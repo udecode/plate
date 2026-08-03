@@ -1,32 +1,117 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "repository": "wordgard/wordgard",
   "provider": "Forgejo API v1",
-  "rawCommand": "curl -sS 'https://code.haverbeke.berlin/api/v1/repos/wordgard/wordgard/issues?state=all&page=1&limit=50' | jq '[.[] | {labels,number,state,title,updatedAt:.updated_at,url:.html_url}]'",
+  "refreshedAt": "2026-08-01T13:53:58.862Z",
   "stateCoverage": "all",
-  "providerLimit": 50,
-  "providerLimitReached": false,
-  "refreshedAt": "2026-07-27T14:28:47Z",
-  "rawPath": ".tmp/editor-issue-harvester/wordgard/raw/issues-refresh-2026-07-26.json",
-  "rawSha256": "d8e4da78b690c81790ede2d6f62b1bdad4a1f502c2806df76e07b1ca3c953bf3",
-  "cursorDeltaSemantics": "Counts include only rows whose lastMetadataRefreshAt matches refreshedAt.",
-  "previousLedgerCount": 27,
-  "providerIssueCount": 27,
-  "hostVerification": {
-    "closedIssueCount": 20,
-    "countCommand": "curl -sS -D - -o /dev/null 'https://code.haverbeke.berlin/api/v1/repos/wordgard/wordgard/issues?state=all&page=1&limit=50'",
-    "issueCount": 27,
-    "omissionCommand": null,
-    "omittedIssues": [],
-    "openIssueCount": 7,
-    "provider": "Forgejo API v1 response headers and repository metadata",
-    "verifiedAt": "2026-07-27T14:28:47Z"
+  "endpointTemplates": {
+    "detail": "https://code.haverbeke.berlin/api/v1/repos/wordgard/wordgard/issues/{number}",
+    "inventory": "https://code.haverbeke.berlin/api/v1/repos/wordgard/wordgard/issues?state={state}&page={page}&limit=50",
+    "timeline": "https://code.haverbeke.berlin/api/v1/repos/wordgard/wordgard/issues/{number}/timeline?page={page}&limit=100"
   },
-  "resultingLedgerCount": 27,
-  "addedUncheckedCount": 0,
-  "addedUncheckedIssues": [],
-  "metadataChangedNeedsRereadCount": 0,
-  "metadataChangedNeedsReread": [],
-  "providerMissingLiveVerifiedCount": 0,
-  "providerMissingLiveVerified": []
+  "sourceHeads": {
+    "wordgard": "c715d4ded8fc780f52c13206e589ea31e4148dd4",
+    "wordgardWebsite": "7627bca8c945389991e7da927e235dbb1e289b20"
+  },
+  "sourceTrackedClean": {
+    "wordgard": true,
+    "wordgardWebsite": true
+  },
+  "inventory": {
+    "providerLimit": 50,
+    "allIssueCount": 35,
+    "allPageTwoCount": 0,
+    "openIssueCount": 12,
+    "closedIssueCount": 23,
+    "hydratedIssueCount": 35,
+    "timelineEventCount": 78,
+    "providerCommentCount": 30,
+    "hydratedCommentCount": 30
+  },
+  "parity": {
+    "allEqualsOpenPlusClosed": true,
+    "detailMetadataMatchesInventory": true,
+    "everyIssueHasSemanticDecision": true,
+    "providerCommentCountsMatch": true,
+    "providerPaginationExhausted": true,
+    "rawBodiesAndTimelinesKeptOutsideDocs": true
+  },
+  "raw": {
+    "path": ".tmp/editor-issue-harvester/wordgard/raw/issues-all-with-bodies-2026-08-01.json",
+    "sha256": "152dbf278c3c07722762d2848164f3f560dc994bfcf4b5dda236b93d085a564d"
+  },
+  "classifications": {
+    "fixed": 22,
+    "open": 12,
+    "stale": 1,
+    "duplicate": 0
+  },
+  "closureStatuses": {
+    "covered-by-existing-test": 0,
+    "deferred-with-owner": 32,
+    "invalid-skip": 2,
+    "needs-repro": 1
+  },
+  "checkedIssueCount": 35,
+  "uncheckedIssueCount": 0,
+  "auditChangingIssueCount": 20,
+  "unionExpandingIssueCount": 2,
+  "unionExpandingIssues": [13, 27],
+  "runtimeHarnessProof": {
+    "classification": "stale-dist-only",
+    "currentHead": "c715d4ded8fc780f52c13206e589ea31e4148dd4",
+    "resolvedDistSnapshot": "01eb2b5eae509509677345fd603acad001827dff",
+    "commitsBehindCurrentHead": 7,
+    "ignoredDist": true,
+    "distFileCount": 22,
+    "distMatchesSnapshotExactly": true,
+    "nodePackageImportsResolveToDist": true,
+    "browserTestsResolveToDist": true,
+    "executesCurrentHeadRuntime": false,
+    "evidence": "docs/plans/artifacts/wordgard-exhaustive-architecture-re-audit/wordgard-public-contract-probe.json"
+  },
+  "proofRuns": [
+    {
+      "command": "npm test",
+      "cwd": "../wordgard",
+      "exitCode": 0,
+      "proofClass": "stale-dist-only",
+      "appliesToFrozenHead": false,
+      "resolvedRevision": "01eb2b5eae509509677345fd603acad001827dff",
+      "result": "572 tests reported passing while package imports resolved ignored dist from 01eb2b5, seven commits behind frozen head; not current-head proof."
+    },
+    {
+      "command": "node bin/test-headless.ts --binary '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'",
+      "cwd": "../wordgard",
+      "exitCode": 0,
+      "proofClass": "stale-dist-only",
+      "appliesToFrozenHead": false,
+      "resolvedRevision": "01eb2b5eae509509677345fd603acad001827dff",
+      "result": "733 tests reported passing while browser imports resolved ignored dist from 01eb2b5, seven commits behind frozen head; not current-head proof."
+    },
+    {
+      "command": "npx tsc --noEmit",
+      "cwd": "../wordgard",
+      "exitCode": 2,
+      "proofClass": "current-head-failure",
+      "appliesToFrozenHead": true,
+      "result": "Fails at frozen head: unused InputRule, unresolved enter, unresolved CodeBlockLanguage, and missing codeBlockLanguage export."
+    },
+    {
+      "command": "npm run prepare",
+      "cwd": "../wordgard",
+      "exitCode": 0,
+      "proofClass": "current-head-failure-hidden-by-exit-code",
+      "appliesToFrozenHead": true,
+      "result": "False green: prints the same TypeScript errors but the build script does not propagate failure."
+    },
+    {
+      "command": "node docs/plans/artifacts/wordgard-exhaustive-architecture-re-audit/probe-wordgard-public-contracts.mjs",
+      "cwd": ".",
+      "exitCode": 0,
+      "proofClass": "harness-provenance",
+      "appliesToFrozenHead": true,
+      "result": "Proves Node and browser test imports resolve ignored dist exactly matching 01eb2b5 across 22 files, seven commits behind frozen head."
+    }
+  ]
 }

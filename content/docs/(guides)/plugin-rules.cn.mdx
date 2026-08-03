@@ -283,18 +283,18 @@ const plugins = [
 
 在空代码块中按下 `Backspace` 前：
 ```tsx
-<code_block>
-  <code_line>
+<codeBlock>
+  <codeLine>
     |
-  </code_line>
-</code_block>
+  </codeLine>
+</codeBlock>
 ```
 
 按下后（重置）：
 ```tsx
-<p>
+<paragraph>
   |
-</p>
+</paragraph>
 ```
 
 ## `rules.delete`
@@ -606,9 +606,8 @@ const plugins = [
 ```tsx
 import { schema } from 'platejs';
 
-const CodeBlockPlugin = createPlatePlugin({
-  name: 'codeBlock',
-  type: 'code_block',
+const CodeBlockPlugin = definePlatePlugin('codeBlock', {
+  type: 'codeBlock',
   schema: {
     element: { content: schema.content.text({ default: 'text', min: 1 }) },
   },
@@ -696,16 +695,14 @@ Plite command handler。下面的单行插件把结构化
 ```tsx
 import { editorCommands } from 'platejs';
 
-const SingleLinePlugin = createPlatePlugin({
+const SingleLinePlugin = definePlatePlugin('singleLine', {
   commands: ({ handle }) => [
     handle(editorCommands.insertBreak, ({ state }) =>
       state.transaction((tx) => {
         tx.break.insertSoft();
       })
     ),
-  ],
-  name: 'singleLine',
-});
+  ],});
 ```
 
 Command handler 对不属于自己的情况返回 `false`，对已处理的情况返回 `state.transaction(...)`。这样键盘输入、程序化调用和测试共享同一条语义命令链。

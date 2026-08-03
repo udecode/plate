@@ -1,18 +1,20 @@
 /** @jsx jsxt */
 
 import { BaseTablePlugin } from './BaseTablePlugin';
-import { getTestTablePlugins } from './__tests__/getTestTablePlugins';
-import { createPlateEditor } from '@platejs/core/react';
+import {
+  createTestTableEditor,
+  getTestTablePlugins,
+} from './__tests__/getTestTablePlugins';
 import { NodeApi } from '@platejs/plite';
 import { jsxt } from '@platejs/test-utils';
 import type { TestEditor } from '@platejs/test-utils';
-import type { TTableElement, TTableRowElement } from '@platejs/utils';
+import type { TableElement, TableRowElement } from './BaseTablePlugin';
 import assert from 'node:assert/strict';
 
 describe('table merge', () => {
   describe('removeRow with expanded selections', () => {
     it('removes every row covered by a selected rowspan cell', () => {
-      const editor = createPlateEditor({
+      const editor = createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge: true }),
         selection: {
@@ -26,38 +28,48 @@ describe('table merge', () => {
               {
                 children: [
                   {
-                    children: [{ children: [{ text: '11' }], type: 'p' }],
+                    children: [
+                      { children: [{ text: '11' }], type: 'paragraph' },
+                    ],
                     rowSpan: 2,
-                    type: 'td',
+                    type: 'tableCell',
                   },
                   {
-                    children: [{ children: [{ text: '12' }], type: 'p' }],
-                    type: 'td',
+                    children: [
+                      { children: [{ text: '12' }], type: 'paragraph' },
+                    ],
+                    type: 'tableCell',
                   },
                 ],
-                type: 'tr',
+                type: 'tableRow',
               },
               {
                 children: [
                   {
-                    children: [{ children: [{ text: '22' }], type: 'p' }],
-                    type: 'td',
+                    children: [
+                      { children: [{ text: '22' }], type: 'paragraph' },
+                    ],
+                    type: 'tableCell',
                   },
                 ],
-                type: 'tr',
+                type: 'tableRow',
               },
               {
                 children: [
                   {
-                    children: [{ children: [{ text: '31' }], type: 'p' }],
-                    type: 'td',
+                    children: [
+                      { children: [{ text: '31' }], type: 'paragraph' },
+                    ],
+                    type: 'tableCell',
                   },
                   {
-                    children: [{ children: [{ text: '32' }], type: 'p' }],
-                    type: 'td',
+                    children: [
+                      { children: [{ text: '32' }], type: 'paragraph' },
+                    ],
+                    type: 'tableCell',
                   },
                 ],
-                type: 'tr',
+                type: 'tableRow',
               },
             ],
             type: 'table',
@@ -67,7 +79,7 @@ describe('table merge', () => {
 
       editor.update.table.removeRow();
 
-      const table = editor.read.nodes.get<TTableElement>([0]);
+      const table = editor.read.nodes.get<TableElement>([0]);
       assert(table);
 
       expect(table[0].children).toHaveLength(1);
@@ -79,7 +91,7 @@ describe('table merge', () => {
     jsxt;
 
     const createTableEditor = (input: TestEditor) =>
-      createPlateEditor({
+      createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge: false }),
         selection: input.selection,
@@ -127,7 +139,7 @@ describe('table merge', () => {
         expect(result.tableEntries).toHaveLength(1);
         expect(result.tableEntries[0]?.[1]).toEqual([0]);
         const table = result.tableEntries[0]?.[0];
-        const firstRow = table?.children[0] as TTableRowElement | undefined;
+        const firstRow = table?.children[0] as TableRowElement | undefined;
 
         expect(table?.children).toHaveLength(2);
         expect(firstRow?.children).toHaveLength(2);
@@ -185,7 +197,7 @@ describe('table merge', () => {
     jsxt;
 
     const createTableEditor = (input: TestEditor) =>
-      createPlateEditor({
+      createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge: false }),
         selection: input.selection,
@@ -224,10 +236,10 @@ describe('table merge', () => {
 
         editor.update.table.insertColumn({ at: [0], select: true });
 
-        const entry = editor.read.nodes.get<TTableElement>([0]);
+        const entry = editor.read.nodes.get<TableElement>([0]);
         assert(entry);
         const [table] = entry;
-        const rows = table.children as TTableRowElement[];
+        const rows = table.children as TableRowElement[];
 
         expect(rows[0].children).toHaveLength(3);
         expect(rows[1].children).toHaveLength(3);
@@ -268,14 +280,18 @@ describe('table merge', () => {
                 children: [
                   {
                     colSpan: 3,
-                    type: 'td',
+                    type: 'tableCell',
                   },
                 ],
-                type: 'tr',
+                type: 'tableRow',
               },
               {
-                children: [{ type: 'td' }, { type: 'td' }, { type: 'td' }],
-                type: 'tr',
+                children: [
+                  { type: 'tableCell' },
+                  { type: 'tableCell' },
+                  { type: 'tableCell' },
+                ],
+                type: 'tableRow',
               },
             ],
             type: 'table',
@@ -289,7 +305,7 @@ describe('table merge', () => {
     jsxt;
 
     const createTableEditor = (input: TestEditor) =>
-      createPlateEditor({
+      createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge: false }),
         selection: input.selection,
@@ -328,7 +344,7 @@ describe('table merge', () => {
 
         editor.update.table.insertRow({ at: [0], select: true });
 
-        const entry = editor.read.nodes.get<TTableElement>([0]);
+        const entry = editor.read.nodes.get<TableElement>([0]);
         assert(entry);
         expect(entry[0].children).toHaveLength(3);
       });
@@ -368,19 +384,19 @@ describe('table merge', () => {
                 children: [
                   {
                     rowSpan: 3,
-                    type: 'td',
+                    type: 'tableCell',
                   },
-                  { type: 'td' },
+                  { type: 'tableCell' },
                 ],
-                type: 'tr',
+                type: 'tableRow',
               },
               {
-                children: [{ type: 'td' }],
-                type: 'tr',
+                children: [{ type: 'tableCell' }],
+                type: 'tableRow',
               },
               {
-                children: [{ type: 'td' }],
-                type: 'tr',
+                children: [{ type: 'tableCell' }],
+                type: 'tableRow',
               },
             ],
             type: 'table',

@@ -51,7 +51,7 @@ describe('parseMarkdownBlocks', () => {
     expect(tokens).not.toEqual(
       expect.arrayContaining([
         expect.objectContaining({ type: 'space' }),
-        expect.objectContaining({ type: 'hr' }),
+        expect.objectContaining({ type: 'horizontalRule' }),
       ])
     );
   });

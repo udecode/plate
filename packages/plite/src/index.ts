@@ -1,5 +1,6 @@
 export {
-  defineEditorExtension,
+  defineEditorSchema,
+  defineExtension,
   defineExtensionPoint,
 } from './core/editor-extension';
 export { defineCommand } from './core/command-registry';
@@ -41,12 +42,7 @@ export type {
   EditorExtensionSlot,
   EditorExtensionSlotValue,
 } from './core/extension-slot';
-export {
-  defineEditorSchema,
-  property,
-  schema,
-  target,
-} from './core/schema-definition';
+export { property, schema, target } from './core/schema-definition';
 export { EditorSchemaValidationError } from './core/schema-validation';
 export { defineFacet } from './core/facet';
 export { setEditorReadOnly } from './core/public-state';
@@ -71,33 +67,9 @@ export {
   type EditorExtensionsFromOptions,
   type EditorValueFromOptions,
 } from './create-editor';
-export { createEditorRuntime, createEditorView } from './editor-runtime-view';
-export {
-  above,
-  after,
-  before,
-  edges,
-  first,
-  fragment,
-  isBlock,
-  isEdge,
-  isEditor,
-  isEmpty,
-  isEnd,
-  isInline,
-  isSelectable,
-  isStart,
-  isVoid,
-  last,
-  next,
-  parent,
-  previous,
-  range,
-  string,
-  unhangRange,
-} from './interfaces/editor';
+export { createEditorView } from './editor-runtime-view';
+export { isEditor } from './interfaces/editor';
 export type {
-  BaseEditor,
   CompatibleEditorCommand,
   CreateEditorOptions,
   Editor,
@@ -162,6 +134,7 @@ export type {
   EditorNodeChangeContext,
   EditorNodeChangeHandler,
   EditorExtensionActivationContext,
+  EditorExtensionCapabilities,
   EditorExtensionCleanupContext,
   EditorExtensionCandidateEditor,
   EditorExtensionCandidateContext,
@@ -194,8 +167,6 @@ export type {
   EditorStateSliceApi,
   EditorReplaceChildrenOptions,
   EditorReplaceNodeOptions,
-  EditorRuntime,
-  EditorRuntimeOptions,
   EditorSelectionBlockOptions,
   EditorSelectionMapContext,
   EditorSelectionSpec,
@@ -216,6 +187,7 @@ export type {
   EditorStateTextApi,
   EditorStateValueApi,
   EditorStateView,
+  EditorStateViewProvider,
   EditorStateViewApi,
   EditorTargetRuntime,
   EditorTextChangeContext,
@@ -253,6 +225,8 @@ export type {
   EditorUpdateTagInput,
   EditorUpdateAnnotation,
   EditorUpdateTransaction,
+  EditorUpdateTransactionOf,
+  EditorUpdateTransactionProvider,
   EditorValueFromExtensions,
   EditorView,
   EditorViewOptions,
@@ -280,6 +254,7 @@ export type {
   Value,
   ValueOf,
 } from './interfaces/editor';
+export { EditorExtensionPublicationError } from './core/editor-extension';
 export * from './interfaces/element';
 export * from './interfaces/location';
 export * from './interfaces/node';

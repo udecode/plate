@@ -1,4 +1,4 @@
-import { type DefinitionOf, createBasePlugin } from '@platejs/core';
+import { type DefinitionOf, defineBasePlugin } from '@platejs/core';
 import {
   ElementApi,
   NodeApi,
@@ -8,7 +8,7 @@ import {
   TextApi,
   property,
 } from '@platejs/plite';
-import { KEYS, NODES } from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 
 export type FindReplacePluginState = {
   /** Searching text to highlight */
@@ -19,14 +19,12 @@ const initialState: FindReplacePluginState = {
   search: '',
 };
 
-export const FindReplacePlugin = createBasePlugin({
-  name: KEYS.searchHighlight,
+export const FindReplacePlugin = defineBasePlugin(PLUGINS.searchHighlight, {
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
-  type: NODES.searchHighlight,
   initialState,
-  decorate: ({ editor, entry: [node, path], store, type }) => {
+  decorate: ({ editor, entry: [node, path], key, store }) => {
     const { search } = store.get();
 
     if (
@@ -109,7 +107,7 @@ export const FindReplacePlugin = createBasePlugin({
               path: textNodePath,
             },
             search: search.slice(searchOverlapStart, searchOverlapEnd),
-            [type]: true,
+            [key]: true,
           });
         }
         if (matchEnd <= textEnd) {

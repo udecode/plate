@@ -1,6 +1,5 @@
 import {
   createEditor,
-  createEditorRuntime,
   createEditorView,
   type Descendant,
   defineEditorSchema,
@@ -11,10 +10,10 @@ import { DOMCoverage } from '@platejs/plite-dom/internal';
 import { history } from '@platejs/plite-history';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { isSelectAllHotkey } from '../src/dom-strategy/dom-strategy-commands';
+import { getTextDirection } from '../src/editable/caret-engine';
 import { resolveHistoryFocusEditor } from '../src/editable/history-focus';
 import {
   applyEditableKeyDown as applyRuntimeEditableKeyDown,
-  getTextDirection,
   shouldDeferBackspaceToNativeInput,
 } from '../src/editable/keyboard-input-strategy';
 import { EditableDOMRuntime } from '../src/editable/editable-dom-runtime';
@@ -130,24 +129,27 @@ const paragraph = (text: string) =>
     children: [{ text }],
   }) satisfies Descendant;
 
-const contentRootExtension = defineEditorSchema({
-  elements: {
-    paragraph: {
-      content: schema.content.text({ default: 'text', min: 1 }),
-    },
-    'content-card': {
-      content: schema.content.open(),
-      contentRoots: {
-        body: schema.content.not(schema.content.text()),
+const contentRootExtension = defineEditorSchema(
+  'schema:keyboard-content-root-test',
+  {
+    elements: {
+      paragraph: {
+        content: schema.content.text({ default: 'text', min: 1 }),
       },
-      void: 'editable-island',
+      'content-card': {
+        content: schema.content.open(),
+        contentRoots: {
+          body: schema.content.not(schema.content.text()),
+        },
+        void: 'editable-island',
+      },
     },
-  },
-  id: 'keyboard-content-root-test',
-  root: schema.content.not(schema.content.text()),
-  unknown: 'preserve',
-  version: 1,
-});
+    id: 'keyboard-content-root-test',
+    root: schema.content.not(schema.content.text()),
+    unknown: 'preserve',
+    version: 1,
+  }
+);
 
 const contentCard = (bodyRoot = 'card:body') =>
   ({
@@ -797,7 +799,7 @@ describe('keyboard input strategy', () => {
   });
 
   it('uses the nested editable selection when promoting a child-root Shift+Arrow move', () => {
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       extensions: [contentRootExtension],
       initialValue: {
         children: [paragraph('p1'), contentCard(), paragraph('p2')],
@@ -886,7 +888,7 @@ describe('keyboard input strategy', () => {
   });
 
   it('uses the nested DOM selection when child-root selection import is stale', () => {
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       extensions: [contentRootExtension],
       initialValue: {
         children: [paragraph('p1'), contentCard(), paragraph('p2')],
@@ -1066,7 +1068,7 @@ describe('keyboard input strategy', () => {
   });
 
   it("repairs history focus to the preserved selection root when undoing another root's batch", () => {
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       extensions: [history()],
       initialValue: {
         children: [paragraph('body')],
@@ -1133,7 +1135,7 @@ describe('keyboard input strategy', () => {
   });
 
   it('skips caret DOM repair when history restores an expanded view selection', () => {
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       extensions: [history()],
       initialValue: [paragraph('Before'), paragraph('After')],
     });
@@ -2460,13 +2462,16 @@ describe('keyboard input strategy', () => {
       ]);
       const editor = createEditor({
         extensions: [
-          defineEditorSchema({
-            elements: { mention: { void: 'markable-inline' } },
-            id: 'keyboard-input-strategy-inline-void-test',
-            root: schema.content.not(schema.content.text()),
-            unknown: 'preserve',
-            version: 1,
-          }),
+          defineEditorSchema(
+            'schema:keyboard-input-strategy-inline-void-test',
+            {
+              elements: { mention: { void: 'markable-inline' } },
+              id: 'keyboard-input-strategy-inline-void-test',
+              root: schema.content.not(schema.content.text()),
+              unknown: 'preserve',
+              version: 1,
+            }
+          ),
         ],
         initialSelection: {
           kind: 'text',
@@ -2563,7 +2568,7 @@ describe('keyboard input strategy', () => {
       ]);
       const editor = createEditor({
         extensions: [
-          defineEditorSchema({
+          defineEditorSchema('schema:keyboard-input-strategy-void-test', {
             elements: { image: { void: 'block' } },
             id: 'keyboard-input-strategy-void-test',
             root: schema.content.not(schema.content.text()),

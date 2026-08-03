@@ -1,4 +1,4 @@
-import { createBasePlugin } from '@platejs/core';
+import { defineBasePlugin } from '@platejs/core';
 import {
   type Descendant,
   type Element,
@@ -13,17 +13,11 @@ import { BaseScriptPlugin } from '../lib/BaseMarkPlugins';
  * Converts pre-v54 subscript and superscript boolean marks into the v54
  * `script` mark before schema fitting.
  */
-export const ScriptV54MigrationPlugin = createBasePlugin({
-  name: 'scriptV54Migration',
+export const ScriptV54MigrationPlugin = defineBasePlugin('scriptV54Migration', {
   transformInitialValue: ({ editor, value }) => {
     const script = editor.plugin(BaseScriptPlugin);
 
     if (!script.installed) return value;
-    if (script.type === 'subscript' || script.type === 'superscript') {
-      throw new Error(
-        `ScriptV54MigrationPlugin cannot migrate into legacy property "${script.type}".`
-      );
-    }
 
     const migrateText = (text: Descendant, location: string): Descendant => {
       if (!TextApi.isText(text)) return text;
@@ -54,7 +48,7 @@ export const ScriptV54MigrationPlugin = createBasePlugin({
 
       const migrated =
         subscript === true ? 'sub' : superscript === true ? 'sup' : undefined;
-      const current = Reflect.get(text, script.type);
+      const current = Reflect.get(text, script.key);
 
       if (
         migrated !== undefined &&
@@ -62,7 +56,7 @@ export const ScriptV54MigrationPlugin = createBasePlugin({
         current !== migrated
       ) {
         throw new Error(
-          `Legacy script mark at ${location} conflicts with ${script.type} "${String(current)}".`
+          `Legacy script mark at ${location} conflicts with ${script.key} "${String(current)}".`
         );
       }
 
@@ -74,7 +68,7 @@ export const ScriptV54MigrationPlugin = createBasePlugin({
 
       return migrated === undefined
         ? next
-        : { ...next, [script.type]: migrated };
+        : { ...next, [script.key]: migrated };
     };
     function migrateDescendant(
       descendant: Descendant,

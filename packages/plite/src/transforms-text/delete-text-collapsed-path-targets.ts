@@ -13,7 +13,7 @@ import {
   isEmpty as editorIsEmpty,
   point as editorPoint,
 } from '../interfaces/editor';
-import type { Editor } from '../interfaces/editor';
+import type { AnyEditor as Editor } from '../interfaces/editor';
 import { getCurrentNode, isTextNode } from './delete-text-plan';
 
 export const getEmptyEditableInlinePathAtPoint = (

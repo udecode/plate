@@ -12,7 +12,7 @@ import {
   createEditor,
   DocumentChange,
   type Element,
-  defineEditorExtension,
+  defineExtension,
   property,
   schema,
 } from '@platejs/plite';
@@ -57,9 +57,8 @@ describe('editor foundation contract', () => {
       image: { void: 'block' },
       mention: { void: 'markable-inline' },
     });
-    editor.extend(
-      defineEditorExtension({
-        name: 'table-foundation',
+    editor.install(
+      defineExtension('table-foundation', {
         schema: {
           elements: {
             'table-cell': {

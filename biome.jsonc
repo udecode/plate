@@ -48,6 +48,7 @@
       "!!tooling/config/global.d.ts",
       "!!templates",
       "!**/__registry__",
+      "!apps/www/src/registry/**/*.schema.json",
       "!**/next-env.d.ts"
     ]
   },
@@ -141,6 +142,19 @@
         "rules": {
           "suspicious": {
             "noConsole": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": [
+        ".agents/rules/**/scripts/**/*.mjs",
+        "docs/plans/artifacts/**/*.mjs"
+      ],
+      "linter": {
+        "rules": {
+          "performance": {
+            "useTopLevelRegex": "off"
           }
         }
       }

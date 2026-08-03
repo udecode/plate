@@ -1,8 +1,12 @@
 import type React from 'react';
+import type { Value } from '@platejs/plite';
 
 import type { EditableProps } from '../../lib';
-import type { PlateEditor } from '../editor/PlateEditor';
-import type { AnyEditorPlatePlugin } from '../plugin';
+import type {
+  InternalPlateEditorWithInstalledPlugins,
+  PlateEditor,
+} from '../editor/PlateEditor';
+import type { AnyResolvedPlatePlugin } from '../plugin';
 import type { DOMHandlerProp, DOMHandlers } from '../plugin/DOMHandlers';
 
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
@@ -11,7 +15,7 @@ import { createPluginContext } from '../plugin/createPluginContext.internal';
 
 type DOMHandlerName = keyof DOMHandlers & string;
 
-type PluginWithDOMHandlers = AnyEditorPlatePlugin & {
+type PluginWithDOMHandlers = AnyResolvedPlatePlugin & {
   on?: DOMHandlers;
 };
 
@@ -85,20 +89,30 @@ const isEventHandled = <
  * - Any callback returning true will stop the next callbacks,
  *   including the Plite internal handler.
  */
-export const pipeHandler = <K extends DOMHandlerProp>(
-  editor: PlateEditor<any, any>,
-  {
-    editableProps,
-    handlerKey,
-  }: { handlerKey: K; editableProps?: Omit<EditableProps, 'decorate'> | null }
-): ((event: any) => boolean | void) | undefined => {
+type PipeHandlerOptions<K extends DOMHandlerProp> = {
+  handlerKey: K;
+  editableProps?: Omit<EditableProps, 'decorate'> | null;
+};
+
+type PipedDOMHandler = ((event: any) => boolean | void) | undefined;
+
+export function pipeHandler<V extends Value, D, K extends DOMHandlerProp>(
+  editor: InternalPlateEditorWithInstalledPlugins<V, D>,
+  options: PipeHandlerOptions<K>
+): PipedDOMHandler;
+export function pipeHandler<K extends DOMHandlerProp>(
+  editor: object,
+  { editableProps, handlerKey }: PipeHandlerOptions<K>
+): PipedDOMHandler {
+  const plateEditor = editor as PlateEditor;
   const propsHandler = editableProps?.[handlerKey] as (
     event: any
   ) => boolean | void;
 
   const pluginHandlerName = getDOMHandlerName(handlerKey);
   const relevantPlugins = (
-    getPlateRuntime(editor).pluginList as unknown as AnyEditorPlatePlugin[]
+    getPlateRuntime(plateEditor)
+      .pluginList as unknown as AnyResolvedPlatePlugin[]
   ).filter(
     (plugin) => (plugin as PluginWithDOMHandlers).on?.[pluginHandlerName]
   );
@@ -112,7 +126,7 @@ export const pipeHandler = <K extends DOMHandlerProp>(
       : event;
 
     const eventIsHandled = relevantPlugins.some((plugin) => {
-      if (isEditOnly(editor.read.view.isReadOnly(), plugin, 'on')) {
+      if (isEditOnly(plateEditor.read.view.isReadOnly(), plugin, 'on')) {
         return false;
       }
 
@@ -123,7 +137,7 @@ export const pipeHandler = <K extends DOMHandlerProp>(
       if (!pluginHandler) return false;
 
       const shouldTreatEventAsHandled = pluginHandler({
-        ...createPluginContext(editor, plugin),
+        ...createPluginContext(plateEditor, plugin),
         event: handledEvent,
       });
 
@@ -138,4 +152,4 @@ export const pipeHandler = <K extends DOMHandlerProp>(
 
     return isEventHandled(handledEvent, propsHandler);
   };
-};
+}

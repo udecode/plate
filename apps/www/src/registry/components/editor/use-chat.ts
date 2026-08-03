@@ -1,4 +1,5 @@
 'use client';
+import { NODES } from '@platejs/utils';
 
 /* eslint-disable react-hooks/refs -- Fake stream abort control is imperative transport state. */
 
@@ -1671,7 +1672,7 @@ const createTableCellChunks = (editor: PlateEditor) => {
     const cells = editor.read((state) => [
       ...state.nodes.entries({
         at: state.selection() ?? undefined,
-        match: { type: [KEYS.td, KEYS.th] },
+        match: { type: [NODES.td, NODES.th] },
       }),
     ]);
     cellIds = cells.flatMap(([node]) =>

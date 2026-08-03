@@ -1,7 +1,7 @@
 import {
   type BasePluginContext,
   type BasePluginDefinition,
-  createBasePlugin,
+  defineBasePlugin,
   type PlatePluginTransaction,
 } from '@platejs/core';
 import {
@@ -78,7 +78,7 @@ export type ProviderMediaInsertInput = AlignedMediaInsertInput & {
   sourceUrl?: string;
 };
 
-type MediaElementForPluginName<K extends string> = K extends typeof KEYS.img
+type MediaElementForPlugin<K extends string> = K extends typeof KEYS.img
   ? TImageElement
   : K extends typeof KEYS.audio
     ? TAudioElement
@@ -90,7 +90,7 @@ type MediaElementForPluginName<K extends string> = K extends typeof KEYS.img
           ? TMediaEmbedElement
           : TMediaElement;
 
-type MediaInsertInputForPluginName<K extends string> = K extends typeof KEYS.img
+type MediaInsertInputForPlugin<K extends string> = K extends typeof KEYS.img
   ? ImageInsertInput
   : K extends typeof KEYS.mediaEmbed | typeof KEYS.video
     ? ProviderMediaInsertInput
@@ -100,11 +100,11 @@ type MediaInsertInputForPluginName<K extends string> = K extends typeof KEYS.img
 
 type MediaPluginUpdate<K extends string> = {
   insert: (
-    input: MediaInsertInputForPluginName<K>,
+    input: MediaInsertInputForPlugin<K>,
     options?: NodeInsertNodesOptions<TMediaElement>
   ) => boolean;
   setUrl: (input: {
-    element: MediaElementForPluginName<K>;
+    element: MediaElementForPlugin<K>;
     url: string;
   }) => boolean;
 };
@@ -210,8 +210,7 @@ export type AudioPluginState = MediaPluginState;
 export type FilePluginState = MediaPluginState;
 export type VideoPluginState = MediaPluginState;
 
-export const BaseAudioPlugin = createBasePlugin({
-  name: KEYS.audio,
+export const BaseAudioPlugin = defineBasePlugin(KEYS.audio, {
   initialState: (): AudioPluginState => ({}),
   schema: {
     element: schema.element.textBlock({
@@ -263,8 +262,7 @@ export const BaseAudioPlugin = createBasePlugin({
     }),
 }).extend(defineMediaPlugin());
 
-export const BaseFilePlugin = createBasePlugin({
-  name: KEYS.file,
+export const BaseFilePlugin = defineBasePlugin(KEYS.file, {
   initialState: (): FilePluginState => ({}),
   schema: {
     element: schema.element.textBlock({
@@ -316,8 +314,7 @@ export const BaseFilePlugin = createBasePlugin({
     }),
 }).extend(defineMediaPlugin());
 
-export const BaseVideoPlugin = createBasePlugin({
-  name: KEYS.video,
+export const BaseVideoPlugin = defineBasePlugin(KEYS.video, {
   initialState: (): VideoPluginState => ({}),
   schema: {
     element: schema.element.textBlock({

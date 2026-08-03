@@ -254,6 +254,7 @@ export type StateFieldTransition<TValue> = Readonly<{
 
 export type EditorStateField<TValue = unknown> =
   EditorExtensionDefinitionInput &
+    Readonly<{ name: string }> &
     Omit<StateFieldDescriptor<TValue>, 'compare'> & {
       compare: (left: TValue, right: TValue) => boolean;
       deserialize: (value: unknown) => TValue;
@@ -540,7 +541,6 @@ export type EditorToggleMarkOptions = {
 export type EditorBlockToggleOptions<T extends Descendant = Descendant> = {
   at?: NodeTarget<T>;
   compare?: PropsCompare;
-  defaultType?: string;
   hanging?: boolean;
   merge?: PropsMerge;
   mode?: MaximizeMode;
@@ -1298,12 +1298,12 @@ export interface BaseEditor<
     > extends never
       ? [never]
       : []
-  ) => EditorExtensionPortal<TExtension>;
+  ) => EditorExtensionPortal<TExtension, V>;
   read: EditorRead<V, TExtensions>;
   subscribe: (listener: SnapshotListener<any>) => () => void;
   subscribeCommit: (listener: EditorCommitListener<any>) => () => void;
   update: EditorUpdate<V, TExtensions>;
-  extend: (
+  install: (
     extension: EditorExtensionInput,
     options?: EditorExtensionReconfigureOptions
   ) => () => void;
@@ -1317,28 +1317,6 @@ export type EditorUpdatePolicyFor<TEditor extends BaseEditor<any, any>> =
   >
     ? EditorAvailableUpdatePolicy<EditorInstalledUpdateGroups<V, TExtensions>>
     : never;
-
-export type EditorRuntime<
-  V extends Value = Value,
-  TExtensions extends readonly unknown[] = readonly [],
-> = Pick<
-  BaseEditor<V, TExtensions>,
-  | 'anchor'
-  | 'api'
-  | 'extension'
-  | 'extend'
-  | 'read'
-  | 'subscribe'
-  | 'subscribeCommit'
-  | 'update'
-> & {
-  editor: Editor<V, TExtensions>;
-};
-
-export type EditorRuntimeOptions<
-  V extends Value = Value,
-  TExtensions extends readonly unknown[] = readonly [],
-> = CreateEditorOptions<V, TExtensions>;
 
 export type EditorViewOptions<TRoot extends RootKey = RootKey> = {
   readOnly?: boolean;
@@ -1354,25 +1332,29 @@ export type EditorView<
   focus: () => void;
   /** Named view root, or `undefined` for the primary document. */
   readonly root: NamedRootKey | undefined;
-  readonly runtime: EditorRuntime<V, TExtensions>;
 };
 
 export type Editor<
-  V extends Value = any,
+  V extends Value = Value,
   TExtensions extends readonly unknown[] = readonly [],
+> = BaseEditor<V, TExtensions>;
+
+/** @internal Existential editor boundary for runtime registries. */
+export type AnyEditor<
+  V extends Value = any,
+  TExtensions extends readonly unknown[] = any,
 > = BaseEditor<V, TExtensions>;
 
 export type CreateEditorOptions<
   V extends Value = Value,
   TExtensions extends readonly unknown[] = readonly [],
 > = {
-  defaultBlockType?: string;
   extensions?: TExtensions;
   /** Stable logical identity for this editor instance. */
   id?: string;
   initialSelection?: Selection;
   initialValue?: InitialValue<V>;
-  lifecycleErrorSink?: EditorLifecycleErrorSink;
+  lifecycleErrorSink?: EditorLifecycleErrorSink<Editor<V, TExtensions>>;
   maxLength?: number;
   readOnly?: boolean;
 };
@@ -1489,44 +1471,50 @@ export type EditorTargetRuntime = {
 
 declare const TRANSACTION_SPEC_TYPE: unique symbol;
 
-export type TransactionSpec<TRoot extends RootKey = RootKey> = Readonly<{
+export interface TransactionSpec<TRoot extends RootKey = RootKey> {
   /** @internal Opaque proof that this spec was built by the owning editor. */
   readonly [TRANSACTION_SPEC_TYPE]: true;
-  annotations: readonly Readonly<{
+  readonly annotations: readonly Readonly<{
     type: EditorUpdateAnnotation<unknown>;
     value: unknown;
   }>[];
-  changes: DocumentChange;
-  effects: readonly EditorEffect[];
-  kind: 'transaction';
-  selection?: Readonly<{
+  readonly changes: DocumentChange;
+  readonly effects: readonly EditorEffect[];
+  readonly kind: 'transaction';
+  readonly selection?: Readonly<{
     /** Named selection root. Omitted for the primary document. */
     root?: NamedRootKey<TRoot>;
     value: Selection;
   }>;
-  tags: readonly EditorUpdateTag[];
-}>;
+  readonly tags: readonly EditorUpdateTag[];
+}
 
 export type EditorCommandResult = false | TransactionSpec;
 
+/** @internal */
+export declare const editorStateViewTypes: unique symbol;
+
 /** @internal Exact state-view carrier for editor layers with richer transactions. */
-export type InternalEditorStateViewProvider<TState> = Readonly<{
-  readonly __editorStateViewTypes?: TState;
-}>;
+export interface EditorStateViewProvider<TState> {
+  readonly [editorStateViewTypes]?: TState;
+}
 
 /** @internal Exact update-transaction carrier for layered editor types. */
-export type InternalEditorUpdateTransactionProvider<TTransaction> = Readonly<{
-  readonly __editorUpdateTransactionTypes?: TTransaction;
-}>;
+/** @internal */
+export declare const editorUpdateTransactionTypes: unique symbol;
+
+export interface EditorUpdateTransactionProvider<TTransaction> {
+  readonly [editorUpdateTransactionTypes]?: TTransaction;
+}
 
 /** @internal Resolve a layered editor's exact live update transaction. */
-export type InternalEditorUpdateTransactionOf<TEditor> =
-  TEditor extends InternalEditorUpdateTransactionProvider<infer TTransaction>
+export type EditorUpdateTransactionOf<TEditor> =
+  TEditor extends EditorUpdateTransactionProvider<infer TTransaction>
     ? TTransaction
     : EditorUpdateTransaction<ValueOf<TEditor>, ExtensionsOf<TEditor>>;
 
 type EditorStateViewOf<TEditor> =
-  TEditor extends InternalEditorStateViewProvider<infer TState>
+  TEditor extends EditorStateViewProvider<infer TState>
     ? TState
     : EditorStateView<ValueOf<TEditor>, ExtensionsOf<TEditor>>;
 
@@ -1557,9 +1545,11 @@ export type EditorCommandAroundHandler<Input, TEditor = Editor> = (
   }
 ) => EditorCommandResult;
 
+/** @internal */
+export declare const editorCommandRegistrationTypes: unique symbol;
+
 export type EditorCommandRegistration<TEditor = Editor> = Readonly<{
-  /** @internal Compile-time editor requirement; runtime data is private. */
-  readonly __editorCommandRegistrationTypes: (
+  [editorCommandRegistrationTypes]: (
     capabilities: EditorCommandCapabilities<TEditor>
   ) => void;
 }>;
@@ -1579,31 +1569,41 @@ export type EditorExtensionCommandContext<
   ) => EditorCommandRegistration<TEditor>;
 }>;
 
+/** @internal */
+export declare const editorReadTypes: unique symbol;
+
+type PrivateEditorReadTypes<Input, Result, TEditor> = Readonly<{
+  [editorReadTypes]: Readonly<{
+    editor: TEditor;
+    input: Input;
+    result: Result;
+  }>;
+}>;
+
 export type EditorReadDescriptor<
   Input = void,
   Result = unknown,
   TEditor extends BaseEditor<any, any> = Editor,
 > = Readonly<{
-  /** @internal Carries input, result, and editor requirements. */
-  readonly __editorReadTypes: Readonly<{
-    editor: TEditor;
-    input: Input;
-    result: Result;
-  }>;
   /** Stable configuration and diagnostics identity. */
   id: string;
-}>;
+}> &
+  PrivateEditorReadTypes<Input, Result, TEditor>;
 
 export type EditorReadInput<TRead extends EditorReadDescriptor<any, any, any>> =
-  TRead['__editorReadTypes']['input'];
+  TRead extends PrivateEditorReadTypes<infer Input, any, any> ? Input : never;
 
 export type EditorReadResult<
   TRead extends EditorReadDescriptor<any, any, any>,
-> = TRead['__editorReadTypes']['result'];
+> =
+  TRead extends PrivateEditorReadTypes<any, infer Result, any> ? Result : never;
 
 export type EditorReadRequiredEditor<
   TRead extends EditorReadDescriptor<any, any, any>,
-> = TRead['__editorReadTypes']['editor'];
+> =
+  TRead extends PrivateEditorReadTypes<any, any, infer TEditor>
+    ? TEditor
+    : never;
 
 export type EditorReadCapabilities<TEditor> =
   TEditor extends BaseEditor<
@@ -1647,9 +1647,11 @@ export type EditorReadAroundHandler<
   TEditor extends BaseEditor<any, any> = Editor,
 > = (context: EditorReadContext<Input, Result, TEditor>) => Result;
 
+/** @internal */
+export declare const editorReadRegistrationTypes: unique symbol;
+
 export type EditorReadRegistration<TEditor = Editor> = Readonly<{
-  /** @internal Compile-time editor requirement; runtime data is private. */
-  readonly __editorReadRegistrationTypes: (
+  [editorReadRegistrationTypes]: (
     capabilities: EditorReadCapabilities<TEditor>
   ) => void;
 }>;
@@ -1674,15 +1676,20 @@ export type EditorExtensionReadMiddlewareFactory<
   readonly EditorReadRegistration<TEditor>[]
 >;
 
+/** @internal */
+export declare const editorCommandTypes: unique symbol;
+
+type PrivateEditorCommandTypes<Input, TEditor> = Readonly<{
+  [editorCommandTypes]: Readonly<{
+    editor: TEditor;
+    input: Input;
+  }>;
+}>;
+
 export type EditorCommand<
   Input = void,
   TEditor extends BaseEditor<any, any> = Editor,
 > = Readonly<{
-  /** @internal Carries input and editor requirements without runtime metadata. */
-  readonly __editorCommandTypes: Readonly<{
-    editor: TEditor;
-    input: Input;
-  }>;
   /** Build only the descriptor default without running installed handlers. */
   build: (
     state: EditorStateViewOf<TEditor>,
@@ -1690,25 +1697,26 @@ export type EditorCommand<
   ) => EditorCommandResult;
   /** Stable configuration and diagnostics identity. */
   id: string;
-}>;
+}> &
+  PrivateEditorCommandTypes<Input, TEditor>;
 
 /** Minimal descriptor shape shared by every semantic editor command. */
 export type EditorCommandDescriptor = Readonly<{
-  readonly __editorCommandTypes: Readonly<{
-    editor: unknown;
-    input: unknown;
-  }>;
   id: string;
-}>;
+}> &
+  PrivateEditorCommandTypes<any, any>;
 
 /** Input accepted by one semantic command descriptor. */
 export type EditorCommandInput<TCommand extends EditorCommandDescriptor> =
-  TCommand['__editorCommandTypes']['input'];
+  TCommand extends PrivateEditorCommandTypes<infer Input, any> ? Input : never;
 
 /** @internal Editor capability required by one semantic command descriptor. */
 export type EditorCommandRequiredEditor<
   TCommand extends EditorCommandDescriptor,
-> = TCommand['__editorCommandTypes']['editor'];
+> =
+  TCommand extends PrivateEditorCommandTypes<any, infer TEditor>
+    ? TEditor
+    : never;
 
 /** @internal Pure capabilities visible while building a semantic command. */
 export type EditorCommandCapabilities<TEditor> =
@@ -1870,8 +1878,13 @@ export type EditorExtensionApiFactory<
   TResult
 >;
 
-export type EditorExtensionPortal<TExtension> = Readonly<{
+export type EditorExtensionPortal<
+  TExtension,
+  V extends Value = Value,
+> = Readonly<{
   api: EditorApiValueFromExtension<TExtension>;
+  read: EditorReadValueFromExtension<V, TExtension>;
+  update: EditorUpdateValueFromExtension<V, TExtension>;
 }>;
 
 export type EditorAnchorApi = <
@@ -1890,7 +1903,7 @@ export type EditorExtensionCleanupContext = Readonly<{
 
 export type EditorExtensionActivationContext = Readonly<{
   afterPublish: (callback: () => void) => void;
-  name: string;
+  extensionName: string;
   onCleanup: (
     cleanup: (context: EditorExtensionCleanupContext) => void
   ) => void;
@@ -1900,24 +1913,28 @@ export type EditorExtensionActivationContext = Readonly<{
   signal: AbortSignal;
 }>;
 
-export type EditorLifecycleError =
+export type EditorLifecycleError<
+  TEditor extends BaseEditor<any, any> = Editor,
+> =
   | Readonly<{
       cause: unknown;
-      editor: Editor;
-      extension: string;
-      phase: 'activate' | 'after-publish' | 'cleanup';
+      editor: TEditor;
+      extensionName: string;
+      phase: 'afterPublish' | 'cleanup';
     }>
   | Readonly<{
       cause: unknown;
-      editor: Editor;
-      extension: string;
+      editor: TEditor;
+      extensionName: string;
       format: string;
       key: string;
       phase: 'parse' | 'query' | 'serialize';
       source: 'host-codec';
     }>;
 
-export type EditorLifecycleErrorSink = (error: EditorLifecycleError) => void;
+export type EditorLifecycleErrorSink<
+  TEditor extends BaseEditor<any, any> = Editor,
+> = (error: EditorLifecycleError<TEditor>) => void;
 
 export type EditorExtensionCandidateContext<
   TEditor extends BaseEditor<any> = Editor,
@@ -1927,19 +1944,17 @@ export type EditorExtensionCandidateContext<
     schema: EditorStateSchemaApi<ValueOf<TEditor>>;
   }>;
 
-export type EditorCommitContext<TEditor extends BaseEditor<any, any> = Editor> =
-  {
-    commit: EditorCommit<ValueOf<TEditor>>;
-    editor: TEditor;
-    snapshot: EditorSnapshot<ValueOf<TEditor>>;
-  };
+export type EditorCommitContext<TEditor = Editor> = {
+  commit: EditorCommit<ValueOf<TEditor>>;
+  editor: TEditor;
+  snapshot: EditorSnapshot<ValueOf<TEditor>>;
+};
 
-export type EditorCommitHandler<TEditor extends BaseEditor<any, any> = Editor> =
-  (context: EditorCommitContext<TEditor>) => void;
+export type EditorCommitHandler<TEditor = Editor> = (
+  context: EditorCommitContext<TEditor>
+) => void;
 
-export type EditorTransactionChangeContext<
-  TEditor extends BaseEditor<any, any> = Editor,
-> = Readonly<{
+export type EditorTransactionChangeContext<TEditor = Editor> = Readonly<{
   after: EditorDocumentValue<ValueOf<TEditor>>;
   before: EditorDocumentValue<ValueOf<TEditor>>;
   change: DocumentChange;
@@ -1953,51 +1968,45 @@ export type EditorTransactionChangeContext<
   tx: EditorUpdateTransaction<ValueOf<TEditor>, ExtensionsOf<TEditor>>;
 }>;
 
-export type EditorTransactionChangeHandler<
-  TEditor extends BaseEditor<any, any> = Editor,
-> = (context: EditorTransactionChangeContext<TEditor>) => void;
+export type EditorTransactionChangeHandler<TEditor = Editor> = (
+  context: EditorTransactionChangeContext<TEditor>
+) => void;
 
 export type EditorNodeChangeKind = 'insert' | 'move' | 'remove' | 'update';
 
-export type EditorNodeChangeContext<
-  TEditor extends BaseEditor<any, any> = Editor,
-> = {
+export type EditorNodeChangeContext<TEditor = Editor> = {
   commit: EditorCommit<ValueOf<TEditor>>;
   editor: TEditor;
   kind: EditorNodeChangeKind;
   node: DescendantIn<ValueOf<TEditor>> | null;
   path: Path;
   previousPath: Path | null;
-  prevNode: DescendantIn<ValueOf<TEditor>> | null;
+  previousNode: DescendantIn<ValueOf<TEditor>> | null;
   /** Named changed root, or `undefined` for the primary document. */
   root: NamedRootKey | undefined;
 };
 
-export type EditorTextChangeContext<
-  TEditor extends BaseEditor<any, any> = Editor,
-> = {
+export type EditorTextChangeContext<TEditor = Editor> = {
   commit: EditorCommit<ValueOf<TEditor>>;
   editor: TEditor;
   node: DescendantIn<ValueOf<TEditor>> | null;
   path: Path;
   previousPath: Path;
-  prevText: string;
+  previousText: string;
   /** Named changed root, or `undefined` for the primary document. */
   root: NamedRootKey | undefined;
   text: string;
 };
 
-export type EditorNodeChangeHandler<
-  TEditor extends BaseEditor<any, any> = Editor,
-> = (context: EditorNodeChangeContext<TEditor>) => void;
+export type EditorNodeChangeHandler<TEditor = Editor> = (
+  context: EditorNodeChangeContext<TEditor>
+) => void;
 
-export type EditorTextChangeHandler<
-  TEditor extends BaseEditor<any, any> = Editor,
-> = (context: EditorTextChangeContext<TEditor>) => void;
+export type EditorTextChangeHandler<TEditor = Editor> = (
+  context: EditorTextChangeContext<TEditor>
+) => void;
 
-export type EditorExtensionChangeHandlers<
-  TEditor extends BaseEditor<any, any> = Editor,
-> = Readonly<{
+export type EditorExtensionChangeHandlers<TEditor = Editor> = Readonly<{
   commit?: EditorCommitHandler<TEditor>;
   nodeChange?: EditorNodeChangeHandler<TEditor>;
   textChange?: EditorTextChangeHandler<TEditor>;
@@ -2016,11 +2025,15 @@ export type EditorExtensionSchemaFactory = (
  * Erased runtime descriptor reference. Exact author capabilities live only in
  * `EditorExtension<D>`'s private invariant witness.
  */
+declare class PrivateEditorExtensionReferenceBrand {
+  protected readonly editorExtensionReference: true;
+}
+
 export type EditorExtensionReference = Readonly<{
   name: string;
   enabled?: boolean;
-  dependencies?: readonly EditorExtensionReference[];
-  conflicts?: readonly EditorExtensionReference[];
+  dependencies?: readonly EditorExtensionDependencyReference[];
+  conflicts?: readonly EditorExtensionDependencyReference[];
   schema?: EditorSchemaDeclaration | EditorExtensionSchemaFactory;
   api?: unknown;
   read?: unknown;
@@ -2036,7 +2049,8 @@ export type EditorExtensionReference = Readonly<{
   on?: unknown;
   activate?: unknown;
   validate?: unknown;
-}>;
+}> &
+  PrivateEditorExtensionReferenceBrand;
 
 type EditorExtensionShallowReference = Readonly<{
   enabled?: boolean;
@@ -2136,7 +2150,8 @@ type EditorExtensionCapabilityDefinition<TDefinition> =
   >;
 
 /** Shallow public reference to an extension dependency. */
-export interface EditorExtensionDependencyReference {
+export interface EditorExtensionDependencyReference
+  extends PrivateEditorExtensionReferenceBrand {
   readonly enabled?: boolean;
   readonly name: string;
 }
@@ -2174,7 +2189,8 @@ type EditorExtensionShallowReferenceFromDefinition<TDefinition> = Readonly<{
     enabled: infer TEnabled extends boolean;
   }
     ? Readonly<{ enabled: TEnabled }>
-    : Readonly<Record<never, never>>);
+    : Readonly<Record<never, never>>) &
+  PrivateEditorExtensionReferenceBrand;
 
 type EditorExtensionShallowReferenceOf<TReference> =
   EditorExtensionDependencyContractOf<TReference> extends infer TContract
@@ -2246,12 +2262,10 @@ type EditorExtensionRequirementsOf<TExtension> = TExtension extends unknown
   : never;
 
 type EditorExtensionTypeProviderOf<TExtension> = TExtension extends unknown
-  ? '__editorExtensionTypes' extends keyof TExtension
-    ? TExtension extends {
-        readonly __editorExtensionTypes?: infer TProvider;
-      }
-      ? Readonly<{ __editorExtensionTypes?: TProvider }>
-      : Readonly<Record<never, never>>
+  ? TExtension extends EditorExtensionTypeProvider<
+      infer TProvider extends EditorExtensionTypeLambda
+    >
+    ? EditorExtensionTypeProvider<TProvider>
     : Readonly<Record<never, never>>
   : never;
 
@@ -2348,16 +2362,16 @@ export type EditorExtension<TDefinition extends EditorExtensionDefinition> =
   Readonly<{
     [TKey in keyof TDefinition]: EditorExtensionRuntimeField<TDefinition, TKey>;
   }> &
-    InternalEditorExtensionWitnessFor<TDefinition>;
+    InternalEditorExtensionWitnessFor<TDefinition> &
+    PrivateEditorExtensionReferenceBrand;
 
 /**
- * Contextually typed author input. `defineEditorExtension` normalizes this
+ * Contextually typed author input. `defineExtension` normalizes this
  * callback-rich shape to the compact definition carried by `DefinitionOf`.
  */
 export type EditorExtensionDefinitionInput<
   TEditor extends BaseEditor<any, any> = Editor,
 > = {
-  name: string;
   enabled?: boolean;
   dependencies?: readonly EditorExtensionReference[];
   conflicts?: readonly EditorExtensionReference[];
@@ -2377,8 +2391,7 @@ export type EditorExtensionDefinitionInput<
   contributions?: readonly EditorExtensionContributionInput<NoInfer<TEditor>>[];
   on?: EditorExtensionChangeHandlers<TEditor>;
   activate?: (
-    editor: TEditor,
-    context: EditorExtensionActivationContext
+    context: EditorExtensionActivationContext & Readonly<{ editor: TEditor }>
   ) => void;
   validate?: BivariantMethod<
     [context: EditorExtensionCandidateContext<TEditor>],
@@ -2399,7 +2412,7 @@ export type EditorExtensionSlotLike = Readonly<{
 
 export type EditorSelectionMapContext = Readonly<{
   change: DocumentChange;
-  editor: Editor;
+  editor: AnyEditor;
   mapPoint: (
     point: Point,
     options?: {
@@ -2461,11 +2474,19 @@ export interface EditorExtensionTypeLambda {
   readonly output: EditorExtensionTypes;
 }
 
-export type EditorExtensionTypeProvider<
+/** Fixed capabilities contributed by an extension regardless of editor value. */
+export interface EditorExtensionCapabilities<
+  TOutput extends EditorExtensionTypes,
+> {
+  readonly input: Value;
+  readonly output: TOutput;
+}
+
+export declare class EditorExtensionTypeProvider<
   TProvider extends EditorExtensionTypeLambda,
-> = {
-  readonly __editorExtensionTypes?: TProvider;
-};
+> {
+  protected readonly editorExtensionTypes: TProvider;
+}
 
 type UnionToIntersection<T> = (
   T extends unknown
@@ -2602,10 +2623,9 @@ type EditorDefinitionSlot<TExtension, TSlot extends 'api' | 'read' | 'update'> =
 type EditorProvidedTypesFromExtension<V extends Value, TExtension> =
   IsAny<TExtension> extends true
     ? never
-    : TExtension extends {
-          readonly __editorExtensionTypes?: infer TProvider extends
-            EditorExtensionTypeLambda;
-        }
+    : TExtension extends EditorExtensionTypeProvider<
+          infer TProvider extends EditorExtensionTypeLambda
+        >
       ? (TProvider & Readonly<{ input: V }>)['output']
       : never;
 
@@ -2706,6 +2726,24 @@ export type EditorApiValueFromExtension<TExtension> =
     ? TExtension extends { name: infer TName }
       ? TName extends keyof TApi
         ? TApi[TName]
+        : never
+      : never
+    : never;
+
+export type EditorReadValueFromExtension<V extends Value, TExtension> =
+  EditorReadGroupsFromExtension<V, TExtension> extends infer TRead
+    ? TExtension extends { name: infer TName }
+      ? TName extends keyof TRead
+        ? TRead[TName]
+        : never
+      : never
+    : never;
+
+export type EditorUpdateValueFromExtension<V extends Value, TExtension> =
+  EditorUpdateGroupsFromExtension<V, TExtension> extends infer TUpdate
+    ? TExtension extends { name: infer TName }
+      ? TName extends keyof TUpdate
+        ? TUpdate[TName]
         : never
       : never
     : never;
@@ -3013,7 +3051,7 @@ export interface EditorStaticApi {
    * Get the ancestor above a location in the document.
    */
   above: <T extends Ancestor>(
-    editor: Editor,
+    editor: AnyEditor,
     options?: EditorAboveOptions<T>
   ) => NodeEntry<T> | undefined;
 
@@ -3023,13 +3061,13 @@ export interface EditorStaticApi {
    * If the selection is currently collapsed, the marks are stored by the
    * editor runtime and applied when text is inserted next.
    */
-  addMark: (editor: Editor, key: string, value: any) => void;
+  addMark: (editor: AnyEditor, key: string, value: any) => void;
 
   /**
    * Get the point after a location.
    */
   after: (
-    editor: Editor,
+    editor: AnyEditor,
     at: Location,
     options?: EditorAfterOptions
   ) => Point | undefined;
@@ -3038,7 +3076,7 @@ export interface EditorStaticApi {
    * Get the point before a location.
    */
   before: (
-    editor: Editor,
+    editor: AnyEditor,
     at: Location,
     options?: EditorBeforeOptions
   ) => Point | undefined;
@@ -3047,7 +3085,7 @@ export interface EditorStaticApi {
    * Delete content in the editor backward from the current selection.
    */
   deleteBackward: (
-    editor: Editor,
+    editor: AnyEditor,
     options?: EditorDirectedDeletionOptions
   ) => void;
 
@@ -3055,7 +3093,7 @@ export interface EditorStaticApi {
    * Delete content in the editor forward from the current selection.
    */
   deleteForward: (
-    editor: Editor,
+    editor: AnyEditor,
     options?: EditorDirectedDeletionOptions
   ) => void;
 
@@ -3063,7 +3101,7 @@ export interface EditorStaticApi {
    * Delete the content in the current selection.
    */
   deleteFragment: (
-    editor: Editor,
+    editor: AnyEditor,
     options?: EditorFragmentDeletionOptions
   ) => void;
 
@@ -3076,7 +3114,7 @@ export interface EditorStaticApi {
   /**
    * Get the start and end points of a location.
    */
-  edges: (editor: Editor, at: Location) => readonly [Point, Point];
+  edges: (editor: AnyEditor, at: Location) => readonly [Point, Point];
 
   /**
    * Get the latest committed transaction metadata.
@@ -3094,17 +3132,17 @@ export interface EditorStaticApi {
   /**
    * Get the extension registry for an editor.
    */
-  getExtensionRegistry: (editor: Editor) => EditorExtensionRegistry;
+  getExtensionRegistry: (editor: AnyEditor) => EditorExtensionRegistry;
 
   /**
    * Resolve the current live path for a runtime id without rebuilding a snapshot.
    */
-  getPathByRuntimeId: (editor: Editor, runtimeId: RuntimeId) => Path | null;
+  getPathByRuntimeId: (editor: AnyEditor, runtimeId: RuntimeId) => Path | null;
 
   /**
    * Get the runtime id for a live node path without rebuilding a snapshot.
    */
-  getRuntimeId: (editor: Editor, path: Path) => RuntimeId | null;
+  getRuntimeId: (editor: AnyEditor, path: Path) => RuntimeId | null;
 
   /**
    * Run a coherent synchronous read against the current editor/runtime state.
@@ -3118,14 +3156,14 @@ export interface EditorStaticApi {
    * Match a read-only element in the current branch of the editor.
    */
   elementReadOnly: (
-    editor: Editor,
+    editor: AnyEditor,
     options?: EditorElementReadOnlyOptions
   ) => NodeEntry<Element> | undefined;
 
   /**
    * Get the first node at a location.
    */
-  first: (editor: Editor, at: Location) => NodeEntry;
+  first: (editor: AnyEditor, at: Location) => NodeEntry;
 
   /**
    * Get the current children through the public accessor boundary.
@@ -3135,7 +3173,7 @@ export interface EditorStaticApi {
   /**
    * Get the current selection through the selection freshness runtime.
    */
-  getSelection: (editor: Editor) => Selection;
+  getSelection: (editor: AnyEditor) => Selection;
 
   /**
    * Get the fragment at a location.
@@ -3160,26 +3198,26 @@ export interface EditorStaticApi {
   /**
    * Check if a node has block children.
    */
-  hasBlocks: (editor: Editor, element: Element) => boolean;
+  hasBlocks: (editor: AnyEditor, element: Element) => boolean;
 
   /**
    * Check if a node has inline and text children.
    */
-  hasInlines: (editor: Editor, element: Element) => boolean;
+  hasInlines: (editor: AnyEditor, element: Element) => boolean;
 
-  hasPath: (editor: Editor, path: Path) => boolean;
+  hasPath: (editor: AnyEditor, path: Path) => boolean;
 
   /**
    * Check if a node has text children.
    */
-  hasTexts: (editor: Editor, element: Element) => boolean;
+  hasTexts: (editor: AnyEditor, element: Element) => boolean;
 
   /**
    * Insert a block break at the current selection.
    *
    * If the selection is currently expanded, it will be deleted first.
    */
-  insertBreak: (editor: Editor) => void;
+  insertBreak: (editor: AnyEditor) => void;
 
   /**
    * Atomically inserts `nodes`
@@ -3198,14 +3236,14 @@ export interface EditorStaticApi {
    *
    * If the selection is currently expanded, it will be deleted first.
    */
-  insertSoftBreak: (editor: Editor) => void;
+  insertSoftBreak: (editor: AnyEditor) => void;
 
   /**
    * Insert a string of text
    * at the specified location or (if not defined) the current selection or (if not defined) the end of the document.
    */
   insertText: (
-    editor: Editor,
+    editor: AnyEditor,
     text: string,
     options?: TextInsertTextOptions
   ) => void;
@@ -3219,61 +3257,61 @@ export interface EditorStaticApi {
   /**
    * Check if a value is a block `Element` object.
    */
-  isBlock: (editor: Editor, value: Node) => boolean;
+  isBlock: (editor: AnyEditor, value: Node) => boolean;
 
   /**
    * Check if a point is an edge of a location.
    */
-  isEdge: (editor: Editor, point: Point, at: Location) => boolean;
+  isEdge: (editor: AnyEditor, point: Point, at: Location) => boolean;
 
   /**
-   * Check if a value is an `Editor` object.
+   * Check if a value is an `AnyEditor` object.
    */
   isEditor: (
     value: unknown,
     options?: EditorIsEditorOptions
-  ) => value is Editor;
+  ) => value is AnyEditor;
 
   /**
    * Check if a value is a read-only `Element` object.
    */
-  isElementReadOnly: (editor: Editor, element: Element) => boolean;
+  isElementReadOnly: (editor: AnyEditor, element: Element) => boolean;
 
   /**
    * Check if an element is empty, accounting for void nodes.
    */
-  isEmpty: (editor: Editor, element: Element) => boolean;
+  isEmpty: (editor: AnyEditor, element: Element) => boolean;
 
   /**
    * Check if a point is the end point of a location.
    */
-  isEnd: (editor: Editor, point: Point, at: Location) => boolean;
+  isEnd: (editor: AnyEditor, point: Point, at: Location) => boolean;
 
   /**
    * Check if a value is an inline `Element` object.
    */
-  isInline: (editor: Editor, value: Node) => boolean;
+  isInline: (editor: AnyEditor, value: Node) => boolean;
 
   /**
    * Check if a value is a selectable `Element` object.
    */
-  isSelectable: (editor: Editor, element: Node) => boolean;
+  isSelectable: (editor: AnyEditor, element: Node) => boolean;
 
   /**
    * Check if a point is the start point of a location.
    */
-  isStart: (editor: Editor, point: Point, at: Location) => boolean;
+  isStart: (editor: AnyEditor, point: Point, at: Location) => boolean;
 
   /**
    * Check if a value is a void `Element` object.
    */
-  isVoid: (editor: Editor, value: Node) => boolean;
+  isVoid: (editor: AnyEditor, value: Node) => boolean;
 
   /**
    * Get the last node at a location.
    */
   last: (
-    editor: Editor,
+    editor: AnyEditor,
     at: Location,
     options?: EditorLastOptions
   ) => NodeEntry | undefined;
@@ -3282,7 +3320,7 @@ export interface EditorStaticApi {
    * Get the leaf text node at a location.
    */
   leaf: (
-    editor: Editor,
+    editor: AnyEditor,
     at: Location,
     options?: EditorLeafOptions
   ) => NodeEntry<Text>;
@@ -3291,7 +3329,7 @@ export interface EditorStaticApi {
    * Iterate through all of the levels at a location.
    */
   levels: <T extends Node>(
-    editor: Editor,
+    editor: AnyEditor,
     options?: EditorLevelsOptions<T>
   ) => Generator<NodeEntry<T>, void, undefined>;
 
@@ -3301,7 +3339,7 @@ export interface EditorStaticApi {
    * Get the matching node in the branch of the document after a location.
    */
   next: <T extends Descendant>(
-    editor: Editor,
+    editor: AnyEditor,
     options?: EditorNextOptions<T>
   ) => NodeEntry<T> | undefined;
 
@@ -3313,7 +3351,7 @@ export interface EditorStaticApi {
    * Get the parent node of a location.
    */
   parent: (
-    editor: Editor,
+    editor: AnyEditor,
     at: Location,
     options?: EditorParentOptions
   ) => NodeEntry<Ancestor>;
@@ -3321,15 +3359,19 @@ export interface EditorStaticApi {
   /**
    * Get the path of a location.
    */
-  path: (editor: Editor, at: Location, options?: EditorPathOptions) => Path;
+  path: (editor: AnyEditor, at: Location, options?: EditorPathOptions) => Path;
 
   /**
    * Get the start or end point of a location.
    */
-  point: (editor: Editor, at: Location, options?: EditorPointOptions) => Point;
+  point: (
+    editor: AnyEditor,
+    at: Location,
+    options?: EditorPointOptions
+  ) => Point;
 
   projectRange: (
-    editor: Editor,
+    editor: AnyEditor,
     range: Range
   ) => readonly ProjectedRangeSegment[];
 
@@ -3346,7 +3388,7 @@ export interface EditorStaticApi {
    * `voids` option, then iteration will occur.
    */
   positions: (
-    editor: Editor,
+    editor: AnyEditor,
     options?: EditorPositionsOptions
   ) => Generator<Point, void, undefined>;
 
@@ -3354,16 +3396,16 @@ export interface EditorStaticApi {
    * Get the matching node in the branch of the document before a location.
    */
   previous: <T extends Node>(
-    editor: Editor,
+    editor: AnyEditor,
     options?: EditorPreviousOptions<T>
   ) => NodeEntry<T> | undefined;
 
   /**
    * Get a range of a location.
    */
-  range: (editor: Editor, at: Location, to?: Location) => Range;
+  range: (editor: AnyEditor, at: Location, to?: Location) => Range;
 
-  extend: <TEditor extends Editor>(
+  install: <TEditor extends AnyEditor>(
     editor: TEditor,
     extension: EditorExtensionInput,
     options?: EditorExtensionReconfigureOptions
@@ -3386,7 +3428,7 @@ export interface EditorStaticApi {
    * If the selection is currently collapsed, the removal is stored by the
    * editor runtime and applied to the text inserted next.
    */
-  removeMark: (editor: Editor, key: string) => void;
+  removeMark: (editor: AnyEditor, key: string) => void;
 
   removeNodes: NodeMutationMethods['removeNodes'];
   replaceChildren: NodeMutationMethods['replaceChildren'];
@@ -3408,7 +3450,7 @@ export interface EditorStaticApi {
    * text.
    */
   toggleMark: (
-    editor: Editor,
+    editor: AnyEditor,
     key: string,
     value?: any,
     options?: EditorToggleMarkOptions
@@ -3434,7 +3476,7 @@ export interface EditorStaticApi {
    * string, regardless of content, unless you pass in true for the voids option
    */
   string: (
-    editor: Editor,
+    editor: AnyEditor,
     at: Location,
     options?: EditorStringOptions
   ) => string;
@@ -3467,7 +3509,7 @@ export interface EditorStaticApi {
    * Convert a range into a non-hanging one.
    */
   unhangRange: (
-    editor: Editor,
+    editor: AnyEditor,
     range: Range,
     options?: EditorUnhangRangeOptions
   ) => Range;
@@ -3476,7 +3518,7 @@ export interface EditorStaticApi {
    * Match a void node in the current branch of the editor.
    */
   void: (
-    editor: Editor,
+    editor: AnyEditor,
     options?: EditorVoidOptions
   ) => NodeEntry<Element> | undefined;
 
@@ -3484,7 +3526,7 @@ export interface EditorStaticApi {
    *  Call a function, Determine whether or not remove the previous node when merge.
    */
   shouldMergeNodesRemovePrevNode: (
-    editor: Editor,
+    editor: AnyEditor,
     prevNodeEntry: NodeEntry,
     curNodeEntry: NodeEntry
   ) => boolean;
@@ -3494,17 +3536,17 @@ type EditorInternalApiTable = EditorStaticApi & {
   defineCommand: typeof defineEditorCommand;
 };
 
-const getImplicitSelectionRoot = (editor: Editor) =>
+const getImplicitSelectionRoot = (editor: AnyEditor) =>
   getCurrentSelection(editor) ? getCurrentSelectionRoot(editor) : undefined;
 
-const getWriteRoot = (editor: Editor, at: Location | undefined) =>
+const getWriteRoot = (editor: AnyEditor, at: Location | undefined) =>
   at === undefined ? getImplicitSelectionRoot(editor) : getLocationRoot(at);
 
 const isPathLocation = (value: Location | undefined): value is Path =>
   Array.isArray(value) && value.every((segment) => Number.isInteger(segment));
 
 const runRootedInternalWrite = <T>(
-  editor: Editor,
+  editor: AnyEditor,
   fn: () => T,
   root?: string
 ): T =>
@@ -3515,8 +3557,8 @@ const runRootedInternalWrite = <T>(
     : fn();
 
 const runInternalEditorWrite = <T>(
-  editor: Editor,
-  fn: (owner: Editor) => T,
+  editor: AnyEditor,
+  fn: (owner: AnyEditor) => T,
   root?: string
 ): T => {
   const owner = getEditorRuntimeOwner(editor);
@@ -3541,8 +3583,8 @@ const runInternalEditorWrite = <T>(
 };
 
 const runInternalEditorWriteSkipNormalize = <T>(
-  editor: Editor,
-  fn: (owner: Editor) => T,
+  editor: AnyEditor,
+  fn: (owner: AnyEditor) => T,
   root?: string
 ): T => {
   const owner = getEditorRuntimeOwner(editor);
@@ -3570,12 +3612,11 @@ const runInternalEditorWriteSkipNormalize = <T>(
 };
 
 const isEditorView = (
-  editor: Editor | EditorView<any, any>
-): editor is EditorView =>
-  (editor as { runtime?: EditorRuntime }).runtime?.editor !== undefined;
+  editor: AnyEditor | EditorView<any, any>
+): editor is EditorView => Object.hasOwn(editor, 'root');
 
 const replaceEditorSnapshot = (
-  editor: Editor | EditorView<any, any>,
+  editor: AnyEditor | EditorView<any, any>,
   input: SnapshotInput
 ) => {
   if (isEditorView(editor)) {
@@ -3645,7 +3686,10 @@ const editorInternalApi: EditorInternalApiTable = {
     return getEditorRuntime(editor).edges(at);
   },
 
-  elementReadOnly(editor: Editor, options: EditorElementReadOnlyOptions = {}) {
+  elementReadOnly(
+    editor: AnyEditor,
+    options: EditorElementReadOnlyOptions = {}
+  ) {
     return getEditorRuntime(editor).elementReadOnly(options);
   },
 
@@ -3800,7 +3844,7 @@ const editorInternalApi: EditorInternalApiTable = {
   },
 
   next<T extends Descendant>(
-    editor: Editor,
+    editor: AnyEditor,
     options?: EditorNextOptions<T>
   ): NodeEntry<T> | undefined {
     return getEditorRuntime(editor).next(options);
@@ -3864,8 +3908,8 @@ const editorInternalApi: EditorInternalApiTable = {
 
   defineCommand: defineEditorCommand,
 
-  extend(editor, extension, options) {
-    return editor.extend(extension, options);
+  install(editor, extension, options) {
+    return editor.install(extension, options);
   },
 
   replace(editor, input) {
@@ -3993,8 +4037,11 @@ const editorInternalApi: EditorInternalApiTable = {
     return getEditorRuntime(editor).void(options);
   },
 
-  shouldMergeNodesRemovePrevNode: (editor, prevNode, curNode) =>
-    getEditorRuntime(editor).shouldMergeNodesRemovePrevNode(prevNode, curNode),
+  shouldMergeNodesRemovePrevNode: (editor, previousNode, curNode) =>
+    getEditorRuntime(editor).shouldMergeNodesRemovePrevNode(
+      previousNode,
+      curNode
+    ),
 };
 
 const {
@@ -4056,7 +4103,7 @@ const {
   previous,
   range,
   defineCommand,
-  extend,
+  install,
   replace,
   reset,
   removeMark,
@@ -4098,7 +4145,7 @@ export {
   deselect,
   edges,
   elementReadOnly,
-  extend,
+  install,
   first,
   fragment,
   getChildren,

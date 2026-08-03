@@ -30,8 +30,8 @@ export const pipeDecorate = (
       if (newRanges?.length) ranges = [...ranges, ...newRanges];
     };
 
-    getPlateRuntime(editor).pluginCache.decorate.forEach((pluginName) => {
-      const plugin = getCompiledPlatePlugin(editor, pluginName)!;
+    getPlateRuntime(editor).pluginCache.decorate.forEach((name) => {
+      const plugin = getCompiledPlatePlugin(editor, name)!;
       if (typeof plugin.decorate !== 'function') return;
       const nextRanges: unknown = Reflect.apply(plugin.decorate, undefined, [
         {

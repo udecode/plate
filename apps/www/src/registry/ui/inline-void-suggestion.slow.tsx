@@ -2,12 +2,10 @@ import * as React from 'react';
 
 import { render } from '@testing-library/react';
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
-import type {
-  TDateElement,
-  TEquationElement,
-  TLinkElement,
-  TMentionElement,
-} from 'platejs';
+import type { DateElement } from '@platejs/date';
+import type { LinkElement } from '@platejs/link';
+import type { EquationElement } from '@platejs/math';
+import type { MentionElement } from '@platejs/mention';
 import type { PlateEditor } from 'platejs/react';
 
 const useFocusedMock = mock();
@@ -192,7 +190,7 @@ describe('inline void suggestion styling', () => {
             children: [{ text: '' }],
             type: 'mention',
             value: 'Ada',
-          } satisfies TMentionElement
+          } satisfies MentionElement
         }
       >
         {null}
@@ -220,7 +218,7 @@ describe('inline void suggestion styling', () => {
             children: [{ text: 'Docs' }],
             type: 'link',
             url: 'https://example.com',
-          } satisfies TLinkElement
+          } satisfies LinkElement
         }
       >
         Docs
@@ -248,7 +246,7 @@ describe('inline void suggestion styling', () => {
             children: [{ text: '' }],
             date: '2026-04-13',
             type: 'date',
-          } satisfies TDateElement
+          } satisfies DateElement
         }
       />
     );
@@ -269,8 +267,8 @@ describe('inline void suggestion styling', () => {
     const element = {
       children: [{ text: '' }],
       texExpression: 'E = mc^2',
-      type: 'inline_equation',
-    } satisfies TEquationElement;
+      type: 'inlineEquation',
+    } satisfies EquationElement;
 
     useElementMock.mockReturnValue(element);
 

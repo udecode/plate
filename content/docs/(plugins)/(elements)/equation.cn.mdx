@@ -161,10 +161,10 @@ const editor = createPlateEditor({
 
 ## 类型定义
 
-### `TEquationElement`
+### `EquationElement`
 
 ```typescript
-interface TEquationElement extends Element {
-  texExpression: string;
-}
+import type { EquationElement } from '@platejs/math';
 ```
+
+`EquationElement` 是从块级和行内公式插件 schema 派生的联合类型。

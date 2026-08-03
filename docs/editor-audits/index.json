@@ -2,6 +2,39 @@
   "version": 1,
   "audits": [
     {
+      "id": "wordgard-exhaustive-symmetric-2026-08-01",
+      "artifactVersion": 4,
+      "target": "full",
+      "artifact": "docs/plans/2026-08-01-wordgard-exhaustive-architecture-re-audit.md",
+      "references": [
+        {
+          "repoKey": "code.haverbeke.berlin/wordgard/wordgard",
+          "source": "https://code.haverbeke.berlin/wordgard/wordgard.git",
+          "localPath": "../wordgard",
+          "branch": "main",
+          "upstream": "origin/main",
+          "auditedCommit": "c715d4ded8fc780f52c13206e589ea31e4148dd4",
+          "auditedAt": "2026-08-01T16:25:32.205Z",
+          "testHarvestCommit": "c715d4ded8fc780f52c13206e589ea31e4148dd4",
+          "issueHarvestCheckedAt": "2026-08-01T11:06:57.199Z",
+          "issueLedger": "docs/editor-issue-harvester/wordgard/full/issue-closure-ledger.md",
+          "conceptManifest": "docs/plans/artifacts/wordgard-exhaustive-architecture-re-audit/concept-manifest.json",
+          "conceptMatrix": "docs/plans/artifacts/wordgard-exhaustive-architecture-re-audit/concept-matrix.md",
+          "conceptMatrixValidatedAt": "2026-08-01T16:25:32.205Z"
+        },
+        {
+          "repoKey": "code.haverbeke.berlin/wordgard/website",
+          "source": "https://code.haverbeke.berlin/wordgard/website.git",
+          "localPath": "../wordgard-website",
+          "branch": "main",
+          "upstream": "origin/main",
+          "auditedCommit": "7627bca8c945389991e7da927e235dbb1e289b20",
+          "auditedAt": "2026-08-01T16:25:32.205Z"
+        }
+      ],
+      "validationReceipt": "docs/plans/artifacts/wordgard-exhaustive-architecture-re-audit/validation-receipt.json"
+    },
+    {
       "id": "wordgard-lexical-prosemirror-full",
       "artifactVersion": 1,
       "target": "full",

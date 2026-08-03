@@ -1,10 +1,12 @@
 import type {
-  AnyBasePluginDefinition,
   BaseEditor,
   MarkdownDecodeContext,
   MarkdownEncodeContext,
 } from '@platejs/core';
-import { getPlateNodeCodecContributions } from '@platejs/core/internal';
+import {
+  type AnyBasePluginDefinition,
+  getPlateNodeCodecContributions,
+} from '@platejs/core/internal';
 import type { Descendant, Value } from '@platejs/plite';
 import type { Node as UnistNode } from 'unist';
 
@@ -57,7 +59,7 @@ type ErasedMarkdownNodeCodec = Readonly<{
 type CompiledMarkdownNodeCodec = Readonly<{
   codec: ErasedMarkdownNodeCodec;
   owner: string;
-  targetPluginName: string;
+  targetPlugin: string;
   targetType: string;
 }>;
 
@@ -85,7 +87,7 @@ const compareCodecs = (
 ) =>
   (right.codec.priority ?? 0) - (left.codec.priority ?? 0) ||
   left.owner.localeCompare(right.owner) ||
-  left.targetPluginName.localeCompare(right.targetPluginName);
+  left.targetPlugin.localeCompare(right.targetPlugin);
 
 const validateCodec = (
   owner: string,
@@ -276,7 +278,7 @@ export const compileMarkdownCodecs = <
         Object.freeze({
           codec: validateCodec(contribution.owner, contribution.declaration),
           owner: contribution.owner,
-          targetPluginName: contribution.targetPluginName,
+          targetPlugin: contribution.targetPlugin,
           targetType: contribution.targetType,
         })
     )
@@ -290,13 +292,13 @@ export const compileMarkdownCodecs = <
       const sourceCodecs = decodeBySource.get(source) ?? [];
       const duplicate = sourceCodecs.find(
         (candidate) =>
-          candidate.targetPluginName === compiled.targetPluginName &&
+          candidate.targetPlugin === compiled.targetPlugin &&
           (candidate.codec.priority ?? 0) === (compiled.codec.priority ?? 0)
       );
 
       if (duplicate) {
         throw new Error(
-          `Markdown node codecs "${duplicate.owner}" and "${compiled.owner}" have equal-priority decode claims for "${source}" and target "${compiled.targetPluginName}".`
+          `Markdown node codecs "${duplicate.owner}" and "${compiled.owner}" have equal-priority decode claims for "${source}" and target "${compiled.targetPlugin}".`
         );
       }
 
@@ -304,12 +306,12 @@ export const compileMarkdownCodecs = <
       decodeBySource.set(source, sourceCodecs);
     }
     if (compiled.codec.encode || compiled.codec.mark) {
-      if (rules[compiled.targetPluginName]) {
+      if (rules[compiled.targetPlugin]) {
         throw new Error(
-          `Markdown node codecs must declare one encoder/mark owner for target "${compiled.targetPluginName}".`
+          `Markdown node codecs must declare one encoder/mark owner for target "${compiled.targetPlugin}".`
         );
       }
-      rules[compiled.targetPluginName] = createRule(compiled);
+      rules[compiled.targetPlugin] = createRule(compiled);
     }
   });
 

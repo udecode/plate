@@ -38,7 +38,7 @@ export const useBlockPlaceholderProps = (
 
 export const useBlockPlaceholder: UseHooks<
   BlockPlaceholderHookContextDefinition
-> = ({ editor, store, type }) => {
+> = ({ editor, store }) => {
   const focused = useEditorFocused();
   const readOnly = useEditorReadOnly();
   const composing = useEditorComposing();
@@ -84,14 +84,14 @@ export const useBlockPlaceholder: UseHooks<
       children.length === 1 &&
       editor.read.nodes.isEmpty(firstNode) &&
       editor.plugin(ElementStatePlugin).api.isEmpty(firstNode);
-    const placeholder = Object.keys(placeholders).find((pluginName) => {
-      const plugin = editor.plugin(pluginName);
+    const placeholder = Object.keys(placeholders).find((name) => {
+      const target = editor.plugin(name);
 
-      return (plugin.installed ? plugin.type : pluginName) === node.type;
+      return target.type === node.type;
     });
 
     if (
-      query({ editor, node, path, type }) &&
+      query({ editor, node, path, type: node.type }) &&
       placeholder &&
       editor.read.nodes.isEmpty(node) &&
       !isPristineEmptyEditor
@@ -105,5 +105,5 @@ export const useBlockPlaceholder: UseHooks<
     } else {
       store.set({ _target: null });
     }
-  }, [editor, entry, store, type]);
+  }, [editor, entry, store]);
 };

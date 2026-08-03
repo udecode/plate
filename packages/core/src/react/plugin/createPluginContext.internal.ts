@@ -1,20 +1,25 @@
 import type { Value } from '@platejs/plite';
 
-import type { PlateEditor } from '../editor';
+import type { InternalPlateEditorWithInstalledPlugins } from '../editor/PlateEditor';
 import type {
-  AnyEditorPlatePlugin,
+  AnyResolvedPlatePlugin,
   AnyPlatePlugin,
   AnyPlatePluginContext,
+  AnyPlatePluginPortal,
   PlatePluginContext,
+  PlatePluginPortal,
 } from './PlatePlugin';
 
 import type {
   AnyBasePlugin,
   AnyBasePluginDefinition,
-  AnyResolvedBasePlugin,
+  AnyPluginBase,
   PluginReference,
 } from '../../lib';
-import { createPluginContext as createBasePluginContext } from '../../lib/plugin/createPluginContext.internal';
+import {
+  createPluginContext as createBaseContext,
+  createPluginPortal as createBasePortal,
+} from '../../lib/plugin/createPluginContext.internal';
 import type { InternalPluginDefinitionOf } from '../../lib/plugin/pluginDefinitionLookup.internal';
 
 export function createPluginContext<
@@ -22,32 +27,77 @@ export function createPluginContext<
   E extends AnyBasePluginDefinition,
   P extends (
     | AnyBasePlugin
-    | AnyEditorPlatePlugin
+    | AnyResolvedPlatePlugin
     | AnyPlatePlugin
-    | AnyResolvedBasePlugin
+    | AnyPluginBase
   ) &
     PluginReference,
 >(
-  editor: PlateEditor<V, E>,
+  editor: InternalPlateEditorWithInstalledPlugins<V, E>,
   plugin: P
 ): PlatePluginContext<InternalPluginDefinitionOf<P>>;
-export function createPluginContext(
-  editor: PlateEditor<any, any>,
+export function createPluginContext<
+  V extends Value,
+  E extends AnyBasePluginDefinition,
+>(
+  editor: InternalPlateEditorWithInstalledPlugins<V, E>,
   plugin:
     | AnyBasePlugin
-    | AnyEditorPlatePlugin
+    | AnyResolvedPlatePlugin
     | AnyPlatePlugin
-    | AnyResolvedBasePlugin
+    | AnyPluginBase
+    | PluginReference
     | string
 ): AnyPlatePluginContext;
 export function createPluginContext(
   editor: object,
   plugin:
     | AnyBasePlugin
-    | AnyEditorPlatePlugin
+    | AnyResolvedPlatePlugin
     | AnyPlatePlugin
-    | AnyResolvedBasePlugin
+    | AnyPluginBase
+    | PluginReference
     | string
 ): unknown {
-  return Reflect.apply(createBasePluginContext, undefined, [editor, plugin]);
+  return Reflect.apply(createBaseContext, undefined, [editor, plugin]);
+}
+
+export function createPluginPortal<
+  V extends Value,
+  E extends AnyBasePluginDefinition,
+  P extends (
+    | AnyBasePlugin
+    | AnyResolvedPlatePlugin
+    | AnyPlatePlugin
+    | AnyPluginBase
+  ) &
+    PluginReference,
+>(
+  editor: InternalPlateEditorWithInstalledPlugins<V, E>,
+  plugin: P
+): PlatePluginPortal<InternalPluginDefinitionOf<P>>;
+export function createPluginPortal<
+  V extends Value,
+  E extends AnyBasePluginDefinition,
+>(
+  editor: InternalPlateEditorWithInstalledPlugins<V, E>,
+  plugin:
+    | AnyBasePlugin
+    | AnyResolvedPlatePlugin
+    | AnyPlatePlugin
+    | AnyPluginBase
+    | PluginReference
+    | string
+): AnyPlatePluginPortal;
+export function createPluginPortal(
+  editor: object,
+  plugin:
+    | AnyBasePlugin
+    | AnyResolvedPlatePlugin
+    | AnyPlatePlugin
+    | AnyPluginBase
+    | PluginReference
+    | string
+): unknown {
+  return Reflect.apply(createBasePortal, undefined, [editor, plugin]);
 }

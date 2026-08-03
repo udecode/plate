@@ -13,7 +13,7 @@ import * as Y from 'yjs';
 import { createYjsPeerWithEditor, paragraph } from './support/collaboration';
 
 const ScriptPosition = schema.property.exclusive('plate:script-position');
-const ScriptSchema = defineEditorSchema({
+const ScriptSchema = defineEditorSchema('schema:yjs-script-schema', {
   elements: {
     paragraph: { content: schema.content.text() },
   },

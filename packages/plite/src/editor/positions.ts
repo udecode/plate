@@ -12,7 +12,10 @@ import {
   point as editorPoint,
   range as editorRange,
 } from '../interfaces/editor';
-import type { Editor, EditorPositionsOptions } from '../interfaces/editor';
+import type {
+  AnyEditor as Editor,
+  EditorPositionsOptions,
+} from '../interfaces/editor';
 import type { Descendant } from '../interfaces/node';
 import { NodeApi } from '../interfaces/node';
 import { type Path, PathApi } from '../interfaces/path';

@@ -14,7 +14,9 @@ and the plugin-scoped commands:
 ```ts
 const list = editor.plugin(ListPlugin);
 
-list.update.toggle({ type: editor.plugin(KEYS.ulClassic).type });
+list.update.toggle({
+  type: editor.plugin(PLUGINS.bulletedList).type,
+});
 list.update.indent();
 list.update.outdent();
 ```
@@ -22,5 +24,5 @@ list.update.outdent();
 Configure additional list-item children through
 `ListItemPlugin.configure({ initialState: { validLiChildren } })`.
 
-The classic todo plugin and command identity is `listTodoClassic`; persisted
-elements remain `action_item`.
+Classic list elements persist as `bulletedList`, `numberedList`, `listItem`,
+`listItemContent`, and `todoList`.

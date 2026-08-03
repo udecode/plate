@@ -1,4 +1,8 @@
-import type { ContentSlice, Editor, Value } from '../interfaces/editor';
+import type {
+  AnyEditor as Editor,
+  ContentSlice,
+  Value,
+} from '../interfaces/editor';
 import type { Node, NodeEntry } from '../interfaces/node';
 import { editorReads } from './editor-reads';
 import { getEditorSchema } from './editor-runtime';

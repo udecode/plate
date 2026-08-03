@@ -4,14 +4,13 @@ import { act, renderHook } from '@testing-library/react';
 
 import { TestPlate as Plate } from '../../__tests__/TestPlate';
 import { createPlateEditor } from '../../editor';
-import { createPlatePlugin } from '../../plugin';
+import { definePlatePlugin } from '../../plugin';
 import { useEditorPlugin } from './useEditorPlugin';
 
 describe('useEditorPlugin', () => {
   it('infers plugin-owned updates from the descriptor', () => {
     const duplicate = vi.fn();
-    const BlockPlugin = createPlatePlugin({
-      name: 'block',
+    const BlockPlugin = definePlatePlugin('block', {
       update: () => ({ duplicate }),
     });
     const editor = createPlateEditor({ plugins: [BlockPlugin] });
@@ -27,9 +26,8 @@ describe('useEditorPlugin', () => {
     expect(duplicate).toHaveBeenCalledTimes(1);
   });
 
-  it('returns the editor plugin context with a stable store-backed reference', () => {
-    const CounterPlugin = createPlatePlugin({
-      name: 'counter',
+  it('returns the flat plugin portal with a stable store-backed reference', () => {
+    const CounterPlugin = definePlatePlugin('counter', {
       initialState: {
         value: 1,
       },
@@ -48,15 +46,17 @@ describe('useEditorPlugin', () => {
       }
     );
 
-    const firstContext = result.current;
+    const firstPortal = result.current;
 
-    expect(firstContext.editor).toBe(editor);
-    expect(firstContext.plugin.name).toBe('counter');
-    expect(firstContext.store.get()).toEqual({ value: 1 });
-    expect(firstContext.store).toBeDefined();
+    expect(firstPortal.name).toBe('counter');
+    expect(firstPortal.store.get()).toEqual({ value: 1 });
+    expect(firstPortal.store).toBeDefined();
+    expect('plugin' in firstPortal).toBe(false);
+    expect('editor' in firstPortal).toBe(false);
+    expect('defineCodecs' in firstPortal).toBe(false);
 
     rerender();
-    expect(result.current).toBe(firstContext);
+    expect(result.current).toBe(firstPortal);
 
     act(() => {
       editor.plugin(CounterPlugin).store.set({ value: 2 });
@@ -66,7 +66,7 @@ describe('useEditorPlugin', () => {
   });
 
   it('accepts runtime names without weakening missing-plugin errors', () => {
-    const CounterPlugin = createPlatePlugin({ name: 'counter' });
+    const CounterPlugin = definePlatePlugin('counter', {});
     const editor = createPlateEditor({ plugins: [CounterPlugin] });
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <Plate editor={editor}>{children}</Plate>
@@ -79,9 +79,9 @@ describe('useEditorPlugin', () => {
     });
 
     expect(installed.current.installed).toBe(true);
-    expect(installed.current.type).toBe('counter');
+    expect(installed.current.name).toBe('counter');
     expect(missing.current.installed).toBe(false);
-    expect(() => missing.current.type).toThrow(
+    expect(() => missing.current.name).toThrow(
       'Plate plugin "missing" is not installed.'
     );
 

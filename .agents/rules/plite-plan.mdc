@@ -171,7 +171,10 @@ Add only what the scope triggers:
 - Issue or PR provenance: include only for issue-backed work or when the plan
   changes a public claim. Do not run ClawSweeper for ordinary architecture.
 - Browser/device proof: include only for browser-owned claims and state the
-  exact claim class.
+  exact claim class. Raw Appium receipts block only an explicit physical-device,
+  device-specific, or release-ready claim. Otherwise keep the raw-device runner
+  fail-closed, record that physical receipts are deferred, and do not block an
+  unrelated source or API handoff on unavailable hardware.
 - Benchmarks: include only when claiming performance or choosing a hot-path
   architecture.
 - Docs, behavior law, migration, release, or collaboration rows: include only

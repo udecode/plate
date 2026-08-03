@@ -1,15 +1,17 @@
 /** @jsx jsxt */
 
 import { BaseTablePlugin } from './BaseTablePlugin';
-import { getTestTablePlugins } from './__tests__/getTestTablePlugins';
-import { createPlateEditor } from '@platejs/core/react';
+import {
+  createTestTableEditor,
+  getTestTablePlugins,
+} from './__tests__/getTestTablePlugins';
 import {
   ContentSlice,
   NodeApi,
-  defineEditorExtension,
+  defineExtension,
   editorCommands,
 } from '@platejs/plite';
-import type { Element, Value } from '@platejs/plite';
+import type { Element } from '@platejs/plite';
 import { jsxt } from '@platejs/test-utils';
 import type { TestEditor } from '@platejs/test-utils';
 import assert from 'node:assert/strict';
@@ -90,7 +92,7 @@ describe('table clipboard slow contracts', () => {
         </editor>
       ) as TestEditor;
 
-      const editor = createPlateEditor({
+      const editor = createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
@@ -175,7 +177,7 @@ describe('table clipboard slow contracts', () => {
         </editor>
       ) as TestEditor;
 
-      const editor = createPlateEditor({
+      const editor = createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
@@ -263,7 +265,7 @@ describe('table clipboard slow contracts', () => {
         </editor>
       ) as TestEditor;
 
-      const editor = createPlateEditor({
+      const editor = createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
@@ -350,7 +352,7 @@ describe('table clipboard slow contracts', () => {
         </editor>
       ) as TestEditor;
 
-      const editor = createPlateEditor({
+      const editor = createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins(),
         selection: input.selection,
@@ -483,7 +485,7 @@ describe('table clipboard slow contracts', () => {
           </editor>
         ) as TestEditor;
 
-        const editor = createPlateEditor({
+        const editor = createTestTableEditor({
           nodeId: true,
           plugins: [
             BaseTablePlugin.extend(() => ({
@@ -493,10 +495,10 @@ describe('table clipboard slow contracts', () => {
                   children: [
                     {
                       children: [{ text: '' }],
-                      type: 'p',
+                      type: 'paragraph',
                     },
                   ],
-                  type: 'td',
+                  type: 'tableCell',
                 }),
               }),
             })).configure({
@@ -596,7 +598,7 @@ describe('table clipboard slow contracts', () => {
         </editor>
       ) as TestEditor;
 
-      const editor = createPlateEditor({
+      const editor = createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins({
           disableExpandOnInsert: true,
@@ -667,7 +669,7 @@ describe('table clipboard slow contracts', () => {
         </editor>
       ) as TestEditor;
 
-      const editor = createPlateEditor({
+      const editor = createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins(),
         selection: input.selection,
@@ -770,7 +772,7 @@ describe('table clipboard slow contracts', () => {
           </htable>
         </editor>
       ) as TestEditor;
-      const editor = createPlateEditor({
+      const editor = createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge: false }),
         selection: input.selection,
@@ -852,7 +854,7 @@ describe('table clipboard slow contracts', () => {
           </htable>
         </editor>
       ) as TestEditor;
-      const editor = createPlateEditor({
+      const editor = createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge: false }),
         selection: input.selection,
@@ -918,7 +920,7 @@ describe('table clipboard slow contracts', () => {
         </editor>
       ) as TestEditor;
 
-      const editor = createPlateEditor({
+      const editor = createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
@@ -934,7 +936,7 @@ describe('table clipboard slow contracts', () => {
   describe('BaseTablePlugin insertFragment fitContent', () => {
     for (const openDepth of [0, 1]) {
       it(`delegates a ${openDepth === 0 ? 'closed' : 'open'} table slice outside tables to one core fit and commit`, () => {
-        const editor = createPlateEditor<Value>({
+        const editor = createTestTableEditor({
           nodeId: true,
           plugins: [BaseTablePlugin],
           selection: {
@@ -942,18 +944,20 @@ describe('table clipboard slow contracts', () => {
             focus: { offset: 3, path: [0, 0] },
             kind: 'text',
           },
-          initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
+          initialValue: [{ children: [{ text: 'one' }], type: 'paragraph' }],
         });
         const table = {
           children: [
             {
               children: [
                 {
-                  children: [{ children: [{ text: 'cell' }], type: 'p' }],
-                  type: 'td',
+                  children: [
+                    { children: [{ text: 'cell' }], type: 'paragraph' },
+                  ],
+                  type: 'tableCell',
                 },
               ],
-              type: 'tr',
+              type: 'tableRow',
             },
           ],
           type: 'table',
@@ -965,8 +969,8 @@ describe('table clipboard slow contracts', () => {
         });
         const seen: unknown[] = [];
 
-        editor.extend(
-          defineEditorExtension({
+        editor.install(
+          defineExtension(`table-slice-delegation-${openDepth}`, {
             commands: ({ handle }) => [
               handle(editorCommands.replaceSlice, ({ input }) => {
                 seen.push(input.slice);
@@ -974,7 +978,6 @@ describe('table clipboard slow contracts', () => {
                 return false;
               }),
             ],
-            name: `table-slice-delegation-${openDepth}`,
           })
         );
 
@@ -1013,7 +1016,7 @@ describe('table clipboard slow contracts', () => {
     }
 
     it('delegates a single-cell inline paste to canonical slice replacement', () => {
-      const editor = createPlateEditor({
+      const editor = createTestTableEditor({
         nodeId: true,
         plugins: [BaseTablePlugin],
         selection: {
@@ -1027,11 +1030,13 @@ describe('table clipboard slow contracts', () => {
               {
                 children: [
                   {
-                    children: [{ children: [{ text: 'ab' }], type: 'p' }],
-                    type: 'td',
+                    children: [
+                      { children: [{ text: 'ab' }], type: 'paragraph' },
+                    ],
+                    type: 'tableCell',
                   },
                 ],
-                type: 'tr',
+                type: 'tableRow',
               },
             ],
             type: 'table',
@@ -1045,7 +1050,7 @@ describe('table clipboard slow contracts', () => {
     });
 
     it('recognizes an open table slice from its retained content context', () => {
-      const source = createPlateEditor({
+      const source = createTestTableEditor({
         nodeId: true,
         plugins: [BaseTablePlugin],
         selection: {
@@ -1059,38 +1064,46 @@ describe('table clipboard slow contracts', () => {
               {
                 children: [
                   {
-                    children: [{ children: [{ text: 'before' }], type: 'p' }],
-                    type: 'td',
+                    children: [
+                      { children: [{ text: 'before' }], type: 'paragraph' },
+                    ],
+                    type: 'tableCell',
                   },
                 ],
-                type: 'tr',
+                type: 'tableRow',
               },
               {
                 children: [
                   {
-                    children: [{ children: [{ text: 'x' }], type: 'p' }],
-                    type: 'td',
+                    children: [
+                      { children: [{ text: 'x' }], type: 'paragraph' },
+                    ],
+                    type: 'tableCell',
                   },
                 ],
-                type: 'tr',
+                type: 'tableRow',
               },
               {
                 children: [
                   {
-                    children: [{ children: [{ text: 'y' }], type: 'p' }],
-                    type: 'td',
+                    children: [
+                      { children: [{ text: 'y' }], type: 'paragraph' },
+                    ],
+                    type: 'tableCell',
                   },
                 ],
-                type: 'tr',
+                type: 'tableRow',
               },
               {
                 children: [
                   {
-                    children: [{ children: [{ text: 'after' }], type: 'p' }],
-                    type: 'td',
+                    children: [
+                      { children: [{ text: 'after' }], type: 'paragraph' },
+                    ],
+                    type: 'tableCell',
                   },
                 ],
-                type: 'tr',
+                type: 'tableRow',
               },
             ],
             type: 'table',
@@ -1098,7 +1111,7 @@ describe('table clipboard slow contracts', () => {
         ],
       });
       const slice = source.read.slice.get();
-      const target = createPlateEditor({
+      const target = createTestTableEditor({
         nodeId: true,
         plugins: [BaseTablePlugin],
         selection: {
@@ -1112,15 +1125,19 @@ describe('table clipboard slow contracts', () => {
               {
                 children: [
                   {
-                    children: [{ children: [{ text: 'a' }], type: 'p' }],
-                    type: 'td',
+                    children: [
+                      { children: [{ text: 'a' }], type: 'paragraph' },
+                    ],
+                    type: 'tableCell',
                   },
                   {
-                    children: [{ children: [{ text: 'b' }], type: 'p' }],
-                    type: 'td',
+                    children: [
+                      { children: [{ text: 'b' }], type: 'paragraph' },
+                    ],
+                    type: 'tableCell',
                   },
                 ],
-                type: 'tr',
+                type: 'tableRow',
               },
             ],
             type: 'table',
@@ -1147,7 +1164,7 @@ describe('table clipboard slow contracts', () => {
     });
 
     it('fits closed text against every selected cell grammar', () => {
-      const editor = createPlateEditor({
+      const editor = createTestTableEditor({
         nodeId: true,
         plugins: [BaseTablePlugin],
         selection: {
@@ -1161,15 +1178,19 @@ describe('table clipboard slow contracts', () => {
               {
                 children: [
                   {
-                    children: [{ children: [{ text: 'a' }], type: 'p' }],
-                    type: 'td',
+                    children: [
+                      { children: [{ text: 'a' }], type: 'paragraph' },
+                    ],
+                    type: 'tableCell',
                   },
                   {
-                    children: [{ children: [{ text: 'b' }], type: 'p' }],
-                    type: 'td',
+                    children: [
+                      { children: [{ text: 'b' }], type: 'paragraph' },
+                    ],
+                    type: 'tableCell',
                   },
                 ],
-                type: 'tr',
+                type: 'tableRow',
               },
             ],
             type: 'table',
@@ -1189,7 +1210,7 @@ describe('table clipboard slow contracts', () => {
       );
       assert.deepEqual(
         cells.map((cell) => cell.children.map((child) => child.type)),
-        [['p'], ['p']]
+        [['paragraph'], ['paragraph']]
       );
     });
   });

@@ -3,7 +3,7 @@ import React from 'react';
 import {
   createPlateEditor,
   Plate,
-  type PlateEditor,
+  type PlateEditorReference,
 } from '@platejs/core/react';
 import { renderHook } from '@testing-library/react';
 
@@ -14,7 +14,7 @@ import {
   useSelectionWithinBlock,
 } from './useSelection';
 
-const createWrapper = (editor: PlateEditor) =>
+const createWrapper = <E extends PlateEditorReference>(editor: E) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
     return (
       <Plate editor={editor} suppressInstanceWarning>
@@ -26,7 +26,7 @@ const createWrapper = (editor: PlateEditor) =>
 describe('useSelection hooks', () => {
   it('reports no active selection as not expanded and not in blocks', () => {
     const editor = createPlateEditor({
-      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'paragraph' }],
     });
 
     const wrapper = createWrapper(editor);
@@ -63,7 +63,7 @@ describe('useSelection hooks', () => {
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'paragraph' }],
     });
 
     const wrapper = createWrapper(editor);
@@ -101,8 +101,8 @@ describe('useSelection hooks', () => {
         focus: { offset: 3, path: [1, 0] },
       },
       initialValue: [
-        { children: [{ text: 'one' }], type: 'p' },
-        { children: [{ text: 'two' }], type: 'p' },
+        { children: [{ text: 'one' }], type: 'paragraph' },
+        { children: [{ text: 'two' }], type: 'paragraph' },
       ],
     });
 

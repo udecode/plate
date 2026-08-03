@@ -1,5 +1,8 @@
 import * as React from 'react';
 
+import * as actualCoreReact from '@platejs/core/react';
+import * as actualMedia from '@platejs/media';
+import * as actualMediaReact from '@platejs/media/react';
 import { render } from '@testing-library/react';
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
@@ -15,12 +18,15 @@ mock.module('@platejs/dnd', () => ({
 }));
 
 mock.module('@platejs/media', () => ({
+  ...actualMedia,
   parseTwitterUrl: parseTwitterUrlMock,
   parseVideoUrl: parseVideoUrlMock,
 }));
 
 mock.module('@platejs/media/react', () => ({
+  ...actualMediaReact,
   useMediaState: useMediaStateMock,
+  VideoPlugin: { name: 'video' },
 }));
 
 mock.module('@platejs/resizable', () => ({
@@ -29,10 +35,12 @@ mock.module('@platejs/resizable', () => ({
 }));
 
 mock.module('platejs/react', () => ({
+  ...actualCoreReact,
   PlateElement: ({ children }: any) => (
     <div data-testid="plate-element">{children}</div>
   ),
   useEditor: () => ({
+    plugin: () => ({ update: { setWidth: () => {} } }),
     read: { selection: () => null },
   }),
   useEditorSelector: (selector: (editor: unknown) => unknown) =>
@@ -64,6 +72,7 @@ mock.module('./resize-handle', () => ({
     <div data-testid="resizable">{children}</div>
   ),
   ResizeHandle: () => <div data-testid="resize-handle" />,
+  withResizableProvider: (Component: React.ComponentType) => Component,
 }));
 
 describe('VideoElement', () => {
@@ -98,12 +107,12 @@ describe('VideoElement', () => {
 
   it('renders a player for plain video URLs inserted via URL', async () => {
     useMediaStateMock.mockReturnValue({
-      align: 'center',
       embed: undefined,
       isVideo: false,
       isUpload: false,
       isYoutube: false,
       readOnly: false,
+      textAlign: 'center',
       unsafeUrl: 'https://cdn.example.com/video.mp4',
     });
 
@@ -141,12 +150,12 @@ describe('VideoElement', () => {
 
   it('keeps the youtube embed path for youtube videos', async () => {
     useMediaStateMock.mockReturnValue({
-      align: 'center',
       embed: { id: 'abc123' },
       isVideo: true,
       isUpload: false,
       isYoutube: true,
       readOnly: false,
+      textAlign: 'center',
       unsafeUrl: 'https://www.youtube.com/watch?v=abc123',
     });
 
@@ -183,12 +192,12 @@ describe('VideoElement', () => {
 
   it('uses ReactPlayer for non-youtube video providers', async () => {
     useMediaStateMock.mockReturnValue({
-      align: 'center',
       embed: { id: '76979871', provider: 'vimeo' },
       isVideo: true,
       isUpload: false,
       isYoutube: false,
       readOnly: false,
+      textAlign: 'center',
       unsafeUrl: 'https://vimeo.com/76979871',
     });
 

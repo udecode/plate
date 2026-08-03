@@ -23,9 +23,9 @@ const initialState: CommentPluginState = {
 
 export const commentPlugin = toPlatePlugin(BaseCommentPlugin, {
   on: {
-    click: ({ api, event, read, store, type }) => {
+    click: ({ api, event, name, read, store }) => {
       const activeTarget = getDiscussionClickTarget({
-        selector: `.plite-${type}`,
+        selector: `.plite-${name}`,
         target: event.target,
       });
 
@@ -43,7 +43,7 @@ export const commentPlugin = toPlatePlugin(BaseCommentPlugin, {
   },
   initialState,
 })
-  .extend(({ store, type }) => ({
+  .extend(({ key, store }) => ({
     update: ({ tx }) => ({
       setDraft: (options = {}) => {
         const commentingBlock = tx.selection()?.focus.path.slice(0, 1) ?? null;
@@ -59,7 +59,7 @@ export const commentPlugin = toPlatePlugin(BaseCommentPlugin, {
         tx.nodes.set(
           {
             [getDraftCommentKey()]: true,
-            [type]: true,
+            [key]: true,
           },
           { match: TextApi.isText, split: true, ...options }
         );

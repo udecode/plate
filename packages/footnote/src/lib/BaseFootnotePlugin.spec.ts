@@ -1,5 +1,4 @@
-import { createBaseEditor, createBasePlugin } from '@platejs/core';
-import { KEYS } from '@platejs/utils';
+import { createBaseEditor, defineBasePlugin } from '@platejs/core';
 import {
   BaseFootnoteDefinitionPlugin,
   BaseFootnoteInputPlugin,
@@ -7,6 +6,7 @@ import {
 } from './BaseFootnotePlugin';
 import {
   DocumentChange,
+  createEditor,
   schema,
   type Selection,
   type Value,
@@ -62,7 +62,7 @@ describe('BaseFootnotePlugins', () => {
     expect(
       editor.read.schema.getElementBehavior({
         children: [{ text: '' }],
-        type: KEYS.footnoteReference,
+        type: 'footnote',
       })
     ).toMatchObject({ atom: true, inline: true, void: true });
     expect(() =>
@@ -70,7 +70,7 @@ describe('BaseFootnotePlugins', () => {
         children: [
           {
             children: [{ text: '' }],
-            type: KEYS.footnoteReference,
+            type: 'footnote',
           },
         ],
       })
@@ -92,8 +92,8 @@ describe('BaseFootnotePlugins', () => {
       editor.read.schema.element(BaseFootnoteDefinitionPlugin)?.behavior.inline
     ).toBe(false);
     expect(editor.read.schema.create(BaseFootnoteDefinitionPlugin)).toEqual({
-      children: [{ children: [{ text: '' }], type: KEYS.p }],
-      type: KEYS.footnoteDefinition,
+      children: [{ children: [{ text: '' }], type: 'paragraph' }],
+      type: 'footnoteDefinition',
     });
     expect(
       editor.read.schema.element(BaseFootnoteDefinitionPlugin)?.groups
@@ -102,8 +102,8 @@ describe('BaseFootnotePlugins', () => {
       editor.read.schema.assertDocument({
         children: [
           {
-            children: [{ children: [{ text: '' }], type: KEYS.p }],
-            type: KEYS.footnoteDefinition,
+            children: [{ children: [{ text: '' }], type: 'paragraph' }],
+            type: 'footnoteDefinition',
           },
         ],
       })
@@ -151,11 +151,11 @@ describe('BaseFootnotePlugins', () => {
             {
               children: [{ text: '' }],
               identifier: '1',
-              type: 'footnoteReference',
+              type: 'footnote',
             },
             { text: ' after' },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
@@ -165,7 +165,7 @@ describe('BaseFootnotePlugins', () => {
     expect(editor.read.value().children).toMatchObject([
       {
         children: [{ text: 'hi  after' }],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
     expect(editor.read.selection()).toEqual({
@@ -190,11 +190,11 @@ describe('BaseFootnotePlugins', () => {
             {
               children: [{ text: '' }],
               identifier: '1',
-              type: 'footnoteReference',
+              type: 'footnote',
             },
             { text: ' after' },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
@@ -204,7 +204,7 @@ describe('BaseFootnotePlugins', () => {
     expect(editor.read.value().children).toMatchObject([
       {
         children: [{ text: 'hi  after' }],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
     expect(editor.read.selection()).toEqual({
@@ -225,7 +225,7 @@ describe('BaseFootnotePlugins', () => {
       initialValue: [
         {
           children: [{ text: '[' }],
-          type: KEYS.p,
+          type: 'paragraph',
         },
       ],
     });
@@ -242,7 +242,7 @@ describe('BaseFootnotePlugins', () => {
           },
           { text: '' },
         ],
-        type: KEYS.p,
+        type: 'paragraph',
       },
     ]);
   });
@@ -264,14 +264,14 @@ describe('BaseFootnotePlugin read', () => {
             {
               children: [{ text: '1' }],
               identifier: '1',
-              type: 'footnoteReference',
+              type: 'footnote',
             },
             { text: '' },
           ],
-          type: KEYS.p,
+          type: 'paragraph',
         },
         {
-          children: [{ children: [{ text: 'body' }], type: KEYS.p }],
+          children: [{ children: [{ text: 'body' }], type: 'paragraph' }],
           identifier: '1',
           type: 'footnoteDefinition',
         },
@@ -310,12 +310,12 @@ describe('BaseFootnotePlugin read', () => {
       plugins: [BaseFootnotePlugin, BaseFootnoteDefinitionPlugin] as const,
       initialValue: [
         {
-          children: [{ children: [{ text: 'one' }], type: KEYS.p }],
+          children: [{ children: [{ text: 'one' }], type: 'paragraph' }],
           identifier: '1',
           type: 'footnoteDefinition',
         },
         {
-          children: [{ children: [{ text: 'duplicate' }], type: KEYS.p }],
+          children: [{ children: [{ text: 'duplicate' }], type: 'paragraph' }],
           identifier: '1',
           type: 'footnoteDefinition',
         },
@@ -335,7 +335,7 @@ describe('BaseFootnotePlugin read', () => {
   it('invalidates for footnotes nested in inserted and removed blocks', () => {
     const editor = createBaseEditor({
       plugins: [BaseFootnotePlugin, BaseFootnoteDefinitionPlugin] as const,
-      initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
 
     expect(editor.read.footnote.nextId()).toBe('1');
@@ -346,10 +346,10 @@ describe('BaseFootnotePlugin read', () => {
           {
             children: [{ text: '' }],
             identifier: '1',
-            type: 'footnoteReference',
+            type: 'footnote',
           },
         ],
-        type: KEYS.p,
+        type: 'paragraph',
       },
       { at: [1] }
     );
@@ -366,12 +366,12 @@ describe('BaseFootnotePlugin read', () => {
       plugins: [BaseFootnotePlugin, BaseFootnoteDefinitionPlugin] as const,
       initialValue: [
         {
-          children: [{ children: [{ text: 'one' }], type: KEYS.p }],
+          children: [{ children: [{ text: 'one' }], type: 'paragraph' }],
           identifier: '1',
           type: 'footnoteDefinition',
         },
         {
-          children: [{ children: [{ text: 'duplicate' }], type: KEYS.p }],
+          children: [{ children: [{ text: 'duplicate' }], type: 'paragraph' }],
           identifier: '1',
           type: 'footnoteDefinition',
         },
@@ -398,11 +398,11 @@ describe('BaseFootnotePlugin read', () => {
   it('invalidates for a classification-free identifier change', () => {
     const value = [
       {
-        children: [{ children: [{ text: 'one' }], type: KEYS.p }],
+        children: [{ children: [{ text: 'one' }], type: 'paragraph' }],
         identifier: '1',
         type: 'footnoteDefinition',
       },
-    ];
+    ] as const;
     const plugins = [BaseFootnotePlugin, BaseFootnoteDefinitionPlugin] as const;
     const source = createBaseEditor({
       plugins,
@@ -439,7 +439,7 @@ describe('BaseFootnotePlugin updates', () => {
         anchor: { offset: 5, path: [0, 0] },
         focus: { offset: 5, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: 'hello' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'hello' }], type: 'paragraph' }],
     });
 
     expect(
@@ -465,8 +465,7 @@ describe('BaseFootnotePlugin updates', () => {
   });
 
   it('preserves block fragments as definition children', () => {
-    const TestFootnoteBlockPlugin = createBasePlugin({
-      name: 'testFootnoteBlock',
+    const TestFootnoteBlockPlugin = defineBasePlugin('testFootnoteBlock', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -479,7 +478,7 @@ describe('BaseFootnotePlugin updates', () => {
         BaseFootnoteDefinitionPlugin,
         TestFootnoteBlockPlugin,
       ] as const,
-      initialValue: [{ children: [{ text: 'hello' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'hello' }], type: 'paragraph' }],
     });
 
     editor.update.footnote.createDefinition({
@@ -501,7 +500,7 @@ describe('BaseFootnotePlugin updates', () => {
         },
       ],
       identifier: '3',
-      type: KEYS.footnoteDefinition,
+      type: 'footnoteDefinition',
     });
     expect(() =>
       editor.read.schema.assertDocument(editor.read.value())
@@ -519,7 +518,7 @@ describe('BaseFootnotePlugin updates', () => {
       initialValue: [
         {
           children: [{ text: 'hello world' }],
-          type: KEYS.p,
+          type: 'paragraph',
         },
       ],
     });
@@ -533,16 +532,16 @@ describe('BaseFootnotePlugin updates', () => {
           {
             children: [{ text: '' }],
             identifier: '1',
-            type: KEYS.footnoteReference,
+            type: 'footnote',
           },
           { text: '' },
         ],
-        type: KEYS.p,
+        type: 'paragraph',
       },
       {
-        children: [{ children: [{ text: 'world' }], type: KEYS.p }],
+        children: [{ children: [{ text: 'world' }], type: 'paragraph' }],
         identifier: '1',
-        type: KEYS.footnoteDefinition,
+        type: 'footnoteDefinition',
       },
     ]);
     expect(editor.read.selection()).toEqual({
@@ -555,7 +554,7 @@ describe('BaseFootnotePlugin updates', () => {
   it('inserts at an explicit target without an active selection', () => {
     const editor = createBaseEditor({
       plugins: [BaseFootnotePlugin, BaseFootnoteDefinitionPlugin] as const,
-      initialValue: [{ children: [{ text: 'hello' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'hello' }], type: 'paragraph' }],
     });
 
     editor.update.footnote.insert({
@@ -570,16 +569,16 @@ describe('BaseFootnotePlugin updates', () => {
           {
             children: [{ text: '' }],
             identifier: '1',
-            type: KEYS.footnoteReference,
+            type: 'footnote',
           },
           { text: 'hello' },
         ],
-        type: KEYS.p,
+        type: 'paragraph',
       },
       {
-        children: [{ children: [{ text: '' }], type: KEYS.p }],
+        children: [{ children: [{ text: '' }], type: 'paragraph' }],
         identifier: '1',
-        type: KEYS.footnoteDefinition,
+        type: 'footnoteDefinition',
       },
     ]);
   });
@@ -593,16 +592,16 @@ describe('BaseFootnotePlugin updates', () => {
         focus: { offset: 1, path: [0, 0] },
       },
       initialValue: [
-        { children: [{ text: 'x' }], type: KEYS.p },
+        { children: [{ text: 'x' }], type: 'paragraph' },
         {
-          children: [{ children: [{ text: 'one' }], type: KEYS.p }],
+          children: [{ children: [{ text: 'one' }], type: 'paragraph' }],
           identifier: '1',
-          type: KEYS.footnoteDefinition,
+          type: 'footnoteDefinition',
         },
         {
-          children: [{ children: [{ text: 'three' }], type: KEYS.p }],
+          children: [{ children: [{ text: 'three' }], type: 'paragraph' }],
           identifier: '3',
-          type: KEYS.footnoteDefinition,
+          type: 'footnoteDefinition',
         },
       ],
     });
@@ -611,11 +610,11 @@ describe('BaseFootnotePlugin updates', () => {
 
     expect(editor.read.nodes.get([0, 1])?.[0]).toMatchObject({
       identifier: '2',
-      type: KEYS.footnoteReference,
+      type: 'footnote',
     });
     expect(editor.read.nodes.get([3])?.[0]).toMatchObject({
       identifier: '2',
-      type: KEYS.footnoteDefinition,
+      type: 'footnoteDefinition',
     });
   });
 
@@ -628,11 +627,11 @@ describe('BaseFootnotePlugin updates', () => {
         focus: { offset: 1, path: [0, 0] },
       },
       initialValue: [
-        { children: [{ text: 'x' }], type: KEYS.p },
+        { children: [{ text: 'x' }], type: 'paragraph' },
         {
-          children: [{ children: [{ text: 'existing' }], type: KEYS.p }],
+          children: [{ children: [{ text: 'existing' }], type: 'paragraph' }],
           identifier: '7',
-          type: KEYS.footnoteDefinition,
+          type: 'footnoteDefinition',
         },
       ],
     });
@@ -657,6 +656,7 @@ describe('BaseFootnotePlugin updates', () => {
     value: Value;
   }) =>
     createBaseEditor({
+      editor: createEditor<Value>(),
       plugins: [BaseFootnotePlugin, BaseFootnoteDefinitionPlugin] as const,
       selection,
       initialValue: value,
@@ -671,18 +671,20 @@ describe('BaseFootnotePlugin updates', () => {
               {
                 children: [{ text: '' }],
                 identifier: '1',
-                type: 'footnoteReference',
+                type: 'footnote',
               },
             ],
-            type: 'p',
+            type: 'paragraph',
           },
           {
-            children: [{ children: [{ text: 'body' }], type: 'p' }],
+            children: [{ children: [{ text: 'body' }], type: 'paragraph' }],
             identifier: '1',
             type: 'footnoteDefinition',
           },
           {
-            children: [{ children: [{ text: 'duplicate' }], type: 'p' }],
+            children: [
+              { children: [{ text: 'duplicate' }], type: 'paragraph' },
+            ],
             identifier: '1',
             type: 'footnoteDefinition',
           },
@@ -708,12 +710,14 @@ describe('BaseFootnotePlugin updates', () => {
       const editor = createFootnoteRuntimeEditor({
         value: [
           {
-            children: [{ children: [{ text: 'one' }], type: 'p' }],
+            children: [{ children: [{ text: 'one' }], type: 'paragraph' }],
             identifier: '1',
             type: 'footnoteDefinition',
           },
           {
-            children: [{ children: [{ text: 'duplicate' }], type: 'p' }],
+            children: [
+              { children: [{ text: 'duplicate' }], type: 'paragraph' },
+            ],
             identifier: '1',
             type: 'footnoteDefinition',
           },
@@ -734,11 +738,11 @@ describe('BaseFootnotePlugin updates', () => {
       const editor = createFootnoteRuntimeEditor({
         value: [
           {
-            children: [{ children: [{ text: 'one' }], type: 'p' }],
+            children: [{ children: [{ text: 'one' }], type: 'paragraph' }],
             type: 'footnoteDefinition',
           },
           {
-            children: [{ children: [{ text: 'two' }], type: 'p' }],
+            children: [{ children: [{ text: 'two' }], type: 'paragraph' }],
             type: 'footnoteDefinition',
           },
         ],
@@ -754,7 +758,7 @@ describe('BaseFootnotePlugin updates', () => {
       const editor = createFootnoteRuntimeEditor({
         value: [
           {
-            children: [{ children: [{ text: 'one' }], type: 'p' }],
+            children: [{ children: [{ text: 'one' }], type: 'paragraph' }],
             identifier: '1',
             type: 'footnoteDefinition',
           },
@@ -764,7 +768,9 @@ describe('BaseFootnotePlugin updates', () => {
       editor.update((tx) => {
         tx.nodes.insert(
           {
-            children: [{ children: [{ text: 'duplicate' }], type: 'p' }],
+            children: [
+              { children: [{ text: 'duplicate' }], type: 'paragraph' },
+            ],
             identifier: '1',
             type: 'footnoteDefinition',
           },
@@ -785,7 +791,7 @@ describe('BaseFootnotePlugin updates', () => {
           anchor: { offset: 2, path: [0, 0] },
           focus: { offset: 2, path: [0, 0] },
         },
-        value: [{ children: [{ text: 'hi' }], type: 'p' }],
+        value: [{ children: [{ text: 'hi' }], type: 'paragraph' }],
       });
 
       editor.update.footnote.insert({ focusDefinition: false });
@@ -797,14 +803,14 @@ describe('BaseFootnotePlugin updates', () => {
             {
               children: [{ text: '' }],
               identifier: '1',
-              type: 'footnoteReference',
+              type: 'footnote',
             },
             { text: '' },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
         {
-          children: [{ children: [{ text: '' }], type: 'p' }],
+          children: [{ children: [{ text: '' }], type: 'paragraph' }],
           identifier: '1',
           type: 'footnoteDefinition',
         },
@@ -825,14 +831,14 @@ describe('BaseFootnotePlugin updates', () => {
               {
                 children: [{ text: '' }],
                 identifier: '1',
-                type: 'footnoteReference',
+                type: 'footnote',
               },
               { text: 'b' },
             ],
-            type: 'p',
+            type: 'paragraph',
           },
           {
-            children: [{ children: [{ text: 'body' }], type: 'p' }],
+            children: [{ children: [{ text: 'body' }], type: 'paragraph' }],
             identifier: '1',
             type: 'footnoteDefinition',
           },

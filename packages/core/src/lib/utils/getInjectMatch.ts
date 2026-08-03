@@ -4,13 +4,13 @@ import type { BaseEditor } from '../editor';
 
 import type { AnyBasePlugin } from '../plugin';
 import {
-  getCompiledPlatePluginName,
+  getCompiledPlatePluginByType,
   getResolvedPluginTargetBinding,
 } from '../../internal/plugin/compilePlateModel';
 
 export const getInjectMatch = <E extends BaseEditor>(
   editor: E,
-  plugin: Pick<AnyBasePlugin, 'inject' | 'name' | 'targetPluginNames'>
+  plugin: Pick<AnyBasePlugin, 'inject' | 'name' | 'targetPlugins'>
 ) => {
   return (node: Node, path?: Path) => {
     const {
@@ -31,16 +31,23 @@ export const getInjectMatch = <E extends BaseEditor>(
     }
     if (isLeaf && element) return false;
     if (element?.type) {
-      const pluginName = getCompiledPlatePluginName(editor, element.type);
+      const elementPlugin = getCompiledPlatePluginByType(editor, element.type);
 
       // Exclude plugins
-      if (pluginName && excludePlugins?.includes(pluginName)) {
+      if (
+        elementPlugin &&
+        excludePlugins?.some((target) => {
+          const portal = editor.plugin(target);
+
+          return portal.installed && portal.name === elementPlugin.name;
+        })
+      ) {
         return false;
       }
       // Target plugins
       if (
-        plugin.targetPluginNames.length > 0 &&
-        (!pluginName || !targetBinding.names.includes(pluginName))
+        plugin.targetPlugins.length > 0 &&
+        (!elementPlugin || !targetBinding.names.includes(elementPlugin.name))
       ) {
         return false;
       }
@@ -53,15 +60,19 @@ export const getInjectMatch = <E extends BaseEditor>(
         return false;
       }
       if (excludeBelowPlugins) {
-        const excludeTypes = excludeBelowPlugins.map((name) => {
-          const portal = editor.plugin(name);
+        const excludeTypes = excludeBelowPlugins.flatMap((target) => {
+          const portal = editor.plugin(target);
 
-          return portal.installed ? portal.type : name;
+          if (!portal.installed) return [];
+
+          return [portal.type];
         });
-        const isBelow = editor.read.nodes.above({
-          at: path,
-          match: { type: excludeTypes },
-        });
+        const isBelow =
+          excludeTypes.length > 0 &&
+          editor.read.nodes.above({
+            at: path,
+            match: { type: excludeTypes },
+          });
 
         if (isBelow) return false;
       }

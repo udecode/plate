@@ -347,14 +347,3 @@ would be a regression.
 `;
 
 writeFileSync(`${root}/lexical-architecture-ledger.md`, ledger);
-console.log(
-  JSON.stringify(
-    {
-      concepts: Object.keys(source.concepts).length,
-      matrix: conceptManifest.concepts.length,
-      material: 2,
-    },
-    null,
-    2
-  )
-);

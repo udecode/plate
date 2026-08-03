@@ -12,7 +12,7 @@ export const playgroundValue: EditorDocumentValue = {
         { text: 'Experience a modern rich-text editor built with ' },
         {
           children: [{ text: 'React' }],
-          type: 'a',
+          type: 'link',
           url: 'https://reactjs.org',
         },
         {
@@ -20,12 +20,12 @@ export const playgroundValue: EditorDocumentValue = {
         },
         {
           children: [{ text: 'Explore the documentation' }],
-          type: 'a',
+          type: 'link',
           url: '/docs',
         },
         { text: ' to discover more.' },
       ],
-      type: 'p',
+      type: 'paragraph',
     },
     // Suggestions & Comments Section
     {
@@ -48,7 +48,7 @@ export const playgroundValue: EditorDocumentValue = {
               text: 'suggestions',
             },
           ],
-          type: 'a',
+          type: 'link',
           url: '/docs/suggestion',
         },
         {
@@ -87,7 +87,7 @@ export const playgroundValue: EditorDocumentValue = {
           children: [
             { comment: true, comment_discussion1: true, text: 'comments' },
           ],
-          type: 'a',
+          type: 'link',
           url: '/docs/comment',
         },
         {
@@ -110,7 +110,7 @@ export const playgroundValue: EditorDocumentValue = {
         },
         { text: ' annotations!' },
       ],
-      type: 'p',
+      type: 'paragraph',
     },
     // {
     //   children: [
@@ -123,7 +123,7 @@ export const playgroundValue: EditorDocumentValue = {
     //     type: 'block',
     //     userId: 'charlie',
     //   },
-    //   type: 'p',
+    //   type: 'paragraph',
     // },
     // AI Section
     {
@@ -135,7 +135,7 @@ export const playgroundValue: EditorDocumentValue = {
         { text: 'Boost your productivity with integrated ' },
         {
           children: [{ text: 'AI SDK' }],
-          type: 'a',
+          type: 'link',
           url: '/docs/ai',
         },
         { text: '. Press ' },
@@ -144,7 +144,7 @@ export const playgroundValue: EditorDocumentValue = {
         { kbd: true, text: 'Space' },
         { text: ' in an empty line to:' },
       ],
-      type: 'p',
+      type: 'paragraph',
     },
     {
       children: [
@@ -152,7 +152,7 @@ export const playgroundValue: EditorDocumentValue = {
       ],
       indent: 1,
       listStyleType: 'disc',
-      type: 'p',
+      type: 'paragraph',
     },
     {
       children: [
@@ -160,7 +160,7 @@ export const playgroundValue: EditorDocumentValue = {
       ],
       indent: 1,
       listStyleType: 'disc',
-      type: 'p',
+      type: 'paragraph',
     },
     // Core Features Section (Combined)
     {
@@ -172,25 +172,25 @@ export const playgroundValue: EditorDocumentValue = {
         { text: 'Structure your content with ' },
         {
           children: [{ text: 'headings' }],
-          type: 'a',
+          type: 'link',
           url: '/docs/heading',
         },
         { text: ', ' },
         {
           children: [{ text: 'lists' }],
-          type: 'a',
+          type: 'link',
           url: '/docs/list',
         },
         { text: ', and ' },
         {
           children: [{ text: 'quotes' }],
-          type: 'a',
+          type: 'link',
           url: '/docs/blockquote',
         },
         { text: '. Apply ' },
         {
           children: [{ text: 'marks' }],
-          type: 'a',
+          type: 'link',
           url: '/docs/basic-marks',
         },
         { text: ' like ' },
@@ -206,13 +206,13 @@ export const playgroundValue: EditorDocumentValue = {
         { text: '. Use ' },
         {
           children: [{ text: 'autoformatting' }],
-          type: 'a',
+          type: 'link',
           url: '/docs/autoformat',
         },
         { text: ' for ' },
         {
           children: [{ text: 'Markdown' }],
-          type: 'a',
+          type: 'link',
           url: '/docs/markdown',
         },
         { text: '-like shortcuts (e.g., ' },
@@ -221,7 +221,7 @@ export const playgroundValue: EditorDocumentValue = {
         { kbd: true, text: '# ' },
         { text: ' for H1).' },
       ],
-      type: 'p',
+      type: 'paragraph',
     },
     {
       children: [
@@ -231,7 +231,7 @@ export const playgroundValue: EditorDocumentValue = {
               text: 'Blockquotes can group paragraphs, quoted lists, and reply chains.',
             },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
         {
           children: [
@@ -239,7 +239,7 @@ export const playgroundValue: EditorDocumentValue = {
               text: 'Markdown blockquotes keep this nested structure instead of flattening it.',
             },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
         {
           children: [
@@ -249,13 +249,13 @@ export const playgroundValue: EditorDocumentValue = {
           ],
           indent: 1,
           listStyleType: 'disc',
-          type: 'p',
+          type: 'paragraph',
         },
         {
           children: [
             {
               children: [{ text: 'Nested blockquotes work here too.' }],
-              type: 'p',
+              type: 'paragraph',
             },
           ],
           type: 'blockquote',
@@ -265,28 +265,28 @@ export const playgroundValue: EditorDocumentValue = {
     },
     {
       children: [
-        { children: [{ text: 'function hello() {' }], type: 'code_line' },
+        { children: [{ text: 'function hello() {' }], type: 'codeLine' },
         {
           children: [{ text: "  console.info('Code blocks are supported!');" }],
-          type: 'code_line',
+          type: 'codeLine',
         },
-        { children: [{ text: '}' }], type: 'code_line' },
+        { children: [{ text: '}' }], type: 'codeLine' },
       ],
       lang: 'javascript',
-      type: 'code_block',
+      type: 'codeBlock',
     },
     {
       children: [
         { text: 'Create ' },
         {
           children: [{ text: 'links' }],
-          type: 'a',
+          type: 'link',
           url: '/docs/link',
         },
         { text: ', ' },
         {
           children: [{ text: '@mention' }],
-          type: 'a',
+          type: 'link',
           url: '/docs/mention',
         },
         { text: ' users like ' },
@@ -294,18 +294,18 @@ export const playgroundValue: EditorDocumentValue = {
         { text: ', or insert ' },
         {
           children: [{ text: 'emojis' }],
-          type: 'a',
+          type: 'link',
           url: '/docs/emoji',
         },
         { text: ' ✨. Use the ' },
         {
           children: [{ text: 'slash command' }],
-          type: 'a',
+          type: 'link',
           url: '/docs/slash-command',
         },
         { text: ' (/) for quick access to elements.' },
       ],
-      type: 'p',
+      type: 'paragraph',
     },
     // Table Section
     {
@@ -318,7 +318,7 @@ export const playgroundValue: EditorDocumentValue = {
           text: 'Plate offers many features out-of-the-box as free, open-source plugins.',
         },
       ],
-      type: 'p',
+      type: 'paragraph',
     },
     {
       children: [
@@ -326,196 +326,235 @@ export const playgroundValue: EditorDocumentValue = {
           children: [
             {
               children: [
-                { children: [{ bold: true, text: 'Feature' }], type: 'p' },
+                {
+                  children: [{ bold: true, text: 'Feature' }],
+                  type: 'paragraph',
+                },
               ],
-              type: 'th',
+              header: true,
+              type: 'tableCell',
             },
             {
               children: [
                 {
                   children: [{ bold: true, text: 'Plate (Free & OSS)' }],
-                  type: 'p',
+                  type: 'paragraph',
                 },
               ],
-              type: 'th',
-            },
-            {
-              children: [
-                { children: [{ bold: true, text: 'Tiptap' }], type: 'p' },
-              ],
-              type: 'th',
-            },
-          ],
-          type: 'tr',
-        },
-        {
-          children: [
-            {
-              children: [{ children: [{ text: 'AI' }], type: 'p' }],
-              type: 'td',
+              header: true,
+              type: 'tableCell',
             },
             {
               children: [
                 {
-                  align: 'center',
-                  children: [{ text: '✅' }],
-                  type: 'p',
+                  children: [{ bold: true, text: 'Tiptap' }],
+                  type: 'paragraph',
                 },
               ],
-              type: 'td',
-            },
-            {
-              children: [{ children: [{ text: 'Paid Extension' }], type: 'p' }],
-              type: 'td',
+              header: true,
+              type: 'tableCell',
             },
           ],
-          type: 'tr',
+          type: 'tableRow',
         },
         {
           children: [
             {
-              children: [{ children: [{ text: 'Comments' }], type: 'p' }],
-              type: 'td',
+              children: [{ children: [{ text: 'AI' }], type: 'paragraph' }],
+              type: 'tableCell',
             },
             {
               children: [
                 {
-                  align: 'center',
+                  textAlign: 'center',
                   children: [{ text: '✅' }],
-                  type: 'p',
+                  type: 'paragraph',
                 },
               ],
-              type: 'td',
-            },
-            {
-              children: [{ children: [{ text: 'Paid Extension' }], type: 'p' }],
-              type: 'td',
-            },
-          ],
-          type: 'tr',
-        },
-        {
-          children: [
-            {
-              children: [{ children: [{ text: 'Suggestions' }], type: 'p' }],
-              type: 'td',
+              type: 'tableCell',
             },
             {
               children: [
-                {
-                  align: 'center',
-                  children: [{ text: '✅' }],
-                  type: 'p',
-                },
+                { children: [{ text: 'Paid Extension' }], type: 'paragraph' },
               ],
-              type: 'td',
-            },
-            {
-              children: [
-                { children: [{ text: 'Paid (Comments Pro)' }], type: 'p' },
-              ],
-              type: 'td',
+              type: 'tableCell',
             },
           ],
-          type: 'tr',
-        },
-        {
-          children: [
-            {
-              children: [{ children: [{ text: 'Emoji Picker' }], type: 'p' }],
-              type: 'td',
-            },
-            {
-              children: [
-                {
-                  align: 'center',
-                  children: [{ text: '✅' }],
-                  type: 'p',
-                },
-              ],
-              type: 'td',
-            },
-            {
-              children: [{ children: [{ text: 'Paid Extension' }], type: 'p' }],
-              type: 'td',
-            },
-          ],
-          type: 'tr',
+          type: 'tableRow',
         },
         {
           children: [
             {
               children: [
-                { children: [{ text: 'Table of Contents' }], type: 'p' },
+                { children: [{ text: 'Comments' }], type: 'paragraph' },
               ],
-              type: 'td',
+              type: 'tableCell',
             },
             {
               children: [
                 {
-                  align: 'center',
+                  textAlign: 'center',
                   children: [{ text: '✅' }],
-                  type: 'p',
+                  type: 'paragraph',
                 },
               ],
-              type: 'td',
-            },
-            {
-              children: [{ children: [{ text: 'Paid Extension' }], type: 'p' }],
-              type: 'td',
-            },
-          ],
-          type: 'tr',
-        },
-        {
-          children: [
-            {
-              children: [{ children: [{ text: 'Drag Handle' }], type: 'p' }],
-              type: 'td',
+              type: 'tableCell',
             },
             {
               children: [
-                {
-                  align: 'center',
-                  children: [{ text: '✅' }],
-                  type: 'p',
-                },
+                { children: [{ text: 'Paid Extension' }], type: 'paragraph' },
               ],
-              type: 'td',
-            },
-            {
-              children: [{ children: [{ text: 'Paid Extension' }], type: 'p' }],
-              type: 'td',
+              type: 'tableCell',
             },
           ],
-          type: 'tr',
+          type: 'tableRow',
         },
         {
           children: [
             {
               children: [
-                { children: [{ text: 'Collaboration (Yjs)' }], type: 'p' },
+                { children: [{ text: 'Suggestions' }], type: 'paragraph' },
               ],
-              type: 'td',
+              type: 'tableCell',
             },
             {
               children: [
                 {
-                  align: 'center',
+                  textAlign: 'center',
                   children: [{ text: '✅' }],
-                  type: 'p',
+                  type: 'paragraph',
                 },
               ],
-              type: 'td',
+              type: 'tableCell',
             },
             {
               children: [
-                { children: [{ text: 'Hocuspocus (OSS/Paid)' }], type: 'p' },
+                {
+                  children: [{ text: 'Paid (Comments Pro)' }],
+                  type: 'paragraph',
+                },
               ],
-              type: 'td',
+              type: 'tableCell',
             },
           ],
-          type: 'tr',
+          type: 'tableRow',
+        },
+        {
+          children: [
+            {
+              children: [
+                { children: [{ text: 'Emoji Picker' }], type: 'paragraph' },
+              ],
+              type: 'tableCell',
+            },
+            {
+              children: [
+                {
+                  textAlign: 'center',
+                  children: [{ text: '✅' }],
+                  type: 'paragraph',
+                },
+              ],
+              type: 'tableCell',
+            },
+            {
+              children: [
+                { children: [{ text: 'Paid Extension' }], type: 'paragraph' },
+              ],
+              type: 'tableCell',
+            },
+          ],
+          type: 'tableRow',
+        },
+        {
+          children: [
+            {
+              children: [
+                {
+                  children: [{ text: 'Table of Contents' }],
+                  type: 'paragraph',
+                },
+              ],
+              type: 'tableCell',
+            },
+            {
+              children: [
+                {
+                  textAlign: 'center',
+                  children: [{ text: '✅' }],
+                  type: 'paragraph',
+                },
+              ],
+              type: 'tableCell',
+            },
+            {
+              children: [
+                { children: [{ text: 'Paid Extension' }], type: 'paragraph' },
+              ],
+              type: 'tableCell',
+            },
+          ],
+          type: 'tableRow',
+        },
+        {
+          children: [
+            {
+              children: [
+                { children: [{ text: 'Drag Handle' }], type: 'paragraph' },
+              ],
+              type: 'tableCell',
+            },
+            {
+              children: [
+                {
+                  textAlign: 'center',
+                  children: [{ text: '✅' }],
+                  type: 'paragraph',
+                },
+              ],
+              type: 'tableCell',
+            },
+            {
+              children: [
+                { children: [{ text: 'Paid Extension' }], type: 'paragraph' },
+              ],
+              type: 'tableCell',
+            },
+          ],
+          type: 'tableRow',
+        },
+        {
+          children: [
+            {
+              children: [
+                {
+                  children: [{ text: 'Collaboration (Yjs)' }],
+                  type: 'paragraph',
+                },
+              ],
+              type: 'tableCell',
+            },
+            {
+              children: [
+                {
+                  textAlign: 'center',
+                  children: [{ text: '✅' }],
+                  type: 'paragraph',
+                },
+              ],
+              type: 'tableCell',
+            },
+            {
+              children: [
+                {
+                  children: [{ text: 'Hocuspocus (OSS/Paid)' }],
+                  type: 'paragraph',
+                },
+              ],
+              type: 'tableCell',
+            },
+          ],
+          type: 'tableRow',
         },
       ],
 
@@ -534,7 +573,7 @@ export const playgroundValue: EditorDocumentValue = {
         },
         {
           children: [{ text: 'Media uploads' }],
-          type: 'a',
+          type: 'link',
           url: '/docs/media',
         },
         {
@@ -542,19 +581,19 @@ export const playgroundValue: EditorDocumentValue = {
         },
         {
           children: [{ text: 'drag & drop' }],
-          type: 'a',
+          type: 'link',
           url: '/docs/dnd',
         },
         {
           text: ' for a smooth experience.',
         },
       ],
-      type: 'p',
+      type: 'paragraph',
     },
     {
-      align: 'center',
+      textAlign: 'center',
       children: [{ text: 'Images with captions provide context.' }],
-      type: 'img',
+      type: 'image',
       url: 'https://images.unsplash.com/photo-1712688930249-98e1963af7bd?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
       width: '75%',
     },
@@ -581,7 +620,7 @@ export const playgroundValue: EditorDocumentValue = {
     // Horizontal Rule
     {
       children: [{ text: '' }],
-      type: 'hr',
+      type: 'horizontalRule',
     },
     // Date
     {
@@ -596,11 +635,11 @@ export const playgroundValue: EditorDocumentValue = {
         {
           children: [{ text: '' }],
           texExpression: 'E = mc^2',
-          type: 'inline_equation',
+          type: 'inlineEquation',
         },
         { text: '.' },
       ],
-      type: 'p',
+      type: 'paragraph',
     },
     // Block Equation
     {
@@ -635,7 +674,7 @@ export const playgroundValue: EditorDocumentValue = {
                   text: 'First column content. Great for side-by-side comparisons.',
                 },
               ],
-              type: 'p',
+              type: 'paragraph',
             },
           ],
           type: 'column',
@@ -649,18 +688,18 @@ export const playgroundValue: EditorDocumentValue = {
                   text: 'Second column content. Layout flexibility at its best.',
                 },
               ],
-              type: 'p',
+              type: 'paragraph',
             },
           ],
           type: 'column',
           width: '50%',
         },
       ],
-      type: 'column_group',
+      type: 'columnGroup',
     },
     {
       children: [{ text: '' }],
-      type: 'p',
+      type: 'paragraph',
     },
     {
       children: [
@@ -694,7 +733,7 @@ export const playgroundValue: EditorDocumentValue = {
       } 
       `,
       },
-      type: 'code_drawing',
+      type: 'codeDrawing',
     },
   ],
 };

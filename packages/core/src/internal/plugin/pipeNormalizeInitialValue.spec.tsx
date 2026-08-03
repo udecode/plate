@@ -6,16 +6,18 @@ import {
 } from '@platejs/plite';
 
 import { createBaseEditor } from '../../lib/editor';
-import { createBasePlugin } from '../../lib/plugin';
+import { defineBasePlugin } from '../../lib/plugin';
 import { pipeNormalizeInitialValue } from './pipeNormalizeInitialValue';
 
 describe('pipeNormalizeInitialValue', () => {
-  const createLoosePlugin = (config: Record<string, unknown>) =>
-    createBasePlugin(config as any) as any;
+  const createLoosePlugin = (config: Record<string, unknown>) => {
+    const { name, ...definition } = config;
+
+    return defineBasePlugin(name as string, definition as any) as any;
+  };
 
   const createTestPlugin = (name: string) =>
-    createBasePlugin({
-      name,
+    defineBasePlugin(name, {
       transformInitialValue: ({ value: initialValue }: any) =>
         ({
           ...initialValue,
@@ -35,14 +37,13 @@ describe('pipeNormalizeInitialValue', () => {
         }) as any,
     });
 
-  const CountPlugin = createBasePlugin({
-    name: 'count',
+  const CountPlugin = defineBasePlugin('count', {
     schema: {
-      properties: [
-        schema.elementProperty('count', property.number(), {
-          target: target.type('p'),
+      properties: {
+        count: schema.elementProperty(property.number(), {
+          target: target.type('paragraph'),
         }),
-      ],
+      },
     },
   });
   const plugins = [CountPlugin, createTestPlugin('a'), createTestPlugin('b')];
@@ -51,11 +52,13 @@ describe('pipeNormalizeInitialValue', () => {
     it('transforms the initial value once', () => {
       const editor = createBaseEditor({
         plugins,
-        initialValue: [{ children: [{ text: '' }], count: 0, type: 'p' }],
+        initialValue: [
+          { children: [{ text: '' }], count: 0, type: 'paragraph' },
+        ],
       });
 
       expect(editor.read.children()).toEqual([
-        { children: [{ text: '' }], count: 2, type: 'p' },
+        { children: [{ text: '' }], count: 2, type: 'paragraph' },
       ]);
     });
   });
@@ -64,11 +67,13 @@ describe('pipeNormalizeInitialValue', () => {
     it('transforms the initial value once', () => {
       const editor = createBaseEditor({
         plugins,
-        initialValue: [{ children: [{ text: '' }], count: 0, type: 'p' }],
+        initialValue: [
+          { children: [{ text: '' }], count: 0, type: 'paragraph' },
+        ],
       });
 
       expect(editor.read.children()).toEqual([
-        { children: [{ text: '' }], count: 2, type: 'p' },
+        { children: [{ text: '' }], count: 2, type: 'paragraph' },
       ]);
     });
   });
@@ -77,11 +82,13 @@ describe('pipeNormalizeInitialValue', () => {
     it('uses the provided value and transforms it once', () => {
       const editor = createBaseEditor({
         plugins,
-        initialValue: [{ children: [{ text: '' }], count: 0, type: 'p' }],
+        initialValue: [
+          { children: [{ text: '' }], count: 0, type: 'paragraph' },
+        ],
       });
 
       expect(editor.read.children()).toEqual([
-        { children: [{ text: '' }], count: 2, type: 'p' },
+        { children: [{ text: '' }], count: 2, type: 'paragraph' },
       ]);
     });
   });
@@ -93,34 +100,34 @@ describe('pipeNormalizeInitialValue', () => {
     });
 
     editor.update.value.replace({
-      children: [{ children: [{ text: '' }], count: 0, type: 'p' }],
+      children: [{ children: [{ text: '' }], count: 0, type: 'paragraph' }],
     });
 
     expect(editor.read.children()).toEqual([
-      { children: [{ text: '' }], count: 2, type: 'p' },
+      { children: [{ text: '' }], count: 2, type: 'paragraph' },
     ]);
   });
 
   it('transforms later complete document replacements', () => {
     const editor = createBaseEditor({
       plugins,
-      initialValue: [{ children: [{ text: '' }], count: 0, type: 'p' }],
+      initialValue: [{ children: [{ text: '' }], count: 0, type: 'paragraph' }],
     });
 
     editor.update.value.replace({
-      children: [{ children: [{ text: '' }], count: 10, type: 'p' }],
+      children: [{ children: [{ text: '' }], count: 10, type: 'paragraph' }],
     });
 
     expect(editor.read.children()).toEqual([
-      { children: [{ text: '' }], count: 12, type: 'p' },
+      { children: [{ text: '' }], count: 12, type: 'paragraph' },
     ]);
   });
 
-  describe('extendPlateEditor', () => {
+  describe('createPlateEditor', () => {
     describe('children handling', () => {
       it('use provided children', () => {
         const children = [
-          { children: [{ text: 'Test' }], count: 0, type: 'p' },
+          { children: [{ text: 'Test' }], count: 0, type: 'paragraph' },
         ];
         const editor = createBaseEditor({
           plugins,
@@ -128,7 +135,7 @@ describe('pipeNormalizeInitialValue', () => {
         });
 
         expect(editor.read.children()).toEqual([
-          { children: [{ text: 'Test' }], count: 2, type: 'p' },
+          { children: [{ text: 'Test' }], count: 2, type: 'paragraph' },
         ]);
       });
 
@@ -136,12 +143,12 @@ describe('pipeNormalizeInitialValue', () => {
         const editor = createBaseEditor({
           plugins,
           initialValue: [
-            { children: [{ text: 'Factory' }], count: 0, type: 'p' },
+            { children: [{ text: 'Factory' }], count: 0, type: 'paragraph' },
           ],
         });
 
         expect(editor.read.children()).toEqual([
-          { children: [{ text: 'Factory' }], count: 2, type: 'p' },
+          { children: [{ text: 'Factory' }], count: 2, type: 'paragraph' },
         ]);
       });
     });
@@ -156,7 +163,9 @@ describe('pipeNormalizeInitialValue', () => {
         const editor = createBaseEditor({
           plugins,
           selection,
-          initialValue: [{ children: [{ text: 'A' }], count: 0, type: 'p' }],
+          initialValue: [
+            { children: [{ text: 'A' }], count: 0, type: 'paragraph' },
+          ],
         });
 
         expect(editor.read.selection()).toEqual(selection);
@@ -165,7 +174,7 @@ describe('pipeNormalizeInitialValue', () => {
       it('auto-select start when autoSelect is "start"', () => {
         const editor = createBaseEditor({
           autoSelect: 'start',
-          initialValue: [{ children: [{ text: 'Test' }], type: 'p' }],
+          initialValue: [{ children: [{ text: 'Test' }], type: 'paragraph' }],
         });
 
         expect(editor.read.selection()).toEqual({
@@ -178,7 +187,7 @@ describe('pipeNormalizeInitialValue', () => {
       it('auto-select end when autoSelect is true', () => {
         const editor = createBaseEditor({
           autoSelect: true,
-          initialValue: [{ children: [{ text: 'Test' }], type: 'p' }],
+          initialValue: [{ children: [{ text: 'Test' }], type: 'paragraph' }],
         });
 
         expect(editor.read.selection()).toEqual({
@@ -203,7 +212,7 @@ describe('pipeNormalizeInitialValue', () => {
 
     expect(() =>
       editor.update.value.replace({
-        children: [{ children: [{ text: '' }], type: 'p' }],
+        children: [{ children: [{ text: '' }], type: 'paragraph' }],
         selection: null,
       })
     ).toThrow(
@@ -230,7 +239,7 @@ describe('pipeNormalizeInitialValue', () => {
         }),
       ],
       readOnly: true,
-      initialValue: [{ children: [{ text: '' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
 
     callCount = 0;

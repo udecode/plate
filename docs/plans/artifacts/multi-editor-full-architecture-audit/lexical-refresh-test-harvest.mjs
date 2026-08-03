@@ -367,16 +367,3 @@ if (!refreshedReport.includes('## License Gate')) {
   );
 }
 writeFileSync(reportPath, refreshedReport);
-
-console.log(
-  JSON.stringify(
-    {
-      inventoryRows: rows.length,
-      selectedFiles: selected.length,
-      extractedCallSites: extracted,
-      zeroNameFiles: 0,
-    },
-    null,
-    2
-  )
-);

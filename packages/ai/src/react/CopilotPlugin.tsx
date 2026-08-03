@@ -5,7 +5,7 @@ import debounce from 'lodash/debounce.js';
 
 import { type MarkdownEditor, MarkdownPlugin } from '@platejs/markdown';
 import { type DefinitionOf, NodeIdPlugin } from '@platejs/core';
-import { type PlateEditor, createPlatePlugin } from '@platejs/core/react';
+import { type PlateEditor, definePlatePlugin } from '@platejs/core/react';
 import {
   type Range,
   RangeApi,
@@ -14,7 +14,7 @@ import {
   editorCommands,
   NodeApi,
 } from '@platejs/plite';
-import { KEYS } from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 
 import { AIChatPlugin } from './AIChatPlugin';
 
@@ -147,11 +147,10 @@ const initialState: CopilotPluginState = {
     editor.read.selection.isCollapsed() && editor.read.selection.isAtBlockEnd(),
 };
 
-export const CopilotPlugin = createPlatePlugin({
+export const CopilotPlugin = definePlatePlugin(PLUGINS.copilot, {
   dependencies,
   effectTypes: [copilotSuggestionEffect],
   stateFields: [copilotSuggestionField],
-  name: KEYS.copilot,
   initialState,
   update: ({ context, editor, store, tx }) => {
     const setSuggestion = (next: CopilotSuggestionState) => {

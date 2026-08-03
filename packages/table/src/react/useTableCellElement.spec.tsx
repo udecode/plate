@@ -2,20 +2,23 @@
 
 import assert from 'node:assert/strict';
 import { renderHook } from '@testing-library/react';
-import { createPlateEditor, Plate } from '@platejs/core/react';
+import { Plate } from '@platejs/core/react';
 import { ElementProvider } from '@platejs/core/react/internal';
+import { PLUGINS } from '@platejs/utils';
 import {
-  KEYS,
-  type TTableCellElement,
-  type TTableElement,
-  type TTableRowElement,
-} from '@platejs/utils';
+  type TableCellElement,
+  type TableElement,
+  type TableRowElement,
+} from '../lib/BaseTablePlugin';
 import React from 'react';
 
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { BaseTablePlugin } from '../lib/BaseTablePlugin';
-import { getTestTablePlugins } from '../lib/__tests__/getTestTablePlugins';
+import {
+  createTestTableEditor,
+  getTestTablePlugins,
+} from '../lib/__tests__/getTestTablePlugins';
 import { TablePlugin } from './TablePlugin';
 import { roundCellSizeToStep, useTableCellSize } from './useTableCellElement';
 import { TableProvider } from './useTableStore';
@@ -23,7 +26,7 @@ import { TableProvider } from './useTableStore';
 jsxt;
 
 const createTableEditor = (input: TestEditor) =>
-  createPlateEditor({
+  createTestTableEditor({
     nodeId: true,
     plugins: getTestTablePlugins(),
     selection: input.selection,
@@ -64,7 +67,7 @@ describe('TablePlugin.update.toggleBorders integration', () => {
     const editor = createTableEditor(input);
     const cells = editor
       .plugin(BaseTablePlugin)
-      .read.getSelectedCells() as TTableCellElement[];
+      .read.getSelectedCells() as TableCellElement[];
 
     expect(cells.map((cell) => cell.id)).toEqual(['c11', 'c21']);
 
@@ -137,7 +140,7 @@ describe('TablePlugin.update.toggleBorders integration', () => {
     const editor = createTableEditor(input);
     const cells = editor
       .plugin(BaseTablePlugin)
-      .read.getSelectedCells() as TTableCellElement[];
+      .read.getSelectedCells() as TableCellElement[];
 
     expect(cells.map((cell) => cell.id)).toEqual(['c12', 'c22']);
     expect(editor.read.nodes.path(cells[1])).toEqual([0, 1, 1]);
@@ -350,7 +353,7 @@ describe('TablePlugin.update.toggleBorders integration', () => {
     ) as TestEditor;
 
     const editor = createTableEditor(input);
-    const entry = editor.read.nodes.get<TTableCellElement>([0, 1, 1]);
+    const entry = editor.read.nodes.get<TableCellElement>([0, 1, 1]);
     assert(entry);
     const [target] = entry;
 
@@ -406,29 +409,29 @@ describe('roundCellSizeToStep', () => {
 
 describe('useTableCellSize', () => {
   it('uses an explicit cell instead of an ancestor element provider', () => {
-    const element: TTableCellElement = {
+    const element: TableCellElement = {
       children: [{ text: '' }],
       id: 'cell-1',
-      type: 'td',
+      type: 'tableCell',
     };
-    const row: TTableRowElement = {
+    const row: TableRowElement = {
       children: [element],
       size: 24,
-      type: 'tr',
+      type: 'tableRow',
     };
-    const table: TTableElement = {
+    const table: TableElement = {
       children: [row],
       colSizes: [120],
       type: 'table',
     };
-    const editor = createPlateEditor({
+    const editor = createTestTableEditor({
       initialValue: [table],
       nodeId: true,
       plugins: [TablePlugin],
     });
-    const installedTable = editor.read.nodes.get<TTableElement>([0])![0];
-    const installedRow = editor.read.nodes.get<TTableRowElement>([0, 0])![0];
-    const installedElement = editor.read.nodes.get<TTableCellElement>([
+    const installedTable = editor.read.nodes.get<TableElement>([0])![0];
+    const installedRow = editor.read.nodes.get<TableRowElement>([0, 0])![0];
+    const installedElement = editor.read.nodes.get<TableCellElement>([
       0, 0, 0,
     ])![0];
     const PlateWithChildren = Plate as React.ComponentType<
@@ -447,7 +450,7 @@ describe('useTableCellSize', () => {
               element: installedTable,
               entry: [installedTable, [0]],
               path: [0],
-              scope: KEYS.table,
+              scope: PLUGINS.table,
             },
             React.createElement(
               ElementProvider,
@@ -455,7 +458,7 @@ describe('useTableCellSize', () => {
                 element: installedRow,
                 entry: [installedRow, [0, 0]],
                 path: [0, 0],
-                scope: KEYS.tr,
+                scope: PLUGINS.tableRow,
               },
               children
             )

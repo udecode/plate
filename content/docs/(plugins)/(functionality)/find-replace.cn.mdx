@@ -48,10 +48,11 @@ export const editor = createPlateEditor({
 
 ```tsx title="components/find-toolbar.tsx" showLineNumbers
 import { FindReplacePlugin } from '@platejs/find-replace';
-import { useEditorPlugin, usePluginStore } from 'platejs/react';
+import { useEditor, useEditorPlugin, usePluginStore } from 'platejs/react';
 
 export function FindToolbar() {
-  const { editor, store } = useEditorPlugin(FindReplacePlugin);
+  const editor = useEditor();
+  const { store } = useEditorPlugin(FindReplacePlugin);
   const search = usePluginStore(FindReplacePlugin, 'search');
 
   return (

@@ -1,4 +1,5 @@
 import type { HistoryStateApi, HistoryTxApi } from '@platejs/plite-history';
+import type { Value } from '@platejs/plite';
 
 import type { AffinityPluginUpdate } from '../plugins/affinity/AffinityPlugin';
 import type { DebugApi } from '../plugins/debug/DebugPlugin';
@@ -48,13 +49,13 @@ export type CoreEditorCapabilityDefinition =
       name: 'override';
       update: OverridePluginUpdate;
     }>
-  | Readonly<{ name: 'p' }>;
+  | Readonly<{ name: 'paragraph' }>;
 
-export type CoreEditorApi = Readonly<{
+export type CoreEditorApi<V extends Value = Value> = Readonly<{
   debug: DebugApi;
   dom: DomApi;
   elementState: ElementStateApi;
-  html: HtmlApi;
+  html: HtmlApi<V>;
 }>;
 
 export type CoreEditorRead = Readonly<{
@@ -76,5 +77,3 @@ export type CoreEditorUpdate = Readonly<{
   nodeId: NodeIdPluginUpdate;
   override: OverridePluginUpdate;
 }>;
-
-export type CoreNodePluginName = 'p';

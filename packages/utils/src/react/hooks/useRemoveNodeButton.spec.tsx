@@ -3,14 +3,14 @@ import React from 'react';
 import {
   createPlateEditor,
   Plate,
-  type PlateEditor,
+  type PlateEditorReference,
 } from '@platejs/core/react';
 import type { Element } from '@platejs/plite';
 import { renderHook } from '@testing-library/react';
 
 import { useRemoveNodeButton } from './useRemoveNodeButton';
 
-const createWrapper = (editor: PlateEditor) =>
+const createWrapper = <E extends PlateEditorReference>(editor: E) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
     return (
       <Plate editor={editor} suppressInstanceWarning>
@@ -23,8 +23,8 @@ describe('useRemoveNodeButton', () => {
   it('removes the node at the current node path', () => {
     const editor = createPlateEditor({
       initialValue: [
-        { children: [{ text: 'one' }], type: 'p' },
-        { children: [{ text: 'two' }], type: 'p' },
+        { children: [{ text: 'one' }], type: 'paragraph' },
+        { children: [{ text: 'two' }], type: 'paragraph' },
       ],
     });
     const element = editor.read.children()[0];
@@ -38,7 +38,7 @@ describe('useRemoveNodeButton', () => {
     expect(editor.read.children()).toEqual([
       expect.objectContaining({
         children: [{ text: 'two' }],
-        type: 'p',
+        type: 'paragraph',
       }),
     ]);
   });
@@ -46,9 +46,9 @@ describe('useRemoveNodeButton', () => {
   it('resolves the node path when clicked', () => {
     const editor = createPlateEditor({
       initialValue: [
-        { children: [{ text: 'one' }], type: 'p' },
-        { children: [{ text: 'two' }], type: 'p' },
-        { children: [{ text: 'three' }], type: 'p' },
+        { children: [{ text: 'one' }], type: 'paragraph' },
+        { children: [{ text: 'two' }], type: 'paragraph' },
+        { children: [{ text: 'three' }], type: 'paragraph' },
       ],
     });
     const element = editor.read.children()[1];
@@ -63,21 +63,24 @@ describe('useRemoveNodeButton', () => {
     expect(editor.read.children()).toEqual([
       expect.objectContaining({
         children: [{ text: 'three' }],
-        type: 'p',
+        type: 'paragraph',
       }),
     ]);
   });
 
   it('prevents the default mouse down behavior', () => {
     const editor = createPlateEditor({
-      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'paragraph' }],
     });
     const preventDefault = mock();
 
     const { result } = renderHook(
       () =>
         useRemoveNodeButton({
-          element: { children: [{ text: 'one' }], type: 'p' } satisfies Element,
+          element: {
+            children: [{ text: 'one' }],
+            type: 'paragraph',
+          } satisfies Element,
         }),
       {
         wrapper: createWrapper(editor),

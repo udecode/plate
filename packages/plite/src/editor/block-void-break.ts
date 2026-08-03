@@ -1,16 +1,21 @@
+import { getEditorRuntimeRoot, getEditorSchema } from '../core/editor-runtime';
 import type { EditorStaticApi } from '../interfaces/editor';
 import {
   getSelection as editorGetSelection,
   isInline as editorIsInline,
   void as editorVoid,
 } from '../interfaces/editor';
+import { ElementApi } from '../interfaces/element';
 import { PathApi } from '../interfaces/path';
 import { insertNodes } from '../transforms-node/insert-nodes';
 import { RangeApi } from '../interfaces/range';
+import { toPublicRoot } from '../core/public-root';
 
 type BreakEditor = Parameters<EditorStaticApi['insertBreak']>[0];
 
-export const insertParagraphAfterSelectedBlockVoid = (editor: BreakEditor) => {
+export const insertDefaultBlockAfterSelectedBlockVoid = (
+  editor: BreakEditor
+) => {
   const selection = editorGetSelection(editor);
 
   if (!selection || !RangeApi.isCollapsed(selection)) {
@@ -32,18 +37,17 @@ export const insertParagraphAfterSelectedBlockVoid = (editor: BreakEditor) => {
     return false;
   }
 
-  insertNodes(
-    editor,
-    {
-      type: 'paragraph',
-      children: [{ text: '' }],
-    },
-    {
-      at: PathApi.next(voidPath),
-      select: true,
-      voids: true,
-    }
+  const defaultChild = getEditorSchema(editor).createDefaultRootChild(
+    toPublicRoot(getEditorRuntimeRoot(editor))
   );
+
+  if (!ElementApi.isElement(defaultChild)) return false;
+
+  insertNodes(editor, defaultChild, {
+    at: PathApi.next(voidPath),
+    select: true,
+    voids: true,
+  });
 
   return true;
 };

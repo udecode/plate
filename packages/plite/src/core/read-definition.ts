@@ -1,11 +1,11 @@
 import type {
   BaseEditor,
-  Editor,
   EditorReadAroundHandler,
   EditorReadDescriptor,
   EditorReadInput,
   EditorReadRegistration,
   EditorReadResult,
+  Editor,
 } from '../interfaces/editor';
 
 type ReadRegistrationRuntime<

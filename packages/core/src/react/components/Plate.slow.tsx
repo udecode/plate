@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { property, schema, type Value } from '@platejs/plite';
+import { property, schema, target, type Value } from '@platejs/plite';
 
 import { render, renderHook } from '@testing-library/react';
 import { useAtomStoreValue } from 'jotai-x';
@@ -10,10 +10,11 @@ import { useAtomStoreValue } from 'jotai-x';
 import type { PlatePlugins } from '../plugin';
 import type { PlateElementProps, PlateLeafProps } from './plate-nodes';
 
-import { createBasePlugin } from '../../lib';
+import { defineBasePlugin } from '../../lib';
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { createPlateEditor, usePlateEditor } from '../editor';
-import { createPlatePlugin } from '../plugin/createPlatePlugin';
+import { definePlatePlugin } from '../plugin/definePlatePlugin';
+import { ParagraphPlugin } from '../plugins';
 import {
   PlateController,
   useActiveEditor,
@@ -94,7 +95,7 @@ describe('Plate', () => {
     describe('when initialValue is defined', () => {
       it('returns the initial value', async () => {
         const initialValue: Value = [
-          { children: [{ text: 'test' }], type: 'p' },
+          { children: [{ text: 'test' }], type: 'paragraph' },
         ];
         const editor = createPlateEditor({
           initialValue,
@@ -113,7 +114,7 @@ describe('Plate', () => {
       it('returns the editor children', async () => {
         const editor = createPlateEditor();
         editor.update.value.replace({
-          children: [{ children: [{ text: 'value' }], type: 'p' }],
+          children: [{ children: [{ text: 'value' }], type: 'paragraph' }],
           selection: null,
         });
 
@@ -136,7 +137,7 @@ describe('Plate', () => {
         const { result } = renderHook(() => useEditorValue(), { wrapper });
 
         expect(result.current).toEqual([
-          { children: [{ text: '' }], type: 'p' },
+          { children: [{ text: '' }], type: 'paragraph' },
         ]);
       });
     });
@@ -144,7 +145,7 @@ describe('Plate', () => {
 
   describe('useEditor().plugins', () => {
     it('uses the plugins already attached to the editor', () => {
-      const _plugins = [createBasePlugin({ name: 'test' })];
+      const _plugins = [defineBasePlugin('test', {})];
       const editor = createPlateEditor({
         plugins: _plugins,
       });
@@ -318,7 +319,7 @@ describe('Plate', () => {
       const fn = mock();
 
       const plugins = [
-        createBasePlugin({
+        defineBasePlugin('a', {
           corrections: [
             {
               event: 'content',
@@ -333,13 +334,12 @@ describe('Plate', () => {
               },
             },
           ],
-          name: 'a',
         }),
       ];
 
       const editor = createPlateEditor({
         plugins,
-        initialValue: [{ children: [{ text: '' }], type: 'p' }],
+        initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
       });
 
       render(
@@ -351,15 +351,14 @@ describe('Plate', () => {
       expect(fn).not.toHaveBeenCalled();
 
       expect(editor.read.children()).not.toStrictEqual([
-        { children: [{ text: '' }], path: [0], type: 'p' },
+        { children: [{ text: '' }], path: [0], type: 'paragraph' },
       ]);
     });
   });
   describe('when render abovePlite renders null', () => {
     it('renders without normalizing editor children', () => {
       const plugins: PlatePlugins = [
-        createPlatePlugin({
-          name: 'a',
+        definePlatePlugin('a', {
           render: {
             abovePlite: () => null,
           },
@@ -368,7 +367,7 @@ describe('Plate', () => {
 
       const editor = createPlateEditor({
         plugins,
-        initialValue: [{ children: [{ text: '' }], type: 'p' }],
+        initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
       });
 
       expect(() =>
@@ -436,10 +435,20 @@ describe('Plate', () => {
       </strong>
     );
 
+    const ParagraphAttributesPlugin = defineBasePlugin('paragraphAttributes', {
+      targetPlugins: [ParagraphPlugin],
+      schema: ({ targetElementTypes }) => ({
+        properties: {
+          attributes: schema.elementProperty(property.json(), {
+            target: target.types(targetElementTypes),
+          }),
+        },
+      }),
+    });
+
     const getParagraphPlugin = (projectAttributes: boolean) =>
-      createPlatePlugin({
+      ParagraphPlugin.configure({
         component: ParagraphElement,
-        name: 'p',
         render: {
           nodeProps: projectAttributes
             ? ({ element }) => {
@@ -459,18 +468,11 @@ describe('Plate', () => {
               }
             : undefined,
         },
-        schema: {
-          element: {
-            content: schema.content.open({ default: 'text', min: 1 }),
-            properties: { attributes: property.json() },
-          },
-        },
       });
 
     const getBoldPlugin = (projectAttributes: boolean) =>
-      createPlatePlugin({
+      definePlatePlugin('bold', {
         component: BoldLeaf,
-        name: 'bold',
         render: {
           nodeProps: projectAttributes
             ? ({ text }) => {
@@ -489,7 +491,9 @@ describe('Plate', () => {
         },
         schema: {
           mark: property.boolean({ default: false, omitDefault: true }),
-          properties: [schema.textProperty('attributes', property.json())],
+          properties: {
+            attributes: schema.textProperty(property.json()),
+          },
         },
       });
 
@@ -509,7 +513,7 @@ describe('Plate', () => {
             text: 'My bold paragraph',
           },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
     ];
 
@@ -517,6 +521,7 @@ describe('Plate', () => {
       const editor = usePlateEditor({
         plugins: [
           getParagraphPlugin(projectAttributes),
+          ParagraphAttributesPlugin,
           getBoldPlugin(projectAttributes),
         ],
         initialValue,
@@ -578,15 +583,17 @@ describe('Plate', () => {
         },
       ];
 
-      const UnknownElementSchemaPlugin = createBasePlugin({
-        name: 'unknown-element-schema',
-        schema: {
-          element: {
-            content: schema.content.open({ default: 'text', min: 1 }),
+      const UnknownElementSchemaPlugin = defineBasePlugin(
+        'unknownElementSchema',
+        {
+          schema: {
+            element: {
+              content: schema.content.open({ default: 'text', min: 1 }),
+              type: 'unknown-element-type',
+            },
           },
-        },
-        type: 'unknown-element-type',
-      });
+        }
+      );
 
       const editor = createPlateEditor({
         plugins: [UnknownElementSchemaPlugin],
@@ -612,15 +619,14 @@ describe('Plate', () => {
       const syncValue: Value = [
         {
           children: [{ text: 'Sync content' }],
-          type: 'p',
+          type: 'paragraph',
         },
       ];
 
-      const InitialValuePlugin = createPlatePlugin({
+      const InitialValuePlugin = definePlatePlugin('initialValue', {
         api: () => ({
           decode: () => syncValue,
         }),
-        name: 'initial-value',
       });
 
       const SyncEditor = () => {

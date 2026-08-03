@@ -17,14 +17,14 @@ Need a plugin or plugin refactor?
 +- Does the behavior matter without React?
 |  |
 |  +- yes -> `src/lib`
-|  |   +- `createBasePlugin`
+|  |   +- `defineBasePlugin`
 |  |   +- static renderer? -> terminal `BasePlugin.configure`
 |  |   +- real React job later? -> thin `toPlatePlugin` wrapper
 |  |   +- no React job? -> keep base-only
 |  |
 |  +- no -> `src/react`
 |      +- only groups complete plugins? -> app/registry kit array
-|      +- genuinely hook/DOM/component-native? -> `createPlatePlugin`
+|      +- genuinely hook/DOM/component-native? -> `definePlatePlugin`
 |
 +- For every proposed source file:
 |  |
@@ -50,8 +50,15 @@ Need a plugin or plugin refactor?
 
 ### Semantic base plugin
 
-Use `createBasePlugin` for document semantics, parsers, normalizers, injected
+Use `defineBasePlugin` for document semantics, parsers, normalizers, injected
 rules, update groups, and shared behavior contracts.
+
+The sole factory grammar is `defineBasePlugin(name, definition)` and
+`definePlatePlugin(name, definition)`. Use the flat `PLUGINS` catalog for
+first-party capability names. Element `type` and property `key` are separate
+persisted identities that default to `name` when omitted and are immutable
+after creation. Runtime AST work resolves the owning `.type`/`.key`; behavior
+plugins expose neither.
 
 Do not split those implementation kinds into their own files when the plugin is
 their only production owner.
@@ -71,7 +78,7 @@ The wrapper must stay thin. Do not copy or re-declare base behavior.
 
 ### Direct Plate plugin
 
-Use `createPlatePlugin` only when:
+Use `definePlatePlugin` only when:
 
 1. the plugin is fundamentally hook- or `useHooks`-driven;
 2. the behavior exists only at a DOM/editor surface;
@@ -86,7 +93,7 @@ Plate constructors expose genuine editor-wide Plite substrate through flat
 native fields such as `commands`, `corrections`, `contributions`, `on`, and
 `readMiddleware`. Never hide those fields in a nested `extension` object.
 
-Use `defineEditorExtension` from `@platejs/plite` only for an independently
+Use `defineExtension` from `@platejs/plite` only for an independently
 reusable standalone descriptor that composes as a dependency. If several Plate
 plugins need the same generic primitive, that is evidence for a Plite owner,
 not a shared Plate helper dump.
@@ -146,7 +153,7 @@ provider or store file only when it owns independent state or lifecycle.
 
 ### Test-family owner
 
-Keep one `<PluginName>.<family>.spec.tsx` for one behavior family. Separate slow
+Keep one `<FooPlugin>.<family>.spec.tsx` for one behavior family. Separate slow
 or integration proof only when measured runtime or an independent proof
 boundary justifies it.
 

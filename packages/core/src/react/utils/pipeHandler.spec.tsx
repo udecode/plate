@@ -1,7 +1,7 @@
 import type React from 'react';
 
 import { createPlateEditor } from '../editor';
-import { createPlatePlugin } from '../plugin';
+import { definePlatePlugin } from '../plugin';
 import { pipeHandler } from './pipeHandler';
 
 describe('pipeHandler', () => {
@@ -29,8 +29,7 @@ describe('pipeHandler', () => {
     const propHandler = mock();
     const editor = createPlateEditor({
       plugins: [
-        createPlatePlugin({
-          name: 'events',
+        definePlatePlugin('events', {
           on: { keyDown: pluginHandler },
         }),
       ],
@@ -54,8 +53,7 @@ describe('pipeHandler', () => {
     const keyDownCapture = mock();
     const editor = createPlateEditor({
       plugins: [
-        createPlatePlugin({
-          name: 'captureEvents',
+        definePlatePlugin('captureEvents', {
           on: { keyDown, keyDownCapture },
         }),
       ],
@@ -76,8 +74,7 @@ describe('pipeHandler', () => {
     const propHandler = mock();
     const editor = createPlateEditor({
       plugins: [
-        createPlatePlugin({
-          name: 'events',
+        definePlatePlugin('events', {
           on: { domBeforeInput },
         }),
       ],
@@ -101,13 +98,11 @@ describe('pipeHandler', () => {
     const enabled = mock();
     const editor = createPlateEditor({
       plugins: [
-        createPlatePlugin({
-          name: 'disabled',
+        definePlatePlugin('disabled', {
           editOnly: true,
           on: { keyDown: disabled },
         }),
-        createPlatePlugin({
-          name: 'enabled',
+        definePlatePlugin('enabled', {
           editOnly: { on: false },
           on: { keyDown: enabled },
         }),

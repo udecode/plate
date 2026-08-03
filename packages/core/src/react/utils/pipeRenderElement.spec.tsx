@@ -5,7 +5,7 @@ import React from 'react';
 import { property, schema, target } from '@platejs/plite';
 import { render } from '@testing-library/react';
 
-import { createBasePlugin } from '../../lib';
+import { BaseParagraphPlugin, defineBasePlugin } from '../../lib';
 import {
   attachPlateModelPublication,
   getPlateModelPublication,
@@ -18,7 +18,7 @@ import {
 import { PlateRoot } from '../components/PlateRoot';
 import type { PlateEditor } from '../editor/PlateEditor';
 import { createPlateEditor } from '../editor/withPlate';
-import { createPlatePlugin } from '../plugin/createPlatePlugin';
+import { ParagraphPlugin } from '../plugins/paragraph/ParagraphPlugin';
 import { useElement, useElementSelector, usePath } from '../stores';
 import { pipeRenderElement } from './pipeRenderElement';
 
@@ -27,19 +27,18 @@ const createValue = (id?: string) =>
     {
       ...(id ? { id } : {}),
       children: [{ text: 'Body' }],
-      type: 'p',
+      type: 'paragraph',
     },
   ] as any;
 
-const ListStylePropertyPlugin = createBasePlugin({
-  name: 'listStyleProperty',
-  schema: {
-    properties: [
-      schema.elementProperty('listStyleType', property.string(), {
-        target: target.type('p'),
+const ListStylePropertyPlugin = defineBasePlugin('listStyleProperty', {
+  schema: () => ({
+    properties: {
+      listStyleType: schema.elementProperty(property.string(), {
+        target: target.element(BaseParagraphPlugin),
       }),
-    ],
-  },
+    },
+  }),
 });
 
 const renderPipe = (editor: PlateEditor) => {
@@ -94,7 +93,7 @@ describe('pipeRenderElement', () => {
     const element = container.querySelector('[data-plite-node="element"]');
 
     expect(element).toBeInTheDocument();
-    expect(element).toHaveClass('plite-p');
+    expect(element).toHaveClass('plite-paragraph');
     expect(element?.tagName).toBe('DIV');
   });
 
@@ -149,7 +148,7 @@ describe('pipeRenderElement', () => {
         {
           children: [{ text: 'Body' }],
           id: 123,
-          type: 'p',
+          type: 'paragraph',
         },
       ] as any,
     } as any);
@@ -163,18 +162,11 @@ describe('pipeRenderElement', () => {
   it('keeps plugin render.as behavior', () => {
     const editor = createPlateEditor({
       plugins: [
-        createBasePlugin({
-          name: 'p',
-          type: 'p',
-          schema: {
-            element: {
-              content: schema.content.open({ default: 'text', min: 1 }),
-            },
-          },
+        ParagraphPlugin.extend(() => ({
           render: {
             as: 'article',
           },
-        }),
+        })),
       ],
       initialValue: createValue(),
     });
@@ -202,15 +194,8 @@ describe('pipeRenderElement', () => {
     };
     const editor = createPlateEditor({
       plugins: [
-        createPlatePlugin({
+        ParagraphPlugin.configure({
           component: CustomElement,
-          name: 'p',
-          type: 'p',
-          schema: {
-            element: {
-              content: schema.content.open({ default: 'text', min: 1 }),
-            },
-          },
         }),
       ],
       initialValue: createValue(),
@@ -226,9 +211,7 @@ describe('pipeRenderElement', () => {
   it('preserves Plite children for void render.as tags on the fast path', () => {
     const editor = createPlateEditor({
       plugins: [
-        createBasePlugin({
-          name: 'hr',
-          type: 'hr',
+        defineBasePlugin('horizontalRule', {
           schema: { element: { void: 'block' } },
           render: {
             as: 'hr',
@@ -238,7 +221,7 @@ describe('pipeRenderElement', () => {
       initialValue: [
         {
           children: [{ text: '' }],
-          type: 'hr',
+          type: 'horizontalRule',
         },
       ] as any,
     });
@@ -273,8 +256,7 @@ describe('pipeRenderElement', () => {
   it('keeps global aboveNodes wrappers', () => {
     const editor = createPlateEditor({
       plugins: [
-        createBasePlugin({
-          name: 'above',
+        defineBasePlugin('above', {
           render: {
             aboveNodes:
               () =>
@@ -295,20 +277,13 @@ describe('pipeRenderElement', () => {
   it('keeps plugin node.props behavior', () => {
     const editor = createPlateEditor({
       plugins: [
-        createBasePlugin({
-          name: 'p',
-          type: 'p',
-          schema: {
-            element: {
-              content: schema.content.open({ default: 'text', min: 1 }),
-            },
-          },
+        ParagraphPlugin.extend(() => ({
           render: {
             nodeProps: {
               'data-probe': 'yes',
             },
           },
-        }),
+        })),
       ],
       initialValue: createValue(),
     });
@@ -323,8 +298,7 @@ describe('pipeRenderElement', () => {
     const editor = createPlateEditor({
       navigationFeedback: false,
       plugins: [
-        createBasePlugin({
-          name: 'inactive-below',
+        defineBasePlugin('inactiveBelow', {
           render: {
             belowNodes: ({ element }: any) => {
               // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -350,9 +324,8 @@ describe('pipeRenderElement', () => {
       navigationFeedback: false,
       plugins: [
         ListStylePropertyPlugin,
-        createBasePlugin({
-          targetPluginNames: ['p'],
-          name: 'list',
+        defineBasePlugin('list', {
+          targetPlugins: [BaseParagraphPlugin],
           inject: {
             nodeProps: {
               nodeKey: 'listStyleType',
@@ -366,7 +339,7 @@ describe('pipeRenderElement', () => {
         {
           children: [{ text: 'Body' }],
           listStyleType: 'disc',
-          type: 'p',
+          type: 'paragraph',
         },
       ] as any,
     } as any);
@@ -381,9 +354,8 @@ describe('pipeRenderElement', () => {
     const editor = createPlateEditor({
       plugins: [
         ListStylePropertyPlugin,
-        createBasePlugin({
-          targetPluginNames: ['p'],
-          name: 'hook-inject',
+        defineBasePlugin('hookInject', {
+          targetPlugins: [BaseParagraphPlugin],
           inject: {
             nodeProps: {
               nodeKey: 'listStyleType',
@@ -408,7 +380,7 @@ describe('pipeRenderElement', () => {
         {
           children: [{ text: 'Body' }],
           listStyleType: 'disc',
-          type: 'p',
+          type: 'paragraph',
         },
       ] as any,
     });
@@ -417,16 +389,15 @@ describe('pipeRenderElement', () => {
     const element = container.querySelector('[data-plite-node="element"]');
 
     expect(element).toHaveAttribute('data-context-path', '0');
-    expect(element).toHaveAttribute('data-context-type', 'p');
+    expect(element).toHaveAttribute('data-context-type', 'paragraph');
   });
 
   it('keeps element store context for inject.nodeProps transform hooks', () => {
     const editor = createPlateEditor({
       plugins: [
         ListStylePropertyPlugin,
-        createBasePlugin({
-          targetPluginNames: ['p'],
-          name: 'selector-inject',
+        defineBasePlugin('selectorInject', {
+          targetPlugins: [BaseParagraphPlugin],
           inject: {
             nodeProps: {
               nodeKey: 'listStyleType',
@@ -448,7 +419,7 @@ describe('pipeRenderElement', () => {
         {
           children: [{ text: 'Body' }],
           listStyleType: 'disc',
-          type: 'p',
+          type: 'paragraph',
         },
       ] as any,
     });
@@ -456,16 +427,15 @@ describe('pipeRenderElement', () => {
     const { container } = renderPipe(editor);
     const element = container.querySelector('[data-plite-node="element"]');
 
-    expect(element).toHaveAttribute('data-selected-type', 'p');
+    expect(element).toHaveAttribute('data-selected-type', 'paragraph');
   });
 
   it('keeps pathless inject.nodeProps on the wrapped directional path', () => {
     const editor = createPlateEditor({
       plugins: [
         ListStylePropertyPlugin,
-        createBasePlugin({
-          targetPluginNames: ['p'],
-          name: 'list',
+        defineBasePlugin('list', {
+          targetPlugins: [BaseParagraphPlugin],
           inject: {
             nodeProps: {
               nodeKey: 'listStyleType',
@@ -482,26 +452,19 @@ describe('pipeRenderElement', () => {
             },
           },
         }),
-        createBasePlugin({
-          name: 'p',
-          type: 'p',
-          schema: {
-            element: {
-              content: schema.content.open({ default: 'text', min: 1 }),
-            },
-          },
+        ParagraphPlugin.extend(() => ({
           rules: {
             selection: {
               affinity: 'directional',
             },
           },
-        }),
+        })),
       ],
       initialValue: [
         {
           children: [{ text: 'Body' }],
           listStyleType: 'disc',
-          type: 'p',
+          type: 'paragraph',
         },
       ] as any,
     });
@@ -518,9 +481,8 @@ describe('pipeRenderElement', () => {
     const editor = createPlateEditor({
       plugins: [
         ListStylePropertyPlugin,
-        createBasePlugin({
-          targetPluginNames: ['p'],
-          name: 'list',
+        defineBasePlugin('list', {
+          targetPlugins: [BaseParagraphPlugin],
           inject: {
             nodeProps: {
               nodeKey: 'listStyleType',
@@ -537,14 +499,13 @@ describe('pipeRenderElement', () => {
             },
           },
         }),
-        createBasePlugin({
-          name: 'active-below',
+        defineBasePlugin('activeBelow', {
           render: {
             belowNodes: ({ element }: any) => {
               // eslint-disable-next-line react-hooks/rules-of-hooks
               const path = usePath();
 
-              return element.type === 'p'
+              return element.type === 'paragraph'
                 ? ({ children }: any) => (
                     <section
                       data-path={path.join(',')}
@@ -562,7 +523,7 @@ describe('pipeRenderElement', () => {
         {
           children: [{ text: 'Body' }],
           listStyleType: 'disc',
-          type: 'p',
+          type: 'paragraph',
         },
       ] as any,
     });
@@ -580,20 +541,13 @@ describe('pipeRenderElement', () => {
   it('keeps plugin selection affinity behavior on the plain fast path', () => {
     const editor = createPlateEditor({
       plugins: [
-        createBasePlugin({
-          name: 'p',
-          type: 'p',
-          schema: {
-            element: {
-              content: schema.content.open({ default: 'text', min: 1 }),
-            },
-          },
+        ParagraphPlugin.extend(() => ({
           rules: {
             selection: {
               affinity: 'directional',
             },
           },
-        }),
+        })),
       ],
       initialValue: createValue(),
     });
@@ -608,16 +562,9 @@ describe('pipeRenderElement', () => {
   it('keeps editOnly behavior on the plain fast path in read-only mode', () => {
     const editor = createPlateEditor({
       plugins: [
-        createBasePlugin({
-          name: 'p',
-          type: 'p',
-          schema: {
-            element: {
-              content: schema.content.open({ default: 'text', min: 1 }),
-            },
-          },
+        ParagraphPlugin.extend(() => ({
           editOnly: true,
-        }),
+        })),
       ],
       readOnly: true,
       initialValue: createValue(),

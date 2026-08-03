@@ -1,11 +1,10 @@
 import type { DefinitionOf } from '@platejs/core';
-import { createPlatePlugin, type RenderNodeWrapper } from '@platejs/core/react';
+import { definePlatePlugin, type RenderNodeWrapper } from '@platejs/core/react';
 
-const WrapperBoundaryPlugin = createPlatePlugin({
+const WrapperBoundaryPlugin = definePlatePlugin('wrapperBoundary', {
   api: () => ({
     value: () => 'exact' as const,
   }),
-  name: 'wrapperBoundary',
 });
 
 const broadWrapper: RenderNodeWrapper =
@@ -34,9 +33,7 @@ const exactWrapper: RenderNodeWrapper<
   return;
 };
 
-const UnrelatedWrapperPlugin = createPlatePlugin({
-  name: 'unrelatedWrapper',
-});
+const UnrelatedWrapperPlugin = definePlatePlugin('unrelatedWrapper', {});
 
 UnrelatedWrapperPlugin.configure({
   render: {

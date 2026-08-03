@@ -35,14 +35,12 @@ export function PlateRoot({
     </Plite>
   );
 
-  getPlateRuntime(editor).pluginCache.render.abovePlite.forEach(
-    (pluginName) => {
-      const plugin = getCompiledPlatePlugin(editor, pluginName)!;
-      const AbovePlite = plugin.render.abovePlite!;
+  getPlateRuntime(editor).pluginCache.render.abovePlite.forEach((name) => {
+    const plugin = getCompiledPlatePlugin(editor, name)!;
+    const AbovePlite = plugin.render.abovePlite!;
 
-      abovePlite = <AbovePlite>{abovePlite}</AbovePlite>;
-    }
-  );
+    abovePlite = <AbovePlite>{abovePlite}</AbovePlite>;
+  });
 
   return abovePlite;
 }

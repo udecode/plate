@@ -1,7 +1,7 @@
-import { createBasePlugin, type DefinitionOf } from '@platejs/core';
+import { defineBasePlugin, type DefinitionOf } from '@platejs/core';
 import { ElementApi, type Path } from '@platejs/plite';
 
-import { KEYS } from '../plate-keys';
+import { PLUGINS } from '../plate-keys';
 
 export type NormalizeTypesRule = {
   /** Path where the rule applies */
@@ -27,8 +27,7 @@ const initialState: NormalizeTypesPluginState = {
   rules: [],
 };
 
-export const NormalizeTypesPlugin = createBasePlugin({
-  name: KEYS.normalizeTypes,
+export const NormalizeTypesPlugin = defineBasePlugin(PLUGINS.normalizeTypes, {
   initialState,
   corrections: [
     {

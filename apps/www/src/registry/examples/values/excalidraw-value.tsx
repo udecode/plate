@@ -4,27 +4,35 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-import type { TExcalidrawElement } from '@platejs/excalidraw';
-import type { NodeProps } from 'platejs';
+import type { ExcalidrawElement } from '@platejs/excalidraw';
 
-export const excalidrawInitialData: NodeProps<TExcalidrawElement> = {
+export const excalidrawInitialData: Partial<
+  Pick<ExcalidrawElement, 'data' | 'width'>
+> = {
   data: {
     elements: [
       {
         id: 'oDVXy8D6rom3H1-LLH2-f',
         angle: 0,
         backgroundColor: 'transparent',
+        boundElements: null,
         fillStyle: 'hachure',
+        frameId: null,
         groupIds: [],
         height: 141.976_562_5,
         isDeleted: false,
+        index: null,
+        link: null,
+        locked: false,
         opacity: 100,
+        roundness: null,
         roughness: 1,
         seed: 1_968_410_350,
         strokeColor: '#000000',
         strokeStyle: 'solid',
         strokeWidth: 1,
         type: 'rectangle',
+        updated: 1,
         version: 141,
         versionNonce: 361_174_001,
         width: 186.472_656_25,
@@ -35,17 +43,24 @@ export const excalidrawInitialData: NodeProps<TExcalidrawElement> = {
         id: '-xMIs_0jIFqvpx-R9UnaG',
         angle: 0,
         backgroundColor: 'transparent',
+        boundElements: null,
         fillStyle: 'hachure',
+        frameId: null,
         groupIds: [],
         height: 129.511_718_75,
         isDeleted: false,
+        index: null,
+        link: null,
+        locked: false,
         opacity: 100,
+        roundness: null,
         roughness: 1,
         seed: 957_947_807,
         strokeColor: '#000000',
         strokeStyle: 'solid',
         strokeWidth: 1,
         type: 'ellipse',
+        updated: 1,
         version: 47,
         versionNonce: 1_128_618_623,
         width: 198.218_75,

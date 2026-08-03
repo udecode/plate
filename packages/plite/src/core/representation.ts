@@ -25,7 +25,7 @@ import {
   ContentSlice as ContentSliceValue,
   getContentSliceCanonicalAuthority,
 } from './content-slice';
-import type { Editor } from '../interfaces/editor';
+import type { AnyEditor as Editor } from '../interfaces/editor';
 import { inheritRuntimeId } from '../utils/runtime-ids';
 import { getEditorSchema } from './editor-runtime';
 import { profileCoreDuration } from './profiling';

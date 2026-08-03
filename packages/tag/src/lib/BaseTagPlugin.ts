@@ -1,4 +1,4 @@
-import { createBasePlugin } from '@platejs/core';
+import { defineBasePlugin } from '@platejs/core';
 import {
   type NodeInsertNodesOptions,
   type Text,
@@ -7,8 +7,7 @@ import {
 import type { TTagElement, TTagProps } from '@platejs/utils';
 import { KEYS } from '@platejs/utils';
 
-export const BaseTagPlugin = createBasePlugin({
-  name: KEYS.tag,
+export const BaseTagPlugin = defineBasePlugin(KEYS.tag, {
   read: ({ state, type }) => ({
     getSelectedItems: () =>
       Array.from(

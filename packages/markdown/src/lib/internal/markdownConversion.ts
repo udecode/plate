@@ -3,13 +3,12 @@ import remarkParse from 'remark-parse';
 import remarkStringify from 'remark-stringify';
 import { type Plugin, unified } from 'unified';
 
-import type {
-  AnyBasePluginDefinition,
-  BaseEditor,
-  MarkdownPluginRegistry,
-  NormalizePluginState,
-} from '@platejs/core';
-import { getCompiledPlatePluginName } from '@platejs/core/internal';
+import type { BaseEditor, MarkdownPluginRegistry } from '@platejs/core';
+import {
+  type AnyBasePluginDefinition,
+  getCompiledPlatePluginByType,
+  type NormalizePluginState,
+} from '@platejs/core/internal';
 import {
   type Descendant,
   type EditorCoreStateView,
@@ -88,14 +87,18 @@ export const createMarkdownRuntime = <
     codecs: compileMarkdownCodecs(editor),
     options: Object.freeze(options),
     registry: Object.freeze({
-      getName: (type: string) => getCompiledPlatePluginName(editor, type),
-      getType: (pluginName: string) => {
-        const plugin = editor.plugin(pluginName);
+      getName: (type) => getCompiledPlatePluginByType(editor, type)?.name,
+      getType: (plugin) => {
+        const portal = editor.plugin(plugin);
 
-        return plugin.installed ? plugin.type : pluginName;
+        return portal.installed
+          ? portal.type
+          : typeof plugin === 'string'
+            ? plugin
+            : plugin.name;
       },
-      has: (pluginName: string) => editor.plugin(pluginName).installed,
-    }),
+      has: (plugin) => editor.plugin(plugin).installed,
+    } satisfies MarkdownPluginRegistry),
     state,
   });
 

@@ -36,11 +36,11 @@ describe('mdastToSlate', () => {
     ).toEqual([
       {
         children: [{ text: 'first' }],
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'second' }],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
   });

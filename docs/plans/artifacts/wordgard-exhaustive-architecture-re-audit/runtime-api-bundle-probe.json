@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-01T15:42:30.378Z",
+  "method": "Rolldown source-entry ESM bundle exporting one method selected from the current frozen runtime API object; unminified output bytes.",
+  "plateHead": "2938677d265c6fb385f68b5ceefe10ee30243eec",
+  "rolldown": "rolldown@1.2.0",
+  "results": [
+    {
+      "bytes": 730292,
+      "id": "NodeApi.string",
+      "source": "packages/plite/src/interfaces/node.ts",
+      "sourceBytes": 28691
+    },
+    {
+      "bytes": 730292,
+      "id": "NodeApi.isText",
+      "source": "packages/plite/src/interfaces/node.ts",
+      "sourceBytes": 28691
+    },
+    {
+      "bytes": 4067,
+      "id": "PathApi.equals",
+      "source": "packages/plite/src/interfaces/path.ts",
+      "sourceBytes": 8596
+    },
+    {
+      "bytes": 5482,
+      "id": "PointApi.equals",
+      "source": "packages/plite/src/interfaces/point.ts",
+      "sourceBytes": 2769
+    },
+    {
+      "bytes": 12160,
+      "id": "TextApi.isText",
+      "source": "packages/plite/src/interfaces/text.ts",
+      "sourceBytes": 7768
+    }
+  ]
+}

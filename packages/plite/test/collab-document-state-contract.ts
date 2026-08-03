@@ -9,6 +9,7 @@ import { history } from '@platejs/plite-history';
 
 import {
   createEditor,
+  defineExtension,
   type Element,
   defineStateField,
   type EditorUpdatePolicy,
@@ -36,9 +37,13 @@ const privateNote = defineStateField({
   persist: valueCodecs.string,
 });
 
+const documentStateExtension = defineExtension('document-state', {
+  stateFields: [documentTitle, privateNote],
+});
+
 const createDocumentStateEditor = () =>
   createEditor({
-    extensions: [history(), documentTitle, privateNote] as const,
+    extensions: [history(), documentStateExtension] as const,
     initialValue: {
       children: [paragraph('body')],
       meta: {

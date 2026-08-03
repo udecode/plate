@@ -3,18 +3,19 @@ import { render } from '@testing-library/react';
 import type { Value } from 'platejs';
 import {
   createPlateEditor,
-  createPlatePlugin,
+  definePlatePlugin,
   usePlateEditor,
 } from 'platejs/react';
 
 describe('usePlateEditor Plite runtime route', () => {
   it('exposes inferred plugin tx groups from public app imports', () => {
-    const value: Value = [{ children: [{ text: 'runtime' }], type: 'p' }];
-    const nextValue: Value = [
-      { children: [{ text: 'runtime hook' }], type: 'p' },
+    const value: Value = [
+      { children: [{ text: 'runtime' }], type: 'paragraph' },
     ];
-    const TxPlugin = createPlatePlugin({
-      name: 'txPlugin',
+    const nextValue: Value = [
+      { children: [{ text: 'runtime hook' }], type: 'paragraph' },
+    ];
+    const TxPlugin = definePlatePlugin('txPlugin', {
       update: ({ tx }) => ({
         replace: () => tx.value.replace({ children: nextValue }),
       }),
@@ -56,12 +57,13 @@ describe('usePlateEditor Plite runtime route', () => {
   });
 
   it('exposes inferred plugin tx groups from public factory imports', () => {
-    const value: Value = [{ children: [{ text: 'runtime' }], type: 'p' }];
-    const nextValue: Value = [
-      { children: [{ text: 'runtime factory' }], type: 'p' },
+    const value: Value = [
+      { children: [{ text: 'runtime' }], type: 'paragraph' },
     ];
-    const TxPlugin = createPlatePlugin({
-      name: 'txPlugin',
+    const nextValue: Value = [
+      { children: [{ text: 'runtime factory' }], type: 'paragraph' },
+    ];
+    const TxPlugin = definePlatePlugin('txPlugin', {
       update: ({ tx }) => ({
         replace: () => tx.value.replace({ children: nextValue }),
       }),

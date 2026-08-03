@@ -1,4 +1,4 @@
-import { defineEditorExtension, editorCommands } from '@platejs/plite';
+import { defineExtension, editorCommands } from '@platejs/plite';
 import { replace as editorReplace } from '@platejs/plite/internal';
 import {
   applyEditableCommand,
@@ -12,7 +12,7 @@ const createCommandProbeEditor = () => {
   const seen: string[] = [];
   const editor = createReactEditor({
     extensions: [
-      defineEditorExtension({
+      defineExtension('react-host-command-probe', {
         commands: ({ handle }) => [
           handle(editorCommands.delete, ({ input, state }) => {
             seen.push(
@@ -53,7 +53,6 @@ const createCommandProbeEditor = () => {
             return false;
           }),
         ],
-        name: 'react-host-command-probe',
       }),
     ],
   });

@@ -1,10 +1,10 @@
-import { createPlatePlugin, usePluginStore } from '@platejs/core/react';
+import { definePlatePlugin, usePluginStore } from '@platejs/core/react';
 
 import { AIChatPlugin } from './AIChatPlugin';
 
 const Component = () => null;
 
-const AIChatKitPlugin = createPlatePlugin({
+const AIChatKitPlugin = definePlatePlugin('typedAIChatKit', {
   dependencies: [AIChatPlugin],
   initialState: {
     chatOptions: {
@@ -12,7 +12,6 @@ const AIChatKitPlugin = createPlatePlugin({
       body: {},
     },
   },
-  name: 'typedAIChatKit',
   useHooks: ({ editor }) => {
     const { api, read, store, update } = editor.plugin(AIChatPlugin);
 

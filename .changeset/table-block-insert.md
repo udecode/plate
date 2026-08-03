@@ -38,8 +38,25 @@ Replace persisted `attributes.colspan` and `attributes.rowspan` with `colSpan`
 and `rowSpan`. HTML import and rendering continue to use lowercase DOM
 attributes.
 
-Install table row, cell, and header descriptors through required plugin
-dependencies.
+Install table row and cell descriptors through required plugin dependencies.
+Persist every data or header cell as `tableCell`; set `header: true` for cells
+that render as `<th>`. `BaseTableCellHeaderPlugin`, `TableCellHeaderPlugin`,
+`TableCellHeaderElement`, and `TableCellHeaderElementStatic` are not part of
+the table surface.
+
+Install `TableV54MigrationPlugin` temporarily when loading documents that
+persisted header cells under the legacy `tableCellHeader` type:
+
+```tsx
+import { TableV54MigrationPlugin } from '@platejs/table/migrations';
+
+const editor = createPlateEditor({
+  plugins: [TableV54MigrationPlugin, TablePlugin],
+  initialValue,
+});
+```
+
+Save the converted document, then remove the migration plugin.
 
 Use exact clipboard slices through `readSlice` and `writeSlice`, preserve
 projected row and cell children when exporting table selections through

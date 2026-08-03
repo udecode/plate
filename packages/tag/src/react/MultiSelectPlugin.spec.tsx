@@ -1,6 +1,7 @@
 import { NodeIdPlugin } from '@platejs/core';
 import { createPlateEditor } from '@platejs/core/react';
-import { KEYS } from '@platejs/utils';
+import { TextApi } from '@platejs/plite';
+import type { TagElement } from '../lib';
 
 import { MultiSelectPlugin } from './MultiSelectPlugin';
 
@@ -18,23 +19,25 @@ describe('MultiSelectPlugin', () => {
           children: [
             {
               children: [{ text: '' }],
-              type: KEYS.tag,
+              type: 'tag',
               value: 'Editor',
             },
             { text: 'sel' },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
+    const { type } = editor.plugin(MultiSelectPlugin).schema.element;
 
     editor.plugin(MultiSelectPlugin).update.insert({ value: 'Select Editor' });
-
     expect(
-      editor.read
-        .children()[0]
-        .children.filter((node) => node.type === KEYS.tag)
-        .map((node) => node.value)
+      Array.from(
+        editor.read.nodes.entries<TagElement>({
+          at: [],
+          match: { type },
+        })
+      ).map(([node]) => node.value)
     ).toEqual(['Editor', 'Select Editor']);
   });
 
@@ -51,29 +54,31 @@ describe('MultiSelectPlugin', () => {
           children: [
             {
               children: [{ text: '' }],
-              type: KEYS.tag,
+              type: 'tag',
               value: 'alpha',
             },
             { text: '' },
             {
               children: [{ text: '' }],
-              type: KEYS.tag,
+              type: 'tag',
               value: 'beta',
             },
             { text: '' },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
+    const { type } = editor.plugin(MultiSelectPlugin).schema.element;
 
     editor.update.text.deleteBackward({ unit: 'character' });
-
     expect(
-      editor.read
-        .children()[0]
-        .children.filter((node) => node.type === KEYS.tag)
-        .map((node) => node.value)
+      Array.from(
+        editor.read.nodes.entries<TagElement>({
+          at: [],
+          match: { type },
+        })
+      ).map(([node]) => node.value)
     ).toEqual(['alpha']);
     expect(editor.read.selection()).toEqual({
       kind: 'text',
@@ -89,26 +94,32 @@ describe('MultiSelectPlugin', () => {
         {
           children: [
             { text: 'query' },
-            { children: [{ text: '' }], type: KEYS.tag, value: 'alpha' },
+            { children: [{ text: '' }], type: 'tag', value: 'alpha' },
             { text: '' },
-            { children: [{ text: '' }], type: KEYS.tag, value: 'alpha' },
+            { children: [{ text: '' }], type: 'tag', value: 'alpha' },
             { text: '' },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
+    const { type } = editor.plugin(MultiSelectPlugin).schema.element;
 
     editor.update.value.repair();
 
     const children = editor.read.children()[0].children;
-    const tags = children.filter((node) => node.type === KEYS.tag);
+    const tags = Array.from(
+      editor.read.nodes.entries<TagElement>({
+        at: [],
+        match: { type },
+      })
+    ).map(([node]) => node);
     const nonEmptyTexts = children.filter(
-      (node) => typeof node.text === 'string' && node.text.length > 0
+      (node) => TextApi.isText(node) && node.text.length > 0
     );
 
     expect(tags).toHaveLength(1);
-    expect(tags[0]).toMatchObject({ type: KEYS.tag, value: 'alpha' });
+    expect(tags[0]).toMatchObject({ type: 'tag', value: 'alpha' });
     expect(nonEmptyTexts).toEqual([]);
   });
 
@@ -123,11 +134,11 @@ describe('MultiSelectPlugin', () => {
       initialValue: [
         {
           children: [{ text: '  query' }],
-          type: 'p',
+          type: 'paragraph',
         },
         {
           children: [{ text: ' stale' }],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
@@ -140,8 +151,8 @@ describe('MultiSelectPlugin', () => {
     editor.update.value.repair();
 
     expect(editor.read.children()).toEqual([
-      { children: [{ text: 'query!' }], type: 'p' },
-      { children: [{ text: '' }], type: 'p' },
+      { children: [{ text: 'query!' }], type: 'paragraph' },
+      { children: [{ text: '' }], type: 'paragraph' },
     ]);
   });
 });

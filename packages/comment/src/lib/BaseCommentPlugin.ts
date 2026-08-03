@@ -1,4 +1,4 @@
-import { type DefinitionOf, createBasePlugin } from '@platejs/core';
+import { type DefinitionOf, defineBasePlugin } from '@platejs/core';
 import type { EditorNodesOptions, NodeSetNodesOptions } from '@platejs/plite';
 import { property, schema, target, TextApi } from '@platejs/plite';
 import { KEYS, type TCommentText } from '@platejs/utils';
@@ -15,8 +15,7 @@ import {
   isCommentText,
 } from './commentMarks';
 
-export const BaseCommentPlugin = createBasePlugin({
-  name: KEYS.comment,
+export const BaseCommentPlugin = defineBasePlugin(KEYS.comment, {
   api: () => ({
     nodeId: (leaf: TCommentText) => {
       const keys = Object.keys(leaf);

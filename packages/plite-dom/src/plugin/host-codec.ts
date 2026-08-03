@@ -1,16 +1,16 @@
 import type {
-  BaseEditor,
   ContentSlice,
   DescendantIn,
   EditorCoreStateView,
   EditorMarks,
   Element,
+  Editor,
   SchemaProperty,
   Value,
 } from '@platejs/plite';
 import {
   ContentSlice as ContentSliceApi,
-  defineEditorExtension,
+  defineExtension,
   defineExtensionPoint,
   editorCommands,
   type EditorExtension,
@@ -42,7 +42,7 @@ const NEWLINE_SPLIT_RE = /\r\n|\r|\n/;
 export type HostCodecPhase = 'parse' | 'query' | 'serialize';
 
 const reportHostCodecError = <V extends Value>(
-  editor: BaseEditor<V, any>,
+  editor: Editor<V, any>,
   registration: HostCodecRegistration<V>,
   phase: HostCodecPhase,
   cause: unknown
@@ -51,7 +51,7 @@ const reportHostCodecError = <V extends Value>(
     Object.freeze({
       cause,
       editor,
-      extension: registration.owner,
+      extensionName: registration.owner,
       format: registration.codec.format,
       key: registration.codec.key,
       phase,
@@ -554,8 +554,7 @@ export const hostCodecs = <const TName extends string, V extends Value = Value>(
     )
   );
 
-  return defineEditorExtension({
-    name,
+  return defineExtension(name, {
     contributions: registrations.map((registration) =>
       HOST_CODECS.of(registration)
     ),
@@ -577,7 +576,7 @@ export const hostCodecs = <const TName extends string, V extends Value = Value>(
 // after looking it up through that same registry.
 const COMPILED_HOST_CODECS = new WeakMap<object, readonly unknown[]>();
 
-const getHostCodecs = <V extends Value>(editor: BaseEditor<V, any>) => {
+const getHostCodecs = <V extends Value>(editor: Editor<V, any>) => {
   const registry = getExtensionRegistry(editor);
   const cached = COMPILED_HOST_CODECS.get(registry);
 
@@ -636,7 +635,7 @@ const readHostData = (source: HostDataSource, format: string) => {
 };
 
 const readHostCodecState = <V extends Value, TResult>(
-  editor: BaseEditor<V, any>,
+  editor: Editor<V, any>,
   read: (state: EditorCoreStateView<V>) => TResult
 ) => {
   const transaction = getActiveEditorTransaction(editor);
@@ -645,7 +644,7 @@ const readHostCodecState = <V extends Value, TResult>(
 };
 
 export const insertHostData = <V extends Value>(
-  editor: BaseEditor<V, any>,
+  editor: Editor<V, any>,
   dataTransfer: DataTransfer,
   options?: Readonly<{ format?: string }>
 ) => {
@@ -717,7 +716,7 @@ export const insertHostData = <V extends Value>(
 
 /** Serialize a model fragment through configuration-ordered codecs. */
 export const writeHostFragmentData = <V extends Value>(
-  editor: BaseEditor<V, any>,
+  editor: Editor<V, any>,
   data: Pick<DataTransfer, 'setData'>,
   slice: ContentSlice<V>
 ) => {

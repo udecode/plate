@@ -1529,6 +1529,7 @@ export const createDOMGeometryKernel = ({
   };
 
   return {
+    associationForPoint,
     coordinatePlacement,
     measureTextVisualLineOffset,
     pointAtCoordinates,

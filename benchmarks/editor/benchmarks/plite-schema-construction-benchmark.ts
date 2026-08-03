@@ -1,6 +1,6 @@
 import {
   createEditor,
-  defineEditorExtension,
+  defineExtension,
   ElementApi,
   property,
   schema,
@@ -26,8 +26,7 @@ if (!Number.isInteger(iterations) || iterations < 1) {
 const percentile = (values: readonly number[], ratio: number) =>
   values[Math.min(values.length - 1, Math.ceil(values.length * ratio) - 1)]!;
 
-const schemaExtension = defineEditorExtension({
-  name: 'schema-construction-benchmark',
+const schemaExtension = defineExtension('schema-construction-benchmark', {
   schema: {
     elements: {
       paragraph: {
@@ -46,12 +45,10 @@ const schemaExtension = defineEditorExtension({
         target: target.group('block'),
       }),
     ],
-    root: {
-      content: schema.content.group('block', {
-        default: { type: 'paragraph' },
-        min: 1,
-      }),
-    },
+    root: schema.content.group('block', {
+      default: { type: 'paragraph' },
+      min: 1,
+    }),
     unknown: 'reject',
     version: 1,
   },

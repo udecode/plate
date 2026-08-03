@@ -19,22 +19,21 @@ import {
   BaseStrikethroughPlugin,
   BaseUnderlinePlugin,
 } from '@platejs/basic-nodes';
-import type { BasePlugins } from '@platejs/core';
+import type { BasePluginInput } from '@platejs/core';
 import {
   BaseParagraphPlugin,
   createBaseEditor,
-  createBasePlugin,
+  defineBasePlugin,
 } from '@platejs/core';
 import { property, schema } from '@platejs/plite';
 import { jsx, type TestEditor } from '@platejs/test-utils';
-import { KEYS } from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 
 import { DocxIOPlugin } from './DocxIOPlugin';
 
 void jsx;
 
-const TestLinkPlugin = createBasePlugin({
-  name: 'link',
+const TestLinkPlugin = defineBasePlugin('link', {
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
@@ -45,7 +44,6 @@ const TestLinkPlugin = createBasePlugin({
       },
     },
   },
-  type: KEYS.link,
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       'text/html': {
@@ -65,20 +63,12 @@ const TestLinkPlugin = createBasePlugin({
     }),
 });
 
-const TestTableRowPlugin = createBasePlugin({
-  name: KEYS.tr,
-  schema: ({ plugins }) => {
-    const cellType = plugins.elementType(TestTableCellPlugin);
-
-    return {
-      element: {
-        content: schema.content.type(cellType, {
-          default: { type: cellType },
-          min: 1,
-        }),
-      },
-    };
-  },
+const TestTableRowPlugin = defineBasePlugin(PLUGINS.tableRow, {
+  schema: () => ({
+    element: {
+      content: schema.content.element(TestTableCellPlugin, { min: 1 }),
+    },
+  }),
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       'text/html': {
@@ -89,12 +79,11 @@ const TestTableRowPlugin = createBasePlugin({
     }),
 });
 
-const TestTableCellPlugin = createBasePlugin({
-  name: KEYS.td,
+const TestTableCellPlugin = defineBasePlugin(PLUGINS.tableCell, {
   schema: ({ plugins }) => ({
     element: {
       content: plugins.blockContent({
-        default: { type: plugins.elementType(BaseParagraphPlugin) },
+        default: BaseParagraphPlugin,
         min: 1,
       }),
     },
@@ -109,20 +98,12 @@ const TestTableCellPlugin = createBasePlugin({
     }),
 });
 
-const TestTablePlugin = createBasePlugin({
-  name: KEYS.table,
+const TestTablePlugin = defineBasePlugin(PLUGINS.table, {
   dependencies: [TestTableRowPlugin, TestTableCellPlugin],
-  schema: ({ plugins }) => {
-    const rowType = plugins.elementType(TestTableRowPlugin);
-
-    return {
-      element: {
-        content: schema.content.type(rowType, {
-          default: { type: rowType },
-          min: 1,
-        }),
-      },
-    };
+  schema: {
+    element: {
+      content: schema.content.element(TestTableRowPlugin, { min: 1 }),
+    },
   },
   codecs: ({ defineCodecs }) =>
     defineCodecs({
@@ -151,7 +132,7 @@ const testDocxImporter = ({
 }: {
   expected: TestEditor;
   filename: string;
-  plugins?: BasePlugins;
+  plugins?: readonly BasePluginInput[];
 }) => {
   it('import', async () => {
     const editor = createBaseEditor({

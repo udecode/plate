@@ -641,4 +641,3 @@ const manifest = {
 };
 
 fs.writeFileSync(outputPath, `${JSON.stringify(manifest, null, 2)}\n`);
-console.log(JSON.stringify(summary));

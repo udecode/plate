@@ -41,37 +41,33 @@ export const PlateContainer = ({
     </div>
   );
 
-  getPlateRuntime(editor).pluginCache.render.beforeContainer.forEach(
-    (pluginName) => {
-      const plugin = getCompiledPlatePlugin(editor, pluginName)!;
-      if (isEditOnly(readOnly, plugin, 'render')) return;
+  getPlateRuntime(editor).pluginCache.render.beforeContainer.forEach((name) => {
+    const plugin = getCompiledPlatePlugin(editor, name)!;
+    if (isEditOnly(readOnly, plugin, 'render')) return;
 
-      const BeforeContainer = plugin.render.beforeContainer!;
+    const BeforeContainer = plugin.render.beforeContainer!;
 
-      beforeContainer = (
-        <>
-          {beforeContainer}
-          <BeforeContainer {...props} />
-        </>
-      );
-    }
-  );
+    beforeContainer = (
+      <>
+        {beforeContainer}
+        <BeforeContainer {...props} />
+      </>
+    );
+  });
 
-  getPlateRuntime(editor).pluginCache.render.afterContainer.forEach(
-    (pluginName) => {
-      const plugin = getCompiledPlatePlugin(editor, pluginName)!;
-      if (isEditOnly(readOnly, plugin, 'render')) return;
+  getPlateRuntime(editor).pluginCache.render.afterContainer.forEach((name) => {
+    const plugin = getCompiledPlatePlugin(editor, name)!;
+    if (isEditOnly(readOnly, plugin, 'render')) return;
 
-      const AfterContainer = plugin.render.afterContainer!;
+    const AfterContainer = plugin.render.afterContainer!;
 
-      afterContainer = (
-        <>
-          {afterContainer}
-          <AfterContainer {...props} />
-        </>
-      );
-    }
-  );
+    afterContainer = (
+      <>
+        {afterContainer}
+        <AfterContainer {...props} />
+      </>
+    );
+  });
 
   return (
     <>

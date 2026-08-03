@@ -18,36 +18,25 @@ type PublicPackageModules = [
 
 type PublicPackageNamedExports = [
   typeof import('@platejs/plite').createEditor,
-  typeof import('@platejs/plite').createEditorRuntime,
+  typeof import('@platejs/plite').createEditorView,
   typeof import('@platejs/plite').ContentSlice,
   typeof import('@platejs/plite').defineEditorSchema,
+  typeof import('@platejs/plite').defineExtension,
+  typeof import('@platejs/plite').ElementApi,
+  typeof import('@platejs/plite').LocationApi,
+  typeof import('@platejs/plite').NodeApi,
+  typeof import('@platejs/plite').PathApi,
+  typeof import('@platejs/plite').PointApi,
   typeof import('@platejs/plite').property,
+  typeof import('@platejs/plite').RangeApi,
   typeof import('@platejs/plite').schema,
+  typeof import('@platejs/plite').SelectionApi,
+  typeof import('@platejs/plite').SpanApi,
   typeof import('@platejs/plite').target,
-  typeof import('@platejs/plite').above,
-  typeof import('@platejs/plite').after,
-  typeof import('@platejs/plite').before,
+  typeof import('@platejs/plite').TextApi,
   import('@platejs/plite').EditorCommit,
-  typeof import('@platejs/plite').edges,
-  typeof import('@platejs/plite').first,
-  typeof import('@platejs/plite').fragment,
-  typeof import('@platejs/plite').isBlock,
-  typeof import('@platejs/plite').isEdge,
   typeof import('@platejs/plite').isEditor,
-  typeof import('@platejs/plite').isEmpty,
-  typeof import('@platejs/plite').isEnd,
-  typeof import('@platejs/plite').isInline,
-  typeof import('@platejs/plite').isSelectable,
-  typeof import('@platejs/plite').isStart,
-  typeof import('@platejs/plite').isVoid,
-  typeof import('@platejs/plite').last,
-  typeof import('@platejs/plite').next,
-  typeof import('@platejs/plite').parent,
-  typeof import('@platejs/plite').previous,
-  typeof import('@platejs/plite').range,
-  typeof import('@platejs/plite').string,
-  typeof import('@platejs/plite').unhangRange,
-  typeof import('@platejs/yjs').createYjsExtension,
+  typeof import('@platejs/yjs').yjs,
   typeof import('@platejs/yjs').BaseYjsPlugin,
   typeof import('@platejs/yjs/core').createYjsAwarenessSelection,
   typeof import('@platejs/yjs/react').useYjsRemoteCursors,
@@ -320,7 +309,7 @@ declare const documentChange: import('@platejs/plite').DocumentChange;
 declare const createEditorView: typeof import('@platejs/plite').createEditorView;
 declare const commit: import('@platejs/plite').EditorCommit;
 declare const facet: import('@platejs/plite').EditorFacet<number>;
-declare const runtime: import('@platejs/plite').EditorRuntime;
+declare const runtime: import('@platejs/plite').Editor;
 declare const slice: import('@platejs/plite').ContentSlice;
 declare const publicParent: import('@platejs/plite').Element;
 declare const transaction: import('@platejs/plite').EditorUpdateTransaction;

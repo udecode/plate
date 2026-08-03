@@ -45,7 +45,7 @@ test('compiles Plate element and mark descriptors into HTML parsing, rendering, 
             },
           ],
           id: expect.any(String),
-          type: 'p',
+          type: 'paragraph',
         },
       ]);
     await expect(page.getByTestId('plate-schema-descriptor-policy')).toHaveText(
@@ -145,13 +145,13 @@ test('projects rich Plate descriptors to standalone HTML while the fragment enve
       );
       const listItem = nodes.find((node) => node.listStyleType === 'disc');
       const table = byType('table');
-      const row = byType('tr');
-      const cell = byType('td');
-      const codeBlock = byType('code_block');
-      const codeLines = nodes.filter((node) => node.type === 'code_line');
-      const link = byType('a');
-      const image = byType('img');
-      const media = byType('media_embed');
+      const row = byType('tableRow');
+      const cell = byType('tableCell');
+      const codeBlock = byType('codeBlock');
+      const codeLines = nodes.filter((node) => node.type === 'codeLine');
+      const link = byType('link');
+      const image = byType('image');
+      const media = byType('mediaEmbed');
 
       return {
         code: {
@@ -357,8 +357,8 @@ test('preserves exact product codec slices across priority, fallback, errors, co
       .getByRole('button', { name: 'Import block codec slice' })
       .click();
     await expect.poll(readDocumentWithoutGeneratedIds).toEqual([
-      { children: [{ text: 'initial:block-a' }], type: 'p' },
-      { children: [{ text: 'initial:block-b' }], type: 'p' },
+      { children: [{ text: 'initial:block-a' }], type: 'paragraph' },
+      { children: [{ text: 'initial:block-b' }], type: 'paragraph' },
     ]);
 
     await page.getByRole('button', { name: 'Reset code codec target' }).click();
@@ -399,8 +399,8 @@ test('preserves exact product codec slices across priority, fallback, errors, co
       .getByRole('button', { name: 'Import block codec slice' })
       .click();
     await expect.poll(readDocumentWithoutGeneratedIds).toEqual([
-      { children: [{ text: 'replacement:block-a' }], type: 'p' },
-      { children: [{ text: 'replacement:block-b' }], type: 'p' },
+      { children: [{ text: 'replacement:block-a' }], type: 'paragraph' },
+      { children: [{ text: 'replacement:block-b' }], type: 'paragraph' },
     ]);
 
     await page
@@ -416,13 +416,13 @@ test('preserves exact product codec slices across priority, fallback, errors, co
       .toEqual({
         label: 'replacement',
         slice: {
-          content: [{ children: [{ text: 'main' }], type: 'p' }],
+          content: [{ children: [{ text: 'main' }], type: 'paragraph' }],
           openEnd: 0,
           openStart: 0,
           roots: {
-            notes: [{ children: [{ text: 'named' }], type: 'p' }],
+            notes: [{ children: [{ text: 'named' }], type: 'paragraph' }],
             'projected:body': [
-              { children: [{ text: 'projected' }], type: 'p' },
+              { children: [{ text: 'projected' }], type: 'paragraph' },
             ],
           },
         },

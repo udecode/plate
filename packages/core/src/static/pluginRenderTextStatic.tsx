@@ -2,13 +2,15 @@ import React from 'react';
 
 import clsx from 'clsx';
 
+import type { BaseEditor } from '../lib/editor/BaseEditor';
 import type {
   AnyBasePlugin,
-  AnyResolvedBasePlugin,
-  BaseEditor,
-  RenderTextProps,
-} from '..';
+  AnyBasePluginPortal,
+  AnyPluginBase,
+} from '../lib/plugin/BasePlugin';
+import type { RenderTextProps } from '../lib/types/RenderTextProps';
 import {
+  getCompiledPlateModelBinding,
   getCompiledPlatePlugin,
   getPlateRuntime,
 } from '../internal/plugin/compilePlateModel';
@@ -22,13 +24,14 @@ export type PliteRenderText = (
 
 export const pluginRenderTextStatic = (
   editor: BaseEditor,
-  plugin: AnyResolvedBasePlugin
+  plugin: AnyBasePluginPortal | AnyPluginBase
 ): PliteRenderText =>
   function render(nodeProps) {
     const { children, text } = nodeProps;
+    const textKey = getCompiledPlateModelBinding(editor, plugin)?.propertyKey;
 
-    if (text[plugin.type]) {
-      const Component = getPlateRuntime(editor).components[plugin.name] as any;
+    if (textKey && text[textKey]) {
+      const Component = getPlateRuntime(editor).components[textKey] as any;
       const Text = Component ?? PliteText;
 
       const ctxProps = getRenderNodeStaticProps({
@@ -56,20 +59,24 @@ export const pipeRenderTextStatic = (
   { renderText: renderTextProp }: { renderText?: PliteRenderText } = {}
 ): PliteRenderText => {
   const renderTexts: PliteRenderText[] = [];
-  const textPropsPlugins: AnyBasePlugin[] = [];
+  const textPropsEntries: Array<{ key: string; plugin: AnyBasePlugin }> = [];
 
-  getPlateRuntime(editor).pluginCache.node.textMarks.forEach((pluginName) => {
-    const plugin = getCompiledPlatePlugin(editor, pluginName)!;
+  getPlateRuntime(editor).pluginCache.node.textMarks.forEach((name) => {
+    const plugin = getCompiledPlatePlugin(editor, name)!;
 
     if (plugin) {
       renderTexts.push(pluginRenderTextStatic(editor, plugin as any));
     }
   });
 
-  getPlateRuntime(editor).pluginCache.node.textProps.forEach((pluginName) => {
-    const plugin = getCompiledPlatePlugin(editor, pluginName)!;
-    if (plugin) {
-      textPropsPlugins.push(plugin as any);
+  getPlateRuntime(editor).pluginCache.node.textProps.forEach((name) => {
+    const plugin = getCompiledPlatePlugin(editor, name)!;
+    const key = plugin
+      ? getCompiledPlateModelBinding(editor, plugin)?.propertyKey
+      : undefined;
+
+    if (plugin && key) {
+      textPropsEntries.push({ key, plugin });
     }
   });
 
@@ -84,8 +91,8 @@ export const pipeRenderTextStatic = (
       }
     });
 
-    textPropsPlugins.forEach((plugin) => {
-      if (props.text[plugin.type]) {
+    textPropsEntries.forEach(({ key, plugin }) => {
+      if (props.text[key]) {
         const pluginTextProps =
           typeof plugin.render.textProps === 'function'
             ? plugin.render.textProps({ ...props, children } as any)

@@ -3,10 +3,10 @@ import type { MarkdownEditor } from '@platejs/markdown';
 
 import { BaseTablePlugin } from '@platejs/table';
 import {
+  PLUGINS,
   type TTableCellElement,
   type TTableElement,
   ElementApi,
-  KEYS,
 } from 'platejs';
 import dedent from 'dedent';
 
@@ -27,7 +27,7 @@ export function buildEditTableMultiCellPrompt(
     cells.flatMap(([cell]) => (typeof cell.id === 'string' ? [cell.id] : []))
   );
   const table = editor.read.nodes.block<TTableElement>({
-    match: { type: editor.plugin(KEYS.table).type },
+    match: { type: editor.plugin(PLUGINS.table).type },
   })?.[0];
   const selectedCells: Array<{ cell: TTableCellElement; id: string }> = [];
   const rows =

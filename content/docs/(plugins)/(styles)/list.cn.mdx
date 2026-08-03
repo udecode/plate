@@ -12,7 +12,7 @@ docs:
 ## 功能
 
 - **扁平列表模型**：任何受支持的块都可以成为列表项，无需嵌套的列表节点树。
-- **项目符号、编号和待办样式**：使用 CSS 列表样式或 `KEYS.listTodo`。
+- **项目符号、编号和待办样式**：使用 CSS 列表样式或 `'todo'`。
 - **自动缩进支持**：`ListPlugin` 会安装必需的 Indent 依赖。
 - **精确目标命令**：对当前选择、路径、点或范围执行切换、缩进和减少缩进。
 - **输入规则**：注册内置的 `-`、`*`、`1.` 和任务列表 Markdown 规则。
@@ -68,16 +68,15 @@ import {
 import { BlockquotePlugin } from '@platejs/basic-nodes/react';
 import { CodeBlockPlugin } from '@platejs/code-block/react';
 import { ListPlugin } from '@platejs/list/react';
-import { KEYS } from 'platejs';
 import { ParagraphPlugin } from 'platejs/react';
 import { BlockList } from '@/components/ui/block-list';
 
 const CustomListPlugin = ListPlugin.configure({
-  targetPluginNames: [
-    ...KEYS.heading,
-    ParagraphPlugin.name,
-    BlockquotePlugin.name,
-    CodeBlockPlugin.name,
+  targetPlugins: [
+    PLUGINS.h1, PLUGINS.h2, PLUGINS.h3, PLUGINS.h4, PLUGINS.h5, PLUGINS.h6,
+    ParagraphPlugin,
+    BlockquotePlugin,
+    CodeBlockPlugin,
   ],
   inputRules: [
     BulletedListRules.markdown({ variant: '-' }),
@@ -103,7 +102,7 @@ const list = editor.plugin(ListPlugin);
 
 list.read.isActive(ListStyleType.Disc);
 list.read.isActive([ListStyleType.Disc, ListStyleType.Circle]);
-list.read.isActive(KEYS.listTodo);
+list.read.isActive('todo');
 ```
 
 编辑器没有选择时，`isActive` 返回 `false`。

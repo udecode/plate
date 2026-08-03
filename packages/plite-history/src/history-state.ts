@@ -7,6 +7,7 @@ import {
   type Value,
 } from '@platejs/plite';
 import {
+  type AnyEditor,
   areEditorSchemaIdentitiesEqual,
   getInternalDocumentChangeClassificationEntries,
   getInternalDocumentChangeRootKeys,
@@ -47,12 +48,12 @@ type HistoryStore<V extends Value> = Readonly<{
   undos: HistoryBranch<V> | null;
 }>;
 
-const HISTORY = new WeakMap<Editor, HistoryStore<Value>>();
+const HISTORY = new WeakMap<AnyEditor, HistoryStore<Value>>();
 
-export const captureHistoryState = (editor: Editor) => HISTORY.get(editor);
+export const captureHistoryState = (editor: AnyEditor) => HISTORY.get(editor);
 
 export const restoreHistoryState = (
-  editor: Editor,
+  editor: AnyEditor,
   state: HistoryStore<Value> | undefined
 ) => {
   if (state) HISTORY.set(editor, state);

@@ -2,7 +2,7 @@ import isUrl from 'is-url';
 import type React from 'react';
 import { type PointerEvent, useMemo } from 'react';
 import {
-  defineEditorExtension,
+  defineExtension,
   editorCommands,
   type EditorTransactionSpecBuilder,
   NodeApi,
@@ -10,6 +10,7 @@ import {
   schema,
 } from '@platejs/plite';
 import { clipboardHandler, isHotkey } from '@platejs/plite-dom';
+import { history } from '@platejs/plite-history';
 import * as PliteReact from '@platejs/plite-react';
 import {
   Editable,
@@ -34,7 +35,7 @@ import type {
 } from './custom-types.d';
 const InlinesExample = () => {
   const editor = usePliteEditor({
-    extensions: [inline()],
+    extensions: [history(), inline()],
     initialValue: [
       {
         type: 'paragraph',
@@ -123,26 +124,26 @@ const InlinesExample = () => {
 };
 
 const inline = () =>
-  defineEditorExtension({
+  defineExtension('inline', {
     contributions: [
       clipboardHandler({
-        insertData(data, { next, transaction }) {
+        insertData(data, { next, tx }) {
           const text = data.getData('text/plain');
 
           if (text && isUrl(text)) {
             if (
-              transaction.nodes.some({
+              tx.nodes.some({
                 match: (node) =>
                   NodeApi.isElement(node) && node.type === 'link',
               })
             ) {
-              transaction.nodes.unwrap({
+              tx.nodes.unwrap({
                 match: (node) =>
                   NodeApi.isElement(node) && node.type === 'link',
               });
             }
 
-            const selection = transaction.selection();
+            const selection = tx.selection();
             const isCollapsed = selection && RangeApi.isCollapsed(selection);
             const link: LinkElement = {
               type: 'link',
@@ -151,10 +152,10 @@ const inline = () =>
             };
 
             if (isCollapsed) {
-              transaction.nodes.insert(link);
-              transaction.selection.move({ unit: 'offset' });
+              tx.nodes.insert(link);
+              tx.selection.move({ unit: 'offset' });
             } else {
-              transaction.nodes.wrap(link, { split: true });
+              tx.nodes.wrap(link, { split: true });
             }
 
             return true;
@@ -163,7 +164,6 @@ const inline = () =>
         },
       }),
     ],
-    name: 'inline',
     commands: ({ handle }) => [
       handle(editorCommands.insertText, ({ input, state }) => {
         if (isUrl(input.text)) {

@@ -22,6 +22,8 @@ export type {
 export { DOMCoverage } from './plugin/dom-coverage';
 export type {
   DOMApi,
+  DOMVisualPoint,
+  DOMVisualPointOptions,
   DOMEditorClipboardCapability,
   DOMClipboardApi,
   DOMClipboardInsertDataHandler,

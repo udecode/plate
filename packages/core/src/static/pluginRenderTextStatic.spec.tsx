@@ -1,7 +1,7 @@
 import { property } from '@platejs/plite';
 import React from 'react';
 
-import { type RenderTextProps, createBasePlugin } from '../lib';
+import { type RenderTextProps, defineBasePlugin } from '../lib';
 import { createStaticEditor } from './editor/withStatic';
 import {
   pipeRenderTextStatic,
@@ -9,9 +9,7 @@ import {
 } from './pluginRenderTextStatic';
 
 describe('pluginRenderTextStatic', () => {
-  const CommentPlugin = createBasePlugin({
-    name: 'comment',
-    type: 'comment',
+  const CommentPlugin = defineBasePlugin('comment', {
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
       isDecoration: false,
@@ -30,7 +28,7 @@ describe('pluginRenderTextStatic', () => {
     expect(
       pluginRenderTextStatic(
         editor,
-        editor.plugin(CommentPlugin).plugin
+        editor.plugin(CommentPlugin)
       )({
         attributes: { 'data-plite-node': 'text', ref: null },
         children: 'plain',
@@ -51,7 +49,7 @@ describe('pluginRenderTextStatic', () => {
     });
     const result = pluginRenderTextStatic(
       editor,
-      editor.plugin(CommentPlugin).plugin
+      editor.plugin(CommentPlugin)
     )({
       attributes: { 'data-plite-node': 'text', ref: null },
       children: 'hi',

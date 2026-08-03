@@ -5,7 +5,7 @@ import * as React from 'react';
 import type { PlateElementProps } from 'platejs/react';
 
 import {
-  createPlatePlugin,
+  definePlatePlugin,
   Plate,
   PlateElement,
   useEditorFocused,
@@ -18,8 +18,7 @@ import { EditorKit } from '@/registry/components/editor/editor-kit';
 import { tabbableValue } from '@/registry/examples/values/tabbable-value';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
 
-const TabbableElementPlugin = createPlatePlugin({
-  name: 'tabbable-element',
+const TabbableElementPlugin = definePlatePlugin('tabbableElement', {
   schema: { element: { void: 'block' } },
 }).configure({ component: TabbableElement });
 

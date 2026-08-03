@@ -87,33 +87,30 @@ const AsyncDecorationsExample = () => {
       collectAsyncHighlightDecorations(node, path, decoratedLength),
     [decoratedLength]
   );
-  const hookDecorationSource = usePliteDecorationSource<AsyncHighlightData>(
-    editor,
-    {
-      id: 'async-decoration-hook',
-      revision: decoratedLength,
-      read: ({ snapshot }) => {
-        const root = { children: snapshot.children } as Ancestor;
-        const decorations: PliteDecoration<AsyncHighlightData>[] = [];
+  const hookDecorationSource = usePliteDecorationSource(editor, {
+    id: 'async-decoration-hook',
+    revision: decoratedLength,
+    read: ({ snapshot }) => {
+      const root = { children: snapshot.children } as Ancestor;
+      const decorations: PliteDecoration<AsyncHighlightData>[] = [];
 
-        for (const [node, path] of NodeApi.nodes(root)) {
-          if (path.length === 0) {
-            continue;
-          }
-
-          decorations.push(
-            ...collectAsyncHighlightDecorations(
-              node as Descendant,
-              path,
-              decoratedLength
-            )
-          );
+      for (const [node, path] of NodeApi.nodes(root)) {
+        if (path.length === 0) {
+          continue;
         }
 
-        return decorations;
-      },
-    }
-  );
+        decorations.push(
+          ...collectAsyncHighlightDecorations(
+            node as Descendant,
+            path,
+            decoratedLength
+          )
+        );
+      }
+
+      return decorations;
+    },
+  });
 
   const scheduleAsyncDecorations = useCallback(
     (value: readonly Descendant[]) => {

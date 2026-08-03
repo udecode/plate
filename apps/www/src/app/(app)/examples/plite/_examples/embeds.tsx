@@ -1,5 +1,5 @@
 import React, { type ChangeEvent, useMemo } from 'react';
-import { defineEditorExtension } from '@platejs/plite';
+import { defineExtension } from '@platejs/plite';
 import {
   Editable,
   type RenderElementProps,
@@ -54,8 +54,7 @@ const EmbedsExample = () => {
 };
 
 const embed = () =>
-  defineEditorExtension({
-    name: 'embed',
+  defineExtension('embed', {
     schema: { elements: { video: { void: 'block' } } },
   });
 

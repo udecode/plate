@@ -3,11 +3,14 @@ import React from 'react';
 import { useEditorReadOnly } from '@platejs/plite-react';
 
 import type { PlateEditor } from '../editor/PlateEditor';
-import type { AnyEditorPlatePlugin } from '../plugin/PlatePlugin';
+import type { AnyResolvedPlatePlugin } from '../plugin/PlatePlugin';
 
 import { getPluginNodeClass } from '../../lib';
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
-import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
+import {
+  getCompiledPlateModelBinding,
+  getPlateRuntime,
+} from '../../internal/plugin/compilePlateModel';
 import { type PlateLeafProps, PlateLeaf } from '../components/plate-nodes';
 import { getRenderNodeProps } from './getRenderNodeProps';
 
@@ -52,13 +55,11 @@ const getSimpleLeafAttributes = (props: PlateLeafProps, className?: string) => {
 };
 
 /**
- * Get a `Editable.renderLeaf` handler for `plugin.type`. If the type is
- * equals to the plite leaf type, render `plugin.render.node`. Else, return
- * `children`.
+ * Get an `Editable.renderLeaf` handler for one plugin-owned property key.
  */
 export const pluginRenderLeaf = (
   editor: PlateEditor,
-  plugin: AnyEditorPlatePlugin
+  plugin: AnyResolvedPlatePlugin
 ): RenderLeaf =>
   function render(props) {
     // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -68,10 +69,12 @@ export const pluginRenderLeaf = (
     } = plugin;
     const { children, leaf, text } = props;
     const Component = leafComponent ?? node;
+    const leafKey = getCompiledPlateModelBinding(editor, plugin)?.propertyKey;
 
     if (isEditOnly(readOnly, plugin, 'render')) return children;
+    if (!leafKey) return children;
 
-    if (leaf[plugin.type]) {
+    if (leaf[leafKey]) {
       const canUseSimpleLeaf =
         !Component &&
         getPlateRuntime(editor).pluginCache.inject.nodeProps.length === 0 &&
@@ -82,7 +85,7 @@ export const pluginRenderLeaf = (
           'span') as keyof HTMLElementTagNameMap;
         const attributes = getSimpleLeafAttributes(
           props,
-          getPluginNodeClass(plugin.type) || undefined
+          getPluginNodeClass(plugin.name) || undefined
         );
 
         return <Tag {...attributes}>{children}</Tag>;
@@ -93,7 +96,7 @@ export const pluginRenderLeaf = (
           'span') as keyof HTMLElementTagNameMap;
         const attributes = getSimpleLeafAttributes(
           props,
-          getPluginNodeClass(plugin.type) || undefined
+          getPluginNodeClass(plugin.name) || undefined
         );
         const showBoundarySpacers = isActiveHardAffinityBoundary(editor, text);
 

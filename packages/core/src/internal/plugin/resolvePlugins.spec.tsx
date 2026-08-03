@@ -3,10 +3,10 @@ import { property } from '@platejs/plite';
 import { createBaseEditor } from '../../lib/editor';
 import type { AnyBasePlugin } from '../../lib/plugin/BasePlugin';
 
-import { createBasePlugin } from '../../lib/plugin/createBasePlugin';
+import { defineBasePlugin } from '../../lib/plugin/defineBasePlugin';
 import { DebugPlugin } from '../../lib/plugins/debug/DebugPlugin';
 import { createPlateEditor } from '../../react/editor/withPlate';
-import { createPlatePlugin } from '../../react/plugin/createPlatePlugin';
+import { definePlatePlugin } from '../../react/plugin/definePlatePlugin';
 import { getPlateRuntime } from './compilePlateModel';
 import { getPluginStore } from './pluginStore';
 import { resolveAndSortPlugins, resolvePlugins } from './resolvePlugins';
@@ -20,8 +20,7 @@ const getSortedKeys = (plugins: readonly AnyBasePlugin[]) => {
 describe('resolvePlugins', () => {
   it('compiles input-rule declarations once into the published runtime', () => {
     let calls = 0;
-    const Plugin = createBasePlugin({
-      name: 'singleInputRuleCompilation',
+    const Plugin = defineBasePlugin('singleInputRuleCompilation', {
       inputRules: () => {
         calls++;
 
@@ -37,47 +36,44 @@ describe('resolvePlugins', () => {
   it('initializes independent plugins in application order', () => {
     expect(
       getSortedKeys([
-        createBasePlugin({ name: 'a' }),
-        createBasePlugin({ name: 'b' }),
-        createBasePlugin({ name: 'c' }),
+        defineBasePlugin('a', {}),
+        defineBasePlugin('b', {}),
+        defineBasePlugin('c', {}),
       ])
     ).toEqual(['a', 'b', 'c']);
   });
 
   it('installs required dependencies', () => {
-    const pluginNames = getSortedKeys([
-      createBasePlugin({
+    const names = getSortedKeys([
+      defineBasePlugin('parent', {
         dependencies: [
-          createBasePlugin({ name: 'dependency1' }),
-          createBasePlugin({ name: 'dependency2' }),
+          defineBasePlugin('dependency1', {}),
+          defineBasePlugin('dependency2', {}),
         ],
-        name: 'parent',
       }),
     ]);
 
-    expect(pluginNames).toContain('parent');
-    expect(pluginNames).toContain('dependency1');
-    expect(pluginNames).toContain('dependency2');
+    expect(names).toContain('parent');
+    expect(names).toContain('dependency1');
+    expect(names).toContain('dependency2');
   });
 
   it('does not include disabled plugins', () => {
-    const pluginNames = getSortedKeys([
-      createBasePlugin({ name: 'enabled' }),
-      createBasePlugin({ name: 'disabled', enabled: false }),
+    const names = getSortedKeys([
+      defineBasePlugin('enabled', {}),
+      defineBasePlugin('disabled', { enabled: false }),
     ]);
 
-    expect(pluginNames).toContain('enabled');
-    expect(pluginNames).not.toContain('disabled');
+    expect(names).toContain('enabled');
+    expect(names).not.toContain('disabled');
   });
 
   it('publishes plugin APIs by name and descriptor portal', () => {
-    const Plugin1 = createBasePlugin({
+    const Plugin1 = defineBasePlugin('plugin1', {
       api: () => ({ methodA: () => 'A' }),
-      name: 'plugin1',
     });
-    const Plugin2 = createBasePlugin({
+    const Plugin2 = defineBasePlugin('plugin2', {
       api: () => ({ methodB: () => 'B' }),
-      name: 'plugin2',
     });
     const editor = createBaseEditor({
       plugins: [Plugin1, Plugin2],
@@ -91,8 +87,7 @@ describe('resolvePlugins', () => {
 
   it('compiles staged read, update, and editor-extension contributions', () => {
     let extensionCalls = 0;
-    const Plugin = createBasePlugin({
-      name: 'unifiedRuntime',
+    const Plugin = defineBasePlugin('unifiedRuntime', {
       initialState: { label: 'unified' },
     })
       .extend(({ store }) => {
@@ -126,7 +121,7 @@ describe('resolvePlugins', () => {
         };
       });
     const editor = createBaseEditor({
-      initialValue: [{ children: [{ text: '' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
       plugins: [Plugin],
     });
 
@@ -147,11 +142,10 @@ describe('resolvePlugins', () => {
   });
 
   it('registers constructor-authored unified contributions', () => {
-    const Plugin = createBasePlugin({
+    const Plugin = defineBasePlugin('objectUnifiedRuntime', {
       api: () => ({
         label: () => 'object',
       }),
-      name: 'objectUnifiedRuntime',
       read: () => ({
         ready: () => true,
       }),
@@ -172,9 +166,8 @@ describe('resolvePlugins', () => {
   });
 
   it('overwrite API methods with the same name', () => {
-    const Plugin = createBasePlugin({
+    const Plugin = defineBasePlugin('apiOverride', {
       api: () => ({ method: (_: string) => 'first' }),
-      name: 'apiOverride',
     }).extend(() => ({
       api: () => ({ method: (_: number) => 'second' }),
     }));
@@ -191,9 +184,7 @@ describe('resolvePlugins', () => {
     const editor = createBaseEditor({
       plugins: [
         Object.assign(
-          createPlatePlugin({
-            name: 'cachey',
-            type: 'cachey',
+          definePlatePlugin('cachey', {
             schema: {
               mark: property.boolean({ default: false, omitDefault: true }),
             },
@@ -280,8 +271,7 @@ describe('resolvePlugins', () => {
     const toggle = mock();
     const editor = createBaseEditor({
       plugins: [
-        createBasePlugin({
-          name: 'shortcutTx',
+        defineBasePlugin('shortcutTx', {
           update: () => ({ toggle }),
         }).extend({ shortcuts: { toggle: { keys: 'mod+k' } } }),
       ],
@@ -296,8 +286,7 @@ describe('resolvePlugins', () => {
 
   it('creates a shortcut handler from a configured owner update', () => {
     const insert = mock();
-    const plugin = createBasePlugin({
-      name: 'shortcutRootTx',
+    const plugin = defineBasePlugin('shortcutRootTx', {
       update: () => ({ insert }),
     });
     const editor = createBaseEditor({
@@ -320,7 +309,7 @@ describe('resolvePlugins', () => {
     const toggle = mock() as any;
     const editor = createBaseEditor({
       plugins: [
-        createBasePlugin({ name: 'shortcutMixed', update: () => ({ other }) })
+        defineBasePlugin('shortcutMixed', { update: () => ({ other }) })
           .extend(() => ({ api: () => ({ toggle }) }))
           .extend({ shortcuts: { toggle: { keys: 'mod+k' } } }),
       ],
@@ -339,8 +328,7 @@ describe('resolvePlugins', () => {
     const create = () =>
       createBaseEditor({
         plugins: [
-          createBasePlugin({
-            name: 'shortcutMissing',
+          defineBasePlugin('shortcutMissing', {
             update: () => ({ other }),
           }).extend({
             shortcuts: {
@@ -360,8 +348,7 @@ describe('resolvePlugins', () => {
     const untab = mock(() => false);
     const editor = createBaseEditor({
       plugins: [
-        createBasePlugin({
-          name: 'shortcutTxFalse',
+        defineBasePlugin('shortcutTxFalse', {
           update: () => ({ untab }),
         }).extend({ shortcuts: { untab: { keys: 'shift+tab' } } }),
       ],
@@ -378,9 +365,8 @@ describe('resolvePlugins', () => {
   it('requires target only when update and api commands collide', () => {
     const apiToggle = mock();
     const updateToggle = mock();
-    const AmbiguousPlugin = createBasePlugin({
+    const AmbiguousPlugin = defineBasePlugin('shortcutAmbiguous', {
       api: () => ({ toggle: apiToggle }),
-      name: 'shortcutAmbiguous',
     })
       .extend(() => ({ update: () => ({ toggle: updateToggle }) }))
       .extend({
@@ -420,8 +406,7 @@ describe('resolvePlugins', () => {
     const create = () =>
       createBaseEditor({
         plugins: [
-          createBasePlugin({
-            name: 'shortcutHandlerTarget',
+          defineBasePlugin('shortcutHandlerTarget', {
             shortcuts: {
               invalid: {
                 handler: () => true,
@@ -442,9 +427,8 @@ describe('resolvePlugins', () => {
     const toggle = mock();
     const editor = createBaseEditor({
       plugins: [
-        createBasePlugin({
+        defineBasePlugin('shortcutApi', {
           api: () => ({ toggle }),
-          name: 'shortcutApi',
         }).extend({
           shortcuts: { toggle: { keys: 'mod+k' } },
         }),
@@ -459,11 +443,10 @@ describe('resolvePlugins', () => {
   });
 
   it('rejects plugin-set mutation after atomic model publication', () => {
-    const PluginApi = createBasePlugin({
+    const PluginApi = defineBasePlugin('pluginApi', {
       api: () => ({
         run: () => 'run',
       }),
-      name: 'pluginApi',
     });
     const editor = createBaseEditor({
       plugins: [PluginApi],
@@ -483,9 +466,7 @@ describe('resolvePlugins', () => {
     expect(() =>
       createBaseEditor({
         plugins: [
-          createBasePlugin({
-            name: 'marks',
-          }).configure({
+          defineBasePlugin('marks', {}).configure({
             inputRules: { markdown: true } as any,
           }),
         ],
@@ -500,34 +481,32 @@ describe('resolveAndSortPlugins', () => {
   it('keeps independent roots in application order', () => {
     expect(
       getSortedKeys([
-        createBasePlugin({ name: 'a' }),
-        createBasePlugin({ name: 'b' }),
-        createBasePlugin({ name: 'c' }),
+        defineBasePlugin('a', {}),
+        defineBasePlugin('b', {}),
+        defineBasePlugin('c', {}),
       ])
     ).toEqual(['a', 'b', 'c']);
   });
 
   it('installs direct and transitive dependencies once', () => {
-    const c = createBasePlugin({ name: 'c' });
-    const b = createBasePlugin({ dependencies: [c], name: 'b' });
-    const a = createBasePlugin({ dependencies: [b, c], name: 'a' });
+    const c = defineBasePlugin('c', {});
+    const b = defineBasePlugin('b', { dependencies: [c] });
+    const a = defineBasePlugin('a', { dependencies: [b, c] });
 
     expect(getSortedKeys([a])).toEqual(['c', 'b', 'a']);
   });
 
   it('resolves one configured descriptor once across dependency and root paths', () => {
     let calls = 0;
-    const dependency = createBasePlugin({
-      name: 'configuredDependency',
+    const dependency = defineBasePlugin('configuredDependency', {
       initialState: { source: 'base' },
     }).configure(() => {
       calls++;
 
       return { initialState: { source: 'configured' } };
     });
-    const dependent = createBasePlugin({
+    const dependent = defineBasePlugin('dependent', {
       dependencies: [dependency],
-      name: 'dependent',
     });
     const editor = createBaseEditor();
     const resolved = resolveAndSortPlugins(editor, [dependent, dependency]);
@@ -539,21 +518,18 @@ describe('resolveAndSortPlugins', () => {
   });
 
   it('whole-replaces a dependency default without leaking its extensions', () => {
-    const dependency = createBasePlugin({
+    const dependency = defineBasePlugin('extendedDependency', {
       api: () => ({
         dependencyRead: () => 'dependency',
       }),
-      name: 'extendedDependency',
     });
-    const explicitDependency = createBasePlugin({
+    const explicitDependency = defineBasePlugin(dependency.name, {
       api: () => ({
         explicitRead: () => 'explicit',
       }),
-      name: dependency.name,
     });
-    const dependent = createBasePlugin({
+    const dependent = defineBasePlugin('dependent', {
       dependencies: [dependency],
-      name: 'dependent',
     });
     const editor = createBaseEditor({
       plugins: [dependent, explicitDependency],
@@ -566,27 +542,24 @@ describe('resolveAndSortPlugins', () => {
   });
 
   it('keeps application order around dependency ordering', () => {
-    const c = createBasePlugin({ name: 'c' });
-    const b = createBasePlugin({
+    const c = defineBasePlugin('c', {});
+    const b = defineBasePlugin('b', {
       dependencies: [c],
-      name: 'b',
     });
-    const a = createBasePlugin({ name: 'a' });
+    const a = defineBasePlugin('a', {});
 
     expect(getSortedKeys([a, b])).toEqual(['a', 'c', 'b']);
   });
 
   it('uses explicit root configuration regardless of root position', () => {
-    const dependency = createBasePlugin({
-      name: 'dependency',
+    const dependency = defineBasePlugin('dependency', {
       initialState: { source: 'implicit' },
     });
     const explicitDependency = dependency.configure({
       initialState: { source: 'explicit' },
     });
-    const dependent = createBasePlugin({
+    const dependent = defineBasePlugin('dependent', {
       dependencies: [dependency],
-      name: 'dependent',
     });
     const editor = createBaseEditor();
 
@@ -603,10 +576,9 @@ describe('resolveAndSortPlugins', () => {
   });
 
   it('rejects an explicitly disabled required dependency', () => {
-    const dependency = createBasePlugin({ name: 'dependency' });
-    const dependent = createBasePlugin({
+    const dependency = defineBasePlugin('dependency', {});
+    const dependent = defineBasePlugin('dependent', {
       dependencies: [dependency],
-      name: 'dependent',
     });
 
     expect(() =>
@@ -615,19 +587,18 @@ describe('resolveAndSortPlugins', () => {
   });
 
   it('omits dependencies owned only by a disabled dependent', () => {
-    const dependency = createBasePlugin({ name: 'dependency' });
-    const dependent = createBasePlugin({
+    const dependency = defineBasePlugin('dependency', {});
+    const dependent = defineBasePlugin('dependent', {
       dependencies: [dependency],
       enabled: false,
-      name: 'dependent',
     });
 
     expect(getSortedKeys([dependent])).toEqual([]);
   });
 
   it('rejects named dependency cycles', () => {
-    const a = createBasePlugin({ name: 'a' });
-    const b = createBasePlugin({ dependencies: [a], name: 'b' });
+    const a = defineBasePlugin('a', {});
+    const b = defineBasePlugin('b', { dependencies: [a] });
 
     Object.assign(a, { dependencies: [b] });
 
@@ -637,7 +608,7 @@ describe('resolveAndSortPlugins', () => {
   });
 
   it('rejects string dependency names', () => {
-    const dependent = createBasePlugin({ name: 'dependent' });
+    const dependent = defineBasePlugin('dependent', {});
 
     dependent.dependencies = ['missing'] as never;
 
@@ -656,8 +627,7 @@ describe('applyPluginOverrides', () => {
 
     const editor = createPlateEditor({
       plugins: [
-        createPlatePlugin({
-          name: 'a',
+        definePlatePlugin('a', {
           override: {
             components: {
               b: OverrideComponent,
@@ -667,19 +637,14 @@ describe('applyPluginOverrides', () => {
             },
           },
         }),
-        createPlatePlugin({
+        definePlatePlugin('b', {
           component: OriginalComponent,
-          name: 'b',
         }),
-        createBasePlugin({
-          name: 'c',
-        }),
-        createPlatePlugin({
+        defineBasePlugin('c', {}),
+        definePlatePlugin('d', {
           component: OriginalComponent,
-          name: 'd',
         }),
-        createPlatePlugin({
-          name: 'e',
+        definePlatePlugin('e', {
           override: {
             components: {
               b: HighPriorityComponent,
@@ -687,45 +652,40 @@ describe('applyPluginOverrides', () => {
             },
           },
         }),
-        createPlatePlugin({
+        definePlatePlugin('f', {
           component: PreservedOriginalComponent,
-          name: 'f',
         }),
       ],
     });
 
-    expect(editor.plugin('b').plugin.render.node).toBe(OriginalComponent);
+    expect(editor.plugin('b').render.node).toBe(OriginalComponent);
 
     // No initial component, so it gets set
-    expect(editor.plugin('c').plugin.render.node).toBe(OverrideComponent);
+    expect(editor.plugin('c').render.node).toBe(OverrideComponent);
 
-    expect(editor.plugin('d').plugin.render.node).toBe(OriginalComponent);
+    expect(editor.plugin('d').render.node).toBe(OriginalComponent);
 
-    expect(editor.plugin('f').plugin.render.node).toBe(
-      PreservedOriginalComponent
-    );
-    expect(() => editor.plugin('missing').plugin).toThrow(
+    expect(editor.plugin('f').render.node).toBe(PreservedOriginalComponent);
+    expect(() => editor.plugin('missing').name).toThrow(
       'Plate plugin "missing" is not installed.'
     );
   });
 
   it('does not fabricate a descriptor for a disabled plugin', () => {
-    const Disabled = createPlatePlugin({
+    const Disabled = definePlatePlugin('disabledPlugin', {
       enabled: false,
-      name: 'disabledPlugin',
     });
     const editor = createPlateEditor({ plugins: [Disabled] });
 
     expect(editor.plugin(Disabled).installed).toBe(false);
-    expect(() => editor.plugin(Disabled).plugin).toThrow(
+    expect(() => editor.plugin(Disabled).name).toThrow(
       'Plate plugin "disabledPlugin" is not installed.'
     );
   });
 
   describe('weak plugin overrides', () => {
     it('ignores missing targets without installing them', () => {
-      const Contributor = createBasePlugin({
-        name: 'missingTargetContributor',
+      const Contributor = defineBasePlugin('missingTargetContributor', {
         override: {
           plugins: {
             missingTarget: {
@@ -744,8 +704,7 @@ describe('applyPluginOverrides', () => {
 
     it('keeps direct target configuration terminal and executes it once', () => {
       let calls = 0;
-      const Target = createBasePlugin({
-        name: 'strongTarget',
+      const Target = defineBasePlugin('strongTarget', {
         initialState: {
           peerOnly: 'base',
           source: 'base',
@@ -759,8 +718,7 @@ describe('applyPluginOverrides', () => {
           },
         };
       });
-      const Contributor = createBasePlugin({
-        name: 'strongTargetContributor',
+      const Contributor = defineBasePlugin('strongTargetContributor', {
         override: {
           plugins: {
             [Target.name]: {
@@ -776,7 +734,7 @@ describe('applyPluginOverrides', () => {
         plugins: [Contributor, Target],
       });
 
-      expect(editor.plugin(Target).plugin.initialState).toEqual({
+      expect(editor.plugin(Target).initialState).toEqual({
         peerOnly: 'weak',
         source: 'strong',
       });
@@ -784,12 +742,10 @@ describe('applyPluginOverrides', () => {
     });
 
     it('uses earlier application order for overlapping fields', () => {
-      const Target = createBasePlugin({
-        name: 'orderedWeakTarget',
+      const Target = defineBasePlugin('orderedWeakTarget', {
         initialState: { priorityWinner: 'base', sourceWinner: 'base' },
       });
-      const Low = createBasePlugin({
-        name: 'lowWeakContributor',
+      const Low = defineBasePlugin('lowWeakContributor', {
         override: {
           plugins: {
             [Target.name]: {
@@ -798,8 +754,7 @@ describe('applyPluginOverrides', () => {
           },
         },
       });
-      const High = createBasePlugin({
-        name: 'highWeakContributor',
+      const High = defineBasePlugin('highWeakContributor', {
         override: {
           plugins: {
             [Target.name]: {
@@ -808,8 +763,7 @@ describe('applyPluginOverrides', () => {
           },
         },
       });
-      const First = createBasePlugin({
-        name: 'firstWeakContributor',
+      const First = defineBasePlugin('firstWeakContributor', {
         override: {
           plugins: {
             [Target.name]: {
@@ -818,8 +772,7 @@ describe('applyPluginOverrides', () => {
           },
         },
       });
-      const Second = createBasePlugin({
-        name: 'secondWeakContributor',
+      const Second = defineBasePlugin('secondWeakContributor', {
         override: {
           plugins: {
             [Target.name]: {
@@ -832,20 +785,18 @@ describe('applyPluginOverrides', () => {
         plugins: [Low, High, First, Second, Target],
       });
 
-      expect(editor.plugin(Target).plugin.initialState).toEqual({
+      expect(editor.plugin(Target).initialState).toEqual({
         priorityWinner: 'low',
         sourceWinner: 'first',
       });
     });
 
     it('skips disabled contributors', () => {
-      const Target = createBasePlugin({
-        name: 'disabledContributorTarget',
+      const Target = defineBasePlugin('disabledContributorTarget', {
         initialState: { source: 'target' },
       });
-      const Contributor = createBasePlugin({
+      const Contributor = defineBasePlugin('disabledWeakContributor', {
         enabled: false,
-        name: 'disabledWeakContributor',
         override: {
           plugins: {
             [Target.name]: {
@@ -858,13 +809,12 @@ describe('applyPluginOverrides', () => {
         plugins: [Contributor, Target],
       });
 
-      expect(editor.plugin(Target).plugin.initialState.source).toBe('target');
+      expect(editor.plugin(Target).initialState.source).toBe('target');
     });
 
     it('rejects topology fields even through erased input', () => {
-      const Target = createBasePlugin({ name: 'topologyTarget' });
-      const Contributor = createBasePlugin({
-        name: 'topologyContributor',
+      const Target = defineBasePlugin('topologyTarget', {});
+      const Contributor = defineBasePlugin('topologyContributor', {
         override: {
           plugins: {
             [Target.name]: {
@@ -882,9 +832,8 @@ describe('applyPluginOverrides', () => {
     });
 
     it('rejects schema replacement through erased weak overrides', () => {
-      const Target = createBasePlugin({ name: 'weakSchemaTarget' });
-      const Contributor = createBasePlugin({
-        name: 'weakSchemaContributor',
+      const Target = defineBasePlugin('weakSchemaTarget', {});
+      const Contributor = defineBasePlugin('weakSchemaContributor', {
         override: {
           plugins: {
             [Target.name]: {
@@ -900,13 +849,11 @@ describe('applyPluginOverrides', () => {
     });
 
     it('cannot disable a required dependency', () => {
-      const Dependency = createBasePlugin({ name: 'weakRequiredDependency' });
-      const Dependent = createBasePlugin({
+      const Dependency = defineBasePlugin('weakRequiredDependency', {});
+      const Dependent = defineBasePlugin('weakRequiredDependent', {
         dependencies: [Dependency],
-        name: 'weakRequiredDependent',
       });
-      const Contributor = createBasePlugin({
-        name: 'weakRequiredContributor',
+      const Contributor = defineBasePlugin('weakRequiredContributor', {
         override: {
           plugins: {
             [Dependency.name]: { enabled: false },
@@ -922,12 +869,10 @@ describe('applyPluginOverrides', () => {
     });
 
     it('cannot beat an explicit target enablement', () => {
-      const Target = createBasePlugin({
+      const Target = defineBasePlugin('strongEnabledTarget', {
         enabled: false,
-        name: 'strongEnabledTarget',
       }).configure({ enabled: true });
-      const Contributor = createBasePlugin({
-        name: 'strongEnabledContributor',
+      const Contributor = defineBasePlugin('strongEnabledContributor', {
         override: {
           plugins: {
             [Target.name]: { enabled: false },
@@ -938,7 +883,7 @@ describe('applyPluginOverrides', () => {
         plugins: [Contributor, Target],
       });
 
-      expect(editor.plugin(Target).plugin).toHaveProperty('enabled', true);
+      expect(editor.plugin(Target)).toHaveProperty('enabled', true);
     });
   });
 
@@ -967,8 +912,7 @@ describe('applyPluginOverrides', () => {
 
 describe('mergePlugins behavior in resolvePlugins', () => {
   it('preserves configured initialState when an overlay uses undefined', () => {
-    const plugin = createBasePlugin({
-      name: 'test',
+    const plugin = defineBasePlugin('test', {
       initialState: {
         contextValue: 'kept',
         nullValue: 'kept',
@@ -996,8 +940,7 @@ describe('mergePlugins behavior in resolvePlugins', () => {
       value = 'original';
     }
     const runtimeResource = new RuntimeResource();
-    const plugin = createBasePlugin({
-      name: 'test',
+    const plugin = defineBasePlugin('test', {
       initialState: { resource: runtimeResource },
     });
 
@@ -1005,7 +948,7 @@ describe('mergePlugins behavior in resolvePlugins', () => {
       plugins: [plugin],
     });
 
-    const published = editor.plugin(plugin).plugin;
+    const published = editor.plugin(plugin);
 
     expect(published.initialState).not.toBe(plugin.initialState);
     expect(Object.isFrozen(published.initialState)).toBe(true);
@@ -1017,12 +960,11 @@ describe('mergePlugins behavior in resolvePlugins', () => {
   it('snapshots nested plain initialState away from caller-owned mutation', () => {
     const nested = { label: 'one' };
     const entries = [nested];
-    const plugin = createBasePlugin({
-      name: 'test',
+    const plugin = defineBasePlugin('test', {
       initialState: { entries, nested },
     });
     const editor = createBaseEditor({ plugins: [plugin] });
-    const published = editor.plugin(plugin).plugin;
+    const published = editor.plugin(plugin);
     const listener = vi.fn();
     const unsubscribe = getPluginStore(editor, plugin.name)!.public.subscribe(
       listener
@@ -1058,12 +1000,11 @@ describe('mergePlugins behavior in resolvePlugins', () => {
     const cycle: { self?: typeof cycle } = {};
 
     cycle.self = cycle;
-    const plugin = createBasePlugin({
-      name: 'test',
+    const plugin = defineBasePlugin('test', {
       initialState: { cycle, first: shared, second: shared },
     });
     const editor = createBaseEditor({ plugins: [plugin] });
-    const initialState = editor.plugin(plugin).plugin.initialState;
+    const initialState = editor.plugin(plugin).initialState;
 
     expect(initialState.first).toBe(initialState.second);
     expect(initialState.first).not.toBe(shared);
@@ -1080,8 +1021,7 @@ describe('mergePlugins behavior in resolvePlugins', () => {
       get: () => 1,
       set: () => {},
     });
-    const plugin = createBasePlugin({
-      name: 'test',
+    const plugin = defineBasePlugin('test', {
       initialState: { nested },
     });
 
@@ -1091,8 +1031,8 @@ describe('mergePlugins behavior in resolvePlugins', () => {
   });
 
   it('rejects accessor properties in plain plugin descriptor graphs', () => {
-    const rootDescriptor = createBasePlugin({ name: 'rootAccessor' });
-    const nested = createBasePlugin({ name: 'nestedAccessor' });
+    const rootDescriptor = defineBasePlugin('rootAccessor', {});
+    const nested = defineBasePlugin('nestedAccessor', {});
 
     Object.defineProperty(rootDescriptor, 'priority', {
       enumerable: true,
@@ -1115,13 +1055,11 @@ describe('mergePlugins behavior in resolvePlugins', () => {
     const DirectNode = React.forwardRef<HTMLDivElement>(() => null);
     const Node = React.forwardRef<HTMLDivElement>(() => null);
     const OverrideNode = React.forwardRef<HTMLDivElement>(() => null);
-    const directPlugin = createPlatePlugin({
+    const directPlugin = definePlatePlugin('directForwardRefHost', {
       component: DirectNode,
-      name: 'directForwardRefHost',
     });
-    const plugin = createPlatePlugin({
+    const plugin = definePlatePlugin('forwardRefHost', {
       component: Node,
-      name: 'forwardRefHost',
     }).configure({
       override: { components: { paragraph: OverrideNode } },
     });
@@ -1139,23 +1077,21 @@ describe('mergePlugins behavior in resolvePlugins', () => {
   });
 
   it('snapshots plugin-valued initialState as frozen nominal references', () => {
-    const Target = createBasePlugin({ name: 'stateTarget' });
+    const Target = defineBasePlugin('stateTarget', {});
     const cycle: { self?: typeof cycle; target: typeof Target } = {
       target: Target,
     };
 
     cycle.self = cycle;
-    const Owner = createBasePlugin({
-      name: 'stateOwner',
+    const Owner = defineBasePlugin('stateOwner', {
       initialState: { cycle, first: Target, second: Target },
     });
     const editor = createBaseEditor({ plugins: [Target, Owner] });
-    const publishedState = editor.plugin(Owner).plugin.initialState;
+    const publishedState = editor.plugin(Owner).initialState;
     const targetReference = publishedState.first;
 
     expect(targetReference).toEqual({
       name: 'stateTarget',
-      type: 'stateTarget',
     });
     expect(targetReference).toBe(publishedState.second);
     expect(targetReference).toBe(publishedState.cycle.target);
@@ -1164,15 +1100,14 @@ describe('mergePlugins behavior in resolvePlugins', () => {
     expect(Object.isFrozen(targetReference)).toBe(true);
     expect(editor.plugin(Owner).store.get('first')).toBe(targetReference);
 
-    const ContextOwner = createBasePlugin({
-      name: 'contextStateOwner',
+    const ContextOwner = defineBasePlugin('contextStateOwner', {
       initialState: { target: null as unknown as typeof Target },
     }).extend(() => ({ initialState: { target: Target } }));
     const contextEditor = createBaseEditor({
       plugins: [Target, ContextOwner],
     });
     const contextPublished =
-      contextEditor.plugin(ContextOwner).plugin.initialState.target;
+      contextEditor.plugin(ContextOwner).initialState.target;
 
     expect(contextPublished).toBe(
       contextEditor.plugin(ContextOwner).store.get('target')
@@ -1181,21 +1116,18 @@ describe('mergePlugins behavior in resolvePlugins', () => {
     expect(contextPublished).not.toBe(targetReference);
     expect(Object.isFrozen(contextPublished)).toBe(true);
 
-    Object.assign(Target, { name: 'mutatedTarget', type: 'mutatedTarget' });
+    Object.assign(Target, { name: 'mutatedTarget' });
 
     expect(targetReference).toEqual({
       name: 'stateTarget',
-      type: 'stateTarget',
     });
     expect(getPlateRuntime(editor).plugins.stateTarget).toMatchObject({
       name: 'stateTarget',
-      type: 'stateTarget',
     });
   });
 
   it('keeps mutable store state outside the published plugin descriptor', () => {
-    const plugin = createBasePlugin({
-      name: 'test',
+    const plugin = defineBasePlugin('test', {
       initialState: { value: 'original' },
     });
 
@@ -1206,13 +1138,12 @@ describe('mergePlugins behavior in resolvePlugins', () => {
     editor.plugin(plugin).store.set({ value: 'modified' });
 
     expect(editor.plugin(plugin).store.get('value')).toBe('modified');
-    expect(editor.plugin(plugin).plugin.initialState.value).toBe('original');
+    expect(editor.plugin(plugin).initialState.value).toBe('original');
     expect(plugin.initialState.value).toBe('original');
   });
 
   it('keeps extension-derived defaults separate from mutable store state', () => {
-    const plugin = createBasePlugin({
-      name: 'test',
+    const plugin = defineBasePlugin('test', {
       initialState: { value: 'original' },
     }).extend(({ store }) => ({
       initialState: {
@@ -1225,12 +1156,12 @@ describe('mergePlugins behavior in resolvePlugins', () => {
       plugins: [plugin],
     });
 
-    expect(editor.plugin(plugin).plugin.initialState.value).toBe('modified');
+    expect(editor.plugin(plugin).initialState.value).toBe('modified');
 
     editor.plugin(plugin).store.set({ value: 'runtime' });
 
     expect(editor.plugin(plugin).store.get('value')).toBe('runtime');
-    expect(editor.plugin(plugin).plugin.initialState.value).toBe('modified');
+    expect(editor.plugin(plugin).initialState.value).toBe('modified');
     expect(plugin.initialState.value).toBe('original');
   });
 });

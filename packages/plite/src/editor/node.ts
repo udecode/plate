@@ -1,7 +1,7 @@
 import { path as editorPath } from '../interfaces/editor';
 import type {
   EditorNodeOptions,
-  Editor as EditorType,
+  AnyEditor as EditorType,
 } from '../interfaces/editor';
 import type { Location } from '../interfaces/location';
 import { NodeApi, type NodeEntry } from '../interfaces/node';

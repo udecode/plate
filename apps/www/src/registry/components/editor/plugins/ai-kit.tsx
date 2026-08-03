@@ -2,7 +2,7 @@
 
 import cloneDeep from 'lodash/cloneDeep.js';
 import { AIChatPlugin, AIPlugin, useChatChunk } from '@platejs/ai/react';
-import { ElementApi, KEYS, PathApi } from 'platejs';
+import { PLUGINS, ElementApi, PathApi } from 'platejs';
 import { usePluginStore } from 'platejs/react';
 
 import { AILoadingBar, AIMenu } from '@/registry/ui/ai-menu';
@@ -32,7 +32,7 @@ export const aiChatPlugin = AIChatPlugin.extend({
     afterEditable: AIMenu,
   },
   shortcuts: { show: { keys: 'mod+j' } },
-  useHooks: ({ api, editor, read, store, update }) => {
+  useHooks: ({ api, editor, read, store }) => {
     useChat();
 
     const mode = usePluginStore(AIChatPlugin, 'mode');
@@ -58,7 +58,7 @@ export const aiChatPlugin = AIChatPlugin.extend({
           editor.update({ history: 'skip' }).nodes.insert(
             {
               children: [{ text: '' }],
-              type: editor.plugin(KEYS.aiChat).type,
+              type: editor.plugin(PLUGINS.aiChat).type,
             },
             {
               at: PathApi.next(selection.focus.path.slice(0, 1)),
@@ -70,16 +70,18 @@ export const aiChatPlugin = AIChatPlugin.extend({
         if (mode === 'insert' && nodes.length > 0) {
           if (!store.get('streaming')) return;
 
-          update.insertChunk(chunk, {
+          editor.plugin(AIChatPlugin).update.insertChunk(chunk, {
             autoScroll: true,
             textProps: {
-              [editor.plugin(KEYS.ai).type]: true,
+              [editor.plugin(PLUGINS.ai).key]: true,
             },
           });
         }
 
         if (toolName === 'edit' && mode === 'chat') {
-          update.applySuggestions(content, { split: isFirst });
+          editor
+            .plugin(AIChatPlugin)
+            .update.applySuggestions(content, { split: isFirst });
         }
       },
       onFinish: () => {

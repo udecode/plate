@@ -3,11 +3,11 @@ import {
   type Point,
   RangeApi,
   type RuntimeId,
-  type Editor as EditorType,
   type Path as PlitePath,
   type Range as PliteRange,
 } from '@platejs/plite';
 import {
+  type AnyEditor as EditorType,
   after as editorAfter,
   before as editorBefore,
   getPathByRuntimeId as editorGetPathByRuntimeId,

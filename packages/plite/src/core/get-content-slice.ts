@@ -1,6 +1,6 @@
 import type {
   ContentSlice as ContentSliceValue,
-  Editor,
+  AnyEditor as Editor,
   Value,
 } from '../interfaces/editor';
 import { ElementApi } from '../interfaces/element';

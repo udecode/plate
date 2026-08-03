@@ -1,4 +1,8 @@
-import type { EditorExtensionReference } from '@platejs/plite';
+import type {
+  EditorExtensionReference,
+  EditorSchemaExtension,
+  EditorSchemaExtensionProvider,
+} from '@platejs/plite';
 import type {
   EditorExtensionDependencyReferenceFor,
   InternalEditorExtensionDependencyReference,
@@ -14,17 +18,16 @@ import type {
   InferDependencies,
   InferEnabled,
   InferRead,
-  InferTargetPluginNames,
+  InferTargetPlugins,
   InferUpdate,
   NormalizePluginState,
   PluginSchemaDeclaration,
+  PluginDependency,
+  PluginDependencySource,
   PluginReference,
 } from './PluginDefinition';
-import type { InternalDefinitionOf } from './pluginDefinitionCarrier.internal';
-import type {
-  InferExactPluginSchemaContribution,
-  InferPluginDocumentType,
-} from './pluginSchemaModel.internal';
+import type { InternalPluginDefinitionOf } from './pluginDefinitionLookup.internal';
+import type { InferExactPluginSchemaContribution } from './pluginSchemaModel.internal';
 
 type InstalledCapabilityNames<TCapability> =
   TCapability extends Readonly<{ name: infer TName extends PropertyKey }>
@@ -42,41 +45,43 @@ type ExcludeInstalledCapabilityNames<
     : TCapability
   : never;
 
+type InstalledDependencyCapability<TDependency> = [
+  PluginDependencySource<TDependency>,
+] extends [never]
+  ? InternalEditorExtensionInstalledCapabilitiesOf<TDependency>
+  : InstalledBasePluginCapabilitiesOf<PluginDependencySource<TDependency>>;
+
 type InstalledDependencyCapabilities<TDependencies extends readonly unknown[]> =
   number extends TDependencies['length']
-    ? InternalEditorExtensionInstalledCapabilitiesOf<TDependencies[number]>
+    ? InstalledDependencyCapability<TDependencies[number]>
     : TDependencies extends readonly [
           ...infer TPrevious extends readonly unknown[],
           infer TLast,
         ]
       ?
-          | InternalEditorExtensionInstalledCapabilitiesOf<TLast>
+          | InstalledDependencyCapability<TLast>
           | ExcludeInstalledCapabilityNames<
               InstalledDependencyCapabilities<TPrevious>,
               InstalledCapabilityNames<TLast>
             >
       : never;
 
-type InstalledBasePluginSchemaCapability<C extends AnyBasePluginDefinition> = [
-  InferExactPluginSchemaContribution<C>,
-] extends [never]
-  ? {}
-  : Readonly<{
-      schemaContribution: InferExactPluginSchemaContribution<C>;
-    }>;
+type InstalledBasePluginSchemaCapability<C extends AnyBasePluginDefinition> =
+  Readonly<{
+    schemaContribution: () => InferExactPluginSchemaContribution<C>;
+  }>;
 
 type InstalledBasePluginCapability<
   C extends AnyBasePluginDefinition,
   TSource,
 > = Readonly<{
-  documentType: InferPluginDocumentType<C>;
   name: C['name'];
 }> &
   DefinitionField<C, 'api', InferApi<C>> &
   DefinitionField<C, 'enabled', InferEnabled<C>> &
   DefinitionField<C, 'read', InferRead<C>> &
   InstalledBasePluginSchemaCapability<C> &
-  DefinitionField<C, 'targetPluginNames', InferTargetPluginNames<C>> &
+  DefinitionField<C, 'targetPlugins', InferTargetPlugins<C>> &
   DefinitionField<C, 'update', InferUpdate<C>> &
   InternalEditorExtensionTypeProviderOf<TSource>;
 
@@ -85,14 +90,13 @@ type DirectBasePluginDependencyCapability<
   TSource,
 > = [InferEnabled<C>] extends [false]
   ? Readonly<{
-      documentType: InferPluginDocumentType<C>;
       enabled: false;
       name: C['name'];
     }>
   : InstalledBasePluginCapability<C, TSource>;
 
 type InstalledBasePluginCapabilitiesOf<TDependency> =
-  InternalDefinitionOf<TDependency> extends infer D extends
+  InternalPluginDefinitionOf<TDependency> extends infer D extends
     AnyBasePluginDefinition
     ? [InferEnabled<D>] extends [false]
       ? never
@@ -122,39 +126,90 @@ export type BasePluginInstalledCapabilityWitness<
 >;
 
 /** Compact, nameable install contract for one Plate dependency. */
-export type BasePluginDependencyReferenceFor<TDependency> = [
-  InternalEditorExtensionInstalledCapabilitiesOf<TDependency>,
+type BasePluginDependencySchemaReference<TDependency> =
+  TDependency extends EditorSchemaExtensionProvider<
+    infer TSchema extends EditorSchemaExtension
+  >
+    ? EditorSchemaExtensionProvider<TSchema>
+    : {};
+
+type BasePluginDependencyDefinitionOf<TDependency> = [
+  PluginDependencySource<TDependency>,
 ] extends [never]
-  ? [InternalDefinitionOf<TDependency>] extends [never]
-    ? EditorExtensionDependencyReferenceFor<TDependency>
-    : InternalDefinitionOf<TDependency> extends infer D extends
-          AnyBasePluginDefinition
-      ? InternalEditorExtensionDependencyReference<
-          Readonly<{
-            direct: DirectBasePluginDependencyCapability<D, TDependency>;
-            installed: InstalledBasePluginCapabilitiesOf<TDependency>;
-          }>
+  ? InternalPluginDefinitionOf<TDependency>
+  : PluginDependencySource<TDependency> extends infer TSource
+    ? TSource extends AnyBasePluginDefinition
+      ? TSource
+      : InternalPluginDefinitionOf<TSource>
+    : never;
+
+type CompactBasePluginDependencyReferences<TDependencies> =
+  TDependencies extends readonly unknown[]
+    ? {
+        readonly [TIndex in keyof TDependencies]: TDependencies[TIndex] extends PluginReference<
+          infer TName
         >
-      : never
-  : EditorExtensionDependencyReferenceFor<TDependency>;
+          ? PluginReference<TName> &
+              PluginDependency<
+                CompactBasePluginDependencyDefinition<
+                  BasePluginDependencyDefinitionOf<TDependencies[TIndex]>
+                >
+              >
+          : TDependencies[TIndex] extends EditorExtensionReference
+            ? Readonly<Pick<TDependencies[TIndex], 'enabled' | 'name'>> &
+                PluginDependency<
+                  CompactBasePluginDependencyDefinition<
+                    BasePluginDependencyDefinitionOf<TDependencies[TIndex]>
+                  >
+                >
+            : never;
+      }
+    : readonly [];
+
+type CompactBasePluginDependencyDefinition<C extends AnyBasePluginDefinition> =
+  Readonly<{ name: C['name'] }> &
+    DefinitionField<C, 'api', InferApi<C>> &
+    DefinitionField<C, 'enabled', InferEnabled<C>> &
+    DefinitionField<C, 'read', InferRead<C>> &
+    DefinitionField<
+      C,
+      'schema',
+      C extends { schema: infer TSchema } ? TSchema : never
+    > &
+    DefinitionField<C, 'targetPlugins', InferTargetPlugins<C>> &
+    DefinitionField<C, 'update', InferUpdate<C>> &
+    (C extends {
+      dependencies: infer TDependencies extends readonly unknown[];
+    }
+      ? Readonly<{
+          dependencies: CompactBasePluginDependencyReferences<TDependencies>;
+        }>
+      : Readonly<Record<never, never>>);
+
+export type BasePluginDependencyReferenceFor<TDependency> = ([
+  InternalPluginDefinitionOf<TDependency>,
+] extends [never]
+  ? EditorExtensionDependencyReferenceFor<TDependency>
+  : PluginDependency<
+      CompactBasePluginDependencyDefinition<
+        InternalPluginDefinitionOf<TDependency>
+      >
+    >) &
+  BasePluginDependencySchemaReference<TDependency>;
 
 export type BasePluginDependencyReferences<
   D extends readonly Readonly<{ name: string }>[],
 > = {
-  readonly [TIndex in keyof D]: D[TIndex] extends PluginReference<
-    infer TName,
-    infer TDocumentType
-  >
-    ? PluginReference<TName, TDocumentType> &
-        EditorExtensionDependencyReferenceFor<D[TIndex]>
+  readonly [TIndex in keyof D]: D[TIndex] extends PluginReference<infer TName>
+    ? PluginReference<TName> & BasePluginDependencyReferenceFor<D[TIndex]>
     : D[TIndex] extends EditorExtensionReference
       ? BasePluginDependencyReferenceFor<D[TIndex]>
       : never;
 };
 
 type BasePluginDependencyDescriptor<TDependency> =
-  TDependency extends PluginReference<infer TName, infer TDocumentType>
-    ? PluginReference<TName, TDocumentType>
+  TDependency extends PluginReference<infer TName>
+    ? PluginReference<TName>
     : TDependency extends EditorExtensionReference
       ? Readonly<Pick<TDependency, 'enabled' | 'name'>>
       : never;
@@ -251,11 +306,10 @@ type InputDependencies<TInput> = TInput extends {
 }
   ? {
       readonly [TIndex in keyof TDependencies]: TDependencies[TIndex] extends PluginReference<
-        infer TName,
-        infer TDocumentType
+        infer TName
       >
-        ? PluginReference<TName, TDocumentType> &
-            EditorExtensionDependencyReferenceFor<TDependencies[TIndex]>
+        ? PluginReference<TName> &
+            BasePluginDependencyReferenceFor<TDependencies[TIndex]>
         : TDependencies[TIndex] extends EditorExtensionReference
           ? BasePluginDependencyReferenceFor<TDependencies[TIndex]>
           : never;
@@ -270,10 +324,9 @@ type InputConflicts<TInput> = TInput extends {
 }
   ? {
       readonly [TIndex in keyof TConflicts]: TConflicts[TIndex] extends PluginReference<
-        infer TName,
-        infer TDocumentType
+        infer TName
       >
-        ? PluginReference<TName, TDocumentType> &
+        ? PluginReference<TName> &
             EditorExtensionDependencyReferenceFor<TConflicts[TIndex]>
         : TConflicts[TIndex] extends EditorExtensionReference
           ? EditorExtensionDependencyReferenceFor<TConflicts[TIndex]>
@@ -295,45 +348,41 @@ type BasePluginPresenceField =
   | 'inject'
   | 'inputRules'
   | 'override'
-  | 'parsers'
   | 'render'
   | 'rules'
   | 'shortcuts'
-  | 'targetPluginNames'
+  | 'targetPlugins'
   | 'transformInitialValue'
   | 'useHooks';
 
-type NormalizedBasePluginField<
-  TInput,
-  TKey extends keyof TInput,
-> = TKey extends 'api'
-  ? InputApi<TInput>
-  : TKey extends 'conflicts'
-    ? InputConflicts<TInput>
-    : TKey extends 'dependencies'
-      ? InputDependencies<TInput>
-      : TKey extends 'enabled'
-        ? InputEnabled<TInput>
-        : TKey extends 'targetPluginNames'
-          ? TInput[TKey] extends readonly string[]
-            ? TInput[TKey]
-            : readonly string[]
-          : TKey extends 'read'
-            ? InputRead<TInput>
-            : TKey extends 'update'
-              ? InputUpdate<TInput>
-              : TKey extends 'initialState'
-                ? InputInitialState<TInput>
-                : TKey extends 'selectors'
-                  ? InputSelectors<TInput>
-                  : TKey extends 'schema'
-                    ? InputSchema<TInput>
-                    : TKey extends BasePluginPresenceField
-                      ? true
-                      : TKey extends 'type'
-                        ? TInput[TKey] extends string
-                          ? TInput[TKey]
-                          : string
+type NormalizedBasePluginField<TInput, TKey extends keyof TInput> = TKey extends
+  | 'key'
+  | 'type'
+  ? TInput[TKey]
+  : TKey extends 'api'
+    ? InputApi<TInput>
+    : TKey extends 'conflicts'
+      ? InputConflicts<TInput>
+      : TKey extends 'dependencies'
+        ? InputDependencies<TInput>
+        : TKey extends 'enabled'
+          ? InputEnabled<TInput>
+          : TKey extends 'targetPlugins'
+            ? TInput[TKey] extends readonly (PluginReference | string)[]
+              ? TInput[TKey]
+              : readonly (PluginReference | string)[]
+            : TKey extends 'read'
+              ? InputRead<TInput>
+              : TKey extends 'update'
+                ? InputUpdate<TInput>
+                : TKey extends 'initialState'
+                  ? InputInitialState<TInput>
+                  : TKey extends 'selectors'
+                    ? InputSelectors<TInput>
+                    : TKey extends 'schema'
+                      ? InputSchema<TInput>
+                      : TKey extends BasePluginPresenceField
+                        ? true
                         : never;
 
 export type NormalizeBasePluginInput<

@@ -1,4 +1,5 @@
 'use client';
+import { NODES } from '@platejs/utils';
 
 import type { PlateEditor } from 'platejs/react';
 import type { Element, NodeEntry, Path } from '@platejs/plite';
@@ -38,25 +39,23 @@ const createBlock = ({
   }) as Element;
 
 const createBlockquote = (): Element => ({
-  children: [createBlock({ type: KEYS.p })],
-  type: KEYS.blockquote,
+  children: [createBlock({ type: NODES.p })],
+  type: NODES.blockquote,
 });
 
 const removeEmptySourceAfterInsert = (
   editor: PlateEditor,
-  insertedType: string,
+  insertedNodeType: string,
   path: Path,
   currentBlockType: string
 ) => {
-  const insertedPlugin = editor.plugin(insertedType);
   const inserted = editor.read.nodes.get(PathApi.next(path));
   const source = editor.read.nodes.get(path);
 
   if (
     !inserted ||
     !ElementApi.isElement(inserted[0]) ||
-    inserted[0].type !==
-      (insertedPlugin.installed ? insertedPlugin.type : insertedType) ||
+    inserted[0].type !== insertedNodeType ||
     !source ||
     !ElementApi.isElement(source[0]) ||
     getBlockType(source[0]) !== currentBlockType ||
@@ -70,16 +69,13 @@ const removeEmptySourceAfterInsert = (
   });
 };
 
-const insertInlineMap: Record<
-  string,
-  (editor: PlateEditor, type: string) => void
-> = {
-  [KEYS.date]: (editor) =>
+const insertInlineMap: Record<string, (editor: PlateEditor) => void> = {
+  [NODES.date]: (editor) =>
     editor.plugin(BaseDatePlugin).update.insert({ select: true }),
   [ACTION_FOOTNOTE]: runFootnoteAction,
-  [KEYS.inlineEquation]: (editor) =>
+  [NODES.inlineEquation]: (editor) =>
     editor.plugin(BaseInlineEquationPlugin).update.insert({ select: true }),
-  [KEYS.link]: (editor) => {
+  [NODES.link]: (editor) => {
     const link = editor.plugin(LinkPlugin);
 
     link.store.set({ text: editor.read.text.string() });
@@ -93,7 +89,7 @@ type InsertBlockOptions = {
 
 export const insertBlock = (
   editor: PlateEditor,
-  type: string,
+  action: string,
   options: InsertBlockOptions = {}
 ) => {
   const { upsert = false } = options;
@@ -105,16 +101,13 @@ export const insertBlock = (
   const [currentNode, path] = block;
   const isCurrentBlockEmpty = editor.read.nodes.isEmpty(currentNode);
   const currentBlockType = getBlockType(currentNode);
-  const plugin = editor.plugin(type);
-  const nodeType = plugin.installed ? plugin.type : type;
-
-  const isSameBlockType = nodeType === currentBlockType;
+  const isSameBlockType = action === currentBlockType;
 
   if (upsert && isCurrentBlockEmpty && isSameBlockType) {
     return;
   }
 
-  if (type === KEYS.blockquote) {
+  if (action === NODES.blockquote) {
     const insertPath = PathApi.next(path);
 
     editor.update((tx) => {
@@ -137,43 +130,47 @@ export const insertBlock = (
 
     return;
   }
-  if (type === KEYS.codeBlock) {
+  if (action === NODES.codeBlock) {
     editor.plugin(BaseCodeBlockPlugin).update.insert();
 
     return;
   }
-  if (type === KEYS.toc) {
+  if (action === NODES.toc) {
     editor
       .plugin(BaseTocPlugin)
       .update.insert({ at: PathApi.next(path), select: true });
-    removeEmptySourceAfterInsert(editor, type, path, currentBlockType);
+    removeEmptySourceAfterInsert(editor, NODES.toc, path, currentBlockType);
 
     return;
   }
-  if (type === KEYS.img || type === KEYS.mediaEmbed) {
+  if (action === NODES.img || action === NODES.mediaEmbed) {
     void insertMediaUrl(editor, {
       at: PathApi.next(path),
       select: true,
-      type,
+      type: action,
     }).then(() => {
-      removeEmptySourceAfterInsert(editor, type, path, currentBlockType);
+      removeEmptySourceAfterInsert(editor, action, path, currentBlockType);
     });
 
     return;
   }
-  if (type === KEYS.audio || type === KEYS.file || type === KEYS.video) {
+  if (
+    action === NODES.audio ||
+    action === NODES.file ||
+    action === NODES.video
+  ) {
     editor
       .plugin(BasePlaceholderPlugin)
-      .update.insert(type, { at: PathApi.next(path), select: true });
+      .update.insert(action, { at: PathApi.next(path), select: true });
     removeEmptySourceAfterInsert(
       editor,
-      KEYS.placeholder,
+      NODES.placeholder,
       path,
       currentBlockType
     );
     return;
   }
-  if (type === ACTION_THREE_COLUMNS) {
+  if (action === ACTION_THREE_COLUMNS) {
     editor.plugin(BaseColumnItemPlugin).update.insertGroup({
       at: PathApi.next(path),
       columns: 3,
@@ -188,7 +185,7 @@ export const insertBlock = (
 
     return;
   }
-  if (type === KEYS.table) {
+  if (action === NODES.table) {
     editor.plugin(BaseTablePlugin).update.insert({}, { select: true });
 
     if (!isSameBlockType && isCurrentBlockEmpty) {
@@ -199,7 +196,7 @@ export const insertBlock = (
 
     return;
   }
-  if (type === KEYS.callout) {
+  if (action === NODES.callout) {
     editor.plugin(BaseCalloutPlugin).update.insert({ select: true });
 
     if (!isSameBlockType && isCurrentBlockEmpty) {
@@ -210,7 +207,7 @@ export const insertBlock = (
 
     return;
   }
-  if (type === KEYS.codeDrawing) {
+  if (action === NODES.codeDrawing) {
     editor.plugin(BaseCodeDrawingPlugin).update.insert({}, { select: true });
 
     if (!isSameBlockType && isCurrentBlockEmpty) {
@@ -221,7 +218,7 @@ export const insertBlock = (
 
     return;
   }
-  if (type === KEYS.equation) {
+  if (action === NODES.equation) {
     editor.plugin(BaseEquationPlugin).update.insert({ select: true });
 
     if (!isSameBlockType && isCurrentBlockEmpty) {
@@ -232,7 +229,7 @@ export const insertBlock = (
 
     return;
   }
-  if (type === KEYS.excalidraw) {
+  if (action === NODES.excalidraw) {
     editor.plugin(BaseExcalidrawPlugin).update.insert({}, { select: true });
 
     if (!isSameBlockType && isCurrentBlockEmpty) {
@@ -244,29 +241,29 @@ export const insertBlock = (
     return;
   }
   editor.update((tx) => {
-    const insertByType: Record<string, () => void> = {
+    const insertByAction: Record<string, () => void> = {
       [KEYS.listTodo]: () =>
         tx.nodes.insert(
-          createBlock({ indent: 1, listStyleType: type, type: KEYS.p }),
+          createBlock({ indent: 1, listStyleType: action, type: NODES.p }),
           { select: true }
         ),
       [KEYS.ol]: () =>
         tx.nodes.insert(
-          createBlock({ indent: 1, listStyleType: type, type: KEYS.p }),
+          createBlock({ indent: 1, listStyleType: action, type: NODES.p }),
           { select: true }
         ),
       [KEYS.ul]: () =>
         tx.nodes.insert(
-          createBlock({ indent: 1, listStyleType: type, type: KEYS.p }),
+          createBlock({ indent: 1, listStyleType: action, type: NODES.p }),
           { select: true }
         ),
     };
-    const insert = insertByType[type];
+    const insert = insertByAction[action];
 
     if (insert) {
       insert();
     } else {
-      tx.nodes.insert(createBlock({ type: nodeType }), {
+      tx.nodes.insert(createBlock({ type: action }), {
         at: PathApi.next(path),
         select: true,
       });
@@ -290,30 +287,25 @@ export const insertBlock = (
   });
 };
 
-export const insertInlineElement = (editor: PlateEditor, type: string) => {
-  if (insertInlineMap[type]) {
-    insertInlineMap[type](editor, type);
-  }
+export const insertInlineElement = (editor: PlateEditor, action: string) => {
+  insertInlineMap[action]?.(editor);
 };
 
 const setBlockActionMap: Record<string, (editor: PlateEditor) => void> = {
   [ACTION_THREE_COLUMNS]: (editor) =>
     editor.plugin(BaseColumnItemPlugin).update.toggle({ columns: 3 }),
-  [KEYS.codeBlock]: toggleCodeBlock,
+  [NODES.codeBlock]: toggleCodeBlock,
 };
 
 export const setBlockType = (
   editor: PlateEditor,
-  type: string,
+  action: string,
   { at }: { at?: Path } = {}
 ) => {
-  if (type in setBlockActionMap) {
-    setBlockActionMap[type](editor);
+  if (action in setBlockActionMap) {
+    setBlockActionMap[action](editor);
     return;
   }
-
-  const plugin = editor.plugin(type);
-  const nodeType = plugin.installed ? plugin.type : type;
 
   editor.update((tx) => {
     const setEntry = (entry: NodeEntry<Element>) => {
@@ -322,36 +314,40 @@ export const setBlockType = (
       if ((node as Element & Record<string, unknown>)[KEYS.listType]) {
         tx.nodes.unset([KEYS.listType, 'indent'], { at: path });
       }
-      if (type === KEYS.listTodo || type === KEYS.ol || type === KEYS.ul) {
+      if (
+        action === KEYS.listTodo ||
+        action === KEYS.ol ||
+        action === KEYS.ul
+      ) {
         tx.nodes.set(
           {
             indent: 1,
-            listStyleType: type,
-            type: KEYS.p,
+            listStyleType: action,
+            type: NODES.p,
           },
           { at: path }
         );
 
         return;
       }
-      if (type === KEYS.blockquote) {
+      if (action === NODES.blockquote) {
         const isActive =
-          node.type === nodeType ||
+          node.type === action ||
           !!tx.nodes.above({
             at: path,
-            match: { type: nodeType },
+            match: { type: action },
           });
 
         if (!isActive) {
-          tx.nodes.wrap({ children: [], type: nodeType } as Element, {
+          tx.nodes.wrap({ children: [], type: action } as Element, {
             at: path,
           });
         }
 
         return;
       }
-      if (node.type !== nodeType) {
-        tx.nodes.set({ type: nodeType }, { at: path });
+      if (node.type !== action) {
+        tx.nodes.set({ type: action }, { at: path });
       }
     };
 

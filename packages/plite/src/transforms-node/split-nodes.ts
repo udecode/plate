@@ -25,7 +25,7 @@ import {
   point as editorPoint,
   void as editorVoid,
 } from '../interfaces/editor';
-import type { Editor } from '../interfaces/editor';
+import type { AnyEditor as Editor } from '../interfaces/editor';
 import { type Node, NodeApi } from '../interfaces/node';
 import { type Path, PathApi } from '../interfaces/path';
 import type { Point } from '../interfaces/point';

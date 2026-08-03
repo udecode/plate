@@ -1,11 +1,11 @@
 import { createBaseEditor } from '../../lib/editor';
-import { createBasePlugin } from '../../lib/plugin';
+import { defineBasePlugin } from '../../lib/plugin';
+import { BaseParagraphPlugin } from '../../lib/plugins/paragraph';
 import { pluginInjectNodeProps } from './pluginInjectNodeProps';
 
 describe('pluginInjectNodeProps', () => {
   it('returns default class and style props for matching elements', () => {
-    const AlignPlugin = createBasePlugin({
-      name: 'align',
+    const AlignPlugin = defineBasePlugin('align', {
       inject: {
         nodeProps: {
           nodeKey: 'align',
@@ -21,12 +21,12 @@ describe('pluginInjectNodeProps', () => {
     expect(
       pluginInjectNodeProps(
         editor,
-        editor.plugin(AlignPlugin).plugin,
+        editor.plugin(AlignPlugin),
         {
           element: {
             align: 'center',
             children: [{ text: 'hello' }],
-            type: 'p',
+            type: 'paragraph',
           },
         },
         () => [0]
@@ -40,8 +40,7 @@ describe('pluginInjectNodeProps', () => {
   });
 
   it('returns undefined when the query fails or the node is missing', () => {
-    const BoldPlugin = createBasePlugin({
-      name: 'bold',
+    const BoldPlugin = defineBasePlugin('bold', {
       inject: {
         nodeProps: {
           nodeKey: 'bold',
@@ -55,17 +54,12 @@ describe('pluginInjectNodeProps', () => {
     });
 
     expect(
-      pluginInjectNodeProps(
-        editor,
-        editor.plugin(BoldPlugin).plugin,
-        {},
-        () => [0]
-      )
+      pluginInjectNodeProps(editor, editor.plugin(BoldPlugin), {}, () => [0])
     ).toBeUndefined();
     expect(
       pluginInjectNodeProps(
         editor,
-        editor.plugin(BoldPlugin).plugin,
+        editor.plugin(BoldPlugin),
         { text: { bold: true, text: 'hello' } },
         () => [0]
       )
@@ -74,9 +68,8 @@ describe('pluginInjectNodeProps', () => {
 
   it('keeps transformProps hook order when inject matching rejects the node', () => {
     const transformProps = mock(({ props }) => props);
-    const TargetPlugin = createBasePlugin({
-      targetPluginNames: ['quote'],
-      name: 'target',
+    const TargetPlugin = defineBasePlugin('target', {
+      targetPlugins: ['quote'],
       inject: {
         nodeProps: {
           nodeKey: 'tone',
@@ -92,12 +85,12 @@ describe('pluginInjectNodeProps', () => {
     expect(
       pluginInjectNodeProps(
         editor,
-        editor.plugin(TargetPlugin).plugin,
+        editor.plugin(TargetPlugin),
         {
           element: {
             children: [{ text: 'hello' }],
             tone: 'red',
-            type: 'p',
+            type: 'paragraph',
           },
         },
         () => [0]
@@ -110,8 +103,7 @@ describe('pluginInjectNodeProps', () => {
 
   it('keeps transformProps hook order when the query rejects the node', () => {
     const transformProps = mock(({ props }) => props);
-    const QueryPlugin = createBasePlugin({
-      name: 'query',
+    const QueryPlugin = defineBasePlugin('query', {
       inject: {
         nodeProps: {
           nodeKey: 'tone',
@@ -128,7 +120,7 @@ describe('pluginInjectNodeProps', () => {
     expect(
       pluginInjectNodeProps(
         editor,
-        editor.plugin(QueryPlugin).plugin,
+        editor.plugin(QueryPlugin),
         { text: { text: 'hello', tone: 'red' } },
         () => [0]
       )
@@ -139,8 +131,7 @@ describe('pluginInjectNodeProps', () => {
   });
 
   it('suppresses default node values unless transformProps forces an injection', () => {
-    const ForcedPlugin = createBasePlugin({
-      name: 'forced',
+    const ForcedPlugin = defineBasePlugin('forced', {
       inject: {
         nodeProps: {
           defaultNodeValue: false,
@@ -153,8 +144,7 @@ describe('pluginInjectNodeProps', () => {
         },
       },
     });
-    const SilentPlugin = createBasePlugin({
-      name: 'silent',
+    const SilentPlugin = defineBasePlugin('silent', {
       inject: {
         nodeProps: {
           defaultNodeValue: false,
@@ -170,7 +160,7 @@ describe('pluginInjectNodeProps', () => {
     expect(
       pluginInjectNodeProps(
         editor,
-        editor.plugin(SilentPlugin).plugin,
+        editor.plugin(SilentPlugin),
         { text: { bold: false, text: 'hello' } },
         () => [0]
       )
@@ -178,7 +168,7 @@ describe('pluginInjectNodeProps', () => {
     expect(
       pluginInjectNodeProps(
         editor,
-        editor.plugin(ForcedPlugin).plugin,
+        editor.plugin(ForcedPlugin),
         { text: { bold: false, text: 'hello' } },
         () => [0]
       )
@@ -188,8 +178,7 @@ describe('pluginInjectNodeProps', () => {
   });
 
   it('uses transform callbacks in precedence order', () => {
-    const TonePlugin = createBasePlugin({
-      name: 'tone',
+    const TonePlugin = defineBasePlugin('tone', {
       inject: {
         nodeProps: {
           classNames: {
@@ -216,7 +205,7 @@ describe('pluginInjectNodeProps', () => {
     expect(
       pluginInjectNodeProps(
         editor,
-        editor.plugin(TonePlugin).plugin,
+        editor.plugin(TonePlugin),
         { text: { text: 'hello', tone: 'red' } },
         () => [0]
       )
@@ -230,9 +219,8 @@ describe('pluginInjectNodeProps', () => {
   });
 
   it('does not resolve a path when inject matching is pathless', () => {
-    const ListishPlugin = createBasePlugin({
-      targetPluginNames: ['p'],
-      name: 'list',
+    const ListishPlugin = defineBasePlugin('list', {
+      targetPlugins: [BaseParagraphPlugin],
       inject: {
         nodeProps: {
           nodeKey: 'listStyleType',
@@ -259,12 +247,12 @@ describe('pluginInjectNodeProps', () => {
     expect(
       pluginInjectNodeProps(
         editor,
-        editor.plugin(ListishPlugin).plugin,
+        editor.plugin(ListishPlugin),
         {
           element: {
             children: [{ text: 'hello' }],
             listStyleType: 'disc',
-            type: 'p',
+            type: 'paragraph',
           },
         },
         getPath
@@ -280,8 +268,7 @@ describe('pluginInjectNodeProps', () => {
   });
 
   it('does not resolve a path for inject matching when the plugin has no path-based filters', () => {
-    const PathlessPlugin = createBasePlugin({
-      name: 'pathless',
+    const PathlessPlugin = defineBasePlugin('pathless', {
       inject: {
         nodeProps: {
           styleKey: '',
@@ -297,7 +284,7 @@ describe('pluginInjectNodeProps', () => {
 
     pluginInjectNodeProps(
       editor,
-      editor.plugin(PathlessPlugin).plugin,
+      editor.plugin(PathlessPlugin),
       { text: { text: 'hello' } },
       getPath
     );
@@ -307,8 +294,7 @@ describe('pluginInjectNodeProps', () => {
 
   it('skips path-based injection when the live node no longer resolves', () => {
     const transformProps = mock(({ props }) => props);
-    const PathPlugin = createBasePlugin({
-      name: 'path',
+    const PathPlugin = defineBasePlugin('path', {
       inject: {
         excludeBelowPlugins: ['quote'],
         nodeProps: {
@@ -324,7 +310,7 @@ describe('pluginInjectNodeProps', () => {
     expect(
       pluginInjectNodeProps(
         editor,
-        editor.plugin(PathPlugin).plugin,
+        editor.plugin(PathPlugin),
         { text: { text: 'hello', tone: 'red' } },
         () => undefined
       )

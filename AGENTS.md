@@ -4,9 +4,19 @@
 <!-- Source: .agents/AGENTS.md -->
 
 - `.agents/AGENTS.md` and `.agents/rules/*.mdc` are source of truth. After editing them, run `pnpm install` to sync. Never edit `SKILL.md` directly.
-- In all interactions and commit messages, be extremely concise and sacrifice grammar for the sake of concision.
+- Be concise in all interactions and commit messages. Never sacrifice precision or readability for brevity.
 - Answer in English by default. Switch languages only when the user explicitly asks for another language.
 - Prefer the smallest durable architecture that materially fixes the owning problem over the nearest local patch. If the real fix is an API or abstraction change, do that.
+
+## Technical prose
+
+These rules apply to user-facing technical prose: docs, commit messages, PR descriptions, reports, proposals, and replies. They do not constrain analysis, investigation, code, API names, or quoted text.
+
+- Lead with the decision or outcome. Give the reason before implementation details.
+- Prefer common words. Use one project term for one concept. Define unavoidable jargon on first use. If a term recurs or is ambiguous, define it in the owning doc and reuse it exactly.
+- Use active voice, short sentences, and short single-topic paragraphs. Prefer 20 words or fewer when clarity survives; never sacrifice precision to hit a word limit.
+- For an implementation proposal or handoff, cover these points when they apply: symptom or objective, root cause or owner, chosen fix, governing invariant, material alternatives rejected, blast radius, verification, and remaining risk.
+- Never make the reader inspect the diff to understand why the approach is correct and safe.
 
 ## Git
 

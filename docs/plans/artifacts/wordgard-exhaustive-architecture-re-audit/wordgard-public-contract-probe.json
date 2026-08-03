@@ -1,0 +1,1373 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-01T15:43:42.653Z",
+  "method": "Rebuild the exact historical source candidate in an isolated archive and hash every generated dist file against the ambient ignored dist. Build and pack a clean current-head archive and a current-head archive seeded with ambient dist; capture exit status, diagnostics, and pack contents. Compare every mechanically discoverable public source symbol/type/member against the historical source surface that generated dist. Compare every emitted public top-level/static/namespace value and non-abstract prototype method/accessor against runtime objects. Verify root namespace identity, Node ESM imports, TypeScript declaration resolution, browser-platform bundling, and browser-test module resolution.",
+  "wordgardHead": "c715d4ded8fc780f52c13206e589ea31e4148dd4",
+  "package": {
+    "name": "wordgard",
+    "version": "0.3.1",
+    "type": "module",
+    "main": "dist/index.js",
+    "files": ["/dist"],
+    "exports": {
+      ".": "./dist/index.js",
+      "./doc": "./dist/doc.js",
+      "./types": "./dist/types.js",
+      "./schema": "./dist/schema.js",
+      "./table": "./dist/table.js",
+      "./state": "./dist/state.js",
+      "./editor": "./dist/editor.js",
+      "./command": "./dist/command.js",
+      "./history": "./dist/history.js",
+      "./collab": "./dist/collab.js",
+      "./phrases": "./dist/phrases.js"
+    },
+    "exportTargets": [
+      {
+        "declarationTarget": "./dist/index.d.ts",
+        "declarationTargetExists": true,
+        "runtimeTarget": "./dist/index.js",
+        "runtimeTargetExists": true,
+        "subpath": "."
+      },
+      {
+        "declarationTarget": "./dist/doc.d.ts",
+        "declarationTargetExists": true,
+        "runtimeTarget": "./dist/doc.js",
+        "runtimeTargetExists": true,
+        "subpath": "./doc"
+      },
+      {
+        "declarationTarget": "./dist/types.d.ts",
+        "declarationTargetExists": true,
+        "runtimeTarget": "./dist/types.js",
+        "runtimeTargetExists": true,
+        "subpath": "./types"
+      },
+      {
+        "declarationTarget": "./dist/schema.d.ts",
+        "declarationTargetExists": true,
+        "runtimeTarget": "./dist/schema.js",
+        "runtimeTargetExists": true,
+        "subpath": "./schema"
+      },
+      {
+        "declarationTarget": "./dist/table.d.ts",
+        "declarationTargetExists": true,
+        "runtimeTarget": "./dist/table.js",
+        "runtimeTargetExists": true,
+        "subpath": "./table"
+      },
+      {
+        "declarationTarget": "./dist/state.d.ts",
+        "declarationTargetExists": true,
+        "runtimeTarget": "./dist/state.js",
+        "runtimeTargetExists": true,
+        "subpath": "./state"
+      },
+      {
+        "declarationTarget": "./dist/editor.d.ts",
+        "declarationTargetExists": true,
+        "runtimeTarget": "./dist/editor.js",
+        "runtimeTargetExists": true,
+        "subpath": "./editor"
+      },
+      {
+        "declarationTarget": "./dist/command.d.ts",
+        "declarationTargetExists": true,
+        "runtimeTarget": "./dist/command.js",
+        "runtimeTargetExists": true,
+        "subpath": "./command"
+      },
+      {
+        "declarationTarget": "./dist/history.d.ts",
+        "declarationTargetExists": true,
+        "runtimeTarget": "./dist/history.js",
+        "runtimeTargetExists": true,
+        "subpath": "./history"
+      },
+      {
+        "declarationTarget": "./dist/collab.d.ts",
+        "declarationTargetExists": true,
+        "runtimeTarget": "./dist/collab.js",
+        "runtimeTargetExists": true,
+        "subpath": "./collab"
+      },
+      {
+        "declarationTarget": "./dist/phrases.d.ts",
+        "declarationTargetExists": true,
+        "runtimeTarget": "./dist/phrases.js",
+        "runtimeTargetExists": true,
+        "subpath": "./phrases"
+      }
+    ],
+    "metadata": {
+      "browser": null,
+      "module": null,
+      "sideEffects": null,
+      "types": null,
+      "typesVersions": null,
+      "conditionalExports": false
+    }
+  },
+  "distProvenance": {
+    "trackedFiles": [],
+    "ignored": true,
+    "snapshotRef": "01eb2b5eae509509677345fd603acad001827dff",
+    "snapshotSubject": "Don't handle Enter/Backspace in key event on Android/iOS",
+    "snapshotBuild": {
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "diagnostics": []
+    },
+    "fileParity": {
+      "fileCount": 22,
+      "allEqual": true,
+      "mismatches": [],
+      "digest": "8538f199f7fa72841cd623cb5eed3fd3a485c9da19157fe946989c5cc2609454"
+    },
+    "changedCommitsAfterSnapshot": [
+      {
+        "commit": "4082fc373cd88b5b492ba6fab01f73d8979fca6a",
+        "committedAt": "2026-07-28T17:06:39+02:00",
+        "subject": "Move codeBlock into its own file"
+      },
+      {
+        "commit": "d6183cd5cccc7bf3a870ae65bccd32660030ca98",
+        "committedAt": "2026-07-28T17:07:35+02:00",
+        "subject": "Make codeBlock.createOnBackticks take effect on enter"
+      },
+      {
+        "commit": "9a3770f48c15a62f85e9848fb705e1021727e440",
+        "committedAt": "2026-07-28T19:54:46+02:00",
+        "subject": "Draw br nodes on textblocks ending in widgets"
+      },
+      {
+        "commit": "4c717b2ed21fd0a845ee6c47ddaf50532486ae43",
+        "committedAt": "2026-07-30T17:11:43+02:00",
+        "subject": "Allow widgets to opt out of being in flow"
+      },
+      {
+        "commit": "4a04555e4230f55d2866ff191343bbd223e0c6dc",
+        "committedAt": "2026-07-30T17:13:43+02:00",
+        "subject": "Make sure Wordgard.flushing is restored on crash"
+      },
+      {
+        "commit": "3f13e9f51d0ef2d08b000c5edf16cfed219dce1c",
+        "committedAt": "2026-07-30T17:22:55+02:00",
+        "subject": "Don't crash on attribute changes on the content element"
+      },
+      {
+        "commit": "c715d4ded8fc780f52c13206e589ea31e4148dd4",
+        "committedAt": "2026-07-30T17:23:38+02:00",
+        "subject": "Fix issue in Attributes.compare"
+      }
+    ],
+    "changedSourceFilesAfterSnapshot": [
+      "src/doc/shape.ts",
+      "src/editor/coords.ts",
+      "src/editor/decoration.ts",
+      "src/editor/dom.ts",
+      "src/editor/domobserver.ts",
+      "src/editor/editor.ts",
+      "src/editor/tile.ts",
+      "src/schema/block.ts",
+      "src/schema/bundle.ts",
+      "src/schema/code.ts",
+      "src/schema/index.ts"
+    ]
+  },
+  "currentBuildAndPack": {
+    "currentBuild": {
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "diagnostics": [
+        "src/schema/code.ts(5,21): error TS6133: 'InputRule' is declared but its value is never read.",
+        "src/schema/code.ts(47,72): error TS2304: Cannot find name 'enter'.",
+        "src/schema/code.ts(56,41): error TS2304: Cannot find name 'CodeBlockLanguage'.",
+        "src/schema/code.ts(57,28): error TS2304: Cannot find name 'CodeBlockLanguage'.",
+        "src/schema/index.ts(12,20): error TS2305: Module '\"./code\"' has no exported member 'codeBlockLanguage'."
+      ]
+    },
+    "cleanPack": {
+      "process": {
+        "status": 0,
+        "signal": null,
+        "error": null,
+        "diagnostics": [
+          "src/schema/code.ts(5,21): error TS6133: 'InputRule' is declared but its value is never read.",
+          "src/schema/code.ts(47,72): error TS2304: Cannot find name 'enter'.",
+          "src/schema/code.ts(56,41): error TS2304: Cannot find name 'CodeBlockLanguage'.",
+          "src/schema/code.ts(57,28): error TS2304: Cannot find name 'CodeBlockLanguage'.",
+          "src/schema/index.ts(12,20): error TS2305: Module '\"./code\"' has no exported member 'codeBlockLanguage'."
+        ]
+      },
+      "files": ["LICENSE", "README.md", "package.json"],
+      "exportTargetsMissingFromPack": [
+        {
+          "kind": "runtime",
+          "subpath": ".",
+          "target": "dist/index.js"
+        },
+        {
+          "kind": "declaration",
+          "subpath": ".",
+          "target": "dist/index.d.ts"
+        },
+        {
+          "kind": "runtime",
+          "subpath": "./doc",
+          "target": "dist/doc.js"
+        },
+        {
+          "kind": "declaration",
+          "subpath": "./doc",
+          "target": "dist/doc.d.ts"
+        },
+        {
+          "kind": "runtime",
+          "subpath": "./types",
+          "target": "dist/types.js"
+        },
+        {
+          "kind": "declaration",
+          "subpath": "./types",
+          "target": "dist/types.d.ts"
+        },
+        {
+          "kind": "runtime",
+          "subpath": "./schema",
+          "target": "dist/schema.js"
+        },
+        {
+          "kind": "declaration",
+          "subpath": "./schema",
+          "target": "dist/schema.d.ts"
+        },
+        {
+          "kind": "runtime",
+          "subpath": "./table",
+          "target": "dist/table.js"
+        },
+        {
+          "kind": "declaration",
+          "subpath": "./table",
+          "target": "dist/table.d.ts"
+        },
+        {
+          "kind": "runtime",
+          "subpath": "./state",
+          "target": "dist/state.js"
+        },
+        {
+          "kind": "declaration",
+          "subpath": "./state",
+          "target": "dist/state.d.ts"
+        },
+        {
+          "kind": "runtime",
+          "subpath": "./editor",
+          "target": "dist/editor.js"
+        },
+        {
+          "kind": "declaration",
+          "subpath": "./editor",
+          "target": "dist/editor.d.ts"
+        },
+        {
+          "kind": "runtime",
+          "subpath": "./command",
+          "target": "dist/command.js"
+        },
+        {
+          "kind": "declaration",
+          "subpath": "./command",
+          "target": "dist/command.d.ts"
+        },
+        {
+          "kind": "runtime",
+          "subpath": "./history",
+          "target": "dist/history.js"
+        },
+        {
+          "kind": "declaration",
+          "subpath": "./history",
+          "target": "dist/history.d.ts"
+        },
+        {
+          "kind": "runtime",
+          "subpath": "./collab",
+          "target": "dist/collab.js"
+        },
+        {
+          "kind": "declaration",
+          "subpath": "./collab",
+          "target": "dist/collab.d.ts"
+        },
+        {
+          "kind": "runtime",
+          "subpath": "./phrases",
+          "target": "dist/phrases.js"
+        },
+        {
+          "kind": "declaration",
+          "subpath": "./phrases",
+          "target": "dist/phrases.d.ts"
+        }
+      ]
+    },
+    "ambientDistPack": {
+      "process": {
+        "status": 0,
+        "signal": null,
+        "error": null,
+        "diagnostics": [
+          "src/schema/code.ts(5,21): error TS6133: 'InputRule' is declared but its value is never read.",
+          "src/schema/code.ts(47,72): error TS2304: Cannot find name 'enter'.",
+          "src/schema/code.ts(56,41): error TS2304: Cannot find name 'CodeBlockLanguage'.",
+          "src/schema/code.ts(57,28): error TS2304: Cannot find name 'CodeBlockLanguage'.",
+          "src/schema/index.ts(12,20): error TS2305: Module '\"./code\"' has no exported member 'codeBlockLanguage'."
+        ]
+      },
+      "files": [
+        "LICENSE",
+        "README.md",
+        "dist/collab.d.ts",
+        "dist/collab.js",
+        "dist/command.d.ts",
+        "dist/command.js",
+        "dist/doc.d.ts",
+        "dist/doc.js",
+        "dist/editor.d.ts",
+        "dist/editor.js",
+        "dist/history.d.ts",
+        "dist/history.js",
+        "dist/index.d.ts",
+        "dist/index.js",
+        "dist/phrases.d.ts",
+        "dist/phrases.js",
+        "dist/schema.d.ts",
+        "dist/schema.js",
+        "dist/state.d.ts",
+        "dist/state.js",
+        "dist/table.d.ts",
+        "dist/table.js",
+        "dist/types.d.ts",
+        "dist/types.js",
+        "package.json"
+      ],
+      "exportTargetsMissingFromPack": []
+    },
+    "releaseCommands": [
+      {
+        "command": "git",
+        "argumentsSource": "\"pull\""
+      },
+      {
+        "command": "git",
+        "argumentsSource": "\"add\", \"package.json\""
+      },
+      {
+        "command": "git",
+        "argumentsSource": "\"add\", \"CHANGELOG.md\""
+      },
+      {
+        "command": "git",
+        "argumentsSource": "\"commit\", \"-m\", `Mark version ${version}`"
+      },
+      {
+        "command": "git",
+        "argumentsSource": "\"tag\", version, \"-m\", `Version ${version}\\n\\n${notes.body}`, \"--cleanup=verbatim\""
+      },
+      {
+        "command": "git",
+        "argumentsSource": "\"log\", \"--format=%B%n\", \"--reverse\", since + \"..main\""
+      }
+    ],
+    "releaseScriptRunsBuildOrTests": false
+  },
+  "publicSurface": {
+    "currentSource": {
+      "recordCount": 1111,
+      "valueRecords": 1007,
+      "typeRecords": 177,
+      "digest": "cbbce8ee00359326e55d62906c29b244861b42a7a99904a46bbc453c8ee6d76a"
+    },
+    "distSnapshotSource": {
+      "recordCount": 1111,
+      "valueRecords": 1007,
+      "typeRecords": 177,
+      "digest": "949cfd230a71d934a29c5537608501744548076375e70855602a7e6c86d29ccb"
+    },
+    "delta": {
+      "added": [],
+      "removed": [],
+      "changed": [
+        {
+          "path": "editor.Widget.Spec",
+          "before": {
+            "kind": "T",
+            "type": "{ render: (value: Param) => Element | Text; eq?: (a: Param, b: Param) => boolean; connect?: (value: Param, dom: Element | Text) => void; disconnect?: (value: Param, dom: Element | Text) => void; handleEvent?: (event: Event, wg: Wordgard) => boolean; }"
+          },
+          "after": {
+            "kind": "T",
+            "type": "{ render: (value: Param) => Element | Text; eq?: (a: Param, b: Param) => boolean; connect?: (value: Param, dom: Element | Text) => void; disconnect?: (value: Param, dom: Element | Text) => void; handleEvent?: (event: Event, wg: Wordgard) => boolean; inFlow?: boolean; }"
+          }
+        },
+        {
+          "path": "schema.codeBlock.createOnBackticks",
+          "before": {
+            "kind": "V",
+            "type": "InputRule"
+          },
+          "after": {
+            "kind": "V",
+            "type": "GardState.Extension"
+          }
+        }
+      ]
+    },
+    "unresolvedCurrentIndexExports": ["schema.codeBlockLanguage"],
+    "emittedDeclarationRuntime": {
+      "moduleResults": [
+        {
+          "module": "collab",
+          "declaredTopLevel": ["collab"],
+          "runtimeTopLevel": ["collab"],
+          "topLevelEqual": true
+        },
+        {
+          "module": "command",
+          "declaredTopLevel": [
+            "Command",
+            "Menu",
+            "autoJoinBlocks",
+            "canAddMarkInRange",
+            "clearNonFitting",
+            "deleteBackward",
+            "deleteEmptyTextblock",
+            "deleteForward",
+            "deleteLine",
+            "deleteSelection",
+            "deleteToLineEnd",
+            "deleteUnit",
+            "deleteWord",
+            "doUnwrapBlock",
+            "enter",
+            "findUnwrappable",
+            "findWrappable",
+            "insertLineBreak",
+            "insertText",
+            "joinBackward",
+            "joinBlocks",
+            "joinForward",
+            "joinListItems",
+            "liftEmptyBlock",
+            "listIsActive",
+            "moveByLine",
+            "moveByPage",
+            "moveByUnit",
+            "moveByWord",
+            "moveToDocSide",
+            "moveToLineSide",
+            "moveToTextblockSide",
+            "redo",
+            "selectAll",
+            "selectedTextblocks",
+            "setAlignment",
+            "setDirection",
+            "setTextblockType",
+            "splitTextblock",
+            "toggleBlock",
+            "toggleEmphasis",
+            "toggleList",
+            "toggleMark",
+            "toggleStrong",
+            "toggleUnderline",
+            "transposeChars",
+            "undo",
+            "unwrapBlock",
+            "wrapBlock",
+            "wrapBlockRange"
+          ],
+          "runtimeTopLevel": [
+            "Command",
+            "Menu",
+            "autoJoinBlocks",
+            "canAddMarkInRange",
+            "clearNonFitting",
+            "deleteBackward",
+            "deleteEmptyTextblock",
+            "deleteForward",
+            "deleteLine",
+            "deleteSelection",
+            "deleteToLineEnd",
+            "deleteUnit",
+            "deleteWord",
+            "doUnwrapBlock",
+            "enter",
+            "findUnwrappable",
+            "findWrappable",
+            "insertLineBreak",
+            "insertText",
+            "joinBackward",
+            "joinBlocks",
+            "joinForward",
+            "joinListItems",
+            "liftEmptyBlock",
+            "listIsActive",
+            "moveByLine",
+            "moveByPage",
+            "moveByUnit",
+            "moveByWord",
+            "moveToDocSide",
+            "moveToLineSide",
+            "moveToTextblockSide",
+            "redo",
+            "selectAll",
+            "selectedTextblocks",
+            "setAlignment",
+            "setDirection",
+            "setTextblockType",
+            "splitTextblock",
+            "toggleBlock",
+            "toggleEmphasis",
+            "toggleList",
+            "toggleMark",
+            "toggleStrong",
+            "toggleUnderline",
+            "transposeChars",
+            "undo",
+            "unwrapBlock",
+            "wrapBlock",
+            "wrapBlockRange"
+          ],
+          "topLevelEqual": true
+        },
+        {
+          "module": "doc",
+          "declaredTopLevel": [
+            "Attributes",
+            "ChangeSet",
+            "Elt",
+            "Leaf",
+            "Mark",
+            "Node",
+            "Plot",
+            "Pos",
+            "Schema",
+            "SchemaError",
+            "Slice",
+            "Token",
+            "ValidationError",
+            "parse",
+            "serialize"
+          ],
+          "runtimeTopLevel": [
+            "Attributes",
+            "ChangeSet",
+            "Elt",
+            "Leaf",
+            "Mark",
+            "Node",
+            "Plot",
+            "Pos",
+            "Schema",
+            "SchemaError",
+            "Slice",
+            "Token",
+            "ValidationError",
+            "parse",
+            "serialize"
+          ],
+          "topLevelEqual": true
+        },
+        {
+          "module": "editor",
+          "declaredTopLevel": [
+            "Decoration",
+            "Dialog",
+            "InputRule",
+            "KeyBinding",
+            "Panel",
+            "PointSet",
+            "RangeSet",
+            "Tooltip",
+            "Widget",
+            "Wordgard",
+            "dropCursor",
+            "menuBar",
+            "placeholder"
+          ],
+          "runtimeTopLevel": [
+            "Decoration",
+            "Dialog",
+            "InputRule",
+            "KeyBinding",
+            "Panel",
+            "PointSet",
+            "RangeSet",
+            "Tooltip",
+            "Widget",
+            "Wordgard",
+            "dropCursor",
+            "menuBar",
+            "placeholder"
+          ],
+          "topLevelEqual": true
+        },
+        {
+          "module": "history",
+          "declaredTopLevel": [
+            "history",
+            "redo",
+            "redoButton",
+            "redoDepth",
+            "undo",
+            "undoButton",
+            "undoDepth"
+          ],
+          "runtimeTopLevel": [
+            "history",
+            "redo",
+            "redoButton",
+            "redoDepth",
+            "undo",
+            "undoButton",
+            "undoDepth"
+          ],
+          "topLevelEqual": true
+        },
+        {
+          "module": "phrases",
+          "declaredTopLevel": [
+            "PhraseSet",
+            "colorNames",
+            "imagePhrases",
+            "phrases",
+            "tablePhrases"
+          ],
+          "runtimeTopLevel": [
+            "PhraseSet",
+            "colorNames",
+            "imagePhrases",
+            "phrases",
+            "tablePhrases"
+          ],
+          "topLevelEqual": true
+        },
+        {
+          "module": "schema",
+          "declaredTopLevel": [
+            "ColorPicker",
+            "alignment",
+            "backgroundColor",
+            "basicMarks",
+            "basicSchema",
+            "blockDoc",
+            "blockquote",
+            "bulletList",
+            "code",
+            "codeBlock",
+            "color",
+            "direction",
+            "emphasis",
+            "figure",
+            "fullSchema",
+            "heading",
+            "horizontalRule",
+            "image",
+            "imageResizing",
+            "inlineDoc",
+            "inlineMarks",
+            "inlineSchema",
+            "lineBreak",
+            "link",
+            "orderedList",
+            "paragraph",
+            "strikethrough",
+            "strong",
+            "subscript",
+            "superscript",
+            "underline"
+          ],
+          "runtimeTopLevel": [
+            "ColorPicker",
+            "alignment",
+            "backgroundColor",
+            "basicMarks",
+            "basicSchema",
+            "blockDoc",
+            "blockquote",
+            "bulletList",
+            "code",
+            "codeBlock",
+            "color",
+            "direction",
+            "emphasis",
+            "figure",
+            "fullSchema",
+            "heading",
+            "horizontalRule",
+            "image",
+            "imageResizing",
+            "inlineDoc",
+            "inlineMarks",
+            "inlineSchema",
+            "lineBreak",
+            "link",
+            "orderedList",
+            "paragraph",
+            "strikethrough",
+            "strong",
+            "subscript",
+            "superscript",
+            "underline"
+          ],
+          "topLevelEqual": true
+        },
+        {
+          "module": "state",
+          "declaredTopLevel": [
+            "BidiSpan",
+            "Correction",
+            "GardSelection",
+            "GardState",
+            "TextblockMap",
+            "Transaction"
+          ],
+          "runtimeTopLevel": [
+            "BidiSpan",
+            "Correction",
+            "GardSelection",
+            "GardState",
+            "TextblockMap",
+            "Transaction"
+          ],
+          "topLevelEqual": true
+        },
+        {
+          "module": "table",
+          "declaredTopLevel": [
+            "CellSelection",
+            "addColumn",
+            "addRow",
+            "deleteColumn",
+            "deleteRow",
+            "handleTablePaste",
+            "mergeCells",
+            "splitCell",
+            "tableMenu",
+            "tables",
+            "toggleHeaderCell"
+          ],
+          "runtimeTopLevel": [
+            "CellSelection",
+            "addColumn",
+            "addRow",
+            "deleteColumn",
+            "deleteRow",
+            "handleTablePaste",
+            "mergeCells",
+            "splitCell",
+            "tableMenu",
+            "tables",
+            "toggleHeaderCell"
+          ],
+          "topLevelEqual": true
+        },
+        {
+          "module": "types",
+          "declaredTopLevel": [
+            "Alignment",
+            "BackgroundColor",
+            "BlockCell",
+            "BlockHeaderCell",
+            "Blockquote",
+            "BulletList",
+            "CaptionedFigure",
+            "Cell",
+            "Code",
+            "CodeBlock",
+            "CodeBlockLanguage",
+            "ColSpan",
+            "Color",
+            "Direction",
+            "Doc",
+            "Emphasis",
+            "Figure",
+            "HeaderCell",
+            "Heading",
+            "HorizontalRule",
+            "Image",
+            "ImageAlt",
+            "ImageSize",
+            "InlineDoc",
+            "InlineListItem",
+            "LineBreak",
+            "Link",
+            "ListItem",
+            "OrderedList",
+            "Paragraph",
+            "RowSpan",
+            "Strikethrough",
+            "Strong",
+            "Subscript",
+            "Superscript",
+            "Table",
+            "TableRow",
+            "Underline"
+          ],
+          "runtimeTopLevel": [
+            "Alignment",
+            "BackgroundColor",
+            "BlockCell",
+            "BlockHeaderCell",
+            "Blockquote",
+            "BulletList",
+            "CaptionedFigure",
+            "Cell",
+            "Code",
+            "CodeBlock",
+            "CodeBlockLanguage",
+            "ColSpan",
+            "Color",
+            "Direction",
+            "Doc",
+            "Emphasis",
+            "Figure",
+            "HeaderCell",
+            "Heading",
+            "HorizontalRule",
+            "Image",
+            "ImageAlt",
+            "ImageSize",
+            "InlineDoc",
+            "InlineListItem",
+            "LineBreak",
+            "Link",
+            "ListItem",
+            "OrderedList",
+            "Paragraph",
+            "RowSpan",
+            "Strikethrough",
+            "Strong",
+            "Subscript",
+            "Superscript",
+            "Table",
+            "TableRow",
+            "Underline"
+          ],
+          "topLevelEqual": true
+        }
+      ],
+      "declaredValueChecks": 566,
+      "prototypeMemberChecks": 251,
+      "missingValues": ["state.Transaction.foo"],
+      "missingPrototypeMembers": []
+    },
+    "rootNamespaceParity": {
+      "rootKeys": [
+        "collab",
+        "command",
+        "doc",
+        "editor",
+        "history",
+        "phrases",
+        "schema",
+        "state",
+        "table",
+        "types"
+      ],
+      "expectedRootKeys": [
+        "collab",
+        "command",
+        "doc",
+        "editor",
+        "history",
+        "phrases",
+        "schema",
+        "state",
+        "table",
+        "types"
+      ],
+      "modules": [
+        {
+          "module": "collab",
+          "keyParity": true,
+          "identityParity": true,
+          "exportCount": 1
+        },
+        {
+          "module": "command",
+          "keyParity": true,
+          "identityParity": true,
+          "exportCount": 50
+        },
+        {
+          "module": "doc",
+          "keyParity": true,
+          "identityParity": true,
+          "exportCount": 15
+        },
+        {
+          "module": "editor",
+          "keyParity": true,
+          "identityParity": true,
+          "exportCount": 13
+        },
+        {
+          "module": "history",
+          "keyParity": true,
+          "identityParity": true,
+          "exportCount": 7
+        },
+        {
+          "module": "phrases",
+          "keyParity": true,
+          "identityParity": true,
+          "exportCount": 5
+        },
+        {
+          "module": "schema",
+          "keyParity": true,
+          "identityParity": true,
+          "exportCount": 31
+        },
+        {
+          "module": "state",
+          "keyParity": true,
+          "identityParity": true,
+          "exportCount": 6
+        },
+        {
+          "module": "table",
+          "keyParity": true,
+          "identityParity": true,
+          "exportCount": 11
+        },
+        {
+          "module": "types",
+          "keyParity": true,
+          "identityParity": true,
+          "exportCount": 38
+        }
+      ]
+    }
+  },
+  "entryParity": {
+    "node": {
+      "process": {
+        "status": 0,
+        "signal": null,
+        "error": null,
+        "diagnostics": []
+      },
+      "imports": {
+        "wordgard": {
+          "resolved": "file:///Users/zbeyens/git/wordgard/dist/index.js",
+          "exports": [
+            "collab",
+            "command",
+            "doc",
+            "editor",
+            "history",
+            "phrases",
+            "schema",
+            "state",
+            "table",
+            "types"
+          ]
+        },
+        "wordgard/collab": {
+          "resolved": "file:///Users/zbeyens/git/wordgard/dist/collab.js",
+          "exports": ["collab"]
+        },
+        "wordgard/command": {
+          "resolved": "file:///Users/zbeyens/git/wordgard/dist/command.js",
+          "exports": [
+            "Command",
+            "Menu",
+            "autoJoinBlocks",
+            "canAddMarkInRange",
+            "clearNonFitting",
+            "deleteBackward",
+            "deleteEmptyTextblock",
+            "deleteForward",
+            "deleteLine",
+            "deleteSelection",
+            "deleteToLineEnd",
+            "deleteUnit",
+            "deleteWord",
+            "doUnwrapBlock",
+            "enter",
+            "findUnwrappable",
+            "findWrappable",
+            "insertLineBreak",
+            "insertText",
+            "joinBackward",
+            "joinBlocks",
+            "joinForward",
+            "joinListItems",
+            "liftEmptyBlock",
+            "listIsActive",
+            "moveByLine",
+            "moveByPage",
+            "moveByUnit",
+            "moveByWord",
+            "moveToDocSide",
+            "moveToLineSide",
+            "moveToTextblockSide",
+            "redo",
+            "selectAll",
+            "selectedTextblocks",
+            "setAlignment",
+            "setDirection",
+            "setTextblockType",
+            "splitTextblock",
+            "toggleBlock",
+            "toggleEmphasis",
+            "toggleList",
+            "toggleMark",
+            "toggleStrong",
+            "toggleUnderline",
+            "transposeChars",
+            "undo",
+            "unwrapBlock",
+            "wrapBlock",
+            "wrapBlockRange"
+          ]
+        },
+        "wordgard/doc": {
+          "resolved": "file:///Users/zbeyens/git/wordgard/dist/doc.js",
+          "exports": [
+            "Attributes",
+            "ChangeSet",
+            "Elt",
+            "Leaf",
+            "Mark",
+            "Node",
+            "Plot",
+            "Pos",
+            "Schema",
+            "SchemaError",
+            "Slice",
+            "Token",
+            "ValidationError",
+            "parse",
+            "serialize"
+          ]
+        },
+        "wordgard/editor": {
+          "resolved": "file:///Users/zbeyens/git/wordgard/dist/editor.js",
+          "exports": [
+            "Decoration",
+            "Dialog",
+            "InputRule",
+            "KeyBinding",
+            "Panel",
+            "PointSet",
+            "RangeSet",
+            "Tooltip",
+            "Widget",
+            "Wordgard",
+            "dropCursor",
+            "menuBar",
+            "placeholder"
+          ]
+        },
+        "wordgard/history": {
+          "resolved": "file:///Users/zbeyens/git/wordgard/dist/history.js",
+          "exports": [
+            "history",
+            "redo",
+            "redoButton",
+            "redoDepth",
+            "undo",
+            "undoButton",
+            "undoDepth"
+          ]
+        },
+        "wordgard/phrases": {
+          "resolved": "file:///Users/zbeyens/git/wordgard/dist/phrases.js",
+          "exports": [
+            "PhraseSet",
+            "colorNames",
+            "imagePhrases",
+            "phrases",
+            "tablePhrases"
+          ]
+        },
+        "wordgard/schema": {
+          "resolved": "file:///Users/zbeyens/git/wordgard/dist/schema.js",
+          "exports": [
+            "ColorPicker",
+            "alignment",
+            "backgroundColor",
+            "basicMarks",
+            "basicSchema",
+            "blockDoc",
+            "blockquote",
+            "bulletList",
+            "code",
+            "codeBlock",
+            "color",
+            "direction",
+            "emphasis",
+            "figure",
+            "fullSchema",
+            "heading",
+            "horizontalRule",
+            "image",
+            "imageResizing",
+            "inlineDoc",
+            "inlineMarks",
+            "inlineSchema",
+            "lineBreak",
+            "link",
+            "orderedList",
+            "paragraph",
+            "strikethrough",
+            "strong",
+            "subscript",
+            "superscript",
+            "underline"
+          ]
+        },
+        "wordgard/state": {
+          "resolved": "file:///Users/zbeyens/git/wordgard/dist/state.js",
+          "exports": [
+            "BidiSpan",
+            "Correction",
+            "GardSelection",
+            "GardState",
+            "TextblockMap",
+            "Transaction"
+          ]
+        },
+        "wordgard/table": {
+          "resolved": "file:///Users/zbeyens/git/wordgard/dist/table.js",
+          "exports": [
+            "CellSelection",
+            "addColumn",
+            "addRow",
+            "deleteColumn",
+            "deleteRow",
+            "handleTablePaste",
+            "mergeCells",
+            "splitCell",
+            "tableMenu",
+            "tables",
+            "toggleHeaderCell"
+          ]
+        },
+        "wordgard/types": {
+          "resolved": "file:///Users/zbeyens/git/wordgard/dist/types.js",
+          "exports": [
+            "Alignment",
+            "BackgroundColor",
+            "BlockCell",
+            "BlockHeaderCell",
+            "Blockquote",
+            "BulletList",
+            "CaptionedFigure",
+            "Cell",
+            "Code",
+            "CodeBlock",
+            "CodeBlockLanguage",
+            "ColSpan",
+            "Color",
+            "Direction",
+            "Doc",
+            "Emphasis",
+            "Figure",
+            "HeaderCell",
+            "Heading",
+            "HorizontalRule",
+            "Image",
+            "ImageAlt",
+            "ImageSize",
+            "InlineDoc",
+            "InlineListItem",
+            "LineBreak",
+            "Link",
+            "ListItem",
+            "OrderedList",
+            "Paragraph",
+            "RowSpan",
+            "Strikethrough",
+            "Strong",
+            "Subscript",
+            "Superscript",
+            "Table",
+            "TableRow",
+            "Underline"
+          ]
+        }
+      }
+    },
+    "typescript": {
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "diagnostics": []
+    },
+    "browserBundle": {
+      "process": {
+        "status": 0,
+        "signal": null,
+        "error": null,
+        "diagnostics": []
+      },
+      "bytes": 620079,
+      "sha256": "5e10f92333b6799de3fb8b88b75e60f1a4d998e2d40d2c923665b465b8b3afeb"
+    },
+    "browserTestResolution": {
+      "status": 200,
+      "moduleImports": [
+        "/_m/__/dist/editor.js",
+        "/_m/__/dist/state.js",
+        "/_m/__/dist/doc.js",
+        "/_m/__/dist/types.js",
+        "/_m/__/node_modules/ist/ist.js",
+        "/_m/__/test/schema.ts",
+        "/_m/__/test/generate.ts"
+      ],
+      "wordgardImports": [
+        "/_m/__/dist/editor.js",
+        "/_m/__/dist/state.js",
+        "/_m/__/dist/doc.js",
+        "/_m/__/dist/types.js"
+      ],
+      "resolvesWordgardToDist": true
+    },
+    "sameUnconditionalTargetsForNodeAndBrowser": true
+  },
+  "sourceMapsAndTreeShaking": {
+    "sourceMapFiles": [],
+    "sourceMappingUrlCount": 0,
+    "sourceFilesPacked": [],
+    "sideEffectsField": null,
+    "pureAnnotationCount": 232,
+    "namespaceProbe": {
+      "artifact": "docs/plans/artifacts/wordgard-exhaustive-architecture-re-audit/wordgard-namespace-bundle-probe.json",
+      "sha256": "439a9e6ba44bb3405acbb56dccfbe5fe5098cd630000a43a5951f5c9185ba008",
+      "resultCount": 4,
+      "siblingRetention": [
+        {
+          "id": "heading.keyBindings",
+          "esbuild": {
+            "heading_1": true,
+            "^(#{1,6}) $": true
+          },
+          "rolldown": {
+            "heading_1": true,
+            "^(#{1,6}) $": true
+          }
+        },
+        {
+          "id": "heading.createOnHash",
+          "esbuild": {
+            "Ctrl-Shift-1": true,
+            "heading_1": true
+          },
+          "rolldown": {
+            "Ctrl-Shift-1": true,
+            "heading_1": true
+          }
+        },
+        {
+          "id": "imageResizing.keyBindings",
+          "esbuild": {
+            "resizeHandle": false,
+            "selectedImage": false
+          },
+          "rolldown": {
+            "resizeHandle": true,
+            "selectedImage": false
+          }
+        },
+        {
+          "id": "Command.bind",
+          "esbuild": {
+            "Menu": false,
+            "toggleBlock": false
+          },
+          "rolldown": {
+            "Menu": false,
+            "toggleBlock": false
+          }
+        }
+      ]
+    }
+  },
+  "findings": [
+    {
+      "id": "WG-PACK-001",
+      "severity": "P0",
+      "kind": "proof defect",
+      "title": "Clean current-head pack succeeds with every export target absent",
+      "impacts": ["WG-PROOF-005A"]
+    },
+    {
+      "id": "WG-PACK-002",
+      "severity": "P0",
+      "kind": "proof defect",
+      "title": "Prepare reports five TypeScript errors but exits zero",
+      "impacts": ["WG-PROOF-005A"]
+    },
+    {
+      "id": "WG-PACK-003",
+      "severity": "P0",
+      "kind": "proof defect",
+      "title": "Ambient ignored dist is publishable and exactly seven commits stale",
+      "impacts": [
+        "WG-META-003",
+        "WG-PROOF-001",
+        "WG-PROOF-002A",
+        "WG-PROOF-002B",
+        "WG-PROOF-002C",
+        "WG-PROOF-003",
+        "WG-PROOF-004A",
+        "WG-PROOF-004B",
+        "WG-PROOF-005A"
+      ]
+    },
+    {
+      "id": "WG-PACK-004",
+      "severity": "P1",
+      "kind": "proof defect",
+      "title": "Current public source surface and packed declarations/runtime disagree",
+      "impacts": ["WG-PROOF-005A", "WG-PROOF-005B"]
+    },
+    {
+      "id": "WG-PACK-005",
+      "severity": "P1",
+      "kind": "proof defect",
+      "title": "Transaction.foo is declared but absent at runtime",
+      "impacts": ["WG-PROOF-005A"]
+    },
+    {
+      "id": "WG-PACK-006",
+      "severity": "P2",
+      "kind": "proof gap",
+      "title": "Packed code has neither sources nor source maps",
+      "impacts": ["WG-PROOF-005A"]
+    },
+    {
+      "id": "WG-PACK-007",
+      "severity": "P2",
+      "kind": "proof gap",
+      "title": "Tree-shaking relies on emitted PURE rewrites without a sideEffects contract",
+      "impacts": ["LOCAL-RUNTIME-API-TREESHAKING"]
+    }
+  ],
+  "interpretation": {
+    "semanticArchitectureRowsAdded": [],
+    "proofDefectsOnly": true,
+    "entryParityVerdict": "The ambient dist has Node/browser/type entry parity, but it is an ignored historical artifact rather than current-head output.",
+    "testVerdict": "Node and browser tests resolve package self-imports to ambient dist, so their green results do not validate source commits after the dist snapshot."
+  }
+}

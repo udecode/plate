@@ -89,19 +89,19 @@ export const buildMdastNode = (
   options: SerializeMdContext,
   isBlock = false
 ) => {
-  const pluginName = options.registry.getName(node.type) ?? node.type;
-  let fallbackName = pluginName;
+  const name = options.registry.getName(node.type) ?? node.type;
+  let fallbackName = name;
 
-  if (KEYS.heading.includes(pluginName)) {
+  if (KEYS.heading.some((headingName) => headingName === name)) {
     fallbackName = 'heading';
   }
 
-  if (pluginName === KEYS.olClassic || pluginName === KEYS.ulClassic) {
+  if (name === KEYS.olClassic || name === KEYS.ulClassic) {
     fallbackName = 'list';
   }
 
   const nodeParser =
-    options.rules?.[pluginName]?.serialize ??
+    options.rules?.[name]?.serialize ??
     options.rules?.[fallbackName]?.serialize;
 
   if (nodeParser) {

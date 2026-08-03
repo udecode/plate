@@ -52,7 +52,6 @@ import { BaseMentionPlugin } from '@platejs/mention';
 import { BaseSuggestionPlugin } from '@platejs/suggestion';
 import { BaseTablePlugin } from '@platejs/table';
 import { BaseTocPlugin } from '@platejs/toc';
-import { KEYS } from '@platejs/utils';
 import remarkEmoji from 'remark-emoji';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -114,7 +113,7 @@ const testSchemaPlugins: readonly BasePluginInput[] = [
 
 const markdownPlugin = MarkdownPlugin.configure({
   initialState: {
-    plainMarks: [KEYS.suggestion, KEYS.comment],
+    plainMarks: ['suggestion', 'comment'],
     remarkPlugins: [
       remarkMath,
       remarkGfm,

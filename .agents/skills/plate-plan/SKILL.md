@@ -80,8 +80,9 @@ plan and repair the target before continuing.
   compromised hybrid. No public aliases, runtime shims, dual signatures, or
   docs for old names.
 - Reject direction words repeated below a namespace that already establishes
-  the format and flow. Under `parsers.html`, plan `query`, `transformData`, and
-  `transformFragment` directly; do not preserve an `ingress`/`egress` bucket
+  the format and flow. On the `'text/html'` codec, plan `query`,
+  `transformData`, and `transformFragment` directly; do not preserve an
+  `ingress`/`egress` bucket
   without an independently consumed lifecycle.
 - A private bridge is exceptional. Name its owner, non-public proof, deletion
   trigger, and removal gate in the decision row.

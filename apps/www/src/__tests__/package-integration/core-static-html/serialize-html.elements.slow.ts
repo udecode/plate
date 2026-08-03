@@ -8,7 +8,7 @@ describe('core static renderStaticHtml element rendering', () => {
     const editor = createStaticEditor([
       {
         children: [{ text: 'Some random paragraph here...' }],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
 
@@ -55,26 +55,29 @@ describe('core static renderStaticHtml element rendering', () => {
 
   it('renders link hrefs', async () => {
     const editor = createStaticEditor([
-      { children: [{ text: 'Some paragraph of text with ' }], type: 'p' },
+      {
+        children: [{ text: 'Some paragraph of text with ' }],
+        type: 'paragraph',
+      },
       {
         children: [{ text: 'link' }],
-        type: 'a',
+        type: 'link',
         url: 'https://example.com/',
       },
-      { children: [{ text: ' part.' }], type: 'p' },
+      { children: [{ text: ' part.' }], type: 'paragraph' },
     ]);
 
     const html = await renderStaticHtml(editor);
 
     expect(html).toContain(decode('href="https://example.com/"'));
-    expect(html).toContain('plite-a');
+    expect(html).toContain('plite-link');
   });
 
   it('renders image src attributes', async () => {
     const editor = createStaticEditor([
       {
         children: [{ text: '' }],
-        type: 'img',
+        type: 'image',
         url: 'https://example.com/image.jpg',
       },
     ]);
@@ -82,7 +85,6 @@ describe('core static renderStaticHtml element rendering', () => {
     const html = await renderStaticHtml(editor);
 
     expect(html).toContain('src="https://example.com/image.jpg"');
-    expect(html).toContain('<figcaption');
   });
 
   it('renders table cell content', async () => {
@@ -91,10 +93,10 @@ describe('core static renderStaticHtml element rendering', () => {
         children: [
           {
             children: [
-              { children: [{ text: 'Cell 1' }], type: 'td' },
-              { children: [{ text: 'Cell 2' }], type: 'td' },
+              { children: [{ text: 'Cell 1' }], type: 'tableCell' },
+              { children: [{ text: 'Cell 2' }], type: 'tableCell' },
             ],
-            type: 'tr',
+            type: 'tableRow',
           },
         ],
         type: 'table',

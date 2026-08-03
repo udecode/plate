@@ -188,8 +188,8 @@ invariant(
   'Issue cursor drifted'
 );
 
-let lexicalCitations = 0;
-let localCitations = 0;
+let _lexicalCitations = 0;
+let _localCitations = 0;
 for (const artifactPath of [
   paths.architecture,
   paths.conceptMatrix,
@@ -204,7 +204,7 @@ for (const artifactPath of [
       line >= 1 && line <= lineCount(path),
       `Out-of-range Lexical citation ${match[0]}`
     );
-    lexicalCitations++;
+    _lexicalCitations++;
   }
   for (const match of text.matchAll(
     /`((?:apps|docs|packages)\/[^`:\n]+):(\d+)`/g
@@ -216,27 +216,6 @@ for (const artifactPath of [
       line >= 1 && line <= lineCount(path),
       `Out-of-range local citation ${match[0]}`
     );
-    localCitations++;
+    _localCitations++;
   }
 }
-
-console.log(
-  JSON.stringify(
-    {
-      architectureConcepts: Object.keys(source.concepts).length,
-      canonicalConcepts: conceptMatrixResult.concepts,
-      indexedCallSites: indexedCalls.length,
-      issueRows: issue.resultingLedgerCount,
-      lexicalCitations,
-      localCitations,
-      manifest: summary,
-      materialCandidates: 2,
-      testInventory: {
-        indexedFiles: indexedFiles.length,
-        total: inventoryRows.length,
-      },
-    },
-    null,
-    2
-  )
-);

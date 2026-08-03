@@ -13,8 +13,11 @@ import {
 import { findEditorDOMRootRuntime } from '@platejs/plite-dom/internal';
 import isEqual from 'lodash/isEqual.js';
 
-import { createBasePlugin, type DefinitionOf } from '../../plugin';
-import { getCompiledPlatePluginByType } from '../../../internal/plugin/compilePlateModel';
+import { defineBasePlugin, type DefinitionOf } from '../../plugin';
+import {
+  getCompiledPlatePluginByKey,
+  getCompiledPlatePluginByType,
+} from '../../../internal/plugin/compilePlateModel';
 
 export type AffinityEdgeNodes =
   | [NodeEntry<Element | Text>, NodeEntry<Element | Text>]
@@ -33,8 +36,7 @@ export type AffinityPluginUpdate = {
   ) => void;
 };
 
-export const AffinityPlugin = createBasePlugin({
-  name: 'affinity',
+export const AffinityPlugin = defineBasePlugin('affinity', {
   update: ({ tx }): AffinityPluginUpdate => ({
     setSelection: (edgeNodes, affinity) => {
       const select = (point: Point) => {
@@ -151,13 +153,17 @@ export const AffinityPlugin = createBasePlugin({
     node: Element | Text,
     affinity: 'directional' | 'hard' | 'outward'
   ) => {
-    const marks = Object.keys(NodeApi.extractProps(node));
-    const keys = ElementApi.isElement(node) ? [node.type] : marks;
-
-    return keys.some(
-      (type) =>
-        getCompiledPlatePluginByType(editor, type)?.rules.selection
+    if (ElementApi.isElement(node)) {
+      return (
+        getCompiledPlatePluginByType(editor, node.type)?.rules.selection
           ?.affinity === affinity
+      );
+    }
+
+    return Object.keys(NodeApi.extractProps(node)).some(
+      (key) =>
+        getCompiledPlatePluginByKey(editor, key)?.rules.selection?.affinity ===
+        affinity
     );
   };
   const isNodesAffinity = (
@@ -273,8 +279,8 @@ export const AffinityPlugin = createBasePlugin({
 
           const marks = Object.keys(NodeApi.extractProps(textNode));
           const outwardMarks = marks.filter(
-            (type) =>
-              getCompiledPlatePluginByType(editor, type)?.rules.selection
+            (key) =>
+              getCompiledPlatePluginByKey(editor, key)?.rules.selection
                 ?.affinity === 'outward'
           );
 

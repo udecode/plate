@@ -287,7 +287,7 @@ const editor = createPlateEditor({
   >
     查找节点的选项。
   </APIOptions>
-  <APIReturns type="NodeEntry<TCommentText> | undefined">
+  <APIReturns type="NodeEntry<CommentText> | undefined">
     如果找到则返回评论节点条目。
   </APIReturns>
 </API>
@@ -298,7 +298,7 @@ const editor = createPlateEditor({
 
 <API name="editor.api.comment.nodeId">
   <APIParameters>
-    <APIItem name="leaf" type="TCommentText">
+    <APIItem name="leaf" type="CommentText">
       评论叶子节点。
     </APIItem>
   </APIParameters>
@@ -316,7 +316,7 @@ const editor = createPlateEditor({
   >
     查找节点的选项。
   </APIOptions>
-  <APIReturns type="NodeEntry<TCommentText>[]">
+  <APIReturns type="NodeEntry<CommentText>[]">
     评论节点条目数组。
   </APIReturns>
 </API>
@@ -369,7 +369,7 @@ const editor = createPlateEditor({
 
 <API name="getCommentCount">
   <APIParameters>
-    <APIItem name="node" type="TCommentText">
+    <APIItem name="node" type="CommentText">
       评论节点。
     </APIItem>
   </APIParameters>
@@ -408,7 +408,7 @@ const editor = createPlateEditor({
 
 <API name="getCommentKeys">
   <APIParameters>
-    <APIItem name="node" type="TCommentText">
+    <APIItem name="node" type="CommentText">
       要检查评论键的节点。
     </APIItem>
   </APIParameters>
@@ -456,11 +456,11 @@ const editor = createPlateEditor({
 
 ## 类型
 
-### `TCommentText`
+### `CommentText`
 
 可以包含评论的文本节点。
 
-<API name="TCommentText">
+<API name="CommentText">
   <APIAttributes>
     <APIItem name="comment" type="boolean" optional>
       此文本节点是否包含评论。

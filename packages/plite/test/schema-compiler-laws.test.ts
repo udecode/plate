@@ -46,7 +46,7 @@ const record = (
 ): EditorSchemaContributionRecord => ({ contribution, extensionName });
 
 const createBaseSchema = (properties: readonly SchemaProperty[] = []) =>
-  defineEditorSchema({
+  defineEditorSchema('schema:generated-laws', {
     elements: {
       code: { content: schema.content.text() } as const,
       paragraph: {
@@ -208,7 +208,7 @@ describe('compiled schema generated laws', () => {
     assertLaw(
       fc.property(fc.nat({ max: 1_000_000 }), (id) => {
         const create = (unknown: 'preserve' | 'reject') =>
-          defineEditorSchema({
+          defineEditorSchema(`schema:closed-target-${id}`, {
             elements: {
               a: { content: schema.content.text() } as const,
               b: { content: schema.content.text() } as const,
@@ -253,18 +253,21 @@ describe('compiled schema generated laws', () => {
           { maxLength: 256, minLength: 256 }
         ),
         (unknownTypes) => {
-          const definition = defineEditorSchema({
-            elements: {
-              paragraph: { content: schema.content.text() } as const,
-              wrapper: {
-                content: schema.content.not(schema.content.text()),
-              } as const,
-            },
-            id: 'bounded-unknown-wrapper-plans',
-            root: schema.content.type('wrapper'),
-            unknown: 'preserve',
-            version: 1,
-          });
+          const definition = defineEditorSchema(
+            'schema:bounded-unknown-wrapper-plans',
+            {
+              elements: {
+                paragraph: { content: schema.content.text() } as const,
+                wrapper: {
+                  content: schema.content.not(schema.content.text()),
+                } as const,
+              },
+              id: 'bounded-unknown-wrapper-plans',
+              root: schema.content.type('wrapper'),
+              unknown: 'preserve',
+              version: 1,
+            }
+          );
           const compiled = compile(definition);
           const unknownPlans = unknownTypes.map((type) =>
             resolveCompiledSchemaWrapperPlan(compiled, 'root', type)

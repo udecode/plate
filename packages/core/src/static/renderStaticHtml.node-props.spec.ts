@@ -2,7 +2,7 @@ import { schema, property } from '@platejs/plite';
 import { createElement } from 'react';
 
 import { BaseParagraphPlugin } from '../lib/plugins';
-import { createBasePlugin } from '../lib/plugin';
+import { defineBasePlugin } from '../lib/plugin';
 import { createStaticEditor } from './editor/withStatic';
 import { renderStaticHtml } from './renderStaticHtml';
 
@@ -22,9 +22,7 @@ const getObjectProp = (record: Record<string, unknown>, key: string) => {
 
 const plugins = [
   BaseParagraphPlugin,
-  createBasePlugin({
-    name: 'a',
-    type: 'a',
+  defineBasePlugin('link', {
     schema: {
       element: {
         content: schema.content.text({ default: 'text', min: 1 }),
@@ -42,9 +40,7 @@ const plugins = [
           : { target: '_blank' },
     },
   }),
-  createBasePlugin({
-    name: 'img',
-    type: 'img',
+  defineBasePlugin('image', {
     schema: {
       element: {
         content: schema.content.text({ default: 'text', min: 1 }),
@@ -69,7 +65,7 @@ describe('static HTML plugin node props', () => {
   it('renders a component declared by a Base plugin', async () => {
     const staticEditor = createStaticEditor({
       plugins: [
-        createBasePlugin({
+        defineBasePlugin('staticCallout', {
           component: ({ attributes, children }) =>
             createElement(
               'aside',
@@ -79,7 +75,6 @@ describe('static HTML plugin node props', () => {
               },
               children
             ),
-          name: 'static-callout',
           render: {
             nodeProps: () => ({ 'data-static-plugin-prop': 'preserved' }),
           },
@@ -89,7 +84,7 @@ describe('static HTML plugin node props', () => {
       initialValue: [
         {
           children: [{ text: '' }],
-          type: 'static-callout',
+          type: 'staticCallout',
         },
       ],
     });
@@ -109,19 +104,19 @@ describe('static HTML plugin node props', () => {
             { text: 'An external ' },
             {
               children: [{ text: 'link' }],
-              type: 'a',
+              type: 'link',
               url: 'https://theuselessweb.com/',
             },
             { text: ' and an internal ' },
             {
               children: [{ text: 'link' }],
               target: '_self',
-              type: 'a',
+              type: 'link',
               url: 'https://platejs.org/',
             },
             { text: '.' },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
@@ -148,11 +143,11 @@ describe('static HTML plugin node props', () => {
               },
               children: [{ text: '' }],
               secret: 'private',
-              type: 'img',
+              type: 'image',
               url: 'https://via.placeholder.com/300',
             },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });

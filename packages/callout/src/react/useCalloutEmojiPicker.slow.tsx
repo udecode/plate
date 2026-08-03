@@ -1,5 +1,5 @@
 import { renderHook } from '@testing-library/react';
-import type { TCalloutElement } from '@platejs/utils';
+import type { CalloutElement } from '../lib/BaseCalloutPlugin';
 import * as platejsReact from '@platejs/core/react';
 
 import { BaseCalloutPlugin } from '../lib/BaseCalloutPlugin';
@@ -9,7 +9,7 @@ const element = {
   id: 'callout-1',
   type: 'callout',
   children: [{ text: '' }],
-} satisfies TCalloutElement;
+} satisfies CalloutElement;
 
 describe('useCalloutEmojiPicker', () => {
   let useEditorReadOnlySpy: ReturnType<typeof spyOn>;
@@ -40,7 +40,7 @@ describe('useCalloutEmojiPicker', () => {
     const setIsOpen = (isOpen: boolean) => {
       setIsOpenMock(isOpen);
     };
-    const value: TCalloutElement[] = [
+    const value: CalloutElement[] = [
       { ...element, icon: '💬' },
       {
         id: 'callout-2',

@@ -9,7 +9,7 @@ import {
   useSyncExternalStore,
 } from 'react';
 import { flushSync } from 'react-dom';
-import type { Editor, EditorCommit, Path } from '@platejs/plite';
+import type { Editor, EditorCommit, Path, Value } from '@platejs/plite';
 import {
   defaultScrollSelectionIntoView,
   Editable,
@@ -120,12 +120,18 @@ export type UsePliteLayoutOptions<
 /** Create and subscribe a derived layout reader with the default engine. */
 export const usePliteLayout = <
   TSettings extends PlitePageSettings = PlitePageSettings,
+  V extends Value = Value,
+  TExtensions extends readonly unknown[] = readonly [],
 >(
-  editor: Editor,
+  editor: Editor<V, TExtensions>,
   options: UsePliteLayoutOptions<TSettings>
 ): PlitePageLayout<PliteLayoutOptions<TSettings>> => {
   const layout = useMemo(
-    () => createPliteLayout(editor, deferLayoutRuntimeConnection(options)),
+    () =>
+      createPliteLayout<TSettings, V, TExtensions>(
+        editor,
+        deferLayoutRuntimeConnection(options)
+      ),
     [editor]
   );
   const committedConfigurationRef = useRef({ layout, options });

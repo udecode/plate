@@ -1,4 +1,4 @@
-import { createBasePlugin } from '@platejs/core';
+import { defineBasePlugin } from '@platejs/core';
 import {
   type Descendant,
   type EditorDocumentValue,
@@ -187,8 +187,7 @@ const migrateMediaV54Document = (
  * Converts pre-v54 media `caption` properties into direct child content before
  * schema fitting.
  */
-export const MediaV54MigrationPlugin = createBasePlugin({
-  name: 'mediaV54Migration',
+export const MediaV54MigrationPlugin = defineBasePlugin('mediaV54Migration', {
   transformInitialValue: ({ editor, value }) => {
     const types = new Set<string>();
     const audio = editor.plugin(BaseAudioPlugin);

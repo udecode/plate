@@ -1,7 +1,6 @@
 import { act, type RenderResult, render } from '@testing-library/react';
 import { createContext, type ReactNode, useContext } from 'react';
 import {
-  createEditorRuntime,
   createEditorView,
   createEditor as createBaseEditor,
   type Descendant,
@@ -58,18 +57,21 @@ type RenderedProjectionEditor = RenderResult & {
 
 const LeafRenderContext = createContext('leaf');
 
-const inlineLinkSchema = defineEditorSchema({
-  elements: {
-    link: {
-      content: schema.content.text({ default: 'text', min: 1 }),
-      inline: true,
+const inlineLinkSchema = defineEditorSchema(
+  'schema:inline-decoration-boundary',
+  {
+    elements: {
+      link: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+        inline: true,
+      },
     },
-  },
-  id: 'inline-decoration-boundary',
-  root: schema.content.not(schema.content.text()),
-  unknown: 'preserve',
-  version: 1,
-});
+    id: 'inline-decoration-boundary',
+    root: schema.content.not(schema.content.text()),
+    unknown: 'preserve',
+    version: 1,
+  }
+);
 
 const HookedLeaf = ({
   attributes,
@@ -476,7 +478,7 @@ describe('plite-react projections and selection contract', () => {
   test('projects decorations across inline element boundaries', () => {
     const editor = createEditor();
 
-    editor.extend(inlineLinkSchema);
+    editor.install(inlineLinkSchema);
     editorReplace(editor, {
       children: [
         {
@@ -1574,7 +1576,7 @@ describe('plite-react projections and selection contract', () => {
   });
 
   test('projection stores created from roots receive runtime source changes', async () => {
-    const runtime = createEditorRuntime({
+    const runtime = createReactEditor({
       initialValue: {
         children: [{ children: [{ text: 'Body' }] }],
         roots: { header: [{ children: [{ text: 'Header' }] }] },

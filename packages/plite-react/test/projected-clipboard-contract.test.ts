@@ -1,6 +1,6 @@
 import type { ClipboardEvent } from 'react';
 import {
-  createEditorRuntime,
+  createEditor,
   createEditorView,
   defineEditorSchema,
   property,
@@ -8,6 +8,7 @@ import {
   type Point,
   type RootKey,
 } from '@platejs/plite';
+import { getEditorRuntimeOwner } from '@platejs/plite/internal';
 import { hostCodecs } from '@platejs/plite-dom';
 import {
   EDITOR_TO_ELEMENT,
@@ -37,42 +38,45 @@ import {
 
 const SHARED_ROOT = 'synced-block:shared:body' as RootKey;
 
-const contentRootExtension = defineEditorSchema({
-  elements: {
-    paragraph: schema.element.textBlock({
-      properties: {
-        blockTone: property.string(),
+const contentRootExtension = defineEditorSchema(
+  'schema:projected-clipboard-test',
+  {
+    elements: {
+      paragraph: schema.element.textBlock({
+        properties: {
+          blockTone: property.string(),
+        },
+      }),
+      section: {
+        content: schema.content.not(schema.content.text()),
       },
-    }),
-    section: {
-      content: schema.content.not(schema.content.text()),
-    },
-    'content-card': {
-      content: schema.content.open(),
-      contentRoots: {
-        body: {
-          content: schema.content.not(schema.content.text()),
-          ownership: 'shared',
+      'content-card': {
+        content: schema.content.open(),
+        contentRoots: {
+          body: {
+            content: schema.content.not(schema.content.text()),
+            ownership: 'shared',
+          },
+        },
+        void: 'editable-island',
+      },
+      'content-owner': {
+        content: schema.content.text({ default: 'text', min: 1 }),
+        contentRoots: {
+          body: {
+            content: schema.content.not(schema.content.text()),
+            ownership: 'shared',
+          },
         },
       },
-      void: 'editable-island',
     },
-    'content-owner': {
-      content: schema.content.text({ default: 'text', min: 1 }),
-      contentRoots: {
-        body: {
-          content: schema.content.not(schema.content.text()),
-          ownership: 'shared',
-        },
-      },
-    },
-  },
-  id: 'projected-clipboard-test',
-  properties: [schema.textProperty('emphasis', property.boolean())],
-  root: schema.content.not(schema.content.text()),
-  unknown: 'preserve',
-  version: 1,
-});
+    id: 'projected-clipboard-test',
+    properties: [schema.textProperty('emphasis', property.boolean())],
+    root: schema.content.not(schema.content.text()),
+    unknown: 'preserve',
+    version: 1,
+  }
+);
 const projectedHostCodecs = hostCodecs('projected-clipboard-host', [
   {
     format: 'text/html',
@@ -136,7 +140,7 @@ const createFixture = (withSignificantProperties = false) => {
   const rootParagraph = withSignificantProperties
     ? paragraph('Inside', { blockTone: 'cool', emphasis: true })
     : paragraph('Inside');
-  const runtime = createEditorRuntime({
+  const runtime = createEditor({
     extensions: [contentRootExtension, projectedHostCodecs],
     initialValue: {
       children: [mainParagraph, contentCard(), paragraph('After')],
@@ -165,7 +169,7 @@ const createFixture = (withSignificantProperties = false) => {
 };
 
 const createRepeatedFixture = () => {
-  const runtime = createEditorRuntime({
+  const runtime = createEditor({
     extensions: [contentRootExtension],
     initialValue: {
       children: [
@@ -276,7 +280,7 @@ describe('projected clipboard', () => {
   });
 
   it('serializes projected selections from a root-scoped editor view', () => {
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       extensions: [contentRootExtension],
       initialValue: {
         children: [contentCard()],
@@ -398,9 +402,7 @@ describe('projected clipboard', () => {
   it('uses the runtime clipboard format key when projected copy runs from a view editor', () => {
     const { editor } = createFixture();
     const clipboardData = createClipboardData();
-    const runtimeEditor = (
-      editor as { runtime: { editor: ReactRuntimeEditor } }
-    ).runtime.editor;
+    const runtimeEditor = getEditorRuntimeOwner(editor) as ReactRuntimeEditor;
 
     setDOMClipboardFormatKey(runtimeEditor, 'x-custom-plite-fragment');
 
@@ -450,7 +452,7 @@ describe('projected clipboard', () => {
 
   it('keeps nested owned roots attached to projected slice segments', () => {
     const nestedRoot = 'card:nested' as RootKey;
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       extensions: [contentRootExtension],
       initialValue: {
         children: [contentCard()],
@@ -487,7 +489,7 @@ describe('projected clipboard', () => {
   });
 
   it('preserves nested open edges through projected copy and paste', () => {
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       extensions: [contentRootExtension],
       initialValue: {
         children: [
@@ -525,7 +527,7 @@ describe('projected clipboard', () => {
       openEnd: 2,
       openStart: 2,
     });
-    const target = createEditorRuntime({
+    const target = createEditor({
       extensions: [contentRootExtension],
       initialValue: { children: [paragraph('x')] },
     });

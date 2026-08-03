@@ -1,10 +1,10 @@
 import React from 'react';
 
-import type { Value } from '@platejs/plite';
-
-import type { BasePluginInput } from '../../lib';
-
-import { createStaticEditor } from '../../static/editor/withStatic';
+import {
+  type CreateStaticEditorOptions,
+  type StaticEditor,
+  createStaticEditor,
+} from '../../static/editor/withStatic';
 
 /**
  * Creates a memoized static Plate editor for view-only React components.
@@ -19,19 +19,18 @@ import { createStaticEditor } from '../../static/editor/withStatic';
  * @see {@link createStaticEditor} for detailed information on static editor creation and configuration.
  */
 export function usePlateViewEditor<
-  V extends Value = Value,
-  const P extends readonly BasePluginInput[] = readonly BasePluginInput[],
+  const P extends readonly unknown[] = readonly [],
   TEnabled extends boolean | undefined = undefined,
 >(
-  options: Parameters<typeof createStaticEditor<V, P>>[0] & {
+  options: CreateStaticEditorOptions<P> & {
     enabled?: TEnabled;
   } = {},
   deps: React.DependencyList = []
 ): TEnabled extends false
   ? null
   : TEnabled extends true | undefined
-    ? ReturnType<typeof createStaticEditor<V, P>>
-    : ReturnType<typeof createStaticEditor<V, P>> | null {
+    ? StaticEditor<P>
+    : StaticEditor<P> | null {
   return React.useMemo(
     (): any => {
       if (options.enabled === false) return null;

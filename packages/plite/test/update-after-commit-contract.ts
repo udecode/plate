@@ -8,9 +8,8 @@ import {
 
 import {
   createEditor,
-  createEditorRuntime,
   createEditorView,
-  defineEditorExtension,
+  defineExtension,
   type EditorCommitHandler,
 } from '@platejs/plite';
 
@@ -146,8 +145,7 @@ describe('editor.update afterCommit', () => {
     const editor = seedEditor(
       createEditor({
         extensions: [
-          defineEditorExtension({
-            name: 'nested-on-commit',
+          defineExtension('nested-on-commit', {
             on: {
               commit({ commit, editor }) {
                 if (
@@ -185,8 +183,7 @@ describe('editor.update afterCommit', () => {
     const editor = seedEditor(
       createEditor({
         extensions: [
-          defineEditorExtension({
-            name: 'nested-on-commit-snapshot',
+          defineExtension('nested-on-commit-snapshot', {
             on: {
               commit({ commit, editor, snapshot }) {
                 if (
@@ -216,7 +213,7 @@ describe('editor.update afterCommit', () => {
   });
 
   it('keeps a named-root extension snapshot scoped and stable during nested updates', () => {
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       initialValue: {
         children: [paragraph('body')],
         roots: { header: [paragraph('header')] },
@@ -225,9 +222,8 @@ describe('editor.update afterCommit', () => {
     const headerEditor = createEditorView(runtime, { root: 'header' });
     const events: string[] = [];
 
-    headerEditor.extend(
-      defineEditorExtension({
-        name: 'nested-named-root-on-commit-snapshot',
+    headerEditor.install(
+      defineExtension('nested-named-root-on-commit-snapshot', {
         on: {
           commit({ commit, editor, snapshot }) {
             const [block] = snapshot.children as readonly {
@@ -257,7 +253,7 @@ describe('editor.update afterCommit', () => {
       tx.text.insert('!', { at: { path: [0, 0], offset: 6 } });
     });
 
-    assert.equal(editorString(runtime.editor, []), 'body');
+    assert.equal(editorString(runtime, []), 'body');
     assert.equal(editorString(headerEditor, []), 'header!?');
     assert.deepEqual(events, ['commit:2:snapshot:2:header!:live:3:header!?']);
   });
@@ -267,8 +263,7 @@ describe('editor.update afterCommit', () => {
     const editor = seedEditor(
       createEditor({
         extensions: [
-          defineEditorExtension({
-            name: 'commit-order',
+          defineExtension('commit-order', {
             on: {
               commit() {
                 events.push('onCommit');
@@ -292,7 +287,7 @@ describe('editor.update afterCommit', () => {
   });
 
   it('passes view-scoped editor and snapshot to view afterCommit handlers', () => {
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       initialValue: {
         children: [paragraph('body')],
         roots: { header: [paragraph('header')] },

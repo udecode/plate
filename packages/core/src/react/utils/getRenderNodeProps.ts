@@ -4,7 +4,7 @@ import type React from 'react';
 import { clsx } from 'clsx';
 
 import type { PlateEditor } from '../editor';
-import type { AnyEditorPlatePlugin } from '../plugin/PlatePlugin';
+import type { AnyResolvedPlatePlugin } from '../plugin/PlatePlugin';
 
 import { pipeInjectNodeProps } from '../../internal/plugin/pipeInjectNodeProps';
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
@@ -38,7 +38,7 @@ export const getRenderNodeProps = <TProps extends RenderNodePropsInput>({
   editor: PlateEditor;
   props: TProps;
   disableInjectNodeProps?: boolean;
-  plugin?: AnyBasePlugin | AnyEditorPlatePlugin;
+  plugin?: AnyBasePlugin | AnyResolvedPlatePlugin;
   pluginContext?: AnyObject;
   readOnly?: boolean;
 }) => {
@@ -72,7 +72,7 @@ export const getRenderNodeProps = <TProps extends RenderNodePropsInput>({
         ...props.attributes,
         className:
           clsx(
-            getPluginNodeClass(plugin?.type),
+            getPluginNodeClass(plugin?.name),
             props.attributes?.className,
             className
           ) || undefined,
@@ -100,7 +100,7 @@ export const getRenderNodeProps = <TProps extends RenderNodePropsInput>({
       ...pluginProps.attributes,
       className:
         clsx(
-          getPluginNodeClass(plugin?.type),
+          getPluginNodeClass(plugin?.name),
           pluginProps.attributes?.className,
           className
         ) || undefined,

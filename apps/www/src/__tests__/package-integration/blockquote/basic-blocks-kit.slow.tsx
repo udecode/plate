@@ -11,7 +11,7 @@ const createEditor = ({
   offset,
   path = [0, 0],
   text,
-  value = [{ children: [{ text }], type: 'p' }],
+  value = [{ children: [{ text }], type: 'paragraph' }],
 }: {
   offset: number;
   path?: number[];
@@ -39,7 +39,7 @@ describe('BasicBlocksKit blockquote autoformat', () => {
     insertText(editor, ' ');
 
     expect(editor.read.children()[0]).toMatchObject({
-      children: [{ children: [{ text: 'hello' }], type: 'p' }],
+      children: [{ children: [{ text: 'hello' }], type: 'paragraph' }],
       type: 'blockquote',
     });
     expect(editor.read.selection()).toEqual({

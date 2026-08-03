@@ -144,7 +144,7 @@ describe('plite delete contract', () => {
     for (const reverse of [true, false]) {
       const editor = createEditor();
 
-      editor.extend(
+      editor.install(
         defineTestSchema(`inline-void-delete-${reverse}`, {
           token: { void: 'inline' },
         })
@@ -199,7 +199,7 @@ describe('plite delete contract', () => {
   it('deletes a selected block void on Delete without merging the next block into it', () => {
     const editor = createEditor();
 
-    editor.extend(
+    editor.install(
       defineTestSchema('block-void-delete-contract', {
         toc: { void: 'block' },
       })
@@ -456,7 +456,7 @@ describe('plite delete contract', () => {
 
   it('deletes a full selection that starts with an inline element', () => {
     const editor = createEditor();
-    editor.extend(
+    editor.install(
       defineTestSchema('delete-leading-inline', { link: { inline: true } })
     );
     const selection = {
@@ -498,7 +498,7 @@ describe('plite delete contract', () => {
 
   it('deletes an expanded range that starts with an inline element', () => {
     const editor = createEditor();
-    editor.extend(
+    editor.install(
       defineTestSchema('delete-selection-leading-inline', {
         link: { inline: true },
       })
@@ -698,7 +698,7 @@ describe('plite delete contract', () => {
       focus: { path: [2, 0, 0], offset: 'Overview tab'.length },
     };
 
-    editor.extend(
+    editor.install(
       defineTestSchema('isolating-expanded-range-delete', {
         'accordion-block': {
           content: schema.content.type('paragraph', { min: 1 }),
@@ -1011,7 +1011,7 @@ describe('plite delete contract', () => {
 
   it('deletes a preceding non-selectable atom block on Backspace without throwing', () => {
     const editor = createEditor();
-    editor.extend(
+    editor.install(
       defineTestSchema('non-selectable-atom-delete-contract', {
         'atom-block': { atom: true, selectable: false },
       })
@@ -1046,7 +1046,7 @@ describe('plite delete contract', () => {
 
   it('does not merge across an isolating block boundary on Backspace', () => {
     const editor = createEditor();
-    editor.extend(
+    editor.install(
       defineTestSchema('isolating-delete-boundary', {
         callout: { isolating: true },
       })
@@ -1434,7 +1434,7 @@ describe('plite delete contract', () => {
 
   it('removes an empty editable inline on Backspace without deleting preceding text', () => {
     const editor = createEditor();
-    editor.extend(
+    editor.install(
       defineTestSchema('inline-delete-boundary', {
         button: { inline: true },
       })

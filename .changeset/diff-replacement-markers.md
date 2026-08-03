@@ -12,8 +12,7 @@ registers copied-fragment cleanup through its root `readMiddleware`.
 Install the behavior through the plugin:
 
 ```tsx
-createBasePlugin({
-  name: 'diff',
+defineBasePlugin('diff', {
   readMiddleware: ({ around }) => [
     around(editorReads.slice.export, ({ next }) => {
       const slice = next();

@@ -6,6 +6,7 @@ import fc from 'fast-check';
 import {
   createEditor,
   defineEffect,
+  defineExtension,
   defineStateField,
   defineValueCodec,
 } from '@platejs/plite';
@@ -71,7 +72,9 @@ describe('editor value codec contract', () => {
     assert.throws(
       () =>
         createEditor({
-          extensions: [field] as const,
+          extensions: [
+            defineExtension('document-payload', { stateFields: [field] }),
+          ] as const,
           initialValue: {
             children: [paragraph('body')],
             meta: { [field.key]: 'raw' },

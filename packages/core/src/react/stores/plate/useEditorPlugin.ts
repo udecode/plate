@@ -2,47 +2,54 @@ import React from 'react';
 
 import type {
   AnyBasePlugin,
-  AnyResolvedBasePlugin,
+  AnyPluginBase,
   PluginReference,
 } from '../../../lib';
 import type { InternalPluginDefinitionOf } from '../../../lib/plugin/pluginDefinitionLookup.internal';
 
 import type {
-  AnyEditorPlatePlugin,
+  AnyResolvedPlatePlugin,
   AnyPlatePlugin,
-  AnyPlatePluginContext,
-  PlatePluginContext,
+  AnyPlatePluginPortal,
+  PlatePluginPortal,
 } from '../../plugin';
-import { createPluginContext } from '../../plugin/createPluginContext.internal';
+import { createPluginPortal } from '../../plugin/createPluginContext.internal';
 import { useEditor } from './createPlateStore';
 
-/** Get editor and plugin context. */
+/** Get an installed plugin's consumer portal. */
 export function useEditorPlugin<
   P extends (
     | AnyBasePlugin
-    | AnyEditorPlatePlugin
+    | AnyResolvedPlatePlugin
     | AnyPlatePlugin
-    | AnyResolvedBasePlugin
+    | AnyPluginBase
   ) &
     PluginReference,
->(p: P, id?: string): PlatePluginContext<InternalPluginDefinitionOf<P>>;
-export function useEditorPlugin(
-  pluginName: string,
-  id?: string
-): AnyPlatePluginContext;
+>(p: P, id?: string): PlatePluginPortal<InternalPluginDefinitionOf<P>>;
 export function useEditorPlugin(
   plugin:
     | AnyBasePlugin
-    | AnyEditorPlatePlugin
+    | AnyResolvedPlatePlugin
     | AnyPlatePlugin
-    | AnyResolvedBasePlugin
+    | AnyPluginBase
+    | PluginReference
+    | string,
+  id?: string
+): AnyPlatePluginPortal;
+export function useEditorPlugin(
+  plugin:
+    | AnyBasePlugin
+    | AnyResolvedPlatePlugin
+    | AnyPlatePlugin
+    | AnyPluginBase
+    | PluginReference
     | string,
   id?: string
 ): unknown {
   const editor = useEditor({ id });
 
   return React.useMemo(
-    () => createPluginContext(editor, plugin),
+    () => createPluginPortal(editor, plugin),
     [editor, plugin]
   );
 }

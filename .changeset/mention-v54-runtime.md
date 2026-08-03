@@ -9,9 +9,8 @@ Move mention insertion to `editor.plugin(MentionPlugin).update.insert` and
 register mention values in compiled schemas. Preserve plugin capability and
 render-time node-context inference in typed component integrations.
 
-Install the mention-input descriptor as a required plugin dependency.
-Its plugin identity is `mentionInput`; persisted elements remain
-`mention_input`.
+Install the mention-input descriptor as a required plugin dependency. Its
+capability name and persisted element type are both `mentionInput`.
 
 Remove `getMentionOnSelectItem`; selection handlers call the installed plugin
 update directly. The update accepts only persisted mention data (`key` and

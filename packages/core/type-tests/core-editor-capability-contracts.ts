@@ -1,4 +1,4 @@
-import { createBaseEditor, createBasePlugin } from '@platejs/core';
+import { createBaseEditor, defineBasePlugin } from '@platejs/core';
 
 import type { CorePluginDefinition } from '../src/lib/plugins/getCorePlugins';
 import type {
@@ -148,11 +148,10 @@ type CoreEditorUpdateAliasDrift = Assert<
   >
 >;
 
-const CustomHtmlPlugin = createBasePlugin({
+const CustomHtmlPlugin = defineBasePlugin('html', {
   api: () => ({
     customDeserialize: () => 'custom-html' as const,
   }),
-  name: 'html',
 });
 const customCoreEditor = createBaseEditor({ plugins: [CustomHtmlPlugin] });
 const customHtmlResult: 'custom-html' =

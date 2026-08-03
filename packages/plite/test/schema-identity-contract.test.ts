@@ -20,14 +20,14 @@ const record = (
 
 describe('schema identity contract', () => {
   it('derives complete schema identity when lineage is omitted', () => {
-    const DerivedSchema = defineEditorSchema({
+    const DerivedSchema = defineEditorSchema('schema:derived', {
       elements: {
         paragraph: { content: schema.content.text() },
       },
       root: schema.content.type('paragraph'),
       unknown: 'reject',
     });
-    const NamedSchema = defineEditorSchema({
+    const NamedSchema = defineEditorSchema('schema:article', {
       elements: {
         paragraph: { content: schema.content.text() },
       },

@@ -1,9 +1,17 @@
-import type { AnyBasePluginDefinition, DefinitionOf } from './PluginDefinition';
-import type { InternalDefinitionOf } from './pluginDefinitionCarrier.internal';
+import type {
+  AnyBasePluginDefinition,
+  DefinitionOf,
+  PluginDefinitionWitness,
+} from './PluginDefinition';
+
+type ExactPluginDefinitionOf<P> =
+  P extends PluginDefinitionWitness<infer D> ? D : never;
 
 /** Internal exact definition, including finite dependency capability carriers. */
-export type InternalPluginDefinitionOf<P> = [InternalDefinitionOf<P>] extends [
-  never,
-]
-  ? Extract<DefinitionOf<P>, AnyBasePluginDefinition>
-  : Extract<InternalDefinitionOf<P>, AnyBasePluginDefinition>;
+export type InternalPluginDefinitionOf<P> = [
+  ExactPluginDefinitionOf<P>,
+] extends [never]
+  ? P extends AnyBasePluginDefinition
+    ? P
+    : Extract<DefinitionOf<P>, AnyBasePluginDefinition>
+  : Extract<ExactPluginDefinitionOf<P>, AnyBasePluginDefinition>;

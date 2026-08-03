@@ -1,0 +1,1314 @@
+{
+  "schemaVersion": 1,
+  "kind": "wordgard-public-forum-claim-coverage",
+  "retrievedAt": "2026-08-01T15:42:20.070Z",
+  "completeness": {
+    "anonymousBoundary": "Every topic and post reachable through anonymous latest, category, category-description, and global-post Discourse JSON endpoints. Instance totals may include private, deleted, or otherwise anonymous-inaccessible records.",
+    "categoryDescriptionTopicIds": [3, 1],
+    "categoryRegularPostCount": 46,
+    "categoryRegularTopicCount": 12,
+    "globalPostIndexPages": 1,
+    "indexedPublicPostCount": 48,
+    "instancePostCount": 71,
+    "anonymousInaccessibleGap": {
+      "posts": 23,
+      "topics": 3
+    },
+    "instanceRecordsNotAnonymousRetrievable": {
+      "posts": 23,
+      "topics": 3
+    },
+    "instanceTopicCount": 17,
+    "latestPages": 1,
+    "publicTopicCount": 14,
+    "unexplainedVisibleCorpus": {
+      "posts": 0,
+      "topics": 0
+    },
+    "visiblePostCount": 48,
+    "visiblePostNumberGaps": 1
+  },
+  "corpus": {
+    "inventory": "wordgard-forum-inventory.json",
+    "publicCorpusHash": "d511d1a3848a3cbc763857592c94229afd9b32fa4460131166f8f25ce57ab265"
+  },
+  "evidenceLaw": {
+    "forumClaimsAreImplementationProof": false,
+    "maintainerPosts": "Authoritative for maintainer intent, boundaries, plans, explanations, and status claims only.",
+    "communityPosts": "Requirements, proposals, observations, and bug reports only; never source or runtime proof."
+  },
+  "claims": [
+    {
+      "existingRowIds": [
+        "WG-STATE-013",
+        "WG-STATE-011B",
+        "WG-VIEW-006B",
+        "WG-VIEW-010A"
+      ],
+      "id": "WGF-001",
+      "implementationProof": false,
+      "kind": "community-requirement",
+      "postId": 50,
+      "proposedRowIds": [
+        "LOCAL-VERTICAL-WRITING-LAYOUT",
+        "LOCAL-VERTICAL-WRITING-INPUT"
+      ],
+      "statement": "A production editor for Japanese and other CJK content needs vertical writing, including editor-owned caret behavior where contenteditable is unreliable.",
+      "author": "karintou8710",
+      "authorAuthority": "community",
+      "postNumber": 1,
+      "topicId": 27,
+      "topicTitle": "Any plans for vertical writing mode support?",
+      "url": "https://discuss.wordgard.net/t/any-plans-for-vertical-writing-mode-support/27/1"
+    },
+    {
+      "existingRowIds": ["WG-STATE-013", "WG-VIEW-006B"],
+      "id": "WGF-002",
+      "implementationProof": false,
+      "kind": "maintainer-intent",
+      "postId": 51,
+      "proposedRowIds": [
+        "LOCAL-VERTICAL-WRITING-LAYOUT",
+        "LOCAL-VERTICAL-WRITING-INPUT"
+      ],
+      "statement": "Vertical writing had not received serious design work because the maintainer did not know there was concrete demand.",
+      "author": "marijn",
+      "authorAuthority": "maintainer",
+      "postNumber": 2,
+      "topicId": 27,
+      "topicTitle": "Any plans for vertical writing mode support?",
+      "url": "https://discuss.wordgard.net/t/any-plans-for-vertical-writing-mode-support/27/2"
+    },
+    {
+      "existingRowIds": [
+        "WG-STATE-013",
+        "WG-STATE-011B",
+        "WG-VIEW-006B",
+        "WG-VIEW-010A"
+      ],
+      "id": "WGF-003",
+      "implementationProof": false,
+      "kind": "community-requirement",
+      "postId": 60,
+      "proposedRowIds": [
+        "LOCAL-VERTICAL-WRITING-LAYOUT",
+        "LOCAL-VERTICAL-WRITING-INPUT"
+      ],
+      "statement": "Modern Japanese vertical writing requires mixed-orientation text, ruby, tate-chu-yoko, reliable IME, and browser-independent caret behavior.",
+      "author": "karintou8710",
+      "authorAuthority": "community",
+      "postNumber": 3,
+      "topicId": 27,
+      "topicTitle": "Any plans for vertical writing mode support?",
+      "url": "https://discuss.wordgard.net/t/any-plans-for-vertical-writing-mode-support/27/3"
+    },
+    {
+      "existingRowIds": ["WG-VIEW-001A", "WG-STATE-013", "WG-VIEW-006B"],
+      "id": "WGF-004",
+      "implementationProof": false,
+      "kind": "maintainer-non-goal",
+      "postId": 61,
+      "proposedRowIds": [
+        "LOCAL-VERTICAL-WRITING-LAYOUT",
+        "LOCAL-VERTICAL-WRITING-INPUT",
+        "LOCAL-HOST-EDITOR-CAPABILITY"
+      ],
+      "statement": "Vertical writing is outside the maintained core; a custom editor component or fork may reuse Wordgard data structures.",
+      "author": "marijn",
+      "authorAuthority": "maintainer",
+      "postNumber": 4,
+      "topicId": 27,
+      "topicTitle": "Any plans for vertical writing mode support?",
+      "url": "https://discuss.wordgard.net/t/any-plans-for-vertical-writing-mode-support/27/4"
+    },
+    {
+      "existingRowIds": [
+        "WG-COLLAB-001",
+        "WG-COLLAB-002A",
+        "LOCAL-YJS",
+        "LOCAL-ANCHORS"
+      ],
+      "id": "WGF-005",
+      "implementationProof": false,
+      "kind": "community-requirement",
+      "postId": 62,
+      "proposedRowIds": ["LOCAL-OFFLINE-MERGE-REVIEW"],
+      "statement": "Offline collaborative editing needs durable reconciliation beyond Wordgard's real-time central-authority transform loop.",
+      "author": "thesmartwon",
+      "authorAuthority": "community",
+      "postNumber": 1,
+      "topicId": 31,
+      "topicTitle": "Offline collaborative editing",
+      "url": "https://discuss.wordgard.net/t/offline-collaborative-editing/31/1"
+    },
+    {
+      "existingRowIds": [
+        "WG-APPLICATION-BLAME-001",
+        "WG-APPLICATION-BLAME-002"
+      ],
+      "id": "WGF-006",
+      "implementationProof": false,
+      "kind": "maintainer-design-position",
+      "postId": 66,
+      "proposedRowIds": ["LOCAL-OFFLINE-MERGE-REVIEW"],
+      "statement": "Offline automatic merging is primarily a change-review and adjustment UI problem, not just a merge-algorithm problem.",
+      "author": "marijn",
+      "authorAuthority": "maintainer",
+      "postNumber": 2,
+      "topicId": 31,
+      "topicTitle": "Offline collaborative editing",
+      "url": "https://discuss.wordgard.net/t/offline-collaborative-editing/31/2"
+    },
+    {
+      "existingRowIds": [
+        "LOCAL-ANCHORS",
+        "LOCAL-YJS",
+        "WG-DOC-007",
+        "WG-DOC-011"
+      ],
+      "id": "WGF-007",
+      "implementationProof": false,
+      "kind": "maintainer-design-position",
+      "postId": 66,
+      "proposedRowIds": [],
+      "statement": "Fractional indices do not provide stable document addressing by themselves; durable addressing requires element IDs and tombstones, which often cost more than they return.",
+      "author": "marijn",
+      "authorAuthority": "maintainer",
+      "postNumber": 2,
+      "topicId": 31,
+      "topicTitle": "Offline collaborative editing",
+      "url": "https://discuss.wordgard.net/t/offline-collaborative-editing/31/2"
+    },
+    {
+      "existingRowIds": ["WG-COLLAB-001", "WG-COLLAB-002A", "LOCAL-YJS"],
+      "id": "WGF-008",
+      "implementationProof": false,
+      "kind": "community-proposal",
+      "postId": 72,
+      "proposedRowIds": [
+        "LOCAL-OFFLINE-MERGE-REVIEW",
+        "LOCAL-EXTERNAL-MODEL-SYNC"
+      ],
+      "statement": "Candidate offline designs include a causal transaction oplog with snapshots or SQL tables using ordered IDs and fractional insertion positions.",
+      "author": "thesmartwon",
+      "authorAuthority": "community",
+      "postNumber": 3,
+      "topicId": 31,
+      "topicTitle": "Offline collaborative editing",
+      "url": "https://discuss.wordgard.net/t/offline-collaborative-editing/31/3"
+    },
+    {
+      "existingRowIds": [
+        "WG-DOC-002D",
+        "WG-INTEGRATION-NESTED-001",
+        "WG-PROOF-005A2"
+      ],
+      "id": "WGF-009",
+      "implementationProof": false,
+      "kind": "maintainer-status",
+      "postId": 59,
+      "proposedRowIds": [],
+      "statement": "Building the footnote example exposed and triggered fixes for block nodes that behave as atoms.",
+      "author": "marijn",
+      "authorAuthority": "maintainer",
+      "postNumber": 1,
+      "topicId": 30,
+      "topicTitle": "New footnote example",
+      "url": "https://discuss.wordgard.net/t/new-footnote-example/30/1"
+    },
+    {
+      "existingRowIds": ["WG-COLLAB-001", "WG-COLLAB-002A", "WG-PROOF-005A2"],
+      "id": "WGF-010",
+      "implementationProof": false,
+      "kind": "maintainer-status",
+      "postId": 59,
+      "proposedRowIds": [],
+      "statement": "A collaborative-editing example and accompanying explanation were published.",
+      "author": "marijn",
+      "authorAuthority": "maintainer",
+      "postNumber": 1,
+      "topicId": 30,
+      "topicTitle": "New footnote example",
+      "url": "https://discuss.wordgard.net/t/new-footnote-example/30/1"
+    },
+    {
+      "existingRowIds": [
+        "WG-INTEGRATION-NESTED-001",
+        "WG-VIEW-007B2",
+        "WG-PROOF-005A2"
+      ],
+      "id": "WGF-011",
+      "implementationProof": false,
+      "kind": "community-bug-report",
+      "postId": 65,
+      "proposedRowIds": [],
+      "statement": "Switching between footnotes in Firefox could display stale nested content unless selection state changed.",
+      "author": "mhmttosun",
+      "authorAuthority": "community",
+      "postNumber": 2,
+      "topicId": 30,
+      "topicTitle": "New footnote example",
+      "url": "https://discuss.wordgard.net/t/new-footnote-example/30/2"
+    },
+    {
+      "existingRowIds": ["WG-PROOF-005A2"],
+      "id": "WGF-012",
+      "implementationProof": false,
+      "kind": "maintainer-status",
+      "postId": 67,
+      "proposedRowIds": [],
+      "statement": "The maintainer reported pushing a patch for the stale-footnote-content report.",
+      "author": "marijn",
+      "authorAuthority": "maintainer",
+      "postNumber": 3,
+      "topicId": 30,
+      "topicTitle": "New footnote example",
+      "url": "https://discuss.wordgard.net/t/new-footnote-example/30/3"
+    },
+    {
+      "existingRowIds": ["WG-DOC-005B", "WG-VIEW-016A", "WG-PROOF-005A2"],
+      "id": "WGF-013",
+      "implementationProof": false,
+      "kind": "community-bug-report",
+      "postId": 68,
+      "proposedRowIds": [],
+      "statement": "The first footnote patch introduced a runtime crash because contentEq was unavailable.",
+      "author": "mhmttosun",
+      "authorAuthority": "community",
+      "postNumber": 4,
+      "topicId": 30,
+      "topicTitle": "New footnote example",
+      "url": "https://discuss.wordgard.net/t/new-footnote-example/30/4"
+    },
+    {
+      "existingRowIds": ["WG-PROOF-005A1A", "WG-PROOF-005A2", "WG-PROOF-005B1"],
+      "id": "WGF-014",
+      "implementationProof": false,
+      "kind": "maintainer-cause-claim",
+      "postId": 69,
+      "proposedRowIds": [],
+      "statement": "The crash came from example code using an unpublished method absent from the website's installed library version.",
+      "author": "marijn",
+      "authorAuthority": "maintainer",
+      "postNumber": 5,
+      "topicId": 30,
+      "topicTitle": "New footnote example",
+      "url": "https://discuss.wordgard.net/t/new-footnote-example/30/5"
+    },
+    {
+      "existingRowIds": ["WG-PROOF-005A2"],
+      "id": "WGF-015",
+      "implementationProof": false,
+      "kind": "community-status-report",
+      "postId": 70,
+      "proposedRowIds": [],
+      "statement": "A user reported that the corrected footnote example worked.",
+      "author": "mhmttosun",
+      "authorAuthority": "community",
+      "postNumber": 6,
+      "topicId": 30,
+      "topicTitle": "New footnote example",
+      "url": "https://discuss.wordgard.net/t/new-footnote-example/30/6"
+    },
+    {
+      "existingRowIds": ["WG-META-004B", "WG-PROOF-005A2"],
+      "id": "WGF-016",
+      "implementationProof": false,
+      "kind": "maintainer-intent",
+      "postId": 71,
+      "proposedRowIds": [],
+      "statement": "Porting realistic ProseMirror examples is intentionally used to discover missing Wordgard behavior, with more examples planned.",
+      "author": "marijn",
+      "authorAuthority": "maintainer",
+      "postNumber": 7,
+      "topicId": 30,
+      "topicTitle": "New footnote example",
+      "url": "https://discuss.wordgard.net/t/new-footnote-example/30/7"
+    },
+    {
+      "existingRowIds": [
+        "WG-STATE-006A",
+        "LOCAL-COMMIT-IMPACT-METADATA",
+        "LOCAL-COMMIT-IMPACT-SUBSCRIPTIONS"
+      ],
+      "id": "WGF-017",
+      "implementationProof": false,
+      "kind": "community-requirement",
+      "postId": 24,
+      "proposedRowIds": ["LOCAL-EXTERNAL-MODEL-SYNC"],
+      "statement": "An external SQL model may need bidirectional conversion between editor transactions and database transactions.",
+      "author": "thesmartwon",
+      "authorAuthority": "community",
+      "postNumber": 1,
+      "topicId": 19,
+      "topicTitle": "Strongly referencing document positions",
+      "url": "https://discuss.wordgard.net/t/strongly-referencing-document-positions/19/1"
+    },
+    {
+      "existingRowIds": ["LOCAL-ANCHORS", "WG-VIEW-004A3", "WG-VIEW-004A1"],
+      "id": "WGF-018",
+      "implementationProof": false,
+      "kind": "community-requirement",
+      "postId": 24,
+      "proposedRowIds": [],
+      "statement": "Stable per-word identity and large-document performance create tension between node-per-word DOM rendering and compact text projection.",
+      "author": "thesmartwon",
+      "authorAuthority": "community",
+      "postNumber": 1,
+      "topicId": 19,
+      "topicTitle": "Strongly referencing document positions",
+      "url": "https://discuss.wordgard.net/t/strongly-referencing-document-positions/19/1"
+    },
+    {
+      "existingRowIds": [
+        "WG-STATE-006A",
+        "LOCAL-COMMIT-IMPACT-METADATA",
+        "LOCAL-COMMIT-IMPACT-SUBSCRIPTIONS"
+      ],
+      "id": "WGF-019",
+      "implementationProof": false,
+      "kind": "maintainer-capability-claim",
+      "postId": 30,
+      "proposedRowIds": ["LOCAL-EXTERNAL-MODEL-SYNC"],
+      "statement": "An update listener can observe editor activity for outbound synchronization, while external changes can be pushed into the editor.",
+      "author": "marijn",
+      "authorAuthority": "maintainer",
+      "postNumber": 2,
+      "topicId": 19,
+      "topicTitle": "Strongly referencing document positions",
+      "url": "https://discuss.wordgard.net/t/strongly-referencing-document-positions/19/2"
+    },
+    {
+      "existingRowIds": ["WG-VIEW-005B2", "WG-DOC-011", "LOCAL-ANCHORS"],
+      "id": "WGF-020",
+      "implementationProof": false,
+      "kind": "maintainer-design-option",
+      "postId": 30,
+      "proposedRowIds": [],
+      "statement": "Mapped range metadata can keep information about document spans outside the document, while schema nodes may be simpler when identity is structural.",
+      "author": "marijn",
+      "authorAuthority": "maintainer",
+      "postNumber": 2,
+      "topicId": 19,
+      "topicTitle": "Strongly referencing document positions",
+      "url": "https://discuss.wordgard.net/t/strongly-referencing-document-positions/19/2"
+    },
+    {
+      "existingRowIds": ["WG-VIEW-004A3", "LOCAL-ANCHORS"],
+      "id": "WGF-021",
+      "implementationProof": false,
+      "kind": "community-requirement",
+      "postId": 63,
+      "proposedRowIds": ["LOCAL-EXTERNAL-MODEL-SYNC"],
+      "statement": "Database transaction mapping and virtualization remain linked requirements for large documents with stable external identities.",
+      "author": "thesmartwon",
+      "authorAuthority": "community",
+      "postNumber": 3,
+      "topicId": 19,
+      "topicTitle": "Strongly referencing document positions",
+      "url": "https://discuss.wordgard.net/t/strongly-referencing-document-positions/19/3"
+    },
+    {
+      "existingRowIds": ["WG-META-004D"],
+      "id": "WGF-022",
+      "implementationProof": false,
+      "kind": "maintainer-design-position",
+      "postId": 41,
+      "proposedRowIds": [],
+      "statement": "Wordgard exists to revisit and improve unresolved design problems in ProseMirror rather than preserve that architecture unchanged.",
+      "author": "marijn",
+      "authorAuthority": "maintainer",
+      "postNumber": 4,
+      "topicId": 24,
+      "topicTitle": "Attitude towards AI?",
+      "url": "https://discuss.wordgard.net/t/attitude-towards-ai/24/4"
+    },
+    {
+      "existingRowIds": [
+        "WG-STATE-001A",
+        "WG-STATE-003A",
+        "WG-STATE-003B",
+        "WG-STATE-004A"
+      ],
+      "id": "WGF-023",
+      "implementationProof": false,
+      "kind": "maintainer-design-position",
+      "postId": 29,
+      "proposedRowIds": [],
+      "statement": "Wordgard deliberately prefers functional algebraic state design and facets over Lexical-style imperative composition.",
+      "author": "marijn",
+      "authorAuthority": "maintainer",
+      "postNumber": 2,
+      "topicId": 20,
+      "topicTitle": "How does this compare to the Lexical editor by Meta?",
+      "url": "https://discuss.wordgard.net/t/how-does-this-compare-to-the-lexical-editor-by-meta/20/2"
+    },
+    {
+      "existingRowIds": [
+        "WG-VIEW-004A3",
+        "LOCAL-REACT-HOST",
+        "LOCAL-LAYOUT-PLAN",
+        "LOCAL-LAYOUT-GEOMETRY"
+      ],
+      "id": "WGF-024",
+      "implementationProof": false,
+      "kind": "community-requirement",
+      "postId": 55,
+      "proposedRowIds": [],
+      "statement": "Large documents and expensive node views motivate bounded DOM mounting, but nested variable-height content makes naïve list windowing insufficient.",
+      "author": "strogonoff",
+      "authorAuthority": "community",
+      "postNumber": 1,
+      "topicId": 29,
+      "topicTitle": "Virtualization (windowing, occlusion culling) support",
+      "url": "https://discuss.wordgard.net/t/virtualization-windowing-occlusion-culling-support/29/1"
+    },
+    {
+      "existingRowIds": ["WG-VIEW-004A3"],
+      "id": "WGF-025",
+      "implementationProof": false,
+      "kind": "maintainer-non-goal",
+      "postId": 56,
+      "proposedRowIds": [],
+      "statement": "Core virtualization is intentionally excluded because its code and API complexity impose a tax on most users.",
+      "author": "marijn",
+      "authorAuthority": "maintainer",
+      "postNumber": 2,
+      "topicId": 29,
+      "topicTitle": "Virtualization (windowing, occlusion culling) support",
+      "url": "https://discuss.wordgard.net/t/virtualization-windowing-occlusion-culling-support/29/2"
+    },
+    {
+      "existingRowIds": [
+        "WG-META-001",
+        "WG-VIEW-001A",
+        "LOCAL-REACT-HOST",
+        "LOCAL-LAYOUT-PLAN",
+        "LOCAL-LAYOUT-GEOMETRY"
+      ],
+      "id": "WGF-026",
+      "implementationProof": false,
+      "kind": "maintainer-intent",
+      "postId": 56,
+      "proposedRowIds": ["LOCAL-HOST-EDITOR-CAPABILITY"],
+      "statement": "Wordgard data structures are intended for reuse by canvas, native, React, or virtualizing editor components, but the host abstractions still need real adopters and refinement.",
+      "author": "marijn",
+      "authorAuthority": "maintainer",
+      "postNumber": 2,
+      "topicId": 29,
+      "topicTitle": "Virtualization (windowing, occlusion culling) support",
+      "url": "https://discuss.wordgard.net/t/virtualization-windowing-occlusion-culling-support/29/2"
+    },
+    {
+      "existingRowIds": ["WG-META-002B", "LOCAL-RUNTIME-API-TREESHAKING"],
+      "id": "WGF-027",
+      "implementationProof": false,
+      "kind": "community-api-analysis",
+      "postId": 21,
+      "proposedRowIds": [],
+      "statement": "Native ESM namespaces could avoid TypeScript namespace declaration problems and improve tree shaking, but lose callable-class-plus-namespace ergonomics.",
+      "author": "ocavue",
+      "authorAuthority": "community",
+      "postNumber": 1,
+      "topicId": 17,
+      "topicTitle": "API design: TS Namespace vs ESM `export * as ns`",
+      "url": "https://discuss.wordgard.net/t/api-design-ts-namespace-vs-esm-export-as-ns/17/1"
+    },
+    {
+      "existingRowIds": ["WG-META-002B", "LOCAL-RUNTIME-API-TREESHAKING"],
+      "id": "WGF-028",
+      "implementationProof": false,
+      "kind": "maintainer-design-position",
+      "postId": 28,
+      "proposedRowIds": [],
+      "statement": "TypeScript namespaces were selected to support nested classes; an ESM alternative was considered.",
+      "author": "marijn",
+      "authorAuthority": "maintainer",
+      "postNumber": 2,
+      "topicId": 17,
+      "topicTitle": "API design: TS Namespace vs ESM `export * as ns`",
+      "url": "https://discuss.wordgard.net/t/api-design-ts-namespace-vs-esm-export-as-ns/17/2"
+    },
+    {
+      "existingRowIds": ["WG-META-002B", "LOCAL-RUNTIME-API-TREESHAKING"],
+      "id": "WGF-029",
+      "implementationProof": false,
+      "kind": "maintainer-design-position",
+      "postId": 32,
+      "proposedRowIds": [],
+      "statement": "Splitting every nested API into ESM modules creates awkward ownership and cycles, so Wordgard keeps namespaces and rewrites build output for tree shaking.",
+      "author": "marijn",
+      "authorAuthority": "maintainer",
+      "postNumber": 3,
+      "topicId": 17,
+      "topicTitle": "API design: TS Namespace vs ESM `export * as ns`",
+      "url": "https://discuss.wordgard.net/t/api-design-ts-namespace-vs-esm-export-as-ns/17/3"
+    },
+    {
+      "existingRowIds": ["WG-META-002B"],
+      "id": "WGF-030",
+      "implementationProof": false,
+      "kind": "community-bug-report",
+      "postId": 34,
+      "proposedRowIds": [],
+      "statement": "A Vite consumer observed the link namespace missing at runtime.",
+      "author": "keais",
+      "authorAuthority": "community",
+      "postNumber": 4,
+      "topicId": 17,
+      "topicTitle": "API design: TS Namespace vs ESM `export * as ns`",
+      "url": "https://discuss.wordgard.net/t/api-design-ts-namespace-vs-esm-export-as-ns/17/4"
+    },
+    {
+      "existingRowIds": ["WG-META-002B", "WG-META-005A"],
+      "id": "WGF-031",
+      "implementationProof": false,
+      "kind": "maintainer-cause-claim",
+      "postId": 35,
+      "proposedRowIds": [],
+      "statement": "The missing link API was attributed to a namespace-mangling build bug that let dead-code elimination drop a live namespace.",
+      "author": "marijn",
+      "authorAuthority": "maintainer",
+      "postNumber": 5,
+      "topicId": 17,
+      "topicTitle": "API design: TS Namespace vs ESM `export * as ns`",
+      "url": "https://discuss.wordgard.net/t/api-design-ts-namespace-vs-esm-export-as-ns/17/5"
+    },
+    {
+      "existingRowIds": ["WG-META-001", "WG-VIEW-001A"],
+      "id": "WGF-032",
+      "implementationProof": false,
+      "kind": "community-requirement",
+      "postId": 23,
+      "proposedRowIds": ["LOCAL-HOST-EDITOR-CAPABILITY"],
+      "statement": "A non-browser Rust port needs the document and command substrate to be separable from DOM layout and selection.",
+      "author": "nicoburns",
+      "authorAuthority": "community",
+      "postNumber": 1,
+      "topicId": 18,
+      "topicTitle": "Porting to other languages / environments?",
+      "url": "https://discuss.wordgard.net/t/porting-to-other-languages-environments/18/1"
+    },
+    {
+      "existingRowIds": ["WG-META-001", "WG-VIEW-001A"],
+      "id": "WGF-033",
+      "implementationProof": false,
+      "kind": "maintainer-intent",
+      "postId": 31,
+      "proposedRowIds": ["LOCAL-HOST-EDITOR-CAPABILITY"],
+      "statement": "Host independence was a deliberate design goal, but it remains unproven until another host drives a generic subset of the editor interface.",
+      "author": "marijn",
+      "authorAuthority": "maintainer",
+      "postNumber": 2,
+      "topicId": 18,
+      "topicTitle": "Porting to other languages / environments?",
+      "url": "https://discuss.wordgard.net/t/porting-to-other-languages-environments/18/2"
+    },
+    {
+      "existingRowIds": ["WG-META-001", "WG-DOC-016"],
+      "id": "WGF-034",
+      "implementationProof": false,
+      "kind": "community-requirement",
+      "postId": 20,
+      "proposedRowIds": ["LOCAL-MARKDOWN-SERIALIZATION-BOUNDARY"],
+      "statement": "Users want a Wordgard Markdown parser and serializer equivalent to the ProseMirror module.",
+      "author": "kepta",
+      "authorAuthority": "community",
+      "postNumber": 1,
+      "topicId": 16,
+      "topicTitle": "wordgard-markdown ? ",
+      "url": "https://discuss.wordgard.net/t/wordgard-markdown/16/1"
+    },
+    {
+      "existingRowIds": ["WG-META-001", "WG-DOC-016"],
+      "id": "WGF-035",
+      "implementationProof": false,
+      "kind": "maintainer-intent",
+      "postId": 27,
+      "proposedRowIds": ["LOCAL-MARKDOWN-SERIALIZATION-BOUNDARY"],
+      "statement": "Markdown serialization is not a core priority and is expected to live in a separate module.",
+      "author": "marijn",
+      "authorAuthority": "maintainer",
+      "postNumber": 2,
+      "topicId": 16,
+      "topicTitle": "wordgard-markdown ? ",
+      "url": "https://discuss.wordgard.net/t/wordgard-markdown/16/2"
+    },
+    {
+      "existingRowIds": ["WG-VIEW-005A2"],
+      "id": "WGF-036",
+      "implementationProof": false,
+      "kind": "community-requirement",
+      "postId": 9,
+      "proposedRowIds": ["LOCAL-HOST-EDITOR-CAPABILITY"],
+      "statement": "Framework users need to render Angular-owned components inside editor content.",
+      "author": "mariojsnunes",
+      "authorAuthority": "community",
+      "postNumber": 1,
+      "topicId": 8,
+      "topicTitle": "Any plan to render Angular components inside the editor?",
+      "url": "https://discuss.wordgard.net/t/any-plan-to-render-angular-components-inside-the-editor/8/1"
+    },
+    {
+      "existingRowIds": ["WG-VIEW-005A2", "WG-META-001"],
+      "id": "WGF-037",
+      "implementationProof": false,
+      "kind": "maintainer-boundary",
+      "postId": 10,
+      "proposedRowIds": ["LOCAL-HOST-EDITOR-CAPABILITY"],
+      "statement": "Core widgets may host custom DOM, while Angular and other framework adapters stay outside the core library.",
+      "author": "marijn",
+      "authorAuthority": "maintainer",
+      "postNumber": 2,
+      "topicId": 8,
+      "topicTitle": "Any plan to render Angular components inside the editor?",
+      "url": "https://discuss.wordgard.net/t/any-plan-to-render-angular-components-inside-the-editor/8/2"
+    }
+  ],
+  "mappings": {
+    "existingMatrixRows": [
+      {
+        "claimIds": ["WGF-005", "WGF-007", "WGF-018", "WGF-020", "WGF-021"],
+        "rowId": "LOCAL-ANCHORS",
+        "title": "Runtime identities, anchors, and transaction-scoped draft references"
+      },
+      {
+        "claimIds": ["WGF-017", "WGF-019"],
+        "rowId": "LOCAL-COMMIT-IMPACT-METADATA",
+        "title": "Lazy commit impact metadata and queries"
+      },
+      {
+        "claimIds": ["WGF-017", "WGF-019"],
+        "rowId": "LOCAL-COMMIT-IMPACT-SUBSCRIPTIONS",
+        "title": "Commit-scoped React subscription invalidation"
+      },
+      {
+        "claimIds": ["WGF-024", "WGF-026"],
+        "rowId": "LOCAL-LAYOUT-GEOMETRY",
+        "title": "Projected page geometry"
+      },
+      {
+        "claimIds": ["WGF-024", "WGF-026"],
+        "rowId": "LOCAL-LAYOUT-PLAN",
+        "title": "Headless page and layout plan"
+      },
+      {
+        "claimIds": ["WGF-024", "WGF-026"],
+        "rowId": "LOCAL-REACT-HOST",
+        "title": "React renderer and provider host"
+      },
+      {
+        "claimIds": ["WGF-027", "WGF-028", "WGF-029"],
+        "rowId": "LOCAL-RUNTIME-API-TREESHAKING",
+        "title": "Namespace-like API discoverability with real ESM tree-shaking"
+      },
+      {
+        "claimIds": ["WGF-005", "WGF-007", "WGF-008"],
+        "rowId": "LOCAL-YJS",
+        "title": "Yjs bridge, awareness, relative selections, and schema envelope"
+      },
+      {
+        "claimIds": ["WGF-006"],
+        "rowId": "WG-APPLICATION-BLAME-001",
+        "title": "Persistent origin attribution through document gaps"
+      },
+      {
+        "claimIds": ["WGF-006"],
+        "rowId": "WG-APPLICATION-BLAME-002",
+        "title": "Cached decoration projection of attribution state"
+      },
+      {
+        "claimIds": ["WGF-005", "WGF-008", "WGF-010"],
+        "rowId": "WG-COLLAB-001",
+        "title": "Versioned local-update queue, acknowledgement, and remote transform loop"
+      },
+      {
+        "claimIds": ["WGF-005", "WGF-008", "WGF-010"],
+        "rowId": "WG-COLLAB-002A",
+        "title": "Pairwise change transformation"
+      },
+      {
+        "claimIds": ["WGF-009"],
+        "rowId": "WG-DOC-002D",
+        "title": "Runtime-configured atom semantics"
+      },
+      {
+        "claimIds": ["WGF-013"],
+        "rowId": "WG-DOC-005B",
+        "title": "Node equality"
+      },
+      {
+        "claimIds": ["WGF-007"],
+        "rowId": "WG-DOC-007",
+        "title": "Strong document position-array cache"
+      },
+      {
+        "claimIds": ["WGF-007", "WGF-020"],
+        "rowId": "WG-DOC-011",
+        "title": "Position mapping, changed ranges, padding, and clipping"
+      },
+      {
+        "claimIds": ["WGF-034", "WGF-035"],
+        "rowId": "WG-DOC-016",
+        "title": "DOM and HTML serializer"
+      },
+      {
+        "claimIds": ["WGF-009", "WGF-011"],
+        "rowId": "WG-INTEGRATION-NESTED-001",
+        "title": "Editable nested content ownership and selection integration"
+      },
+      {
+        "claimIds": [
+          "WGF-026",
+          "WGF-032",
+          "WGF-033",
+          "WGF-034",
+          "WGF-035",
+          "WGF-037"
+        ],
+        "rowId": "WG-META-001",
+        "title": "Public package and subpath entrypoints"
+      },
+      {
+        "claimIds": ["WGF-027", "WGF-028", "WGF-029", "WGF-030", "WGF-031"],
+        "rowId": "WG-META-002B",
+        "title": "Namespace-output rewrite and cross-bundler dead-code elimination"
+      },
+      {
+        "claimIds": ["WGF-016"],
+        "rowId": "WG-META-004B",
+        "title": "Literate executable examples with snippet injection and import maps"
+      },
+      {
+        "claimIds": ["WGF-022"],
+        "rowId": "WG-META-004D",
+        "title": "Public architecture positioning and ProseMirror migration map"
+      },
+      {
+        "claimIds": ["WGF-031"],
+        "rowId": "WG-META-005A",
+        "title": "Dead-code and tree-shaking probe"
+      },
+      {
+        "claimIds": ["WGF-014"],
+        "rowId": "WG-PROOF-005A1A",
+        "title": "Registry example source compilation"
+      },
+      {
+        "claimIds": [
+          "WGF-009",
+          "WGF-010",
+          "WGF-011",
+          "WGF-012",
+          "WGF-013",
+          "WGF-014",
+          "WGF-015",
+          "WGF-016"
+        ],
+        "rowId": "WG-PROOF-005A2",
+        "title": "Executable-example behavior integrity"
+      },
+      {
+        "claimIds": ["WGF-014"],
+        "rowId": "WG-PROOF-005B1",
+        "title": "Source-derived public symbol and reference completeness"
+      },
+      {
+        "claimIds": ["WGF-023"],
+        "rowId": "WG-STATE-001A",
+        "title": "Immutable editor state"
+      },
+      {
+        "claimIds": ["WGF-023"],
+        "rowId": "WG-STATE-003A",
+        "title": "Typed facet declaration, combination, and precedence"
+      },
+      {
+        "claimIds": ["WGF-023"],
+        "rowId": "WG-STATE-003B",
+        "title": "Dependency-tracked computed facet providers"
+      },
+      {
+        "claimIds": ["WGF-023"],
+        "rowId": "WG-STATE-004A",
+        "title": "Recursive extension trees and feature-local bundles"
+      },
+      {
+        "claimIds": ["WGF-017", "WGF-019"],
+        "rowId": "WG-STATE-006A",
+        "title": "Transaction specifications and sequential merge"
+      },
+      {
+        "claimIds": ["WGF-001", "WGF-003"],
+        "rowId": "WG-STATE-011B",
+        "title": "Grapheme, word, and logical movement"
+      },
+      {
+        "claimIds": ["WGF-001", "WGF-002", "WGF-003", "WGF-004"],
+        "rowId": "WG-STATE-013",
+        "title": "Custom bidi span computation and visual motion"
+      },
+      {
+        "claimIds": ["WGF-004", "WGF-026", "WGF-032", "WGF-033"],
+        "rowId": "WG-VIEW-001A",
+        "title": "Imperative editor and view lifecycle"
+      },
+      {
+        "claimIds": ["WGF-018"],
+        "rowId": "WG-VIEW-004A1",
+        "title": "Incremental DOM projection and subtree identity reuse"
+      },
+      {
+        "claimIds": ["WGF-018", "WGF-021", "WGF-024", "WGF-025"],
+        "rowId": "WG-VIEW-004A3",
+        "title": "Large-document bounded mounting"
+      },
+      {
+        "claimIds": ["WGF-036", "WGF-037"],
+        "rowId": "WG-VIEW-005A2",
+        "title": "Widget public model and lifecycle"
+      },
+      {
+        "claimIds": ["WGF-020"],
+        "rowId": "WG-VIEW-005B2",
+        "title": "Packed bulk point and range storage and mapping"
+      },
+      {
+        "claimIds": ["WGF-001", "WGF-002", "WGF-003", "WGF-004"],
+        "rowId": "WG-VIEW-006B",
+        "title": "Geometry and coordinate mapping"
+      },
+      {
+        "claimIds": ["WGF-011"],
+        "rowId": "WG-VIEW-007B2",
+        "title": "Model-to-DOM selection replay"
+      },
+      {
+        "claimIds": ["WGF-001", "WGF-003"],
+        "rowId": "WG-VIEW-010A",
+        "title": "Composition lifecycle and composition DOM preservation"
+      },
+      {
+        "claimIds": ["WGF-013"],
+        "rowId": "WG-VIEW-016A",
+        "title": "Whole-plugin lifecycle deactivation after failure"
+      }
+    ],
+    "proposedMatrixRows": [
+      {
+        "classification": "insufficient evidence",
+        "dimensionWinners": {
+          "api": "insufficient evidence",
+          "correctness": "insufficient evidence",
+          "data": "insufficient evidence",
+          "ownership": "insufficient evidence",
+          "proof": "insufficient evidence",
+          "runtime": "insufficient evidence"
+        },
+        "forumLocators": [
+          "https://discuss.wordgard.net/t/any-plans-for-vertical-writing-mode-support/27/1",
+          "https://discuss.wordgard.net/t/any-plans-for-vertical-writing-mode-support/27/2",
+          "https://discuss.wordgard.net/t/any-plans-for-vertical-writing-mode-support/27/3",
+          "https://discuss.wordgard.net/t/any-plans-for-vertical-writing-mode-support/27/4"
+        ],
+        "id": "LOCAL-VERTICAL-WRITING-LAYOUT",
+        "localDebt": "insufficient evidence",
+        "mechanism": "Project vertical-rl/vertical-lr lines, ruby, tate-chu-yoko, and mixed-orientation runs into visual geometry and navigation.",
+        "preferred": "insufficient evidence",
+        "priority": "—",
+        "proofAdaptation": "defer",
+        "referenceAdaptation": "defer",
+        "sourceLocators": {
+          "plate": ["docs/plite/selection-navigation-coverage.md:198-201"],
+          "plite": [
+            "packages/plite-dom/src/plugin/dom-geometry.ts:65-105",
+            "packages/plite-dom/src/plugin/dom-geometry.ts:1041-1085",
+            "packages/plite-dom/src/plugin/dom-geometry.ts:1185-1217",
+            "docs/plite/selection-navigation-coverage.md:198-201"
+          ],
+          "wordgard": [
+            "../wordgard/src/state/textblock.ts:29-48",
+            "../wordgard/src/state/textblock.ts:141-175"
+          ]
+        },
+        "status": {
+          "plate": "absent",
+          "plite": "absent",
+          "wordgard": "absent"
+        },
+        "title": "CSS vertical-rl/lr layout, ruby, mixed orientation, geometry, and navigation",
+        "verdict": "defer",
+        "whyNew": "CSS vertical layout, ruby, tate-chu-yoko, and horizontal runs inside vertical lines are not the same concept as bidi text direction or ordinary geometry mapping.",
+        "claimIds": ["WGF-001", "WGF-002", "WGF-003", "WGF-004"]
+      },
+      {
+        "classification": "insufficient evidence",
+        "dimensionWinners": {
+          "api": "insufficient evidence",
+          "correctness": "insufficient evidence",
+          "data": "insufficient evidence",
+          "ownership": "insufficient evidence",
+          "proof": "insufficient evidence",
+          "runtime": "insufficient evidence"
+        },
+        "forumLocators": [
+          "https://discuss.wordgard.net/t/any-plans-for-vertical-writing-mode-support/27/1",
+          "https://discuss.wordgard.net/t/any-plans-for-vertical-writing-mode-support/27/2",
+          "https://discuss.wordgard.net/t/any-plans-for-vertical-writing-mode-support/27/3",
+          "https://discuss.wordgard.net/t/any-plans-for-vertical-writing-mode-support/27/4"
+        ],
+        "id": "LOCAL-VERTICAL-WRITING-INPUT",
+        "localDebt": "insufficient evidence",
+        "mechanism": "Route vertical-writing caret motion, selection, keyboard intent, composition, and IME reconciliation independently from horizontal bidi input.",
+        "preferred": "insufficient evidence",
+        "priority": "—",
+        "proofAdaptation": "defer",
+        "referenceAdaptation": "defer",
+        "sourceLocators": {
+          "plate": ["docs/plite/selection-navigation-coverage.md:198-201"],
+          "plite": [
+            "packages/plite-react/src/editable/keyboard-input-strategy.ts:90-158",
+            "packages/plite-react/src/editable/keyboard-input-strategy.ts:625-648",
+            "packages/plite-react/src/editable/keyboard-input-strategy.ts:882-896",
+            "docs/plite/selection-navigation-coverage.md:198-201"
+          ],
+          "wordgard": [
+            "../wordgard/src/state/textblock.ts:29-48",
+            "../wordgard/src/state/textblock.ts:141-175"
+          ]
+        },
+        "status": {
+          "plate": "absent",
+          "plite": "absent",
+          "wordgard": "absent"
+        },
+        "title": "Vertical-mode caret, selection, key routing, composition, and IME reconciliation",
+        "verdict": "defer",
+        "whyNew": "Caret motion and composition in vertical writing have independent browser failure modes and proof obligations from layout projection.",
+        "claimIds": ["WGF-001", "WGF-002", "WGF-003", "WGF-004"]
+      },
+      {
+        "classification": "Plate stronger",
+        "dimensionWinners": {
+          "api": "Plate stronger",
+          "correctness": "Plate stronger",
+          "data": "Plate stronger",
+          "ownership": "Plate stronger",
+          "proof": "Plate stronger",
+          "runtime": "insufficient evidence"
+        },
+        "forumLocators": [
+          "https://discuss.wordgard.net/t/offline-collaborative-editing/31/1",
+          "https://discuss.wordgard.net/t/offline-collaborative-editing/31/2",
+          "https://discuss.wordgard.net/t/offline-collaborative-editing/31/3"
+        ],
+        "id": "LOCAL-OFFLINE-MERGE-REVIEW",
+        "localDebt": "insufficient evidence",
+        "mechanism": "Expose offline divergence as attributed changes that a user can review, accept, reject, and adjust after convergence.",
+        "preferred": "Plate",
+        "priority": "—",
+        "proofAdaptation": "defer",
+        "referenceAdaptation": "not-applicable",
+        "sourceLocators": {
+          "plate": [
+            "packages/yjs/test/canonical-change-contract.spec.ts:97-290",
+            "packages/suggestion/src/lib/BaseSuggestionPlugin.ts:1204-1303",
+            "packages/suggestion/src/lib/BaseSuggestionPlugin.ts:1392-1425",
+            "packages/suggestion/src/lib/BaseSuggestionPlugin.spec.tsx:1882-1915",
+            "packages/suggestion/src/lib/BaseSuggestionPlugin.spec.tsx:2572-2617"
+          ],
+          "plite": [
+            "packages/yjs/test/canonical-change-contract.spec.ts:97-290",
+            "packages/yjs/test/insert-fragment-contract.spec.ts:76-102"
+          ],
+          "wordgard": [
+            "../wordgard/src/collab/collab.ts:23-37",
+            "../wordgard/src/collab/collab.ts:64-82",
+            "../wordgard/src/collab/collab.ts:122-230"
+          ]
+        },
+        "status": {
+          "plate": "partial",
+          "plite": "partial",
+          "wordgard": "absent"
+        },
+        "title": "User-visible offline change attribution, review, and adjustment atop convergence",
+        "verdict": "defer",
+        "whyNew": "Offline reconciliation is a user-visible review workflow, not merely the existing real-time OT or Yjs transport loop.",
+        "claimIds": ["WGF-005", "WGF-006", "WGF-008"]
+      },
+      {
+        "classification": "Plite/Plate stack stronger",
+        "dimensionWinners": {
+          "api": "Plite/Plate stack stronger",
+          "correctness": "insufficient evidence",
+          "data": "Plite/Plate stack stronger",
+          "ownership": "Plite/Plate stack stronger",
+          "proof": "Plite/Plate stack stronger",
+          "runtime": "insufficient evidence"
+        },
+        "forumLocators": [
+          "https://discuss.wordgard.net/t/any-plan-to-render-angular-components-inside-the-editor/8/1",
+          "https://discuss.wordgard.net/t/any-plan-to-render-angular-components-inside-the-editor/8/2",
+          "https://discuss.wordgard.net/t/porting-to-other-languages-environments/18/1",
+          "https://discuss.wordgard.net/t/porting-to-other-languages-environments/18/2",
+          "https://discuss.wordgard.net/t/virtualization-windowing-occlusion-culling-support/29/2",
+          "https://discuss.wordgard.net/t/any-plans-for-vertical-writing-mode-support/27/4"
+        ],
+        "id": "LOCAL-HOST-EDITOR-CAPABILITY",
+        "localDebt": "none",
+        "mechanism": "Define a typed headless editor capability that DOM, React, virtualized, native, and canvas hosts can consume without depending on a specific view class.",
+        "preferred": "Plite/Plate stack",
+        "priority": "—",
+        "proofAdaptation": "keep-local",
+        "referenceAdaptation": "keep-local",
+        "sourceLocators": {
+          "plate": [
+            "packages/core/src/react/editor/PlateEditor.ts:24-70",
+            "packages/core/src/react/editor/TPlateEditorCore.spec.ts:55-90"
+          ],
+          "plite": [
+            "packages/plite/src/interfaces/editor.ts:120-180",
+            "packages/plite/src/interfaces/editor.ts:1285-1311",
+            "packages/plite-dom/src/index.ts:23-55",
+            "packages/plite-react/src/index.ts:35-85"
+          ],
+          "wordgard": [
+            "../wordgard/src/editor/editor.ts:26-79",
+            "../wordgard/src/command/command.ts:19-55",
+            "../wordgard/src/state/state.ts:41-79"
+          ]
+        },
+        "status": {
+          "plate": "partial",
+          "plite": "partial",
+          "wordgard": "partial"
+        },
+        "title": "Typed headless editor capability across DOM, React, virtualized, native, and canvas hosts",
+        "verdict": "keep",
+        "whyNew": "A command-capable editor interface shared by DOM, native, canvas, React, and virtualized views is more specific than package entrypoints or one imperative DOM view lifecycle.",
+        "claimIds": [
+          "WGF-004",
+          "WGF-026",
+          "WGF-032",
+          "WGF-033",
+          "WGF-036",
+          "WGF-037"
+        ]
+      },
+      {
+        "classification": "Plate stronger",
+        "dimensionWinners": {
+          "api": "Plate stronger",
+          "correctness": "Plate stronger",
+          "data": "Plate stronger",
+          "ownership": "Plate stronger",
+          "proof": "Plate stronger",
+          "runtime": "insufficient evidence"
+        },
+        "forumLocators": [
+          "https://discuss.wordgard.net/t/wordgard-markdown/16/1",
+          "https://discuss.wordgard.net/t/wordgard-markdown/16/2"
+        ],
+        "id": "LOCAL-MARKDOWN-SERIALIZATION-BOUNDARY",
+        "localDebt": "none",
+        "mechanism": "Own Markdown parsing and serialization in a separate package that integrates with the editor through host codecs.",
+        "preferred": "Plate",
+        "priority": "—",
+        "proofAdaptation": "keep-local",
+        "referenceAdaptation": "not-applicable",
+        "sourceLocators": {
+          "plate": [
+            "packages/markdown/package.json:2-29",
+            "packages/markdown/src/lib/MarkdownPlugin.ts:47-122",
+            "packages/markdown/src/lib/MarkdownPlugin.spec.ts:152-185",
+            "packages/markdown/src/lib/MarkdownPlugin.spec.ts:304-434"
+          ],
+          "plite": [
+            "packages/plite-dom/test/host-codec.test.ts:163-239",
+            "packages/plite-dom/test/host-codec.test.ts:356-411"
+          ],
+          "wordgard": []
+        },
+        "status": {
+          "plate": "exact",
+          "plite": "partial",
+          "wordgard": "absent"
+        },
+        "title": "Separately owned Markdown parse/serialize module integrated through host codecs",
+        "verdict": "keep",
+        "whyNew": "Markdown parsing and serialization ownership is absent from the current matrix and is independent from the DOM/HTML codec.",
+        "claimIds": ["WGF-034", "WGF-035"]
+      },
+      {
+        "classification": "Plite/Plate stack stronger",
+        "dimensionWinners": {
+          "api": "Plite/Plate stack stronger",
+          "correctness": "insufficient evidence",
+          "data": "Plite/Plate stack stronger",
+          "ownership": "Plite/Plate stack stronger",
+          "proof": "Plite/Plate stack stronger",
+          "runtime": "insufficient evidence"
+        },
+        "forumLocators": [
+          "https://discuss.wordgard.net/t/strongly-referencing-document-positions/19/1",
+          "https://discuss.wordgard.net/t/strongly-referencing-document-positions/19/2",
+          "https://discuss.wordgard.net/t/strongly-referencing-document-positions/19/3",
+          "https://discuss.wordgard.net/t/offline-collaborative-editing/31/3"
+        ],
+        "id": "LOCAL-EXTERNAL-MODEL-SYNC",
+        "localDebt": "none",
+        "mechanism": "Observe committed editor transactions and snapshots for outbound synchronization and apply inbound external-model transactions through the editor update boundary.",
+        "preferred": "Plite/Plate stack",
+        "priority": "—",
+        "proofAdaptation": "keep-local",
+        "referenceAdaptation": "keep-local",
+        "sourceLocators": {
+          "plate": [
+            "packages/core/src/react/components/Plate.tsx:34-53",
+            "packages/core/src/react/components/Plate.tsx:111-175",
+            "packages/core/src/react/components/PlateContent.spec.tsx:209-280",
+            "packages/core/src/react/components/PlateContent.spec.tsx:282-373"
+          ],
+          "plite": [
+            "packages/plite/src/interfaces/editor.ts:1285-1311",
+            "packages/plite/src/interfaces/editor.ts:3491-3508",
+            "packages/plite/src/core/listener-state.ts:105-118",
+            "packages/plite/test/transaction-extension-contract.ts:19-79"
+          ],
+          "wordgard": [
+            "../wordgard/src/editor/editor.ts:170-190",
+            "../wordgard/src/editor/editor.ts:240-243",
+            "../wordgard/src/editor/editor.ts:635-658",
+            "../wordgard/src/editor/editor.ts:1015-1039"
+          ]
+        },
+        "status": {
+          "plate": "partial",
+          "plite": "partial",
+          "wordgard": "partial"
+        },
+        "title": "Bidirectional external-model synchronization over committed editor transactions",
+        "verdict": "keep",
+        "whyNew": "Observing editor transactions and applying external database changes is a distinct integration contract from state fields, commit impact queries, or collaboration transport.",
+        "claimIds": ["WGF-008", "WGF-017", "WGF-019", "WGF-021"]
+      }
+    ]
+  },
+  "excludedPosts": [
+    {
+      "scope": "category-description",
+      "reason": "Discourse category boilerplate; no editor requirement.",
+      "postId": 1
+    },
+    {
+      "scope": "category-description",
+      "reason": "Discourse category boilerplate; no editor requirement.",
+      "postId": 3
+    },
+    {
+      "scope": "project-process",
+      "reason": "Forum conduct and issue-routing policy, not an editor architecture claim.",
+      "postId": 6
+    },
+    {
+      "scope": "context-only",
+      "reason": "Clarifies a CodeMirror package link; no Wordgard capability claim.",
+      "postId": 11
+    },
+    {
+      "scope": "context-only",
+      "reason": "Corrects the CodeMirror/Wordgard mix-up; no architecture claim.",
+      "postId": 13
+    },
+    {
+      "scope": "social",
+      "reason": "Agreement about AI companies and pull requests; no editor claim.",
+      "postId": 22
+    },
+    {
+      "scope": "social",
+      "reason": "Website praise; no editor requirement.",
+      "postId": 25
+    },
+    {
+      "scope": "documentation-request",
+      "reason": "Requests a competitor table but does not assert an editor capability.",
+      "postId": 26
+    },
+    {
+      "scope": "question-only",
+      "reason": "Asks about AI and motivation without asserting architecture.",
+      "postId": 38
+    },
+    {
+      "scope": "tooling-policy",
+      "reason": "Maintainer opinion on AI-assisted development, not editor architecture.",
+      "postId": 39
+    },
+    {
+      "scope": "question-only",
+      "reason": "Asks about motivation without adding an atomic claim.",
+      "postId": 40
+    },
+    {
+      "scope": "documentation-translation",
+      "reason": "Community opinion on translated docs; peripheral to editor design.",
+      "postId": 48
+    },
+    {
+      "scope": "documentation-translation",
+      "reason": "Describes a translated-site workflow; no editor architecture claim.",
+      "postId": 52
+    },
+    {
+      "scope": "documentation-translation",
+      "reason": "Maintainer accepts maintained translated docs; no editor architecture claim.",
+      "postId": 54
+    },
+    {
+      "scope": "documentation-translation",
+      "reason": "Encourages translation; no editor architecture claim.",
+      "postId": 58
+    },
+    {
+      "scope": "social",
+      "reason": "Acknowledges the vertical-writing answer; no new requirement.",
+      "postId": 73
+    }
+  ],
+  "summary": {
+    "claims": 37,
+    "communityClaims": 16,
+    "communityPosts": 25,
+    "excludedPosts": 16,
+    "existingMatrixRowsReferenced": 42,
+    "maintainerClaims": 21,
+    "maintainerPosts": 20,
+    "materialPosts": 32,
+    "proposedMatrixRows": 6,
+    "publicTopics": 14,
+    "systemPosts": 3,
+    "unexplainedVisiblePosts": 0,
+    "unexplainedVisibleTopics": 0,
+    "visiblePosts": 48
+  },
+  "validation": {
+    "allVisiblePostsExplained": true,
+    "allVisibleTopicsExplained": true,
+    "categoryPostCountMatchesRegularTopics": true,
+    "categoryTopicCountMatchesIndexes": true,
+    "changedPostIds": [],
+    "duplicateClaimIds": [],
+    "globalPostIndexMismatch": [],
+    "latestCategoryTopicMismatch": [],
+    "missingReviewedPostIds": [],
+    "postStreamsComplete": true,
+    "staleExcludedPostIds": [],
+    "uncategorizedPostIds": [],
+    "unknownExistingRowIds": [],
+    "unknownProposedRowIds": [],
+    "unmappedClaimIds": [],
+    "unreviewedPostIds": []
+  }
+}

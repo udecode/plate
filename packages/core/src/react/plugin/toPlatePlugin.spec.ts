@@ -1,29 +1,21 @@
-import { schema } from '@platejs/plite';
-
 import type { NodeComponent } from '../../lib';
 
 import { resolvePluginTest } from '../../internal/plugin/resolveCreatePluginTest';
-import { createBaseEditor, createBasePlugin } from '../../lib';
+import { createBaseEditor, defineBasePlugin } from '../../lib';
 import { toPlatePlugin } from './toPlatePlugin';
 
 describe('toPlatePlugin', () => {
-  const BaseParagraphPlugin = createBasePlugin({
+  const BaseAdapterPlugin = defineBasePlugin('baseAdapter', {
     api: () => ({
       baseLabel: () => 'base' as const,
     }),
     initialState: { count: 1 },
-    name: 'paragraph',
-    schema: {
-      element: {
-        content: schema.content.open({ default: 'text', min: 1 }),
-      },
-    },
   });
 
   it('lifts one Base descriptor with React component and event fields', () => {
     const Component: NodeComponent = () => null;
     const keyDown = mock();
-    const plugin = toPlatePlugin(BaseParagraphPlugin, {
+    const plugin = toPlatePlugin(BaseAdapterPlugin, {
       component: Component,
       initialState: { label: 'react' },
       on: { keyDown },
@@ -39,7 +31,7 @@ describe('toPlatePlugin', () => {
   });
 
   it('preserves Base and React-owned staged capabilities', () => {
-    const plugin = toPlatePlugin(BaseParagraphPlugin).extend(() => ({
+    const plugin = toPlatePlugin(BaseAdapterPlugin).extend(() => ({
       api: () => ({
         reactLabel: () => 'react' as const,
       }),
@@ -53,8 +45,7 @@ describe('toPlatePlugin', () => {
   it('runs Base lifecycle contributions before React adapter contributions', () => {
     const calls: string[] = [];
     const plugin = toPlatePlugin(
-      createBasePlugin({
-        name: 'orderedLifecycle',
+      defineBasePlugin('orderedLifecycle', {
         on: {
           transactionChange: () => {
             calls.push('base');
@@ -80,12 +71,11 @@ describe('toPlatePlugin', () => {
   });
 
   it('rebinds required dependencies to their React descriptors', () => {
-    const BaseChildPlugin = createBasePlugin({ name: 'child' });
+    const BaseChildPlugin = defineBasePlugin('child', {});
     const ChildPlugin = toPlatePlugin(BaseChildPlugin);
     const ParentPlugin = toPlatePlugin(
-      createBasePlugin({
+      defineBasePlugin('parent', {
         dependencies: [BaseChildPlugin],
-        name: 'parent',
       }),
       {
         dependencies: [ChildPlugin],
@@ -98,11 +88,9 @@ describe('toPlatePlugin', () => {
   it('lets terminal configuration bind the component', () => {
     const Component: NodeComponent = () => null;
     const resolved = resolvePluginTest(
-      toPlatePlugin(
-        createBasePlugin({
-          name: 'configuredComponent',
-        })
-      ).configure({ component: Component })
+      toPlatePlugin(defineBasePlugin('configuredComponent', {})).configure({
+        component: Component,
+      })
     );
 
     expect(resolved.render.node).toBe(Component);
@@ -110,9 +98,7 @@ describe('toPlatePlugin', () => {
 
   it('preserves terminal Base configuration through the React lift', () => {
     const plugin = toPlatePlugin(
-      createBasePlugin({
-        name: 'configured',
-      }).configure({})
+      defineBasePlugin('configured', {}).configure({})
     );
     const extend = Reflect.get(plugin, 'extend');
 
@@ -123,7 +109,7 @@ describe('toPlatePlugin', () => {
   });
 
   it('keeps adapter callbacks contextually typed by the Base owner', () => {
-    const plugin = toPlatePlugin(BaseParagraphPlugin, ({ store }) => ({
+    const plugin = toPlatePlugin(BaseAdapterPlugin, ({ store }) => ({
       initialState: {
         doubled: store.get('count') * 2,
       },
@@ -136,7 +122,7 @@ describe('toPlatePlugin', () => {
   });
 
   it('rejects non-factory API contributions at the runtime boundary', () => {
-    const plugin = toPlatePlugin(BaseParagraphPlugin);
+    const plugin = toPlatePlugin(BaseAdapterPlugin);
     const extend = Reflect.get(plugin, 'extend') as (input: unknown) => unknown;
 
     expect(() =>

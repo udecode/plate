@@ -154,7 +154,7 @@ describe('@platejs/plite', () => {
         name: `fixture-root-content-${fixturePath}`,
       } satisfies EditorExtension;
 
-      editor.extend(fallbackExtension);
+      editor.install(fallbackExtension);
     }
 
     editor.update.value.repair();

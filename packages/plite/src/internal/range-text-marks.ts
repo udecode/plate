@@ -1,5 +1,5 @@
 import { type Descendant, NodeApi, type Range, type Text } from '../interfaces';
-import type { Editor as EditorType } from '../interfaces/editor';
+import type { AnyEditor as EditorType } from '../interfaces/editor';
 
 export type TextMarks = Record<string, unknown>;
 

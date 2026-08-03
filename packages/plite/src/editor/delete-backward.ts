@@ -6,7 +6,7 @@ import {
 } from '../core/public-state';
 import { hasPath } from './has-path';
 import { point } from './point';
-import type { Editor } from '../interfaces/editor';
+import type { AnyEditor as Editor } from '../interfaces/editor';
 import { PathApi } from '../interfaces/path';
 import { RangeApi } from '../interfaces/range';
 import { SelectionApi } from '../interfaces/selection';

@@ -35,7 +35,7 @@ describe('ListKit current contract', () => {
         BaseImagePlugin,
         ...ListKit,
       ],
-      initialValue: [{ children: [{ text: '-' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '-' }], type: 'paragraph' }],
     });
 
     editor.update.selection.set({
@@ -51,7 +51,7 @@ describe('ListKit current contract', () => {
         children: [{ text: '' }],
         indent: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
     expect(editor.read.children()[0]).toHaveProperty('id');

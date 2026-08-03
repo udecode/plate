@@ -90,7 +90,7 @@ describe('useElementSelector', () => {
         {
           children: [{ text: 'one' }],
           tone: 'red',
-          type: 'p',
+          type: 'paragraph',
         },
         [0],
       ]);
@@ -154,7 +154,7 @@ describe('useElementSelector', () => {
     const entry = [
       {
         children: [{ text: 'one' }],
-        type: 'p',
+        type: 'paragraph',
       },
       [0],
     ] as any;
@@ -179,10 +179,10 @@ describe('useElementSelector', () => {
       { initialProps: { suffix: 'one' }, wrapper }
     );
 
-    expect(result.current).toBe('p-one');
+    expect(result.current).toBe('paragraph-one');
 
     rerender({ suffix: 'two' });
 
-    expect(result.current).toBe('p-two');
+    expect(result.current).toBe('paragraph-two');
   });
 });

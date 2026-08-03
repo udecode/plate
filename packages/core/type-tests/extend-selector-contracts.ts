@@ -1,8 +1,7 @@
-import { createBasePlugin } from '../src/lib/plugin/createBasePlugin';
+import { defineBasePlugin } from '../src/lib/plugin/defineBasePlugin';
 
-const SelectorPlugin = createBasePlugin({
+const SelectorPlugin = defineBasePlugin('selectorPlugin', {
   initialState: { value: 2 },
-  name: 'selectorPlugin',
 }).extend(({ store }) => ({
   selectors: {
     multiplied: (state) => state.value + store.get().value,

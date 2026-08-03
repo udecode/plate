@@ -2,7 +2,6 @@ import type {
   EditorSchemaDeclaration,
   EditorSchemaDerivedDefinition,
   EditorSchemaDefinition,
-  EditorSchemaExtension,
   EditorSchemaNamedDefinition,
   PropertyEnumDescriptor,
   PropertyJsonDescriptor,
@@ -991,7 +990,7 @@ type NormalizedEditorSchemaFields<TInput extends EditorSchemaDefinition> =
       : 'reject';
   }>;
 
-type NormalizedEditorSchemaInput<TInput extends EditorSchemaDefinition> =
+export type NormalizedEditorSchemaInput<TInput extends EditorSchemaDefinition> =
   TInput extends EditorSchemaNamedDefinition
     ? Omit<TInput, 'elements' | 'unknown'> &
         NormalizedEditorSchemaFields<TInput>
@@ -1006,8 +1005,8 @@ type NormalizedEditorSchemaInput<TInput extends EditorSchemaDefinition> =
  * application-owned persistence lineage, or provide both for named History,
  * collaboration, and migration lineage.
  */
-export const defineEditorSchema = <const TInput extends EditorSchemaDefinition>(
-  input: TInput &
+export type EditorSchemaDefinitionInput<TInput extends EditorSchemaDefinition> =
+  TInput &
     Record<
       Exclude<
         keyof TInput,
@@ -1023,8 +1022,16 @@ export const defineEditorSchema = <const TInput extends EditorSchemaDefinition>(
       >,
       never
     > &
-    WithoutReservedPrimaryRoot<TInput>
-): EditorSchemaExtension<NormalizedEditorSchemaInput<TInput>> => {
+    WithoutReservedPrimaryRoot<TInput>;
+
+/** @internal Normalize complete schema grammar before extension compilation. */
+export const normalizeEditorSchemaDefinition = <
+  const TInput extends EditorSchemaDefinition,
+>(
+  name: string,
+  input: EditorSchemaDefinitionInput<TInput>
+): NormalizedEditorSchemaInput<TInput> => {
+  assertNonEmpty(name, 'Editor schema name');
   assertOnlyKeys(
     input as Readonly<Record<string, unknown>>,
     [
@@ -1040,7 +1047,6 @@ export const defineEditorSchema = <const TInput extends EditorSchemaDefinition>(
     ],
     'Editor schema'
   );
-  let extensionName = 'schema:derived';
   const named = Object.hasOwn(input, 'id') || Object.hasOwn(input, 'version');
 
   if (named) {
@@ -1057,7 +1063,6 @@ export const defineEditorSchema = <const TInput extends EditorSchemaDefinition>(
       );
     }
     assertVersion(version, `Editor schema "${id}"`);
-    extensionName = `schema:${id}`;
   }
   const unknown = input.unknown ?? 'reject';
 
@@ -1070,8 +1075,5 @@ export const defineEditorSchema = <const TInput extends EditorSchemaDefinition>(
     unknown,
   }) as NormalizedEditorSchemaInput<TInput>;
 
-  return Object.freeze({
-    name: extensionName,
-    schema: definition,
-  }) as EditorSchemaExtension<NormalizedEditorSchemaInput<TInput>>;
+  return definition;
 };

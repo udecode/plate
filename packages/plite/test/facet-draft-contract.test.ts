@@ -3,7 +3,7 @@ import { describe, it } from 'node:test';
 
 import {
   createEditor,
-  defineEditorExtension,
+  defineExtension,
   defineEditorSchema,
   defineExtensionSlot,
   defineFacet,
@@ -34,7 +34,7 @@ describe('transaction-local facet caching', () => {
     const wholeState = defineFacet<string>({ key: 'draft-whole-state' });
     const schemaSlot = defineExtensionSlot('draft-schema-slot');
     const schemaMode = (voidKind?: 'block') =>
-      defineEditorSchema({
+      defineEditorSchema('schema:draft-schema', {
         elements: {
           paragraph: { content: schema.content.text() } as const,
           quote: voidKind
@@ -51,8 +51,7 @@ describe('transaction-local facet caching', () => {
       });
     const editor = createEditor({
       extensions: [
-        counter,
-        defineEditorExtension({
+        defineExtension('draft-facet-providers', {
           facetProviders: [
             documentText.compute((state) => state.text.string([]), {
               dependencies: ['document'],
@@ -85,7 +84,7 @@ describe('transaction-local facet caching', () => {
                 `${state.text.string([])}:${state.selection()?.anchor.offset ?? -1}:${state.getField(counter)}`
             ),
           ],
-          name: 'draft-facet-providers',
+          stateFields: [counter],
         }),
         schemaSlot.of(schemaMode()),
       ] as const,
@@ -145,7 +144,7 @@ describe('transaction-local facet caching', () => {
     let computes = 0;
     const editor = createEditor({
       extensions: [
-        defineEditorExtension({
+        defineExtension('isolated-draft-facet', {
           facetProviders: [
             text.compute(
               (state) => {
@@ -155,7 +154,6 @@ describe('transaction-local facet caching', () => {
               { dependencies: ['document'] }
             ),
           ],
-          name: 'isolated-draft-facet',
         }),
       ],
       initialValue: [paragraph('a')],

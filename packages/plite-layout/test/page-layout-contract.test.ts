@@ -2,7 +2,11 @@ import { afterAll, describe, expect, it } from 'bun:test';
 import { existsSync, readFileSync } from 'node:fs';
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
 import { act, renderHook } from '@testing-library/react';
-import { createEditor, defineStateField } from '@platejs/plite';
+import {
+  createEditor,
+  defineExtension,
+  defineStateField,
+} from '@platejs/plite';
 import { createElement, type PropsWithChildren, StrictMode } from 'react';
 
 import * as PliteLayout from '../src';
@@ -80,6 +84,9 @@ const pageSettings = defineStateField<PlitePageSettings>({
   history: 'push',
   initial: () => ({ margins: 96, preset: 'a4' }),
   persist: plitePageSettingsCodec,
+});
+const pageSettingsExtension = defineExtension('page-settings', {
+  stateFields: [pageSettings],
 });
 
 const expectedPliteLayoutRuntimeRootExports = [
@@ -520,7 +527,7 @@ describe('createPlitePageLayout', () => {
   it('projects collapsed rich-inline whitespace at style boundaries', () => {
     Reflect.set(globalThis, 'OffscreenCanvas', TestOffscreenCanvas);
     const editor = createEditor({
-      extensions: [pageSettings],
+      extensions: [pageSettingsExtension],
       initialValue: [
         {
           type: 'paragraph',
@@ -568,7 +575,7 @@ describe('createPlitePageLayout', () => {
 
   it('rejects explicit public main roots in layout options', () => {
     const editor = createEditor({
-      extensions: [pageSettings],
+      extensions: [pageSettingsExtension],
       initialValue: [
         {
           type: 'paragraph',
@@ -588,7 +595,7 @@ describe('createPlitePageLayout', () => {
 
   it('rejects explicit public main roots in layout projection options', () => {
     const editor = createEditor({
-      extensions: [pageSettings],
+      extensions: [pageSettingsExtension],
       initialValue: [
         {
           type: 'paragraph',
@@ -782,7 +789,7 @@ describe('createPlitePageLayout', () => {
 
   it('keeps page settings in state fields and layout output in the derived store', () => {
     const editor = createEditor({
-      extensions: [pageSettings],
+      extensions: [pageSettingsExtension],
       initialValue: {
         children: [
           {
@@ -828,7 +835,9 @@ describe('createPlitePageLayout', () => {
       persist: plitePageBreakSnapshotCodec,
     });
     const editor = createEditor({
-      extensions: [pageBreaks],
+      extensions: [
+        defineExtension('page-breaks', { stateFields: [pageBreaks] }),
+      ],
       initialValue: [
         {
           type: 'paragraph',
@@ -958,7 +967,7 @@ describe('createPlitePageLayout', () => {
 
   it('refreshes subscribers after editor text changes', async () => {
     const editor = createEditor({
-      extensions: [pageSettings],
+      extensions: [pageSettingsExtension],
       initialValue: [
         {
           type: 'paragraph',
@@ -993,7 +1002,7 @@ describe('createPlitePageLayout', () => {
 
   it('bounds deferred text refreshes during sustained typing', async () => {
     const editor = createEditor({
-      extensions: [pageSettings],
+      extensions: [pageSettingsExtension],
       initialValue: [
         {
           type: 'paragraph',
@@ -1027,7 +1036,7 @@ describe('createPlitePageLayout', () => {
 
   it('coalesces deferred text refreshes for text commits that mark children dirty', async () => {
     const editor = createEditor({
-      extensions: [pageSettings],
+      extensions: [pageSettingsExtension],
       initialValue: [
         {
           type: 'paragraph',
@@ -1067,7 +1076,7 @@ describe('createPlitePageLayout', () => {
     const headerText = 'Header '.repeat(160);
     const mainText = 'Main '.repeat(12);
     const editor = createEditor({
-      extensions: [pageSettings],
+      extensions: [pageSettingsExtension],
       initialValue: {
         children: [
           {
@@ -1129,7 +1138,7 @@ describe('createPlitePageLayout', () => {
   it('projects ranges through the requested page geometry', () => {
     const text = 'Long '.repeat(6000);
     const editor = createEditor({
-      extensions: [pageSettings],
+      extensions: [pageSettingsExtension],
       initialValue: [
         {
           type: 'paragraph',
@@ -1181,7 +1190,7 @@ describe('createPlitePageLayout', () => {
 
   it('projects only the requested partial range and collapsed caret', () => {
     const editor = createEditor({
-      extensions: [pageSettings],
+      extensions: [pageSettingsExtension],
       initialValue: [
         {
           type: 'paragraph',
@@ -1224,7 +1233,7 @@ describe('createPlitePageLayout', () => {
 
   it('projects spanning ranges without leaking unrelated blocks', () => {
     const editor = createEditor({
-      extensions: [pageSettings],
+      extensions: [pageSettingsExtension],
       initialValue: [
         {
           type: 'paragraph',
@@ -1259,7 +1268,7 @@ describe('createPlitePageLayout', () => {
 
   it('extracts leaf runs with block offsets and projects placed runs on lines', () => {
     const editor = createEditor({
-      extensions: [pageSettings],
+      extensions: [pageSettingsExtension],
       initialValue: [
         {
           type: 'paragraph',
@@ -1343,7 +1352,7 @@ describe('createPlitePageLayout', () => {
 
   it('extracts block-local boxes for structured Markdown nodes', () => {
     const editor = createEditor({
-      extensions: [pageSettings],
+      extensions: [pageSettingsExtension],
       initialValue: [
         {
           type: 'code-block',
@@ -1461,7 +1470,7 @@ describe('createPlitePageLayout', () => {
 
   it('lets providers own media and BFC-like box sizing without a product TableKit', () => {
     const editor = createEditor({
-      extensions: [pageSettings],
+      extensions: [pageSettingsExtension],
       initialValue: [
         {
           type: 'image',
@@ -1753,7 +1762,9 @@ describe('createPlitePageLayout', () => {
       ],
     }));
     const editor = createEditor({
-      extensions: [pageBreaks],
+      extensions: [
+        defineExtension('unit-page-breaks', { stateFields: [pageBreaks] }),
+      ],
       initialValue: [
         {
           type: 'table',
@@ -2058,7 +2069,7 @@ describe('getPlitePageLayoutProjection', () => {
 
   it('builds per-text decorations from projected layout runs', () => {
     const editor = createEditor({
-      extensions: [pageSettings],
+      extensions: [pageSettingsExtension],
       initialValue: [
         {
           type: 'paragraph',

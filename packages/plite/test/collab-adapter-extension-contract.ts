@@ -8,7 +8,7 @@ import {
 
 import {
   createEditor,
-  defineEditorExtension,
+  defineExtension,
   DocumentChange,
   type Element,
   type Editor,
@@ -80,8 +80,9 @@ const createFakeCollabAdapterExtension = () => {
   const listenerEvents: string[] = [];
   const runtimeStates = new WeakMap<Editor, FakeAdapterRuntimeState>();
 
-  const extension = defineEditorExtension({
-    activate(editor, context) {
+  const extension = defineExtension('fake-collab-adapter', {
+    activate(context) {
+      const { editor } = context;
       let currentState: FakeAdapterState = {
         connected: true,
         exports: [],
@@ -147,7 +148,6 @@ const createFakeCollabAdapterExtension = () => {
         }
       });
     },
-    name: 'fake-collab-adapter',
     on: {
       commit({ commit, editor }) {
         listenerEvents.push(`commit:${commit.tags.join(',')}`);
@@ -196,7 +196,7 @@ describe('collab adapter extension contract', () => {
   it('exports local commits and suppresses remote, skipped, paused, and cleaned-up loops without editor monkey-patches', () => {
     const editor = createSeededEditor();
     const fakeAdapter = createFakeCollabAdapterExtension();
-    const unextend = editor.extend(fakeAdapter.extension);
+    const unextend = editor.install(fakeAdapter.extension);
     const adapter = fakeAdapter.controller();
 
     assert.equal('apply' in editor, false);

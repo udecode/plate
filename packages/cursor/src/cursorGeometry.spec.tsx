@@ -134,7 +134,7 @@ describe('cursor geometry', () => {
 
     it('returns an empty array when a mapped DOM text node is detached', async () => {
       const editor = createPlateEditor({
-        initialValue: [{ children: [{ text: 'a' }], type: 'p' }],
+        initialValue: [{ children: [{ text: 'a' }], type: 'paragraph' }],
       });
 
       await act(async () => {
@@ -170,9 +170,9 @@ describe('cursor geometry', () => {
     it('collects start, middle, and end rects with offsets applied', async () => {
       const editor = createPlateEditor({
         initialValue: [
-          { children: [{ text: 'a' }], type: 'p' },
-          { children: [{ text: 'b' }], type: 'p' },
-          { children: [{ text: 'c' }], type: 'p' },
+          { children: [{ text: 'a' }], type: 'paragraph' },
+          { children: [{ text: 'b' }], type: 'paragraph' },
+          { children: [{ text: 'c' }], type: 'paragraph' },
         ],
       });
 

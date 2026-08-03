@@ -1,17 +1,20 @@
 /** @jsx jsxt */
 
-import { createBaseEditor, createBasePlugin } from '@platejs/core';
+import { defineBasePlugin } from '@platejs/core';
 import { schema } from '@platejs/plite';
-import { createPlateEditor } from '@platejs/core/react';
 
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 
-import { getTestTablePlugins } from './__tests__/getTestTablePlugins';
+import {
+  createTestBaseTableEditor,
+  createTestTableEditor,
+  getTestTablePlugins,
+} from './__tests__/getTestTablePlugins';
 
 jsxt;
 
 const createCellSelectionEditor = (input: TestEditor, disableMerge: boolean) =>
-  createPlateEditor({
+  createTestTableEditor({
     nodeId: true,
     plugins: getTestTablePlugins({ disableMerge }),
     selection: input.selection,
@@ -35,7 +38,7 @@ describe('BaseTablePlugin deletion', () => {
           </htable>
         </editor>
       ) as TestEditor;
-      const editor = createPlateEditor({
+      const editor = createTestTableEditor({
         plugins: getTestTablePlugins(),
         selection: input.selection,
         initialValue: input.children,
@@ -61,7 +64,7 @@ describe('BaseTablePlugin deletion', () => {
           </htable>
         </editor>
       ) as TestEditor;
-      const editor = createPlateEditor({
+      const editor = createTestTableEditor({
         plugins: getTestTablePlugins(),
         selection: input.selection,
         initialValue: input.children,
@@ -88,7 +91,7 @@ describe('BaseTablePlugin deletion', () => {
           </hp>
         </editor>
       ) as TestEditor;
-      const editor = createPlateEditor({
+      const editor = createTestTableEditor({
         plugins: getTestTablePlugins(),
         selection: input.selection,
         initialValue: input.children,
@@ -115,7 +118,7 @@ describe('BaseTablePlugin deletion', () => {
           </htable>
         </editor>
       ) as TestEditor;
-      const editor = createPlateEditor({
+      const editor = createTestTableEditor({
         plugins: getTestTablePlugins(),
         selection: input.selection,
         initialValue: input.children,
@@ -227,7 +230,7 @@ describe('BaseTablePlugin deletion', () => {
         </hp>
       </editor>
     ) as TestEditor;
-    const editor = createPlateEditor({
+    const editor = createTestTableEditor({
       plugins: getTestTablePlugins(),
       selection: input.selection,
       initialValue: input.children,
@@ -271,21 +274,19 @@ describe('BaseTablePlugin deletion', () => {
     const rootOwner = {
       childRoots: { body: targetRoot },
       children: [{ text: '' }],
-      type: 'table-test-root-owner',
+      type: 'tableTestRootOwner',
     };
-    const RootOwnerPlugin = createBasePlugin({
-      name: 'table-test-root-owner',
+    const RootOwnerPlugin = defineBasePlugin('tableTestRootOwner', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
           contentRoots: {
-            body: schema.content.type('p', { min: 1 }),
+            body: schema.content.type('paragraph', { min: 1 }),
           },
         },
       },
-      type: 'table-test-root-owner',
     });
-    const editor = createBaseEditor({
+    const editor = createTestBaseTableEditor({
       plugins: [...getTestTablePlugins(), RootOwnerPlugin],
       selection: input.selection,
       initialValue: input.children,
@@ -294,7 +295,7 @@ describe('BaseTablePlugin deletion', () => {
     editor.update((tx) => {
       tx.nodes.insert(rootOwner, { at: [1] });
       tx.roots.create(targetRoot, [
-        { children: [{ text: 'named' }], type: 'p' },
+        { children: [{ text: 'named' }], type: 'paragraph' },
       ]);
     });
     editor.update.fragment.delete({
@@ -306,7 +307,7 @@ describe('BaseTablePlugin deletion', () => {
 
     expect(editor.read.children()).toEqual([...input.children!, rootOwner]);
     expect(editor.read.root(targetRoot)).toEqual([
-      { children: [{ text: 'nd' }], type: 'p' },
+      { children: [{ text: 'nd' }], type: 'paragraph' },
     ]);
   });
 });

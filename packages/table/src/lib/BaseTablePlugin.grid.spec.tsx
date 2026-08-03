@@ -1,16 +1,19 @@
 /** @jsx jsxt */
 
 import { BaseTablePlugin } from './BaseTablePlugin';
-import { getTestTablePlugins } from './__tests__/getTestTablePlugins';
-import { createPlateEditor, createPlatePlugin } from '@platejs/core/react';
+import {
+  createTestTableEditor,
+  getTestTablePlugins,
+} from './__tests__/getTestTablePlugins';
+import { definePlatePlugin } from '@platejs/core/react';
 import { schema, type Value } from '@platejs/plite';
 import { jsxt } from '@platejs/test-utils';
 import type { TestEditor } from '@platejs/test-utils';
 import type {
-  TTableCellElement,
-  TTableElement,
-  TTableRowElement,
-} from '@platejs/utils';
+  TableCellElement,
+  TableElement,
+  TableRowElement,
+} from './BaseTablePlugin';
 import assert from 'node:assert/strict';
 
 describe('table grid queries', () => {
@@ -20,17 +23,17 @@ describe('table grid queries', () => {
         {
           children: [
             {
-              children: [{ children: [{ text: '11' }], type: 'p' }],
+              children: [{ children: [{ text: '11' }], type: 'paragraph' }],
               id: 'c11',
-              type: 'td',
+              type: 'tableCell',
             },
             {
-              children: [{ children: [{ text: '12' }], type: 'p' }],
+              children: [{ children: [{ text: '12' }], type: 'paragraph' }],
               id: 'c12',
-              type: 'td',
+              type: 'tableCell',
             },
           ],
-          type: 'tr',
+          type: 'tableRow',
         },
       ],
       type: 'table',
@@ -41,7 +44,7 @@ describe('table grid queries', () => {
     it('derives cells from the immutable initial value', () => {
       const initialValue = structuredClone(value);
       const inputSnapshot = structuredClone(initialValue);
-      const editor = createPlateEditor({
+      const editor = createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins(),
         initialValue,
@@ -57,8 +60,7 @@ describe('table grid queries', () => {
     });
 
     it('indexes tables in element-owned content roots', () => {
-      const RootHolderPlugin = createPlatePlugin({
-        name: 'tableRootHolder',
+      const RootHolderPlugin = definePlatePlugin('tableRootHolder', {
         schema: {
           element: {
             contentRoots: {
@@ -75,7 +77,7 @@ describe('table grid queries', () => {
           },
         },
       });
-      const editor = createPlateEditor({
+      const editor = createTestTableEditor({
         nodeId: true,
         plugins: [...getTestTablePlugins(), RootHolderPlugin],
         initialValue: {
@@ -99,12 +101,12 @@ describe('table grid queries', () => {
     });
 
     it('derives stable indices through the canonical compiler', () => {
-      const editor = createPlateEditor({
+      const editor = createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins(),
         initialValue: value,
       });
-      const entry = editor.read.nodes.get<TTableCellElement>([0, 0, 1]);
+      const entry = editor.read.nodes.get<TableCellElement>([0, 0, 1]);
       assert(entry);
       const [cell] = entry;
 
@@ -122,15 +124,17 @@ describe('table grid queries', () => {
     });
 
     it('falls back when the cell does not belong to a table', () => {
-      const orphanValue: Value = [{ children: [{ text: '' }], type: 'p' }];
-      const editor = createPlateEditor({
+      const orphanValue: Value = [
+        { children: [{ text: '' }], type: 'paragraph' },
+      ];
+      const editor = createTestTableEditor({
         plugins: getTestTablePlugins(),
         initialValue: orphanValue,
       });
-      const cell: TTableCellElement = {
+      const cell: TableCellElement = {
         children: [{ text: '' }],
         id: 'orphan',
-        type: 'td',
+        type: 'tableCell',
       };
 
       expect(editor.plugin(BaseTablePlugin).read.getCellIndices(cell)).toEqual({
@@ -144,14 +148,14 @@ describe('table grid queries', () => {
     jsxt;
 
     const createTableEditor = (input: TestEditor) =>
-      createPlateEditor({
+      createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins(),
         initialValue: input.children,
       });
 
     const getCell = (editor: ReturnType<typeof createTableEditor>) => {
-      const entry = editor.read.nodes.get<TTableCellElement>([0, 0, 1]);
+      const entry = editor.read.nodes.get<TableCellElement>([0, 0, 1]);
       assert(entry);
 
       return entry[0];
@@ -210,7 +214,7 @@ describe('table grid queries', () => {
         expect(
           editor.plugin(BaseTablePlugin).read.getColumnIndex({
             children: [{ text: 'ghost' }],
-            type: 'td',
+            type: 'tableCell',
           })
         ).toBe(-1);
       });
@@ -221,7 +225,7 @@ describe('table grid queries', () => {
     jsxt;
 
     const createTableEditor = (input: TestEditor) =>
-      createPlateEditor({
+      createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins(),
         selection: input.selection,
@@ -259,9 +263,9 @@ describe('table grid queries', () => {
         const editor = createTableEditor(input);
         const entries = editor.plugin(BaseTablePlugin).read.getEntries()!;
 
-        expect(entries.cell[0].type).toBe('td');
+        expect(entries.cell[0].type).toBe('tableCell');
         expect(entries.cell[1]).toEqual([0, 1, 0]);
-        expect(entries.row[0].type).toBe('tr');
+        expect(entries.row[0].type).toBe('tableRow');
         expect(entries.row[1]).toEqual([0, 1]);
         expect(entries.table[0].type).toBe('table');
         expect(entries.table[1]).toEqual([0]);
@@ -320,7 +324,7 @@ describe('table grid queries', () => {
     jsxt;
 
     const createTableEditor = (input: TestEditor) =>
-      createPlateEditor({
+      createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins(),
         initialValue: input.children,
@@ -346,7 +350,7 @@ describe('table grid queries', () => {
         ) as TestEditor;
 
         const editor = createTableEditor(input);
-        const entry = editor.read.nodes.get<TTableCellElement>([0, 1, 0]);
+        const entry = editor.read.nodes.get<TableCellElement>([0, 1, 0]);
         assert(entry);
         const [cellNode] = entry;
 
@@ -367,20 +371,20 @@ describe('table grid queries', () => {
         expect(
           editor.plugin(BaseTablePlugin).read.getRowIndex({
             children: [{ text: 'ghost' }],
-            type: 'td',
+            type: 'tableCell',
           })
         ).toBe(0);
       });
     });
   }
   {
-    const editor = createPlateEditor({
+    const editor = createTestTableEditor({
       plugins: getTestTablePlugins(),
     });
 
     describe('getTableColumnCount', () => {
       it('returns 0 if tableNode has no children', () => {
-        const tableNode: TTableElement = {
+        const tableNode: TableElement = {
           children: [],
           type: 'table',
         };
@@ -392,18 +396,18 @@ describe('table grid queries', () => {
       });
 
       it('returns the sum of colSpan values of the first row elements', () => {
-        const tableNode: TTableElement = {
+        const tableNode: TableElement = {
           children: [
             {
               children: [2, 3, 1].map(
-                (colSpan): TTableCellElement => ({
+                (colSpan): TableCellElement => ({
                   children: [{ text: '' }],
                   colSpan,
-                  type: 'td',
+                  type: 'tableCell',
                 })
               ),
-              type: 'tr',
-            } satisfies TTableRowElement,
+              type: 'tableRow',
+            } satisfies TableRowElement,
           ],
           type: 'table',
         };
@@ -415,24 +419,24 @@ describe('table grid queries', () => {
       });
 
       it('returns the sum of canonical colSpan values in the first row', () => {
-        const tableNode: TTableElement = {
+        const tableNode: TableElement = {
           children: [
             {
               children: [
                 {
                   children: [{ text: '' }],
                   colSpan: 2,
-                  type: 'td',
+                  type: 'tableCell',
                 },
                 {
                   children: [{ text: '' }],
                   colSpan: 3,
-                  type: 'td',
+                  type: 'tableCell',
                 },
-                { children: [{ text: '' }], type: 'td' },
+                { children: [{ text: '' }], type: 'tableCell' },
               ],
-              type: 'tr',
-            } satisfies TTableRowElement,
+              type: 'tableRow',
+            } satisfies TableRowElement,
           ],
           type: 'table',
         };
@@ -444,18 +448,18 @@ describe('table grid queries', () => {
       });
 
       it('handle elements without colSpan or colspan attribute', () => {
-        const tableNode: TTableElement = {
+        const tableNode: TableElement = {
           children: [
             {
               children: Array.from(
                 { length: 3 },
-                (): TTableCellElement => ({
+                (): TableCellElement => ({
                   children: [{ text: '' }],
-                  type: 'td',
+                  type: 'tableCell',
                 })
               ),
-              type: 'tr',
-            } satisfies TTableRowElement,
+              type: 'tableRow',
+            } satisfies TableRowElement,
           ],
           type: 'table',
         };

@@ -1,4 +1,7 @@
-import type { Editor, EditorUpdateTag } from '../interfaces/editor';
+import type {
+  AnyEditor as Editor,
+  EditorUpdateTag,
+} from '../interfaces/editor';
 import { reduceEditorUpdateTags } from './update-policy';
 
 const UPDATE_TAG_CONTEXT = new WeakMap<Editor, EditorUpdateTag[][]>();

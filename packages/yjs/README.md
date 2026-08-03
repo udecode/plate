@@ -36,17 +36,17 @@ const editor = createPlateEditor({
 
 ## Plite
 
-Install `createYjsExtension` directly in a Plite editor.
+Install `yjs` directly in a Plite editor.
 
 ```tsx
 import { createEditor } from "@platejs/plite";
-import { createYjsExtension } from "@platejs/yjs";
+import { yjs } from "@platejs/yjs";
 import { history } from "@platejs/plite-history";
 
 const editor = createEditor({
   extensions: [
     history(),
-    createYjsExtension({
+    yjs({
       clientId: "local-user",
       doc,
       provider,
@@ -82,7 +82,7 @@ a versioned codec whose output is JSON-compatible.
 ```tsx
 import {
   createEditor,
-  defineEditorExtension,
+  defineExtension,
   defineEffect,
   valueCodecs,
 } from '@platejs/plite'
@@ -94,13 +94,13 @@ const incrementCounter = defineEffect<number>({
   key: 'counter.increment',
 })
 
-const counterEffects = defineEditorExtension({
+const counterEffects = defineExtension('counter-effects', {
   effectTypes: [incrementCounter],
-  name: 'counter-effects',
+
 })
 
 const editor = createEditor({
-  extensions: [counterEffects, createYjsExtension({ doc })],
+  extensions: [counterEffects, yjs({ doc })],
 })
 ```
 
@@ -115,7 +115,7 @@ compaction never treats the last event as a state snapshot.
 One peer may compact a checkpoint-safe effect-log prefix.
 
 ```tsx
-createYjsExtension({
+yjs({
   doc,
   sharedEffectCompaction: {
     authorityId: 'collaboration-service',

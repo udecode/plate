@@ -1,0 +1,1421 @@
+{
+  "schemaVersion": 1,
+  "kind": "wordgard-public-forum-inventory",
+  "retrievedAt": "2026-08-01T15:42:20.070Z",
+  "authority": {
+    "aboutUrl": "https://discuss.wordgard.net/about.json",
+    "categoriesUrl": "https://discuss.wordgard.net/categories.json",
+    "forum": "https://discuss.wordgard.net",
+    "locale": "en",
+    "maintainer": {
+      "id": 1,
+      "name": "Marijn",
+      "title": "Maintainer",
+      "username": "marijn"
+    },
+    "publicCorpusHash": "d511d1a3848a3cbc763857592c94229afd9b32fa4460131166f8f25ce57ab265",
+    "siteCreatedAt": "2026-06-26T07:08:59.562Z",
+    "title": "discuss.Wordgard",
+    "version": "2026.8.0-latest"
+  },
+  "completeness": {
+    "anonymousBoundary": "Every topic and post reachable through anonymous latest, category, category-description, and global-post Discourse JSON endpoints. Instance totals may include private, deleted, or otherwise anonymous-inaccessible records.",
+    "categoryDescriptionTopicIds": [3, 1],
+    "categoryRegularPostCount": 46,
+    "categoryRegularTopicCount": 12,
+    "globalPostIndexPages": 1,
+    "indexedPublicPostCount": 48,
+    "instancePostCount": 71,
+    "anonymousInaccessibleGap": {
+      "posts": 23,
+      "topics": 3
+    },
+    "instanceRecordsNotAnonymousRetrievable": {
+      "posts": 23,
+      "topics": 3
+    },
+    "instanceTopicCount": 17,
+    "latestPages": 1,
+    "publicTopicCount": 14,
+    "unexplainedVisibleCorpus": {
+      "posts": 0,
+      "topics": 0
+    },
+    "visiblePostCount": 48,
+    "visiblePostNumberGaps": 1
+  },
+  "categories": [
+    {
+      "id": 4,
+      "name": "General",
+      "postCount": 46,
+      "slug": "general",
+      "topicCount": 12,
+      "topicUrl": "https://discuss.wordgard.net/t/about-the-general-category/3"
+    },
+    {
+      "id": 1,
+      "name": "Uncategorized",
+      "postCount": 0,
+      "slug": "uncategorized",
+      "topicCount": 0,
+      "topicUrl": null
+    },
+    {
+      "id": 2,
+      "name": "Site Feedback",
+      "postCount": 0,
+      "slug": "site-feedback",
+      "topicCount": 0,
+      "topicUrl": "https://discuss.wordgard.net/t/about-the-site-feedback-category/1"
+    }
+  ],
+  "categoryIndexes": [
+    {
+      "categoryId": 4,
+      "pages": 1,
+      "topicIds": [5, 3, 27, 31, 30, 19, 24, 29, 17, 18, 20, 16, 8]
+    },
+    {
+      "categoryId": 1,
+      "pages": 1,
+      "topicIds": []
+    },
+    {
+      "categoryId": 2,
+      "pages": 1,
+      "topicIds": [1]
+    }
+  ],
+  "topics": [
+    {
+      "archived": false,
+      "categoryId": 2,
+      "closed": false,
+      "createdAt": "2026-06-26T07:09:24.236Z",
+      "highestPostNumber": 1,
+      "id": 1,
+      "lastPostedAt": null,
+      "missingPublicPostNumbers": [],
+      "posts": [
+        {
+          "author": "system",
+          "authorAuthority": "system",
+          "claimIds": [],
+          "cookedHtmlSha256": "e27c964a4e60c4cc962d041a5182103f0834304c5f273927d7b7f37cea3cb558",
+          "createdAt": "2026-06-26T07:09:24.329Z",
+          "excerpt": "Discussion about this site, its organization, how it works, and how we can improve it.",
+          "id": 1,
+          "links": [],
+          "postNumber": 1,
+          "plainTextCharacters": 86,
+          "plainTextSha256": "0e5c09061ecc1544ac0e0c5e6b2d0aa1a5757df5e8915d87c4bb8ab70bbe12b1",
+          "plainTextWords": 15,
+          "replyToPostNumber": null,
+          "review": {
+            "disposition": "excluded",
+            "scope": "category-description",
+            "reason": "Discourse category boilerplate; no editor requirement."
+          },
+          "updatedAt": "2026-06-26T07:09:24.329Z",
+          "url": "https://discuss.wordgard.net/t/about-the-site-feedback-category/1/1"
+        }
+      ],
+      "postsCount": 1,
+      "slug": "about-the-site-feedback-category",
+      "title": "About the Site Feedback category",
+      "url": "https://discuss.wordgard.net/t/about-the-site-feedback-category/1",
+      "views": 4
+    },
+    {
+      "archived": false,
+      "categoryId": 4,
+      "closed": false,
+      "createdAt": "2026-06-26T07:09:25.468Z",
+      "highestPostNumber": 1,
+      "id": 3,
+      "lastPostedAt": null,
+      "missingPublicPostNumbers": [],
+      "posts": [
+        {
+          "author": "system",
+          "authorAuthority": "system",
+          "claimIds": [],
+          "cookedHtmlSha256": "c405e31cad47384106336cd781c577f1692b2d28faeb21d93b3593cdd7147d48",
+          "createdAt": "2026-06-26T07:09:25.488Z",
+          "excerpt": "Create topics here that don’t fit into any other existing category.",
+          "id": 3,
+          "links": [],
+          "postNumber": 1,
+          "plainTextCharacters": 67,
+          "plainTextSha256": "491658231096bb89c604e3428e107d032fdabdb56d18623b498559a690eb73b8",
+          "plainTextWords": 11,
+          "replyToPostNumber": null,
+          "review": {
+            "disposition": "excluded",
+            "scope": "category-description",
+            "reason": "Discourse category boilerplate; no editor requirement."
+          },
+          "updatedAt": "2026-06-26T07:09:25.488Z",
+          "url": "https://discuss.wordgard.net/t/about-the-general-category/3/1"
+        }
+      ],
+      "postsCount": 1,
+      "slug": "about-the-general-category",
+      "title": "About the General category",
+      "url": "https://discuss.wordgard.net/t/about-the-general-category/3",
+      "views": 4
+    },
+    {
+      "archived": false,
+      "categoryId": 4,
+      "closed": false,
+      "createdAt": "2026-06-26T07:09:50.325Z",
+      "highestPostNumber": 3,
+      "id": 5,
+      "lastPostedAt": "2026-07-05T08:14:39.192Z",
+      "missingPublicPostNumbers": [],
+      "posts": [
+        {
+          "author": "system",
+          "authorAuthority": "system",
+          "claimIds": [],
+          "cookedHtmlSha256": "1764e4d3062a223bbde9a947d7900cace60050abab1ca19f2f11ee7ff6f962af",
+          "createdAt": "2026-06-26T07:09:50.470Z",
+          "excerpt": "Good to have you here. This is a place for discussion and questions around the Wordgard editor system. Please be…",
+          "id": 6,
+          "links": [
+            "https://wordgard.net/",
+            "http://wordgard.net/docs/",
+            "https://code.haverbeke.berlin/wordgard/wordgard/issues"
+          ],
+          "postNumber": 1,
+          "plainTextCharacters": 669,
+          "plainTextSha256": "54264358e1a3e62b2c3518f32ecde6db66c61e319f6b2dcbcd66665b0d3aa1ac",
+          "plainTextWords": 120,
+          "replyToPostNumber": null,
+          "review": {
+            "disposition": "excluded",
+            "scope": "project-process",
+            "reason": "Forum conduct and issue-routing policy, not an editor architecture claim."
+          },
+          "updatedAt": "2026-06-26T08:18:04.297Z",
+          "url": "https://discuss.wordgard.net/t/welcome-to-the-wordgard-forum/5/1"
+        },
+        {
+          "author": "akiyama",
+          "authorAuthority": "community",
+          "claimIds": [],
+          "cookedHtmlSha256": "f9c074cce93585c7643ba51792e84b7afc7921f6b905a369da5ab226e5939859",
+          "createdAt": "2026-07-05T08:14:14.255Z",
+          "excerpt": "So right about those AI companies and PR requests!",
+          "id": 22,
+          "links": [],
+          "postNumber": 2,
+          "plainTextCharacters": 50,
+          "plainTextSha256": "48af383270bcd0e0c41135cafa0bdb454f3600b2534a33c2f7e2f51dacef9e88",
+          "plainTextWords": 9,
+          "replyToPostNumber": null,
+          "review": {
+            "disposition": "excluded",
+            "scope": "social",
+            "reason": "Agreement about AI companies and pull requests; no editor claim."
+          },
+          "updatedAt": "2026-07-05T08:14:14.255Z",
+          "url": "https://discuss.wordgard.net/t/welcome-to-the-wordgard-forum/5/2"
+        },
+        {
+          "author": "homelesshimalayan",
+          "authorAuthority": "community",
+          "claimIds": [],
+          "cookedHtmlSha256": "75a71e4a2a2db4615de21dee6dc8821b4698ed69969c986c89e7160824a39530",
+          "createdAt": "2026-07-05T08:14:39.192Z",
+          "excerpt": "I’m still reading the docs to understand how Wordgard works, but… how beautiful is the website! Thanks for your release,…",
+          "id": 25,
+          "links": [],
+          "postNumber": 3,
+          "plainTextCharacters": 163,
+          "plainTextSha256": "7c4bd4671b25a3bf9d35c75cfeb31b54ab31e15485b86496fe57b50cb9d017eb",
+          "plainTextWords": 29,
+          "replyToPostNumber": null,
+          "review": {
+            "disposition": "excluded",
+            "scope": "social",
+            "reason": "Website praise; no editor requirement."
+          },
+          "updatedAt": "2026-07-05T08:14:39.192Z",
+          "url": "https://discuss.wordgard.net/t/welcome-to-the-wordgard-forum/5/3"
+        }
+      ],
+      "postsCount": 3,
+      "slug": "welcome-to-the-wordgard-forum",
+      "title": "Welcome to the Wordgard forum",
+      "url": "https://discuss.wordgard.net/t/welcome-to-the-wordgard-forum/5",
+      "views": 48
+    },
+    {
+      "archived": false,
+      "categoryId": 4,
+      "closed": false,
+      "createdAt": "2026-07-03T12:46:32.214Z",
+      "highestPostNumber": 4,
+      "id": 8,
+      "lastPostedAt": "2026-07-03T14:22:56.695Z",
+      "missingPublicPostNumbers": [],
+      "posts": [
+        {
+          "author": "mariojsnunes",
+          "authorAuthority": "community",
+          "claimIds": ["WGF-036"],
+          "cookedHtmlSha256": "8f10d829ff907cffcca1709249acfdc5e304e4bd2f2c8f13e63b54eb93aee2f4",
+          "createdAt": "2026-07-03T12:46:32.329Z",
+          "excerpt": "I see there is already Angular support, which is awesome! I work on a project that requires rendering angular components…",
+          "id": 9,
+          "links": [],
+          "postNumber": 1,
+          "plainTextCharacters": 188,
+          "plainTextSha256": "cef54e946c31a4b4eea6456ab847df5378c0e6a2650dcf22368d43987555978c",
+          "plainTextWords": 30,
+          "replyToPostNumber": null,
+          "review": {
+            "disposition": "material",
+            "reason": null
+          },
+          "updatedAt": "2026-07-03T12:46:32.329Z",
+          "url": "https://discuss.wordgard.net/t/any-plan-to-render-angular-components-inside-the-editor/8/1"
+        },
+        {
+          "author": "marijn",
+          "authorAuthority": "maintainer",
+          "claimIds": ["WGF-037"],
+          "cookedHtmlSha256": "31e24e788f48df7b1f0e470fc8238fc1957a500ed3e4646ecf227817a1ce3473",
+          "createdAt": "2026-07-03T12:50:46.302Z",
+          "excerpt": "mariojsnunes: I see there is already Angular support, which is awesome! I’m not sure what you mean by this. The…",
+          "id": 10,
+          "links": [],
+          "postNumber": 2,
+          "plainTextCharacters": 423,
+          "plainTextSha256": "16cf80e0e6d8b20f51dbc44fdc7d53b6a592d078212d0f5461d1fb48ba03f289",
+          "plainTextWords": 70,
+          "replyToPostNumber": null,
+          "review": {
+            "disposition": "material",
+            "reason": null
+          },
+          "updatedAt": "2026-07-03T12:50:46.302Z",
+          "url": "https://discuss.wordgard.net/t/any-plan-to-render-angular-components-inside-the-editor/8/2"
+        },
+        {
+          "author": "mariojsnunes",
+          "authorAuthority": "community",
+          "claimIds": [],
+          "cookedHtmlSha256": "d4f03675f233918c2823b2db4b44c96bad5cb5ff3269773d2914f3efcb99bcd4",
+          "createdAt": "2026-07-03T14:02:04.346Z",
+          "excerpt": "Yeah I never meant for the core to support Angular. Isn’t this project related? code.haverbeke.berlin lang-angular Angular Template language mode…",
+          "id": 11,
+          "links": ["https://code.haverbeke.berlin/codemirror/lang-angular"],
+          "postNumber": 3,
+          "plainTextCharacters": 215,
+          "plainTextSha256": "5df53833172f95104b58a36f60a7068722964842751ee3709aa17d40a9052213",
+          "plainTextWords": 31,
+          "replyToPostNumber": null,
+          "review": {
+            "disposition": "excluded",
+            "scope": "context-only",
+            "reason": "Clarifies a CodeMirror package link; no Wordgard capability claim."
+          },
+          "updatedAt": "2026-07-03T14:02:04.346Z",
+          "url": "https://discuss.wordgard.net/t/any-plan-to-render-angular-components-inside-the-editor/8/3"
+        },
+        {
+          "author": "marijn",
+          "authorAuthority": "maintainer",
+          "claimIds": [],
+          "cookedHtmlSha256": "7e625ec20ac9d756aa2c07dcc59c8f4f8fe15349b1cdca60645e53212b444de4",
+          "createdAt": "2026-07-03T14:22:56.695Z",
+          "excerpt": "Oh, no, that is a package for editing Angular code in CodeMirror. It has nothing to do with Wordgard.",
+          "id": 13,
+          "links": [],
+          "postNumber": 4,
+          "plainTextCharacters": 101,
+          "plainTextSha256": "2d49069a1b1b7f5376bf2d7c969979d1da9eb5c69718dbf86a8f188c78c3f2e2",
+          "plainTextWords": 19,
+          "replyToPostNumber": null,
+          "review": {
+            "disposition": "excluded",
+            "scope": "context-only",
+            "reason": "Corrects the CodeMirror/Wordgard mix-up; no architecture claim."
+          },
+          "updatedAt": "2026-07-03T14:22:56.695Z",
+          "url": "https://discuss.wordgard.net/t/any-plan-to-render-angular-components-inside-the-editor/8/4"
+        }
+      ],
+      "postsCount": 4,
+      "slug": "any-plan-to-render-angular-components-inside-the-editor",
+      "title": "Any plan to render Angular components inside the editor?",
+      "url": "https://discuss.wordgard.net/t/any-plan-to-render-angular-components-inside-the-editor/8",
+      "views": 48
+    },
+    {
+      "archived": false,
+      "categoryId": 4,
+      "closed": false,
+      "createdAt": "2026-07-05T08:13:54.157Z",
+      "highestPostNumber": 2,
+      "id": 16,
+      "lastPostedAt": "2026-07-05T08:20:13.567Z",
+      "missingPublicPostNumbers": [],
+      "posts": [
+        {
+          "author": "kepta",
+          "authorAuthority": "community",
+          "claimIds": ["WGF-034"],
+          "cookedHtmlSha256": "e438dc53fb1a648ff799d757a9417720af7116beba9ec21ef18418814290f0ed",
+          "createdAt": "2026-07-05T08:13:54.302Z",
+          "excerpt": "Good to see this project! I wanted to ask If there is any plan to build the prosemirror-markdown equivalent for…",
+          "id": 20,
+          "links": [],
+          "postNumber": 1,
+          "plainTextCharacters": 176,
+          "plainTextSha256": "2e430220bfa79385a4ae8998b8a117de37d65dc93f8221492e91d36bfde0b16b",
+          "plainTextWords": 32,
+          "replyToPostNumber": null,
+          "review": {
+            "disposition": "material",
+            "reason": null
+          },
+          "updatedAt": "2026-07-05T08:13:54.302Z",
+          "url": "https://discuss.wordgard.net/t/wordgard-markdown/16/1"
+        },
+        {
+          "author": "marijn",
+          "authorAuthority": "maintainer",
+          "claimIds": ["WGF-035"],
+          "cookedHtmlSha256": "466f538859bb5a499a5fc485adeb84fac3c8fc796eefc2e78bb1a836d2125ee0",
+          "createdAt": "2026-07-05T08:20:13.567Z",
+          "excerpt": "This is not a priority for me at the moment, because robust Markdown serialization is a pain to get right…",
+          "id": 27,
+          "links": [],
+          "postNumber": 2,
+          "plainTextCharacters": 301,
+          "plainTextSha256": "28a93e1726c11144aefda10401d3255eff331fd8bb615d0e7c709a70785c254d",
+          "plainTextWords": 52,
+          "replyToPostNumber": null,
+          "review": {
+            "disposition": "material",
+            "reason": null
+          },
+          "updatedAt": "2026-07-05T08:20:13.567Z",
+          "url": "https://discuss.wordgard.net/t/wordgard-markdown/16/2"
+        }
+      ],
+      "postsCount": 2,
+      "slug": "wordgard-markdown",
+      "title": "wordgard-markdown ? ",
+      "url": "https://discuss.wordgard.net/t/wordgard-markdown/16",
+      "views": 47
+    },
+    {
+      "archived": false,
+      "categoryId": 4,
+      "closed": false,
+      "createdAt": "2026-07-05T08:14:02.891Z",
+      "highestPostNumber": 5,
+      "id": 17,
+      "lastPostedAt": "2026-07-05T18:00:26.096Z",
+      "missingPublicPostNumbers": [],
+      "posts": [
+        {
+          "author": "ocavue",
+          "authorAuthority": "community",
+          "claimIds": ["WGF-027"],
+          "cookedHtmlSha256": "b826dbd511f5a66b5f46e5a88d6f4f202912dcf29965d678dc8010d284cc0c56",
+          "createdAt": "2026-07-05T08:14:03.115Z",
+          "excerpt": "Hi. Thanks for building Wordgard. As some non-direct thoughts about #6 - TypeScript declaration error: Property `isTextblock` does not exist…",
+          "id": 21,
+          "links": [
+            "https://code.haverbeke.berlin/wordgard/wordgard/issues/6",
+            "https://devblogs.microsoft.com/typescript/typescripts-migration-to-modules/",
+            "https://discuss.wordgard.net/#p-21-pros-1",
+            "https://app.unpkg.com/wordgard@0.1.0/files/dist/collab.js#L70",
+            "https://discuss.wordgard.net/#p-21-cons-2"
+          ],
+          "postNumber": 1,
+          "plainTextCharacters": 2789,
+          "plainTextSha256": "4e00012c6cac6a26ad70e57a6cd7bb4c5a1b81ed1136982d0b5a5f5e63f328ce",
+          "plainTextWords": 434,
+          "replyToPostNumber": null,
+          "review": {
+            "disposition": "material",
+            "reason": null
+          },
+          "updatedAt": "2026-07-05T08:14:03.115Z",
+          "url": "https://discuss.wordgard.net/t/api-design-ts-namespace-vs-esm-export-as-ns/17/1"
+        },
+        {
+          "author": "marijn",
+          "authorAuthority": "maintainer",
+          "claimIds": ["WGF-028"],
+          "cookedHtmlSha256": "54d30dbc4eafc8e00071e534be3629cc6269316d9a4afeb9b58119d3399621c6",
+          "createdAt": "2026-07-05T08:23:15.658Z",
+          "excerpt": "I landed on namespaces because they let me nest classes. Is that someone you could also do with a combination…",
+          "id": 28,
+          "links": [],
+          "postNumber": 2,
+          "plainTextCharacters": 161,
+          "plainTextSha256": "0c8c5b386bfa90b60ae3252e7b939bd12f20fe36d5cab5f1cbc263e5badd3957",
+          "plainTextWords": 30,
+          "replyToPostNumber": null,
+          "review": {
+            "disposition": "material",
+            "reason": null
+          },
+          "updatedAt": "2026-07-05T08:23:15.658Z",
+          "url": "https://discuss.wordgard.net/t/api-design-ts-namespace-vs-esm-export-as-ns/17/2"
+        },
+        {
+          "author": "marijn",
+          "authorAuthority": "maintainer",
+          "claimIds": ["WGF-029"],
+          "cookedHtmlSha256": "a1132c233f3cdf30fe72e271b3f5c3d3b9ce6083745c125897cec6128307a807",
+          "createdAt": "2026-07-05T11:40:45.976Z",
+          "excerpt": "I tried, but this doesn’t work at all with the style of API I use in Wordgard. It requires every…",
+          "id": 32,
+          "links": [],
+          "postNumber": 3,
+          "plainTextCharacters": 491,
+          "plainTextSha256": "fb30c3a0a696687a5804621579e936adf0f9ed55d4dda5fa36ced7213bcbad9f",
+          "plainTextWords": 88,
+          "replyToPostNumber": null,
+          "review": {
+            "disposition": "material",
+            "reason": null
+          },
+          "updatedAt": "2026-07-05T11:40:45.976Z",
+          "url": "https://discuss.wordgard.net/t/api-design-ts-namespace-vs-esm-export-as-ns/17/3"
+        },
+        {
+          "author": "keais",
+          "authorAuthority": "community",
+          "claimIds": ["WGF-030"],
+          "cookedHtmlSha256": "ec581aaefe532f61c26596c77f3d555e539746d1b5fc42be7efe0f483f71d51b",
+          "createdAt": "2026-07-05T17:51:25.800Z",
+          "excerpt": "Hi. Wordgard is cool! I’m not a native English speaker, so forgive my poor spelling/grammar … I tried to integrate…",
+          "id": 34,
+          "links": [
+            "https://discuss.wordgard.net/uploads/thirdsite/original/1X/cd35438be8f5f10c8e301b7384822f8399784d70.png",
+            "https://discuss.wordgard.net/#far-image",
+            "https://discuss.wordgard.net/#discourse-expand",
+            "https://github.com/keaisann/test-wordgard"
+          ],
+          "postNumber": 4,
+          "plainTextCharacters": 324,
+          "plainTextSha256": "00725ac8e0d889c1821308d5c2cbeaa73fbd9c25643752439172e0058a96df91",
+          "plainTextWords": 52,
+          "replyToPostNumber": null,
+          "review": {
+            "disposition": "material",
+            "reason": null
+          },
+          "updatedAt": "2026-07-05T17:51:25.800Z",
+          "url": "https://discuss.wordgard.net/t/api-design-ts-namespace-vs-esm-export-as-ns/17/4"
+        },
+        {
+          "author": "marijn",
+          "authorAuthority": "maintainer",
+          "claimIds": ["WGF-031"],
+          "cookedHtmlSha256": "667d0ca18658b950a5eb7dc396605cf0781af1bc9739f20703fb2b3c5dd637f2",
+          "createdAt": "2026-07-05T18:00:26.096Z",
+          "excerpt": "I’m not sure if you intentionally posted in this thread, but that was actually a bug in my namespace-mangling build…",
+          "id": 35,
+          "links": [],
+          "postNumber": 5,
+          "plainTextCharacters": 322,
+          "plainTextSha256": "22ef60a234b8ba5e7b224853f12eae1305f61985e45da2f92a721fd4a8f63877",
+          "plainTextWords": 56,
+          "replyToPostNumber": null,
+          "review": {
+            "disposition": "material",
+            "reason": null
+          },
+          "updatedAt": "2026-07-05T18:00:26.096Z",
+          "url": "https://discuss.wordgard.net/t/api-design-ts-namespace-vs-esm-export-as-ns/17/5"
+        }
+      ],
+      "postsCount": 5,
+      "slug": "api-design-ts-namespace-vs-esm-export-as-ns",
+      "title": "API design: TS Namespace vs ESM `export * as ns`",
+      "url": "https://discuss.wordgard.net/t/api-design-ts-namespace-vs-esm-export-as-ns/17",
+      "views": 49
+    },
+    {
+      "archived": false,
+      "categoryId": 4,
+      "closed": false,
+      "createdAt": "2026-07-05T08:14:23.545Z",
+      "highestPostNumber": 2,
+      "id": 18,
+      "lastPostedAt": "2026-07-05T08:36:55.154Z",
+      "missingPublicPostNumbers": [],
+      "posts": [
+        {
+          "author": "nicoburns",
+          "authorAuthority": "community",
+          "claimIds": ["WGF-032"],
+          "cookedHtmlSha256": "2778892dcc4ba2389494fc6dacd6040a8388615987bbd40c614cc2644a2998f5",
+          "createdAt": "2026-07-05T08:14:23.662Z",
+          "excerpt": "I have an interest in creating a rich text editing library for the Rust GUI ecosystem. I had previously been…",
+          "id": 23,
+          "links": [],
+          "postNumber": 1,
+          "plainTextCharacters": 447,
+          "plainTextSha256": "68cef9cb044b8ebbfdd8c62afd11e03f6fa5e2c7d92a81a1c53c391bfdabe04d",
+          "plainTextWords": 76,
+          "replyToPostNumber": null,
+          "review": {
+            "disposition": "material",
+            "reason": null
+          },
+          "updatedAt": "2026-07-05T08:14:23.662Z",
+          "url": "https://discuss.wordgard.net/t/porting-to-other-languages-environments/18/1"
+        },
+        {
+          "author": "marijn",
+          "authorAuthority": "maintainer",
+          "claimIds": ["WGF-033"],
+          "cookedHtmlSha256": "97e02e0edd33cc573327703be7ae7b742726a08a01c0e54a8621f2e72ca9c586",
+          "createdAt": "2026-07-05T08:36:55.154Z",
+          "excerpt": "Yes, this is also something I kept in mind in the design of Wordgard (even more so than ProseMirror). But…",
+          "id": 31,
+          "links": [],
+          "postNumber": 2,
+          "plainTextCharacters": 632,
+          "plainTextSha256": "af82f491f43372493f7732c4933bde5ffc3d770e407db7468dc093455d419ad5",
+          "plainTextWords": 112,
+          "replyToPostNumber": null,
+          "review": {
+            "disposition": "material",
+            "reason": null
+          },
+          "updatedAt": "2026-07-05T08:36:55.154Z",
+          "url": "https://discuss.wordgard.net/t/porting-to-other-languages-environments/18/2"
+        }
+      ],
+      "postsCount": 2,
+      "slug": "porting-to-other-languages-environments",
+      "title": "Porting to other languages / environments?",
+      "url": "https://discuss.wordgard.net/t/porting-to-other-languages-environments/18",
+      "views": 36
+    },
+    {
+      "archived": false,
+      "categoryId": 4,
+      "closed": false,
+      "createdAt": "2026-07-05T08:14:29.727Z",
+      "highestPostNumber": 3,
+      "id": 19,
+      "lastPostedAt": "2026-07-15T16:35:32.540Z",
+      "missingPublicPostNumbers": [],
+      "posts": [
+        {
+          "author": "thesmartwon",
+          "authorAuthority": "community",
+          "claimIds": ["WGF-017", "WGF-018"],
+          "cookedHtmlSha256": "ce2e579da1737172c8cc65f2a627bc28d8d72ed137b3806930ce359610488fde",
+          "createdAt": "2026-07-05T08:14:29.833Z",
+          "excerpt": "Hello @marijn . Fantastic work as always with this new library! I have a document model that I’d like to…",
+          "id": 24,
+          "links": ["https://discuss.wordgard.net/u/marijn"],
+          "postNumber": 1,
+          "plainTextCharacters": 908,
+          "plainTextSha256": "9a7dd6047f584c7c8adfadf657226f33b3f5a0248c481b4e8480c4387c5b4efa",
+          "plainTextWords": 152,
+          "replyToPostNumber": null,
+          "review": {
+            "disposition": "material",
+            "reason": null
+          },
+          "updatedAt": "2026-07-05T08:14:29.833Z",
+          "url": "https://discuss.wordgard.net/t/strongly-referencing-document-positions/19/1"
+        },
+        {
+          "author": "marijn",
+          "authorAuthority": "maintainer",
+          "claimIds": ["WGF-019", "WGF-020"],
+          "cookedHtmlSha256": "5b277fee524fac27cb3179888a5fd0b6f1e5274b718a45ab22dfa03a67557ecf",
+          "createdAt": "2026-07-05T08:33:13.139Z",
+          "excerpt": "I’m not sure what two-way binding means precisely in this context. You can fully observe what is happening in your…",
+          "id": 30,
+          "links": [
+            "https://wordgard.net/docs/ref/#editor.Wordgard.updateListener",
+            "https://wordgard.net/docs/ref/#editor.RangeSet"
+          ],
+          "postNumber": 2,
+          "plainTextCharacters": 853,
+          "plainTextSha256": "9bc059850e89981685054079fc6240338a0a2a70d789b7c1214b08748d71241e",
+          "plainTextWords": 154,
+          "replyToPostNumber": null,
+          "review": {
+            "disposition": "material",
+            "reason": null
+          },
+          "updatedAt": "2026-07-05T08:33:13.139Z",
+          "url": "https://discuss.wordgard.net/t/strongly-referencing-document-positions/19/2"
+        },
+        {
+          "author": "thesmartwon",
+          "authorAuthority": "community",
+          "claimIds": ["WGF-021"],
+          "cookedHtmlSha256": "afcbfd21551a5fd02df5bcf83440360c3ad10ed6d14f82f7ab8766ed38cf5071",
+          "createdAt": "2026-07-15T16:35:32.540Z",
+          "excerpt": "I’m not sure what two-way binding means precisely in this context. I mean binding to SQL database tables that store…",
+          "id": 63,
+          "links": [
+            "https://discuss.wordgard.net/t/virtualization-windowing-occlusion-culling-support/29/2"
+          ],
+          "postNumber": 3,
+          "plainTextCharacters": 686,
+          "plainTextSha256": "2153d12f36beb80a79e14f92db3177d6c0fe5e107f789fbe8200435e85157058",
+          "plainTextWords": 111,
+          "replyToPostNumber": 2,
+          "review": {
+            "disposition": "material",
+            "reason": null
+          },
+          "updatedAt": "2026-07-15T16:35:32.540Z",
+          "url": "https://discuss.wordgard.net/t/strongly-referencing-document-positions/19/3"
+        }
+      ],
+      "postsCount": 3,
+      "slug": "strongly-referencing-document-positions",
+      "title": "Strongly referencing document positions",
+      "url": "https://discuss.wordgard.net/t/strongly-referencing-document-positions/19",
+      "views": 46
+    },
+    {
+      "archived": false,
+      "categoryId": 4,
+      "closed": false,
+      "createdAt": "2026-07-05T08:14:48.334Z",
+      "highestPostNumber": 2,
+      "id": 20,
+      "lastPostedAt": "2026-07-05T08:26:20.031Z",
+      "missingPublicPostNumbers": [],
+      "posts": [
+        {
+          "author": "kingbluetooth",
+          "authorAuthority": "community",
+          "claimIds": [],
+          "cookedHtmlSha256": "e90b64e13d44f211320c9b5ef5d26aa98e8f62cab363ee112d130ec3108e98d1",
+          "createdAt": "2026-07-05T08:14:48.488Z",
+          "excerpt": "A comparison table on your website comparing features and capability of Prosemirror, Wordgard, Lexical and other open-source editors would be…",
+          "id": 26,
+          "links": [],
+          "postNumber": 1,
+          "plainTextCharacters": 200,
+          "plainTextSha256": "6d2e5fca22361d65b9327c3a4530e757cdfce7bcfca36944d40f089afb13015e",
+          "plainTextWords": 29,
+          "replyToPostNumber": null,
+          "review": {
+            "disposition": "excluded",
+            "scope": "documentation-request",
+            "reason": "Requests a competitor table but does not assert an editor capability."
+          },
+          "updatedAt": "2026-07-05T08:14:48.488Z",
+          "url": "https://discuss.wordgard.net/t/how-does-this-compare-to-the-lexical-editor-by-meta/20/1"
+        },
+        {
+          "author": "marijn",
+          "authorAuthority": "maintainer",
+          "claimIds": ["WGF-023"],
+          "cookedHtmlSha256": "27c9aab2df54bed7442ab781688f66902c130abe92ff99d768d1bd5c804926e7",
+          "createdAt": "2026-07-05T08:26:20.031Z",
+          "excerpt": "I’m not going to go there, since I’m not an unbiased judge here (back when Slate had a comparison on…",
+          "id": 29,
+          "links": [],
+          "postNumber": 2,
+          "plainTextCharacters": 482,
+          "plainTextSha256": "f62d0d493c937b2e4c5badc34402134941a10108da87edd2f2543dac007ba302",
+          "plainTextWords": 85,
+          "replyToPostNumber": null,
+          "review": {
+            "disposition": "material",
+            "reason": null
+          },
+          "updatedAt": "2026-07-05T08:26:20.031Z",
+          "url": "https://discuss.wordgard.net/t/how-does-this-compare-to-the-lexical-editor-by-meta/20/2"
+        }
+      ],
+      "postsCount": 2,
+      "slug": "how-does-this-compare-to-the-lexical-editor-by-meta",
+      "title": "How does this compare to the Lexical editor by Meta?",
+      "url": "https://discuss.wordgard.net/t/how-does-this-compare-to-the-lexical-editor-by-meta/20",
+      "views": 58
+    },
+    {
+      "archived": false,
+      "categoryId": 4,
+      "closed": false,
+      "createdAt": "2026-07-07T13:59:58.628Z",
+      "highestPostNumber": 9,
+      "id": 24,
+      "lastPostedAt": "2026-07-13T08:12:50.993Z",
+      "missingPublicPostNumbers": [8],
+      "posts": [
+        {
+          "author": "Xheldon",
+          "authorAuthority": "community",
+          "claimIds": [],
+          "cookedHtmlSha256": "46993741fd7ed777dcec5f4dd072cc079883e6ded93e353fa0123ba034e0ecfa",
+          "createdAt": "2026-07-07T13:59:58.854Z",
+          "excerpt": "I noticed a badge at the bottom of the site indicating that the current website (and perhaps the repository?) contains…",
+          "id": 38,
+          "links": [
+            "https://prosemirror.xheldon.com/",
+            "https://wordgard.xheldon.com/",
+            "https://github.com/Xheldon/wordgard-cn-website",
+            "https://discuss.wordgard.net/u/marijn"
+          ],
+          "postNumber": 1,
+          "plainTextCharacters": 1099,
+          "plainTextSha256": "8a16ed82c5fc960840c253da685e4c379a9c5fc6591ecab24ed03b295fb68f6f",
+          "plainTextWords": 182,
+          "replyToPostNumber": null,
+          "review": {
+            "disposition": "excluded",
+            "scope": "question-only",
+            "reason": "Asks about AI and motivation without asserting architecture."
+          },
+          "updatedAt": "2026-07-07T13:59:58.854Z",
+          "url": "https://discuss.wordgard.net/t/attitude-towards-ai/24/1"
+        },
+        {
+          "author": "marijn",
+          "authorAuthority": "maintainer",
+          "claimIds": [],
+          "cookedHtmlSha256": "57b4063bb2e553a0a2b014c4bcdbb63e1ec09ec9c58b53d7e64e959ecce164ba",
+          "createdAt": "2026-07-07T14:04:33.602Z",
+          "excerpt": "I don’t think language models are a good way to build complicated software. Their reasoning is too rudimentary and flawed…",
+          "id": 39,
+          "links": [],
+          "postNumber": 2,
+          "plainTextCharacters": 767,
+          "plainTextSha256": "6714aaeb4eb4fe8aa78769c669d3c66017a926fec29fb697ffe04f63dbb29287",
+          "plainTextWords": 125,
+          "replyToPostNumber": null,
+          "review": {
+            "disposition": "excluded",
+            "scope": "tooling-policy",
+            "reason": "Maintainer opinion on AI-assisted development, not editor architecture."
+          },
+          "updatedAt": "2026-07-07T14:13:05.682Z",
+          "url": "https://discuss.wordgard.net/t/attitude-towards-ai/24/2"
+        },
+        {
+          "author": "vighnesh153",
+          "authorAuthority": "community",
+          "claimIds": [],
+          "cookedHtmlSha256": "0062677d2afe7533b2c51a3d5e2e49df041e2442c38c805d10bc7ca10745dd92",
+          "createdAt": "2026-07-08T06:03:47.415Z",
+          "excerpt": "Hi @marijn . I am also interested in knowing what you think about the latter part of original question. What…",
+          "id": 40,
+          "links": ["https://discuss.wordgard.net/u/marijn"],
+          "postNumber": 3,
+          "plainTextCharacters": 290,
+          "plainTextSha256": "9485d546a6d928839800ed1f55cd6f175920d113f04a539b6221ad7d2fffe660",
+          "plainTextWords": 52,
+          "replyToPostNumber": 2,
+          "review": {
+            "disposition": "excluded",
+            "scope": "question-only",
+            "reason": "Asks about motivation without adding an atomic claim."
+          },
+          "updatedAt": "2026-07-08T06:03:47.415Z",
+          "url": "https://discuss.wordgard.net/t/attitude-towards-ai/24/3"
+        },
+        {
+          "author": "marijn",
+          "authorAuthority": "maintainer",
+          "claimIds": ["WGF-022"],
+          "cookedHtmlSha256": "86c20f7cd8d790e329fec3a9f5a91b64d5ffa661420a6c7448e116d14e9e7287",
+          "createdAt": "2026-07-08T06:07:30.080Z",
+          "excerpt": "See my project announcement post. I cannot leave design problems alone. Since ProseMirror is still heavily used, it seems like…",
+          "id": 41,
+          "links": ["https://marijnhaverbeke.nl/blog/wordgard-0.1.html"],
+          "postNumber": 4,
+          "plainTextCharacters": 269,
+          "plainTextSha256": "7ae2ddf8ec01305e48df1de92f7382d364fef966098fde1cd9f6bd9690892df0",
+          "plainTextWords": 47,
+          "replyToPostNumber": 3,
+          "review": {
+            "disposition": "material",
+            "reason": null
+          },
+          "updatedAt": "2026-07-08T06:07:30.080Z",
+          "url": "https://discuss.wordgard.net/t/attitude-towards-ai/24/4"
+        },
+        {
+          "author": "akiyama",
+          "authorAuthority": "community",
+          "claimIds": [],
+          "cookedHtmlSha256": "d84a45ace8f5b991ff15247c13bd0044f54072f42d5e806828b93cbfade97af6",
+          "createdAt": "2026-07-12T11:49:50.168Z",
+          "excerpt": "Opinions are my own but, building a translated version of the prosemirror site using AI has very little value in…",
+          "id": 48,
+          "links": [],
+          "postNumber": 5,
+          "plainTextCharacters": 274,
+          "plainTextSha256": "8ac3c9b3f12bdece73abeaa5aa13fb4e9c6687948179049f56d92db7dbef7cfb",
+          "plainTextWords": 49,
+          "replyToPostNumber": null,
+          "review": {
+            "disposition": "excluded",
+            "scope": "documentation-translation",
+            "reason": "Community opinion on translated docs; peripheral to editor design."
+          },
+          "updatedAt": "2026-07-12T11:49:50.168Z",
+          "url": "https://discuss.wordgard.net/t/attitude-towards-ai/24/5"
+        },
+        {
+          "author": "Xheldon",
+          "authorAuthority": "community",
+          "claimIds": [],
+          "cookedHtmlSha256": "f3b04c9c6270572db0a6bd9575a838ddd8462757e4621f485ab0f63f5ea6fc22",
+          "createdAt": "2026-07-13T01:12:46.007Z",
+          "excerpt": "That’s exactly the point I want to emphasize. I have some personal comments under certain interfaces (by adding a bit…",
+          "id": 52,
+          "links": [
+            "https://discuss.wordgard.net/uploads/thirdsite/original/1X/2d4fadc3585f714b51d69fabb253c52032509aba.png",
+            "https://discuss.wordgard.net/#far-image",
+            "https://discuss.wordgard.net/#discourse-expand"
+          ],
+          "postNumber": 6,
+          "plainTextCharacters": 411,
+          "plainTextSha256": "9d79251455e7245d97d4ce36e10db8b6e42c12967e464a8c75a8aa07ec3ac08f",
+          "plainTextWords": 70,
+          "replyToPostNumber": 5,
+          "review": {
+            "disposition": "excluded",
+            "scope": "documentation-translation",
+            "reason": "Describes a translated-site workflow; no editor architecture claim."
+          },
+          "updatedAt": "2026-07-13T01:12:46.007Z",
+          "url": "https://discuss.wordgard.net/t/attitude-towards-ai/24/6"
+        },
+        {
+          "author": "marijn",
+          "authorAuthority": "maintainer",
+          "claimIds": [],
+          "cookedHtmlSha256": "6df447e8846672471f416c7f885576f0be134287109746a8f43feaf259c07df6",
+          "createdAt": "2026-07-13T07:42:24.648Z",
+          "excerpt": "That is pretty cool. I guess if it’s kept up to date I cannot see any issue with having a…",
+          "id": 54,
+          "links": [],
+          "postNumber": 7,
+          "plainTextCharacters": 113,
+          "plainTextSha256": "ad264747e4e5e08cc4a4e2d12fb2441f59d0d82df4f6984234648d15c9710a51",
+          "plainTextWords": 24,
+          "replyToPostNumber": 6,
+          "review": {
+            "disposition": "excluded",
+            "scope": "documentation-translation",
+            "reason": "Maintainer accepts maintained translated docs; no editor architecture claim."
+          },
+          "updatedAt": "2026-07-13T07:42:24.648Z",
+          "url": "https://discuss.wordgard.net/t/attitude-towards-ai/24/7"
+        },
+        {
+          "author": "akiyama",
+          "authorAuthority": "community",
+          "claimIds": [],
+          "cookedHtmlSha256": "e741add83a5aa4cde5c8dfe6ec1d076806704bb345bd38f99a570c3cf97154d3",
+          "createdAt": "2026-07-13T08:12:50.993Z",
+          "excerpt": "Other than this I think you should just go ahead and build it, people may get to know it if…",
+          "id": 58,
+          "links": [],
+          "postNumber": 9,
+          "plainTextCharacters": 120,
+          "plainTextSha256": "7fdd1b309aacfb07cedeb25b03f910a8fb200273728ccdbf2580485eb104efb7",
+          "plainTextWords": 26,
+          "replyToPostNumber": 8,
+          "review": {
+            "disposition": "excluded",
+            "scope": "documentation-translation",
+            "reason": "Encourages translation; no editor architecture claim."
+          },
+          "updatedAt": "2026-07-13T08:12:50.993Z",
+          "url": "https://discuss.wordgard.net/t/attitude-towards-ai/24/9"
+        }
+      ],
+      "postsCount": 8,
+      "slug": "attitude-towards-ai",
+      "title": "Attitude towards AI?",
+      "url": "https://discuss.wordgard.net/t/attitude-towards-ai/24",
+      "views": 73
+    },
+    {
+      "archived": false,
+      "categoryId": 4,
+      "closed": false,
+      "createdAt": "2026-07-12T18:24:40.767Z",
+      "highestPostNumber": 5,
+      "id": 27,
+      "lastPostedAt": "2026-07-18T13:31:06.017Z",
+      "missingPublicPostNumbers": [],
+      "posts": [
+        {
+          "author": "karintou8710",
+          "authorAuthority": "community",
+          "claimIds": ["WGF-001"],
+          "cookedHtmlSha256": "ffd1a0f92538426557051b173b172cf3c3f279ee770eeb2691dc470b8b8ea345",
+          "createdAt": "2026-07-12T18:24:40.884Z",
+          "excerpt": "Hi, Are there any plans to support vertical writing modes in Wordgard? Japanese and other CJK text is commonly laid…",
+          "id": 50,
+          "links": [],
+          "postNumber": 1,
+          "plainTextCharacters": 430,
+          "plainTextSha256": "e07c2ac466c82ee00e0c946c0bb9af27e7bcc2aa51f36805ec6cdd93fe10d0d4",
+          "plainTextWords": 69,
+          "replyToPostNumber": null,
+          "review": {
+            "disposition": "material",
+            "reason": null
+          },
+          "updatedAt": "2026-07-12T18:24:40.884Z",
+          "url": "https://discuss.wordgard.net/t/any-plans-for-vertical-writing-mode-support/27/1"
+        },
+        {
+          "author": "marijn",
+          "authorAuthority": "maintainer",
+          "claimIds": ["WGF-002"],
+          "cookedHtmlSha256": "16df6e1b191357996ee8d892965234dcf5592725c478a22d6ab0e3ed271f9e75",
+          "createdAt": "2026-07-12T18:36:30.287Z",
+          "excerpt": "I have not put serious thought into this yet, since I wasn’t aware that there’s actual demand for it—I know…",
+          "id": 51,
+          "links": [],
+          "postNumber": 2,
+          "plainTextCharacters": 357,
+          "plainTextSha256": "045a4e6b8ab41f4ce99f70bd64213ccf4a8e1b20df49671db287a808a54dfcb8",
+          "plainTextWords": 60,
+          "replyToPostNumber": null,
+          "review": {
+            "disposition": "material",
+            "reason": null
+          },
+          "updatedAt": "2026-07-12T18:36:30.287Z",
+          "url": "https://discuss.wordgard.net/t/any-plans-for-vertical-writing-mode-support/27/2"
+        },
+        {
+          "author": "karintou8710",
+          "authorAuthority": "community",
+          "claimIds": ["WGF-003"],
+          "cookedHtmlSha256": "745e9e92bead6f93fdcf7565c878636fc828fed3001360752ca2c76a42878c6e",
+          "createdAt": "2026-07-15T14:44:54.746Z",
+          "excerpt": "Vertical writing is still a mainstream typesetting style in modern Japanese. To begin with, vertical writing is not limited to…",
+          "id": 60,
+          "links": [
+            "https://apps.apple.com/jp/app/%E7%B8%A6%E5%BC%8F-%E7%B8%A6%E6%9B%B8%E3%81%8D%E5%85%A5%E5%8A%9B/id1415281201",
+            "https://www.justsystems.com/jp/products/ichitaro/"
+          ],
+          "postNumber": 3,
+          "plainTextCharacters": 1631,
+          "plainTextSha256": "3a938bab714b32620de552b6ed410911dc86345b426b16856cf6ddc491c23cd0",
+          "plainTextWords": 249,
+          "replyToPostNumber": null,
+          "review": {
+            "disposition": "material",
+            "reason": null
+          },
+          "updatedAt": "2026-07-15T14:44:54.746Z",
+          "url": "https://discuss.wordgard.net/t/any-plans-for-vertical-writing-mode-support/27/3"
+        },
+        {
+          "author": "marijn",
+          "authorAuthority": "maintainer",
+          "claimIds": ["WGF-004"],
+          "cookedHtmlSha256": "596cdeed64f880c35513765eacbfb20cc82ea898cb28001a2b8f1efb43441710",
+          "createdAt": "2026-07-15T16:16:59.765Z",
+          "excerpt": "Interesting. I wasn’t aware of that. But looking deeper into this, I think this would be more complex than I…",
+          "id": 61,
+          "links": [],
+          "postNumber": 4,
+          "plainTextCharacters": 674,
+          "plainTextSha256": "ea53748394bbfccc172cb5c98e571f7a0cc7739d3cb384418e8359366a383130",
+          "plainTextWords": 112,
+          "replyToPostNumber": null,
+          "review": {
+            "disposition": "material",
+            "reason": null
+          },
+          "updatedAt": "2026-07-15T16:16:59.765Z",
+          "url": "https://discuss.wordgard.net/t/any-plans-for-vertical-writing-mode-support/27/4"
+        },
+        {
+          "author": "karintou8710",
+          "authorAuthority": "community",
+          "claimIds": [],
+          "cookedHtmlSha256": "9b359b1c5a0828dcd9848ef67589cd79d6a3f6a545f9f9bd17c014f93b92ff04",
+          "createdAt": "2026-07-18T13:31:06.017Z",
+          "excerpt": "Thanks for looking into this! I’ll explore the option of forking or extending it for now.",
+          "id": 73,
+          "links": [],
+          "postNumber": 5,
+          "plainTextCharacters": 90,
+          "plainTextSha256": "298eb5cd31feb314c0ea7865a59ae8978077c47fd8aa426ec53eae336a0b12a9",
+          "plainTextWords": 16,
+          "replyToPostNumber": 4,
+          "review": {
+            "disposition": "excluded",
+            "scope": "social",
+            "reason": "Acknowledges the vertical-writing answer; no new requirement."
+          },
+          "updatedAt": "2026-07-18T13:31:06.017Z",
+          "url": "https://discuss.wordgard.net/t/any-plans-for-vertical-writing-mode-support/27/5"
+        }
+      ],
+      "postsCount": 5,
+      "slug": "any-plans-for-vertical-writing-mode-support",
+      "title": "Any plans for vertical writing mode support?",
+      "url": "https://discuss.wordgard.net/t/any-plans-for-vertical-writing-mode-support/27",
+      "views": 43
+    },
+    {
+      "archived": false,
+      "categoryId": 4,
+      "closed": false,
+      "createdAt": "2026-07-13T07:42:32.590Z",
+      "highestPostNumber": 2,
+      "id": 29,
+      "lastPostedAt": "2026-07-13T07:48:17.363Z",
+      "missingPublicPostNumbers": [],
+      "posts": [
+        {
+          "author": "strogonoff",
+          "authorAuthority": "community",
+          "claimIds": ["WGF-024"],
+          "cookedHtmlSha256": "01625f5be87037e89cd7a3bd48d529636eef5fc40ec74372bc587aeebfcca4b5",
+          "createdAt": "2026-07-13T07:42:32.806Z",
+          "excerpt": "I’m curious how suitable is Wordgard’s architecture for implementing virtualized (windowed) editor area. The ability to only mount in DOM…",
+          "id": 55,
+          "links": [
+            "https://discuss.prosemirror.net/t/virtual-scroll-for-prosemirror/8882",
+            "https://discuss.prosemirror.net/t/implementing-pagination-with-prosemirror/6336/2"
+          ],
+          "postNumber": 1,
+          "plainTextCharacters": 1950,
+          "plainTextSha256": "7355453f2332ce3b0c140c27ad9a25de5cced77b95950e3bc6a13fc0565f7802",
+          "plainTextWords": 298,
+          "replyToPostNumber": null,
+          "review": {
+            "disposition": "material",
+            "reason": null
+          },
+          "updatedAt": "2026-07-13T08:39:36.052Z",
+          "url": "https://discuss.wordgard.net/t/virtualization-windowing-occlusion-culling-support/29/1"
+        },
+        {
+          "author": "marijn",
+          "authorAuthority": "maintainer",
+          "claimIds": ["WGF-025", "WGF-026"],
+          "cookedHtmlSha256": "fef09314a10072ac49951de77d9c5e3d45359bb8ac1099e4cd834aa650eeabb5",
+          "createdAt": "2026-07-13T07:48:17.363Z",
+          "excerpt": "I explicitly decided against including this in the library. CodeMirror does virtualization, and it adds a lot of complexity to…",
+          "id": 56,
+          "links": [],
+          "postNumber": 2,
+          "plainTextCharacters": 879,
+          "plainTextSha256": "0c33dcae753996cdac3e12122c48701e1d0d7bb92373b84b58ce6799211ea942",
+          "plainTextWords": 149,
+          "replyToPostNumber": null,
+          "review": {
+            "disposition": "material",
+            "reason": null
+          },
+          "updatedAt": "2026-07-13T07:48:17.363Z",
+          "url": "https://discuss.wordgard.net/t/virtualization-windowing-occlusion-culling-support/29/2"
+        }
+      ],
+      "postsCount": 2,
+      "slug": "virtualization-windowing-occlusion-culling-support",
+      "title": "Virtualization (windowing, occlusion culling) support",
+      "url": "https://discuss.wordgard.net/t/virtualization-windowing-occlusion-culling-support/29",
+      "views": 33
+    },
+    {
+      "archived": false,
+      "categoryId": 4,
+      "closed": false,
+      "createdAt": "2026-07-14T19:45:44.502Z",
+      "highestPostNumber": 7,
+      "id": 30,
+      "lastPostedAt": "2026-07-16T14:39:26.594Z",
+      "missingPublicPostNumbers": [],
+      "posts": [
+        {
+          "author": "marijn",
+          "authorAuthority": "maintainer",
+          "claimIds": ["WGF-009", "WGF-010"],
+          "cookedHtmlSha256": "b26781c74c8ea34185abda554fa71640846cd7ec59baf7f1762c69b78e75755e",
+          "createdAt": "2026-07-14T19:45:44.669Z",
+          "excerpt": "Hi all. I just published a new example—a footnote editor (port of the similar example in ProseMirror). I had to…",
+          "id": 59,
+          "links": [
+            "https://wordgard.net/examples/footnote/",
+            "https://wordgard.net/examples/collab/",
+            "https://marijnhaverbeke.nl/blog/collaborative-editing-wordgard.html"
+          ],
+          "postNumber": 1,
+          "plainTextCharacters": 477,
+          "plainTextSha256": "c7ca18cca942de280aff0c36e17e64f6eb39d0e4425cc1c17d5d12559f615ab7",
+          "plainTextWords": 85,
+          "replyToPostNumber": null,
+          "review": {
+            "disposition": "material",
+            "reason": null
+          },
+          "updatedAt": "2026-07-14T19:45:44.669Z",
+          "url": "https://discuss.wordgard.net/t/new-footnote-example/30/1"
+        },
+        {
+          "author": "mhmttosun",
+          "authorAuthority": "community",
+          "claimIds": ["WGF-011"],
+          "cookedHtmlSha256": "ab5332acc9cb43b3176a369e2bc3791be4a5394ca9e785a2d8ca449a3039fd5a",
+          "createdAt": "2026-07-16T08:03:42.102Z",
+          "excerpt": "Hi Marijn, I tested footnote example on Firefox. When first footnote is open, clicking on the second footnote displays the…",
+          "id": 65,
+          "links": [
+            "https://discuss.wordgard.net/uploads/thirdsite/original/1X/d94b95b46d0474e2d5225d30e54ec1ffffef7a4d.png",
+            "https://discuss.wordgard.net/#far-image",
+            "https://discuss.wordgard.net/#discourse-expand",
+            "https://discuss.wordgard.net/uploads/thirdsite/original/1X/71b8605739b27b07f04432f4c62621c7690c2b6a.png"
+          ],
+          "postNumber": 2,
+          "plainTextCharacters": 424,
+          "plainTextSha256": "552b108c9119d855947962c9f8154bebd006e3ddb15029e2e3fc2607be33c23c",
+          "plainTextWords": 65,
+          "replyToPostNumber": null,
+          "review": {
+            "disposition": "material",
+            "reason": null
+          },
+          "updatedAt": "2026-07-16T08:03:42.102Z",
+          "url": "https://discuss.wordgard.net/t/new-footnote-example/30/2"
+        },
+        {
+          "author": "marijn",
+          "authorAuthority": "maintainer",
+          "claimIds": ["WGF-012"],
+          "cookedHtmlSha256": "eea9d47e05358b8c439fce8460650807ab3dc4d8dec1b58a807b1577436fbc48",
+          "createdAt": "2026-07-16T09:17:05.698Z",
+          "excerpt": "Thanks for spotting that. I’ve pushed a patch that should resolve this.",
+          "id": 67,
+          "links": [],
+          "postNumber": 3,
+          "plainTextCharacters": 71,
+          "plainTextSha256": "520d8dcf8c12230e87fb7877d87cdbdff32dbf4255ffbcdc26021d8394ae33b2",
+          "plainTextWords": 12,
+          "replyToPostNumber": null,
+          "review": {
+            "disposition": "material",
+            "reason": null
+          },
+          "updatedAt": "2026-07-16T09:17:05.698Z",
+          "url": "https://discuss.wordgard.net/t/new-footnote-example/30/3"
+        },
+        {
+          "author": "mhmttosun",
+          "authorAuthority": "community",
+          "claimIds": ["WGF-013"],
+          "cookedHtmlSha256": "e5cf794c75f4b9c88b45a9f07c4f32404bd942f8dd43283270e2c9e8734075e9",
+          "createdAt": "2026-07-16T10:31:06.913Z",
+          "excerpt": "This patch may have caused another problem. I clicked one footnote to display its content. Then I clicked another one…",
+          "id": 68,
+          "links": [],
+          "postNumber": 4,
+          "plainTextCharacters": 237,
+          "plainTextSha256": "adfc13608e909d7546b6d0fa5e0e577b24ca7977f260c70e497891fcf2323e08",
+          "plainTextWords": 36,
+          "replyToPostNumber": 3,
+          "review": {
+            "disposition": "material",
+            "reason": null
+          },
+          "updatedAt": "2026-07-16T10:31:06.913Z",
+          "url": "https://discuss.wordgard.net/t/new-footnote-example/30/4"
+        },
+        {
+          "author": "marijn",
+          "authorAuthority": "maintainer",
+          "claimIds": ["WGF-014"],
+          "cookedHtmlSha256": "55a3ad9a1ff1c50abf9abd17cca48a887cea6c8a65d7a94b99f20bf3b40a44ca",
+          "createdAt": "2026-07-16T13:14:33.687Z",
+          "excerpt": "Good point. I used a method I didn’t publish yet, and thus isn’t available in the version of the library…",
+          "id": 69,
+          "links": [],
+          "postNumber": 5,
+          "plainTextCharacters": 144,
+          "plainTextSha256": "0f9fd98188a3539e3ccfeff799b6decdae32171850f97e87c3c927a2d12aad9c",
+          "plainTextWords": 27,
+          "replyToPostNumber": null,
+          "review": {
+            "disposition": "material",
+            "reason": null
+          },
+          "updatedAt": "2026-07-16T13:14:33.687Z",
+          "url": "https://discuss.wordgard.net/t/new-footnote-example/30/5"
+        },
+        {
+          "author": "mhmttosun",
+          "authorAuthority": "community",
+          "claimIds": ["WGF-015"],
+          "cookedHtmlSha256": "92bdc50c1c619ebf773a2826a58dcb265c96d218ec6fda0dc05fa0f21269dd42",
+          "createdAt": "2026-07-16T13:30:12.503Z",
+          "excerpt": "It works great. It is very beneficial to see Prosemirror examples in Wordgard.",
+          "id": 70,
+          "links": [],
+          "postNumber": 6,
+          "plainTextCharacters": 79,
+          "plainTextSha256": "e0acc92aaf381128d09a47abd8824bb7c5d01d8df51b3e7ccbd88edbc699b2b9",
+          "plainTextWords": 13,
+          "replyToPostNumber": 5,
+          "review": {
+            "disposition": "material",
+            "reason": null
+          },
+          "updatedAt": "2026-07-16T13:30:12.503Z",
+          "url": "https://discuss.wordgard.net/t/new-footnote-example/30/6"
+        },
+        {
+          "author": "marijn",
+          "authorAuthority": "maintainer",
+          "claimIds": ["WGF-016"],
+          "cookedHtmlSha256": "73617a346fdb239cfd5fb7e6f0326825a6e5df3de6b785391e9c25803db432e2",
+          "createdAt": "2026-07-16T14:39:26.594Z",
+          "excerpt": "Indeed. It’s also a great way for me to find out what’s not working yet. There will be more of…",
+          "id": 71,
+          "links": [],
+          "postNumber": 7,
+          "plainTextCharacters": 100,
+          "plainTextSha256": "e42218597f276933808ad5acc3ebf39c186c4801d99dc4ab53c3d98a81ac02cb",
+          "plainTextWords": 21,
+          "replyToPostNumber": 6,
+          "review": {
+            "disposition": "material",
+            "reason": null
+          },
+          "updatedAt": "2026-07-16T14:39:26.594Z",
+          "url": "https://discuss.wordgard.net/t/new-footnote-example/30/7"
+        }
+      ],
+      "postsCount": 7,
+      "slug": "new-footnote-example",
+      "title": "New footnote example",
+      "url": "https://discuss.wordgard.net/t/new-footnote-example/30",
+      "views": 26
+    },
+    {
+      "archived": false,
+      "categoryId": 4,
+      "closed": false,
+      "createdAt": "2026-07-15T16:29:44.219Z",
+      "highestPostNumber": 3,
+      "id": 31,
+      "lastPostedAt": "2026-07-16T18:22:47.135Z",
+      "missingPublicPostNumbers": [],
+      "posts": [
+        {
+          "author": "thesmartwon",
+          "authorAuthority": "community",
+          "claimIds": ["WGF-005"],
+          "cookedHtmlSha256": "b04f564796ddde27d1ba12e41e1492223fd97f3a8325bbad6b03eb6251f550da",
+          "createdAt": "2026-07-15T16:29:44.388Z",
+          "excerpt": "I noticed your’re working on collaborative editing using operational transforms . This is great when the user is online and…",
+          "id": 62,
+          "links": [
+            "https://marijnhaverbeke.nl/blog/collaborative-editing-wordgard.html",
+            "https://discuss.wordgard.net/t/strongly-referencing-document-positions/19"
+          ],
+          "postNumber": 1,
+          "plainTextCharacters": 573,
+          "plainTextSha256": "d973f9198d85825988858e73767f315cb358b86378104c758bceb346a9b05ad2",
+          "plainTextWords": 90,
+          "replyToPostNumber": null,
+          "review": {
+            "disposition": "material",
+            "reason": null
+          },
+          "updatedAt": "2026-07-15T16:29:44.388Z",
+          "url": "https://discuss.wordgard.net/t/offline-collaborative-editing/31/1"
+        },
+        {
+          "author": "marijn",
+          "authorAuthority": "maintainer",
+          "claimIds": ["WGF-006", "WGF-007"],
+          "cookedHtmlSha256": "010518cb147b4576fde46f6294e25090714580b33cb6f5b71173587da15e4961",
+          "createdAt": "2026-07-16T08:11:03.885Z",
+          "excerpt": "This is a very different problem from real-time collaborative editing—automatic change merging is dumb , and only appropriate when the…",
+          "id": 66,
+          "links": [
+            "https://marijnhaverbeke.nl/blog/addressing-editor-content.html#ordered-ids"
+          ],
+          "postNumber": 2,
+          "plainTextCharacters": 787,
+          "plainTextSha256": "577a5569300479101501419682c99bdcc504e06e692b8268f844e8b20f932bfc",
+          "plainTextWords": 131,
+          "replyToPostNumber": null,
+          "review": {
+            "disposition": "material",
+            "reason": null
+          },
+          "updatedAt": "2026-07-16T08:11:03.885Z",
+          "url": "https://discuss.wordgard.net/t/offline-collaborative-editing/31/2"
+        },
+        {
+          "author": "thesmartwon",
+          "authorAuthority": "community",
+          "claimIds": ["WGF-008"],
+          "cookedHtmlSha256": "5aab860ca6cf91b7bf2543fa5281c472028bc2cc829dc9502d26f1731a74539b",
+          "createdAt": "2026-07-16T18:22:47.135Z",
+          "excerpt": "in most setups, more bother than it’s worth. I agree, but I have one of those offline setups where users…",
+          "id": 72,
+          "links": ["https://github.com/dolthub/doltlite"],
+          "postNumber": 3,
+          "plainTextCharacters": 694,
+          "plainTextSha256": "00c9b1882fb515ebf4686ee819672cc45e5b185eb653eff905a05c9ab7f5f3d5",
+          "plainTextWords": 114,
+          "replyToPostNumber": 2,
+          "review": {
+            "disposition": "material",
+            "reason": null
+          },
+          "updatedAt": "2026-07-16T18:22:47.135Z",
+          "url": "https://discuss.wordgard.net/t/offline-collaborative-editing/31/3"
+        }
+      ],
+      "postsCount": 3,
+      "slug": "offline-collaborative-editing",
+      "title": "Offline collaborative editing",
+      "url": "https://discuss.wordgard.net/t/offline-collaborative-editing/31",
+      "views": 31
+    }
+  ],
+  "validation": {
+    "allVisiblePostsExplained": true,
+    "allVisibleTopicsExplained": true,
+    "categoryPostCountMatchesRegularTopics": true,
+    "categoryTopicCountMatchesIndexes": true,
+    "changedPostIds": [],
+    "duplicateClaimIds": [],
+    "globalPostIndexMismatch": [],
+    "latestCategoryTopicMismatch": [],
+    "missingReviewedPostIds": [],
+    "postStreamsComplete": true,
+    "staleExcludedPostIds": [],
+    "uncategorizedPostIds": [],
+    "unknownExistingRowIds": [],
+    "unknownProposedRowIds": [],
+    "unmappedClaimIds": [],
+    "unreviewedPostIds": []
+  }
+}

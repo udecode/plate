@@ -1,8 +1,8 @@
-import { BaseParagraphPlugin, createBasePlugin } from '@platejs/core';
+import { BaseParagraphPlugin, defineBasePlugin } from '@platejs/core';
 import { createPlateEditor } from '@platejs/core/react';
 import { MarkdownPlugin } from '@platejs/markdown';
 import { NodeApi, property, schema } from '@platejs/plite';
-import { KEYS, NODES } from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 import remarkMath from 'remark-math';
 
 import { AI_PREVIEW_KEY } from '../lib/BaseAIPlugin';
@@ -12,7 +12,7 @@ const createEditor = () =>
   createPlateEditor({
     plugins: [
       BaseParagraphPlugin,
-      createBasePlugin({
+      defineBasePlugin(PLUGINS.codeBlock, {
         codecs: ({ defineCodecs }) =>
           defineCodecs({
             'text/markdown': {
@@ -26,16 +26,14 @@ const createEditor = () =>
               }),
             },
           }),
-        name: KEYS.codeBlock,
         schema: {
           element: {
             content: schema.content.open(),
             properties: { lang: property.string() },
           },
         },
-        type: NODES.codeBlock,
       }),
-      createBasePlugin({
+      defineBasePlugin(PLUGINS.equation, {
         codecs: ({ defineCodecs }) =>
           defineCodecs({
             'text/markdown': {
@@ -46,7 +44,6 @@ const createEditor = () =>
               }),
             },
           }),
-        name: KEYS.equation,
         schema: {
           element: {
             properties: { texExpression: property.string() },
@@ -64,7 +61,7 @@ const createEditor = () =>
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     },
-    initialValue: [{ children: [{ text: '' }], type: 'p' }],
+    initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
   });
 
 describe('AIChatPlugin streaming', () => {
@@ -74,8 +71,8 @@ describe('AIChatPlugin streaming', () => {
     expect(
       editor.plugin(AIChatPlugin).api.deserializeChunk('hello\n\n')
     ).toEqual([
-      { children: [{ text: 'hello' }], type: 'p' },
-      { children: [{ text: '' }], type: 'p' },
+      { children: [{ text: 'hello' }], type: 'paragraph' },
+      { children: [{ text: '' }], type: 'paragraph' },
     ]);
   });
 
@@ -92,11 +89,11 @@ describe('AIChatPlugin streaming', () => {
                 children: [
                   {
                     children: [{ text: 'const answer = 42;' }],
-                    type: 'code_line',
+                    type: 'codeLine',
                   },
                 ],
                 lang: 'typescript',
-                type: 'code_block',
+                type: 'codeBlock',
               },
             ],
           },

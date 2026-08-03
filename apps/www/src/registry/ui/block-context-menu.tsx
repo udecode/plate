@@ -7,7 +7,7 @@ import {
   BlockMenuPlugin,
   BlockSelectionPlugin,
 } from '@platejs/selection/react';
-import { KEYS } from 'platejs';
+import { NODES } from 'platejs';
 import {
   useEditorPlugin,
   useEditorReadOnly,
@@ -38,12 +38,12 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
   const isOpen = openId === BLOCK_CONTEXT_MENU_ID;
 
   const handleTurnInto = React.useCallback(
-    (type: string) => {
+    (action: string) => {
       editor
         .plugin(BlockSelectionPlugin)
         .read.getNodes()
         .forEach(([, path]) => {
-          setBlockType(editor, type, { at: path });
+          setBlockType(editor, action, { at: path });
         });
     },
     [editor]
@@ -131,26 +131,26 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
             <ContextMenuSub>
               <ContextMenuSubTrigger>Turn into</ContextMenuSubTrigger>
               <ContextMenuSubContent className="w-48">
-                <ContextMenuItem onClick={() => handleTurnInto(KEYS.p)}>
+                <ContextMenuItem onClick={() => handleTurnInto(NODES.p)}>
                   Paragraph
                 </ContextMenuItem>
 
-                <ContextMenuItem onClick={() => handleTurnInto(KEYS.h1)}>
+                <ContextMenuItem onClick={() => handleTurnInto(NODES.h1)}>
                   Heading 1
                 </ContextMenuItem>
-                <ContextMenuItem onClick={() => handleTurnInto(KEYS.h2)}>
+                <ContextMenuItem onClick={() => handleTurnInto(NODES.h2)}>
                   Heading 2
                 </ContextMenuItem>
-                <ContextMenuItem onClick={() => handleTurnInto(KEYS.h3)}>
+                <ContextMenuItem onClick={() => handleTurnInto(NODES.h3)}>
                   Heading 3
                 </ContextMenuItem>
                 <ContextMenuItem
-                  onClick={() => handleTurnInto(KEYS.blockquote)}
+                  onClick={() => handleTurnInto(NODES.blockquote)}
                 >
                   Blockquote
                 </ContextMenuItem>
                 <ContextMenuItem
-                  onClick={() => handleTurnInto(KEYS.codeDrawing)}
+                  onClick={() => handleTurnInto(NODES.codeDrawing)}
                 >
                   Code Drawing
                 </ContextMenuItem>

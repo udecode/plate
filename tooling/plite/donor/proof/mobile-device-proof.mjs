@@ -2,8 +2,9 @@
 
 // biome-ignore-all lint/suspicious/noConsole: CLI reports proof scope and artifact paths.
 
+import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const repoRoot = fileURLToPath(new URL('../../../..', import.meta.url));
@@ -15,21 +16,13 @@ const artifactPath = resolve(
 const rawRequired = process.env.PLITE_BROWSER_RAW_MOBILE_REQUIRED === '1';
 
 const {
-  assertPliteBrowserReleaseProof,
+  assertPliteRawMobileProof,
   createBrowserMobileReleaseProofArtifact,
   validatePliteBrowserReleaseProof,
+  validatePliteRawMobileProof,
 } = await import(
-  pathToFileURL(resolve(repoRoot, 'packages/browser/src/core/release-proof.ts'))
-    .href
+  pathToFileURL(resolve(repoRoot, 'packages/browser/src/core/index.ts')).href
 );
-
-const rawMobileClaims = [
-  'android-chrome-device-browser-text-input',
-  'android-chrome-device-browser-ime-commit',
-  'ios-safari-device-browser-text-input',
-  'ios-safari-device-browser-ime-commit',
-  'native-mobile-clipboard',
-];
 
 const readArtifacts = () => {
   if (!existsSync(artifactPath)) {
@@ -40,29 +33,66 @@ const readArtifacts = () => {
 
   const parsed = JSON.parse(readFileSync(artifactPath, 'utf8'));
 
-  if (Array.isArray(parsed)) {
+  if (parsed?.schemaVersion === 1 && Array.isArray(parsed.receipts)) {
     return parsed;
   }
 
-  if (Array.isArray(parsed.artifacts)) {
-    return parsed.artifacts;
-  }
-
   throw new Error(
-    `Expected ${artifactPath} to contain an artifact array or { "artifacts": [...] }`
+    `Expected ${artifactPath} to contain a schemaVersion 1 raw mobile receipt bundle`
   );
 };
 
-if (rawRequired) {
-  const artifacts = readArtifacts();
+const stableStringify = (value) => {
+  if (Array.isArray(value)) {
+    return `[${value.map(stableStringify).join(',')}]`;
+  }
+  if (value && typeof value === 'object') {
+    return `{${Object.keys(value)
+      .sort()
+      .map((key) => `${JSON.stringify(key)}:${stableStringify(value[key])}`)
+      .join(',')}}`;
+  }
 
-  assertPliteBrowserReleaseProof({
-    artifacts,
-    claims: rawMobileClaims,
-  });
+  return JSON.stringify(value);
+};
+
+const digest = (value) => createHash('sha256').update(value).digest('hex');
+
+const verifyPointer = (pointer, label) => {
+  const filePath = resolve(dirname(artifactPath), pointer.path);
+
+  if (!existsSync(filePath)) {
+    throw new Error(`${label} artifact is missing at ${filePath}`);
+  }
+  if (digest(readFileSync(filePath)) !== pointer.sha256) {
+    throw new Error(`${label} artifact digest does not match ${filePath}`);
+  }
+};
+
+const verifyReadback = (bundle) => {
+  for (const receipt of bundle.receipts) {
+    const { receiptSha256, ...payload } = receipt;
+    const label = `${receipt.platform}/${receipt.scenario}`;
+
+    if (digest(stableStringify(payload)) !== receiptSha256) {
+      throw new Error(`${label} receipt digest does not match its payload`);
+    }
+
+    verifyPointer(receipt.artifacts.video, `${label} video`);
+    receipt.snapshots.forEach((snapshot, index) => {
+      verifyPointer(snapshot.screenshot, `${label} snapshot ${index}`);
+    });
+  }
+};
+
+if (rawRequired) {
+  const bundle = readArtifacts();
+
+  assertPliteRawMobileProof(bundle);
+  verifyReadback(bundle);
 
   console.log(
-    `[plite-browser-mobile-proof] raw mobile release proof passed: ${artifactPath}`
+    `[plite-browser-mobile-proof] raw direct-Appium matrix and independent artifact readback passed: ${artifactPath}`
   );
 } else {
   const scopedProxyResult = validatePliteBrowserReleaseProof({
@@ -104,8 +134,17 @@ if (rawRequired) {
     );
   }
 
+  const incompleteRawResult = validatePliteRawMobileProof({
+    receipts: [],
+    schemaVersion: 1,
+  });
+
+  if (incompleteRawResult.ok) {
+    throw new Error('an incomplete raw mobile receipt matrix was accepted');
+  }
+
   console.log(
-    '[plite-browser-mobile-proof] scoped release proof passed: semantic/proxy rows cannot satisfy raw mobile IME or clipboard claims'
+    '[plite-browser-mobile-proof] scoped release proof passed: semantic/proxy rows and incomplete receipts cannot satisfy raw mobile claims'
   );
   console.log(
     `[plite-browser-mobile-proof] set PLITE_BROWSER_RAW_MOBILE_REQUIRED=1 and provide ${artifactPath} to prove raw Android/iOS device claims`

@@ -1,4 +1,6 @@
 'use client';
+import { NODES } from '@platejs/utils';
+
 import {
   type HTMLAttributes,
   useCallback,
@@ -313,7 +315,7 @@ export default function MarkdownStreamingDemo() {
   const editor = usePlateEditor(
     {
       plugins: [...CopilotKit, ...EditorKit],
-      initialValue: [{ children: [{ text: '' }], type: KEYS.p }] as Value,
+      initialValue: [{ children: [{ text: '' }], type: NODES.p }] as Value,
     },
     []
   );

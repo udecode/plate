@@ -15,8 +15,8 @@ safely, and preserve fitted slice changes through reconnect and concurrent
 edits.
 
 **Migration:** Configure `YjsPlugin` with the Yjs document and provider adapter
-from application code. Raw Plite editors can install `createYjsExtension`
-directly. Import React cursor and provider-state hooks from
+from application code. Raw Plite editors install `yjs(options)` through
+`editor.install(...)`. Import React cursor and provider-state hooks from
 `@platejs/yjs/react`. Serialized adapter metadata uses `plite:*` keys.
 
 Encode exact derived or named schema identities in Yjs schema metadata format

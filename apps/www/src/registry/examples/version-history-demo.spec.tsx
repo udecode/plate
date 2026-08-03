@@ -11,7 +11,7 @@ describe('createVersionSnapshot', () => {
           { children: [{ text: '' }], type: 'inline-void' },
           { text: '. Try removing it.' },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
     ];
 

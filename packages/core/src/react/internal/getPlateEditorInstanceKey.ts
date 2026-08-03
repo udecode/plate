@@ -1,10 +1,12 @@
 import { nanoid } from 'nanoid';
 
-import type { PlateEditor } from '../editor/PlateEditor';
+import type { PlateEditorReference } from '../editor/PlateEditor';
 
-const EDITOR_TO_INSTANCE_KEY = new WeakMap<PlateEditor, string>();
+const EDITOR_TO_INSTANCE_KEY = new WeakMap<PlateEditorReference, string>();
 
-export const getPlateEditorInstanceKey = (editor: PlateEditor): string => {
+export const getPlateEditorInstanceKey = (
+  editor: PlateEditorReference
+): string => {
   let key = EDITOR_TO_INSTANCE_KEY.get(editor);
 
   if (!key) {

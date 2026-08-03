@@ -13,7 +13,7 @@ import { History, history } from '@platejs/plite-history';
 import * as Y from 'yjs';
 
 import { createYjsNode } from '../src/core/document';
-import { createYjsExtension } from '../src/core/extension';
+import { yjs } from '../src/core/extension';
 import {
   createYjsSchemaEnvelope,
   getYjsSchemaMetadataName,
@@ -34,7 +34,7 @@ const card = (text: string): Descendant => ({
 });
 
 const articleSchema = (version: number, preserveContext = false) =>
-  defineEditorSchema({
+  defineEditorSchema('schema:article', {
     elements: {
       paragraph: {
         content: schema.content.text({ min: 1 }),
@@ -47,7 +47,7 @@ const articleSchema = (version: number, preserveContext = false) =>
     version,
   });
 
-const requiredCardSchema = defineEditorSchema({
+const requiredCardSchema = defineEditorSchema('schema:required-card', {
   elements: {
     card: { content: schema.content.text({ min: 1 }) },
   },
@@ -71,7 +71,7 @@ const policySchema = ({
   mode?: PolicySchemaMode;
   version?: number;
 }) =>
-  defineEditorSchema({
+  defineEditorSchema('schema:article-policy-schema', {
     elements: {
       paragraph: {
         content: schema.content.text({ min: 1 }),
@@ -121,7 +121,7 @@ const seedUpdate = (
   createEditor({
     extensions: [
       ...(editorSchema ? [editorSchema] : []),
-      createYjsExtension({ doc, rootName }),
+      yjs({ doc, rootName }),
     ],
     initialValue: [paragraph(text)],
   });
@@ -133,7 +133,7 @@ describe('@platejs/yjs schema identity contract', () => {
   it('derives an empty Yjs root from the compiled schema minimum', () => {
     const doc = new Y.Doc();
     const editor = createEditor({
-      extensions: [requiredCardSchema, createYjsExtension({ doc, rootName })],
+      extensions: [requiredCardSchema, yjs({ doc, rootName })],
       initialValue: [card('one'), card('two')],
     });
     const root = doc.get(rootName, Y.XmlElement);
@@ -148,7 +148,7 @@ describe('@platejs/yjs schema identity contract', () => {
     const doc = new Y.Doc();
 
     const editor = createEditor({
-      extensions: [createYjsExtension({ doc, rootName })],
+      extensions: [yjs({ doc, rootName })],
       initialValue: [paragraph('open')],
     });
 
@@ -162,43 +162,32 @@ describe('@platejs/yjs schema identity contract', () => {
   it('rejects nonempty documents that never claimed schema metadata', () => {
     const doc = new Y.Doc();
     const root = doc.get(rootName, Y.XmlElement);
-    const errors: unknown[] = [];
 
     root.insert(0, [createYjsNode(paragraph('unclaimed'))]);
 
-    const editor = createEditor({
-      extensions: [createYjsExtension({ doc, rootName })],
-      initialValue: [paragraph('local')],
-      lifecycleErrorSink: ({ cause }) => errors.push(cause),
-    });
-
-    assert.match(
-      String(errors[0]),
-      /nonempty Yjs document without schema metadata/
-    );
     assert.throws(
-      () => editor.read.yjs.root(),
+      () =>
+        createEditor({
+          extensions: [yjs({ doc, rootName })],
+          initialValue: [paragraph('local')],
+        }),
       /nonempty Yjs document without schema metadata/
     );
   });
 
   it('rejects malformed schema metadata before exposing Yjs state', () => {
     const doc = new Y.Doc();
-    const errors: unknown[] = [];
 
     doc
       .getMap(getYjsSchemaMetadataName(rootName))
       .set('current', { format: 1, identity: null });
 
-    const editor = createEditor({
-      extensions: [createYjsExtension({ doc, rootName })],
-      initialValue: [paragraph('local')],
-      lifecycleErrorSink: ({ cause }) => errors.push(cause),
-    });
-
-    assert.match(String(errors[0]), /Invalid Yjs schema metadata envelope/);
     assert.throws(
-      () => editor.read.yjs.root(),
+      () =>
+        createEditor({
+          extensions: [yjs({ doc, rootName })],
+          initialValue: [paragraph('local')],
+        }),
       /Invalid Yjs schema metadata envelope/
     );
   });
@@ -262,7 +251,6 @@ describe('@platejs/yjs schema identity contract', () => {
 
   it('rejects schema metadata with a zero schema version', () => {
     const doc = new Y.Doc();
-    const errors: unknown[] = [];
 
     doc.getMap(getYjsSchemaMetadataName(rootName)).set('current', {
       format: 2,
@@ -274,15 +262,12 @@ describe('@platejs/yjs schema identity contract', () => {
       },
     });
 
-    const editor = createEditor({
-      extensions: [createYjsExtension({ doc, rootName })],
-      initialValue: [paragraph('local')],
-      lifecycleErrorSink: ({ cause }) => errors.push(cause),
-    });
-
-    assert.match(String(errors[0]), /Invalid Yjs schema metadata envelope/);
     assert.throws(
-      () => editor.read.yjs.root(),
+      () =>
+        createEditor({
+          extensions: [yjs({ doc, rootName })],
+          initialValue: [paragraph('local')],
+        }),
       /Invalid Yjs schema metadata envelope/
     );
   });
@@ -294,10 +279,7 @@ describe('@platejs/yjs schema identity contract', () => {
 
     const provider = new FakeProvider({ doc, synced: false });
     const editor = createEditor({
-      extensions: [
-        articleSchema(1),
-        createYjsExtension({ provider, rootName }),
-      ],
+      extensions: [articleSchema(1), yjs({ provider, rootName })],
       initialValue: [paragraph('local')],
     });
 
@@ -312,10 +294,7 @@ describe('@platejs/yjs schema identity contract', () => {
     const doc = new Y.Doc();
     const provider = new FakeProvider({ doc, synced: false });
     const editor = createEditor({
-      extensions: [
-        articleSchema(1),
-        createYjsExtension({ provider, rootName }),
-      ],
+      extensions: [articleSchema(1), yjs({ provider, rootName })],
       initialValue: [paragraph('seed')],
     });
     const root = doc.get(rootName, Y.XmlElement);
@@ -352,10 +331,7 @@ describe('@platejs/yjs schema identity contract', () => {
 
     const provider = new FakeProvider({ doc, synced: false });
     const editor = createEditor({
-      extensions: [
-        articleSchema(2),
-        createYjsExtension({ provider, rootName }),
-      ],
+      extensions: [articleSchema(2), yjs({ provider, rootName })],
       initialValue: [paragraph('local')],
     });
 
@@ -377,7 +353,7 @@ describe('@platejs/yjs schema identity contract', () => {
 
     const provider = new FakeProvider({ doc, synced: false });
     const editor = createEditor({
-      extensions: [createYjsExtension({ provider, rootName })],
+      extensions: [yjs({ provider, rootName })],
       initialValue: [paragraph('local')],
     });
 
@@ -396,10 +372,7 @@ describe('@platejs/yjs schema identity contract', () => {
     const provider = new FakeProvider({ doc, synced: false });
 
     createEditor({
-      extensions: [
-        articleSchema(1, true),
-        createYjsExtension({ provider, rootName }),
-      ],
+      extensions: [articleSchema(1, true), yjs({ provider, rootName })],
       initialValue: [paragraph('local')],
     });
 
@@ -412,7 +385,7 @@ describe('@platejs/yjs schema identity contract', () => {
   it('observes schema metadata before flushing remote content', () => {
     const doc = new Y.Doc();
     const editor = createEditor({
-      extensions: [articleSchema(1), createYjsExtension({ doc, rootName })],
+      extensions: [articleSchema(1), yjs({ doc, rootName })],
       initialValue: [paragraph('local')],
     });
     const nextIdentity = createEditor({
@@ -438,7 +411,7 @@ describe('@platejs/yjs schema identity contract', () => {
   it('rejects local schema reconfiguration against a claimed room', () => {
     const slot = defineExtensionSlot('article-schema');
     const editor = createEditor({
-      extensions: [slot.of(articleSchema(1)), createYjsExtension({ rootName })],
+      extensions: [slot.of(articleSchema(1)), yjs({ rootName })],
       initialValue: [paragraph('local')],
     });
     const identity = editor.read.schema.identity();
@@ -458,7 +431,7 @@ describe('@platejs/yjs schema identity contract', () => {
       extensions: [
         history(),
         slot.of(policySchema({ calls, label: 'policy-0' })),
-        createYjsExtension({ doc, rootName }),
+        yjs({ doc, rootName }),
       ] as const,
       initialValue: [policyParagraph('local', 0)],
     });

@@ -2,7 +2,7 @@
 import { createEditor, type Value } from '@platejs/plite';
 import { jsxt } from '@platejs/test-utils';
 
-import { createBasePlugin, DOMPlugin } from '../../lib';
+import { defineBasePlugin, DOMPlugin } from '../../lib';
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { ViewPlugin } from '../plugins/ViewPlugin';
 import { createStaticEditor } from './withStatic';
@@ -18,23 +18,23 @@ describe('extendStaticEditor', () => {
 
       expect(editor.id).toBe('1');
       expect(getPlateRuntime(editor).plugins).toBeDefined();
-      expect(editor.plugin(ViewPlugin).plugin).toBeDefined();
+      expect(editor.plugin(ViewPlugin)).toBeDefined();
     });
 
     it('include ViewPlugin in the plugin list', () => {
       const editor = createStaticEditor();
 
-      const pluginNames = getPlateRuntime(editor).pluginList.map(
+      const names = getPlateRuntime(editor).pluginList.map(
         (plugin) => plugin.name
       );
-      expect(pluginNames).toContain(DOMPlugin.name);
+      expect(names).toContain(DOMPlugin.name);
     });
 
     it('exposes the ViewPlugin fragment API', () => {
       const editor = createStaticEditor();
 
       // ViewPlugin extends DOMPlugin, so we check the DOM plugin is installed.
-      const domPlugin = editor.plugin(DOMPlugin).plugin;
+      const domPlugin = editor.plugin(DOMPlugin);
       expect(domPlugin).toBeDefined();
 
       // The API should be applied through the plugin system.
@@ -44,33 +44,33 @@ describe('extendStaticEditor', () => {
 
   describe('when plugins are provided', () => {
     it('add custom plugins after static plugins', () => {
-      const customPlugin = createBasePlugin({ name: 'custom' });
+      const customPlugin = defineBasePlugin('custom', {});
       const editor = createStaticEditor({
         plugins: [customPlugin],
       });
 
-      const pluginNames = getPlateRuntime(editor).pluginList.map(
+      const names = getPlateRuntime(editor).pluginList.map(
         (plugin) => plugin.name
       );
-      expect(pluginNames).toContain('custom');
-      expect(pluginNames).toContain(DOMPlugin.name);
+      expect(names).toContain('custom');
+      expect(names).toContain(DOMPlugin.name);
 
       // Ensure custom plugin comes after static plugins
-      const domIndex = pluginNames.indexOf(DOMPlugin.name);
-      const customIndex = pluginNames.indexOf('custom');
+      const domIndex = names.indexOf(DOMPlugin.name);
+      const customIndex = names.indexOf('custom');
       expect(customIndex).toBeGreaterThan(domIndex);
     });
 
     it('allow multiple custom plugins', () => {
-      const plugin1 = createBasePlugin({ name: 'plugin1' });
-      const plugin2 = createBasePlugin({ name: 'plugin2' });
+      const plugin1 = defineBasePlugin('plugin1', {});
+      const plugin2 = defineBasePlugin('plugin2', {});
 
       const editor = createStaticEditor({
         plugins: [plugin1, plugin2],
       });
 
-      expect(editor.plugin('plugin1').plugin).toBeDefined();
-      expect(editor.plugin('plugin2').plugin).toBeDefined();
+      expect(editor.plugin('plugin1')).toBeDefined();
+      expect(editor.plugin('plugin2')).toBeDefined();
     });
   });
 
@@ -85,6 +85,7 @@ describe('extendStaticEditor', () => {
       );
 
       const editor = createStaticEditor({
+        editor: createEditor<Value>(),
         initialValue: value.children as Value,
       });
 
@@ -109,6 +110,7 @@ describe('extendStaticEditor', () => {
       };
 
       const editor = createStaticEditor({
+        editor: createEditor<Value>(),
         selection,
         initialValue: value.children as Value,
       });
@@ -129,6 +131,7 @@ describe('extendStaticEditor', () => {
 
       const editor = createStaticEditor({
         autoSelect: 'start',
+        editor: createEditor<Value>(),
         initialValue: value.children as Value,
       });
 
@@ -152,6 +155,7 @@ describe('extendStaticEditor', () => {
 
       const editor = createStaticEditor({
         autoSelect: 'end',
+        editor: createEditor<Value>(),
         initialValue: value.children as Value,
       });
 
@@ -174,7 +178,7 @@ describe('extendStaticEditor', () => {
       });
 
       expect(editor.id).toBe('existing');
-      expect(editor.plugin(ViewPlugin).plugin).toBeDefined();
+      expect(editor.plugin(ViewPlugin)).toBeDefined();
     });
 
     it('preserves a raw editor id when a new id is provided', () => {
@@ -189,33 +193,33 @@ describe('extendStaticEditor', () => {
     });
   });
 
-  describe('integration with extendBaseEditor', () => {
+  describe('integration with createBaseEditor', () => {
     it('properly integrate static plugins with core plugins', () => {
       const editor = createStaticEditor();
 
-      // Should have both core plugins from extendBaseEditor and static plugins
+      // Should have both core plugins from createBaseEditor and static plugins
       expect(editor.read((state) => state.history())).toBeDefined(); // from HistoryPlugin
       expect(editor.read.view.isReadOnly()).toBe(false); // from Plite view
-      expect(editor.plugin(ViewPlugin).plugin).toBeDefined(); // static plugin
+      expect(editor.plugin(ViewPlugin)).toBeDefined(); // static plugin
     });
 
     it('maintain plugin order with static plugins first', () => {
-      const customPlugin = createBasePlugin({ name: 'custom' });
+      const customPlugin = defineBasePlugin('custom', {});
       const editor = createStaticEditor({
         plugins: [customPlugin],
       });
 
-      const pluginNames = getPlateRuntime(editor).pluginList.map(
+      const names = getPlateRuntime(editor).pluginList.map(
         (plugin) => plugin.name
       );
 
       // ViewPlugin (static) should come before custom plugins
-      const viewPluginIndex = pluginNames.findIndex((pluginName) =>
+      const viewPluginIndex = names.findIndex((name) =>
         getPlateRuntime(editor).pluginList.find(
-          (plugin) => plugin.name === pluginName && plugin === ViewPlugin
+          (plugin) => plugin.name === name && plugin === ViewPlugin
         )
       );
-      const customIndex = pluginNames.indexOf('custom');
+      const customIndex = names.indexOf('custom');
 
       if (viewPluginIndex !== -1 && customIndex !== -1) {
         expect(viewPluginIndex).toBeLessThan(customIndex);
@@ -229,14 +233,14 @@ describe('extendStaticEditor', () => {
         plugins: [],
       });
 
-      expect(editor.plugin(ViewPlugin).plugin).toBeDefined();
+      expect(editor.plugin(ViewPlugin)).toBeDefined();
     });
 
     it('handle undefined options', () => {
       const editor = createStaticEditor();
 
       expect(editor).toBeDefined();
-      expect(editor.plugin(ViewPlugin).plugin).toBeDefined();
+      expect(editor.plugin(ViewPlugin)).toBeDefined();
     });
 
     it('create unique ids for different editors', () => {
@@ -257,13 +261,13 @@ describe('extendStaticEditor', () => {
       expect(typeof editor.api.dom.getSelectedFragment).toBe('function');
     });
 
-    it('preserves other extendBaseEditor options', () => {
+    it('preserves other createBaseEditor options', () => {
       const editor = createStaticEditor({
         shouldNormalizeEditor: true,
         initialValue: [
           {
             children: [{ text: 'content' }],
-            type: 'p',
+            type: 'paragraph',
           },
         ],
       });
@@ -271,7 +275,7 @@ describe('extendStaticEditor', () => {
       expect(editor.read.children()).toEqual([
         {
           children: [{ text: 'content' }],
-          type: 'p',
+          type: 'paragraph',
         },
       ]);
     });

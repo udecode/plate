@@ -17,7 +17,7 @@ docs:
 
 ## 特性
 
-- 使用一个 `KEYS.script` 属性表示 `'sub' | 'sup'`。
+- 使用一个 `PLUGINS.script` 属性表示 `'sub' | 'sup'`。
 - 从 `sup` 标签和 `vertical-align: super` 反序列化。
 - `'sup'` 值默认渲染为 `<sup>`。
 - 通过 `ScriptRules` 支持可选的 `^x^` 输入规则。
@@ -72,7 +72,7 @@ editor.update.script.toggle('sup');
 
 | API | 用途 |
 |-----|------|
-| `KEYS.script` | `script` 文本属性。 |
+| `PLUGINS.script` | `script` 文本属性。 |
 | `ScriptPlugin` | 下标和上标共用的 React 插件。 |
 | `ScriptRules.markdown({ value: 'sup' })` | 创建上标输入规则。 |
 | `editor.update.script.toggle('sup')` | 应用上标；已启用时则移除。 |

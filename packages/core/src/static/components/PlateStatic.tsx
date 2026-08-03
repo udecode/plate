@@ -277,51 +277,48 @@ function Children({
   );
 }
 
-export type PlateStaticProps = {
+export type PlateStaticProps<E = BaseEditor> = {
   /** Editor instance. */
-  editor: BaseEditor;
+  editor: E;
   style?: React.CSSProperties;
 } & React.HTMLAttributes<HTMLDivElement>;
 
-export function PlateStatic(props: PlateStaticProps) {
-  const { className, editor, ...rest } = props;
+export function PlateStatic<E = BaseEditor>(props: PlateStaticProps<E>) {
+  const { className, editor: editorInput, ...rest } = props;
+  const editor = editorInput as BaseEditor;
 
   const decorate = pipeDecorate(editor);
 
   let afterEditable: React.ReactNode = null;
   let beforeEditable: React.ReactNode = null;
 
-  getPlateRuntime(editor).pluginCache.render.beforeEditable.forEach(
-    (pluginName) => {
-      const plugin = getCompiledPlatePlugin(editor, pluginName)!;
-      const BeforeEditable = plugin.render.beforeEditable;
+  getPlateRuntime(editor).pluginCache.render.beforeEditable.forEach((name) => {
+    const plugin = getCompiledPlatePlugin(editor, name)!;
+    const BeforeEditable = plugin.render.beforeEditable;
 
-      if (BeforeEditable) {
-        beforeEditable = (
-          <>
-            {beforeEditable}
-            <BeforeEditable />
-          </>
-        );
-      }
+    if (BeforeEditable) {
+      beforeEditable = (
+        <>
+          {beforeEditable}
+          <BeforeEditable />
+        </>
+      );
     }
-  );
+  });
 
-  getPlateRuntime(editor).pluginCache.render.afterEditable.forEach(
-    (pluginName) => {
-      const plugin = getCompiledPlatePlugin(editor, pluginName)!;
-      const AfterEditable = plugin.render.afterEditable;
+  getPlateRuntime(editor).pluginCache.render.afterEditable.forEach((name) => {
+    const plugin = getCompiledPlatePlugin(editor, name)!;
+    const AfterEditable = plugin.render.afterEditable;
 
-      if (AfterEditable) {
-        afterEditable = (
-          <>
-            {afterEditable}
-            <AfterEditable />
-          </>
-        );
-      }
+    if (AfterEditable) {
+      afterEditable = (
+        <>
+          {afterEditable}
+          <AfterEditable />
+        </>
+      );
     }
-  );
+  });
 
   const content = (
     <div
@@ -350,16 +347,14 @@ export function PlateStatic(props: PlateStaticProps) {
   );
 
   // Use pre-computed arrays for aboveEditable components
-  getPlateRuntime(editor).pluginCache.render.aboveEditable.forEach(
-    (pluginName) => {
-      const plugin = getCompiledPlatePlugin(editor, pluginName)!;
-      const AboveEditable = plugin.render.aboveEditable;
+  getPlateRuntime(editor).pluginCache.render.aboveEditable.forEach((name) => {
+    const plugin = getCompiledPlatePlugin(editor, name)!;
+    const AboveEditable = plugin.render.aboveEditable;
 
-      if (AboveEditable) {
-        aboveEditable = <AboveEditable>{aboveEditable}</AboveEditable>;
-      }
+    if (AboveEditable) {
+      aboveEditable = <AboveEditable>{aboveEditable}</AboveEditable>;
     }
-  );
+  });
 
   return aboveEditable;
 }

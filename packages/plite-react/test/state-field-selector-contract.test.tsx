@@ -1,6 +1,11 @@
 import { act, renderHook } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { type Descendant, defineStateField, valueCodecs } from '@platejs/plite';
+import {
+  type Descendant,
+  defineExtension,
+  defineStateField,
+  valueCodecs,
+} from '@platejs/plite';
 import { getLastCommit as editorGetLastCommit } from '@platejs/plite/internal';
 
 import {
@@ -26,7 +31,9 @@ const documentTitle = defineStateField({
 describe('plite-react state field selector contract', () => {
   test('useStateFieldValue subscribes to one field and ignores body commits', async () => {
     const editor = createReactEditor({
-      extensions: [documentTitle],
+      extensions: [
+        defineExtension('document-title', { stateFields: [documentTitle] }),
+      ],
       initialValue: {
         children: [paragraph('body')],
         meta: { [documentTitle.key]: documentTitle.serialize('Q2 Plan') },

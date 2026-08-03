@@ -1,6 +1,6 @@
 import type { ChangeEvent } from 'react';
 import {
-  defineEditorExtension,
+  defineExtension,
   editorCommands,
   NodeApi,
   PointApi,
@@ -86,8 +86,7 @@ const CheckListsExample = () => {
 };
 
 const checklist = () =>
-  defineEditorExtension({
-    name: 'checklists',
+  defineExtension('checklists', {
     commands: ({ handle }) => [
       handle(editorCommands.delete, ({ input, state }) => {
         if (input.direction !== 'backward') return false;

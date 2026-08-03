@@ -5,7 +5,7 @@ import {
   type NodeEntry,
   type Value,
 } from '../interfaces';
-import type { Editor } from '../interfaces/editor';
+import type { AnyEditor as Editor } from '../interfaces/editor';
 import { getCorrectionUpdateView, getMutationVersion } from './public-state';
 
 export const matchesEditorCorrection = (

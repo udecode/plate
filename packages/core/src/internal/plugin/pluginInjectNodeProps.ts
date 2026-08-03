@@ -3,7 +3,7 @@ import type { Element, Path, Text } from '@platejs/plite';
 import { isDefined } from '@udecode/utils';
 
 import type { BaseEditor } from '../../lib/editor';
-import type { AnyResolvedBasePlugin } from '../../lib/plugin/BasePlugin';
+import type { AnyBasePlugin } from '../../lib/plugin/BasePlugin';
 
 import type {
   GetInjectNodePropsOptions,
@@ -11,6 +11,7 @@ import type {
 } from '../../lib/plugin';
 import { createPluginContext } from '../../lib/plugin/createPluginContext.internal';
 import { getInjectMatch } from '../../lib/utils/getInjectMatch';
+import { getCompiledPlateModelBinding } from './compilePlateModel';
 
 const getNodeProp = (node: Element | Text, key?: string) =>
   key ? node[key] : undefined;
@@ -22,7 +23,7 @@ const getNodePropClassValue = (value: unknown) =>
 
 /**
  * Return if `element`, `text`, `nodeKey` is defined. Return if `node.type` is
- * not in `targetPluginNames` (when configured). Return if `value =
+ * not in `targetPlugins` (when configured). Return if `value =
  * node[nodeKey]` is not in `validNodeValues` (if defined). If
  * `classNames[value]` is defined,
  * override `className` with it. If `styleKey` is defined, override `style` with
@@ -30,7 +31,7 @@ const getNodePropClassValue = (value: unknown) =>
  */
 export const pluginInjectNodeProps = (
   editor: BaseEditor,
-  plugin: AnyResolvedBasePlugin,
+  plugin: Pick<AnyBasePlugin, 'inject' | 'name' | 'targetPlugins'>,
   nodeProps: GetInjectNodePropsOptions,
   getElementPath: (node: Element | Text) => Path | undefined
 ): GetInjectNodePropsReturnType | undefined => {
@@ -49,15 +50,20 @@ export const pluginInjectNodeProps = (
   const {
     classNames,
     defaultNodeValue,
-    nodeKey = editor.plugin(name).type,
+    nodeKey: configuredNodeKey,
     query,
-    styleKey = nodeKey,
+    styleKey: configuredStyleKey,
     transformClassName,
     transformNodeValue,
     transformProps,
     transformStyle,
     validNodeValues,
   } = injectNodeProps;
+  const nodeKey =
+    configuredNodeKey ??
+    getCompiledPlateModelBinding(editor, name)?.propertyKey ??
+    undefined;
+  const styleKey = configuredStyleKey ?? nodeKey;
 
   const injectMatch = getInjectMatch(editor, plugin);
   const shouldResolvePathForMatch = !!(excludeBelowPlugins || maxLevel);

@@ -71,7 +71,9 @@ describe('useFloatingLinkActions', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 13, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: 'selected text' }], type: 'p' }],
+      initialValue: [
+        { children: [{ text: 'selected text' }], type: 'paragraph' },
+      ],
     });
 
     const wrapper = ({ children }: { children: React.ReactNode }) =>
@@ -110,12 +112,12 @@ describe('useFloatingLinkActions', () => {
             {
               children: [{ text: 'https://x.dev' }],
               target: '_blank',
-              type: 'a',
+              type: 'link',
               url: 'https://x.dev',
             },
             { text: '' },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
@@ -156,18 +158,18 @@ describe('useFloatingLinkActions', () => {
             { text: '' },
             {
               children: [{ text: 'first' }],
-              type: 'a',
+              type: 'link',
               url: 'https://first.dev',
             },
             { text: ' and ' },
             {
               children: [{ text: 'second' }],
-              type: 'a',
+              type: 'link',
               url: 'https://second.dev',
             },
             { text: '' },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
@@ -210,12 +212,12 @@ describe('useFloatingLinkActions', () => {
             { text: '' },
             {
               children: [{ text: 'hello' }],
-              type: 'a',
+              type: 'link',
               url: 'https://x.dev',
             },
             { text: '' },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });

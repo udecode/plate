@@ -1,5 +1,5 @@
 import {
-  defineEditorExtension,
+  defineExtension,
   defineCommand,
   defineUpdateAnnotation,
   type DocumentChange,
@@ -90,6 +90,8 @@ export type HistoryOptions<TEnabled extends boolean | undefined = undefined> = {
   enabled?: TEnabled;
   /** Maximum number of undo and redo batches retained per branch. */
   maxDepth?: number;
+  /** Idle time in milliseconds before an automatic edit starts a new batch. */
+  newBatchDelay?: number;
 };
 
 export type HistoryExtensionTypes<V extends Value = Value> = {
@@ -111,14 +113,17 @@ type HistoryExtensionDefinition<TEnabled extends boolean | undefined> = {
   validate: true;
 };
 
-interface HistoryExtensionTypeLambda {
-  readonly input: Value;
-  readonly output: HistoryExtensionTypes<this['input']>;
-}
-
 /** Value-sensitive history capability provider for extension composition. */
 export type HistoryExtensionTypeProvider =
-  EditorExtensionTypeProvider<HistoryExtensionTypeLambda>;
+  EditorExtensionTypeProvider<HistoryExtensionTypeProvider.Contract>;
+
+// biome-ignore lint/style/noNamespace: declaration merging keeps the HKT contract nameable through package declarations without exporting a second root symbol
+export declare namespace HistoryExtensionTypeProvider {
+  interface Contract {
+    readonly input: Value;
+    readonly output: HistoryExtensionTypes<this['input']>;
+  }
+}
 
 export type HistoryExtension<TEnabled extends boolean | undefined = undefined> =
   EditorExtension<HistoryExtensionDefinition<TEnabled>> &
@@ -128,6 +133,7 @@ type HistoryMode = 'merge' | 'push' | 'skip';
 type HistoryAction = 'redo' | 'undo';
 
 const HISTORY_ACTIVATION = new WeakMap<Editor, object>();
+const LAST_AUTOMATIC_HISTORY_GROUP_TIME = new WeakMap<Editor, number>();
 const PENDING_HISTORY_SCHEMA_ACTIVATION = new WeakMap<Editor, object>();
 
 const getHistoryMaxDepth = (options: Pick<HistoryOptions, 'maxDepth'>) => {
@@ -138,6 +144,18 @@ const getHistoryMaxDepth = (options: Pick<HistoryOptions, 'maxDepth'>) => {
   }
 
   return maxDepth;
+};
+
+const getHistoryNewBatchDelay = (
+  options: Pick<HistoryOptions, 'newBatchDelay'>
+) => {
+  const newBatchDelay = options.newBatchDelay ?? 500;
+
+  if (!Number.isFinite(newBatchDelay) || newBatchDelay < 0) {
+    throw new Error('history newBatchDelay must be a non-negative number.');
+  }
+
+  return newBatchDelay;
 };
 
 const historyAction = defineUpdateAnnotation<HistoryAction>({
@@ -412,9 +430,8 @@ const createHistoryExtension = <
 >(
   options: HistoryOptions<TEnabled> = {}
 ): HistoryExtension<TEnabled> =>
-  defineEditorExtension({
+  defineExtension('history', {
     enabled: options.enabled as TEnabled,
-    name: 'history',
     read({ editor }) {
       return Object.assign(() => getHistory(editor), {
         redos: () => getHistory(editor).redos,
@@ -450,14 +467,18 @@ const createHistoryExtension = <
         },
       } satisfies HistoryTxApi;
     },
-    activate(editor, context) {
+    activate(context) {
+      const { editor } = context;
       const previousActivation = HISTORY_ACTIVATION.get(editor);
       const previousPendingSchemaActivation =
         PENDING_HISTORY_SCHEMA_ACTIVATION.get(editor);
+      const previousAutomaticGroupTime =
+        LAST_AUTOMATIC_HISTORY_GROUP_TIME.get(editor);
       const previousState = captureHistoryState(editor);
       const activation = {};
 
       HISTORY_ACTIVATION.set(editor, activation);
+      LAST_AUTOMATIC_HISTORY_GROUP_TIME.delete(editor);
       context.onCleanup(({ reason }) => {
         if (PENDING_HISTORY_SCHEMA_ACTIVATION.get(editor) === activation) {
           PENDING_HISTORY_SCHEMA_ACTIVATION.delete(editor);
@@ -477,10 +498,17 @@ const createHistoryExtension = <
               previousPendingSchemaActivation
             );
           }
+          if (previousAutomaticGroupTime !== undefined) {
+            LAST_AUTOMATIC_HISTORY_GROUP_TIME.set(
+              editor,
+              previousAutomaticGroupTime
+            );
+          }
           return;
         }
 
         clearHistoryState(editor);
+        LAST_AUTOMATIC_HISTORY_GROUP_TIME.delete(editor);
         HISTORY_ACTIVATION.delete(editor);
       });
       if (configureHistoryState(editor, getHistoryMaxDepth(options))) {
@@ -498,6 +526,7 @@ const createHistoryExtension = <
           synchronizeHistorySchema(editor) ||
           PENDING_HISTORY_SCHEMA_ACTIVATION.has(editor)
         ) {
+          LAST_AUTOMATIC_HISTORY_GROUP_TIME.delete(editor);
           return;
         }
 
@@ -524,9 +553,11 @@ const createHistoryExtension = <
               validateDocument: false,
             })
           );
+          LAST_AUTOMATIC_HISTORY_GROUP_TIME.delete(editor);
         }
 
         if (action) {
+          LAST_AUTOMATIC_HISTORY_GROUP_TIME.delete(editor);
           const source = action === 'undo' ? 'undos' : 'redos';
           const destination = action === 'undo' ? 'redos' : 'undos';
           const batch = peekHistoryBatch(editor, source);
@@ -550,6 +581,7 @@ const createHistoryExtension = <
         }
 
         if (!shouldSaveCommit(commit, effects)) {
+          LAST_AUTOMATIC_HISTORY_GROUP_TIME.delete(editor);
           if (discardRedos) clearHistoryStack(editor, 'redos');
 
           if (!commit.tags.includes('historic') && !changes.empty) {
@@ -567,10 +599,15 @@ const createHistoryExtension = <
 
         const preparedBatch = prepared.batch;
         const lastEntry = peekHistoryEntry(editor, 'undos');
+        const currentTime = globalThis.performance.now();
+        const previousAutomaticGroupTime =
+          LAST_AUTOMATIC_HISTORY_GROUP_TIME.get(editor);
+        const explicitMerge = commit.tags.includes('history-merge');
+        const explicitPush = commit.tags.includes('history-push');
         const merge =
           lastEntry != null &&
-          !commit.tags.includes('history-push') &&
-          (commit.tags.includes('history-merge')
+          !explicitPush &&
+          (explicitMerge
             ? shouldMergeExplicitBatch(
                 preparedBatch,
                 prepared.group,
@@ -578,7 +615,10 @@ const createHistoryExtension = <
                 lastEntry.group,
                 commit.tags.includes('native-text-input')
               )
-            : preparedBatch.effects.length === 0 &&
+            : previousAutomaticGroupTime !== undefined &&
+              currentTime - previousAutomaticGroupTime <=
+                getHistoryNewBatchDelay(options) &&
+              preparedBatch.effects.length === 0 &&
               shouldMergeBatch(
                 preparedBatch,
                 prepared.group,
@@ -616,10 +656,16 @@ const createHistoryExtension = <
             group: prepared.group,
           });
         }
+        if (explicitPush || preparedBatch.effects.length > 0) {
+          LAST_AUTOMATIC_HISTORY_GROUP_TIME.delete(editor);
+        } else {
+          LAST_AUTOMATIC_HISTORY_GROUP_TIME.set(editor, currentTime);
+        }
       },
     },
     validate() {
       getHistoryMaxDepth(options);
+      getHistoryNewBatchDelay(options);
     },
   }) as HistoryExtension<TEnabled>;
 

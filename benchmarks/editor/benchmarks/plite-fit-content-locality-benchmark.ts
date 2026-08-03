@@ -77,15 +77,13 @@ const createFitSchema = (elementTypes: number) => {
     };
   }
 
-  return defineEditorSchema({
+  return defineEditorSchema(`schema:fit-content-locality-${elementTypes}`, {
     elements,
     id: `fit-content-locality-${elementTypes}`,
-    root: {
-      content: schema.content.group('block', {
-        default: { type: 'paragraph' },
-        min: 1,
-      }),
-    },
+    root: schema.content.group('block', {
+      default: { type: 'paragraph' },
+      min: 1,
+    }),
     unknown: 'reject',
     version: 1,
   });

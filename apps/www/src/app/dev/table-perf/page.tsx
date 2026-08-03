@@ -3,10 +3,11 @@
 import * as React from 'react';
 
 import type {
-  TTableCellElement,
-  TTableElement,
-  TTableRowElement,
-} from 'platejs';
+  TableCellElement,
+  TableElement,
+  TableRowElement,
+} from '@platejs/table';
+import type { Value } from 'platejs';
 import { Plate, type PlateEditor, usePlateEditor } from 'platejs/react';
 
 import { BlockSelectionPlugin } from '@platejs/selection/react';
@@ -40,26 +41,35 @@ const EMPTY_METRICS: TablePerfMetrics = {
   renderCount: 0,
   renderDurations: [],
 };
+const EMPTY_SNAPSHOT: TablePerfHarnessSnapshot = {
+  benchmarkResult: null,
+  config: DEFAULT_CONFIG,
+  inputLatencyResult: null,
+  metrics: EMPTY_METRICS,
+  resizeLatencyResult: null,
+  selectionLatencyResult: null,
+  selectionSimulation: DEFAULT_SELECTION,
+};
 
-const createTable = (rows: number, cols: number): TTableElement => ({
+const createTable = (rows: number, cols: number): TableElement => ({
   children: Array.from(
     { length: rows },
-    (_, rowIndex): TTableRowElement => ({
+    (_, rowIndex): TableRowElement => ({
       children: Array.from(
         { length: cols },
-        (_, colIndex): TTableCellElement => ({
+        (_, colIndex): TableCellElement => ({
           children: [
             {
               children: [{ text: `R${rowIndex}C${colIndex}` }],
-              type: 'p',
+              type: 'paragraph',
             },
           ],
           id: `cell-${rowIndex}-${colIndex}`,
-          type: 'td',
+          type: 'tableCell',
         })
       ),
       id: `row-${rowIndex}`,
-      type: 'tr',
+      type: 'tableRow',
     })
   ),
   colSizes: Array.from({ length: cols }, () => 100),
@@ -147,7 +157,8 @@ export default function TablePerfPage() {
     React.useRef<TablePerfResizeLatencyResult | null>(null);
   const selectionLatencyResultRef =
     React.useRef<TablePerfSelectionLatencyResult | null>(null);
-  const [, refreshSummary] = React.useReducer((value) => value + 1, 0);
+  const [summary, setSummary] =
+    React.useState<TablePerfHarnessSnapshot>(EMPTY_SNAPSHOT);
 
   const resetResults = React.useCallback(() => {
     metricsRef.current = { ...EMPTY_METRICS, renderDurations: [] };
@@ -184,6 +195,9 @@ export default function TablePerfPage() {
     }),
     []
   );
+  const refreshSummary = React.useCallback(() => {
+    setSummary(readSnapshot());
+  }, [readSnapshot]);
 
   const configure = React.useCallback(
     async (next: TablePerfHarnessConfig) => {
@@ -207,7 +221,7 @@ export default function TablePerfPage() {
 
       return readSnapshot();
     },
-    [readSnapshot, remount, resetResults]
+    [readSnapshot, refreshSummary, remount, resetResults]
   );
 
   const setCollapsedSelection = React.useCallback((editor: PlateEditor) => {
@@ -358,7 +372,7 @@ export default function TablePerfPage() {
 
       return readSnapshot();
     },
-    [readSnapshot, runInput, runMount, runResize, runSelection]
+    [readSnapshot, refreshSummary, runInput, runMount, runResize, runSelection]
   );
 
   React.useEffect(() => {
@@ -400,7 +414,7 @@ export default function TablePerfPage() {
         {selectionSimulation.cols} selection
       </p>
       <pre className="mb-4 overflow-auto rounded-md bg-muted p-3 text-xs">
-        {JSON.stringify(readSnapshot(), null, 2)}
+        {JSON.stringify(summary, null, 2)}
       </pre>
 
       <div className="rounded-lg border" data-table-perf-editor="true">
@@ -422,15 +436,16 @@ function TablePerfEditor({
   table,
 }: {
   onEditor: (editor: PlateEditor) => void;
-  table: TTableElement;
+  table: TableElement;
 }) {
+  const initialValue: Value = [table];
   const editor = usePlateEditor({
-    initialValue: [table],
+    initialValue,
     plugins: [...BasicBlocksKit, BlockSelectionPlugin, ...DndKit, ...TableKit],
   });
 
   React.useLayoutEffect(() => {
-    onEditor(editor);
+    onEditor(editor as unknown as PlateEditor);
   }, [editor, onEditor]);
 
   return (

@@ -1,6 +1,11 @@
-import { createBaseEditor, createBasePlugin } from '@platejs/core';
-import { property, schema, target } from '@platejs/plite';
-import { KEYS, NODES } from '@platejs/utils';
+import { createBaseEditor, defineBasePlugin } from '@platejs/core';
+import {
+  type Value,
+  createEditor,
+  property,
+  schema,
+  target,
+} from '@platejs/plite';
 
 import {
   BaseAudioPlugin,
@@ -11,26 +16,23 @@ import { BaseImagePlugin } from '../lib/image/BaseImagePlugin';
 import { BaseMediaEmbedPlugin } from '../lib/media-embed/BaseMediaEmbedPlugin';
 import { MediaV54MigrationPlugin } from './MediaV54MigrationPlugin';
 
-const TestBoldPlugin = createBasePlugin({
-  name: 'bold',
+const TestBoldPlugin = defineBasePlugin('bold', {
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
 });
-const TestMediaRootPlugin = createBasePlugin({
-  name: 'testMediaRoot',
-  schema: ({ own, plugins, type }) => ({
+const TestMediaRootPlugin = defineBasePlugin('testMediaRoot', {
+  schema: ({ name, plugins }) => ({
     contentRoots: [
-      own.contentRoot(
-        schema.content.any(
+      {
+        content: schema.content.any(
           [schema.content.group('textBlock'), plugins.blockContent()],
-          { default: { type: KEYS.p }, min: 1 }
+          { default: { type: 'paragraph' }, min: 1 }
         ),
-        {
-          ownership: 'exclusive',
-          target: target.types([type]),
-        }
-      ),
+        ownership: 'exclusive',
+        slot: name,
+        target: target.element(name),
+      },
     ],
     element: { void: 'block' },
   }),
@@ -39,26 +41,28 @@ const TestMediaRootPlugin = createBasePlugin({
 describe('MediaV54MigrationPlugin', () => {
   it('migrates legacy captions for every installed media owner', () => {
     const rows = [
-      [BaseFilePlugin, KEYS.file],
-      [BaseAudioPlugin, KEYS.audio],
-      [BaseVideoPlugin, KEYS.video],
-      [BaseImagePlugin, KEYS.img],
-      [BaseMediaEmbedPlugin, NODES.mediaEmbed],
+      BaseFilePlugin,
+      BaseAudioPlugin,
+      BaseVideoPlugin,
+      BaseImagePlugin,
+      BaseMediaEmbedPlugin,
     ] as const;
 
-    for (const [plugin, type] of rows) {
+    for (const plugin of rows) {
       const editor = createBaseEditor({
+        editor: createEditor<Value>(),
         nodeId: false,
         plugins: [MediaV54MigrationPlugin, plugin, TestBoldPlugin],
-        initialValue: [
+        initialValue: ({ editor }) => [
           {
             caption: [{ bold: true, text: 'Legacy caption' }],
             children: [{ text: '' }],
-            type,
+            type: editor.plugin(plugin).schema.element!.type,
             url: 'https://platejs.org/media',
           },
         ],
       });
+      const type = editor.plugin(plugin).schema.element!.type;
 
       expect(editor.read.children()[0]).toEqual({
         children: [{ bold: true, text: 'Legacy caption' }],
@@ -70,6 +74,7 @@ describe('MediaV54MigrationPlugin', () => {
 
   it('unwraps the published single-block caption shape', () => {
     const editor = createBaseEditor({
+      editor: createEditor<Value>(),
       nodeId: false,
       plugins: [MediaV54MigrationPlugin, BaseImagePlugin, TestBoldPlugin],
       initialValue: [
@@ -77,11 +82,11 @@ describe('MediaV54MigrationPlugin', () => {
           caption: [
             {
               children: [{ bold: true, text: 'Legacy block caption' }],
-              type: KEYS.p,
+              type: 'paragraph',
             },
           ],
           children: [{ text: '' }],
-          type: KEYS.img,
+          type: 'image',
           url: 'https://platejs.org/media',
         },
       ],
@@ -89,20 +94,21 @@ describe('MediaV54MigrationPlugin', () => {
 
     expect(editor.read.children()[0]).toEqual({
       children: [{ bold: true, text: 'Legacy block caption' }],
-      type: KEYS.img,
+      type: 'image',
       url: 'https://platejs.org/media',
     });
   });
 
   it('keeps direct content when the legacy source is empty', () => {
     const editor = createBaseEditor({
+      editor: createEditor<Value>(),
       nodeId: false,
       plugins: [MediaV54MigrationPlugin, BaseImagePlugin],
       initialValue: [
         {
           caption: [{ text: '' }],
           children: [{ text: 'Direct caption' }],
-          type: KEYS.img,
+          type: 'image',
           url: 'https://platejs.org/media',
         },
       ],
@@ -110,13 +116,14 @@ describe('MediaV54MigrationPlugin', () => {
 
     expect(editor.read.children()[0]).toEqual({
       children: [{ text: 'Direct caption' }],
-      type: KEYS.img,
+      type: 'image',
       url: 'https://platejs.org/media',
     });
   });
 
   it('migrates primary and named roots during deferred document loads', () => {
     const editor = createBaseEditor({
+      editor: createEditor<Value>(),
       nodeId: false,
       plugins: [
         MediaV54MigrationPlugin,
@@ -132,7 +139,7 @@ describe('MediaV54MigrationPlugin', () => {
         {
           caption: [{ bold: true, text: 'Legacy main caption' }],
           children: [{ text: '' }],
-          type: KEYS.img,
+          type: 'image',
           url: 'https://platejs.org/main',
         },
         {
@@ -146,7 +153,7 @@ describe('MediaV54MigrationPlugin', () => {
           {
             caption: [{ text: 'Legacy root caption' }],
             children: [{ text: '' }],
-            type: KEYS.img,
+            type: 'image',
             url: 'https://platejs.org/root',
           },
         ],
@@ -155,14 +162,14 @@ describe('MediaV54MigrationPlugin', () => {
 
     expect(editor.read.children()[0]).toEqual({
       children: [{ bold: true, text: 'Legacy main caption' }],
-      type: KEYS.img,
+      type: 'image',
       url: 'https://platejs.org/main',
     });
     expect(editor.read.value().roots).toEqual({
       notes: [
         {
           children: [{ text: 'Legacy root caption' }],
-          type: KEYS.img,
+          type: 'image',
           url: 'https://platejs.org/root',
         },
       ],
@@ -171,12 +178,12 @@ describe('MediaV54MigrationPlugin', () => {
 
   it('preserves canonical and foreign caption content', () => {
     const editor = createBaseEditor({
+      editor: createEditor<Value>(),
       nodeId: false,
       plugins: [
         MediaV54MigrationPlugin,
         BaseImagePlugin,
-        createBasePlugin({
-          name: 'foreign',
+        defineBasePlugin('foreign', {
           schema: {
             element: {
               content: schema.content.text({ default: 'text', min: 1 }),
@@ -193,7 +200,7 @@ describe('MediaV54MigrationPlugin', () => {
         },
         {
           children: [{ text: 'Media caption' }],
-          type: KEYS.img,
+          type: 'image',
           url: 'https://platejs.org/media',
         },
       ],
@@ -207,7 +214,7 @@ describe('MediaV54MigrationPlugin', () => {
       },
       {
         children: [{ text: 'Media caption' }],
-        type: KEYS.img,
+        type: 'image',
         url: 'https://platejs.org/media',
       },
     ]);
@@ -216,13 +223,14 @@ describe('MediaV54MigrationPlugin', () => {
   it('rejects ambiguous caption sources with their document path', () => {
     expect(() =>
       createBaseEditor({
+        editor: createEditor<Value>(),
         nodeId: false,
         plugins: [MediaV54MigrationPlugin, BaseImagePlugin],
         initialValue: [
           {
             caption: [{ text: 'Legacy caption' }],
             children: [{ text: 'Direct caption' }],
-            type: KEYS.img,
+            type: 'image',
             url: 'https://platejs.org/media',
           },
         ],

@@ -1,5 +1,5 @@
 import { BaseSuggestionPlugin } from '@platejs/suggestion';
-import { KEYS, TextApi } from 'platejs';
+import { PLUGINS, TextApi } from 'platejs';
 
 import {
   SuggestionLeafStatic,
@@ -7,10 +7,10 @@ import {
 } from '@/registry/ui/suggestion-node-static';
 
 const INLINE_SUGGESTION_RENDER_TARGETS = [
-  KEYS.date,
-  KEYS.inlineEquation,
-  KEYS.link,
-  KEYS.mention,
+  PLUGINS.date,
+  PLUGINS.inlineEquation,
+  PLUGINS.link,
+  PLUGINS.mention,
 ];
 
 export const BaseSuggestionKit = [
@@ -49,6 +49,6 @@ export const BaseSuggestionKit = [
     render: {
       belowRootNodes: VoidRemoveSuggestionOverlayStatic,
     },
-    targetPluginNames: INLINE_SUGGESTION_RENDER_TARGETS,
+    targetPlugins: INLINE_SUGGESTION_RENDER_TARGETS,
   }),
 ];

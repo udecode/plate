@@ -25,7 +25,7 @@ const heading = (text: string) => ({
 });
 
 const articleSchema = (version: number, paragraphReadOnly: boolean) =>
-  defineEditorSchema({
+  defineEditorSchema('schema:react-schema-runtime-invalidation', {
     elements: {
       heading: {
         content: schema.content.text({ default: 'text', min: 1 }),
@@ -70,7 +70,7 @@ test('schema invalidation targets runtime IDs of changed element types', () => {
 });
 
 const projectedSchema = (version: number, paragraphReadOnly: boolean) =>
-  defineEditorSchema({
+  defineEditorSchema('schema:react-projected-schema-runtime-invalidation', {
     elements: {
       'content-card': {
         content: schema.content.open(),
@@ -129,7 +129,7 @@ const propertySchema = (
   elementSplit: 'drop' | 'preserve',
   textInclusive: boolean
 ) =>
-  defineEditorSchema({
+  defineEditorSchema('schema:react-schema-property-invalidation', {
     elements: {
       heading: { content: schema.content.text() },
       paragraph: { content: schema.content.text() },
@@ -206,7 +206,7 @@ test('schema invalidation targets text-property parent elements', () => {
 });
 
 const constructionPropertySchema = (version: number, defaultAlign: string) =>
-  defineEditorSchema({
+  defineEditorSchema('schema:react-schema-construction-property-invalidation', {
     elements: {
       paragraph: { content: schema.content.text() },
     },
@@ -227,7 +227,7 @@ test('property defaults invalidate affected construction types', () => {
   const slot = defineExtensionSlot('react-schema-construction-property');
   const editor = createEditor({
     extensions: [slot.of(constructionPropertySchema(1, 'left'))],
-    initialValue: [paragraph('body')],
+    initialValue: [{ ...paragraph('body'), align: 'left' }],
   });
 
   editor.update.extensions.reconfigure(
@@ -244,7 +244,7 @@ test('property defaults invalidate affected construction types', () => {
 });
 
 const rootedSchema = (version: number, mainMax: number, notesMax: number) =>
-  defineEditorSchema({
+  defineEditorSchema('schema:react-schema-root-invalidation', {
     elements: {
       heading: { content: schema.content.text() },
       paragraph: { content: schema.content.text() },

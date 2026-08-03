@@ -138,7 +138,7 @@ describe('InlineCombobox', () => {
 
     render(
       <InlineCombobox
-        element={{ children: [{ text: '' }], type: 'mention_input' }}
+        element={{ children: [{ text: '' }], type: 'mentionInput' }}
         trigger="@"
       >
         <div>child</div>

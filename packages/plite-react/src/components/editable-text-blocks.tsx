@@ -58,11 +58,9 @@ import {
 } from '../editable/root-selector-sources';
 import {
   type Editor,
-  getEditorMaxLength,
   isEditor as editorIsEditor,
   isInline as editorIsInline,
   point as editorPoint,
-  setEditorMaxLength,
   toInternalRoot,
 } from '../editable/runtime-editor-api';
 import { readRuntimeNode } from '../editable/runtime-live-state';
@@ -183,7 +181,6 @@ export type EditableContentRootSlotOptions = {
   disableDefaultStyles?: boolean;
   domStrategy?: DOMStrategyOptions | null;
   id?: string;
-  maxLength?: number;
   placeholder?: ReactNode;
   readOnly?: boolean;
   spellCheck?: TextareaHTMLAttributes<HTMLDivElement>['spellCheck'];
@@ -423,7 +420,6 @@ function EditableContentRootView({
     disableDefaultStyles,
     domStrategy,
     id,
-    maxLength,
     placeholder,
     spellCheck,
     style,
@@ -526,7 +522,6 @@ function EditableContentRootView({
           disableDefaultStyles={disableDefaultStyles}
           domStrategy={domStrategy}
           id={id}
-          maxLength={maxLength}
           placeholder={placeholder}
           readOnly={readOnly}
           renderElement={renderElement}
@@ -1072,7 +1067,6 @@ const EditableInner = <T, TElement extends PliteElementNode>({
   enableVirtualizedRendering = false,
   id,
   ignoreBlankEditableRootClicks = false,
-  maxLength,
   domStrategy,
   onBeforeInput,
   onDOMBeforeInput,
@@ -1101,7 +1095,6 @@ const EditableInner = <T, TElement extends PliteElementNode>({
       ? (domStrategyOptions.textSync ?? null)
       : null;
   const editor = useEditor();
-  const { runtime } = useRequiredPliteRuntimeContext();
   const editableRoot = toInternalRoot(
     editor.read((state) => state.view.root())
   );
@@ -1124,25 +1117,13 @@ const EditableInner = <T, TElement extends PliteElementNode>({
     [decorateRuntimeScope]
   );
 
-  useIsomorphicLayoutEffect(() => {
-    if (maxLength === undefined) return;
-
-    const runtimeEditor = runtime.editor;
-    const previousMaxLength = getEditorMaxLength(runtimeEditor);
-
-    setEditorMaxLength(runtimeEditor, maxLength);
-
-    return () => {
-      setEditorMaxLength(runtimeEditor, previousMaxLength);
-    };
-  }, [maxLength, runtime.editor]);
   const hasDecorate = Boolean(decorate);
   const decorateSource = React.useMemo(() => {
     if (!hasDecorate) {
       return null;
     }
 
-    return createDecorationSource<T>(editor, {
+    return createDecorationSource(editor, {
       dirtiness: decorateDirtiness,
       id: 'editable-decorate',
       read: (context) =>

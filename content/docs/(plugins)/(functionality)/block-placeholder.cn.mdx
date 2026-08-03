@@ -72,16 +72,15 @@ const editor = createPlateEditor({
 为不同块类型配置占位内容：
 
 ```tsx
-import { KEYS } from 'platejs';
 import { BlockPlaceholderPlugin } from 'platejs/react';
 
 BlockPlaceholderPlugin.configure({
   initialState: {
     placeholders: {
-      [KEYS.p]: '输入内容...',
-      [KEYS.h1]: '输入标题...',
-      [KEYS.blockquote]: '输入引用...',
-      [KEYS.codeBlock]: '输入代码...',
+      ['paragraph']: '输入内容...',
+      ['h1']: '输入标题...',
+      ['blockquote']: '输入引用...',
+      ['codeBlock']: '输入代码...',
     },
   },
 });
@@ -92,14 +91,13 @@ BlockPlaceholderPlugin.configure({
 自定义外观和可见性规则：
 
 ```tsx
-import { KEYS } from 'platejs';
 import { BlockPlaceholderPlugin } from 'platejs/react';
 
 BlockPlaceholderPlugin.configure({
   initialState: {
     className: 'before:absolute before:cursor-text before:opacity-30 before:content-[attr(placeholder)]',
     placeholders: {
-      [KEYS.p]: '输入内容...',
+      ['paragraph']: '输入内容...',
     },
     query: ({ path }) => {
       // 仅在最外层块显示占位符
@@ -137,7 +135,7 @@ BlockPlaceholderPlugin.configure({
 <APIOptions>
   <APIItem name="placeholders" type="Record<string, string>">
     插件 name 与占位文本字符串的映射
-    - **默认值:** `{ [KEYS.p]: '输入内容...' }`
+    - **默认值:** `{ ['paragraph']: '输入内容...' }`
   </APIItem>
   <APIItem name="query" type="(context: PlatePluginContext & { node: Element; path: Path }) => boolean">
     决定块是否应显示占位符的函数

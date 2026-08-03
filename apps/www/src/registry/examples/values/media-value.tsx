@@ -10,7 +10,7 @@ export const imageValue = {
       <hh2>Image</hh2>
       <hp>Add images by either uploading them or providing the image URL:</hp>
       <himg
-        align="center"
+        textAlign="center"
         url="https://images.unsplash.com/photo-1712688930249-98e1963af7bd?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
         width="55%"
       >
@@ -41,7 +41,7 @@ export const mediaPlaceholderValue = {
         Real-time upload status and progress tracking
       </hp>
       <haudio
-        align="center"
+        textAlign="center"
         url="https://samplelib.com/lib/preview/mp3/sample-3s.mp3"
         width="80%"
       >
@@ -51,7 +51,7 @@ export const mediaPlaceholderValue = {
         Configurable file size limits and batch upload settings
       </hp>
       <hvideo
-        align="center"
+        textAlign="center"
         url="https://videos.pexels.com/video-files/6769791/6769791-uhd_2560_1440_24fps.mp4"
         width="80%"
         isUpload
@@ -78,14 +78,14 @@ export const mediaValue = {
       <hh2>Embed</hh2>
       <hp>Embed various types of content, such as videos and tweets:</hp>
       <hmediaembed
-        align="center"
+        textAlign="center"
         url="https://www.youtube.com/watch?v=MyiBAziEWUA"
       >
         <htext />
       </hmediaembed>
       {/* BUG */}
       {/* <hmediaembed
-      align="center"
+      textAlign="center"
       url="https://twitter.com/zbeyens/status/1677214892212776960"
     >
       <htext />

@@ -8,7 +8,8 @@ import type { PliteRenderNodeProps } from '../types';
 
 import { pipeInjectNodeProps } from '../../internal/plugin/pipeInjectNodeProps';
 import {
-  type AnyResolvedBasePlugin,
+  type AnyPluginBase,
+  type AnyBasePluginPortal,
   type BaseEditor,
   type GetInjectNodePropsOptions,
   getPluginNodeProps,
@@ -36,9 +37,9 @@ export const getRenderNodeStaticProps = <TProps extends StaticNodePropsInput>({
   props: TProps;
   /** Pre-computed path to avoid expensive node path lookup */
   path?: Path;
-  plugin?: AnyResolvedBasePlugin;
+  plugin?: AnyBasePluginPortal | AnyPluginBase;
 }): TProps & { attributes: AnyObject } & (
-    | PliteRenderNodeProps
+    | PliteRenderNodeProps<any>
     | { api: BaseEditor['api']; editor: BaseEditor }
   ) => {
   const contextProps = {
@@ -64,7 +65,7 @@ export const getRenderNodeStaticProps = <TProps extends StaticNodePropsInput>({
       ...pluginProps.attributes,
       className:
         clsx(
-          getPluginNodeClass(plugin?.type),
+          getPluginNodeClass(plugin?.name),
           pluginProps.attributes.className,
           className
         ) || undefined,

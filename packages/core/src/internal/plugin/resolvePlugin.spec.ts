@@ -1,17 +1,16 @@
-import { schema } from '@platejs/plite';
-
 import { createBaseEditor } from '../../lib/editor';
-import { createBasePlugin } from '../../lib/plugin';
+import { defineBasePlugin } from '../../lib/plugin';
 import { defineInputRule } from '../../lib/plugins/input-rules';
+import { BaseParagraphPlugin } from '../../lib/plugins/paragraph';
 import { DebugPlugin } from '../../lib/plugins/debug/DebugPlugin';
 import { validatePlugin } from './resolvePlugin';
 import { getPlateRuntime } from './compilePlateModel';
+import { getPluginDescriptorMetadata } from '../utils/mergePlugins';
 
 describe('resolvePlugin', () => {
   it('exposes consumer configuration to extensions and keeps it final', () => {
     const seen: string[] = [];
-    const plugin = createBasePlugin({
-      name: 'orderedConfiguration',
+    const plugin = defineBasePlugin('orderedConfiguration', {
       initialState: { label: 'base', mode: 'base' },
     })
       .extend(({ plugin }) => {
@@ -28,11 +27,13 @@ describe('resolvePlugin', () => {
     const editor = createBaseEditor({ plugins: [plugin] });
 
     expect(seen).toEqual(['consumer']);
-    expect(editor.plugin(plugin).plugin.initialState).toEqual({
+    expect(editor.plugin(plugin).initialState).toEqual({
       label: 'consumer',
       mode: 'consumer',
     });
-    expect(plugin.__configurationLayers).toHaveLength(1);
+    expect(
+      getPluginDescriptorMetadata(plugin).configurationLayers
+    ).toHaveLength(1);
   });
 
   it('does not mutate configured inputRules reused across editors', () => {
@@ -44,9 +45,7 @@ describe('resolvePlugin', () => {
     const config = {
       inputRules: [configuredRule],
     };
-    const plugin = createBasePlugin({
-      name: 'inputRulesPlugin',
-    }).configure(config);
+    const plugin = defineBasePlugin('inputRulesPlugin', {}).configure(config);
     const firstEditor = createBaseEditor({
       plugins: [plugin],
     });
@@ -69,8 +68,7 @@ describe('resolvePlugin', () => {
       target: 'insertText',
       trigger: 'extension',
     });
-    const plugin = createBasePlugin({
-      name: 'configuredInputRulesFinal',
+    const plugin = defineBasePlugin('configuredInputRulesFinal', {
       inputRules: [
         defineInputRule({
           apply: () => true,
@@ -98,8 +96,7 @@ describe('resolvePlugin', () => {
       target: 'insertText',
       trigger: 'configured',
     });
-    const plugin = createBasePlugin({
-      name: 'configuredInputRulesFactory',
+    const plugin = defineBasePlugin('configuredInputRulesFactory', {
       inputRules: [
         defineInputRule({
           apply: () => true,
@@ -123,7 +120,7 @@ describe('resolvePlugin', () => {
     expect(rules[0].trigger).toBe('configured');
   });
 
-  it('reports plugins that do not come from createBasePlugin', () => {
+  it('reports plugins that do not come from defineBasePlugin', () => {
     const errorLogger = mock();
     const editor = createBaseEditor({
       plugins: [
@@ -135,27 +132,17 @@ describe('resolvePlugin', () => {
         }),
       ],
     });
-    const plugin = createBasePlugin({ name: 'broken' });
-
-    delete (plugin as any).__stages;
-
-    validatePlugin(editor, plugin as any);
+    validatePlugin(editor, { name: 'broken' });
 
     expect(errorLogger).toHaveBeenCalledWith(
-      "Invalid plugin 'broken', use createBasePlugin.",
+      "Invalid plugin 'broken', use defineBasePlugin.",
       'USE_CREATE_PLUGIN',
       undefined
     );
   });
 
   it('does not mutate the configured plugin between editor instances', () => {
-    const configured = createBasePlugin({
-      name: 'p',
-      type: 'p',
-      schema: {
-        element: { content: schema.content.open({ default: 'text', min: 1 }) },
-      },
-    }).configure({
+    const configured = BaseParagraphPlugin.configure({
       inputRules: [
         {
           apply: () => true,
@@ -168,11 +155,15 @@ describe('resolvePlugin', () => {
     const e1 = createBaseEditor({
       plugins: [configured],
     });
-    expect(getPlateRuntime(e1).inputRules.plugins.p.rules).toHaveLength(1);
+    expect(getPlateRuntime(e1).inputRules.plugins.paragraph.rules).toHaveLength(
+      1
+    );
 
     const e2 = createBaseEditor({
       plugins: [configured],
     });
-    expect(getPlateRuntime(e2).inputRules.plugins.p.rules).toHaveLength(1);
+    expect(getPlateRuntime(e2).inputRules.plugins.paragraph.rules).toHaveLength(
+      1
+    );
   });
 });

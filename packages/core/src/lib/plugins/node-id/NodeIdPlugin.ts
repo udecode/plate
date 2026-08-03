@@ -2,11 +2,13 @@ import {
   type Descendant,
   DocumentChange,
   type EditorDocumentValue,
+  type Element,
   type EditorTransactionTopLevelRange,
   type NodeEntry,
   type NodeMatch,
   type NodeProps,
   type Path,
+  type PropertyValueOf,
   type Value,
   ElementApi,
   NodeApi,
@@ -25,7 +27,28 @@ import {
 } from '@platejs/plite/internal';
 
 import type { DefinitionOf } from '../../plugin/PluginDefinition';
-import { createBasePlugin } from '../../plugin/createBasePlugin';
+import { defineBasePlugin } from '../../plugin/defineBasePlugin';
+
+const nodeIdProperty = property.json({
+  validate: (value): value is number | string =>
+    (typeof value === 'number' && Number.isFinite(value)) ||
+    typeof value === 'string',
+  validationVersion: 1,
+});
+
+const canonicalNodeIdSchema = {
+  properties: [
+    schema.elementProperty('id', nodeIdProperty, {
+      role: 'metadata',
+      target: target.group('element'),
+    }),
+  ],
+} as const;
+
+/** Element narrowed to the canonical NodeId property. */
+export type IdElement = Element & {
+  id: PropertyValueOf<typeof nodeIdProperty>;
+};
 
 export type NodeIdPluginState = {
   /**
@@ -687,17 +710,22 @@ const nodeIdInitialState: NodeIdPluginState = {
   idCreator: () => nanoid(10),
 };
 
-export const NodeIdPlugin = createBasePlugin({
+export const NodeIdPlugin = defineBasePlugin('nodeId', {
   initialState: nodeIdInitialState,
-  name: 'nodeId',
-  schema: ({ initialState }) => ({
-    properties: [
-      schema.elementProperty(initialState.idKey ?? 'id', property.json(), {
-        role: 'metadata',
-        target: target.group('element'),
-      }),
-    ],
-  }),
+  schema: ({ initialState }): typeof canonicalNodeIdSchema => {
+    const idKey = initialState.idKey ?? 'id';
+
+    if (idKey === 'id') return canonicalNodeIdSchema;
+
+    return {
+      properties: [
+        schema.elementProperty(idKey, nodeIdProperty, {
+          role: 'metadata',
+          target: target.group('element'),
+        }),
+      ],
+    } as unknown as typeof canonicalNodeIdSchema;
+  },
   update: ({ store, tx }) => ({
     normalize() {
       const state = store.get();

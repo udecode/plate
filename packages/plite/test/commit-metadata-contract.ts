@@ -12,7 +12,7 @@ import {
 import {
   createEditor,
   DocumentChange,
-  defineEditorExtension,
+  defineExtension,
   defineEffect,
   defineStateField,
   defineUpdateAnnotation,
@@ -156,7 +156,11 @@ describe('commit metadata contract', () => {
       initial: () => null,
     });
     const editor = createEditor({
-      extensions: [localProvenance] as const,
+      extensions: [
+        defineExtension('local-provenance', {
+          stateFields: [localProvenance],
+        }),
+      ] as const,
       initialValue: [paragraph('one')],
     });
 
@@ -258,9 +262,8 @@ describe('commit metadata contract', () => {
     const effect = defineEffect<string>({ key: 'metadata.effect-only' });
     const editor = createEditor({
       extensions: [
-        defineEditorExtension({
+        defineExtension('metadata-effect-only', {
           effectTypes: [effect],
-          name: 'metadata-effect-only',
         }),
       ] as const,
     });

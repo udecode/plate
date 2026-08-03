@@ -3,7 +3,10 @@ import {
   isVoid as editorIsVoid,
   path as editorPath,
 } from '../interfaces/editor';
-import type { Editor, EditorLevelsOptions } from '../interfaces/editor';
+import type {
+  AnyEditor as Editor,
+  EditorLevelsOptions,
+} from '../interfaces/editor';
 import { type Node, NodeApi, type NodeEntry } from '../interfaces/node';
 import { normalizeNodeMatch } from '../utils/node-match';
 

@@ -238,7 +238,7 @@ function buildParagraphValue(blocks: number): Value {
 
   const value = Array.from({ length: blocks }, () => ({
     children: [{ text: 'Huge document paragraph.' }],
-    type: 'p',
+    type: 'paragraph',
   })) as Value;
 
   paragraphDocumentCache.set(blocks, value);
@@ -310,7 +310,7 @@ function buildMarkedValue({
 
   const value = Array.from({ length: blocks }, () => ({
     children: [{ [markKey]: markValue ?? true, text }],
-    type: 'p',
+    type: 'paragraph',
   })) as Value;
 
   markDocumentCache.set(resolvedCacheKey, value);
@@ -364,7 +364,7 @@ function buildHorizontalRuleValue(blocks: number): Value {
 
   const value = Array.from({ length: blocks }, () => ({
     children: [{ text: HR_TEXT }],
-    type: 'hr',
+    type: 'horizontalRule',
   })) as Value;
 
   markDocumentCache.set(resolvedCacheKey, value);
@@ -420,7 +420,7 @@ function buildDenseTextValue(blocks: number): Value {
     children: DENSE_TEXT_SEGMENTS.map((segment, segmentIndex) => ({
       text: `${segment} ${blockIndex}-${segmentIndex} `,
     })),
-    type: 'p',
+    type: 'paragraph',
   })) as Value;
 
   denseTextDocumentCache.set(blocks, value);
@@ -442,7 +442,7 @@ function buildDenseInlinePropsValue(blocks: number): Value {
       text: `${segment} ${blockIndex}-${segmentIndex} `,
       tokenCount: segment.length,
     })),
-    type: 'p',
+    type: 'paragraph',
   })) as Value;
 
   denseInlinePropsDocumentCache.set(blocks, value);
@@ -462,7 +462,7 @@ function buildFallbackParagraphValue(blocks: number): Value {
 
     return {
       ...nextNode,
-      ...(nextNode.type === 'p' ? { type: 'quote' } : {}),
+      ...(nextNode.type === 'paragraph' ? { type: 'quote' } : {}),
     } as Descendant;
   }) as Value;
 

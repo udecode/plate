@@ -1,18 +1,17 @@
 import { schema } from '@platejs/plite';
 import {
   createPlateEditor,
-  createPlatePlugin,
+  definePlatePlugin,
   type PlateElementProps,
 } from '@platejs/core/react';
 
-const FigurePlugin = createPlatePlugin({
-  name: 'typedFigure',
+const FigurePlugin = definePlatePlugin('typedFigure', {
   schema: {
     element: {
       contentRoots: {
         caption: {
-          content: schema.content.type('p', {
-            default: { type: 'p' },
+          content: schema.content.type('paragraph', {
+            default: { type: 'paragraph' },
             min: 1,
           }),
           ownership: 'exclusive',
@@ -21,7 +20,6 @@ const FigurePlugin = createPlatePlugin({
       void: 'block',
     },
   },
-  type: 'figure',
 });
 
 declare const figureProps: PlateElementProps<typeof FigurePlugin>;
@@ -39,16 +37,13 @@ const editor = createPlateEditor({
       {
         childRoots: { caption: 'caption:1' },
         children: [{ text: '' }],
-        type: 'figure',
+        type: 'typedFigure',
       },
     ],
     meta: { revision: 1 },
     roots: {
-      'caption:1': [{ children: [{ text: 'Caption' }], type: 'p' }],
+      'caption:1': [{ children: [{ text: 'Caption' }], type: 'paragraph' }],
     },
   },
 });
-const captionRoot: string =
-  editor.read.schema.create(FigurePlugin).childRoots.caption;
-
-void captionRoot;
+editor.read.schema.create(FigurePlugin);

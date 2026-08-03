@@ -56,7 +56,7 @@ describe('plite interfaces contract', () => {
 
   it('treats elements and text as descendants, not editor roots', () => {
     const editor = createEditor();
-    const element = { children: [{ text: '' }], type: 'p' };
+    const element = { children: [{ text: '' }], type: 'paragraph' };
     const text = { text: '' };
 
     assert.equal(NodeApi.isDescendant(editor), false);
@@ -86,7 +86,7 @@ describe('plite interfaces contract', () => {
   });
 
   it('checks node props while letting callers define metadata', () => {
-    const paragraph = { children: [{ text: '' }], type: 'p' };
+    const paragraph = { children: [{ text: '' }], type: 'paragraph' };
 
     assert.equal(NodeApi.hasProps({ text: '' }), false);
     assert.equal(NodeApi.hasProps({ bold: true, text: '' }), true);

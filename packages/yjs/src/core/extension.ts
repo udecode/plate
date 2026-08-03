@@ -1,9 +1,4 @@
-import {
-  defineEditorExtension,
-  type Descendant,
-  type Editor,
-  type EditorExtension,
-} from '@platejs/plite';
+import { defineExtension, type Descendant, type Editor } from '@platejs/plite';
 import {
   getCompiledEditorSchemaFromApi,
   getEditorRuntimeOwner,
@@ -18,17 +13,6 @@ import type {
 } from './types';
 
 const activeControllers = new WeakMap<Editor, YjsController>();
-
-type YjsExtensionDefinition = {
-  activate: true;
-  name: 'yjs';
-  on: true;
-  read: YjsState;
-  update: YjsTx;
-  validate: true;
-};
-
-export type YjsExtension = EditorExtension<YjsExtensionDefinition>;
 
 const createDeferredYjsState = (getController: () => YjsController) => {
   const state: YjsState = {
@@ -76,9 +60,7 @@ const createDeferredYjsTx = (getController: () => YjsController): YjsTx =>
       getController().tx().sendSelection(range, data),
   });
 
-export const createYjsExtension = (
-  options: YjsExtensionOptions = {}
-): YjsExtension => {
+export const yjs = (options: YjsExtensionOptions = {}) => {
   const activationErrors = new WeakMap<Editor, unknown>();
   const controllers = new WeakMap<Editor, YjsController>();
   const getController = (editor: Editor) => {
@@ -94,8 +76,9 @@ export const createYjsExtension = (
     throw new Error('Yjs extension is not active on this editor.');
   };
 
-  return defineEditorExtension({
-    activate(editor, context) {
+  return defineExtension('yjs', {
+    activate(context) {
+      const { editor } = context;
       const owner = getEditorRuntimeOwner(editor);
       const previousActiveController = activeControllers.get(owner);
       const previousLocalController = controllers.get(owner);
@@ -215,7 +198,6 @@ export const createYjsExtension = (
       });
       context.afterPublish(() => controller.seed());
     },
-    name: 'yjs',
     on: {
       commit({ commit, editor, snapshot }): void {
         getController(editor).handleCommit(commit, snapshot);
@@ -234,5 +216,7 @@ export const createYjsExtension = (
     validate({ editor, schema }) {
       controllers.get(editor)?.assertSchemaIdentity(schema.identity());
     },
-  }) as YjsExtension;
+  });
 };
+
+export type YjsExtension = ReturnType<typeof yjs>;

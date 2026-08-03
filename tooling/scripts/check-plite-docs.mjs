@@ -111,14 +111,14 @@ const deletedCodeBlockPatterns = [
 const removedRootMutationFacadePattern =
   /\b(?:editor\.(?:tf|transforms)|overrideEditor)\b|\btf\s*:\s*\{/;
 const removedPlateSchemaFlagsPattern =
-  /\bnode\.(?:component|element|mark|isElement|isLeaf|isInline|isVoid|isMarkableVoid|isSelectable|isContainer|isStrictSiblings|isMetadataProp)\b|\bisMarkableVoid\b|\b(?:isElement\b[^\n]{0,160}\bisLeaf|isLeaf\b[^\n]{0,160}\bisElement)\b/;
+  /\bnode\.(?:component|element|mark|isElement|isLeaf|isInline|isVoid|isMarkableVoid|isSelectable|isContainer|isStrictSiblings|isMetadataProp)\b|\b(?:isElement\b[^\n]{0,160}\bisLeaf|isLeaf\b[^\n]{0,160}\bisElement)\b/;
 const removedSchemaTargetOptionsPattern =
-  /\boptions\s*:\s*\{[^}\n]*\btargetPluginNames\b/;
+  /\boptions\s*:\s*\{[^}\n]*\btargetPlugins\b/;
 const removedCaptionTargetOptionsPattern =
   /\boptions\s*:\s*\{\s*query\s*:\s*\{\s*allow\s*:/;
 const removedExtensionApiPortalPattern = /\beditor\.getApi\s*\(/;
 const removedExtensionValidationPattern = /\bvalidateConfiguration\b/;
-const removedExplicitExtensionGenericPattern = /\bdefineEditorExtension\s*</;
+const removedExplicitExtensionGenericPattern = /\bdefineExtension\s*</;
 const removedLooseExtensionPortalSignaturePattern =
   /\bextension\s*<[^>]*\bEditorExtension\s*<\s*EditorExtensionDefinition\s*>/;
 const removedPlatePluginShapePattern =
@@ -157,8 +157,7 @@ const deletedArchitecturePatterns = [
   },
   {
     pattern: removedExplicitExtensionGenericPattern,
-    reason:
-      'defineEditorExtension infers one definition from its author object',
+    reason: 'defineExtension infers one definition from its author object',
   },
   {
     pattern: removedLooseExtensionPortalSignaturePattern,
@@ -195,12 +194,12 @@ const deletedArchitecturePatterns = [
   {
     pattern: removedSchemaTargetOptionsPattern,
     reason:
-      'schema target plugin descriptors belong in top-level targetPluginNames',
+      'schema target plugin descriptors belong in top-level targetPlugins',
   },
   {
     pattern: removedCaptionTargetOptionsPattern,
     reason:
-      'caption target plugin descriptors belong in top-level targetPluginNames',
+      'caption target plugin descriptors belong in top-level targetPlugins',
   },
   {
     pattern: removedRootMutationFacadePattern,

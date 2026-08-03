@@ -2,28 +2,34 @@ import type { Value } from '@platejs/plite';
 
 import type {
   AnyBasePluginDefinition,
-  InferName,
   PluginReference,
 } from '../plugin/PluginDefinition';
 import type { InternalPluginDefinitionOf } from '../plugin/pluginDefinitionLookup.internal';
 import type {
   AnyBasePlugin,
-  AnyBasePluginPortal,
-  AnyResolvedBasePlugin,
+  AnyPluginBase,
   BasePluginPortal,
+  DynamicBasePluginPortal,
 } from '../plugin/BasePlugin';
 import type {
-  CoreEditorCapabilityDefinition,
-  CoreNodePluginName,
-} from './coreEditorCapabilityDefinition.internal';
-import type {
+  BasePluginInput,
   InternalPliteEditorWithInstalledPlateDefinitions,
   PliteEditorWithPlatePlugins,
+  InferEditorRuntimePlugins,
+  InternalEditorMutationProvider,
+  MergeInstalledPluginDefinitions,
 } from './pluginRuntimeTypes';
+import type {
+  GeneratedEditorMutations,
+  GeneratedEditorValue,
+} from './defineEditor';
+import type { CorePlugins } from '../plugins/getCorePlugins';
 
 export type {
   BasePluginInput,
   InferPlugins,
+  InferEditorRuntimePlugins,
+  InferRuntimePlugins,
   MergeInstalledPluginDefinitions,
 } from './pluginRuntimeTypes';
 
@@ -49,30 +55,57 @@ type PlatePluginRuntime = {
 };
 
 type GetBasePluginPortal = {
-  <P extends (AnyBasePlugin | AnyResolvedBasePlugin) & PluginReference>(
+  <P extends (AnyBasePlugin | AnyPluginBase) & PluginReference>(
     plugin: P
   ): BasePluginPortal<InternalPluginDefinitionOf<P>>;
-  (pluginName: string): AnyBasePluginPortal;
+  (
+    plugin: AnyBasePlugin | AnyPluginBase | PluginReference | string
+  ): DynamicBasePluginPortal;
 };
 
-export type NameofPlugins<T extends AnyBasePluginDefinition> =
-  | (string & {})
-  | InferName<CoreEditorCapabilityDefinition | T>;
+type NormalizeBasePluginInput<TPlugins> =
+  TPlugins extends readonly BasePluginInput[]
+    ? TPlugins
+    : TPlugins extends BasePluginInput
+      ? readonly [TPlugins]
+      : readonly [];
 
-export type NameofNodePlugins<T extends AnyBasePluginDefinition> =
-  | (string & {})
-  | CoreNodePluginName
-  | InferName<T>;
+export type InferBaseEditorPlugins<TPlugins> = MergeInstalledPluginDefinitions<
+  InferEditorRuntimePlugins<CorePlugins>,
+  InferEditorRuntimePlugins<NormalizeBasePluginInput<TPlugins>>
+>;
 
-export type BaseEditor<
-  V extends Value = Value,
-  P extends AnyBasePluginDefinition = AnyBasePluginDefinition,
+export type InternalBaseEditorMutationProvider<TPlugins, TRuntime> = [
+  GeneratedEditorMutations<TPlugins>,
+] extends [never]
+  ? TRuntime
+  : InternalEditorMutationProvider<GeneratedEditorMutations<TPlugins>>;
+
+/** @internal Base runtime projected from one authored plugin definition. */
+export type InternalBaseEditorWithPlatePlugins<
+  V extends Value,
+  P extends AnyBasePluginDefinition,
 > = PliteEditorWithPlatePlugins<V, P> & PlateEditorRuntime & PlatePluginRuntime;
+
+export type BaseEditor<TPlugins = never> = [TPlugins] extends [never]
+  ? InternalBaseEditorWithInstalledPlugins<
+      any,
+      AnyBasePluginDefinition,
+      AnyBasePluginDefinition
+    >
+  : InferBaseEditorPlugins<TPlugins> extends infer D
+    ? InternalBaseEditorWithInstalledPlugins<
+        GeneratedEditorValue<TPlugins>,
+        D,
+        InternalBaseEditorMutationProvider<TPlugins, D>
+      >
+    : never;
 
 /** @internal Editor whose plugin definition union is already lowered. */
 export type InternalBaseEditorWithInstalledPlugins<
   V extends Value,
   D,
-> = InternalPliteEditorWithInstalledPlateDefinitions<V, D> &
+  S = D,
+> = InternalPliteEditorWithInstalledPlateDefinitions<V, D, S> &
   PlateEditorRuntime &
   PlatePluginRuntime;

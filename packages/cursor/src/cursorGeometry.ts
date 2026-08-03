@@ -61,8 +61,11 @@ export const getCursorOverlayState = <
   });
 };
 
-export const getSelectionRects = <V extends Value>(
-  editor: DOMEditor<V>,
+export const getSelectionRects = <
+  V extends Value,
+  TExtensions extends readonly unknown[],
+>(
+  editor: DOMEditor<V, TExtensions>,
   {
     range,
     xOffset,

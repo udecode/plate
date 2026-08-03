@@ -1,6 +1,5 @@
 import { BaseParagraphPlugin, createBaseEditor } from '@platejs/core';
 import { BaseIndentPlugin } from '@platejs/indent';
-import { KEYS } from '@platejs/utils';
 
 import { BaseTogglePlugin } from './BaseTogglePlugin';
 
@@ -12,7 +11,7 @@ describe('BaseTogglePlugin', () => {
 
     expect(editor.read.schema.create(BaseTogglePlugin)).toEqual({
       children: [{ text: '' }],
-      type: BaseTogglePlugin.type,
+      type: 'toggle',
     });
     expect(editor.read.schema.element(BaseTogglePlugin)?.groups).toContain(
       'block'
@@ -53,8 +52,8 @@ describe('BaseTogglePlugin', () => {
         focus: { offset: 1, path: [0, 0] },
       },
       initialValue: [
-        { children: [{ text: 'one' }], type: KEYS.toggle },
-        { children: [{ text: 'two' }], type: KEYS.p },
+        { children: [{ text: 'one' }], type: 'toggle' },
+        { children: [{ text: 'two' }], type: 'paragraph' },
       ],
     });
 
@@ -72,7 +71,7 @@ describe('BaseTogglePlugin', () => {
   it('reports no selected toggle without a selection', () => {
     const editor = createBaseEditor({
       plugins: [BaseTogglePlugin],
-      initialValue: [{ children: [{ text: 'one' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'paragraph' }],
     });
 
     expect(editor.plugin(BaseTogglePlugin).read.isActive()).toBe(false);
@@ -84,19 +83,19 @@ describe('BaseTogglePlugin', () => {
         children: [{ text: 'toggle' }],
         id: 't1',
         indent: 0,
-        type: KEYS.toggle,
+        type: 'toggle',
       },
       {
         children: [{ text: 'child' }],
         id: 'p1',
         indent: 1,
-        type: KEYS.p,
+        type: 'paragraph',
       },
-    ];
+    ] as const;
     const editor = createBaseEditor({
       plugins: [
         BaseIndentPlugin.configure({
-          targetPluginNames: [BaseParagraphPlugin.name, BaseTogglePlugin.name],
+          targetPlugins: [BaseParagraphPlugin, BaseTogglePlugin],
         }),
         BaseTogglePlugin,
       ],
@@ -112,7 +111,7 @@ describe('BaseTogglePlugin', () => {
     const editor = createBaseEditor({
       plugins: [
         BaseIndentPlugin.configure({
-          targetPluginNames: [BaseParagraphPlugin.name, BaseTogglePlugin.name],
+          targetPlugins: [BaseParagraphPlugin, BaseTogglePlugin],
         }),
         BaseTogglePlugin,
       ],
@@ -120,20 +119,20 @@ describe('BaseTogglePlugin', () => {
         {
           children: [{ text: 'toggle' }],
           id: 't1',
-          type: KEYS.toggle,
+          type: 'toggle',
         },
         {
           children: [{ text: 'child' }],
           id: 'p1',
           indent: 1,
-          type: KEYS.p,
+          type: 'paragraph',
         },
-        { children: [{ text: 'boundary' }], type: KEYS.p },
+        { children: [{ text: 'boundary' }], type: 'paragraph' },
         {
           children: [{ text: 'outside' }],
           id: 'p2',
           indent: 1,
-          type: KEYS.p,
+          type: 'paragraph',
         },
       ],
     });

@@ -80,14 +80,14 @@ describe('editor.api.markdown.serialize list', () => {
         indent: 1,
         listStart: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'child' }],
         indent: 2,
         listStart: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
     ];
 
@@ -105,14 +105,14 @@ describe('editor.api.markdown.serialize list', () => {
         indent: 1,
         listStart: 1,
         listStyleType: 'decimal',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'child' }],
         indent: 2,
         listStart: 1,
         listStyleType: 'decimal',
-        type: 'p',
+        type: 'paragraph',
       },
     ];
 
@@ -130,21 +130,21 @@ describe('editor.api.markdown.serialize list', () => {
         indent: 1,
         listStart: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'child' }],
         indent: 2,
         listStart: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'grandchild' }],
         indent: 3,
         listStart: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
     ];
 
@@ -162,21 +162,21 @@ describe('editor.api.markdown.serialize list', () => {
         indent: 1,
         listStart: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'ordered child' }],
         indent: 2,
         listStart: 1,
         listStyleType: 'decimal',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'bullet child' }],
         indent: 2,
         listStart: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
     ];
 
@@ -194,21 +194,21 @@ describe('editor.api.markdown.serialize list', () => {
         indent: 1,
         listStart: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'child' }],
         indent: 2,
         listStart: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'sibling' }],
         indent: 1,
         listStart: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
     ];
 
@@ -252,25 +252,25 @@ describe('editor.api.markdown.serialize list', () => {
         indent: 1,
         listStart: 1,
         listStyleType: 'decimal',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'Break between lists.' }],
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'Second list item' }],
         indent: 1,
         listStart: 2,
         listStyleType: 'decimal',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'Third list item' }],
         indent: 1,
         listStart: 3,
         listStyleType: 'decimal',
-        type: 'p',
+        type: 'paragraph',
       },
     ];
 

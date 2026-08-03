@@ -1,4 +1,9 @@
-import type { Range, RuntimeId, Editor as EditorType } from '@platejs/plite';
+import type {
+  Editor as EditorType,
+  Range,
+  RuntimeId,
+  Value,
+} from '@platejs/plite';
 import { RangeApi } from '@platejs/plite';
 import type { PliteViewSourceStatus } from './view-source';
 
@@ -24,31 +29,35 @@ export type PliteRangeDecoration<T = unknown> =
       range: Range;
     };
 
-export type PliteDecorationSourceReadContext =
-  PliteProjectionSourceReadContext & {
-    editor: EditorType;
-  };
+export type PliteDecorationSourceReadContext<
+  V extends Value = Value,
+  TExtensions extends readonly unknown[] = readonly [],
+> = PliteProjectionSourceReadContext & {
+  editor: EditorType<V, TExtensions>;
+};
 
-export type PliteDecorationSourceOptions<T = unknown> = Omit<
-  PliteProjectionStoreOptions,
-  'sourceId'
-> & {
+export type PliteDecorationSourceOptions<
+  T = unknown,
+  V extends Value = Value,
+  TExtensions extends readonly unknown[] = readonly [],
+> = Omit<PliteProjectionStoreOptions, 'sourceId'> & {
   id: string;
   read: (
-    context: PliteDecorationSourceReadContext
+    context: PliteDecorationSourceReadContext<V, TExtensions>
   ) => readonly PliteDecoration<T>[];
 };
 
-export type PliteRangeDecorationSourceOptions<T = unknown> = Omit<
-  PliteDecorationSourceOptions<T>,
-  'read'
-> & {
+export type PliteRangeDecorationSourceOptions<
+  T = unknown,
+  V extends Value = Value,
+  TExtensions extends readonly unknown[] = readonly [],
+> = Omit<PliteDecorationSourceOptions<T, V, TExtensions>, 'read'> & {
   /**
    * Data attached to every range that does not provide its own data.
    */
   data?: T;
   read: (
-    context: PliteDecorationSourceReadContext
+    context: PliteDecorationSourceReadContext<V, TExtensions>
   ) => readonly PliteRangeDecoration<T>[];
 };
 
@@ -186,9 +195,13 @@ export const toPliteRangeDecorations = <T>(
     };
   });
 
-export const createDecorationSource = <T = unknown>(
-  editor: EditorType,
-  options: PliteDecorationSourceOptions<T>
+export const createDecorationSource = <
+  V extends Value,
+  TExtensions extends readonly unknown[],
+  T = unknown,
+>(
+  editor: EditorType<V, TExtensions>,
+  options: PliteDecorationSourceOptions<T, V, TExtensions>
 ): PliteDecorationSource<T> => {
   const store = createPliteProjectionStore<T>(
     editor,
@@ -207,13 +220,17 @@ export const createDecorationSource = <T = unknown>(
   });
 };
 
-export const createRangeDecorationSource = <T = unknown>(
-  editor: EditorType,
-  options: PliteRangeDecorationSourceOptions<T>
+export const createRangeDecorationSource = <
+  V extends Value,
+  TExtensions extends readonly unknown[],
+  T = unknown,
+>(
+  editor: EditorType<V, TExtensions>,
+  options: PliteRangeDecorationSourceOptions<T, V, TExtensions>
 ): PliteDecorationSource<T> => {
   const { data, read, ...sourceOptions } = options;
 
-  return createDecorationSource<T>(editor, {
+  return createDecorationSource<V, TExtensions, T>(editor, {
     ...sourceOptions,
     read: (context) =>
       toPliteRangeDecorations(read(context), {

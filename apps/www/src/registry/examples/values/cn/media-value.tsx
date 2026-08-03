@@ -10,7 +10,7 @@ export const imageValue = {
       <hh2>图片</hh2>
       <hp>通过上传或提供图片 URL 来添加图片：</hp>
       <himg
-        align="center"
+        textAlign="center"
         url="https://images.unsplash.com/photo-1712688930249-98e1963af7bd?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
         width="55%"
       >
@@ -38,7 +38,7 @@ export const mediaPlaceholderValue = {
         实时上传状态和进度跟踪
       </hp>
       <haudio
-        align="center"
+        textAlign="center"
         url="https://samplelib.com/lib/preview/mp3/sample-3s.mp3"
         width="80%"
       >
@@ -48,7 +48,7 @@ export const mediaPlaceholderValue = {
         可配置的文件大小限制和批量上传设置
       </hp>
       <hvideo
-        align="center"
+        textAlign="center"
         url="https://videos.pexels.com/video-files/6769791/6769791-uhd_2560_1440_24fps.mp4"
         width="80%"
         isUpload
@@ -74,14 +74,14 @@ export const mediaValue = {
       <hh2>嵌入</hh2>
       <hp>嵌入各种类型的内容，如视频和推文：</hp>
       <hmediaembed
-        align="center"
+        textAlign="center"
         url="https://www.youtube.com/watch?v=MyiBAziEWUA"
       >
         <htext />
       </hmediaembed>
       {/* BUG */}
       {/* <hmediaembed
-      align="center"
+      textAlign="center"
       url="https://twitter.com/zbeyens/status/1677214892212776960"
     >
       <htext />

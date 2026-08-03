@@ -1,5 +1,6 @@
 import type {
   Element,
+  EditorUpdateTransactionOf,
   NodeEntry,
   Path,
   Point,
@@ -7,23 +8,13 @@ import type {
   Range,
   TextInsertTextOptions,
 } from '@platejs/plite';
-import type {
-  EditorCommandContext,
-  InternalEditorUpdateTransactionOf,
-} from '@platejs/plite/internal';
-
 import type { BaseEditor } from '../../editor';
+import type { AnyBasePlugin, PluginReference } from '../../plugin';
 
 export type InputRuleTarget = 'insertBreak' | 'insertData' | 'insertText';
 
 type InputRuleTransaction<TEditor> = TEditor extends BaseEditor
-  ?
-      | Parameters<
-          Parameters<
-            EditorCommandContext<void, TEditor>['state']['transaction']
-          >[0]
-        >[0]
-      | InternalEditorUpdateTransactionOf<TEditor>
+  ? EditorUpdateTransactionOf<TEditor>
   : never;
 
 type BivariantCallback<TArgs extends unknown[], TResult> = {
@@ -39,7 +30,7 @@ export type SelectionInputRuleContext<TEditor = BaseEditor> = {
   getCharAfter: () => string | undefined;
   getCharBefore: () => string | undefined;
   isCollapsed: boolean;
-  pluginName: string;
+  plugin: AnyBasePlugin;
 };
 
 export type TransformInputRuleContext<TEditor = BaseEditor> = {
@@ -78,8 +69,8 @@ export type BaseInputRule<TContext = SelectionInputRuleContext> = {
 
 export type MarkInputRuleConfig = BaseInputRule<InsertTextInputRuleContext> & {
   end?: string;
-  mark?: string;
-  marks?: string[];
+  mark?: PluginReference | string;
+  marks?: readonly (PluginReference | string)[];
   start: string;
   trim?: 'allow' | 'reject';
   trigger: string;
@@ -110,7 +101,7 @@ export type BlockStartInputRuleConfig<TMatch extends object = {}> =
       match: BlockStartInputRuleMatch & TMatch
     ) => boolean | void;
     mode?: 'set' | 'toggle' | 'wrap';
-    node?: string;
+    node?: PluginReference | string;
     removeMatchedText?: boolean;
     trigger: string;
   } & MatchBlockStartOptions<TMatch, InsertTextInputRuleContext>;
@@ -120,7 +111,7 @@ export type BlockFenceInputRuleMatch = BlockStartInputRuleMatch & {
 };
 
 export type MatchBlockFenceOptions<TMatch = BlockFenceInputRuleMatch> = {
-  block?: string;
+  block?: PluginReference | string;
   fence: string;
   resolveMatch?: (args: {
     fence: string;
@@ -179,7 +170,7 @@ export type TextSubstitutionInputRuleConfig =
 export type InputRuleBuilder = {
   blockFence: <TMatch = BlockFenceInputRuleMatch>(
     config: BlockFenceInputRuleConfig<TMatch>
-  ) => AnyInputRule<TMatch>;
+  ) => InputRule<TMatch>;
   blockStart: <TMatch extends object = {}>(
     config: BlockStartInputRuleConfig<TMatch>
   ) => InsertTextInputRule<BlockStartInputRuleMatch & TMatch>;
@@ -251,10 +242,29 @@ export type InsertTextInputRule<
   trigger: readonly string[] | string;
 };
 
-export type AnyInputRule<TMatch = unknown, TEditor = BaseEditor> =
+export type InputRule<TMatch = unknown, TEditor = BaseEditor> =
   | InsertBreakInputRule<TMatch, TEditor>
   | InsertDataInputRule<TMatch, TEditor>
   | InsertTextInputRule<TMatch, TEditor>;
+
+type InputRuleFactoryOptions<TOptions extends object, TEditor> = TOptions & {
+  enabled?: (context: SelectionInputRuleContext<TEditor>) => boolean;
+  priority?: number;
+};
+
+/** Portable public shape for feature-owned input rule factories. */
+export type InputRuleFactory<
+  TOptions extends object = {},
+  TRequired extends boolean = false,
+  TMatch = never,
+  TEditor = BaseEditor,
+> = TRequired extends true
+  ? (
+      options: InputRuleFactoryOptions<TOptions, TEditor>
+    ) => InputRule<TMatch, TEditor>
+  : (
+      options?: InputRuleFactoryOptions<TOptions, TEditor>
+    ) => InputRule<TMatch, TEditor>;
 
 type StoredInsertBreakInputRule<
   TContext = unknown,
@@ -303,25 +313,27 @@ export type InputRulesDefinition<TEditor = BaseEditor> =
   | ((ctx: InputRulesFactoryContext) => InputRulesConfig<TEditor>);
 
 export type InputRulesConfig<TEditor = BaseEditor> = (
-  | AnyInputRule<any, TEditor>
+  | InputRule<any, TEditor>
   | InputRuleReference
 )[];
 
 export type ResolvedInputRule = StoredInputRule & {
   id: string;
-  pluginName: string;
+  plugin: AnyBasePlugin;
   priority: number;
   ruleIndex: number;
   pluginIndex: number;
 };
 
-type DeepReadonly<T> = T extends (...args: any[]) => unknown
+type DeepReadonly<T> = T extends AnyBasePlugin | PluginReference
   ? T
-  : T extends readonly (infer TItem)[]
-    ? readonly DeepReadonly<TItem>[]
-    : T extends object
-      ? { readonly [K in keyof T]: DeepReadonly<T[K]> }
-      : T;
+  : T extends (...args: any[]) => unknown
+    ? T
+    : T extends readonly (infer TItem)[]
+      ? readonly DeepReadonly<TItem>[]
+      : T extends object
+        ? { readonly [K in keyof T]: DeepReadonly<T[K]> }
+        : T;
 
 type ReadonlyResolvedInputRule = DeepReadonly<ResolvedInputRule>;
 

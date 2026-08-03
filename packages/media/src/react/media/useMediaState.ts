@@ -9,6 +9,7 @@ import {
   type TMediaElement,
   type TResizableElement,
   KEYS,
+  NODES,
 } from '@platejs/utils';
 import { useEditor, useElement } from '@platejs/core/react';
 
@@ -37,8 +38,8 @@ export const useMediaState = ({
 
     if (
       !urlParsers ||
-      (type !== (video.installed ? video.type : KEYS.video) &&
-        type !== (mediaEmbed.installed ? mediaEmbed.type : KEYS.mediaEmbed))
+      (type !== (video.installed ? video.type : NODES.video) &&
+        type !== (mediaEmbed.installed ? mediaEmbed.type : NODES.mediaEmbed))
     )
       return;
 

@@ -25,7 +25,7 @@ describe('markdownToSlateNodesSafely', () => {
     expect(parseSafely(editor, 'plain **bold**')).toEqual([
       {
         children: [{ text: 'plain ' }, { bold: true, text: 'bold' }],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
   });
@@ -42,7 +42,7 @@ describe('markdownToSlateNodesSafely', () => {
           },
           { text: '<callout>' },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
   });
@@ -58,7 +58,7 @@ describe('markdownToSlateNodesSafely', () => {
             text: '<u>',
           },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
   });
@@ -74,7 +74,7 @@ describe('markdownToSlateNodesSafely', () => {
           { text: ' ' },
           { bold: true, text: 'bold' },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
   });
@@ -85,7 +85,7 @@ describe('markdownToSlateNodesSafely', () => {
     expect(parseSafely(editor, '<u>')).toEqual([
       {
         children: [{ text: '<u>' }],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
   });
@@ -96,7 +96,7 @@ describe('markdownToSlateNodesSafely', () => {
     expect(parseSafely(editor, String.raw`</ph\><`)).toEqual([
       {
         children: [{ text: '</ph><' }],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
   });
@@ -124,7 +124,7 @@ describe('markdownToSlateNodesSafely', () => {
           },
           { text: '<u>' },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
   });
@@ -132,14 +132,14 @@ describe('markdownToSlateNodesSafely', () => {
   it('preserves complete void blocks before appending the fallback paragraph', () => {
     const editor = createTestEditor();
 
-    expect(parseSafely(editor, '<hr /><u>')).toEqual([
+    expect(parseSafely(editor, '---\n\n<u>')).toEqual([
       {
         children: [{ text: '' }],
-        type: 'hr',
+        type: 'horizontalRule',
       },
       {
         children: [{ text: '<u>' }],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
   });

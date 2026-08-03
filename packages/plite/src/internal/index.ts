@@ -1,4 +1,6 @@
 export type {
+  AnyEditor,
+  BaseEditor,
   Editor,
   EditorCommandContext,
   EditorExtensionDependencyReferenceFor,
@@ -7,9 +9,9 @@ export type {
   InternalEditorExtensionInstalledCapabilitiesOf,
   InternalEditorExtensionTypeProviderOf,
   InternalEditorExtensionWitnessFor,
-  InternalEditorStateViewProvider,
-  InternalEditorUpdateTransactionOf,
-  InternalEditorUpdateTransactionProvider,
+  EditorStateViewProvider,
+  EditorUpdateTransactionOf,
+  EditorUpdateTransactionProvider,
   Value,
 } from '../interfaces/editor';
 export { txRead } from '../core/tx-only';
@@ -32,7 +34,7 @@ export {
   deselect,
   edges,
   elementReadOnly,
-  extend,
+  install,
   first,
   fragment,
   getChildren,
@@ -154,12 +156,13 @@ export {
 } from '../core/schema-compiler';
 export {
   compileEditorExtension,
-  defineEditorExtension,
+  defineExtension,
   getCompiledEditorConfiguration,
   getCandidateEditorExtensionApi,
   getEditorExtensionContributions,
   getInstalledEditorExtension,
   getInstalledEditorExtensionApi,
+  isEditorExtension,
   reportEditorLifecycleError,
 } from '../core/editor-extension';
 export {
@@ -189,7 +192,6 @@ export {
   getCollabEffectTypes,
   getCurrentMarks as getEditorCurrentMarks,
   getCurrentSelectionRoot as getEditorSelectionRoot,
-  getEditorDefaultBlockType,
   getEditorMaxLength,
   getEditorRuntimeElementEntries,
   getEditorRuntimeRootKeys,
@@ -206,7 +208,6 @@ export {
   scheduleAfterCommitNotification,
   setChildren as setEditorChildren,
   setEditorComposing,
-  setEditorDefaultBlockType,
   setEditorFocused,
   setEditorMaxLength,
   setEditorReadOnly,

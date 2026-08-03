@@ -2,7 +2,7 @@
 
 import type { TComment } from '@/registry/ui/comment';
 
-import { createPlatePlugin } from 'platejs/react';
+import { definePlatePlugin } from 'platejs/react';
 
 import { BlockDiscussion } from '@/registry/ui/block-discussion';
 
@@ -72,7 +72,7 @@ const discussionsData: TDiscussion[] = [
                 text: 'Comments are a great way to provide feedback and discuss changes.',
               },
             ],
-            type: 'p',
+            type: 'paragraph',
           },
         ],
         createdAt: new Date(Date.now() - 600_000),
@@ -89,7 +89,7 @@ const discussionsData: TDiscussion[] = [
                 text: 'Agreed! The link to the docs makes it easy to learn more.',
               },
             ],
-            type: 'p',
+            type: 'paragraph',
           },
         ],
         createdAt: new Date(Date.now() - 500_000),
@@ -115,7 +115,7 @@ const discussionsData: TDiscussion[] = [
                 text: 'Nice demonstration of overlapping annotations with both comments and suggestions!',
               },
             ],
-            type: 'p',
+            type: 'paragraph',
           },
         ],
         createdAt: new Date(Date.now() - 300_000),
@@ -132,7 +132,7 @@ const discussionsData: TDiscussion[] = [
                 text: 'This helps users understand how powerful the editor can be.',
               },
             ],
-            type: 'p',
+            type: 'paragraph',
           },
         ],
         createdAt: new Date(Date.now() - 200_000),
@@ -179,8 +179,7 @@ const initialState: DiscussionPluginState = {
 };
 
 // This plugin is purely UI. It's only used to store the discussions and users data
-export const discussionPlugin = createPlatePlugin({
-  name: 'discussion',
+export const discussionPlugin = definePlatePlugin('discussion', {
   initialState,
   selectors: {
     currentUser: (state) => state.users[state.currentUserId],

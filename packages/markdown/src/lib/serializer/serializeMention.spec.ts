@@ -16,7 +16,7 @@ describe('editor.api.markdown.serialize - mention', () => {
             },
             { text: ' how are you?' },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
@@ -46,7 +46,7 @@ describe('editor.api.markdown.serialize - mention', () => {
             },
             { text: ' in the discussion' },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
@@ -72,7 +72,7 @@ describe('editor.api.markdown.serialize - mention', () => {
             },
             { text: ' check this out' },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
@@ -96,7 +96,7 @@ describe('editor.api.markdown.serialize - mention', () => {
             },
             { text: ' check this out' },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
@@ -139,7 +139,7 @@ describe('editor.api.markdown.serialize - mention', () => {
               value: 'dev-team',
             },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });

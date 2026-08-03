@@ -9,31 +9,39 @@ import {
   BaseTextIndentPlugin,
   toUnitLess,
 } from './BaseStylePlugins';
-import { BaseParagraphPlugin, createBaseEditor } from '@platejs/core';
+import {
+  BaseParagraphPlugin,
+  createBaseEditor,
+  defineBasePlugin,
+} from '@platejs/core';
 import { createPluginContext } from '@platejs/core/internal';
-import { ContentSlice } from '@platejs/plite';
+import { ContentSlice, createEditor, schema, type Value } from '@platejs/plite';
 import { writeHostFragmentData } from '@platejs/plite-dom';
-import { KEYS } from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 
 describe('BaseFontBackgroundColorPlugin', () => {
   it('parses html background-color styles into leaf marks', () => {
     const editor = createBaseEditor({
       plugins: [BaseFontBackgroundColorPlugin],
     });
-    const plugin = editor.plugin(BaseFontBackgroundColorPlugin).plugin;
+    const plugin = editor.plugin(BaseFontBackgroundColorPlugin);
 
     expect(plugin.inject.nodeProps).toEqual({
       nodeKey: 'backgroundColor',
       styleKey: 'backgroundColor',
     });
     expect(
-      editor.plugin(BaseFontBackgroundColorPlugin).plugin.inject.nodeProps!
+      editor.plugin(BaseFontBackgroundColorPlugin).inject.nodeProps!
     ).toMatchObject({
       nodeKey: 'backgroundColor',
       styleKey: 'backgroundColor',
     });
     expect(
-      editor.read.schema.property(BaseFontBackgroundColorPlugin)?.value.kind
+      editor.read.schema.property({
+        key: editor.plugin(BaseFontBackgroundColorPlugin).schema.properties
+          .backgroundColor.key,
+        placement: 'text',
+      })?.value.kind
     ).toBe('string');
     expect(
       editor.api.html.deserialize({
@@ -43,11 +51,11 @@ describe('BaseFontBackgroundColorPlugin', () => {
       {
         children: [
           {
-            [KEYS.backgroundColor]: 'rgb(255, 255, 0)',
+            backgroundColor: 'rgb(255, 255, 0)',
             text: 'text',
           },
         ],
-        type: KEYS.p,
+        type: 'paragraph',
       },
     ]);
   });
@@ -60,13 +68,13 @@ describe('BaseFontBackgroundColorPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: 'text' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'text' }], type: 'paragraph' }],
     });
 
     editor.update.backgroundColor.set('yellow');
 
     expect(editor.read.children()[0]?.children[0]).toMatchObject({
-      [KEYS.backgroundColor]: 'yellow',
+      backgroundColor: 'yellow',
       text: 'text',
     });
 
@@ -83,23 +91,24 @@ describe('BaseFontColorPlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseFontColorPlugin],
     });
-    const plugin = editor.plugin(BaseFontColorPlugin).plugin;
+    const plugin = editor.plugin(BaseFontColorPlugin);
 
     expect(plugin.inject.nodeProps).toEqual({
       defaultNodeValue: 'black',
       nodeKey: 'color',
       styleKey: 'color',
     });
-    expect(
-      editor.plugin(BaseFontColorPlugin).plugin.inject.nodeProps!
-    ).toMatchObject({
+    expect(editor.plugin(BaseFontColorPlugin).inject.nodeProps!).toMatchObject({
       defaultNodeValue: 'black',
       nodeKey: 'color',
       styleKey: 'color',
     });
-    expect(editor.read.schema.property(BaseFontColorPlugin)?.value.kind).toBe(
-      'string'
-    );
+    expect(
+      editor.read.schema.property({
+        key: editor.plugin(BaseFontColorPlugin).schema.properties.color.key,
+        placement: 'text',
+      })?.value.kind
+    ).toBe('string');
     expect(
       editor.api.html.deserialize({
         element: '<span style="color: rgb(255, 0, 0)">text</span>',
@@ -108,11 +117,11 @@ describe('BaseFontColorPlugin', () => {
       {
         children: [
           {
-            [KEYS.color]: 'rgb(255, 0, 0)',
+            color: 'rgb(255, 0, 0)',
             text: 'text',
           },
         ],
-        type: KEYS.p,
+        type: 'paragraph',
       },
     ]);
   });
@@ -125,13 +134,13 @@ describe('BaseFontColorPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: 'text' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'text' }], type: 'paragraph' }],
     });
 
     editor.update.color.set('red');
 
     expect(editor.read.children()[0]?.children[0]).toMatchObject({
-      [KEYS.color]: 'red',
+      color: 'red',
       text: 'text',
     });
 
@@ -148,21 +157,25 @@ describe('BaseFontFamilyPlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseFontFamilyPlugin],
     });
-    const plugin = editor.plugin(BaseFontFamilyPlugin).plugin;
+    const plugin = editor.plugin(BaseFontFamilyPlugin);
 
     expect(plugin.inject.nodeProps).toEqual({
       nodeKey: 'fontFamily',
       styleKey: 'fontFamily',
     });
-    expect(
-      editor.plugin(BaseFontFamilyPlugin).plugin.inject.nodeProps!
-    ).toMatchObject({
-      nodeKey: 'fontFamily',
-      styleKey: 'fontFamily',
-    });
-    expect(editor.read.schema.property(BaseFontFamilyPlugin)?.value.kind).toBe(
-      'string'
+    expect(editor.plugin(BaseFontFamilyPlugin).inject.nodeProps!).toMatchObject(
+      {
+        nodeKey: 'fontFamily',
+        styleKey: 'fontFamily',
+      }
     );
+    expect(
+      editor.read.schema.property({
+        key: editor.plugin(BaseFontFamilyPlugin).schema.properties.fontFamily
+          .key,
+        placement: 'text',
+      })?.value.kind
+    ).toBe('string');
     expect(
       editor.api.html.deserialize({
         element: '<span style="font-family: Fira Code, monospace">text</span>',
@@ -171,11 +184,11 @@ describe('BaseFontFamilyPlugin', () => {
       {
         children: [
           {
-            [KEYS.fontFamily]: '"Fira Code", monospace',
+            fontFamily: '"Fira Code", monospace',
             text: 'text',
           },
         ],
-        type: KEYS.p,
+        type: 'paragraph',
       },
     ]);
   });
@@ -188,13 +201,13 @@ describe('BaseFontFamilyPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: 'text' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'text' }], type: 'paragraph' }],
     });
 
     editor.update.fontFamily.set('serif');
 
     expect(editor.read.children()[0]?.children[0]).toMatchObject({
-      [KEYS.fontFamily]: 'serif',
+      fontFamily: 'serif',
       text: 'text',
     });
   });
@@ -205,21 +218,22 @@ describe('BaseFontSizePlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseFontSizePlugin],
     });
-    const plugin = editor.plugin(BaseFontSizePlugin).plugin;
+    const plugin = editor.plugin(BaseFontSizePlugin);
 
     expect(plugin.inject.nodeProps).toEqual({
       nodeKey: 'fontSize',
       styleKey: 'fontSize',
     });
-    expect(
-      editor.plugin(BaseFontSizePlugin).plugin.inject.nodeProps!
-    ).toMatchObject({
+    expect(editor.plugin(BaseFontSizePlugin).inject.nodeProps!).toMatchObject({
       nodeKey: 'fontSize',
       styleKey: 'fontSize',
     });
-    expect(editor.read.schema.property(BaseFontSizePlugin)?.value.kind).toBe(
-      'string'
-    );
+    expect(
+      editor.read.schema.property({
+        key: editor.plugin(BaseFontSizePlugin).schema.properties.fontSize.key,
+        placement: 'text',
+      })?.value.kind
+    ).toBe('string');
     expect(
       editor.api.html.deserialize({
         element: '<span style="font-size: 18px">text</span>',
@@ -228,11 +242,11 @@ describe('BaseFontSizePlugin', () => {
       {
         children: [
           {
-            [KEYS.fontSize]: '18px',
+            fontSize: '18px',
             text: 'text',
           },
         ],
-        type: KEYS.p,
+        type: 'paragraph',
       },
     ]);
   });
@@ -245,13 +259,13 @@ describe('BaseFontSizePlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: 'text' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'text' }], type: 'paragraph' }],
     });
 
     editor.update.fontSize.set('24px');
 
     expect(editor.read.children()[0]?.children[0]).toMatchObject({
-      [KEYS.fontSize]: '24px',
+      fontSize: '24px',
       text: 'text',
     });
   });
@@ -262,21 +276,25 @@ describe('BaseFontWeightPlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseFontWeightPlugin],
     });
-    const plugin = editor.plugin(BaseFontWeightPlugin).plugin;
+    const plugin = editor.plugin(BaseFontWeightPlugin);
 
     expect(plugin.inject.nodeProps).toEqual({
       nodeKey: 'fontWeight',
       styleKey: 'fontWeight',
     });
-    expect(
-      editor.plugin(BaseFontWeightPlugin).plugin.inject.nodeProps!
-    ).toMatchObject({
-      nodeKey: 'fontWeight',
-      styleKey: 'fontWeight',
-    });
-    expect(editor.read.schema.property(BaseFontWeightPlugin)?.value.kind).toBe(
-      'string'
+    expect(editor.plugin(BaseFontWeightPlugin).inject.nodeProps!).toMatchObject(
+      {
+        nodeKey: 'fontWeight',
+        styleKey: 'fontWeight',
+      }
     );
+    expect(
+      editor.read.schema.property({
+        key: editor.plugin(BaseFontWeightPlugin).schema.properties.fontWeight
+          .key,
+        placement: 'text',
+      })?.value.kind
+    ).toBe('string');
     expect(
       editor.api.html.deserialize({
         element: '<span style="font-weight: 700">text</span>',
@@ -285,11 +303,11 @@ describe('BaseFontWeightPlugin', () => {
       {
         children: [
           {
-            [KEYS.fontWeight]: '700',
+            fontWeight: '700',
             text: 'text',
           },
         ],
-        type: KEYS.p,
+        type: 'paragraph',
       },
     ]);
   });
@@ -302,13 +320,13 @@ describe('BaseFontWeightPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: 'text' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'text' }], type: 'paragraph' }],
     });
 
     editor.update.fontWeight.set('bold');
 
     expect(editor.read.children()[0]?.children[0]).toMatchObject({
-      [KEYS.fontWeight]: 'bold',
+      fontWeight: 'bold',
       text: 'text',
     });
   });
@@ -319,19 +337,25 @@ describe('BaseLineHeightPlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, BaseLineHeightPlugin],
     });
-    const plugin = editor.plugin(BaseLineHeightPlugin).plugin;
+    const plugin = editor.plugin(BaseLineHeightPlugin);
 
     expect(plugin.inject.isBlock).toBe(true);
-    expect(plugin.targetPluginNames).toEqual([KEYS.p]);
-    expect(
-      editor.plugin(BaseLineHeightPlugin).plugin.inject.nodeProps!
-    ).toMatchObject({
-      defaultNodeValue: 1.5,
-      nodeKey: 'lineHeight',
-    });
-    expect(editor.read.schema.property(BaseLineHeightPlugin)?.value.kind).toBe(
-      'json'
+    expect(plugin.targetPlugins[0]?.name).toBe(
+      editor.plugin(BaseParagraphPlugin).schema.element.type
     );
+    expect(editor.plugin(BaseLineHeightPlugin).inject.nodeProps!).toMatchObject(
+      {
+        defaultNodeValue: 1.5,
+        nodeKey: 'lineHeight',
+      }
+    );
+    expect(
+      editor.read.schema.property({
+        key: editor.plugin(BaseLineHeightPlugin).schema.properties.lineHeight
+          .key,
+        placement: 'element',
+      })?.value.kind
+    ).toBe('json');
     expect(typeof editor.update.lineHeight.set).toBe('function');
   });
 
@@ -346,7 +370,7 @@ describe('BaseLineHeightPlugin', () => {
           {
             children: [{ text: 'One' }],
             lineHeight: true,
-            type: KEYS.p,
+            type: 'paragraph',
           },
         ],
       })
@@ -364,9 +388,9 @@ describe('BaseLineHeightPlugin', () => {
       })
     ).toMatchObject([
       {
-        [editor.plugin(KEYS.lineHeight).type]: 2,
+        [editor.plugin(PLUGINS.lineHeight).schema.properties.lineHeight.key]: 2,
         children: [{ text: 'text' }],
-        type: KEYS.p,
+        type: 'paragraph',
       },
     ]);
   });
@@ -382,7 +406,7 @@ describe('BaseLineHeightPlugin', () => {
       initialValue: [
         {
           children: [{ text: 'One' }],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
@@ -412,7 +436,7 @@ describe('BaseLineHeightPlugin', () => {
       initialValue: [
         {
           children: [{ text: 'One' }],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
@@ -425,7 +449,7 @@ describe('BaseLineHeightPlugin', () => {
       {
         children: [{ text: 'text' }],
         lineHeight: 2,
-        type: KEYS.p,
+        type: 'paragraph',
       },
     ]);
 
@@ -441,22 +465,52 @@ describe('BaseLineHeightPlugin', () => {
 });
 
 describe('BaseTextAlignPlugin', () => {
+  it('admits the canonical property on configured element targets', () => {
+    const ImagePlugin = defineBasePlugin(PLUGINS.image, {
+      schema: { element: schema.element.textBlock() },
+    });
+    const TextAlignPlugin = BaseTextAlignPlugin.configure({
+      targetPlugins: [ImagePlugin],
+    });
+    const editor = createBaseEditor({
+      editor: createEditor<Value>(),
+      initialValue: [
+        {
+          children: [{ text: '' }],
+          textAlign: 'center',
+          type: 'image',
+        },
+      ],
+      plugins: [ImagePlugin, TextAlignPlugin] as const,
+    });
+
+    expect(editor.read.children()[0]).toMatchObject({
+      textAlign: 'center',
+      type: 'image',
+    });
+  });
+
   it('exposes the injected block contract and typed tx group', () => {
     const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, BaseTextAlignPlugin],
     });
-    const plugin = editor.plugin(BaseTextAlignPlugin).plugin;
+    const plugin = editor.plugin(BaseTextAlignPlugin);
 
     expect(plugin.inject.isBlock).toBe(true);
-    expect(plugin.targetPluginNames).toEqual([KEYS.p]);
+    expect(plugin.targetPlugins[0]?.name).toBe(
+      editor.plugin(BaseParagraphPlugin).schema.element.type
+    );
     expect(plugin.inject.nodeProps).toMatchObject({
       defaultNodeValue: 'start',
       styleKey: 'textAlign',
       validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],
     });
-    expect(editor.read.schema.property(BaseTextAlignPlugin)?.value.kind).toBe(
-      'string'
-    );
+    expect(
+      editor.read.schema.property({
+        key: editor.plugin(BaseTextAlignPlugin).schema.properties.textAlign.key,
+        placement: 'element',
+      })?.value.kind
+    ).toBe('string');
     expect(typeof editor.update.textAlign.set).toBe('function');
   });
 
@@ -471,9 +525,10 @@ describe('BaseTextAlignPlugin', () => {
       })
     ).toMatchObject([
       {
-        [editor.plugin(KEYS.textAlign).type]: 'center',
+        [editor.plugin(PLUGINS.textAlign).schema.properties.textAlign.key]:
+          'center',
         children: [{ text: 'text' }],
-        type: KEYS.p,
+        type: 'paragraph',
       },
     ]);
   });
@@ -489,11 +544,12 @@ describe('BaseTextAlignPlugin', () => {
       initialValue: [
         {
           children: [{ text: 'One' }],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
-    const nodeKey = editor.plugin(KEYS.textAlign).type;
+    const nodeKey = editor.plugin(PLUGINS.textAlign).schema.properties.textAlign
+      .key;
 
     editor.update.textAlign.set('center');
     expect(editor.read.children()[0]).toMatchObject({ [nodeKey]: 'center' });
@@ -502,7 +558,7 @@ describe('BaseTextAlignPlugin', () => {
     expect(editor.read.children()[0]).not.toHaveProperty(nodeKey);
   });
 
-  it('uses the plugin type instead of an injected node key', () => {
+  it('uses the schema key instead of an injected node-prop key', () => {
     const TextAlignPlugin = BaseTextAlignPlugin.configure({
       inject: {
         nodeProps: {
@@ -520,7 +576,7 @@ describe('BaseTextAlignPlugin', () => {
       initialValue: [
         {
           children: [{ text: 'One' }],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
@@ -531,22 +587,24 @@ describe('BaseTextAlignPlugin', () => {
       })
     ).toMatchObject([
       {
-        align: 'center',
+        textAlign: 'center',
         children: [{ text: 'text' }],
-        type: KEYS.p,
+        type: 'paragraph',
       },
     ]);
 
     editor.update.textAlign.set('center');
 
     expect(editor.read.children()[0]).toMatchObject({
-      align: 'center',
+      textAlign: 'center',
     });
     expect(editor.read.children()[0]).not.toHaveProperty('legacyAlign');
 
     editor.update.textAlign.set('start');
 
-    expect(editor.read.children()[0]).not.toHaveProperty('align');
+    expect(editor.read.children()[0]).not.toHaveProperty(
+      editor.plugin(BaseTextAlignPlugin).schema.properties.textAlign.key
+    );
   });
 });
 
@@ -555,26 +613,31 @@ describe('BaseTextIndentPlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, BaseTextIndentPlugin],
     });
-    const plugin = editor.plugin(BaseTextIndentPlugin).plugin;
-    const nodeProps =
-      editor.plugin(BaseTextIndentPlugin).plugin.inject.nodeProps!;
+    const plugin = editor.plugin(BaseTextIndentPlugin);
+    const nodeProps = editor.plugin(BaseTextIndentPlugin).inject.nodeProps!;
     const transformNodeValue = nodeProps.transformNodeValue!;
 
     expect(plugin.inject.isBlock).toBe(true);
-    expect(plugin.targetPluginNames).toEqual([KEYS.p]);
+    expect(plugin.targetPlugins[0]?.name).toBe(
+      editor.plugin(BaseParagraphPlugin).schema.element.type
+    );
     expect(nodeProps).toMatchObject({
       nodeKey: 'textIndent',
       styleKey: 'textIndent',
     });
     expect(
       transformNodeValue({
-        ...createPluginContext(editor, plugin),
+        ...createPluginContext(editor, BaseTextIndentPlugin),
         nodeValue: 2,
       })
     ).toBe('48px');
-    expect(editor.read.schema.property(BaseTextIndentPlugin)?.value.kind).toBe(
-      'number'
-    );
+    expect(
+      editor.read.schema.property({
+        key: editor.plugin(BaseTextIndentPlugin).schema.properties.textIndent
+          .key,
+        placement: 'element',
+      })?.value.kind
+    ).toBe('number');
   });
 
   it('uses configured offset and unit when formatting node values', () => {
@@ -587,12 +650,11 @@ describe('BaseTextIndentPlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, TextIndentPlugin],
     });
-    const plugin = editor.plugin(TextIndentPlugin).plugin;
-    const nodeProps = editor.plugin(TextIndentPlugin).plugin.inject.nodeProps!;
+    const nodeProps = editor.plugin(TextIndentPlugin).inject.nodeProps!;
 
     expect(
       nodeProps.transformNodeValue!({
-        ...createPluginContext(editor, plugin),
+        ...createPluginContext(editor, TextIndentPlugin),
         nodeValue: 3,
       })
     ).toBe('30em');
@@ -617,7 +679,7 @@ describe('BaseTextIndentPlugin', () => {
       {
         children: [{ text: 'Indented' }],
         textIndent: 2,
-        type: KEYS.p,
+        type: 'paragraph',
       },
     ]);
   });
@@ -628,11 +690,12 @@ describe('BaseTextIndentPlugin', () => {
       initialValue: [
         {
           children: [{ text: 'One' }],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
-    const nodeKey = editor.plugin(KEYS.textIndent).type;
+    const nodeKey = editor.plugin(PLUGINS.textIndent).schema.properties
+      .textIndent.key;
 
     editor.update.textIndent.set(2, { at: [0] });
     expect(editor.read.children()[0]).toMatchObject({ [nodeKey]: 2 });
@@ -654,7 +717,7 @@ describe('BaseTextIndentPlugin', () => {
       initialValue: [
         {
           children: [{ text: 'One' }],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
@@ -671,6 +734,28 @@ describe('BaseTextIndentPlugin', () => {
 });
 
 describe('basic style HTML codecs', () => {
+  it('keeps nested mark values over inherited parent values', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseParagraphPlugin, BaseFontSizePlugin],
+    });
+
+    expect(
+      editor.api.html.deserialize({
+        element:
+          '<p style="font-size: 12pt">before <span style="font-size: 18pt">inside</span> after</p>',
+      })
+    ).toEqual([
+      {
+        children: [
+          { fontSize: '12pt', text: 'before ' },
+          { fontSize: '18pt', text: 'inside' },
+          { fontSize: '12pt', text: ' after' },
+        ],
+        type: 'paragraph',
+      },
+    ]);
+  });
+
   it('round-trips mark wrappers and block property patches', () => {
     const editor = createBaseEditor({
       plugins: [
@@ -686,7 +771,7 @@ describe('basic style HTML codecs', () => {
       ],
       initialValue: [
         {
-          align: 'center',
+          textAlign: 'center',
           children: [
             {
               backgroundColor: 'yellow',
@@ -699,7 +784,7 @@ describe('basic style HTML codecs', () => {
           ],
           lineHeight: 2,
           textIndent: 2,
-          type: KEYS.p,
+          type: 'paragraph',
         },
       ],
     });

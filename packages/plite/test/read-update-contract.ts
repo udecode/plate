@@ -20,7 +20,7 @@ const NESTED_UPDATE_ERROR =
   /editor\.update cannot be started inside editor\.read/;
 
 const ScriptPosition = schema.property.exclusive('plate:script-position');
-const ScriptSchema = defineEditorSchema({
+const ScriptSchema = defineEditorSchema('schema:script-schema', {
   elements: {
     paragraph: { content: schema.content.text() },
   },
@@ -145,10 +145,10 @@ describe('read/update contract', () => {
           type: 'table',
           children: [
             {
-              type: 'tr',
+              type: 'tableRow',
               children: [
                 {
-                  type: 'td',
+                  type: 'tableCell',
                   children: [
                     {
                       type: 'paragraph',
@@ -157,7 +157,7 @@ describe('read/update contract', () => {
                   ],
                 },
                 {
-                  type: 'td',
+                  type: 'tableCell',
                   children: [
                     {
                       type: 'paragraph',
@@ -168,10 +168,10 @@ describe('read/update contract', () => {
               ],
             },
             {
-              type: 'tr',
+              type: 'tableRow',
               children: [
                 {
-                  type: 'td',
+                  type: 'tableCell',
                   children: [
                     {
                       type: 'paragraph',

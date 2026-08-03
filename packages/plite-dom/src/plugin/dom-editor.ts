@@ -9,7 +9,7 @@ import {
   RangeApi,
   type RootKey,
   type RuntimeId,
-  type Editor as EditorType,
+  type SelectionAssociation,
   type EditorUpdateTransaction,
   TextApi,
   type Value,
@@ -18,6 +18,7 @@ import scrollIntoViewIfNeeded, {
   type StandardBehaviorOptions,
 } from 'scroll-into-view-if-needed';
 import {
+  type AnyEditor as EditorType,
   getSelection as editorGetSelection,
   getActiveEditorTransaction,
   getEditorRuntimeIdForNode,
@@ -146,6 +147,11 @@ export interface DOMApi {
   resolveEventRange: (event: any) => Range | null;
   resolvePath: (node: Node) => Path | null;
   resolveRangeRect: (range: Range) => DOMRect | null;
+  /** Resolve one mounted caret step in rendered visual order. */
+  resolveVisualPoint: (
+    point: Point,
+    options: DOMVisualPointOptions
+  ) => DOMVisualPoint | null;
   root: () => HTMLElement | null;
   scroll: () => HTMLElement | null;
   /** Scroll a mounted node path, text point/range, or native DOM range. */
@@ -230,6 +236,17 @@ export interface DOMClipboardApi<V extends Value = Value>
 export type ScrollIntoViewOptions = StandardBehaviorOptions | boolean;
 
 export type ScrollIntoViewTarget = DOMRange | Path | Point | Range;
+
+export type DOMVisualPoint = Readonly<{
+  affinity: SelectionAssociation;
+  point: Point;
+}>;
+
+export type DOMVisualPointOptions = Readonly<{
+  affinity?: SelectionAssociation;
+  direction: 'left' | 'right';
+  unit: 'character' | 'word';
+}>;
 
 /** Error thrown when Plite cannot resolve a DOM node, point, or range. */
 export class PliteDOMResolutionError extends Error {
@@ -2294,6 +2311,86 @@ export const createDOMEditorCapability = <
   editor: DOMEditor<V, TExtensions>,
   clipboardHandlers: readonly DOMClipboardHandler<any>[] = []
 ): DOMEditorCapability<V> => {
+  const resolveVisualPoint = (
+    point: Point,
+    options: DOMVisualPointOptions
+  ): DOMVisualPoint | null => {
+    const root = DOMEditor.resolveDOMNode(editor, editor);
+    const domPoint = DOMEditor.resolveDOMPoint(editor, point);
+
+    if (!root || !domPoint) return null;
+    const selection = root.ownerDocument.getSelection();
+    const modify = selection
+      ? (
+          selection as globalThis.Selection & {
+            modify?: (
+              alter: 'move',
+              direction: 'left' | 'right',
+              granularity: 'character' | 'word'
+            ) => void;
+          }
+        ).modify
+      : undefined;
+
+    if (!selection || !modify) return null;
+    const saved =
+      selection.anchorNode && selection.focusNode
+        ? {
+            anchorNode: selection.anchorNode,
+            anchorOffset: selection.anchorOffset,
+            focusNode: selection.focusNode,
+            focusOffset: selection.focusOffset,
+          }
+        : null;
+
+    try {
+      selection.collapse(domPoint[0], domPoint[1]);
+      Reflect.apply(modify, selection, [
+        'move',
+        options.direction,
+        options.unit,
+      ]);
+
+      if (!selection.focusNode) return null;
+      const nextDOMPoint: DOMPoint = [
+        selection.focusNode,
+        selection.focusOffset,
+      ];
+      const next = DOMEditor.resolvePlitePoint(editor, nextDOMPoint, {
+        exactMatch: false,
+      });
+
+      if (!next) return null;
+      const geometry = createDOMGeometryKernel({ root });
+      const rect = geometry.pointRect(nextDOMPoint, {
+        association: options.affinity === 'forward' ? 'forward' : 'backward',
+      });
+      const affinity = rect
+        ? geometry.associationForPoint(nextDOMPoint, rect.left)
+        : (options.affinity ??
+          (options.direction === 'left' ? 'backward' : 'forward'));
+
+      if (
+        PointApi.equals(point, next) &&
+        affinity === (options.affinity ?? 'backward')
+      ) {
+        return null;
+      }
+
+      return Object.freeze({ affinity, point: next });
+    } finally {
+      if (saved) {
+        selection.setBaseAndExtent(
+          saved.anchorNode,
+          saved.anchorOffset,
+          saved.focusNode,
+          saved.focusOffset
+        );
+      } else {
+        selection.removeAllRanges();
+      }
+    }
+  };
   const runClipboardInsert = (
     data: DataTransfer,
     fallback: (data: DataTransfer) => boolean,
@@ -2370,6 +2467,7 @@ export const createDOMEditorCapability = <
     resolveEventRange: (event) => DOMEditor.resolveEventRange(editor, event),
     resolvePath: (node) => DOMEditor.resolvePath(editor, node),
     resolveRangeRect: (range) => DOMEditor.resolveRangeRect(editor, range),
+    resolveVisualPoint,
     root: () => DOMEditor.root(editor),
     scroll: () => DOMEditor.scroll(editor),
     scrollIntoView: (target, options) =>

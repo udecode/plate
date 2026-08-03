@@ -16,7 +16,7 @@ describe('mdx mark package surfaces', () => {
       output: [
         {
           children: [{ highlight: true, text: 'highlight' }],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
       title: 'round-trips highlight marks through mdx text elements',
@@ -31,7 +31,7 @@ describe('mdx mark package surfaces', () => {
             { script: 'sub', text: '2' },
             { text: 'O' },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
       title: 'round-trips subscript marks through mdx text elements',
@@ -42,7 +42,7 @@ describe('mdx mark package surfaces', () => {
       output: [
         {
           children: [{ text: 'E=mc' }, { script: 'sup', text: '2' }],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
       title: 'round-trips superscript marks through mdx text elements',
@@ -64,7 +64,7 @@ describe('mdx mark package surfaces', () => {
               text: 'Styled',
             },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
       title: 'composes every feature-owned span mark codec',

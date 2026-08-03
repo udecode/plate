@@ -2,6 +2,7 @@ import type { KeyboardEvent } from 'react';
 import {
   type EditorUpdatePolicyFor,
   type MoveUnit,
+  NodeApi,
   type Point,
   PointApi,
   type Range,
@@ -49,6 +50,76 @@ import {
 export type EditableCaretMovementResult = {
   handled: boolean;
   repair?: EditableRepairRequest | null;
+};
+
+type TextDirection = 'ltr' | 'neutral' | 'rtl';
+
+const BIDI_CONTROL_MATCHER = /[\u061c\u200e\u200f\u202a-\u202e\u2066-\u2069]/u;
+const LETTER_MATCHER = /\p{L}/u;
+const RTL_SCRIPT_MATCHERS = [
+  'Adlam',
+  'Arabic',
+  'Avestan',
+  'Chorasmian',
+  'Elymaic',
+  'Hanifi_Rohingya',
+  'Hatran',
+  'Hebrew',
+  'Imperial_Aramaic',
+  'Inscriptional_Pahlavi',
+  'Inscriptional_Parthian',
+  'Lydian',
+  'Mandaic',
+  'Manichaean',
+  'Mende_Kikakui',
+  'Meroitic_Cursive',
+  'Meroitic_Hieroglyphs',
+  'Nabataean',
+  'Nko',
+  'Old_Hungarian',
+  'Old_North_Arabian',
+  'Old_Sogdian',
+  'Old_South_Arabian',
+  'Old_Uyghur',
+  'Palmyrene',
+  'Phoenician',
+  'Psalter_Pahlavi',
+  'Samaritan',
+  'Sogdian',
+  'Syriac',
+  'Thaana',
+  'Yezidi',
+]
+  .map((script) => {
+    try {
+      return new RegExp(`\\p{Script=${script}}`, 'u');
+    } catch {
+      return null;
+    }
+  })
+  .filter((matcher): matcher is RegExp => matcher !== null);
+
+const hasVisualBidiText = (value: string) =>
+  BIDI_CONTROL_MATCHER.test(value) ||
+  Array.from(value).some((character) =>
+    RTL_SCRIPT_MATCHERS.some((matcher) => matcher.test(character))
+  );
+
+export const getTextDirection = (value: string): TextDirection => {
+  for (const character of value) {
+    if (
+      LETTER_MATCHER.test(character) &&
+      RTL_SCRIPT_MATCHERS.some((matcher) => matcher.test(character))
+    ) {
+      return 'rtl';
+    }
+
+    if (LETTER_MATCHER.test(character)) {
+      return 'ltr';
+    }
+  }
+
+  return 'neutral';
 };
 
 const selectionSyncRepair = ({
@@ -436,7 +507,6 @@ export const applyEditableCaretMovement = ({
   domPhaseScheduler,
   editor,
   event,
-  isRTL,
   selection,
   domStrategyRuntime,
 }: {
@@ -444,7 +514,6 @@ export const applyEditableCaretMovement = ({
   domStrategyRuntime: unknown;
   editor: ReactRuntimeEditor;
   event: KeyboardEvent<HTMLDivElement>;
-  isRTL: boolean;
   selection: Range | null;
 }): EditableCaretMovementResult => {
   const { nativeEvent } = event;
@@ -674,170 +743,190 @@ export const applyEditableCaretMovement = ({
     return caretMovementHandled();
   }
 
-  if (Hotkeys.isExtendBackward(nativeEvent)) {
+  const horizontal = Hotkeys.isExtendBackward(nativeEvent)
+    ? { direction: 'left' as const, extend: true, unit: 'character' as const }
+    : Hotkeys.isExtendForward(nativeEvent)
+      ? {
+          direction: 'right' as const,
+          extend: true,
+          unit: 'character' as const,
+        }
+      : Hotkeys.isExtendWordBackward(nativeEvent)
+        ? { direction: 'left' as const, extend: true, unit: 'word' as const }
+        : Hotkeys.isExtendWordForward(nativeEvent)
+          ? { direction: 'right' as const, extend: true, unit: 'word' as const }
+          : Hotkeys.isMoveBackward(nativeEvent)
+            ? {
+                direction: 'left' as const,
+                extend: false,
+                unit: 'character' as const,
+              }
+            : Hotkeys.isMoveForward(nativeEvent)
+              ? {
+                  direction: 'right' as const,
+                  extend: false,
+                  unit: 'character' as const,
+                }
+              : Hotkeys.isMoveWordBackward(nativeEvent)
+                ? {
+                    direction: 'left' as const,
+                    extend: false,
+                    unit: 'word' as const,
+                  }
+                : Hotkeys.isMoveWordForward(nativeEvent)
+                  ? {
+                      direction: 'right' as const,
+                      extend: false,
+                      unit: 'word' as const,
+                    }
+                  : null;
+
+  if (horizontal) {
     event.preventDefault();
+    const reverse = horizontal.direction === 'left';
+    const currentTarget = event.currentTarget;
+    const directionHost = currentTarget?.closest<HTMLElement>('[dir]');
+    const directionTarget =
+      directionHost ?? currentTarget ?? editor.api.dom?.root();
+    const rootIsRTL =
+      directionHost?.dir === 'rtl' ||
+      (directionTarget
+        ? directionTarget.ownerDocument.defaultView?.getComputedStyle(
+            directionTarget
+          ).direction === 'rtl'
+        : false);
+    const modelReverse = rootIsRTL ? !reverse : reverse;
+
     moveSelectionAndRespectBoundaries({
       domPhaseScheduler,
       editor,
       move: () => {
-        dispatchCommand(editor, editorCommands.move, {
-          options: { edge: 'focus', reverse: !isRTL },
+        if (!selection) return;
+        if (
+          !horizontal.extend &&
+          horizontal.unit === 'character' &&
+          RangeApi.isExpanded(selection)
+        ) {
+          const root = editor.api.dom?.root();
+          const isRTL =
+            root?.ownerDocument.defaultView?.getComputedStyle(root)
+              .direction === 'rtl';
+          const useStart =
+            horizontal.direction === 'left' ? !isRTL : Boolean(isRTL);
+
+          dispatchCommand(editor, editorCommands.select, {
+            target: useStart
+              ? RangeApi.start(selection)
+              : RangeApi.end(selection),
+          });
+          return;
+        }
+
+        const usesVisualBidiOrder = editor.read((state) => {
+          const block = state.nodes.block({
+            at: selection.focus,
+            mode: 'lowest',
+          })?.[0];
+
+          return (
+            rootIsRTL || (block && hasVisualBidiText(NodeApi.string(block)))
+          );
         });
-      },
-      boundarySkipUnit: 'character',
-      preserveAnchorOnBoundarySkip: true,
-      reverse: !isRTL,
-      selection,
-    });
-    return caretMovementHandled();
-  }
 
-  if (Hotkeys.isExtendForward(nativeEvent)) {
-    event.preventDefault();
-    moveSelectionAndRespectBoundaries({
-      domPhaseScheduler,
-      editor,
-      move: () => {
-        dispatchCommand(editor, editorCommands.move, {
-          options: { edge: 'focus', reverse: isRTL },
-        });
-      },
-      boundarySkipUnit: 'character',
-      preserveAnchorOnBoundarySkip: true,
-      reverse: isRTL,
-      selection,
-    });
-    return caretMovementHandled();
-  }
-
-  if (Hotkeys.isExtendWordBackward(nativeEvent)) {
-    event.preventDefault();
-    moveSelectionAndRespectBoundaries({
-      domPhaseScheduler,
-      editor,
-      move: () => {
-        dispatchCommand(editor, editorCommands.move, {
-          options: { edge: 'focus', reverse: !isRTL, unit: 'word' },
-        });
-      },
-      boundarySkipUnit: 'word',
-      preserveAnchorOnBoundarySkip: true,
-      reverse: !isRTL,
-      selection,
-    });
-    return caretMovementHandled();
-  }
-
-  if (Hotkeys.isExtendWordForward(nativeEvent)) {
-    event.preventDefault();
-    moveSelectionAndRespectBoundaries({
-      domPhaseScheduler,
-      editor,
-      move: () => {
-        dispatchCommand(editor, editorCommands.move, {
-          options: { edge: 'focus', reverse: isRTL, unit: 'word' },
-        });
-      },
-      boundarySkipUnit: 'word',
-      preserveAnchorOnBoundarySkip: true,
-      reverse: isRTL,
-      selection,
-    });
-    return caretMovementHandled();
-  }
-
-  // COMPAT: If a void node is selected, or a zero-width text node adjacent to
-  // an inline is selected, browsers can't reliably skip over the void node with
-  // the zero-width space not being an empty string.
-  if (Hotkeys.isMoveBackward(nativeEvent)) {
-    event.preventDefault();
-
-    moveSelectionAndRespectBoundaries({
-      domPhaseScheduler,
-      editor,
-      move: () => {
-        if (selection && RangeApi.isCollapsed(selection)) {
+        if (!usesVisualBidiOrder) {
           dispatchCommand(editor, editorCommands.move, {
-            options: { reverse: !isRTL },
+            options: {
+              edge: horizontal.extend ? 'focus' : undefined,
+              reverse: modelReverse,
+              unit: horizontal.unit,
+            },
           });
-        } else if (selection) {
-          dispatchCommand(editor, editorCommands.select, {
-            target: isRTL ? RangeApi.end(selection) : RangeApi.start(selection),
-          });
+          return;
         }
-      },
-      reverse: !isRTL,
-      selection,
-    });
 
-    return caretMovementHandled();
-  }
+        const visualNext = editor.api.dom?.resolveVisualPoint(selection.focus, {
+          affinity: SelectionApi.isText(selection)
+            ? selection.affinity
+            : undefined,
+          direction: horizontal.direction,
+          unit: horizontal.unit,
+        });
+        const next =
+          visualNext && horizontal.unit === 'character'
+            ? editor.read((state) => {
+                const logicalNext = PointApi.isBefore(
+                  selection.focus,
+                  visualNext.point
+                )
+                  ? state.points.after(selection.focus, { unit: 'character' })
+                  : PointApi.isAfter(selection.focus, visualNext.point)
+                    ? state.points.before(selection.focus, {
+                        unit: 'character',
+                      })
+                    : undefined;
 
-  if (Hotkeys.isMoveForward(nativeEvent)) {
-    event.preventDefault();
+                if (!logicalNext) {
+                  return visualNext;
+                }
 
-    moveSelectionAndRespectBoundaries({
-      domPhaseScheduler,
-      editor,
-      move: () => {
-        if (selection && RangeApi.isCollapsed(selection)) {
-          dispatchCommand(editor, editorCommands.move, {
-            options: { reverse: isRTL },
-          });
-        } else if (selection) {
+                const enteredNonSelectable = state.nodes.above({
+                  at: visualNext.point,
+                  match: (node) =>
+                    NodeApi.isElement(node) && !state.nodes.isSelectable(node),
+                  mode: 'highest',
+                  voids: true,
+                });
+
+                if (PointApi.equals(logicalNext, visualNext.point)) {
+                  return visualNext;
+                }
+
+                const crossedInlineVoid = state.nodes.above({
+                  at: logicalNext,
+                  match: (node) =>
+                    NodeApi.isElement(node) &&
+                    state.schema.isInline(node) &&
+                    state.schema.isVoid(node),
+                  mode: 'lowest',
+                  voids: true,
+                });
+
+                return enteredNonSelectable ||
+                  crossedInlineVoid ||
+                  DOMCoverage.getBoundaryForPoint(editor, logicalNext)
+                  ? { ...visualNext, point: logicalNext }
+                  : visualNext;
+              })
+            : visualNext;
+
+        if (next) {
           dispatchCommand(editor, editorCommands.select, {
-            target: isRTL ? RangeApi.start(selection) : RangeApi.end(selection),
+            target: SelectionApi.isText(selection)
+              ? {
+                  ...selection,
+                  affinity: next.affinity,
+                  anchor: horizontal.extend ? selection.anchor : next.point,
+                  focus: next.point,
+                }
+              : {
+                  anchor: horizontal.extend ? selection.anchor : next.point,
+                  focus: next.point,
+                },
           });
-        }
-      },
-      reverse: isRTL,
-      selection,
-    });
-
-    return caretMovementHandled();
-  }
-
-  if (Hotkeys.isMoveWordBackward(nativeEvent)) {
-    event.preventDefault();
-
-    moveSelectionAndRespectBoundaries({
-      domPhaseScheduler,
-      editor,
-      move: () => {
-        if (selection && RangeApi.isExpanded(selection)) {
-          dispatchCommand(editor, editorCommands.select, {
-            target: selection.focus,
-          });
+          return;
         }
 
         dispatchCommand(editor, editorCommands.move, {
-          options: { reverse: !isRTL, unit: 'word' },
+          options: {
+            edge: horizontal.extend ? 'focus' : undefined,
+            reverse: modelReverse,
+            unit: horizontal.unit,
+          },
         });
       },
-      reverse: !isRTL,
-      selection,
-    });
-    return caretMovementHandled();
-  }
-
-  if (Hotkeys.isMoveWordForward(nativeEvent)) {
-    event.preventDefault();
-
-    moveSelectionAndRespectBoundaries({
-      domPhaseScheduler,
-      editor,
-      move: () => {
-        if (selection && RangeApi.isExpanded(selection)) {
-          dispatchCommand(editor, editorCommands.select, {
-            target: selection.focus,
-          });
-        }
-
-        dispatchCommand(editor, editorCommands.move, {
-          options: { reverse: isRTL, unit: 'word' },
-        });
-      },
-      reverse: isRTL,
+      boundarySkipUnit: horizontal.unit,
+      preserveAnchorOnBoundarySkip: horizontal.extend,
+      reverse: modelReverse,
       selection,
     });
     return caretMovementHandled();

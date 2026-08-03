@@ -15,7 +15,7 @@ const createEditor = (text: string, offset = text.length) =>
       anchor: { offset, path: [0, 0] },
       focus: { offset, path: [0, 0] },
     },
-    initialValue: [{ children: [{ text }], type: 'p' }],
+    initialValue: [{ children: [{ text }], type: 'paragraph' }],
   } as any);
 
 const insertText = (editor: ReturnType<typeof createEditor>, text: string) => {
@@ -31,8 +31,8 @@ describe('CodeBlockKit current contract', () => {
 
     expect(editor.read.children()).toMatchObject([
       {
-        children: [{ children: [{ text: 'code' }], type: 'code_line' }],
-        type: 'code_block',
+        children: [{ children: [{ text: 'code' }], type: 'codeLine' }],
+        type: 'codeBlock',
       },
     ]);
     expect(editor.read.selection()).toEqual({

@@ -7,7 +7,7 @@ import {
 } from '@testing-library/react';
 import {
   createEditor,
-  defineEditorExtension,
+  defineExtension,
   type Descendant,
   type Range as PliteRange,
 } from '@platejs/plite';
@@ -103,14 +103,13 @@ const createCoordinateSelectionEditor = ({
 }) =>
   createEditor({
     extensions: [
-      defineEditorExtension({
+      defineExtension('dom', {
         api: () => ({
           assertDOMNode: () => editable,
           focus: vi.fn(),
           resolveDOMNode: () => editable,
           resolveEventRange: () => resolvedRanges.shift() ?? null,
         }),
-        name: 'dom',
       }),
     ],
     initialValue,

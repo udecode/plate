@@ -9,6 +9,8 @@ describe('vNodeHasChildren', () => {
   });
 
   it('returns true when the vnode has child nodes', () => {
-    expect(vNodeHasChildren({ children: [{ type: 'p' }] as any })).toBe(true);
+    expect(vNodeHasChildren({ children: [{ type: 'paragraph' }] as any })).toBe(
+      true
+    );
   });
 });

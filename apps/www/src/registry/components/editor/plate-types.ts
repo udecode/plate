@@ -3,7 +3,6 @@
 import type { Element, Text } from '@platejs/plite';
 import type {
   EmptyText,
-  KEYS,
   NODES,
   PlainText,
   TBasicMarks,
@@ -38,7 +37,7 @@ export interface MyTextBlockElement
 }
 
 export interface MyBlockquoteElement extends MyTextBlockElement {
-  type: typeof KEYS.blockquote;
+  type: typeof NODES.blockquote;
 }
 
 export interface MyCodeBlockElement extends MyBlockElement {
@@ -52,44 +51,44 @@ export interface MyCodeLineElement extends Element {
 }
 
 export interface MyH1Element extends MyTextBlockElement {
-  type: typeof KEYS.h1;
+  type: typeof NODES.h1;
 }
 
 export interface MyH2Element extends MyTextBlockElement {
-  type: typeof KEYS.h2;
+  type: typeof NODES.h2;
 }
 
 /** Block props */
 
 export interface MyH3Element extends MyTextBlockElement {
-  type: typeof KEYS.h3;
+  type: typeof NODES.h3;
 }
 
 export interface MyH4Element extends MyTextBlockElement {
-  type: typeof KEYS.h4;
+  type: typeof NODES.h4;
 }
 
 export interface MyH5Element extends MyTextBlockElement {
-  type: typeof KEYS.h5;
+  type: typeof NODES.h5;
 }
 
 export interface MyH6Element extends MyTextBlockElement {
-  type: typeof KEYS.h6;
+  type: typeof NODES.h6;
 }
 
 export interface MyHrElement extends MyBlockElement {
   children: [EmptyText];
-  type: typeof KEYS.hr;
+  type: typeof NODES.hr;
 }
 
 export interface MyImageElement extends TImageElement, TResizableProps {
   id?: string;
-  type: typeof KEYS.img;
+  type: typeof NODES.img;
 }
 
 export interface MyLinkElement extends TLinkElement {
   children: RichText[];
-  type: typeof KEYS.link;
+  type: typeof NODES.link;
 }
 
 export interface MyMediaEmbedElement
@@ -101,7 +100,7 @@ export interface MyMediaEmbedElement
 
 export interface MyMentionElement extends TMentionElement {
   children: [EmptyText];
-  type: typeof KEYS.mention;
+  type: typeof NODES.mention;
 }
 
 export interface MyMentionInputElement extends TComboboxInputElement {
@@ -112,26 +111,26 @@ export interface MyMentionInputElement extends TComboboxInputElement {
 export type MyNestableBlock = MyParagraphElement;
 
 export interface MyParagraphElement extends MyTextBlockElement {
-  type: typeof KEYS.p;
+  type: typeof NODES.p;
 }
 
 export interface MyTableCellElement extends Element {
   children: MyNestableBlock[];
-  type: typeof KEYS.td;
+  type: typeof NODES.td;
 }
 
 export interface MyTableElement extends MyBlockElement, TTableElement {
   children: MyTableRowElement[];
-  type: typeof KEYS.table;
+  type: typeof NODES.table;
 }
 
 export interface MyTableRowElement extends Element {
   children: MyTableCellElement[];
-  type: typeof KEYS.tr;
+  type: typeof NODES.tr;
 }
 
 export interface MyToggleElement extends MyTextBlockElement {
-  type: typeof KEYS.toggle;
+  type: typeof NODES.toggle;
 }
 
 export interface RichText extends TBasicMarks, TCommentText, TFontMarks, Text {

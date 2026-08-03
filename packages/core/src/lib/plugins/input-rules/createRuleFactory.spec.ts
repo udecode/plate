@@ -1,7 +1,7 @@
 import type { Range } from '@platejs/plite';
 
 import { createBaseEditor } from '../../editor';
-import { createBasePlugin } from '../../plugin';
+import { defineBasePlugin } from '../../plugin';
 import { createRuleFactory } from './createRuleFactory';
 import type { InsertTextInputRule } from './types';
 
@@ -9,15 +9,16 @@ const resolveInsertTextRule = <TMatch>(
   rule: InsertTextInputRule<TMatch>,
   {
     blockText,
-    pluginName,
+    name,
     range,
   }: {
     blockText: string;
-    pluginName: string;
+    name: string;
     range: Range;
   }
 ) => {
   const editor = createBaseEditor();
+  const plugin = defineBasePlugin(name, {});
   let match: TMatch | undefined;
 
   editor.update((tx) => {
@@ -33,7 +34,7 @@ const resolveInsertTextRule = <TMatch>(
       insertText: () => {},
       isCollapsed: true,
       options: undefined,
-      pluginName,
+      plugin,
       text: ' ',
       tx,
     });
@@ -91,7 +92,7 @@ describe('createRuleFactory', () => {
   });
 
   it('binds a plugin owner without changing rule factory behavior', () => {
-    const plugin = createBasePlugin({ name: 'blockquote' });
+    const plugin = defineBasePlugin('blockquote', {});
     const editor = createBaseEditor({ plugins: [plugin] });
     const rule = createRuleFactory(plugin)<{}, { marker: string }>({
       type: 'blockStart',
@@ -119,7 +120,7 @@ describe('createRuleFactory', () => {
         insertText: () => {},
         isCollapsed: true,
         options: undefined,
-        pluginName: plugin.name,
+        plugin,
         text: ' ',
         tx,
       });
@@ -144,7 +145,7 @@ describe('createRuleFactory', () => {
 
     const match = resolveInsertTextRule(rule, {
       blockText: '>',
-      pluginName: 'blockquote',
+      name: 'blockquote',
       range,
     });
 
@@ -169,7 +170,7 @@ describe('createRuleFactory', () => {
 
     const match = resolveInsertTextRule(rule, {
       blockText: '3.',
-      pluginName: 'list',
+      name: 'list',
       range,
     });
 

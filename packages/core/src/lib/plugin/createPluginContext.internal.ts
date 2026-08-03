@@ -1,6 +1,9 @@
 import type { Value } from '@platejs/plite';
 
-import type { BaseEditor } from '../editor';
+import type {
+  BaseEditor,
+  InternalBaseEditorWithInstalledPlugins,
+} from '../editor';
 import type {
   AnyBasePluginDefinition,
   PluginReference,
@@ -11,7 +14,7 @@ import type {
   AnyBasePlugin,
   AnyBasePluginContext,
   AnyBasePluginPortal,
-  AnyResolvedBasePlugin,
+  AnyPluginBase,
   BasePluginContext,
   BasePluginPortal,
 } from './BasePlugin';
@@ -19,36 +22,38 @@ import { createDefinePluginCodecs } from './pluginAuthoringContext';
 import {
   getCompiledPlatePlugin,
   getCompiledPlatePluginApi,
+  getCompiledPlateModelBinding,
   hasCompiledPlatePluginCandidate,
   hasCompiledPlatePluginApiCandidate,
   isResolvingPlatePlugin,
+  resolvePluginElementType,
+  resolvePluginPropertyKey,
 } from '../../internal/plugin/compilePlateModel';
 import { getPluginStore } from '../../internal/plugin/pluginStore';
 import {
   getPluginSchemaFamily,
   isNominalPluginDescriptor,
+  isResolvedPluginDescriptor,
 } from '../../internal/utils/mergePlugins';
 
-const isResolvedBasePluginDescriptor = (
-  value: unknown
-): value is AnyBasePlugin =>
-  isNominalPluginDescriptor(value) && Reflect.get(value, '__resolved') === true;
+const isPluginBaseDescriptor = (value: unknown): value is AnyBasePlugin =>
+  isNominalPluginDescriptor(value) && isResolvedPluginDescriptor(value);
 
 export function createPluginPortal<
   V extends Value,
   E extends AnyBasePluginDefinition,
-  P extends (AnyBasePlugin | AnyResolvedBasePlugin) & PluginReference,
+  P extends (AnyBasePlugin | AnyPluginBase) & PluginReference,
 >(
-  editor: BaseEditor<V, E>,
+  editor: InternalBaseEditorWithInstalledPlugins<V, E>,
   p: P
 ): BasePluginPortal<InternalPluginDefinitionOf<P>>;
 export function createPluginPortal(
   editor: BaseEditor,
-  plugin: AnyBasePlugin | AnyResolvedBasePlugin | string
+  plugin: AnyBasePlugin | AnyPluginBase | PluginReference | string
 ): AnyBasePluginPortal;
 export function createPluginPortal(
   editor: object,
-  plugin: AnyBasePlugin | AnyResolvedBasePlugin | string
+  plugin: AnyBasePlugin | AnyPluginBase | PluginReference | string
 ): unknown {
   return createPluginAccess(editor, plugin, false);
 }
@@ -56,25 +61,25 @@ export function createPluginPortal(
 export function createPluginContext<
   V extends Value,
   E extends AnyBasePluginDefinition,
-  P extends (AnyBasePlugin | AnyResolvedBasePlugin) & PluginReference,
+  P extends (AnyBasePlugin | AnyPluginBase) & PluginReference,
 >(
-  editor: BaseEditor<V, E>,
+  editor: InternalBaseEditorWithInstalledPlugins<V, E>,
   p: P
 ): BasePluginContext<InternalPluginDefinitionOf<P>>;
 export function createPluginContext(
   editor: BaseEditor,
-  plugin: AnyBasePlugin | AnyResolvedBasePlugin | string
+  plugin: AnyBasePlugin | AnyPluginBase | PluginReference | string
 ): AnyBasePluginContext;
 export function createPluginContext(
   editor: object,
-  plugin: AnyBasePlugin | AnyResolvedBasePlugin | string
+  plugin: AnyBasePlugin | AnyPluginBase | PluginReference | string
 ): unknown {
   return createPluginAccess(editor, plugin, true);
 }
 
 const createPluginAccess = (
   editor: object,
-  input: AnyBasePlugin | AnyResolvedBasePlugin | string,
+  input: AnyBasePlugin | AnyPluginBase | PluginReference | string,
   authoring: boolean
 ): AnyBasePluginContext | AnyBasePluginPortal => {
   if (typeof input !== 'string' && !isNominalPluginDescriptor(input)) {
@@ -85,10 +90,12 @@ const createPluginAccess = (
 
   const descriptor = typeof input === 'string' ? undefined : input;
   const name = typeof input === 'string' ? input : input.name;
-  const provided =
-    descriptor && isResolvedBasePluginDescriptor(descriptor)
-      ? descriptor
+  const fallbackSchemaOwner =
+    descriptor && 'schema' in descriptor
+      ? (descriptor as AnyBasePlugin)
       : undefined;
+  const provided =
+    descriptor && isPluginBaseDescriptor(descriptor) ? descriptor : undefined;
   const matchesDescriptorFamily = (plugin: AnyBasePlugin) =>
     !descriptor ||
     !isNominalPluginDescriptor(descriptor) ||
@@ -120,12 +127,88 @@ const createPluginAccess = (
 
     return plugin !== undefined && matchesDescriptorFamily(plugin);
   };
-  const getStore = () => getPluginStore(editor, getPlugin().name);
+  const getStore = () => getPluginStore(editor, getPlugin());
+  const getElementType = () => {
+    const plugin = getCandidate() ?? getCompiledPlatePlugin(editor, name);
+
+    if (!plugin || !matchesDescriptorFamily(plugin)) {
+      if (!descriptor) return name;
+      if (
+        fallbackSchemaOwner?.schema &&
+        (typeof fallbackSchemaOwner.schema === 'function' ||
+          (typeof fallbackSchemaOwner.schema === 'object' &&
+            'element' in fallbackSchemaOwner.schema))
+      ) {
+        return resolvePluginElementType(fallbackSchemaOwner);
+      }
+
+      throw new Error(`Plate plugin "${name}" does not own an element type.`);
+    }
+    const binding = getCompiledPlateModelBinding(editor, plugin);
+
+    if (binding) {
+      if (binding.elementType) return binding.elementType;
+
+      throw new Error(
+        `Plate plugin "${plugin.name}" does not own an element type.`
+      );
+    }
+    if (
+      plugin.schema &&
+      (typeof plugin.schema === 'function' ||
+        (typeof plugin.schema === 'object' && 'element' in plugin.schema))
+    ) {
+      return resolvePluginElementType(plugin);
+    }
+
+    throw new Error(
+      `Plate plugin "${plugin.name}" does not own an element type.`
+    );
+  };
+  const getPropertyKey = () => {
+    const plugin = getCandidate() ?? getCompiledPlatePlugin(editor, name);
+
+    if (!plugin || !matchesDescriptorFamily(plugin)) {
+      if (!descriptor) return name;
+      if (
+        fallbackSchemaOwner?.schema &&
+        (typeof fallbackSchemaOwner.schema === 'function' ||
+          (typeof fallbackSchemaOwner.schema === 'object' &&
+            ('mark' in fallbackSchemaOwner.schema ||
+              'properties' in fallbackSchemaOwner.schema)))
+      ) {
+        return resolvePluginPropertyKey(fallbackSchemaOwner);
+      }
+
+      throw new Error(`Plate plugin "${name}" does not own a property key.`);
+    }
+    const binding = getCompiledPlateModelBinding(editor, plugin);
+
+    if (binding) {
+      if (binding.propertyKey) return binding.propertyKey;
+
+      throw new Error(
+        `Plate plugin "${plugin.name}" does not own a property key.`
+      );
+    }
+    if (
+      plugin.schema &&
+      (typeof plugin.schema === 'function' ||
+        (typeof plugin.schema === 'object' &&
+          ('mark' in plugin.schema || 'properties' in plugin.schema)))
+    ) {
+      return resolvePluginPropertyKey(plugin);
+    }
+
+    throw new Error(
+      `Plate plugin "${plugin.name}" does not own a property key.`
+    );
+  };
   const createApiFacade = (path: readonly PropertyKey[]): unknown =>
     new Proxy(
       (...args: unknown[]) => {
         let owner: unknown =
-          getCompiledPlatePluginApi(editor, getPlugin().name) ?? {};
+          getCompiledPlatePluginApi(editor, getPlugin()) ?? {};
         let value = owner;
 
         for (const key of path) {
@@ -178,12 +261,12 @@ const createPluginAccess = (
     }
     if (
       !hasCompiledPlatePluginApiCandidate(editor) &&
-      getCompiledPlatePluginApi(editor, plugin.name) === undefined
+      getCompiledPlatePluginApi(editor, plugin) === undefined
     ) {
       return api;
     }
 
-    return getCompiledPlatePluginApi(editor, plugin.name) ?? {};
+    return getCompiledPlatePluginApi(editor, plugin) ?? {};
   };
   const createUpdateFacade = (path: readonly PropertyKey[]): unknown =>
     new Proxy(
@@ -352,12 +435,17 @@ const createPluginAccess = (
   if (authoring) {
     context.defineCodecs = createDefinePluginCodecs<AnyBasePluginDefinition>();
     context.editor = editor;
+    Object.defineProperty(context, 'plugin', {
+      enumerable: true,
+      get: getPlugin,
+    });
   }
 
   Object.defineProperties(context, {
     api: { enumerable: true, get: getRuntimeApi },
     installed: { enumerable: true, get: isInstalled },
-    plugin: { enumerable: true, get: getPlugin },
+    key: { enumerable: false, get: getPropertyKey },
+    name: { enumerable: true, get: () => getPlugin().name },
     read: {
       enumerable: true,
       get: () => {
@@ -374,7 +462,7 @@ const createPluginAccess = (
         return store;
       },
     },
-    type: { enumerable: true, get: () => getPlugin().type },
+    type: { enumerable: false, get: getElementType },
     update: {
       enumerable: true,
       get: () => {
@@ -385,5 +473,49 @@ const createPluginAccess = (
     },
   });
 
-  return context as AnyBasePluginContext | AnyBasePluginPortal;
+  return new Proxy(context, {
+    get(target, key, receiver) {
+      if (Reflect.has(target, key)) {
+        return Reflect.get(target, key, receiver);
+      }
+
+      return Reflect.get(getPlugin(), key);
+    },
+    getOwnPropertyDescriptor(target, key) {
+      const ownDescriptor = Reflect.getOwnPropertyDescriptor(target, key);
+
+      if (ownDescriptor) return ownDescriptor;
+
+      const pluginDescriptor = Reflect.getOwnPropertyDescriptor(
+        getPlugin(),
+        key
+      );
+
+      return pluginDescriptor
+        ? { ...pluginDescriptor, configurable: true }
+        : undefined;
+    },
+    has(target, key) {
+      return Reflect.has(target, key) || Reflect.has(getPlugin(), key);
+    },
+    ownKeys(target) {
+      return [
+        ...new Set([
+          ...Reflect.ownKeys(target),
+          ...Reflect.ownKeys(getPlugin()),
+        ]),
+      ];
+    },
+    defineProperty(target, key, attributes) {
+      return authoring
+        ? Reflect.defineProperty(target, key, attributes)
+        : false;
+    },
+    deleteProperty(target, key) {
+      return authoring ? Reflect.deleteProperty(target, key) : false;
+    },
+    set(target, key, value, receiver) {
+      return authoring ? Reflect.set(target, key, value, receiver) : false;
+    },
+  }) as AnyBasePluginContext | AnyBasePluginPortal;
 };

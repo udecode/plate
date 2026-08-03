@@ -3,7 +3,7 @@ import { expect, mock, test } from 'bun:test';
 import {
   ContentSlice,
   createEditor,
-  defineEditorExtension,
+  defineExtension,
   defineEditorSchema,
   defineExtensionSlot,
   editorCommands,
@@ -59,7 +59,7 @@ const DataAttribute = schema.elementProperty(
   { target: target.group('block') }
 );
 
-const hostSchema = defineEditorSchema({
+const hostSchema = defineEditorSchema('schema:host-codec-test', {
   elements: {
     heading: {
       content: schema.content.text({ default: 'text', min: 1 }),
@@ -78,7 +78,7 @@ const hostSchema = defineEditorSchema({
   version: 1,
 });
 
-const inlineHostSchema = defineEditorSchema({
+const inlineHostSchema = defineEditorSchema('schema:host-codec-inline-test', {
   elements: {
     link: {
       content: schema.content.text({ default: 'text', min: 1 }),
@@ -109,7 +109,7 @@ const createInlineCodecEditor = (
       inlineHostSchema,
       dom(),
       hostCodecs('inline-host-codecs', []),
-      defineEditorExtension({
+      defineExtension('capture-inline-host-slice', {
         commands: ({ around }) => [
           around(editorCommands.replaceSlice, ({ input, next }) => {
             capture(input.slice);
@@ -117,7 +117,6 @@ const createInlineCodecEditor = (
             return next();
           }),
         ],
-        name: 'capture-inline-host-slice',
       }),
     ] as const,
     initialSelection: SelectionApi.text({
@@ -341,7 +340,7 @@ test('plain-text inline wrappers reject undeclared closed-schema properties', ()
   expect(captures).toBe(0);
   expect(diagnostics).toHaveLength(1);
   expect(diagnostics[0]).toMatchObject({
-    extension: 'plite-dom',
+    extensionName: 'plite-dom',
     format: 'text/plain',
     key: 'plite-plain-text',
     phase: 'parse',
@@ -496,7 +495,7 @@ test('host codec compilation follows configuration revisions and rolls back conf
 
   expect(write()).toBe('<p>original</p>');
 
-  const cleanup = editor.extend(
+  const cleanup = editor.install(
     hostCodecs('temporary-host-codec', [
       defineHostCodec({
         format: 'text/html',
@@ -511,7 +510,7 @@ test('host codec compilation follows configuration revisions and rolls back conf
   expect(write()).toBe('<p>original</p>');
 
   expect(() =>
-    editor.extend(hostCodecs('conflicting-host-codec', [original]))
+    editor.install(hostCodecs('conflicting-host-codec', [original]))
   ).toThrow(/use the same key "original"/);
   expect(write()).toBe('<p>original</p>');
 });
@@ -521,8 +520,7 @@ test('host codec ownership resolves declaration semantics against the candidate 
   const Italic = schema.textProperty('italic', property.boolean(), {
     target: target.type('paragraph'),
   });
-  const equivalentItalicSchema = defineEditorExtension({
-    name: 'equivalent-italic-schema',
+  const equivalentItalicSchema = defineExtension('equivalent-italic-schema', {
     schema: {
       properties: [
         schema.textProperty('italic', property.boolean(), {
@@ -538,11 +536,11 @@ test('host codec ownership resolves declaration semantics against the candidate 
     serialize: () => '<em>value</em>',
   });
 
-  expect(() => editor.extend(hostCodecs('italic-codec', [italic]))).toThrow(
+  expect(() => editor.install(hostCodecs('italic-codec', [italic]))).toThrow(
     /owns schema property .* that is not installed/
   );
 
-  const cleanup = editor.extend([
+  const cleanup = editor.install([
     equivalentItalicSchema,
     hostCodecs('italic-codec', [italic]),
   ]);
@@ -560,7 +558,7 @@ test('host codec ownership resolves declaration semantics against the candidate 
 test('schema reconfiguration recompiles codec claims and rolls back atomically', () => {
   const slot = defineExtensionSlot('host-codec-schema-revision');
   const articleSchema = (version: number, type: 'heading' | 'paragraph') =>
-    defineEditorSchema({
+    defineEditorSchema('schema:host-codec-schema-revision', {
       elements: {
         [type]: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -654,7 +652,7 @@ test('query and parse faults report lifecycle errors then fall through', () => {
     diagnostics.map((error) =>
       'format' in error
         ? {
-            extension: error.extension,
+            extension: error.extensionName,
             format: error.format,
             key: error.key,
             phase: error.phase,

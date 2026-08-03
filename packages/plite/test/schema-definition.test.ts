@@ -4,7 +4,7 @@ import { describe, it } from 'node:test';
 import {
   createEditor,
   defineEditorSchema,
-  defineEditorExtension,
+  defineExtension,
   defineExtensionSlot,
   type EditorSchemaContribution,
   type EditorExtensionReference,
@@ -41,12 +41,14 @@ describe('schema declaration builders', () => {
       default: 12,
       kind: 'number',
       omitDefault: true,
+      required: false,
       validationVersion: 2,
     });
     assert.deepEqual(JSON.parse(JSON.stringify(Width)), {
       default: 12,
       kind: 'number',
       omitDefault: true,
+      required: false,
       validationVersion: 2,
     });
     assert.equal(Width.validate?.('1'), false);
@@ -55,6 +57,7 @@ describe('schema declaration builders', () => {
       'default',
       'kind',
       'omitDefault',
+      'required',
       'validationVersion',
     ]);
     assert.throws(
@@ -70,6 +73,19 @@ describe('schema declaration builders', () => {
     assert.throws(
       () => property.string({ omitDefault: true }),
       /omitDefault requires a default/
+    );
+    assert.throws(
+      () => property.string({ default: '', required: true }),
+      /required cannot be combined with default or omitDefault/
+    );
+    assert.throws(
+      () =>
+        property.string({
+          default: '',
+          omitDefault: true,
+          required: true,
+        } as never),
+      /required cannot be combined with default or omitDefault/
     );
     assert.throws(
       () =>
@@ -90,6 +106,7 @@ describe('schema declaration builders', () => {
     assert.deepEqual(Script, {
       kind: 'enum',
       omitDefault: false,
+      required: false,
       values: ['sub', 'sup'],
     });
     assert.equal(Object.isFrozen(Script), true);
@@ -232,6 +249,7 @@ describe('schema declaration builders', () => {
       value: {
         kind: 'boolean',
         omitDefault: false,
+        required: false,
       },
     });
     assert.equal(Indent.placement, 'element');
@@ -260,7 +278,7 @@ describe('schema declaration builders', () => {
         min: 1,
       },
       properties: {
-        align: { kind: 'string', omitDefault: false },
+        align: { kind: 'string', omitDefault: false, required: false },
       },
       slice: { preserveContext: true },
     });
@@ -314,7 +332,7 @@ describe('schema declaration builders', () => {
       properties,
       slice,
     };
-    const ImageSchema = defineEditorSchema({
+    const ImageSchema = defineEditorSchema('schema:image-shape', {
       elements: { image },
       id: 'image-shape',
       root: schema.content.type('image'),
@@ -339,7 +357,7 @@ describe('schema declaration builders', () => {
   });
 
   it('normalizes omitted complete-schema fields to closed defaults', () => {
-    const TextSchema = defineEditorSchema({
+    const TextSchema = defineEditorSchema('schema:text-only', {
       id: 'text-only',
       root: schema.content.text(),
       version: 1,
@@ -356,7 +374,7 @@ describe('schema declaration builders', () => {
       content: schema.content.text({ min: 1 }),
       groups: ['articleBlock'],
     } as const;
-    const ArticleSchema = defineEditorSchema({
+    const ArticleSchema = defineEditorSchema('schema:article', {
       elements: { paragraph: Paragraph },
       groups: {
         articleBlock: { extends: ['block'] } as const,
@@ -418,7 +436,7 @@ describe('schema declaration builders', () => {
         createEditor({
           extensions: [
             // @ts-expect-error the primary root belongs in the singular root field
-            defineEditorSchema(invalidMain),
+            defineEditorSchema('schema:invalid-main', invalidMain),
           ],
         }),
       /singular root field/
@@ -446,10 +464,12 @@ describe('schema declaration builders', () => {
       },
       properties: [schema.textProperty('bold', property.boolean())],
     } as const;
-    const extension: EditorExtensionReference = defineEditorExtension({
-      name: 'paragraph-feature',
-      schema: contribution,
-    });
+    const extension: EditorExtensionReference = defineExtension(
+      'paragraph-feature',
+      {
+        schema: contribution,
+      }
+    );
     const canonicalContribution = extension.schema;
 
     assert.ok(
@@ -484,7 +504,7 @@ describe('schema declaration builders', () => {
   });
 
   it('preserves unknown elements only when the compiled grammar admits them', () => {
-    const OpenSchema = defineEditorSchema({
+    const OpenSchema = defineEditorSchema('schema:open-elements', {
       elements: {
         container: {
           content: schema.content.open(),
@@ -514,7 +534,7 @@ describe('schema declaration builders', () => {
       () =>
         createEditor({
           extensions: [
-            defineEditorSchema({
+            defineEditorSchema('schema:closed-content', {
               elements: {
                 container: { content: schema.content.text() },
               },
@@ -543,7 +563,7 @@ describe('schema declaration builders', () => {
     const elements: Record<string, SchemaElement> = {
       paragraph: rawElement,
     };
-    const FrozenSchema = defineEditorSchema({
+    const FrozenSchema = defineEditorSchema('schema:raw-structural-input', {
       elements,
       id: 'raw-structural-input',
       root: rawContent,
@@ -578,13 +598,16 @@ describe('schema declaration builders', () => {
         value: 'metadata',
       })
     ) as SchemaElement;
-    const FrozenSchema = defineEditorSchema({
-      elements: { paragraph: frozenElement },
-      id: 'frozen-declaration-traversal',
-      root: schema.content.type('paragraph'),
-      unknown: 'reject',
-      version: 1,
-    });
+    const FrozenSchema = defineEditorSchema(
+      'schema:frozen-declaration-traversal',
+      {
+        elements: { paragraph: frozenElement },
+        id: 'frozen-declaration-traversal',
+        root: schema.content.type('paragraph'),
+        unknown: 'reject',
+        version: 1,
+      }
+    );
 
     slice.preserveContext = false;
 
@@ -602,7 +625,7 @@ describe('schema declaration builders', () => {
 
     assert.throws(
       () =>
-        defineEditorSchema({
+        defineEditorSchema('schema:frozen-accessor', {
           elements: { paragraph: accessor as SchemaElement },
           id: 'frozen-accessor',
           root: schema.content.type('paragraph'),
@@ -620,7 +643,7 @@ describe('schema declaration builders', () => {
 
     assert.throws(
       () =>
-        defineEditorSchema({
+        defineEditorSchema('schema:frozen-nonplain', {
           elements: { paragraph: nonPlain as unknown as SchemaElement },
           id: 'frozen-nonplain',
           root: schema.content.type('paragraph'),
@@ -639,7 +662,7 @@ describe('schema declaration builders', () => {
 
     assert.throws(
       () =>
-        defineEditorSchema({
+        defineEditorSchema('schema:frozen-cycle', {
           elements: { paragraph: cyclic as unknown as SchemaElement },
           id: 'frozen-cycle',
           root: schema.content.type('paragraph'),

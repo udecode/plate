@@ -1,28 +1,28 @@
 import type {
-  TTableCellElement,
-  TTableElement,
-  TTableRowElement,
-} from '@platejs/utils';
+  TableCellElement,
+  TableElement,
+  TableRowElement,
+} from '../BaseTablePlugin';
 
 import { compileTableGrid, readTableGridCompilerMetrics } from './grid';
 
 const cell = (
   id: string,
-  options: Pick<TTableCellElement, 'colSpan' | 'rowSpan'> = {}
-): TTableCellElement => ({
+  options: Pick<TableCellElement, 'colSpan' | 'rowSpan'> = {}
+): TableCellElement => ({
   children: [{ text: id }],
   id,
   ...options,
-  type: 'td',
+  type: 'tableCell',
 });
 
 const table = (
-  rows: readonly (readonly TTableCellElement[])[]
-): TTableElement => ({
+  rows: readonly (readonly TableCellElement[])[]
+): TableElement => ({
   children: rows.map(
-    (children): TTableRowElement => ({
+    (children): TableRowElement => ({
       children: [...children],
-      type: 'tr',
+      type: 'tableRow',
     })
   ),
   type: 'table',
@@ -106,7 +106,7 @@ describe('compileTableGrid', () => {
       const occupied = Array.from({ length: height }, () =>
         Array.from({ length: width }, () => false)
       );
-      const rows: TTableCellElement[][] = Array.from(
+      const rows: TableCellElement[][] = Array.from(
         { length: height },
         () => []
       );

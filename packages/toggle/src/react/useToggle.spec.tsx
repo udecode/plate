@@ -52,7 +52,11 @@ describe('toggle hooks', () => {
     );
     const editor = {
       api: { dom: { focus } },
-      plugin: () => ({ api: { toggleIds }, type: 'toggle' }),
+      plugin: () => ({
+        api: { toggleIds },
+        name: 'toggle',
+        schema: { element: { type: 'toggle' } },
+      }),
       read: {
         nodes: {
           isBlock: () => true,

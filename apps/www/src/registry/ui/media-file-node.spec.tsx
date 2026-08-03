@@ -1,5 +1,6 @@
 import * as React from 'react';
 
+import * as actualResizable from '@platejs/resizable';
 import { render } from '@testing-library/react';
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
@@ -10,7 +11,7 @@ mock.module('@platejs/media/react', () => ({
 }));
 
 mock.module('@platejs/resizable', () => ({
-  ResizableProvider: ({ children }: any) => <>{children}</>,
+  ...actualResizable,
   useResizableValue: () => '100%',
 }));
 
@@ -40,6 +41,10 @@ mock.module('platejs/react', () => ({
 mock.module('@/lib/utils', () => ({
   cn: (...values: Array<string | false | null | undefined>) =>
     values.filter(Boolean).join(' '),
+}));
+
+mock.module('./resize-handle', () => ({
+  withResizableProvider: (Component: React.ComponentType) => Component,
 }));
 
 describe('FileElement', () => {

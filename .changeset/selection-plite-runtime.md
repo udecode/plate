@@ -13,6 +13,7 @@
   `CursorOverlayPluginState` contracts, with public selection-area option types
 - Use `@platejs/cursor` as the sole cursor geometry, overlay-state, and
   positioning-hook owner
+- Treat data and header cells as one `tableCell` selection type
 
 **Migration:** Use `editor.plugin(BlockSelectionPlugin).api` for UI and
 clipboard services, `.read` for selected-node queries, `.store.get` for state

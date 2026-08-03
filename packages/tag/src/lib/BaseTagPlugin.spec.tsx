@@ -1,5 +1,4 @@
 import { createBaseEditor } from '@platejs/core';
-import { KEYS } from '@platejs/utils';
 
 import { BaseTagPlugin } from './BaseTagPlugin';
 
@@ -12,16 +11,17 @@ describe('BaseTagPlugin', () => {
         anchor: { offset: 2, path: [0, 0] },
         focus: { offset: 2, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: 'hello' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'hello' }], type: 'paragraph' }],
     });
-    const tag = { children: [{ text: '' }], type: KEYS.tag };
+    const tag = { children: [{ text: '' }], type: 'tag' };
     const tagProps = { ignored: true, value: 'alpha' };
 
     expect(editor.read.schema.isInline(tag)).toBe(true);
     expect(editor.read.schema.isVoid(tag)).toBe(true);
-    expect(editor.read.schema.property(BaseTagPlugin)?.value.kind).toBe(
-      'string'
-    );
+    expect(
+      editor.read.schema.property({ key: 'value', placement: 'element' })?.value
+        .kind
+    ).toBe('string');
 
     editor.update.tag.insert(tagProps);
 
@@ -30,7 +30,7 @@ describe('BaseTagPlugin', () => {
     expect(children[0]).toEqual({ text: 'he' });
     expect(children[1]).toEqual({
       children: [{ text: '' }],
-      type: KEYS.tag,
+      type: 'tag',
       value: 'alpha',
     });
     expect(children[2]).toEqual({ text: 'llo' });
@@ -46,18 +46,18 @@ describe('BaseTagPlugin.read', () => {
           children: [
             {
               children: [{ text: '' }],
-              type: KEYS.tag,
+              type: 'tag',
               value: 'alpha',
             },
             { text: ' ' },
             {
               children: [{ text: '' }],
-              type: KEYS.tag,
+              type: 'tag',
               value: 'beta',
             },
             { text: '' },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
@@ -77,18 +77,18 @@ describe('BaseTagPlugin.read', () => {
           children: [
             {
               children: [{ text: '' }],
-              type: KEYS.tag,
+              type: 'tag',
               value: 'alpha',
             },
             { text: '' },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
     const emptyEditor = createBaseEditor({
       plugins: [BaseTagPlugin],
-      initialValue: [{ children: [{ text: '' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
 
     expect(editor.plugin(BaseTagPlugin).read.isEqual([{ value: 'beta' }])).toBe(

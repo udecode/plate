@@ -1,5 +1,9 @@
 import { writeFileSync } from 'node:fs';
-import { createEditor, ElementApi } from '../../../packages/plite/src/index';
+import {
+  createEditor,
+  defineExtension,
+  ElementApi,
+} from '../../../packages/plite/src/index';
 
 const iterationsArgument = process.argv.find((argument) =>
   argument.startsWith('--iterations=')
@@ -37,32 +41,33 @@ const rows = cohorts.map(({ blocks, name }) => {
     })),
   });
 
-  editor.extend({
-    corrections: [
-      {
-        event: 'properties',
-        query: { type: 'paragraph' },
-        correct({ entry: [node] }) {
-          if (ElementApi.isElement(node)) propertyVisits += 1;
+  editor.install(
+    defineExtension(`correction-worklist-benchmark-${name}`, {
+      corrections: [
+        {
+          event: 'properties',
+          query: { type: 'paragraph' },
+          correct({ entry: [node] }) {
+            if (ElementApi.isElement(node)) propertyVisits += 1;
+          },
         },
-      },
-      {
-        event: 'content',
-        query: { type: 'paragraph' },
-        correct({ entry: [node] }) {
-          if (ElementApi.isElement(node)) contentVisits += 1;
+        {
+          event: 'content',
+          query: { type: 'paragraph' },
+          correct({ entry: [node] }) {
+            if (ElementApi.isElement(node)) contentVisits += 1;
+          },
         },
-      },
-      {
-        event: 'children',
-        query: { type: 'paragraph' },
-        correct({ entry: [node] }) {
-          if (ElementApi.isElement(node)) childrenVisits += 1;
+        {
+          event: 'children',
+          query: { type: 'paragraph' },
+          correct({ entry: [node] }) {
+            if (ElementApi.isElement(node)) childrenVisits += 1;
+          },
         },
-      },
-    ],
-    name: `correction-worklist-benchmark-${name}`,
-  });
+      ],
+    })
+  );
 
   editor.update.nodes.set({ benchmarkProbe: -1 }, { at: [target] });
   childrenVisits = 0;

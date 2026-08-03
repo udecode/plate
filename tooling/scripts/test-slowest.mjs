@@ -6,9 +6,9 @@ import { join } from 'node:path';
 
 import {
   FAST_TEST_WARN_CASE_THRESHOLD_MS,
-  FAST_TEST_WARN_FILE_THRESHOLD_MS,
   FAST_TEST_SLOW_CASE_THRESHOLD_MS,
-  FAST_TEST_SLOW_FILE_THRESHOLD_MS,
+  FAST_TEST_SLOW_SUITE_THRESHOLD_MS,
+  FAST_TEST_WARN_SUITE_THRESHOLD_MS,
 } from '../config/test-suites.mjs';
 
 const rawArgs = process.argv.slice(2);
@@ -111,15 +111,15 @@ if (xml) {
   const slowTests = rows.filter(
     (row) => row.milliseconds >= FAST_TEST_SLOW_CASE_THRESHOLD_MS
   );
-  const slowFiles = sortedFiles.filter(
-    (row) => row.milliseconds >= FAST_TEST_SLOW_FILE_THRESHOLD_MS
-  );
   const warnTests = rows.filter(
     (row) => row.milliseconds >= FAST_TEST_WARN_CASE_THRESHOLD_MS
   );
-  const warnFiles = sortedFiles.filter(
-    (row) => row.milliseconds >= FAST_TEST_WARN_FILE_THRESHOLD_MS
+  const suiteMilliseconds = rows.reduce(
+    (sum, row) => sum + row.milliseconds,
+    0
   );
+  const slowSuite = suiteMilliseconds >= FAST_TEST_SLOW_SUITE_THRESHOLD_MS;
+  const warnSuite = suiteMilliseconds >= FAST_TEST_WARN_SUITE_THRESHOLD_MS;
   const averageMs =
     rows.length === 0
       ? 0
@@ -139,11 +139,12 @@ if (xml) {
     `Average: ${averageMs.toFixed(3)}ms  Median: ${medianMs.toFixed(3)}ms`
   );
   console.log(
-    `Slow-bucket thresholds: ${FAST_TEST_SLOW_CASE_THRESHOLD_MS}ms/test, ${FAST_TEST_SLOW_FILE_THRESHOLD_MS}ms/file total`
+    `Hard limits: ${FAST_TEST_SLOW_CASE_THRESHOLD_MS}ms/test, ${FAST_TEST_SLOW_SUITE_THRESHOLD_MS}ms/suite total`
   );
   console.log(
-    `Warning zone: ${FAST_TEST_WARN_CASE_THRESHOLD_MS}ms/test, ${FAST_TEST_WARN_FILE_THRESHOLD_MS}ms/file total`
+    `Warning zone: ${FAST_TEST_WARN_CASE_THRESHOLD_MS}ms/test, ${FAST_TEST_WARN_SUITE_THRESHOLD_MS}ms/suite total`
   );
+  console.log(`Measured suite total: ${suiteMilliseconds.toFixed(2)}ms`);
   console.log(`Top ${Math.min(limit, rows.length)} slowest tests`);
 
   for (const row of rows.slice(0, limit)) {
@@ -165,42 +166,29 @@ if (xml) {
   console.log(`Top ${Math.min(20, sortedFiles.length)} slowest files`);
 
   for (const row of sortedFiles.slice(0, 20)) {
-    const marker =
-      row.milliseconds >= FAST_TEST_SLOW_FILE_THRESHOLD_MS
-        ? '! '
-        : row.milliseconds >= FAST_TEST_WARN_FILE_THRESHOLD_MS
-          ? '~ '
-          : '';
-
     console.log(
-      `${marker}${row.milliseconds.toFixed(2).padStart(8)}ms  ${String(row.tests).padStart(3)} tests  ${row.file}`
+      `${row.milliseconds.toFixed(2).padStart(8)}ms  ${String(row.tests).padStart(3)} tests  ${row.file}`
     );
   }
 
   if (
     slowTests.length === 0 &&
-    slowFiles.length === 0 &&
-    (warnTests.length > 0 || warnFiles.length > 0)
+    !slowSuite &&
+    (warnTests.length > 0 || warnSuite)
   ) {
     console.log('');
     console.log(
-      'Warning-zone specs found. CI may flip these over the fast-lane limit on a slower runner.'
+      'Fast-suite warning zone reached. Optimize repeat offenders before the feedback loop crosses its hard budget.'
     );
     console.log(
-      'Treat repeat offenders as split candidates for the matching `*.slow.*` lane, especially React-heavy or blocking subprocess cases.'
+      'Move only inherently blocking tests to `*.slow.*`; keep coherent families colocated.'
     );
 
-    if (warnFiles.length > 0) {
+    if (warnSuite) {
       console.log('');
-      console.log('Files in the warning zone:');
-
-      for (const row of warnFiles.filter(
-        (row) => row.milliseconds < FAST_TEST_SLOW_FILE_THRESHOLD_MS
-      )) {
-        console.log(
-          `  - ${row.file} (${row.milliseconds.toFixed(2)}ms across ${row.tests} tests)`
-        );
-      }
+      console.log(
+        `Suite total is in the warning zone (${suiteMilliseconds.toFixed(2)}ms).`
+      );
     }
 
     if (warnTests.length > 0) {
@@ -220,21 +208,17 @@ if (xml) {
     }
   }
 
-  if (!profileOnly && (slowTests.length > 0 || slowFiles.length > 0)) {
+  if (!profileOnly && (slowTests.length > 0 || slowSuite)) {
     console.error('');
     console.error(
-      'Fast-suite threshold exceeded. Split inherently blocking cases into a matching `*.slow.*` file so they run via `pnpm test:slow`; keep cheap contracts in the fast loop.'
+      'Fast-suite budget exceeded. Optimize aggregate drift or move inherently blocking tests to `*.slow.*`; do not split coherent files to game file totals.'
     );
 
-    if (slowFiles.length > 0) {
+    if (slowSuite) {
       console.error('');
-      console.error('Files over the fast-suite file threshold:');
-
-      for (const row of slowFiles) {
-        console.error(
-          `  - ${row.file} (${row.milliseconds.toFixed(2)}ms across ${row.tests} tests)`
-        );
-      }
+      console.error(
+        `Suite total exceeds ${FAST_TEST_SLOW_SUITE_THRESHOLD_MS}ms (${suiteMilliseconds.toFixed(2)}ms).`
+      );
     }
 
     if (slowTests.length > 0) {

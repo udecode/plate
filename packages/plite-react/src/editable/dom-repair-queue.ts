@@ -284,6 +284,7 @@ export const createDOMRepairQueue = ({
 
     const nextOffset = insert.offset + insert.text.length;
 
+    armRepairInducedSelectionOriginGuard();
     profileDOMRepairDuration('captured-update-model', () =>
       updateNativeTextInput(editor, (tx) => {
         tx.text.insert(insert.text, {

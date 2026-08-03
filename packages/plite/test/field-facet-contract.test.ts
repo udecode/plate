@@ -4,7 +4,7 @@ import { describe, it } from 'node:test';
 import {
   createEditor,
   defineCommand,
-  defineEditorExtension,
+  defineExtension,
   defineExtensionSlot,
   defineFacet,
   defineStateField,
@@ -18,6 +18,20 @@ const paragraph = (text: string) => ({
 });
 
 describe('field-aware explicit facets', () => {
+  it('installs a state field directly as its canonical extension', () => {
+    const counter = defineStateField({
+      initial: 1,
+      key: 'direct-field-extension',
+    });
+    const editor = createEditor({ extensions: [counter] });
+
+    assert.equal(counter.stateFields?.[0], counter);
+    assert.equal(
+      editor.read((state) => state.getField(counter)),
+      1
+    );
+  });
+
   it('invalidates only declared field dependencies and suppresses equal transitions', () => {
     const counter = defineStateField({
       compare: (left, right) => left.count === right.count,
@@ -33,9 +47,8 @@ describe('field-aware explicit facets', () => {
     let computes = 0;
     const editor = createEditor({
       extensions: [
-        counter,
-        unrelated,
-        defineEditorExtension({
+        defineExtension('field-derived-facet', {
+          stateFields: [counter, unrelated],
           facetProviders: [
             doubled.compute(
               (state) => {
@@ -46,7 +59,6 @@ describe('field-aware explicit facets', () => {
               { dependencies: [counter] }
             ),
           ],
-          name: 'field-derived-facet',
         }),
       ],
     });
@@ -83,8 +95,8 @@ describe('field-aware explicit facets', () => {
     let computes = 0;
     const editor = createEditor({
       extensions: [
-        counter,
-        defineEditorExtension({
+        defineExtension('field-equality-facet', {
+          stateFields: [counter],
           facetProviders: [
             parity.compute(
               (state) => {
@@ -95,7 +107,6 @@ describe('field-aware explicit facets', () => {
               { dependencies: [counter] }
             ),
           ],
-          name: 'field-equality-facet',
         }),
       ],
     });
@@ -114,10 +125,13 @@ describe('field-aware explicit facets', () => {
     });
     const derived = defineFacet<object>({ key: 'stable-field-derived' });
     const slot = defineExtensionSlot('stable-field-slot');
+    const stableFieldExtension = defineExtension('stable-field', {
+      stateFields: [field],
+    });
     let computes = 0;
     const editor = createEditor({
       extensions: [
-        defineEditorExtension({
+        defineExtension('stable-field-reader', {
           facetProviders: [
             derived.compute(
               (state) => {
@@ -128,9 +142,8 @@ describe('field-aware explicit facets', () => {
               { dependencies: [field] }
             ),
           ],
-          name: 'stable-field-reader',
         }),
-        slot.of(field),
+        slot.of(stableFieldExtension),
       ] as const,
     });
     const value = editor.read.getField(field);
@@ -142,7 +155,7 @@ describe('field-aware explicit facets', () => {
     assert.equal(editor.read.getField(field), value);
 
     editor.update((tx) => {
-      tx.extensions.reconfigure(slot, field);
+      tx.extensions.reconfigure(slot, stableFieldExtension);
 
       assert.equal(editor.read.getField(field), value);
       assert.equal(editor.read.facet(derived), output);
@@ -161,11 +174,19 @@ describe('field-aware explicit facets', () => {
     });
 
     assert.throws(
-      () => createEditor({ extensions: [first, duplicate] }),
+      () =>
+        createEditor({
+          extensions: [
+            defineExtension('first-field', { stateFields: [first] }),
+            defineExtension('duplicate-field', { stateFields: [duplicate] }),
+          ],
+        }),
       /state field "duplicate-field".*(?:conflicts|descriptor identity)/i
     );
 
-    const editor = createEditor({ extensions: [first] });
+    const editor = createEditor({
+      extensions: [defineExtension('first-field', { stateFields: [first] })],
+    });
     const unknown = defineStateField({ initial: 0, key: 'unknown-field' });
 
     assert.throws(
@@ -189,10 +210,18 @@ describe('field-aware explicit facets', () => {
       key: 'active-second',
     });
     const slot = defineExtensionSlot('active-field-slot');
-    const editor = createEditor({ extensions: [slot.of(first)] as const });
+    const firstExtension = defineExtension('active-first', {
+      stateFields: [first],
+    });
+    const secondExtension = defineExtension('active-second', {
+      stateFields: [second],
+    });
+    const editor = createEditor({
+      extensions: [slot.of(firstExtension)] as const,
+    });
 
     editor.update((tx) => {
-      tx.extensions.reconfigure(slot, second);
+      tx.extensions.reconfigure(slot, secondExtension);
 
       assert.equal(editor.read.getField(first), 'first');
       assert.throws(
@@ -215,7 +244,7 @@ describe('field-aware explicit facets', () => {
     let sidebarComputes = 0;
     const editor = createEditor({
       extensions: [
-        defineEditorExtension({
+        defineExtension('root-scoped-facets', {
           facetProviders: [
             mainLength.compute(
               (state) => {
@@ -236,7 +265,6 @@ describe('field-aware explicit facets', () => {
               }
             ),
           ],
-          name: 'root-scoped-facets',
         }),
       ],
       initialValue: {
@@ -277,7 +305,11 @@ describe('field-aware explicit facets', () => {
           tx.setField(counter, (value) => value + input.amount);
         }),
     });
-    const editor = createEditor({ extensions: [counter] as const });
+    const editor = createEditor({
+      extensions: [
+        defineExtension('draft-field-counter', { stateFields: [counter] }),
+      ] as const,
+    });
 
     editor.update((tx) => tx.setField(counter, 3));
 

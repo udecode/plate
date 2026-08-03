@@ -1,15 +1,16 @@
-import { createBasePlugin, type DefinitionOf } from '@platejs/core';
+import { defineBasePlugin, type DefinitionOf } from '@platejs/core';
 import { ElementApi, schema } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 export type BaseTogglePluginState = {
   openIds: Set<string>;
+  toggleIndex: Map<string, string[]>;
 };
 
-export const BaseTogglePlugin = createBasePlugin({
-  name: KEYS.toggle,
+export const BaseTogglePlugin = defineBasePlugin(KEYS.toggle, {
   initialState: (): BaseTogglePluginState => ({
     openIds: new Set(),
+    toggleIndex: new Map(),
   }),
   schema: {
     element: {
@@ -76,6 +77,12 @@ export const BaseTogglePlugin = createBasePlugin({
     },
   }),
   selectors: {
+    enclosingIds: (state, elementId: string) =>
+      state.toggleIndex.get(elementId) ?? [],
+    isClosed: (state, elementId: string) =>
+      (state.toggleIndex.get(elementId) ?? []).some(
+        (toggleId) => !state.openIds.has(toggleId)
+      ),
     isOpen: (state, toggleId: string) => state.openIds.has(toggleId),
     someClosed: (state, toggleIds: string[]) =>
       toggleIds.some((id) => !state.openIds.has(id)),

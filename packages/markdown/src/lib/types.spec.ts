@@ -15,13 +15,13 @@ describe('MdRules typing', () => {
           };
         },
       },
-      p: {
+      paragraph: {
         deserialize(node) {
           return {
             children: node.children.map((child) => ({
               text: child.type,
             })),
-            type: 'p',
+            type: 'paragraph',
           };
         },
         serialize(node) {
@@ -36,7 +36,7 @@ describe('MdRules typing', () => {
       },
     } satisfies MdRules;
 
-    expect(rules.p.deserialize).toBeFunction();
+    expect(rules.paragraph.deserialize).toBeFunction();
     expect(rules.customWidget.deserialize).toBeFunction();
   });
 });

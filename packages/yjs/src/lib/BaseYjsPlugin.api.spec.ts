@@ -6,7 +6,7 @@ import { createPlateEditor } from '@platejs/core/react';
 import { createEditor } from '@platejs/plite';
 import * as Y from 'yjs';
 
-import { createYjsExtension } from '../core/extension';
+import { yjs } from '../core/extension';
 import { YjsPlugin } from '../react/YjsPlugin';
 import { FakeProvider } from '../../test/support/provider';
 import { BaseYjsPlugin } from './BaseYjsPlugin';
@@ -21,7 +21,7 @@ const createSeededYjsUpdate = (text: string) => {
   const doc = new Y.Doc();
 
   createEditor({
-    extensions: [createYjsExtension({ clientId: 'seed', doc })] as const,
+    extensions: [yjs({ clientId: 'seed', doc })] as const,
     initialValue: [paragraph(text)],
   });
 
@@ -86,6 +86,34 @@ describe('BaseYjsPlugin', () => {
     );
   });
 
+  it('disconnects the configured provider through the Plate update portal', () => {
+    const provider = new FakeProvider({
+      status: 'connected',
+      synced: true,
+    });
+    const editor = createPlateEditor({
+      initialValue: [{ children: [{ text: 'react' }], type: 'paragraph' }],
+      plugins: [
+        BaseParagraphPlugin,
+        YjsPlugin.configure({
+          initialState: {
+            clientId: 'react-user',
+            provider,
+          },
+        }),
+      ],
+      schemaIdentity: TestSchema,
+    });
+
+    editor.update.yjs.disconnect();
+
+    assert.equal(provider.status, 'disconnected');
+    assert.equal(
+      editor.read((state) => state.yjs.providerStatus()),
+      'disconnected'
+    );
+  });
+
   it('publishes Plate selection commits through the configured provider', () => {
     const provider = new FakeProvider({
       awarenessClientId: 101,
@@ -93,7 +121,7 @@ describe('BaseYjsPlugin', () => {
       synced: true,
     });
     const editor = createPlateEditor({
-      initialValue: [{ children: [{ text: 'react' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'react' }], type: 'paragraph' }],
       plugins: [
         BaseParagraphPlugin,
         YjsPlugin.configure({
@@ -120,7 +148,7 @@ describe('BaseYjsPlugin', () => {
 
     Y.applyUpdate(doc, createSeededYjsUpdate('seeded'));
     const editor = createEditor({
-      extensions: [createYjsExtension({ clientId: 'target', doc })] as const,
+      extensions: [yjs({ clientId: 'target', doc })] as const,
       initialValue: [paragraph('local')],
     });
 
@@ -133,16 +161,14 @@ describe('BaseYjsPlugin', () => {
 
   it('resolves replacement Yjs state while a seeded document initializes', () => {
     const editor = createEditor({
-      extensions: [
-        createYjsExtension({ clientId: 'first', doc: new Y.Doc() }),
-      ] as const,
+      extensions: [yjs({ clientId: 'first', doc: new Y.Doc() })] as const,
       initialValue: [paragraph('first')],
     });
     const replacementDoc = new Y.Doc();
 
     Y.applyUpdate(replacementDoc, createSeededYjsUpdate('second'));
-    editor.extend(
-      createYjsExtension({
+    editor.install(
+      yjs({
         clientId: 'second',
         doc: replacementDoc,
       })

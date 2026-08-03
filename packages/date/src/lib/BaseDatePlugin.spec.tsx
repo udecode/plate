@@ -3,7 +3,6 @@
 import { createBaseEditor } from '@platejs/core';
 import { jsxt } from '@platejs/test-utils';
 import { schema } from '@platejs/plite';
-import { KEYS } from '@platejs/utils';
 
 import { BaseDatePlugin } from './BaseDatePlugin';
 
@@ -15,10 +14,10 @@ describe('BaseDatePlugin', () => {
       plugins: [BaseDatePlugin],
     });
 
-    const element = { children: [{ text: '' }], type: KEYS.date };
+    const element = { children: [{ text: '' }], type: 'date' };
     const dateElement = schema.handle.element(
       BaseDatePlugin,
-      BaseDatePlugin.type
+      editor.plugin(BaseDatePlugin).schema.element.type
     );
     const date = schema.handle.property(dateElement, 'date');
 
@@ -32,7 +31,7 @@ describe('BaseDatePlugin', () => {
       plugins: [BaseDatePlugin],
     });
 
-    const element = { children: [{ text: '' }], type: KEYS.date };
+    const element = { children: [{ text: '' }], type: 'date' };
 
     expect(editor.read.schema.isKeyboardSelectable(element)).toBe(true);
   });
@@ -61,11 +60,11 @@ describe('BaseDatePlugin', () => {
             {
               children: [{ text: '' }],
               date: '2024-01-01',
-              type: KEYS.date,
+              type: 'date',
             },
             { text: ' after' },
           ],
-          type: KEYS.p,
+          type: 'paragraph',
         },
       ],
     });
@@ -75,7 +74,7 @@ describe('BaseDatePlugin', () => {
     expect(editor.read.children()).toMatchObject([
       {
         children: [{ text: 'hi  after' }],
-        type: KEYS.p,
+        type: 'paragraph',
       },
     ]);
     expect(editor.read.selection()).toEqual({
@@ -100,11 +99,11 @@ describe('BaseDatePlugin', () => {
             {
               children: [{ text: '' }],
               date: '2024-01-01',
-              type: KEYS.date,
+              type: 'date',
             },
             { text: ' after' },
           ],
-          type: KEYS.p,
+          type: 'paragraph',
         },
       ],
     });
@@ -114,7 +113,7 @@ describe('BaseDatePlugin', () => {
     expect(editor.read.children()).toMatchObject([
       {
         children: [{ text: 'hi  after' }],
-        type: KEYS.p,
+        type: 'paragraph',
       },
     ]);
     expect(editor.read.selection()).toEqual({
@@ -139,11 +138,11 @@ describe('BaseDatePlugin', () => {
             {
               children: [{ text: '' }],
               date: '2024-01-01',
-              type: KEYS.date,
+              type: 'date',
             },
             { text: ' after' },
           ],
-          type: KEYS.p,
+          type: 'paragraph',
         },
       ],
     });
@@ -172,11 +171,11 @@ describe('BaseDatePlugin', () => {
             {
               children: [{ text: '' }],
               date: '2024-01-01',
-              type: KEYS.date,
+              type: 'date',
             },
             { text: ' after' },
           ],
-          type: KEYS.p,
+          type: 'paragraph',
         },
       ],
     });
@@ -202,7 +201,7 @@ describe('BaseDatePlugin', () => {
         anchor: { offset: 2, path: [0, 0] },
         focus: { offset: 2, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: 'hi' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'hi' }], type: 'paragraph' }],
     });
 
     editor.update.date.insert({ date: 'Mon Mar 23 2026' });
@@ -214,11 +213,11 @@ describe('BaseDatePlugin', () => {
           {
             children: [{ text: '' }],
             date: '2026-03-23',
-            type: KEYS.date,
+            type: 'date',
           },
           { text: ' ' },
         ],
-        type: KEYS.p,
+        type: 'paragraph',
       },
     ]);
   });
@@ -238,11 +237,11 @@ describe('BaseDatePlugin', () => {
             {
               children: [{ text: '' }],
               date: '2025-01-01',
-              type: KEYS.date,
+              type: 'date',
             },
             { text: 'b' },
           ],
-          type: KEYS.p,
+          type: 'paragraph',
         },
       ],
     });
@@ -256,9 +255,9 @@ describe('BaseDatePlugin', () => {
       {
         children: [
           { text: 'a' },
-          { date: '2026-03-23', type: KEYS.date },
+          { date: '2026-03-23', type: 'date' },
           { text: ' ' },
-          { date: '2025-01-01', type: KEYS.date },
+          { date: '2025-01-01', type: 'date' },
           { text: 'b' },
         ],
       },
@@ -273,7 +272,7 @@ describe('BaseDatePlugin', () => {
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: 'x' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'x' }], type: 'paragraph' }],
     });
 
     editor.update.date.insert({ date: 'sometime next week' });
@@ -281,7 +280,7 @@ describe('BaseDatePlugin', () => {
     expect(editor.read.children()[0]).toMatchObject({
       children: [
         { text: 'x' },
-        { rawDate: 'sometime next week', type: KEYS.date },
+        { rawDate: 'sometime next week', type: 'date' },
         { text: ' ' },
       ],
     });

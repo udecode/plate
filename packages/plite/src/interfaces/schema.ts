@@ -527,10 +527,9 @@ export type EditorSchemaDeclaration =
 /** A complete schema packaged as one raw Plite extension contribution. */
 export type EditorSchemaExtension<
   TDefinition extends EditorSchemaDefinition = EditorSchemaDefinition,
+  TName extends string = string,
 > = Readonly<{
-  name: TDefinition extends { id: infer TId extends string }
-    ? `schema:${TId}`
-    : 'schema:derived';
+  name: TName;
   schema: TDefinition;
 }>;
 

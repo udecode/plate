@@ -28,7 +28,7 @@ import {
 } from '@/registry/ui/equation-node-static';
 import { TocElementDocx } from '@/registry/ui/toc-node-static';
 import { DocxIOPlugin } from '@platejs/docx-io';
-import { KEYS } from 'platejs';
+import { PLUGINS } from 'platejs';
 
 /**
  * Editor kit for DOCX export.
@@ -47,15 +47,15 @@ export const DocxExportKit = [
   DocxIOPlugin.configure({
     override: {
       components: {
-        [KEYS.codeBlock]: CodeBlockElementDocx,
-        [KEYS.codeLine]: CodeLineElementDocx,
-        [KEYS.codeSyntax]: CodeSyntaxLeafDocx,
-        [KEYS.column]: ColumnElementDocx,
-        [KEYS.columnGroup]: ColumnGroupElementDocx,
-        [KEYS.equation]: EquationElementDocx,
-        [KEYS.inlineEquation]: InlineEquationElementDocx,
-        [KEYS.callout]: CalloutElementDocx,
-        [KEYS.toc]: TocElementDocx,
+        [PLUGINS.codeBlock]: CodeBlockElementDocx,
+        [PLUGINS.codeLine]: CodeLineElementDocx,
+        [PLUGINS.codeSyntax]: CodeSyntaxLeafDocx,
+        [PLUGINS.column]: ColumnElementDocx,
+        [PLUGINS.columnGroup]: ColumnGroupElementDocx,
+        [PLUGINS.equation]: EquationElementDocx,
+        [PLUGINS.inlineEquation]: InlineEquationElementDocx,
+        [PLUGINS.callout]: CalloutElementDocx,
+        [PLUGINS.toc]: TocElementDocx,
       },
     },
   }),

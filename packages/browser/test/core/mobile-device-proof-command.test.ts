@@ -18,7 +18,7 @@ describe('mobile device proof command', () => {
 
     expect(result.status).toBe(0);
     expect(result.stdout).toContain(
-      'scoped release proof passed: semantic/proxy rows cannot satisfy raw mobile IME or clipboard claims'
+      'scoped release proof passed: semantic/proxy rows and incomplete receipts cannot satisfy raw mobile claims'
     );
   });
 

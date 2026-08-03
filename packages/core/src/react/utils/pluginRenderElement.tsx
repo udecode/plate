@@ -4,7 +4,7 @@ import { useEditorReadOnly } from '@platejs/plite-react';
 import { useClaimEditableDOMCommit } from '@platejs/plite-react/internal';
 
 import type { PlateEditor } from '../editor/PlateEditor';
-import type { AnyEditorPlatePlugin } from '../plugin/PlatePlugin';
+import type { AnyResolvedPlatePlugin } from '../plugin/PlatePlugin';
 
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
@@ -41,7 +41,7 @@ function ElementContent({
 
   props = getRenderNodeProps({
     editor,
-    plugin: plugin as AnyEditorPlatePlugin,
+    plugin: plugin as AnyResolvedPlatePlugin,
     pluginContext,
     props: props as any,
     readOnly,
@@ -49,20 +49,18 @@ function ElementContent({
 
   let children = _children;
 
-  getPlateRuntime(editor).pluginCache.render.belowNodes.forEach(
-    (pluginName) => {
-      const wrapperContext = createPluginContext(editor, pluginName);
-      const { plugin } = wrapperContext;
-      const withHOC = plugin.render.belowNodes!;
+  getPlateRuntime(editor).pluginCache.render.belowNodes.forEach((name) => {
+    const wrapperContext = createPluginContext(editor, name);
+    const { plugin } = wrapperContext;
+    const withHOC = plugin.render.belowNodes!;
 
-      // belowNodes can have hooks
-      const hoc = withHOC({ ...props, ...wrapperContext, pluginName } as any);
+    // belowNodes can have hooks
+    const hoc = withHOC({ ...props, ...wrapperContext } as any);
 
-      if (hoc && !isEditOnly(readOnly, plugin, 'render')) {
-        children = hoc({ ...props, children } as any);
-      }
+    if (hoc && !isEditOnly(readOnly, plugin, 'render')) {
+      children = hoc({ ...props, children } as any);
     }
-  );
+  });
 
   const defaultProps = Component ? {} : { as: plugin.render?.as };
 
@@ -74,20 +72,18 @@ function ElementContent({
     </Element>
   );
 
-  getPlateRuntime(editor).pluginCache.render.aboveNodes.forEach(
-    (pluginName) => {
-      const wrapperContext = createPluginContext(editor, pluginName);
-      const { plugin } = wrapperContext;
-      const withHOC = plugin.render.aboveNodes!;
+  getPlateRuntime(editor).pluginCache.render.aboveNodes.forEach((name) => {
+    const wrapperContext = createPluginContext(editor, name);
+    const { plugin } = wrapperContext;
+    const withHOC = plugin.render.aboveNodes!;
 
-      // aboveNodes can have hooks
-      const hoc = withHOC({ ...props, ...wrapperContext, pluginName } as any);
+    // aboveNodes can have hooks
+    const hoc = withHOC({ ...props, ...wrapperContext } as any);
 
-      if (hoc && !isEditOnly(readOnly, plugin, 'render')) {
-        component = hoc({ ...props, children: component } as any);
-      }
+    if (hoc && !isEditOnly(readOnly, plugin, 'render')) {
+      component = hoc({ ...props, children: component } as any);
     }
-  );
+  });
 
   return component;
 }
@@ -98,30 +94,26 @@ export function BelowRootNodes({ ...props }: any) {
 
   return (
     <>
-      {getPlateRuntime(editor).pluginCache.render.belowRootNodes.map(
-        (pluginName) => {
-          const pluginContext = createPluginContext(editor, pluginName);
-          const { plugin } = pluginContext;
+      {getPlateRuntime(editor).pluginCache.render.belowRootNodes.map((name) => {
+        const pluginContext = createPluginContext(editor, name);
+        const { plugin } = pluginContext;
 
-          if (isEditOnly(readOnly, plugin, 'render')) return null;
+        if (isEditOnly(readOnly, plugin, 'render')) return null;
 
-          const Component = plugin.render.belowRootNodes!;
+        const Component = plugin.render.belowRootNodes!;
 
-          return <Component key={pluginName} {...props} {...pluginContext} />;
-        }
-      )}
+        return <Component {...props} {...pluginContext} key={name} />;
+      })}
     </>
   );
 }
 
 /**
- * Get a `Editable.renderElement` handler for `plugin.type`. If the type is
- * equals to the plite element type, render `plugin.render.node`. Else, return
- * `undefined` so the pipeline can check the next plugin.
+ * Get an `Editable.renderElement` handler for one plugin-owned element type.
  */
 export const pluginRenderElement = (
   editor: PlateEditor,
-  plugin: AnyEditorPlatePlugin
+  plugin: AnyResolvedPlatePlugin
 ): RenderElement => {
   const pluginContext = createPluginContext(editor, plugin);
 

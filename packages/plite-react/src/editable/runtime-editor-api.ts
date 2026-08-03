@@ -47,7 +47,7 @@ export {
   after,
   before,
   deleteFragment,
-  defineEditorExtension,
+  defineExtension,
   getLastCommit,
   getPathByRuntimeId,
   getRuntimeId,

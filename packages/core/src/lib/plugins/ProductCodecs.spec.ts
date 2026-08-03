@@ -1,14 +1,15 @@
 import { describe, expect, it, spyOn } from 'bun:test';
 
-import { ContentSlice, property, schema } from '@platejs/plite';
+import { ContentSlice, property, schema, type ValueOf } from '@platejs/plite';
 import { writeHostFragmentData } from '@platejs/plite-dom';
 
 import { createBaseEditor } from '../editor';
-import { createBasePlugin } from '../plugin';
+import { defineBasePlugin } from '../plugin';
+import { getPlateNodeCodecContributions } from '../../internal';
 
 const createParagraph = (text: string) => ({
   children: [{ text }],
-  type: 'p',
+  type: 'paragraph' as const,
 });
 
 const createDataTransfer = (format: string, data: string) => {
@@ -47,22 +48,44 @@ const seededShuffle = <T>(values: readonly T[], seed: number) => {
 };
 
 describe('product codecs', () => {
+  it('retains product codecs when the same declaration defines HTML hooks', () => {
+    const MixedPlugin = defineBasePlugin('mixedCodec', {
+      schema: { element: schema.element.textBlock() },
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            query: () => true,
+          },
+          'text/markdown': {
+            kind: 'node',
+          },
+        }),
+    });
+    const editor = createBaseEditor({ plugins: [MixedPlugin] });
+
+    expect(getPlateNodeCodecContributions(editor, 'text/markdown')).toEqual([
+      expect.objectContaining({
+        owner: 'mixedCodec',
+        targetPlugin: 'mixedCodec',
+        targetType: 'mixedCodec',
+      }),
+    ]);
+  });
+
   it('derives ordinary ownership from the owning plugin schema', () => {
-    const CardPlugin = createBasePlugin({
-      name: 'cardCodec',
+    const CardPlugin = defineBasePlugin('cardCodec', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
           properties: { tone: property.string() },
         },
       },
-      type: 'card',
       codecs: ({ defineCodecs }) =>
         defineCodecs({
           'application/x-card': {
             decode: ({ data }) =>
               ContentSlice.closed([
-                { children: [{ text: data }], type: 'card' },
+                { children: [{ text: data }], type: 'cardCodec' },
               ]),
           },
         }),
@@ -75,42 +98,42 @@ describe('product codecs', () => {
       )
     ).toBe(true);
     expect(editor.read.children()).toEqual([
-      { children: [{ text: 'derived' }], type: 'card' },
+      { children: [{ text: 'derived' }], type: 'cardCodec' },
     ]);
   });
 
   it('orders document codecs independently of plugin declaration order', () => {
     const calls: string[] = [];
-    const LowerPlugin = createBasePlugin({
-      name: 'lowerCodec',
-    }).extend(({ defineCodecs }) => ({
-      codecs: defineCodecs({
-        'application/x-fallback': {
-          priority: 1000,
-          scope: 'document',
-          decode: ({ data }) => {
-            calls.push('lower');
+    const LowerPlugin = defineBasePlugin('lowerCodec', {}).extend(
+      ({ defineCodecs }) => ({
+        codecs: defineCodecs({
+          'application/x-fallback': {
+            priority: 1000,
+            scope: 'document',
+            decode: ({ data }) => {
+              calls.push('lower');
 
-            return ContentSlice.closed([createParagraph(`lower:${data}`)]);
+              return ContentSlice.closed([createParagraph(`lower:${data}`)]);
+            },
           },
-        },
-      }),
-    }));
-    const HigherPlugin = createBasePlugin({
-      name: 'higherCodec',
-    }).extend(({ defineCodecs }) => ({
-      codecs: defineCodecs({
-        'application/x-fallback': {
-          priority: 2000,
-          scope: 'document',
-          decode: () => {
-            calls.push('higher');
+        }),
+      })
+    );
+    const HigherPlugin = defineBasePlugin('higherCodec', {}).extend(
+      ({ defineCodecs }) => ({
+        codecs: defineCodecs({
+          'application/x-fallback': {
+            priority: 2000,
+            scope: 'document',
+            decode: () => {
+              calls.push('higher');
 
-            return null;
+              return null;
+            },
           },
-        },
-      }),
-    }));
+        }),
+      })
+    );
 
     for (const plugins of [
       [LowerPlugin, HigherPlugin],
@@ -130,8 +153,7 @@ describe('product codecs', () => {
   });
 
   it('allows disjoint equal-priority claims with a stable owner tie-break', () => {
-    const AlphaPlugin = createBasePlugin({
-      name: 'alphaCodec',
+    const AlphaPlugin = defineBasePlugin('alphaCodec', {
       schema: {
         mark: property.boolean({ default: false, omitDefault: true }),
       },
@@ -142,8 +164,7 @@ describe('product codecs', () => {
           },
         }),
     });
-    const ZuluPlugin = createBasePlugin({
-      name: 'zuluCodec',
+    const ZuluPlugin = defineBasePlugin('zuluCodec', {
       schema: {
         mark: property.boolean({ default: false, omitDefault: true }),
       },
@@ -172,8 +193,7 @@ describe('product codecs', () => {
 
   it('orders formats independently of codec object enumeration', () => {
     const createFormatPlugin = (reverse: boolean) =>
-      createBasePlugin({
-        name: reverse ? 'reverseFormats' : 'forwardFormats',
+      defineBasePlugin(reverse ? 'reverseFormats' : 'forwardFormats', {
         codecs: ({ defineCodecs }) =>
           defineCodecs(
             reverse
@@ -228,7 +248,7 @@ describe('product codecs', () => {
       { codecPriority: 10, name: 'generatedE' },
     ] as const;
     const plugins = definitions.map(({ codecPriority, name }, index) =>
-      createBasePlugin({ name }).extend(({ defineCodecs }) => ({
+      defineBasePlugin(name, {}).extend(({ defineCodecs }) => ({
         codecs: defineCodecs({
           'application/x-generated-order': {
             priority: codecPriority,
@@ -273,8 +293,7 @@ describe('product codecs', () => {
     for (let width = 2; width <= 6; width++) {
       const format = `application/x-generated-claims-${width}`;
       const disjoint = Array.from({ length: width }, (_, index) =>
-        createBasePlugin({
-          name: `generatedDisjoint${width}-${index}`,
+        defineBasePlugin(`generatedDisjoint${width}Case${index}`, {
           schema: {
             mark: property.boolean({ default: false, omitDefault: true }),
           },
@@ -302,8 +321,7 @@ describe('product codecs', () => {
         createParagraph(`disjoint:${width}`),
       ]);
 
-      const propertyOwner = createBasePlugin({
-        name: `generatedPropertyOwner${width}`,
+      const propertyOwner = defineBasePlugin(`generatedPropertyOwner${width}`, {
         schema: {
           mark: property.boolean({ default: false, omitDefault: true }),
         },
@@ -314,8 +332,7 @@ describe('product codecs', () => {
             },
           }),
       });
-      const documentOwner = createBasePlugin({
-        name: `generatedDocumentOwner${width}`,
+      const documentOwner = defineBasePlugin(`generatedDocumentOwner${width}`, {
         codecs: ({ defineCodecs }) =>
           defineCodecs({
             [format]: {
@@ -334,8 +351,7 @@ describe('product codecs', () => {
   });
 
   it('rejects equal-priority competing document claims', () => {
-    const FirstPlugin = createBasePlugin({
-      name: 'firstCodec',
+    const FirstPlugin = defineBasePlugin('firstCodec', {
       codecs: ({ defineCodecs }) =>
         defineCodecs({
           'application/x-conflict': {
@@ -344,8 +360,7 @@ describe('product codecs', () => {
           },
         }),
     });
-    const SecondPlugin = createBasePlugin({
-      name: 'secondCodec',
+    const SecondPlugin = defineBasePlugin('secondCodec', {
       codecs: ({ defineCodecs }) =>
         defineCodecs({
           'application/x-conflict': {
@@ -363,8 +378,7 @@ describe('product codecs', () => {
   });
 
   it('rejects split declarations for one owner and format', () => {
-    const SplitPlugin = createBasePlugin({
-      name: 'splitCodec',
+    const SplitPlugin = defineBasePlugin('splitCodec', {
       codecs: ({ defineCodecs }) =>
         defineCodecs({
           'application/x-split': {
@@ -388,8 +402,8 @@ describe('product codecs', () => {
 
   it('rejects public identity fields and non-callable callbacks', () => {
     for (const field of ['key', 'owner', 'target'] as const) {
-      const InvalidPlugin = createBasePlugin({
-        name: `invalid-${field}`,
+      const name = `invalid${field[0]!.toUpperCase()}${field.slice(1)}`;
+      const InvalidPlugin = defineBasePlugin(name, {
         codecs: ({ defineCodecs }) =>
           defineCodecs({
             'application/x-invalid': {
@@ -401,12 +415,11 @@ describe('product codecs', () => {
       });
 
       expect(() => createBaseEditor({ plugins: [InvalidPlugin] })).toThrow(
-        `Plate codec "invalid-${field}/application/x-invalid" has unknown field "${field}".`
+        `Plate codec "${name}/application/x-invalid" has unknown field "${field}".`
       );
     }
 
-    const InvalidCallbackPlugin = createBasePlugin({
-      name: 'invalidCallback',
+    const InvalidCallbackPlugin = defineBasePlugin('invalidCallback', {
       codecs: ({ defineCodecs }) =>
         defineCodecs({
           'application/x-invalid': {
@@ -424,18 +437,21 @@ describe('product codecs', () => {
   });
 
   it('rejects malformed author callbacks and codec descriptors', () => {
-    const InvalidAuthorCallbackPlugin = createBasePlugin({
-      name: 'invalidAuthorCallback',
-      // @plate-schema-adoption-negative-codec
-      codecs: (() => null) as never,
-    });
+    const InvalidAuthorCallbackPlugin = defineBasePlugin(
+      'invalidAuthorCallback',
+      {
+        // @plate-schema-adoption-negative-codec
+        codecs: (() => null) as never,
+      }
+    );
 
     expect(() =>
       createBaseEditor({ plugins: [InvalidAuthorCallbackPlugin] })
-    ).toThrow('Plate plugin `codecs` must be a MIME-keyed object.');
+    ).toThrow(
+      'Plate plugin "invalidAuthorCallback" codecs must be a MIME-keyed object.'
+    );
 
-    const InvalidDescriptorPlugin = createBasePlugin({
-      name: 'invalidDescriptor',
+    const InvalidDescriptorPlugin = defineBasePlugin('invalidDescriptor', {
       codecs: ({ defineCodecs }) =>
         defineCodecs({
           'application/x-invalid': null,
@@ -448,8 +464,7 @@ describe('product codecs', () => {
       'Plate codec "invalidDescriptor/application/x-invalid" must be an object.'
     );
 
-    const MissingDirectionPlugin = createBasePlugin({
-      name: 'missingDirection',
+    const MissingDirectionPlugin = defineBasePlugin('missingDirection', {
       codecs: ({ defineCodecs }) =>
         defineCodecs({
           'application/x-invalid': {
@@ -464,8 +479,7 @@ describe('product codecs', () => {
       'Plate codec "missingDirection/application/x-invalid" must define decode or encode.'
     );
 
-    const InvalidFormatPlugin = createBasePlugin({
-      name: 'invalidFormat',
+    const InvalidFormatPlugin = defineBasePlugin('invalidFormat', {
       codecs: ({ defineCodecs }) =>
         defineCodecs({
           invalid: {
@@ -479,8 +493,7 @@ describe('product codecs', () => {
       'Plate codec owner "invalidFormat" must use a MIME format key.'
     );
 
-    const InvalidScopePlugin = createBasePlugin({
-      name: 'invalidScope',
+    const InvalidScopePlugin = defineBasePlugin('invalidScope', {
       codecs: ({ defineCodecs }) =>
         defineCodecs({
           'application/x-invalid': {
@@ -494,8 +507,7 @@ describe('product codecs', () => {
       'Plate codec owner "invalidScope" has unknown scope "node".'
     );
 
-    const InvalidPriorityPlugin = createBasePlugin({
-      name: 'invalidPriority',
+    const InvalidPriorityPlugin = defineBasePlugin('invalidPriority', {
       codecs: ({ defineCodecs }) =>
         defineCodecs({
           'application/x-invalid': {
@@ -512,8 +524,7 @@ describe('product codecs', () => {
       'Plate codec "invalidPriority/application/x-invalid" priority must be finite.'
     );
 
-    const MissingClaimPlugin = createBasePlugin({
-      name: 'missingClaim',
+    const MissingClaimPlugin = defineBasePlugin('missingClaim', {
       codecs: ({ defineCodecs }) =>
         defineCodecs({
           'application/x-invalid': {
@@ -529,8 +540,7 @@ describe('product codecs', () => {
 
   it('rejects array decode output and delegates to the next codec', () => {
     const errorSpy = spyOn(console, 'error').mockImplementation(() => {});
-    const FallbackPlugin = createBasePlugin({
-      name: 'arrayFallback',
+    const FallbackPlugin = defineBasePlugin('arrayFallback', {
       codecs: ({ defineCodecs }) =>
         defineCodecs({
           'application/x-array': {
@@ -540,8 +550,7 @@ describe('product codecs', () => {
           },
         }),
     });
-    const ArrayPlugin = createBasePlugin({
-      name: 'arrayCodec',
+    const ArrayPlugin = defineBasePlugin('arrayCodec', {
       codecs: ({ defineCodecs }) =>
         defineCodecs({
           'application/x-array': {
@@ -571,95 +580,96 @@ describe('product codecs', () => {
     const count = (key: string) => {
       calls[key] = (calls[key] ?? 0) + 1;
     };
-    const QueryThrowPlugin = createBasePlugin({
-      name: 'queryThrowCodec',
-    }).extend(({ defineCodecs }) => {
-      declarationCalls++;
+    const QueryThrowPlugin = defineBasePlugin('queryThrowCodec', {}).extend(
+      ({ defineCodecs }) => {
+        declarationCalls++;
 
-      return {
-        codecs: defineCodecs({
-          'application/x-delegation': {
-            priority: 70,
-            scope: 'document',
-            query: () => {
-              count('queryThrow.query');
+        return {
+          codecs: defineCodecs({
+            'application/x-delegation': {
+              priority: 70,
+              scope: 'document',
+              query: () => {
+                count('queryThrow.query');
 
-              throw new Error('query failure');
+                throw new Error('query failure');
+              },
+              decode: () => {
+                count('queryThrow.decode');
+
+                return ContentSlice.closed([createParagraph('unreachable')]);
+              },
             },
-            decode: () => {
-              count('queryThrow.decode');
+          }),
+        };
+      }
+    );
+    const QueryFalsePlugin = defineBasePlugin('queryFalseCodec', {}).extend(
+      ({ defineCodecs }) => {
+        declarationCalls++;
 
-              return ContentSlice.closed([createParagraph('unreachable')]);
+        return {
+          codecs: defineCodecs({
+            'application/x-delegation': {
+              priority: 60,
+              scope: 'document',
+              query: () => {
+                count('queryFalse.query');
+
+                return false;
+              },
+              decode: () => {
+                count('queryFalse.decode');
+
+                return ContentSlice.closed([createParagraph('unreachable')]);
+              },
             },
-          },
-        }),
-      };
-    });
-    const QueryFalsePlugin = createBasePlugin({
-      name: 'queryFalseCodec',
-    }).extend(({ defineCodecs }) => {
-      declarationCalls++;
+          }),
+        };
+      }
+    );
+    const DecodeThrowPlugin = defineBasePlugin('decodeThrowCodec', {}).extend(
+      ({ defineCodecs }) => {
+        declarationCalls++;
 
-      return {
-        codecs: defineCodecs({
-          'application/x-delegation': {
-            priority: 60,
-            scope: 'document',
-            query: () => {
-              count('queryFalse.query');
+        return {
+          codecs: defineCodecs({
+            'application/x-delegation': {
+              priority: 50,
+              scope: 'document',
+              decode: () => {
+                count('decodeThrow');
 
-              return false;
+                throw new Error('decode failure');
+              },
             },
-            decode: () => {
-              count('queryFalse.decode');
+          }),
+        };
+      }
+    );
+    const DecodeNullPlugin = defineBasePlugin('decodeNullCodec', {}).extend(
+      ({ defineCodecs }) => {
+        declarationCalls++;
 
-              return ContentSlice.closed([createParagraph('unreachable')]);
+        return {
+          codecs: defineCodecs({
+            'application/x-delegation': {
+              priority: 40,
+              scope: 'document',
+              decode: () => {
+                count('decodeNull');
+
+                return null;
+              },
             },
-          },
-        }),
-      };
-    });
-    const DecodeThrowPlugin = createBasePlugin({
-      name: 'decodeThrowCodec',
-    }).extend(({ defineCodecs }) => {
-      declarationCalls++;
-
-      return {
-        codecs: defineCodecs({
-          'application/x-delegation': {
-            priority: 50,
-            scope: 'document',
-            decode: () => {
-              count('decodeThrow');
-
-              throw new Error('decode failure');
-            },
-          },
-        }),
-      };
-    });
-    const DecodeNullPlugin = createBasePlugin({
-      name: 'decodeNullCodec',
-    }).extend(({ defineCodecs }) => {
-      declarationCalls++;
-
-      return {
-        codecs: defineCodecs({
-          'application/x-delegation': {
-            priority: 40,
-            scope: 'document',
-            decode: () => {
-              count('decodeNull');
-
-              return null;
-            },
-          },
-        }),
-      };
-    });
-    const DecodeFallbackPlugin = createBasePlugin({
-      name: 'decodeFallbackCodec',
-    }).extend(({ defineCodecs }) => {
+          }),
+        };
+      }
+    );
+    const DecodeFallbackPlugin = defineBasePlugin(
+      'decodeFallbackCodec',
+      {}
+    ).extend(({ defineCodecs }) => {
       declarationCalls++;
 
       return {
@@ -676,47 +686,48 @@ describe('product codecs', () => {
         }),
       };
     });
-    const EncodeThrowPlugin = createBasePlugin({
-      name: 'encodeThrowCodec',
-    }).extend(({ defineCodecs }) => {
-      declarationCalls++;
+    const EncodeThrowPlugin = defineBasePlugin('encodeThrowCodec', {}).extend(
+      ({ defineCodecs }) => {
+        declarationCalls++;
 
-      return {
-        codecs: defineCodecs({
-          'application/x-delegation': {
-            priority: 50,
-            scope: 'document',
-            encode: () => {
-              count('encodeThrow');
+        return {
+          codecs: defineCodecs({
+            'application/x-delegation': {
+              priority: 50,
+              scope: 'document',
+              encode: () => {
+                count('encodeThrow');
 
-              throw new Error('encode failure');
+                throw new Error('encode failure');
+              },
             },
-          },
-        }),
-      };
-    });
-    const EncodeNullPlugin = createBasePlugin({
-      name: 'encodeNullCodec',
-    }).extend(({ defineCodecs }) => {
-      declarationCalls++;
+          }),
+        };
+      }
+    );
+    const EncodeNullPlugin = defineBasePlugin('encodeNullCodec', {}).extend(
+      ({ defineCodecs }) => {
+        declarationCalls++;
 
-      return {
-        codecs: defineCodecs({
-          'application/x-delegation': {
-            priority: 40,
-            scope: 'document',
-            encode: () => {
-              count('encodeNull');
+        return {
+          codecs: defineCodecs({
+            'application/x-delegation': {
+              priority: 40,
+              scope: 'document',
+              encode: () => {
+                count('encodeNull');
 
-              return null;
+                return null;
+              },
             },
-          },
-        }),
-      };
-    });
-    const EncodeFallbackPlugin = createBasePlugin({
-      name: 'encodeFallbackCodec',
-    }).extend(({ defineCodecs }) => {
+          }),
+        };
+      }
+    );
+    const EncodeFallbackPlugin = defineBasePlugin(
+      'encodeFallbackCodec',
+      {}
+    ).extend(({ defineCodecs }) => {
       declarationCalls++;
 
       return {
@@ -790,8 +801,7 @@ describe('product codecs', () => {
     let decodedSlice: unknown;
     let encodedSlice: unknown;
     const calls = { decode: 0, encode: 0 };
-    const RecordsPlugin = createBasePlugin({
-      name: 'recordsCodec',
+    const RecordsPlugin = defineBasePlugin('recordsCodec', {
       codecs: ({ defineCodecs }) =>
         defineCodecs({
           'application/x-records': {
@@ -816,7 +826,7 @@ describe('product codecs', () => {
       plugins: [RecordsPlugin],
     });
     const transfer = new DataTransfer();
-    const slice = ContentSlice.fromJSON({
+    const slice = ContentSlice.fromJSON<ValueOf<typeof editor>>({
       content: [createParagraph('record')],
       openEnd: 1,
       openStart: 1,
@@ -841,8 +851,7 @@ describe('product codecs', () => {
     for (let seed = 1; seed <= 24; seed++) {
       const format = `application/x-generated-slice-${seed}`;
       let decodedSlice: unknown;
-      const CodecPlugin = createBasePlugin({
-        name: `generatedSliceCodec${seed}`,
+      const CodecPlugin = defineBasePlugin(`generatedSliceCodec${seed}`, {
         codecs: ({ defineCodecs }) =>
           defineCodecs({
             [format]: {
@@ -872,7 +881,7 @@ describe('product codecs', () => {
           [createParagraph(`detached:${seed}:${index}`)],
         ])
       );
-      const slice = ContentSlice.fromJSON({
+      const slice = ContentSlice.fromJSON<ValueOf<typeof editor>>({
         content: [createParagraph(`main:${seed}`)],
         openEnd,
         openStart,
@@ -888,8 +897,7 @@ describe('product codecs', () => {
 
   it('does not publish malformed host data or decoded slice shapes', () => {
     let decodeCalls = 0;
-    const MalformedPlugin = createBasePlugin({
-      name: 'malformedCodec',
+    const MalformedPlugin = defineBasePlugin('malformedCodec', {
       codecs: ({ defineCodecs }) =>
         defineCodecs({
           'application/x-malformed': {
@@ -934,8 +942,7 @@ describe('product codecs', () => {
   it('fuzzes malformed host data without publishing a document change', () => {
     const format = 'application/x-generated-malformed';
     let decodeCalls = 0;
-    const MalformedPlugin = createBasePlugin({
-      name: 'generatedMalformedCodec',
+    const MalformedPlugin = defineBasePlugin('generatedMalformedCodec', {
       codecs: ({ defineCodecs }) =>
         defineCodecs({
           [format]: {
@@ -985,8 +992,7 @@ describe('product codecs', () => {
   });
 
   it('falls back to plain-text insertion when codecs return null', () => {
-    const NullPlugin = createBasePlugin({
-      name: 'nullCodec',
+    const NullPlugin = defineBasePlugin('nullCodec', {
       codecs: ({ defineCodecs }) =>
         defineCodecs({
           'text/plain': {

@@ -1,5 +1,4 @@
 import { createPlateEditor, Plate } from '@platejs/core/react';
-import { KEYS } from '@platejs/utils';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
 
@@ -14,7 +13,7 @@ import { ListPlugin } from './ListPlugin';
 describe('useListToolbarButton', () => {
   it('builds list toolbar button props from query state', async () => {
     const editor = createPlateEditor({
-      initialValue: [{ children: [{ text: 'Item' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'Item' }], type: 'paragraph' }],
       plugins: [ListPlugin],
       selection: {
         kind: 'text',
@@ -57,7 +56,7 @@ describe('useListToolbarButton', () => {
 
   it('builds todo toolbar button props from todo selection state', async () => {
     const editor = createPlateEditor({
-      initialValue: [{ children: [{ text: 'Item' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'Item' }], type: 'paragraph' }],
       plugins: [ListPlugin],
       selection: {
         kind: 'text',
@@ -92,7 +91,7 @@ describe('useListToolbarButton', () => {
     expect(editor.read.children()[0]).toMatchObject({
       checked: false,
       indent: 1,
-      listStyleType: KEYS.listTodo,
+      listStyleType: 'todo',
     });
     await waitFor(() => {
       expect(result.current.pressed).toBe(true);

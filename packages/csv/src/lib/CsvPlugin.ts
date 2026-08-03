@@ -1,7 +1,7 @@
 import type { DefinitionOf } from '@platejs/core';
-import { createBasePlugin } from '@platejs/core';
+import { defineBasePlugin } from '@platejs/core';
 import { ContentSlice, type Descendant } from '@platejs/plite';
-import { KEYS } from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 import Papa, { type ParseConfig } from 'papaparse';
 
 export type CsvParseOptions = ParseConfig;
@@ -25,8 +25,7 @@ export type CsvPluginState = {
 export type DeserializeCsvOptions = { data: string } & CsvParseOptions;
 
 /** Enables support for deserializing CSV content into Plate nodes. */
-export const CsvPlugin = createBasePlugin({
-  name: KEYS.csv,
+export const CsvPlugin = defineBasePlugin(PLUGINS.csv, {
   initialState: (): CsvPluginState => ({
     errorTolerance: 0.25,
     parseOptions: { header: true },
@@ -84,15 +83,16 @@ export const CsvPlugin = createBasePlugin({
           return;
         }
 
-        const paragraph = editor.plugin(KEYS.p).type;
-        const tablePlugin = editor.plugin(KEYS.table);
-        const table = tablePlugin.installed ? tablePlugin.type : KEYS.table;
-        const thPlugin = editor.plugin(KEYS.th);
-        const th = thPlugin.installed ? thPlugin.type : KEYS.th;
-        const trPlugin = editor.plugin(KEYS.tr);
-        const tr = trPlugin.installed ? trPlugin.type : KEYS.tr;
-        const tdPlugin = editor.plugin(KEYS.td);
-        const td = tdPlugin.installed ? tdPlugin.type : KEYS.td;
+        const paragraphPlugin = editor.plugin(PLUGINS.paragraph);
+        const paragraph = paragraphPlugin.type;
+        const tablePlugin = editor.plugin(PLUGINS.table);
+        const table = tablePlugin.type;
+        const thPlugin = editor.plugin(PLUGINS.tableCellHeader);
+        const th = thPlugin.type;
+        const trPlugin = editor.plugin(PLUGINS.tableRow);
+        const tr = trPlugin.type;
+        const tdPlugin = editor.plugin(PLUGINS.tableCell);
+        const td = tdPlugin.type;
         const fields = csv.meta.fields;
         const rows = fields
           ? [

@@ -1606,7 +1606,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           },
           { text: ' titles' },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
     ],
     input1: [
@@ -1629,7 +1629,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
             text: ' titles',
           },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
     ],
     input2: [
@@ -1652,7 +1652,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
             text: ' titles',
           },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
     ],
   },

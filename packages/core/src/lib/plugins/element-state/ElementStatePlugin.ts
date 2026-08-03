@@ -1,13 +1,13 @@
 import type { Element } from '@platejs/plite';
 import { NodeApi } from '@platejs/plite';
 
-import { createBasePlugin, type DefinitionOf } from '../../plugin';
+import { defineBasePlugin, type DefinitionOf } from '../../plugin';
 
 export type ElementStateApi = {
   isEmpty: (element: Element) => boolean;
 };
 
-export const ElementStatePlugin = createBasePlugin({
+export const ElementStatePlugin = defineBasePlugin('elementState', {
   api: ({ editor }) => ({
     isEmpty: (element: Element) =>
       !NodeApi.hasProps(element, {
@@ -25,7 +25,6 @@ export const ElementStatePlugin = createBasePlugin({
         },
       }),
   }),
-  name: 'elementState',
 });
 
 export type ElementStateDefinition = DefinitionOf<typeof ElementStatePlugin>;

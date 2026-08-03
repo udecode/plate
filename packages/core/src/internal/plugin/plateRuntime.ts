@@ -20,8 +20,6 @@ export type PlatePluginCache = Readonly<{
     textMarks: readonly string[];
     leafProps: readonly string[];
     textProps: readonly string[];
-    /** Node types to plugin names. */
-    types: Readonly<Record<string, string>>;
   }>;
   transformInitialValue: readonly string[];
   render: Readonly<{

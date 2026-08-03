@@ -5,7 +5,7 @@ import { runInNewContext } from 'node:vm';
 import {
   createEditor,
   defineCommand,
-  defineEditorExtension,
+  defineExtension,
   defineEditorSchema,
   defineEffect,
   defineExtensionSlot,
@@ -13,6 +13,7 @@ import {
   defineStateField,
   defineValueCodec,
   ElementApi,
+  EditorExtensionPublicationError,
   editorCommands,
   property,
   schema,
@@ -50,8 +51,7 @@ describe('transactional extension configuration', () => {
   it('calls schema factories with only the extension name', () => {
     let receivedContext: unknown;
 
-    defineEditorExtension({
-      name: 'schema-factory-context',
+    defineExtension('schema-factory-context', {
       schema(context) {
         receivedContext = context;
 
@@ -65,8 +65,7 @@ describe('transactional extension configuration', () => {
   });
 
   it('composes partial schema contributions over the derived base schema', () => {
-    const imageExtension = defineEditorExtension({
-      name: 'partial-image-schema',
+    const imageExtension = defineExtension('partial-image-schema', {
       schema: { elements: { image: { void: 'block' } } },
     });
     const derivedEditor = createEditor({ extensions: [imageExtension] });
@@ -82,13 +81,16 @@ describe('transactional extension configuration', () => {
       1
     );
 
-    const documentSchema = defineEditorSchema({
-      elements: {},
-      id: 'explicit-schema-composition-owner',
-      root: schema.content.not(schema.content.text()),
-      unknown: 'preserve',
-      version: 1,
-    });
+    const documentSchema = defineEditorSchema(
+      'schema:explicit-schema-composition-owner',
+      {
+        elements: {},
+        id: 'explicit-schema-composition-owner',
+        root: schema.content.not(schema.content.text()),
+        unknown: 'preserve',
+        version: 1,
+      }
+    );
     const editor = createEditor({
       extensions: [documentSchema, imageExtension],
     });
@@ -104,24 +106,25 @@ describe('transactional extension configuration', () => {
   });
 
   it('bootstraps one complete schema only on an unchanged editor', () => {
-    const articleSchema = defineEditorSchema({
-      elements: {
-        paragraph: {
-          content: schema.content.text({ default: 'text', min: 1 }),
+    const articleSchema = defineEditorSchema(
+      'schema:one-shot-schema-bootstrap',
+      {
+        elements: {
+          paragraph: {
+            content: schema.content.text({ default: 'text', min: 1 }),
+          },
         },
-      },
-      id: 'one-shot-schema-bootstrap',
-      root: schema.content.type('paragraph', {
-        default: { type: 'paragraph' },
-        min: 1,
-      }),
-      unknown: 'reject',
-      version: 1,
-    });
+        id: 'one-shot-schema-bootstrap',
+        root: schema.content.type('paragraph', {
+          default: { type: 'paragraph' },
+          min: 1,
+        }),
+        unknown: 'reject',
+        version: 1,
+      }
+    );
     const editor = createEditor({
-      extensions: [
-        defineEditorExtension({ name: 'pre-schema-runtime-extension' }),
-      ],
+      extensions: [defineExtension('pre-schema-runtime-extension', {})],
     });
     let commits = 0;
 
@@ -152,31 +155,34 @@ describe('transactional extension configuration', () => {
   it('restores a failed schema bootstrap and permits one clean retry', () => {
     let allowPublishedDocument = false;
     let editor: ReturnType<typeof createEditor> | undefined;
-    const articleSchema = defineEditorSchema({
-      elements: {
-        paragraph: {
-          content: schema.content.text({ default: 'text', min: 1 }),
-          properties: {
-            guard: property.json({
-              default: 'valid',
-              validate: (value): value is string =>
-                typeof value === 'string' &&
-                (allowPublishedDocument ||
-                  !editor ||
-                  editor.read.children().length === 0),
-              validationVersion: 1,
-            }),
+    const articleSchema = defineEditorSchema(
+      'schema:retryable-schema-bootstrap',
+      {
+        elements: {
+          paragraph: {
+            content: schema.content.text({ default: 'text', min: 1 }),
+            properties: {
+              guard: property.json({
+                default: 'valid',
+                validate: (value): value is string =>
+                  typeof value === 'string' &&
+                  (allowPublishedDocument ||
+                    !editor ||
+                    editor.read.children().length === 0),
+                validationVersion: 1,
+              }),
+            },
           },
         },
-      },
-      id: 'retryable-schema-bootstrap',
-      root: schema.content.type('paragraph', {
-        default: { type: 'paragraph' },
-        min: 1,
-      }),
-      unknown: 'reject',
-      version: 1,
-    });
+        id: 'retryable-schema-bootstrap',
+        root: schema.content.type('paragraph', {
+          default: { type: 'paragraph' },
+          min: 1,
+        }),
+        unknown: 'reject',
+        version: 1,
+      }
+    );
 
     editor = createEditor();
     const derivedIdentity = editor.read.schema.identity();
@@ -211,18 +217,19 @@ describe('transactional extension configuration', () => {
   });
 
   it('rolls back initializer drafts before publishing bootstrap state', () => {
-    const articleSchema = defineEditorSchema({
-      elements: {
-        paragraph: { content: schema.content.text() },
-      },
-      id: 'atomic-initializer-bootstrap',
-      root: schema.content.type('paragraph'),
-      unknown: 'reject',
-      version: 1,
-    });
-    const bootstrapOwner = defineEditorExtension({
-      name: 'bootstrap-atomic-owner',
-    });
+    const articleSchema = defineEditorSchema(
+      'schema:atomic-initializer-bootstrap',
+      {
+        elements: {
+          paragraph: { content: schema.content.text() },
+        },
+        id: 'atomic-initializer-bootstrap',
+        root: schema.content.type('paragraph'),
+        unknown: 'reject',
+        version: 1,
+      }
+    );
+    const bootstrapOwner = defineExtension('bootstrap-atomic-owner', {});
     const initialSelection = {
       anchor: { offset: 2, path: [0, 0] },
       focus: { offset: 2, path: [0, 0] },
@@ -287,7 +294,7 @@ describe('transactional extension configuration', () => {
   });
 
   it('invalidates specs minted before one successful schema bootstrap', () => {
-    const articleSchema = defineEditorSchema({
+    const articleSchema = defineEditorSchema('schema:bootstrap-spec-success', {
       elements: {
         paragraph: { content: schema.content.text() },
       },
@@ -316,7 +323,7 @@ describe('transactional extension configuration', () => {
   });
 
   it('preserves specs when schema bootstrap rolls back', () => {
-    const articleSchema = defineEditorSchema({
+    const articleSchema = defineEditorSchema('schema:bootstrap-spec-failure', {
       elements: {
         paragraph: { content: schema.content.text() },
       },
@@ -350,7 +357,7 @@ describe('transactional extension configuration', () => {
   });
 
   it('rejects active anchors before staging schema bootstrap state', () => {
-    const articleSchema = defineEditorSchema({
+    const articleSchema = defineEditorSchema('schema:anchor-free-bootstrap', {
       elements: {
         paragraph: { content: schema.content.text() },
       },
@@ -385,7 +392,7 @@ describe('transactional extension configuration', () => {
   });
 
   it('rejects bootstrap transaction metadata that has no commit owner', () => {
-    const articleSchema = defineEditorSchema({
+    const articleSchema = defineEditorSchema('schema:metadata-free-bootstrap', {
       elements: {
         paragraph: { content: schema.content.text() },
       },
@@ -395,9 +402,8 @@ describe('transactional extension configuration', () => {
       version: 1,
     });
     const effect = defineEffect<string>({ key: 'bootstrap.effect' });
-    const effectOwner = defineEditorExtension({
+    const effectOwner = defineExtension('bootstrap-effect-owner', {
       effectTypes: [effect],
-      name: 'bootstrap-effect-owner',
     });
     const editor = createEditor({ initialValue: [paragraph('before')] });
     const previousRegistry = getEditorExtensionRegistry(editor);
@@ -421,15 +427,18 @@ describe('transactional extension configuration', () => {
   });
 
   it('validates explicit initial documents without rewriting them', () => {
-    const articleSchema = defineEditorSchema({
-      elements: {
-        paragraph: { content: schema.content.text() },
-      },
-      id: 'explicit-schema-bootstrap',
-      root: schema.content.type('paragraph'),
-      unknown: 'reject',
-      version: 1,
-    });
+    const articleSchema = defineEditorSchema(
+      'schema:explicit-schema-bootstrap',
+      {
+        elements: {
+          paragraph: { content: schema.content.text() },
+        },
+        id: 'explicit-schema-bootstrap',
+        root: schema.content.type('paragraph'),
+        unknown: 'reject',
+        version: 1,
+      }
+    );
 
     assert.throws(
       () =>
@@ -456,20 +465,23 @@ describe('transactional extension configuration', () => {
   });
 
   it('publishes a dynamic extension migration and schema atomically', () => {
-    const articleSchema = defineEditorSchema({
-      elements: {
-        paragraph: {
-          content: schema.content.text({ default: 'text', min: 1 }),
-        } as const,
-      },
-      id: 'dynamic-schema-migration',
-      root: schema.content.type('paragraph', {
-        default: { type: 'paragraph' },
-        min: 1,
-      }),
-      unknown: 'reject',
-      version: 1,
-    });
+    const articleSchema = defineEditorSchema(
+      'schema:dynamic-schema-migration',
+      {
+        elements: {
+          paragraph: {
+            content: schema.content.text({ default: 'text', min: 1 }),
+          } as const,
+        },
+        id: 'dynamic-schema-migration',
+        root: schema.content.type('paragraph', {
+          default: { type: 'paragraph' },
+          min: 1,
+        }),
+        unknown: 'reject',
+        version: 1,
+      }
+    );
     const editor = createEditor();
     const derivedIdentity = editor.read.schema.identity();
     const observations: Array<{
@@ -485,14 +497,14 @@ describe('transactional extension configuration', () => {
     });
 
     assert.throws(
-      () => editor.extend(articleSchema),
+      () => editor.install(articleSchema),
       /requires an explicit migration/u
     );
     assert.deepEqual(editor.read.children(), []);
     assert.equal(editor.read.schema.identity(), derivedIdentity);
     assert.deepEqual(observations, []);
 
-    editor.extend(articleSchema, {
+    editor.install(articleSchema, {
       migrate({ document, next }) {
         const child = next.createDefaultRootChild();
 
@@ -522,7 +534,7 @@ describe('transactional extension configuration', () => {
   it('publishes candidate schema migration and document as one commit', () => {
     const slot = defineExtensionSlot('atomic-schema-migration');
     const articleSchema = (version: number, type: string) =>
-      defineEditorSchema({
+      defineEditorSchema('schema:atomic-schema-migration', {
         elements: {
           [type]: {
             content: schema.content.text({ default: 'text', min: 1 }),
@@ -652,7 +664,7 @@ describe('transactional extension configuration', () => {
   it('retains earlier document writes across a schema-revision migration', () => {
     const slot = defineExtensionSlot('schema-migration-after-write');
     const articleSchema = (version: number, type: string) =>
-      defineEditorSchema({
+      defineEditorSchema('schema:schema-migration-after-write', {
         elements: {
           [type]: {
             content: schema.content.text({ default: 'text', min: 1 }),
@@ -708,7 +720,7 @@ describe('transactional extension configuration', () => {
       key: 'failed-schema-migration.effect',
     });
     const articleSchema = (version: number, type: string) =>
-      defineEditorSchema({
+      defineEditorSchema('schema:failed-schema-migration', {
         elements: {
           [type]: {
             content: schema.content.text({ default: 'text', min: 1 }),
@@ -725,9 +737,8 @@ describe('transactional extension configuration', () => {
     const editor = createEditor({
       extensions: [
         slot.of(articleSchema(1, 'paragraph')),
-        defineEditorExtension({
+        defineExtension('failed-schema-migration-effect', {
           effectTypes: [effect],
-          name: 'failed-schema-migration-effect',
         }),
       ] as const,
       initialValue: [paragraph('before')],
@@ -789,10 +800,10 @@ describe('transactional extension configuration', () => {
     assert.equal(commits, 0);
   });
 
-  it('treats a fresh equivalent complete schema as a configuration no-op', () => {
+  it('treats the exact same complete schema descriptor as a no-op', () => {
     const slot = defineExtensionSlot('equivalent-schema-migration');
     const createSchema = () =>
-      defineEditorSchema({
+      defineEditorSchema('schema:equivalent-schema-migration', {
         elements: {
           paragraph: {
             content: schema.content.text({ default: 'text', min: 1 }),
@@ -806,8 +817,9 @@ describe('transactional extension configuration', () => {
         unknown: 'reject',
         version: 1,
       });
+    const schemaExtension = createSchema();
     const editor = createEditor({
-      extensions: [slot.of(createSchema())] as const,
+      extensions: [slot.of(schemaExtension)] as const,
       initialValue: [paragraph('same')],
     });
     const identity = editor.read.schema.identity();
@@ -818,7 +830,7 @@ describe('transactional extension configuration', () => {
     let commits = 0;
 
     editor.subscribeCommit(() => commits++);
-    editor.update.extensions.reconfigure(slot, createSchema(), {
+    editor.update.extensions.reconfigure(slot, schemaExtension, {
       migrate({ document }) {
         migrations++;
         return document;
@@ -839,10 +851,10 @@ describe('transactional extension configuration', () => {
     assert.equal(editor.read.lastCommit(), null);
   });
 
-  it('treats declaration-order differences as a configuration no-op', () => {
+  it('publishes a fresh descriptor even when schema grammar is equivalent', () => {
     const slot = defineExtensionSlot('equivalent-schema-order');
     const articleSchema = (groups: readonly string[]) =>
-      defineEditorSchema({
+      defineEditorSchema('schema:equivalent-schema-order', {
         elements: {
           paragraph: {
             content: schema.content.text(),
@@ -874,17 +886,17 @@ describe('transactional extension configuration', () => {
       articleSchema(['section', 'article'])
     );
 
-    assert.equal(commits, 0);
+    assert.equal(commits, 1);
     assert.equal(editor.read.schema.identity(), identity);
     assert.equal(
       getCompiledEditorConfiguration(editor).revision,
-      configurationRevision
+      configurationRevision + 1
     );
     assert.equal(
       getEditorExtensionRegistry(editor).schemaRevision,
       schemaRevision
     );
-    assert.equal(editor.read.lastCommit(), null);
+    assert.notEqual(editor.read.lastCommit(), null);
   });
 
   it('publishes equal-schema non-schema changes without migration', () => {
@@ -894,7 +906,7 @@ describe('transactional extension configuration', () => {
     });
     const slot = defineExtensionSlot('equal-schema-non-schema');
     const createSchema = () =>
-      defineEditorSchema({
+      defineEditorSchema('schema:equal-schema-non-schema', {
         elements: {
           paragraph: { content: schema.content.text() },
         },
@@ -904,9 +916,8 @@ describe('transactional extension configuration', () => {
         version: 1,
       }).schema;
     const extension = (value: string) =>
-      defineEditorExtension({
+      defineExtension('equal-schema-non-schema', {
         facetProviders: [mode.of(value)],
-        name: 'equal-schema-non-schema',
         schema: createSchema(),
       });
     const editor = createEditor({
@@ -951,20 +962,23 @@ describe('transactional extension configuration', () => {
   });
 
   it('publishes same-schema setup and API replacements', () => {
-    const schemaDeclaration = defineEditorSchema({
-      elements: {
-        paragraph: { content: schema.content.text() },
-      },
-      id: 'same-schema-runtime-resources',
-      root: schema.content.type('paragraph'),
-      unknown: 'reject',
-      version: 1,
-    }).schema;
+    const schemaDeclaration = defineEditorSchema(
+      'schema:same-schema-runtime-resources',
+      {
+        elements: {
+          paragraph: { content: schema.content.text() },
+        },
+        id: 'same-schema-runtime-resources',
+        root: schema.content.type('paragraph'),
+        unknown: 'reject',
+        version: 1,
+      }
+    ).schema;
     const assertPublishes = (
       slotName: string,
       initial: EditorExtensionReference,
       replacement: EditorExtensionReference,
-      verify: (editor: Editor) => void
+      verify: (editor: Editor<any, any>) => void
     ) => {
       const slot = defineExtensionSlot(slotName);
       const editor = createEditor({
@@ -994,12 +1008,11 @@ describe('transactional extension configuration', () => {
     };
     const setupLifecycle: string[] = [];
     const setupExtension = (mode: string) =>
-      defineEditorExtension({
-        activate(_editor, context) {
+      defineExtension('same-schema-setup', {
+        activate(context) {
           setupLifecycle.push(`activate:${mode}`);
           context.onCleanup(() => setupLifecycle.push(`cleanup:${mode}`));
         },
-        name: 'same-schema-setup',
         schema: schemaDeclaration,
       });
 
@@ -1016,14 +1029,12 @@ describe('transactional extension configuration', () => {
     );
     assertPublishes(
       'same-schema-api-slot',
-      defineEditorExtension({
+      defineExtension('same-schema-api', {
         api: () => ({ value: 'read' }),
-        name: 'same-schema-api',
         schema: schemaDeclaration,
       }),
-      defineEditorExtension({
+      defineExtension('same-schema-api', {
         api: () => ({ value: 'write' }),
-        name: 'same-schema-api',
         schema: schemaDeclaration,
       }),
       (editor) =>
@@ -1039,7 +1050,7 @@ describe('transactional extension configuration', () => {
   it('reports only semantically changed schema resources', () => {
     const slot = defineExtensionSlot('semantic-schema-delta');
     const articleSchema = (version: number, paragraphReadOnly: boolean) =>
-      defineEditorSchema({
+      defineEditorSchema('schema:semantic-schema-delta', {
         elements: {
           heading: { content: schema.content.text() },
           paragraph: {
@@ -1072,7 +1083,7 @@ describe('transactional extension configuration', () => {
   it('rebinds live validators without treating function identity as schema data', () => {
     const slot = defineExtensionSlot('schema-validation-rebind');
     const articleSchema = (accepted: string) =>
-      defineEditorSchema({
+      defineEditorSchema('schema:schema-validation-rebind', {
         elements: {
           paragraph: {
             content: schema.content.text(),
@@ -1134,7 +1145,7 @@ describe('transactional extension configuration', () => {
   it('rolls back an equal-schema validator rebind that rejects the document', () => {
     const slot = defineExtensionSlot('schema-validation-rebind-rollback');
     const articleSchema = (accepted: string) =>
-      defineEditorSchema({
+      defineEditorSchema('schema:schema-validation-rebind-rollback', {
         elements: {
           paragraph: {
             content: schema.content.text(),
@@ -1201,7 +1212,7 @@ describe('transactional extension configuration', () => {
   it('requires an explicit migration when candidate root defaults change the document', () => {
     const slot = defineExtensionSlot('explicit-root-default-migration');
     const articleSchema = (version: number, minimum: number) =>
-      defineEditorSchema({
+      defineEditorSchema('schema:explicit-root-default-migration', {
         elements: {
           paragraph: {
             content: schema.content.text({ default: 'text', min: 1 }),
@@ -1252,11 +1263,10 @@ describe('transactional extension configuration', () => {
 
   it('activates initial extensions before exposing their read group', () => {
     let active = false;
-    const extension = defineEditorExtension({
+    const extension = defineExtension('initial-activation-state', {
       activate() {
         active = true;
       },
-      name: 'initial-activation-state',
       read: () => {
         if (!active) throw new Error('Initial extension is not active.');
 
@@ -1276,9 +1286,8 @@ describe('transactional extension configuration', () => {
     const slot = defineExtensionSlot('configuration-mode');
     let activations = 0;
     const extension = (value: string) =>
-      defineEditorExtension({
+      defineExtension(`configuration-mode-${value}`, {
         facetProviders: [mode.of(value)],
-        name: `configuration-mode-${value}`,
         activate() {
           activations++;
         },
@@ -1312,9 +1321,8 @@ describe('transactional extension configuration', () => {
     const slot = defineExtensionSlot('aborted-configuration-mode');
     let activations = 0;
     const extension = (value: string) =>
-      defineEditorExtension({
+      defineExtension(`aborted-configuration-mode-${value}`, {
         facetProviders: [mode.of(value)],
-        name: `aborted-configuration-mode-${value}`,
         activate() {
           activations++;
         },
@@ -1336,11 +1344,11 @@ describe('transactional extension configuration', () => {
     assert.equal(getCompiledEditorConfiguration(editor).revision, revision);
   });
 
-  it('publishes document and configuration before isolating activation failure', () => {
+  it('rolls back document and configuration when candidate activation fails', () => {
     const mode = defineFacet<string>({ key: 'failed-configuration-mode' });
     const slot = defineExtensionSlot('failed-configuration-mode');
     const lifecycle: string[] = [];
-    const errors: Array<{ extension: string; phase: string }> = [];
+    const errors: Array<{ extensionName: string; phase: string }> = [];
     const persisted = defineStateField({
       initial: 'installed',
       key: 'failed-configuration-field',
@@ -1358,19 +1366,18 @@ describe('transactional extension configuration', () => {
     const editor = createEditor({
       extensions: [
         slot.of(
-          defineEditorExtension({
-            activate(_editor, context) {
+          defineExtension('failed-configuration-mode-read', {
+            activate(context) {
               lifecycle.push('old:activate');
               context.onCleanup(() => lifecycle.push('old:cleanup'));
             },
             facetProviders: [mode.of('read')],
-            name: 'failed-configuration-mode-read',
           })
         ),
       ] as const,
       initialValue: [paragraph('before')],
       lifecycleErrorSink(error) {
-        errors.push({ extension: error.extension, phase: error.phase });
+        errors.push({ extensionName: error.extensionName, phase: error.phase });
       },
     });
     const revision = getCompiledEditorConfiguration(editor).revision;
@@ -1384,57 +1391,61 @@ describe('transactional extension configuration', () => {
       });
     });
 
-    editor.update((tx) => {
-      tx.text.insert('!', { at: { offset: 6, path: [0, 0] } });
-      tx.extensions.reconfigure(
-        slot,
-        defineEditorExtension({
-          activate(runtimeEditor, context) {
-            lifecycle.push(
-              `new:activate:${runtimeEditor.read
-                .facet(mode)
-                .join(',')}:${runtimeEditor.read.text.string([])}`
-            );
-            context.signal.addEventListener('abort', () => {
-              lifecycle.push('new:abort');
-            });
-            context.onCleanup(({ reason }) =>
-              lifecycle.push(`new:cleanup:first:${reason}`)
-            );
-            context.onCleanup(({ reason }) =>
-              lifecycle.push(`new:cleanup:second:${reason}`)
-            );
-            throw new Error('activation failed');
-          },
-          facetProviders: [mode.of('write')],
-          stateFields: [persisted],
-          name: 'failed-configuration-mode-write',
-        })
-      );
-    });
+    assert.throws(
+      () =>
+        editor.update((tx) => {
+          tx.text.insert('!', { at: { offset: 6, path: [0, 0] } });
+          tx.extensions.reconfigure(
+            slot,
+            defineExtension('failed-configuration-mode-write', {
+              activate(context) {
+                const runtimeEditor = context.editor;
+                lifecycle.push(
+                  `new:activate:${runtimeEditor.read
+                    .facet(mode)
+                    .join(',')}:${runtimeEditor.read.text.string([])}`
+                );
+                context.signal.addEventListener('abort', () => {
+                  lifecycle.push('new:abort');
+                });
+                context.onCleanup(({ reason }) =>
+                  lifecycle.push(`new:cleanup:first:${reason}`)
+                );
+                context.onCleanup(({ reason }) =>
+                  lifecycle.push(`new:cleanup:second:${reason}`)
+                );
+                throw new Error('activation failed');
+              },
+              facetProviders: [mode.of('write')],
+              stateFields: [persisted],
+            })
+          );
+        }),
+      (error) => {
+        assert.ok(error instanceof EditorExtensionPublicationError);
+        assert.equal(error.extensionName, 'failed-configuration-mode-write');
+        assert.equal(error.phase, 'activate');
+        assert.match(String(error.cause), /activation failed/);
+        assert.deepEqual(error.rollbackErrors, []);
 
-    assert.equal(editor.read.text.string([]), 'before!');
-    assert.equal(editor.read.getField(persisted), 'installed');
-    assert.deepEqual(editor.read.value().meta?.[persisted.key], {
-      value: 'installed',
-      version: 1,
-    });
-    assert.deepEqual(editor.read.facet(mode), ['write']);
-    assert.equal(getCompiledEditorConfiguration(editor).revision, revision + 1);
-    assert.notEqual(getEditorExtensionRegistry(editor), registry);
-    assert.deepEqual(errors, [
-      { extension: 'failed-configuration-mode-write', phase: 'activate' },
-    ]);
-    assert.deepEqual(committedStates, [
-      { field: 'installed', revision: revision + 1, stateChanged: true },
-    ]);
+        return true;
+      }
+    );
+
+    assert.equal(editor.read.text.string([]), 'before');
+    assert.throws(() => editor.read.getField(persisted), /not installed/);
+    assert.equal(editor.read.value().meta?.[persisted.key], undefined);
+    assert.deepEqual(editor.read.facet(mode), ['read']);
+    assert.equal(getCompiledEditorConfiguration(editor).revision, revision);
+    assert.equal(getEditorExtensionRegistry(editor), registry);
+    assert.deepEqual(errors, []);
+    assert.deepEqual(committedStates, []);
     assert.deepEqual(lifecycle, [
       'old:activate',
       'new:activate:write:before!',
       'new:abort',
       'new:cleanup:second:rollback',
       'new:cleanup:first:rollback',
-      'old:cleanup',
     ]);
   });
 
@@ -1447,15 +1458,14 @@ describe('transactional extension configuration', () => {
     const editor = createEditor({
       extensions: [
         slot.of(
-          defineEditorExtension({
-            activate(_editor, context) {
+          defineExtension('post-publication-previous', {
+            activate(context) {
               previousSignal = context.signal;
               context.onCleanup(({ reason }) =>
                 lifecycle.push(`previous:${reason}`)
               );
             },
             facetProviders: [mode.of('previous')],
-            name: 'post-publication-previous',
           })
         ),
       ] as const,
@@ -1465,15 +1475,14 @@ describe('transactional extension configuration', () => {
     const publication = prepareEditorExtensionPublication(
       editor,
       slot.of(
-        defineEditorExtension({
-          activate(_editor, context) {
+        defineExtension('post-publication-provisional', {
+          activate(context) {
             provisionalSignal = context.signal;
             context.onCleanup(({ reason }) =>
               lifecycle.push(`provisional:${reason}`)
             );
           },
           facetProviders: [mode.of('provisional')],
-          name: 'post-publication-provisional',
         })
       )
     );
@@ -1497,37 +1506,36 @@ describe('transactional extension configuration', () => {
     );
     assert.deepEqual(editor.read.facet(mode), ['previous']);
     assert.equal(previousSignal.aborted, false);
-    assert.equal(provisionalSignal, undefined);
-    assert.deepEqual(lifecycle, []);
+    assert.equal(provisionalSignal.aborted, true);
+    assert.deepEqual(lifecycle, ['provisional:rollback']);
   });
 
-  it('keeps published configuration when one activation fails', () => {
+  it('rolls back earlier candidate activations when a dependency fails', () => {
     const mode = defineFacet<string>({ key: 'partial-activation-mode' });
     const slot = defineExtensionSlot('partial-activation-mode');
     const lifecycle: string[] = [];
-    const errors: Array<{ extension: string; phase: string }> = [];
+    const errors: Array<{ extensionName: string; phase: string }> = [];
     const commits: number[] = [];
     const editor = createEditor({
       extensions: [
         slot.of(
-          defineEditorExtension({
-            activate(_editor, context) {
+          defineExtension('partial-activation-old', {
+            activate(context) {
               context.onCleanup(() => lifecycle.push('old:cleanup'));
             },
             facetProviders: [mode.of('read')],
-            name: 'partial-activation-old',
           })
         ),
       ] as const,
       initialValue: [paragraph('before')],
       lifecycleErrorSink(error) {
-        errors.push({ extension: error.extension, phase: error.phase });
+        errors.push({ extensionName: error.extensionName, phase: error.phase });
       },
     });
     const registry = getEditorExtensionRegistry(editor);
     const revision = getCompiledEditorConfiguration(editor).revision;
-    const partialA = defineEditorExtension({
-      activate(_editor, context) {
+    const partialA = defineExtension('partial-activation-a', {
+      activate(context) {
         lifecycle.push('a:activate');
         context.signal.addEventListener('abort', () => {
           lifecycle.push('a:abort');
@@ -1537,35 +1545,40 @@ describe('transactional extension configuration', () => {
         });
       },
       facetProviders: [mode.of('write')],
-      name: 'partial-activation-a',
     });
 
     editor.subscribeCommit((commit) => commits.push(commit.version));
 
-    editor.update((tx) => {
-      tx.text.insert('!', { at: { offset: 6, path: [0, 0] } });
-      tx.extensions.reconfigure(slot, [
-        partialA,
-        defineEditorExtension({
-          activate() {
-            lifecycle.push('b:activate');
-            throw new Error('second activation failed');
-          },
-          dependencies: [partialA],
-          name: 'partial-activation-b',
+    assert.throws(
+      () =>
+        editor.update((tx) => {
+          tx.text.insert('!', { at: { offset: 6, path: [0, 0] } });
+          tx.extensions.reconfigure(slot, [
+            partialA,
+            defineExtension('partial-activation-b', {
+              activate() {
+                lifecycle.push('b:activate');
+                throw new Error('second activation failed');
+              },
+              dependencies: [partialA],
+            }),
+          ]);
         }),
-      ]);
-    });
+      EditorExtensionPublicationError
+    );
 
-    assert.equal(editor.read.text.string([]), 'before!');
-    assert.deepEqual(editor.read.facet(mode), ['write']);
-    assert.notEqual(getEditorExtensionRegistry(editor), registry);
-    assert.equal(getCompiledEditorConfiguration(editor).revision, revision + 1);
-    assert.deepEqual(commits, [1]);
-    assert.deepEqual(errors, [
-      { extension: 'partial-activation-b', phase: 'activate' },
+    assert.equal(editor.read.text.string([]), 'before');
+    assert.deepEqual(editor.read.facet(mode), ['read']);
+    assert.equal(getEditorExtensionRegistry(editor), registry);
+    assert.equal(getCompiledEditorConfiguration(editor).revision, revision);
+    assert.deepEqual(commits, []);
+    assert.deepEqual(errors, []);
+    assert.deepEqual(lifecycle, [
+      'a:activate',
+      'b:activate',
+      'a:abort',
+      'a:cleanup:rollback',
     ]);
-    assert.deepEqual(lifecycle, ['a:activate', 'b:activate', 'old:cleanup']);
   });
 
   it('rejects conflicting descriptors without exposing a partial registry', () => {
@@ -1574,20 +1587,19 @@ describe('transactional extension configuration', () => {
     const editor = createEditor({
       extensions: [
         slot.of(
-          defineEditorExtension({
+          defineExtension('dependency-configuration-mode-read', {
             facetProviders: [mode.of('read')],
-            name: 'dependency-configuration-mode-read',
           })
         ),
       ] as const,
     });
 
-    const conflictB = defineEditorExtension({
-      name: 'dependency-configuration-conflict-b',
-    });
-    const conflictA = defineEditorExtension({
+    const conflictB = defineExtension(
+      'dependency-configuration-conflict-b',
+      {}
+    );
+    const conflictA = defineExtension('dependency-configuration-conflict-a', {
       conflicts: [conflictB],
-      name: 'dependency-configuration-conflict-a',
     });
 
     assert.throws(() => {
@@ -1599,9 +1611,7 @@ describe('transactional extension configuration', () => {
 
   it('rejects a detached candidate without changing the live registry', () => {
     const editor = createEditor({
-      extensions: [
-        defineEditorExtension({ name: 'detached-candidate-base' }),
-      ] as const,
+      extensions: [defineExtension('detached-candidate-base', {})] as const,
     });
     const registry = getEditorExtensionRegistry(editor);
     const revision = getCompiledEditorConfiguration(editor).revision;
@@ -1612,7 +1622,7 @@ describe('transactional extension configuration', () => {
       () =>
         prepareEditorExtensionPublication(
           editor,
-          defineEditorExtension({
+          defineExtension('invalid-detached-candidate', {
             api() {
               apiFactories++;
               return {};
@@ -1620,7 +1630,6 @@ describe('transactional extension configuration', () => {
             activate() {
               activations++;
             },
-            name: 'invalid-detached-candidate',
             validate() {
               throw new Error('invalid detached candidate');
             },
@@ -1638,11 +1647,10 @@ describe('transactional extension configuration', () => {
   it('rejects merged command id collisions without publishing the candidate', () => {
     const editor = createEditor({
       extensions: [
-        defineEditorExtension({
+        defineExtension('canonical-command-descriptor', {
           commands: ({ handle }) => [
             handle(editorCommands.insertText, () => false),
           ],
-          name: 'canonical-command-descriptor',
         }),
       ],
     });
@@ -1655,10 +1663,9 @@ describe('transactional extension configuration', () => {
 
     assert.throws(
       () =>
-        editor.extend(
-          defineEditorExtension({
+        editor.install(
+          defineExtension('conflicting-command-descriptor', {
             commands: ({ handle }) => [handle(conflicting, () => false)],
-            name: 'conflicting-command-descriptor',
           })
         ),
       /cannot install multiple descriptor identities/
@@ -1683,7 +1690,7 @@ describe('transactional extension configuration', () => {
   it('installs descriptor dependencies before their consumer', () => {
     const command = defineCommand('ordered-command');
     const seen: string[] = [];
-    const base = defineEditorExtension({
+    const base = defineExtension('ordered-base', {
       commands: ({ handle }) => [
         handle(command, () => {
           seen.push('base');
@@ -1691,9 +1698,8 @@ describe('transactional extension configuration', () => {
           return false;
         }),
       ],
-      name: 'ordered-base',
     });
-    const dependent = defineEditorExtension({
+    const dependent = defineExtension('ordered-dependent', {
       commands: ({ handle }) => [
         handle(command, () => {
           seen.push('dependent');
@@ -1702,7 +1708,6 @@ describe('transactional extension configuration', () => {
         }),
       ],
       dependencies: [base],
-      name: 'ordered-dependent',
     });
     const editor = createEditor({
       extensions: [dependent],
@@ -1727,7 +1732,7 @@ describe('transactional extension configuration', () => {
     const seen: string[] = [];
     let editor!: ReturnType<typeof createEditor>;
     let installed = false;
-    const late = defineEditorExtension({
+    const late = defineExtension('captured-command-late', {
       commands: ({ handle }) => [
         handle(command, () => {
           seen.push('late');
@@ -1735,17 +1740,16 @@ describe('transactional extension configuration', () => {
           return false;
         }),
       ],
-      name: 'captured-command-late',
     });
     editor = createEditor({
       extensions: [
-        defineEditorExtension({
+        defineExtension('captured-command-base', {
           commands: ({ handle }) => [
             handle(command, () => {
               seen.push('first');
               if (!installed) {
                 installed = true;
-                editor.extend(late);
+                editor.install(late);
               }
 
               return false;
@@ -1756,7 +1760,6 @@ describe('transactional extension configuration', () => {
               return false;
             }),
           ],
-          name: 'captured-command-base',
         }),
       ],
     });
@@ -1795,12 +1798,11 @@ describe('transactional extension configuration', () => {
     const field = defineStateField({ key: 'immutable-field' });
     const editor = createEditor({
       extensions: [
-        defineEditorExtension({
+        defineExtension('immutable-registry', {
           commands: ({ handle }) => [handle(command, () => false)],
           effectTypes: [effect],
           stateFields: [field],
-          name: 'immutable-registry',
-          schema: defineEditorSchema({
+          schema: defineEditorSchema('schema:immutable-registry', {
             elements: {
               'immutable-element': { content: schema.content.open() },
             },
@@ -1879,8 +1881,7 @@ describe('transactional extension configuration', () => {
 
   it('canonicalizes declarations and revisions the compiled schema', () => {
     const sourceElement = { inline: false };
-    const canonical = defineEditorExtension({
-      name: 'canonical-schema-declaration',
+    const canonical = defineExtension('canonical-schema-declaration', {
       schema: {
         elements: { 'canonical-schema-element': sourceElement },
         groups: {},
@@ -1904,9 +1905,8 @@ describe('transactional extension configuration', () => {
 
     const slot = defineExtensionSlot('compiled-schema-revision');
     const extension = (name: string) =>
-      defineEditorExtension({
-        name,
-        schema: defineEditorSchema({
+      defineExtension(name, {
+        schema: defineEditorSchema('schema:equivalent-schema', {
           elements: {
             'equivalent-schema-element': { content: schema.content.text() },
           },
@@ -1932,13 +1932,12 @@ describe('transactional extension configuration', () => {
     );
   });
 
-  it('canonicalizes raw static declarations once at publication', () => {
+  it('freezes static declarations when defining the extension', () => {
     const sourceElement = {
       content: schema.content.text({ default: 'text', min: 1 }),
       inline: false,
     };
-    const extension = {
-      name: 'raw-static-schema-declaration',
+    const extension = defineExtension('static-schema-declaration', {
       schema: {
         elements: { paragraph: sourceElement },
         id: 'raw-static-schema-declaration',
@@ -1949,20 +1948,19 @@ describe('transactional extension configuration', () => {
         unknown: 'reject',
         version: 1,
       },
-    } satisfies EditorExtensionReference;
+    });
     const editor = createEditor({ extensions: [extension] as const });
     const published = getInstalledEditorExtension(
       editor,
-      'raw-static-schema-declaration'
+      'static-schema-declaration'
     );
 
     assert.ok(published);
 
     sourceElement.inline = true;
-    extension.name = 'mutated-raw-static-schema-declaration';
 
-    assert.notEqual(published, extension);
-    assert.equal(published?.name, 'raw-static-schema-declaration');
+    assert.equal(published, extension);
+    assert.equal(published?.name, 'static-schema-declaration');
     assert.equal(Object.isFrozen(published), true);
     assert.equal(Object.isFrozen(published?.schema), true);
     assert.equal(
@@ -1971,22 +1969,23 @@ describe('transactional extension configuration', () => {
     );
   });
 
-  it('keeps the canonical token identity when raw extension input mutates', () => {
-    const extension = {
+  it('keeps the defined extension token as the installed identity', () => {
+    const extension = defineExtension('extension-token', {
       api: () => ({ read: () => 'canonical' }),
-      name: 'raw-extension-token',
-    } satisfies EditorExtensionReference;
+    });
     const editor = createEditor({ extensions: [extension] as const });
-
-    extension.name = 'mutated-raw-extension-token';
 
     assert.equal(
       (
-        getInstalledEditorExtensionApi(editor, 'raw-extension-token')?.[
-          'raw-extension-token'
+        getInstalledEditorExtensionApi(editor, 'extension-token')?.[
+          'extension-token'
         ] as { read: () => string }
       ).read(),
       'canonical'
+    );
+    assert.equal(
+      getInstalledEditorExtension(editor, 'extension-token'),
+      extension
     );
   });
 
@@ -2040,7 +2039,7 @@ describe('transactional extension configuration', () => {
         unknown: "reject",
         version: 1
       }
-    })`) as EditorExtensionDefinitionInput;
+    })`) as EditorExtensionDefinitionInput & Readonly<{ name: string }>;
     const canonical = compileEditorExtension(source);
     const schemaDeclaration = canonical.schema;
 
@@ -2119,27 +2118,76 @@ describe('transactional extension configuration', () => {
 
   it('activates with schema and lifecycle controls', () => {
     const contexts: string[][] = [];
+    const mode = defineFacet<string, string>({
+      combine: (values) => values.at(-1) ?? 'missing',
+      key: 'activation-candidate-mode',
+    });
     const editor = createEditor();
+    const first = defineExtension('activation-context-first', {
+      api: () => ({ probe: 'first' }),
+      facetProviders: [mode.of('candidate')],
+    });
 
-    editor.extend([
-      defineEditorExtension({
-        api: () => ({ probe: 'first' }),
-        name: 'activation-context-first',
-      }),
-      defineEditorExtension({
-        activate(_editor, context) {
+    editor.install([
+      first,
+      defineExtension('activation-context-second', {
+        activate(context) {
           contexts.push(Object.keys(context).sort());
           assert.equal(typeof context.schema.assertDocument, 'function');
           assert.equal(Object.isFrozen(context), true);
+          assert.equal(context.editor.read.facet(mode), 'candidate');
+          assert.equal(context.editor.extension(first).api.probe, 'first');
         },
         api: () => ({ probe: 'second' }),
-        name: 'activation-context-second',
+        dependencies: [first],
       }),
     ]);
 
     assert.deepEqual(contexts, [
-      ['afterPublish', 'name', 'onCleanup', 'root', 'schema', 'signal'],
+      [
+        'afterPublish',
+        'editor',
+        'extensionName',
+        'onCleanup',
+        'root',
+        'schema',
+        'signal',
+      ],
     ]);
+  });
+
+  it('reports ordered rollback failures without hiding activation failure', () => {
+    const editor = createEditor();
+    const first = defineExtension('rollback-error-first', {
+      activate(context) {
+        context.onCleanup(() => {
+          throw new Error('first cleanup failed');
+        });
+      },
+    });
+
+    assert.throws(
+      () =>
+        editor.install([
+          first,
+          defineExtension('rollback-error-second', {
+            activate() {
+              throw new Error('activation failed');
+            },
+            dependencies: [first],
+          }),
+        ]),
+      (error) => {
+        assert.ok(error instanceof EditorExtensionPublicationError);
+        assert.equal(error.extensionName, 'rollback-error-second');
+        assert.match(String(error.cause), /activation failed/);
+        assert.equal(error.rollbackErrors.length, 1);
+        assert.match(String(error.rollbackErrors[0]), /first cleanup failed/);
+
+        return true;
+      }
+    );
+    assert.deepEqual(getCompiledEditorConfiguration(editor).extensions, []);
   });
 
   it('resolves API factories against a guarded candidate before publication', () => {
@@ -2147,11 +2195,10 @@ describe('transactional extension configuration', () => {
     const editor = createEditor();
     const registry = getEditorExtensionRegistry(editor);
     let factoryCalls = 0;
-    const seed = defineEditorExtension({
+    const seed = defineExtension('candidate-api-seed', {
       api: () => ({ candidateSeed: 'visible' }),
-      name: 'candidate-api-seed',
     });
-    const factory = defineEditorExtension({
+    const factory = defineExtension('candidate-api-factory', {
       api(context) {
         factoryCalls++;
         assert.deepEqual(Object.keys(context).sort(), [
@@ -2180,7 +2227,6 @@ describe('transactional extension configuration', () => {
       },
       dependencies: [seed],
       facetProviders: [mode.of('provisional')],
-      name: 'candidate-api-factory',
     });
     const publication = prepareEditorExtensionPublication(editor, factory);
 
@@ -2209,33 +2255,29 @@ describe('transactional extension configuration', () => {
   });
 
   it('isolates nested editor writes during activation', () => {
-    const errors: Array<{ extension: string; phase: string }> = [];
+    const errors: Array<{ extensionName: string; phase: string }> = [];
     const editor = createEditor({
       lifecycleErrorSink(error) {
-        errors.push({ extension: error.extension, phase: error.phase });
+        errors.push({ extensionName: error.extensionName, phase: error.phase });
       },
     });
     const registry = getEditorExtensionRegistry(editor);
 
-    const cleanup = editor.extend(
-      defineEditorExtension({
-        activate(runtimeEditor) {
-          runtimeEditor.update(() => {});
-        },
-        name: 'nested-activation-write',
-      })
+    assert.throws(
+      () =>
+        editor.install(
+          defineExtension('nested-activation-write', {
+            activate({ editor: runtimeEditor }) {
+              runtimeEditor.update(() => {});
+            },
+          })
+        ),
+      EditorExtensionPublicationError
     );
 
-    assert.notEqual(getEditorExtensionRegistry(editor), registry);
-    assert.deepEqual(errors, [
-      { extension: 'nested-activation-write', phase: 'activate' },
-    ]);
-    assert.deepEqual(
-      getCompiledEditorConfiguration(editor).extensions.map(({ name }) => name),
-      ['nested-activation-write']
-    );
-
-    cleanup();
+    assert.equal(getEditorExtensionRegistry(editor), registry);
+    assert.deepEqual(errors, []);
+    assert.deepEqual(getCompiledEditorConfiguration(editor).extensions, []);
   });
 
   it('rejects nested editor writes during cleanup', () => {
@@ -2245,12 +2287,12 @@ describe('transactional extension configuration', () => {
         errors.push(error.cause);
       },
     });
-    const cleanup = editor.extend(
-      defineEditorExtension({
-        activate(runtimeEditor, context) {
+    const cleanup = editor.install(
+      defineExtension('nested-cleanup-write', {
+        activate(context) {
+          const runtimeEditor = context.editor;
           context.onCleanup(() => runtimeEditor.update(() => {}));
         },
-        name: 'nested-cleanup-write',
       })
     );
 
@@ -2272,20 +2314,18 @@ describe('transactional extension configuration', () => {
     let observerCalls = 0;
 
     editor.subscribeCommit(() => observerCalls++);
-    const invalidApi = defineEditorExtension({
+    const invalidApi = defineExtension('invalid-candidate-api', {
       api: () => ({ invalidCandidateApi: 'hidden' }),
-      name: 'invalid-candidate-api',
     });
 
     assert.throws(
       () =>
         prepareEditorExtensionPublication(editor, [
-          defineEditorExtension({
+          defineExtension('invalid-configuration-phase', {
             activate() {
               lifecycle.push('activate');
             },
             dependencies: [invalidApi],
-            name: 'invalid-configuration-phase',
             validate({ editor: candidateEditor, name }) {
               assert.equal(candidateEditor, editor);
               assert.equal(
@@ -2312,9 +2352,8 @@ describe('transactional extension configuration', () => {
 
     assert.throws(
       () =>
-        editor.extend(
-          defineEditorExtension({
-            name: 'configuration-owner-write-guard',
+        editor.install(
+          defineExtension('configuration-owner-write-guard', {
             validate({ editor: owner }) {
               assert.equal(owner, editor);
               owner.update.selection.clear();
@@ -2334,15 +2373,14 @@ describe('transactional extension configuration', () => {
     const activationRevisions: number[] = [];
     const observerRevisions: number[] = [];
     const extension = (value: string) =>
-      defineEditorExtension({
-        activate(editor) {
+      defineExtension(`atomic-observer-mode-${value}`, {
+        activate({ editor }) {
           activationRevisions.push(
             getCompiledEditorConfiguration(editor).revision
           );
           assert.equal(editor.read.facet(mode), value);
         },
         facetProviders: [mode.of(value)],
-        name: `atomic-observer-mode-${value}`,
       });
     const editor = createEditor({
       extensions: [slot.of(extension('read'))] as const,
@@ -2373,25 +2411,24 @@ describe('transactional extension configuration', () => {
           : 'observer:document'
       );
     });
-    editor.extend(
-      defineEditorExtension({
-        activate(_editor, context) {
+    editor.install(
+      defineExtension('after-publish-after-observers', {
+        activate(context) {
           events.push('activate');
           context.afterPublish(() => {
-            events.push('after-publish');
+            events.push('afterPublish');
             editor.update((tx) => {
               tx.text.insert('!', { at: { offset: 6, path: [0, 0] } });
             });
           });
         },
-        name: 'after-publish-after-observers',
       })
     );
 
     assert.deepEqual(events, [
       'activate',
       'observer:configuration',
-      'after-publish',
+      'afterPublish',
       'observer:document',
     ]);
     assert.equal(editor.read.text.string([]), 'before!');
@@ -2407,14 +2444,13 @@ describe('transactional extension configuration', () => {
 
     assert.throws(
       () =>
-        editor.extend(
-          defineEditorExtension({
-            activate(_editor, context) {
+        editor.install(
+          defineExtension('after-publish-after-observer-failure', {
+            activate(context) {
               context.afterPublish(() => {
                 afterPublishCalls++;
               });
             },
-            name: 'after-publish-after-observer-failure',
           })
         ),
       /observer failed/
@@ -2435,13 +2471,13 @@ describe('transactional extension configuration', () => {
     const slot = defineExtensionSlot('activation-order-mode');
     const lifecycle: string[] = [];
     const extension = (value: string) =>
-      defineEditorExtension({
-        activate(editor, context) {
+      defineExtension(`activation-order-mode-${value}`, {
+        activate(context) {
+          const { editor } = context;
           lifecycle.push(`activate:${value}:${editor.read.facet(mode)}`);
           context.onCleanup(() => lifecycle.push(`cleanup:${value}`));
         },
         facetProviders: [mode.of(value)],
-        name: `activation-order-mode-${value}`,
       });
     const editor = createEditor({
       extensions: [slot.of(extension('read'))] as const,
@@ -2459,8 +2495,8 @@ describe('transactional extension configuration', () => {
   it('runs abort and cleanup once in deterministic order', () => {
     const lifecycle: string[] = [];
     const editor = createEditor();
-    const extension = defineEditorExtension({
-      activate(_editor, context) {
+    const extension = defineExtension('deterministic-cleanup', {
+      activate(context) {
         const mode = 'active';
 
         context.signal.addEventListener('abort', () => {
@@ -2473,7 +2509,6 @@ describe('transactional extension configuration', () => {
           lifecycle.push(`cleanup:second:${mode}:${reason}`)
         );
       },
-      name: 'deterministic-cleanup',
     });
     const publication = prepareEditorExtensionPublication(editor, extension);
 
@@ -2495,61 +2530,61 @@ describe('transactional extension configuration', () => {
     const lifecycle: string[] = [];
     const editor = createEditor();
     const extension = (revision: string) =>
-      defineEditorExtension({
-        activate(_editor, context) {
+      defineExtension('cleanup-reason-extension', {
+        activate(context) {
           context.onCleanup(({ reason }) =>
             lifecycle.push(`${revision}:${reason}`)
           );
         },
-        name: 'cleanup-reason-extension',
       });
 
-    editor.extend(extension('first'));
-    const removeSecond = editor.extend(extension('second'));
+    editor.install(extension('first'));
+    const removeSecond = editor.install(extension('second'));
     removeSecond();
 
     const publication = prepareEditorExtensionPublication(
       editor,
-      defineEditorExtension({
-        activate(_editor, context) {
+      defineExtension('cleanup-reason-provisional', {
+        activate(context) {
           context.onCleanup(({ reason }) =>
             lifecycle.push(`provisional:${reason}`)
           );
         },
-        name: 'cleanup-reason-provisional',
       })
     );
     publication.stage();
     publication.commit();
     publication.rollback();
 
-    assert.deepEqual(lifecycle, ['first:replace', 'second:remove']);
+    assert.deepEqual(lifecycle, [
+      'first:replace',
+      'second:remove',
+      'provisional:rollback',
+    ]);
   });
 
   it('rejects thenables from every synchronous publication phase', () => {
-    const errors: Array<{ extension: string; phase: string }> = [];
+    const errors: Array<{ extensionName: string; phase: string }> = [];
     const editor = createEditor({
       lifecycleErrorSink(error) {
-        errors.push({ extension: error.extension, phase: error.phase });
+        errors.push({ extensionName: error.extensionName, phase: error.phase });
       },
     });
     const registry = getEditorExtensionRegistry(editor);
 
     assert.throws(
       () =>
-        editor.extend(
-          defineEditorExtension({
+        editor.install(
+          defineExtension('async-api-factory', {
             api: (() => Promise.resolve({})) as never,
-            name: 'async-api-factory',
           })
         ),
       /API must be synchronous/
     );
     assert.throws(
       () =>
-        editor.extend(
-          defineEditorExtension({
-            name: 'async-configuration-validation',
+        editor.install(
+          defineExtension('async-configuration-validation', {
             validate: (() => Promise.resolve()) as never,
           })
         ),
@@ -2558,61 +2593,56 @@ describe('transactional extension configuration', () => {
     assert.equal(getEditorExtensionRegistry(editor), registry);
     assert.deepEqual(getCompiledEditorConfiguration(editor).extensions, []);
 
-    const cleanup = editor.extend(
-      defineEditorExtension({
-        activate: (() => Promise.resolve()) as never,
-        name: 'async-activation',
-      })
+    assert.throws(
+      () =>
+        editor.install(
+          defineExtension('async-activation', {
+            activate: (() => Promise.resolve()) as never,
+          })
+        ),
+      EditorExtensionPublicationError
     );
 
-    assert.deepEqual(errors, [
-      { extension: 'async-activation', phase: 'activate' },
-    ]);
-    assert.deepEqual(
-      getCompiledEditorConfiguration(editor).extensions.map(({ name }) => name),
-      ['async-activation']
-    );
-
-    cleanup();
+    assert.deepEqual(errors, []);
+    assert.deepEqual(getCompiledEditorConfiguration(editor).extensions, []);
   });
 
   it('isolates after-publish and cleanup failures through the lifecycle error sink', () => {
-    const errors: Array<{ extension: string; phase: string }> = [];
+    const errors: Array<{ extensionName: string; phase: string }> = [];
     const editor = createEditor({
       lifecycleErrorSink(error) {
-        errors.push({ extension: error.extension, phase: error.phase });
+        errors.push({ extensionName: error.extensionName, phase: error.phase });
       },
     });
-    const cleanup = editor.extend(
-      defineEditorExtension({
-        activate(_editor, context) {
+    const cleanup = editor.install(
+      defineExtension('isolated-lifecycle-failures', {
+        activate(context) {
           context.afterPublish(() => {
             throw new Error('after-publish failed');
           });
           context.onCleanup((() => Promise.resolve()) as never);
         },
-        name: 'isolated-lifecycle-failures',
       })
     );
 
     assert.doesNotThrow(cleanup);
     assert.deepEqual(errors, [
-      { extension: 'isolated-lifecycle-failures', phase: 'after-publish' },
-      { extension: 'isolated-lifecycle-failures', phase: 'cleanup' },
+      {
+        extensionName: 'isolated-lifecycle-failures',
+        phase: 'afterPublish',
+      },
+      { extensionName: 'isolated-lifecycle-failures', phase: 'cleanup' },
     ]);
     assert.deepEqual(getCompiledEditorConfiguration(editor).extensions, []);
   });
 
   it('retains a required dependency until its consumer is removed', () => {
     const editor = createEditor();
-    const dependency = defineEditorExtension({
-      name: 'retryable-cleanup-dependency',
-    });
-    const cleanupDependency = editor.extend(dependency);
-    const cleanupDependent = editor.extend(
-      defineEditorExtension({
+    const dependency = defineExtension('retryable-cleanup-dependency', {});
+    const cleanupDependency = editor.install(dependency);
+    const cleanupDependent = editor.install(
+      defineExtension('retryable-cleanup-dependent', {
         dependencies: [dependency],
-        name: 'retryable-cleanup-dependent',
       })
     );
 
@@ -2628,31 +2658,28 @@ describe('transactional extension configuration', () => {
   it('reference-counts one transitive dependency across independent roots', () => {
     const lifecycle: string[] = [];
     const editor = createEditor();
-    const dependency = defineEditorExtension({
-      activate(_editor, context) {
+    const dependency = defineExtension('shared-transitive-dependency', {
+      activate(context) {
         lifecycle.push('dependency:activate');
         context.onCleanup(() => lifecycle.push('dependency:cleanup'));
       },
-      name: 'shared-transitive-dependency',
     });
-    const first = defineEditorExtension({
-      activate(_editor, context) {
+    const first = defineExtension('first-transitive-root', {
+      activate(context) {
         lifecycle.push('first:activate');
         context.onCleanup(() => lifecycle.push('first:cleanup'));
       },
       dependencies: [dependency],
-      name: 'first-transitive-root',
     });
-    const second = defineEditorExtension({
-      activate(_editor, context) {
+    const second = defineExtension('second-transitive-root', {
+      activate(context) {
         lifecycle.push('second:activate');
         context.onCleanup(() => lifecycle.push('second:cleanup'));
       },
       dependencies: [dependency],
-      name: 'second-transitive-root',
     });
-    const cleanupFirst = editor.extend(first);
-    const cleanupSecond = editor.extend(second);
+    const cleanupFirst = editor.install(first);
+    const cleanupSecond = editor.install(second);
 
     assert.deepEqual(lifecycle, [
       'dependency:activate',
@@ -2687,7 +2714,7 @@ describe('transactional extension configuration', () => {
 
     for (let index = 0; index < 32; index++) {
       descriptors.push(
-        defineEditorExtension({
+        defineExtension(`permuted-dag-${index}`, {
           dependencies:
             index === 0
               ? []
@@ -2695,7 +2722,6 @@ describe('transactional extension configuration', () => {
                   descriptors[Math.floor((index - 1) / 2)]!,
                   ...(index > 3 ? [descriptors[index - 3]!] : []),
                 ],
-          name: `permuted-dag-${index}`,
         })
       );
     }
@@ -2727,20 +2753,19 @@ describe('transactional extension configuration', () => {
     assert.deepEqual(installedSets[2], installedSets[0]);
   });
 
-  it('rejects a stale prepared candidate without activating it', () => {
+  it('rolls back an activated candidate when its publication becomes stale', () => {
     const editor = createEditor();
     let staleActivations = 0;
     const first = prepareEditorExtensionPublication(
       editor,
-      defineEditorExtension({ name: 'first-candidate' })
+      defineExtension('first-candidate', {})
     );
     const stale = prepareEditorExtensionPublication(
       editor,
-      defineEditorExtension({
+      defineExtension('stale-candidate', {
         activate() {
           staleActivations++;
         },
-        name: 'stale-candidate',
       })
     );
 
@@ -2750,7 +2775,7 @@ describe('transactional extension configuration', () => {
     first.finalize();
 
     assert.throws(() => stale.commit(), /publication is stale/);
-    assert.equal(staleActivations, 0);
+    assert.equal(staleActivations, 1);
     assert.deepEqual(
       getCompiledEditorConfiguration(editor).extensions.map(({ name }) => name),
       ['first-candidate']

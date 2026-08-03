@@ -4,7 +4,7 @@ import {
   getSnapshot as editorGetSnapshot,
   point as editorPoint,
 } from '../interfaces/editor';
-import type { Editor } from '../interfaces/editor';
+import type { AnyEditor as Editor } from '../interfaces/editor';
 
 /**
  * Get the default location to insert content into the editor.

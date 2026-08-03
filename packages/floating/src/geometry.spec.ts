@@ -1,6 +1,9 @@
 import React from 'react';
 
-import { type PlateEditor, createPlateEditor } from '@platejs/core/react';
+import {
+  type PlateEditorReference,
+  createPlateEditor,
+} from '@platejs/core/react';
 import { PlateTest } from '@platejs/core/react/test';
 import type { TextSelection } from '@platejs/plite';
 import { act, render } from '@testing-library/react';
@@ -17,7 +20,7 @@ import {
   mergeClientRects,
 } from './geometry';
 
-const mountEditor = async (editor: PlateEditor) => {
+const mountEditor = async <E extends PlateEditorReference>(editor: E) => {
   await act(async () => {
     render(
       React.createElement(PlateTest, {
@@ -204,7 +207,7 @@ describe('floating geometry', () => {
       top: 8,
     });
     const editor = createPlateEditor({
-      initialValue: [{ children: [{ text: 'a' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'a' }], type: 'paragraph' }],
     });
     const range = {
       kind: 'text',
@@ -226,7 +229,7 @@ describe('floating geometry', () => {
     } satisfies TextSelection;
     const editor = createPlateEditor({
       selection,
-      initialValue: [{ children: [{ text: 'a' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'a' }], type: 'paragraph' }],
     });
 
     expect(getSelectionBoundingClientRect(editor)).toEqual(
@@ -248,7 +251,7 @@ describe('floating geometry', () => {
     } satisfies TextSelection;
     const editor = createPlateEditor({
       selection,
-      initialValue: [{ children: [{ text: 'ab' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'ab' }], type: 'paragraph' }],
     });
 
     await mountEditor(editor);
@@ -271,7 +274,7 @@ describe('floating geometry', () => {
     } satisfies TextSelection;
     const editor = createPlateEditor({
       selection,
-      initialValue: [{ children: [{ text: 'a' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'a' }], type: 'paragraph' }],
     });
 
     await mountEditor(editor);
@@ -287,8 +290,8 @@ describe('floating geometry', () => {
     ];
     const editor = createPlateEditor({
       initialValue: [
-        { children: [{ text: 'a' }], type: 'p' },
-        { children: [{ text: 'b' }], type: 'p' },
+        { children: [{ text: 'a' }], type: 'paragraph' },
+        { children: [{ text: 'b' }], type: 'paragraph' },
       ],
     });
 
@@ -323,7 +326,7 @@ describe('floating geometry', () => {
     } satisfies TextSelection;
     const editor = createPlateEditor({
       selection,
-      initialValue: [{ children: [{ text: 'a' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'a' }], type: 'paragraph' }],
     });
 
     await mountEditor(editor);

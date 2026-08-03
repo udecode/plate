@@ -3,10 +3,11 @@ import type React from 'react';
 
 import type {
   AnyBasePlugin,
-  AnyResolvedBasePlugin,
+  AnyBasePluginPortal,
+  AnyPluginBase,
   GetInjectNodePropsOptions,
 } from '../plugin';
-import type { AnyEditorPlatePlugin } from '../../react/plugin';
+import type { AnyResolvedPlatePlugin } from '../../react/plugin';
 
 export const getPluginNodeProps = <
   TProps extends GetInjectNodePropsOptions & {
@@ -18,7 +19,11 @@ export const getPluginNodeProps = <
   props,
 }: {
   props: TProps;
-  plugin?: AnyBasePlugin | AnyEditorPlatePlugin | AnyResolvedBasePlugin;
+  plugin?:
+    | AnyBasePlugin
+    | AnyBasePluginPortal
+    | AnyResolvedPlatePlugin
+    | AnyPluginBase;
 }): TProps & { attributes: AnyObject } => {
   const newProps = { ...props, attributes: { ...props.attributes } };
 

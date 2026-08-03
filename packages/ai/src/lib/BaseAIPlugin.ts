@@ -17,8 +17,8 @@ import {
   schema,
   target,
 } from '@platejs/plite';
-import { createBasePlugin, type DefinitionOf } from '@platejs/core';
-import { KEYS } from '@platejs/utils';
+import { defineBasePlugin, type DefinitionOf } from '@platejs/core';
+import { PLUGINS } from '@platejs/utils';
 import { SUGGESTION_TRANSIENT_KEY } from '@platejs/suggestion';
 
 export const AI_PREVIEW_KEY = 'aiPreview';
@@ -49,7 +49,7 @@ const aiPreviewField = defineStateField<AIPreviewState | null>({
   initial: null,
 });
 
-export const BaseAIPlugin = createBasePlugin({
+export const BaseAIPlugin = defineBasePlugin(PLUGINS.ai, {
   api: () => ({
     findTextRangeInBlock: ({
       block,
@@ -189,7 +189,6 @@ export const BaseAIPlugin = createBasePlugin({
   }),
   effectTypes: [aiBatchEffect, aiPreviewField.effect],
   stateFields: [aiBatchField, aiPreviewField],
-  name: KEYS.ai,
   render: { isDecoration: false },
   rules: { selection: { affinity: 'outward' } },
   schema: {
@@ -210,7 +209,7 @@ export const BaseAIPlugin = createBasePlugin({
   read: ({ state }) => ({
     hasPreview: () => state.getField(aiPreviewField) !== null,
   }),
-  update: ({ context, editor, tx, type }) => {
+  update: ({ context, editor, key, tx }) => {
     const getPreviewRange = (
       children: readonly Descendant[]
     ):
@@ -248,6 +247,9 @@ export const BaseAIPlugin = createBasePlugin({
 
       if (!preview) return false;
 
+      tx.history.skip();
+      tx.selection.set(null);
+
       const range = getPreviewRange(tx.children());
 
       if (range.kind === 'invalid') return false;
@@ -260,20 +262,21 @@ export const BaseAIPlugin = createBasePlugin({
         });
       }
 
-      const aiChat = editor.plugin(KEYS.aiChat);
+      const aiChat = editor.plugin(PLUGINS.aiChat);
 
       tx.nodes.remove({
         at: [],
-        match: { type: aiChat.installed ? aiChat.type : KEYS.aiChat },
+        match: { type: aiChat.type },
       });
 
-      if (preview.selectionBefore) {
-        tx.selection.set(cloneDeep(preview.selectionBefore));
-      } else {
-        tx.selection.clear();
-      }
-
       tx.setField(aiPreviewField, null);
+      context.afterCommit(() => {
+        if (!preview.selectionBefore) return;
+
+        editor
+          .update({ history: 'skip' })
+          .selection.set(cloneDeep(preview.selectionBefore));
+      });
 
       return true;
     };
@@ -294,7 +297,7 @@ export const BaseAIPlugin = createBasePlugin({
 
           const rest = { ...node };
 
-          Reflect.deleteProperty(rest, type);
+          Reflect.deleteProperty(rest, key);
 
           return rest;
         }
@@ -381,7 +384,7 @@ export const BaseAIPlugin = createBasePlugin({
         tx.nodes.insert(
           nodes.map((node) => ({
             ...node,
-            [type]: true,
+            [key]: true,
           })),
           {
             at: point,
@@ -394,16 +397,16 @@ export const BaseAIPlugin = createBasePlugin({
         tx.effects.emit(aiBatchEffect, 1);
       },
       removeMarks: ({ at = [] }: { at?: Location } = {}) => {
-        tx.nodes.unset(type, {
+        tx.nodes.unset(key, {
           at,
-          match: (node) => Boolean(Reflect.get(node, type)),
+          match: (node) => Boolean(Reflect.get(node, key)),
         });
       },
       removeNodes: ({ at = [] }: { at?: Path } = {}) => {
         tx.nodes.remove({
           at,
           match: (node) =>
-            !ElementApi.isElement(node) && Boolean(Reflect.get(node, type)),
+            !ElementApi.isElement(node) && Boolean(Reflect.get(node, key)),
         });
       },
       undo: () => {
@@ -412,7 +415,7 @@ export const BaseAIPlugin = createBasePlugin({
         const hasAINodeOrAISuggestion =
           tx.nodes.some({
             at: [],
-            match: (node) => Boolean(Reflect.get(node, type)),
+            match: (node) => Boolean(Reflect.get(node, key)),
           }) ||
           tx.nodes.some({
             at: [],

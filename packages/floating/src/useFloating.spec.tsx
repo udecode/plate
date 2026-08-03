@@ -87,7 +87,7 @@ describe('floating hooks', () => {
     const editor = createPlateEditor({
       id: 'editor-1',
       selection,
-      initialValue: [{ children: [{ text: 'text' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'text' }], type: 'paragraph' }],
     });
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <Plate editor={editor}>{children}</Plate>

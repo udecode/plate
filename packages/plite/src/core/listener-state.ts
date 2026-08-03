@@ -1,5 +1,5 @@
 import type {
-  Editor,
+  AnyEditor as Editor,
   EditorCommit,
   EditorCommitListener,
   EditorCommitSource,

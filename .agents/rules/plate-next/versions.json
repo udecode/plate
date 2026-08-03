@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "latestVersion": 40,
+  "latestVersion": 47,
   "versions": [
     {
       "version": 0,
@@ -481,6 +481,90 @@
         "Use a runtime-name portal for dynamic input or a family-agnostic slot that intentionally accepts another descriptor family with the same name.",
         "Keep runtime-name portals erased and use installed as the only non-throwing absence check.",
         "Prove exact-family rejection and family-agnostic name acceptance before attesting a package at v40."
+      ]
+    },
+    {
+      "version": 41,
+      "date": "2026-07-31",
+      "doctrineFingerprint": "sha256:60292c2053b545fce802553be5381bee6d67f70878cc047c213d04147690e0e6",
+      "summary": "Plugin names and serialized node types use distinct constants, grouped identities, parameter names, and input-rule context fields.",
+      "migrationChecks": [
+        "Use KEYS only for plugin identity, lookup, dependencies, injection, and targetPluginNames; use NODES for persisted types, fixtures, comparisons, and raw node construction.",
+        "Keep KEYS.heading as heading plugin names and NODES.heading as serialized heading types.",
+        "Name descriptor lookup inputs plugin or pluginName and serialized values type or nodeType; expose both pluginName and pluginType when a context needs both.",
+        "Prove constants, package source, tests, registry actions, docs, generated skills, and zero ambiguous dynamic plugin lookups before attesting any package at v41."
+      ]
+    },
+    {
+      "version": 42,
+      "date": "2026-08-01",
+      "doctrineFingerprint": "sha256:e45e5c9a49f73340a577e17f8ce752d9530171818cce38c58c04d6bd91940bb0",
+      "summary": "Descriptor-aware inputs use one plugin noun and accept exact descriptors or dynamic strings without name-specific API alternatives.",
+      "migrationChecks": [
+        "Rename every descriptor-aware input from pluginName to plugin and type it as the exact plugin descriptor or string; use name only after runtime normalization.",
+        "Rename targetPluginNames to targetPlugins, preserve exact descriptor tuples, and keep strings only for genuinely dynamic or family-agnostic targets.",
+        "Expose the owning plugin descriptor in input-rule contexts and read serialized identity from plugin.type instead of duplicating pluginName and pluginType strings.",
+        "Remove PluginName-style public aliases, name-only lookup helpers, schema by-name alternatives, stale docs/tooling/rules, and compatibility bridges before attesting any package at v42."
+      ]
+    },
+    {
+      "version": 43,
+      "date": "2026-08-01",
+      "doctrineFingerprint": "sha256:66c6356385eb4691735617af93b9aecc7e9de4d66b97c8861d6740f38705b48e",
+      "summary": "One plugin name is also the primary persisted identity of every schema-owning plugin; the flat PLUGINS catalog replaces split name and storage catalogs.",
+      "migrationChecks": [
+        "Use PLUGINS as the only first-party plugin string catalog and hard-cut KEYS, NODES, STYLE_KEYS, grouped heading aliases, and configurable plugin type metadata.",
+        "Use plugin.name as the primary persisted element type or property key for schema-owning plugins; reserve type for the structural field on persisted elements.",
+        "Migrate package source, fixtures, registry values, codecs, current docs, History, and collaboration data through an explicit pure pre-construction identity migration.",
+        "Prove zero stale catalogs or plugin.type access, exact legacy migration coverage, collision diagnostics, and canonical current-state examples before attesting any package at v43."
+      ]
+    },
+    {
+      "version": 44,
+      "date": "2026-08-02",
+      "doctrineFingerprint": "sha256:7d913f89c713adaa1ddcd24935151f8c309e1fab608cdc4adac2a0ee0759f4ec",
+      "summary": "Consumer plugin portals expose resolved descriptor fields directly and reject a nested plugin alias.",
+      "migrationChecks": [
+        "Replace editor.plugin(plugin).plugin field access with direct portal fields such as name, inject, render, initialState, and targetPlugins.",
+        "Keep api, read, update, store, and installed direct on the same portal, with installed as the only non-throwing absence check.",
+        "Reserve a plugin property for authoring callback contexts that need the current raw descriptor; never publish it on consumer portals.",
+        "Prove runtime forwarding, exact descriptor inference, erased runtime-name behavior, missing-plugin failure, caller adoption, docs, generated skills, and zero nested consumer aliases before attesting any package at v44."
+      ]
+    },
+    {
+      "version": 45,
+      "date": "2026-08-02",
+      "doctrineFingerprint": "sha256:c35cb54ffa90868c030f87a95b00d2b4921ee993395c4698f9c6ce7521529565",
+      "summary": "Plugin capability names are independent from persisted element types and property keys, with schema-aware portal access and no name-as-storage proxies.",
+      "migrationChecks": [
+        "Treat PLUGINS and plugin.name as capability identity only; never use either as an element type or property key proxy.",
+        "Let omitted element type or property key default to name, author differences only at plugin creation, and reject identity mutation through extend or configure.",
+        "Use inferred type/key authoring context or schema-aware editor.plugin portals for runtime AST work; use explicit persisted literals in copied registry data, serialization boundaries, and deliberate fixtures.",
+        "Prove distinct name/type/key compilation and rendering, behavior-plugin identity rejection, package and app adoption, current docs, and a classified zero-use audit before attesting any package at v45."
+      ]
+    },
+    {
+      "version": 46,
+      "date": "2026-08-02",
+      "doctrineFingerprint": "sha256:d042b5aa62064e60f46d260f221e3c0a87a966f3b8ae6f99bf0c1078d49833e9",
+      "summary": "Plugin authoring examples and repository guards resolve schema-owned type and key instead of using capability names as persisted identity.",
+      "migrationChecks": [
+        "Audit plugin authoring examples, release guidance, and current docs for PLUGINS or plugin.name used as an element type or property key.",
+        "Use inferred constructor context, exact descriptor fields, schema-aware portals, or explicit persisted literals at serialization and fixture boundaries.",
+        "Run the Plate schema adoption checker and its negative contracts so future type/key objects, schema handles, targets, and comparisons reject capability names.",
+        "Prove generated skills, doctrine fingerprint, affected package types/tests, Browser behavior, and final review before attesting any package at v46."
+      ]
+    },
+    {
+      "version": 47,
+      "date": "2026-08-02",
+      "doctrineFingerprint": "sha256:9e3513f7b250f00d0588649f1ea37ea7313172899827d454fc2e15c49d06c28b",
+      "summary": "Schema identity portals expose conventional type and key even when the referenced plugin is not installed.",
+      "migrationChecks": [
+        "Read portal type or key directly; remove installed ternaries, literal fallbacks, filtering guards, and same-name aliases used only to make schema identity access safe.",
+        "Keep installed checks only for capability, state, descriptor, and behavior availability; uninstalled exact schema descriptors preserve authored/default identity and runtime-name type or key resolves to the supplied string.",
+        "List literal array items directly instead of spreading a literal array into another literal array.",
+        "Prove portal runtime behavior, package adoption, checker negative contracts, generated skills, doctrine fingerprint, typechecks, tests, Browser behavior, and final review before attesting any package at v47."
       ]
     }
   ],

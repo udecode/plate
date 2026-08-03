@@ -3,9 +3,10 @@
 import React from 'react';
 
 import { renderHook } from '@testing-library/react';
-import { createPlateEditor, Plate } from '@platejs/core/react';
+import { Plate } from '@platejs/core/react';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 
+import { createTestTableEditor } from '../lib/__tests__/getTestTablePlugins';
 import { TablePlugin } from './TablePlugin';
 import { useTableMergeState } from './useTableMergeState';
 
@@ -33,7 +34,7 @@ describe('useTableMergeState', () => {
         </htable>
       </editor>
     ) as TestEditor;
-    const editor = createPlateEditor({
+    const editor = createTestTableEditor({
       nodeId: true,
       plugins: [
         TablePlugin.configure({

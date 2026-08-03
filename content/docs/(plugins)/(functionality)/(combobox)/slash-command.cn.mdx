@@ -37,7 +37,9 @@ docs:
 ### 添加套件
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import {
+  PLUGINS,
+  createPlateEditor } from 'platejs/react';
 import { SlashKit } from '@/components/editor/plugins/slash-kit';
 
 const editor = createPlateEditor({
@@ -45,7 +47,7 @@ const editor = createPlateEditor({
     // ...其他插件
     ...SlashKit,
   ],
-});
+  });
 ```
 
 </Steps>
@@ -73,7 +75,7 @@ const editor = createPlateEditor({
     // ...其他插件
     SlashPlugin,
   ],
-});
+  });
 ```
 
 ### 配置插件
@@ -81,10 +83,10 @@ const editor = createPlateEditor({
 需要替换依赖的组件或配置时，把完整的 `SlashInputPlugin` 描述符加入同一数组。
 
 ```tsx
-import { SlashPlugin, SlashInputPlugin } from '@platejs/slash-command/react';
+import { SlashPlugin,
+  SlashInputPlugin } from '@platejs/slash-command/react';
 import { createPlateEditor } from 'platejs/react';
 import { SlashInputElement } from '@/components/ui/slash-node';
-import { KEYS, NODES } from 'platejs';
 
 const editor = createPlateEditor({
   plugins: [
@@ -95,7 +97,9 @@ const editor = createPlateEditor({
         triggerPreviousCharPattern: /^\s?$/,
         triggerQuery: (editor) =>
           !editor.read.nodes.some({
-            match: { type: editor.plugin(KEYS.codeBlock).type },
+            match: {
+              type: editor.plugin(PLUGINS.codeBlock).schema.element!.type,
+            },
           }),
       },
     }),
@@ -150,13 +154,13 @@ const editor = createPlateEditor({
     匹配触发字符前字符的正则表达式。
     - **默认值:** `/^\s?$/`
   </APIItem>
-  <APIItem name="createComboboxInput" type="() => TComboboxInputElement" optional>
+  <APIItem name="createComboboxInput" type="() => Element" optional>
     创建组合框输入元素的函数。
     - **默认值:** 
     ```tsx
     () => ({
       children: [{ text: '' }],
-      type: NODES.slashInput,
+      type: 'slashInput',
     });
     ```
   </APIItem>

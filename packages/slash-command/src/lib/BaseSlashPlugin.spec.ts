@@ -1,5 +1,5 @@
 import { createBaseEditor } from '@platejs/core';
-import { NODES } from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 
 import { BaseSlashInputPlugin, BaseSlashPlugin } from './BaseSlashPlugin';
 import { SlashInputPlugin, SlashPlugin } from '../react/SlashPlugin';
@@ -27,13 +27,13 @@ describe('BaseSlashPlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseSlashPlugin],
     });
-    const plugin = editor.plugin(BaseSlashPlugin).plugin;
-    const inputPlugin = editor.plugin(BaseSlashInputPlugin).plugin;
+    const plugin = editor.plugin(BaseSlashPlugin);
+    const inputPlugin = editor.plugin(BaseSlashInputPlugin);
     const state = editor.plugin(BaseSlashPlugin).store.get();
 
     expect(plugin.name).toBe('slashCommand');
     expect(inputPlugin.name).toBe('slashInput');
-    expect(inputPlugin.type).toBe(NODES.slashInput);
+    expect(inputPlugin.name).toBe(PLUGINS.slashInput);
     expect(plugin.editOnly).toBe(true);
     expect(state.trigger).toBe('/');
     const triggerPreviousCharPattern = state.triggerPreviousCharPattern;
@@ -48,7 +48,7 @@ describe('BaseSlashPlugin', () => {
     expect(triggerPreviousCharPattern.test('x')).toBe(false);
     expect(createComboboxInput('/')).toEqual({
       children: [{ text: '' }],
-      type: NODES.slashInput,
+      type: 'slashInput',
     });
     expect(
       editor.read.schema.element(BaseSlashInputPlugin)?.behavior

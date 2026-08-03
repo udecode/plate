@@ -8,8 +8,12 @@ import type {
   EditorSchemaExtensionProvider,
   SchemaExtensionsOf,
 } from '../interfaces/schema';
+import { defineExtension } from './editor-extension';
 
-export const EDITOR_EXTENSION_SLOT_INPUT = Symbol('plite.extension-slot');
+const EDITOR_EXTENSION_SLOT_INPUTS = new WeakMap<
+  object,
+  EditorExtensionInput
+>();
 
 type ExtensionTuple<TInput> = TInput extends readonly unknown[]
   ? TInput
@@ -38,9 +42,11 @@ export type EditorExtensionSlot<TKey extends string> = Readonly<{
   ) => EditorExtensionSlotValue<TKey, TInput>;
 }>;
 
-export type InternalEditorExtensionSlotValue = EditorExtensionReference & {
-  readonly [EDITOR_EXTENSION_SLOT_INPUT]?: EditorExtensionInput;
-};
+/** @internal Read the configured input owned by a nominal slot descriptor. */
+export const getEditorExtensionSlotInput = (
+  extension: EditorExtensionReference
+): EditorExtensionInput | undefined =>
+  EDITOR_EXTENSION_SLOT_INPUTS.get(extension);
 
 /**
  * Define a named extension boundary that can be replaced as one atomic unit.
@@ -49,12 +55,21 @@ export const defineExtensionSlot = <const TKey extends string>(
   key: TKey
 ): EditorExtensionSlot<TKey> => {
   if (!key) throw new Error('Editor extension slot key cannot be empty.');
+  const values = new WeakMap<object, EditorExtensionReference>();
 
-  const of = <const TInput extends EditorExtensionInput>(input: TInput) =>
-    Object.freeze({
-      [EDITOR_EXTENSION_SLOT_INPUT]: input,
-      name: `slot:${key}`,
-    }) as unknown as EditorExtensionSlotValue<TKey, TInput>;
+  const of = <const TInput extends EditorExtensionInput>(input: TInput) => {
+    const known = values.get(input);
+
+    if (known) {
+      return known as unknown as EditorExtensionSlotValue<TKey, TInput>;
+    }
+    const extension = defineExtension(`slot:${key}`, {});
+
+    EDITOR_EXTENSION_SLOT_INPUTS.set(extension, input);
+    values.set(input, extension);
+
+    return extension as unknown as EditorExtensionSlotValue<TKey, TInput>;
+  };
 
   return Object.freeze({
     key,

@@ -1,5 +1,5 @@
 import type {
-  Editor,
+  AnyEditor as Editor,
   EditorCommitListener,
   EditorCorrection,
   EditorEffectType,
@@ -105,6 +105,10 @@ export type ExtensionRegistry<TEditor extends Editor = Editor> = {
 type ExtensionRegistryStore = {
   base: ExtensionRegistry;
   baseInitialized: boolean;
+  candidate: Readonly<{
+    configured: ExtensionRegistry;
+    current: ExtensionRegistry;
+  }> | null;
   configured: ExtensionRegistry;
   current: ExtensionRegistry;
   publishing: boolean;
@@ -581,6 +585,7 @@ const createExtensionRegistryStore = (): ExtensionRegistryStore => {
   return {
     base,
     baseInitialized: false,
+    candidate: null,
     configured,
     current: mergeRegistries(configured, base),
     publishing: false,
@@ -608,8 +613,12 @@ export const assertEditorExtensionPublicationInactive = (editor: Editor) => {
 
 export const getExtensionRegistry = <TEditor extends Editor>(
   editor: TEditor
-): ExtensionRegistry<TEditor> =>
-  getExtensionRegistryStore(editor).current as ExtensionRegistry<TEditor>;
+): ExtensionRegistry<TEditor> => {
+  const store = getExtensionRegistryStore(editor);
+
+  return (store.candidate?.current ??
+    store.current) as ExtensionRegistry<TEditor>;
+};
 
 /** Canonical compiled schema for the current editor configuration. */
 export const getCompiledEditorSchema = (editor: Editor): CompiledEditorSchema =>
@@ -617,8 +626,43 @@ export const getCompiledEditorSchema = (editor: Editor): CompiledEditorSchema =>
 
 export const getConfiguredExtensionRegistry = <TEditor extends Editor>(
   editor: TEditor
-): ExtensionRegistry<TEditor> =>
-  getExtensionRegistryStore(editor).configured as ExtensionRegistry<TEditor>;
+): ExtensionRegistry<TEditor> => {
+  const store = getExtensionRegistryStore(editor);
+
+  return (store.candidate?.configured ??
+    store.configured) as ExtensionRegistry<TEditor>;
+};
+
+/** Run read-only lifecycle work against one detached candidate registry. */
+export const runWithCandidateExtensionRegistry = <
+  TEditor extends Editor,
+  TResult,
+>(
+  editor: TEditor,
+  candidate: Readonly<{
+    configured: ExtensionRegistry<TEditor>;
+    current: ExtensionRegistry<TEditor>;
+  }>,
+  fn: () => TResult
+): TResult => {
+  const store = getExtensionRegistryStore(editor);
+
+  if (store.publishing || store.candidate) {
+    throw new Error('Editor extension registry publication cannot re-enter.');
+  }
+
+  store.publishing = true;
+  store.candidate = candidate as Readonly<{
+    configured: ExtensionRegistry;
+    current: ExtensionRegistry;
+  }>;
+  try {
+    return fn();
+  } finally {
+    store.candidate = null;
+    store.publishing = false;
+  }
+};
 
 export const validateConfiguredExtensionRegistry = <TEditor extends Editor>(
   editor: TEditor,

@@ -8,12 +8,12 @@ import {
   useRef,
   useState,
 } from 'react';
-import type { Anchor, Editor, Range, Value } from '@platejs/plite';
+import type { Anchor, Range, Value } from '@platejs/plite';
 import {
   Editable,
-  type react,
   Plite,
   type PliteAnnotationStore,
+  type ReactEditor,
   useEditorSelection,
   usePliteAnnotationStore,
   usePliteAnnotations,
@@ -53,7 +53,7 @@ type CommentProjection = {
 
 type CommentVisualState = 'question' | 'resolved' | 'review';
 
-type CommentEditor = Editor<Value, readonly [ReturnType<typeof react>]>;
+type CommentEditor = ReactEditor<Value>;
 
 const initialValue: Value = [
   {

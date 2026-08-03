@@ -76,8 +76,8 @@ React 和 DOM 运行时状态通过 Plite runtime API 读取。`editor.runtime` 
 
 ## 插件访问
 
-在具体编辑器中，通过 `editor.api.<pluginName>` 调用已安装插件的 query 和 service。
-当通用代码需要精确的插件 API、read、update 命令、type 或 store 时，将描述符传给
+在具体编辑器中，通过 `editor.api.<name>` 调用已安装插件的 query 和 service。
+当通用代码需要精确的插件 API、read、update 命令、name 或 store 时，将描述符传给
 `editor.plugin(plugin)`。根路径和作用域路径引用同一个不可变 API 对象。
 
 ```ts title="Plugin API access"
@@ -101,7 +101,7 @@ public definition。
 
 | Helper                                   | 类型                                                                                           | 用途                                                                       |
 | ---------------------------------------- | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| `api[pluginName]`                        | `InferOwnApi<DefinitionOf<P>>`                                                                 | 从具体推断编辑器调用已安装插件的 query 和 service。                        |
+| `api[name]`                              | `InferOwnApi<DefinitionOf<P>>`                                                                 | 从具体推断编辑器调用已安装插件的 query 和 service。                        |
 | `plugin(plugin)`                         | `<P extends AnyBasePlugin & PluginReference>(plugin: P) => BasePluginPortal<DefinitionOf<P>>`  | 打开精确插件 descriptor 的类型化 consumer portal。                         |
 | `plugin(plugin).installed`               | `boolean`                                                                                      | 插件可选时，先检查是否已安装，再读取其他 portal 字段。                     |
 | `plugin(plugin).api`                     | `InferOwnApi<DefinitionOf<P>>`                                                                 | 从通用代码或精确 descriptor 调用同一个插件 API。                           |
@@ -111,8 +111,8 @@ public definition。
 | `plugin(plugin).store.get()`             | `() => InferPluginStoreState<DefinitionOf<P>>`                                                 | 读取完整的当前插件 state。                                                 |
 | `plugin(plugin).store.set(partial)`      | `(partial) => void`                                                                            | 合并 state 字段。                                                          |
 | `plugin(plugin).store.set(recipe)`       | `(draft) => void`                                                                              | 通过 draft recipe 更新 state。                                             |
-| `plugin(plugin).plugin`                  | `ResolvedBasePlugin<DefinitionOf<P>>`                                                          | 读取 override 和配置后的 compiled plugin descriptor。                     |
-| `plugin(pluginName)`                     | `(pluginName: string) => AnyBasePluginPortal`                                                   | 为动态 name 或不限定 descriptor family 的插件槽打开擦除类型的 portal。     |
+| `plugin(plugin).name`、`.inject`、`.render`、`.initialState` | 已解析的 descriptor 字段 | 直接读取 override 和配置后的 compiled descriptor 字段。                   |
+| `plugin(plugin)`                         | `(plugin: PluginReference \| string) => AnyBasePluginPortal`                                    | 为 descriptor 或动态 name 打开擦除类型的 portal；具体 descriptor 使用上方精确 overload。 |
 
 React 组件使用 `usePluginStore(plugin, key)` 或
 `usePluginStore(plugin, selector)` 订阅变化，不要在 render 中直接读取 portal。
@@ -132,7 +132,7 @@ export function useBasicEditor() {
     plugins: [BoldPlugin],
     initialValue: [
       {
-        type: "p",
+        type: "paragraph",
         children: [{ text: "Bold text is ready." }],
       },
     ],
@@ -145,7 +145,7 @@ export function useBasicEditor() {
 | 步骤                | 行为                                                                                                                           |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | Runtime 状态        | 保留 Plite `editor.id`，并初始化 `runtime.userId`。                                                                            |
-| 插件访问            | 将已安装 API 发布到 `editor.api[pluginName]`，并安装 descriptor 或 name 的 `plugin(...)` portal。                            |
+| 插件访问            | 将已安装 API 发布到 `editor.api[name]`，并安装 descriptor 或 name 的 `plugin(...)` portal。                                |
 | Core plugins        | 解析 core plugins，用相同 name 的自定义插件替换 core plugins，并解析 root plugin。                                             |
 | Components          | 将 `components` 合并到 root-plugin component overrides。                                                                       |
 | Normalization guard | 包装 `normalizeNode`，让 `editor.api.shouldNormalizeNode(entry)` 可以跳过一次 normalization。                                  |

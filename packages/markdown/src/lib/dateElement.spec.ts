@@ -18,7 +18,7 @@ describe('markdown date element', () => {
             type: 'date',
           },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
 
@@ -45,7 +45,7 @@ describe('markdown date element', () => {
             type: 'date',
           },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
     expect(markdown).toBe('Date: <date value="2024-01-01" />\n');
@@ -68,7 +68,7 @@ describe('markdown date element', () => {
             type: 'date',
           },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
     expect(markdown).toBe('Date: <date>sometime next week</date>\n');
@@ -91,7 +91,7 @@ describe('markdown date element', () => {
             type: 'date',
           },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
     expect(markdown).toBe('Date: <date value="2026-03-23" />\n');

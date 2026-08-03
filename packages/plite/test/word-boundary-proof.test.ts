@@ -155,16 +155,19 @@ const createMovementEditor = (
     initialValue: children,
   });
 
-const InlineVoidSchema = defineEditorSchema({
-  elements: {
-    paragraph: { content: schema.content.open() },
-    token: { inline: true, void: 'inline' },
-  },
-  id: 'word-boundary-inline-void-proof',
-  root: schema.content.types(['paragraph']),
-  unknown: 'preserve',
-  version: 1,
-});
+const InlineVoidSchema = defineEditorSchema(
+  'schema:word-boundary-inline-void-proof',
+  {
+    elements: {
+      paragraph: { content: schema.content.open() },
+      token: { inline: true, void: 'inline' },
+    },
+    id: 'word-boundary-inline-void-proof',
+    root: schema.content.types(['paragraph']),
+    unknown: 'preserve',
+    version: 1,
+  }
+);
 
 const graphemeBoundaryOffsets = (text: string) => {
   const offsets = new Set([0]);

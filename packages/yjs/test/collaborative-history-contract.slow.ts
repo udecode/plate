@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   createEditor,
-  defineEditorExtension,
+  defineExtension,
   defineEffect,
   defineStateField,
   type Descendant,
@@ -612,9 +612,9 @@ describe('@platejs/yjs collaborative history contract', () => {
       reduce: (value, effect) =>
         effect.type === increment ? value + effect.value : value,
     });
-    const effects = defineEditorExtension({
+    const effects = defineExtension('c14-counter-effects', {
       effectTypes: [increment],
-      name: 'c14-counter-effects',
+      stateFields: [counter],
     });
     const trace: CollaborativeHistoryTrace = {
       seed: 14_013,
@@ -642,7 +642,7 @@ describe('@platejs/yjs collaborative history contract', () => {
       clientIds,
       createEditor: () =>
         createEditor({
-          extensions: [history(), counter, effects] as const,
+          extensions: [history(), effects] as const,
         }),
       numericClientIds,
       observeExtension: (editor) =>

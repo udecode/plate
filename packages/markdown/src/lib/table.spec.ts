@@ -17,41 +17,51 @@ describe('markdown tables', () => {
         type: 'table',
         children: [
           {
-            type: 'tr',
+            type: 'tableRow',
             children: [
               {
-                type: 'th',
-                children: [{ type: 'p', children: [{ text: 'Name' }] }],
+                header: true,
+                type: 'tableCell',
+                children: [{ type: 'paragraph', children: [{ text: 'Name' }] }],
               },
               {
-                type: 'th',
-                children: [{ type: 'p', children: [{ text: 'Value' }] }],
+                header: true,
+                type: 'tableCell',
+                children: [
+                  { type: 'paragraph', children: [{ text: 'Value' }] },
+                ],
               },
             ],
           },
           {
-            type: 'tr',
+            type: 'tableRow',
             children: [
               {
-                type: 'td',
-                children: [{ type: 'p', children: [{ text: 'Alpha' }] }],
+                type: 'tableCell',
+                children: [
+                  { type: 'paragraph', children: [{ text: 'Alpha' }] },
+                ],
               },
               {
-                type: 'td',
-                children: [{ type: 'p', children: [{ text: 'Beta' }] }],
+                type: 'tableCell',
+                children: [{ type: 'paragraph', children: [{ text: 'Beta' }] }],
               },
             ],
           },
           {
-            type: 'tr',
+            type: 'tableRow',
             children: [
               {
-                type: 'td',
-                children: [{ type: 'p', children: [{ text: 'Gamma' }] }],
+                type: 'tableCell',
+                children: [
+                  { type: 'paragraph', children: [{ text: 'Gamma' }] },
+                ],
               },
               {
-                type: 'td',
-                children: [{ type: 'p', children: [{ text: 'Delta' }] }],
+                type: 'tableCell',
+                children: [
+                  { type: 'paragraph', children: [{ text: 'Delta' }] },
+                ],
               },
             ],
           },
@@ -78,28 +88,36 @@ describe('markdown tables', () => {
           {
             children: [
               {
-                children: [{ type: 'p', children: [{ text: 'Dimension' }] }],
-                type: 'th',
+                children: [
+                  { type: 'paragraph', children: [{ text: 'Dimension' }] },
+                ],
+                header: true,
+                type: 'tableCell',
               },
               {
-                children: [{ type: 'p', children: [{ text: 'Basis' }] }],
-                type: 'th',
+                children: [
+                  { type: 'paragraph', children: [{ text: 'Basis' }] },
+                ],
+                header: true,
+                type: 'tableCell',
               },
             ],
-            type: 'tr',
+            type: 'tableRow',
           },
           {
             children: [
               {
-                children: [{ type: 'p', children: [{ text: 'Volume trend' }] }],
-                type: 'td',
+                children: [
+                  { type: 'paragraph', children: [{ text: 'Volume trend' }] },
+                ],
+                type: 'tableCell',
               },
               {
-                children: [{ type: 'p', children: [{ text: 'a<b' }] }],
-                type: 'td',
+                children: [{ type: 'paragraph', children: [{ text: 'a<b' }] }],
+                type: 'tableCell',
               },
             ],
-            type: 'tr',
+            type: 'tableRow',
           },
         ],
         type: 'table',
@@ -125,35 +143,43 @@ describe('markdown tables', () => {
           {
             children: [
               {
-                children: [{ type: 'p', children: [{ text: 'Dimension' }] }],
-                type: 'th',
+                children: [
+                  { type: 'paragraph', children: [{ text: 'Dimension' }] },
+                ],
+                header: true,
+                type: 'tableCell',
               },
               {
-                children: [{ type: 'p', children: [{ text: 'Basis' }] }],
-                type: 'th',
+                children: [
+                  { type: 'paragraph', children: [{ text: 'Basis' }] },
+                ],
+                header: true,
+                type: 'tableCell',
               },
             ],
-            type: 'tr',
+            type: 'tableRow',
           },
           {
             children: [
               {
-                children: [{ type: 'p', children: [{ text: 'Volume trend' }] }],
-                type: 'td',
+                children: [
+                  { type: 'paragraph', children: [{ text: 'Volume trend' }] },
+                ],
+                type: 'tableCell',
               },
               {
-                children: [{ type: 'p', children: [{ text: 'a<b' }] }],
-                type: 'td',
+                children: [{ type: 'paragraph', children: [{ text: 'a<b' }] }],
+                type: 'tableCell',
               },
             ],
-            type: 'tr',
+            type: 'tableRow',
           },
         ],
         type: 'table',
       },
       {
         children: [{ text: 'After' }],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
   });
@@ -178,28 +204,36 @@ describe('markdown tables', () => {
           {
             children: [
               {
-                children: [{ type: 'p', children: [{ text: 'Dimension' }] }],
-                type: 'th',
+                children: [
+                  { type: 'paragraph', children: [{ text: 'Dimension' }] },
+                ],
+                header: true,
+                type: 'tableCell',
               },
               {
-                children: [{ type: 'p', children: [{ text: 'Basis' }] }],
-                type: 'th',
+                children: [
+                  { type: 'paragraph', children: [{ text: 'Basis' }] },
+                ],
+                header: true,
+                type: 'tableCell',
               },
             ],
-            type: 'tr',
+            type: 'tableRow',
           },
           {
             children: [
               {
-                children: [{ type: 'p', children: [{ text: 'Volume trend' }] }],
-                type: 'td',
+                children: [
+                  { type: 'paragraph', children: [{ text: 'Volume trend' }] },
+                ],
+                type: 'tableCell',
               },
               {
-                children: [{ type: 'p', children: [{ text: 'a<b' }] }],
-                type: 'td',
+                children: [{ type: 'paragraph', children: [{ text: 'a<b' }] }],
+                type: 'tableCell',
               },
             ],
-            type: 'tr',
+            type: 'tableRow',
           },
         ],
         type: 'table',
@@ -209,28 +243,36 @@ describe('markdown tables', () => {
           {
             children: [
               {
-                children: [{ type: 'p', children: [{ text: 'Name' }] }],
-                type: 'th',
+                children: [{ type: 'paragraph', children: [{ text: 'Name' }] }],
+                header: true,
+                type: 'tableCell',
               },
               {
-                children: [{ type: 'p', children: [{ text: 'Value' }] }],
-                type: 'th',
+                children: [
+                  { type: 'paragraph', children: [{ text: 'Value' }] },
+                ],
+                header: true,
+                type: 'tableCell',
               },
             ],
-            type: 'tr',
+            type: 'tableRow',
           },
           {
             children: [
               {
-                children: [{ type: 'p', children: [{ text: 'Later' }] }],
-                type: 'td',
+                children: [
+                  { type: 'paragraph', children: [{ text: 'Later' }] },
+                ],
+                type: 'tableCell',
               },
               {
-                children: [{ type: 'p', children: [{ text: 'Table' }] }],
-                type: 'td',
+                children: [
+                  { type: 'paragraph', children: [{ text: 'Table' }] },
+                ],
+                type: 'tableCell',
               },
             ],
-            type: 'tr',
+            type: 'tableRow',
           },
         ],
         type: 'table',
@@ -252,32 +294,35 @@ describe('markdown tables', () => {
           {
             children: [
               {
-                children: [{ type: 'p', children: [{ text: 'Content' }] }],
-                type: 'th',
+                children: [
+                  { type: 'paragraph', children: [{ text: 'Content' }] },
+                ],
+                header: true,
+                type: 'tableCell',
               },
             ],
-            type: 'tr',
+            type: 'tableRow',
           },
           {
             children: [
               {
                 children: [
                   {
-                    type: 'p',
+                    type: 'paragraph',
                     children: [{ text: 'ok', underline: true }],
                   },
                 ],
-                type: 'td',
+                type: 'tableCell',
               },
             ],
-            type: 'tr',
+            type: 'tableRow',
           },
         ],
         type: 'table',
       },
       {
         children: [{ text: '<x>' }],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
   });
@@ -289,31 +334,37 @@ describe('markdown tables', () => {
         type: 'table',
         children: [
           {
-            type: 'tr',
+            type: 'tableRow',
             children: [
               {
-                type: 'th',
-                children: [{ type: 'p', children: [{ text: 'Name' }] }],
+                header: true,
+                type: 'tableCell',
+                children: [{ type: 'paragraph', children: [{ text: 'Name' }] }],
               },
               {
-                type: 'th',
-                children: [{ type: 'p', children: [{ text: 'Value' }] }],
+                header: true,
+                type: 'tableCell',
+                children: [
+                  { type: 'paragraph', children: [{ text: 'Value' }] },
+                ],
               },
             ],
           },
           {
-            type: 'tr',
+            type: 'tableRow',
             children: [
               {
-                type: 'td',
+                type: 'tableCell',
                 children: [
-                  { type: 'p', children: [{ text: 'Alpha' }] },
-                  { type: 'p', children: [{ text: 'Beta' }] },
+                  { type: 'paragraph', children: [{ text: 'Alpha' }] },
+                  { type: 'paragraph', children: [{ text: 'Beta' }] },
                 ],
               },
               {
-                type: 'td',
-                children: [{ type: 'p', children: [{ text: 'Gamma' }] }],
+                type: 'tableCell',
+                children: [
+                  { type: 'paragraph', children: [{ text: 'Gamma' }] },
+                ],
               },
             ],
           },
@@ -333,26 +384,30 @@ describe('markdown tables', () => {
         type: 'table',
         children: [
           {
-            type: 'tr',
+            type: 'tableRow',
             children: [
               {
-                type: 'th',
-                children: [{ type: 'p', children: [{ text: 'Name' }] }],
+                header: true,
+                type: 'tableCell',
+                children: [{ type: 'paragraph', children: [{ text: 'Name' }] }],
               },
               {
-                type: 'th',
-                children: [{ type: 'p', children: [{ text: 'Value' }] }],
+                header: true,
+                type: 'tableCell',
+                children: [
+                  { type: 'paragraph', children: [{ text: 'Value' }] },
+                ],
               },
             ],
           },
           {
-            type: 'tr',
+            type: 'tableRow',
             children: [
               {
-                type: 'td',
+                type: 'tableCell',
                 children: [
                   {
-                    type: 'p',
+                    type: 'paragraph',
                     children: [
                       { text: 'Alpha' },
                       { text: '\n' },
@@ -362,8 +417,10 @@ describe('markdown tables', () => {
                 ],
               },
               {
-                type: 'td',
-                children: [{ type: 'p', children: [{ text: 'Gamma' }] }],
+                type: 'tableCell',
+                children: [
+                  { type: 'paragraph', children: [{ text: 'Gamma' }] },
+                ],
               },
             ],
           },

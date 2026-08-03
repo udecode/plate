@@ -1,7 +1,7 @@
 import type {
   ContentSlice,
   Descendant,
-  Editor,
+  AnyEditor as Editor,
   EditorDocumentValue,
   EditorElementBehavior,
   EditorSchemaVocabulary,

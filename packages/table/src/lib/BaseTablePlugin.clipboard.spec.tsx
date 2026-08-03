@@ -1,13 +1,11 @@
 /** @jsx jsxt */
 
 import { BaseTablePlugin } from './BaseTablePlugin';
-import { getTestTablePlugins } from './__tests__/getTestTablePlugins';
-import { createPlateEditor } from '@platejs/core/react';
 import {
-  ContentSlice,
-  defineEditorExtension,
-  editorReads,
-} from '@platejs/plite';
+  createTestTableEditor,
+  getTestTablePlugins,
+} from './__tests__/getTestTablePlugins';
+import { ContentSlice, defineExtension, editorReads } from '@platejs/plite';
 import { jsxt } from '@platejs/test-utils';
 import type { TestEditor } from '@platejs/test-utils';
 
@@ -50,7 +48,7 @@ describe('table clipboard', () => {
         </editor>
       ) as TestEditor;
 
-      const editor = createPlateEditor({
+      const editor = createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
@@ -96,7 +94,7 @@ describe('table clipboard', () => {
         </editor>
       ) as TestEditor;
 
-      const editor = createPlateEditor({
+      const editor = createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
@@ -132,7 +130,7 @@ describe('table clipboard', () => {
         </hp>
       </editor>
     ) as TestEditor;
-    const editor = createPlateEditor({
+    const editor = createTestTableEditor({
       nodeId: true,
       plugins: getTestTablePlugins(),
       selection: input.selection,
@@ -207,7 +205,7 @@ describe('table clipboard', () => {
         </editor>
       ) as TestEditor;
 
-      const editor = createPlateEditor({
+      const editor = createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
@@ -223,7 +221,7 @@ describe('table clipboard', () => {
     jsxt;
 
     const createTableEditor = (input: TestEditor) =>
-      createPlateEditor({
+      createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins(),
         selection: input.selection,
@@ -400,9 +398,8 @@ describe('table clipboard', () => {
         const { clipboard, values } = createClipboard();
         const editor = createTableEditor(input);
 
-        editor.extend(
-          defineEditorExtension({
-            name: 'table-clipboard-export-projection',
+        editor.install(
+          defineExtension('table-clipboard-export-projection', {
             readMiddleware: ({ around }) => [
               around(editorReads.slice.export, ({ next }) => {
                 const slice = next();

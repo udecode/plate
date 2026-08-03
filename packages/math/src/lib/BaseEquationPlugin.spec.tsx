@@ -3,47 +3,42 @@
 import {
   BaseParagraphPlugin,
   createBaseEditor,
-  createBasePlugin,
+  defineBasePlugin,
 } from '@platejs/core';
-import { editorCommands, schema } from '@platejs/plite';
+import {
+  createEditor as createRawEditor,
+  editorCommands,
+  schema,
+  type Value,
+} from '@platejs/plite';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
-import { KEYS, NODES } from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 
 import {
   BaseEquationPlugin,
   BaseInlineEquationPlugin,
+  type BlockEquationElement,
   getEquationHtml,
   MathRules,
 } from './BaseEquationPlugin';
 
 jsxt;
 
-const CodeLinePlugin = createBasePlugin({
-  name: KEYS.codeLine,
+const CodeLinePlugin = defineBasePlugin(PLUGINS.codeLine, {
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
     },
   },
-  type: NODES.codeLine,
 });
 
-const CodeBlockPlugin = createBasePlugin({
-  name: KEYS.codeBlock,
+const CodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
   dependencies: [CodeLinePlugin],
-  schema: ({ plugins }) => {
-    const codeLineType = plugins.elementType(CodeLinePlugin);
-
-    return {
-      element: {
-        content: schema.content.type(codeLineType, {
-          default: { type: codeLineType },
-          min: 1,
-        }),
-      },
-    };
+  schema: {
+    element: {
+      content: schema.content.element(CodeLinePlugin, { min: 1 }),
+    },
   },
-  type: NODES.codeBlock,
 });
 
 describe('BaseEquationPlugin', () => {
@@ -51,13 +46,16 @@ describe('BaseEquationPlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseEquationPlugin],
     });
-    const element = { children: [{ text: '' }], type: KEYS.equation };
+    const element = { children: [{ text: '' }], type: 'equation' };
 
     expect(editor.read.schema.isBlock(element)).toBe(true);
     expect(editor.read.schema.isVoid(element)).toBe(true);
-    expect(editor.read.schema.property(BaseEquationPlugin)?.value.kind).toBe(
-      'string'
-    );
+    expect(
+      editor.read.schema.property({
+        key: 'texExpression',
+        placement: 'element',
+      })?.value.kind
+    ).toBe('string');
     expect(typeof editor.plugin(BaseEquationPlugin).update.insert).toBe(
       'function'
     );
@@ -75,11 +73,11 @@ describe('BaseEquationPlugin', () => {
         {
           children: [{ text: '' }],
           texExpression: 'x+1',
-          type: KEYS.equation,
+          type: 'equation',
         },
         {
           children: [{ text: 'after' }],
-          type: KEYS.p,
+          type: 'paragraph',
         },
       ],
     });
@@ -105,7 +103,7 @@ describe('BaseEquationPlugin', () => {
       initialValue: [
         {
           children: [{ text: 'hi' }],
-          type: KEYS.p,
+          type: 'paragraph',
         },
       ],
     });
@@ -115,12 +113,12 @@ describe('BaseEquationPlugin', () => {
     expect(editor.read.value().children).toMatchObject([
       {
         children: [{ text: 'hi' }],
-        type: KEYS.p,
+        type: 'paragraph',
       },
       {
         children: [{ text: '' }],
         texExpression: '',
-        type: KEYS.equation,
+        type: 'equation',
       },
     ]);
   });
@@ -137,7 +135,7 @@ describe('BaseEquationPlugin', () => {
       initialValue: [
         {
           children: [{ text: 'a' }, { text: 'b' }],
-          type: KEYS.p,
+          type: 'paragraph',
         },
       ],
     });
@@ -147,21 +145,21 @@ describe('BaseEquationPlugin', () => {
     expect(editor.read.value().children).toMatchObject([
       {
         children: [{ text: 'ab' }],
-        type: KEYS.p,
+        type: 'paragraph',
       },
       {
         children: [{ text: '' }],
         texExpression: '',
-        type: NODES.equation,
+        type: 'equation',
       },
     ]);
   });
 
   it('renders KaTeX html and forwards options', () => {
-    const element = {
+    const element: BlockEquationElement = {
       children: [{ text: '' }],
       texExpression: 'x^2',
-      type: KEYS.equation,
+      type: 'equation',
     };
 
     expect(getEquationHtml({ element })).toContain('katex');
@@ -179,20 +177,25 @@ describe('BaseInlineEquationPlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseInlineEquationPlugin],
     });
-    const plugin = editor.plugin(BaseInlineEquationPlugin).plugin;
+    const plugin = editor.plugin(BaseInlineEquationPlugin);
     const element = {
       children: [{ text: '' }],
-      type: NODES.inlineEquation,
+      type: 'inlineEquation',
     };
 
     expect(plugin.name).toBe('inlineEquation');
-    expect(plugin.type).toBe(NODES.inlineEquation);
+    expect(plugin.name).toBe(PLUGINS.inlineEquation);
     expect(editor.read.schema.isInline(element)).toBe(true);
     expect(editor.read.schema.isVoid(element)).toBe(true);
     expect(
-      editor.read.schema.property(BaseInlineEquationPlugin)?.value.kind
+      editor.read.schema.property({
+        key: 'texExpression',
+        placement: 'element',
+      })?.value.kind
     ).toBe('string');
-    expect(editor.plugin(KEYS.inlineEquation).type).toBe(NODES.inlineEquation);
+    expect(editor.plugin(PLUGINS.inlineEquation).name).toBe(
+      PLUGINS.inlineEquation
+    );
     expect(typeof editor.plugin(BaseInlineEquationPlugin).update.insert).toBe(
       'function'
     );
@@ -213,11 +216,11 @@ describe('BaseInlineEquationPlugin', () => {
             {
               children: [{ text: '' }],
               texExpression: 'x+1',
-              type: NODES.inlineEquation,
+              type: 'inlineEquation',
             },
             { text: ' after' },
           ],
-          type: KEYS.p,
+          type: 'paragraph',
         },
       ],
     });
@@ -253,7 +256,7 @@ describe('BaseInlineEquationPlugin', () => {
       initialValue: [
         {
           children: [{ text: 'abc' }],
-          type: KEYS.p,
+          type: 'paragraph',
         },
       ],
     });
@@ -267,11 +270,11 @@ describe('BaseInlineEquationPlugin', () => {
           {
             children: [{ text: '' }],
             texExpression: 'abc',
-            type: NODES.inlineEquation,
+            type: 'inlineEquation',
           },
           { text: '' },
         ],
-        type: KEYS.p,
+        type: 'paragraph',
       },
     ]);
   });
@@ -288,7 +291,7 @@ describe('BaseInlineEquationPlugin', () => {
       initialValue: [
         {
           children: [{ text: 'x' }, { text: 'y' }],
-          type: KEYS.p,
+          type: 'paragraph',
         },
       ],
     });
@@ -305,11 +308,11 @@ describe('BaseInlineEquationPlugin', () => {
           {
             children: [{ text: '' }],
             texExpression: 'x^2',
-            type: NODES.inlineEquation,
+            type: 'inlineEquation',
           },
           { text: 'y' },
         ],
-        type: KEYS.p,
+        type: 'paragraph',
       },
     ]);
   });
@@ -329,6 +332,7 @@ describe('math input rules', () => {
     } = {}
   ) =>
     createBaseEditor({
+      editor: createRawEditor<Value>(),
       plugins: [
         BaseParagraphPlugin,
         BaseInlineEquationPlugin.configure({
@@ -338,7 +342,7 @@ describe('math input rules', () => {
           inputRules: [blockMathRule],
         }),
         ...(withCodeBlock ? [CodeBlockPlugin] : []),
-      ],
+      ] as const,
       selection: value.selection,
       initialValue: value.children,
     });
@@ -364,11 +368,11 @@ describe('math input rules', () => {
           {
             children: [{ text: '' }],
             texExpression: 'x',
-            type: NODES.inlineEquation,
+            type: 'inlineEquation',
           },
           { text: '' },
         ],
-        type: KEYS.p,
+        type: 'paragraph',
       },
     ]);
   });
@@ -396,7 +400,7 @@ describe('math input rules', () => {
     expect(editor.read.value().children).toMatchObject([
       {
         texExpression: '',
-        type: KEYS.equation,
+        type: 'equation',
       },
     ]);
   });
@@ -427,7 +431,7 @@ describe('math input rules', () => {
     expect(editor.read.value().children).toMatchObject([
       {
         texExpression: '',
-        type: KEYS.equation,
+        type: 'equation',
       },
     ]);
   });
@@ -482,11 +486,11 @@ describe('math input rules', () => {
         {
           children: [{ text: '' }],
           texExpression: 'x',
-          type: NODES.inlineEquation,
+          type: 'inlineEquation',
         },
         { text: '' },
       ],
-      type: KEYS.p,
+      type: 'paragraph',
     });
   });
 

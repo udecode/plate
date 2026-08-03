@@ -155,8 +155,15 @@ selection, history, browser proof, package API, and benchmarks.
   addressed by omission; explicit roots are for additional roots only.
 - Plite stays unopinionated. Plate owns product opinion.
 - Do not keep legacy APIs alive just because they are familiar.
-- Plite extensions are exact, `name`-identified definitions. `type` remains
-  serialized node identity. They have no `config`; immutable construction
+- Plite extensions are exact, `name`-identified definitions. Plate plugin
+  `name` identifies a capability only. Element plugins own a persisted `type`;
+  mark/property plugins own a persisted `key`. Each defaults to `name` when
+  omitted but may differ at definition time, and behavior plugins expose
+  neither. Uninstalled portals preserve an exact schema descriptor's identity,
+  while runtime strings use the string as conventional `.type`/`.key`;
+  `installed` guards behavior, not identity. These identities
+  are immutable after construction. Plugins have no
+  `config`; immutable construction
   inputs and runtime resources stay in factory closures or honest host owners.
 - Extension-owned document capabilities are `read` and `update`; pure
   core-read policy is `readMiddleware`. One descriptor-owned `api` projects to

@@ -37,7 +37,7 @@ const profileVersions: Record<SchemaProfile, number> = {
 const schemaSlot = defineExtensionSlot('schema-reconfiguration');
 
 const createSchema = (profile: SchemaProfile) =>
-  defineEditorSchema({
+  defineEditorSchema('schema:schema-reconfiguration-browser-proof', {
     elements: {
       'content-card': {
         content: schema.content.text({ default: 'text', min: 1 }),

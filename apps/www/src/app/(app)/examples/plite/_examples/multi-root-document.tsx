@@ -1,10 +1,12 @@
 import type { ChangeEvent } from 'react';
 import {
+  defineExtension,
   defineStateField,
   type EditorCommit,
   type Node,
   valueCodecs,
 } from '@platejs/plite';
+import { history } from '@platejs/plite-history';
 import {
   Editable,
   Plite,
@@ -27,6 +29,10 @@ const documentTitle = defineStateField({
   history: 'push',
   initial: () => 'Untitled',
   persist: valueCodecs.string,
+});
+
+const documentTitleExtension = defineExtension('documentTitle', {
+  stateFields: [documentTitle],
 });
 
 const rootText = (state: { nodes: { children: () => readonly Node[] } }) =>
@@ -243,7 +249,7 @@ const MultiRootPanel = () => {
 
 const MultiRootDocumentExample = () => {
   const editor = usePliteEditor({
-    extensions: [documentTitle],
+    extensions: [history(), documentTitleExtension],
     initialValue: {
       children: [
         {

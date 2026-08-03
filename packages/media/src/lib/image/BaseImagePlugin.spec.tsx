@@ -1,11 +1,9 @@
-import { createBaseEditor, createBasePlugin } from '@platejs/core';
+import { createBaseEditor, defineBasePlugin } from '@platejs/core';
 import { property } from '@platejs/plite';
-import { KEYS } from '@platejs/utils';
 
 import { BaseImagePlugin } from './BaseImagePlugin';
 
-const TestBoldPlugin = createBasePlugin({
-  name: 'bold',
+const TestBoldPlugin = defineBasePlugin('bold', {
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
@@ -46,7 +44,7 @@ describe('BaseImagePlugin clipboard behavior', () => {
         anchor: { offset: 4, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: 'test' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'test' }], type: 'paragraph' }],
     });
 
   it('inserts at an exact explicit target through the flat scoped update', () => {
@@ -59,10 +57,10 @@ describe('BaseImagePlugin clipboard behavior', () => {
     expect(editor.read.children()).toEqual([
       {
         children: [{ text: '' }],
-        type: KEYS.img,
+        type: 'image',
         url: 'https://platejs.org/image.png',
       },
-      { children: [{ text: 'test' }], type: KEYS.p },
+      { children: [{ text: 'test' }], type: 'paragraph' },
     ]);
   });
 
@@ -75,7 +73,7 @@ describe('BaseImagePlugin clipboard behavior', () => {
           },
         }),
       ],
-      initialValue: [{ children: [{ text: 'test' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'test' }], type: 'paragraph' }],
     });
 
     editor
@@ -83,7 +81,7 @@ describe('BaseImagePlugin clipboard behavior', () => {
       .update.insert({ url: 'https://platejs.org/image.png' }, { at: [0] });
 
     expect(editor.read.children()[0]).toMatchObject({
-      type: KEYS.img,
+      type: 'image',
       url: 'https://platejs.org/image.png?normalized=image',
     });
   });
@@ -91,7 +89,7 @@ describe('BaseImagePlugin clipboard behavior', () => {
   it('stores caption construction input as canonical child content', () => {
     const editor = createBaseEditor({
       plugins: [BaseImagePlugin],
-      initialValue: [{ children: [{ text: 'test' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'test' }], type: 'paragraph' }],
     });
 
     editor.plugin(BaseImagePlugin).update.insert(
@@ -106,7 +104,7 @@ describe('BaseImagePlugin clipboard behavior', () => {
 
     expect(image).toMatchObject({
       children: [{ text: 'A rich caption' }],
-      type: KEYS.img,
+      type: 'image',
       url: 'https://platejs.org/image.png',
     });
     expect(image).not.toHaveProperty('caption');
@@ -126,7 +124,7 @@ describe('BaseImagePlugin clipboard behavior', () => {
 
     expect(editor.read.children()[0]).toEqual({
       children: [{ text: '' }],
-      type: KEYS.img,
+      type: 'image',
       url: 'https://platejs.org/image.png',
     });
   });
@@ -141,10 +139,10 @@ describe('BaseImagePlugin clipboard behavior', () => {
     editor.api.dom.clipboard.insertData(data as unknown as DataTransfer);
 
     expect(editor.read.children()).toEqual([
-      { children: [{ text: 'test' }], type: KEYS.p },
+      { children: [{ text: 'test' }], type: 'paragraph' },
       {
         children: [{ text: '' }],
-        type: KEYS.img,
+        type: 'image',
         url: 'https://i.imgur.com/removed.png',
       },
     ]);
@@ -160,7 +158,7 @@ describe('BaseImagePlugin clipboard behavior', () => {
     editor.api.dom.clipboard.insertData(data as unknown as DataTransfer);
 
     expect(editor.read.children().at(1)).toMatchObject({
-      type: KEYS.img,
+      type: 'image',
       url: 'https://example.com/photo.PNG',
     });
   });
@@ -177,7 +175,7 @@ describe('BaseImagePlugin clipboard behavior', () => {
         anchor: { offset: 4, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: 'test' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'test' }], type: 'paragraph' }],
     });
     const text = 'https://example.com/rejected.png';
     const data = {
@@ -188,7 +186,7 @@ describe('BaseImagePlugin clipboard behavior', () => {
     editor.api.dom.clipboard.insertData(data as unknown as DataTransfer);
 
     expect(editor.read.children()).toEqual([
-      { children: [{ text: `test${text}` }], type: KEYS.p },
+      { children: [{ text: `test${text}` }], type: 'paragraph' },
     ]);
   });
 
@@ -205,7 +203,7 @@ describe('BaseImagePlugin clipboard behavior', () => {
     editor.api.dom.clipboard.insertData(data as unknown as DataTransfer);
 
     expect(editor.read.children()).toEqual([
-      { children: [{ text: `test${text}` }], type: KEYS.p },
+      { children: [{ text: `test${text}` }], type: 'paragraph' },
     ]);
   });
 
@@ -221,7 +219,7 @@ describe('BaseImagePlugin clipboard behavior', () => {
     editor.api.dom.clipboard.insertData(data as unknown as DataTransfer);
 
     expect(editor.read.children()).toEqual([
-      { children: [{ text: 'test' }], type: KEYS.p },
+      { children: [{ text: 'test' }], type: 'paragraph' },
     ]);
   });
 
@@ -237,7 +235,7 @@ describe('BaseImagePlugin clipboard behavior', () => {
     editor.api.dom.clipboard.insertData(data as unknown as DataTransfer);
 
     expect(editor.read.children()).toEqual([
-      { children: [{ text: 'test' }], type: KEYS.p },
+      { children: [{ text: 'test' }], type: 'paragraph' },
     ]);
   });
 
@@ -266,8 +264,8 @@ describe('BaseImagePlugin clipboard behavior', () => {
         focus: { offset: 4, path: [0, 0] },
       },
       initialValue: [
-        { children: [{ text: 'test' }], type: KEYS.p },
-        { children: [{ text: 'later' }], type: KEYS.p },
+        { children: [{ text: 'test' }], type: 'paragraph' },
+        { children: [{ text: 'later' }], type: 'paragraph' },
       ],
     });
     const data = {
@@ -289,12 +287,12 @@ describe('BaseImagePlugin clipboard behavior', () => {
     );
     expect(editor.read.children().at(1)).toEqual({
       children: [{ text: '' }],
-      type: KEYS.img,
+      type: 'image',
       url: 'https://platejs.org/uploaded-image.png',
     });
     expect(editor.read.children().at(2)).toEqual({
       children: [{ text: 'later' }],
-      type: KEYS.p,
+      type: 'paragraph',
     });
   });
 
@@ -310,7 +308,7 @@ describe('BaseImagePlugin clipboard behavior', () => {
         anchor: { offset: 4, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: 'test' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'test' }], type: 'paragraph' }],
     });
     const data = {
       files: [],
@@ -322,7 +320,7 @@ describe('BaseImagePlugin clipboard behavior', () => {
     expect(editor.read.children()).toEqual([
       {
         children: [{ text: 'testhttps://i.imgur.com/removed.png' }],
-        type: KEYS.p,
+        type: 'paragraph',
       },
     ]);
   });

@@ -1,6 +1,6 @@
 import type { Pluggable, Preset, Settings } from 'unified';
 
-import type { NormalizePluginState } from '@platejs/core';
+import type { NormalizePluginState } from '@platejs/core/internal';
 
 export const REMARK_MDX_TAG = 'remarkMdx';
 

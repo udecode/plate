@@ -4,7 +4,7 @@ import {
   createEditor,
   type Descendant,
   type EditorExtension,
-  defineEditorExtension,
+  defineExtension,
   defineEditorSchema,
   editorReads,
   type Node,
@@ -79,7 +79,7 @@ const createChildren = (): Descendant[] => [
   },
 ];
 
-const clipboardRichSchema = defineEditorSchema({
+const clipboardRichSchema = defineEditorSchema('schema:clipboard-rich-test', {
   elements: {
     image: {
       properties: { url: property.string() },
@@ -119,64 +119,71 @@ const clipboardRichSchema = defineEditorSchema({
   version: 1,
 });
 
-const permissiveClipboardSchema = defineEditorSchema({
-  elements: {},
-  id: 'clipboard-permissive-test',
-  root: schema.content.not(schema.content.text()),
-  unknown: 'preserve',
-  version: 1,
-});
+const permissiveClipboardSchema = defineEditorSchema(
+  'schema:clipboard-permissive-test',
+  {
+    elements: {},
+    id: 'clipboard-permissive-test',
+    root: schema.content.not(schema.content.text()),
+    unknown: 'preserve',
+    version: 1,
+  }
+);
 
-const keyboardSelectableClipboardSchema = defineEditorSchema({
-  elements: {
-    media: {
-      content: schema.content.text({ default: 'text', min: 1 }),
-      contentRoots: {
-        details: {
-          content: schema.content.type('paragraph', {
-            default: { type: 'paragraph' },
-            min: 1,
-          }),
-          ownership: 'exclusive',
+const keyboardSelectableClipboardSchema = defineEditorSchema(
+  'schema:keyboard-selectable-clipboard-test',
+  {
+    elements: {
+      media: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+        contentRoots: {
+          details: {
+            content: schema.content.type('paragraph', {
+              default: { type: 'paragraph' },
+              min: 1,
+            }),
+            ownership: 'exclusive',
+          },
+        },
+        keyboardSelectable: true,
+      },
+      paragraph: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+      },
+    },
+    id: 'keyboard-selectable-clipboard-test',
+    root: schema.content.types(['media', 'paragraph'], {
+      default: { type: 'paragraph' },
+      min: 1,
+    }),
+    unknown: 'reject',
+    version: 1,
+  }
+);
+
+const readOnlyInlinePasteExtension = defineExtension(
+  'read-only-inline-paste-delegate',
+  {
+    contributions: [
+      clipboardHandler({
+        insertData(_data, { next }) {
+          return next();
+        },
+      }),
+    ],
+    schema: {
+      elements: {
+        badge: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          inline: true,
+          readOnly: true,
         },
       },
-      keyboardSelectable: true,
     },
-    paragraph: {
-      content: schema.content.text({ default: 'text', min: 1 }),
-    },
-  },
-  id: 'keyboard-selectable-clipboard-test',
-  root: schema.content.types(['media', 'paragraph'], {
-    default: { type: 'paragraph' },
-    min: 1,
-  }),
-  unknown: 'reject',
-  version: 1,
-});
+  }
+);
 
-const readOnlyInlinePasteExtension = defineEditorExtension({
-  contributions: [
-    clipboardHandler({
-      insertData(_data, { next }) {
-        return next();
-      },
-    }),
-  ],
-  name: 'read-only-inline-paste-delegate',
-  schema: {
-    elements: {
-      badge: {
-        content: schema.content.text({ default: 'text', min: 1 }),
-        inline: true,
-        readOnly: true,
-      },
-    },
-  },
-});
-
-const inlineLinkPasteExtension = defineEditorExtension({
-  name: 'inline-link-paste',
+const inlineLinkPasteExtension = defineExtension('inline-link-paste', {
   schema: {
     elements: {
       link: {
@@ -187,8 +194,7 @@ const inlineLinkPasteExtension = defineEditorExtension({
   },
 });
 
-const nestedInlinePasteExtension = defineEditorExtension({
-  name: 'nested-inline-paste',
+const nestedInlinePasteExtension = defineExtension('nested-inline-paste', {
   schema: {
     elements: {
       inner: {
@@ -838,8 +844,7 @@ describe('plite-dom clipboard boundary', () => {
 
   it('rejects a second next call from one clipboard handler', () => {
     const editor = createClipboardEditor(createChildren(), null, undefined, [
-      defineEditorExtension({
-        name: 'double-delegate',
+      defineExtension('double-delegate', {
         contributions: [
           clipboardHandler({
             insertData(data, { next }) {
@@ -875,18 +880,17 @@ describe('plite-dom clipboard boundary', () => {
       },
       undefined,
       [
-        defineEditorExtension({
-          name: 'product-card-paste',
+        defineExtension('product-card-paste', {
           contributions: [
             clipboardHandler({
-              insertData(data, { next, transaction }) {
-                expect(transaction.tags.has('paste')).toBe(true);
+              insertData(data, { next, tx }) {
+                expect(tx.tags.has('paste')).toBe(true);
 
                 const title = data.getData('application/x-product-card-title');
 
                 seen.push(
                   `${title ? 'consume' : 'delegate'}:${
-                    transaction.selection()?.anchor.offset ?? -1
+                    tx.selection()?.anchor.offset ?? -1
                   }`
                 );
 
@@ -894,7 +898,7 @@ describe('plite-dom clipboard boundary', () => {
                   return next();
                 }
 
-                transaction.text.insert(`Card: ${title}`);
+                tx.text.insert(`Card: ${title}`);
                 return true;
               },
             }),
@@ -1180,8 +1184,7 @@ describe('plite-dom clipboard boundary', () => {
         range,
         undefined,
         [
-          defineEditorExtension({
-            name: 'clipboard-export-projection',
+          defineExtension('clipboard-export-projection', {
             readMiddleware: ({ around }) => [
               around(editorReads.slice.export, ({ next }) => {
                 const slice = next();

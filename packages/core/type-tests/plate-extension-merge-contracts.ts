@@ -1,12 +1,11 @@
-import { createBaseEditor, createBasePlugin } from '@platejs/core';
+import { createBaseEditor, defineBasePlugin } from '@platejs/core';
 import { createPlateEditor, toPlatePlugin } from '@platejs/core/react';
-import { defineEditorExtension } from '@platejs/plite';
+import { defineExtension } from '@platejs/plite';
 
-const RuntimeExtensionPlugin = createBasePlugin({
+const RuntimeExtensionPlugin = defineBasePlugin('runtimeExtension', {
   api: () => ({
     first: () => 'first' as const,
   }),
-  name: 'runtimeExtension',
   update: () => ({
     first: () => 'first-update' as const,
   }),
@@ -44,14 +43,13 @@ editor.update((tx) => {
 editor.api.runtimeExtension.missing();
 
 const RuntimeStatePlugin = toPlatePlugin(
-  createBasePlugin({
+  defineBasePlugin('runtimeState', {
     api: () => ({
       ping: () => 'runtime-state-ping' as const,
     }),
     initialState: {
       value: 'runtime-state' as const,
     },
-    name: 'runtimeState',
   })
 );
 
@@ -68,16 +66,13 @@ const runtimeStatePing: 'runtime-state-ping' =
 void runtimeStateValue;
 void runtimeStatePing;
 
-const RawBaseCallbackExtension = defineEditorExtension({
+const RawBaseCallbackExtension = defineExtension('rawBaseCallback', {
   api: () => ({
     rawBase: () => 'raw-base' as const,
   }),
   enabled: true,
-  name: 'rawBaseCallback',
 });
-const RawBaseCallbackPlugin = createBasePlugin({
-  name: 'rawBaseCallback',
-})
+const RawBaseCallbackPlugin = defineBasePlugin('rawBaseCallback', {})
   .extend(() => RawBaseCallbackExtension)
   .extend(({ api }) => ({
     api: () => ({
@@ -94,17 +89,14 @@ const rawBaseAfterResult: 'raw-base:after' =
 // @ts-expect-error raw Base adoption followed by a normal stage stays exact.
 rawBaseCallbackEditor.api.rawBaseCallback.missing();
 
-const RawPlateCallbackExtension = defineEditorExtension({
+const RawPlateCallbackExtension = defineExtension('rawPlateCallback', {
   api: () => ({
     rawPlate: () => 'raw-plate' as const,
   }),
   enabled: true,
-  name: 'rawPlateCallback',
 });
 const RawPlateCallbackPlugin = toPlatePlugin(
-  createBasePlugin({
-    name: 'rawPlateCallback',
-  })
+  defineBasePlugin('rawPlateCallback', {})
 )
   .extend(() => RawPlateCallbackExtension)
   .extend(({ api }) => ({

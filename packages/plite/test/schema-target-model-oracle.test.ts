@@ -146,7 +146,7 @@ const matchesModel = (
 };
 
 const compileTarget = (input: ModelTarget) => {
-  const definition = defineEditorSchema({
+  const definition = defineEditorSchema('schema:target-model', {
     elements: Object.fromEntries(
       Array.from({ length: TYPE_COUNT }, (_value, index) => [
         typeName(index),

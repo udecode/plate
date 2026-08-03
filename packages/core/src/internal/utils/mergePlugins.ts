@@ -1,10 +1,30 @@
 import mergeWith from 'lodash/mergeWith.js';
 
-import type { BasePlugin } from '../../lib';
+import type {
+  BasePlugin,
+  ErasedPluginCallable,
+  ErasedPluginConfigurationLayer,
+} from '../../lib';
 
-type NominalPluginReference = Readonly<{ name: string; type: string }>;
+type NominalPluginReference = Readonly<{ name: string }>;
 
 const pluginDescriptors = new WeakSet<object>();
+/** @internal */
+export type PluginDescriptorMetadata = Readonly<{
+  configured: boolean;
+  configurationLayers: readonly ErasedPluginConfigurationLayer[];
+  htmlCodecContributions: readonly Readonly<{
+    extension: ErasedPluginCallable;
+    targetPlugin: string | null;
+  }>[];
+  resolved: boolean;
+  stages: readonly ErasedPluginCallable[];
+}>;
+
+const pluginDescriptorMetadata = new WeakMap<
+  object,
+  PluginDescriptorMetadata
+>();
 const pluginSchemaFamilies = new WeakMap<object, object>();
 const htmlCodecSchemaFamilies = new WeakMap<
   (...args: never[]) => unknown,
@@ -91,7 +111,8 @@ const collectOpaquePluginHostResources = (
     collectPluginRecord(getDataProperty(inject, 'parsers'));
   }
 
-  const configurationLayers = getDataProperty(value, '__configurationLayers');
+  const configurationLayers =
+    pluginDescriptorMetadata.get(value)?.configurationLayers;
 
   if (Array.isArray(configurationLayers)) {
     configurationLayers.forEach((layer) => {
@@ -112,6 +133,23 @@ export const brandPluginDescriptor = <T extends object>(
 ): T => {
   lockPluginSchema(value);
   pluginDescriptors.add(value);
+  if (!pluginDescriptorMetadata.has(value)) {
+    const sourceMetadata = familySource
+      ? pluginDescriptorMetadata.get(familySource)
+      : undefined;
+
+    pluginDescriptorMetadata.set(
+      value,
+      sourceMetadata ??
+        Object.freeze({
+          configured: false,
+          configurationLayers: Object.freeze([]),
+          htmlCodecContributions: Object.freeze([]),
+          resolved: false,
+          stages: Object.freeze([]),
+        })
+    );
+  }
   const family = familySource
     ? pluginSchemaFamilies.get(familySource)
     : pluginSchemaFamilies.get(value);
@@ -120,6 +158,31 @@ export const brandPluginDescriptor = <T extends object>(
 
   return value;
 };
+
+export const getPluginDescriptorMetadata = (
+  value: object
+): PluginDescriptorMetadata => {
+  const metadata = pluginDescriptorMetadata.get(value);
+
+  if (!metadata) {
+    throw new Error('Plate plugin metadata requires a nominal descriptor.');
+  }
+
+  return metadata;
+};
+
+export const setPluginDescriptorMetadata = (
+  value: object,
+  metadata: PluginDescriptorMetadata
+) => {
+  pluginDescriptorMetadata.set(value, Object.freeze(metadata));
+};
+
+export const isConfiguredPluginDescriptor = (value: object) =>
+  pluginDescriptorMetadata.get(value)?.configured === true;
+
+export const isResolvedPluginDescriptor = (value: object) =>
+  pluginDescriptorMetadata.get(value)?.resolved === true;
 
 export const getPluginSchemaFamily = (value: object): object | null =>
   pluginSchemaFamilies.get(value) ?? null;
@@ -148,15 +211,9 @@ export const getHtmlCodecSchemaFamilies = (
 
 const hasStringIdentity = (value: object): value is NominalPluginReference => {
   const name = Object.getOwnPropertyDescriptor(value, 'name');
-  const type = Object.getOwnPropertyDescriptor(value, 'type');
 
   return (
-    !!name &&
-    Object.hasOwn(name, 'value') &&
-    typeof name.value === 'string' &&
-    !!type &&
-    Object.hasOwn(type, 'value') &&
-    typeof type.value === 'string'
+    !!name && Object.hasOwn(name, 'value') && typeof name.value === 'string'
   );
 };
 
@@ -177,6 +234,7 @@ const cloneFrozenPluginDescriptor = <T>(
   clones = new WeakMap<object, unknown>()
 ): T => {
   if (!value || typeof value !== 'object') return value;
+  if (isNominalPluginDescriptor(value)) return value;
 
   const existing = clones.get(value);
 
@@ -194,7 +252,6 @@ const cloneFrozenPluginDescriptor = <T>(
   const prototype = Object.getPrototypeOf(value);
 
   if (prototype !== Object.prototype && prototype !== null) return value;
-
   const clone: Record<PropertyKey, unknown> = {};
 
   clones.set(value, clone);

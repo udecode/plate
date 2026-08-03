@@ -1,8 +1,8 @@
 import {
-  createTriggerComboboxExtension,
+  triggerCombobox,
   type TriggerComboboxPluginState,
 } from '@platejs/combobox';
-import { type DefinitionOf, createBasePlugin } from '@platejs/core';
+import { type DefinitionOf, defineBasePlugin } from '@platejs/core';
 import { property } from '@platejs/plite';
 import { KEYS, NODES } from '@platejs/utils';
 
@@ -16,8 +16,7 @@ export type SlashPluginState = TriggerComboboxPluginState & {
   >;
 };
 
-export const BaseSlashInputPlugin = createBasePlugin({
-  name: KEYS.slashInput,
+export const BaseSlashInputPlugin = defineBasePlugin(KEYS.slashInput, {
   schema: {
     element: {
       properties: {
@@ -41,14 +40,13 @@ const slashInitialState: SlashPluginState = {
   }),
 };
 
-export const BaseSlashPlugin = createBasePlugin({
-  name: KEYS.slashCommand,
+export const BaseSlashPlugin = defineBasePlugin(KEYS.slashCommand, {
   dependencies: [BaseSlashInputPlugin],
   initialState: slashInitialState,
 
   editOnly: true,
 }).extend(({ editor, plugin, store, type }) =>
-  createTriggerComboboxExtension({
+  triggerCombobox({
     editor,
     getState: () => store.get(),
     name: plugin.name,

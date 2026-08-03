@@ -25,7 +25,7 @@ describe('normalizeStaticValue', () => {
     const input = [
       {
         children: [{ text: 'Intro' }],
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [
@@ -33,10 +33,18 @@ describe('normalizeStaticValue', () => {
             children: [
               {
                 children: [
-                  { children: [{ text: 'A1' }], type: 'th' },
-                  { children: [{ text: 'B1' }], type: 'th' },
+                  {
+                    children: [{ text: 'A1' }],
+                    header: true,
+                    type: 'tableCell',
+                  },
+                  {
+                    children: [{ text: 'B1' }],
+                    header: true,
+                    type: 'tableCell',
+                  },
                 ],
-                type: 'tr',
+                type: 'tableRow',
               },
               {
                 children: [
@@ -52,11 +60,11 @@ describe('normalizeStaticValue', () => {
                         text: 'Cell',
                       },
                     ],
-                    type: 'td',
+                    type: 'tableCell',
                   },
-                  { children: [{ text: 'Other' }], type: 'td' },
+                  { children: [{ text: 'Other' }], type: 'tableCell' },
                 ],
-                type: 'tr',
+                type: 'tableRow',
               },
             ],
             type: 'tbody',
@@ -111,7 +119,7 @@ describe('normalizeStaticValue', () => {
                 text: 'Caption',
               },
             ],
-            type: 'p',
+            type: 'paragraph',
           },
         ],
       },

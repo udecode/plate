@@ -3,7 +3,6 @@ import { describe, it } from 'node:test';
 
 import {
   createEditor,
-  createEditorRuntime,
   createEditorView,
   type Element,
   type Text,
@@ -280,7 +279,7 @@ describe('state query contract', () => {
   });
 
   it('scopes node path lookup to root-bound views', () => {
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       initialValue: {
         children: [paragraph('body')],
         roots: {
@@ -306,7 +305,7 @@ describe('state query contract', () => {
   });
 
   it('scopes selection predicates to root-bound views', () => {
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       initialValue: {
         children: [paragraph('body')],
         roots: {

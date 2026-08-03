@@ -1,17 +1,16 @@
 import { createPlateEditor } from '@platejs/core/react';
 import { BaseParagraphPlugin } from '@platejs/core';
 import { BaseIndentPlugin } from '@platejs/indent';
-import { KEYS } from '@platejs/utils';
 
 import { TogglePlugin } from './TogglePlugin';
 
 describe('TogglePlugin', () => {
   const plugins = [
     BaseIndentPlugin.configure({
-      targetPluginNames: [BaseParagraphPlugin.name, TogglePlugin.name],
+      targetPlugins: [BaseParagraphPlugin, TogglePlugin],
     }),
     TogglePlugin,
-  ];
+  ] as const;
 
   it('inserts an indented paragraph inside an open toggle', () => {
     const editor = createPlateEditor({
@@ -22,8 +21,8 @@ describe('TogglePlugin', () => {
         focus: { offset: 6, path: [0, 0] },
       },
       initialValue: [
-        { children: [{ text: 'Toggle' }], id: 't1', type: KEYS.toggle },
-        { children: [{ text: 'after' }], type: KEYS.p },
+        { children: [{ text: 'Toggle' }], id: 't1', type: 'toggle' },
+        { children: [{ text: 'after' }], type: 'paragraph' },
       ],
     });
 
@@ -34,16 +33,16 @@ describe('TogglePlugin', () => {
       {
         children: [{ text: 'Toggle' }],
         id: 't1',
-        type: KEYS.toggle,
+        type: 'toggle',
       },
       {
         children: [{ text: '' }],
         indent: 1,
-        type: KEYS.p,
+        type: 'paragraph',
       },
       {
         children: [{ text: 'after' }],
-        type: KEYS.p,
+        type: 'paragraph',
       },
     ]);
   });
@@ -57,14 +56,14 @@ describe('TogglePlugin', () => {
         focus: { offset: 6, path: [0, 0] },
       },
       initialValue: [
-        { children: [{ text: 'Toggle' }], id: 't1', type: KEYS.toggle },
+        { children: [{ text: 'Toggle' }], id: 't1', type: 'toggle' },
         {
           children: [{ text: 'hidden child' }],
           id: 'p1',
           indent: 1,
-          type: KEYS.p,
+          type: 'paragraph',
         },
-        { children: [{ text: 'after' }], type: KEYS.p },
+        { children: [{ text: 'after' }], type: 'paragraph' },
       ],
     });
 
@@ -80,21 +79,21 @@ describe('TogglePlugin', () => {
       {
         children: [{ text: 'Toggle' }],
         id: 't1',
-        type: KEYS.toggle,
+        type: 'toggle',
       },
       {
         children: [{ text: 'hidden child' }],
         id: 'p1',
         indent: 1,
-        type: KEYS.p,
+        type: 'paragraph',
       },
       {
         children: [{ text: '' }],
-        type: KEYS.toggle,
+        type: 'toggle',
       },
       {
         children: [{ text: 'after' }],
-        type: KEYS.p,
+        type: 'paragraph',
       },
     ]);
   });
@@ -103,12 +102,12 @@ describe('TogglePlugin', () => {
     const editor = createPlateEditor({
       plugins,
       initialValue: [
-        { children: [{ text: 'Toggle' }], id: 't1', type: KEYS.toggle },
+        { children: [{ text: 'Toggle' }], id: 't1', type: 'toggle' },
         {
           children: [{ text: 'hidden child' }],
           id: 'p1',
           indent: 1,
-          type: KEYS.p,
+          type: 'paragraph',
         },
       ],
     });
@@ -147,14 +146,14 @@ describe('TogglePlugin', () => {
         focus: { offset: 0, path: [2, 0] },
       },
       initialValue: [
-        { children: [{ text: 'Toggle' }], id: 't1', type: KEYS.toggle },
+        { children: [{ text: 'Toggle' }], id: 't1', type: 'toggle' },
         {
           children: [{ text: 'hidden' }],
           id: 'p1',
           indent: 1,
-          type: KEYS.p,
+          type: 'paragraph',
         },
-        { children: [{ text: 'after' }], id: 'p2', type: KEYS.p },
+        { children: [{ text: 'after' }], id: 'p2', type: 'paragraph' },
       ],
     });
 
@@ -171,13 +170,13 @@ describe('TogglePlugin', () => {
       {
         children: [{ text: 'Toggleafter' }],
         id: 't1',
-        type: KEYS.toggle,
+        type: 'toggle',
       },
       {
         children: [{ text: 'hidden' }],
         id: 'p1',
         indent: 1,
-        type: KEYS.p,
+        type: 'paragraph',
       },
     ]);
   });
@@ -191,14 +190,14 @@ describe('TogglePlugin', () => {
         focus: { offset: 6, path: [0, 0] },
       },
       initialValue: [
-        { children: [{ text: 'Toggle' }], id: 't1', type: KEYS.toggle },
+        { children: [{ text: 'Toggle' }], id: 't1', type: 'toggle' },
         {
           children: [{ text: 'hidden' }],
           id: 'p1',
           indent: 1,
-          type: KEYS.p,
+          type: 'paragraph',
         },
-        { children: [{ text: 'after' }], id: 'p2', type: KEYS.p },
+        { children: [{ text: 'after' }], id: 'p2', type: 'paragraph' },
       ],
     });
 
@@ -215,24 +214,39 @@ describe('TogglePlugin', () => {
       {
         children: [{ text: 'Toggleafter' }],
         id: 't1',
-        type: KEYS.toggle,
+        type: 'toggle',
       },
       {
         children: [{ text: 'hidden' }],
         id: 'p1',
         indent: 1,
-        type: KEYS.p,
+        type: 'paragraph',
       },
     ]);
   });
 
   it('finds the last top-level entry enclosed by a toggle', () => {
     const value = [
-      { children: [{ text: 'toggle' }], id: 't1', type: KEYS.toggle },
-      { children: [{ text: 'one' }], id: 'p1', indent: 1, type: KEYS.p },
-      { children: [{ text: 'two' }], id: 'p2', indent: 1, type: KEYS.p },
-      { children: [{ text: 'three' }], id: 'p3', indent: 0, type: KEYS.p },
-    ];
+      { children: [{ text: 'toggle' }], id: 't1', type: 'toggle' },
+      {
+        children: [{ text: 'one' }],
+        id: 'p1',
+        indent: 1,
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'two' }],
+        id: 'p2',
+        indent: 1,
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'three' }],
+        id: 'p3',
+        indent: 0,
+        type: 'paragraph',
+      },
+    ] as const;
     const editor = createPlateEditor({ plugins, initialValue: value });
 
     expect(editor.plugin(TogglePlugin).read.lastEnclosedEntry('t1')).toEqual([
@@ -243,11 +257,26 @@ describe('TogglePlugin', () => {
 
   it('reads hidden ids and closed state from the toggle index', () => {
     const value = [
-      { children: [{ text: 'toggle' }], id: 't1', type: KEYS.toggle },
-      { children: [{ text: 'one' }], id: 'p1', indent: 1, type: KEYS.p },
-      { children: [{ text: 'two' }], id: 'p2', indent: 1, type: KEYS.p },
-      { children: [{ text: 'three' }], id: 'p3', indent: 0, type: KEYS.p },
-    ];
+      { children: [{ text: 'toggle' }], id: 't1', type: 'toggle' },
+      {
+        children: [{ text: 'one' }],
+        id: 'p1',
+        indent: 1,
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'two' }],
+        id: 'p2',
+        indent: 1,
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'three' }],
+        id: 'p3',
+        indent: 0,
+        type: 'paragraph',
+      },
+    ] as const;
     const editor = createPlateEditor({ plugins, initialValue: value });
     const toggle = editor.plugin(TogglePlugin);
 

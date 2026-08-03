@@ -35,14 +35,11 @@ import {
   withEditorRootChildrenGenerator,
   withEditorTargetRuntime,
 } from './core/public-state';
-import { createEditorUnchecked } from './create-editor';
 import type {
-  Editor,
+  AnyEditor as Editor,
   EditorAnchorApi,
   EditorCommitContext,
   EditorExtensionReference,
-  EditorRuntime,
-  EditorRuntimeOptions,
   EditorSelectionBlockOptions,
   EditorSelectionTargetOptions,
   EditorSnapshot,
@@ -517,7 +514,11 @@ const withViewTransaction = <V extends Value>(
               throw new Error('Editor view is not initialized.');
             }
 
-            return getEditorRuntime(viewEditor).runCommand(definition, input);
+            return Reflect.apply(
+              getEditorRuntime(viewEditor).runCommand,
+              getEditorRuntime(viewEditor),
+              [definition, input]
+            );
           }) as EditorUpdateTransaction<V>['command'],
         }
       : {}),
@@ -935,61 +936,25 @@ const createViewRuntime = <V extends Value>(
       withRootRead(editor, viewState, () => baseRuntime.void(...args)),
   });
 
-/** Create a root editor runtime around a new Plite editor. */
-export function createEditorRuntime<
-  const TExtensions extends readonly unknown[],
-  V extends Value = Value,
->(
-  options: EditorRuntimeOptions<V, TExtensions> & { extensions: TExtensions }
-): EditorRuntime<V, TExtensions>;
-
-export function createEditorRuntime<
-  V extends Value = Value,
-  const TExtensions extends readonly unknown[] = readonly [],
->(
-  options?: EditorRuntimeOptions<V, TExtensions>
-): EditorRuntime<V, TExtensions>;
-
-export function createEditorRuntime<
-  V extends Value = Value,
-  const TExtensions extends readonly unknown[] = readonly [],
->(
-  options: EditorRuntimeOptions<V, TExtensions> = {}
-): EditorRuntime<V, TExtensions> {
-  const editor = createEditorUnchecked(options);
-
-  return Object.freeze({
-    api: editor.api,
-    anchor: editor.anchor,
-    editor,
-    extension: editor.extension,
-    extend: editor.extend,
-    read: editor.read,
-    subscribe: editor.subscribe,
-    subscribeCommit: editor.subscribeCommit,
-    update: editor.update,
-  });
-}
-
-/** Create a root-scoped editor view from an existing runtime. */
+/** Create a root-scoped editor view from an existing editor. */
 export const createEditorView = <
   V extends Value,
   TExtensions extends readonly unknown[] = readonly [],
   const TRoot extends RootKey = RootKey,
 >(
-  runtime: EditorRuntime<V, TExtensions>,
+  sourceEditor: Editor<V, TExtensions>,
   options: EditorViewOptions<TRoot> = {}
 ): EditorView<V, TExtensions> => {
   const viewState: ViewState = {
-    composing: runtime.editor.read.view.isComposing(),
-    focused: runtime.editor.read.view.isFocused(),
+    composing: sourceEditor.read.view.isComposing(),
+    focused: sourceEditor.read.view.isFocused(),
     readOnly: options.readOnly ?? false,
     root: toInternalRoot(options.root),
   };
-  const baseRuntime = getEditorRuntime(runtime.editor);
+  const baseRuntime = getEditorRuntime(sourceEditor);
   let viewEditor: Editor<V> | null = null;
   const viewRuntime = createViewRuntime(
-    runtime.editor,
+    sourceEditor,
     baseRuntime,
     viewState,
     () => viewEditor
@@ -1013,21 +978,21 @@ export const createEditorView = <
     },
     {
       hasTxGroup: (groupName) =>
-        getExtensionRegistry(runtime.editor).txGroups.has(groupName),
+        getExtensionRegistry(sourceEditor).txGroups.has(groupName),
       repairValue: () => {
         if (viewState.readOnly) {
           throw new Error('Cannot update a read-only editor view.');
         }
 
-        runtime.editor.update.value.repair();
+        sourceEditor.update.value.repair();
       },
     }
   );
   const createViewAnchor: EditorAnchorApi = (value, anchorOptions) =>
-    runRootTransform(runtime.editor, viewState, () =>
-      runtime.editor.anchor(value, anchorOptions)
+    runRootTransform(sourceEditor, viewState, () =>
+      sourceEditor.anchor(value, anchorOptions)
     );
-  const extendView: EditorView<V, TExtensions>['extend'] = (
+  const installView: EditorView<V, TExtensions>['install'] = (
     extension,
     options
   ) => extendEditor(viewEditor!, extension, options);
@@ -1036,50 +1001,49 @@ export const createEditorView = <
 
   const view = {
     get api() {
-      return extensionApis?.api ?? runtime.editor.api;
+      return extensionApis?.api ?? sourceEditor.api;
     },
     anchor: createViewAnchor,
     blur: () => {
       viewState.focused = false;
     },
     get children() {
-      return runtime.editor.read((state) =>
+      return sourceEditor.read((state) =>
         viewState.root === MAIN_ROOT_KEY
           ? state.children()
           : state.root(viewState.root)
       );
     },
-    extend: extendView,
+    install: installView,
     focus: () => {
       viewState.focused = true;
     },
     extension: ((descriptor: EditorExtensionReference) =>
       (
-        (extensionApis?.extension ?? runtime.editor.extension) as unknown as (
+        (extensionApis?.extension ?? sourceEditor.extension) as unknown as (
           extension: EditorExtensionReference
         ) => Readonly<{ api: unknown }>
       )(descriptor)) as unknown as Editor<V, TExtensions>['extension'],
-    id: runtime.editor.id,
+    id: sourceEditor.id,
     read: viewRead,
     root: toPublicRoot(viewState.root) as NamedRootKey | undefined,
-    runtime,
     subscribe: viewRuntime.subscribe,
     subscribeCommit: viewRuntime.subscribeCommit,
     update: viewUpdate,
   };
 
-  viewEditor = view as unknown as typeof runtime.editor;
+  viewEditor = view as unknown as typeof sourceEditor;
 
   setEditorRuntime(
     viewEditor,
     viewRuntime,
-    getEditorRuntimeOwner(runtime.editor),
+    getEditorRuntimeOwner(sourceEditor),
     viewState.root
   );
-  inheritExtensionRegistry(viewEditor, runtime.editor);
+  inheritExtensionRegistry(viewEditor, sourceEditor);
   extensionApis = createEditorViewExtensionApis(
     viewEditor,
-    runtime.editor
+    sourceEditor
   ) as Pick<Editor<V, TExtensions>, 'api' | 'extension'>;
   return Object.freeze(view);
 };

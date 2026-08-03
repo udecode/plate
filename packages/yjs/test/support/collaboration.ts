@@ -20,7 +20,7 @@ import * as Y from 'yjs';
 import type { YjsNode } from '../../src/core/attributes';
 import { getYjsNode, readPliteValueFromYjs } from '../../src/core/document';
 import { getEditorYjsState, getEditorYjsTx } from '../../src/core/editor-yjs';
-import { createYjsExtension } from '../../src/core/extension';
+import { yjs } from '../../src/core/extension';
 import type {
   YjsAwarenessLike,
   YjsProviderLike,
@@ -96,8 +96,8 @@ export const createYjsPeerWithEditor = <TEditor extends TestEditor>(
     Y.applyUpdate(doc, seedUpdate);
   }
 
-  const cleanup = editor.extend(
-    createYjsExtension({
+  const cleanup = editor.install(
+    yjs({
       awareness,
       clientId,
       doc,

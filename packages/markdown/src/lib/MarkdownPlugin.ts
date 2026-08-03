@@ -3,7 +3,7 @@ import type { Pluggable } from 'unified';
 import {
   type BaseEditor,
   type DefinitionOf,
-  createBasePlugin,
+  defineBasePlugin,
 } from '@platejs/core';
 import type {
   Descendant,
@@ -66,7 +66,7 @@ const shouldParseMarkdown = (
   return true;
 };
 
-export const MarkdownPlugin = createBasePlugin({
+export const MarkdownPlugin = defineBasePlugin(KEYS.markdown, {
   codecs: ({ defineCodecs, editor, store }) => {
     const decode = (data: string, state: EditorCoreStateView) => {
       const document = deserializeMdWithRuntime(
@@ -97,7 +97,6 @@ export const MarkdownPlugin = createBasePlugin({
       },
     });
   },
-  name: KEYS.markdown,
   initialState: (): MarkdownPluginState => ({
     allowedNodes: null,
     disallowedNodes: null,

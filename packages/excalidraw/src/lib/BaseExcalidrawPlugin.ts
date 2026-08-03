@@ -1,13 +1,13 @@
 import type { ImportedDataState } from '@excalidraw/excalidraw/data/types';
 
-import { createBasePlugin } from '@platejs/core';
+import { defineBasePlugin } from '@platejs/core';
 import {
   type Element,
   type NodeInsertNodesOptions,
   type NodeProps,
   property,
 } from '@platejs/plite';
-import { KEYS } from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 
 export type ExcalidrawDataState = ImportedDataState;
 
@@ -22,8 +22,7 @@ export interface TExcalidrawElement extends Element {
 type ExcalidrawElementData = Exclude<TExcalidrawElement['data'], undefined>;
 
 /** Enables support for Excalidraw drawing tool within a Slate document */
-export const BaseExcalidrawPlugin = createBasePlugin({
-  name: KEYS.excalidraw,
+export const BaseExcalidrawPlugin = defineBasePlugin(PLUGINS.excalidraw, {
   schema: {
     element: {
       properties: {

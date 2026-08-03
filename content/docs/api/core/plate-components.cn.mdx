@@ -17,7 +17,7 @@ export function Editor() {
     initialValue: [
       {
         children: [{ text: "Start writing." }],
-        type: "p",
+        type: "paragraph",
       },
     ],
   });
@@ -46,7 +46,7 @@ import { PlateView, usePlateViewEditor } from "platejs/react";
 const value = [
   {
     children: [{ text: "Published content." }],
-    type: "p",
+    type: "paragraph",
   },
 ];
 
@@ -207,14 +207,14 @@ export function FigureElement({
     </APIItem>
     <APIItem
       name="onNodeChange"
-      type="({ editor, node, operation, prevNode }) => void"
+      type="({ editor, node, operation, previousNode }) => void"
       optional
     >
       在 `Plate` provider 的生命周期内观察规范化节点变更。
     </APIItem>
     <APIItem
       name="onTextChange"
-      type="({ editor, node, operation, prevText, text }) => void"
+      type="({ editor, node, operation, previousText, text }) => void"
       optional
     >
       在 `Plate` provider 的生命周期内观察规范化文本变更。

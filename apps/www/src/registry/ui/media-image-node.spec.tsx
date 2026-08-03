@@ -1,5 +1,7 @@
 import * as React from 'react';
 
+import * as actualCoreReact from '@platejs/core/react';
+import * as actualMediaReact from '@platejs/media/react';
 import { render } from '@testing-library/react';
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
@@ -13,10 +15,11 @@ mock.module('@platejs/dnd', () => ({
 }));
 
 mock.module('@platejs/media/react', () => ({
+  ...actualMediaReact,
   Image: ({ className }: React.ComponentProps<'img'>) => (
     <img className={className} data-testid="image" alt="" />
   ),
-  ImagePlugin: { name: 'img' },
+  ImagePlugin: { name: 'image' },
   useMediaState: useMediaStateMock,
 }));
 
@@ -26,17 +29,19 @@ mock.module('@platejs/resizable', () => ({
 }));
 
 mock.module('platejs/react', () => ({
+  ...actualCoreReact,
   PlateElement: ({ children }: React.PropsWithChildren) => (
     <div data-testid="plate-element">{children}</div>
   ),
   useEditor: () => ({
+    plugin: () => ({ update: { setWidth: () => {} } }),
     read: { selection: selectionMock },
   }),
   useEditorMounted: () => true,
   useEditorReadOnly: () => false,
   useEditorSelector: (selector: (editor: unknown) => unknown) =>
     useEditorSelectorMock(selector),
-  useElement: () => ({ children: [{ text: '' }], type: 'img' }),
+  useElement: () => ({ children: [{ text: '' }], type: 'image' }),
   withHOC: (_Provider: unknown, Component: React.ComponentType) => Component,
 }));
 
@@ -60,6 +65,7 @@ mock.module('./resize-handle', () => ({
   mediaResizeHandleVariants: () => '',
   Resizable: ({ children }: React.PropsWithChildren) => <div>{children}</div>,
   ResizeHandle: () => null,
+  withResizableProvider: (Component: React.ComponentType) => Component,
 }));
 
 describe('ImageElement', () => {
@@ -82,10 +88,10 @@ describe('ImageElement', () => {
       const selection = selectionMock();
 
       return {
-        align: 'center',
         focused: true,
         readOnly: false,
         selected: selection?.kind === 'node' && selection.path?.[0] === 0,
+        textAlign: 'center',
       };
     });
   });
@@ -103,7 +109,7 @@ describe('ImageElement', () => {
       <ImageElement
         attributes={{}}
         editor={{ read: { selection: selectionMock } } as any}
-        element={{ children: [{ text: '' }], type: 'img', url: '/image.png' }}
+        element={{ children: [{ text: '' }], type: 'image', url: '/image.png' }}
         path={[0]}
         slots={
           {

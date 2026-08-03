@@ -1,11 +1,11 @@
-import { type DefinitionOf, createBasePlugin } from '@platejs/core';
+import { type DefinitionOf, defineBasePlugin } from '@platejs/core';
 import {
   pipePreparedInsertDataQuery,
   prepareHtmlRegistry,
 } from '@platejs/core/internal';
 import { PathApi, property, schema } from '@platejs/plite';
 import { clipboardHandler } from '@platejs/plite-dom';
-import { KEYS } from '@platejs/utils';
+import { KEYS, NODES } from '@platejs/utils';
 import { isUrl } from '@udecode/utils';
 
 import {
@@ -30,8 +30,8 @@ export type ImagePluginState = {
 const initialState: ImagePluginState = {};
 
 /** Enables support for images. */
-export const BaseImagePlugin = createBasePlugin({
-  name: KEYS.img,
+export const BaseImagePlugin = defineBasePlugin(KEYS.img, {
+  type: NODES.img,
   initialState,
   schema: {
     element: schema.element.textBlock({
@@ -314,7 +314,7 @@ export const BaseImagePlugin = createBasePlugin({
     return {
       contributions: [
         clipboardHandler({
-          insertData(dataTransfer, { next, transaction: tx }) {
+          insertData(dataTransfer, { next, tx }) {
             const format = 'text/plain';
             const text = dataTransfer.getData(format);
             const imageExtension = isUrl(text)
@@ -326,7 +326,7 @@ export const BaseImagePlugin = createBasePlugin({
               imageExtension &&
               imageExtensions.has(imageExtension)
             ) {
-              if (!tx.img.insert({ url: text })) {
+              if (!tx.image.insert({ url: text })) {
                 return next(dataTransfer);
               }
 

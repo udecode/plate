@@ -1,8 +1,8 @@
 import { property, schema, target } from '@platejs/plite';
 
 import { createBaseEditor } from '../../lib/editor';
-import { createBasePlugin } from '../../lib/plugin';
-import { createPlatePlugin, toPlatePlugin } from '../../react/plugin';
+import { defineBasePlugin } from '../../lib/plugin';
+import { definePlatePlugin, toPlatePlugin } from '../../react/plugin';
 import {
   isNominalPluginDescriptor,
   isNominalPluginReference,
@@ -10,7 +10,6 @@ import {
 
 type NominalPluginOutput = Readonly<{
   name: string;
-  type: string;
 }>;
 
 const expectReusableReference = (plugin: NominalPluginOutput) => {
@@ -19,26 +18,22 @@ const expectReusableReference = (plugin: NominalPluginOutput) => {
 };
 
 describe('plugin references', () => {
-  it('preserves document type identity through terminal configuration', () => {
-    const TargetPlugin = createBasePlugin({
-      name: 'configuredReferenceTarget',
-      type: 'configured-reference-type',
-    });
+  it('preserves identity through terminal configuration', () => {
+    const TargetPlugin = defineBasePlugin('configuredReferenceTarget', {});
     const ConfiguredTargetPlugin = TargetPlugin.configure({
       enabled: true,
     });
 
     const editor = createBaseEditor({ plugins: [ConfiguredTargetPlugin] });
 
-    expect(editor.plugin(ConfiguredTargetPlugin).plugin.type).toBe(
-      'configured-reference-type'
+    expect(editor.plugin(ConfiguredTargetPlugin).name).toBe(
+      'configuredReferenceTarget'
     );
     expect(isNominalPluginReference(ConfiguredTargetPlugin)).toBe(true);
   });
 
   it('keeps every public factory and method result nominal', () => {
-    const BasePlugin = createBasePlugin({
-      name: 'baseReference',
+    const BasePlugin = defineBasePlugin('baseReference', {
       initialState: { nested: { value: 1 } },
     });
     const baseOutputs: NominalPluginOutput[] = [
@@ -54,8 +49,7 @@ describe('plugin references', () => {
     ];
     const PlatePlugin = toPlatePlugin(BasePlugin);
     const plateOutputs: NominalPluginOutput[] = [
-      createPlatePlugin({
-        name: 'plateReference',
+      definePlatePlugin('plateReference', {
         initialState: { nested: { value: 1 } },
       }),
       PlatePlugin,
@@ -78,26 +72,22 @@ describe('plugin references', () => {
   });
 
   it('accepts genuine state references and rejects spread-forged identities', () => {
-    const TargetPlugin = createBasePlugin({
-      name: 'referenceTarget',
+    const TargetPlugin = defineBasePlugin('referenceTarget', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
         },
       },
-      type: 'reference-target',
     });
-    const OwnerPlugin = createBasePlugin({
-      name: 'referenceOwner',
+    const OwnerPlugin = defineBasePlugin('referenceOwner', {
       initialState: { target: TargetPlugin },
-      schema: ({ initialState, own, plugins }) => ({
-        properties: [
-          own.elementProperty(property.string(), {
-            target: target.type(plugins.elementType(initialState.target)),
+      schema: ({ initialState }) => ({
+        properties: {
+          referenceOwner: schema.elementProperty(property.string(), {
+            target: target.element(initialState.target),
           }),
-        ],
+        },
       }),
-      type: 'reference-owner',
     });
 
     expect(OwnerPlugin.initialState.target).toBe(TargetPlugin);
@@ -106,17 +96,15 @@ describe('plugin references', () => {
     ).not.toThrow();
 
     const forgedReference = { ...TargetPlugin };
-    const ForgedOwnerPlugin = createBasePlugin({
-      name: 'forgedReferenceOwner',
+    const ForgedOwnerPlugin = defineBasePlugin('forgedReferenceOwner', {
       initialState: { target: forgedReference },
-      schema: ({ initialState, own, plugins }) => ({
-        properties: [
-          own.elementProperty(property.string(), {
-            target: target.type(plugins.elementType(initialState.target)),
+      schema: ({ initialState }) => ({
+        properties: {
+          forgedReferenceOwner: schema.elementProperty(property.string(), {
+            target: target.element(initialState.target),
           }),
-        ],
+        },
       }),
-      type: 'forged-reference-owner',
     });
 
     expect(isNominalPluginReference(forgedReference)).toBe(false);

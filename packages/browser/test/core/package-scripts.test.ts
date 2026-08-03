@@ -17,8 +17,10 @@ const expectedPliteBrowserRuntimeSubpathExports = {
     'PLITE_BROWSER_FIRST_PARTY_INTENT_FAMILY_CONTRACTS',
     'PLITE_BROWSER_FIRST_PARTY_PARITY_FAMILIES',
     'PLITE_BROWSER_RELEASE_DISCIPLINE_GUARDS',
+    'PLITE_RAW_MOBILE_SCENARIOS',
     'assertPliteBrowserFirstPartyParityContracts',
     'assertPliteBrowserReleaseProof',
+    'assertPliteRawMobileProof',
     'classifyBrowserMobileTransportProof',
     'createBrowserMobileReleaseProofArtifact',
     'createPersistentBrowserSoakProofArtifact',
@@ -36,6 +38,7 @@ const expectedPliteBrowserRuntimeSubpathExports = {
     'serializePoint',
     'serializeRange',
     'validatePliteBrowserReleaseProof',
+    'validatePliteRawMobileProof',
   ],
   playwright: [
     'assertNoIllegalKernelTransitions',

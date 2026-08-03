@@ -107,10 +107,10 @@ test('rejects incomplete inline identities', () => {
 test('requires explicit content for non-void plugin elements', () => {
   const source = [
     '```ts',
-    "createBasePlugin({ name: 'p', schema: { element: {} } });",
-    "createBasePlugin({ name: 'link', schema: { element: { inline: true } } });",
-    "defineEditorExtension({ name: 'quote', schema: { elements: { quote: {} } } });",
-    "defineEditorSchema({ id: 'app', version: 1, elements: { paragraph: {} } });",
+    "defineBasePlugin('p', {schema: { element: {} } });",
+    "defineBasePlugin('link', {schema: { element: { inline: true } } });",
+    "defineExtension('quote', {schema: { elements: { quote: {} } } });",
+    `defineEditorSchema('schema:app', { id: 'app', version: 1, elements: { paragraph: {} } });`,
     '```',
   ].join('\n');
 
@@ -125,13 +125,13 @@ test('requires explicit content for non-void plugin elements', () => {
 test('accepts explicit content, void elements, and configured partial schemas', () => {
   const source = [
     '```ts',
-    "createBasePlugin({ name: 'p', schema: { element: { content: schema.content.text() } } });",
-    "createBasePlugin({ name: 'hr', schema: { element: { void: 'block' } } });",
+    "defineBasePlugin('p', {schema: { element: { content: schema.content.text() } } });",
+    "defineBasePlugin('hr', {schema: { element: { void: 'block' } } });",
     'ParagraphPlugin.configure({ schema: { element: { properties: { id: property.string() } } } });',
-    "defineEditorExtension({ name: 'paragraph', schema: { elements: { paragraph: { content: schema.content.text() } } } });",
-    "defineEditorSchema({ id: 'app', version: 1, elements: { horizontalRule: { void: true } } });",
-    "defineEditorExtension({ name: 'dynamic', schema: { elements } });",
-    "defineEditorExtension({ name: 'spread', schema: { elements: { paragraph: { ...definition } } } });",
+    "defineExtension('paragraph', {schema: { elements: { paragraph: { content: schema.content.text() } } } });",
+    `defineEditorSchema('schema:app', { id: 'app', version: 1, elements: { horizontalRule: { void: true } } });`,
+    "defineExtension('dynamic', {schema: { elements } });",
+    "defineExtension('spread', {schema: { elements: { paragraph: { ...definition } } } });",
     '```',
   ].join('\n');
 
@@ -228,21 +228,21 @@ test('rejects deleted plugin builders in docs', () => {
 test('accepts the full independent plugin declaration vocabulary in docs', () => {
   const accepted = [
     '```ts',
-    "createBasePlugin({ api: () => ({}), commands: () => [], name: 'p', on: {}, read: () => ({}), readMiddleware: () => [], render: { leaf: Leaf }, selectors: {}, update: () => ({}) });",
-    "createPlatePlugin({ component: ParagraphElement, name: 'p' });",
-    "createBasePlugin({ name: 'p', ...behavior });",
+    "defineBasePlugin('p', { api: () => ({}), commands: () => [],on: {}, read: () => ({}), readMiddleware: () => [], render: { leaf: Leaf }, selectors: {}, update: () => ({}) });",
+    "definePlatePlugin('p', { component: ParagraphElement, });",
+    "defineBasePlugin('p', {...behavior });",
     '```',
   ].join('\n');
   const rejected = [
     '```ts',
-    "createBasePlugin({ component: ParagraphElement, name: 'p' });",
+    "defineBasePlugin('p', { component: ParagraphElement, });",
     '```',
   ].join('\n');
 
   assert.deepEqual(auditPlateDocCode(accepted), []);
   assert.equal(
     auditPlateDocCode(rejected).filter((issue) =>
-      issue.reason.includes('only in createPlatePlugin')
+      issue.reason.includes('only in definePlatePlugin')
     ).length,
     1
   );
@@ -275,10 +275,10 @@ test('requires the sole one-argument clipboard contribution form', () => {
 test('rejects deleted Plate and Plite definition fields in docs', () => {
   const source = [
     '```ts',
-    "createBasePlugin({ clipboard: {}, config: {}, extension: {}, handlers: {}, name: 'p', pluginApi: {}, targetPluginKeys: [], tx: {}, validateConfiguration() {} });",
-    "defineEditorExtension({ config: {}, name: 'raw', state: {}, tx: {}, validateConfiguration() {} });",
-    'defineEditorExtension<Editor>()({ name: "typed" });',
-    'createBasePlugin<Definition>({ name: "typedPlate" });',
+    "defineBasePlugin('p', { clipboard: {}, config: {}, extension: {}, handlers: {},pluginApi: {}, targetPluginKeys: [], tx: {}, validateConfiguration() {} });",
+    "defineExtension('raw', { config: {},state: {}, tx: {}, validateConfiguration() {} });",
+    'defineExtension<Editor>("typed", {});',
+    'defineBasePlugin<Definition>("typedPlate", {});',
     'editor.getApi(RawExtension).run();',
     'service.getApi();',
     '```',
@@ -313,18 +313,18 @@ test('rejects deleted Plate and Plite definition fields in docs', () => {
 test('audits aliased Plite factories and resolved author objects in docs', () => {
   const source = [
     '```ts',
-    'const directAlias = defineEditorExtension;',
-    "directAlias({ config: {}, name: 'a' });",
-    "import { defineEditorExtension as importedAlias } from '@platejs/plite';",
-    "importedAlias({ name: 'b', state: {} });",
-    'const { defineEditorExtension: destructuredAlias } = Plite;',
-    "destructuredAlias({ name: 'c', tx: {} });",
-    "Plite.defineEditorExtension({ name: 'd', validateConfiguration() {} });",
-    "directAlias<Definition>({ name: 'typed' });",
-    "importedAlias({ api: {}, name: 'static-api' });",
-    "destructuredAlias({ api: (editor, context) => ({ editor, context }), name: 'arity' });",
-    "const stale = { handlers: {} }; createBasePlugin({ name: 'plate', ...stale });",
-    "const on = { onKeyDown() {} }; createPlatePlugin({ name: 'events', on });",
+    'const directAlias = defineExtension;',
+    "directAlias('a', { config: {} });",
+    "import { defineExtension as importedAlias } from '@platejs/plite';",
+    "importedAlias('b', { state: {} });",
+    'const { defineExtension: destructuredAlias } = Plite;',
+    "destructuredAlias('c', { tx: {} });",
+    "Plite.defineExtension('d', {validateConfiguration() {} });",
+    "directAlias<Definition>('typed', {});",
+    "importedAlias('static-api', { api: {} });",
+    "destructuredAlias('arity', { api: (editor, context) => ({ editor, context }) });",
+    "const stale = { handlers: {} }; defineBasePlugin('plate', {...stale });",
+    "const on = { onKeyDown() {} }; definePlatePlugin('events', {on });",
     '```',
   ].join('\n');
   const issues = auditPlateDocCode(source);
@@ -368,8 +368,7 @@ test('audits aliased Plite factories and resolved author objects in docs', () =>
 test('rejects config only in Plite callback contexts in docs', () => {
   const source = [
     '```ts',
-    'defineEditorExtension({',
-    "  name: 'contexts',",
+    "defineExtension('contexts', {",
     '  schema: ({ config }) => ({}),',
     '  api: ({ config }) => ({}),',
     '  activate(editor, { config }) {},',
@@ -392,7 +391,7 @@ test('rejects config only in Plite callback contexts in docs', () => {
 test('rejects stale names only in capability factory contexts in docs', () => {
   const source = [
     '```ts',
-    "createBasePlugin({ name: 'legacy', read: ({ editorReads }) => ({ value: () => editorReads.value() }) });",
+    "defineBasePlugin('legacy', {read: ({ editorReads }) => ({ value: () => editorReads.value() }) });",
     'const inspect = ({ editorReads }) => editorReads;',
     '```',
   ].join('\n');
@@ -427,22 +426,22 @@ test('rejects only proven API root merges in docs', () => {
 test('requires API factories and keeps API out of consumer configuration', () => {
   const rejected = [
     '```ts',
-    "createBasePlugin({ api: {}, name: 'base' });",
-    "createPlatePlugin({ api: {}, name: 'react' });",
-    "defineEditorExtension({ api: {}, name: 'raw' });",
+    "defineBasePlugin('base', { api: {}, });",
+    "definePlatePlugin('react', { api: {}, });",
+    "defineExtension('raw', { api: {}, });",
     'Plugin.extend({ api: {} });',
     'Plugin.configure({ api: () => ({}) });',
-    "createBasePlugin({ name: 'groups', read: {}, update: {} });",
-    "defineEditorExtension({ commands: {}, name: 'middleware', readMiddleware: {} });",
-    "createBasePlugin({ api: (editor, store) => ({ editor, store }), name: 'twoPlateContexts' });",
-    "defineEditorExtension({ api: (editor, context) => ({ editor, context }), name: 'twoPliteContexts' });",
+    "defineBasePlugin('groups', {read: {}, update: {} });",
+    "defineExtension('middleware', { commands: {},readMiddleware: {} });",
+    "defineBasePlugin('twoPlateContexts', { api: (editor, store) => ({ editor, store }), });",
+    "defineExtension('twoPliteContexts', { api: (editor, context) => ({ editor, context }), });",
     '```',
   ].join('\n');
   const accepted = [
     '```ts',
-    "createBasePlugin({ api: () => ({}), name: 'base', read: () => ({}), update: () => ({}) });",
-    "createPlatePlugin({ api() { return {}; }, name: 'react' });",
-    "defineEditorExtension({ api: ({ editor, getContributions, root }) => ({ editor, getContributions, root }), commands: () => [], name: 'raw', readMiddleware: () => [] });",
+    "defineBasePlugin('base', { api: () => ({}),read: () => ({}), update: () => ({}) });",
+    "definePlatePlugin('react', { api() { return {}; }, });",
+    "defineExtension('raw', { api: ({ editor, getContributions, root }) => ({ editor, getContributions, root }), commands: () => [],readMiddleware: () => [] });",
     'Plugin.extend({ api: () => ({}) });',
     '```',
   ].join('\n');
@@ -597,8 +596,8 @@ test('requires context-bound codec declarations in docs', () => {
   ].join('\n');
   const accepted = [
     '```ts',
-    `createBasePlugin({ name: 'p', codecs: ({ defineCodecs }) => defineCodecs({ 'text/html': rule }) });`,
-    `createPlatePlugin({ name: 'p', codecs: ({ defineCodecs }) => defineCodecs(TargetPlugin, { 'text/html': rule }) });`,
+    `defineBasePlugin('p', {codecs: ({ defineCodecs }) => defineCodecs({ 'text/html': rule }) });`,
+    `definePlatePlugin('p', {codecs: ({ defineCodecs }) => defineCodecs(TargetPlugin, { 'text/html': rule }) });`,
     `Plugin.extend(({ defineCodecs }) => ({ codecs: defineCodecs({ 'text/html': rule }) }));`,
     `Plugin.extend(({ defineCodecs }) => ({ codecs: defineCodecs(TargetPlugin, { 'text/html': rule }) }));`,
     '```',
@@ -616,14 +615,14 @@ test('requires context-bound codec declarations in docs', () => {
 test('requires root-level component for plugin node components in docs', () => {
   const rejected = [
     '```tsx',
-    "createPlatePlugin({ name: 'p', render: { node: ParagraphElement } });",
+    "definePlatePlugin('p', {render: { node: ParagraphElement } });",
     'ParagraphPlugin.extend({ render: { node: ParagraphElement } });',
     'ParagraphPlugin.configure({ render: { node: ParagraphElement } });',
     '```',
   ].join('\n');
   const accepted = [
     '```tsx',
-    "createPlatePlugin({ component: ParagraphElement, name: 'p' });",
+    "definePlatePlugin('p', { component: ParagraphElement, });",
     'ParagraphPlugin.configure({ component: ParagraphElement });',
     'toPlatePlugin(BaseParagraphPlugin).configure({ component: ParagraphElement });',
     'ParagraphPlugin.extend({ render: { leaf: Leaf, aboveNodes } });',

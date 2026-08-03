@@ -11,11 +11,11 @@ describe('commonmark package surfaces', () => {
             { text: 'Visit ' },
             {
               children: [{ text: 'Plate' }],
-              type: 'a',
+              type: 'link',
               url: 'https://platejs.org',
             },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
       title: 'round-trips inline links through the markdown package surfaces',
@@ -28,11 +28,11 @@ describe('commonmark package surfaces', () => {
           children: [
             {
               children: [{ text: 'Plate' }],
-              type: 'a',
+              type: 'link',
               url: 'https://platejs.org',
             },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
       title:
@@ -80,7 +80,7 @@ describe('commonmark package surfaces', () => {
       alt,
       children: [{ text: '' }],
       ...(imageTitle ? { title: imageTitle } : {}),
-      type: 'img',
+      type: 'image',
       url: '/image.png',
     });
     expect(document).not.toHaveProperty('roots');
@@ -109,7 +109,7 @@ describe('commonmark package surfaces', () => {
         {
           alt,
           children: [{ text: caption }],
-          type: 'img',
+          type: 'image',
           url: '/image.png',
         },
       ],
@@ -137,7 +137,7 @@ describe('commonmark package surfaces', () => {
             { code: true, text: 'code' },
             { text: '.' },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
       title: 'round-trips mixed bold italic and inline code marks',
@@ -148,7 +148,7 @@ describe('commonmark package surfaces', () => {
       output: [
         {
           children: [{ strikethrough: true, text: 'strike' }],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
       title: 'round-trips strikethrough marks',
@@ -159,7 +159,7 @@ describe('commonmark package surfaces', () => {
       output: [
         {
           children: [{ bold: true, text: 'padded' }, { text: ' text' }],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
       title: 'round-trips bold marks at the start of a paragraph',
@@ -187,7 +187,7 @@ describe('commonmark package surfaces', () => {
     expect(value.children).toMatchObject([
       {
         children: [{ text: 'alpha' }, { text: '\n' }, { text: 'beta' }],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
 
@@ -207,7 +207,7 @@ describe('commonmark package surfaces', () => {
               text: 'Text followed by two empty lines\n\n\nFollowed by more text.',
             },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     };
@@ -226,7 +226,7 @@ describe('commonmark package surfaces', () => {
           { text: '\n' },
           { text: 'Followed by more text.' },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
   });
@@ -240,7 +240,7 @@ describe('commonmark package surfaces', () => {
           children: [
             {
               children: [{ text: 'alpha\n' }],
-              type: 'p',
+              type: 'paragraph',
             },
           ],
         },
@@ -278,7 +278,7 @@ describe('commonmark package surfaces', () => {
             children: [
               {
                 children: [{ text: 'inner' }, { text: '\n' }, { text: 'tail' }],
-                type: 'p',
+                type: 'paragraph',
               },
             ],
             type: 'blockquote',

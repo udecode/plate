@@ -9,7 +9,7 @@ import {
   getChildren as editorGetChildren,
   isBlock as editorIsBlock,
 } from '../interfaces/editor';
-import type { Editor } from '../interfaces/editor';
+import type { AnyEditor as Editor } from '../interfaces/editor';
 import { type Path, PathApi } from '../interfaces/path';
 import type { NodeMutationMethods } from '../interfaces/transforms/node';
 import { deselect, select } from '../transforms-selection';

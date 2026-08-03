@@ -34,7 +34,7 @@ const packageDirectoryByName = new Map([
   ['@platejs/plite-react', 'plite-react'],
 ]);
 
-const blockVoidSchema = defineEditorSchema({
+const blockVoidSchema = defineEditorSchema('schema:react-surface-block-void', {
   elements: { image: { void: 'block' } },
   id: 'react-surface-block-void',
   root: schema.content.not(schema.content.text()),
@@ -42,26 +42,32 @@ const blockVoidSchema = defineEditorSchema({
   version: 1,
 });
 
-const editableIslandSchema = defineEditorSchema({
-  elements: {
-    'editable-card': {
-      content: schema.content.open(),
-      void: 'editable-island',
+const editableIslandSchema = defineEditorSchema(
+  'schema:react-surface-editable-island',
+  {
+    elements: {
+      'editable-card': {
+        content: schema.content.open(),
+        void: 'editable-island',
+      },
     },
-  },
-  id: 'react-surface-editable-island',
-  root: schema.content.not(schema.content.text()),
-  unknown: 'preserve',
-  version: 1,
-});
+    id: 'react-surface-editable-island',
+    root: schema.content.not(schema.content.text()),
+    unknown: 'preserve',
+    version: 1,
+  }
+);
 
-const inlineVoidSchema = defineEditorSchema({
-  elements: { mention: { void: 'inline' } },
-  id: 'react-surface-inline-void',
-  root: schema.content.not(schema.content.text()),
-  unknown: 'preserve',
-  version: 1,
-});
+const inlineVoidSchema = defineEditorSchema(
+  'schema:react-surface-inline-void',
+  {
+    elements: { mention: { void: 'inline' } },
+    id: 'react-surface-inline-void',
+    root: schema.content.not(schema.content.text()),
+    unknown: 'preserve',
+    version: 1,
+  }
+);
 
 const readRepoFileIfExists = (file: string) => {
   const absolutePath = resolve(repoRoot, file);
@@ -1669,12 +1675,12 @@ describe('plite-react surface contract', () => {
         'utf8'
       );
 
-      expect(projectedCommandContract).toMatch(/\bdefineEditorExtension\b/);
+      expect(projectedCommandContract).toMatch(/\bdefineExtension\b/);
       expect(projectedCommandContract).toMatch(/\btx\./);
       return;
     }
 
-    expect(tables).toMatch(/\bdefineEditorExtension\b/);
+    expect(tables).toMatch(/\bdefineExtension\b/);
     expect(tables).toMatch(/\bdeleteBackward\(\{ next, tx, unit \}\)/);
     expect(tables).toMatch(/\bdeleteForward\(\{ next, tx, unit \}\)/);
     expect(tables).toMatch(/\binsertBreak\(\{ next, tx \}\)/);
@@ -1767,7 +1773,7 @@ describe('plite-react surface contract', () => {
       ],
     }) as ReactRuntimeEditor;
 
-    editor.extend(blockVoidSchema);
+    editor.install(blockVoidSchema);
 
     const rendered = render(
       <Plite editor={editor}>
@@ -2069,7 +2075,7 @@ describe('plite-react surface contract', () => {
       <p>{children}</p>
     ));
 
-    editor.extend(blockVoidSchema);
+    editor.install(blockVoidSchema);
 
     const renderVoid = (props: RenderVoidProps) => {
       renderVoidProps = props;
@@ -2120,7 +2126,7 @@ describe('plite-react surface contract', () => {
       )
     );
 
-    editor.extend(blockVoidSchema);
+    editor.install(blockVoidSchema);
 
     const rendered = render(
       <Plite editor={editor}>
@@ -2146,7 +2152,7 @@ describe('plite-react surface contract', () => {
       ],
     }) as ReactRuntimeEditor;
 
-    editor.extend(editableIslandSchema);
+    editor.install(editableIslandSchema);
 
     const rendered = render(
       <Plite editor={editor}>

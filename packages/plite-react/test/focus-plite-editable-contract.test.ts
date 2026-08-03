@@ -1,5 +1,5 @@
 import {
-  defineEditorExtension,
+  defineExtension,
   defineValueCodec,
   type Range,
   SelectionApi,
@@ -51,8 +51,7 @@ const isFocusProjectionSelection = (
   selection.kind === 'focus-projection' &&
   typeof (selection as FocusProjectionSelection).modelOnly === 'boolean';
 
-const FocusProjectionExtension = defineEditorExtension({
-  name: 'focus-projection-selection',
+const FocusProjectionExtension = defineExtension('focus-projection-selection', {
   selectionKinds: [
     {
       codec: defineValueCodec<FocusProjectionSelection>({

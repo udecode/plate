@@ -1,4 +1,4 @@
-import type { TCommentText } from '@platejs/utils';
+import type { CommentText } from './BaseCommentPlugin';
 
 import { getCommentCount, getCommentKeys } from './commentMarks';
 
@@ -9,7 +9,7 @@ const comment = {
   comment_beta: true,
   comment_draft: true,
   text: 'hello',
-} satisfies TCommentText;
+} satisfies CommentText;
 
 describe('comment marks', () => {
   it('returns only comment-prefixed keys in insertion order', () => {

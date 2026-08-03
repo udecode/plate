@@ -2,7 +2,7 @@ import React from 'react';
 
 import { renderHook } from '@testing-library/react';
 
-import { createBasePlugin } from '../../lib';
+import { defineBasePlugin } from '../../lib';
 import { TestPlate as Plate } from '../__tests__/TestPlate';
 import { createPlateEditor } from '../editor';
 import { useEditableProps } from './useEditableProps';
@@ -14,8 +14,7 @@ describe('useEditableProps', () => {
 
       const editor = createPlateEditor({
         plugins: [
-          createBasePlugin({
-            name: 'a',
+          defineBasePlugin('a', {
             decorate: () => {
               decorate();
 

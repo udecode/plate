@@ -5,33 +5,33 @@ import { createStaticEditor } from './create-static-editor';
 
 const representableValue: Value = [
   {
-    align: 'right',
+    textAlign: 'right',
     children: [
       { bold: true, text: 'Plate ' },
       {
         children: [{ text: 'link' }],
         target: '_blank',
-        type: 'a',
+        type: 'link',
         url: 'https://platejs.org/',
       },
       { text: ' end' },
     ],
     indent: 1,
     lineHeight: 2,
-    type: 'p',
+    type: 'paragraph',
   },
   {
-    align: 'justify',
+    textAlign: 'justify',
     children: [{ text: 'Second paragraph' }],
     indent: 2,
     lineHeight: 3,
-    type: 'p',
+    type: 'paragraph',
   },
   {
     children: [
       {
         children: [{ text: 'Quoted paragraph' }],
-        type: 'p',
+        type: 'paragraph',
       },
     ],
     type: 'blockquote',

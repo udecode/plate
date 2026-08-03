@@ -4,7 +4,7 @@ import { DOMEditor } from '@platejs/plite-dom/internal';
 import { createBaseEditor } from '../../editor';
 import { DOMPlugin } from './DOMPlugin';
 
-const value = [{ children: [{ text: '' }], type: 'p' }];
+const value = [{ children: [{ text: '' }], type: 'paragraph' }] as const;
 
 describe('DOMPlugin', () => {
   afterEach(() => {
@@ -90,7 +90,7 @@ describe('DOMPlugin', () => {
     editor.update((tx) => {
       tx.dom.autoScroll((scrollTx) => {
         scrollTx.nodes.insert(
-          { children: [{ text: '' }], type: 'p' },
+          { children: [{ text: '' }], type: 'paragraph' },
           { at: [1] }
         );
       });
@@ -113,8 +113,8 @@ describe('DOMPlugin', () => {
         focus: { offset: 0, path: [0, 0] },
       },
       initialValue: [
-        { children: [{ text: '' }], type: 'p' },
-        { children: [{ text: '' }], type: 'p' },
+        { children: [{ text: '' }], type: 'paragraph' },
+        { children: [{ text: '' }], type: 'paragraph' },
       ],
     });
     editor.update((tx) => {
@@ -131,9 +131,9 @@ describe('DOMPlugin', () => {
 
   it('scrolls the exact target of a classification-free change', () => {
     const twoBlocks = [
-      { children: [{ text: '' }], type: 'p' },
-      { children: [{ text: '' }], type: 'p' },
-    ];
+      { children: [{ text: '' }], type: 'paragraph' },
+      { children: [{ text: '' }], type: 'paragraph' },
+    ] as const;
     const source = createBaseEditor({
       initialValue: twoBlocks,
     });

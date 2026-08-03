@@ -1,6 +1,5 @@
 /** @jsx jsxt */
 
-import { ParagraphPlugin } from '@platejs/core/react';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { normalizeRoot } from './__tests__/normalizeRoot';
@@ -30,7 +29,7 @@ describe('NormalizeTypesPlugin', () => {
       ) as TestEditor,
       rules: [
         { path: [0, 0], strictType: 'h1' },
-        { path: [0, 1], type: ParagraphPlugin.name },
+        { path: [0, 1], type: 'paragraph' },
       ],
       title: 'inserts missing nodes for configured paths',
     },
@@ -129,12 +128,12 @@ describe('NormalizeTypesPlugin', () => {
           },
         }),
       ],
-      value: [{ children: [{ text: 'x' }], type: 'p' }],
+      value: [{ children: [{ text: 'x' }], type: 'paragraph' }],
     });
 
     expect(errors).toHaveLength(1);
     expect(normalized.children).toEqual([
-      { children: [{ text: 'x' }], type: 'p' },
+      { children: [{ text: 'x' }], type: 'paragraph' },
     ]);
   });
 });

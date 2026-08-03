@@ -238,7 +238,7 @@ const compileFormat = (
                     Object.freeze({
                       cause,
                       editor,
-                      extension: 'plate:codecs',
+                      extensionName: 'plate:codecs',
                       format,
                       key: `plate:${declaration.owner}:${format}:query`,
                       phase: 'query' as const,
@@ -261,7 +261,7 @@ const compileFormat = (
                   Object.freeze({
                     cause,
                     editor,
-                    extension: 'plate:codecs',
+                    extensionName: 'plate:codecs',
                     format,
                     key: `plate:${declaration.owner}:${format}:decode`,
                     phase: 'parse' as const,
@@ -291,7 +291,7 @@ const compileFormat = (
                   Object.freeze({
                     cause,
                     editor,
-                    extension: 'plate:codecs',
+                    extensionName: 'plate:codecs',
                     format,
                     key: `plate:${declaration.owner}:${format}:encode`,
                     phase: 'serialize' as const,
@@ -322,9 +322,7 @@ export const compilePlateCodecs = (
 
     return Object.entries(codecs).flatMap(([format, declaration]) => {
       if (format.trim().toLowerCase() === 'text/html') {
-        throw new Error(
-          `Plate codec owner "${plugin.name}" must register "text/html" through the schema-aware \`codecs["text/html"]\` declaration.`
-        );
+        return [];
       }
 
       if (

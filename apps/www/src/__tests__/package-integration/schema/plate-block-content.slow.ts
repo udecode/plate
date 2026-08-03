@@ -10,7 +10,6 @@ import {
 } from '@platejs/list-classic';
 import { ElementApi } from '@platejs/plite';
 import {
-  BaseTableCellHeaderPlugin,
   BaseTableCellPlugin,
   BaseTablePlugin,
   BaseTableRowPlugin,
@@ -19,7 +18,6 @@ import {
 const structuralPlugins = [
   BaseTableRowPlugin,
   BaseTableCellPlugin,
-  BaseTableCellHeaderPlugin,
   BaseListItemPlugin,
   BaseListItemContentPlugin,
   BaseCodeLinePlugin,
@@ -28,7 +26,6 @@ const structuralPlugins = [
 
 const normalFlowContainerPlugins = [
   BaseTableCellPlugin,
-  BaseTableCellHeaderPlugin,
   BaseBlockquotePlugin,
   BaseFootnoteDefinitionPlugin,
   BaseColumnItemPlugin,
@@ -47,7 +44,7 @@ describe('Plate block-content eligibility', () => {
       ],
     });
     const structuralTypes = structuralPlugins.map(
-      (plugin) => editor.plugin(plugin.name).type
+      (plugin) => editor.plugin(plugin).schema.element.type
     );
 
     for (const plugin of structuralPlugins) {

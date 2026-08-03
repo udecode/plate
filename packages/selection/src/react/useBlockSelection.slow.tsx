@@ -2,9 +2,11 @@ import { renderHook } from '@testing-library/react';
 import * as actualCoreReact from '@platejs/core/react';
 
 const useEditorPluginMock = mock();
+const useEditorMock = mock();
 
 mock.module('@platejs/core/react', () => ({
   ...actualCoreReact,
+  useEditor: useEditorMock,
   useEditorPlugin: useEditorPluginMock,
 }));
 
@@ -38,6 +40,7 @@ const loadModule = async () =>
 describe('useSelectionArea', () => {
   afterEach(() => {
     mock.restore();
+    useEditorMock.mockReset();
     useEditorPluginMock.mockReset();
     lastSelectionArea = null;
   });
@@ -48,24 +51,24 @@ describe('useSelectionArea', () => {
     const set = mock();
     const clear = mock();
 
+    useEditorMock.mockReturnValue({
+      id: 'editor',
+      api: {
+        dom: { blur },
+      },
+      read: {
+        selection: () => ({
+          kind: 'text',
+          anchor: { offset: 0, path: [0, 0] },
+          focus: { offset: 0, path: [0, 0] },
+        }),
+        view: { isFocused: () => true },
+      },
+      update: { selection: { clear: clearSelection } },
+    });
     useEditorPluginMock.mockReturnValue({
       api: {
         clear,
-      },
-      editor: {
-        id: 'editor',
-        api: {
-          dom: { blur },
-        },
-        read: {
-          selection: () => ({
-            kind: 'text',
-            anchor: { offset: 0, path: [0, 0] },
-            focus: { offset: 0, path: [0, 0] },
-          }),
-          view: { isFocused: () => true },
-        },
-        update: { selection: { clear: clearSelection } },
       },
       store: {
         get: mock(() => ({
@@ -113,9 +116,9 @@ describe('useSelectionArea', () => {
       startAreas,
     });
 
+    useEditorMock.mockReturnValue({ id: 'editor' });
     useEditorPluginMock.mockReturnValue({
       api: { clear: mock() },
-      editor: { id: 'editor' },
       store: {
         get: mock(() => ({ areaOptions })),
         set: mock(),

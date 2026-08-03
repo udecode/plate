@@ -44,12 +44,11 @@ export const buildSlateNode = (
 
   /** Handle custom mdx nodes */
   if (isMdxJsxNode(mdastNode)) {
-    const pluginName = mdastNode.name
-      ? (options.registry.getName(mdastNode.name) ?? mdastNode.name)
-      : null;
+    const source = mdastNode.name;
+    const name = source ? (options.registry.getName(source) ?? source) : null;
 
-    if (pluginName) {
-      const type = options.registry.getType(mdastToPlate(pluginName));
+    if (name) {
+      const type = options.registry.getType(mdastToPlate(name));
       const parserName = options.registry.getName(type) ?? type;
       const overridden = runParser(options.ruleOverrides?.[parserName]);
 
@@ -58,7 +57,7 @@ export const buildSlateNode = (
       const compiled = options.compiledCodecs
         ? runMarkdownDecodeCodecs(
             options.compiledCodecs,
-            pluginName,
+            source!,
             mdastNode,
             deco,
             options
@@ -93,8 +92,8 @@ export const buildSlateNode = (
 
   const type = options.registry.getType(mdastToPlate(mdastNode.type));
 
-  const pluginName = options.registry.getName(type) ?? type;
-  const overridden = runParser(options.ruleOverrides?.[pluginName]);
+  const name = options.registry.getName(type) ?? type;
+  const overridden = runParser(options.ruleOverrides?.[name]);
 
   if (overridden) return overridden;
 
@@ -112,7 +111,7 @@ export const buildSlateNode = (
     return Array.isArray(compiled) ? compiled : [compiled];
   }
 
-  const fallback = runParser(options.rules?.[pluginName]);
+  const fallback = runParser(options.rules?.[name]);
 
   if (fallback) return fallback;
   return [];

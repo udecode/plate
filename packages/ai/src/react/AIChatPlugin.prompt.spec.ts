@@ -1,12 +1,11 @@
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import { BaseParagraphPlugin, NodeIdPlugin } from '@platejs/core';
-import { type Value } from '@platejs/plite';
 import { createPlateEditor } from '@platejs/core/react';
 
 import { AIChatPlugin } from './AIChatPlugin';
 
 const createEditor = () =>
-  createPlateEditor<Value>({
+  createPlateEditor({
     plugins: [
       BaseParagraphPlugin,
       NodeIdPlugin,
@@ -18,7 +17,9 @@ const createEditor = () =>
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 4, path: [0, 0] },
     },
-    initialValue: [{ children: [{ text: 'text' }], id: 'block', type: 'p' }],
+    initialValue: [
+      { children: [{ text: 'text' }], id: 'block', type: 'paragraph' },
+    ],
   });
 
 describe('AIChatPlugin getPrompt', () => {

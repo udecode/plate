@@ -30,7 +30,7 @@ const markdownFilePattern = /\.mdx?$/;
 const codeFencePattern =
   /^ {0,3}```([^\n`]*)\r?\n([\s\S]*?)^ {0,3}```[^\n]*$/gm;
 const whitespacePattern = /\s+/;
-const pluginFactoryNamePattern = /^(?:create|define).*(?:Extension|Plugin)$/;
+const pluginFactoryNamePattern = /^define(?:BasePlugin|Extension|PlatePlugin)$/;
 const pliteExtensionNamePattern = /^define.*Extension$/;
 const pliteDomModulePattern = /^@platejs\/plite-dom(?:\/|$)/;
 const pluginDescriptorOwnerPathPattern =
@@ -436,7 +436,7 @@ const isFullyResolvedStaticDocObject = (node, bindings, seen = new Set()) => {
 };
 
 const collectLocalPliteExtensionCreatorNames = (ast) => {
-  const creators = new Set(['defineEditorExtension']);
+  const creators = new Set(['defineExtension']);
   const namespaces = new Set(['Plite']);
   const creatorCandidates = [];
   const namespaceCandidates = [];
@@ -453,7 +453,7 @@ const collectLocalPliteExtensionCreatorNames = (ast) => {
       (current?.type === 'Identifier' && creators.has(current.name)) ||
       ((current?.type === 'MemberExpression' ||
         current?.type === 'OptionalMemberExpression') &&
-        getPropertyName(current.property) === 'defineEditorExtension' &&
+        getPropertyName(current.property) === 'defineExtension' &&
         isNamespace(current.object))
     );
   };
@@ -469,7 +469,7 @@ const collectLocalPliteExtensionCreatorNames = (ast) => {
     for (const property of pattern.properties) {
       if (
         property.type !== 'ObjectProperty' ||
-        getPropertyName(property.key) !== 'defineEditorExtension'
+        getPropertyName(property.key) !== 'defineExtension'
       ) {
         continue;
       }
@@ -500,7 +500,7 @@ const collectLocalPliteExtensionCreatorNames = (ast) => {
         }
         if (
           specifier.type === 'ImportSpecifier' &&
-          getPropertyName(specifier.imported) === 'defineEditorExtension'
+          getPropertyName(specifier.imported) === 'defineExtension'
         ) {
           creators.add(specifier.local.name);
         }
@@ -822,7 +822,7 @@ const getStaticPliteElementMap = (node) => {
     return;
   }
 
-  const declaration = node.arguments[0];
+  const declaration = node.arguments[1];
 
   if (declaration?.type !== 'ObjectExpression') return;
 
@@ -1286,9 +1286,18 @@ export function auditPlateDocCode(source, file = 'content/docs/example.mdx') {
       if (
         node.type === 'CallExpression' &&
         node.callee.type === 'Identifier' &&
-        ['createBasePlugin', 'createPlatePlugin'].includes(node.callee.name) &&
-        node.arguments[0]
+        ['defineBasePlugin', 'definePlatePlugin'].includes(node.callee.name)
       ) {
+        if (node.arguments.length !== 2) {
+          issues.push(
+            createIssue(
+              file,
+              fence,
+              node,
+              `${node.callee.name} requires (name, definition)`
+            )
+          );
+        }
         if (
           node.typeParameters?.params.length > 0 ||
           node.typeArguments?.params.length > 0
@@ -1303,7 +1312,7 @@ export function auditPlateDocCode(source, file = 'content/docs/example.mdx') {
           );
         }
 
-        for (const property of getAuthorProperties(node.arguments[0])) {
+        for (const property of getAuthorProperties(node.arguments[1])) {
           const key =
             property.type === 'ObjectProperty' ||
             property.type === 'ObjectMethod'
@@ -1364,13 +1373,13 @@ export function auditPlateDocCode(source, file = 'content/docs/example.mdx') {
             );
           }
 
-          if (node.callee.name === 'createBasePlugin' && key === 'component') {
+          if (node.callee.name === 'defineBasePlugin' && key === 'component') {
             issues.push(
               createIssue(
                 file,
                 fence,
                 property,
-                'root-level component is available only in createPlatePlugin'
+                'root-level component is available only in definePlatePlugin'
               )
             );
           }
@@ -1389,6 +1398,16 @@ export function auditPlateDocCode(source, file = 'content/docs/example.mdx') {
       }
 
       if (localPliteExtensionCreatorNames.hasCall(node)) {
+        if (node.arguments.length !== 2) {
+          issues.push(
+            createIssue(
+              file,
+              fence,
+              node,
+              'defineExtension requires (name, definition)'
+            )
+          );
+        }
         if (
           node.typeParameters?.params.length > 0 ||
           node.typeArguments?.params.length > 0
@@ -1398,13 +1417,13 @@ export function auditPlateDocCode(source, file = 'content/docs/example.mdx') {
               file,
               fence,
               node,
-              'defineEditorExtension infers one definition from its author object'
+              'defineExtension infers one definition from its author object'
             )
           );
         }
 
-        if (node.arguments[0]) {
-          for (const property of getAuthorProperties(node.arguments[0])) {
+        if (node.arguments[1]) {
+          for (const property of getAuthorProperties(node.arguments[1])) {
             const key =
               property.type === 'ObjectProperty' ||
               property.type === 'ObjectMethod'
@@ -1664,7 +1683,7 @@ export function auditPlateDocCode(source, file = 'content/docs/example.mdx') {
 
       if (!isPluginFactoryCall(node)) return;
 
-      const declaration = node.arguments[0];
+      const declaration = node.arguments[1];
 
       if (declaration?.type !== 'ObjectExpression') return;
 

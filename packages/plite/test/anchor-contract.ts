@@ -4,7 +4,6 @@ import { describe, it } from 'node:test';
 import {
   type Anchor,
   createEditor,
-  createEditorRuntime,
   createEditorView,
   type Element,
   NodeApi,
@@ -277,7 +276,7 @@ describe('canonical anchor contract', () => {
   });
 
   it('rebases rootless view intents against the active document root', () => {
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       initialValue: {
         children: [paragraph('main')],
         roots: { header: [paragraph('header')] },

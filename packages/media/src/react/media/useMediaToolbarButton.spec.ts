@@ -1,5 +1,4 @@
 import { createBaseEditor } from '@platejs/core';
-import { KEYS, NODES } from '@platejs/utils';
 
 import { BaseImagePlugin } from '../../lib/image/BaseImagePlugin';
 import { BaseMediaEmbedPlugin } from '../../lib/media-embed/BaseMediaEmbedPlugin';
@@ -21,7 +20,7 @@ describe('insertMediaUrl', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
 
   it('inserts an image from the resolved URL', async () => {
@@ -33,7 +32,7 @@ describe('insertMediaUrl', () => {
 
     expect(editor.read.children().at(1)).toEqual({
       children: [{ text: '' }],
-      type: KEYS.img,
+      type: 'image',
       url: 'https://platejs.org/image.png',
     });
   });
@@ -43,13 +42,13 @@ describe('insertMediaUrl', () => {
 
     await insertMediaUrl(editor, {
       getUrl: async () => 'https://www.youtube.com/watch?v=M7lc1UVf-VE',
-      type: NODES.mediaEmbed,
+      type: 'mediaEmbed',
     });
 
     expect(editor.read.children().at(1)).toMatchObject({
       provider: 'youtube',
       sourceUrl: 'https://www.youtube.com/watch?v=M7lc1UVf-VE',
-      type: NODES.mediaEmbed,
+      type: 'mediaEmbed',
       url: 'https://www.youtube.com/embed/M7lc1UVf-VE',
     });
   });
@@ -69,7 +68,7 @@ describe('insertMediaUrl', () => {
     await insertion;
 
     expect(editor.read.children().at(1)).toMatchObject({
-      type: KEYS.img,
+      type: 'image',
       url: 'https://platejs.org/image.png',
     });
   });
@@ -86,14 +85,14 @@ describe('insertMediaUrl', () => {
     });
 
     editor.update.nodes.insert(
-      { children: [{ text: 'before' }], type: KEYS.p },
+      { children: [{ text: 'before' }], type: 'paragraph' },
       { at: [0] }
     );
     resolveUrl('https://platejs.org/image.png');
     await insertion;
 
     expect(editor.read.children().at(2)).toMatchObject({
-      type: KEYS.img,
+      type: 'image',
       url: 'https://platejs.org/image.png',
     });
   });
@@ -106,7 +105,7 @@ describe('insertMediaUrl', () => {
 
     await insertMediaUrl(editor);
 
-    expect(promptSpy).toHaveBeenCalledWith('Enter the URL of the img');
+    expect(promptSpy).toHaveBeenCalledWith('Enter the URL of the image');
     expect(editor.read.children()).toHaveLength(1);
   });
 });

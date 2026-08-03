@@ -1,15 +1,10 @@
+import { PLUGINS } from '@platejs/utils';
 import type { ChatMessage } from '@/registry/components/editor/use-chat';
 import type { UIMessage } from 'ai';
 
 import type { MarkdownEditor } from '@platejs/markdown';
 import dedent from 'dedent';
-import {
-  ElementApi,
-  type BaseEditor,
-  type Element,
-  KEYS,
-  RangeApi,
-} from 'platejs';
+import { ElementApi, type BaseEditor, type Element, RangeApi } from 'platejs';
 
 /**
  * Tag content split by newlines
@@ -315,7 +310,7 @@ export const isSelectionInTable = (editor: BaseEditor): boolean => {
 
   const tableEntry = editor.read.nodes.block({
     at: selection,
-    match: { type: KEYS.table },
+    match: { type: editor.plugin(PLUGINS.table).type },
   });
 
   return !!tableEntry;
@@ -330,7 +325,7 @@ export const isSingleCellSelection = (editor: BaseEditor): boolean => {
   // Get all td blocks in selection
   const cells = editor.read.nodes.toArray({
     at: selection,
-    match: { type: KEYS.td },
+    match: { type: editor.plugin(PLUGINS.tableCell).type },
   });
 
   return cells.length === 1;

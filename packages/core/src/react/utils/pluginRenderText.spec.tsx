@@ -5,14 +5,12 @@ import React from 'react';
 
 import { render } from '@testing-library/react';
 
-import { createBasePlugin } from '../../lib/plugin';
+import { defineBasePlugin } from '../../lib/plugin';
 import { createPlateEditor } from '../editor/withPlate';
 import { pluginRenderText } from './pluginRenderText';
 
 it('uses a plain render.as fast path for simple text plugins', () => {
-  const testPlugin = createBasePlugin({
-    name: 'test',
-    type: 'test',
+  const testPlugin = defineBasePlugin('test', {
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: { isDecoration: false, as: 'strong' },
   });

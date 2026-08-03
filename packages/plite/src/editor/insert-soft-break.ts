@@ -3,12 +3,12 @@ import { editorCommands } from '../core/editor-commands';
 import { limitTextInsert } from '../core/insert-limit';
 import type { EditorStaticApi } from '../interfaces/editor';
 import { applyInsertTextCommand } from './insert-text';
-import { insertParagraphAfterSelectedBlockVoid } from './block-void-break';
+import { insertDefaultBlockAfterSelectedBlockVoid } from './block-void-break';
 
 export const applyInsertSoftBreak: EditorStaticApi['insertSoftBreak'] = (
   editor
 ) => {
-  if (insertParagraphAfterSelectedBlockVoid(editor)) {
+  if (insertDefaultBlockAfterSelectedBlockVoid(editor)) {
     return;
   }
 

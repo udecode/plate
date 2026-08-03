@@ -1,4 +1,4 @@
-import { createBasePlugin } from '@platejs/core';
+import { defineBasePlugin } from '@platejs/core';
 import {
   createPlateEditor,
   toPlatePlugin,
@@ -18,9 +18,8 @@ const suggestionInitialState: SuggestionPluginState = {
   hoverId: null,
 };
 
-const BaseStoreContractPlugin = createBasePlugin({
+const BaseStoreContractPlugin = defineBasePlugin('storeContract', {
   initialState: suggestionInitialState,
-  name: 'storeContract',
   selectors: {
     isActive: (state, id: string) => state.activeId === id,
   },

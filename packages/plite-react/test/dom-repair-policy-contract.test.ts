@@ -1337,78 +1337,90 @@ test('virtualized text insert caret repair corrects model drift back to pending 
 });
 
 test('native input repair trusts captured coalesced inserts when projected DOM interleaves suffix text', () => {
-  const editor = createReactEditor();
-  const root = mountEditorRoot(editor);
-  const originalText = 'This mixed';
-  const domText = 'This qmrixed';
-  const repairedText = 'This qrmixed';
-  const nextOffset = 'This qr'.length;
+  vi.useFakeTimers();
 
-  editorReplace(editor, {
-    children: [
-      {
-        type: 'paragraph',
-        children: [{ text: originalText }],
-      },
-    ],
-    selection: {
-      kind: 'text',
-      anchor: { path: [0, 0], offset: 0 },
-      focus: { path: [0, 0], offset: 0 },
-    },
-  });
-
-  const textHost = document.createElement('span');
-  const string = document.createElement('span');
-  const text = document.createTextNode(domText);
-  const range = document.createRange();
-  const selection = window.getSelection();
-  const queue = createDOMRepairQueue({
-    editor,
-    inputController: {
+  try {
+    const editor = createReactEditor();
+    const root = mountEditorRoot(editor);
+    const inputController = {
       preferModelSelectionForInputRef: { current: false },
       state: createEditableInputControllerState(),
-    },
-    scrollSelectionIntoView: () => {},
-    syncDOMSelectionToEditor: () => {},
-  });
+    };
+    const originalText = 'This mixed';
+    const domText = 'This qmrixed';
+    const repairedText = 'This qrmixed';
+    const nextOffset = 'This qr'.length;
 
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', '0,0');
-  string.setAttribute('data-plite-string', 'true');
-  string.append(text);
-  textHost.append(string);
-  root.append(textHost);
-
-  range.setStart(text, 'This qmr'.length);
-  range.collapse(true);
-  selection?.removeAllRanges();
-  selection?.addRange(range);
-
-  queue.repairDOMInput(
-    {
-      data: 'r',
-      inputType: 'insertText',
-      target: {
-        insert: { offset: 'This '.length, text: 'qr' },
-        path: [0, 0],
-        preferCapturedInsert: true,
-        selectionOffset: 'This qmr'.length,
-        text: domText,
+    editorReplace(editor, {
+      children: [
+        {
+          type: 'paragraph',
+          children: [{ text: originalText }],
+        },
+      ],
+      selection: {
+        kind: 'text',
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 0 },
       },
-    },
-    root,
-    1
-  );
+    });
 
-  expect(editor.read((state) => state.text.string([0]))).toBe(repairedText);
-  expect(editor.read((state) => state.selection())).toEqual({
-    kind: 'text',
-    anchor: { path: [0, 0], offset: nextOffset },
-    focus: { path: [0, 0], offset: nextOffset },
-  });
+    const textHost = document.createElement('span');
+    const string = document.createElement('span');
+    const text = document.createTextNode(domText);
+    const range = document.createRange();
+    const selection = window.getSelection();
+    const queue = createDOMRepairQueue({
+      editor,
+      inputController,
+      scrollSelectionIntoView: () => {},
+      syncDOMSelectionToEditor: () => {},
+    });
 
-  root.remove();
+    textHost.setAttribute('data-plite-node', 'text');
+    textHost.setAttribute('data-plite-path', '0,0');
+    string.setAttribute('data-plite-string', 'true');
+    string.append(text);
+    textHost.append(string);
+    root.append(textHost);
+
+    range.setStart(text, 'This qmr'.length);
+    range.collapse(true);
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+
+    queue.repairDOMInput(
+      {
+        data: 'r',
+        inputType: 'insertText',
+        target: {
+          insert: { offset: 'This '.length, text: 'qr' },
+          path: [0, 0],
+          preferCapturedInsert: true,
+          selectionOffset: 'This qmr'.length,
+          text: domText,
+        },
+      },
+      root,
+      1
+    );
+
+    expect(editor.read((state) => state.text.string([0]))).toBe(repairedText);
+    expect(editor.read((state) => state.selection())).toEqual({
+      kind: 'text',
+      anchor: { path: [0, 0], offset: nextOffset },
+      focus: { path: [0, 0], offset: nextOffset },
+    });
+    expect(inputController.state.selectionChangeOrigin).toBe('repair-induced');
+
+    vi.advanceTimersByTime(151);
+
+    expect(inputController.state.selectionChangeOrigin).toBe(null);
+
+    root.remove();
+  } finally {
+    vi.useRealTimers();
+  }
 });
 
 test('native input repair rebases later captured same-path inserts against repaired model text', () => {

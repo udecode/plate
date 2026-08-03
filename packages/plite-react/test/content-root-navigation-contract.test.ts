@@ -1,5 +1,5 @@
 import {
-  createEditorRuntime,
+  createEditor,
   createEditorView,
   defineEditorSchema,
   schema,
@@ -20,24 +20,27 @@ import {
   writePliteViewSelection,
 } from '../src/view-selection';
 
-const contentRootExtension = defineEditorSchema({
-  elements: {
-    paragraph: {
-      content: schema.content.text({ default: 'text', min: 1 }),
-    },
-    'content-card': {
-      content: schema.content.open(),
-      contentRoots: {
-        body: schema.content.not(schema.content.text()),
+const contentRootExtension = defineEditorSchema(
+  'schema:content-root-navigation-test',
+  {
+    elements: {
+      paragraph: {
+        content: schema.content.text({ default: 'text', min: 1 }),
       },
-      void: 'editable-island',
+      'content-card': {
+        content: schema.content.open(),
+        contentRoots: {
+          body: schema.content.not(schema.content.text()),
+        },
+        void: 'editable-island',
+      },
     },
-  },
-  id: 'content-root-navigation-test',
-  root: schema.content.not(schema.content.text()),
-  unknown: 'preserve',
-  version: 1,
-});
+    id: 'content-root-navigation-test',
+    root: schema.content.not(schema.content.text()),
+    unknown: 'preserve',
+    version: 1,
+  }
+);
 
 const paragraph = (text: string) => ({
   type: 'paragraph',
@@ -56,7 +59,7 @@ const section = (children: any[]) => ({
 });
 
 const createFixture = () => {
-  const runtime = createEditorRuntime({
+  const runtime = createEditor({
     extensions: [contentRootExtension],
     initialValue: {
       children: [paragraph('Before'), contentCard(), paragraph('After')],
@@ -72,7 +75,7 @@ const createFixture = () => {
 };
 
 const createRepeatedProjectionFixture = () => {
-  const runtime = createEditorRuntime({
+  const runtime = createEditor({
     extensions: [contentRootExtension],
     initialValue: {
       children: [
@@ -148,7 +151,7 @@ describe('content root navigation', () => {
   });
 
   it('does not resolve mounted roots for vertical keys when schema has no content roots', () => {
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       initialValue: { children: [paragraph('Plain')] },
     });
     const mainEditor = createEditorView(
@@ -173,7 +176,7 @@ describe('content root navigation', () => {
   });
 
   it('does not scan plain documents when looking for content-root owners', () => {
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       initialValue: {
         children: Array.from({ length: 5000 }, (_, index) =>
           paragraph(`Plain ${index}`)
@@ -197,26 +200,29 @@ describe('content root navigation', () => {
   });
 
   it('finds every mapped slot through the runtime element index', () => {
-    const multiSlotExtension = defineEditorSchema({
-      elements: {
-        paragraph: {
-          content: schema.content.text({ default: 'text', min: 1 }),
-        },
-        'content-card': {
-          content: schema.content.open(),
-          contentRoots: {
-            body: schema.content.type('paragraph'),
-            caption: schema.content.type('paragraph'),
+    const multiSlotExtension = defineEditorSchema(
+      'schema:content-root-navigation-multi-slot-test',
+      {
+        elements: {
+          paragraph: {
+            content: schema.content.text({ default: 'text', min: 1 }),
           },
-          void: 'editable-island',
+          'content-card': {
+            content: schema.content.open(),
+            contentRoots: {
+              body: schema.content.type('paragraph'),
+              caption: schema.content.type('paragraph'),
+            },
+            void: 'editable-island',
+          },
         },
-      },
-      id: 'content-root-navigation-multi-slot-test',
-      root: schema.content.not(schema.content.text()),
-      unknown: 'preserve',
-      version: 1,
-    });
-    const runtime = createEditorRuntime({
+        id: 'content-root-navigation-multi-slot-test',
+        root: schema.content.not(schema.content.text()),
+        unknown: 'preserve',
+        version: 1,
+      }
+    );
+    const runtime = createEditor({
       extensions: [multiSlotExtension],
       initialValue: {
         children: [
@@ -281,7 +287,7 @@ describe('content root navigation', () => {
   });
 
   it('does not exit a content root from the start of its last block on ArrowDown', () => {
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       extensions: [contentRootExtension],
       initialValue: {
         children: [paragraph('Before'), contentCard(), paragraph('After')],
@@ -766,7 +772,7 @@ describe('content root navigation', () => {
   });
 
   it('builds projected selection graph nodes for nested content roots', () => {
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       extensions: [contentRootExtension],
       initialValue: {
         children: [
@@ -805,7 +811,7 @@ describe('content root navigation', () => {
   });
 
   it('orders nested content roots inside content roots as visible sibling blocks', () => {
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       extensions: [contentRootExtension],
       initialValue: {
         children: [paragraph('Before'), contentCard(), paragraph('After')],

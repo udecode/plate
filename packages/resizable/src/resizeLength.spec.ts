@@ -11,6 +11,7 @@ describe('resize lengths', () => {
     expect(resizeLengthToRelative(5, 20)).toBe('25%');
     expect(resizeLengthToStatic(5, 20)).toBe(5);
     expect(resizeLengthToStatic('50%', 20)).toBe(10);
+    expect(resizeLengthToStatic('50px', 200)).toBe(50);
   });
 
   it('keeps an unconstrained static length', () => {
@@ -55,5 +56,9 @@ describe('resize lengths', () => {
     expect(resizeLengthClamp('70%', 100, { max: '60%', min: '40%' })).toBe(
       '60%'
     );
+  });
+
+  it('clamps and preserves explicit pixel lengths', () => {
+    expect(resizeLengthClamp('50px', 200, { min: 80 })).toBe('80px');
   });
 });

@@ -137,13 +137,13 @@ description: \@platejs/core 的 API 参考文档。
 
 有关编辑器配置的更多详情，请参阅[编辑器配置](/docs/editor)指南。
 
-### `createPlatePlugin`
+### `definePlatePlugin`
 
 从一个推断出的 definition 创建 React Plate 插件。
 
-<API name="createPlatePlugin">
+<API name="definePlatePlugin">
 <APIParameters>
-  <APIItem name="definition" type="PlatePluginDefinition">
+  <APIItem name="definition" type="BasePluginDefinition">
     插件 definition。factory 从该对象推断 name、initial state、API、read 和
     update method、schema、dependencies、原生 Plite 能力和 React 字段。
   </APIItem>
@@ -205,7 +205,7 @@ description: \@platejs/core 的 API 参考文档。
 
 ### `useEditorPlugin`
 
-获取编辑器和插件上下文。
+获取已安装插件的扁平 consumer portal。
 
 <API name="useEditorPlugin">
 <APIParameters>
@@ -214,12 +214,9 @@ description: \@platejs/core 的 API 参考文档。
   </APIItem>
 </APIParameters>
 
-<APIReturns type="PlatePluginContext">
-  <APIItem name="editor" type="PlateEditor">
-      当前编辑器实例。
-  </APIItem>
-  <APIItem name="plugin" type="PlatePlugin">
-      插件实例。
+<APIReturns type="PlatePluginPortal">
+  <APIItem name="name" type="string">
+      已安装插件的名称。
   </APIItem>
   <APIItem name="store" type="PluginStore">
       当前插件的可变 editor-local store。
@@ -564,17 +561,16 @@ const elementState = editor.plugin(ElementStatePlugin);
 
 elementState.api.isEmpty({
   children: [{ text: "" }],
-  type: "p",
+  type: "paragraph",
 }); // true
 
 elementState.api.isEmpty({
   children: [{ text: "" }],
   listStyleType: "disc",
-  type: "p",
+  type: "paragraph",
 }); // false
 
-const CustomMetadataPlugin = createBasePlugin({
-  name: "customMetadata",
+const CustomMetadataPlugin = defineBasePlugin("customMetadata", {
   schema: {
     properties: [
       schema.elementProperty(

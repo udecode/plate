@@ -1,18 +1,21 @@
 /** @jsx jsxt */
 
-import { createBaseEditor, createBasePlugin } from '@platejs/core';
+import { createBaseEditor, defineBasePlugin } from '@platejs/core';
 import { getPlateRuntime } from '@platejs/core/internal';
 import {
   NodeApi,
+  createEditor as createPliteEditor,
   property,
   type Point,
   type Selection,
   type Value,
 } from '@platejs/plite';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
-import { KEYS, type TLinkElement } from '@platejs/utils';
-
-import { BaseLinkPlugin, type BaseLinkDefinition } from './BaseLinkPlugin';
+import {
+  BaseLinkPlugin,
+  type BaseLinkDefinition,
+  type LinkElement,
+} from './BaseLinkPlugin';
 import type { LinkDefinition } from '../react/LinkPlugin';
 
 jsxt;
@@ -31,12 +34,14 @@ describe('BaseLinkPlugin', () => {
     const link = Array.from(
       NodeApi.elements({ children: fragment ?? [], type: 'root' }),
       ([node]) => node
-    ).find((node) => node.type === editor.plugin(BaseLinkPlugin.name).type);
+    ).find(
+      (node) => node.type === editor.plugin(BaseLinkPlugin).schema.element.type
+    );
 
     expect(link).toMatchObject({
       children: [{ text: 'Link' }],
       target: '_blank',
-      type: editor.plugin(BaseLinkPlugin.name).type,
+      type: editor.plugin(BaseLinkPlugin).schema.element.type,
       url: 'https://example.com',
     });
   });
@@ -49,7 +54,9 @@ describe('BaseLinkPlugin', () => {
     const hasLink = Array.from(
       NodeApi.elements({ children: fragment ?? [], type: 'root' }),
       ([node]) => node
-    ).some((node) => node.type === editor.plugin(BaseLinkPlugin.name).type);
+    ).some(
+      (node) => node.type === editor.plugin(BaseLinkPlugin).schema.element.type
+    );
 
     expect(hasLink).toBe(false);
   });
@@ -68,11 +75,11 @@ describe('BaseLinkPlugin', () => {
             {
               children: [{ text: 'Link' }],
               target: '_self',
-              type: KEYS.link,
+              type: 'link',
               url: 'https://example.com',
             },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
@@ -100,8 +107,8 @@ describe('BaseLinkPlugin', () => {
 
 const baseLink = {
   children: [{ text: 'Link text' }],
-  type: 'a',
-};
+  type: 'link',
+} as const;
 
 const defaultOptions: Partial<LinkDefinition['initialState']> = {
   defaultLinkAttributes: {
@@ -127,7 +134,7 @@ describe('BaseLinkPlugin.api.getAttributes', () => {
   const editor = createApiEditor();
 
   describe('when url is valid', () => {
-    const link: TLinkElement = {
+    const link: LinkElement = {
       ...baseLink,
       target: '_self',
       url: 'https://example.com/',
@@ -143,7 +150,7 @@ describe('BaseLinkPlugin.api.getAttributes', () => {
   });
 
   describe('when url is invalid', () => {
-    const link: TLinkElement = {
+    const link: LinkElement = {
       ...baseLink,
       target: '_self',
 
@@ -166,7 +173,7 @@ describe('BaseLinkPlugin.api.getAttributes', () => {
       dangerouslySkipSanitization: true,
     });
 
-    const link: TLinkElement = {
+    const link: LinkElement = {
       ...baseLink,
       target: '_self',
       url: 'pageKey',
@@ -186,7 +193,7 @@ describe('BaseLinkPlugin.api.getAttributes', () => {
   });
 
   describe('when target is not set', () => {
-    const link: TLinkElement = {
+    const link: LinkElement = {
       ...baseLink,
       url: 'https://example.com/',
     };
@@ -359,14 +366,16 @@ describe('BaseLinkPlugin.api.validateUrl', () => {
       Array.from(
         NodeApi.elements({ children: fragment ?? [], type: 'root' }),
         ([node]) => node
-      ).some((node) => node.type === editor.plugin(BaseLinkPlugin.name).type)
+      ).some(
+        (node) =>
+          node.type === editor.plugin(BaseLinkPlugin).schema.element.type
+      )
     ).toBe(false);
   });
 });
 
 const mark = (name: string) =>
-  createBasePlugin({
-    name,
+  defineBasePlugin(name, {
     schema: {
       mark: property.boolean({ default: false, omitDefault: true }),
     },
@@ -395,10 +404,10 @@ const createEditingEditor = ({
 
 const findLink = (
   editor: ReturnType<typeof createEditingEditor>
-): TLinkElement | undefined =>
-  editor.read.nodes.find<TLinkElement>({
+): LinkElement | undefined =>
+  editor.read.nodes.find<LinkElement>({
     at: [],
-    match: { type: 'a' },
+    match: { type: 'link' },
   })?.[0];
 
 describe('editor.update.link.upsert', () => {
@@ -409,7 +418,7 @@ describe('editor.update.link.upsert', () => {
         anchor: { offset: 4, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'test' }], type: 'p' }],
+      value: [{ children: [{ text: 'test' }], type: 'paragraph' }],
     });
 
     expect(editor.update.link.upsert({ url: 'https://example.com' })).toBe(
@@ -428,7 +437,7 @@ describe('editor.update.link.upsert', () => {
         anchor: { offset: 4, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
-      value: [{ children: [{ bold: true, text: 'test' }], type: 'p' }],
+      value: [{ children: [{ bold: true, text: 'test' }], type: 'paragraph' }],
     });
 
     editor.update.link.upsert({
@@ -455,12 +464,12 @@ describe('editor.update.link.upsert', () => {
             { text: '' },
             {
               children: [{ text: 'old' }],
-              type: 'a',
+              type: 'link',
               url: 'https://old.dev',
             },
             { text: '' },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
@@ -491,12 +500,12 @@ describe('editor.update.link.upsert', () => {
             { text: '' },
             {
               children: [{ text: 'old' }],
-              type: 'a',
+              type: 'link',
               url: 'https://old.dev',
             },
             { text: '' },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
@@ -525,12 +534,12 @@ describe('editor.update.link.upsert', () => {
             { text: '' },
             {
               children: [{ text: 'old' }],
-              type: 'a',
+              type: 'link',
               url: 'https://old.dev',
             },
             { text: '' },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
@@ -547,7 +556,12 @@ describe('editor.update.link.upsert', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 5, path: [0, 0] },
       },
-      value: [{ children: [{ italic: true, text: 'hello world' }], type: 'p' }],
+      value: [
+        {
+          children: [{ italic: true, text: 'hello world' }],
+          type: 'paragraph',
+        },
+      ],
     });
 
     editor.update.link.upsert({
@@ -569,7 +583,7 @@ describe('editor.update.link.upsert', () => {
         anchor: { offset: 4, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'test' }], type: 'p' }],
+      value: [{ children: [{ text: 'test' }], type: 'paragraph' }],
     });
 
     expect(editor.update.link.upsert({ url: 'not a url' })).toBeUndefined();
@@ -589,7 +603,7 @@ describe('editor.update.link.upsert', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      value: [{ children: [{ text: '' }], type: 'p' }],
+      value: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
 
     expect(editor.update.link.upsert({ url: '/internal' })).toBeUndefined();
@@ -598,7 +612,7 @@ describe('editor.update.link.upsert', () => {
 
   it('does nothing without a selection', () => {
     const editor = createEditingEditor({
-      value: [{ children: [{ text: 'test' }], type: 'p' }],
+      value: [{ children: [{ text: 'test' }], type: 'paragraph' }],
     });
 
     expect(
@@ -615,14 +629,14 @@ describe('editor.update.link.unwrap', () => {
         { text: 'x' },
         {
           children: [{ text: 'abcdef' }],
-          type: 'a',
+          type: 'link',
           url: 'https://example.com',
         },
         { text: 'y' },
       ],
-      type: 'p',
+      type: 'paragraph',
     },
-  ];
+  ] as const;
   const createUnwrapEditor = (anchor: Point, focus: Point) =>
     createBaseEditor({
       plugins: [BaseLinkPlugin],
@@ -664,7 +678,7 @@ describe('editor.update.link.unwrap', () => {
     editor.update.link.unwrap();
 
     expect(editor.read.children()).toEqual([
-      { children: [{ text: 'xabcdefy' }], type: 'p' },
+      { children: [{ text: 'xabcdefy' }], type: 'paragraph' },
     ]);
   });
 
@@ -681,12 +695,12 @@ describe('editor.update.link.unwrap', () => {
           { text: 'x' },
           {
             children: [{ text: fixture.linked }],
-            type: 'a',
+            type: 'link',
             url: 'https://example.com',
           },
           { text: fixture.plain },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
   });
@@ -705,18 +719,18 @@ describe('editor.update.link.unwrap', () => {
           { text: 'x' },
           {
             children: [{ text: 'ab' }],
-            type: 'a',
+            type: 'link',
             url: 'https://example.com',
           },
           { text: 'cd' },
           {
             children: [{ text: 'ef' }],
-            type: 'a',
+            type: 'link',
             url: 'https://example.com',
           },
           { text: 'y' },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
   });
@@ -737,12 +751,12 @@ describe('editor.update.link.upsertText', () => {
             { text: '' },
             {
               children: [{ bold: true, text: 'old' }, { text: ' tail' }],
-              type: 'a',
+              type: 'link',
               url: 'https://example.com',
             },
             { text: '' },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
@@ -755,12 +769,12 @@ describe('editor.update.link.upsertText', () => {
       url: 'https://example.com',
     });
 
-    expect(editor.read.nodes.find({ match: { type: 'a' } })?.[0]).toMatchObject(
-      {
-        children: [{ bold: true, text: 'new value' }],
-        type: 'a',
-      }
-    );
+    expect(
+      editor.read.nodes.find({ match: { type: 'link' } })?.[0]
+    ).toMatchObject({
+      children: [{ bold: true, text: 'new value' }],
+      type: 'link',
+    });
   });
 
   it('does nothing without different replacement text', () => {
@@ -789,6 +803,7 @@ describe('editor.update.link.wrap', () => {
       </editor>
     ) as TestEditor;
     const editor = createBaseEditor({
+      editor: createPliteEditor<Value>(),
       plugins: [BaseLinkPlugin],
       selection: input.selection,
       initialValue: input.children,
@@ -817,6 +832,7 @@ describe('editor.update.link.wrap', () => {
 
 const createRuntimeEditor = (value: Value) =>
   createBaseEditor({
+    editor: createPliteEditor<Value>(),
     plugins: [BaseLinkPlugin],
     selection: {
       kind: 'text',
@@ -834,11 +850,11 @@ describe('BaseLinkPlugin runtime', () => {
           { text: 'Before ' },
           {
             children: [{ text: 'link' }],
-            type: 'a',
+            type: 'link',
             url: 'https://example.com',
           },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
 
@@ -851,12 +867,12 @@ describe('BaseLinkPlugin runtime', () => {
           { text: 'Before ' },
           {
             children: [{ text: 'link' }],
-            type: 'a',
+            type: 'link',
             url: 'https://example.com',
           },
           { text: 'x' },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
     expect(editor.read.selection()).toEqual({
@@ -873,12 +889,12 @@ describe('BaseLinkPlugin runtime', () => {
           { text: 'Before ' },
           {
             children: [{ text: 'link' }],
-            type: 'a',
+            type: 'link',
             url: 'https://example.com',
           },
           { text: ' after' },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
 
@@ -889,7 +905,7 @@ describe('BaseLinkPlugin runtime', () => {
     expect(editor.read.children()[0]).toMatchObject({
       children: [
         { text: 'Before ' },
-        { children: [{ text: 'link' }], type: 'a' },
+        { children: [{ text: 'link' }], type: 'link' },
         { text: 'x after' },
       ],
     });

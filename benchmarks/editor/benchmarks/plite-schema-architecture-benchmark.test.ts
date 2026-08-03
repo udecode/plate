@@ -314,7 +314,7 @@ Total time:          1.50s
     assert.doesNotMatch(exact, /readonly AnyBasePlugin\[\] = \[/u);
     assert.match(widened, /readonly AnyBasePlugin\[\] = \[/u);
     assert.equal(
-      (widened.match(/const Plugin\d+ = createBasePlugin/g) ?? []).length,
+      (widened.match(/const Plugin\d+ = defineBasePlugin/g) ?? []).length,
       1000
     );
     assert.deepEqual(diagnostics, {

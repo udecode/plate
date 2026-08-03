@@ -8,7 +8,7 @@ import {
 } from '..';
 import { hasEditorRuntime } from '../core/editor-runtime';
 import { formatDebugValue } from '../utils/format-debug-value';
-import type { Editor as EditorType, Value } from './editor';
+import type { AnyEditor as EditorType, Value } from './editor';
 import {
   getChildren as editorGetChildren,
   isEditor as editorIsEditor,

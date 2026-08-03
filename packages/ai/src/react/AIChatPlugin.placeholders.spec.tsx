@@ -5,14 +5,21 @@ import { describe, expect, it } from 'bun:test';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 import {
   BaseParagraphPlugin,
-  createBasePlugin,
+  defineBasePlugin,
   type DefinitionOf,
   NodeIdPlugin,
   type PlatePluginReadState,
 } from '@platejs/core';
 import { MarkdownPlugin } from '@platejs/markdown';
-import { type Element, type ElementEntry, schema } from '@platejs/plite';
-import { KEYS } from '@platejs/utils';
+import {
+  createEditor,
+  type Element,
+  type ElementEntry,
+  property,
+  schema,
+  type Value,
+} from '@platejs/plite';
+import { PLUGINS } from '@platejs/utils';
 import { createPlateEditor } from '@platejs/core/react';
 
 jsxt;
@@ -25,11 +32,11 @@ const getTableGridAbove = (
 
   const start = state.nodes.above<Element>({
     at: selection.anchor,
-    match: { type: [KEYS.td, KEYS.th] },
+    match: { type: 'tableCell' },
   });
   const end = state.nodes.above<Element>({
     at: selection.focus,
-    match: { type: [KEYS.td, KEYS.th] },
+    match: { type: 'tableCell' },
   });
   if (!start || !end) return [];
 
@@ -50,46 +57,32 @@ const getTableGridAbove = (
   return entries;
 };
 
-const TableFixturePlugin = createBasePlugin({
-  name: KEYS.table,
+const TableFixturePlugin = defineBasePlugin(PLUGINS.table, {
   read: ({ state }) => ({
     getGridAbove: () => getTableGridAbove(state),
   }),
-  schema: ({ plugins }) => ({
+  schema: () => ({
     element: {
-      content: schema.content.type(plugins.elementType(TableRowFixturePlugin)),
+      content: schema.content.element(TableRowFixturePlugin),
     },
   }),
 });
 
-const TableRowFixturePlugin = createBasePlugin({
-  name: KEYS.tr,
-  schema: ({ plugins }) => ({
+const TableRowFixturePlugin = defineBasePlugin(PLUGINS.tableRow, {
+  schema: () => ({
     element: {
-      content: schema.content.types(
-        plugins.elementTypes([
-          TableCellFixturePlugin,
-          TableHeaderCellFixturePlugin,
-        ])
-      ),
+      content: schema.content.element(TableCellFixturePlugin),
     },
   }),
 });
 
-const TableCellFixturePlugin = createBasePlugin({
-  name: KEYS.td,
+const TableCellFixturePlugin = defineBasePlugin(PLUGINS.tableCell, {
   schema: ({ plugins }) => ({
     element: {
       content: plugins.blockContent(),
-    },
-  }),
-});
-
-const TableHeaderCellFixturePlugin = createBasePlugin({
-  name: KEYS.th,
-  schema: ({ plugins }) => ({
-    element: {
-      content: plugins.blockContent(),
+      properties: {
+        header: property.boolean({ default: false, omitDefault: true }),
+      },
     },
   }),
 });
@@ -97,13 +90,13 @@ const TableHeaderCellFixturePlugin = createBasePlugin({
 const createTestEditor = async (input: TestEditor) => {
   const { AIChatPlugin } = await import('./AIChatPlugin');
   const editor = createPlateEditor({
+    editor: createEditor<Value>(),
     plugins: [
       BaseParagraphPlugin,
       NodeIdPlugin,
       TableFixturePlugin,
       TableRowFixturePlugin,
       TableCellFixturePlugin,
-      TableHeaderCellFixturePlugin,
       MarkdownPlugin,
       AIChatPlugin,
     ],

@@ -46,12 +46,11 @@ npm install @platejs/combobox
 首先创建一个输入插件，当触发器激活时将被插入：
 
 ```tsx
-import { createBasePlugin } from 'platejs';
+import { defineBasePlugin } from 'platejs';
 
-const TagInputPlugin = createBasePlugin({
-  editOnly: true,
-  name: 'tag_input',
-  schema: { element: { void: 'inline' } },
+const TagInputPlugin = defineBasePlugin('tagInput', {
+  type: 'tag_input',
+  editOnly: true,  schema: { element: { void: 'inline' } },
 });
 ```
 
@@ -60,7 +59,7 @@ const TagInputPlugin = createBasePlugin({
 使用触发器元数据创建主插件：
 
 ```tsx
-import { createBasePlugin } from 'platejs';
+import { defineBasePlugin } from 'platejs';
 import type { TriggerComboboxPluginState } from '@platejs/combobox';
 
 export type TagPluginState = TriggerComboboxPluginState;
@@ -74,11 +73,9 @@ const initialState: TagPluginState = {
   }),
 };
 
-export const TagPlugin = createBasePlugin({
+export const TagPlugin = defineBasePlugin('tag', {
   dependencies: [TagInputPlugin],
-  initialState,
-  name: 'tag',
-  schema: { element: { void: 'inline' } },
+  initialState,  schema: { element: { void: 'inline' } },
 });
 ```
 
@@ -186,7 +183,7 @@ const editor = createPlateEditor({
       initialState: {
         triggerQuery: (editor) => {
           // 在代码块中禁用
-          return !editor.read.nodes.some({ match: { type: 'code_block' } });
+          return !editor.read.nodes.some({ match: { type: 'codeBlock' } });
         },
       },
     }),

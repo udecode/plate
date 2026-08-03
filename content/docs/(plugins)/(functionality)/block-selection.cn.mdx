@@ -93,11 +93,17 @@ import { BlockSelectionPlugin } from '@platejs/selection/react';
 BlockSelectionPlugin.configure({
   initialState: {
     isSelectable: (element, path) => {
-      if (['code_line', 'column', 'td'].includes(element.type)) {
+      if (['codeLine', 'column', 'tableCell'].includes(element.type)) {
         return false;
       }
       // 排除表格行内的块
-      if (editor.api.block({ above: true, at: path, match: { type: 'tr' } })) {
+      if (
+        editor.api.block({
+          above: true,
+          at: path,
+          match: { type: 'tableRow' },
+        })
+      ) {
         return false;
       }
       return true;

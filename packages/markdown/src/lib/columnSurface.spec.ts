@@ -25,7 +25,7 @@ describe('column package surfaces', () => {
             children: [
               {
                 children: [{ text: 'Left column' }],
-                type: 'p',
+                type: 'paragraph',
               },
             ],
             type: 'column',
@@ -35,7 +35,7 @@ describe('column package surfaces', () => {
             children: [
               {
                 children: [{ text: 'Right column' }],
-                type: 'p',
+                type: 'paragraph',
               },
             ],
             type: 'column',
@@ -43,7 +43,7 @@ describe('column package surfaces', () => {
           },
         ],
         layout: [50, 50],
-        type: 'column_group',
+        type: 'columnGroup',
       },
     ]);
 

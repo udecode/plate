@@ -88,8 +88,7 @@ export function ParagraphElement(props: PlateElementProps) {
   );
 }
 
-const ParagraphPlugin = createPlatePlugin({
-  name: 'p',
+const ParagraphPlugin = definePlatePlugin('p', {
   type: 'paragraph',
   schema: {
     element: { content: schema.content.text({ default: 'text', min: 1 }) },
@@ -105,8 +104,7 @@ const ParagraphPlugin = createPlatePlugin({
 `editor.update(...)` 的事务对象上：
 
 ```ts
-const SignaturePlugin = createPlatePlugin({
-  name: 'signature',
+const SignaturePlugin = definePlatePlugin('signature', {
   update: ({ tx }) => ({
     insert() {
       tx.text.insert(' - Plate');
@@ -122,8 +120,7 @@ editor.update((tx) => {
 插件 portal 已经拥有插件名，因此方法应保持扁平并直接描述任务：
 
 ```ts
-const CalloutPlugin = createPlatePlugin({
-  name: 'callout',
+const CalloutPlugin = definePlatePlugin('callout', {
   update: ({ tx }) => ({
     insertCallout() {
       tx.nodes.insert({
@@ -161,8 +158,7 @@ const onKeyDown = (event) => {
 };
 
 // 之后
-const TabPlugin = createPlatePlugin({
-  name: 'tab',
+const TabPlugin = definePlatePlugin('tab', {
   on: {
     keyDown: ({ editor, event }) => {
       if (event.key === 'Tab') {
@@ -176,8 +172,7 @@ const TabPlugin = createPlatePlugin({
 或者，您可以使用 Plate 强大的快捷键系统：
 
 ```ts
-const TabPlugin = createPlatePlugin({
-  name: 'tab',
+const TabPlugin = definePlatePlugin('tab', {
   shortcuts: {
     indent: {
       handler: ({ editor }) => {

@@ -1,6 +1,7 @@
 import type {
   AnyBasePlugin,
   AnyBasePluginDefinition,
+  ConfiguredPluginDescriptor,
   PluginReference,
 } from '../../lib';
 import type { EditorExtensionReference } from '@platejs/plite';
@@ -12,7 +13,8 @@ import type {
   PlatePluginExtendInput,
 } from './PlatePlugin';
 import type { NormalizePlatePluginInput } from './platePluginCompiler.internal';
-import type { PluginDefinitionCarrier } from '../../lib/plugin/pluginDefinitionCarrier.internal';
+import type { PluginDefinitionWitness } from '../../lib/plugin/PluginDefinition';
+import type { InternalPluginDefinitionOf } from '../../lib/plugin/pluginDefinitionLookup.internal';
 import type { MergePluginDefinitions } from '../../lib/plugin/pluginDefinitionMerge.internal';
 
 import {
@@ -29,6 +31,12 @@ type PlateAdapterContribution<C extends AnyBasePluginDefinition> = Exclude<
 
 type BasePluginAdapterSource = PluginReference &
   Pick<AnyBasePlugin, 'configure' | 'extend'>;
+
+type BasePluginDefinitionOf<TPlugin extends BasePluginAdapterSource> =
+  InternalPluginDefinitionOf<TPlugin> extends infer C extends
+    AnyBasePluginDefinition
+    ? C
+    : never;
 
 type PlateAdapterObject<C extends AnyBasePluginDefinition> =
   PlateAdapterContribution<C> &
@@ -71,7 +79,7 @@ type NormalizePlatePluginAdapterWithDependencies<
 > = NormalizePlatePluginInput<Omit<TInput, 'dependencies'>, TFallbackName> &
   Readonly<{ dependencies: TDependencies }>;
 
-type AdaptedPlatePluginDefinition<
+type AdaptedBasePluginDefinition<
   C extends AnyBasePluginDefinition,
   TNormalized,
 > = Omit<
@@ -91,6 +99,19 @@ type AdaptedPlatePluginDefinition<
     : 'dependencies' extends keyof C
       ? Pick<C, 'dependencies'>
       : Readonly<Record<never, never>>);
+
+/** @internal Exact definition for a declaration-emission dependency adapter. */
+export type InternalPlateDependencyAdapterDefinition<
+  C extends AnyBasePluginDefinition,
+  TDependencies extends readonly (EditorExtensionReference | PluginReference)[],
+> = AdaptedBasePluginDefinition<
+  C,
+  NormalizePlatePluginAdapterWithDependencies<
+    PlateAdapterObjectWithoutDependencies<NoInfer<C>>,
+    C['name'],
+    TDependencies
+  >
+>;
 
 type PluginRecord = Record<PropertyKey, unknown>;
 
@@ -142,7 +163,7 @@ const assertAdapterObject = (value: PluginRecord) => {
 const assertPlateExtendObject = (value: PluginRecord) => {
   if (Object.hasOwn(value, 'component')) {
     throw new Error(
-      'Plate plugin .extend() cannot define `component`; bind it in createPlatePlugin(), toPlatePlugin(), or terminal .configure().'
+      'Plate plugin .extend() cannot define `component`; bind it in definePlatePlugin(), toPlatePlugin(), or terminal .configure().'
     );
   }
   if (Object.hasOwn(value, 'api') && typeof value.api !== 'function') {
@@ -276,7 +297,7 @@ const toPlatePluginRuntime = (
 ): AnyBasePlugin => {
   if (!isRuntimeBasePlugin(basePlugin)) {
     throw new Error(
-      'toPlatePlugin requires a descriptor created by createBasePlugin.'
+      'toPlatePlugin requires a descriptor created by defineBasePlugin.'
     );
   }
   if (adapter === undefined) return wrapPlatePlugin(basePlugin);
@@ -311,51 +332,54 @@ const toPlatePluginRuntime = (
  */
 export function toPlatePlugin<const C extends AnyBasePluginDefinition>(
   basePlugin: BasePluginAdapterSource &
-    PluginDefinitionCarrier<C> &
-    Readonly<{ __configured: true }>
+    PluginDefinitionWitness<C> &
+    ConfiguredPluginDescriptor
 ): ConfiguredPlatePlugin<C>;
 
 export function toPlatePlugin<const C extends AnyBasePluginDefinition>(
-  basePlugin: BasePluginAdapterSource &
-    PluginDefinitionCarrier<C> &
-    Readonly<{ __configured?: never }>
+  basePlugin: BasePluginAdapterSource & PluginDefinitionWitness<C>
 ): PlatePlugin<C>;
 
 export function toPlatePlugin<
-  const C extends AnyBasePluginDefinition,
+  const TBasePlugin extends BasePluginAdapterSource,
   const TDependencies extends readonly (
     | EditorExtensionReference
     | PluginReference
   )[],
-  const TAdapter extends PlateAdapterObjectWithoutDependencies<NoInfer<C>>,
+  const TAdapter extends PlateAdapterObjectWithoutDependencies<
+    NoInfer<BasePluginDefinitionOf<TBasePlugin>>
+  >,
 >(
-  basePlugin: BasePluginAdapterSource &
-    PluginDefinitionCarrier<C> &
-    Readonly<{ __configured?: never }>,
+  basePlugin: TBasePlugin &
+    (TBasePlugin extends ConfiguredPluginDescriptor ? never : unknown),
   adapter: TAdapter & Readonly<{ dependencies: TDependencies }>
 ): PlatePlugin<
-  AdaptedPlatePluginDefinition<
-    C,
+  AdaptedBasePluginDefinition<
+    BasePluginDefinitionOf<TBasePlugin>,
     NormalizePlatePluginAdapterWithDependencies<
       AdapterResult<TAdapter>,
-      C['name'],
+      BasePluginDefinitionOf<TBasePlugin>['name'],
       TDependencies
     >
   >
 >;
 
 export function toPlatePlugin<
-  const C extends AnyBasePluginDefinition,
-  const TAdapter extends PlateAdapterInput<NoInfer<C>>,
+  const TBasePlugin extends BasePluginAdapterSource,
+  const TAdapter extends PlateAdapterInput<
+    NoInfer<BasePluginDefinitionOf<TBasePlugin>>
+  >,
 >(
-  basePlugin: BasePluginAdapterSource &
-    PluginDefinitionCarrier<C> &
-    Readonly<{ __configured?: never }>,
+  basePlugin: TBasePlugin &
+    (TBasePlugin extends ConfiguredPluginDescriptor ? never : unknown),
   adapter: TAdapter
 ): PlatePlugin<
-  AdaptedPlatePluginDefinition<
-    C,
-    NormalizePlatePluginAdapterInput<AdapterResult<TAdapter>, C['name']>
+  AdaptedBasePluginDefinition<
+    BasePluginDefinitionOf<TBasePlugin>,
+    NormalizePlatePluginAdapterInput<
+      AdapterResult<TAdapter>,
+      BasePluginDefinitionOf<TBasePlugin>['name']
+    >
   >
 >;
 

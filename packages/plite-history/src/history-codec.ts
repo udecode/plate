@@ -7,6 +7,7 @@ import {
   type Value,
 } from '@platejs/plite';
 import {
+  type AnyEditor,
   areEditorSchemaIdentitiesEqual,
   assertSelectionSupported,
   decodeEditorEffect,
@@ -37,7 +38,7 @@ const copyHistorySchemaIdentity = (
   return identity;
 };
 
-const encodeBatch = (editor: Editor, batch: Batch): HistoryBatchJSON => ({
+const encodeBatch = (editor: AnyEditor, batch: Batch): HistoryBatchJSON => ({
   change: batch.change.toJSON(),
   effects: batch.effects.map(encodeEditorEffect),
   selectionAfter: encodeEditorSelection(editor, batch.selectionAfter, {
@@ -67,7 +68,7 @@ const describeSchema = (identity: EditorSchemaIdentity) =>
     : `schema "${identity.id}" version ${identity.version}`;
 
 const assertSchemaIdentity = (
-  editor: Editor,
+  editor: AnyEditor,
   persisted: EditorSchemaIdentity
 ) => {
   const current = editor.read.schema.identity();

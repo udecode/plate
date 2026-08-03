@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-03-unify-table-cells",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-03-unify-table-cells.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-03",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "remove",
+  "summary": "Use one table cell plugin and component",
+  "targets": [
+    {
+      "name": "table-node",
+      "files": ["apps/www/src/registry/ui/table-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "table-base-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/table-base-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "table-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/table-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-03-table-one-cell-plugin-76fc618b",
+      "kind": "remove",
+      "summary": "Use one table cell plugin and component for data and header cells.",
+      "details": [],
+      "migrationNotes": [
+        "Use TableCellElement for data and header cells. Header nodes use type: 'tableCell' with header: true."
+      ],
+      "targets": ["table-node", "table-base-kit", "table-kit"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-03",
+          "entry": "2026-08-03-unify-table-cells",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

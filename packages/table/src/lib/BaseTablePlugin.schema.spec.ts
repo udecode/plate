@@ -1,6 +1,4 @@
-import { createBaseEditor } from '@platejs/core';
-import { KEYS } from '@platejs/utils';
-
+import { createTestBaseTableEditor } from './__tests__/getTestTablePlugins';
 import {
   BaseTableCellPlugin,
   BaseTablePlugin,
@@ -9,23 +7,24 @@ import {
 
 const paragraph = (text = '') => ({
   children: [{ text }],
-  type: KEYS.p,
+  type: 'paragraph',
 });
 
-const cell = (type: typeof KEYS.td | typeof KEYS.th) => ({
+const cell = (header = false) => ({
   children: [paragraph()],
-  type,
+  ...(header ? { header: true } : {}),
+  type: 'tableCell',
 });
 
 describe('BaseTablePlugin schema', () => {
   it('merges Plate node behavior with the explicit row grammar', () => {
     const row = {
-      children: [cell(KEYS.td), cell(KEYS.th)],
-      type: KEYS.tr,
+      children: [cell(), cell(true)],
+      type: 'tableRow',
     };
-    const editor = createBaseEditor({
+    const editor = createTestBaseTableEditor({
       plugins: [BaseTablePlugin],
-      initialValue: [{ children: [row], type: KEYS.table }],
+      initialValue: [{ children: [row], type: 'table' }],
     });
     const rowSpec = editor.read.schema.element(BaseTableRowPlugin);
     const tableSpec = editor.read.schema.element(BaseTablePlugin);
@@ -33,36 +32,36 @@ describe('BaseTablePlugin schema', () => {
 
     expect(rowSpec).toMatchObject({
       content: {
-        allowedElementTypes: [KEYS.td, KEYS.th],
+        allowedElementTypes: ['tableCell'],
         allowsText: false,
-        default: { type: KEYS.td },
+        default: { type: 'tableCell' },
         min: 0,
       },
       groups: expect.arrayContaining(['block']),
-      type: KEYS.tr,
+      type: 'tableRow',
     });
     expect(tableSpec?.groups).toContain('block');
     expect(cellSpec?.groups).toContain('block');
     expect(tableSpec?.content).toMatchObject({
-      allowedElementTypes: [KEYS.tr],
+      allowedElementTypes: ['tableRow'],
       allowsText: false,
-      default: { type: KEYS.tr },
+      default: { type: 'tableRow' },
       min: 1,
     });
     expect(cellSpec?.content).toMatchObject({
-      allowedElementTypes: [KEYS.p, KEYS.table],
+      allowedElementTypes: ['paragraph', 'table'],
       allowsText: false,
-      default: { type: KEYS.p },
+      default: { type: 'paragraph' },
       min: 1,
     });
     expect(editor.read.schema.create(BaseTablePlugin)).toEqual({
       children: [
         {
           children: [],
-          type: KEYS.tr,
+          type: 'tableRow',
         },
       ],
-      type: KEYS.table,
+      type: 'table',
     });
     expect(() =>
       editor.read.schema.assertDocument({
@@ -70,12 +69,12 @@ describe('BaseTablePlugin schema', () => {
           {
             children: [
               {
-                children: [{ ...cell(KEYS.td), rowSpan: 2 }],
-                type: KEYS.tr,
+                children: [{ ...cell(), rowSpan: 2 }],
+                type: 'tableRow',
               },
-              { children: [], type: KEYS.tr },
+              { children: [], type: 'tableRow' },
             ],
-            type: KEYS.table,
+            type: 'table',
           },
         ],
       })
@@ -84,14 +83,14 @@ describe('BaseTablePlugin schema', () => {
       editor.read.schema.assertDocument({ children: [row] })
     ).toThrow(/root.*cannot contain|cannot contain.*root/i);
     expect(() =>
-      editor.read.schema.assertDocument({ children: [cell(KEYS.td)] })
+      editor.read.schema.assertDocument({ children: [cell()] })
     ).toThrow(/root.*cannot contain|cannot contain.*root/i);
     expect(() =>
       editor.read.schema.assertDocument({
         children: [
           {
-            children: [{ children: [paragraph('invalid')], type: KEYS.tr }],
-            type: KEYS.table,
+            children: [{ children: [paragraph('invalid')], type: 'tableRow' }],
+            type: 'table',
           },
         ],
       })
@@ -101,7 +100,7 @@ describe('BaseTablePlugin schema', () => {
         children: [
           {
             children: [paragraph('invalid')],
-            type: KEYS.table,
+            type: 'table',
           },
         ],
       })
@@ -120,58 +119,58 @@ describe('BaseTablePlugin schema', () => {
                           children: [
                             {
                               children: [paragraph('nested')],
-                              type: KEYS.td,
+                              type: 'tableCell',
                             },
                           ],
-                          type: KEYS.tr,
+                          type: 'tableRow',
                         },
                       ],
-                      type: KEYS.table,
+                      type: 'table',
                     },
                   ],
-                  type: KEYS.td,
+                  type: 'tableCell',
                 },
               ],
-              type: KEYS.tr,
+              type: 'tableRow',
             },
           ],
-          type: KEYS.table,
+          type: 'table',
         },
       ])
     ).not.toThrow();
   });
 
   it('validates table-owned JSON properties', () => {
-    const editor = createBaseEditor({
+    const editor = createTestBaseTableEditor({
       plugins: [BaseTablePlugin],
       initialValue: [
         {
-          children: [{ children: [cell(KEYS.td)], type: KEYS.tr }],
-          type: KEYS.table,
+          children: [{ children: [cell()], type: 'tableRow' }],
+          type: 'table',
         },
       ],
     });
     const colSpan = editor.read.schema.property({
       key: 'colSpan',
       placement: 'element',
-      type: KEYS.td,
+      type: 'tableCell',
     })?.value.validate;
     const borders = editor.read.schema.property({
       key: 'borders',
       placement: 'element',
-      type: KEYS.td,
+      type: 'tableCell',
     })?.value.validate;
     const colSizes = editor.read.schema.property({
       key: 'colSizes',
       placement: 'element',
-      type: KEYS.table,
+      type: 'table',
     })?.value.validate;
 
     expect(
       editor.read.schema.property({
         key: 'colSpan',
         placement: 'element',
-        type: KEYS.td,
+        type: 'tableCell',
       })?.value.kind
     ).toBe('number');
     expect(colSpan).toBeUndefined();
@@ -181,11 +180,11 @@ describe('BaseTablePlugin schema', () => {
           {
             children: [
               {
-                children: [{ ...cell(KEYS.td), colSpan: '2' }],
-                type: KEYS.tr,
+                children: [{ ...cell(), colSpan: '2' }],
+                type: 'tableRow',
               },
             ],
-            type: KEYS.table,
+            type: 'table',
           },
         ],
       })
@@ -194,7 +193,7 @@ describe('BaseTablePlugin schema', () => {
       editor.read.schema.property({
         key: 'attributes',
         placement: 'element',
-        type: KEYS.td,
+        type: 'tableCell',
       })
     ).toBeNull();
     expect(borders?.({ bottom: { color: 'red', size: 1 } })).toBe(true);

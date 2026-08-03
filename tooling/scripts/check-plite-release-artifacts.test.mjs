@@ -243,7 +243,7 @@ test('builds an executable typed Plite schema consumer without changing DCE fixt
     {
       publicExports: [
         {
-          runtimeExportNames: ['createEditorRuntime'],
+          runtimeExportNames: ['createEditor'],
           specifier: '@platejs/plite',
           subpath: '.',
         },
@@ -253,7 +253,7 @@ test('builds an executable typed Plite schema consumer without changing DCE fixt
 
   for (const source of [sources.types, sources.runtime]) {
     assert.match(source, /defineEditorSchema/);
-    assert.match(source, /createEditorRuntime/);
+    assert.match(source, /createEditor/);
     assert.match(source, /read\.schema\.identity\(\)/);
     assert.match(source, /read\.schema\.createAndFill/);
     assert.match(source, /release-consumer-schema/);
@@ -304,7 +304,7 @@ test('packs Core and builds an executable final Plate schema consumer', () => {
 
   for (const source of [sources.types, sources.runtime]) {
     assert.match(source, /createBaseEditor/);
-    assert.match(source, /createBasePlugin/);
+    assert.match(source, /defineBasePlugin/);
     assert.match(source, /api: \(\{ store \}\) => \(\{/);
     assert.match(source, /schema: \(\{ initialState \}\)/);
     assert.match(source, /mark: releasePlateProperty\.boolean/);

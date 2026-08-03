@@ -1,5 +1,5 @@
 import type { DefinitionOf } from '../../plugin/PluginDefinition';
-import { createBasePlugin } from '../../plugin/createBasePlugin';
+import { defineBasePlugin } from '../../plugin/defineBasePlugin';
 
 export type DebugErrorType =
   | (string & {})
@@ -59,7 +59,7 @@ export class PlateError extends Error {
   }
 }
 
-export const DebugPlugin = createBasePlugin({
+export const DebugPlugin = defineBasePlugin('debug', {
   api: ({ store }) => {
     const logLevels: LogLevel[] = ['error', 'warn', 'info', 'log'];
 
@@ -93,7 +93,6 @@ export const DebugPlugin = createBasePlugin({
         log('warn', message, type, details),
     };
   },
-  name: 'debug',
   initialState,
 });
 

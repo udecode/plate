@@ -1,0 +1,446 @@
+{
+  "schemaVersion": 1,
+  "kind": "wordgard-published-package-contract",
+  "generatedAt": "2026-08-01T15:44:15.776Z",
+  "package": {
+    "integrity": "sha512-H8tn9jeYwd96S9XaH6C+BLbT7clFdr9YGwet+HwxIFF9bgckTAolb57SudKHYuYJj74BlIqxyRLh8IEjqm2VAg==",
+    "npmIntegrity": "sha512-H8tn9jeYwd96S9XaH6C+BLbT7clFdr9YGwet+HwxIFF9bgckTAolb57SudKHYuYJj74BlIqxyRLh8IEjqm2VAg==",
+    "npmShasum": "bcdf08c4c2bfecefb95cd7e8c1d54ed17a4f163e",
+    "npmTarball": "https://registry.npmjs.org/wordgard/-/wordgard-0.3.1.tgz",
+    "publishedAt": "2026-07-16T13:00:15.790Z",
+    "spec": "wordgard@0.3.1",
+    "tarballSha256": "549811d59da0f90dfd253b2e336680241889d887bb6f3256e621946492beb95d",
+    "unpackedSize": 1039432,
+    "version": "0.3.1"
+  },
+  "pack": {
+    "entryCount": 30,
+    "fileCount": 30,
+    "files": [
+      {
+        "path": "LICENSE",
+        "size": 1103
+      },
+      {
+        "path": "README.md",
+        "size": 694
+      },
+      {
+        "path": "dist/collab.d.ts",
+        "size": 3796
+      },
+      {
+        "path": "dist/collab.js",
+        "size": 9089
+      },
+      {
+        "path": "dist/command.d.ts",
+        "size": 29407
+      },
+      {
+        "path": "dist/command.js",
+        "size": 57107
+      },
+      {
+        "path": "dist/doc.d.ts",
+        "size": 74934
+      },
+      {
+        "path": "dist/doc.js",
+        "size": 136624
+      },
+      {
+        "path": "dist/editor.d.ts",
+        "size": 75422
+      },
+      {
+        "path": "dist/editor.js",
+        "size": 271203
+      },
+      {
+        "path": "dist/history.d.ts",
+        "size": 3270
+      },
+      {
+        "path": "dist/history.js",
+        "size": 10641
+      },
+      {
+        "path": "dist/index.d.ts",
+        "size": 414
+      },
+      {
+        "path": "dist/index.js",
+        "size": 414
+      },
+      {
+        "path": "dist/inputrule.d.ts",
+        "size": 3816
+      },
+      {
+        "path": "dist/menu.d.ts",
+        "size": 6436
+      },
+      {
+        "path": "dist/phrases.d.ts",
+        "size": 4245
+      },
+      {
+        "path": "dist/phrases.js",
+        "size": 4376
+      },
+      {
+        "path": "dist/schema.d.ts",
+        "size": 18564
+      },
+      {
+        "path": "dist/schema.js",
+        "size": 55404
+      },
+      {
+        "path": "dist/schema/image.d.ts",
+        "size": 489
+      },
+      {
+        "path": "dist/schema/image.js",
+        "size": 5996
+      },
+      {
+        "path": "dist/state.d.ts",
+        "size": 52955
+      },
+      {
+        "path": "dist/state.js",
+        "size": 78032
+      },
+      {
+        "path": "dist/table.d.ts",
+        "size": 7296
+      },
+      {
+        "path": "dist/table.js",
+        "size": 53379
+      },
+      {
+        "path": "dist/types.d.ts",
+        "size": 6380
+      },
+      {
+        "path": "dist/types.js",
+        "size": 9906
+      },
+      {
+        "path": "dist/view.d.ts",
+        "size": 56568
+      },
+      {
+        "path": "package.json",
+        "size": 1472
+      }
+    ]
+  },
+  "entries": [
+    {
+      "declarationExists": true,
+      "declarationPath": "dist/index.d.ts",
+      "importError": null,
+      "runtimeExists": true,
+      "runtimeExports": [
+        "collab",
+        "command",
+        "doc",
+        "editor",
+        "history",
+        "phrases",
+        "schema",
+        "state",
+        "table",
+        "types"
+      ],
+      "runtimePath": "dist/index.js",
+      "subpath": "."
+    },
+    {
+      "declarationExists": true,
+      "declarationPath": "dist/doc.d.ts",
+      "importError": null,
+      "runtimeExists": true,
+      "runtimeExports": [
+        "Attributes",
+        "ChangeSet",
+        "Elt",
+        "Leaf",
+        "Mark",
+        "Node",
+        "Plot",
+        "Pos",
+        "Schema",
+        "SchemaError",
+        "Slice",
+        "Token",
+        "ValidationError",
+        "parse",
+        "serialize"
+      ],
+      "runtimePath": "dist/doc.js",
+      "subpath": "./doc"
+    },
+    {
+      "declarationExists": true,
+      "declarationPath": "dist/types.d.ts",
+      "importError": null,
+      "runtimeExists": true,
+      "runtimeExports": [
+        "Alignment",
+        "BackgroundColor",
+        "BlockCell",
+        "BlockHeaderCell",
+        "Blockquote",
+        "BulletList",
+        "CaptionedFigure",
+        "Cell",
+        "Code",
+        "CodeBlock",
+        "CodeBlockLanguage",
+        "ColSpan",
+        "Color",
+        "Direction",
+        "Doc",
+        "Emphasis",
+        "Figure",
+        "HeaderCell",
+        "Heading",
+        "HorizontalRule",
+        "Image",
+        "ImageAlt",
+        "ImageSize",
+        "InlineDoc",
+        "InlineListItem",
+        "LineBreak",
+        "Link",
+        "ListItem",
+        "OrderedList",
+        "Paragraph",
+        "RowSpan",
+        "Strikethrough",
+        "Strong",
+        "Subscript",
+        "Superscript",
+        "Table",
+        "TableRow",
+        "Underline"
+      ],
+      "runtimePath": "dist/types.js",
+      "subpath": "./types"
+    },
+    {
+      "declarationExists": true,
+      "declarationPath": "dist/schema.d.ts",
+      "importError": null,
+      "runtimeExists": true,
+      "runtimeExports": [
+        "ColorPicker",
+        "alignment",
+        "backgroundColor",
+        "basicMarks",
+        "basicSchema",
+        "blockDoc",
+        "blockquote",
+        "bulletList",
+        "code",
+        "codeBlock",
+        "color",
+        "direction",
+        "emphasis",
+        "figure",
+        "fullSchema",
+        "heading",
+        "horizontalRule",
+        "image",
+        "imageResizing",
+        "inlineDoc",
+        "inlineMarks",
+        "inlineSchema",
+        "lineBreak",
+        "link",
+        "orderedList",
+        "paragraph",
+        "strikethrough",
+        "strong",
+        "subscript",
+        "superscript",
+        "underline"
+      ],
+      "runtimePath": "dist/schema.js",
+      "subpath": "./schema"
+    },
+    {
+      "declarationExists": true,
+      "declarationPath": "dist/table.d.ts",
+      "importError": null,
+      "runtimeExists": true,
+      "runtimeExports": [
+        "CellSelection",
+        "addColumn",
+        "addRow",
+        "deleteColumn",
+        "deleteRow",
+        "handleTablePaste",
+        "mergeCells",
+        "splitCell",
+        "tableMenu",
+        "tables",
+        "toggleHeaderCell"
+      ],
+      "runtimePath": "dist/table.js",
+      "subpath": "./table"
+    },
+    {
+      "declarationExists": true,
+      "declarationPath": "dist/state.d.ts",
+      "importError": null,
+      "runtimeExists": true,
+      "runtimeExports": [
+        "BidiSpan",
+        "Correction",
+        "GardSelection",
+        "GardState",
+        "TextblockMap",
+        "Transaction"
+      ],
+      "runtimePath": "dist/state.js",
+      "subpath": "./state"
+    },
+    {
+      "declarationExists": true,
+      "declarationPath": "dist/editor.d.ts",
+      "importError": null,
+      "runtimeExists": true,
+      "runtimeExports": [
+        "Decoration",
+        "Dialog",
+        "InputRule",
+        "KeyBinding",
+        "Panel",
+        "PointSet",
+        "RangeSet",
+        "Tooltip",
+        "Widget",
+        "Wordgard",
+        "dropCursor",
+        "menuBar",
+        "placeholder"
+      ],
+      "runtimePath": "dist/editor.js",
+      "subpath": "./editor"
+    },
+    {
+      "declarationExists": true,
+      "declarationPath": "dist/command.d.ts",
+      "importError": null,
+      "runtimeExists": true,
+      "runtimeExports": [
+        "Command",
+        "Menu",
+        "autoJoinBlocks",
+        "canAddMarkInRange",
+        "clearNonFitting",
+        "deleteBackward",
+        "deleteEmptyTextblock",
+        "deleteForward",
+        "deleteLine",
+        "deleteSelection",
+        "deleteToLineEnd",
+        "deleteUnit",
+        "deleteWord",
+        "doUnwrapBlock",
+        "enter",
+        "findUnwrappable",
+        "findWrappable",
+        "insertLineBreak",
+        "insertText",
+        "joinBackward",
+        "joinBlocks",
+        "joinForward",
+        "joinListItems",
+        "liftEmptyBlock",
+        "listIsActive",
+        "moveByLine",
+        "moveByPage",
+        "moveByUnit",
+        "moveByWord",
+        "moveToDocSide",
+        "moveToLineSide",
+        "moveToTextblockSide",
+        "redo",
+        "selectAll",
+        "selectedTextblocks",
+        "setAlignment",
+        "setDirection",
+        "setTextblockType",
+        "splitTextblock",
+        "toggleBlock",
+        "toggleEmphasis",
+        "toggleList",
+        "toggleMark",
+        "toggleStrong",
+        "toggleUnderline",
+        "transposeChars",
+        "undo",
+        "unwrapBlock",
+        "wrapBlock",
+        "wrapBlockRange"
+      ],
+      "runtimePath": "dist/command.js",
+      "subpath": "./command"
+    },
+    {
+      "declarationExists": true,
+      "declarationPath": "dist/history.d.ts",
+      "importError": null,
+      "runtimeExists": true,
+      "runtimeExports": [
+        "history",
+        "redo",
+        "redoButton",
+        "redoDepth",
+        "undo",
+        "undoButton",
+        "undoDepth"
+      ],
+      "runtimePath": "dist/history.js",
+      "subpath": "./history"
+    },
+    {
+      "declarationExists": true,
+      "declarationPath": "dist/collab.d.ts",
+      "importError": null,
+      "runtimeExists": true,
+      "runtimeExports": ["collab"],
+      "runtimePath": "dist/collab.js",
+      "subpath": "./collab"
+    },
+    {
+      "declarationExists": true,
+      "declarationPath": "dist/phrases.d.ts",
+      "importError": null,
+      "runtimeExists": true,
+      "runtimeExports": [
+        "PhraseSet",
+        "colorNames",
+        "imagePhrases",
+        "phrases",
+        "tablePhrases"
+      ],
+      "runtimePath": "dist/phrases.js",
+      "subpath": "./phrases"
+    }
+  ],
+  "validation": {
+    "dependencyInstallError": null,
+    "declarationTargetsMissing": [],
+    "importFailures": [],
+    "runtimeTargetsMissing": []
+  },
+  "interpretation": "This freezes the npm-published 0.3.1 artifact only. It does not prove current main, whose ignored dist and clean-pack behavior are audited separately."
+}

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   createEditor,
-  defineEditorExtension,
+  defineExtension,
   type Editor,
   type Path,
 } from '@platejs/plite';
@@ -26,7 +26,7 @@ const paragraph = (text: string): ParagraphElement => ({
 });
 
 const createBlockSelectionExtension = () =>
-  defineEditorExtension({
+  defineExtension('blockSelection', {
     api: ({ editor }) => ({
       clear() {
         selectedBlockPaths.set(editor, null);
@@ -38,7 +38,6 @@ const createBlockSelectionExtension = () =>
         return selectedBlockPaths.get(editor) ?? null;
       },
     }),
-    name: 'blockSelection',
     read: ({ editor }) => ({
       hasSelection: () => selectedBlockPaths.get(editor) != null,
       selectedPath: () => selectedBlockPaths.get(editor) ?? null,
@@ -151,7 +150,7 @@ describe('extension namespace contract', () => {
 
   it('cleans up dynamically installed API, state, and tx extension namespaces', () => {
     const editor = createBlockSelectionEditor();
-    const cleanup = editor.extend(createBlockSelectionExtension());
+    const cleanup = editor.install(createBlockSelectionExtension());
     const api = editor.api as {
       blockSelection?: { selectedPath: () => Path | null };
     };

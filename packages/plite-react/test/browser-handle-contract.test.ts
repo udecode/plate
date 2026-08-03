@@ -42,6 +42,7 @@ const createInputController = () =>
 
 test('browser handle applies direct text writes and canonical document changes', () => {
   const editor = createReactEditor({
+    extensions: [history()],
     initialValue: [{ type: 'paragraph', children: [{ text: 'one' }] }],
   });
   const element = document.createElement('div') as PliteBrowserHandleElement;
@@ -175,7 +176,10 @@ test('browser handle leaves text-only multi-root history to direct DOM sync', ()
       shared: [{ type: 'paragraph', children: [{ text: 'beta' }] }],
     },
   };
-  const editor = createReactEditor({ initialValue: before });
+  const editor = createReactEditor({
+    extensions: [history()],
+    initialValue: before,
+  });
   const element = document.createElement('div') as PliteBrowserHandleElement;
   const forceRender = vi.fn();
 

@@ -150,8 +150,8 @@ const PlateContentBranch = React.forwardRef<
     let beforeEditable: React.ReactNode = null;
 
     getPlateRuntime(editor).pluginCache.render.beforeEditable.forEach(
-      (pluginName) => {
-        const plugin = getCompiledPlatePlugin(editor, pluginName)!;
+      (name) => {
+        const plugin = getCompiledPlatePlugin(editor, name)!;
         if (isEditOnly(plateReadOnly, plugin, 'render')) return;
 
         const BeforeEditable = plugin.render.beforeEditable!;
@@ -165,21 +165,19 @@ const PlateContentBranch = React.forwardRef<
       }
     );
 
-    getPlateRuntime(editor).pluginCache.render.afterEditable.forEach(
-      (pluginName) => {
-        const plugin = getCompiledPlatePlugin(editor, pluginName)!;
-        if (isEditOnly(plateReadOnly, plugin, 'render')) return;
+    getPlateRuntime(editor).pluginCache.render.afterEditable.forEach((name) => {
+      const plugin = getCompiledPlatePlugin(editor, name)!;
+      if (isEditOnly(plateReadOnly, plugin, 'render')) return;
 
-        const AfterEditable = plugin.render.afterEditable!;
+      const AfterEditable = plugin.render.afterEditable!;
 
-        afterEditable = (
-          <>
-            {afterEditable}
-            <AfterEditable {...editableProps} />
-          </>
-        );
-      }
-    );
+      afterEditable = (
+        <>
+          {afterEditable}
+          <AfterEditable {...editableProps} />
+        </>
+      );
+    });
 
     let aboveEditable: React.ReactNode = (
       <>
@@ -191,16 +189,14 @@ const PlateContentBranch = React.forwardRef<
       </>
     );
 
-    getPlateRuntime(editor).pluginCache.render.aboveEditable.forEach(
-      (pluginName) => {
-        const plugin = getCompiledPlatePlugin(editor, pluginName)!;
-        if (isEditOnly(plateReadOnly, plugin, 'render')) return;
+    getPlateRuntime(editor).pluginCache.render.aboveEditable.forEach((name) => {
+      const plugin = getCompiledPlatePlugin(editor, name)!;
+      if (isEditOnly(plateReadOnly, plugin, 'render')) return;
 
-        const AboveEditable = plugin.render.aboveEditable!;
+      const AboveEditable = plugin.render.aboveEditable!;
 
-        aboveEditable = <AboveEditable>{aboveEditable}</AboveEditable>;
-      }
-    );
+      aboveEditable = <AboveEditable>{aboveEditable}</AboveEditable>;
+    });
 
     return (
       <PlateRoot id={id}>

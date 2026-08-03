@@ -26,4 +26,4 @@ editor.update.list.outdent();
 
 Generic package code can use the same groups through
 `editor.plugin(ListPlugin).read` and `editor.plugin(ListPlugin).update`.
-Configure list targets through `targetPluginNames`.
+Configure list targets through `targetPlugins`.

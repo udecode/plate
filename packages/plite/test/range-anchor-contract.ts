@@ -7,7 +7,6 @@ import {
 
 import {
   createEditor,
-  createEditorRuntime,
   createEditorView,
   type Anchor,
   type Element,
@@ -205,7 +204,7 @@ describe('plite range anchor contract', () => {
   });
 
   it('keeps rootless non-main range anchors public while rebasing in their view root', () => {
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       initialValue: {
         children: createChildren(),
         roots: { header: createChildren() },
@@ -259,7 +258,7 @@ describe('plite range anchor contract', () => {
   });
 
   it('removes range anchors only when a matching-root change deletes them', () => {
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       initialValue: {
         children: createChildren(),
         roots: { header: createChildren() },

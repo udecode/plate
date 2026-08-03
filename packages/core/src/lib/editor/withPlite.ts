@@ -1,24 +1,21 @@
 import {
   createEditor,
-  defineEditorExtension,
+  defineExtension,
   defineEditorSchema,
   type Editor,
   type EditorDocumentValue,
   type EditorExtensionReference,
-  type EditorSchemaPropertyHandle,
-  type EditorSchemaPropertyQuery,
   type SnapshotInput,
   type EditorTransactionSpecBuilder,
-  type Element,
   type Selection,
   type Value,
 } from '@platejs/plite';
 import {
-  getEditorDefaultBlockType,
+  type AnyEditor,
+  getCompiledEditorSchemaFromApi,
   initializeEditorExtensions,
   MAIN_ROOT_KEY,
   repairEditorValue,
-  setEditorDefaultBlockType,
   setEditorMaxLength,
   setEditorReadOnly,
   setEditorSnapshotInputTransform,
@@ -39,6 +36,7 @@ import {
 import { clearPlateRuntimeCandidate } from '../../internal/plugin/plateRuntime';
 import { clearPluginStores } from '../../internal/plugin/pluginStore';
 import {
+  getPluginSchemaFamily,
   isNominalPluginDescriptor,
   isNominalPluginReference,
 } from '../../internal/utils/mergePlugins';
@@ -51,16 +49,17 @@ import type {
 import type { InternalPluginDefinitionOf } from '../plugin/pluginDefinitionLookup.internal';
 import type {
   AnyBasePlugin,
-  AnyBasePluginPortal,
   BasePluginPortal,
   BasePluginDefinitionInput,
+  DynamicBasePluginPortal,
 } from '../plugin/BasePlugin';
 import type { NodeIdPluginState } from '../plugins/node-id/NodeIdPlugin';
-import { BaseParagraphPlugin } from '../plugins/paragraph/BaseParagraphPlugin';
 import type {
   InferPlugins,
+  InferRuntimePlugins,
   BaseEditor,
   BasePluginInput,
+  InternalBaseEditorMutationProvider,
   InternalBaseEditorWithInstalledPlugins,
   MergeInstalledPluginDefinitions,
   PlateSchemaIdentity,
@@ -70,35 +69,48 @@ import {
   createPlateModelPublication,
   createPlateRuntimeExtensions,
   getPlateRuntimeExtensionBindings,
-  plateReactCorePlugins,
   resolvePlateRuntimeExtension,
   resolvePlugins,
   restorePlateRuntimeExtensionBindings,
   snapshotPlatePluginSources,
 } from '../../internal/plugin/resolvePlugins';
 import { transformInitialValue } from '../../internal/plugin/pipeTransformInitialValue';
-import { createBasePlugin } from '../plugin/createBasePlugin';
+import {
+  getGeneratedEditorContract,
+  type RuntimeGeneratedEditorContract,
+} from './defineEditor';
+
+type ProjectInjectedEditor<TEditor, TProjection> = Omit<
+  TEditor,
+  keyof TProjection
+> &
+  TProjection;
+import { defineBasePlugin } from '../plugin/defineBasePlugin';
 import { createPluginPortal } from '../plugin/createPluginContext.internal';
 import {
   type CorePluginDefinition,
+  type CorePlugins,
   getCorePlugins,
 } from '../plugins/getCorePlugins';
 
-type PluginLookupInput = AnyBasePlugin | string;
+type PluginLookupInput = AnyBasePlugin | PluginReference | string;
 type PluginContextLookupInput = PluginLookupInput;
 
 type PlateSchemaDescriptor = PluginReference;
 
 type InferBaseEditorPlugins<TPlugins extends readonly unknown[]> =
+  MergeInstalledPluginDefinitions<
+    InferRuntimePlugins<CorePlugins>,
+    InferRuntimePlugins<TPlugins>
+  >;
+
+type InferBaseEditorSchemaPlugins<TPlugins extends readonly unknown[]> =
   MergeInstalledPluginDefinitions<CorePluginDefinition, InferPlugins<TPlugins>>;
 
 const hasPlateSchemaDescriptorShape = (
   value: unknown
 ): value is PlateSchemaDescriptor =>
-  typeof value === 'object' &&
-  value !== null &&
-  'name' in value &&
-  'type' in value;
+  typeof value === 'object' && value !== null && 'name' in value;
 
 const isBasePluginDescriptor = (value: unknown): value is AnyBasePlugin =>
   isNominalPluginDescriptor(value) &&
@@ -198,32 +210,28 @@ const createPlateSchemaExtensions = (
   editor: BaseEditor,
   identityOptions: PlateSchemaIdentity | undefined,
   model: ReturnType<typeof compilePlateModel>,
-  pluginList: readonly AnyBasePlugin[]
+  pluginList: readonly AnyBasePlugin[],
+  generatedContract?: RuntimeGeneratedEditorContract
 ) => {
-  const contribution = model.contribution;
   const definition = {
-    contentRoots: contribution.contentRoots ?? [],
-    elements: contribution.elements ?? {},
-    groups: contribution.groups ?? {},
-    properties: contribution.properties ?? [],
+    groups: model.contribution.groups ?? {},
     root: createPlateBlockContent({
-      default: { type: getEditorDefaultBlockType(editor) },
+      default: { type: 'paragraph' },
       min: 1,
     }),
-    roots: contribution.roots ?? {},
   };
   const identity = identityOptions
-    ? defineEditorSchema({
+    ? defineEditorSchema(`schema:${identityOptions.id}`, {
         ...definition,
         id: identityOptions.id,
         version: identityOptions.version,
       })
-    : defineEditorSchema(definition);
+    : defineEditorSchema('schema:derived', definition);
   const { codecExtension, runtime } = withCompiledPlateModelCandidate(
     editor,
     model,
     () => {
-      const runtime = createPlateRuntimeExtensions(editor, pluginList);
+      const runtime = createPlateRuntimeExtensions(editor, pluginList, model);
 
       return {
         codecExtension: compilePlateCodecs(editor, model, pluginList),
@@ -233,9 +241,23 @@ const createPlateSchemaExtensions = (
   );
   let publication: ReturnType<typeof createPlateModelPublication> | undefined;
 
-  const modelExtension = defineEditorExtension({
-    name: 'plate:model',
-    validate: ({ schema: compiledSchema }) => {
+  const modelExtension = defineExtension('plate:model', {
+    validate: ({ schema: schemaApi }) => {
+      const compiledSchema = getCompiledEditorSchemaFromApi(schemaApi);
+
+      if (!compiledSchema) {
+        throw new Error(
+          'Generated editor validation requires a compiled schema.'
+        );
+      }
+      if (
+        generatedContract &&
+        compiledSchema.identity.fingerprint !== generatedContract.fingerprint
+      ) {
+        throw new Error(
+          `Generated editor schema is stale: expected "${generatedContract.fingerprint}" but compiled "${compiledSchema.identity.fingerprint}". Run plate generate.`
+        );
+      }
       const { apiByPlugin, shortcutApiByPlugin } =
         runtime.resolveApiPublication();
 
@@ -244,7 +266,7 @@ const createPlateSchemaExtensions = (
         identityOptions ?? null,
         model,
         pluginList,
-        compiledSchema,
+        schemaApi,
         apiByPlugin,
         shortcutApiByPlugin,
         runtime.updateMethods
@@ -264,7 +286,8 @@ const createPlateSchemaExtensions = (
 const createPlateConfiguration = (
   editor: BaseEditor,
   identity: PlateSchemaIdentity | undefined,
-  pluginList: readonly AnyBasePlugin[]
+  pluginList: readonly AnyBasePlugin[],
+  generatedContract?: RuntimeGeneratedEditorContract
 ) =>
   withCompiledPlatePluginCandidate(editor, pluginList, () => {
     const model = compilePlateModel(editor);
@@ -272,7 +295,8 @@ const createPlateConfiguration = (
       editor,
       identity,
       model,
-      pluginList
+      pluginList,
+      generatedContract
     );
     return Object.freeze([
       ...modelExtensions,
@@ -312,9 +336,9 @@ const installPlateModelAccessors = (editor: BaseEditor) => {
         `Plate schema descriptor "${descriptor.name}" is not installed.`
       );
     }
-    if (plugin.type !== descriptor.type) {
+    if (getPluginSchemaFamily(descriptor) !== getPluginSchemaFamily(plugin)) {
       throw new Error(
-        `Plate schema descriptor "${descriptor.name}" expects type "${descriptor.type}" but the installed plugin owns "${plugin.type}".`
+        `Plate schema descriptor "${descriptor.name}" does not match the installed plugin family.`
       );
     }
     if (requireElement && !binding.elementType) {
@@ -338,9 +362,9 @@ const installPlateModelAccessors = (editor: BaseEditor) => {
               properties
             );
           }
-          const { plugin } = resolveDescriptor(descriptor, true);
+          const { binding } = resolveDescriptor(descriptor, true);
 
-          return rawSchema.create(plugin.type, properties);
+          return rawSchema.create(binding.elementType!, properties);
         };
       }
       if (key === 'allowsElementType') {
@@ -350,10 +374,10 @@ const installPlateModelAccessors = (editor: BaseEditor) => {
         ) =>
           rawSchema.allowsElementType(
             hasPlateSchemaDescriptorShape(parent)
-              ? resolveDescriptor(parent, true).plugin.type
+              ? resolveDescriptor(parent, true).binding.elementType!
               : parent,
             hasPlateSchemaDescriptorShape(child)
-              ? resolveDescriptor(child, true).plugin.type
+              ? resolveDescriptor(child, true).binding.elementType!
               : child
           );
       }
@@ -362,74 +386,19 @@ const installPlateModelAccessors = (editor: BaseEditor) => {
           if (!hasPlateSchemaDescriptorShape(descriptor)) {
             return rawSchema.element(descriptor);
           }
-          const { plugin } = resolveDescriptor(descriptor, true);
+          const { binding } = resolveDescriptor(descriptor, true);
 
-          return rawSchema.element(plugin.type);
+          return rawSchema.element(binding.elementType!);
         };
       }
       if (key === 'isElementTypeInGroup') {
         return (descriptor: PlateSchemaDescriptor | string, group: string) =>
           rawSchema.isElementTypeInGroup(
             hasPlateSchemaDescriptorShape(descriptor)
-              ? resolveDescriptor(descriptor, true).plugin.type
+              ? resolveDescriptor(descriptor, true).binding.elementType!
               : descriptor,
             group
           );
-      }
-      if (key === 'getElementProperty') {
-        return (
-          element: Element,
-          property:
-            | Parameters<typeof rawSchema.getElementProperty>[1]
-            | PlateSchemaDescriptor
-        ) => {
-          if (!hasPlateSchemaDescriptorShape(property)) {
-            return rawSchema.getElementProperty(element, property);
-          }
-          const { binding, plugin } = resolveDescriptor(property, false);
-
-          if (binding.elementPropertyKeys.length !== 1) {
-            throw new Error(
-              `Plate plugin "${plugin.name}" cannot identify one element property. Declare exactly one element property, or pass a raw Plite property handle or string.`
-            );
-          }
-
-          return rawSchema.getElementProperty(
-            element,
-            binding.elementPropertyKeys[0]
-          );
-        };
-      }
-      if (key === 'property') {
-        return (
-          property:
-            | EditorSchemaPropertyHandle
-            | EditorSchemaPropertyQuery
-            | PlateSchemaDescriptor
-        ) => {
-          if ('placement' in property) {
-            return rawSchema.property(property);
-          }
-          if ('kind' in property) {
-            return rawSchema.property(property);
-          }
-          const { binding, plugin } = resolveDescriptor(property, false);
-          const propertyIds = [
-            ...binding.propertyIds,
-            ...(binding.textPropertyId ? [binding.textPropertyId] : []),
-          ];
-
-          if (propertyIds.length !== 1) {
-            throw new Error(
-              `Plate plugin "${plugin.name}" cannot identify one schema property. Declare exactly one element or text property, or pass a raw Plite property handle or query.`
-            );
-          }
-
-          return rawSchema.property({
-            id: propertyIds[0]!,
-            kind: 'schema-property',
-          });
-        };
       }
       return Reflect.get(target, key, receiver);
     },
@@ -481,7 +450,8 @@ const installPlateExtensionPortal = (editor: BaseEditor) => {
 const installPlateEditorExtensions = (
   editor: BaseEditor,
   identity: PlateSchemaIdentity | undefined,
-  initialize?: (tx: EditorTransactionSpecBuilder) => void
+  initialize?: (tx: EditorTransactionSpecBuilder) => void,
+  generatedContract?: RuntimeGeneratedEditorContract
 ) => {
   const previousBindings = getPlateRuntimeExtensionBindings(editor);
   const restoreExtensionPortal = installPlateExtensionPortal(editor);
@@ -491,7 +461,8 @@ const installPlateEditorExtensions = (
     const configuration = createPlateConfiguration(
       editor,
       identity,
-      getPlateRuntime(editor).pluginList
+      getPlateRuntime(editor).pluginList,
+      generatedContract
     );
 
     initializeEditorExtensions<Editor>(editor, configuration, {
@@ -512,7 +483,7 @@ const installPlateEditorExtensions = (
   if (!initialize) installPlateModelAccessors(editor);
 };
 
-export type BaseExtendBaseEditorOptions<
+export type BaseEditorOptions<
   P extends BasePluginInput = CorePluginDefinition,
 > = {
   /**
@@ -608,10 +579,10 @@ export type BaseExtendBaseEditorOptions<
   skipInitialization?: boolean;
 };
 
-export type ExtendBaseEditorOptions<
+type ApplyBaseEditorOptions<
   V extends Value = Value,
   P extends BasePluginInput = CorePluginDefinition,
-> = Omit<BaseExtendBaseEditorOptions<P>, 'id'> &
+> = Omit<BaseEditorOptions<P>, 'id'> &
   Partial<
     Pick<
       AnyBasePlugin,
@@ -636,32 +607,30 @@ export type ExtendBaseEditorOptions<
       | ((context: {
           editor: InternalBaseEditorWithInstalledPlugins<
             V,
-            InferBaseEditorPlugins<P[]>
+            InferBaseEditorPlugins<P[]>,
+            InferBaseEditorSchemaPlugins<P[]>
           >;
         }) => EditorValueInput<NoInfer<V>>)
       | EditorValueInput<NoInfer<V>>;
   };
 
 /**
- * Applies Plate enhancements to an editor instance (non-React version).
- *
- * @remarks
- *   This function supports server-side usage as it doesn't include React-specific
- *   features like component rendering or hooks integration.
- * @see {@link createBaseEditor} for a higher-level non-React editor creation function.
- * @see {@link createPlateEditor} for a React-specific version of editor creation.
- * @see {@link usePlateEditor} for a memoized React version.
- * @see {@link extendPlateEditor} for the React-specific enhancement function.
+ * Applies the Base plugin model to the supplied Plite editor during
+ * construction.
  */
-export const extendBaseEditor = <
+const applyBaseEditor = <
   V extends Value = Value,
   P extends BasePluginInput = CorePluginDefinition,
+  E extends AnyEditor = AnyEditor,
 >(
-  e: Editor,
-  options: ExtendBaseEditorOptions<V, P>
-): InternalBaseEditorWithInstalledPlugins<V, InferBaseEditorPlugins<P[]>> => {
+  e: E,
+  options: ApplyBaseEditorOptions<V, P>
+): InternalBaseEditorWithInstalledPlugins<
+  V,
+  InferBaseEditorPlugins<P[]>,
+  InferBaseEditorSchemaPlugins<P[]>
+> => {
   const {
-    [plateReactCorePlugins]: reactCorePlugins = [],
     affinity,
     autoSelect,
     initialValue,
@@ -675,9 +644,10 @@ export const extendBaseEditor = <
     skipInitialization,
     userId,
     ...pluginConfig
-  } = options as ExtendBaseEditorOptions<V, P> & {
-    [plateReactCorePlugins]?: readonly AnyBasePlugin[];
-  };
+  } = options;
+  const generatedContract = getGeneratedEditorContract(plugins);
+  const effectiveSchemaIdentity =
+    schemaIdentity ?? generatedContract?.schemaIdentity;
   const editor = e as unknown as BaseEditor;
 
   editor.runtime = editor.runtime ?? ({} as BaseEditor['runtime']);
@@ -692,7 +662,9 @@ export const extendBaseEditor = <
   function getInstalledPluginPortal<P extends AnyBasePlugin & PluginReference>(
     plugin: P
   ): BasePluginPortal<InternalPluginDefinitionOf<P>>;
-  function getInstalledPluginPortal(pluginName: string): AnyBasePluginPortal;
+  function getInstalledPluginPortal(
+    plugin: AnyBasePlugin | PluginReference | string
+  ): DynamicBasePluginPortal;
   function getInstalledPluginPortal(plugin: PluginContextLookupInput): unknown {
     return createPluginPortal(editor, plugin);
   }
@@ -702,9 +674,9 @@ export const extendBaseEditor = <
     nodeId,
   });
 
-  const internalRootCandidate = Reflect.apply(createBasePlugin, undefined, [
+  const internalRootCandidate = Reflect.apply(defineBasePlugin, undefined, [
+    'root',
     {
-      name: 'root',
       ...pluginConfig,
       override: {
         ...pluginConfig.override,
@@ -726,24 +698,14 @@ export const extendBaseEditor = <
   const sourcePlugins = snapshotPlatePluginSources({
     baseCore: baseCorePlugins,
     internalRoot: internalRootDescriptor,
-    reactCore: reactCorePlugins,
+    reactCore: [],
     user: plugins,
   });
-  const schemaIdentitySnapshot = schemaIdentity
-    ? Object.freeze({
-        id: schemaIdentity.id,
-        version: schemaIdentity.version,
-      })
-    : undefined;
   const publicationBeforeExtension = getPlateModelPublication(editor);
   let restoreSnapshotInputTransform: (() => void) | undefined;
 
   try {
     resolvePlugins(editor, sourcePlugins);
-    setEditorDefaultBlockType(
-      editor,
-      editor.plugin(BaseParagraphPlugin.name).type
-    );
     restoreSnapshotInputTransform = setEditorSnapshotInputTransform(
       editor,
       (input: SnapshotInput) => {
@@ -772,7 +734,12 @@ export const extendBaseEditor = <
     );
     installPlateEditorExtensions(
       editor,
-      schemaIdentitySnapshot,
+      effectiveSchemaIdentity
+        ? Object.freeze({
+            id: effectiveSchemaIdentity.id,
+            version: effectiveSchemaIdentity.version,
+          })
+        : undefined,
       skipInitialization
         ? undefined
         : (tx) =>
@@ -785,18 +752,21 @@ export const extendBaseEditor = <
                         editor:
                           editor as unknown as InternalBaseEditorWithInstalledPlugins<
                             V,
-                            InferBaseEditorPlugins<P[]>
+                            InferBaseEditorPlugins<P[]>,
+                            InferBaseEditorSchemaPlugins<P[]>
                           >,
                       })
                   : initialValue,
               selection,
               shouldNormalizeEditor,
-            })
+            }),
+      generatedContract
     );
 
     return editor as unknown as InternalBaseEditorWithInstalledPlugins<
       V,
-      InferBaseEditorPlugins<P[]>
+      InferBaseEditorPlugins<P[]>,
+      InferBaseEditorSchemaPlugins<P[]>
     >;
   } catch (error) {
     restoreSnapshotInputTransform?.();
@@ -808,14 +778,14 @@ export const extendBaseEditor = <
   }
 };
 
-export type CreateBaseEditorOptions<
-  V extends Value = Value,
+type CreateBaseEditorOptionsForValue<
+  V extends Value,
   P extends readonly unknown[] = readonly CreateBaseEditorPluginInput[],
-> = Partial<Omit<ExtendBaseEditorOptions<V, BasePluginInput>, 'plugins'>> & {
+> = Partial<Omit<ApplyBaseEditorOptions<V, BasePluginInput>, 'plugins'>> & {
   /** Stable logical identity for the created editor. */
   id?: string;
   /**
-   * Initial editor to be extended with `extendBaseEditor`.
+   * Existing Plite editor to configure as a Base editor.
    *
    * @default createEditor()
    */
@@ -826,6 +796,10 @@ export type CreateBaseEditorOptions<
    */
   plugins?: P;
 };
+
+export type CreateBaseEditorOptions<
+  P extends readonly unknown[] = readonly CreateBaseEditorPluginInput[],
+> = CreateBaseEditorOptionsForValue<Value, P>;
 
 type CreateBaseEditorPluginInput<
   _C extends AnyBasePluginDefinition = AnyBasePluginDefinition,
@@ -846,7 +820,7 @@ type InferCreateBaseEditorPlugins<P extends readonly unknown[]> =
  * ```ts
  * const editor = createBaseEditor({
  *   plugins: [ParagraphPlugin, H1Plugin],
- *   initialValue: [{ type: 'p', children: [{ text: 'Hello world!' }] }],
+ *   initialValue: [{ type: 'paragraph', children: [{ text: 'Hello world!' }] }],
  * });
  *
  * // Editor with custom configuration
@@ -874,28 +848,42 @@ type InferCreateBaseEditorPlugins<P extends readonly unknown[]> =
  *
  * @see {@link createPlateEditor} for a React-specific version of editor creation.
  * @see {@link usePlateEditor} for a memoized React version.
- * @see {@link extendBaseEditor} for the underlying function that applies base Plate enhancements to an editor.
  */
 export function createBaseEditor<
-  V extends Value = Value,
+  const P extends readonly unknown[] = readonly [],
+>(options: CreateBaseEditorOptions<P> & { plugins: P }): BaseEditor<P>;
+export function createBaseEditor<
+  const TEditor,
   const P extends readonly unknown[] = readonly [],
 >(
-  options: CreateBaseEditorOptions<V, P> & { plugins: P }
-): InternalBaseEditorWithInstalledPlugins<V, InferCreateBaseEditorPlugins<P>>;
-export function createBaseEditor<V extends Value = Value>(
-  options?: CreateBaseEditorOptions<V>
-): InternalBaseEditorWithInstalledPlugins<V, CorePluginDefinition>;
-export function createBaseEditor<
-  V extends Value = Value,
-  const P extends readonly unknown[] = readonly [],
->({
+  options: Omit<CreateBaseEditorOptions<P>, 'editor' | 'initialValue'> & {
+    editor: TEditor extends Editor<infer _V, infer _TExtensions>
+      ? TEditor
+      : never;
+    initialValue?: CreateBaseEditorOptionsForValue<
+      TEditor extends Editor<infer V, infer _TExtensions> ? V : never,
+      P
+    >['initialValue'];
+  }
+): ProjectInjectedEditor<
+  TEditor,
+  InternalBaseEditorWithInstalledPlugins<
+    TEditor extends Editor<infer V, infer _TExtensions> ? V : never,
+    InferCreateBaseEditorPlugins<P>,
+    InternalBaseEditorMutationProvider<P, InferCreateBaseEditorPlugins<P>>
+  >
+>;
+export function createBaseEditor(
+  options?: CreateBaseEditorOptions<readonly []>
+): BaseEditor<readonly []>;
+export function createBaseEditor({
   editor,
   id,
   ...options
-}: CreateBaseEditorOptions<V, P> = {}): InternalBaseEditorWithInstalledPlugins<
-  V,
-  InferCreateBaseEditorPlugins<P>
-> {
+}: CreateBaseEditorOptionsForValue<
+  Value,
+  readonly BasePluginInput[]
+> = {}): unknown {
   const baseEditor =
     editor ??
     createEditor({
@@ -904,11 +892,8 @@ export function createBaseEditor<
       readOnly: options.readOnly,
     });
 
-  return extendBaseEditor<V, BasePluginInput>(
+  return applyBaseEditor<Value, BasePluginInput>(
     baseEditor,
-    options as unknown as ExtendBaseEditorOptions<V, BasePluginInput>
-  ) as unknown as InternalBaseEditorWithInstalledPlugins<
-    V,
-    InferCreateBaseEditorPlugins<P>
-  >;
+    options as unknown as ApplyBaseEditorOptions<Value, BasePluginInput>
+  ) as unknown as BaseEditor;
 }

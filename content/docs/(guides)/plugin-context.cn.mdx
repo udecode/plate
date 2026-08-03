@@ -12,8 +12,7 @@ description: 理解并利用 Plate 插件中的插件上下文。
 插件上下文作为第一个参数在所有插件方法中可用：
 
 ```ts
-const MyPlugin = createPlatePlugin({
-  name: 'myPlugin',
+const MyPlugin = definePlatePlugin('myPlugin', {
   on: {
     keyDown: (ctx) => {
       // ctx 就是插件上下文
@@ -28,8 +27,7 @@ const MyPlugin = createPlatePlugin({
 需要访问其他插件时，使用该插件 descriptor 打开类型化 consumer portal。
 
 ```ts
-const MyPlugin = createPlatePlugin({
-  name: 'myPlugin',
+const MyPlugin = definePlatePlugin('myPlugin', {
   on: {
     keyDown: ({ editor }) => {
       const linkCtx = editor.plugin(LinkPlugin);
@@ -40,13 +38,13 @@ const MyPlugin = createPlatePlugin({
 
 ### `useEditorPlugin`
 
-在 React 组件中，您可以使用 `useEditorPlugin` 钩子来访问插件上下文：
+在 React 组件中，使用 `useEditorPlugin` 访问 consumer portal：
 
 ```ts
 const MyComponent = () => {
-  const { editor, plugin, type } = useEditorPlugin(MyPlugin);
+  const { name } = useEditorPlugin(MyPlugin);
   
-  return <div>{type}</div>;
+  return <div>{name}</div>;
 };
 ```
 
@@ -57,8 +55,7 @@ const MyComponent = () => {
 当前的 `PlateEditor` 实例：
 
 ```ts
-const MyPlugin = createPlatePlugin({
-  name: 'myPlugin',
+const MyPlugin = definePlatePlugin('myPlugin', {
   on: {
     commit: ({ editor }) => {
       console.info('编辑器内容:', editor.children);
@@ -72,8 +69,7 @@ const MyPlugin = createPlatePlugin({
 当前插件的配置：
 
 ```ts
-const MyPlugin = createPlatePlugin({
-  name: 'myPlugin',
+const MyPlugin = definePlatePlugin('myPlugin', {
   on: {
     keyDown: ({ plugin }) => {
       console.info('插件名称:', plugin.name);
@@ -95,10 +91,8 @@ const initialState: MyPluginState = {
   myValue: 'default',
 };
 
-const MyPlugin = createPlatePlugin({
-  initialState,
-  name: 'myPlugin',
-  on: {
+const MyPlugin = definePlatePlugin('myPlugin', {
+  initialState,  on: {
     click: ({ store }) => {
       const myValue = store.get('myValue');
       console.info('state 值:', myValue);
@@ -120,10 +114,8 @@ const initialState: MyPluginState = {
   value2: 'b',
 };
 
-const MyPlugin = createPlatePlugin({
-  initialState,
-  name: 'myPlugin',
-  on: {
+const MyPlugin = definePlatePlugin('myPlugin', {
+  initialState,  on: {
     click: ({ store }) => {
       console.info('完整 state:', store.get());
     },
@@ -142,10 +134,8 @@ const initialState: MyPluginState = {
   count: 0,
 };
 
-const MyPlugin = createPlatePlugin({
-  initialState,
-  name: 'myPlugin',
-  on: {
+const MyPlugin = definePlatePlugin('myPlugin', {
+  initialState,  on: {
     click: ({ store }) => {
       store.set({ count: 1 });
     },
@@ -164,10 +154,8 @@ const initialState: MyPluginState = {
   count: 0,
 };
 
-const MyPlugin = createPlatePlugin({
-  initialState,
-  name: 'myPlugin',
-  on: {
+const MyPlugin = definePlatePlugin('myPlugin', {
+  initialState,  on: {
     click: ({ store }) => {
       store.set((state) => {
         state.count += 1;
@@ -177,17 +165,15 @@ const MyPlugin = createPlatePlugin({
 });
 ```
 
-### `type`
+### `name`
 
-与插件关联的节点类型：
+插件的唯一标识；当插件拥有 schema 时，它也是主要持久化标识：
 
 ```ts
-const MyPlugin = createPlatePlugin({
-  name: 'myPlugin',
-  type: 'myNodeType',
+const MyPlugin = definePlatePlugin('myPlugin', {
   on: {
-    keyDown: ({ type }) => {
-      console.info('节点类型:', type);
+    keyDown: ({ name }) => {
+      console.info('插件标识:', name);
     },
   },
 });
@@ -199,9 +185,9 @@ const MyPlugin = createPlatePlugin({
 唯一的 inference anchor：
 
 ```ts
-import { createBasePlugin, property } from 'platejs';
+import { defineBasePlugin, property } from 'platejs';
 
-const StrongPlugin = createBasePlugin({
+const StrongPlugin = defineBasePlugin('strong', {
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       'text/html': {
@@ -209,9 +195,7 @@ const StrongPlugin = createBasePlugin({
         decodeOnly: true,
         match: [{ tag: 'strong' }],
       },
-    }),
-  name: 'strong',
-  schema: { mark: property.boolean() },
+    }),  schema: { mark: property.boolean() },
 });
 ```
 
@@ -226,6 +210,6 @@ Map 保持 MIME-keyed；`'text/html'` 使用单个 rule 或非空有序 rule tup
 能力专属 helper 和 Plate plugin context 会一起推断。抽取 domain input，
 不要抽取整个 Plate plugin context。
 
-从 `@platejs/plite` import 的 `defineEditorExtension` 只用于独立复用的
+从 `@platejs/plite` import 的 `defineExtension` 只用于独立复用的
 standalone Plite descriptor。完整示例见
 [插件方法](/docs/plugin-methods#install-plite-capabilities)。

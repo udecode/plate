@@ -15,15 +15,13 @@ mock.module('@platejs/core/react', () => ({
   useElementSelected: useElementSelectedMock,
 }));
 
-const ComboboxInputPlugin = actualCoreReact.createPlatePlugin({
-  name: 'mentionInput',
+const ComboboxInputPlugin = actualCoreReact.definePlatePlugin('mentionInput', {
   schema: {
     element: {
       inline: true,
       void: 'inline',
     },
   },
-  type: 'mention_input',
 });
 
 describe('combobox input hooks', () => {
@@ -44,8 +42,8 @@ describe('combobox input hooks', () => {
     const onCancelInput = mock();
     const inputElement = {
       children: [{ text: '' }],
-      type: 'mention_input',
-    } satisfies Element;
+      type: 'mentionInput',
+    } as const;
     const editor = actualCoreReact.createPlateEditor({
       plugins: [ComboboxInputPlugin],
       selection: {
@@ -54,8 +52,8 @@ describe('combobox input hooks', () => {
         focus: { offset: 0, path: [0, 1, 0] },
       },
       initialValue: [
-        { children: [inputElement], type: 'p' },
-        { children: [{ text: 'after' }], type: 'p' },
+        { children: [inputElement], type: 'paragraph' },
+        { children: [{ text: 'after' }], type: 'paragraph' },
       ],
     });
     const element = editor.read.nodes.get<Element>([0, 1])?.[0];
@@ -82,7 +80,7 @@ describe('combobox input hooks', () => {
     expect(editor.read.children()).toHaveLength(2);
     expect(editor.read.text.string([0])).toBe('');
     expect(editor.read.text.string([1])).toBe('after');
-    expect(editor.read.nodes.some({ match: { type: 'mention_input' } })).toBe(
+    expect(editor.read.nodes.some({ match: { type: 'mentionInput' } })).toBe(
       false
     );
     expect(onCancelInput).toHaveBeenCalledWith('blur');
@@ -107,10 +105,10 @@ describe('combobox input hooks', () => {
       },
       initialValue: [
         {
-          children: [{ children: [{ text: '' }], type: 'mention_input' }],
-          type: 'p',
+          children: [{ children: [{ text: '' }], type: 'mentionInput' }],
+          type: 'paragraph',
         },
-        { children: [{ text: 'after' }], type: 'p' },
+        { children: [{ text: 'after' }], type: 'paragraph' },
       ],
     });
     const element = editor.read.nodes.get<Element>([0, 1])?.[0];
@@ -140,7 +138,7 @@ describe('combobox input hooks', () => {
     expect(editor.read.children()).toHaveLength(2);
     expect(editor.read.text.string([0])).toBe('');
     expect(editor.read.text.string([1])).toBe('after');
-    expect(editor.read.nodes.some({ match: { type: 'mention_input' } })).toBe(
+    expect(editor.read.nodes.some({ match: { type: 'mentionInput' } })).toBe(
       false
     );
     expect(onCancelInput).toHaveBeenCalledWith(cause);
@@ -156,7 +154,7 @@ describe('combobox input hooks', () => {
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: 'a' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'a' }], type: 'paragraph' }],
     });
     const element = editor.read.children()[0];
 

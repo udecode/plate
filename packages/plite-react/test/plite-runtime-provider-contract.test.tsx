@@ -10,7 +10,7 @@ import { type ReactNode, useLayoutEffect } from 'react';
 import {
   createEditorView,
   type Descendant,
-  defineEditorExtension,
+  defineExtension,
   defineEditorSchema,
   defineExtensionSlot,
   defineFacet,
@@ -81,7 +81,7 @@ const initialValue = () => ({
   roots: { footer: [paragraph('footer')], header: [paragraph('header')] },
 });
 
-const editableIsland = defineEditorSchema({
+const editableIsland = defineEditorSchema('schema:test-editable-island', {
   elements: {
     'editable-void': {
       content: schema.content.open(),
@@ -97,7 +97,7 @@ const editableIsland = defineEditorSchema({
   version: 1,
 });
 
-const contentRootExtension = defineEditorSchema({
+const contentRootExtension = defineEditorSchema('schema:test-content-root', {
   elements: {
     'details-content': {
       content: schema.content.open(),
@@ -140,9 +140,8 @@ describe('PliteRuntime provider contract', () => {
     });
     const slot = defineExtensionSlot('react-runtime-configuration-mode');
     const extension = (value: string) =>
-      defineEditorExtension({
+      defineExtension(`react-runtime-configuration-mode-${value}`, {
         facetProviders: [mode.of(value)],
-        name: `react-runtime-configuration-mode-${value}`,
       });
     const editor = createReactEditor({
       extensions: [slot.of(extension('read'))] as const,
@@ -285,24 +284,27 @@ describe('PliteRuntime provider contract', () => {
   test('usePliteContentRoot requires a slot for multi-slot elements', () => {
     const bodyRoot = 'details-multi:body';
     const captionRoot = 'details-multi:caption';
-    const multiSlotSchema = defineEditorSchema({
-      elements: {
-        paragraph: {
-          content: schema.content.text({ default: 'text', min: 1 }),
-        },
-        'details-content': {
-          content: schema.content.open(),
-          contentRoots: {
-            body: schema.content.type('paragraph'),
-            caption: schema.content.type('paragraph'),
+    const multiSlotSchema = defineEditorSchema(
+      'schema:test-content-root-multi-slot',
+      {
+        elements: {
+          paragraph: {
+            content: schema.content.text({ default: 'text', min: 1 }),
+          },
+          'details-content': {
+            content: schema.content.open(),
+            contentRoots: {
+              body: schema.content.type('paragraph'),
+              caption: schema.content.type('paragraph'),
+            },
           },
         },
-      },
-      id: 'test-content-root-multi-slot',
-      root: schema.content.type('details-content'),
-      unknown: 'reject',
-      version: 1,
-    });
+        id: 'test-content-root-multi-slot',
+        root: schema.content.type('details-content'),
+        unknown: 'reject',
+        version: 1,
+      }
+    );
     const element = {
       type: 'details-content',
       childRoots: { body: bodyRoot, caption: captionRoot },
@@ -652,7 +654,7 @@ describe('PliteRuntime provider contract', () => {
     expect(activeRoots).toHaveLength(renderCountAfterMount);
 
     await act(async () => {
-      createEditorView(runtime, { root: 'header' }).update((tx) => {
+      createEditorView(runtime.editor, { root: 'header' }).update((tx) => {
         tx.selection.set({ path: [0, 0], offset: 2 });
       });
     });
@@ -790,7 +792,7 @@ describe('PliteRuntime provider contract', () => {
     });
 
     await act(async () => {
-      createEditorView(runtime).update((tx) => {
+      createEditorView(runtime.editor).update((tx) => {
         tx.selection.set({
           kind: 'text',
           anchor: { path: [0, 0], offset: 4 },
@@ -1562,8 +1564,7 @@ describe('PliteRuntime provider contract', () => {
     let headerEditor!: ReturnType<typeof useEditor>;
     let insertCount = 0;
 
-    const clipboardExtension = defineEditorExtension({
-      name: 'custom-clipboard',
+    const clipboardExtension = defineExtension('custom-clipboard', {
       contributions: [
         clipboardHandler({
           insertData() {
@@ -1998,7 +1999,7 @@ describe('PliteRuntime provider contract', () => {
     };
 
     const rendered = render(<RuntimeViews root="header" />);
-    const headerEditor = createEditorView(runtime, { root: 'header' });
+    const headerEditor = createEditorView(runtime.editor, { root: 'header' });
 
     await act(async () => {
       headerEditor.update((tx) => {

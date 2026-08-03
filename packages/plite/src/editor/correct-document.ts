@@ -21,7 +21,7 @@ import {
   withEditorUpdateRootChildren,
 } from '../core/public-state';
 import type {
-  Editor,
+  AnyEditor as Editor,
   EditorCorrection,
   EditorCorrectionEvent,
   EditorTransactionChangeHandler,

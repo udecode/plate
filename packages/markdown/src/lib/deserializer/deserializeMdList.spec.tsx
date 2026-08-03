@@ -27,25 +27,25 @@ Break between lists.
         indent: 1,
         listStart: 1,
         listStyleType: 'decimal',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'Break between lists.' }],
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'Second list item' }],
         indent: 1,
         listStart: 2,
         listStyleType: 'decimal',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'Third list item' }],
         indent: 1,
         listStart: 3,
         listStyleType: 'decimal',
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
 
@@ -56,25 +56,25 @@ Break between lists.
         children: [{ text: 'First list item' }],
         indent: 1,
         listStyleType: 'decimal',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'Break between lists.' }],
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'Second list item' }],
         indent: 1,
         listStart: 2,
         listStyleType: 'decimal',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'Third list item' }],
         indent: 1,
         listStart: 3,
         listStyleType: 'decimal',
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
   });
@@ -134,14 +134,14 @@ Break between lists.
         indent: 1,
         listStart: 1,
         listStyleType: 'decimal',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'Item B' }],
         indent: 1,
         listStart: 2,
         listStyleType: 'decimal',
-        type: 'p',
+        type: 'paragraph',
       },
 
       // 2) Blank line
@@ -152,14 +152,14 @@ Break between lists.
         indent: 1,
         listStart: 3,
         listStyleType: 'decimal',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'Another item' }],
         indent: 1,
         listStart: 4,
         listStyleType: 'decimal',
-        type: 'p',
+        type: 'paragraph',
       },
 
       // 4) Blank line
@@ -169,20 +169,20 @@ Break between lists.
         children: [{ text: 'Bullet outer' }],
         indent: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'Nested bullet' }],
         indent: 2,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'Nested ordered' }],
         indent: 3,
         listStart: 1,
         listStyleType: 'decimal',
-        type: 'p',
+        type: 'paragraph',
       },
 
       // 6) Blank line
@@ -192,7 +192,7 @@ Break between lists.
         children: [{ text: 'A bullet with a blockquote:' }],
         indent: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
       // The blockquote lines become paragraphs at indent + 1 (if your parser merges them),
       // or in some implementations, they might remain at indent 1. Adapt if needed.
@@ -202,7 +202,7 @@ Break between lists.
         children: [
           {
             children: [{ text: 'This is inside blockquote\nAnd so on' }],
-            type: 'p',
+            type: 'paragraph',
           },
         ],
         // Might become indent: 2, or remain indent: 1, depending on how your parser merges them.
@@ -218,13 +218,13 @@ Break between lists.
         children: [{ text: 'Star bullet' }],
         indent: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: '' }],
         indent: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
       // Extra blank lines produce no tokens
 
@@ -232,7 +232,7 @@ Break between lists.
         children: [{ text: 'Some item' }],
         indent: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
 
       // 10) Another bullet with sub bullet + code fence
@@ -240,23 +240,23 @@ Break between lists.
         children: [{ text: 'Another bullet' }],
         indent: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'Sub bullet' }],
         indent: 2,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [
           {
             children: [{ text: 'console.info("code fence");' }],
-            type: 'code_line',
+            type: 'codeLine',
           },
         ],
         indent: 3,
-        type: 'code_block',
+        type: 'codeBlock',
       },
 
       // 11) Deeply nested ordered list
@@ -265,28 +265,28 @@ Break between lists.
         indent: 1,
         listStart: 1,
         listStyleType: 'decimal',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'b' }],
         indent: 2,
         listStart: 1,
         listStyleType: 'decimal',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'c' }],
         indent: 3,
         listStart: 1,
         listStyleType: 'decimal',
-        type: 'p',
+        type: 'paragraph',
       },
       // followed by sibling bullet at indent 2
       {
         children: [{ text: 'sibling bullet' }],
         indent: 2,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
     ];
 

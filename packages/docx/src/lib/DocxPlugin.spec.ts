@@ -1,5 +1,8 @@
 import { createBaseEditor } from '@platejs/core';
-import { prepareHtmlPluginContext } from '@platejs/core/internal';
+import {
+  prepareHtmlPluginContext,
+  prepareHtmlRegistry,
+} from '@platejs/core/internal';
 
 import { DocxPlugin } from './DocxPlugin';
 import { cleanDocx } from './cleanDocx';
@@ -10,8 +13,9 @@ describe('DocxPlugin', () => {
   });
   const createContext = prepareHtmlPluginContext(editor, DocxPlugin);
   const context = editor.read((state) => createContext(state));
-  const transformData =
-    editor.plugin(DocxPlugin).plugin.parsers.html?.transformData;
+  const transformData = prepareHtmlRegistry(editor).plugins.find(
+    ({ name }) => name === DocxPlugin.name
+  )?.transformData;
   const source = (dataTransfer: DataTransfer) => ({
     files: dataTransfer.files,
     getData: (format: string) => dataTransfer.getData(format),

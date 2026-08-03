@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { Editor as EditorType } from '@platejs/plite';
+import type { Editor as EditorType, Value } from '@platejs/plite';
 
 import {
   createDecorationSource,
@@ -16,18 +16,24 @@ import type {
 import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
 
 /** Hook options for computed decoration sources. */
-export type UsePliteDecorationSourceOptions<T = unknown> =
-  PliteDecorationSourceOptions<T> & {
-    /** Explicit invalidation token for mutable data read by option callbacks. */
-    revision?: unknown;
-  };
+export type UsePliteDecorationSourceOptions<
+  T = unknown,
+  V extends Value = Value,
+  TExtensions extends readonly unknown[] = readonly [],
+> = PliteDecorationSourceOptions<T, V, TExtensions> & {
+  /** Explicit invalidation token for mutable data read by option callbacks. */
+  revision?: unknown;
+};
 
 /** Hook options for range-backed decoration sources. */
-export type UsePliteRangeDecorationSourceOptions<T = unknown> =
-  PliteRangeDecorationSourceOptions<T> & {
-    /** Explicit invalidation token for mutable data read by option callbacks. */
-    revision?: unknown;
-  };
+export type UsePliteRangeDecorationSourceOptions<
+  T = unknown,
+  V extends Value = Value,
+  TExtensions extends readonly unknown[] = readonly [],
+> = PliteRangeDecorationSourceOptions<T, V, TExtensions> & {
+  /** Explicit invalidation token for mutable data read by option callbacks. */
+  revision?: unknown;
+};
 
 const DIRTINESS_CLASSES = [
   'always',
@@ -73,8 +79,12 @@ const useStableDirtiness = (dirtiness: PliteSourceDirtiness | undefined) => {
   );
 };
 
-const isReactEditorFocused = (editor: EditorType) =>
-  ReactEditor.isFocused(editor as unknown as ReactRuntimeEditor);
+const isReactEditorFocused = <
+  V extends Value,
+  TExtensions extends readonly unknown[],
+>(
+  editor: EditorType<V, TExtensions>
+) => ReactEditor.isFocused(editor as unknown as ReactRuntimeEditor);
 
 const createDecorationSourceLifecycle = <T>() => {
   let currentSource: PliteDecorationSource<T> | null = null;
@@ -102,16 +112,20 @@ const useDecorationSourceLifecycle = <T>(source: PliteDecorationSource<T>) => {
   useEffect(() => lifecycle.mount(source), [lifecycle, source]);
 };
 
-const useDecorationSourceCommit = <T>(
-  editor: EditorType,
+const useDecorationSourceCommit = <
+  T,
+  V extends Value,
+  TExtensions extends readonly unknown[],
+>(
+  editor: EditorType<V, TExtensions>,
   source: PliteDecorationSource<T>,
   options:
-    | UsePliteDecorationSourceOptions<T>
-    | UsePliteRangeDecorationSourceOptions<T>,
+    | UsePliteDecorationSourceOptions<T, V, TExtensions>
+    | UsePliteRangeDecorationSourceOptions<T, V, TExtensions>,
   optionsCell: {
     current:
-      | UsePliteDecorationSourceOptions<T>
-      | UsePliteRangeDecorationSourceOptions<T>;
+      | UsePliteDecorationSourceOptions<T, V, TExtensions>
+      | UsePliteRangeDecorationSourceOptions<T, V, TExtensions>;
   }
 ) => {
   const [commit] = useState<{
@@ -145,9 +159,13 @@ const useDecorationSourceCommit = <T>(
  *
  * Pass `revision` when callbacks read a mutable external source.
  */
-export const usePliteDecorationSource = <T = unknown>(
-  editor: EditorType,
-  options: UsePliteDecorationSourceOptions<T>
+export const usePliteDecorationSource = <
+  V extends Value,
+  TExtensions extends readonly unknown[],
+  T = unknown,
+>(
+  editor: EditorType<V, TExtensions>,
+  options: UsePliteDecorationSourceOptions<T, V, TExtensions>
 ): PliteDecorationSource<T> => {
   const [optionsCell] = useState(() => ({ current: options }));
   const optionsId = options.id;
@@ -156,7 +174,7 @@ export const usePliteDecorationSource = <T = unknown>(
 
   const source = useMemo(
     () =>
-      createDecorationSource<T>(editor, {
+      createDecorationSource<V, TExtensions, T>(editor, {
         dirtiness,
         id: optionsId,
         onError: (error) => optionsCell.current.onError?.(error),
@@ -188,9 +206,13 @@ export const usePliteDecorationSource = <T = unknown>(
  * Creates and owns a decoration source from Plite ranges, converting them into
  * keyed decorations for the projection store.
  */
-export const usePliteRangeDecorationSource = <T = unknown>(
-  editor: EditorType,
-  options: UsePliteRangeDecorationSourceOptions<T>
+export const usePliteRangeDecorationSource = <
+  V extends Value,
+  TExtensions extends readonly unknown[],
+  T = unknown,
+>(
+  editor: EditorType<V, TExtensions>,
+  options: UsePliteRangeDecorationSourceOptions<T, V, TExtensions>
 ): PliteDecorationSource<T> => {
   const [optionsCell] = useState(() => ({ current: options }));
   const optionsId = options.id;
@@ -199,7 +221,7 @@ export const usePliteRangeDecorationSource = <T = unknown>(
 
   const source = useMemo(
     () =>
-      createDecorationSource<T>(editor, {
+      createDecorationSource<V, TExtensions, T>(editor, {
         dirtiness,
         id: optionsId,
         onError: (error) => optionsCell.current.onError?.(error),

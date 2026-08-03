@@ -49,7 +49,7 @@ describe('DocxIOPlugin import', () => {
     );
     expect(result).toEqual({
       comments: [],
-      nodes: [{ type: 'p', children: [{ text: '4Hello' }] }],
+      nodes: [{ type: 'paragraph', children: [{ text: '4Hello' }] }],
       warnings: ['warn-1'],
     });
   });
@@ -84,7 +84,7 @@ describe('DocxIOPlugin import', () => {
           text: 'First note more detail',
         },
       ],
-      nodes: [{ type: 'p', children: [{ text: 'AlphaBeta' }] }],
+      nodes: [{ type: 'paragraph', children: [{ text: 'AlphaBeta' }] }],
       warnings: [],
     });
     expect(JSON.stringify(result.nodes)).not.toContain('DOCX_COMMENT_REF');

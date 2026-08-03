@@ -68,6 +68,8 @@ import {
   assertPublicRootKey,
 } from './core/public-root';
 import type {
+  AnyEditor,
+  BaseEditor,
   CreateEditorOptions,
   DescendantIn,
   Editor,
@@ -87,7 +89,7 @@ import type {
 import type { InternalEditorUpdateOptions } from './core/update-policy';
 
 let nextEditorId = 0;
-const PENDING_SCHEMA_BOOTSTRAP = new WeakSet<Editor>();
+const PENDING_SCHEMA_BOOTSTRAP = new WeakSet<AnyEditor>();
 
 /** Extension tuple inferred from a `createEditor` options object. */
 export type EditorExtensionsFromOptions<TOptions> = TOptions extends {
@@ -281,13 +283,13 @@ const publishInitialEditorExtensions = <TEditor extends Editor>(
 };
 
 /** @internal Replace the derived base schema on one unchanged raw editor. */
-export const initializeEditorExtensions = <TEditor extends Editor>(
+export const initializeEditorExtensions = <TEditor extends AnyEditor>(
   editor: TEditor,
   input: EditorExtensionInput,
   options: Readonly<{
     initialize?: (
       transaction: EditorTransactionSpecBuilder<
-        TEditor extends Editor<infer V> ? V : Value
+        TEditor extends BaseEditor<infer V, any> ? V : Value
       >
     ) => void;
   }> = {}
@@ -388,7 +390,7 @@ const createEditorImplementation = <
 
   const extensionRuntime = {
     schema,
-    extend: (extension, extensionOptions) =>
+    install: (extension, extensionOptions) =>
       extendEditor(editor, extension, extensionOptions),
     prepareExtensionPublication: (entries, publicationOptions) =>
       prepareScopedEditorExtensionPublication(
@@ -444,12 +446,12 @@ const createEditorImplementation = <
         return;
       }
       const candidateValue = getCandidateEditorApiValue(
-        editor as Editor,
+        editor as AnyEditor,
         property
       );
 
       if (candidateValue !== undefined) return candidateValue;
-      const apiValues = getExtensionRegistry(editor as Editor).apiGroups.get(
+      const apiValues = getExtensionRegistry(editor as AnyEditor).apiGroups.get(
         property
       );
 
@@ -473,16 +475,44 @@ const createEditorImplementation = <
 
       return capability;
     };
+    const createPortal = (name: string, installedApi: EditorExtensionApiMap) =>
+      Object.freeze({
+        get api() {
+          return resolveValue(installedApi);
+        },
+        get read() {
+          const capability = Reflect.get(read, name);
+
+          if (capability === undefined) {
+            throw new Error(
+              `Editor extension "${name}" does not expose read methods.`
+            );
+          }
+
+          return capability;
+        },
+        get update() {
+          const capability = Reflect.get(update, name);
+
+          if (capability === undefined) {
+            throw new Error(
+              `Editor extension "${name}" does not expose update methods.`
+            );
+          }
+
+          return capability;
+        },
+      });
     const candidateApi = getCandidateEditorExtensionApi(
-      editor as Editor,
+      editor as AnyEditor,
       extension
     );
 
     if (candidateApi) {
-      return Object.freeze({ api: resolveValue(candidateApi) });
+      return createPortal(extension.name, candidateApi);
     }
     const installedExtension = resolveInstalledEditorExtension(
-      editor as Editor,
+      editor as AnyEditor,
       extension
     );
 
@@ -494,9 +524,9 @@ const createEditorImplementation = <
 
     const installedName = installedExtension.name;
     const installedApi =
-      getInstalledEditorExtensionApi(editor as Editor, installedName) ?? {};
+      getInstalledEditorExtensionApi(editor as AnyEditor, installedName) ?? {};
 
-    return Object.freeze({ api: resolveValue(installedApi) });
+    return createPortal(installedName, installedApi);
   };
 
   const read = createEditorReadApi<V, TExtensions>((fn) =>
@@ -534,7 +564,7 @@ const createEditorImplementation = <
     subscribe: (listener) => subscribe(editor, listener),
     subscribeCommit: (listener) => subscribeCommit(editor, listener),
     update,
-    extend: (extension, extensionOptions) =>
+    install: (extension, extensionOptions) =>
       extendEditor(editor, extension, extensionOptions),
   };
 
@@ -569,7 +599,7 @@ const createEditorImplementation = <
 
   if (options.extensions) {
     publishInitialEditorExtensions(
-      editor as Editor,
+      editor as AnyEditor,
       options.extensions as EditorExtensionInput,
       initialState.explicit
     );

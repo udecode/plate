@@ -6,46 +6,21 @@ import {
   ElementApi,
   PathApi,
 } from '@platejs/plite';
-import { KEYS } from '@platejs/utils';
 
 import { BaseTogglePlugin } from '../lib/BaseTogglePlugin';
 import { ToggleVisibility } from './ToggleVisibility';
 import { useToggleIndex } from './useToggle';
 
-export type TogglePluginState = {
-  toggleIndex: Map<string, string[]>;
-};
-
-const initialState: TogglePluginState = {
-  toggleIndex: new Map(),
-};
-
 /** Enables support for toggleable elements in the editor. */
-export const TogglePlugin = toPlatePlugin(BaseTogglePlugin, {
-  initialState,
-})
-  .extend(() => ({
-    selectors: {
-      enclosingIds: (state, elementId: string) =>
-        state.toggleIndex.get(elementId) ?? [],
-      isClosed: (state, elementId: string) => {
-        const { openIds, toggleIndex } = state;
-
-        return (toggleIndex.get(elementId) ?? []).some(
-          (toggleId) => !openIds.has(toggleId)
-        );
-      },
-    },
-    useHooks: useToggleIndex,
-  }))
-  .extend(({ plugin, store }) => ({
+export const TogglePlugin = toPlatePlugin(BaseTogglePlugin).extend(
+  ({ store, type }) => ({
     commands: ({ around }) => [
       around(editorCommands.insertBreak, ({ state, next }) => {
         const currentBlockEntry = state.nodes.block();
 
         if (
           !currentBlockEntry ||
-          currentBlockEntry[0].type !== plugin.type ||
+          currentBlockEntry[0].type !== type ||
           typeof currentBlockEntry[0].id !== 'string'
         ) {
           return false;
@@ -62,16 +37,16 @@ export const TogglePlugin = toPlatePlugin(BaseTogglePlugin, {
 
         return state.transaction.extend(result, (tx) => {
           if (isOpen) {
-            tx.blocks.toggle(plugin.type);
+            tx.blocks.toggle(type);
 
             const insertedBlock = tx.nodes.block();
 
             if (insertedBlock) {
-              const indent = insertedBlock[0][KEYS.indent];
+              const indent = insertedBlock[0].indent;
 
               tx.nodes.set(
                 {
-                  [KEYS.indent]: typeof indent === 'number' ? indent + 1 : 1,
+                  indent: typeof indent === 'number' ? indent + 1 : 1,
                 },
                 { at: insertedBlock[1] }
               );
@@ -180,6 +155,8 @@ export const TogglePlugin = toPlatePlugin(BaseTogglePlugin, {
     render: {
       aboveNodes: () => ToggleVisibility,
     },
-  }));
+    useHooks: useToggleIndex,
+  })
+);
 
 export type ToggleDefinition = DefinitionOf<typeof TogglePlugin>;

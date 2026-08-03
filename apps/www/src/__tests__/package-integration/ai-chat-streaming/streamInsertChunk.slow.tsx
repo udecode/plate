@@ -137,7 +137,7 @@ describe('AIChatPlugin update.insertChunk', () => {
       expect(editor.read.children()).toEqual([
         {
           children: [{ text: 'inline math:' }],
-          type: 'p',
+          type: 'paragraph',
         },
         {
           children: [
@@ -145,11 +145,11 @@ describe('AIChatPlugin update.insertChunk', () => {
             {
               children: [{ text: '' }],
               texExpression: 'a^2 + b^2 = c^2',
-              type: 'inline_equation',
+              type: 'inlineEquation',
             },
             { text: '' },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ]);
     });
@@ -171,7 +171,7 @@ describe('AIChatPlugin update.insertChunk', () => {
             { text: ',' },
             { text: 'underline', underline: true },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ]);
     });

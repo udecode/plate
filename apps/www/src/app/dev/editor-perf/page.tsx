@@ -44,7 +44,7 @@ import {
   PlateElement,
   PlateLeaf,
   Plite,
-  createPlatePlugin,
+  definePlatePlugin,
   createPlateEditor,
   useEditableProps,
   useEditorReadOnly,
@@ -1965,7 +1965,7 @@ function createPluginCensusMountedEditor({
 function createFanoutParagraph(index: number): Descendant {
   return {
     children: [{ text: `fanout update ${index}` }],
-    type: 'p',
+    type: 'paragraph',
   } as Descendant;
 }
 
@@ -1980,9 +1980,8 @@ const benchmarkStoreInitialState: BenchmarkStorePluginState = {
   enabled: false,
 };
 
-const BenchmarkStorePlugin = createPlatePlugin({
+const BenchmarkStorePlugin = definePlatePlugin('benchmarkStore', {
   initialState: benchmarkStoreInitialState,
-  name: 'benchmarkStore',
 });
 
 function BenchmarkElement({
@@ -2682,21 +2681,15 @@ function BenchmarkEditableMount({
     [editor]
   );
   const paragraphPlugin = React.useMemo(
-    () => editor.plugin('p').plugin,
+    () => editor.plugin('paragraph'),
     [editor]
   );
-  const boldPlugin = React.useMemo(
-    () => editor.plugin('bold').plugin,
-    [editor]
-  );
+  const boldPlugin = React.useMemo(() => editor.plugin('bold'), [editor]);
   const underlinePlugin = React.useMemo(
-    () => editor.plugin('underline').plugin,
+    () => editor.plugin('underline'),
     [editor]
   );
-  const codePlugin = React.useMemo(
-    () => editor.plugin('code').plugin,
-    [editor]
-  );
+  const codePlugin = React.useMemo(() => editor.plugin('code'), [editor]);
   const renderElement = React.useCallback(
     (props: RenderElementProps) => (
       <BenchmarkElement
@@ -2816,8 +2809,11 @@ function BenchmarkEditableMount({
       if (!path) return renderElement(props);
 
       const elementType = element.type as string | undefined;
-      const elementPlugin = elementType
-        ? editor.plugin(elementType as any).plugin
+      const elementPortal = elementType
+        ? editor.plugin(elementType)
+        : undefined;
+      const elementPlugin = elementPortal?.installed
+        ? elementPortal
         : undefined;
       const elementClassName = elementType ? `plite-${elementType}` : undefined;
       const baseAttributes = {
@@ -2916,7 +2912,7 @@ function BenchmarkEditableMount({
 
       if (elementBenchmarkMode === 'plate-element-plugin-context-no-provider') {
         const pluginContext = elementPlugin
-          ? editor.plugin(elementPlugin)
+          ? editor.plugin(elementPlugin.name)
           : { api: editor.api, editor };
 
         return (
@@ -2997,8 +2993,8 @@ function BenchmarkEditableMount({
           elementType &&
           editor.read.schema.element(elementType) !== undefined
         ) {
-          const typeClass = elementPlugin.type
-            ? `plite-${elementPlugin.type}`
+          const typeClass = elementPlugin.name
+            ? `plite-${elementPlugin.name}`
             : undefined;
           const attributes = {
             ...baseAttributes,
@@ -3044,7 +3040,7 @@ function BenchmarkEditableMount({
 
       if (elementBenchmarkMode === 'render-as-provider') {
         const pluginContext = elementPlugin
-          ? editor.plugin(elementPlugin)
+          ? editor.plugin(elementPlugin.name)
           : { api: editor.api, editor };
         const ctxProps = {
           ...props,
@@ -3210,7 +3206,7 @@ function BenchmarkEditableMount({
 
       if (elementBenchmarkMode === 'plugin-render-node-hooks') {
         const pluginContext = elementPlugin
-          ? editor.plugin(elementPlugin)
+          ? editor.plugin(elementPlugin.name)
           : { api: editor.api, editor };
         const ctxProps = getRenderNodeProps({
           editor: editor as any,
@@ -3246,7 +3242,7 @@ function BenchmarkEditableMount({
 
       if (elementBenchmarkMode === 'plugin-render-node-hooks-plain-context') {
         const pluginContext = elementPlugin
-          ? editor.plugin(elementPlugin)
+          ? editor.plugin(elementPlugin.name)
           : { api: editor.api, editor };
         const ctxProps = getRenderNodeProps({
           editor: editor as any,
@@ -3284,7 +3280,7 @@ function BenchmarkEditableMount({
 
       if (elementBenchmarkMode === 'plugin-render-node-hooks-jotai-provider') {
         const pluginContext = elementPlugin
-          ? editor.plugin(elementPlugin)
+          ? editor.plugin(elementPlugin.name)
           : { api: editor.api, editor };
         const ctxProps = getRenderNodeProps({
           editor: editor as any,
@@ -3321,7 +3317,7 @@ function BenchmarkEditableMount({
         elementBenchmarkMode === 'plugin-render-node-hooks-jotai-hydrate-only'
       ) {
         const pluginContext = elementPlugin
-          ? editor.plugin(elementPlugin)
+          ? editor.plugin(elementPlugin.name)
           : { api: editor.api, editor };
         const ctxProps = getRenderNodeProps({
           editor: editor as any,
@@ -3358,7 +3354,7 @@ function BenchmarkEditableMount({
         elementBenchmarkMode === 'plugin-render-node-hooks-jotai-hydrate-sync'
       ) {
         const pluginContext = elementPlugin
-          ? editor.plugin(elementPlugin)
+          ? editor.plugin(elementPlugin.name)
           : { api: editor.api, editor };
         const ctxProps = getRenderNodeProps({
           editor: editor as any,
@@ -3393,7 +3389,7 @@ function BenchmarkEditableMount({
 
       if (elementBenchmarkMode === 'plugin-render-node-selector') {
         const pluginContext = elementPlugin
-          ? editor.plugin(elementPlugin)
+          ? editor.plugin(elementPlugin.name)
           : { api: editor.api, editor };
         const ctxProps = getRenderNodeProps({
           editor: editor as any,
@@ -3431,7 +3427,7 @@ function BenchmarkEditableMount({
         elementBenchmarkMode === 'plugin-render-node-selector-plain-context'
       ) {
         const pluginContext = elementPlugin
-          ? editor.plugin(elementPlugin)
+          ? editor.plugin(elementPlugin.name)
           : { api: editor.api, editor };
         const ctxProps = getRenderNodeProps({
           editor: editor as any,
@@ -3471,7 +3467,7 @@ function BenchmarkEditableMount({
         elementBenchmarkMode === 'plugin-render-node-selector-jotai-provider'
       ) {
         const pluginContext = elementPlugin
-          ? editor.plugin(elementPlugin)
+          ? editor.plugin(elementPlugin.name)
           : { api: editor.api, editor };
         const ctxProps = getRenderNodeProps({
           editor: editor as any,
@@ -3506,7 +3502,7 @@ function BenchmarkEditableMount({
 
       if (elementBenchmarkMode === 'plugin-precomputed-fast-node-props') {
         const pluginContext = elementPlugin
-          ? editor.plugin(elementPlugin)
+          ? editor.plugin(elementPlugin.name)
           : { api: editor.api, editor };
         const ctxProps = {
           ...props,
@@ -3534,7 +3530,7 @@ function BenchmarkEditableMount({
 
       if (elementBenchmarkMode === 'plain-context-plugin-fast-node-props') {
         const pluginContext = elementPlugin
-          ? editor.plugin(elementPlugin)
+          ? editor.plugin(elementPlugin.name)
           : { api: editor.api, editor };
         const ctxProps = {
           ...props,
@@ -3564,7 +3560,7 @@ function BenchmarkEditableMount({
 
       if (elementBenchmarkMode === 'jotai-provider-plugin-fast-node-props') {
         const pluginContext = elementPlugin
-          ? editor.plugin(elementPlugin)
+          ? editor.plugin(elementPlugin.name)
           : { api: editor.api, editor };
         const ctxProps = {
           ...props,
@@ -3593,7 +3589,7 @@ function BenchmarkEditableMount({
         elementBenchmarkMode === 'jotai-hydrate-only-plugin-fast-node-props'
       ) {
         const pluginContext = elementPlugin
-          ? editor.plugin(elementPlugin)
+          ? editor.plugin(elementPlugin.name)
           : { api: editor.api, editor };
         const ctxProps = {
           ...props,
@@ -3622,7 +3618,7 @@ function BenchmarkEditableMount({
         elementBenchmarkMode === 'jotai-hydrate-sync-plugin-fast-node-props'
       ) {
         const pluginContext = elementPlugin
-          ? editor.plugin(elementPlugin)
+          ? editor.plugin(elementPlugin.name)
           : { api: editor.api, editor };
         const ctxProps = {
           ...props,
@@ -3649,7 +3645,7 @@ function BenchmarkEditableMount({
 
       if (elementBenchmarkMode === 'zustand-provider-plugin-fast-node-props') {
         const pluginContext = elementPlugin
-          ? editor.plugin(elementPlugin)
+          ? editor.plugin(elementPlugin.name)
           : { api: editor.api, editor };
         const ctxProps = {
           ...props,
@@ -3724,7 +3720,11 @@ function BenchmarkEditableMount({
         );
       }
 
-      const plugin = editor.plugin(element.type as any).plugin;
+      const portal =
+        typeof element.type === 'string'
+          ? editor.plugin(element.type)
+          : undefined;
+      const plugin = portal?.installed ? portal : undefined;
       const ctxProps = getRenderNodeProps({
         editor: editor as any,
         plugin: plugin as any,
@@ -3745,7 +3745,6 @@ function BenchmarkEditableMount({
     if (
       !precomputedElementPluginPath ||
       !paragraphPlugin ||
-      !paragraphPlugin.type ||
       editor.read.schema.element(paragraphPlugin.type) === undefined
     ) {
       return;

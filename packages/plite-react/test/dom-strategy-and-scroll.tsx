@@ -1,6 +1,7 @@
 import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import React from 'react';
 import type { Descendant } from '@platejs/plite';
+import { history } from '@platejs/plite-history';
 import {
   getRuntimeId as editorGetRuntimeId,
   getSnapshot as editorGetSnapshot,
@@ -1241,7 +1242,7 @@ test('Editable disables DOM text sync for app-owned text renderers', async () =>
 });
 
 test('Editable restores native-updated app-owned text from model history', async () => {
-  const editor = createReactEditor();
+  const editor = createReactEditor({ extensions: [history()] });
 
   editorReplace(editor, {
     children: [
@@ -1614,7 +1615,7 @@ test('Editable syncs projected leaf strings for Plite-owned text input', async (
 });
 
 test('Editable syncs projected leaf strings from model-owned history', async () => {
-  const editor = createReactEditor();
+  const editor = createReactEditor({ extensions: [history()] });
 
   editorReplace(editor, {
     children: [

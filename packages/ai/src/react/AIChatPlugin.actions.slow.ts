@@ -1,61 +1,41 @@
 import { MarkdownPlugin } from '@platejs/markdown';
 import { SUGGESTION_TRANSIENT_KEY } from '@platejs/suggestion';
 import { SuggestionPlugin } from '@platejs/suggestion/react';
-import { KEYS } from '@platejs/utils';
-import { schema } from '@platejs/plite';
-import { BaseParagraphPlugin, createBasePlugin } from '@platejs/core';
+import { PLUGINS } from '@platejs/utils';
+import { createEditor, schema, type Value } from '@platejs/plite';
+import { BaseParagraphPlugin, defineBasePlugin } from '@platejs/core';
 import { createPlateEditor } from '@platejs/core/react';
 
 import { BaseAIPlugin } from '../lib/BaseAIPlugin';
 import { type AIChatDefinition, AIChatPlugin } from './AIChatPlugin';
 
-const TableCellPlugin = createBasePlugin({
-  name: KEYS.td,
+const TableCellPlugin = defineBasePlugin(PLUGINS.tableCell, {
   schema: ({ plugins }) => ({
     element: {
       content: plugins.blockContent({
-        default: { type: plugins.elementType(BaseParagraphPlugin) },
+        default: BaseParagraphPlugin,
         min: 1,
       }),
     },
   }),
-  type: KEYS.td,
 });
-const TableRowPlugin = createBasePlugin({
-  name: KEYS.tr,
-  schema: ({ plugins }) => {
-    const cellType = plugins.elementType(TableCellPlugin);
-
-    return {
-      element: {
-        content: schema.content.type(cellType, {
-          default: { type: cellType },
-          min: 1,
-        }),
-      },
-    };
+const TableRowPlugin = defineBasePlugin(PLUGINS.tableRow, {
+  schema: {
+    element: {
+      content: schema.content.element(TableCellPlugin, { min: 1 }),
+    },
   },
-  type: KEYS.tr,
 });
-const TablePlugin = createBasePlugin({
-  name: KEYS.table,
-  schema: ({ plugins }) => {
-    const rowType = plugins.elementType(TableRowPlugin);
-
-    return {
-      element: {
-        content: schema.content.type(rowType, {
-          default: { type: rowType },
-          min: 1,
-        }),
-      },
-    };
+const TablePlugin = defineBasePlugin(PLUGINS.table, {
+  schema: {
+    element: {
+      content: schema.content.element(TableRowPlugin, { min: 1 }),
+    },
   },
-  type: KEYS.table,
 });
 
 const createSuggestionEditor = (type: 'insert' | 'remove') => {
-  const suggestionKey = `${KEYS.suggestion}_s1`;
+  const suggestionKey = 'suggestion_s1';
 
   return createPlateEditor({
     plugins: [
@@ -73,12 +53,12 @@ const createSuggestionEditor = (type: 'insert' | 'remove') => {
               type,
               userId: 'u1',
             },
-            [KEYS.suggestion]: true,
+            suggestion: true,
             [SUGGESTION_TRANSIENT_KEY]: true,
             text: 'suggested',
           },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
     ],
   });
@@ -87,6 +67,7 @@ const createSuggestionEditor = (type: 'insert' | 'remove') => {
 describe('ai chat action utils', () => {
   it('diffs a table cell update and replaces only its children', () => {
     const editor = createPlateEditor({
+      editor: createEditor<Value>(),
       plugins: [
         BaseParagraphPlugin,
         BaseAIPlugin,
@@ -103,15 +84,17 @@ describe('ai chat action utils', () => {
             {
               children: [
                 {
-                  children: [{ children: [{ text: 'old' }], type: 'p' }],
+                  children: [
+                    { children: [{ text: 'old' }], type: 'paragraph' },
+                  ],
                   id: 'cell-1',
-                  type: KEYS.td,
+                  type: 'tableCell',
                 },
               ],
-              type: KEYS.tr,
+              type: 'tableRow',
             },
           ],
-          type: KEYS.table,
+          type: 'table',
         },
       ],
     });
@@ -157,7 +140,7 @@ describe('ai chat action utils', () => {
     const clear = mock();
     const editor = createPlateEditor({
       plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin],
-      initialValue: [{ children: [{ text: '' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
     const chat = {
       messages: [
@@ -173,7 +156,7 @@ describe('ai chat action utils', () => {
     editor.plugin(AIChatPlugin).store.set({
       _replaceIds: ['block'],
       chat,
-      chatNodes: [{ children: [{ text: '' }], id: 'block', type: 'p' }],
+      chatNodes: [{ children: [{ text: '' }], id: 'block', type: 'paragraph' }],
       mode: 'chat',
       toolName: 'edit',
       open: true,

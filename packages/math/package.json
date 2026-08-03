@@ -17,16 +17,20 @@
     "directory": "packages/math"
   },
   "license": "MIT",
-  "sideEffects": false,
+  "sideEffects": [
+    "./katex.css"
+  ],
   "exports": {
     ".": "./dist/index.js",
+    "./katex.css": "./katex.css",
     "./react": "./dist/react/index.js",
     "./package.json": "./package.json"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
-    "dist/**/*"
+    "dist/**/*",
+    "katex.css"
   ],
   "scripts": {
     "brl": "plate-pkg p:brl",

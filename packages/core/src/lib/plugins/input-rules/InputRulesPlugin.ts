@@ -15,11 +15,10 @@ import type {
   SelectionInputRuleContext,
 } from './types';
 
-import { createBasePlugin } from '../../plugin';
+import { defineBasePlugin } from '../../plugin';
 import { getPlateRuntime } from '../../../internal/plugin/compilePlateModel';
 
-export const InputRulesPlugin = createBasePlugin({
-  name: 'inputRules',
+export const InputRulesPlugin = defineBasePlugin('inputRules', {
   editOnly: true,
 }).extend(({ editor }) => {
   const createCachedGetter = <TValue>(compute: () => TValue) => {
@@ -42,7 +41,7 @@ export const InputRulesPlugin = createBasePlugin({
       EditorStateView,
       'nodes' | 'points' | 'schema' | 'selection' | 'text'
     >;
-  }): Omit<SelectionInputRuleContext, 'pluginName'> => {
+  }): Omit<SelectionInputRuleContext, 'plugin'> => {
     const selection = state.selection();
     const isCollapsed = !!selection && RangeApi.isCollapsed(selection);
     const getBlockEntry = createCachedGetter(() =>
@@ -119,7 +118,7 @@ export const InputRulesPlugin = createBasePlugin({
   return {
     contributions: [
       clipboardHandler({
-        insertData(data, { next, transaction: tx }) {
+        insertData(data, { next, tx }) {
           const text = data.getData('text/plain') || null;
           const selectionContext = createSelectionContext({ state: tx });
           let handled = false;
@@ -131,7 +130,7 @@ export const InputRulesPlugin = createBasePlugin({
               insertData: (nextData) => {
                 next(nextData);
               },
-              pluginName: rule.pluginName,
+              plugin: rule.plugin,
               text,
               tx,
               ...selectionContext,
@@ -200,7 +199,7 @@ export const InputRulesPlugin = createBasePlugin({
 
                 continueInsertion = true;
               },
-              pluginName: rule.pluginName,
+              plugin: rule.plugin,
               tx,
               ...selectionContext,
             } satisfies Omit<InsertBreakInputRuleContext, 'tx'> & {
@@ -264,7 +263,7 @@ export const InputRulesPlugin = createBasePlugin({
                 continuation = { ...input, options, text };
               },
               options: commandOptions,
-              pluginName: rule.pluginName,
+              plugin: rule.plugin,
               text: input.text,
               tx,
               ...selectionContext,

@@ -1,5 +1,5 @@
 import { createBaseEditor } from '@platejs/core';
-import { KEYS } from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 
 import { BaseExcalidrawPlugin } from './BaseExcalidrawPlugin';
 
@@ -8,20 +8,20 @@ describe('BaseExcalidrawPlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseExcalidrawPlugin],
     });
-    const plugin = editor.plugin(BaseExcalidrawPlugin).plugin;
-    const element = { children: [{ text: '' }], type: KEYS.excalidraw };
+    const plugin = editor.plugin(BaseExcalidrawPlugin);
+    const element = { children: [{ text: '' }], type: 'excalidraw' };
 
-    expect(plugin.name).toBe(KEYS.excalidraw);
+    expect(plugin.name).toBe(PLUGINS.excalidraw);
     expect(editor.read.schema.isBlock(element)).toBe(true);
     expect(editor.read.schema.isVoid(element)).toBe(true);
     expect(
       editor.read.schema.property({
         key: 'data',
         placement: 'element',
-        type: KEYS.excalidraw,
+        type: 'excalidraw',
       })?.value.kind
     ).toBe('json');
-    expect(editor.plugin(KEYS.excalidraw).type).toBe(KEYS.excalidraw);
+    expect(editor.plugin(PLUGINS.excalidraw).name).toBe(PLUGINS.excalidraw);
   });
 
   it('rejects malformed drawing data', () => {
@@ -35,7 +35,7 @@ describe('BaseExcalidrawPlugin', () => {
           {
             children: [{ text: '' }],
             data: { elements: [], state: [] },
-            type: KEYS.excalidraw,
+            type: 'excalidraw',
           },
         ],
       })
@@ -53,7 +53,7 @@ describe('BaseExcalidrawPlugin', () => {
           {
             children: [{ text: '' }],
             data: { elements: [], state: {} },
-            type: KEYS.excalidraw,
+            type: 'excalidraw',
             width: '50%',
           },
         ],
@@ -64,56 +64,25 @@ describe('BaseExcalidrawPlugin', () => {
   it('does nothing without a selection or explicit target', () => {
     const editor = createBaseEditor({
       plugins: [BaseExcalidrawPlugin],
-      initialValue: [{ children: [{ text: '' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
 
-    editor.update.excalidraw.insert();
+    editor.plugin(BaseExcalidrawPlugin).update.insert();
 
     expect(editor.read.children()).toHaveLength(1);
   });
 
-  it('inserts after an explicit block target without a selection', () => {
+  it('inserts at an exact explicit target without a selection', () => {
     const editor = createBaseEditor({
       plugins: [BaseExcalidrawPlugin],
-      initialValue: [{ children: [{ text: '' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
 
-    editor.update.excalidraw.insert({}, { at: [0] });
+    editor.plugin(BaseExcalidrawPlugin).update.insert({}, { at: [0] });
 
     expect(editor.read.children()).toMatchObject([
-      { type: 'p' },
-      { children: [{ text: '' }], type: KEYS.excalidraw },
-    ]);
-  });
-
-  it('publishes insertion on the active transaction group', () => {
-    const editor = createBaseEditor({
-      plugins: [BaseExcalidrawPlugin],
-      selection: {
-        kind: 'text',
-        anchor: { offset: 0, path: [0, 0] },
-        focus: { offset: 0, path: [0, 0] },
-      },
-      initialValue: [{ children: [{ text: '' }], type: 'p' }],
-    });
-
-    editor.update((tx) => {
-      tx.excalidraw.insert(
-        { data: { elements: [], state: { theme: 'dark' } } },
-        { select: true }
-      );
-    });
-
-    expect(editor.read.children()).toMatchObject([
-      {
-        children: [{ text: '' }],
-        type: 'p',
-      },
-      {
-        children: [{ text: '' }],
-        data: { elements: [], state: { theme: 'dark' } },
-        type: KEYS.excalidraw,
-      },
+      { children: [{ text: '' }], type: 'excalidraw' },
+      { type: 'paragraph' },
     ]);
   });
 });

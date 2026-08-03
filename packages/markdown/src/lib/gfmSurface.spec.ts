@@ -10,11 +10,11 @@ describe('gfm package surfaces', () => {
           children: [
             {
               children: [{ text: 'https://platejs.org' }],
-              type: 'a',
+              type: 'link',
               url: 'https://platejs.org',
             },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
       title: 'round-trips a bare autolink literal',
@@ -28,12 +28,12 @@ describe('gfm package surfaces', () => {
             { text: 'Visit ' },
             {
               children: [{ text: 'https://platejs.org' }],
-              type: 'a',
+              type: 'link',
               url: 'https://platejs.org',
             },
             { text: ' for docs.' },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
       title: 'round-trips an autolink literal inside surrounding text',
@@ -59,11 +59,11 @@ describe('gfm package surfaces', () => {
           children: [
             {
               children: [{ text: 'https://platejs.org' }],
-              type: 'a',
+              type: 'link',
               url: 'https://platejs.org',
             },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     };
@@ -89,16 +89,16 @@ describe('gfm package surfaces', () => {
           {
             children: [{ text: '' }],
             identifier: '1',
-            type: 'footnoteReference',
+            type: 'footnote',
           },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [
           {
             children: [{ text: 'Footnote text' }],
-            type: 'p',
+            type: 'paragraph',
           },
         ],
         identifier: '1',

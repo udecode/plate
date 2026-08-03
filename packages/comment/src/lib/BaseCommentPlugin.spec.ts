@@ -1,15 +1,15 @@
 import {
   BaseParagraphPlugin,
+  type BaseEditor,
   createBaseEditor,
-  createBasePlugin,
+  defineBasePlugin,
 } from '@platejs/core';
-import { schema, type Selection, type Value } from '@platejs/plite';
-import type { TCommentText } from '@platejs/utils';
+import { schema, type Selection, type ValueOf } from '@platejs/plite';
+import type { CommentText } from './BaseCommentPlugin';
 
 import { BaseCommentPlugin } from './BaseCommentPlugin';
 
-const CommentTargetPlugin = createBasePlugin({
-  name: 'commentTarget',
+const CommentTargetPlugin = defineBasePlugin('commentTarget', {
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
@@ -17,9 +17,20 @@ const CommentTargetPlugin = createBasePlugin({
   },
 });
 
-const createCommentEditor = (value: Value, selection: Selection = null) =>
+const commentPlugins = [
+  BaseParagraphPlugin,
+  CommentTargetPlugin,
+  BaseCommentPlugin,
+] as const;
+
+type CommentValue = ValueOf<BaseEditor<typeof commentPlugins>>;
+
+const createCommentEditor = (
+  value: CommentValue,
+  selection: Selection = null
+) =>
   createBaseEditor({
-    plugins: [BaseParagraphPlugin, CommentTargetPlugin, BaseCommentPlugin],
+    plugins: commentPlugins,
     selection,
     initialValue: value,
   });
@@ -27,17 +38,17 @@ const createCommentEditor = (value: Value, selection: Selection = null) =>
 describe('BaseCommentPlugin', () => {
   it('canonicalizes false base comment marks to the absent default', () => {
     const editor = createCommentEditor([
-      { children: [{ text: 'plain' }], type: 'p' },
+      { children: [{ text: 'plain' }], type: 'paragraph' },
     ]);
 
     expect(
       editor.read.schema.fitDocument({
         children: [
-          { children: [{ comment: false, text: 'plain' }], type: 'p' },
+          { children: [{ comment: false, text: 'plain' }], type: 'paragraph' },
         ],
       })
     ).toEqual({
-      children: [{ children: [{ text: 'plain' }], type: 'p' }],
+      children: [{ children: [{ text: 'plain' }], type: 'paragraph' }],
     });
   });
 
@@ -48,14 +59,16 @@ describe('BaseCommentPlugin', () => {
       comment_one: false,
       text: 'a',
     };
-    const editor = createCommentEditor([{ children: [text], type: 'p' }]);
-    const paragraph = { children: [{ text: '' }], type: 'p' };
+    const editor = createCommentEditor([
+      { children: [text], type: 'paragraph' },
+    ]);
+    const paragraph = { children: [{ text: '' }], type: 'paragraph' };
 
     expect(
       editor.read.schema.property({
         key: 'comment',
         placement: 'text',
-        type: 'p',
+        type: 'paragraph',
       })
     ).toMatchObject({
       lifecycle: {
@@ -69,7 +82,7 @@ describe('BaseCommentPlugin', () => {
       editor.read.schema.property({
         key: 'comment_one',
         placement: 'text',
-        type: 'p',
+        type: 'paragraph',
       })
     ).toMatchObject({
       lifecycle: {
@@ -83,7 +96,7 @@ describe('BaseCommentPlugin', () => {
       editor.read.schema.property({
         key: 'commentTransient',
         placement: 'text',
-        type: 'p',
+        type: 'paragraph',
       })
     ).toMatchObject({ value: { kind: 'boolean' } });
     expect(
@@ -103,9 +116,7 @@ describe('BaseCommentPlugin', () => {
 
     editor.update.nodes.set({ type: 'commentTarget' }, { at: [0] });
 
-    expect(editor.read.nodes.get<TCommentText>([0, 0])?.[0]).toMatchObject(
-      text
-    );
+    expect(editor.read.nodes.get<CommentText>([0, 0])?.[0]).toMatchObject(text);
 
     editor.update.selection.set({
       kind: 'text',
@@ -114,7 +125,7 @@ describe('BaseCommentPlugin', () => {
     });
     editor.update.marks.add('comment_one', true);
 
-    expect(editor.read.nodes.get<TCommentText>([0, 0])?.[0]).toMatchObject({
+    expect(editor.read.nodes.get<CommentText>([0, 0])?.[0]).toMatchObject({
       ...text,
       comment_one: true,
     });
@@ -133,7 +144,7 @@ describe('BaseCommentPlugin', () => {
             text: 'b',
           },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
 
@@ -164,7 +175,7 @@ describe('BaseCommentPlugin', () => {
             text: 'b',
           },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
     const comment = editor.plugin(BaseCommentPlugin);
@@ -181,7 +192,7 @@ describe('BaseCommentPlugin', () => {
 
   it('marks the selected text as a draft comment', () => {
     const editor = createCommentEditor(
-      [{ children: [{ text: 'ab' }], type: 'p' }],
+      [{ children: [{ text: 'ab' }], type: 'paragraph' }],
       {
         kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
@@ -191,7 +202,7 @@ describe('BaseCommentPlugin', () => {
 
     editor.update.comment.setDraft();
 
-    expect(editor.read.nodes.get<TCommentText>([0, 0])?.[0]).toMatchObject({
+    expect(editor.read.nodes.get<CommentText>([0, 0])?.[0]).toMatchObject({
       comment: true,
       comment_draft: true,
       text: 'ab',
@@ -210,7 +221,7 @@ describe('BaseCommentPlugin', () => {
               text: 'a',
             },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
       {
@@ -222,20 +233,20 @@ describe('BaseCommentPlugin', () => {
 
     editor.update.comment.removeMark();
 
-    expect(editor.read.nodes.get<TCommentText>([0, 0])?.[0]).toEqual({
+    expect(editor.read.nodes.get<CommentText>([0, 0])?.[0]).toEqual({
       text: 'a',
     });
   });
 
   it('does nothing when removeMark has no active comment node', () => {
     const editor = createCommentEditor([
-      { children: [{ text: 'a' }], type: 'p' },
+      { children: [{ text: 'a' }], type: 'paragraph' },
     ]);
 
     editor.update.comment.removeMark();
 
     expect(editor.read.children()).toEqual([
-      { children: [{ text: 'a' }], type: 'p' },
+      { children: [{ text: 'a' }], type: 'paragraph' },
     ]);
   });
 
@@ -250,13 +261,13 @@ describe('BaseCommentPlugin', () => {
             text: 'a',
           },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
 
     editor.update.comment.unsetMark({ id: 'one' });
 
-    expect(editor.read.nodes.get<TCommentText>([0, 0])?.[0]).toEqual({
+    expect(editor.read.nodes.get<CommentText>([0, 0])?.[0]).toEqual({
       comment: true,
       comment_two: true,
       text: 'a',
@@ -267,13 +278,13 @@ describe('BaseCommentPlugin', () => {
     const editor = createCommentEditor([
       {
         children: [{ comment: true, comment_one: true, text: 'a' }],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
 
     editor.update.comment.unsetMark({ id: 'one' });
 
-    expect(editor.read.nodes.get<TCommentText>([0, 0])?.[0]).toEqual({
+    expect(editor.read.nodes.get<CommentText>([0, 0])?.[0]).toEqual({
       text: 'a',
     });
   });
@@ -282,13 +293,13 @@ describe('BaseCommentPlugin', () => {
     const editor = createCommentEditor([
       {
         children: [{ comment: true, commentTransient: true, text: 'a' }],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
 
     editor.update.comment.unsetMark({ transient: true });
 
-    expect(editor.read.nodes.get<TCommentText>([0, 0])?.[0]).toEqual({
+    expect(editor.read.nodes.get<CommentText>([0, 0])?.[0]).toEqual({
       text: 'a',
     });
   });
@@ -300,7 +311,7 @@ describe('BaseCommentPlugin', () => {
           { comment: true, text: 'a' },
           { comment: true, comment_draft: true, text: 'b' },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
 
@@ -312,7 +323,7 @@ describe('BaseCommentPlugin', () => {
           { text: 'a' },
           { comment: true, comment_draft: true, text: 'b' },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
   });

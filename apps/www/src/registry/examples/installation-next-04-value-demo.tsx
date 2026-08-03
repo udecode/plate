@@ -31,7 +31,7 @@ const initialValue: Value = [
     children: [
       {
         children: [{ text: 'This is a quote.' }],
-        type: 'p',
+        type: 'paragraph',
       },
     ],
     type: 'blockquote',
@@ -42,7 +42,7 @@ const initialValue: Value = [
       { bold: true, text: 'bold' },
       { text: ' text for emphasis!' },
     ],
-    type: 'p',
+    type: 'paragraph',
   },
 ];
 

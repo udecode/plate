@@ -1,5 +1,5 @@
 import {
-  createBasePlugin,
+  defineBasePlugin,
   DOMPlugin,
   type CorePluginDefinition,
   type DefinitionOf,
@@ -14,9 +14,8 @@ import type { NavigationFeedbackPluginState } from '../plugins/navigation-feedba
 
 const ReactDOMPlugin = toPlatePlugin(DOMPlugin);
 const ReactPlugin = toPlatePlugin(
-  createBasePlugin({
+  defineBasePlugin('react', {
     dependencies: [DOMPlugin],
-    name: 'react',
   }).extend<ReactExtension>(plateReactExtension)
 );
 

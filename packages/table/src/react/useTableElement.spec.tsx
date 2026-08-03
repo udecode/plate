@@ -4,9 +4,10 @@ import assert from 'node:assert/strict';
 import React from 'react';
 
 import { act, renderHook, waitFor } from '@testing-library/react';
-import { createPlateEditor, Plate } from '@platejs/core/react';
+import { Plate } from '@platejs/core/react';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 
+import { createTestTableEditor } from '../lib/__tests__/getTestTablePlugins';
 import { TablePlugin } from './TablePlugin';
 import { useTableSelectionDom } from './useTableElement';
 
@@ -40,7 +41,7 @@ describe('useTableElement family', () => {
         </htable>
       </editor>
     ) as TestEditor;
-    const editor = createPlateEditor({
+    const editor = createTestTableEditor({
       nodeId: true,
       plugins: [TablePlugin],
       selection: input.selection,

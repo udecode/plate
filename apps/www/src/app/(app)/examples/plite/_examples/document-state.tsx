@@ -1,9 +1,12 @@
 import { type ChangeEvent, type KeyboardEvent, useRef } from 'react';
 import {
+  defineExtension,
   defineStateField,
   type EditorCommit,
+  type Value,
   valueCodecs,
 } from '@platejs/plite';
+import { history } from '@platejs/plite-history';
 import {
   Editable,
   type ReactEditor,
@@ -36,6 +39,15 @@ const spellcheck = defineStateField({
   initial: () => true,
   persist: valueCodecs.boolean,
 });
+
+const HistoryExtension = history();
+const DocumentStateExtension = defineExtension('documentState', {
+  stateFields: [documentTitle, spellcheck],
+});
+type DocumentStateEditor = ReactEditor<
+  Value,
+  readonly [typeof HistoryExtension, typeof DocumentStateExtension]
+>;
 
 const formatList = (items: readonly string[]) =>
   items.length === 0 ? 'none' : items.join(',');
@@ -87,7 +99,7 @@ const getHistoryShortcut = (event: KeyboardEvent<HTMLInputElement>) => {
 };
 
 const DocumentStatePanel = () => {
-  const editor = useEditor<ReactEditor>();
+  const editor = useEditor<DocumentStateEditor>();
   const title = useStateFieldValue(documentTitle);
   const setTitle = useSetStateField(documentTitle);
   const spellcheckEnabled = useStateFieldValue(spellcheck);
@@ -252,7 +264,7 @@ const DocumentStatePanel = () => {
 
 const DocumentStateExample = () => {
   const editor = usePliteEditor({
-    extensions: [documentTitle, spellcheck],
+    extensions: [HistoryExtension, DocumentStateExtension],
     initialValue: {
       children: [
         {

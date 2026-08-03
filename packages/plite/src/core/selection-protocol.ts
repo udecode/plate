@@ -1,6 +1,6 @@
 import type {
   ContentSlice,
-  Editor,
+  AnyEditor as Editor,
   EditorDocumentValue,
   EditorMarks,
   EditorSelectionMapContext,
@@ -722,7 +722,11 @@ export const mapSelectionWithContext = (
     return path ? Object.freeze({ ...selection, ...range, path }) : null;
   }
 
-  if (SelectionApi.isText(selection) && selection.affinity) {
+  if (
+    SelectionApi.isText(selection) &&
+    selection.affinity &&
+    options.association === undefined
+  ) {
     const focus = context.mapPoint(selection.focus, {
       association: selection.affinity,
       deletion: options.deletion,

@@ -1,20 +1,23 @@
 import {
   type CreateEditorOptions,
   createEditor,
-  defineEditorExtension,
+  defineExtension,
   type Editor,
   type EditorExtensionsFromOptions,
   type EditorValueFromOptions,
   type Value,
 } from '@platejs/plite';
-import type { DOMEditorOptions, DOMExtension } from '@platejs/plite-dom';
+import type {
+  DOMEditorOptions,
+  DOMExtension,
+  DOMExtensionTypes,
+} from '@platejs/plite-dom';
 import { dom } from '@platejs/plite-dom';
 import {
   DOMEditor,
   EDITOR_TO_PENDING_SELECTION,
   findEditorDOMRootRuntime,
 } from '@platejs/plite-dom/internal';
-import { history, type HistoryExtension } from '@platejs/plite-history';
 import { refreshEditorDecorations } from '../decoration-refresh';
 import type { PliteProjectionStoreRefreshOptions } from '../projection-store';
 
@@ -57,10 +60,9 @@ const createReactApi = (editor: Editor): ReactApi =>
 const createReactExtension = <const TDOMExtension extends AnyDOMExtension>(
   domExtension: TDOMExtension
 ) =>
-  defineEditorExtension({
+  defineExtension('react', {
     api: ({ editor }) => createReactApi(editor),
     dependencies: [domExtension],
-    name: 'react',
     on: {
       commit(context) {
         if (
@@ -88,15 +90,24 @@ export const react = <const TDOMExtension extends AnyDOMExtension>({
   createReactExtension(domExtension);
 
 type ReactDefaultExtensions<TExtensions extends readonly unknown[]> = readonly [
-  ReactExtension,
-  HistoryExtension,
   ...TExtensions,
+  DOMExtension<true>,
+  ReactExtension,
 ];
-/** Editor type with Plite React, DOM, and history extensions installed. */
+type ReactEditorBase<
+  V extends Value,
+  TExtensions extends readonly unknown[],
+> = Editor<V, ReactDefaultExtensions<TExtensions>>;
+/** Editor type with Plite React and DOM extensions installed. */
 export type ReactEditor<
   V extends Value = Value,
   TExtensions extends readonly unknown[] = readonly [],
-> = Editor<V, ReactDefaultExtensions<TExtensions>>;
+> = Omit<ReactEditorBase<V, TExtensions>, 'api' | 'update'> & {
+  readonly api: ReactEditorBase<V, TExtensions>['api'] &
+    DOMExtensionTypes<true>['api'] & { react: ReactApi };
+  update: ReactEditorBase<V, TExtensions>['update'] &
+    DOMExtensionTypes<true>['update'];
+};
 
 /** React-only editor context value used by lower-level provider internals. */
 export type ReactEditorContextValue<V extends Value = Value> = Omit<
@@ -133,8 +144,8 @@ export function createReactEditor<
 ): ReactEditor<V, TExtensions>;
 
 /**
- * Creates a React editor with the React bridge and history extension installed
- * before any custom extensions.
+ * Creates a React editor with the React bridge installed before custom
+ * extensions. Install history explicitly when the editor needs undo/redo.
  */
 export function createReactEditor<
   V extends Value = Value,
@@ -146,7 +157,6 @@ export function createReactEditor<
   const exactDOMExtension = dom({ clipboardFormatKey });
   const editorExtensions = [
     react({ dom: exactDOMExtension }),
-    history(),
     ...((extensions ?? []) as TExtensions),
   ] as const;
 

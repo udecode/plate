@@ -3,7 +3,7 @@ import { useStoreWithEqualityFn } from 'zustand/traditional';
 import type {
   AnyBasePlugin,
   AnyBasePluginDefinition,
-  AnyResolvedBasePlugin,
+  AnyPluginBase,
   DefinitionOf,
   InferPluginStoreState,
   InferSelectors,
@@ -12,16 +12,16 @@ import type {
   PluginReference,
 } from '../../../lib';
 import type { PlateEditor } from '../../editor';
-import type { AnyEditorPlatePlugin, AnyPlatePlugin } from '../../plugin';
+import type { AnyResolvedPlatePlugin, AnyPlatePlugin } from '../../plugin';
 
 import { getPluginStore as getInternalPluginStore } from '../../../internal/plugin/pluginStore';
 import { useEditor } from './createPlateStore';
 
 type PluginStoreDescriptor = (
   | AnyBasePlugin
-  | AnyEditorPlatePlugin
+  | AnyResolvedPlatePlugin
   | AnyPlatePlugin
-  | AnyResolvedBasePlugin
+  | AnyPluginBase
 ) &
   PluginReference;
 
@@ -133,39 +133,43 @@ function useResolvedPluginStore(
   if (!portal.installed) {
     throw new Error(`Plate plugin "${plugin.name}" is not installed.`);
   }
-  const store = getInternalPluginStore(editor, portal.plugin.name);
+  const store = getInternalPluginStore(editor, portal.name);
 
   if (!store) {
     throw new Error(`Plate plugin "${plugin.name}" store is not installed.`);
   }
 
+  let equalityFn: ((a: unknown, b: unknown) => boolean) | undefined;
+  let selector: (state: unknown) => unknown;
+
   if (typeof keyOrSelector === 'function') {
-    const [{ equalityFn } = {}] = args as [
+    const [options = {}] = args as [
       { equalityFn?: (a: unknown, b: unknown) => boolean }?,
     ];
 
-    return useStoreWithEqualityFn(store.base.store, keyOrSelector, equalityFn);
+    selector = keyOrSelector;
+    equalityFn = options.equalityFn;
+  } else {
+    const namedSelector = (store.selectors as Record<PropertyKey, unknown>)[
+      keyOrSelector
+    ] as ((state: unknown, ...selectorArgs: unknown[]) => unknown) | undefined;
+    selector = namedSelector
+      ? (state: unknown) => namedSelector(state, ...args)
+      : (state: unknown) => {
+          if (typeof state !== 'object' || state === null) {
+            throw new Error(
+              `Plate plugin "${plugin.name}" store state must be an object.`
+            );
+          }
+          if (!Object.hasOwn(state, keyOrSelector)) {
+            throw new Error(
+              `Plate plugin "${plugin.name}" has no state field or selector "${String(keyOrSelector)}".`
+            );
+          }
+
+          return Reflect.get(state, keyOrSelector);
+        };
   }
 
-  const namedSelector = (store.selectors as Record<PropertyKey, unknown>)[
-    keyOrSelector
-  ] as ((state: unknown, ...selectorArgs: unknown[]) => unknown) | undefined;
-  const selector = namedSelector
-    ? (state: unknown) => namedSelector(state, ...args)
-    : (state: unknown) => {
-        if (typeof state !== 'object' || state === null) {
-          throw new Error(
-            `Plate plugin "${plugin.name}" store state must be an object.`
-          );
-        }
-        if (!Object.hasOwn(state, keyOrSelector)) {
-          throw new Error(
-            `Plate plugin "${plugin.name}" has no state field or selector "${String(keyOrSelector)}".`
-          );
-        }
-
-        return Reflect.get(state, keyOrSelector);
-      };
-
-  return useStoreWithEqualityFn(store.base.store, selector);
+  return useStoreWithEqualityFn(store.base.store, selector, equalityFn);
 }

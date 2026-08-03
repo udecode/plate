@@ -7,7 +7,7 @@ import {
   type BaseEditor,
   NodeApi,
   createBaseEditor,
-  createBasePlugin,
+  defineBasePlugin,
 } from 'platejs';
 
 jsxt;
@@ -20,22 +20,20 @@ const createMarkEditor = (input: any) =>
   });
 
 const createVoidElementPlugin = (name: string) =>
-  createBasePlugin({
-    name,
+  defineBasePlugin(name, {
     schema: { element: { void: 'block' } },
-    type: name,
   });
 
-const deleteBackwardCharacter = (editor: BaseEditor<any, any>) => {
+const deleteBackwardCharacter = (editor: BaseEditor) => {
   editor.update.text.deleteBackward({ unit: 'character' });
 };
 
-const deleteForwardCharacter = (editor: BaseEditor<any, any>) => {
+const deleteForwardCharacter = (editor: BaseEditor) => {
   editor.update.text.deleteForward({ unit: 'character' });
 };
 
 const toggleMark = (
-  editor: BaseEditor<any, any>,
+  editor: BaseEditor,
   key: string,
   options: { remove?: string } = {}
 ) => {
@@ -47,7 +45,7 @@ const toggleMark = (
   });
 };
 
-const isTrailingTextEmpty = (editor: BaseEditor<any, any>) =>
+const isTrailingTextEmpty = (editor: BaseEditor) =>
   editor.read((state) => {
     const selection = state.selection();
     if (!selection) return true;
@@ -250,7 +248,7 @@ describe('slate cross-package contracts', () => {
         <editor>
           <hp>
             <htext>first</htext>
-            <ha>
+            <ha url="https://example.com">
               test
               <cursor />
             </ha>
@@ -291,7 +289,7 @@ describe('slate cross-package contracts', () => {
         <editor>
           <hp>
             <htext>first</htext>
-            <ha>
+            <ha url="https://example.com">
               test
               <cursor />
             </ha>
@@ -313,7 +311,7 @@ describe('slate cross-package contracts', () => {
         <editor>
           <hp>
             <htext>first</htext>
-            <ha>
+            <ha url="https://example.com">
               test
               <cursor />
             </ha>
@@ -358,7 +356,7 @@ describe('slate cross-package contracts', () => {
 
       const editor = createMarkEditor(input);
 
-      toggleMark(editor, BoldPlugin.name);
+      toggleMark(editor, editor.plugin(BoldPlugin).schema.properties.bold.key);
 
       expect(editor.read.children()).toEqual(output.children);
     });
@@ -387,7 +385,13 @@ describe('slate cross-package contracts', () => {
 
       const editor = createMarkEditor(input);
 
-      toggleMark(editor, ItalicPlugin.name, { remove: BoldPlugin.name });
+      toggleMark(
+        editor,
+        editor.plugin(ItalicPlugin).schema.properties.italic.key,
+        {
+          remove: editor.plugin(BoldPlugin).schema.properties.bold.key,
+        }
+      );
 
       expect(editor.read.children()).toEqual(output.children);
     });
@@ -415,7 +419,7 @@ describe('slate cross-package contracts', () => {
 
       const editor = createMarkEditor(input);
 
-      toggleMark(editor, BoldPlugin.name);
+      toggleMark(editor, editor.plugin(BoldPlugin).schema.properties.bold.key);
 
       expect(editor.read.children()).toEqual(output.children);
     });

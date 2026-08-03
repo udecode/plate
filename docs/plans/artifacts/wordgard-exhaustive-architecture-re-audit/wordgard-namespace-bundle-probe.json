@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-01T15:43:23.249Z",
+  "method": "Bundle one property from Wordgard current dist namespace objects with Rolldown and esbuild; report byte/gzip size and concept-specific sibling sentinels.",
+  "rolldown": "rolldown@1.2.0",
+  "esbuild": "0.28.0",
+  "wordgardHead": "c715d4ded8fc780f52c13206e589ea31e4148dd4",
+  "results": [
+    {
+      "id": "heading.keyBindings",
+      "module": "dist/schema.js",
+      "sourceBytes": 55404,
+      "rolldown": {
+        "bytes": 479858,
+        "gzipBytes": 120534,
+        "siblingSentinels": {
+          "heading_1": true,
+          "^(#{1,6}) $": true
+        }
+      },
+      "esbuild": {
+        "bytes": 283630,
+        "gzipBytes": 92219,
+        "siblingSentinels": {
+          "heading_1": true,
+          "^(#{1,6}) $": true
+        }
+      }
+    },
+    {
+      "id": "heading.createOnHash",
+      "module": "dist/schema.js",
+      "sourceBytes": 55404,
+      "rolldown": {
+        "bytes": 479860,
+        "gzipBytes": 120540,
+        "siblingSentinels": {
+          "Ctrl-Shift-1": true,
+          "heading_1": true
+        }
+      },
+      "esbuild": {
+        "bytes": 283631,
+        "gzipBytes": 92219,
+        "siblingSentinels": {
+          "Ctrl-Shift-1": true,
+          "heading_1": true
+        }
+      }
+    },
+    {
+      "id": "imageResizing.keyBindings",
+      "module": "dist/schema.js",
+      "sourceBytes": 55404,
+      "rolldown": {
+        "bytes": 479870,
+        "gzipBytes": 120532,
+        "siblingSentinels": {
+          "resizeHandle": true,
+          "selectedImage": false
+        }
+      },
+      "esbuild": {
+        "bytes": 283630,
+        "gzipBytes": 92217,
+        "siblingSentinels": {
+          "resizeHandle": false,
+          "selectedImage": false
+        }
+      }
+    },
+    {
+      "id": "Command.bind",
+      "module": "dist/command.js",
+      "sourceBytes": 57107,
+      "rolldown": {
+        "bytes": 166655,
+        "gzipBytes": 42557,
+        "siblingSentinels": {
+          "Menu": false,
+          "toggleBlock": false
+        }
+      },
+      "esbuild": {
+        "bytes": 96273,
+        "gzipBytes": 32402,
+        "siblingSentinels": {
+          "Menu": false,
+          "toggleBlock": false
+        }
+      }
+    }
+  ]
+}

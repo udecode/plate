@@ -8,7 +8,7 @@ describe('emoji shortcode package surfaces', () => {
       output: [
         {
           children: [{ text: '🔥' }],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
       title: 'deserializes a bare emoji shortcode to unicode text',
@@ -19,7 +19,7 @@ describe('emoji shortcode package surfaces', () => {
       output: [
         {
           children: [{ text: 'Launch ' }, { text: '🔥' }, { text: ' soon' }],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
       title: 'deserializes inline emoji shortcodes inside paragraph text',

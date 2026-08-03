@@ -13,44 +13,44 @@ describe(getDocxTestName(name), () => {
   testDocxDeserializer({
     expected: (
       <editor>
-        <hp align="center">
+        <hp textAlign="center">
           <htext bold>TITLE</htext>
         </hp>
         <hp textIndent={1}>
           <htext />
         </hp>
-        <hp align="center">
+        <hp textAlign="center">
           <htext bold>Name</htext>
         </hp>
-        <hp align="justify" lineHeight="normal" textIndent={1}>
+        <hp textAlign="justify" lineHeight="normal" textIndent={1}>
           A
         </hp>
-        <hp align="justify">
+        <hp textAlign="justify">
           <htext bold italic>
             Bylaws
           </htext>
         </hp>
-        <hp align="justify" indent={1}>
+        <hp textAlign="justify" indent={1}>
           A
         </hp>
-        <hp align="justify" indent={1}>
+        <hp textAlign="justify" indent={1}>
           B
         </hp>
-        <hp align="justify">
+        <hp textAlign="justify">
           <htext bold italic>
             Board of Directors
           </htext>
         </hp>
-        <hp align="justify" indent={1}>
+        <hp textAlign="justify" indent={1}>
           A
         </hp>
-        <hp align="justify" indent={1}>
+        <hp textAlign="justify" indent={1}>
           B
         </hp>
-        <hp align="center" lineHeight="normal" textIndent={1}>
+        <hp textAlign="center" lineHeight="normal" textIndent={1}>
           (<htext italic>signature page follows</htext>)
         </hp>
-        <hp align="justify" lineHeight="normal" textIndent={1}>
+        <hp textAlign="justify" lineHeight="normal" textIndent={1}>
           C
         </hp>
         <hp indent={7}>

@@ -22,6 +22,7 @@ import {
   useState,
 } from 'react';
 import {
+  defineExtension,
   defineStateField,
   type Node,
   NodeApi,
@@ -29,6 +30,7 @@ import {
   type Value,
 } from '@platejs/plite';
 import { isHotkey } from '@platejs/plite-dom';
+import { history } from '@platejs/plite-history';
 import {
   createPlitePage,
   getPlitePageLayoutDecorations,
@@ -95,6 +97,10 @@ const pageSettings = defineStateField<PlitePageSettings>({
   history: 'push',
   initial: () => ({ margins: 96, preset: 'a4' }),
   persist: plitePageSettingsCodec,
+});
+
+const pageSettingsExtension = defineExtension('pageSettings', {
+  stateFields: [pageSettings],
 });
 
 type DOMStrategyMode = 'full' | 'staged' | 'virtualized';
@@ -2080,7 +2086,7 @@ const PaginationEditor = ({
       ? controls.virtualizedStressPages
       : 0;
   const editor = usePliteEditor({
-    extensions: [pageSettings],
+    extensions: [history(), pageSettingsExtension],
     initialValue: {
       children: createInitialValue({
         stressPages: initialStressPages,

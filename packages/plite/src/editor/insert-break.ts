@@ -8,7 +8,7 @@ import {
 import { RangeApi } from '../interfaces/range';
 import { splitNodes } from '../transforms-node/split-nodes';
 import { deleteText } from '../transforms-text/delete-text';
-import { insertParagraphAfterSelectedBlockVoid } from './block-void-break';
+import { insertDefaultBlockAfterSelectedBlockVoid } from './block-void-break';
 
 const getNextSoftBreakRange = (
   editor: Parameters<EditorStaticApi['insertBreak']>[0]
@@ -40,7 +40,7 @@ export const applyInsertBreak: EditorStaticApi['insertBreak'] = (editor) => {
     deleteText(editor, { at: softBreakRange, hanging: true });
   }
 
-  if (selection && insertParagraphAfterSelectedBlockVoid(editor)) {
+  if (selection && insertDefaultBlockAfterSelectedBlockVoid(editor)) {
     return;
   }
 

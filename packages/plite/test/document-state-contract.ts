@@ -4,6 +4,7 @@ import { describe, it } from 'node:test';
 import {
   createEditor,
   type Descendant,
+  defineExtension,
   defineStateField,
   defineValueCodec,
   valueCodecs,
@@ -26,7 +27,9 @@ describe('document meta contract', () => {
     });
 
     const explicit = createEditor({
-      extensions: [documentTitle] as const,
+      extensions: [
+        defineExtension('document-title', { stateFields: [documentTitle] }),
+      ] as const,
       initialValue: {
         children: [paragraph('body')],
         meta: {
@@ -35,7 +38,9 @@ describe('document meta contract', () => {
       },
     });
     const defaulted = createEditor({
-      extensions: [documentTitle] as const,
+      extensions: [
+        defineExtension('document-title', { stateFields: [documentTitle] }),
+      ] as const,
       initialValue: [paragraph('body')],
     });
 
@@ -78,7 +83,11 @@ describe('document meta contract', () => {
       initial: () => 'closed',
     });
     const editor = createEditor({
-      extensions: [documentTitle, localPanel] as const,
+      extensions: [
+        defineExtension('document-meta', {
+          stateFields: [documentTitle, localPanel],
+        }),
+      ] as const,
       initialValue: [paragraph('body')],
     });
 
@@ -132,8 +141,14 @@ describe('document meta contract', () => {
         meta: { unknown: { retained: true } },
       },
     });
-    const removePersisted = editor.extend(persisted);
-    const removeLocal = editor.extend(local);
+    const persistedExtension = defineExtension('document-counter', {
+      stateFields: [persisted],
+    });
+    const localExtension = defineExtension('local-panel', {
+      stateFields: [local],
+    });
+    const removePersisted = editor.install(persistedExtension);
+    const removeLocal = editor.install(localExtension);
 
     editor.update((tx) => {
       tx.setField(persisted, { count: 7 });
@@ -158,7 +173,7 @@ describe('document meta contract', () => {
       },
     });
 
-    const removeReinstalled = editor.extend(persisted);
+    const removeReinstalled = editor.install(persistedExtension);
 
     assert.equal(editor.read.getField(persisted), stored);
     assert.equal(initialCalls, initialCallsBeforeReinstall);
@@ -176,7 +191,12 @@ describe('document meta contract', () => {
     });
 
     assert.throws(
-      () => editor.extend(impostor),
+      () =>
+        editor.install(
+          defineExtension('document-counter-impostor', {
+            stateFields: [impostor],
+          })
+        ),
       /does not match the stable descriptor identity/i
     );
   });

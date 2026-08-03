@@ -3,7 +3,7 @@ import { performance } from 'node:perf_hooks';
 
 import {
   createEditor,
-  defineEditorExtension,
+  defineExtension,
 } from '../../../../../packages/plite/src/index.ts';
 import { ChangeDraft } from '../../../../../packages/plite/src/core/change/builder.ts';
 import * as Editor from '../../../../../packages/plite/src/internal/index.ts';
@@ -153,8 +153,7 @@ const createFakeCollabAdapter = () => {
   let listenerCalls = 0;
 
   return {
-    extension: defineEditorExtension({
-      name: 'benchmark-fake-collab-adapter',
+    extension: defineExtension('benchmark-fake-collab-adapter', {
       setup(context) {
         const state = context.runtimeState({
           connected: true,

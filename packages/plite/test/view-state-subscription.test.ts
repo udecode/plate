@@ -7,7 +7,7 @@ import {
   subscribeEditorViewState,
 } from '@platejs/plite/internal';
 
-const value = [{ children: [{ text: '' }], type: 'p' }];
+const value = [{ children: [{ text: '' }], type: 'paragraph' }];
 
 describe('editor view state subscription', () => {
   test('notifies read-only, composing, and focus changes', async () => {

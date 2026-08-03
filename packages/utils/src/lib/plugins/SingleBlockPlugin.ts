@@ -1,11 +1,10 @@
-import { createBasePlugin } from '@platejs/core';
+import { defineBasePlugin } from '@platejs/core';
 import { editorCommands, NodeApi } from '@platejs/plite';
 
 import { KEYS } from '../plate-keys';
 
 /** Forces editor to only have one block. */
-export const SingleBlockPlugin = createBasePlugin({
-  name: KEYS.singleBlock,
+export const SingleBlockPlugin = defineBasePlugin(KEYS.singleBlock, {
   commands: ({ handle }) => [
     handle(editorCommands.insertBreak, ({ state }) =>
       state.transaction((tx) => {

@@ -4,6 +4,7 @@ import React from 'react';
 
 import {
   NavigationFeedbackPlugin,
+  type PlateEditor,
   useEditor,
   useEditorPlugin,
   useEditorScrollElement,
@@ -28,6 +29,18 @@ export type UseContentController = {
   rootMargin: string;
   scroll?: boolean;
   topOffset: number;
+};
+
+export type TocElementState = {
+  activeContentId: string;
+  editor: PlateEditor;
+  headingList: Heading[];
+  onContentScroll: (
+    element: HTMLElement,
+    id: string,
+    behavior?: ScrollBehavior,
+    path?: Path
+  ) => void;
 };
 
 export const useContentObserver = ({
@@ -281,7 +294,7 @@ export const useTocController = ({
   }, [visible, offset, tocRef]);
 };
 
-export const useTocElementState = () => {
+export const useTocElementState = (): TocElementState => {
   const { editor } = useEditorPlugin(TocPlugin);
   const isScroll = usePluginStore(TocPlugin, 'isScroll');
   const topOffset = usePluginStore(TocPlugin, 'topOffset');

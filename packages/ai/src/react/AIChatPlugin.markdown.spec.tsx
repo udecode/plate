@@ -5,60 +5,50 @@ import { describe, expect, it } from 'bun:test';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 import {
   BaseParagraphPlugin,
-  createBasePlugin,
+  defineBasePlugin,
   NodeIdPlugin,
 } from '@platejs/core';
 import { MarkdownPlugin } from '@platejs/markdown';
-import { type Element, type ElementEntry, schema } from '@platejs/plite';
-import { KEYS } from '@platejs/utils';
+import {
+  createEditor,
+  type Element,
+  type ElementEntry,
+  property,
+  schema,
+  type Value,
+} from '@platejs/plite';
+import { PLUGINS } from '@platejs/utils';
 import { createPlateEditor } from '@platejs/core/react';
 
 jsxt;
 
-const TableRowFixturePlugin = createBasePlugin({
-  name: KEYS.tr,
-  schema: ({ plugins }) => ({
+const TableRowFixturePlugin = defineBasePlugin(PLUGINS.tableRow, {
+  schema: () => ({
     element: {
-      content: schema.content.types(
-        plugins.elementTypes([
-          TableCellFixturePlugin,
-          TableHeaderCellFixturePlugin,
-        ])
-      ),
+      content: schema.content.element(TableCellFixturePlugin),
     },
   }),
 });
 
-const TableCellFixturePlugin = createBasePlugin({
-  name: KEYS.td,
+const TableCellFixturePlugin = defineBasePlugin(PLUGINS.tableCell, {
   schema: ({ plugins }) => ({
     element: {
       content: plugins.blockContent(),
+      properties: {
+        header: property.boolean({ default: false, omitDefault: true }),
+      },
     },
   }),
 });
 
-const TableHeaderCellFixturePlugin = createBasePlugin({
-  name: KEYS.th,
-  schema: ({ plugins }) => ({
-    element: {
-      content: plugins.blockContent(),
-    },
-  }),
-});
-
-const createTestEditor = async (
-  input: TestEditor,
-  { tableType = KEYS.table }: { tableType?: string } = {}
-) => {
+const createTestEditor = async (input: TestEditor) => {
   const { AIChatPlugin } = await import('./AIChatPlugin');
   const editor = createPlateEditor({
+    editor: createEditor<Value>(),
     plugins: [
       BaseParagraphPlugin,
       NodeIdPlugin,
-      createBasePlugin({
-        name: KEYS.table,
-        type: tableType,
+      defineBasePlugin(PLUGINS.table, {
         read: ({ state }) => ({
           getGridAbove: () => {
             const selection = state.selection();
@@ -66,11 +56,11 @@ const createTestEditor = async (
 
             const start = state.nodes.above<Element>({
               at: selection.anchor,
-              match: { type: [KEYS.td, KEYS.th] },
+              match: { type: 'tableCell' },
             });
             const end = state.nodes.above<Element>({
               at: selection.focus,
-              match: { type: [KEYS.td, KEYS.th] },
+              match: { type: 'tableCell' },
             });
             if (!start || !end) return [];
 
@@ -95,17 +85,14 @@ const createTestEditor = async (
             return entries;
           },
         }),
-        schema: ({ plugins }) => ({
+        schema: () => ({
           element: {
-            content: schema.content.type(
-              plugins.elementType(TableRowFixturePlugin)
-            ),
+            content: schema.content.element(TableRowFixturePlugin),
           },
         }),
       }),
       TableRowFixturePlugin,
       TableCellFixturePlugin,
-      TableHeaderCellFixturePlugin,
       MarkdownPlugin,
       AIChatPlugin,
     ],
@@ -190,34 +177,6 @@ describe('AIChatPlugin read.markdown', () => {
       // Non-selected cells should NOT have CellRef
       expect(result).not.toContain('<CellRef id="t1_r1_c4"');
       expect(result).toContain('| 工程师 |');
-    });
-
-    it('uses the configured table type', async () => {
-      const input = (
-        <editor>
-          <htable id="t1">
-            <htr id="t1_r1">
-              <htd id="t1_r1_c1">
-                <hp>
-                  <anchor />
-                  Content
-                  <focus />
-                </hp>
-              </htd>
-            </htr>
-          </htable>
-        </editor>
-      ) as TestEditor;
-
-      Reflect.set(input.children[0]!, 'type', 'custom-table');
-
-      const aiChat = await createTestEditor(input, {
-        tableType: 'custom-table',
-      });
-
-      expect(aiChat.read.markdown({ type: 'tableCellWithId' })).toContain(
-        '<CellRef id="t1_r1_c1" />'
-      );
     });
 
     it('handle single cell selection', async () => {

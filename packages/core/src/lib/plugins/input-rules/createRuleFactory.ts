@@ -1,13 +1,10 @@
-import type { Point, Value } from '@platejs/plite';
+import type { Point } from '@platejs/plite';
 
 import type { BaseEditor } from '../../editor';
 import type { AnyBasePlugin } from '../../plugin/BasePlugin';
+import type { PluginReference } from '../../plugin/PluginDefinition';
 import type {
-  DefinitionOf,
-  PluginReference,
-} from '../../plugin/PluginDefinition';
-import type {
-  AnyInputRule,
+  InputRule,
   BlockFenceInputRuleConfig,
   BlockFenceInputRuleMatch,
   BlockStartInputRuleConfig,
@@ -91,10 +88,13 @@ type MarkRuleFactoryConfig<
 > = {
   type: 'mark';
   end?: FactoryValue<FactoryOptions<TDefaults, TRequired>, string | undefined>;
-  mark?: FactoryValue<FactoryOptions<TDefaults, TRequired>, string | undefined>;
+  mark?: FactoryValue<
+    FactoryOptions<TDefaults, TRequired>,
+    MarkInputRuleConfig['mark']
+  >;
   marks?: FactoryValue<
     FactoryOptions<TDefaults, TRequired>,
-    string[] | undefined
+    MarkInputRuleConfig['marks']
   >;
   start: FactoryValue<FactoryOptions<TDefaults, TRequired>, string>;
   trim?: FactoryValue<
@@ -141,7 +141,10 @@ type BlockStartRuleFactoryConfig<
     FactoryOptions<TDefaults, TRequired>,
     BlockStartInputRuleConfig<TMatch>['mode']
   >;
-  node?: FactoryValue<FactoryOptions<TDefaults, TRequired>, string | undefined>;
+  node?: FactoryValue<
+    FactoryOptions<TDefaults, TRequired>,
+    BlockStartInputRuleConfig<TMatch>['node']
+  >;
   removeMatchedText?: FactoryValue<
     FactoryOptions<TDefaults, TRequired>,
     boolean | undefined
@@ -184,7 +187,7 @@ type BlockFenceRuleFactoryConfig<
   >;
   block?: FactoryValue<
     FactoryOptions<TDefaults, TRequired>,
-    string | undefined
+    PluginReference | string | undefined
   >;
   fence: FactoryValue<FactoryOptions<TDefaults, TRequired>, string>;
   on?: FactoryValue<
@@ -390,7 +393,7 @@ type RuleFromFactoryConfig<TConfig, TEditor> =
             infer TMatch,
             infer _TEditor
           >
-        ? AnyInputRule<TMatch, TEditor>
+        ? InputRule<TMatch, TEditor>
         : TConfig extends InsertTextRuleFactoryConfig<
               infer _TDefaults,
               infer _TRequired,
@@ -544,7 +547,7 @@ function assertRuleFactoryConfig(
 
 export function createRuleFactory<P extends RuleFactoryOwner>(
   plugin: P
-): BoundRuleFactory<BaseEditor<Value, DefinitionOf<P>>>;
+): BoundRuleFactory<BaseEditor<P>>;
 export function createRuleFactory<
   TRequired extends object = {},
   TDefaults extends object = {},

@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-01T15:42:30.212Z",
+  "wordgardHead": "c715d4ded8fc780f52c13206e589ea31e4148dd4",
+  "plotInputAliasing": {
+    "before": {
+      "contentLength": 1,
+      "json": {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "param": "A"
+          }
+        ]
+      },
+      "length": 3,
+      "text": "A"
+    },
+    "after": {
+      "contentLength": 1,
+      "json": {
+        "type": "Paragraph",
+        "content": [
+          {
+            "type": "Text",
+            "param": "A"
+          },
+          {
+            "type": "Text",
+            "param": "B"
+          }
+        ]
+      },
+      "length": 3,
+      "text": "AB"
+    },
+    "cachedLengthMatchesContent": false
+  },
+  "sliceInputAliasing": {
+    "before": {
+      "json": [
+        {
+          "type": "Text",
+          "param": "A"
+        }
+      ],
+      "length": 1,
+      "text": "A"
+    },
+    "after": {
+      "json": [
+        {
+          "type": "Text",
+          "param": "A"
+        },
+        {
+          "type": "Text",
+          "param": "B"
+        }
+      ],
+      "length": 1,
+      "text": "AB"
+    },
+    "cachedLengthMatchesContent": false
+  },
+  "markSetInputAliasing": {
+    "before": {
+      "json": {
+        "type": "Text",
+        "param": "A",
+        "marks": {
+          "Strong": null
+        }
+      },
+      "text": "\"A\"[Strong]"
+    },
+    "after": {
+      "json": {
+        "type": "Text",
+        "param": "A",
+        "marks": {
+          "Strong": null,
+          "Emphasis": null
+        }
+      },
+      "text": "\"A\"[Strong,Emphasis]"
+    },
+    "valuePreserved": false
+  },
+  "writableTransactionNewDoc": {
+    "before": {
+      "appliedChangeText": "A",
+      "newDocText": "A",
+      "startDocText": ""
+    },
+    "after": {
+      "appliedChangeText": "A",
+      "newDocText": "",
+      "publishedStateText": ""
+    },
+    "publishedStateMatchesChanges": false
+  },
+  "failedTransactionStateResolution": {
+    "firstStateError": "audit update failure",
+    "cachedPartialState": true,
+    "secondStateDocText": "A",
+    "secondStateFieldError": "Cyclic dependency between fields and/or facets",
+    "failureRemainedAtomic": false
+  }
+}

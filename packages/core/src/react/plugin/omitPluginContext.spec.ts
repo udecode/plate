@@ -8,11 +8,11 @@ describe('omitPluginContext (plate)', () => {
       editor: { id: 'editor' },
       extra: 'kept',
       installed: true,
+      name: 'plugin',
       nested: { value: 2 },
       plugin: { name: 'plugin' },
       read: { remove: true },
       store: { get: () => ({ value: 1 }) },
-      type: 'plugin',
       update: () => {},
     };
 

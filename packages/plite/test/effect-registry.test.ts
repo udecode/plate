@@ -3,7 +3,7 @@ import { describe, it } from 'node:test';
 
 import {
   createEditor,
-  defineEditorExtension,
+  defineExtension,
   defineEffect,
   defineExtensionSlot,
   type EditorEffectType,
@@ -13,7 +13,7 @@ import {
 import { screenReaderAnnouncementEffect } from '../src/core/screen-reader-announcement';
 
 const owner = (name: string, type: EditorEffectType) =>
-  defineEditorExtension({ effectTypes: [type], name });
+  defineExtension(name, { effectTypes: [type] });
 
 describe('installed editor effect registry', () => {
   it('keeps the intrinsic screen-reader effect zero-config', () => {
@@ -35,7 +35,7 @@ describe('installed editor effect registry', () => {
       /is not installed/
     );
 
-    const cleanup = editor.extend(owner('counter-effect', increment));
+    const cleanup = editor.install(owner('counter-effect', increment));
 
     assert.doesNotThrow(() => {
       editor.update((tx) => tx.effects.emit(increment, 1));
@@ -54,7 +54,7 @@ describe('installed editor effect registry', () => {
     const editor = createEditor({ extensions: [owner('first', first)] });
 
     assert.throws(
-      () => editor.extend(owner('duplicate', duplicate)),
+      () => editor.install(owner('duplicate', duplicate)),
       /from "duplicate" conflicts with "first"/
     );
     assert.doesNotThrow(() => {

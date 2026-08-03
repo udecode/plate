@@ -1,4 +1,4 @@
-import { property, createEditor, type Value } from '@platejs/plite';
+import { property, createEditor } from '@platejs/plite';
 import { createReactEditor } from '@platejs/plite-react';
 
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
@@ -7,55 +7,49 @@ import {
   plateReactExtension,
 } from '../../internal/plugin/plateNativeExtensions';
 import { createBaseEditor } from '../../lib/editor/withPlite';
-import { createBasePlugin } from '../../lib/plugin/createBasePlugin';
+import { defineBasePlugin } from '../../lib/plugin/defineBasePlugin';
 import { DebugPlugin } from '../../lib/plugins/debug/DebugPlugin';
 import { someHtmlElement } from '../../lib/plugins/html/htmlDom';
-import { createPlatePlugin } from '../plugin/createPlatePlugin';
-import { createPlateEditor, extendPlateEditor } from './withPlate';
+import { definePlatePlugin } from '../plugin/definePlatePlugin';
+import { createPlateEditor } from './withPlate';
 
 describe('PlateEditor core package', () => {
-  const MyCustomPlugin = createBasePlugin({
+  const MyCustomPlugin = defineBasePlugin('myCustom', {
     api: () => ({ myCustomMethod: () => {} }),
-    name: 'myCustom',
   });
 
-  const TextFormattingPlugin = createBasePlugin({
+  const TextFormattingPlugin = defineBasePlugin('textFormatting', {
     api: () => ({
       bold: () => {},
       italic: () => {},
       underline: () => {},
     }),
-    name: 'textFormatting',
   });
 
-  const ListPlugin = createBasePlugin({
+  const ListPlugin = defineBasePlugin('list', {
     api: () => ({
       createBulletedList: () => {},
     }),
-    name: 'list',
   });
 
-  const TablePlugin = createBasePlugin({
+  const TablePlugin = defineBasePlugin('table', {
     api: () => ({
       addRow: () => {},
       insertTable: () => {},
     }),
-    name: 'table',
   });
 
-  const ImagePlugin = createBasePlugin({
+  const ImagePlugin = defineBasePlugin('image', {
     api: () => ({
       insertImage: () => {},
       resizeImage: () => {},
     }),
-    name: 'image',
   });
 
-  const LinkPlugin = createPlatePlugin({
+  const LinkPlugin = definePlatePlugin('link', {
     api: () => ({
       getAttributes: () => ({}),
     }),
-    name: 'link',
   });
 
   it('creates base and React editors without identity ceremony', () => {
@@ -83,7 +77,7 @@ describe('PlateEditor core package', () => {
   });
 
   it('reconfigures an existing React editor onto the canonical Plate graph', () => {
-    const editor = extendPlateEditor(createReactEditor(), {});
+    const editor = createPlateEditor({ editor: createReactEditor() });
 
     expect(editor.api.dom.focus).toBeInstanceOf(Function);
     expect(editor.api.react.refreshDecorations).toBeInstanceOf(Function);
@@ -143,13 +137,13 @@ describe('PlateEditor core package', () => {
     it('exposes link api after extending a plate plugin', () => {
       const editor = createPlateEditor({
         plugins: [
-          LinkPlugin.extend({
-            parsers: {
-              html: {
+          LinkPlugin.extend(({ defineCodecs }) => ({
+            codecs: defineCodecs({
+              'text/html': {
                 query: () => true,
               },
-            },
-          }),
+            }),
+          })),
         ],
       });
 
@@ -168,7 +162,7 @@ describe('PlateEditor core package', () => {
       expect(singlePluginEditor.api.myCustom.myCustomMethod).toBeInstanceOf(
         Function
       );
-      const installedPlugin = singlePluginEditor.plugin(MyCustomPlugin).plugin;
+      const installedPlugin = singlePluginEditor.plugin(MyCustomPlugin);
 
       // @ts-expect-error installed descriptors do not expose author methods
       installedPlugin.extend;
@@ -202,7 +196,8 @@ describe('PlateEditor core package', () => {
     });
 
     it('extends a raw editor with all plugins atomically', () => {
-      const editor = extendPlateEditor(createEditor(), {
+      const editor = createPlateEditor({
+        editor: createEditor(),
         plugins: [TextFormattingPlugin, ListPlugin, TablePlugin],
       });
 
@@ -215,12 +210,11 @@ describe('PlateEditor core package', () => {
     });
 
     it('isolates overlapping API names by plugin namespace', () => {
-      const OverlappingPlugin = createBasePlugin({
+      const OverlappingPlugin = defineBasePlugin('overlapping', {
         api: () => ({
           bold: (_: number) => {},
           insertImage: (_: number) => {},
         }),
-        name: 'overlapping',
       });
 
       const editor = createPlateEditor({
@@ -240,8 +234,7 @@ describe('PlateEditor core package', () => {
   });
 
   describe('Plugin', () => {
-    const BoldPlugin = createBasePlugin({
-      name: 'bold',
+    const BoldPlugin = defineBasePlugin('bold', {
       schema: { mark: property.boolean({ default: false, omitDefault: true }) },
       codecs: ({ defineCodecs }) =>
         defineCodecs({
@@ -263,7 +256,7 @@ describe('PlateEditor core package', () => {
     });
 
     it('supports specific plugin generics on createPlateEditor', () => {
-      const editor = createPlateEditor<Value, readonly [typeof BoldPlugin]>({
+      const editor = createPlateEditor({
         plugins: [BoldPlugin],
       });
 

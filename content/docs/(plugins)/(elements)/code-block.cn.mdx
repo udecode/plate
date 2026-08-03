@@ -179,7 +179,7 @@ const editor = createPlateEditor({
 {
   icon: <FileCodeIcon />,
   label: '代码',
-  value: KEYS.codeBlock,
+  value: PLUGINS.codeBlock,
 }
 ```
 
@@ -191,7 +191,7 @@ const editor = createPlateEditor({
 {
   icon: <FileCodeIcon />,
   label: '代码',
-  value: KEYS.codeBlock,
+  value: PLUGINS.codeBlock,
 }
 ```
 
@@ -205,7 +205,7 @@ const editor = createPlateEditor({
 
 ### `CodeHighlightPlugin`
 
-负责 `code_syntax` mark、Lowlight decoration 流程和高亮 token 渲染。把这个描述符作为普通插件数组的一项加入或省略。
+负责 `codeSyntax` mark、Lowlight decoration 流程和高亮 token 渲染。把这个描述符作为普通插件数组的一项加入或省略。
 
 <API name="CodeHighlightPlugin">
 <APIOptions>

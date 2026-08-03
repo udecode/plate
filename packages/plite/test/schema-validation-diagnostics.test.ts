@@ -11,7 +11,7 @@ import {
   type EditorSchemaValidationDiagnostic,
 } from '@platejs/plite';
 
-const Schema = defineEditorSchema({
+const Schema = defineEditorSchema('schema:validation-diagnostics', {
   elements: {
     code: {
       content: schema.content.text({ default: 'text', min: 1 }),

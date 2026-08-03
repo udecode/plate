@@ -1,4 +1,4 @@
-import { createBaseEditor, createBasePlugin } from '@platejs/core';
+import { createBaseEditor, defineBasePlugin } from '@platejs/core';
 
 import { DocxIOPlugin, downloadDocx } from './DocxIOPlugin';
 
@@ -10,7 +10,7 @@ describe('DocxIOPlugin', () => {
   it('converts an explicit document snapshot and downloads separately', async () => {
     const editor = createBaseEditor({
       plugins: [DocxIOPlugin],
-      initialValue: [{ children: [{ text: 'Export me' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'Export me' }], type: 'paragraph' }],
     });
     const createObjectUrl = spyOn(URL, 'createObjectURL').mockReturnValue(
       'blob:docx'
@@ -36,10 +36,10 @@ describe('DocxIOPlugin', () => {
   });
 
   it('uses explicit plugin descriptors for the export editor', async () => {
-    const SerializationPlugin = createBasePlugin({ name: 'serialization' });
+    const SerializationPlugin = defineBasePlugin('serialization', {});
     const editor = createBaseEditor({
       plugins: [SerializationPlugin, DocxIOPlugin],
-      initialValue: [{ children: [{ text: 'Export me' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'Export me' }], type: 'paragraph' }],
     });
 
     const blob = await editor

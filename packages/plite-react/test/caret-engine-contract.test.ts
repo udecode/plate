@@ -41,7 +41,6 @@ test('caret movement tags the semantic command commit', () => {
     domStrategyRuntime: null,
     editor,
     event: createKeyDownEvent('ArrowRight'),
-    isRTL: false,
     selection,
   });
 

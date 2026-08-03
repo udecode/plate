@@ -3,11 +3,10 @@ import { describe, it } from 'node:test';
 
 import {
   createEditor,
-  createEditorRuntime,
   createEditorView,
   type Anchor,
   type Descendant,
-  defineEditorExtension,
+  defineExtension,
   defineEffect,
   defineStateField,
   defineValueCodec,
@@ -64,12 +63,12 @@ describe('document meta history contract', () => {
       reduce: (value, effect) =>
         effect.type === increment ? value + effect.value : value,
     });
-    const incrementExtension = defineEditorExtension({
+    const incrementExtension = defineExtension('counter-increment-effect', {
       effectTypes: [increment],
-      name: 'counter-increment-effect',
+      stateFields: [counter],
     });
     const editor = createEditor({
-      extensions: [history(), counter, incrementExtension],
+      extensions: [history(), incrementExtension],
     });
 
     editor.update((tx) => {
@@ -104,10 +103,9 @@ describe('document meta history contract', () => {
     const editor = createEditor({
       extensions: [
         history(),
-        counter,
-        defineEditorExtension({
+        defineExtension('nested-counter-effect', {
           effectTypes: [replace],
-          name: 'nested-counter-effect',
+          stateFields: [counter],
         }),
       ] as const,
     });
@@ -142,7 +140,10 @@ describe('document meta history contract', () => {
       persist: valueCodecs.string,
     });
     const editor = createEditor({
-      extensions: [history(), documentTitle],
+      extensions: [
+        history(),
+        defineExtension('document-title', { stateFields: [documentTitle] }),
+      ],
       initialValue: {
         children: [paragraph('body')],
         meta: { [documentTitle.key]: documentTitle.serialize('Q2 Plan') },
@@ -221,7 +222,12 @@ describe('document meta history contract', () => {
       persist: valueCodecs.string,
     });
     const editor = createEditor({
-      extensions: [history(), streamState],
+      extensions: [
+        history(),
+        defineExtension('document-stream-state', {
+          stateFields: [streamState],
+        }),
+      ],
       initialValue: [paragraph('body')],
     });
     const readStreamState = () =>
@@ -286,7 +292,10 @@ describe('document meta history contract', () => {
       initial: () => 'closed',
     });
     const editor = createEditor({
-      extensions: [history(), localPanel],
+      extensions: [
+        history(),
+        defineExtension('local-panel', { stateFields: [localPanel] }),
+      ],
       initialValue: [paragraph('body')],
     });
     const readPanel = () => editor.read((state) => state.getField(localPanel));
@@ -321,7 +330,12 @@ describe('document meta history contract', () => {
       initial: () => null,
     });
     const editor = createEditor({
-      extensions: [history(), previewReplacement],
+      extensions: [
+        history(),
+        defineExtension('preview-replacement', {
+          stateFields: [previewReplacement],
+        }),
+      ],
       initialValue: [paragraph('Original body')],
     });
     const readPreview = () =>
@@ -394,7 +408,12 @@ describe('document meta history contract', () => {
       persist: optionalStringCodec,
     });
     const editor = createEditor({
-      extensions: [history(), optionalSubtitle],
+      extensions: [
+        history(),
+        defineExtension('optional-subtitle', {
+          stateFields: [optionalSubtitle],
+        }),
+      ],
       initialValue: [paragraph('body')],
     });
 
@@ -443,7 +462,12 @@ describe('document meta history contract', () => {
       persist: optionalStringCodec,
     });
     const editor = createEditor({
-      extensions: [history(), optionalSubtitle],
+      extensions: [
+        history(),
+        defineExtension('optional-subtitle', {
+          stateFields: [optionalSubtitle],
+        }),
+      ],
       initialValue: [paragraph('body')],
     });
 
@@ -507,12 +531,15 @@ describe('document meta history contract', () => {
           ? { ...value, count: value.count + effect.value }
           : value,
     });
-    const incrementExtension = defineEditorExtension({
-      effectTypes: [increment],
-      name: 'document-large-counter-increment-effect',
-    });
+    const incrementExtension = defineExtension(
+      'document-large-counter-increment-effect',
+      {
+        effectTypes: [increment],
+        stateFields: [largeCounter],
+      }
+    );
     const editor = createEditor({
-      extensions: [history(), largeCounter, incrementExtension],
+      extensions: [history(), incrementExtension],
       initialValue: [paragraph('body')],
     });
     const readCounter = () =>
@@ -557,7 +584,10 @@ describe('document meta history contract', () => {
       persist: valueCodecs.string,
     });
     const editor = createEditor({
-      extensions: [history(), documentTitle],
+      extensions: [
+        history(),
+        defineExtension('document-title', { stateFields: [documentTitle] }),
+      ],
       initialValue: {
         children: [paragraph('body')],
         meta: { [documentTitle.key]: documentTitle.serialize('Q2 Plan') },
@@ -602,7 +632,7 @@ describe('document meta history contract', () => {
   });
 
   it('undoes and redoes root-scoped edits while rebasing rootless anchors', () => {
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       extensions: [history()],
       initialValue: {
         children: [paragraph('body')],
@@ -668,7 +698,7 @@ describe('document meta history contract', () => {
   });
 
   it('redoes non-main structural selections in the active root', () => {
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       extensions: [history()],
       initialValue: {
         children: [paragraph('body')],

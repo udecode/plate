@@ -1,5 +1,5 @@
 import {
-  defineEditorExtension,
+  defineExtension,
   editorCommands,
   type EditorTransactionSpecBuilder,
   NodeApi,
@@ -8,6 +8,7 @@ import {
   RangeApi,
   type Element as PliteElement,
 } from '@platejs/plite';
+import { history } from '@platejs/plite-history';
 import {
   Editable,
   type RenderElementProps,
@@ -83,7 +84,7 @@ const MarkdownShortcutsExample = () => {
     },
   ];
   const editor = usePliteEditor({
-    extensions: [markdownShortcuts()],
+    extensions: [history(), markdownShortcuts()],
     initialValue,
   });
   return (
@@ -99,8 +100,7 @@ const MarkdownShortcutsExample = () => {
 };
 
 const markdownShortcuts = () =>
-  defineEditorExtension({
-    name: 'markdown-shortcuts',
+  defineExtension('markdown-shortcuts', {
     commands: ({ around, handle }) => [
       handle(editorCommands.delete, ({ input, state }) => {
         const selection = state.selection();

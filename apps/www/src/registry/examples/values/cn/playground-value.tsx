@@ -12,7 +12,7 @@ export const playgroundValue: EditorDocumentValue = {
         { text: '体验使用 ' },
         {
           children: [{ text: 'React' }],
-          type: 'a',
+          type: 'link',
           url: 'https://reactjs.org',
         },
         {
@@ -20,12 +20,12 @@ export const playgroundValue: EditorDocumentValue = {
         },
         {
           children: [{ text: '浏览文档' }],
-          type: 'a',
+          type: 'link',
           url: '/docs',
         },
         { text: ' 以了解更多。' },
       ],
-      type: 'p',
+      type: 'paragraph',
     },
     // Suggestions & Comments Section
     {
@@ -48,7 +48,7 @@ export const playgroundValue: EditorDocumentValue = {
               text: '建议',
             },
           ],
-          type: 'a',
+          type: 'link',
           url: '/docs/suggestion',
         },
         {
@@ -87,7 +87,7 @@ export const playgroundValue: EditorDocumentValue = {
           children: [
             { comment: true, comment_discussion1: true, text: '评论' },
           ],
-          type: 'a',
+          type: 'link',
           url: '/docs/comment',
         },
         {
@@ -110,7 +110,7 @@ export const playgroundValue: EditorDocumentValue = {
         },
         { text: ' 评论！' },
       ],
-      type: 'p',
+      type: 'paragraph',
     },
     // {
     //   children: [
@@ -123,7 +123,7 @@ export const playgroundValue: EditorDocumentValue = {
     //     type: 'block',
     //     userId: 'charlie',
     //   },
-    //   type: 'p',
+    //   type: 'paragraph',
     // },
     // AI Section
     {
@@ -135,7 +135,7 @@ export const playgroundValue: EditorDocumentValue = {
         { text: '通过集成的 ' },
         {
           children: [{ text: 'AI SDK' }],
-          type: 'a',
+          type: 'link',
           url: '/docs/ai',
         },
         { text: ' 提高您的生产力。按下 ' },
@@ -144,19 +144,19 @@ export const playgroundValue: EditorDocumentValue = {
         { kbd: true, text: '空格键' },
         { text: ' 可以：' },
       ],
-      type: 'p',
+      type: 'paragraph',
     },
     {
       children: [{ text: '生成内容（继续写作、总结、解释）' }],
       indent: 1,
       listStyleType: 'disc',
-      type: 'p',
+      type: 'paragraph',
     },
     {
       children: [{ text: '编辑现有文本（改进、修正语法、改变语气）' }],
       indent: 1,
       listStyleType: 'disc',
-      type: 'p',
+      type: 'paragraph',
     },
     // Core Features Section (Combined)
     {
@@ -168,25 +168,25 @@ export const playgroundValue: EditorDocumentValue = {
         { text: '使用 ' },
         {
           children: [{ text: '标题' }],
-          type: 'a',
+          type: 'link',
           url: '/docs/heading',
         },
         { text: '、' },
         {
           children: [{ text: '列表' }],
-          type: 'a',
+          type: 'link',
           url: '/docs/list',
         },
         { text: ' 和 ' },
         {
           children: [{ text: '引用' }],
-          type: 'a',
+          type: 'link',
           url: '/docs/blockquote',
         },
         { text: ' 来组织您的内容。应用 ' },
         {
           children: [{ text: '标记' }],
-          type: 'a',
+          type: 'link',
           url: '/docs/basic-marks',
         },
         { text: ' 如 ' },
@@ -202,13 +202,13 @@ export const playgroundValue: EditorDocumentValue = {
         { text: '。使用 ' },
         {
           children: [{ text: '自动格式化' }],
-          type: 'a',
+          type: 'link',
           url: '/docs/autoformat',
         },
         { text: ' 实现类似 ' },
         {
           children: [{ text: 'Markdown' }],
-          type: 'a',
+          type: 'link',
           url: '/docs/markdown',
         },
         { text: ' 的快捷方式（例如，' },
@@ -217,7 +217,7 @@ export const playgroundValue: EditorDocumentValue = {
         { kbd: true, text: '# ' },
         { text: ' 创建一级标题）。' },
       ],
-      type: 'p',
+      type: 'paragraph',
     },
     {
       children: [
@@ -227,7 +227,7 @@ export const playgroundValue: EditorDocumentValue = {
               text: '引用块可以在同一个容器中组合段落、引用列表和回复链。',
             },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
         {
           children: [
@@ -235,7 +235,7 @@ export const playgroundValue: EditorDocumentValue = {
               text: 'Markdown 引用会保留这种嵌套结构，而不是把内容压平成纯文本。',
             },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
         {
           children: [
@@ -245,13 +245,13 @@ export const playgroundValue: EditorDocumentValue = {
           ],
           indent: 1,
           listStyleType: 'disc',
-          type: 'p',
+          type: 'paragraph',
         },
         {
           children: [
             {
               children: [{ text: '这里同样支持嵌套引用块。' }],
-              type: 'p',
+              type: 'paragraph',
             },
           ],
           type: 'blockquote',
@@ -261,28 +261,28 @@ export const playgroundValue: EditorDocumentValue = {
     },
     {
       children: [
-        { children: [{ text: 'function hello() {' }], type: 'code_line' },
+        { children: [{ text: 'function hello() {' }], type: 'codeLine' },
         {
           children: [{ text: "  console.info('支持代码块！');" }],
-          type: 'code_line',
+          type: 'codeLine',
         },
-        { children: [{ text: '}' }], type: 'code_line' },
+        { children: [{ text: '}' }], type: 'codeLine' },
       ],
       lang: 'javascript',
-      type: 'code_block',
+      type: 'codeBlock',
     },
     {
       children: [
         { text: '创建 ' },
         {
           children: [{ text: '链接' }],
-          type: 'a',
+          type: 'link',
           url: '/docs/link',
         },
         { text: '、' },
         {
           children: [{ text: '@提及' }],
-          type: 'a',
+          type: 'link',
           url: '/docs/mention',
         },
         { text: ' 用户，如 ' },
@@ -290,18 +290,18 @@ export const playgroundValue: EditorDocumentValue = {
         { text: '，或插入 ' },
         {
           children: [{ text: '表情符号' }],
-          type: 'a',
+          type: 'link',
           url: '/docs/emoji',
         },
         { text: ' ✨。使用 ' },
         {
           children: [{ text: '斜杠命令' }],
-          type: 'a',
+          type: 'link',
           url: '/docs/slash-command',
         },
         { text: ' (/) 快速访问元素。' },
       ],
-      type: 'p',
+      type: 'paragraph',
     },
     // Table Section
     {
@@ -314,7 +314,7 @@ export const playgroundValue: EditorDocumentValue = {
           text: 'Plate 提供许多开箱即用的免费、开源插件。',
         },
       ],
-      type: 'p',
+      type: 'paragraph',
     },
     {
       children: [
@@ -322,192 +322,220 @@ export const playgroundValue: EditorDocumentValue = {
           children: [
             {
               children: [
-                { children: [{ bold: true, text: '功能' }], type: 'p' },
+                { children: [{ bold: true, text: '功能' }], type: 'paragraph' },
               ],
-              type: 'th',
+              header: true,
+              type: 'tableCell',
             },
             {
               children: [
                 {
                   children: [{ bold: true, text: 'Plate（免费和开源）' }],
-                  type: 'p',
+                  type: 'paragraph',
                 },
               ],
-              type: 'th',
-            },
-            {
-              children: [
-                { children: [{ bold: true, text: 'Tiptap' }], type: 'p' },
-              ],
-              type: 'th',
-            },
-          ],
-          type: 'tr',
-        },
-        {
-          children: [
-            {
-              children: [{ children: [{ text: 'AI' }], type: 'p' }],
-              type: 'td',
+              header: true,
+              type: 'tableCell',
             },
             {
               children: [
                 {
-                  align: 'center',
-                  children: [{ text: '✅' }],
-                  type: 'p',
+                  children: [{ bold: true, text: 'Tiptap' }],
+                  type: 'paragraph',
                 },
               ],
-              type: 'td',
-            },
-            {
-              children: [{ children: [{ text: '付费扩展' }], type: 'p' }],
-              type: 'td',
+              header: true,
+              type: 'tableCell',
             },
           ],
-          type: 'tr',
+          type: 'tableRow',
         },
         {
           children: [
             {
-              children: [{ children: [{ text: '评论' }], type: 'p' }],
-              type: 'td',
+              children: [{ children: [{ text: 'AI' }], type: 'paragraph' }],
+              type: 'tableCell',
             },
             {
               children: [
                 {
-                  align: 'center',
+                  textAlign: 'center',
                   children: [{ text: '✅' }],
-                  type: 'p',
+                  type: 'paragraph',
                 },
               ],
-              type: 'td',
+              type: 'tableCell',
             },
             {
-              children: [{ children: [{ text: '付费扩展' }], type: 'p' }],
-              type: 'td',
+              children: [
+                { children: [{ text: '付费扩展' }], type: 'paragraph' },
+              ],
+              type: 'tableCell',
             },
           ],
-          type: 'tr',
+          type: 'tableRow',
         },
         {
           children: [
             {
-              children: [{ children: [{ text: '建议' }], type: 'p' }],
-              type: 'td',
+              children: [{ children: [{ text: '评论' }], type: 'paragraph' }],
+              type: 'tableCell',
             },
             {
               children: [
                 {
-                  align: 'center',
+                  textAlign: 'center',
                   children: [{ text: '✅' }],
-                  type: 'p',
+                  type: 'paragraph',
                 },
               ],
-              type: 'td',
+              type: 'tableCell',
             },
             {
               children: [
-                { children: [{ text: '付费（评论专业版）' }], type: 'p' },
+                { children: [{ text: '付费扩展' }], type: 'paragraph' },
               ],
-              type: 'td',
+              type: 'tableCell',
             },
           ],
-          type: 'tr',
+          type: 'tableRow',
         },
         {
           children: [
             {
-              children: [{ children: [{ text: '表情选择器' }], type: 'p' }],
-              type: 'td',
+              children: [{ children: [{ text: '建议' }], type: 'paragraph' }],
+              type: 'tableCell',
             },
             {
               children: [
                 {
-                  align: 'center',
+                  textAlign: 'center',
                   children: [{ text: '✅' }],
-                  type: 'p',
+                  type: 'paragraph',
                 },
               ],
-              type: 'td',
+              type: 'tableCell',
             },
             {
-              children: [{ children: [{ text: '付费扩展' }], type: 'p' }],
-              type: 'td',
+              children: [
+                {
+                  children: [{ text: '付费（评论专业版）' }],
+                  type: 'paragraph',
+                },
+              ],
+              type: 'tableCell',
             },
           ],
-          type: 'tr',
+          type: 'tableRow',
         },
         {
           children: [
             {
-              children: [{ children: [{ text: '目录' }], type: 'p' }],
-              type: 'td',
+              children: [
+                { children: [{ text: '表情选择器' }], type: 'paragraph' },
+              ],
+              type: 'tableCell',
             },
             {
               children: [
                 {
-                  align: 'center',
+                  textAlign: 'center',
                   children: [{ text: '✅' }],
-                  type: 'p',
+                  type: 'paragraph',
                 },
               ],
-              type: 'td',
+              type: 'tableCell',
             },
             {
-              children: [{ children: [{ text: '付费扩展' }], type: 'p' }],
-              type: 'td',
+              children: [
+                { children: [{ text: '付费扩展' }], type: 'paragraph' },
+              ],
+              type: 'tableCell',
             },
           ],
-          type: 'tr',
+          type: 'tableRow',
         },
         {
           children: [
             {
-              children: [{ children: [{ text: '拖拽手柄' }], type: 'p' }],
-              type: 'td',
+              children: [{ children: [{ text: '目录' }], type: 'paragraph' }],
+              type: 'tableCell',
             },
             {
               children: [
                 {
-                  align: 'center',
+                  textAlign: 'center',
                   children: [{ text: '✅' }],
-                  type: 'p',
+                  type: 'paragraph',
                 },
               ],
-              type: 'td',
+              type: 'tableCell',
             },
             {
-              children: [{ children: [{ text: '付费扩展' }], type: 'p' }],
-              type: 'td',
+              children: [
+                { children: [{ text: '付费扩展' }], type: 'paragraph' },
+              ],
+              type: 'tableCell',
             },
           ],
-          type: 'tr',
+          type: 'tableRow',
         },
         {
           children: [
             {
-              children: [{ children: [{ text: '协作（Yjs）' }], type: 'p' }],
-              type: 'td',
+              children: [
+                { children: [{ text: '拖拽手柄' }], type: 'paragraph' },
+              ],
+              type: 'tableCell',
             },
             {
               children: [
                 {
-                  align: 'center',
+                  textAlign: 'center',
                   children: [{ text: '✅' }],
-                  type: 'p',
+                  type: 'paragraph',
                 },
               ],
-              type: 'td',
+              type: 'tableCell',
             },
             {
               children: [
-                { children: [{ text: 'Hocuspocus（开源/付费）' }], type: 'p' },
+                { children: [{ text: '付费扩展' }], type: 'paragraph' },
               ],
-              type: 'td',
+              type: 'tableCell',
             },
           ],
-          type: 'tr',
+          type: 'tableRow',
+        },
+        {
+          children: [
+            {
+              children: [
+                { children: [{ text: '协作（Yjs）' }], type: 'paragraph' },
+              ],
+              type: 'tableCell',
+            },
+            {
+              children: [
+                {
+                  textAlign: 'center',
+                  children: [{ text: '✅' }],
+                  type: 'paragraph',
+                },
+              ],
+              type: 'tableCell',
+            },
+            {
+              children: [
+                {
+                  children: [{ text: 'Hocuspocus（开源/付费）' }],
+                  type: 'paragraph',
+                },
+              ],
+              type: 'tableCell',
+            },
+          ],
+          type: 'tableRow',
         },
       ],
       type: 'table',
@@ -524,7 +552,7 @@ export const playgroundValue: EditorDocumentValue = {
         },
         {
           children: [{ text: '媒体上传' }],
-          type: 'a',
+          type: 'link',
           url: '/docs/media',
         },
         {
@@ -532,19 +560,19 @@ export const playgroundValue: EditorDocumentValue = {
         },
         {
           children: [{ text: '拖放' }],
-          type: 'a',
+          type: 'link',
           url: '/docs/dnd',
         },
         {
           text: '，提供流畅的体验。',
         },
       ],
-      type: 'p',
+      type: 'paragraph',
     },
     {
-      align: 'center',
+      textAlign: 'center',
       children: [{ text: '带有说明的图片提供上下文。' }],
-      type: 'img',
+      type: 'image',
       url: 'https://images.unsplash.com/photo-1712688930249-98e1963af7bd?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
       width: '75%',
     },
@@ -570,7 +598,7 @@ export const playgroundValue: EditorDocumentValue = {
     },
     {
       children: [{ text: '' }],
-      type: 'p',
+      type: 'paragraph',
     },
   ],
 };

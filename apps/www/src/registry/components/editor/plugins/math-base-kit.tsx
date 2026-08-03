@@ -1,3 +1,5 @@
+import '@platejs/math/katex.css';
+
 import { BaseEquationPlugin, BaseInlineEquationPlugin } from '@platejs/math';
 
 import {

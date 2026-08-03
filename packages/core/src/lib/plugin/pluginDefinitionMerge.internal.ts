@@ -49,11 +49,14 @@ type Enabled<TContribution> =
       : Extract<TEnabled, boolean>
     : boolean;
 
-type TargetPluginNames<TContribution> =
+type TargetPlugins<TContribution> =
   TContribution extends Readonly<{
-    targetPluginNames: infer TTargetPluginNames extends readonly string[];
+    targetPlugins: infer TTargetPlugins extends readonly (
+      | PluginReference
+      | string
+    )[];
   }>
-    ? TTargetPluginNames
+    ? TTargetPlugins
     : readonly [];
 
 /**
@@ -75,7 +78,7 @@ export type MergePluginDefinitions<
     | 'name'
     | 'read'
     | 'selectors'
-    | 'targetPluginNames'
+    | 'targetPlugins'
     | 'update'
   > &
     Omit<
@@ -89,8 +92,7 @@ export type MergePluginDefinitions<
       | 'read'
       | 'schema'
       | 'selectors'
-      | 'targetPluginNames'
-      | 'type'
+      | 'targetPlugins'
       | 'update'
     > &
     Readonly<{ name: C['name'] }> &
@@ -140,11 +142,11 @@ export type MergePluginDefinitions<
       : 'enabled' extends keyof C
         ? Readonly<{ enabled: InferEnabled<C> }>
         : {}) &
-    ('targetPluginNames' extends keyof TNormalized
+    ('targetPlugins' extends keyof TNormalized
       ? Readonly<{
-          targetPluginNames: TargetPluginNames<TNormalized>;
+          targetPlugins: TargetPlugins<TNormalized>;
         }>
-      : 'targetPluginNames' extends keyof C
-        ? Pick<C, 'targetPluginNames'>
+      : 'targetPlugins' extends keyof C
+        ? Pick<C, 'targetPlugins'>
         : {})
 >;

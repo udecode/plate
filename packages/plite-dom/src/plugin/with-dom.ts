@@ -1,5 +1,5 @@
 import {
-  defineEditorExtension,
+  defineExtension,
   type EditorCommit,
   type EditorExtension,
   type EditorExtensionApiFactoryContext,
@@ -182,8 +182,9 @@ export function dom(
     }) as DOMExtensionApi;
   };
 
-  const extension = defineEditorExtension({
-    activate(editor, context) {
+  const extension = defineExtension('dom', {
+    activate(context) {
+      const { editor } = context;
       const previousActivation = DOM_ACTIVATION.get(editor);
       const previousClipboardFormatKey = getDOMClipboardFormatKey(editor);
       const previousElements = EDITOR_TO_KEY_TO_ELEMENT.get(editor);
@@ -222,7 +223,6 @@ export function dom(
       }
     },
     api: createApi,
-    name: 'dom',
     on: {
       commit({ commit, editor }) {
         handleDOMCommit(editor, commit);
@@ -253,7 +253,13 @@ export function dom(
   return extension as unknown as DOMExtension<boolean>;
 }
 
-/** Editor type with the public API installed by `dom()`. */
+/** Editor with the DOM capability installed over its exact extension set. */
 export type DOMEditor<
   V extends import('@platejs/plite').Value = import('@platejs/plite').Value,
-> = EditorType<V, readonly [DOMExtension]>;
+  TExtensions extends readonly unknown[] = readonly [],
+> = Omit<EditorType<V, TExtensions>, 'api' | 'update'> & {
+  readonly api: EditorType<V, TExtensions>['api'] &
+    DOMExtensionTypes<true>['api'];
+  update: EditorType<V, TExtensions>['update'] &
+    DOMExtensionTypes<true>['update'];
+};

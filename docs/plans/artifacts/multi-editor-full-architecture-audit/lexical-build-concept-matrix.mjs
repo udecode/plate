@@ -288,7 +288,7 @@ const header = [
   'Verdict',
   'Priority',
 ];
-const escape = (cell) =>
+const escapeCell = (cell) =>
   String(cell).replaceAll('|', '\\|').replace(/\n/g, ' ');
 const matrix = `# Lexical Canonical Concept Matrix
 
@@ -302,19 +302,6 @@ Each concept appears exactly once. Qualitative judgments replace numeric scores.
 
 | ${header.join(' | ')} |
 | ${header.map(() => '---').join(' | ')} |
-${rows.map((row) => `| ${row.map(escape).join(' | ')} |`).join('\n')}
+${rows.map((row) => `| ${row.map(escapeCell).join(' | ')} |`).join('\n')}
 `;
 writeFileSync(`${root}/lexical-concept-matrix.md`, matrix);
-
-console.log(
-  JSON.stringify(
-    {
-      concepts: concepts.length,
-      localOnly: localConcepts.length,
-      material: rows.filter((row) => /^P[0-3]$/.test(row.at(-1))).length,
-      reference: referenceConcepts.length,
-    },
-    null,
-    2
-  )
-);

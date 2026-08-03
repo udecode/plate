@@ -55,7 +55,7 @@ describe('wrapWithBlockId', () => {
         {
           id: '123',
           children: [{ text: 'Hello world' }],
-          type: 'p',
+          type: 'paragraph',
         },
       ];
 
@@ -71,7 +71,7 @@ describe('wrapWithBlockId', () => {
       const slateNodes = [
         {
           children: [{ text: 'No ID here' }],
-          type: 'p',
+          type: 'paragraph',
         },
       ];
 
@@ -94,7 +94,7 @@ describe('wrapWithBlockId', () => {
             { italic: true, text: 'italic' },
             { text: ' marks' },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ];
 
@@ -149,21 +149,21 @@ describe('wrapWithBlockId', () => {
           children: [{ text: 'Item 1' }],
           indent: 1,
           listStyleType: 'disc',
-          type: 'p',
+          type: 'paragraph',
         },
         {
           id: 'list-item-2',
           children: [{ text: 'Item 2' }],
           indent: 1,
           listStyleType: 'disc',
-          type: 'p',
+          type: 'paragraph',
         },
         {
           id: 'list-item-3',
           children: [{ text: 'Nested item' }],
           indent: 2,
           listStyleType: 'disc',
-          type: 'p',
+          type: 'paragraph',
         },
       ];
 
@@ -182,14 +182,14 @@ describe('wrapWithBlockId', () => {
           children: [{ text: 'First' }],
           indent: 1,
           listStyleType: 'decimal',
-          type: 'p',
+          type: 'paragraph',
         },
         {
           id: 'ordered-2',
           children: [{ text: 'Second' }],
           indent: 1,
           listStyleType: 'decimal',
-          type: 'p',
+          type: 'paragraph',
         },
       ];
 

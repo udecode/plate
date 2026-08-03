@@ -29,7 +29,7 @@ const editor = createBaseEditor({
   plugins: BaseEditorKit,
   initialValue: [
     { type: 'h1', children: [{ text: 'Hello World' }] },
-    { type: 'p', children: [{ text: '此内容将被序列化为HTML。' }] },
+    { type: 'paragraph', children: [{ text: '此内容将被序列化为HTML。' }] },
   ],
 });
 
@@ -90,7 +90,7 @@ const editor = createBaseEditor({
   components,
   initialValue: [
     { type: 'h1', children: [{ text: '我的标题' }] },
-    { type: 'p', children: [{ text: '我的内容。' }] },
+    { type: 'paragraph', children: [{ text: '我的内容。' }] },
   ],
 });
 
@@ -225,26 +225,28 @@ Context-bound `defineCodecs` 返回的同一个 `'text/html'` map 同时负责 d
 | `<h1>` - `<h6>`                                            | [`H1Plugin`–`H6Plugin`](/docs/heading)    | 转换为对应的标题元素（`h1` - `h6`）。                |
 | `<ul>`, `<ol>`, `<li>`                                     | [`ListPlugin`](/docs/list)      | 转换为带 `indent` 和 `listStyleType` 属性的块。 |
 | `<blockquote>`                                             | [`BlockquotePlugin`](/docs/blockquote)      | 转换为blockquote元素。                                          |
-| `<pre>` (通常内部有`<code>`)                       | [`CodeBlockPlugin`](/docs/code-block)       | 转换为`code_block`元素。内容分割为`code_line`。        |
+| `<pre>` (通常内部有`<code>`)                       | [`CodeBlockPlugin`](/docs/code-block)       | 转换为`codeBlock`元素。内容分割为`codeLine`。          |
 | `<hr>`                                                     | [`HorizontalRulePlugin`](/docs/horizontal-rule)  | 转换为水平线元素。                                     |
-| `<a>`                                                      | [`LinkPlugin`](/docs/link)            | 转换为链接元素（`a`类型）带`url`属性。                 |
-| `<img>`                                                    | [`ImagePlugin`](/docs/media)           | 转换为图像元素（`img`类型）带`url`属性。              |
+| `<a>`                                                      | [`LinkPlugin`](/docs/link)            | 转换为带 `url` 属性的 `link` 元素。                    |
+| `<img>`                                                    | [`ImagePlugin`](/docs/media)           | 转换为带 `url` 属性的 `image` 元素。                   |
 | `<iframe>`                                                 | [`MediaEmbedPlugin`](/docs/media)      | 转换为媒体嵌入元素，尝试解析URL。                |
 | `<table>`                                                  | [`TablePlugin`](/docs/table)           | 转换为`table`元素。                                             |
-| `<tr>`                                                     | [`TablePlugin`](/docs/table)           | 转换为`tr`（表格行）元素。                                    |
-| `<td>`                                                     | [`TablePlugin`](/docs/table)           | 转换为`td`（表格单元格）元素。                                   |
-| `<th>`                                                     | [`TablePlugin`](/docs/table)           | 转换为`th`（表格标题单元格）元素。                            |
+| `<tr>`                                                     | [`TablePlugin`](/docs/table)           | 转换为 `tableRow`。                                    |
+| `<td>`                                                     | [`TablePlugin`](/docs/table)           | 转换为 `tableCell`。                                   |
+| `<th>`                                                     | [`TablePlugin`](/docs/table)           | 转换为带 `header: true` 的 `tableCell`。               |
 | `style="background-color: ..."`                          | [`FontBackgroundColorPlugin`](/docs/font)    | 转换为`backgroundColor`标记。 |
 | `style="color: ..."`                                     | [`FontColorPlugin`](/docs/font)       | 转换为`color`标记。                                                |
 | `style="font-family: ..."`                               | [`FontFamilyPlugin`](/docs/font)      | 转换为`fontFamily`标记。                                           |
 | `style="font-size: ..."`                                 | [`FontSizePlugin`](/docs/font)        | 转换为`fontSize`标记。                                             |
 | `style="font-weight: ..."` (非粗体值)      | [`FontWeightPlugin`](/docs/font)      | 为非标准粗体值转换为`fontWeight`标记。              |
 | `<mark>`                                                   | [`HighlightPlugin`](/docs/highlight)       | 转换为`highlight: true`标记。                                      |
-| `style="text-align: ..."`                                | [`TextAlignPlugin`](/docs/text-align)           | 在块元素上设置`align`属性。                                 |
+| `style="text-align: ..."`                                | [`TextAlignPlugin`](/docs/text-align)           | 在块元素上设置`textAlign`属性。                                 |
 | `style="line-height: ..."`                               | [`LineHeightPlugin`](/docs/line-height)      | 在块元素上设置`lineHeight`属性。                            |
 
 <Callout type="note" title="插件配置">
-  确切的Plate类型（例如`ParagraphPlugin.name`与`'p'`）取决于插件的配置方式。表格显示典型关联。确保编辑器包含对应的Plate插件以使这些规则生效。
+  持久化元素类型来自已安装插件的 schema handle（例如
+  `editor.plugin(ParagraphPlugin).schema.element.type`）。表格显示典型关联。请在编辑器中包含对应的
+  Plate 插件以使这些规则生效。
 </Callout>
 
 ### `defineCodecs`
@@ -268,9 +270,9 @@ MIME-keyed map。它是插件 schema 和 codec callback 唯一的 inline inferen
 
 ```tsx title="lib/callout-plugin.ts"
 import { property, schema } from 'platejs';
-import { createPlatePlugin } from 'platejs/react';
+import { definePlatePlugin } from 'platejs/react';
 
-const CalloutPlugin = createPlatePlugin({
+const CalloutPlugin = definePlatePlugin('callout', {
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       'text/html': {
@@ -284,9 +286,7 @@ const CalloutPlugin = createPlatePlugin({
         }),
         match: [{ tag: 'aside' }],
       },
-    }),
-  name: 'callout',
-  schema: {
+    }),  schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
       properties: {
@@ -294,14 +294,12 @@ const CalloutPlugin = createPlatePlugin({
       },
     },
   },
-  type: 'callout',
 });
-
-export const NotePlugin = CalloutPlugin.configure({ type: 'note' });
 ```
 
-`NotePlugin` 将 `<aside>` 解码为 `note` element，因为 codec 指向已安装的
-descriptor，而不是硬编码的类型字符串。
+`CalloutPlugin` 将 `<aside>` 解码为 `callout` element，因为 codec 指向已安装的
+descriptor。需要不同的持久化身份时定义另一个命名 descriptor；`.configure()`
+不会重命名插件。
 
 Self/product codec 使用 `defineCodecs(map)`。向另一个 descriptor 贡献 HTML
 行为时使用 `defineCodecs(TargetPlugin, map)`；helper 会把 target 注入每个
@@ -310,20 +308,20 @@ map 的非空有序 `'text/html'` tuple 中。
 
 ### 完整输入 HTML 钩子
 
-需要整个输入 payload 时，使用扁平的 `parsers.html.query`、
+需要整个输入 payload 时，使用 `'text/html'` codec 上的 `query`、
 `transformData` 和 `transformFragment`。这些钩子在节点 decode 前后运行，
 不声明节点 matcher。
 
 ```ts title="lib/html-cleanup-plugin.ts"
-const HtmlCleanupPlugin = createPlatePlugin({
-  name: 'htmlCleanup',
-  parsers: {
-    html: {
+const HtmlCleanupPlugin = definePlatePlugin('htmlCleanup', {
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'text/html': {
       query: ({ source }) => source.types.includes('text/html'),
       transformData: ({ data }) =>
         data.replaceAll(/<!--(?:Start|End)Fragment-->/g, ''),
-    },
-  },
+      },
+    }),
 });
 ```
 

@@ -1,5 +1,5 @@
 /** @jsx jsxt */
-import { HorizontalRulePlugin } from '@platejs/basic-nodes/react';
+import { BaseHorizontalRulePlugin } from '@platejs/basic-nodes';
 import { BaseListPlugin } from '@platejs/list-classic';
 import { jsxt } from '@platejs/test-utils';
 import { createBaseEditor } from 'platejs';
@@ -259,7 +259,9 @@ Paragraph 2 line 1`,
         output: (
           <fragment>
             <hp>Line 1</hp>
-            <element type={HorizontalRulePlugin.name}>
+            <element
+              type={editor.plugin(BaseHorizontalRulePlugin).schema.element.type}
+            >
               <htext />
             </element>
             <hp>Line 2</hp>
@@ -472,7 +474,7 @@ Paragraph 2 line 1`,
           children: [{ text: '' }],
           indent: 1,
           listStyleType: 'disc',
-          type: 'img',
+          type: 'image',
           url: 'https://example.com/image.png',
         },
       ]);

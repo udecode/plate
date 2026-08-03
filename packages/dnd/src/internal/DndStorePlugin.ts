@@ -1,8 +1,8 @@
 import type React from 'react';
 
-import { createPlatePlugin, type PlateEditor } from '@platejs/core/react';
+import { definePlatePlugin, type PlateEditor } from '@platejs/core/react';
 import type { Path } from '@platejs/plite';
-import { KEYS } from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 import type { DropTargetMonitor } from 'react-dnd';
 
 import type { ScrollerProps } from '../DndScroller';
@@ -45,10 +45,9 @@ const initialState: DndPluginState = {
   scrollerProps: {},
 };
 
-export const DndStorePlugin = createPlatePlugin({
+export const DndStorePlugin = definePlatePlugin(PLUGINS.dnd, {
   editOnly: true,
   initialState,
-  name: KEYS.dnd,
   on: {
     dragEnd: ({ store }) => {
       store.set({ isDragging: false });

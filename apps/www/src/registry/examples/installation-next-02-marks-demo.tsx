@@ -27,7 +27,7 @@ const initialValue: Value = [
       { text: 'underline', underline: true },
       { text: ' formatting.' },
     ],
-    type: 'p',
+    type: 'paragraph',
   },
 ];
 

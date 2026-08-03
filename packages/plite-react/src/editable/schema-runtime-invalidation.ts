@@ -1,4 +1,4 @@
-import type { Editor, EditorCommit, RuntimeId } from '@platejs/plite';
+import type { Editor, EditorCommit, RuntimeId, Value } from '@platejs/plite';
 
 import {
   getEditorRuntimeElementEntries,
@@ -7,9 +7,12 @@ import {
 } from './runtime-editor-api';
 import { MAIN_ROOT_KEY } from '../root-key';
 
-export const getSchemaInvalidatedRuntimeIds = (
-  editor: Editor,
-  commit: EditorCommit
+export const getSchemaInvalidatedRuntimeIds = <
+  V extends Value,
+  TExtensions extends readonly unknown[],
+>(
+  editor: Editor<V, TExtensions>,
+  commit: Pick<EditorCommit, 'dirtyStateKeys'>
 ): readonly RuntimeId[] => {
   if (!commit.dirtyStateKeys.includes('$configuration')) return [];
 

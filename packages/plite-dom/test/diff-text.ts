@@ -1,5 +1,5 @@
 import {
-  createEditorRuntime,
+  createEditor,
   createEditorView,
   type Descendant,
   DocumentChange,
@@ -32,7 +32,7 @@ const transformRemoveText = (diff: StringDiff, offset: number, text: string) =>
         paragraph(source.slice(0, offset) + source.slice(offset + text.length)),
       ],
     };
-    const runtime = createEditorRuntime({ initialValue: before });
+    const runtime = createEditor({ initialValue: before });
     const editor = createEditorView(runtime);
 
     return transformTextDiff(
@@ -94,7 +94,7 @@ describe('plite-dom diff text', () => {
   });
 
   test('transforms implicit pending points against the view root', () => {
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       initialValue: {
         children: [paragraph('body')],
         roots: { header: [paragraph('header')] },
@@ -150,7 +150,7 @@ describe('plite-dom diff text', () => {
   });
 
   test('transforms pending text diffs against the view root only', () => {
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       initialValue: {
         children: [paragraph('body')],
         roots: { header: [paragraph('header'), paragraph('pending')] },

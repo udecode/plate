@@ -3,7 +3,7 @@ import { describe, it } from 'node:test';
 
 import {
   createEditor,
-  defineEditorExtension,
+  defineExtension,
   defineExtensionPoint,
   type EditorExtensionContribution,
 } from '@platejs/plite';
@@ -12,21 +12,18 @@ import { getExtensionRegistry } from '@platejs/plite/internal';
 describe('typed extension contributions', () => {
   it('aggregates descriptor-owned values in extension order', () => {
     const messages = defineExtensionPoint<string>('test:messages');
-    const first = defineEditorExtension({
-      name: 'first-message',
+    const first = defineExtension('first-message', {
       contributions: [messages.of('first')],
     });
-    const second = defineEditorExtension({
-      name: 'second-message',
+    const second = defineExtension('second-message', {
       contributions: [messages.of('second')],
     });
-    const consumer = defineEditorExtension({
+    const consumer = defineExtension('consumer', {
       api({ getContributions }) {
         const values = getContributions(messages);
 
         return { values: () => values };
       },
-      name: 'consumer',
     });
     const editor = createEditor({
       extensions: [first, second, consumer] as const,
@@ -47,9 +44,8 @@ describe('typed extension contributions', () => {
 
     assert.throws(
       () =>
-        editor.extend(
-          defineEditorExtension({
-            name: 'spoofed-output',
+        editor.install(
+          defineExtension('spoofed-output', {
             contributions: [spoofed],
           })
         ),
@@ -66,8 +62,7 @@ describe('typed extension contributions', () => {
     const second = defineExtensionPoint<string>('test:duplicate-point');
     const editor = createEditor({
       extensions: [
-        defineEditorExtension({
-          name: 'first-point',
+        defineExtension('first-point', {
           contributions: [first.of('first')],
         }),
       ],
@@ -75,9 +70,8 @@ describe('typed extension contributions', () => {
 
     assert.throws(
       () =>
-        editor.extend(
-          defineEditorExtension({
-            name: 'second-point',
+        editor.install(
+          defineExtension('second-point', {
             contributions: [second.of('second')],
           })
         ),

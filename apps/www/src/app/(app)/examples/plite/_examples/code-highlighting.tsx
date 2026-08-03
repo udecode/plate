@@ -17,6 +17,7 @@ import {
   type Range,
 } from '@platejs/plite';
 import { isHotkey } from '@platejs/plite-dom';
+import { history } from '@platejs/plite-history';
 import {
   Editable,
   type RenderElementProps,
@@ -102,7 +103,7 @@ const editor = usePliteEditor<CustomValue>({ initialValue })`),
       children: toChildren('There you have it!'),
     },
   ];
-  const editor = usePliteEditor({ initialValue });
+  const editor = usePliteEditor({ extensions: [history()], initialValue });
   const codeHighlightingSource = usePliteRangeDecorationSource(editor, {
     id: 'code-highlighting',
     dirtiness: 'always',

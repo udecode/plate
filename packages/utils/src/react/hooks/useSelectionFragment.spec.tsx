@@ -3,7 +3,7 @@ import React from 'react';
 import {
   createPlateEditor,
   Plate,
-  type PlateEditor,
+  type PlateEditorReference,
 } from '@platejs/core/react';
 import { renderHook } from '@testing-library/react';
 
@@ -12,7 +12,7 @@ import {
   useSelectionFragmentProp,
 } from './useSelectionFragment';
 
-const createWrapper = (editor: PlateEditor) =>
+const createWrapper = <E extends PlateEditorReference>(editor: E) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
     return (
       <Plate editor={editor} suppressInstanceWarning>
@@ -29,9 +29,9 @@ describe('useSelectionFragment', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 3, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'paragraph' }],
     });
-    const fragment = [{ children: [{ text: 'one' }], type: 'p' }];
+    const fragment = [{ children: [{ text: 'one' }], type: 'paragraph' }];
 
     const { result } = renderHook(() => useSelectionFragment(), {
       wrapper: createWrapper(editor),
@@ -47,7 +47,7 @@ describe('useSelectionFragment', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 3, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'paragraph' }],
     });
 
     const { result } = renderHook(
@@ -57,6 +57,6 @@ describe('useSelectionFragment', () => {
       }
     );
 
-    expect(result.current).toBe('p');
+    expect(result.current).toBe('paragraph');
   });
 });

@@ -9,7 +9,7 @@ import {
 
 import {
   createEditor,
-  defineEditorExtension,
+  defineExtension,
   defineEditorSchema,
   defineValueCodec,
   type EditorSelectionSpec,
@@ -106,49 +106,53 @@ const cellSelectionKinds = [
   },
 ] satisfies readonly EditorSelectionSpec<CellSelection>[];
 
-const cellSelectionExtension = defineEditorExtension({
-  name: 'cell-selection',
+const cellSelectionExtension = defineExtension('cell-selection', {
   selectionKinds: cellSelectionKinds,
 });
 
-const conflictingCellSelectionExtension = defineEditorExtension({
-  name: 'other-cell-selection',
-  selectionKinds: cellSelectionKinds,
-});
+const conflictingCellSelectionExtension = defineExtension(
+  'other-cell-selection',
+  {
+    selectionKinds: cellSelectionKinds,
+  }
+);
 
 const initialValue = [
-  { children: [{ text: 'a' }], type: 'p' },
-  { children: [{ text: 'b' }], type: 'p' },
+  { children: [{ text: 'a' }], type: 'paragraph' },
+  { children: [{ text: 'b' }], type: 'paragraph' },
 ];
 
-const selectionMarksSchema = defineEditorSchema({
-  elements: {
-    code: {
-      content: schema.content.text({ default: 'text', min: 1 }),
-    } as const,
-    paragraph: {
-      content: schema.content.text({ default: 'text', min: 1 }),
-    } as const,
-  },
-  id: 'selection-marks-schema',
-  properties: [
-    schema.textProperty('bold', property.boolean(), {
-      target: target.type('paragraph'),
-    }),
-  ],
-  root: schema.content.group('block', {
-    default: { type: 'paragraph' },
-    min: 1,
-  }),
-  roots: {
-    header: schema.content.group('block', {
+const selectionMarksSchema = defineEditorSchema(
+  'schema:selection-marks-schema',
+  {
+    elements: {
+      code: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+      } as const,
+      paragraph: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+      } as const,
+    },
+    id: 'selection-marks-schema',
+    properties: [
+      schema.textProperty('bold', property.boolean(), {
+        target: target.type('paragraph'),
+      }),
+    ],
+    root: schema.content.group('block', {
       default: { type: 'paragraph' },
       min: 1,
     }),
-  },
-  unknown: 'reject',
-  version: 1,
-});
+    roots: {
+      header: schema.content.group('block', {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
+    },
+    unknown: 'reject',
+    version: 1,
+  }
+);
 
 describe('extensible selection protocol', () => {
   it('validates insertion marks at every selection ingress and named root', () => {
@@ -379,7 +383,7 @@ describe('extensible selection protocol', () => {
     const children = editorGetChildren(editor);
 
     editor.update.nodes.replaceChildren(
-      [{ children: [{ text: 'prefix' }], type: 'p' }, ...children],
+      [{ children: [{ text: 'prefix' }], type: 'paragraph' }, ...children],
       { at: [] }
     );
 
@@ -494,14 +498,14 @@ describe('extensible selection protocol', () => {
     }
   });
 
-  it('maps the text focus using its explicit association', () => {
+  it('lets an explicit transform association override visual affinity', () => {
     const create = (affinity: 'backward' | 'forward', expanded = false) =>
       createEditor({
         initialSelection: SelectionApi.text(
           range([0, 0], expanded ? 0 : 1, [0, 0], 1),
           { affinity }
         ),
-        initialValue: [{ children: [{ text: 'ab' }], type: 'p' }],
+        initialValue: [{ children: [{ text: 'ab' }], type: 'paragraph' }],
       });
 
     const backward = create('backward');
@@ -514,8 +518,8 @@ describe('extensible selection protocol', () => {
       );
     }
 
-    assert.equal(backward.read.selection()?.focus.offset, 1);
-    assert.equal(backward.read.selection()?.anchor.offset, 1);
+    assert.equal(backward.read.selection()?.focus.offset, 2);
+    assert.equal(backward.read.selection()?.anchor.offset, 2);
     assert.equal(forward.read.selection()?.focus.offset, 2);
     assert.equal(forward.read.selection()?.anchor.offset, 2);
     assert.equal(expandedForward.read.selection()?.anchor.offset, 0);

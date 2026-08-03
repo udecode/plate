@@ -29,15 +29,19 @@ plateEditor.update((tx) => {
   tx.history.undo();
 });
 
-// Unparameterized editors are broad consumer boundaries.
+// Unparameterized editors expose only the guaranteed Core capabilities.
+// @ts-expect-error Unknown API groups are never synthesized.
 baseEditor.api.notARealCoreApi();
 
+// @ts-expect-error Unknown API groups are never synthesized.
 plateEditor.api.notARealCoreApi();
 
 baseEditor.update((tx) => {
+  // @ts-expect-error Unknown transaction groups are never synthesized.
   tx.notARealCoreTx.run();
 });
 
 plateEditor.update((tx) => {
+  // @ts-expect-error Unknown transaction groups are never synthesized.
   tx.notARealCoreTx.run();
 });

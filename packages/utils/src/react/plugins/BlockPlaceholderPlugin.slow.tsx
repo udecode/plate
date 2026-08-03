@@ -2,14 +2,12 @@
 
 import React from 'react';
 
-import { createBasePlugin } from '@platejs/core';
-import {
-  createPlateEditor,
-  ParagraphPlugin,
-  type PlateEditor,
-} from '@platejs/core/react';
+import { defineBasePlugin } from '@platejs/core';
+import { createPlateEditor, ParagraphPlugin } from '@platejs/core/react';
+import type { InternalPlateEditorWithInstalledPlugins } from '@platejs/core/react/internal';
 import { PlateTest } from '@platejs/core/react/test';
 import {
+  createEditor as createPliteEditor,
   type Element,
   property,
   schema,
@@ -24,27 +22,29 @@ import {
   type BlockPlaceholderDefinition,
 } from './BlockPlaceholderPlugin';
 
-const BlockPlaceholderFixtureSchemaPlugin = createBasePlugin({
-  name: 'blockPlaceholderFixtureSchema',
-  schema: {
-    properties: [
-      schema.elementProperty('indent', property.number(), {
-        target: target.type('p'),
-      }),
-      schema.elementProperty('listStyleType', property.string(), {
-        target: target.type('p'),
-      }),
-    ],
-  },
-});
+const BlockPlaceholderFixtureSchemaPlugin = defineBasePlugin(
+  'blockPlaceholderFixtureSchema',
+  {
+    schema: {
+      properties: {
+        indent: schema.elementProperty(property.number(), {
+          target: target.element(ParagraphPlugin),
+        }),
+        listStyleType: schema.elementProperty(property.string(), {
+          target: target.element(ParagraphPlugin),
+        }),
+      },
+    },
+  }
+);
 const ParagraphWithComponentPlugin = ParagraphPlugin.configure({
   component: ({ attributes, children }) => (
     <div {...attributes}>{children}</div>
   ),
 });
 
-const renderPlaceholderEditor = (
-  editor: PlateEditor,
+const renderPlaceholderEditor = <V extends Value, D>(
+  editor: InternalPlateEditorWithInstalledPlugins<V, D>,
   options?: { autoFocus?: boolean; readOnly?: boolean }
 ) =>
   render(
@@ -68,6 +68,7 @@ const createEditor = (options?: {
   value?: Value;
 }) =>
   createPlateEditor({
+    editor: createPliteEditor<Value>(),
     plugins: [
       BlockPlaceholderFixtureSchemaPlugin,
       ParagraphWithComponentPlugin,
@@ -90,21 +91,21 @@ const createEditor = (options?: {
       focus: { offset: 0, path: [0, 0] },
     },
     initialValue: options?.value ?? [
-      { children: [{ text: '' }], type: 'p' },
-      { children: [{ text: 'filled' }], type: 'p' },
+      { children: [{ text: '' }], type: 'paragraph' },
+      { children: [{ text: 'filled' }], type: 'paragraph' },
     ],
   });
 
-const getPlaceholder = <TEditor extends PlateEditor>(
-  editor: TEditor,
+const getPlaceholder = <V extends Value, D>(
+  editor: InternalPlateEditorWithInstalledPlugins<V, D>,
   node: Element
 ) =>
   editor
     .plugin(BlockPlaceholderPlugin)
     .store.get('placeholder', editor.read.nodes.path(node));
 
-const getEditorElement = <TEditor extends PlateEditor>(
-  editor: TEditor,
+const getEditorElement = <V extends Value, D>(
+  editor: InternalPlateEditorWithInstalledPlugins<V, D>,
   index: number
 ): Element => {
   const node = editor.read.children()[index];
@@ -116,7 +117,9 @@ const getEditorElement = <TEditor extends PlateEditor>(
   return node;
 };
 
-const focusEditor = async (editor: PlateEditor) => {
+const focusEditor = async <V extends Value, D>(
+  editor: InternalPlateEditorWithInstalledPlugins<V, D>
+) => {
   await React.act(async () => {
     editor.api.dom.focus();
   });
@@ -142,7 +145,7 @@ describe('BlockPlaceholderPlugin', () => {
 
   it('clears the target when the editor is globally empty', async () => {
     const editor = createEditor({
-      value: [{ children: [{ text: '' }], type: 'p' }],
+      value: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
     const { container } = renderPlaceholderEditor(editor);
 
@@ -154,7 +157,7 @@ describe('BlockPlaceholderPlugin', () => {
   it('clears the target when the only empty block has id metadata', async () => {
     const editor = createEditor({
       nodeId: true,
-      value: [{ children: [{ text: '' }], id: 'block-1', type: 'p' }],
+      value: [{ children: [{ text: '' }], id: 'block-1', type: 'paragraph' }],
     });
     const { container } = renderPlaceholderEditor(editor);
 
@@ -170,7 +173,7 @@ describe('BlockPlaceholderPlugin', () => {
           children: [{ text: '' }],
           indent: 1,
           listStyleType: 'disc',
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
@@ -191,15 +194,15 @@ describe('BlockPlaceholderPlugin', () => {
   });
 
   it('honors custom node metadata rules for pristine empty blocks', async () => {
-    const CustomMetadataPlugin = createBasePlugin({
-      name: 'customMetadata',
+    const CustomMetadataPlugin = defineBasePlugin('customMetadata', {
       schema: {
-        properties: [
-          schema.elementProperty('data-test-id', property.string(), {
+        properties: {
+          dataTestId: schema.elementProperty(property.string(), {
+            key: 'data-test-id',
             role: 'metadata',
-            target: target.type('p'),
+            target: target.element(ParagraphWithComponentPlugin),
           }),
-        ],
+        },
       },
     });
 
@@ -218,7 +221,7 @@ describe('BlockPlaceholderPlugin', () => {
         {
           children: [{ text: '' }],
           'data-test-id': 'block-1',
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
@@ -249,6 +252,24 @@ describe('BlockPlaceholderPlugin', () => {
     expect(getPlaceholder(editor, getEditorElement(editor, 0))).toBeUndefined();
 
     expect(container.querySelector('[placeholder]')).toBeNull();
+  });
+
+  it('passes the selected element type to the query', async () => {
+    let queriedType: string | undefined;
+    const editor = createEditor({
+      query: ({ type }) => {
+        queriedType = type;
+
+        return true;
+      },
+    });
+
+    renderPlaceholderEditor(editor);
+    await focusEditor(editor);
+
+    await waitFor(() => {
+      expect(queriedType).toBe('paragraph');
+    });
   });
 
   it('clears the target when the selection is expanded', async () => {

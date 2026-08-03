@@ -14,7 +14,7 @@ describe('editor.api.markdown.deserialize', () => {
       children: [
         {
           children: [{ text: '<u>' }],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
@@ -33,7 +33,7 @@ describe('editor.api.markdown.deserialize', () => {
       children: [
         {
           children: [{ text: '</ph><' }],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
@@ -46,7 +46,7 @@ describe('editor.api.markdown.deserialize', () => {
     expect(
       editor.api.markdown.deserialize('plain', {
         rules: {
-          p: {
+          paragraph: {
             deserialize: () => ({ text: 'wrapped' }),
           },
         },
@@ -55,7 +55,7 @@ describe('editor.api.markdown.deserialize', () => {
       children: [
         {
           children: [{ text: 'wrapped' }],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
@@ -94,25 +94,25 @@ describe('editor.api.markdown.deserialize', () => {
       children: [
         {
           children: [{ text: 'Hello!' }],
-          type: 'p',
+          type: 'paragraph',
         },
         {
           children: [
             {
               children: [{ text: 'some thing is reference' }],
-              type: 'p',
+              type: 'paragraph',
             },
             {
               children: [{ text: 'aaa' }],
               indent: 1,
               listStyleType: 'disc',
-              type: 'p',
+              type: 'paragraph',
             },
             {
               children: [{ text: 'bbb' }],
               indent: 1,
               listStyleType: 'disc',
-              type: 'p',
+              type: 'paragraph',
             },
           ],
           type: 'blockquote',
@@ -136,13 +136,13 @@ describe('editor.api.markdown.deserialize', () => {
           children: [
             {
               children: [{ text: 'outer' }],
-              type: 'p',
+              type: 'paragraph',
             },
             {
               children: [
                 {
                   children: [{ text: 'inner\ntail' }],
-                  type: 'p',
+                  type: 'paragraph',
                 },
               ],
               type: 'blockquote',
@@ -167,15 +167,15 @@ describe('editor.api.markdown.deserialize', () => {
           children: [
             {
               children: [{ text: 'const x = 1;' }],
-              type: 'code_line',
+              type: 'codeLine',
             },
             {
               children: [{ text: 'console.log(x)' }],
-              type: 'code_line',
+              type: 'codeLine',
             },
           ],
           lang: 'ts',
-          type: 'code_block',
+          type: 'codeBlock',
         },
       ],
     });
@@ -221,7 +221,7 @@ describe('editor.api.markdown.deserialize', () => {
               text: '<figure class="hero">\n<img src="/image.png" />\n</figure>',
             },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });

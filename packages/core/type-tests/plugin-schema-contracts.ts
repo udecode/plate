@@ -4,69 +4,61 @@ import {
   property,
   schema,
   target,
-  type Value,
 } from '@platejs/plite';
 import {
-  type AnyBasePlugin,
   createBaseEditor,
-  createBasePlugin,
+  defineBasePlugin,
+  type BaseEditor,
   type DefinitionOf,
   NodeIdPlugin,
   normalizeNodeId,
-  type NormalizePluginState,
   type PluginReference,
 } from '@platejs/core';
+import type { AnyBasePlugin } from '../src/lib/plugin/BasePlugin';
+import type { NormalizePluginState } from '../src/lib/plugin/PluginDefinition';
 import {
   createPlateEditor,
-  createPlatePlugin,
-  type PlateCorePlugin,
+  definePlatePlugin,
   type PlateEditor,
   toPlatePlugin,
 } from '@platejs/core/react';
 
-const TargetPlugin = createBasePlugin({
-  name: 'schemaTarget',
+const TargetPlugin = defineBasePlugin('schemaTarget', {
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
     },
   },
-  type: 'schema-target',
 });
 
 const ExtendedTargetPlugin = TargetPlugin.extend({
   initialState: { enabled: true },
 });
 type ExtendedTargetDefinition = DefinitionOf<typeof ExtendedTargetPlugin>;
-declare const extendedTargetDocumentType: ExtendedTargetDefinition['type'];
-const exactExtendedTargetDocumentType: 'schema-target' =
-  extendedTargetDocumentType;
+declare const extendedTargetName: ExtendedTargetDefinition['name'];
+const exactExtendedTargetName: 'schemaTarget' = extendedTargetName;
 const ConfiguredTargetPlugin = TargetPlugin.configure({});
-const configuredTargetType: 'schema-target' = ConfiguredTargetPlugin.type;
-const configuredTargetReference: PluginReference<
-  'schemaTarget',
-  'schema-target'
-> = ConfiguredTargetPlugin;
-const canonicalTargetReference: PluginReference<
-  'schemaTarget',
-  'schema-target'
-> = configuredTargetReference;
+const configuredTargetName: 'schemaTarget' = ConfiguredTargetPlugin.name;
+const configuredTargetReference: PluginReference<'schemaTarget'> =
+  ConfiguredTargetPlugin;
+const canonicalTargetReference: PluginReference<'schemaTarget'> =
+  configuredTargetReference;
 const configuredTargetEditor = createBaseEditor({
   plugins: [ConfiguredTargetPlugin],
 });
 const configuredTargetElement = configuredTargetEditor.read.schema.create(
   ConfiguredTargetPlugin
 );
-const exactConfiguredTargetType: 'schema-target' = configuredTargetElement.type;
+const exactConfiguredTargetType: 'schemaTarget' = configuredTargetElement.type;
 const ConfiguredPlateTargetPlugin = toPlatePlugin(TargetPlugin).configure({});
-const configuredPlateTargetType: 'schema-target' =
-  ConfiguredPlateTargetPlugin.type;
+const configuredPlateTargetName: 'schemaTarget' =
+  ConfiguredPlateTargetPlugin.name;
 const configuredPlateTargetEditor = createPlateEditor({
   plugins: [ConfiguredPlateTargetPlugin],
 });
 const configuredPlateTargetElement =
   configuredPlateTargetEditor.read.schema.create(ConfiguredPlateTargetPlugin);
-const exactConfiguredPlateTargetType: 'schema-target' =
+const exactConfiguredPlateTargetType: 'schemaTarget' =
   configuredPlateTargetElement.type;
 
 configuredTargetEditor.read.schema.isElementTypeInGroup(
@@ -77,12 +69,12 @@ configuredTargetEditor.read.schema.isElementTypeInGroup(
 void configuredTargetReference;
 void canonicalTargetReference;
 void exactConfiguredTargetType;
-void configuredPlateTargetType;
+void configuredPlateTargetName;
 void exactConfiguredPlateTargetType;
-void configuredTargetType;
-void exactExtendedTargetDocumentType;
+void configuredTargetName;
+void exactExtendedTargetName;
 
-const NoSchemaPlugin = createBasePlugin({ name: 'noSchemaElement' });
+const NoSchemaPlugin = defineBasePlugin('noSchemaElement', {});
 const noSchemaEditor = createBaseEditor({
   plugins: [NoSchemaPlugin],
 });
@@ -100,47 +92,42 @@ const configuredPropertyInitialState: ConfiguredPropertyPluginState = {
   prefix: 'configured',
 };
 
-const ConfiguredPropertyPlugin = createBasePlugin({
-  name: 'configuredProperty',
+const ConfiguredPropertyPlugin = defineBasePlugin('configuredProperty', {
   initialState: configuredPropertyInitialState,
-  schema: ({ initialState, own, plugins, targetPluginNames, type }) => {
+  schema: ({ initialState, own, targetElementTypes }) => {
     const prefix: string = initialState.prefix;
-    const targetPluginName: 'schemaTarget' = targetPluginNames[0];
-    const ownedType: 'configured-property' = type;
+    const targetElementType: string = targetElementTypes[0]!;
+    const ownedKey: 'configuredProperty' = own.key;
 
     void prefix;
-    void targetPluginName;
-    void ownedType;
+    void targetElementType;
+    void ownedKey;
 
     return {
       properties: [
         own.elementProperty(property.string(), {
-          target: target.types(plugins.elementTypesByName(targetPluginNames)),
+          target: target.types(targetElementTypes),
         }),
       ],
     };
   },
-  targetPluginNames: [TargetPlugin.name],
-  type: 'configured-property',
+  targetPlugins: [TargetPlugin],
 });
 
-const AmbiguousPropertyPlugin = createBasePlugin({
-  name: 'ambiguousProperty',
+const AmbiguousPropertyPlugin = defineBasePlugin('ambiguousProperty', {
   schema: {
     properties: [
       schema.elementProperty('first-property', property.string(), {
-        target: target.type('schema-target'),
+        target: target.type('schemaTarget'),
       }),
       schema.elementProperty('second-property', property.number(), {
-        target: target.type('schema-target'),
+        target: target.type('schemaTarget'),
       }),
     ],
   },
-  type: 'ambiguous-property',
 });
 
-const MarkPropertyPlugin = createPlatePlugin({
-  name: 'schemaMarkProperty',
+const MarkPropertyPlugin = definePlatePlugin('schemaMarkProperty', {
   schema: {
     mark: {
       inclusive: false,
@@ -148,37 +135,125 @@ const MarkPropertyPlugin = createPlatePlugin({
       split: 'preserve',
     },
   },
-  type: 'schema-mark-property',
 });
 
-const ElementPropertyPlugin = createPlatePlugin({
-  name: 'schemaElementProperty',
+const ElementPropertyPlugin = definePlatePlugin('schemaElementProperty', {
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
       properties: { tone: property.string() },
     },
   },
-  type: 'schema-element-property',
 });
 
-const UninstalledElementPropertyPlugin = createBasePlugin({
-  name: 'uninstalledSchemaElementProperty',
+const RelationshipParagraphPlugin = defineBasePlugin('relationshipParagraph', {
+  schema: { element: schema.element.textBlock() },
+});
+const RelationshipCellPlugin = defineBasePlugin('relationshipCell', {
+  dependencies: [RelationshipParagraphPlugin],
   schema: {
     element: {
-      content: schema.content.text({ default: 'text', min: 1 }),
-      properties: { tone: property.string() },
+      content: schema.content.type('relationshipParagraph', {
+        default: { type: 'relationshipParagraph' },
+        min: 1,
+      }),
     },
   },
-  type: 'uninstalled-schema-element-property',
 });
+const RelationshipRowPlugin = defineBasePlugin('relationshipRow', {
+  dependencies: [RelationshipCellPlugin],
+  schema: {
+    element: {
+      content: schema.content.type('relationshipCell', {
+        default: { type: 'relationshipCell' },
+        min: 1,
+      }),
+    },
+  },
+});
+const RelationshipTablePlugin = defineBasePlugin('relationshipTable', {
+  dependencies: [RelationshipRowPlugin],
+  schema: {
+    element: {
+      content: schema.content.type('relationshipRow', {
+        default: { type: 'relationshipRow' },
+        min: 1,
+      }),
+    },
+  },
+});
+const relationshipEditor = createBaseEditor({
+  plugins: [RelationshipTablePlugin],
+});
+const relationshipTable = relationshipEditor.read.schema.create(
+  RelationshipTablePlugin
+);
+const exactRelationshipTable: 'relationshipTable' = relationshipTable.type;
+
+// Static children expose the finite installed vocabulary. Plite runtime schema
+// rejects this cell directly under a table.
+const relationshipTableVocabulary: typeof relationshipTable = {
+  children: [{ children: [], type: 'relationshipCell' }],
+  type: 'relationshipTable',
+};
+
+void exactRelationshipTable;
+void relationshipTableVocabulary;
+
+const AggregatePropertiesPlugin = defineBasePlugin('aggregateProperties', {
+  schema: {
+    properties: [
+      schema.elementProperty('firstProperty', property.string(), {
+        target: target.group('element'),
+      }),
+      schema.elementProperty('secondProperty', property.number(), {
+        target: target.group('element'),
+      }),
+    ],
+  },
+});
+const aggregatePropertiesEditor = createBaseEditor({
+  plugins: [AggregatePropertiesPlugin],
+});
+// @ts-expect-error aggregate property contributors do not own one primary key
+void aggregatePropertiesEditor.plugin(AggregatePropertiesPlugin).key;
+
+const ExplicitPlateElementPlugin = definePlatePlugin('plateElementOwner', {
+  schema: { element: schema.element.textBlock() },
+  type: 'plateElementDocumentType',
+  update: ({ type }) => {
+    const exactType: 'plateElementDocumentType' = type;
+
+    return { identity: () => exactType };
+  },
+});
+const explicitPlateElementType: 'plateElementDocumentType' =
+  ExplicitPlateElementPlugin.type;
+const noPlateElementKey: undefined = ExplicitPlateElementPlugin.key;
+
+const ExplicitPlateMarkPlugin = definePlatePlugin('plateMarkOwner', {
+  api: ({ key }) => {
+    const exactKey: 'plateMarkDocumentKey' = key;
+
+    return { identity: () => exactKey };
+  },
+  key: 'plateMarkDocumentKey',
+  schema: { mark: property.boolean() },
+});
+const explicitPlateMarkKey: 'plateMarkDocumentKey' =
+  ExplicitPlateMarkPlugin.key;
+const noPlateMarkType: undefined = ExplicitPlateMarkPlugin.type;
+
+void explicitPlateElementType;
+void explicitPlateMarkKey;
+void noPlateElementKey;
+void noPlateMarkType;
 
 const configuredPrefix: string = ConfiguredPropertyPlugin.initialState.prefix;
-const configuredTargetPluginName: string =
-  ConfiguredPropertyPlugin.targetPluginNames[0];
+const configuredTargetPlugin: typeof TargetPlugin =
+  ConfiguredPropertyPlugin.targetPlugins[0];
 
-const PluginReferenceStatePlugin = createBasePlugin({
-  name: 'pluginReferenceState',
+const PluginReferenceStatePlugin = defineBasePlugin('pluginReferenceState', {
   initialState: {
     nested: { targets: [TargetPlugin] as const },
     target: TargetPlugin,
@@ -195,12 +270,9 @@ const targetReference = pluginReferenceStateEditor
 const nestedTargetReference = pluginReferenceStateEditor
   .plugin(PluginReferenceStatePlugin)
   .store.get('nested').targets[0];
-const exactTargetReference: PluginReference<'schemaTarget', 'schema-target'> =
-  targetReference;
-const exactNestedTargetReference: PluginReference<
-  'schemaTarget',
-  'schema-target'
-> = nestedTargetReference;
+const exactTargetReference: PluginReference<'schemaTarget'> = targetReference;
+const exactNestedTargetReference: PluginReference<'schemaTarget'> =
+  nestedTargetReference;
 const readonlyPluginReferenceState = pluginReferenceStateEditor
   .plugin(PluginReferenceStatePlugin)
   .store.get();
@@ -226,8 +298,7 @@ class PluginStateResource {
 }
 
 const pluginStateResource = new PluginStateResource();
-const PluginResourceStatePlugin = createBasePlugin({
-  name: 'pluginResourceState',
+const PluginResourceStatePlugin = defineBasePlugin('pluginResourceState', {
   initialState: { resource: pluginStateResource },
 });
 const pluginResourceEditor = createBaseEditor({
@@ -255,7 +326,7 @@ configuredThirdPartyPreset.settings.joins.push('mutable');
 void configuredThirdPartyPlugin;
 
 // @ts-expect-error Plugin target names are immutable.
-ConfiguredPropertyPlugin.targetPluginNames.push(TargetPlugin.name);
+ConfiguredPropertyPlugin.targetPlugins.push(TargetPlugin.name);
 
 const editor = createBaseEditor({
   plugins: [
@@ -280,45 +351,47 @@ for (const installedElementPlugin of installedElementPlugins) {
 }
 
 const requirePluginReference = <T extends PluginReference>(plugin: T) => plugin;
-const ReferenceChildPlugin = createBasePlugin({
+const ReferenceChildPlugin = defineBasePlugin('schemaReferenceChild', {
   dependencies: [TargetPlugin, ElementPropertyPlugin],
-  name: 'schemaReferenceChild',
 });
-const DependencyInferencePlugin = createBasePlugin({
-  api: () => ({
-    readDependencyInference: () => 'dependency' as const,
-  }),
-  name: 'schemaDependencyInference',
-  update: () => ({
-    writeDependencyInference: () => undefined,
-  }),
-});
-const NestedInferencePlugin = createBasePlugin({
+const DependencyInferencePlugin = defineBasePlugin(
+  'schemaDependencyInference',
+  {
+    api: () => ({
+      readDependencyInference: () => 'dependency' as const,
+    }),
+    update: () => ({
+      writeDependencyInference: () => undefined,
+    }),
+  }
+);
+const NestedInferencePlugin = defineBasePlugin('schemaNestedInference', {
   api: () => ({ readNestedInference: () => 'nested' as const }),
-  name: 'schemaNestedInference',
   update: () => ({ writeNestedInference: () => undefined }),
 });
-export const InferenceTreePlugin = createBasePlugin({
+export const InferenceTreePlugin = defineBasePlugin('schemaInferenceTree', {
   dependencies: [DependencyInferencePlugin, NestedInferencePlugin],
-  name: 'schemaInferenceTree',
 });
-const ExplicitReferenceParentPlugin = createBasePlugin({
-  dependencies: [TargetPlugin],
-  name: 'explicitSchemaReferenceParent',
-});
-const exactInferredChildPluginName: 'schemaTarget' =
+const ExplicitReferenceParentPlugin = defineBasePlugin(
+  'explicitSchemaReferenceParent',
+  {
+    dependencies: [TargetPlugin],
+  }
+);
+const exactInferredChildName: 'schemaTarget' =
   ReferenceChildPlugin.dependencies[0].name;
-export const exactInferredDependencyPluginName: 'schemaDependencyInference' =
+export const exactInferredDependencyName: 'schemaDependencyInference' =
   InferenceTreePlugin.dependencies[0].name;
-export const exactInferredNestedPluginName: 'schemaNestedInference' =
+export const exactInferredNestedName: 'schemaNestedInference' =
   InferenceTreePlugin.dependencies[1].name;
-const explicitChildReference: PluginReference<'schemaTarget', 'schema-target'> =
+const explicitChildReference: PluginReference<'schemaTarget'> =
   ExplicitReferenceParentPlugin.dependencies[0];
 const explicitParentAtErasedBoundary: AnyBasePlugin =
   ExplicitReferenceParentPlugin;
-const exactEmptyStateAtErasedBoundary: AnyBasePlugin = createBasePlugin({
-  name: 'exactEmptyState',
-});
+const exactEmptyStateAtErasedBoundary: AnyBasePlugin = defineBasePlugin(
+  'exactEmptyState',
+  {}
+);
 const erasedPluginCollection: readonly AnyBasePlugin[] = [TargetPlugin];
 const erasedCollectionEditor = createBaseEditor({
   plugins: erasedPluginCollection,
@@ -326,18 +399,18 @@ const erasedCollectionEditor = createBaseEditor({
 const nestedReferenceEditor = createBaseEditor({
   plugins: [ReferenceChildPlugin],
 });
-export const inferenceTreeEditor = createBaseEditor({
+export const inferenceTreeEditor: BaseEditor<
+  readonly [typeof InferenceTreePlugin]
+> = createBaseEditor({
   plugins: [InferenceTreePlugin],
 });
-const inferenceTreeValue: Value = [];
-export const inferenceTreePlateEditor = createPlateEditor({
+export const inferenceTreePlateEditor: PlateEditor<
+  readonly [typeof InferenceTreePlugin]
+> = createPlateEditor({
   plugins: [InferenceTreePlugin],
-  initialValue: inferenceTreeValue,
 });
-export const broadInferenceTreePlateEditor: PlateEditor<
-  Value,
-  PlateCorePlugin
-> = inferenceTreePlateEditor;
+export const broadInferenceTreePlateEditor: PlateEditor =
+  inferenceTreePlateEditor;
 export const exactDependencyApiResult: 'dependency' = inferenceTreeEditor
   .plugin(DependencyInferencePlugin)
   .api.readDependencyInference();
@@ -349,22 +422,28 @@ export const exactDependencyUpdate: () => undefined =
 export const exactNestedUpdate: () => undefined =
   inferenceTreeEditor.update.schemaNestedInference.writeNestedInference;
 
-void nestedReferenceEditor.plugin(TargetPlugin).plugin;
+void nestedReferenceEditor.plugin(TargetPlugin);
 nestedReferenceEditor.read.schema.element(TargetPlugin);
 nestedReferenceEditor.read.schema.isElementTypeInGroup(
   TargetPlugin,
   'textBlock'
 );
-nestedReferenceEditor.read.schema.property(ElementPropertyPlugin);
-erasedCollectionEditor.read.schema.element(TargetPlugin);
-erasedCollectionEditor.read.schema.property(UninstalledElementPropertyPlugin);
+nestedReferenceEditor.read.schema.property({
+  key: 'tone',
+  placement: 'element',
+});
+erasedCollectionEditor.read.schema.element(TargetPlugin.type);
+erasedCollectionEditor.read.schema.property({
+  key: 'tone',
+  placement: 'element',
+});
 void explicitParentAtErasedBoundary;
 void exactEmptyStateAtErasedBoundary;
 void exactDependencyApiResult;
 void exactDependencyUpdate;
-void exactInferredDependencyPluginName;
-void exactInferredNestedPluginName;
-void exactInferredChildPluginName;
+void exactInferredDependencyName;
+void exactInferredNestedName;
+void exactInferredChildName;
 void exactNestedApiResult;
 void exactNestedUpdate;
 void broadInferenceTreePlateEditor;
@@ -415,14 +494,14 @@ const PlateExtendedSchemaTargetPlugin = toPlatePlugin(
 const schemaInferenceEditor = createBaseEditor({
   plugins: [ExtendedSchemaTargetPlugin, PlateExtendedSchemaTargetPlugin],
 });
-const extendedSchemaTargetType: 'schema-target' =
+const extendedSchemaTargetType: 'schemaTarget' =
   schemaInferenceEditor.read.schema.create(ExtendedSchemaTargetPlugin).type;
-const plateExtendedSchemaTargetType: 'schema-target' =
+const plateExtendedSchemaTargetType: 'schemaTarget' =
   schemaInferenceEditor.read.schema.create(
     PlateExtendedSchemaTargetPlugin
   ).type;
 
-requirePluginReference(createPlatePlugin({ name: 'createdPlateReference' }));
+requirePluginReference(definePlatePlugin('createdPlateReference', {}));
 requirePluginReference(PlateTargetPlugin);
 requirePluginReference(toPlatePlugin(TargetPlugin, { editOnly: true }));
 requirePluginReference(toPlatePlugin(TargetPlugin, () => ({ enabled: true })));
@@ -464,31 +543,37 @@ requirePluginReference(
 );
 requirePluginReference(PlateTargetPlugin.configure({ component: () => null }));
 requirePluginReference(PlateReferenceChildPlugin);
-requirePluginReference(editor.plugin(TargetPlugin).plugin);
-requirePluginReference(editor.plugin(TargetPlugin).plugin);
+requirePluginReference(editor.plugin(TargetPlugin));
+requirePluginReference(editor.plugin(TargetPlugin));
 
 // @ts-expect-error Structurally matching objects are not plugin descriptors.
-requirePluginReference({ name: 'schemaTarget', type: 'schema-target' });
+requirePluginReference({ name: 'schemaTarget', type: 'schemaTarget' });
 // @ts-expect-error Name-only objects cannot forge Plate plugin references.
 requirePluginReference({ name: 'schemaTarget' });
 
 const targetElement = editor.read.schema.create(TargetPlugin, {
   'first-property': 'center',
 });
-const targetType: 'schema-target' = targetElement.type;
+const targetType: 'schemaTarget' = targetElement.type;
 const configuredProperty: string | undefined =
-  editor.read.schema.getElementProperty(
-    targetElement,
-    ConfiguredPropertyPlugin
-  );
+  editor.read.schema.getElementProperty(targetElement, 'configured-property');
 const configuredSchemaProperty: EditorSchemaProperty | null =
-  editor.read.schema.property(ConfiguredPropertyPlugin);
+  editor.read.schema.property({
+    key: 'configured-property',
+    placement: 'element',
+  });
 const elementSchemaProperty: EditorSchemaProperty | null =
-  editor.read.schema.property(ElementPropertyPlugin);
+  editor.read.schema.property({ key: 'tone', placement: 'element' });
 const markSchemaProperty: EditorSchemaProperty | null =
-  editor.read.schema.property(MarkPropertyPlugin);
+  editor.read.schema.property({
+    key: 'schema-mark-property',
+    placement: 'text',
+  });
 const elementPropertyHandle = schema.handle.property(
-  schema.handle.element(ElementPropertyPlugin, ElementPropertyPlugin.type),
+  schema.handle.element(
+    ElementPropertyPlugin,
+    editor.plugin(ElementPropertyPlugin).type
+  ),
   'tone'
 );
 const handledElementSchemaProperty: EditorSchemaProperty | null =
@@ -518,10 +603,10 @@ declare const exactNodeIdValue: ExactNodeIdValue;
 const exactNormalizedNodeIdValue: ExactNodeIdValue =
   normalizeNodeId(exactNodeIdValue);
 const nodeIdProperty: PropertyJsonValue | undefined =
-  nodeIdEditor.read.schema.getElementProperty(targetElement, NodeIdPlugin);
-// @ts-expect-error JSON-valued node ids are not guaranteed to be strings.
-const stringOnlyNodeId: string | undefined =
-  nodeIdEditor.read.schema.getElementProperty(targetElement, NodeIdPlugin);
+  nodeIdEditor.read.schema.getElementProperty<PropertyJsonValue>(
+    targetElement,
+    'id'
+  );
 editor.read.schema.element(TargetPlugin);
 void configuredSchemaProperty;
 void elementSchemaProperty;
@@ -529,31 +614,20 @@ void handledElementSchemaProperty;
 void markSchemaProperty;
 void nodeIdProperty;
 void exactNormalizedNodeIdValue;
-void stringOnlyNodeId;
-// @ts-expect-error Property values come from the composed Plate plugin schema.
 editor.read.schema.create(TargetPlugin, { 'first-property': 42 });
 // @ts-expect-error Property-only plugins cannot construct elements.
 editor.read.schema.create(AmbiguousPropertyPlugin);
-// @ts-expect-error Ambiguous property plugins require an explicit Plite handle.
-editor.read.schema.getElementProperty(targetElement, AmbiguousPropertyPlugin);
-// @ts-expect-error Element-only plugins do not identify a schema property.
-editor.read.schema.property(TargetPlugin);
-// @ts-expect-error Ambiguous property plugins require an explicit Plite handle.
-editor.read.schema.property(AmbiguousPropertyPlugin);
-editor.read.schema.getElementProperty(
-  targetElement,
-  // @ts-expect-error Exact editors reject uninstalled property descriptors.
-  UninstalledElementPropertyPlugin
-);
-// @ts-expect-error Exact editors reject uninstalled property descriptors.
-editor.read.schema.property(UninstalledElementPropertyPlugin);
 ConfiguredPropertyPlugin.configure({ initialState: { prefix: 'next' } });
 ConfiguredPropertyPlugin.configure({
-  targetPluginNames: [TargetPlugin.name],
+  targetPlugins: [TargetPlugin],
 });
 ConfiguredPropertyPlugin.configure({
-  // @ts-expect-error Plugin target names are strings.
-  targetPluginNames: [42],
+  // @ts-expect-error Plugin targets are descriptors or strings.
+  targetPlugins: [42],
+});
+ConfiguredPropertyPlugin.configure({
+  // @ts-expect-error Weak name-only objects are not plugin descriptors.
+  targetPlugins: [{ name: 'schemaTarget' }],
 });
 ConfiguredPropertyPlugin.configure({
   initialState: {
@@ -571,8 +645,7 @@ void editor.api.plateModel;
 // @ts-expect-error The compiled Plate model is not exposed through runtime.
 void editor.runtime.model;
 
-createBasePlugin({
-  name: 'exclusiveSchema',
+defineBasePlugin('exclusiveSchema', {
   // @ts-expect-error A plugin cannot own both an element and a mark.
   schema: {
     element: {},
@@ -580,15 +653,13 @@ createBasePlugin({
   },
 });
 
-createBasePlugin({
-  name: 'explicitMarkDescriptor',
+defineBasePlugin('explicitMarkDescriptor', {
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
 });
 
-createBasePlugin({
-  name: 'advancedMarkDescriptor',
+defineBasePlugin('advancedMarkDescriptor', {
   schema: {
     mark: {
       inclusive: false,
@@ -599,8 +670,7 @@ createBasePlugin({
   },
 });
 
-createBasePlugin({
-  name: 'requiredElementPropertyTarget',
+defineBasePlugin('requiredElementPropertyTarget', {
   schema: ({ own }) => ({
     properties: [
       // @ts-expect-error Element property placement requires an explicit target.
@@ -611,7 +681,7 @@ createBasePlugin({
 
 void configuredPrefix;
 void configuredProperty;
-void configuredTargetPluginName;
+void configuredTargetPlugin;
 void explicitChildReference;
 void extendedSchemaTargetType;
 void plateExtendedSchemaTargetType;

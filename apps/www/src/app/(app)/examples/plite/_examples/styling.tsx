@@ -1,7 +1,9 @@
+import { history } from '@platejs/plite-history';
 import { Editable, Plite, usePliteEditor } from '@platejs/plite-react';
 
 const StylingExample = () => {
   const editor1 = usePliteEditor({
+    extensions: [history()],
     initialValue: [
       {
         type: 'paragraph',
@@ -10,6 +12,7 @@ const StylingExample = () => {
     ],
   });
   const editor2 = usePliteEditor({
+    extensions: [history()],
     initialValue: [
       {
         type: 'paragraph',

@@ -7,11 +7,11 @@ const createNestedElement = () => ({
     { text: 'test' },
     {
       children: [{ text: 'test' }],
-      type: 'p',
+      type: 'paragraph',
     },
     { text: 'test' },
   ],
-  type: 'li',
+  type: 'listItem',
 });
 
 describe('mergeDeepToNodes', () => {
@@ -20,7 +20,7 @@ describe('mergeDeepToNodes', () => {
       children: [
         {
           children: [{ text: 'test' }],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     };
@@ -36,7 +36,7 @@ describe('mergeDeepToNodes', () => {
         {
           a: 1,
           children: [{ a: 1, text: 'test' }],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
@@ -64,11 +64,11 @@ describe('mergeDeepToNodes', () => {
           {
             a: 1,
             children: [{ a: 1, text: 'test' }],
-            type: 'p',
+            type: 'paragraph',
           },
           { a: 1, text: 'test' },
         ],
-        type: 'li',
+        type: 'listItem',
       };
 
       mergeDeepToNodes({
@@ -97,12 +97,12 @@ describe('mergeDeepToNodes', () => {
           {
             children: [{ order: 4, text: 'test' }],
             order: 3,
-            type: 'p',
+            type: 'paragraph',
           },
           { order: 5, text: 'test' },
         ],
         order: 1,
-        type: 'li',
+        type: 'listItem',
       });
     });
   });
@@ -129,11 +129,11 @@ describe('mergeDeepToNodes', () => {
           {
             a: 1,
             children: [{ text: 'test' }],
-            type: 'p',
+            type: 'paragraph',
           },
           { text: 'test' },
         ],
-        type: 'li',
+        type: 'listItem',
       };
 
       mergeDeepToNodes({

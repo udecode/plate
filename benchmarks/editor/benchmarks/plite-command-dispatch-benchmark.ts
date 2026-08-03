@@ -3,7 +3,7 @@ import { performance } from 'node:perf_hooks';
 import {
   createEditor,
   defineCommand,
-  defineEditorExtension,
+  defineExtension,
   type Value,
 } from '../../../packages/plite/src/index';
 import { dispatchCommand } from '../../../packages/plite/src/internal/index';
@@ -95,35 +95,37 @@ const createActualLane = (kind: LaneKind, blocks: number, depth: number) => {
       },
     }
   );
-  const extension = defineEditorExtension({
-    commands: ({ around, handle }) =>
-      Array.from({ length: depth }, (_value, index) =>
-        kind === 'simple'
-          ? handle(command, (context) => {
-              if (tracker) {
-                tracker.handlerVisits += 1;
-                tracker.trace?.push(`handle:${index}`);
-                if ('next' in context) tracker.simpleNextLeaks += 1;
-              }
+  const extension = defineExtension(
+    `benchmark.command-dispatch.${kind}.${blocks}.${depth}.extension`,
+    {
+      commands: ({ around, handle }) =>
+        Array.from({ length: depth }, (_value, index) =>
+          kind === 'simple'
+            ? handle(command, (context) => {
+                if (tracker) {
+                  tracker.handlerVisits += 1;
+                  tracker.trace?.push(`handle:${index}`);
+                  if ('next' in context) tracker.simpleNextLeaks += 1;
+                }
 
-              return false;
-            })
-          : around(command, ({ next, state }) => {
-              if (tracker) {
-                tracker.handlerVisits += 1;
-                tracker.trace?.push(`prefix:${index}`);
-                tracker.continuationIdentities.add(next);
-              }
+                return false;
+              })
+            : around(command, ({ next, state }) => {
+                if (tracker) {
+                  tracker.handlerVisits += 1;
+                  tracker.trace?.push(`prefix:${index}`);
+                  tracker.continuationIdentities.add(next);
+                }
 
-              return next.after(
-                state.transaction((tx) => {
-                  tx.tags.add(`benchmark-prefix-${index}`);
-                })
-              );
-            })
-      ),
-    name: `benchmark.command-dispatch.${kind}.${blocks}.${depth}.extension`,
-  });
+                return next.after(
+                  state.transaction((tx) => {
+                    tx.tags.add(`benchmark-prefix-${index}`);
+                  })
+                );
+              })
+        ),
+    }
+  );
   const editor = createEditor({
     extensions: depth === 0 ? [] : [extension],
     initialValue: createDocument(blocks),

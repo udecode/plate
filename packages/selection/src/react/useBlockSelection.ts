@@ -1,10 +1,7 @@
 import React, { useMemo, useSyncExternalStore } from 'react';
 
-import {
-  getFragmentProp,
-  type GetFragmentPropOptions,
-  type NormalizePluginState,
-} from '@platejs/core';
+import { getFragmentProp, type GetFragmentPropOptions } from '@platejs/core';
+import type { NormalizePluginState } from '@platejs/core/internal';
 import {
   useEditor,
   useEditorPlugin,

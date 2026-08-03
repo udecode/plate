@@ -43,13 +43,12 @@ import {
 } from '@platejs/media';
 import { BaseMentionPlugin } from '@platejs/mention';
 import {
-  BaseTableCellHeaderPlugin,
   BaseTableCellPlugin,
   BaseTablePlugin,
   BaseTableRowPlugin,
 } from '@platejs/table';
 import { BaseTocPlugin } from '@platejs/toc';
-import { BaseParagraphPlugin, KEYS, createBaseEditor } from 'platejs';
+import { BaseParagraphPlugin, createBaseEditor } from 'platejs';
 import remarkEmoji from 'remark-emoji';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -62,7 +61,7 @@ import {
 
 const markdownPlugin = MarkdownPlugin.configure({
   initialState: {
-    plainMarks: [KEYS.suggestion, KEYS.comment],
+    plainMarks: ['suggestion', 'comment'],
     remarkPlugins: [
       remarkMath,
       remarkGfm,
@@ -86,7 +85,6 @@ const testPlugins = [
   BaseTablePlugin,
   BaseTableRowPlugin,
   BaseTableCellPlugin,
-  BaseTableCellHeaderPlugin,
   BaseBoldPlugin,
   BaseItalicPlugin,
   BaseUnderlinePlugin,

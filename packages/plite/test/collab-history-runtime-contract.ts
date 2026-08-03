@@ -14,7 +14,7 @@ import { history } from '@platejs/plite-history';
 
 import {
   createEditor,
-  defineEditorExtension,
+  defineExtension,
   DocumentChange,
   type EditorTransactionSpecBuilder,
   type EditorUpdatePolicy,
@@ -114,8 +114,7 @@ describe('collab and history runtime contract', () => {
     const editor = createEditor({
       extensions: [
         history(),
-        defineEditorExtension({
-          name: 'collab-commit-listener',
+        defineExtension('collab-commit-listener', {
           on: {
             commit({ commit }) {
               extensionCommits.push(commit);

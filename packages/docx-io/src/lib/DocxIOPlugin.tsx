@@ -37,7 +37,7 @@ import type {
   DefinitionOf,
   NodeComponents,
 } from '@platejs/core';
-import { createBaseEditor, createBasePlugin } from '@platejs/core';
+import { createBaseEditor, defineBasePlugin } from '@platejs/core';
 import {
   TextApi,
   type Descendant,
@@ -491,7 +491,7 @@ export function downloadDocx(blob: Blob, filename: string): void {
 // Plate.js Plugins
 // =============================================================================
 
-export const DocxIOPlugin = createBasePlugin({
+export const DocxIOPlugin = defineBasePlugin('docxIO', {
   api: ({ editor, plugin }) => ({
     import: async (
       arrayBuffer: ArrayBuffer,
@@ -682,7 +682,6 @@ export const DocxIOPlugin = createBasePlugin({
       });
     },
   }),
-  name: 'docxIO',
 });
 
 export type DocxIODefinition = DefinitionOf<typeof DocxIOPlugin>;

@@ -1,9 +1,18 @@
-import { createBaseEditor } from '@platejs/core';
+import {
+  type BaseEditorOptions,
+  type BasePluginInput,
+  createBaseEditor as createTypedBaseEditor,
+} from '@platejs/core';
 import { BaseBoldPlugin } from '@platejs/basic-nodes';
 import { BaseFontColorPlugin } from '@platejs/basic-styles';
-import { ContentSlice } from '@platejs/plite';
+import {
+  ContentSlice,
+  createEditor as createPliteEditor,
+  type InitialValue,
+  type Value,
+} from '@platejs/plite';
 import { writeHostFragmentData } from '@platejs/plite-dom';
-import { KEYS } from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 import type { Pluggable, Preset, Settings } from 'unified';
 
 import { MarkdownPlugin } from './MarkdownPlugin';
@@ -11,6 +20,17 @@ import { createTestEditor } from './__tests__/createTestEditor';
 import { createMarkdownRuntime } from './internal/markdownConversion';
 import { remarkMdx } from './plugins';
 import { materializeRemarkPlugins } from './utils/getRemarkPluginsWithoutMdx';
+
+const createBaseEditor = <const P extends readonly BasePluginInput[]>(
+  options: Omit<BaseEditorOptions, 'plugins'> & {
+    initialValue?: InitialValue<Value>;
+    plugins: P;
+  }
+) =>
+  createTypedBaseEditor({
+    ...options,
+    editor: createPliteEditor<Value>(),
+  });
 
 const createDataTransfer = ({
   files = [],
@@ -50,7 +70,7 @@ describe('MarkdownPlugin', () => {
         children: [{ text: 'Item' }],
         indent: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
     ];
     const identity = editor.read.schema.identity();
@@ -153,7 +173,7 @@ describe('MarkdownPlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseBoldPlugin, MarkdownPlugin],
     });
-    const plugin = editor.plugin(MarkdownPlugin).plugin;
+    const plugin = editor.plugin(MarkdownPlugin);
 
     expect(editor.plugin(MarkdownPlugin).store.get()).toMatchObject({
       allowedNodes: null,
@@ -178,7 +198,7 @@ describe('MarkdownPlugin', () => {
       children: [
         {
           children: [{ bold: true, text: 'bold' }],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
@@ -190,12 +210,12 @@ describe('MarkdownPlugin', () => {
     expect(
       editor.api.markdown.deserialize('```ts\nconst answer = 42;\n```', {
         rules: {
-          [KEYS.codeBlock]: {
+          codeBlock: {
             deserialize: () => ({
               children: [{ text: '' }],
               lang: 'ts',
               rawCode: 'const answer = 42;',
-              type: KEYS.codeBlock,
+              type: 'codeBlock',
             }),
           },
         },
@@ -206,7 +226,7 @@ describe('MarkdownPlugin', () => {
           children: [{ text: '' }],
           lang: 'ts',
           rawCode: 'const answer = 42;',
-          type: KEYS.codeBlock,
+          type: 'codeBlock',
         },
       ],
     });
@@ -224,7 +244,7 @@ describe('MarkdownPlugin', () => {
       );
 
       return {
-        markdown: runtime.registry.has(KEYS.markdown),
+        markdown: runtime.registry.has(PLUGINS.markdown),
         missing: runtime.registry.has('missingPlugin'),
       };
     });
@@ -249,7 +269,7 @@ describe('MarkdownPlugin', () => {
       )
     ).toBe(true);
     expect(editor.read.children()).toEqual([
-      { children: [{ text: 'paste me' }], type: 'p' },
+      { children: [{ text: 'paste me' }], type: 'paragraph' },
     ]);
   });
 
@@ -264,7 +284,7 @@ describe('MarkdownPlugin', () => {
       )
     ).toBe(true);
     expect(editor.read.children()).toEqual([
-      { children: [{ text: 'https://platejs.org/docs' }], type: 'p' },
+      { children: [{ text: 'https://platejs.org/docs' }], type: 'paragraph' },
     ]);
   });
 
@@ -282,7 +302,7 @@ describe('MarkdownPlugin', () => {
       )
     ).toBe(true);
     expect(editor.read.children()).toEqual([
-      { children: [{ text: 'https://platejs.org/docs' }], type: 'p' },
+      { children: [{ text: 'https://platejs.org/docs' }], type: 'paragraph' },
     ]);
   });
 
@@ -297,7 +317,7 @@ describe('MarkdownPlugin', () => {
       )
     ).toBe(true);
     expect(editor.read.children()).toEqual([
-      { children: [{ bold: true, text: 'bold' }], type: 'p' },
+      { children: [{ bold: true, text: 'bold' }], type: 'paragraph' },
     ]);
   });
 
@@ -326,7 +346,7 @@ describe('MarkdownPlugin', () => {
         content: [
           {
             children: [{ text: 'Primary content' }],
-            type: 'p',
+            type: 'paragraph',
           },
         ],
         openEnd: 1,
@@ -361,7 +381,7 @@ describe('MarkdownPlugin', () => {
     const markdownData = new DataTransfer();
 
     target.update.value.replace({
-      children: [{ children: [{ text: '' }], type: 'p' }],
+      children: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
     target.update.selection.set({ offset: 0, path: [0, 0] });
     markdownData.setData('text/markdown', data.getData('text/markdown'));
@@ -374,7 +394,7 @@ describe('MarkdownPlugin', () => {
     expect(image).toMatchObject({
       alt: 'Caption',
       children: [{ text: '' }],
-      type: 'img',
+      type: 'image',
       url: '/image.png',
     });
     expect(value).not.toHaveProperty('roots');
@@ -393,7 +413,7 @@ describe('MarkdownPlugin', () => {
       children: [
         {
           children: [{ color: '#93C47D', text: 'colored' }],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
@@ -403,7 +423,7 @@ describe('MarkdownPlugin', () => {
   it('parses the registered Markdown clipboard format', () => {
     const editor = createBaseEditor({
       plugins: [BaseBoldPlugin, MarkdownPlugin],
-      initialValue: [{ children: [{ text: '' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
     const data = new DataTransfer();
 
@@ -416,14 +436,16 @@ describe('MarkdownPlugin', () => {
   });
 
   it('round-trips a leaf property through the Markdown host codec', () => {
-    const value = [{ children: [{ bold: true, text: 'bold' }], type: 'p' }];
+    const value = [
+      { children: [{ bold: true, text: 'bold' }], type: 'paragraph' },
+    ];
     const source = createBaseEditor({
       plugins: [BaseBoldPlugin, MarkdownPlugin],
       initialValue: value,
     });
     const target = createBaseEditor({
       plugins: [BaseBoldPlugin, MarkdownPlugin],
-      initialValue: [{ children: [{ text: '' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
     const data = new DataTransfer();
 

@@ -9,7 +9,7 @@ import {
 } from '@platejs/plite/internal';
 import {
   createEditor,
-  defineEditorExtension,
+  defineExtension,
   type Descendant,
   type Editor,
   ElementApi,
@@ -142,9 +142,8 @@ describe('plite normalization contract', () => {
     const editor = createEditor();
     const seen: string[] = [];
 
-    editor.extend([
-      defineEditorExtension({
-        name: 'first-correction',
+    editor.install([
+      defineExtension('first-correction', {
         corrections: [
           {
             event: 'content',
@@ -156,8 +155,7 @@ describe('plite normalization contract', () => {
           },
         ],
       }),
-      defineEditorExtension({
-        name: 'second-correction',
+      defineExtension('second-correction', {
         corrections: [
           {
             event: 'content',
@@ -195,9 +193,8 @@ describe('plite normalization contract', () => {
       ],
     });
 
-    editor.extend(
-      defineEditorExtension({
-        name: 'automatic-closeout-correction',
+    editor.install(
+      defineExtension('automatic-closeout-correction', {
         corrections: [
           {
             event: 'properties',
@@ -227,9 +224,8 @@ describe('plite normalization contract', () => {
       })),
     });
 
-    editor.extend(
-      defineEditorExtension({
-        name: 'shifted-path-correction',
+    editor.install(
+      defineExtension('shifted-path-correction', {
         corrections: [
           {
             event: 'properties',
@@ -278,9 +274,8 @@ describe('plite normalization contract', () => {
 
     const editor = createEditor({ initialValue });
 
-    editor.extend(
-      defineEditorExtension({
-        name: 'direct-change-correction',
+    editor.install(
+      defineExtension('direct-change-correction', {
         corrections: [
           {
             event: 'properties',
@@ -399,12 +394,11 @@ describe('plite normalization contract', () => {
     const editor = createEditor();
     let sawPartiallyUnwrappedTree = false;
 
-    editor.extend(
-      defineEditorExtension({
-        ...defineTestSchema('unwrap-correction-schema', {
+    editor.install(
+      defineExtension('unwrap-correction-spy', {
+        schema: defineTestSchema('unwrap-correction-schema', {
           link: { inline: true },
-        }),
-        name: 'unwrap-correction-spy',
+        }).schema,
         corrections: [
           {
             event: 'children',
@@ -454,9 +448,8 @@ describe('plite normalization contract', () => {
     const editor = createEditor();
     const seen: string[] = [];
 
-    editor.extend(
-      defineEditorExtension({
-        name: 'split-corrections',
+    editor.install(
+      defineExtension('split-corrections', {
         corrections: [
           {
             event: 'children',
@@ -512,8 +505,8 @@ describe('plite normalization contract', () => {
       })),
     });
 
-    editor.extend(
-      defineEditorExtension({
+    editor.install(
+      defineExtension('composed-sparse-correction-proof', {
         corrections: [
           {
             event: 'children',
@@ -541,7 +534,6 @@ describe('plite normalization contract', () => {
             },
           },
         ],
-        name: 'composed-sparse-correction-proof',
       })
     );
 
@@ -615,9 +607,8 @@ describe('plite normalization contract', () => {
     const editor = createEditor();
     const seen: string[] = [];
 
-    editor.extend([
-      defineEditorExtension({
-        name: 'same-lane-a',
+    editor.install([
+      defineExtension('same-lane-a', {
         corrections: [
           {
             event: 'content',
@@ -629,8 +620,7 @@ describe('plite normalization contract', () => {
           },
         ],
       }),
-      defineEditorExtension({
-        name: 'same-lane-b',
+      defineExtension('same-lane-b', {
         corrections: [
           {
             event: 'content',
@@ -661,9 +651,8 @@ describe('plite normalization contract', () => {
     const editor = createEditor();
     let rootCalls = 0;
 
-    editor.extend(
-      defineEditorExtension({
-        name: 'layout-correction',
+    editor.install(
+      defineExtension('layout-correction', {
         corrections: [
           {
             event: 'children',
@@ -713,8 +702,7 @@ describe('plite normalization contract', () => {
 
   it('preserves installed transaction groups in correction tx', () => {
     let correctionCalls = 0;
-    const listExtension = defineEditorExtension({
-      name: 'list',
+    const listExtension = defineExtension('list', {
       update({ tx }) {
         return {
           hasInvalid: () =>
@@ -725,7 +713,7 @@ describe('plite normalization contract', () => {
         };
       },
     });
-    const correctionExtension = defineEditorExtension({
+    const correctionExtension = defineExtension('list-correction', {
       corrections: [
         {
           event: 'properties',
@@ -745,7 +733,6 @@ describe('plite normalization contract', () => {
         },
       ],
       dependencies: [listExtension] as const,
-      name: 'list-correction',
     });
     const editor = createEditor({
       extensions: [correctionExtension] as const,
@@ -768,9 +755,8 @@ describe('plite normalization contract', () => {
     const editor = createEditor();
     let calls = 0;
 
-    const unextend = editor.extend(
-      defineEditorExtension({
-        name: 'temporary-correction',
+    const unextend = editor.install(
+      defineExtension('temporary-correction', {
         corrections: [
           {
             event: 'content',
@@ -948,9 +934,8 @@ describe('plite normalization contract', () => {
   it('fails deterministically when a correction revisits an earlier draft state', () => {
     const editor = createEditor();
 
-    editor.extend(
-      defineEditorExtension({
-        name: 'cycling-correction',
+    editor.install(
+      defineExtension('cycling-correction', {
         corrections: [
           {
             event: 'children',
@@ -992,9 +977,8 @@ describe('plite normalization contract', () => {
   it('rechecks a corrected node until it reaches fixpoint', () => {
     const editor = createEditor();
 
-    editor.extend(
-      defineEditorExtension({
-        name: 'multi-pass-correction',
+    editor.install(
+      defineExtension('multi-pass-correction', {
         corrections: [
           {
             event: 'content',
@@ -1047,7 +1031,7 @@ describe('plite normalization contract', () => {
 
   it('converges to the same fixed point across correction registration order', () => {
     const create = (reverse: boolean) => {
-      const contentCorrection = defineEditorExtension({
+      const contentCorrection = defineExtension('order-independent-content', {
         corrections: [
           {
             event: 'content',
@@ -1062,29 +1046,30 @@ describe('plite normalization contract', () => {
             },
           },
         ],
-        name: 'order-independent-content',
       });
-      const propertyCorrection = defineEditorExtension({
-        corrections: [
-          {
-            event: 'properties',
-            correct({ entry: [node, path], tx }) {
-              if (
-                path.length === 1 &&
-                ElementApi.isElement(node) &&
-                node.type === 'paragraph' &&
-                node.ready !== true
-              ) {
-                tx.nodes.set({ ready: true }, { at: path });
-              }
+      const propertyCorrection = defineExtension(
+        'order-independent-properties',
+        {
+          corrections: [
+            {
+              event: 'properties',
+              correct({ entry: [node, path], tx }) {
+                if (
+                  path.length === 1 &&
+                  ElementApi.isElement(node) &&
+                  node.type === 'paragraph' &&
+                  node.ready !== true
+                ) {
+                  tx.nodes.set({ ready: true }, { at: path });
+                }
+              },
             },
-          },
-        ],
-        name: 'order-independent-properties',
-      });
+          ],
+        }
+      );
       const editor = createEditor();
 
-      editor.extend(
+      editor.install(
         reverse
           ? [propertyCorrection, contentCorrection]
           : [contentCorrection, propertyCorrection]
@@ -1114,8 +1099,8 @@ describe('plite normalization contract', () => {
   it('enqueues nodes generated by a correction', () => {
     const editor = createEditor();
 
-    editor.extend(
-      defineEditorExtension({
+    editor.install(
+      defineExtension('generated-target-corrections', {
         corrections: [
           {
             event: 'children',
@@ -1151,7 +1136,6 @@ describe('plite normalization contract', () => {
             },
           },
         ],
-        name: 'generated-target-corrections',
       })
     );
     editor.update((tx) => {
@@ -1172,8 +1156,8 @@ describe('plite normalization contract', () => {
   it('rechecks parent cardinality after a child correction', () => {
     const editor = createEditor();
 
-    editor.extend(
-      defineEditorExtension({
+    editor.install(
+      defineExtension('parent-cardinality-corrections', {
         corrections: [
           {
             event: 'properties',
@@ -1203,7 +1187,6 @@ describe('plite normalization contract', () => {
             },
           },
         ],
-        name: 'parent-cardinality-corrections',
       })
     );
     editor.update((tx) => {
@@ -1238,8 +1221,8 @@ describe('plite normalization contract', () => {
     const editor = createEditor();
     let rootCalls = 0;
 
-    editor.extend(
-      defineEditorExtension({
+    editor.install(
+      defineExtension('root-lifecycle-correction', {
         corrections: [
           {
             event: 'children',
@@ -1256,7 +1239,6 @@ describe('plite normalization contract', () => {
             },
           },
         ],
-        name: 'root-lifecycle-correction',
       })
     );
     editor.update((tx) => {
@@ -1280,8 +1262,8 @@ describe('plite normalization contract', () => {
     const cycleMessage = () => {
       const editor = createEditor();
 
-      editor.extend(
-        defineEditorExtension({
+      editor.install(
+        defineExtension('deterministic-cycle', {
           corrections: [
             {
               event: 'children',
@@ -1299,7 +1281,6 @@ describe('plite normalization contract', () => {
               },
             },
           ],
-          name: 'deterministic-cycle',
         })
       );
 
@@ -1348,8 +1329,8 @@ describe('plite normalization contract', () => {
       },
     });
 
-    editor.extend(
-      defineEditorExtension({
+    editor.install(
+      defineExtension('multi-root-correction', {
         corrections: [
           {
             event: 'properties',
@@ -1360,7 +1341,6 @@ describe('plite normalization contract', () => {
             },
           },
         ],
-        name: 'multi-root-correction',
       })
     );
     editor.update.value.repair();
@@ -1379,8 +1359,8 @@ describe('plite normalization contract', () => {
       })),
     });
 
-    editor.extend(
-      defineEditorExtension({
+    editor.install(
+      defineExtension('large-document-target-probe', {
         corrections: [
           {
             event: 'properties',
@@ -1391,7 +1371,6 @@ describe('plite normalization contract', () => {
             },
           },
         ],
-        name: 'large-document-target-probe',
       })
     );
     editor.update.nodes.set({ inspected: true }, { at: [target] });
@@ -1413,8 +1392,8 @@ describe('plite normalization contract', () => {
         })),
       });
 
-      editor.extend(
-        defineEditorExtension({
+      editor.install(
+        defineExtension(name, {
           corrections: [
             {
               event: 'content',
@@ -1423,7 +1402,6 @@ describe('plite normalization contract', () => {
               },
             },
           ],
-          name,
         })
       );
 
@@ -1573,16 +1551,13 @@ describe('plite normalization contract', () => {
       });
       const editor = createEditor({
         extensions: [
-          {
-            ...defineTestSchema(`malformed-fuzz-schema-${seed}`, {
-              empty: {
-                content: schema.content.text({ default: 'text', min: 1 }),
-              },
-              inline: { inline: true },
-              nested: {},
-            }),
-            name: `malformed-fuzz-${seed}`,
-          },
+          defineTestSchema(`malformed-fuzz-schema-${seed}`, {
+            empty: {
+              content: schema.content.text({ default: 'text', min: 1 }),
+            },
+            inline: { inline: true },
+            nested: {},
+          }),
         ],
       });
       const children: Descendant[] = [

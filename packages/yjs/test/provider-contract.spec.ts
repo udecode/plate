@@ -13,7 +13,7 @@ import {
 import { history } from '@platejs/plite-history';
 import * as Y from 'yjs';
 
-import { createYjsExtension } from '../src';
+import { yjs } from '../src';
 import {
   connectedFromYjsProviderStatus,
   normalizeYjsProviderStatus,
@@ -136,7 +136,7 @@ const createYjsUpdate = (children: readonly Descendant[]): Uint8Array => {
 
   createEditor({
     extensions: [
-      createYjsExtension({
+      yjs({
         clientId: 'seed',
         doc,
         rootName: '@platejs/plite',
@@ -189,8 +189,8 @@ const createProviderEditor = (
 ): ProviderEditor => {
   const editor = createInitialEditor();
 
-  const cleanup = editor.extend(
-    createYjsExtension({
+  const cleanup = editor.install(
+    yjs({
       clientId: 'provider-peer',
       provider,
       rootName: '@platejs/plite',
@@ -210,12 +210,12 @@ const createProviderEditorWithHistory = (
   const cleanups: Cleanup[] = [];
 
   if (order === 'history-first') {
-    cleanups.push(editor.extend(history()));
+    cleanups.push(editor.install(history()));
   }
 
   cleanups.push(
-    editor.extend(
-      createYjsExtension({
+    editor.install(
+      yjs({
         clientId: `provider-peer-${order}`,
         provider,
         rootName: '@platejs/plite',
@@ -225,7 +225,7 @@ const createProviderEditorWithHistory = (
   );
 
   if (order === 'yjs-first') {
-    cleanups.push(editor.extend(history()));
+    cleanups.push(editor.install(history()));
   }
 
   return {

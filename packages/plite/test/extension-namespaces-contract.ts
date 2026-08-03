@@ -6,7 +6,7 @@ import {
   string as editorString,
 } from '@platejs/plite/internal';
 
-import { createEditor, defineEditorExtension } from '@platejs/plite';
+import { createEditor, defineExtension } from '@platejs/plite';
 
 const paragraph = (text: string) => ({
   type: 'paragraph',
@@ -32,9 +32,8 @@ describe('editor extension namespaces', () => {
   it('installs read and update groups without mutating the editor object', () => {
     const editor = createSeededEditor();
 
-    editor.extend(
-      defineEditorExtension({
-        name: 'table',
+    editor.install(
+      defineExtension('table', {
         read: ({ state }) => ({
           selectedText() {
             return state.text.string(state.selection() ?? []);
@@ -69,9 +68,8 @@ describe('editor extension namespaces', () => {
     const editor = createSeededEditor();
     let leakedRead: (() => string) | undefined;
 
-    editor.extend(
-      defineEditorExtension({
-        name: 'selectionInfo',
+    editor.install(
+      defineExtension('selectionInfo', {
         read: ({ state }) => ({
           selectedText() {
             return state.text.string(state.selection() ?? []);
@@ -100,9 +98,8 @@ describe('editor extension namespaces', () => {
   it('composes same-name read and update groups against the active draft', () => {
     const editor = createSeededEditor();
 
-    editor.extend(
-      defineEditorExtension({
-        name: 'table',
+    editor.install(
+      defineExtension('table', {
         read: ({ state }) => ({
           owner: () => 'read',
           rowCount() {
@@ -152,9 +149,8 @@ describe('editor extension namespaces', () => {
 
   it('cleans up extension groups when unextended', () => {
     const editor = createSeededEditor();
-    const unextend = editor.extend(
-      defineEditorExtension({
-        name: 'mentions',
+    const unextend = editor.install(
+      defineExtension('mentions', {
         read: () => ({ count: () => 1 }),
       })
     );

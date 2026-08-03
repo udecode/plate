@@ -1,6 +1,5 @@
 import { createBaseEditor } from '@platejs/core';
 import { schema } from '@platejs/plite';
-import { KEYS } from '@platejs/utils';
 
 import { BaseCalloutPlugin } from './BaseCalloutPlugin';
 
@@ -8,12 +7,12 @@ describe('BaseCalloutPlugin', () => {
   it('exposes callout break/delete rules and inserts bound callout nodes', () => {
     const editor = createBaseEditor({
       plugins: [BaseCalloutPlugin],
-      initialValue: [{ children: [{ text: '' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
-    const plugin = editor.plugin(BaseCalloutPlugin).plugin;
+    const plugin = editor.plugin(BaseCalloutPlugin);
     const callout = schema.handle.element(
       BaseCalloutPlugin,
-      BaseCalloutPlugin.type
+      editor.plugin(BaseCalloutPlugin).schema.element.type
     );
     const variant = schema.handle.property(callout, 'variant');
 
@@ -37,7 +36,7 @@ describe('BaseCalloutPlugin', () => {
     expect(editor.read.children().at(-1)).toMatchObject({
       children: [{ text: '' }],
       icon: '💡',
-      type: editor.plugin('callout').type,
+      type: editor.plugin('callout').schema.element!.type,
       variant: 'info',
     });
   });
@@ -45,7 +44,7 @@ describe('BaseCalloutPlugin', () => {
   it('uses explicit insert properties and node options', () => {
     const editor = createBaseEditor({
       plugins: [BaseCalloutPlugin],
-      initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
 
     editor.update((tx) => {
@@ -59,7 +58,7 @@ describe('BaseCalloutPlugin', () => {
     expect(editor.read.children().at(-1)).toMatchObject({
       children: [{ text: '' }],
       icon: '🔥',
-      type: KEYS.callout,
+      type: 'callout',
       variant: 'warning',
     });
   });
@@ -67,17 +66,17 @@ describe('BaseCalloutPlugin', () => {
   it('uses the default bulb icon when no icon is provided', () => {
     const editor = createBaseEditor({
       plugins: [BaseCalloutPlugin],
-      initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
 
     editor.update.callout.insert();
     editor.update.callout.insert({ icon: undefined });
 
     expect(
-      editor.read.children().filter((node) => node.type === KEYS.callout)
+      editor.read.children().filter((node) => node.type === 'callout')
     ).toMatchObject([
-      { icon: '💡', type: KEYS.callout },
-      { icon: '💡', type: KEYS.callout },
+      { icon: '💡', type: 'callout' },
+      { icon: '💡', type: 'callout' },
     ]);
   });
 });

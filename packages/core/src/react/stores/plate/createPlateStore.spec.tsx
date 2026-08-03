@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { Range, Value } from '@platejs/plite';
+import type { Range } from '@platejs/plite';
 
 import { act, renderHook, waitFor } from '@testing-library/react';
 
@@ -28,7 +28,7 @@ describe('createPlateStore', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'paragraph' }],
     });
 
     const containerRef = { current: document.createElement('div') };
@@ -111,7 +111,7 @@ describe('createPlateStore', () => {
         focus: { offset: 1, path: [0, 0] },
       } as Range);
       editor.update.nodes.insert(
-        { children: [{ text: 'two' }], type: 'p' },
+        { children: [{ text: 'two' }], type: 'paragraph' },
         { at: [1] }
       );
     });
@@ -123,7 +123,9 @@ describe('createPlateStore', () => {
   });
 
   it('reads a Plate editor through typed Plate store hooks', () => {
-    const value: Value = [{ children: [{ text: 'runtime' }], type: 'p' }];
+    const value = [
+      { children: [{ text: 'runtime' }], type: 'paragraph' },
+    ] as const;
     const editor = createPlateEditor({
       id: 'runtime-store-editor',
       initialValue: value,
@@ -137,7 +139,7 @@ describe('createPlateStore', () => {
 
     const { result } = renderHook(
       () => ({
-        editor: useEditor<PlateEditor<Value>>({ id: 'runtime' }),
+        editor: useEditor<PlateEditor>({ id: 'runtime' }),
         value: useEditorState((state) => state.children(), { id: 'runtime' }),
       }),
       { wrapper }

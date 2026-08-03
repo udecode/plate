@@ -2,7 +2,7 @@ import {
   createEditor,
   type DefinitionOf,
   type Descendant,
-  defineEditorExtension,
+  defineExtension,
   type EditorExtensionTypeProvider,
   type Value,
 } from '@platejs/plite';
@@ -26,8 +26,7 @@ const initialValue: CustomValue = [
   { type: 'checklist', children: [{ text: 'todo' }] },
 ];
 
-const ChecklistExtension = defineEditorExtension({
-  name: 'checklist',
+const ChecklistExtension = defineExtension('checklist', {
   read: ({ state }) => ({
     isActive: () => state.selection() != null,
     value: () => state.children() as CustomValue,
@@ -40,13 +39,12 @@ const ChecklistExtension = defineEditorExtension({
   }),
 });
 
-const RuntimeHostExtension = defineEditorExtension({
+const RuntimeHostExtension = defineExtension('runtime-host', {
   api: () => ({
     status() {
       return 'ready' as const;
     },
   }),
-  name: 'runtime-host',
 });
 
 const editor = createEditor({
@@ -76,13 +74,12 @@ const tokenHostStatus: 'ready' = editor
   .extension(RuntimeHostExtension)
   .api.status();
 
-const OtherRuntimeHostExtension = defineEditorExtension({
+const OtherRuntimeHostExtension = defineExtension('other-runtime-host', {
   api: () => ({
     status() {
       return 'ready' as const;
     },
   }),
-  name: 'other-runtime-host',
 });
 
 type ValueEchoExtensionTypes<V extends Value> = {
@@ -97,15 +94,14 @@ interface ValueEchoExtensionTypeLambda extends EditorExtensionTypeLambda {
   readonly output: ValueEchoExtensionTypes<this['input']>;
 }
 
-const ValueEchoExtension = defineEditorExtension({
-  name: 'value-echo',
-}) as ReturnType<typeof defineEditorExtension> &
+const ValueEchoExtension = defineExtension('value-echo', {}) as ReturnType<
+  typeof defineExtension
+> &
   EditorExtensionTypeProvider<ValueEchoExtensionTypeLambda> & {
     name: 'value-echo';
   };
-const ValueEchoCarrierExtension = defineEditorExtension({
+const ValueEchoCarrierExtension = defineExtension('value-echo-carrier', {
   dependencies: [ValueEchoExtension],
-  name: 'value-echo-carrier',
 });
 const directValueEchoEditor = createEditor({
   initialValue,
@@ -137,14 +133,16 @@ const _transitiveValueEcho: InferredCustomValue =
 const _widenedValueEcho: InferredCustomValue =
   widenedValueEchoEditor.read.valueEcho.value();
 
-const TransitiveRuntimeHostExtension = defineEditorExtension({
-  api: () => ({
-    status: () => 'transitive' as const,
-  }),
-  name: 'transitiveRuntimeHost',
-});
+const TransitiveRuntimeHostExtension = defineExtension(
+  'transitiveRuntimeHost',
+  {
+    api: () => ({
+      status: () => 'transitive' as const,
+    }),
+  }
+);
 
-const TransitiveConsumerExtension = defineEditorExtension({
+const TransitiveConsumerExtension = defineExtension('transitiveConsumer', {
   api({ editor }) {
     const host = editor.extension(TransitiveRuntimeHostExtension).api;
 
@@ -153,17 +151,15 @@ const TransitiveConsumerExtension = defineEditorExtension({
     };
   },
   dependencies: [TransitiveRuntimeHostExtension],
-  name: 'transitiveConsumer',
 });
 
-const TransitiveRootExtension = defineEditorExtension({
+const TransitiveRootExtension = defineExtension('transitiveRoot', {
   api({ editor }) {
     return {
       status: editor.extension(TransitiveRuntimeHostExtension).api.status,
     };
   },
   dependencies: [TransitiveConsumerExtension] as const,
-  name: 'transitiveRoot',
 });
 
 const transitiveEditor = createEditor({
@@ -238,8 +234,7 @@ type _keepsRuntimeDependencyName = Expect<
   Equal<RuntimeConsumerDependency['name'], 'transitiveRuntimeHost'>
 >;
 
-defineEditorExtension({
-  name: 'old-capabilities',
+defineExtension('old-capabilities', {
   // @ts-expect-error public extension authoring uses api, not capabilities
   capabilities: {
     checklist: {
@@ -248,28 +243,28 @@ defineEditorExtension({
   },
 });
 
-const DisabledChecklistExtension = defineEditorExtension({
+const DisabledChecklistExtension = defineExtension('checklist', {
   enabled: false,
-  name: 'checklist',
 });
 
-const DisabledRuntimeHostExtension = defineEditorExtension({
+const DisabledRuntimeHostExtension = defineExtension('runtime-host', {
   enabled: false,
-  name: 'runtime-host',
 });
 
-const DisabledDependencyConsumerExtension = defineEditorExtension({
-  api({ editor }) {
-    typeOnly(() => {
-      // @ts-expect-error disabled dependencies do not provide portals
-      editor.extension(DisabledRuntimeHostExtension);
-    });
+const DisabledDependencyConsumerExtension = defineExtension(
+  'disabled-dependency-consumer',
+  {
+    api({ editor }) {
+      typeOnly(() => {
+        // @ts-expect-error disabled dependencies do not provide portals
+        editor.extension(DisabledRuntimeHostExtension);
+      });
 
-    return {};
-  },
-  dependencies: [DisabledRuntimeHostExtension],
-  name: 'disabled-dependency-consumer',
-});
+      return {};
+    },
+    dependencies: [DisabledRuntimeHostExtension],
+  }
+);
 
 type DisabledDependencyConsumerDefinition = DefinitionOf<
   typeof DisabledDependencyConsumerExtension
@@ -310,10 +305,12 @@ typeOnly(() => {
   disabledEditor.extension(RuntimeHostExtension);
 });
 
-const DisabledRuntimeHostCarrierExtension = defineEditorExtension({
-  dependencies: [RuntimeHostExtension, DisabledRuntimeHostExtension],
-  name: 'disabled-runtime-host-carrier',
-});
+const DisabledRuntimeHostCarrierExtension = defineExtension(
+  'disabled-runtime-host-carrier',
+  {
+    dependencies: [RuntimeHostExtension, DisabledRuntimeHostExtension],
+  }
+);
 const disabledRuntimeHostDependencyEditor = createEditor({
   initialValue,
   extensions: [DisabledRuntimeHostCarrierExtension] as const,
@@ -327,10 +324,12 @@ typeOnly(() => {
   disabledRuntimeHostDependencyEditor.extension(RuntimeHostExtension);
 });
 
-const EnabledRuntimeHostCarrierExtension = defineEditorExtension({
-  dependencies: [DisabledRuntimeHostExtension, RuntimeHostExtension],
-  name: 'enabled-runtime-host-carrier',
-});
+const EnabledRuntimeHostCarrierExtension = defineExtension(
+  'enabled-runtime-host-carrier',
+  {
+    dependencies: [DisabledRuntimeHostExtension, RuntimeHostExtension],
+  }
+);
 const enabledRuntimeHostDependencyEditor = createEditor({
   initialValue,
   extensions: [EnabledRuntimeHostCarrierExtension] as const,
@@ -342,11 +341,10 @@ const _reenabledRuntimeHostPortalStatus: 'ready' =
     .extension(RuntimeHostExtension)
     .api.status();
 
-const FirstSameNameExtension = defineEditorExtension({
+const FirstSameNameExtension = defineExtension('same-name', {
   api: () => ({
     firstOnly: () => 'first-api' as const,
   }),
-  name: 'same-name',
   read: () => ({
     firstOnly: () => 'first-read' as const,
   }),
@@ -355,11 +353,10 @@ const FirstSameNameExtension = defineEditorExtension({
   }),
 });
 
-const SecondSameNameExtension = defineEditorExtension({
+const SecondSameNameExtension = defineExtension('same-name', {
   api: () => ({
     secondOnly: () => 'second-api' as const,
   }),
-  name: 'same-name',
   read: () => ({
     secondOnly: () => 'second-read' as const,
   }),
@@ -387,9 +384,8 @@ typeOnly(() => {
   latestWinsEditor.extension(FirstSameNameExtension);
 });
 
-const SameNameCarrierExtension = defineEditorExtension({
+const SameNameCarrierExtension = defineExtension('same-name-carrier', {
   dependencies: [FirstSameNameExtension, SecondSameNameExtension],
-  name: 'same-name-carrier',
 });
 const transitiveLatestWinsEditor = createEditor({
   initialValue,

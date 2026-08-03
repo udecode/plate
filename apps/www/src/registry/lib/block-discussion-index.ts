@@ -10,7 +10,6 @@ import { BaseCommentPlugin } from '@platejs/comment';
 import { BaseSuggestionPlugin } from '@platejs/suggestion';
 import {
   type TCommentText,
-  type NormalizePluginState,
   ElementApi,
   KEYS,
   NodeApi,
@@ -18,6 +17,7 @@ import {
   PathApi,
   TextApi,
 } from 'platejs';
+import type { NormalizePluginState } from '@platejs/core/internal';
 import {
   useEditor,
   useEditorRuntimeState,
@@ -87,33 +87,33 @@ const getSuggestionApi = (editor: PlateEditor) =>
   editor.plugin(BaseSuggestionPlugin).api;
 
 const TYPE_TEXT_MAP: Record<string, (node?: Element) => string> = {
-  [KEYS.audio]: () => 'Audio',
-  [KEYS.blockquote]: () => 'Blockquote',
-  [KEYS.callout]: () => 'Callout',
+  [NODES.audio]: () => 'Audio',
+  [NODES.blockquote]: () => 'Blockquote',
+  [NODES.callout]: () => 'Callout',
   [NODES.codeBlock]: () => 'Code Block',
-  [KEYS.column]: () => 'Column',
-  [KEYS.equation]: () => 'Equation',
-  [KEYS.file]: () => 'File',
-  [KEYS.h1]: () => 'Heading 1',
-  [KEYS.h2]: () => 'Heading 2',
-  [KEYS.h3]: () => 'Heading 3',
-  [KEYS.h4]: () => 'Heading 4',
-  [KEYS.h5]: () => 'Heading 5',
-  [KEYS.h6]: () => 'Heading 6',
-  [KEYS.hr]: () => 'Horizontal Rule',
-  [KEYS.img]: () => 'Image',
+  [NODES.column]: () => 'Column',
+  [NODES.equation]: () => 'Equation',
+  [NODES.file]: () => 'File',
+  [NODES.h1]: () => 'Heading 1',
+  [NODES.h2]: () => 'Heading 2',
+  [NODES.h3]: () => 'Heading 3',
+  [NODES.h4]: () => 'Heading 4',
+  [NODES.h5]: () => 'Heading 5',
+  [NODES.h6]: () => 'Heading 6',
+  [NODES.hr]: () => 'Horizontal Rule',
+  [NODES.img]: () => 'Image',
   [NODES.mediaEmbed]: () => 'Media',
-  [KEYS.p]: (node) => {
+  [NODES.p]: (node) => {
     if (node?.[KEYS.listType] === KEYS.listTodo) return 'Todo List';
     if (node?.[KEYS.listType] === KEYS.ol) return 'Ordered List';
     if (node?.[KEYS.listType] === KEYS.ul) return 'List';
 
     return 'Paragraph';
   },
-  [KEYS.table]: () => 'Table',
-  [KEYS.toc]: () => 'Table of Contents',
-  [KEYS.toggle]: () => 'Toggle',
-  [KEYS.video]: () => 'Video',
+  [NODES.table]: () => 'Table',
+  [NODES.toc]: () => 'Table of Contents',
+  [NODES.toggle]: () => 'Toggle',
+  [NODES.video]: () => 'Video',
 };
 
 const appendByKey = <T>(map: Map<string, T[]>, key: string, value: T) => {

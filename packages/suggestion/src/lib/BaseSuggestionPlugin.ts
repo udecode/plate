@@ -1,6 +1,6 @@
 import {
   type BaseEditor,
-  createBasePlugin,
+  defineBasePlugin,
   type DefinitionOf,
   nanoid,
 } from '@platejs/core';
@@ -223,8 +223,7 @@ const initialState: BaseSuggestionPluginState = {
   isSuggesting: false,
 };
 
-export const BaseSuggestionPlugin = createBasePlugin({
-  name: KEYS.suggestion,
+export const BaseSuggestionPlugin = defineBasePlugin(KEYS.suggestion, {
   schema: {
     mark: {
       property: property.boolean({ default: false, omitDefault: true }),

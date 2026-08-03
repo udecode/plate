@@ -3,11 +3,12 @@ import React from 'react';
 import type {
   EditorCommitContext,
   EditorDocumentValue,
-  Editor,
   EditorNodeChangeContext,
   EditorTextChangeContext,
+  NodeEntry,
+  Range,
   Selection,
-  ValueOf,
+  Value,
 } from '@platejs/plite';
 import { EditorReadOnlyProvider } from '@platejs/plite-react';
 import isEqual from 'lodash/isEqual.js';
@@ -18,44 +19,56 @@ import type { PlateEditor } from '../editor/PlateEditor';
 import { usePlateInstancesWarn } from '../../internal/hooks/usePlateInstancesWarn';
 import { subscribePlateChangeCallbacks } from '../../internal/plugin/plateChangeHandlers';
 import { getPlateEditorInstanceKey } from '../internal/getPlateEditorInstanceKey';
-import { type PlateStoreState, PlateStoreProvider } from '../stores';
+import { PlateStoreProvider } from '../stores';
 
-type PlateEditorConstraint = Editor<any, any> & {
-  plugin(plugin: any): unknown;
+export type PlateSelectionChangeContext<E = PlateEditor> =
+  PlateCommitContext<E> & {
+    selection: Selection;
+  };
+
+export type PlateCommitContext<E = PlateEditor> = Omit<
+  EditorCommitContext,
+  'editor'
+> & {
+  editor: E;
 };
 
-export type PlateSelectionChangeContext<
-  E extends PlateEditorConstraint = PlateEditor,
-> = EditorCommitContext<E> & {
-  selection: Selection;
+type PlateNodeChangeContext<E> = Omit<EditorNodeChangeContext, 'editor'> & {
+  editor: E;
 };
 
-export type PlateValueChangeContext<
-  E extends PlateEditorConstraint = PlateEditor,
-> = EditorCommitContext<E> & {
-  value: EditorDocumentValue<ValueOf<E>>;
+type PlateTextChangeContext<E> = Omit<EditorTextChangeContext, 'editor'> & {
+  editor: E;
 };
 
-export interface PlateProps<E extends PlateEditorConstraint = PlateEditor>
-  extends Partial<Pick<PlateStoreState<E>, 'decorate' | 'primary'>> {
+export type PlateValueChangeContext<E = PlateEditor> = PlateCommitContext<E> & {
+  value: EditorDocumentValue<Value>;
+};
+
+export interface PlateProps<E = PlateEditor> {
   children: React.ReactNode;
+
+  decorate?: ((options: { editor: E; entry: NodeEntry }) => Range[]) | null;
 
   editor: E | null;
 
   /** Observe every published editor commit. */
-  onCommit?: (context: EditorCommitContext<E>) => void;
+  onCommit?: (context: PlateCommitContext<E>) => void;
 
   /** Observe canonical node changes for this editor. */
-  onNodeChange?: (context: EditorNodeChangeContext<E>) => void;
+  onNodeChange?: (context: PlateNodeChangeContext<E>) => void;
 
   /** Observe commits that change the primary-root selection. */
   onSelectionChange?: (context: PlateSelectionChangeContext<E>) => void;
 
   /** Observe canonical text changes for this editor. */
-  onTextChange?: (context: EditorTextChangeContext<E>) => void;
+  onTextChange?: (context: PlateTextChangeContext<E>) => void;
 
   /** Observe commits that change the full serializable document value. */
   onValueChange?: (context: PlateValueChangeContext<E>) => void;
+
+  /** Whether this editor is the primary editor for its controller. */
+  primary?: boolean;
 
   readOnly?: boolean;
 
@@ -80,7 +93,7 @@ function PlateInner({
   onSelectionChange,
   onTextChange,
   onValueChange,
-}: PlateProps<PlateEditor<any, any>> & {
+}: PlateProps<PlateEditor> & {
   containerRef: React.RefObject<HTMLDivElement | null>;
 }) {
   const plateReadOnly = readOnly ?? editor?.read.view.isReadOnly();
@@ -197,7 +210,7 @@ function PlateInner({
   );
 }
 
-export function Plate<E extends PlateEditorConstraint = PlateEditor>(
+export function Plate<E = PlateEditor>(
   props: PlateProps<E>
 ): React.ReactElement | null;
 export function Plate(props: PlateProps<any>) {

@@ -48,7 +48,7 @@ const editor = createBaseEditor({
   plugins: BaseEditorKit,
   initialValue: [
     { type: 'h1', children: [{ text: 'Server-Rendered Title' }] },
-    { type: 'p', children: [{ text: 'This content is rendered statically.' }] },
+    { type: 'paragraph', children: [{ text: 'This content is rendered statically.' }] },
   ],
 });
 
@@ -87,7 +87,7 @@ const editor = createBaseEditor({
   ],
   initialValue: [ // Example initial value
     {
-      type: 'p',
+      type: 'paragraph',
       children: [{ text: 'Hello from a static Plate editor!' }],
     },
   ],
@@ -142,7 +142,7 @@ export default async function MyStaticPage() {
   // Example: Fetch or define editor value
   const initialValue = [
     { type: 'h1', children: [{ text: 'Server-Rendered Title' }] },
-    { type: 'p', children: [{ text: 'Content rendered statically.' }] },
+    { type: 'paragraph', children: [{ text: 'Content rendered statically.' }] },
   ];
 
   const editor = createBaseEditor({
@@ -264,7 +264,7 @@ export default async function Page() {
   // Fetch or define content server-side
   const serverContent = [
     { type: 'h1', children: [{ text: 'Rendered on the Server! 🎉' }] },
-    { type: 'p', children: [{ text: 'This content is static and server-rendered.' }] },
+    { type: 'paragraph', children: [{ text: 'This content is static and server-rendered.' }] },
   ];
 
   const editor = createBaseEditor({

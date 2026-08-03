@@ -4,7 +4,7 @@ import { describe, it } from 'node:test';
 import {
   createEditor,
   defineCommand,
-  defineEditorExtension,
+  defineExtension,
   editorReads,
   type Element,
   type NodeEntry,
@@ -22,8 +22,7 @@ const entry = (text: string, path: number): NodeEntry<Element> => [
 describe('descriptor-based extension read middleware', () => {
   it('composes descriptor middleware in extension order', () => {
     const seen: string[] = [];
-    const first = defineEditorExtension({
-      name: 'first-merge-read',
+    const first = defineExtension('first-merge-read', {
       readMiddleware: ({ around }) => [
         around(editorReads.nodes.shouldMergeNodesRemovePrevNode, ({ next }) => {
           seen.push('first:before');
@@ -34,8 +33,7 @@ describe('descriptor-based extension read middleware', () => {
         }),
       ],
     });
-    const second = defineEditorExtension({
-      name: 'second-merge-read',
+    const second = defineExtension('second-merge-read', {
       readMiddleware: ({ around }) => [
         around(editorReads.nodes.shouldMergeNodesRemovePrevNode, ({ next }) => {
           seen.push('second');
@@ -57,14 +55,12 @@ describe('descriptor-based extension read middleware', () => {
   });
 
   it('lets read middleware veto a schema-selectable node', () => {
-    const allow = defineEditorExtension({
-      name: 'allow-selection',
+    const allow = defineExtension('allow-selection', {
       readMiddleware: ({ around }) => [
         around(editorReads.nodes.isSelectable, ({ next }) => next()),
       ],
     });
-    const deny = defineEditorExtension({
-      name: 'deny-selection',
+    const deny = defineExtension('deny-selection', {
       readMiddleware: ({ around }) => [
         around(editorReads.nodes.isSelectable, () => false),
       ],
@@ -75,8 +71,7 @@ describe('descriptor-based extension read middleware', () => {
   });
 
   it('runs middleware inside the pure read boundary', () => {
-    const impure = defineEditorExtension({
-      name: 'impure-selection-policy',
+    const impure = defineExtension('impure-selection-policy', {
       readMiddleware: ({ around }) => [
         around(editorReads.nodes.isSelectable, ({ editor }) => {
           editor.update(() => {});
@@ -95,8 +90,7 @@ describe('descriptor-based extension read middleware', () => {
 
   it('composes export projections once in extension order', () => {
     const seen: string[] = [];
-    const first = defineEditorExtension({
-      name: 'first-export',
+    const first = defineExtension('first-export', {
       readMiddleware: ({ around }) => [
         around(editorReads.slice.export, ({ next }) => {
           seen.push('first');
@@ -105,8 +99,7 @@ describe('descriptor-based extension read middleware', () => {
         }),
       ],
     });
-    const second = defineEditorExtension({
-      name: 'second-export',
+    const second = defineExtension('second-export', {
       readMiddleware: ({ around }) => [
         around(editorReads.slice.export, ({ next }) => {
           seen.push('second');
@@ -133,8 +126,7 @@ describe('descriptor-based extension read middleware', () => {
     const second = defineRead<void, boolean>('test:duplicate-read');
     const editor = createEditor({
       extensions: [
-        defineEditorExtension({
-          name: 'first-duplicate-read',
+        defineExtension('first-duplicate-read', {
           readMiddleware: ({ around }) => [around(first, ({ next }) => next())],
         }),
       ],
@@ -142,9 +134,8 @@ describe('descriptor-based extension read middleware', () => {
 
     assert.throws(
       () =>
-        editor.extend(
-          defineEditorExtension({
-            name: 'second-duplicate-read',
+        editor.install(
+          defineExtension('second-duplicate-read', {
             readMiddleware: ({ around }) => [
               around(second, ({ next }) => next()),
             ],
@@ -158,8 +149,7 @@ describe('descriptor-based extension read middleware', () => {
     const read = defineRead<void, boolean>('test:double-next-read');
     const editor = createEditor({
       extensions: [
-        defineEditorExtension({
-          name: 'double-next-read',
+        defineExtension('double-next-read', {
           readMiddleware: ({ around }) => [
             around(read, ({ next }) => {
               next();
@@ -185,8 +175,7 @@ describe('descriptor-based extension read middleware', () => {
     );
     const editor = createEditor({
       extensions: [
-        defineEditorExtension({
-          name: 'undefined-read-result',
+        defineExtension('undefined-read-result', {
           readMiddleware: ({ around }) => [
             around(read, ({ next }) => {
               assert.equal(next(), true);
@@ -210,7 +199,7 @@ describe('descriptor-based extension read middleware', () => {
     const inspect = defineCommand('test:inspect-read-draft');
     const editor = createEditor({
       extensions: [
-        defineEditorExtension({
+        defineExtension('transaction-local-read', {
           commands: ({ around, handle }) => [
             around(inspect, ({ state, next }) =>
               next.after(
@@ -229,7 +218,6 @@ describe('descriptor-based extension read middleware', () => {
               );
             }),
           ],
-          name: 'transaction-local-read',
           readMiddleware: ({ around }) => [
             around(editorReads.nodes.isSelectable, ({ next, state }) => {
               seen.push(state.text.string([0]));
@@ -253,8 +241,7 @@ describe('descriptor-based extension read middleware', () => {
     );
     const editor = createEditor({
       extensions: [
-        defineEditorExtension({
-          name: 'generator-read',
+        defineExtension('generator-read', {
           readMiddleware: ({ around }) => [
             around(read, ({ editor, next }) =>
               (function* () {
@@ -287,8 +274,7 @@ describe('descriptor-based extension read middleware', () => {
     let cleaned = false;
     const editor = createEditor({
       extensions: [
-        defineEditorExtension({
-          name: 'generator-protocol-read',
+        defineExtension('generator-protocol-read', {
           readMiddleware: ({ around }) => [
             around(read, ({ next }) =>
               (function* () {

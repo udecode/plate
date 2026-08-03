@@ -1,8 +1,28 @@
-import { createBaseEditor } from '@platejs/core';
-import { BaseParagraphPlugin } from '@platejs/core';
-import { KEYS, NODES } from '@platejs/utils';
+import {
+  BaseParagraphPlugin,
+  createBaseEditor as createTypedBaseEditor,
+  type BaseEditorOptions,
+  type BasePluginInput,
+} from '@platejs/core';
+import {
+  createEditor as createPliteEditor,
+  type InitialValue,
+  type Value,
+} from '@platejs/plite';
+import { PLUGINS } from '@platejs/utils';
 
 import { BaseTodoListPlugin } from './BaseListPlugin';
+
+const createBaseEditor = <const P extends readonly BasePluginInput[]>(
+  options: Omit<BaseEditorOptions, 'plugins'> & {
+    initialValue?: InitialValue<Value>;
+    plugins: P;
+  }
+) =>
+  createTypedBaseEditor({
+    ...options,
+    editor: createPliteEditor<Value>(),
+  });
 
 describe('BaseTodoListPlugin', () => {
   it('inserts a new todo item on line break inside a todo item', () => {
@@ -17,13 +37,13 @@ describe('BaseTodoListPlugin', () => {
         {
           checked: true,
           children: [{ text: 'task' }],
-          type: NODES.listTodoClassic,
+          type: 'todoList',
         },
       ],
-    } as any);
+    });
 
-    expect(BaseTodoListPlugin.name).toBe('listTodoClassic');
-    expect(BaseTodoListPlugin.type).toBe(NODES.listTodoClassic);
+    expect(BaseTodoListPlugin.name).toBe('todoList');
+    expect(BaseTodoListPlugin.name).toBe(PLUGINS.todoList);
     const typedEditor = createBaseEditor({
       plugins: [BaseTodoListPlugin],
     });
@@ -33,7 +53,7 @@ describe('BaseTodoListPlugin', () => {
     expect(typedEditor.read.schema.create(BaseTodoListPlugin)).toEqual({
       checked: false,
       children: [{ text: '' }],
-      type: NODES.listTodoClassic,
+      type: 'todoList',
     });
 
     editor.update.break.insert();
@@ -42,12 +62,12 @@ describe('BaseTodoListPlugin', () => {
       {
         checked: true,
         children: [{ text: 'task' }],
-        type: NODES.listTodoClassic,
+        type: 'todoList',
       },
       {
         checked: false,
         children: [{ text: '' }],
-        type: NODES.listTodoClassic,
+        type: 'todoList',
       },
     ]);
     expect(editor.read.selection()).toEqual({
@@ -65,19 +85,19 @@ describe('BaseTodoListPlugin', () => {
         anchor: { path: [0, 0], offset: 4 },
         focus: { path: [0, 0], offset: 4 },
       },
-      initialValue: [{ children: [{ text: 'task' }], type: KEYS.p }],
-    } as any);
+      initialValue: [{ children: [{ text: 'task' }], type: 'paragraph' }],
+    });
 
     editor.update.break.insert();
 
     expect(editor.read.children()).toEqual([
       {
         children: [{ text: 'task' }],
-        type: KEYS.p,
+        type: 'paragraph',
       },
       {
         children: [{ text: '' }],
-        type: KEYS.p,
+        type: 'paragraph',
       },
     ]);
     expect(editor.read.selection()).toEqual({
@@ -99,10 +119,10 @@ describe('BaseTodoListPlugin', () => {
         {
           checked: true,
           children: [{ text: 'task' }],
-          type: NODES.listTodoClassic,
+          type: 'todoList',
         },
       ],
-    } as any);
+    });
 
     editor.update.break.insert();
 
@@ -120,13 +140,13 @@ describe('BaseTodoListPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
-    } as any);
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
+    });
 
     editor.plugin(BaseTodoListPlugin).update.toggle();
 
     expect(editor.read.children()[0].type).toBe(
-      editor.plugin(KEYS.listTodoClassic).type
+      editor.plugin(PLUGINS.todoList).schema.element!.type
     );
   });
 });

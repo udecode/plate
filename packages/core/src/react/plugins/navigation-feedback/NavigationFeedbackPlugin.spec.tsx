@@ -22,7 +22,7 @@ describe('NavigationFeedbackPlugin', () => {
 
   it('updates navigation highlight attributes without a selection change', async () => {
     const editor = createPlateEditor({
-      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'paragraph' }],
     });
     const initialSelection = editor.read.selection();
 
@@ -92,7 +92,7 @@ describe('NavigationFeedbackPlugin', () => {
       return 1;
     }) as typeof setTimeout);
     const editor = createPlateEditor({
-      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'paragraph' }],
     });
     editor.update((tx) => {
       tx.navigation.flashTarget({
@@ -134,7 +134,7 @@ describe('NavigationFeedbackPlugin', () => {
       return timeoutId;
     }) as typeof setTimeout);
     const editor = createPlateEditor({
-      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'paragraph' }],
     });
     editor.update((tx) => {
       tx.navigation.flashTarget({
@@ -173,7 +173,7 @@ describe('NavigationFeedbackPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'paragraph' }],
     });
     const focusSpy = spyOn(DOMEditor, 'focus').mockImplementation(() => {});
     const scrollSpy = spyOn(DOMEditor, 'scrollIntoView').mockImplementation(
@@ -224,12 +224,15 @@ describe('NavigationFeedbackPlugin', () => {
 
   it('navigates to a node inserted earlier in the same transaction', () => {
     const editor = createPlateEditor({
-      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'paragraph' }],
     });
     let navigated = false;
 
     editor.update((tx) => {
-      tx.nodes.insert({ children: [{ text: 'two' }], type: 'p' }, { at: [1] });
+      tx.nodes.insert(
+        { children: [{ text: 'two' }], type: 'paragraph' },
+        { at: [1] }
+      );
       navigated = tx.navigation.navigate({
         focus: false,
         scroll: false,
@@ -254,7 +257,7 @@ describe('NavigationFeedbackPlugin', () => {
 
   it('keeps the active target and rendered highlight synced when the target node moves', async () => {
     const editor = createPlateEditor({
-      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'paragraph' }],
     });
     const { getByText } = render(
       <Plate editor={editor}>
@@ -287,7 +290,7 @@ describe('NavigationFeedbackPlugin', () => {
 
     act(() => {
       editor.update.nodes.insert(
-        { children: [{ text: 'zero' }], type: 'p' },
+        { children: [{ text: 'zero' }], type: 'paragraph' },
         {
           at: [0],
         }
@@ -341,7 +344,7 @@ describe('NavigationFeedbackPlugin', () => {
 
   it('clears the active target when the target node is removed', () => {
     const editor = createPlateEditor({
-      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'paragraph' }],
     });
 
     editor.update((tx) => {
@@ -369,7 +372,7 @@ describe('NavigationFeedbackPlugin', () => {
   it('uses the top-level navigationFeedback option to override duration', () => {
     const editor = createPlateEditor({
       navigationFeedback: { duration: 1200 },
-      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'paragraph' }],
     });
 
     expect(editor.plugin(NavigationFeedbackPlugin).store.get('duration')).toBe(
@@ -380,7 +383,7 @@ describe('NavigationFeedbackPlugin', () => {
   it('can disable the navigation feedback plugin from editor options', () => {
     const editor = createPlateEditor({
       navigationFeedback: false,
-      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'paragraph' }],
     });
 
     expect(

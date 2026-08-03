@@ -6,5 +6,5 @@ export * from './BasePlugin';
 export * from './HandlerReturnType';
 export * from './MarkdownNodeCodec';
 export * from './PluginDefinition';
-export * from './createBasePlugin';
+export * from './defineBasePlugin';
 export * from './pluginAuthoringContext';

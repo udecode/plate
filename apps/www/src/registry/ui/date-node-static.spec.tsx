@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import { render } from '@testing-library/react';
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
-import type { TDateElement } from 'platejs';
+import type { DateElement } from '@platejs/date';
 
 const getDateDisplayLabelMock = mock(
   ({ date, rawDate }: { date?: string; rawDate?: string }) => {
@@ -44,7 +44,7 @@ describe('DateElementStatic', () => {
             children: [{ text: '' }],
             date: '2026-03-23',
             type: 'date',
-          } satisfies TDateElement
+          } satisfies DateElement
         }
       >
         {null}
@@ -67,7 +67,7 @@ describe('DateElementStatic', () => {
             children: [{ text: '' }],
             rawDate: 'sometime next week',
             type: 'date',
-          } satisfies TDateElement
+          } satisfies DateElement
         }
       >
         {null}

@@ -17,7 +17,7 @@ import {
   range as editorRange,
   unhangRange as editorUnhangRange,
 } from '../interfaces/editor';
-import type { Editor, Value } from '../interfaces/editor';
+import type { AnyEditor as Editor, Value } from '../interfaces/editor';
 import type { NodeMatchPredicate } from '../interfaces/node';
 import { type Node, NodeApi } from '../interfaces/node';
 import { type Path, PathApi } from '../interfaces/path';

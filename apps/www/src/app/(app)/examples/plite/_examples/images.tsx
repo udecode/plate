@@ -2,7 +2,7 @@ import imageExtensions from 'image-extensions';
 import isUrl from 'is-url';
 import { parseAsStringLiteral, useQueryState } from 'nuqs';
 import type { PointerEvent } from 'react';
-import { defineEditorExtension } from '@platejs/plite';
+import { defineExtension } from '@platejs/plite';
 import { clipboardHandler } from '@platejs/plite-dom';
 import {
   Editable,
@@ -152,22 +152,21 @@ const ImagesEditor = ({ exampleCase }: { exampleCase: ImageExampleCase }) => {
 };
 
 const image = () =>
-  defineEditorExtension({
-    name: 'image',
+  defineExtension('image', {
     contributions: [
       clipboardHandler({
-        insertData(data, { next, transaction }) {
+        insertData(data, { next, tx }) {
           const text = data.getData('text/plain');
           const imageFiles = Array.from(data.files ?? []).filter(
             (file) => file.type.split('/')[0] === 'image'
           );
           const insert = (url: string) => {
-            transaction.nodes.insert({
+            tx.nodes.insert({
               type: 'image',
               url,
               children: [{ text: '' }],
             });
-            transaction.nodes.insert({
+            tx.nodes.insert({
               type: 'paragraph',
               children: [{ text: '' }],
             });

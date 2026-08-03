@@ -877,9 +877,6 @@ importers:
       '@platejs/suggestion':
         specifier: workspace:^
         version: link:../suggestion
-      '@platejs/table':
-        specifier: workspace:^
-        version: link:../table
       '@platejs/utils':
         specifier: workspace:^
         version: link:../utils
@@ -1001,6 +998,34 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+
+  packages/cli:
+    dependencies:
+      '@platejs/core':
+        specifier: workspace:^
+        version: link:../core
+      '@platejs/plite':
+        specifier: workspace:^
+        version: link:../plite
+      chokidar:
+        specifier: 4.0.3
+        version: 4.0.3
+      commander:
+        specifier: 14.0.1
+        version: 14.0.1
+      esbuild:
+        specifier: 0.25.12
+        version: 0.25.12
+      typescript:
+        specifier: 6.0.2
+        version: 6.0.2
+    devDependencies:
+      '@plate/scripts':
+        specifier: workspace:*
+        version: link:../plate-scripts
+      '@types/node':
+        specifier: 24.12.0
+        version: 24.12.0
 
   packages/code-block:
     dependencies:
@@ -1699,6 +1724,9 @@ importers:
       '@platejs/core':
         specifier: workspace:^
         version: link:../core
+      '@platejs/list':
+        specifier: workspace:^
+        version: link:../list
       '@platejs/plite':
         specifier: workspace:^
         version: link:../plite
@@ -1769,9 +1797,6 @@ importers:
       '@platejs/link':
         specifier: workspace:^
         version: link:../link
-      '@platejs/list':
-        specifier: workspace:^
-        version: link:../list
       '@platejs/list-classic':
         specifier: workspace:^
         version: link:../list-classic

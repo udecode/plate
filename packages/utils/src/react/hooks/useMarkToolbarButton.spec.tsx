@@ -1,10 +1,10 @@
 import React from 'react';
 
-import { createBasePlugin } from '@platejs/core';
+import { defineBasePlugin } from '@platejs/core';
 import {
   createPlateEditor,
   Plate,
-  type PlateEditor,
+  type PlateEditorReference,
 } from '@platejs/core/react';
 import { property, schema } from '@platejs/plite';
 import { renderHook } from '@testing-library/react';
@@ -16,27 +16,26 @@ import {
 
 const Emphasis = schema.property.exclusive('test:emphasis');
 const Literal = schema.property.exclusive('test:literal');
-const MarksPlugin = createBasePlugin({
-  name: 'testMarks',
+const MarksPlugin = defineBasePlugin('testMarks', {
   schema: {
-    properties: [
-      schema.textProperty('bold', property.boolean(), {
+    properties: {
+      bold: schema.textProperty(property.boolean(), {
         exclusive: [Emphasis],
       }),
-      schema.textProperty('italic', property.boolean(), {
+      code: schema.textProperty(property.boolean(), {
+        exclusive: [Literal],
+      }),
+      highlight: schema.textProperty(property.boolean(), {
+        exclusive: [Literal],
+      }),
+      italic: schema.textProperty(property.boolean(), {
         exclusive: [Emphasis],
       }),
-      schema.textProperty('code', property.boolean(), {
-        exclusive: [Literal],
-      }),
-      schema.textProperty('highlight', property.boolean(), {
-        exclusive: [Literal],
-      }),
-    ],
+    },
   },
 });
 
-const createWrapper = (editor: PlateEditor) =>
+const createWrapper = <E extends PlateEditorReference>(editor: E) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
     return (
       <Plate editor={editor} suppressInstanceWarning>
@@ -54,7 +53,7 @@ describe('useMarkToolbarButton', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'paragraph' }],
     });
 
     editor.update.marks.add('bold', true);
@@ -80,7 +79,7 @@ describe('useMarkToolbarButton', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'paragraph' }],
     });
 
     editor.update.marks.add('italic', true);
@@ -118,7 +117,7 @@ describe('useMarkToolbarButton', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'paragraph' }],
     });
 
     editor.update.marks.add('bold', true);
@@ -153,7 +152,7 @@ describe('useMarkToolbarButton', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'paragraph' }],
     });
 
     editor.update.marks.add('highlight', true);
@@ -182,7 +181,7 @@ describe('useMarkToolbarButton', () => {
   it('prevents the default mouse down behavior', () => {
     const editor = createPlateEditor({
       plugins: [MarksPlugin],
-      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'paragraph' }],
     });
     const preventDefault = mock();
 

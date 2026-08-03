@@ -1,7 +1,7 @@
 import type React from 'react';
 import type { MouseEvent, PointerEvent } from 'react';
 import {
-  defineEditorExtension,
+  defineExtension,
   defineEditorSchema,
   editorCommands,
   type Node,
@@ -27,6 +27,7 @@ import {
   isHotkey,
   parseDOMClipboardHtml,
 } from '@platejs/plite-dom';
+import { history } from '@platejs/plite-history';
 import {
   Editable,
   type ReactEditor,
@@ -55,7 +56,7 @@ const TEXT_ALIGN_TYPES = ['left', 'center', 'right', 'justify'] as const;
 const HEADING_TYPES = ['heading-one', 'heading-two'] as const;
 const EXIT_ON_ENTER_TYPES = [...HEADING_TYPES, 'block-quote'] as const;
 
-const RichTextSchema = defineEditorSchema({
+const RichTextSchema = defineEditorSchema('schema:derived', {
   elements: {
     'block-quote': {
       content: schema.content.text({ default: 'text', min: 1 }),
@@ -159,7 +160,7 @@ const CLEAR_FORMATTING_HOTKEY = 'mod+\\';
 
 const RichTextExample = () => {
   const editor = usePliteEditor({
-    extensions: [RichTextExtension],
+    extensions: [history(), RichTextExtension],
     initialValue: [
       {
         type: 'paragraph',
@@ -377,11 +378,10 @@ const normalizeRichTextHtmlFragment = (fragment: unknown): RichTextValue => {
     : [{ type: 'paragraph', children: [{ text: '' }] }];
 };
 
-const RichTextExtension = defineEditorExtension({
-  name: 'richtext',
+const RichTextExtension = defineExtension('richtext', {
   contributions: [
     clipboardHandler({
-      insertData(data, { next, transaction }) {
+      insertData(data, { next, tx }) {
         const html = data.getData('text/html');
 
         if (!html) {
@@ -407,7 +407,7 @@ const RichTextExtension = defineEditorExtension({
           deserialize(parsed.body)
         );
 
-        transaction.fragment.replace(fragment);
+        tx.fragment.replace(fragment);
         return true;
       },
     }),

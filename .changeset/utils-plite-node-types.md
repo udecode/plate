@@ -15,11 +15,14 @@ Export complete `NormalizeTypesPluginState`, `TrailingBlockPluginState`, and
 - Expose exit-break commands through the scoped plugin update API
 - Narrow `TrailingBlockPlugin`'s custom `insert` option to a wrapper around the
   default insertion; it no longer receives an editor or transaction context
-- Use camel-case built-in plugin identities while keeping serialized element
-  and mark types in `NODES`
-- Replace `KEYS.sub` and `KEYS.sup` with `KEYS.script`; represent script text
+- Use one flat `PLUGINS` catalog for camel-case capability names; resolve
+  persisted element types and property keys separately, and remove `KEYS`,
+  `NODES`, `STYLE_KEYS`, and the redundant `tableCellHeader` capability
+- Replace the separate subscript and superscript identities with
+  `PLUGINS.script`; represent script text
   with `TScriptValue` (`'sub' | 'sup'`)
 - Type resizable widths as numeric or relative CSS lengths
+- Persist `TTextAlignProps` under the canonical `textAlign` property
 
 **Migration:** Replace `TNodeMap` imports with `NodeMap`, import editor node
 primitives from `@platejs/plite`, and type media nodes directly as
@@ -48,3 +51,6 @@ insert: (insert) => {
   suggestionApi.untracked(insert);
 };
 ```
+
+Run `migratePlateAstIdentities` before editor construction to rewrite explicit
+legacy element types and property keys.

@@ -1,6 +1,10 @@
 import * as React from 'react';
 
+import * as actualBasicStyles from '@platejs/basic-styles';
 import { BoldPlugin, ScriptPlugin } from '@platejs/basic-nodes/react';
+import * as actualCore from '@platejs/core';
+import * as actualCoreReact from '@platejs/core/react';
+import * as actualMedia from '@platejs/media';
 import { FontColorPlugin, FontSizePlugin } from '@platejs/basic-styles/react';
 import {
   BaseAudioPlugin,
@@ -8,6 +12,9 @@ import {
   BaseImagePlugin,
   BaseVideoPlugin,
 } from '@platejs/media';
+import * as actualPlite from '@platejs/plite';
+import * as actualUtils from '@platejs/utils';
+import * as actualUdecodeUtils from '@udecode/utils';
 import { act, fireEvent, render, within } from '@testing-library/react';
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
@@ -24,25 +31,30 @@ const toggleMock = mock();
 const pluginMock = mock();
 
 let currentEditor: any;
-let currentPluginType = 'bold';
+let currentPluginName = 'bold';
 let dropdownOnCloseAutoFocus:
   | ((event: { preventDefault: () => void }) => void)
   | undefined;
 let mediaUrlOnChange: React.ChangeEventHandler<HTMLInputElement> | undefined;
 
 mock.module('platejs/react', () => ({
+  ...actualCoreReact,
   useEditor: () => currentEditor,
-  useEditorPlugin: () => ({ editor: currentEditor, type: currentPluginType }),
+  useEditorPlugin: () => ({ name: currentPluginName }),
   useEditorSelector: (selector: (editor: unknown) => unknown) =>
     selector(currentEditor),
 }));
 
 mock.module('platejs', () => ({
+  ...actualCore,
+  ...actualPlite,
+  ...actualUtils,
+  ...actualUdecodeUtils,
   isUrl: isUrlMock,
-  KEYS: {
+  PLUGINS: {
     audio: 'audio',
     file: 'file',
-    img: 'img',
+    image: 'image',
     kbd: 'kbd',
     video: 'video',
   },
@@ -50,10 +62,12 @@ mock.module('platejs', () => ({
 }));
 
 mock.module('@platejs/basic-styles', () => ({
+  ...actualBasicStyles,
   toUnitLess: (value: string) => value.replace('px', ''),
 }));
 
 mock.module('@platejs/media', () => ({
+  ...actualMedia,
   BaseAudioPlugin,
   BaseFilePlugin,
   BaseImagePlugin,
@@ -230,7 +244,7 @@ mock.module('./toolbar', () => ({
 
 describe('feature toolbar plugin portals', () => {
   beforeEach(() => {
-    currentPluginType = 'bold';
+    currentPluginName = 'bold';
     dropdownOnCloseAutoFocus = undefined;
     mediaUrlOnChange = undefined;
     clearMock.mockClear();
@@ -261,7 +275,8 @@ describe('feature toolbar plugin portals', () => {
 
   it('uses the typed plugin portal for a decoupled bold control', async () => {
     pluginMock.mockReturnValue({
-      type: 'bold',
+      key: 'bold',
+      name: 'bold',
       update: { toggle: toggleMock },
     });
     const { MarkToolbarButton } = await import(
@@ -305,7 +320,7 @@ describe('feature toolbar plugin portals', () => {
   });
 
   it('sets font size through the installed plugin portal', async () => {
-    currentPluginType = 'fontSize';
+    currentPluginName = 'fontSize';
     currentEditor.read.marks = () => ({ fontSize: '16px' });
     pluginMock.mockReturnValue({
       update: { set: setMock },
@@ -328,7 +343,7 @@ describe('feature toolbar plugin portals', () => {
     currentEditor.read.children = () =>
       Array.from({ length: 5000 }, () => ({
         children: [{ text: 'block' }],
-        type: 'p',
+        type: 'paragraph',
       }));
     currentEditor.read.nodes.toArray = () => {
       throw new Error('Color controls must not traverse the document');
@@ -338,7 +353,8 @@ describe('feature toolbar plugin portals', () => {
       focus: { offset: 4, path: [0, 0] },
     });
     pluginMock.mockReturnValue({
-      type: 'color',
+      key: 'color',
+      name: 'color',
       update: { clear: clearMock, set: setMock },
     });
     const { FontColorToolbarButton } = await import(
@@ -377,7 +393,8 @@ describe('feature toolbar plugin portals', () => {
       focus: { offset: 4, path: [0, 0] },
     });
     pluginMock.mockReturnValue({
-      type: 'color',
+      key: 'color',
+      name: 'color',
       update: { clear: clearMock, set: setMock },
     });
     const { FontColorToolbarButton } = await import(
@@ -407,7 +424,7 @@ describe('feature toolbar plugin portals', () => {
       focus: { offset: 4, path: [0, 0] },
     });
     pluginMock.mockReturnValue({
-      type: 'color',
+      name: 'color',
       update: { clear: clearMock, set: setMock },
     });
     const { FontColorToolbarButton } = await import(

@@ -27,7 +27,6 @@ import {
   BaseTablePlugin,
   BaseTableRowPlugin,
   BaseTableCellPlugin,
-  BaseTableCellHeaderPlugin,
 } from '@platejs/table';
 import { MarkdownKit } from '@/registry/components/editor/plugins/markdown-kit';
 
@@ -44,7 +43,6 @@ const BasePlugins = [
   BaseTablePlugin,
   BaseTableRowPlugin,
   BaseTableCellPlugin,
-  BaseTableCellHeaderPlugin,
   // BaseColumnPlugin,
   // BaseColumnItemPlugin,
   BaseBoldPlugin,

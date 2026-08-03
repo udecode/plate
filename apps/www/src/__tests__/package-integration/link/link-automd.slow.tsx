@@ -16,7 +16,7 @@ const createPlainEditor = (text: string, offset = text.length) =>
       anchor: { offset, path: [0, 0] },
       focus: { offset, path: [0, 0] },
     },
-    initialValue: [{ children: [{ text }], type: 'p' }],
+    initialValue: [{ children: [{ text }], type: 'paragraph' }],
   } as any);
 const createEditor = (value: any) =>
   createBaseEditor({
@@ -44,12 +44,12 @@ describe('AutoformatKit link automd', () => {
         { text: '' },
         {
           children: [{ text: 'Example' }],
-          type: 'a',
+          type: 'link',
           url: 'https://example.com',
         },
         { text: '' },
       ],
-      type: 'p',
+      type: 'paragraph',
     });
     expect(editor.read.selection()).toEqual({
       kind: 'text',

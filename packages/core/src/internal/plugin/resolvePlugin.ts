@@ -1,17 +1,18 @@
 import type { BaseEditor } from '../../lib/editor';
-import type {
-  AnyBasePlugin,
-  AnyBasePluginContext,
-} from '../../lib/plugin/BasePlugin';
+import type { AnyBasePlugin } from '../../lib/plugin/BasePlugin';
 import type { EditorExtensionReference } from '@platejs/plite';
+
+import { isEditorExtension } from '@platejs/plite/internal';
 
 import { createPluginContext } from '../../lib/plugin/createPluginContext.internal';
 import { pluginCodecMapDeclaration } from '../../lib/plugin/pluginAuthoringContext';
 import { DebugPlugin } from '../../lib/plugins/debug/DebugPlugin';
 import {
+  getPluginDescriptorMetadata,
   isNominalPluginDescriptor,
   mergePlugins,
   registerHtmlCodecSchemaFamilies,
+  setPluginDescriptorMetadata,
 } from '../utils/mergePlugins';
 import { snapshotApiValue } from '../utils/snapshotApiValue';
 import { withResolvingPlatePlugin } from './compilePlateModel';
@@ -100,7 +101,7 @@ const assertConfiguredInputRules = (value: unknown) => {
 };
 
 const mergeLifecycleHandlers = (
-  pluginName: string,
+  plugin: AnyBasePlugin,
   previous: unknown,
   contribution: Readonly<Record<PropertyKey, unknown>>
 ) => {
@@ -126,7 +127,7 @@ const mergeLifecycleHandlers = (
       handlers[name] = next;
     } else {
       throw new Error(
-        `Plate plugin "${pluginName}" on.${String(name)} must be a function or null.`
+        `Plate plugin "${plugin.name}" on.${String(name)} must be a function or null.`
       );
     }
   }
@@ -138,7 +139,7 @@ const mergeFactory =
   (
     previous: unknown,
     next: (context: object) => object,
-    pluginContext: AnyBasePluginContext
+    pluginContext: Readonly<{ plugin: Readonly<{ name: string }> }>
   ) =>
   (context: object) => {
     const prior =
@@ -204,10 +205,9 @@ const applyCodecs = (
   }
 
   const { 'text/html': htmlCodec, ...productCodecs } = codecs;
+  let currentCodecs = Reflect.get(plugin, 'codecs');
 
   if (Reflect.ownKeys(productCodecs).length > 0) {
-    const currentCodecs = Reflect.get(plugin, 'codecs');
-
     if (isObjectRecord(currentCodecs)) {
       const currentFormats = new Map(
         Object.keys(currentCodecs).map((format) => [
@@ -227,15 +227,20 @@ const applyCodecs = (
       }
     }
 
-    Reflect.set(
-      plugin,
-      'codecs',
-      mergePlugins(currentCodecs ?? {}, productCodecs)
-    );
+    currentCodecs = mergePlugins(currentCodecs ?? {}, productCodecs);
+    Reflect.set(plugin, 'codecs', currentCodecs);
   }
   if (htmlCodec === undefined) return;
 
   const htmlCodecs = Array.isArray(htmlCodec) ? htmlCodec : [htmlCodec];
+  const currentHtmlHooks = isObjectRecord(currentCodecs)
+    ? Reflect.get(currentCodecs, 'text/html')
+    : undefined;
+  const htmlHooks: Record<PropertyKey, unknown> = isObjectRecord(
+    currentHtmlHooks
+  )
+    ? { ...currentHtmlHooks }
+    : {};
 
   if (htmlCodecs.length === 0) {
     throw new Error(
@@ -250,7 +255,36 @@ const applyCodecs = (
       );
     }
 
-    const { target, ...rule } = declaration;
+    const { query, target, transformData, transformFragment, ...rule } =
+      declaration;
+
+    for (const [name, hook] of Object.entries({
+      query,
+      transformData,
+      transformFragment,
+    })) {
+      if (hook === undefined) continue;
+      if (typeof hook !== 'function') {
+        throw new Error(
+          `Plate plugin HTML codec hook "${name}" must be a function.`
+        );
+      }
+      if (Reflect.has(htmlHooks, name)) {
+        throw new Error(
+          `Plate plugin "${plugin.name}" must declare HTML codec hook "${name}" once.`
+        );
+      }
+      Reflect.set(htmlHooks, name, hook);
+    }
+
+    if (Reflect.ownKeys(rule).length === 0) {
+      if (target !== undefined) {
+        throw new Error(
+          'Plate plugin HTML codec hooks cannot target another plugin.'
+        );
+      }
+      continue;
+    }
     const targetPlugin = target ?? plugin;
 
     if (!isNominalPluginDescriptor(targetPlugin)) {
@@ -270,22 +304,37 @@ const applyCodecs = (
       targetPlugin
     );
 
-    plugin.__htmlCodecContributions = [
-      ...plugin.__htmlCodecContributions,
-      Object.freeze({
-        extension: contribution,
-        targetPluginName: target === undefined ? null : targetPlugin.name,
-      }),
-    ];
+    const metadata = getPluginDescriptorMetadata(plugin);
+
+    setPluginDescriptorMetadata(plugin, {
+      ...metadata,
+      htmlCodecContributions: [
+        ...metadata.htmlCodecContributions,
+        Object.freeze({
+          extension: contribution,
+          targetPlugin: target === undefined ? null : targetPlugin.name,
+        }),
+      ],
+    });
+  }
+
+  if (Reflect.ownKeys(htmlHooks).length > 0) {
+    Reflect.set(
+      plugin,
+      'codecs',
+      mergePlugins(currentCodecs ?? {}, {
+        'text/html': Object.freeze(htmlHooks),
+      })
+    );
   }
 };
 
 const applyStage = (
   plugin: AnyBasePlugin,
   contribution: PluginContribution,
-  pluginContext: AnyBasePluginContext
+  pluginContext: Readonly<{ plugin: Readonly<{ name: string }> }>
 ) => {
-  const isRawPliteDescriptor = Object.hasOwn(contribution, 'name');
+  const isRawPliteDescriptor = isEditorExtension(contribution);
 
   if (
     isRawPliteDescriptor &&
@@ -329,10 +378,7 @@ const applyStage = (
   let updateContributions = previousCapabilities.update;
 
   if (isRawPliteDescriptor) {
-    nativeSources = Object.freeze([
-      ...nativeSources,
-      contribution as EditorExtensionReference,
-    ]);
+    nativeSources = Object.freeze([...nativeSources, contribution]);
   }
 
   if (on !== undefined) {
@@ -342,7 +388,7 @@ const applyStage = (
     Reflect.set(
       next,
       'on',
-      mergeLifecycleHandlers(plugin.name, Reflect.get(next, 'on'), on)
+      mergeLifecycleHandlers(plugin, Reflect.get(next, 'on'), on)
     );
   }
   if (api !== undefined) {
@@ -418,7 +464,9 @@ const applyStage = (
   }
   if (codecs !== undefined) {
     if (!isObjectRecord(codecs)) {
-      throw new Error('Plate plugin `codecs` must be a MIME-keyed object.');
+      throw new Error(
+        `Plate plugin "${next.name}" codecs must be a MIME-keyed object.`
+      );
     }
     applyCodecs(next, codecs);
   }
@@ -449,20 +497,17 @@ const finalizeResolvedPlugin = <P extends AnyBasePlugin>(
 ): P => {
   const nodeProps = plugin.inject.nodeProps;
 
-  if (nodeProps) {
-    const nodeKey = nodeProps.nodeKey ?? plugin.type;
-
+  if (nodeProps?.nodeKey && nodeProps.styleKey === undefined) {
     plugin.inject = {
       ...plugin.inject,
       nodeProps: {
         ...nodeProps,
-        nodeKey,
-        styleKey: nodeProps.styleKey ?? nodeKey,
+        styleKey: nodeProps.nodeKey,
       },
     };
   }
-  (plugin as { targetPluginNames: readonly string[] }).targetPluginNames =
-    Object.freeze([...plugin.targetPluginNames]);
+  (plugin as { targetPlugins: AnyBasePlugin['targetPlugins'] }).targetPlugins =
+    Object.freeze([...plugin.targetPlugins]);
   validatePlugin(editor, plugin);
 
   return plugin;
@@ -474,7 +519,6 @@ export const reapplyResolvedPluginConfigurations = <P extends AnyBasePlugin>(
   plugin: P,
   configurations: readonly ResolvedPluginConfiguration[]
 ): P => {
-  const layers = [...plugin.__configurationLayers];
   let configured = plugin;
 
   for (const configuration of configurations) {
@@ -482,7 +526,6 @@ export const reapplyResolvedPluginConfigurations = <P extends AnyBasePlugin>(
       configured,
       mergePlugins(configured, configuration)
     );
-    configured.__configurationLayers = layers;
   }
 
   return finalizeResolvedPlugin(editor, configured);
@@ -496,10 +539,14 @@ export const resolvePluginWithConfigurations = <P extends AnyBasePlugin>(
   plugin: P;
 }> => {
   let plugin = mergePlugins({}, descriptor) as P;
+  const descriptorMetadata = getPluginDescriptorMetadata(plugin);
 
-  plugin.__resolved = true;
+  setPluginDescriptorMetadata(plugin, {
+    ...descriptorMetadata,
+    resolved: true,
+  });
 
-  const layers = [...plugin.__configurationLayers];
+  const layers = [...descriptorMetadata.configurationLayers];
   const configurations: ResolvedPluginConfiguration[] = [];
 
   for (const layer of layers) {
@@ -524,11 +571,10 @@ export const resolvePluginWithConfigurations = <P extends AnyBasePlugin>(
     const snapshot = { ...value };
 
     plugin = mergePlugins(plugin, snapshot);
-    plugin.__configurationLayers = layers;
     configurations.push(snapshot);
   }
 
-  const stages = [...plugin.__stages];
+  const stages = [...getPluginDescriptorMetadata(plugin).stages];
 
   for (const stage of stages) {
     plugin = withResolvingPlatePlugin(editor, plugin, () => {
@@ -544,7 +590,6 @@ export const resolvePluginWithConfigurations = <P extends AnyBasePlugin>(
       return applyStage(plugin, contribution, context) as P;
     });
   }
-  plugin.__stages = stages;
   plugin = reapplyResolvedPluginConfigurations(editor, plugin, configurations);
 
   return Object.freeze({
@@ -560,15 +605,15 @@ export const resolvePlugin = <P extends AnyBasePlugin>(
 
 export const validatePlugin = (
   editor: BaseEditor,
-  plugin: Pick<AnyBasePlugin, '__stages' | 'name'>
+  plugin: Pick<AnyBasePlugin, 'name'>
 ) => {
-  if (!plugin.__stages) {
+  if (!isNominalPluginDescriptor(plugin)) {
     const api = createPluginContext(editor, DebugPlugin).api as {
       error: (message: string, code: string) => void;
     };
 
     api.error(
-      `Invalid plugin '${plugin.name}', use createBasePlugin.`,
+      `Invalid plugin '${(plugin as { name: string }).name}', use defineBasePlugin.`,
       'USE_CREATE_PLUGIN'
     );
   }

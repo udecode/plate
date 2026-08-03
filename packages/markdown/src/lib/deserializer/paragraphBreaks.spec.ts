@@ -11,7 +11,7 @@ describe('paragraph breaks preservation', () => {
             text: 'line 1',
           },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [
@@ -19,7 +19,7 @@ describe('paragraph breaks preservation', () => {
             text: '',
           },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [
@@ -27,7 +27,7 @@ describe('paragraph breaks preservation', () => {
             text: 'line 2',
           },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [
@@ -35,7 +35,7 @@ describe('paragraph breaks preservation', () => {
             text: 'line 3',
           },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
     ];
 
@@ -55,7 +55,7 @@ describe('paragraph breaks preservation', () => {
     expect(deserialized.children).toHaveLength(4);
     expect(deserialized.children[1]).toMatchObject({
       children: [{ text: '' }],
-      type: 'p',
+      type: 'paragraph',
     });
 
     // The structure should match the original
@@ -66,19 +66,19 @@ describe('paragraph breaks preservation', () => {
     const originalValue = [
       {
         children: [{ text: 'line 1' }],
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: '' }],
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: '' }],
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'line 2' }],
-        type: 'p',
+        type: 'paragraph',
       },
     ];
 
@@ -96,27 +96,27 @@ describe('paragraph breaks preservation', () => {
     const originalValue = [
       {
         children: [{ text: '' }],
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'line 1' }],
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: '' }],
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: '' }],
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'line 2' }],
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: '' }],
-        type: 'p',
+        type: 'paragraph',
       },
     ];
 
@@ -140,11 +140,11 @@ describe('paragraph breaks preservation', () => {
           { bold: true, text: 'bold' },
           { text: ' text' },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: '' }],
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [
@@ -152,7 +152,7 @@ describe('paragraph breaks preservation', () => {
           { italic: true, text: 'italic' },
           { text: ' text' },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
     ];
 
@@ -177,7 +177,7 @@ describe('paragraph breaks preservation', () => {
     const originalValue = [
       {
         children: [{ text: 'text with \u200B zero-width space' }],
-        type: 'p',
+        type: 'paragraph',
       },
     ];
 

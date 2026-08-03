@@ -5,10 +5,9 @@ import fc from 'fast-check';
 import {
   ContentSlice,
   createEditor,
-  createEditorRuntime,
   createEditorView,
   defineCommand,
-  defineEditorExtension,
+  defineExtension,
   defineEditorSchema,
   defineUpdateAnnotation,
   editorCommands,
@@ -57,11 +56,11 @@ type CommandDeclarations = NonNullable<
 
 const createTextEditor = (commands?: CommandDeclarations) =>
   createTextEditorWithExtensions(
-    commands ? [defineEditorExtension({ commands, name: 'test.commands' })] : []
+    commands ? [defineExtension('test.commands', { commands })] : []
   );
 
 const commandExtension = (name: string, commands: CommandDeclarations) =>
-  defineEditorExtension({ commands, name });
+  defineExtension(name, { commands });
 
 const insert = defineCommand<InsertCommand>('test.insert', {
   build: ({ input, state }) =>
@@ -80,7 +79,7 @@ const deleteWordBackward = defineCommand('test.delete-word-backward', {
 const CommandScriptPosition = schema.property.exclusive(
   'plate:script-position'
 );
-const CommandScriptSchema = defineEditorSchema({
+const CommandScriptSchema = defineEditorSchema('schema:command-script-schema', {
   elements: {
     paragraph: { content: schema.content.text() },
   },
@@ -129,9 +128,8 @@ describe('pure command transaction specs', () => {
     anchor.release();
   });
 
-  it('rejects copied descriptors and structurally forged specs', () => {
+  it('rejects structurally forged specs', () => {
     const editor = createTextEditor();
-    const copied = { ...insert };
     const forged = {
       annotations: [],
       changes: editor.read((state) => state.transaction(() => {})).changes,
@@ -143,10 +141,6 @@ describe('pure command transaction specs', () => {
       build: () => forged,
     });
 
-    assert.throws(
-      () => dispatchCommand(editor, copied, { text: '!' }),
-      /must be created with defineCommand/
-    );
     assert.throws(
       () => dispatchCommand(editor, forgedCommand),
       /must return false or a transaction spec/
@@ -212,6 +206,14 @@ describe('pure command transaction specs', () => {
         fc.array(actionArbitrary, { maxLength: 32 }),
         fc.constantFrom<Terminal>('false', 'spec', 'throw'),
         (actions, terminal) => {
+          const orderedActions = actions
+            .map((action, index) => [index, action] as const)
+            .sort((left, right) => {
+              const leftAround = left[1].startsWith('around');
+              const rightAround = right[1].startsWith('around');
+
+              return leftAround === rightAround ? 0 : leftAround ? -1 : 1;
+            });
           const expectedTrace: string[] = [];
           const actualTrace: string[] = [];
           const prepare = (trace: string[], input: Input) => {
@@ -220,35 +222,36 @@ describe('pure command transaction specs', () => {
             return { value: input.value + 1 };
           };
           const evaluate = (
-            index: number,
+            position: number,
             input: Input,
             prepared = false
           ): boolean => {
             const nextInput = prepared ? input : prepare(expectedTrace, input);
-            const action = actions[index];
+            const entry = orderedActions[position];
 
-            if (!action) {
+            if (!entry) {
               expectedTrace.push(`default:${nextInput.value}`);
               if (terminal === 'throw') throw new Error('default');
 
               return terminal === 'spec';
             }
+            const [index, action] = entry;
 
             expectedTrace.push(`${index}:${action}:${nextInput.value}`);
             if (action.endsWith('throw')) throw new Error(`action-${index}`);
             if (action.endsWith('spec')) return true;
             if (action === 'around-next') {
-              return evaluate(index + 1, nextInput, true);
+              return evaluate(position + 1, nextInput, true);
             }
             if (action === 'around-rewrite') {
               return evaluate(
-                index + 1,
+                position + 1,
                 { value: nextInput.value + index + 1 },
                 false
               );
             }
 
-            return evaluate(index + 1, nextInput, true);
+            return evaluate(position + 1, nextInput, true);
           };
           const command = defineCommand<Input>('test.generated-chain', {
             build: ({ input, state }) => {
@@ -823,7 +826,17 @@ describe('pure command transaction specs', () => {
     const seen: string[] = [];
     const editor = createEditor({
       extensions: [
-        defineEditorExtension({
+        defineEditorSchema('schema:semantic-block-commands', {
+          elements: {
+            'heading-one': { content: schema.content.text() },
+            paragraph: { content: schema.content.text() },
+          },
+          root: schema.content.types(['paragraph', 'heading-one'], {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+        }),
+        defineExtension('test.semantic-selection-and-block-commands', {
           commands: ({ handle }) => [
             handle(editorCommands.collapse, () => {
               seen.push(editorCommands.collapse.id);
@@ -836,7 +849,6 @@ describe('pure command transaction specs', () => {
               return false;
             }),
           ],
-          name: 'test.semantic-selection-and-block-commands',
         }),
       ],
       initialSelection: SelectionApi.text({
@@ -850,7 +862,6 @@ describe('pure command transaction specs', () => {
       blockType: 'heading-one',
       options: {
         collapse: { edge: 'end' },
-        defaultType: 'paragraph',
       },
     });
 
@@ -919,7 +930,7 @@ describe('pure command transaction specs', () => {
   });
 
   it('keeps command specs rooted to the dispatching view', () => {
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       initialValue: {
         children: [{ type: 'paragraph', children: [{ text: 'main' }] }],
         roots: {
@@ -1018,7 +1029,7 @@ describe('pure command transaction specs', () => {
       anchor: { offset: 1, path: [0, 0] },
       focus: { offset: 1, path: [0, 0] },
     });
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       initialSelection: selection,
       initialValue: {
         children: [{ type: 'paragraph', children: [{ text: 'main' }] }],
@@ -1071,23 +1082,21 @@ describe('pure command transaction specs', () => {
   it('preserves application order and next command overrides before dispatch', () => {
     const seen: string[] = [];
     const editor = createTextEditorWithExtensions([
-      defineEditorExtension({
+      defineExtension('low-command-priority', {
         commands: ({ around }) => [
           around(insert, ({ input, next }) => {
             seen.push(`low:${input.text}`);
             return next({ ...input, text: input.text.toUpperCase() });
           }),
         ],
-        name: 'low-command-priority',
       }),
-      defineEditorExtension({
+      defineExtension('high-command-priority', {
         commands: ({ around }) => [
           around(insert, ({ input, next }) => {
             seen.push(`high:${input.text}`);
             return next({ ...input, text: `${input.text}!` });
           }),
         ],
-        name: 'high-command-priority',
       }),
     ]);
 
@@ -1099,16 +1108,15 @@ describe('pure command transaction specs', () => {
 
   it('keeps dependency-resolved command order ahead of application order', () => {
     const seen: string[] = [];
-    const dependency = defineEditorExtension({
+    const dependency = defineExtension('command-order-dependency', {
       commands: ({ around }) => [
         around(insert, ({ input, next }) => {
           seen.push(`dependency:${input.text}`);
           return next({ ...input, text: input.text.toUpperCase() });
         }),
       ],
-      name: 'command-order-dependency',
     });
-    const dependent = defineEditorExtension({
+    const dependent = defineExtension('command-order-dependent', {
       commands: ({ around }) => [
         around(insert, ({ input, next }) => {
           seen.push(`dependent:${input.text}`);
@@ -1116,7 +1124,6 @@ describe('pure command transaction specs', () => {
         }),
       ],
       dependencies: [dependency],
-      name: 'command-order-dependent',
     });
     const editor = createTextEditorWithExtensions([dependent]);
 
@@ -1405,7 +1412,7 @@ describe('pure command transaction specs', () => {
   it('keeps split runtime identities injective while extending a delegated spec', () => {
     const editor = createEditor({
       extensions: [
-        defineEditorExtension({
+        defineExtension('test.extend-split-command', {
           commands: ({ around }) => [
             around(editorCommands.insertBreak, ({ next, state }) => {
               const delegated = next();
@@ -1417,7 +1424,6 @@ describe('pure command transaction specs', () => {
               });
             }),
           ],
-          name: 'test.extend-split-command',
         }),
       ],
       initialSelection: SelectionApi.text({
@@ -1633,7 +1639,7 @@ describe('pure command transaction specs', () => {
     });
     const editor = createEditor({
       extensions: [
-        defineEditorSchema({
+        defineEditorSchema('schema:derived', {
           elements: {
             heading: {
               content: schema.content.text({ default: 'text', min: 1 }),
@@ -1677,7 +1683,7 @@ describe('pure command transaction specs', () => {
     });
     const editor = createEditor({
       extensions: [
-        defineEditorSchema({
+        defineEditorSchema('schema:test.structural-blocks', {
           elements: {
             'bulleted-list': {
               content: schema.content.group('list-item', {
@@ -1739,7 +1745,7 @@ describe('pure command transaction specs', () => {
           );
         }),
     });
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       initialValue: {
         children: [{ type: 'paragraph', children: [{ text: 'main' }] }],
         roots: {

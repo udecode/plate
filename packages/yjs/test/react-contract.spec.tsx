@@ -3,6 +3,8 @@ import { after, describe, it } from 'node:test';
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
 import React, { act, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
+import { BaseParagraphPlugin } from '@platejs/core';
+import { createPlateEditor } from '@platejs/core/react';
 import type { Descendant, Range } from '@platejs/plite';
 import { setEditorFocused } from '@platejs/plite/internal';
 import type { PliteDecorationSource, ReactEditor } from '@platejs/plite-react';
@@ -13,6 +15,7 @@ import {
   useYjsProviderSynced,
   useYjsRemoteCursorDecorationSource,
   useYjsRemoteCursorOverlayPositions,
+  YjsPlugin,
 } from '../src/react';
 import {
   FakeAwareness,
@@ -150,6 +153,41 @@ describe('@platejs/yjs react contract', () => {
 
     view.unmount();
     peer.cleanup();
+  });
+
+  it('rerenders provider status after a Plate update portal disconnect', () => {
+    const provider = new FakeProvider({
+      awarenessClientId: 7,
+      status: 'connected',
+    });
+    const editor = createPlateEditor({
+      initialValue: [{ children: [{ text: 'alpha' }], type: 'paragraph' }],
+      plugins: [
+        BaseParagraphPlugin,
+        YjsPlugin.configure({
+          initialState: { clientId: 'a', provider },
+        }),
+      ],
+      schemaIdentity: { id: 'plate:yjs-react-contract', version: 1 },
+    });
+
+    const ProviderProbe = (): React.ReactElement => {
+      const status = useYjsProviderStatus(editor);
+
+      return <output>{status ?? 'none'}</output>;
+    };
+
+    const view = render(<ProviderProbe />);
+
+    assert.equal(view.container.textContent, 'connected');
+
+    act(() => {
+      editor.update.yjs.disconnect();
+    });
+
+    assert.equal(view.container.textContent, 'disconnected');
+
+    view.unmount();
   });
 
   it('exposes remote cursors as a DOM-neutral decoration source', () => {

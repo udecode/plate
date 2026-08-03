@@ -1,4 +1,8 @@
-import type { Editor, RuntimeId, SnapshotIndex } from '../interfaces/editor';
+import type {
+  AnyEditor as Editor,
+  RuntimeId,
+  SnapshotIndex,
+} from '../interfaces/editor';
 import type { Descendant } from '../interfaces/node';
 import type { Path } from '../interfaces/path';
 import {

@@ -1,6 +1,6 @@
 import { createPlateEditor, Plate } from '@platejs/core/react';
-import type { Element } from '@platejs/plite';
-import { KEYS, NODES } from '@platejs/utils';
+import { createEditor, type Element, type Value } from '@platejs/plite';
+import { PLUGINS } from '@platejs/utils';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
 
@@ -17,7 +17,7 @@ import {
 describe('list-classic hooks', () => {
   it('builds classic list toolbar button props from the current selection', async () => {
     const editor = createPlateEditor({
-      initialValue: [{ children: [{ text: 'Item' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'Item' }], type: 'paragraph' }],
       plugins: [ListPlugin],
       selection: {
         kind: 'text',
@@ -50,7 +50,7 @@ describe('list-classic hooks', () => {
     });
 
     expect(editor.read.children()[0]).toMatchObject({
-      type: editor.plugin(KEYS.ulClassic).type,
+      type: editor.plugin(PLUGINS.bulletedList).schema.element!.type,
     });
     await waitFor(() => {
       expect(result.current.pressed).toBe(true);
@@ -62,10 +62,11 @@ describe('list-classic hooks', () => {
       {
         checked: false,
         children: [{ text: 'Task' }],
-        type: NODES.listTodoClassic,
+        type: 'todoList',
       },
     ];
     const editor = createPlateEditor({
+      editor: createEditor<Value>(),
       initialValue,
       plugins: [TodoListPlugin],
     });
@@ -97,10 +98,11 @@ describe('list-classic hooks', () => {
       {
         checked: false,
         children: [{ text: 'Task' }],
-        type: NODES.listTodoClassic,
+        type: 'todoList',
       },
     ];
     const editor = createPlateEditor({
+      editor: createEditor<Value>(),
       initialValue,
       plugins: [TodoListPlugin],
       readOnly: true,

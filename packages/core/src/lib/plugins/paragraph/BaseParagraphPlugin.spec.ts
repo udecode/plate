@@ -17,7 +17,7 @@ describe('BaseParagraphPlugin', () => {
     expect(fragment).toEqual([
       {
         children: [{ text: 'Paragraph' }],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
     expect(

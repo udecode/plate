@@ -1,16 +1,16 @@
 /** @jsx jsxt */
 
-import { createPlateEditor } from '@platejs/core/react';
 import { pipeHandler } from '@platejs/core/react/internal';
 
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 
+import { createTestTableEditor } from '../lib/__tests__/getTestTablePlugins';
 import { TablePlugin } from './TablePlugin';
 
 jsxt;
 
 const createTableEditor = (input: TestEditor) =>
-  createPlateEditor({
+  createTestTableEditor({
     nodeId: true,
     plugins: [
       TablePlugin.configure({

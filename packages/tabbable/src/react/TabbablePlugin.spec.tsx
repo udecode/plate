@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
-import { createPlateEditor, createPlatePlugin } from '@platejs/core/react';
-import { type Node, type Path } from '@platejs/plite';
+import { createPlateEditor, definePlatePlugin } from '@platejs/core/react';
+import { type Node, type Path, createEditor } from '@platejs/plite';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import type { TabbableEntry } from '../lib/TabbablePluginTypes';
@@ -9,8 +9,7 @@ import { TabbablePlugin } from './TabbablePlugin';
 
 jsxt;
 
-const VoidPlugin = createPlatePlugin({
-  name: 'void',
+const VoidPlugin = definePlatePlugin('void', {
   schema: {
     element: {
       void: 'block',
@@ -21,13 +20,14 @@ const VoidPlugin = createPlatePlugin({
 describe('TabbablePlugin', () => {
   it('ships the default options and delegates tabbable checks to the schema', () => {
     const editor = createPlateEditor({
+      editor: createEditor(),
       plugins: [VoidPlugin, TabbablePlugin],
       initialValue: [
         { children: [{ text: '' }], type: 'void' },
-        { children: [{ text: 'a' }], type: 'p' },
+        { children: [{ text: 'a' }], type: 'paragraph' },
       ],
     });
-    const plugin = editor.plugin(TabbablePlugin).plugin;
+    const plugin = editor.plugin(TabbablePlugin);
     const voidEntry = editor.read.nodes.get([0]);
     const textEntry = editor.read.nodes.get([1, 0]);
     const { insertTabbableEntries, isTabbable, query } = plugin.initialState;
@@ -77,6 +77,7 @@ describe('TabbablePlugin.read.findDestination', () => {
     </editor>
   ) as TestEditor;
   const editor = createPlateEditor({
+    editor: createEditor(),
     plugins: [VoidPlugin, TabbablePlugin],
     selection: input.selection,
     initialValue: input.children,
@@ -111,6 +112,7 @@ describe('TabbablePlugin.read.findDestination', () => {
   const tabbableEntries = [entry1, entry2a, entry2b, entry3];
   const createEditorAt = (path: Path) =>
     createPlateEditor({
+      editor: createEditor(),
       plugins: [VoidPlugin, TabbablePlugin],
       selection: {
         kind: 'text',

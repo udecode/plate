@@ -25,9 +25,8 @@ import {
 import {
   ContentSlice,
   createEditor,
-  createEditorRuntime,
   createEditorView,
-  defineEditorExtension,
+  defineExtension,
   DocumentChange,
   editorCommands,
   type Editor,
@@ -61,10 +60,9 @@ const installCommandExtension = <Input>(
   command: EditorCommand<Input>,
   handler: EditorCommandAroundHandler<Input>
 ) =>
-  editor.extend(
-    defineEditorExtension({
+  editor.install(
+    defineExtension(`test-command-${commandExtensionOrder++}`, {
       commands: ({ around }) => [around(command, handler)],
-      name: `test-command-${commandExtensionOrder++}`,
     })
   );
 
@@ -195,9 +193,8 @@ describe('plite transaction contract', () => {
     const targetRuntimeId = editorGetRuntimeId(editor, [1]);
     assert(targetRuntimeId);
 
-    const unextend = editor.extend(
-      defineEditorExtension({
-        name: 'atomic-replace-correction-spy',
+    const unextend = editor.install(
+      defineExtension('atomic-replace-correction-spy', {
         corrections: [
           {
             event: 'content',
@@ -446,9 +443,8 @@ describe('plite transaction contract', () => {
     replaceChildren(editor, [paragraph('one')]);
 
     const seenChanges: DocumentChange[] = [];
-    const unextend = editor.extend(
-      defineEditorExtension({
-        name: 'transaction-change-spy',
+    const unextend = editor.install(
+      defineExtension('transaction-change-spy', {
         on: {
           transactionChange({ change }) {
             seenChanges.push(change);
@@ -497,9 +493,8 @@ describe('plite transaction contract', () => {
       structure: boolean;
       text: boolean;
     }> = [];
-    const unextend = editor.extend(
-      defineEditorExtension({
-        name: 'lazy-transaction-change-spy',
+    const unextend = editor.install(
+      defineExtension('lazy-transaction-change-spy', {
         on: {
           transactionChange({ changed }) {
             observations.push({
@@ -556,9 +551,8 @@ describe('plite transaction contract', () => {
       after: readonly [number, number] | null;
       before: readonly [number, number] | null;
     }> = [];
-    const unextend = editor.extend(
-      defineEditorExtension({
-        name: 'bounded-transaction-change-paths',
+    const unextend = editor.install(
+      defineExtension('bounded-transaction-change-paths', {
         on: {
           transactionChange({ changed }) {
             paths.push(...changed.paths());
@@ -1019,7 +1013,7 @@ describe('plite transaction contract', () => {
   });
 
   it('keeps rootless selection caller-shaped while committing the view root', () => {
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       initialValue: {
         children: [paragraph('body')],
         roots: { header: [paragraph('header')] },
@@ -1036,7 +1030,7 @@ describe('plite transaction contract', () => {
       tx.selection.set(selection);
     });
 
-    const commit = editorGetLastCommit(runtime.editor);
+    const commit = editorGetLastCommit(runtime);
 
     assert.equal(commit?.changes.empty, true);
     assert.equal(commit?.selectionAfterRoot, 'header');
@@ -1472,11 +1466,10 @@ describe('plite transaction contract', () => {
     };
     const commitListener = () => {};
 
-    const cleanup = editor.extend(
-      defineEditorExtension({
+    const cleanup = editor.install(
+      defineExtension('registry-slots', {
         api: () => ({ inline: capability }),
         corrections: [correction],
-        name: 'registry-slots',
         on: {
           commit: commitListener,
         },
@@ -1522,15 +1515,14 @@ describe('plite transaction contract', () => {
       focus: { path: [0, 0], offset: 3 },
     });
 
-    const unextend = editor.extend(
-      defineEditorExtension({
-        activate: (_editor, context) => {
+    const unextend = editor.install(
+      defineExtension('lifecycle-extension', {
+        activate: (context) => {
           signal = context.signal;
           context.onCleanup(() => {
             cleanupCalls += 1;
           });
         },
-        name: 'lifecycle-extension',
         on: {
           commit({ commit }) {
             commits.push(commit);
@@ -1568,9 +1560,8 @@ describe('plite transaction contract', () => {
 
     replaceChildren(editor, [paragraph('one')]);
 
-    const unextend = editor.extend(
-      defineEditorExtension({
-        name: 'group-extension',
+    const unextend = editor.install(
+      defineExtension('group-extension', {
         read: ({ state }) =>
           Object.freeze({
             text: () => state.text.string([0]),
@@ -1756,9 +1747,8 @@ describe('plite transaction contract', () => {
       focus: { path: [0, 0], offset: 3 },
     });
 
-    const unextendCommitListener = editor.extend(
-      defineEditorExtension({
-        name: 'command-commit-listener',
+    const unextendCommitListener = editor.install(
+      defineExtension('command-commit-listener', {
         on: {
           commit({ commit }) {
             extensionCommits.push(commit);

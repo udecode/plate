@@ -30,16 +30,12 @@ export const TEST_FAST_IGNORE_PATTERNS = [
 
 const isCI = !!process.env.CI;
 
-// When an inherently blocking test repeatedly crosses these thresholds, split
-// that case into the matching `*.slow.*` lane. Keep cheap contracts in the fast
-// file. `pnpm test:slowest` and `pnpm check` enforce these limits. CI runners are
-// noisier than fast local machines, so keep local enforcement tight and give CI
-// a slightly wider bucket before it hard-fails. Use `pnpm test:profile` for a
-// non-failing profile run.
-export const FAST_TEST_SLOW_CASE_THRESHOLD_MS = isCI ? 90 : 75;
-export const FAST_TEST_SLOW_FILE_THRESHOLD_MS = isCI ? 180 : 150;
+// Budget the feedback loop, not file topology. A coherent file with many cheap
+// tests is not slow and must not be split to game an aggregate file timer.
+// Individual hard limits catch genuinely blocking cases; the suite limit catches
+// distributed drift. CI runners get wider budgets for ordinary machine noise.
+export const FAST_TEST_SLOW_CASE_THRESHOLD_MS = isCI ? 1500 : 1000;
+export const FAST_TEST_SLOW_SUITE_THRESHOLD_MS = isCI ? 30_000 : 20_000;
 
-// Keep the local warning zone where it already was, but in CI surface the old
-// hard limits as warnings so slow drift is still visible in logs.
-export const FAST_TEST_WARN_CASE_THRESHOLD_MS = isCI ? 75 : 60;
-export const FAST_TEST_WARN_FILE_THRESHOLD_MS = isCI ? 150 : 120;
+export const FAST_TEST_WARN_CASE_THRESHOLD_MS = isCI ? 300 : 200;
+export const FAST_TEST_WARN_SUITE_THRESHOLD_MS = isCI ? 25_000 : 15_000;

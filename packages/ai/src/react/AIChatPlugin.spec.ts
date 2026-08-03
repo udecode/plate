@@ -3,7 +3,7 @@ import { describe, expect, it } from 'bun:test';
 import { BaseParagraphPlugin } from '@platejs/core';
 import { getPlateRuntime } from '@platejs/core/internal';
 import { createPlateEditor } from '@platejs/core/react';
-import { editorCommands, type Value } from '@platejs/plite';
+import { createEditor, editorCommands, type Value } from '@platejs/plite';
 
 import { BaseAIPlugin } from '../lib/BaseAIPlugin';
 import { AIChatPlugin } from './AIChatPlugin';
@@ -13,24 +13,20 @@ describe('AIChatPlugin', () => {
     const editor = createPlateEditor({
       plugins: [AIChatPlugin],
     });
-    const pluginNames = getPlateRuntime(editor).pluginList.map(
+    const names = getPlateRuntime(editor).pluginList.map(
       (plugin) => plugin.name
     );
 
-    expect(pluginNames.indexOf('ai')).toBeLessThan(
-      pluginNames.indexOf('aiChat')
-    );
-    expect(pluginNames.indexOf('markdown')).toBeLessThan(
-      pluginNames.indexOf('aiChat')
-    );
-    expect(pluginNames.filter((name) => name === 'ai')).toHaveLength(1);
-    expect(pluginNames.filter((name) => name === 'markdown')).toHaveLength(1);
+    expect(names.indexOf('ai')).toBeLessThan(names.indexOf('aiChat'));
+    expect(names.indexOf('markdown')).toBeLessThan(names.indexOf('aiChat'));
+    expect(names.filter((name) => name === 'ai')).toHaveLength(1);
+    expect(names.filter((name) => name === 'markdown')).toHaveLength(1);
   });
 
   it('clears internal streaming state when stop is called', () => {
     const editor = createPlateEditor({
       plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin],
-      initialValue: [{ children: [{ text: 'x' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'x' }], type: 'paragraph' }],
     });
 
     editor.plugin(AIChatPlugin).store.set({ streaming: true });
@@ -48,10 +44,11 @@ describe('AIChatPlugin', () => {
 
   it('removes its anchor without adding history', () => {
     const initialValue: Value = [
-      { children: [{ text: '' }], type: 'p' },
+      { children: [{ text: '' }], type: 'paragraph' },
       { children: [{ text: '' }], type: 'aiChat' },
     ];
     const editor = createPlateEditor({
+      editor: createEditor<Value>(),
       plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin],
       initialValue,
     });
@@ -59,7 +56,7 @@ describe('AIChatPlugin', () => {
     editor.update({ history: 'skip' }).aiChat.removeAnchor();
 
     expect(editor.read.children()).toHaveLength(1);
-    expect(editor.read.children()[0]?.type).toBe('p');
+    expect(editor.read.children()[0]?.type).toBe('paragraph');
     expect(editor.read.history.undos()).toHaveLength(0);
   });
 
@@ -67,7 +64,7 @@ describe('AIChatPlugin', () => {
     const editor = createPlateEditor({
       plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin],
       initialValue: [
-        { children: [{ text: '' }], type: 'p' },
+        { children: [{ text: '' }], type: 'paragraph' },
         { children: [{ text: '' }], type: 'aiChat' },
       ],
     });
@@ -75,7 +72,7 @@ describe('AIChatPlugin', () => {
     editor.plugin(AIChatPlugin).api.hide({ focus: false, undo: false });
 
     expect(editor.read.children()).toHaveLength(1);
-    expect(editor.read.children()[0]?.type).toBe('p');
+    expect(editor.read.children()[0]?.type).toBe('paragraph');
     expect(editor.read.history.undos()).toHaveLength(0);
   });
 
@@ -88,8 +85,8 @@ describe('AIChatPlugin', () => {
         focus: { offset: 0, path: [1, 0] },
       },
       initialValue: [
-        { children: [{ text: '' }], type: 'p' },
-        { children: [{ text: 'occupied' }], type: 'p' },
+        { children: [{ text: '' }], type: 'paragraph' },
+        { children: [{ text: 'occupied' }], type: 'paragraph' },
       ],
     });
 
@@ -106,8 +103,8 @@ describe('AIChatPlugin', () => {
 
     expect(editor.plugin(AIChatPlugin).store.get('open')).toBe(true);
     expect(editor.read.children()).toEqual([
-      { children: [{ text: '' }], type: 'p' },
-      { children: [{ text: 'occupied' }], type: 'p' },
+      { children: [{ text: '' }], type: 'paragraph' },
+      { children: [{ text: 'occupied' }], type: 'paragraph' },
     ]);
   });
 });

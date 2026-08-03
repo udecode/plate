@@ -1,4 +1,4 @@
-import { type DefinitionOf, createBasePlugin } from '@platejs/core';
+import { type DefinitionOf, defineBasePlugin } from '@platejs/core';
 import type {
   EditorStateView,
   Element,
@@ -6,7 +6,7 @@ import type {
   Path,
 } from '@platejs/plite';
 import { ElementApi, NodeApi } from '@platejs/plite';
-import { KEYS } from '@platejs/utils';
+import { KEYS, NODES } from '@platejs/utils';
 
 export type Heading = {
   depth: number;
@@ -22,7 +22,7 @@ export type TocPluginState = {
   queryHeading?: (state: EditorStateView) => Heading[];
 };
 
-export const BaseTocPlugin = createBasePlugin({
+export const BaseTocPlugin = defineBasePlugin(KEYS.toc, {
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       'text/markdown': {
@@ -44,7 +44,6 @@ export const BaseTocPlugin = createBasePlugin({
     isScroll: true,
     topOffset: 80,
   }),
-  name: KEYS.toc,
   schema: {
     element: {
       void: 'block',
@@ -64,7 +63,7 @@ export const BaseTocPlugin = createBasePlugin({
         match: (node) =>
           ElementApi.isElement(node) &&
           typeof node.type === 'string' &&
-          KEYS.heading.some((type) => type === node.type),
+          NODES.heading.some((type) => type === node.type),
       })) {
         const title = NodeApi.string(node);
 

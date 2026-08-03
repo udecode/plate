@@ -9,7 +9,7 @@ import { createEditor } from '@platejs/plite'
 import { History, history } from '@platejs/plite-history'
 
 const editor = createEditor({
-  extensions: [history()],
+  extensions: [history({ newBatchDelay: 500 })],
   initialValue: [{ type: 'paragraph', children: [{ text: '' }] }],
 })
 
@@ -17,6 +17,10 @@ const isHistoryValue = editor.read((state) =>
   History.isHistory(state.history())
 )
 ```
+
+`newBatchDelay` defaults to 500 milliseconds. It applies only to otherwise
+compatible automatic native edit groups. Explicit `merge()` and `newBatch()`
+transactions remain authoritative. History JSON never persists timestamps.
 
 `usePliteEditor` installs history by default. Disable it explicitly when an
 editor should not expose history state or transaction helpers.

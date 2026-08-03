@@ -1,7 +1,7 @@
 import { parseAsBoolean, parseAsStringLiteral, useQueryStates } from 'nuqs';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
-  defineEditorExtension,
+  defineExtension,
   NodeApi,
   schema,
   type Element as PliteElement,
@@ -416,8 +416,7 @@ const HiddenContentBlocksExample = () => {
 };
 
 const hiddenContentBlocks = () =>
-  defineEditorExtension({
-    name: 'hidden-content-blocks',
+  defineExtension('hidden-content-blocks', {
     schema: {
       elements: {
         'accordion-block': {

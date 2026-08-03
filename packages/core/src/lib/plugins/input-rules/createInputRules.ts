@@ -93,15 +93,17 @@ export const createMarkInputRule = (
         end: config.end,
       };
     },
-    apply: ({ editor, pluginName, tx }, match) => {
-      const marks = config.marks
-        ? [...config.marks]
-        : [config.mark ?? pluginName];
-      const markKeys = marks.map((mark) => {
-        const plugin = editor.plugin(mark);
+    apply: ({ editor, plugin, tx }, match) => {
+      const marks = config.marks ? [...config.marks] : [config.mark ?? plugin];
+      const markKeys: string[] = [];
 
-        return plugin.installed ? plugin.type : mark;
-      });
+      for (const mark of marks) {
+        const portal = editor.plugin(mark);
+
+        if (!portal.installed) return;
+
+        markKeys.push(portal.key);
+      }
 
       const selection = tx.selection();
 
@@ -218,31 +220,31 @@ export const createBlockStartInputRule = <TMatch extends object = {}>(
     apply: (context, match) => {
       if (config.apply) return config.apply(context, match);
 
-      const { editor, pluginName, tx } = context;
+      const { editor, plugin, tx } = context;
       const defaultMatch = match as BlockStartInputRuleMatch;
+      const target = config.node ?? plugin;
+      const portal = editor.plugin(target);
+
+      if (!portal.installed) return;
 
       if (config.removeMatchedText !== false) {
         tx.text.delete({ at: defaultMatch.range });
       }
 
-      const nodeName = config.node ?? pluginName;
-      const plugin = editor.plugin(nodeName);
-      const node = plugin.installed ? plugin.type : nodeName;
-
       if (config.mode === 'wrap') {
-        tx.blocks.toggle(node, {
+        tx.blocks.toggle(portal.type, {
           wrap: true,
         });
         return true;
       }
 
       if (config.mode === 'toggle') {
-        tx.blocks.toggle(node);
+        tx.blocks.toggle(portal.type);
         return true;
       }
 
       tx.nodes.set(
-        { type: node },
+        { type: portal.type },
         {
           match: (entryNode) =>
             ElementApi.isElement(entryNode) && tx.schema.isBlock(entryNode),
@@ -274,7 +276,10 @@ const matchBlockFence = <
 
   if (config.block) {
     const plugin = editor.plugin(config.block);
-    const blockType = plugin.installed ? plugin.type : config.block;
+
+    if (!plugin.installed) return;
+
+    const blockType = plugin.type;
 
     if (blockNode.type !== blockType) return;
   }

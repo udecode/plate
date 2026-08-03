@@ -846,7 +846,7 @@ describe('@platejs/yjs structural soak contracts', () => {
     connectAll(peers);
     runCommand(peers, 'a', reconcilePeer);
 
-    assertPeerTopLevelTexts(allPeers(peers), ['n canonica', 'l snapshot.K']);
+    assertPeerTopLevelTexts(allPeers(peers), ['ot.Ken canonical snap', 'sh']);
   });
 
   it('keeps structural edits from projecting block placeholders inside paragraphs', () => {

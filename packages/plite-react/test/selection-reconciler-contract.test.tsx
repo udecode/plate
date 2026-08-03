@@ -1,6 +1,6 @@
 import { act, render } from '@testing-library/react';
 import {
-  defineEditorExtension,
+  defineExtension,
   defineValueCodec,
   type Range,
   SelectionApi,
@@ -53,52 +53,54 @@ const isProjectedTableCellSelection = (
   selection.kind === 'projected-table-cell' &&
   Array.isArray((selection as ProjectedTableCellSelection).cells);
 
-const ProjectedTableCellSelectionExtension = defineEditorExtension({
-  name: 'projected-table-cell-selection',
-  selectionKinds: [
-    {
-      codec: defineValueCodec<ProjectedTableCellSelection>({
-        decode(value) {
-          if (!isProjectedTableCellSelection(value)) {
-            throw new Error('Invalid projected table-cell selection.');
-          }
+const ProjectedTableCellSelectionExtension = defineExtension(
+  'projected-table-cell-selection',
+  {
+    selectionKinds: [
+      {
+        codec: defineValueCodec<ProjectedTableCellSelection>({
+          decode(value) {
+            if (!isProjectedTableCellSelection(value)) {
+              throw new Error('Invalid projected table-cell selection.');
+            }
 
-          return value;
-        },
-        encode: (selection) => selection,
-        version: 1,
-      }),
-      primaryRange: (selection) =>
-        selection.cells.length > 0
-          ? Object.freeze({
-              anchor: selection.anchor,
-              focus: selection.anchor,
-            })
-          : null,
-      kind: 'projected-table-cell',
-      map(selection, context) {
-        const range = context.mapRange(selection, {
-          association: 'outward',
-        });
-        const cells = selection.cells.flatMap((cell) => {
-          const mapped = context.mapRange(cell, {
+            return value;
+          },
+          encode: (selection) => selection,
+          version: 1,
+        }),
+        primaryRange: (selection) =>
+          selection.cells.length > 0
+            ? Object.freeze({
+                anchor: selection.anchor,
+                focus: selection.anchor,
+              })
+            : null,
+        kind: 'projected-table-cell',
+        map(selection, context) {
+          const range = context.mapRange(selection, {
             association: 'outward',
-            deletion: 'drop',
+          });
+          const cells = selection.cells.flatMap((cell) => {
+            const mapped = context.mapRange(cell, {
+              association: 'outward',
+              deletion: 'drop',
+            });
+
+            return mapped ? [mapped] : [];
           });
 
-          return mapped ? [mapped] : [];
-        });
-
-        return range && cells.length > 0
-          ? { ...selection, ...range, cells }
-          : null;
+          return range && cells.length > 0
+            ? { ...selection, ...range, cells }
+            : null;
+        },
+        ranges: (selection) => selection.cells,
+        replacementRange: (selection) => selection,
+        validate: isProjectedTableCellSelection,
       },
-      ranges: (selection) => selection.cells,
-      replacementRange: (selection) => selection,
-      validate: isProjectedTableCellSelection,
-    },
-  ],
-});
+    ],
+  }
+);
 
 test('beforeinput preserves pending native text repair selection over mismatched DOM selection', () => {
   const editor = createReactEditor();

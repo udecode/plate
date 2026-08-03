@@ -38,7 +38,7 @@ import {
   nanoid,
   type PlatePluginReadState,
 } from '@platejs/core';
-import { type PlateEditor, createPlatePlugin } from '@platejs/core/react';
+import { type PlateEditor, definePlatePlugin } from '@platejs/core/react';
 import {
   type TIdElement,
   type TTableCellElement,
@@ -168,9 +168,8 @@ const initialState: AIChatPluginState = {
   triggerPreviousCharPattern: /^\s?$/,
 };
 
-export const AIChatPlugin = createPlatePlugin({
+export const AIChatPlugin = definePlatePlugin(KEYS.aiChat, {
   dependencies,
-  name: KEYS.aiChat,
   initialState,
   schema: {
     element: {
@@ -322,7 +321,7 @@ export const AIChatPlugin = createPlatePlugin({
               ...node,
               children: [...node.children],
               ...(node.type ===
-                (equation.installed ? equation.type : KEYS.equation) &&
+                (equation.installed ? equation.type : NODES.equation) &&
               typeof node.texExpression === 'string'
                 ? { texExpression: node.texExpression.trim() }
                 : {}),
@@ -372,10 +371,10 @@ export const AIChatPlugin = createPlatePlugin({
         }
       }
       if (addNewLine && !isCodeBlockOrTable) {
-        result.push({ children: [{ text: '' }], type: KEYS.p });
+        result.push({ children: [{ text: '' }], type: NODES.p });
       }
       if (prependNewLine && !isCodeBlockOrTable) {
-        result.unshift({ children: [{ text: '' }], type: KEYS.p });
+        result.unshift({ children: [{ text: '' }], type: NODES.p });
       }
 
       if (
@@ -512,7 +511,7 @@ export const AIChatPlugin = createPlatePlugin({
 
       return entry &&
         [
-          columnGroup.installed ? columnGroup.type : KEYS.columnGroup,
+          columnGroup.installed ? columnGroup.type : NODES.columnGroup,
           editor.plugin(KEYS.table).type,
         ].includes(entry[0].type)
         ? (state.nodes.above()?.[1] ?? path)
@@ -731,7 +730,7 @@ export const AIChatPlugin = createPlatePlugin({
         const fragment = state.fragment();
         const value: Element[] =
           fragment.length === 1 && ElementApi.isElement(fragment[0])
-            ? [{ children: fragment[0].children, type: KEYS.p }]
+            ? [{ children: fragment[0].children, type: NODES.p }]
             : fragment.flatMap((node) =>
                 ElementApi.isElement(node) ? [node] : []
               );
@@ -1197,9 +1196,9 @@ export const AIChatPlugin = createPlatePlugin({
                   );
 
                   nextChunks = [
-                    codeBlock.installed ? codeBlock.type : KEYS.codeBlock,
+                    codeBlock.installed ? codeBlock.type : NODES.codeBlock,
                     editor.plugin(KEYS.table).type,
-                    equation.installed ? equation.type : KEYS.equation,
+                    equation.installed ? equation.type : NODES.equation,
                   ].includes(blocks[0].type)
                     ? combined
                     : replacement;

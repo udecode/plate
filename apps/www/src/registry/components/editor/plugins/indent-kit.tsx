@@ -1,20 +1,25 @@
 'use client';
 
 import { IndentPlugin } from '@platejs/indent/react';
-import { KEYS } from 'platejs';
+import { PLUGINS } from 'platejs';
 
 export const IndentKit = [
   IndentPlugin.configure({
     initialState: {
       offset: 24,
     },
-    targetPluginNames: [
-      ...KEYS.heading,
-      KEYS.p,
-      KEYS.blockquote,
-      KEYS.codeBlock,
-      KEYS.toggle,
-      KEYS.img,
+    targetPlugins: [
+      PLUGINS.h1,
+      PLUGINS.h2,
+      PLUGINS.h3,
+      PLUGINS.h4,
+      PLUGINS.h5,
+      PLUGINS.h6,
+      PLUGINS.paragraph,
+      PLUGINS.blockquote,
+      PLUGINS.codeBlock,
+      PLUGINS.toggle,
+      PLUGINS.image,
     ],
   }),
 ];

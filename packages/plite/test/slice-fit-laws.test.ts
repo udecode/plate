@@ -91,7 +91,7 @@ const createLawSchema = (grammar: number, policyIndex: number) => {
             min: 2,
           });
 
-  return defineEditorSchema({
+  return defineEditorSchema(`schema:slice-fit-laws-${grammar}-${policyIndex}`, {
     elements: {
       caption: {
         content: schema.content.text({ default: 'text', min: 1 }),

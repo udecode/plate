@@ -1,14 +1,15 @@
 # Wordgard Test Inventory
 
 Source checkout: clean local `../wordgard` tree at
-`01eb2b5eae509509677345fd603acad001827dff` on `main`, tracking
+`c715d4ded8fc780f52c13206e589ea31e4148dd4` on `main`, tracking
 `origin/main` from `https://code.haverbeke.berlin/wordgard/wordgard.git`.
 License: MIT from `../wordgard/LICENSE` and `../wordgard/package.json`.
 
-Full provenance: every inventory row was discovered, line-counted, and
-classified directly from
-`source_commit=01eb2b5eae509509677345fd603acad001827dff`. No earlier artifact
-or commit diff supplied the file set.
+Current provenance: the full inventory was originally discovered and
+classified at `01eb2b5eae509509677345fd603acad001827dff`. The incremental
+refresh to `source_commit=c715d4ded8fc780f52c13206e589ea31e4148dd4`
+verified that `git diff --name-status 01eb2b5..c715d4d -- test` is empty,
+then re-counted the current tracked test set, lines, and declared cases.
 
 Inventory command:
 
@@ -23,9 +24,10 @@ Accounting: 27 files, 6,039 lines; 27 classified; 15 portable; 6
 portable-mixed; 3 Plate-owned; 3 harness; 0 skip; 0 product-shell; 0
 uncertain.
 
-Full rebuild accounting: 27/27 tracked test files are present below, with zero
-uncertain or skipped files. The owning validator checks the exact current file
-set, newline counts, categories, and test-index parity.
+Current-cursor accounting: 27/27 tracked test files are present below, with
+zero uncertain or skipped files. The current tree still contains 6,039 lines
+and 644 declared `it(...)` cases, so the prior row classifications remain
+source-identical rather than merely assumed unchanged.
 
 | File                            | Lines | Category       | Why                                                                                                                                                                                         |
 | ------------------------------- | ----: | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

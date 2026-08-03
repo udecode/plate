@@ -20,7 +20,7 @@ export const discussionValue: Value = [
             text: 'suggestions',
           },
         ],
-        type: 'a',
+        type: 'link',
         url: '/docs/suggestion',
       },
       {
@@ -59,7 +59,7 @@ export const discussionValue: Value = [
         children: [
           { comment: true, comment_discussion1: true, text: 'comments' },
         ],
-        type: 'a',
+        type: 'link',
         url: '/docs/comment',
       },
       {
@@ -82,6 +82,6 @@ export const discussionValue: Value = [
       },
       { text: ' annotations!' },
     ],
-    type: 'p',
+    type: 'paragraph',
   },
 ];

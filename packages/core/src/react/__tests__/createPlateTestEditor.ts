@@ -1,4 +1,3 @@
-import type { Value } from '@platejs/plite';
 import { subscribeCommit } from '@platejs/plite/internal';
 import { usesAppleDOMHotkeys } from '@platejs/plite-dom/internal';
 
@@ -6,10 +5,9 @@ import { act, fireEvent, render } from '@testing-library/react';
 import { parseHotkey } from 'is-hotkey';
 import React from 'react';
 
+import type { BasePluginInput } from '../../lib';
 import { PlateTest } from '../components/PlateTest';
 import { type CreatePlateEditorOptions, createPlateEditor } from '../editor';
-
-type PlateTestEditorPluginInput = { name: string };
 
 type PlateTestHarnessOptions = {
   componentProps?: Partial<React.ComponentProps<typeof PlateTest>>;
@@ -66,10 +64,9 @@ const fireBeforeInput = (element: HTMLElement, init: InputEventInit): void => {
  * - `editor`: `createPlateEditor`
  */
 export const createPlateTestEditor = async <
-  V extends Value = Value,
-  const TPlugins extends readonly PlateTestEditorPluginInput[] = readonly [],
+  const TPlugins extends readonly BasePluginInput[] = readonly [],
 >(
-  options: CreatePlateEditorOptions<V, TPlugins>,
+  options: CreatePlateEditorOptions<TPlugins>,
   buildTestHarnessOptions: PlateTestHarnessOptions = {}
 ) => {
   const {
@@ -78,7 +75,7 @@ export const createPlateTestEditor = async <
     strict: _strict = false,
     testID = 'plite-content-editable',
   } = buildTestHarnessOptions;
-  const editor = createPlateEditor<V, TPlugins>({
+  const editor = createPlateEditor({
     ...options,
     schemaIdentity: options.schemaIdentity,
   });

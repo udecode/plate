@@ -85,6 +85,30 @@ The package is subpath-only. Import exactly the layer you need:
   not claim native mobile clipboard, human soft-keyboard, glide typing, or
   voice input proof.
 
+## Raw Mobile Device Proof
+
+Run the raw gate only in a direct-Appium lane connected to a real Android
+device running Chrome and a real iOS device running Safari:
+
+```bash
+bun test:mobile-device-proof:raw
+```
+
+The runner reads
+`test-results/release-proof/mobile-device-proof.json`. The schema requires one
+receipt for every scenario on both platforms: tap, double tap, long press,
+forward and backward selection handles, cross-inline and cross-block
+selection, selection auto-scroll, collapsed and expanded swipes, inline-void
+boundaries, Enter, Backspace, autocapitalization, composition/IME, and native
+clipboard.
+
+Every receipt records real device, OS, browser, build, replay steps, native and
+semantic selection, model and DOM text, semantic update count, event trace,
+screenshots, video, and SHA-256 digests. The command independently reads every
+artifact back and verifies its digest. An incomplete matrix, viewport
+emulation, agent-browser proxy, or Appium descriptor without those artifacts
+fails closed and proves no raw-mobile claim.
+
 ## First Playwright Test
 
 ```ts

@@ -1,6 +1,5 @@
 import type {
   BaseEditor,
-  Editor,
   EditorCommand,
   EditorCommandAroundHandler,
   EditorCommandContext,
@@ -10,6 +9,7 @@ import type {
   EditorCommandRegistration,
   EditorCommandResult,
   EditorUpdateTag,
+  Editor,
 } from '../interfaces/editor';
 
 type CommandDefinitionSpec<
@@ -105,7 +105,9 @@ export const defineCommand = <
     runtime as CommandRuntime<any, BaseEditor<any, any>>
   );
 
-  return Object.freeze(command);
+  Object.freeze(command);
+
+  return command;
 };
 
 /** @internal Resolve private descriptor preparation and default behavior. */

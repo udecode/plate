@@ -3,7 +3,7 @@ title: Plate 插件
 description: Plate 插件的 API 参考文档。
 ---
 
-Plate 插件是传给 `Plate` 组件 [plugins](/docs/api/core/plate-components#plugins) 属性的描述符。已安装插件的 API 会按插件 name 推断到 `editor.api`。当通用代码需要精确的插件 API、update 命令、类型或 editor-local state 时，将描述符传给 `editor.plugin(MyPlugin)`；React 组件通过 `usePluginStore` 订阅变化。
+Plate 插件是传给 `Plate` 组件 [plugins](/docs/api/core/plate-components#plugins) 属性的描述符。已安装插件的 API 会按插件 name 推断到 `editor.api`。当通用代码需要精确的插件 API、update 命令、标识或 editor-local state 时，将描述符传给 `editor.plugin(MyPlugin)`；React 组件通过 `usePluginStore` 订阅变化。
 
 ## Authoring Context
 
@@ -19,8 +19,12 @@ const uploadInitialState: UploadPluginState = {
   active: false,
 };
 
-export const UploadPlugin = createPlatePlugin({
-  name: "upload",
+export const UploadPlugin = definePlatePlugin("upload", {
+  schema: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+    },
+  },
   initialState: uploadInitialState,
   api: ({ store }) => ({
     start: () => store.set({ active: true }),
@@ -44,7 +48,7 @@ export const UploadPlugin = createPlatePlugin({
 }));
 ```
 
-当前插件直接使用 `store`、`api`、`read`、`update`、`type`、`plugin` 和
+当前插件直接使用 `store`、`api`、`read`、`update`、`name`、`plugin` 和
 `installed`。编辑器级操作、其他插件，或 scoped `update` 无法表达的事务
 metadata 才使用 `editor`。shortcut handler 和 input rule 等特殊 callback
 可能只接收 `editor`；这种情况使用精确的 typed plugin portal。
@@ -57,8 +61,8 @@ metadata 才使用 `editor`。shortcut handler 和 input rule 等特殊 callback
 Plate 用于通过 `editor.plugin(MyPlugin)` 解析描述符的唯一标识符。
 </APIItem>
 
-<APIItem name="targetPluginNames" type="readonly string[]">
-插件的 schema 声明和注入行为所针对的插件 name。
+<APIItem name="targetPlugins" type="readonly (PluginReference | string)[]">
+插件的 schema 声明和注入行为所针对的插件描述符或动态 name。
 
 - **默认值:** `[]`
 </APIItem>
@@ -78,7 +82,7 @@ Plate 用于通过 `editor.plugin(MyPlugin)` 解析描述符的唯一标识符�
   type="(context: PlatePluginContext<D> & { state: PlatePluginReadState<D> }) => InferOwnRead<D>"
 >
   插件拥有的 state-bound read。Plate 会将它发布到
-  `editor.read[pluginName]`，也可通过 `editor.plugin(MyPlugin).read` 访问。
+  `editor.read[name]`，也可通过 `editor.plugin(MyPlugin).read` 访问。
   即使返回的方法不需要 authoring context，也必须把 `read` 声明为 factory。
 </APIItem>
 
@@ -92,7 +96,7 @@ Plate 用于通过 `editor.plugin(MyPlugin)` 解析描述符的唯一标识符�
   type="(context: PlatePluginContext<D> & { context: EditorUpdateContext; tx: PlatePluginTransaction<D> }) => InferOwnUpdate<D>"
 >
   插件提供的事务命令。通过 `editor.plugin(MyPlugin).update.method()`
-  执行单个命令， 或在 `editor.update((tx) => tx[pluginName].method())`
+  执行单个命令， 或在 `editor.update((tx) => tx[name].method())`
   中组合命令。 `update` 只能使用 factory：从 callback 返回 command
   object，不要声明静态对象。
 </APIItem>
@@ -106,8 +110,8 @@ Plate 用于通过 `editor.plugin(MyPlugin)` 解析描述符的唯一标识符�
 </APIItem>
 
 <APIItem name="component" type="NodeComponent" optional>
-  插件普通节点使用的组件。在 `createBasePlugin({component})` 或
-  `createPlatePlugin({component})` 中声明，可用于 static/RSC 和 live rendering；
+  插件普通节点使用的组件。在 `defineBasePlugin(name, { component })` 或
+  `definePlatePlugin(name, { component })` 中声明，可用于 static/RSC 和 live rendering；
   使用一次最终 `.configure({component})` 替换。Base `.extend()` 不接受该字段。
   `toPlatePlugin()` 只在所属 React adapter 中发布可复用 Plate-layer descriptor
   或添加 Plate-only authoring；terminal consumer 不为设置 `component` 而转换。
@@ -143,7 +147,7 @@ type OnNodeChange = (
 
 - `kind`：`insert`、`move`、`remove` 或 `update`
 - `node`：变更后的节点，或 `null`
-- `prevNode`：变更前的节点，或 `null`
+- `previousNode`：变更前的节点，或 `null`
 - `path` 和 `previousPath`：最终和此前的文档坐标
 - `commit`：已发布的 commit
 
@@ -160,7 +164,7 @@ type OnTextChange = (
 **参数：**
 
 - `node`：包含已更改文本的父节点
-- `prevText`：操作前的文本内容
+- `previousText`：操作前的文本内容
 - `text`：操作后的文本内容
 - `path` 和 `previousPath`：最终和此前的文档坐标
 - `commit`：已发布的 commit
@@ -184,14 +188,14 @@ handler 使用 `keyDownCapture` 等名称。
 Plate 用于向任何节点组件注入 props 的属性。
 </APISubListItem>
 
-<APISubListItem parent="inject" name="excludePlugins" type="string[]" optional>
+<APISubListItem parent="inject" name="excludePlugins" type="readonly (PluginReference | string)[]" optional>
   排除节点属性注入的插件 name 数组。
 </APISubListItem>
 
 <APISubListItem
   parent="inject"
   name="excludeBelowPlugins"
-  type="string[]"
+  type="readonly (PluginReference | string)[]"
   optional
 >
   插件 name 数组。对于这些插件类型的元素后代节点，将排除节点属性注入。
@@ -212,20 +216,11 @@ Plate 用于向任何节点组件注入 props 的属性。
 </APISubList>
 </APIItem>
 
-<APIItem name="type" type="string">
-插件拥有的已解析文档类型或属性 key。通过 `own.elementProperty(...)` 或
-`own.textProperty(...)` 创建的 schema 声明、注入的节点 props 和插件命令都使用
-同一个值。当存储 key 需要与 `plugin.name` 不同时配置 `type`，不要添加第二个
-存储 key 选项。
-
-- **默认值:** `plugin.name`
-</APIItem>
-
 <APIItem name="schema" type="PluginSchema<D> | null">
-通过 `element`、`mark`、`properties` 和 `contentRoots` 字段声明插件的 Plite
-模型。工厂通过 `contentRoots: [own.contentRoot(...)]` 声明元素拥有的根。
-Schema 工厂接收已解析的插件 `type`、配置后的 `initialState` 快照和已安装插件
-类型的类型化 helper。
+通过 `element`、`mark`、键控 `properties` 和 `contentRoots` 字段声明插件的 Plite
+模型。Schema 工厂接收插件 `name`、配置后的 `initialState`、`targetElementTypes`
+和 Plate 关系 helper。`name` 只标识能力。已安装的 AST identity 通过插件 callback
+和 portal 的 `schema.element.type` 与 `schema.properties.&lt;localId&gt;.key` 发布。
 布尔文本属性使用 `property.boolean({ default: false, omitDefault: true })`。
 </APIItem>
 
@@ -297,7 +292,7 @@ Schema 工厂接收已解析的插件 `type`、配置后的 `initialState` 快�
 <APISubListItem parent="rules" name="match" type="MatchRules" optional>
 确定此插件的规则是否应用于节点的函数。用于基于节点属性（不仅仅是类型匹配）覆盖行为。
 
-**默认值:** `type === node.type`
+**默认值:** `name === node.type`
 
 **示例:** `matchRules: ({ node }) => Boolean(node.listStyleType)`
 
@@ -548,7 +543,7 @@ H1Plugin.configure({
 <APIItem name="extend" type="<TExtension extends PlatePluginExtendInput<D>>(extension: TExtension) => PlatePlugin">
 向 import/prebuilt descriptor 添加贡献，使用 constructor 无法访问的 shared
 factory，或使用前一阶段新增类型。
-互相独立的字段直接放进 `createBasePlugin()` 或 `createPlatePlugin()`。所有
+互相独立的字段直接放进 `defineBasePlugin()` 或 `definePlatePlugin()`。所有
 `.extend()` 调用必须在用户 `.configure()` 之前完成。返回的 `PlatePlugin`
 保留 contribution 推断出的 capabilities。
 
@@ -564,7 +559,7 @@ factory，或使用前一阶段新增类型。
 - `codecs`：context-bound `defineCodecs` 返回的 declaration
 
 独立复用的 standalone Plite descriptor 使用从 `@platejs/plite` import 的
-`defineEditorExtension`。Plate 插件在根级声明相同的原生能力。
+`defineExtension`。Plate 插件在根级声明相同的原生能力。
 
 Self/product codec 使用 `defineCodecs(map)`；foreign codec 使用
 `defineCodecs(TargetPlugin, map)`，helper 会注入 foreign target。Map 保持
@@ -572,7 +567,7 @@ MIME-keyed；`'text/html'` 接受单个 schema-aware rule 或非空有序 rule t
 `defineCodecs` 是唯一的 inline inference anchor；不要直接声明 codec map，
 也不要手动添加 `target`。
 
-`createBasePlugin()` / `createPlatePlugin()` 拥有所有互相独立的 declaration
+`defineBasePlugin()` / `definePlatePlugin()` 拥有所有互相独立的 declaration
 字段，包括 `api`、`read`、`selectors`、`update`、原生 Plite 字段和 `codecs`。
 
 </APIItem>
@@ -586,7 +581,7 @@ MIME-keyed；`'text/html'` 接受单个 schema-aware rule 或非空有序 rule t
     <APIItem name="editor" type="PlateEditor">
       当前编辑器实例。
     </APIItem>
-    <APIItem name="plugin" type="EditorPlatePlugin<D>">
+    <APIItem name="plugin" type="ResolvedPlatePlugin<D>">
       当前插件实例。
     </APIItem>
     <APIItem name="defineCodecs" type="DefinePluginCodecs<D>">
@@ -611,7 +606,7 @@ MIME-keyed；`'text/html'` 接受单个 schema-aware rule 或非空有序 rule t
 
 <API name="GenericTypes">
   <APIAttributes>
-    <APIItem name="D" type="BasePluginDefinition | PlatePluginDefinition">
+    <APIItem name="D" type="BasePluginDefinition | BasePluginDefinition">
       表示插件契约，包括
       `name`、`initialState`、`api`、`read`、`update`、selectors、dependencies
       和 schema 推断。
@@ -626,8 +621,7 @@ export type MyPluginState = {
   customOption: boolean;
 };
 
-export const MyPlugin = createPlatePlugin({
-  name: "myPlugin",
+export const MyPlugin = definePlatePlugin("myPlugin", {
   initialState: {
     customOption: false,
   } satisfies MyPluginState,

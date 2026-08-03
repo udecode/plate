@@ -1,4 +1,4 @@
-import { BaseParagraphPlugin, createBasePlugin } from '@platejs/core';
+import { BaseParagraphPlugin, defineBasePlugin } from '@platejs/core';
 import { createPlateEditor } from '@platejs/core/react';
 import { schema } from '@platejs/plite';
 
@@ -13,14 +13,14 @@ describe('ExitBreakPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: '' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
 
     editor.plugin(ExitBreakPlugin).update.insert();
 
     expect(editor.read.children()).toEqual([
-      { children: [{ text: '' }], type: 'p' },
-      { children: [{ text: '' }], type: 'p' },
+      { children: [{ text: '' }], type: 'paragraph' },
+      { children: [{ text: '' }], type: 'paragraph' },
     ]);
   });
 
@@ -32,14 +32,14 @@ describe('ExitBreakPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: 'start' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'start' }], type: 'paragraph' }],
     });
 
     editor.plugin(ExitBreakPlugin).update.insertBefore({ match: () => true });
 
     expect(editor.read.children()).toEqual([
-      { children: [{ text: '' }], type: 'p' },
-      { children: [{ text: 'start' }], type: 'p' },
+      { children: [{ text: '' }], type: 'paragraph' },
+      { children: [{ text: 'start' }], type: 'paragraph' },
     ]);
   });
 
@@ -51,42 +51,31 @@ describe('ExitBreakPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: 'start' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'start' }], type: 'paragraph' }],
     });
 
     editor.plugin(ExitBreakPlugin).update.insert();
 
     expect(editor.read.children()).toEqual([
-      { children: [{ text: 'start' }], type: 'p' },
-      { children: [{ text: '' }], type: 'p' },
+      { children: [{ text: 'start' }], type: 'paragraph' },
+      { children: [{ text: '' }], type: 'paragraph' },
     ]);
   });
 
   it('exits after the nearest ancestor whose parent accepts a paragraph', () => {
-    const CodeLinePlugin = createBasePlugin({
-      name: 'codeline',
+    const CodeLinePlugin = defineBasePlugin('codeline', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
         },
       },
-      type: 'codeline',
     });
-    const CodeBlockPlugin = createBasePlugin({
-      name: 'codeblock',
-      schema: ({ plugins }) => {
-        const codeLineType = plugins.elementType(CodeLinePlugin);
-
-        return {
-          element: {
-            content: schema.content.type(codeLineType, {
-              default: { type: codeLineType },
-              min: 1,
-            }),
-          },
-        };
+    const CodeBlockPlugin = defineBasePlugin('codeblock', {
+      schema: {
+        element: {
+          content: schema.content.element(CodeLinePlugin, { min: 1 }),
+        },
       },
-      type: 'codeblock',
     });
     const editor = createPlateEditor({
       plugins: [ExitBreakPlugin, CodeBlockPlugin, CodeLinePlugin],
@@ -110,54 +99,34 @@ describe('ExitBreakPlugin', () => {
         children: [{ children: [{ text: 'code' }], type: 'codeline' }],
         type: 'codeblock',
       },
-      { children: [{ text: '' }], type: 'p' },
+      { children: [{ text: '' }], type: 'paragraph' },
     ]);
   });
 
   it('exits after an outer structure whose grammar rejects paragraphs', () => {
-    const TableCellPlugin = createBasePlugin({
-      name: 'td',
+    const TableCellPlugin = defineBasePlugin('tableCell', {
       schema: ({ plugins }) => ({
         element: {
           content: plugins.blockContent({
-            default: { type: plugins.elementType(BaseParagraphPlugin) },
+            default: BaseParagraphPlugin,
             min: 1,
           }),
         },
       }),
-      type: 'td',
     });
-    const TableRowPlugin = createBasePlugin({
-      name: 'tr',
-      schema: ({ plugins }) => {
-        const cellType = plugins.elementType(TableCellPlugin);
-
-        return {
-          element: {
-            content: schema.content.type(cellType, {
-              default: { type: cellType },
-              min: 1,
-            }),
-          },
-        };
+    const TableRowPlugin = defineBasePlugin('tableRow', {
+      schema: {
+        element: {
+          content: schema.content.element(TableCellPlugin, { min: 1 }),
+        },
       },
-      type: 'tr',
     });
-    const TablePlugin = createBasePlugin({
-      name: 'table',
-      schema: ({ plugins }) => {
-        const rowType = plugins.elementType(TableRowPlugin);
-
-        return {
-          element: {
-            content: schema.content.type(rowType, {
-              default: { type: rowType },
-              min: 1,
-            }),
-          },
-        };
+    const TablePlugin = defineBasePlugin('table', {
+      schema: {
+        element: {
+          content: schema.content.element(TableRowPlugin, { min: 1 }),
+        },
       },
-      type: 'table',
     });
     const editor = createPlateEditor({
       plugins: [ExitBreakPlugin, TablePlugin, TableRowPlugin, TableCellPlugin],
@@ -172,11 +141,13 @@ describe('ExitBreakPlugin', () => {
             {
               children: [
                 {
-                  children: [{ children: [{ text: 'cell' }], type: 'p' }],
-                  type: 'td',
+                  children: [
+                    { children: [{ text: 'cell' }], type: 'paragraph' },
+                  ],
+                  type: 'tableCell',
                 },
               ],
-              type: 'tr',
+              type: 'tableRow',
             },
           ],
           type: 'table',
@@ -192,16 +163,16 @@ describe('ExitBreakPlugin', () => {
           {
             children: [
               {
-                children: [{ children: [{ text: 'cell' }], type: 'p' }],
-                type: 'td',
+                children: [{ children: [{ text: 'cell' }], type: 'paragraph' }],
+                type: 'tableCell',
               },
             ],
-            type: 'tr',
+            type: 'tableRow',
           },
         ],
         type: 'table',
       },
-      { children: [{ text: '' }], type: 'p' },
+      { children: [{ text: '' }], type: 'paragraph' },
     ]);
   });
 });

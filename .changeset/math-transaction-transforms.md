@@ -3,8 +3,10 @@
 ---
 
 Register block and inline equation properties in compiled schemas. The inline
-equation plugin identity is `inlineEquation`; persisted elements remain
-`inline_equation`.
+equation capability name and persisted element type are both `inlineEquation`.
+
+Import KaTeX styling explicitly from `@platejs/math/katex.css`; headless math
+imports have no stylesheet side effect.
 
 Colocate both Base plugins, math rules, static KaTeX rendering, React
 descriptors, and React hooks by equation family.

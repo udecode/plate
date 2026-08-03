@@ -1,10 +1,10 @@
-import { createBasePlugin } from '@platejs/core';
+import { defineBasePlugin } from '@platejs/core';
 import { type NodeInsertNodesOptions, property } from '@platejs/plite';
 import type { TPlaceholderElement } from '@platejs/utils';
-import { KEYS } from '@platejs/utils';
+import { KEYS, NODES } from '@platejs/utils';
 
-export const BasePlaceholderPlugin = createBasePlugin({
-  name: KEYS.placeholder,
+export const BasePlaceholderPlugin = defineBasePlugin(KEYS.placeholder, {
+  type: NODES.placeholder,
   schema: {
     element: {
       properties: {

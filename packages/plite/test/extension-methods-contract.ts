@@ -9,134 +9,21 @@ import {
   string as editorString,
 } from '@platejs/plite/internal';
 
-import {
-  createEditor,
-  defineEditorExtension,
-  editorCommands,
-  type EditorExtensionInput,
-} from '@platejs/plite';
+import { createEditor, defineExtension, editorCommands } from '@platejs/plite';
 import { hasCommandHandler } from '../src/core/command-registry';
 
-const asExtensionInput = (extension: unknown): EditorExtensionInput =>
-  extension as EditorExtensionInput;
-
 describe('extension method hard cut', () => {
-  it('rejects object methods before mutating the editor', () => {
-    const editor = createEditor();
-    const methodsExtension = asExtensionInput({
-      name: 'method-link',
-      methods: {
-        insertLink() {},
-      },
-    });
-
-    assert.throws(
-      () => editor.extend(methodsExtension),
-      /Editor extension "method-link" cannot use methods\. Declare read or update capabilities instead\./
-    );
-    assert.equal('insertText' in editor, false);
-    assert.equal('insertLink' in editor, false);
-    assert.equal(editorGetExtensionRegistry(editor).extensions.size, 0);
-  });
-
-  it('rejects malformed command registrations before mutating the editor', () => {
-    const editor = createEditor();
-    const commandExtension = asExtensionInput({
-      commands: () => [
-        {
-          handler: () => false,
-        },
-      ],
-      name: 'command-extension',
-    });
-
-    assert.throws(
-      () => editor.extend(commandExtension),
-      /command registrations must be created by the extension command factory/
-    );
-    assert.equal(editorGetExtensionRegistry(editor).extensions.size, 0);
-    assert.equal(
-      editorGetExtensionRegistry(editor).commands.byDescriptor.size,
-      0
-    );
-  });
-
-  it('rejects unsupported extension lifecycle slots before mutating the editor', () => {
-    const editor = createEditor();
-
-    assert.throws(
-      () =>
-        editor.extend(
-          asExtensionInput({
-            name: 'setup-only-register',
-            register() {},
-          })
-        ),
-      /Editor extension "setup-only-register" cannot use register\. Declare extension resources directly\./
-    );
-    assert.throws(
-      () =>
-        editor.extend(
-          asExtensionInput({
-            commitListeners: [() => {}],
-            name: 'commit-slot',
-          })
-        ),
-      /Editor extension "commit-slot" cannot use commitListeners\. Add on\.commit instead\./
-    );
-    assert.equal(editorGetExtensionRegistry(editor).extensions.size, 0);
-  });
-
-  it('rejects functional methods before mutating the editor', () => {
-    const editor = createEditor();
-    const methodsExtension = asExtensionInput({
-      name: 'method-wrapper',
-      methods() {
-        return {
-          insertText() {},
-        };
-      },
-    });
-
-    assert.throws(
-      () => editor.extend(methodsExtension),
-      /Editor extension "method-wrapper" cannot use methods\. Declare read or update capabilities instead\./
-    );
-    assert.equal('insertText' in editor, false);
-    assert.equal(editorGetExtensionRegistry(editor).extensions.size, 0);
-  });
-
-  it('rejects descriptor dependency cycles before mutating the editor', () => {
-    const editor = createEditor();
-    type CyclicExtension = {
-      dependencies?: readonly CyclicExtension[];
-      name: string;
-    };
-    const a: CyclicExtension = { name: 'a' };
-    const b = { dependencies: [a], name: 'b' };
-
-    a.dependencies = [b];
-
-    assert.throws(
-      () => editor.extend(asExtensionInput(a)),
-      /cyclic dependency/
-    );
-    assert.equal(editorGetExtensionRegistry(editor).extensions.size, 0);
-  });
-
   it('rejects one stable name with different descriptor identities', () => {
     const editor = createEditor();
-    const first = defineEditorExtension({
+    const first = defineExtension('duplicate-descriptor-name', {
       api: () => ({ duplicateIdentity: 'first' }),
-      name: 'duplicate-descriptor-name',
     });
-    const second = defineEditorExtension({
+    const second = defineExtension('duplicate-descriptor-name', {
       api: () => ({ duplicateIdentity: 'second' }),
-      name: 'duplicate-descriptor-name',
     });
 
     assert.throws(
-      () => editor.extend([first, second]),
+      () => editor.install([first, second]),
       /"duplicate-descriptor-name" has multiple descriptor identities/
     );
     assert.equal(editorGetExtensionRegistry(editor).extensions.size, 0);
@@ -152,10 +39,10 @@ describe('extension method hard cut', () => {
       set: (value: 'cell' | 'text') => void;
     } | null = null;
 
-    const unextend = editor.extend(
-      defineEditorExtension({
-        activate(_editor, context) {
-          assert.equal(context.name, 'runtime-table');
+    const unextend = editor.install(
+      defineExtension('runtime-table', {
+        activate(context) {
+          assert.equal(context.extensionName, 'runtime-table');
 
           let active = true;
           let current: 'cell' | 'text' = initialMode;
@@ -182,7 +69,6 @@ describe('extension method hard cut', () => {
             mode.cleanup();
           });
         },
-        name: 'runtime-table',
         read: () => ({
           mode: () => runtimeMode?.get(),
         }),
@@ -235,21 +121,19 @@ describe('extension method hard cut', () => {
   });
 
   it('resolves editor api handles only from installed extension tokens', () => {
-    const installed = defineEditorExtension({
+    const installed = defineExtension('history', {
       api: () => ({
         run(_options: { save?: boolean }, fn: () => void) {
           fn();
         },
       }),
-      name: 'history',
     });
-    const fresh = defineEditorExtension({
+    const fresh = defineExtension('history', {
       api: () => ({
         run(_options: { save?: boolean }, fn: () => void) {
           fn();
         },
       }),
-      name: 'history',
     });
     const editor = createEditor({ extensions: [installed] as const });
     let called = false;
@@ -266,13 +150,12 @@ describe('extension method hard cut', () => {
   });
 
   it('resolves editor api handles from installed API factories', () => {
-    const installed = defineEditorExtension({
+    const installed = defineExtension('factory-owner', {
       api() {
         return {
           read: () => 42,
         };
       },
-      name: 'factory-owner',
     });
     const editor = createEditor({ extensions: [installed] as const });
 
@@ -284,8 +167,7 @@ describe('extension method hard cut', () => {
     const seenOffsets: number[] = [];
     const editor = createEditor({
       extensions: [
-        defineEditorExtension({
-          name: 'insert-text-command',
+        defineExtension('insert-text-command', {
           commands: ({ around }) => [
             around(editorCommands.insertText, ({ input, state, next }) => {
               seenOffsets.push(state.selection()?.anchor.offset ?? -1);
@@ -320,8 +202,7 @@ describe('extension method hard cut', () => {
   it('detects registered semantic command handlers by token', () => {
     const editor = createEditor({
       extensions: [
-        defineEditorExtension({
-          name: 'insert-break-command',
+        defineExtension('insert-break-command', {
           commands: ({ handle }) => [
             handle(editorCommands.insertBreak, (_context) => false),
           ],
@@ -332,9 +213,8 @@ describe('extension method hard cut', () => {
     assert.equal(hasCommandHandler(editor, editorCommands.insertText), false);
     assert.equal(hasCommandHandler(editor, editorCommands.insertBreak), true);
 
-    editor.extend(
-      defineEditorExtension({
-        name: 'insert-text-command',
+    editor.install(
+      defineExtension('insert-text-command', {
         commands: ({ handle }) => [
           handle(editorCommands.insertText, (_context) => false),
         ],
@@ -357,9 +237,8 @@ describe('extension method hard cut', () => {
       },
     });
 
-    editor.extend(
-      defineEditorExtension({
-        name: 'delete-backward-command',
+    editor.install(
+      defineExtension('delete-backward-command', {
         commands: ({ handle }) => [
           handle(editorCommands.delete, ({ input, state }) => {
             seenUnits.push(input.unit);
@@ -379,9 +258,8 @@ describe('extension method hard cut', () => {
     const editor = createEditor();
     const calls: string[] = [];
 
-    editor.extend([
-      defineEditorExtension({
-        name: 'low-delete-backward-command',
+    editor.install([
+      defineExtension('low-delete-backward-command', {
         commands: ({ handle }) => [
           handle(editorCommands.delete, (_context) => {
             calls.push('low');
@@ -389,8 +267,7 @@ describe('extension method hard cut', () => {
           }),
         ],
       }),
-      defineEditorExtension({
-        name: 'high-delete-backward-command',
+      defineExtension('high-delete-backward-command', {
         commands: ({ handle }) => [
           handle(editorCommands.delete, ({ state }) => {
             calls.push('high');
@@ -405,30 +282,58 @@ describe('extension method hard cut', () => {
     assert.deepEqual(calls, ['low', 'high']);
   });
 
+  it('runs around middleware outside terminal handlers regardless of install order', () => {
+    const editor = createEditor();
+    const calls: string[] = [];
+
+    editor.install([
+      defineExtension('terminal-delete-command', {
+        commands: ({ handle }) => [
+          handle(editorCommands.delete, ({ state }) => {
+            calls.push('handle');
+            return state.transaction(() => {});
+          }),
+        ],
+      }),
+      defineExtension('around-delete-command', {
+        commands: ({ around }) => [
+          around(editorCommands.delete, ({ next }) => {
+            calls.push('around:before');
+            const result = next();
+            calls.push('around:after');
+            return result;
+          }),
+        ],
+      }),
+    ]);
+
+    editorDeleteBackward(editor);
+
+    assert.deepEqual(calls, ['around:before', 'handle', 'around:after']);
+  });
+
   it('validates descriptor conflicts before mutating the editor', () => {
     const editor = createEditor();
-    const conflictB = defineEditorExtension({ name: 'conflict-b' });
-    const conflictA = defineEditorExtension({
+    const conflictB = defineExtension('conflict-b', {});
+    const conflictA = defineExtension('conflict-a', {
       conflicts: [conflictB],
-      name: 'conflict-a',
     });
 
     assert.throws(
-      () => editor.extend([conflictA, conflictB]),
+      () => editor.install([conflictA, conflictB]),
       /Editor extension "conflict-a" conflicts with "conflict-b"/
     );
     assert.equal(editorGetExtensionRegistry(editor).extensions.size, 0);
 
-    const lateConflict = defineEditorExtension({ name: 'late-conflict' });
-    const cleanupInstalled = editor.extend(
-      defineEditorExtension({
+    const lateConflict = defineExtension('late-conflict', {});
+    const cleanupInstalled = editor.install(
+      defineExtension('installed-conflict', {
         conflicts: [lateConflict],
-        name: 'installed-conflict',
       })
     );
 
     assert.throws(
-      () => editor.extend(lateConflict),
+      () => editor.install(lateConflict),
       /Editor extension "late-conflict" conflicts with "installed-conflict"/
     );
     assert.equal(
@@ -441,33 +346,30 @@ describe('extension method hard cut', () => {
 
   it('rejects active same-name descriptors and accepts disabled tombstones', () => {
     const editor = createEditor();
-    const first = defineEditorExtension({
+    const first = defineExtension('duplicate', {
       api: () => ({
         value: 'first',
       }),
-      name: 'duplicate',
       read: () => ({ value: () => 'first' }),
     });
-    const second = defineEditorExtension({
+    const second = defineExtension('duplicate', {
       api: () => ({
         value: 'second',
       }),
-      name: 'duplicate',
       read: () => ({ value: () => 'second' }),
     });
 
     assert.throws(
-      () => editor.extend([first, second]),
+      () => editor.install([first, second]),
       /Editor extension "duplicate" has multiple descriptor identities/
     );
     assert.equal(editorGetExtensionRegistry(editor).extensions.size, 0);
 
-    editor.extend(first);
+    editor.install(first);
 
-    editor.extend(
-      defineEditorExtension({
+    editor.install(
+      defineExtension('duplicate', {
         enabled: false,
-        name: 'duplicate',
       })
     );
 
@@ -484,27 +386,25 @@ describe('extension method hard cut', () => {
 
   it('keeps installed same-name extension when replacement validation fails', () => {
     const editor = createEditor();
-    const installed = defineEditorExtension({
+    const installed = defineExtension('duplicate', {
       api: () => ({
         value: 'installed',
       }),
-      name: 'duplicate',
       read: () => ({ value: () => 'installed' }),
     });
-    const replacement = defineEditorExtension({
+    const replacement = defineExtension('duplicate', {
       api: () => ({
         value: 'replacement',
       }),
-      name: 'duplicate',
       validate() {
         throw new Error('invalid replacement');
       },
       read: () => ({ value: () => 'replacement' }),
     });
 
-    editor.extend(installed);
+    editor.install(installed);
 
-    assert.throws(() => editor.extend(replacement), /invalid replacement/);
+    assert.throws(() => editor.install(replacement), /invalid replacement/);
     assert.equal(
       (editor.api as { duplicate?: { value: string } }).duplicate?.value,
       'installed'

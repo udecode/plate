@@ -4,7 +4,7 @@ import clsx from 'clsx';
 
 import type { BaseEditor } from '../../lib/editor';
 import type {
-  AnyResolvedBasePlugin,
+  AnyPluginBase,
   GetInjectNodePropsOptions,
   GetInjectNodePropsReturnType,
 } from '../../lib/plugin';
@@ -27,11 +27,11 @@ export const pipeInjectNodeProps = <
   let attributes: TNodeProps['attributes'] & GetInjectNodePropsReturnType =
     nodeProps.attributes;
 
-  getPlateRuntime(editor).pluginCache.inject.nodeProps.forEach((pluginName) => {
+  getPlateRuntime(editor).pluginCache.inject.nodeProps.forEach((name) => {
     const plugin = getCompiledPlatePlugin(
       editor,
-      pluginName
-    ) as unknown as AnyResolvedBasePlugin;
+      name
+    ) as unknown as AnyPluginBase;
 
     const newAttributes = pluginInjectNodeProps(
       editor,

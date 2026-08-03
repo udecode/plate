@@ -10,14 +10,15 @@ export const shouldMergeNodesRemovePrevNode: EditorStaticApi['shouldMergeNodesRe
       previous,
       current,
       () => {
-        const [prevNode, prevPath] = previous;
+        const [previousNode, prevPath] = previous;
 
         // If the target node that we're merging with is empty, remove it
         // instead of merging the two.
         return (
-          (NodeApi.isElement(prevNode) && editorIsEmpty(editor, prevNode)) ||
-          (NodeApi.isText(prevNode) &&
-            prevNode.text === '' &&
+          (NodeApi.isElement(previousNode) &&
+            editorIsEmpty(editor, previousNode)) ||
+          (NodeApi.isText(previousNode) &&
+            previousNode.text === '' &&
             prevPath.at(-1)! !== 0)
         );
       }

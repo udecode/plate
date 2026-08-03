@@ -1,7 +1,7 @@
-import { createBasePlugin } from '@platejs/core';
+import { defineBasePlugin } from '@platejs/core';
 import { BaseTablePlugin } from '@platejs/table';
 import { TablePlugin } from '@platejs/table/react';
-import type { TTableCellElement } from '@platejs/utils';
+import type { TableCellElement } from '@platejs/table';
 
 type AssertFalse<T extends false> = T;
 type IsAny<T> = 0 extends 1 & T ? true : false;
@@ -13,14 +13,14 @@ const canonicalCell = {
   children: [{ text: '' }],
   colSpan: 2,
   rowSpan: 3,
-  type: 'td',
-} satisfies TTableCellElement;
+  type: 'tableCell',
+} satisfies TableCellElement;
 
-const stringSpanCell: TTableCellElement = {
+const stringSpanCell: TableCellElement = {
   children: [{ text: '' }],
   // @ts-expect-error Persisted spans are numbers.
   colSpan: '2',
-  type: 'td',
+  type: 'tableCell',
 };
 
 void canonicalCell;
@@ -55,9 +55,8 @@ const extendedTablePlugin = TablePlugin.extend((ctx) => {
 
 void extendedTablePlugin;
 
-const tableDependentPlugin = createBasePlugin({
+const tableDependentPlugin = defineBasePlugin('tableDependent', {
   dependencies: [BaseTablePlugin],
-  name: 'tableDependent',
 }).extend(({ editor }) => ({
   api: () => ({
     createTable: () => {

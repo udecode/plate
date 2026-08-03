@@ -10,7 +10,6 @@ import {
   BaseStrikethroughPlugin,
   BaseUnderlinePlugin,
 } from '@platejs/basic-nodes';
-import { KEYS } from 'platejs';
 import { type PliteLeafProps, PliteLeaf } from 'platejs/static';
 
 import { CodeLeafStatic } from '@/registry/ui/code-node-static';
@@ -18,7 +17,7 @@ import { HighlightLeafStatic } from '@/registry/ui/highlight-node-static';
 import { KbdLeafStatic } from '@/registry/ui/kbd-node-static';
 
 const ScriptLeafStatic = (props: PliteLeafProps) => (
-  <PliteLeaf {...props} as={props.leaf[KEYS.script] === 'sub' ? 'sub' : 'sup'}>
+  <PliteLeaf {...props} as={props.leaf.script === 'sub' ? 'sub' : 'sup'}>
     {props.children}
   </PliteLeaf>
 );

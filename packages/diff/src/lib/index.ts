@@ -3,4 +3,4 @@
  */
 
 export * from './computeDiff';
-export * from './excludeDiffFromFragment';
+export * from './excludeDiffFragment';

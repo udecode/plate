@@ -2,7 +2,10 @@ import { dispatchCommand } from '../core/command-registry';
 import { editorCommands } from '../core/editor-commands';
 import { getEditorSchema } from '../core/editor-runtime';
 import { runEditorTransaction } from '../core/public-state';
-import type { Editor, EditorStaticApi } from '../interfaces/editor';
+import type {
+  AnyEditor as Editor,
+  EditorStaticApi,
+} from '../interfaces/editor';
 import { RangeApi } from '../interfaces/range';
 import { applyAddMark } from './add-mark';
 import { applyRemoveMark } from './remove-mark';

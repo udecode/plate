@@ -4,14 +4,12 @@ import { jsxt } from '@platejs/test-utils';
 import { property, DocumentChange, schema } from '@platejs/plite';
 
 import { createBaseEditor } from '../../editor';
-import { createBasePlugin } from '../../plugin';
+import { defineBasePlugin } from '../../plugin';
 import { NodeIdPlugin, normalizeNodeId } from './NodeIdPlugin';
 
 jsxt;
 
-const TestLinkPlugin = createBasePlugin({
-  name: 'a',
-  type: 'a',
+const TestLinkPlugin = defineBasePlugin('link', {
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
@@ -20,8 +18,7 @@ const TestLinkPlugin = createBasePlugin({
   },
 });
 
-const TestInlineVoidPlugin = createBasePlugin({
-  name: 'tag',
+const TestInlineVoidPlugin = defineBasePlugin('tag', {
   schema: {
     element: {
       void: 'inline',
@@ -29,8 +26,7 @@ const TestInlineVoidPlugin = createBasePlugin({
   },
 });
 
-const TestBlockquotePlugin = createBasePlugin({
-  name: 'blockquote',
+const TestBlockquotePlugin = defineBasePlugin('blockquote', {
   schema: {
     element: {
       content: schema.content.group('block'),
@@ -38,15 +34,13 @@ const TestBlockquotePlugin = createBasePlugin({
   },
 });
 
-const TestHeadingPlugin = createBasePlugin({
-  name: 'h1',
+const TestHeadingPlugin = defineBasePlugin('h1', {
   schema: {
     element: { content: schema.content.open({ default: 'text', min: 1 }) },
   },
 });
 
-const TestMarkLikePlugin = createBasePlugin({
-  name: 'markLike',
+const TestMarkLikePlugin = defineBasePlugin('markLike', {
   schema: { mark: property.boolean({ default: false, omitDefault: true }) },
 });
 
@@ -64,7 +58,7 @@ const createStringIdFactory = (prefix = 'generated') => {
 
 describe('normalizeNodeId', () => {
   it('adds ids without mutating the input value', () => {
-    const input = [{ children: [{ text: 'test' }], type: 'p' }] as any;
+    const input = [{ children: [{ text: 'test' }], type: 'paragraph' }] as any;
 
     const output = normalizeNodeId(input, {
       idCreator: createIdFactory(),
@@ -77,8 +71,8 @@ describe('normalizeNodeId', () => {
 
   it('preserves existing ids and fills missing ones', () => {
     const input = [
-      { children: [{ text: 'first' }], id: 10, type: 'p' },
-      { children: [{ text: 'second' }], type: 'p' },
+      { children: [{ text: 'first' }], id: 10, type: 'paragraph' },
+      { children: [{ text: 'second' }], type: 'paragraph' },
     ] as any;
 
     const output = normalizeNodeId(input, {
@@ -91,8 +85,8 @@ describe('normalizeNodeId', () => {
 
   it('returns the original value when every node already has an id', () => {
     const input = [
-      { children: [{ text: 'first' }], id: 1, type: 'p' },
-      { children: [{ text: 'second' }], id: 2, type: 'p' },
+      { children: [{ text: 'first' }], id: 1, type: 'paragraph' },
+      { children: [{ text: 'second' }], id: 2, type: 'paragraph' },
     ] as any;
 
     const output = normalizeNodeId(input, {
@@ -106,9 +100,9 @@ describe('normalizeNodeId', () => {
 
   it('preserves unchanged branches when only part of the tree needs ids', () => {
     const input = [
-      { children: [{ text: 'first' }], id: 1, type: 'p' },
-      { children: [{ text: 'second' }], type: 'p' },
-      { children: [{ text: 'third' }], id: 3, type: 'p' },
+      { children: [{ text: 'first' }], id: 1, type: 'paragraph' },
+      { children: [{ text: 'second' }], type: 'paragraph' },
+      { children: [{ text: 'third' }], id: 3, type: 'paragraph' },
     ] as any;
 
     const output = normalizeNodeId(input, {
@@ -123,7 +117,7 @@ describe('normalizeNodeId', () => {
   });
 
   it('supports a custom id key', () => {
-    const input = [{ children: [{ text: 'test' }], type: 'p' }] as any;
+    const input = [{ children: [{ text: 'test' }], type: 'paragraph' }] as any;
 
     const output = normalizeNodeId(input, {
       idCreator: createIdFactory(),
@@ -136,13 +130,13 @@ describe('normalizeNodeId', () => {
 
   it('matches nodes with the shared Plite matcher', () => {
     const input = [
-      { children: [{ text: 'paragraph' }], type: 'p' },
+      { children: [{ text: 'paragraph' }], type: 'paragraph' },
       { children: [{ text: 'heading' }], type: 'h1' },
     ] as any;
 
     const output = normalizeNodeId(input, {
       idCreator: createIdFactory(),
-      match: { type: ['p'] },
+      match: { type: ['paragraph'] },
     }) as any;
 
     expect(output[0].id).toBe('1');
@@ -157,11 +151,11 @@ describe('normalizeNodeId', () => {
           {
             children: [{ text: 'link' }],
             inline: true,
-            type: 'a',
+            type: 'link',
           },
           { text: ' after' },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
     ] as any;
 
@@ -225,8 +219,8 @@ describe('NodeIdPlugin', () => {
 
   it('does not mutate the provided initial value during normalization', () => {
     const value = [
-      { children: [{ text: 'first' }], type: 'p' },
-      { children: [{ text: 'last' }], type: 'p' },
+      { children: [{ text: 'first' }], type: 'paragraph' },
+      { children: [{ text: 'last' }], type: 'paragraph' },
     ] as any;
 
     const editor = createBaseEditor({
@@ -371,14 +365,11 @@ describe('NodeIdPlugin', () => {
       initialValue: input.children,
     });
 
-    expect(editor.read.children()[0].foo).toBe('first');
-    expect(editor.read.children()[1].foo).toBeUndefined();
-    expect(editor.read.children()[2].foo).toBe('last');
+    expect(Reflect.get(editor.read.children()[0], 'foo')).toBe('first');
+    expect(Reflect.get(editor.read.children()[1], 'foo')).toBeUndefined();
+    expect(Reflect.get(editor.read.children()[2], 'foo')).toBe('last');
     expect(
-      editor.read.schema.getElementProperty(
-        editor.read.children()[0],
-        NodeIdPlugin
-      )
+      editor.read.schema.getProperty(editor.read.children()[0], 'foo')
     ).toBe('first');
   });
 
@@ -392,7 +383,7 @@ describe('NodeIdPlugin', () => {
         }),
       ],
       initialValue: [
-        { children: [{ text: 'existing' }], id: 'taken-id', type: 'p' },
+        { children: [{ text: 'existing' }], id: 'taken-id', type: 'paragraph' },
       ],
     });
 
@@ -402,7 +393,7 @@ describe('NodeIdPlugin', () => {
           _id: 'preferred-id',
           children: [{ text: 'inserted' }],
           id: 'taken-id',
-          type: 'p',
+          type: 'paragraph',
         } as any,
         { at: [1] }
       );
@@ -411,7 +402,7 @@ describe('NodeIdPlugin', () => {
     expect(editor.read.children()[1]).toMatchObject({
       children: [{ text: 'inserted' }],
       id: 'preferred-id',
-      type: 'p',
+      type: 'paragraph',
     });
     expect((editor.read.children()[1] as any)._id).toBeUndefined();
   });
@@ -426,7 +417,11 @@ describe('NodeIdPlugin', () => {
         }),
       ],
       initialValue: [
-        { children: [{ text: 'existing' }], id: 'existing-id', type: 'p' },
+        {
+          children: [{ text: 'existing' }],
+          id: 'existing-id',
+          type: 'paragraph',
+        },
       ],
     });
 
@@ -435,7 +430,7 @@ describe('NodeIdPlugin', () => {
         {
           children: [{ text: 'inserted' }],
           id: 'unique-id',
-          type: 'p',
+          type: 'paragraph',
         } as any,
         { at: [1] }
       );
@@ -444,7 +439,7 @@ describe('NodeIdPlugin', () => {
     expect(editor.read.children()[1]).toMatchObject({
       children: [{ text: 'inserted' }],
       id: 'unique-id',
-      type: 'p',
+      type: 'paragraph',
     });
   });
 
@@ -458,7 +453,11 @@ describe('NodeIdPlugin', () => {
         }),
       ],
       initialValue: [
-        { children: [{ text: 'existing' }], id: 'existing-id', type: 'p' },
+        {
+          children: [{ text: 'existing' }],
+          id: 'existing-id',
+          type: 'paragraph',
+        },
       ],
     });
 
@@ -467,7 +466,7 @@ describe('NodeIdPlugin', () => {
         {
           children: [{ text: 'pasted' }],
           id: 'source-editor-id',
-          type: 'p',
+          type: 'paragraph',
         } as any,
         { at: [1] }
       );
@@ -476,7 +475,7 @@ describe('NodeIdPlugin', () => {
     expect(editor.read.children()[1]).toMatchObject({
       children: [{ text: 'pasted' }],
       id: 'generated-1',
-      type: 'p',
+      type: 'paragraph',
     });
   });
 
@@ -491,7 +490,11 @@ describe('NodeIdPlugin', () => {
         }),
       ],
       initialValue: [
-        { children: [{ text: 'existing' }], id: 'existing-id', type: 'p' },
+        {
+          children: [{ text: 'existing' }],
+          id: 'existing-id',
+          type: 'paragraph',
+        },
       ],
     });
 
@@ -500,7 +503,7 @@ describe('NodeIdPlugin', () => {
         {
           children: [{ text: 'unique' }],
           id: 'source-editor-id',
-          type: 'p',
+          type: 'paragraph',
         } as any,
         { at: [1] }
       );
@@ -510,7 +513,7 @@ describe('NodeIdPlugin', () => {
         {
           children: [{ text: 'duplicate' }],
           id: 'existing-id',
-          type: 'p',
+          type: 'paragraph',
         } as any,
         { at: [2] }
       );
@@ -534,23 +537,31 @@ describe('NodeIdPlugin', () => {
         }),
       ],
       initialValue: [
-        { children: [{ text: 'existing' }], id: 'existing-id', type: 'p' },
+        {
+          children: [{ text: 'existing' }],
+          id: 'existing-id',
+          type: 'paragraph',
+        },
       ],
     });
 
     editor.update((tx) => {
       tx.nodes.insert(
         [
-          { children: [{ text: 'first' }], id: 'shared-id', type: 'p' },
-          { children: [{ text: 'second' }], id: 'shared-id', type: 'p' },
+          { children: [{ text: 'first' }], id: 'shared-id', type: 'paragraph' },
+          {
+            children: [{ text: 'second' }],
+            id: 'shared-id',
+            type: 'paragraph',
+          },
         ],
         { at: [1] }
       );
     });
 
     expect(editor.read.children().slice(1)).toEqual([
-      { children: [{ text: 'first' }], id: 'shared-id', type: 'p' },
-      { children: [{ text: 'second' }], id: 'generated-1', type: 'p' },
+      { children: [{ text: 'first' }], id: 'shared-id', type: 'paragraph' },
+      { children: [{ text: 'second' }], id: 'generated-1', type: 'paragraph' },
     ]);
   });
 
@@ -560,13 +571,13 @@ describe('NodeIdPlugin', () => {
         NodeIdPlugin.configure({
           initialState: {
             idCreator: createStringIdFactory(),
-            match: { type: 'p' },
+            match: { type: 'paragraph' },
           },
         }),
         TestHeadingPlugin,
       ],
       initialValue: [
-        { children: [{ text: 'existing' }], id: 'existing', type: 'p' },
+        { children: [{ text: 'existing' }], id: 'existing', type: 'paragraph' },
       ],
     });
 
@@ -574,9 +585,12 @@ describe('NodeIdPlugin', () => {
       tx.nodes.insert({ children: [{ text: 'heading' }], type: 'h1' } as any, {
         at: [1],
       });
-      tx.nodes.insert({ children: [{ text: 'paragraph' }], type: 'p' } as any, {
-        at: [2],
-      });
+      tx.nodes.insert(
+        { children: [{ text: 'paragraph' }], type: 'paragraph' } as any,
+        {
+          at: [2],
+        }
+      );
     });
 
     expect(editor.read.children()[1].id).toBeUndefined();
@@ -593,7 +607,7 @@ describe('NodeIdPlugin', () => {
         }),
         TestMarkLikePlugin,
       ],
-      initialValue: [{ children: [{ text: 'hello' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'hello' }], type: 'paragraph' }],
     });
 
     editor.update((tx) => {
@@ -627,7 +641,7 @@ describe('NodeIdPlugin', () => {
         anchor: { offset: 2, path: [0, 0] },
         focus: { offset: 2, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: 'hello' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'hello' }], type: 'paragraph' }],
     });
 
     editor.update((tx) => {
@@ -643,7 +657,7 @@ describe('NodeIdPlugin', () => {
       children: [{ text: '' }],
       type: 'tag',
     });
-    expect(inserted.id).toBeUndefined();
+    expect(Reflect.get(inserted, 'id')).toBeUndefined();
   });
 
   it('generates ids for nested inserted duplicates with one document scan', () => {
@@ -659,8 +673,16 @@ describe('NodeIdPlugin', () => {
         TestBlockquotePlugin,
       ],
       initialValue: [
-        { children: [{ text: 'existing a' }], id: 'taken-a', type: 'p' },
-        { children: [{ text: 'existing b' }], id: 'taken-b', type: 'p' },
+        {
+          children: [{ text: 'existing a' }],
+          id: 'taken-a',
+          type: 'paragraph',
+        },
+        {
+          children: [{ text: 'existing b' }],
+          id: 'taken-b',
+          type: 'paragraph',
+        },
       ],
     });
 
@@ -671,12 +693,12 @@ describe('NodeIdPlugin', () => {
             {
               children: [{ text: 'hello' }],
               id: 'taken-a',
-              type: 'p',
+              type: 'paragraph',
             },
             {
               children: [{ text: 'world' }],
               id: 'taken-b',
-              type: 'p',
+              type: 'paragraph',
             },
           ],
           type: 'blockquote',
@@ -694,8 +716,8 @@ describe('NodeIdPlugin', () => {
     });
     expect(editor.read.children()[2]).toMatchObject({
       children: [
-        { children: [{ text: 'hello' }], id: 'generated-2', type: 'p' },
-        { children: [{ text: 'world' }], id: 'generated-3', type: 'p' },
+        { children: [{ text: 'hello' }], id: 'generated-2', type: 'paragraph' },
+        { children: [{ text: 'world' }], id: 'generated-3', type: 'paragraph' },
       ],
       id: 'generated-1',
       type: 'blockquote',
@@ -713,11 +735,15 @@ describe('NodeIdPlugin', () => {
         }),
       ],
       initialValue: [
-        { children: [{ text: 'existing' }], id: 'existing-id', type: 'p' },
+        {
+          children: [{ text: 'existing' }],
+          id: 'existing-id',
+          type: 'paragraph',
+        },
         {
           children: [{ text: 'before' }, { text: 'after' }],
           id: 'source-id',
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
@@ -744,7 +770,7 @@ describe('NodeIdPlugin', () => {
     expect(editor.read.children()[2]).toMatchObject({
       children: [{ text: 'after' }],
       id: 'generated-1',
-      type: 'p',
+      type: 'paragraph',
     });
   });
 
@@ -759,7 +785,10 @@ describe('NodeIdPlugin', () => {
         }),
       ],
       initialValue: [
-        { children: [{ text: 'before' }, { text: 'after' }], type: 'p' },
+        {
+          children: [{ text: 'before' }, { text: 'after' }],
+          type: 'paragraph',
+        },
       ],
     });
 
@@ -780,7 +809,7 @@ describe('NodeIdPlugin', () => {
     expect(editor.read.children()[1]).toMatchObject({
       children: [{ text: 'after' }],
       id: 'keep-id',
-      type: 'p',
+      type: 'paragraph',
     });
   });
 });

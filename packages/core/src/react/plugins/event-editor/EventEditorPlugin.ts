@@ -1,12 +1,11 @@
-import { createPlatePlugin } from '../../plugin';
+import { definePlatePlugin } from '../../plugin';
 import {
   BLUR_EDITOR_EVENT,
   EventEditorStore,
   FOCUS_EDITOR_EVENT,
 } from './EventEditorStore';
 
-export const EventEditorPlugin = createPlatePlugin({
-  name: 'eventEditor',
+export const EventEditorPlugin = definePlatePlugin('eventEditor', {
   on: {
     blur: ({ editor }) => {
       const focus = EventEditorStore.get('focus');

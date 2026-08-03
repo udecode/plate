@@ -68,7 +68,6 @@ const editor = createPlateEditor({
 ```tsx
 import { TabbablePlugin } from '@platejs/tabbable/react';
 import { createPlateEditor } from 'platejs/react';
-import { KEYS } from 'platejs';
 
 const editor = createPlateEditor({
   plugins: [
@@ -77,9 +76,11 @@ const editor = createPlateEditor({
       initialState: {
         query: (event) => {
           // 在列表或代码块中禁用
-          const inList = editor.read.nodes.some({ match: { type: KEYS.li } });
+          const inList = editor.read.nodes.some({ match: { type: 'listItem' } });
           const inCodeBlock = editor.read.nodes.some({
-            match: { type: editor.plugin(KEYS.codeBlock).type },
+            match: {
+              type: editor.plugin(PLUGINS.codeBlock).schema.element!.type,
+            },
           });
           return !inList && !inCodeBlock;
         },
@@ -112,9 +113,9 @@ Tabbable插件可能会与处理`Tab`键的其他插件产生冲突，例如：
 
 ```tsx
 query: (event) => {
-  const inList = editor.read.nodes.some({ match: { type: KEYS.li } });
+  const inList = editor.read.nodes.some({ match: { type: 'listItem' } });
   const inCodeBlock = editor.read.nodes.some({
-    match: { type: editor.plugin(KEYS.codeBlock).type },
+    match: { type: editor.plugin(PLUGINS.codeBlock).schema.element!.type },
   });
   return !inList && !inCodeBlock;
 },

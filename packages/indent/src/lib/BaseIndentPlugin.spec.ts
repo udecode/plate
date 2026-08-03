@@ -1,11 +1,12 @@
 import {
   BaseParagraphPlugin,
   createBaseEditor,
-  createBasePlugin,
+  defineBasePlugin,
 } from '@platejs/core';
 import { createPluginContext } from '@platejs/core/internal';
 import {
   ContentSlice,
+  createEditor,
   EditorSchemaValidationError,
   type Value,
   property,
@@ -13,7 +14,6 @@ import {
   target,
 } from '@platejs/plite';
 import { writeHostFragmentData } from '@platejs/plite-dom';
-import { KEYS } from '@platejs/utils';
 import { createPlateEditor } from '@platejs/core/react';
 
 import { BaseIndentPlugin } from './BaseIndentPlugin';
@@ -23,19 +23,21 @@ describe('BaseIndentPlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, BaseIndentPlugin],
     });
-    const plugin = editor.plugin(BaseIndentPlugin).plugin;
-    const nodeProps = editor.plugin(BaseIndentPlugin).plugin.inject.nodeProps!;
+    const plugin = editor.plugin(BaseIndentPlugin);
+    const nodeProps = editor.plugin(BaseIndentPlugin).inject.nodeProps!;
 
     expect(editor.plugin(BaseIndentPlugin).store.get()).toEqual({
       offset: 24,
       unit: 'px',
     });
-    expect(plugin.targetPluginNames).toEqual([KEYS.p]);
+    expect(plugin.targetPlugins[0]?.name).toBe(
+      editor.plugin(BaseParagraphPlugin).schema.element.type
+    );
     expect(nodeProps.nodeKey).toBe('indent');
     expect(nodeProps.styleKey).toBe('marginLeft');
     expect(
       nodeProps.transformNodeValue!({
-        ...createPluginContext(editor, plugin),
+        ...createPluginContext(editor, BaseIndentPlugin),
         nodeValue: 2,
       })
     ).toBe('48px');
@@ -46,26 +48,25 @@ describe('BaseIndentPlugin', () => {
       plugins: [
         BaseParagraphPlugin,
         BaseIndentPlugin,
-        createBasePlugin({
-          name: 'testIndentProps',
+        defineBasePlugin('testIndentProps', {
           schema: {
-            properties: [
-              schema.elementProperty('foo', property.string(), {
+            properties: {
+              foo: schema.elementProperty(property.string(), {
                 target: target.group('block'),
               }),
-            ],
+            },
           },
         }),
       ],
       initialValue: [
         {
           children: [{ text: 'One' }],
-          type: KEYS.p,
+          type: 'paragraph',
         },
         {
           children: [{ text: 'Two' }],
           indent: 1,
-          type: KEYS.p,
+          type: 'paragraph',
         },
       ],
     });
@@ -79,12 +80,12 @@ describe('BaseIndentPlugin', () => {
       {
         foo: 'indent-1',
         indent: 1,
-        type: KEYS.p,
+        type: 'paragraph',
       },
       {
         foo: 'indent-2',
         indent: 2,
-        type: KEYS.p,
+        type: 'paragraph',
       },
     ]);
 
@@ -96,46 +97,43 @@ describe('BaseIndentPlugin', () => {
     expect(editor.read.children()).toMatchObject([
       {
         children: [{ text: 'One' }],
-        type: KEYS.p,
+        type: 'paragraph',
       },
       {
         foo: 'indent-2',
         indent: 1,
-        type: KEYS.p,
+        type: 'paragraph',
       },
     ]);
   });
 
   it('uses configured targets for both model validation and injection', () => {
-    const QuotePlugin = createBasePlugin({
-      name: 'quote',
+    const QuotePlugin = defineBasePlugin('quote', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
         },
       },
-      type: 'callout',
     });
     const IndentQuotePlugin = BaseIndentPlugin.configure({
-      targetPluginNames: ['quote'],
+      targetPlugins: ['quote'],
     });
     const editor = createBaseEditor({
+      editor: createEditor<Value>(),
       plugins: [BaseParagraphPlugin, QuotePlugin, IndentQuotePlugin],
       initialValue: [
         {
           children: [{ text: 'Quote' }],
           indent: 1,
-          type: 'callout',
+          type: 'quote',
         },
       ],
     });
 
-    expect(
-      editor.plugin(BaseIndentPlugin).plugin.targetPluginNames.join()
-    ).toBe('quote');
+    expect(editor.plugin(BaseIndentPlugin).targetPlugins.join()).toBe('quote');
     expect(editor.read.children()[0]).toMatchObject({
       indent: 1,
-      type: 'callout',
+      type: 'quote',
     });
     let thrown: unknown;
     const assertFragment: typeof editor.read.schema.assertFragment =
@@ -143,7 +141,11 @@ describe('BaseIndentPlugin', () => {
 
     try {
       assertFragment([
-        { children: [{ text: 'Paragraph' }], indent: 1, type: KEYS.p },
+        {
+          children: [{ text: 'Paragraph' }],
+          indent: 1,
+          type: 'paragraph',
+        },
       ]);
     } catch (error) {
       thrown = error;
@@ -154,7 +156,7 @@ describe('BaseIndentPlugin', () => {
     expect(thrown.diagnostics).toMatchObject([
       {
         code: 'property-target-mismatch',
-        nodeType: KEYS.p,
+        nodeType: editor.plugin(BaseParagraphPlugin).schema.element.type,
         property: { key: 'indent' },
       },
     ]);
@@ -168,7 +170,7 @@ describe('BaseIndentPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: 'One' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'One' }], type: 'paragraph' }],
     });
 
     expect(editor.update.indent.tab()).toBe(true);
@@ -197,7 +199,7 @@ describe('BaseIndentPlugin', () => {
       {
         children: [{ text: 'Indented' }],
         indent: 2,
-        type: KEYS.p,
+        type: 'paragraph',
       },
     ]);
   });
@@ -221,7 +223,7 @@ describe('BaseIndentPlugin', () => {
         {
           children: [{ text: 'One' }],
           indent: 1,
-          type: KEYS.p,
+          type: 'paragraph',
         },
       ],
     });
@@ -248,7 +250,7 @@ describe('BaseIndentPlugin', () => {
         {
           children: [{ text: 'Indented' }],
           indent: 2,
-          type: KEYS.p,
+          type: 'paragraph',
         },
       ],
     });
@@ -277,9 +279,9 @@ describe('BaseIndentPlugin', () => {
   });
 
   it('caps matching block indent during normalization', () => {
-    const value: Value = [
-      { children: [{ text: 'One' }], indent: 4, type: 'p' },
-    ];
+    const value = [
+      { children: [{ text: 'One' }], indent: 4, type: 'paragraph' },
+    ] as const;
     const editor = createPlateEditor({
       plugins: [
         BaseParagraphPlugin,
@@ -293,14 +295,14 @@ describe('BaseIndentPlugin', () => {
     editor.update.value.repair();
 
     expect(editor.read.children()).toEqual([
-      { children: [{ text: 'One' }], indent: 2, type: 'p' },
+      { children: [{ text: 'One' }], indent: 2, type: 'paragraph' },
     ]);
   });
 
   it('caps the schema property instead of an injected node key', () => {
-    const value: Value = [
-      { children: [{ text: 'One' }], indent: 4, type: 'p' },
-    ];
+    const value = [
+      { children: [{ text: 'One' }], indent: 4, type: 'paragraph' },
+    ] as const;
     const editor = createPlateEditor({
       plugins: [
         BaseParagraphPlugin,
@@ -319,7 +321,7 @@ describe('BaseIndentPlugin', () => {
     editor.update.value.repair();
 
     expect(editor.read.children()).toEqual([
-      { children: [{ text: 'One' }], indent: 2, type: 'p' },
+      { children: [{ text: 'One' }], indent: 2, type: 'paragraph' },
     ]);
   });
 
@@ -331,10 +333,10 @@ describe('BaseIndentPlugin', () => {
 
     try {
       createPlateEditor({
+        editor: createEditor<Value>(),
         plugins: [
           BaseParagraphPlugin,
-          createBasePlugin({
-            name: 'quote',
+          defineBasePlugin('quote', {
             schema: {
               element: {
                 content: schema.content.text({ default: 'text', min: 1 }),

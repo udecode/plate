@@ -44,8 +44,8 @@ describe('createValue', () => {
     const mediaTypes = new Set([
       'audio',
       'file',
-      'img',
-      'media_embed',
+      'image',
+      'mediaEmbed',
       'video',
     ]);
     const media = children.filter(

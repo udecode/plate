@@ -134,12 +134,12 @@ export default function MySelectEditor() {
 
 <API name="editor.plugin(MultiSelectPlugin).update.insert">
 <APIParameters>
-  <APIItem name="props" type="TTagProps">
+  <APIItem name="props" type="TagItem">
     多选元素的属性。
   </APIItem>
 </APIParameters>
 
-<APIOptions type="TTagProps">
+<APIOptions type="TagItem">
   <APIItem name="value" type="string">
     多选元素的唯一值。
   </APIItem>
@@ -151,7 +151,7 @@ export default function MySelectEditor() {
 获取编辑器中的所有标签项目。
 
 <API name="editor.plugin(MultiSelectPlugin).read.getSelectedItems">
-<APIReturns type="TTagProps[]">
+<APIReturns type="TagItem[]">
   编辑器中的标签项目数组。
 </APIReturns>
 </API>
@@ -162,7 +162,7 @@ export default function MySelectEditor() {
 
 <API name="editor.plugin(MultiSelectPlugin).read.isEqual">
 <APIParameters>
-  <APIItem name="tags" type="TTagProps[]" optional>
+  <APIItem name="tags" type="TagItem[]" optional>
     要与当前编辑器标签比较的新标签。
   </APIItem>
 </APIParameters>
@@ -179,7 +179,7 @@ export default function MySelectEditor() {
 获取编辑器中当前选中的标签项目的 Hook。
 
 <API name="useSelectedItems">
-<APIReturns type="TTagProps[]">
+<APIReturns type="TagItem[]">
   具有值和属性的选中标签项目数组。
 </APIReturns>
 </API>
@@ -226,7 +226,7 @@ export default function MySelectEditor() {
   <APIItem name="selectFirstItem" type="() => void">
     选择第一个组合框项目的函数。
   </APIItem>
-  <APIItem name="onValueChange" type="(items: TTagProps[]) => void" optional>
+  <APIItem name="onValueChange" type="(items: TagItem[]) => void" optional>
     选中项目更改时的回调。
   </APIItem>
 </APIOptions>
@@ -234,18 +234,16 @@ export default function MySelectEditor() {
 
 ## 类型
 
-### TTagElement
+### TagElement
 
 ```ts
-type TTagElement = Element & {
-  value: string;
-};
+import type { TagElement } from '@platejs/tag';
 ```
 
-### TTagProps
+`TagElement` 从 `BaseTagPlugin` 派生，并且需要字符串 `value`。
+
+### TagItem
 
 ```ts
-type TTagProps = {
-  value: string;
-};
+import type { TagItem } from '@platejs/tag';
 ```

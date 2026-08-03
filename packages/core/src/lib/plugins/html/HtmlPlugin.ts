@@ -3,6 +3,7 @@ import {
   ElementApi,
   TextApi,
   type Descendant,
+  type DescendantIn,
   type EditorCoreStateView,
   type EditorStateSchemaApi,
   type Element as PliteElement,
@@ -10,6 +11,7 @@ import {
   type SchemaProperty,
   type SchemaTarget,
   type Text,
+  type Value,
 } from '@platejs/plite';
 import {
   getCompiledSchemaPropertyId,
@@ -29,15 +31,16 @@ import type {
   AnyBasePlugin,
   AnyBasePluginDefinition,
   DefinitionOf,
+  ErasedPluginCallable,
   HtmlContentToken,
   HtmlMatcher,
-  HtmlParser,
+  HtmlCodecHooks,
   HtmlParserOptions,
   HtmlPluginContext,
   HtmlPluginRegistry,
   PluginReference,
 } from '../../plugin';
-import { createBasePlugin } from '../../plugin';
+import { defineBasePlugin } from '../../plugin';
 import { createPluginContext } from '../../plugin/createPluginContext.internal';
 import { isHtmlBlockElement, isHtmlElement, isHtmlText } from './htmlDom';
 import {
@@ -51,6 +54,7 @@ import {
 import { getPluginStore } from '../../../internal/plugin/pluginStore';
 import {
   getHtmlCodecSchemaFamilies,
+  getPluginDescriptorMetadata,
   getPluginSchemaFamily,
 } from '../../../internal/utils/mergePlugins';
 
@@ -387,9 +391,9 @@ type PreparedHtmlPluginEntry<
   context: Omit<HtmlPluginContext<C>, 'pluginState' | 'state'>;
   getPluginState: () => HtmlPluginContext<C>['pluginState'];
   name: string;
-  query?: HtmlParser<C>['query'];
-  transformData?: HtmlParser<C>['transformData'];
-  transformFragment?: HtmlParser<C>['transformFragment'];
+  query?: HtmlCodecHooks<C>['query'];
+  transformData?: HtmlCodecHooks<C>['transformData'];
+  transformFragment?: HtmlCodecHooks<C>['transformFragment'];
 }>;
 
 type PreparedHtmlRegistry = Readonly<{
@@ -412,12 +416,19 @@ const preparePlugin = <P extends AnyBasePlugin & PluginReference>(
   registry: HtmlPluginRegistry
 ): PreparedHtmlPluginEntry<DefinitionOf<P>> => {
   const installed = getCompiledPlatePlugin(editor, plugin)!;
-  const parser = installed.parsers.html;
+  const parserValue =
+    typeof installed.codecs === 'object' && installed.codecs !== null
+      ? Reflect.get(installed.codecs, 'text/html')
+      : undefined;
+  const parser =
+    typeof parserValue === 'object' && parserValue !== null
+      ? (parserValue as HtmlCodecHooks<DefinitionOf<P>>)
+      : undefined;
 
   return Object.freeze({
     context: Object.freeze({
+      name: plugin.name,
       registry,
-      type: registry.getType(plugin.name),
     }),
     getPluginState: () =>
       getPluginStore<DefinitionOf<P>>(editor, plugin.name)?.public.get() ??
@@ -436,7 +447,10 @@ const prepareCompiledPlugin = (
   installed: AnyBasePlugin,
   registry: HtmlPluginRegistry
 ): PreparedHtmlPluginEntry => {
-  const parserValue = installed.parsers.html;
+  const parserValue =
+    typeof installed.codecs === 'object' && installed.codecs !== null
+      ? Reflect.get(installed.codecs, 'text/html')
+      : undefined;
   const parser =
     typeof parserValue === 'object' && parserValue !== null ? parserValue : {};
   const query = Reflect.get(parser, 'query');
@@ -444,8 +458,8 @@ const prepareCompiledPlugin = (
   const transformFragment = Reflect.get(parser, 'transformFragment');
   const prepared: PreparedHtmlPluginEntry = {
     context: Object.freeze({
+      name: installed.name,
       registry,
-      type: registry.getType(installed.name),
     }),
     getPluginState: () =>
       getPluginStore(editor, installed.name)?.public.get() ??
@@ -489,16 +503,9 @@ export const prepareHtmlRegistry = (
     return cached.registry;
   }
 
-  const typesByName = new Map(
-    pluginList.map((plugin) => [plugin.name, plugin.type] as const)
-  );
-  const namesByType = new Map(
-    pluginList.map((plugin) => [plugin.type, plugin.name] as const)
-  );
+  const names = new Set(pluginList.map((plugin) => plugin.name));
   const publicRegistry = Object.freeze({
-    getName: (type: string) => namesByType.get(type),
-    getType: (name: string) => typesByName.get(name) ?? name,
-    has: (name: string) => typesByName.has(name),
+    has: (name: string) => names.has(name),
   });
   const prepared = Object.freeze({
     plugins: Object.freeze(
@@ -523,14 +530,17 @@ export const prepareHtmlRegistry = (
   return prepared;
 };
 
-const createHtmlPluginContext = <C extends AnyBasePluginDefinition>(
+const createHtmlPluginContext = <
+  C extends AnyBasePluginDefinition,
+  V extends Value,
+>(
   plugin: PreparedHtmlPluginEntry<C>,
-  state: EditorCoreStateView
+  state: EditorCoreStateView<V>
 ): HtmlPluginContext<C> =>
   Object.freeze({
     ...plugin.context,
     pluginState: Object.freeze({ ...plugin.getPluginState() }),
-    state: toEditorCoreStateView(state),
+    state: toEditorCoreStateView(state) as unknown as EditorCoreStateView,
   });
 
 export const pipePreparedInsertDataQuery = (
@@ -592,11 +602,13 @@ export const prepareHtmlPluginContext = <
 >(
   editor: BaseEditor,
   plugin: P
-): ((state: EditorCoreStateView) => HtmlPluginContext<DefinitionOf<P>>) => {
+): (<V extends Value>(
+  state: EditorCoreStateView<V>
+) => HtmlPluginContext<DefinitionOf<P>>) => {
   const registry = prepareHtmlRegistry(editor);
   const prepared = preparePlugin(editor, plugin, registry.public);
 
-  return (state: EditorCoreStateView) =>
+  return <V extends Value>(state: EditorCoreStateView<V>) =>
     createHtmlPluginContext(prepared, state);
 };
 
@@ -912,8 +924,8 @@ const compileRule = (
   model: CompiledPlateModel,
   pluginsByName: ReadonlyMap<string, AnyBasePlugin>,
   ownerPlugin: AnyBasePlugin,
-  targetPluginName: string | null,
-  extension: AnyBasePlugin['__htmlCodecContributions'][number]['extension']
+  target: string | null,
+  extension: ErasedPluginCallable
 ): CompiledHtmlRule => {
   function assertDeclaration(
     value: unknown
@@ -971,18 +983,16 @@ const compileRule = (
     }
   }
 
-  if (targetPluginName === ownerPlugin.name) {
+  if (target === ownerPlugin.name) {
     throw new Error(
       `Plate HTML codec "${ownerPlugin.name}" must use the self overload for its own schema.`
     );
   }
-  const targetPlugin = targetPluginName
-    ? pluginsByName.get(targetPluginName)
-    : ownerPlugin;
+  const targetPlugin = target ? pluginsByName.get(target) : ownerPlugin;
 
-  if (!targetPlugin || (targetPluginName && targetPlugin.enabled === false)) {
+  if (!targetPlugin || targetPlugin.enabled === false) {
     throw new Error(
-      `Plate HTML codec "${ownerPlugin.name}" targets missing or disabled plugin "${targetPluginName}".`
+      `Plate HTML codec "${ownerPlugin.name}" targets missing or disabled plugin "${target}".`
     );
   }
   const authoredFamilies = getHtmlCodecSchemaFamilies(extension);
@@ -1008,9 +1018,9 @@ const compileRule = (
   ]);
 
   assertDeclaration(declaration);
-  if (targetPluginName && declaration.createsElement) {
+  if (target && declaration.createsElement) {
     throw new Error(
-      `Plate HTML codec "${ownerPlugin.name}" cannot use createsElement for foreign target "${targetPluginName}".`
+      `Plate HTML codec "${ownerPlugin.name}" cannot use createsElement for foreign target "${target}".`
     );
   }
 
@@ -1046,28 +1056,28 @@ const compileRule = (
   }
 
   if (declaration.createsElement) {
-    if (kind !== 'element-property' || targetPluginName) {
+    if (kind !== 'element-property' || target) {
       throw new Error(
         `Plate HTML codec "${ownerPlugin.name}" can use createsElement only for self-owned element properties.`
       );
     }
-    const primaryPluginName = targetPlugin.targetPluginNames[0];
-    const primaryPlugin = primaryPluginName
-      ? pluginsByName.get(primaryPluginName)
+    const primaryTarget = targetPlugin.targetPlugins[0];
+    const primaryName =
+      typeof primaryTarget === 'string' ? primaryTarget : primaryTarget?.name;
+    const primaryPlugin = primaryName
+      ? pluginsByName.get(primaryName)
       : undefined;
-    const primaryBinding = primaryPluginName
-      ? model.byName[primaryPluginName]
-      : undefined;
+    const primaryBinding = primaryName ? model.byName[primaryName] : undefined;
 
     if (
-      !primaryPluginName ||
+      !primaryName ||
       !primaryPlugin ||
       primaryPlugin.enabled === false ||
       primaryBinding?.kind !== 'element' ||
       !primaryBinding.elementType
     ) {
       throw new Error(
-        `Plate HTML codec "${ownerPlugin.name}" createsElement requires installed element targetPluginNames[0].`
+        `Plate HTML codec "${ownerPlugin.name}" createsElement requires installed element targetPlugins[0].`
       );
     }
     targetType = primaryBinding.elementType;
@@ -1429,7 +1439,7 @@ const reportDecodeError = (
         { cause }
       ),
       editor,
-      extension: 'plate:html',
+      extensionName: 'plate:html',
       format: HTML_FORMAT,
       key: `plate:${rule.owner}:html:decode`,
       phase: 'parse' as const,
@@ -1482,7 +1492,7 @@ const encodeWithRule = <T>(
           { cause }
         ),
         editor,
-        extension: 'plate:html',
+        extensionName: 'plate:html',
         format: HTML_FORMAT,
         key: `plate:${rule.owner}:html:encode`,
         phase: 'serialize' as const,
@@ -1546,11 +1556,9 @@ const validateExplicitDecodedChildren = (
     )
   );
   const parent = state.schema.create(rule.targetType!, properties);
-  const fitted = state.slice.fitContent(ContentSlice.closed(children), {
-    parent,
-  });
-
-  if (!fitted || !isEqual(fitted, children)) {
+  try {
+    state.schema.assertFragment([{ ...parent, children }]);
+  } catch {
     throw new Error(
       `Plate HTML codec "${rule.owner}" returned children outside target "${rule.targetType}" schema.`
     );
@@ -1731,7 +1739,8 @@ const applyTextProperties = (
     if (TextApi.isText(node)) {
       const applicable = [...properties.values()].flatMap(
         ({ property, value }) =>
-          propertyAppliesToType(property, state, parentType)
+          propertyAppliesToType(property, state, parentType) &&
+          !Object.hasOwn(node, property.key)
             ? [[property.key, value] as const]
             : []
       );
@@ -2774,15 +2783,16 @@ export const compilePlateHtmlCodec = (
   const rules = Object.freeze(
     plugins
       .flatMap((plugin) =>
-        plugin.__htmlCodecContributions.map(({ extension, targetPluginName }) =>
-          compileRule(
-            editor,
-            model,
-            pluginsByName,
-            plugin,
-            targetPluginName,
-            extension
-          )
+        getPluginDescriptorMetadata(plugin).htmlCodecContributions.map(
+          ({ extension, targetPlugin }) =>
+            compileRule(
+              editor,
+              model,
+              pluginsByName,
+              plugin,
+              targetPlugin,
+              extension
+            )
         )
       )
       .sort(compareRules)
@@ -2871,14 +2881,14 @@ export const compilePlateHtmlCodec = (
   return codec;
 };
 
-export type HtmlApi = {
+export type HtmlApi<V extends Value = Value> = {
   deserialize: (options: {
     collapseWhiteSpace?: boolean;
     element: HTMLElement | string;
-  }) => Descendant[] | null;
+  }) => DescendantIn<V>[] | null;
 };
 
-export const HtmlPlugin = createBasePlugin({
+export const HtmlPlugin = defineBasePlugin(HTML_PLUGIN_NAME, {
   api: ({ editor }): HtmlApi => ({
     deserialize: ({
       collapseWhiteSpace: shouldCollapseWhiteSpace = true,
@@ -2917,7 +2927,7 @@ export const HtmlPlugin = createBasePlugin({
               { cause }
             ),
             editor,
-            extension: 'plate:html',
+            extensionName: 'plate:html',
             format: HTML_FORMAT,
             key: 'plate:html:decode',
             phase: 'parse' as const,
@@ -2929,7 +2939,6 @@ export const HtmlPlugin = createBasePlugin({
       }
     },
   }),
-  name: HTML_PLUGIN_NAME,
 });
 
 export type HtmlDefinition = DefinitionOf<typeof HtmlPlugin>;

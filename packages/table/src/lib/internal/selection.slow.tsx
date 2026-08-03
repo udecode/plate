@@ -1,15 +1,18 @@
 /** @jsx jsxt */
 
 import assert from 'node:assert/strict';
-import { createPlateEditor } from '@platejs/core/react';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 import type {
-  TTableCellElement,
-  TTableElement,
-  TTableRowElement,
-} from '@platejs/utils';
+  TableCellElement,
+  TableElement,
+  TableRowElement,
+} from '../BaseTablePlugin';
+import { BaseTableCellPlugin, BaseTablePlugin } from '../BaseTablePlugin';
 
-import { getTestTablePlugins } from '../__tests__/getTestTablePlugins';
+import {
+  createTestTableEditor,
+  getTestTablePlugins,
+} from '../__tests__/getTestTablePlugins';
 import { createDetachedTableContext } from './context';
 import {
   getTableSelectionExpansion,
@@ -22,7 +25,7 @@ import {
 jsxt;
 
 const createEditor = (input: TestEditor) =>
-  createPlateEditor({
+  createTestTableEditor({
     nodeId: true,
     plugins: getTestTablePlugins(),
     selection: input.selection,
@@ -37,22 +40,22 @@ const createThreeCellEditor = () =>
           {
             children: [
               {
-                children: [{ children: [{ text: 'a' }], type: 'p' }],
+                children: [{ children: [{ text: 'a' }], type: 'paragraph' }],
                 id: 'a',
-                type: 'td',
+                type: 'tableCell',
               },
               {
-                children: [{ children: [{ text: 'b' }], type: 'p' }],
+                children: [{ children: [{ text: 'b' }], type: 'paragraph' }],
                 id: 'b',
-                type: 'td',
+                type: 'tableCell',
               },
               {
-                children: [{ children: [{ text: 'c' }], type: 'p' }],
+                children: [{ children: [{ text: 'c' }], type: 'paragraph' }],
                 id: 'c',
-                type: 'td',
+                type: 'tableCell',
               },
             ],
-            type: 'tr',
+            type: 'tableRow',
           },
         ],
         type: 'table',
@@ -61,14 +64,18 @@ const createThreeCellEditor = () =>
     selection: null,
   } as TestEditor);
 
+const getSelectionTypes = (editor: ReturnType<typeof createEditor>) => ({
+  cellTypes: [editor.plugin(BaseTableCellPlugin).schema.element.type],
+  tableType: editor.plugin(BaseTablePlugin).schema.element.type,
+});
+
 const readSelection = (
   editor: ReturnType<typeof createEditor>,
   expansion: 'endpoint-union' | 'span-closure' = 'span-closure'
 ) =>
   readTableSelection(editor.read, {
-    cellTypes: ['td', 'th'],
     expansion,
-    tableType: 'table',
+    ...getSelectionTypes(editor),
   });
 
 const readExpandedSelection = (
@@ -95,12 +102,11 @@ const readExpandedSelection = (
 
   return readTableSelection(editor.read, {
     at: { anchor, focus },
-    cellTypes: ['td', 'th'],
-    tableType: 'table',
+    ...getSelectionTypes(editor),
   });
 };
 
-const createGeneratedSpanTable = (seed: number): TTableElement => {
+const createGeneratedSpanTable = (seed: number): TableElement => {
   let random = seed;
   const next = (max: number) => {
     random = (random * 16_807) % 2_147_483_647;
@@ -112,7 +118,7 @@ const createGeneratedSpanTable = (seed: number): TTableElement => {
   const occupied = Array.from({ length: height }, () =>
     Array.from({ length: width }, () => false)
   );
-  const rows: TTableCellElement[][] = Array.from({ length: height }, () => []);
+  const rows: TableCellElement[][] = Array.from({ length: height }, () => []);
   let id = 0;
 
   for (let row = 0; row < height; row++) {
@@ -141,13 +147,13 @@ const createGeneratedSpanTable = (seed: number): TTableElement => {
         children: [
           {
             children: [{ text: cellId }],
-            type: 'p',
+            type: 'paragraph',
           },
         ],
         ...(colSpan > 1 ? { colSpan } : {}),
         id: cellId,
         ...(rowSpan > 1 ? { rowSpan } : {}),
-        type: 'td',
+        type: 'tableCell',
       });
 
       for (let rowOffset = 0; rowOffset < rowSpan; rowOffset++) {
@@ -160,9 +166,9 @@ const createGeneratedSpanTable = (seed: number): TTableElement => {
 
   return {
     children: rows.map(
-      (children): TTableRowElement => ({
+      (children): TableRowElement => ({
         children,
-        type: 'tr',
+        type: 'tableRow',
       })
     ),
     type: 'table',
@@ -799,13 +805,13 @@ describe('readTableSelection', () => {
               children: [
                 {
                   children: [{ text: `${row},${col}` }],
-                  type: 'p',
+                  type: 'paragraph',
                 },
               ],
               id: `r${row}c${col}`,
-              type: 'td',
+              type: 'tableCell',
             })),
-            type: 'tr',
+            type: 'tableRow',
           })),
           type: 'table',
         },
@@ -865,20 +871,15 @@ describe('readTableSelection', () => {
     assert(b);
     assert(c);
     editor.update.selection.set({ anchor: a, focus: b });
+    const selectionTypes = getSelectionTypes(editor);
 
     editor.update((tx) => {
-      const first = readTableSelection(tx, {
-        cellTypes: ['td', 'th'],
-        tableType: 'table',
-      });
+      const first = readTableSelection(tx, selectionTypes);
 
       assert(first);
       tx.selection.set({ anchor: b, focus: c });
 
-      const second = readTableSelection(tx, {
-        cellTypes: ['td', 'th'],
-        tableType: 'table',
-      });
+      const second = readTableSelection(tx, selectionTypes);
 
       assert(second);
       expect(second).not.toBe(first);
@@ -896,12 +897,10 @@ describe('readTableSelection', () => {
     assert(anchor);
     assert(focus);
     editor.update.selection.set({ anchor, focus });
+    const selectionTypes = getSelectionTypes(editor);
 
     editor.update((tx) => {
-      const first = readTableSelection(tx, {
-        cellTypes: ['td', 'th'],
-        tableType: 'table',
-      });
+      const first = readTableSelection(tx, selectionTypes);
 
       assert(first);
       tx.nodes.insert(
@@ -909,19 +908,16 @@ describe('readTableSelection', () => {
           children: [
             {
               children: [{ text: 'inserted' }],
-              type: 'p',
+              type: 'paragraph',
             },
           ],
           id: 'inserted',
-          type: 'td',
+          type: 'tableCell',
         },
         { at: [0, 0, 1] }
       );
 
-      const second = readTableSelection(tx, {
-        cellTypes: ['td', 'th'],
-        tableType: 'table',
-      });
+      const second = readTableSelection(tx, selectionTypes);
 
       assert(second);
       expect(second).not.toBe(first);
@@ -941,13 +937,13 @@ describe('readTableSelection', () => {
               children: [
                 {
                   children: [{ text: `${row},${col}` }],
-                  type: 'p',
+                  type: 'paragraph',
                 },
               ],
               id: `r${row}c${col}`,
-              type: 'td',
+              type: 'tableCell',
             })),
-            type: 'tr',
+            type: 'tableRow',
           })),
           type: 'table',
         },

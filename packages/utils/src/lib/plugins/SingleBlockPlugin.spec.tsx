@@ -3,6 +3,7 @@
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 import { createPlateEditor } from '@platejs/core/react';
 import { getPlateRuntime } from '@platejs/core/internal';
+import { createEditor, type Value } from '@platejs/plite';
 
 import { SingleBlockPlugin } from './SingleBlockPlugin';
 import { SingleLinePlugin } from './SingleLinePlugin';
@@ -28,6 +29,7 @@ const output = (
 describe('SingleBlockPlugin', () => {
   it('merge all blocks into the first block with soft breaks', () => {
     const editor = createPlateEditor({
+      editor: createEditor<Value>(),
       plugins: [SingleBlockPlugin],
       selection: input.selection,
       initialValue: input.children,
@@ -48,6 +50,7 @@ describe('SingleBlockPlugin', () => {
       </editor>
     );
     const editor = createPlateEditor({
+      editor: createEditor<Value>(),
       plugins: [SingleBlockPlugin],
       selection: input.selection,
       initialValue: input.children,
@@ -56,7 +59,7 @@ describe('SingleBlockPlugin', () => {
     editor.update.break.insert();
 
     expect(editor.read.children()).toEqual([
-      { children: [{ text: 'test\n' }], type: 'p' },
+      { children: [{ text: 'test\n' }], type: 'paragraph' },
     ]);
   });
 
@@ -68,6 +71,7 @@ describe('SingleBlockPlugin', () => {
     ) as TestEditor;
 
     const editor = createPlateEditor({
+      editor: createEditor<Value>(),
       plugins: [SingleBlockPlugin],
       initialValue: singleBlockInput.children,
     });
@@ -94,6 +98,7 @@ describe('SingleBlockPlugin', () => {
     ) as TestEditor;
 
     const editor = createPlateEditor({
+      editor: createEditor<Value>(),
       plugins: [SingleBlockPlugin],
       initialValue: inputWithLineBreaks.children,
     });
@@ -122,6 +127,7 @@ describe('SingleBlockPlugin', () => {
     ) as TestEditor;
 
     const editor = createPlateEditor({
+      editor: createEditor<Value>(),
       plugins: [SingleBlockPlugin],
       initialValue: emptyBlocksInput.children,
     });
@@ -134,14 +140,14 @@ describe('SingleBlockPlugin', () => {
   it.each([
     [SingleBlockPlugin, 'singleBlock'],
     [SingleLinePlugin, 'singleLine'],
-  ] as const)('%s weakly disables trailing blocks regardless of plugin order', (plugin, pluginName) => {
+  ] as const)('%s weakly disables trailing blocks regardless of plugin order', (plugin, name) => {
     for (const plugins of [
       [plugin, TrailingBlockPlugin],
       [TrailingBlockPlugin, plugin],
     ]) {
       const editor = createPlateEditor({ plugins });
 
-      expect(getPlateRuntime(editor).plugins[pluginName]).toBeDefined();
+      expect(getPlateRuntime(editor).plugins[name]).toBeDefined();
       expect(
         getPlateRuntime(editor).plugins[TrailingBlockPlugin.name]
       ).toBeUndefined();

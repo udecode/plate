@@ -14,7 +14,7 @@ describe('convertNodesSerialize', () => {
 
   const mockParagraphNodeSlate: Descendant = {
     children: [{ text: 'Hello' }],
-    type: 'p',
+    type: 'paragraph',
   };
 
   const mockHeadingNodeSlate: Descendant = {
@@ -24,12 +24,12 @@ describe('convertNodesSerialize', () => {
 
   const mockThematicBreakNodeSlate: Descendant = {
     children: [{ text: '' }],
-    type: 'hr',
+    type: 'horizontalRule',
   };
 
   const mockBoldNodeSlate: Descendant = {
     children: [{ bold: true, text: 'Hello' }, { text: 'World' }],
-    type: 'p',
+    type: 'paragraph',
   };
 
   const mockNodesSlate = [
@@ -121,7 +121,7 @@ describe('convertNodesSerialize', () => {
     it('drop truthy text marks that are not in allowedNodes even when the parent block is allowed', () => {
       const options: SerializeMdContext = {
         ...baseOptions,
-        allowedNodes: ['p'],
+        allowedNodes: ['paragraph'],
       };
 
       const result = convertNodesSerialize([mockBoldNodeSlate], options);
@@ -142,7 +142,7 @@ describe('convertNodesSerialize', () => {
           {
             children: [{ text: 'Hello' }],
             id: 'block-1',
-            type: 'p',
+            type: 'paragraph',
           },
         ],
         {
@@ -184,7 +184,7 @@ describe('convertNodesSerialize', () => {
               {
                 children: [{ text: 'Nested' }],
                 id: 'nested-1',
-                type: 'p',
+                type: 'paragraph',
               },
             ],
             type: 'blockquote',
@@ -257,7 +257,7 @@ describe('convertNodesSerialize', () => {
       ['h4', 4],
       ['h5', 5],
       ['h6', 6],
-    ] as const)('normalizes %s plugin names before selecting the serializer', (type, depth) => {
+    ] as const)('normalizes persisted %s heading types before selecting the serializer', (type, depth) => {
       expect(
         buildMdastNode(
           {
@@ -336,7 +336,7 @@ describe('convertNodesSerialize', () => {
           { bold: true, italic: true, text: 'BoldItalic' },
           { text: ' normal' },
         ],
-        type: 'p',
+        type: 'paragraph',
       };
 
       const options: SerializeMdContext = {
@@ -360,7 +360,7 @@ describe('convertNodesSerialize', () => {
           { bold: true, italic: true, text: 'BoldItalic' },
           { text: ' normal' },
         ],
-        type: 'p',
+        type: 'paragraph',
       };
 
       const options: SerializeMdContext = {
@@ -391,7 +391,7 @@ describe('convertNodesSerialize', () => {
         ...baseOptions,
         allowNode: {
           serialize(node) {
-            if (node.type === 'hr') return false;
+            if (node.type === 'horizontalRule') return false;
             return true;
           },
         },
@@ -441,7 +441,7 @@ describe('convertNodesSerialize', () => {
             indent: 1,
             listStart: 1,
             listStyleType: 'decimal',
-            type: 'p',
+            type: 'paragraph',
           },
           {
             children: [{ text: 'two' }],
@@ -449,7 +449,7 @@ describe('convertNodesSerialize', () => {
             indent: 1,
             listStart: 1,
             listStyleType: 'decimal',
-            type: 'p',
+            type: 'paragraph',
           },
         ],
         {
@@ -479,7 +479,7 @@ describe('convertNodesSerialize', () => {
           indent: 1,
           listStart: 1,
           listStyleType: 'disc',
-          type: 'p',
+          type: 'paragraph',
         },
         {
           children: [{ text: 'todo' }],
@@ -487,14 +487,14 @@ describe('convertNodesSerialize', () => {
           listStart: 1,
           listStyleType: 'todo',
           checked: false,
-          type: 'p',
+          type: 'paragraph',
         },
         {
           children: [{ text: 'ordered' }],
           indent: 1,
           listStart: 1,
           listStyleType: 'decimal',
-          type: 'p',
+          type: 'paragraph',
         },
       ];
 
@@ -568,21 +568,21 @@ describe('convertNodesSerialize', () => {
           indent: 1,
           listStart: 1,
           listStyleType: 'disc',
-          type: 'p',
+          type: 'paragraph',
         },
         {
           children: [{ text: 'child ordered' }],
           indent: 2,
           listStart: 1,
           listStyleType: 'decimal',
-          type: 'p',
+          type: 'paragraph',
         },
         {
           children: [{ text: 'child bullet' }],
           indent: 2,
           listStart: 1,
           listStyleType: 'disc',
-          type: 'p',
+          type: 'paragraph',
         },
       ];
 
@@ -656,21 +656,21 @@ describe('convertNodesSerialize', () => {
           indent: 1,
           listStart: 1,
           listStyleType: 'disc',
-          type: 'p',
+          type: 'paragraph',
         },
         {
           children: [{ text: 'child bullet' }],
           indent: 2,
           listStart: 1,
           listStyleType: 'disc',
-          type: 'p',
+          type: 'paragraph',
         },
         {
           children: [{ text: 'child ordered' }],
           indent: 2,
           listStart: 1,
           listStyleType: 'decimal',
-          type: 'p',
+          type: 'paragraph',
         },
       ];
 

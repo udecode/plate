@@ -79,7 +79,7 @@ and registry wiring.
 - Keep `usePath()` only when a descendant must rerender or resynchronize as its
   element moves and no path prop is already available. Account for that
   dependency in the repeated-unit subscription budget.
-- Prefer direct `editor.api.<pluginName>` / `editor.update.<group>` in concrete
+- Prefer direct `editor.api.<name>` / `editor.update.<group>` in concrete
   host-owned app code with a complete inferred kit. Copied registry UI is
   generic by definition: never import its host editor type or use root plugin
   namespaces there. Use `editor.plugin(plugin)` or `useEditorPlugin(plugin)`.

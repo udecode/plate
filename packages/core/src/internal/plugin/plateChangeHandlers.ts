@@ -2,12 +2,11 @@ import type {
   EditorNodeChangeContext,
   EditorTextChangeContext,
 } from '@platejs/plite';
-import { defineEditorExtension } from '@platejs/plite';
+import { defineExtension } from '@platejs/plite';
 
 import type { BaseEditor } from '../../lib/editor';
 import { createPluginContext } from '../../lib/plugin/createPluginContext.internal';
 import { getCompiledPlatePlugin, getPlateRuntime } from './compilePlateModel';
-import { isEditOnly } from './isEditOnlyDisabled';
 
 type PlateNodeChangeCallback<E extends BaseEditor = BaseEditor> = (
   options: EditorNodeChangeContext<E>
@@ -58,8 +57,7 @@ const getPlateChangeCallbacks = (editor: BaseEditor) =>
   PLATE_CHANGE_CALLBACKS.get(editor);
 
 export const createPlateChangeHandlersExtension = (editor: BaseEditor) =>
-  defineEditorExtension({
-    name: 'plate:change-handlers',
+  defineExtension('plate:change-handlers', {
     on: {
       nodeChange(context) {
         const callbacks = getPlateChangeCallbacks(editor);
@@ -75,30 +73,23 @@ export const createPlateChangeHandlersExtension = (editor: BaseEditor) =>
           ...context,
           editor,
         } as EditorNodeChangeContext<BaseEditor>;
-        getPlateRuntime(editor).pluginCache.on.nodeChange.some((pluginName) => {
-          const plugin = getCompiledPlatePlugin(editor, pluginName)!;
+        getPlateRuntime(editor).pluginCache.on.nodeChange.forEach((name) => {
+          const plugin = getCompiledPlatePlugin(editor, name)!;
 
-          if (
-            !plugin ||
-            isEditOnly(editor.read.view.isReadOnly(), plugin, 'on')
-          ) {
-            return false;
-          }
+          if (!plugin) return;
 
           const handler = plugin.on?.nodeChange;
-          if (!handler) return false;
+          if (!handler) return;
 
-          return (
-            Reflect.apply(handler, undefined, [
-              {
-                ...createPluginContext(editor, plugin),
-                ...change,
-                editor,
-                plugin,
-                root: change.root === 'main' ? undefined : change.root,
-              },
-            ]) ?? false
-          );
+          Reflect.apply(handler, undefined, [
+            {
+              ...createPluginContext(editor, plugin),
+              ...change,
+              editor,
+              plugin,
+              root: change.root === 'main' ? undefined : change.root,
+            },
+          ]);
         });
 
         for (const callback of callbacks ?? []) {
@@ -119,30 +110,23 @@ export const createPlateChangeHandlersExtension = (editor: BaseEditor) =>
           ...context,
           editor,
         } as EditorTextChangeContext<BaseEditor>;
-        getPlateRuntime(editor).pluginCache.on.textChange.some((pluginName) => {
-          const plugin = getCompiledPlatePlugin(editor, pluginName)!;
+        getPlateRuntime(editor).pluginCache.on.textChange.forEach((name) => {
+          const plugin = getCompiledPlatePlugin(editor, name)!;
 
-          if (
-            !plugin ||
-            isEditOnly(editor.read.view.isReadOnly(), plugin, 'on')
-          ) {
-            return false;
-          }
+          if (!plugin) return;
 
           const handler = plugin.on?.textChange;
-          if (!handler) return false;
+          if (!handler) return;
 
-          return (
-            Reflect.apply(handler, undefined, [
-              {
-                ...createPluginContext(editor, plugin),
-                ...change,
-                editor,
-                plugin,
-                root: change.root === 'main' ? undefined : change.root,
-              },
-            ]) ?? false
-          );
+          Reflect.apply(handler, undefined, [
+            {
+              ...createPluginContext(editor, plugin),
+              ...change,
+              editor,
+              plugin,
+              root: change.root === 'main' ? undefined : change.root,
+            },
+          ]);
         });
 
         for (const callback of callbacks ?? []) {

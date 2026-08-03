@@ -1,7 +1,6 @@
 import { BaseParagraphPlugin } from '@platejs/core';
 import { createPlateEditor } from '@platejs/core/react';
 import { pipeHandler } from '@platejs/core/react/internal';
-import { KEYS } from '@platejs/utils';
 
 import { BaseImagePlugin } from '../../lib/image/BaseImagePlugin';
 import { PlaceholderPlugin, UploadErrorCode } from './PlaceholderPlugin';
@@ -58,7 +57,7 @@ describe('PlaceholderPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
     const event = {
       clipboardData: {
@@ -72,7 +71,7 @@ describe('PlaceholderPlugin', () => {
     pipeHandler(editor, { handlerKey: 'onPaste' })?.(event);
 
     expect(editor.read.children()).toMatchObject([
-      { children: [{ text: '' }], type: KEYS.placeholder },
+      { children: [{ text: '' }], type: 'placeholder' },
     ]);
   });
 
@@ -84,7 +83,7 @@ describe('PlaceholderPlugin', () => {
         anchor: { offset: 4, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: 'text' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'text' }], type: 'paragraph' }],
     });
     const event = {
       clipboardData: {
@@ -98,8 +97,8 @@ describe('PlaceholderPlugin', () => {
     pipeHandler(editor, { handlerKey: 'onPaste' })?.(event);
 
     expect(editor.read.children()).toMatchObject([
-      { children: [{ text: 'text' }], type: KEYS.p },
-      { children: [{ text: '' }], type: KEYS.placeholder },
+      { children: [{ text: 'text' }], type: 'paragraph' },
+      { children: [{ text: '' }], type: 'placeholder' },
     ]);
   });
 
@@ -111,7 +110,7 @@ describe('PlaceholderPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
 
     editor
@@ -121,8 +120,8 @@ describe('PlaceholderPlugin', () => {
       ]);
 
     expect(editor.read.children()).toMatchObject([
-      { children: [{ text: '' }], type: KEYS.p },
-      { children: [{ text: '' }], type: KEYS.placeholder },
+      { children: [{ text: '' }], type: 'paragraph' },
+      { children: [{ text: '' }], type: 'placeholder' },
     ]);
   });
 
@@ -132,8 +131,8 @@ describe('PlaceholderPlugin', () => {
       initialValue: [
         {
           children: [{ text: '' }],
-          mediaType: KEYS.img,
-          type: KEYS.placeholder,
+          mediaType: 'image',
+          type: 'placeholder',
         },
       ],
     });
@@ -141,7 +140,7 @@ describe('PlaceholderPlugin', () => {
     editor.plugin(PlaceholderPlugin).update.replaceMedia(
       {
         caption: 'Uploaded image',
-        type: KEYS.img,
+        type: 'image',
         url: 'https://platejs.org/uploaded.png',
       },
       { at: [0] }
@@ -152,7 +151,7 @@ describe('PlaceholderPlugin', () => {
     expect(image).not.toHaveProperty('caption');
     expect(image).toMatchObject({
       children: [{ text: 'Uploaded image' }],
-      type: KEYS.img,
+      type: 'image',
     });
     expect(editor.read.value()).not.toHaveProperty('roots');
   });
@@ -182,7 +181,7 @@ describe('PlaceholderPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
     const file = new File(['image'], 'image.png', { type: 'image/png' });
 
@@ -196,7 +195,7 @@ describe('PlaceholderPlugin', () => {
       editor.plugin(PlaceholderPlugin).store.get('uploadingFiles')
     ).toEqual({});
     expect(editor.read.children()).toEqual([
-      { children: [{ text: '' }], type: KEYS.p },
+      { children: [{ text: '' }], type: 'paragraph' },
     ]);
   });
 
@@ -206,12 +205,12 @@ describe('PlaceholderPlugin', () => {
         PlaceholderPlugin.configure({
           initialState: {
             uploadConfig: {
-              image: { mediaType: KEYS.img },
+              image: { mediaType: 'image' },
             },
           },
         }),
       ],
-      initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
 
     editor
@@ -232,12 +231,12 @@ describe('PlaceholderPlugin', () => {
         PlaceholderPlugin.configure({
           initialState: {
             uploadConfig: {
-              blob: { mediaType: KEYS.file },
+              blob: { mediaType: 'file' },
             },
           },
         }),
       ],
-      initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
 
     editor
@@ -248,15 +247,15 @@ describe('PlaceholderPlugin', () => {
       );
 
     expect(editor.read.children().at(1)).toMatchObject({
-      mediaType: KEYS.file,
-      type: KEYS.placeholder,
+      mediaType: 'file',
+      type: 'placeholder',
     });
   });
 
   it('looks up missing MIME types by extension', () => {
     const editor = createPlateEditor({
       plugins: [PlaceholderPlugin],
-      initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
 
     editor
@@ -264,8 +263,8 @@ describe('PlaceholderPlugin', () => {
       .update.insertMedia([new File(['image'], 'image.png')], { at: [1] });
 
     expect(editor.read.children().at(1)).toMatchObject({
-      mediaType: KEYS.img,
-      type: KEYS.placeholder,
+      mediaType: 'image',
+      type: 'placeholder',
     });
   });
 
@@ -277,13 +276,13 @@ describe('PlaceholderPlugin', () => {
             uploadConfig: {
               image: {
                 maxFileCount: 1,
-                mediaType: KEYS.img,
+                mediaType: 'image',
               },
             },
           },
         }),
       ],
-      initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
 
     editor
@@ -307,13 +306,13 @@ describe('PlaceholderPlugin', () => {
             uploadConfig: {
               image: {
                 maxFileSize: '1KB',
-                mediaType: KEYS.img,
+                mediaType: 'image',
               },
             },
           },
         }),
       ],
-      initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
 
     editor
@@ -335,7 +334,7 @@ describe('PlaceholderPlugin', () => {
           initialState: { multiple: false },
         }),
       ],
-      initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
 
     editor

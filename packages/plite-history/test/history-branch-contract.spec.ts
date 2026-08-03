@@ -121,6 +121,38 @@ describe('immutable history branches', () => {
     ]);
   });
 
+  it('keeps a skipped sibling insert after undo restores and crosses it', () => {
+    const editor = createEditor({
+      extensions: [history()],
+      initialValue: [paragraph('alpha')],
+    });
+
+    editor.update((tx) => {
+      tx.history.newBatch();
+      tx.nodes.insert(paragraph('local'), { at: [1] });
+    });
+    editor.update({ history: 'skip' }, (tx) => {
+      tx.nodes.insert(paragraph('remote'), { at: [1] });
+    });
+    editor.update((tx) => {
+      tx.history.newBatch();
+      tx.nodes.remove({ at: [1] });
+    });
+
+    editor.update((tx) => tx.history.undo());
+    assert.deepEqual(editor.read.children(), [
+      paragraph('alpha'),
+      paragraph('remote'),
+      paragraph('local'),
+    ]);
+
+    editor.update((tx) => tx.history.undo());
+    assert.deepEqual(editor.read.children(), [
+      paragraph('alpha'),
+      paragraph('remote'),
+    ]);
+  });
+
   it('throws an unresolvable mapping instead of silently deleting history', () => {
     const editor = createEditor({
       extensions: [history()],

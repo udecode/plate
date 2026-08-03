@@ -8,7 +8,7 @@ import {
 
 import {
   createEditor,
-  defineEditorExtension,
+  defineExtension,
   type Element,
   type Editor as EditorType,
 } from '@platejs/plite';
@@ -82,8 +82,7 @@ describe('apply/onChange hard cuts', () => {
     const events: string[] = [];
     const editor = createEditor({
       extensions: [
-        defineEditorExtension({
-          name: 'commit-timing-listener',
+        defineExtension('commit-timing-listener', {
           on: {
             commit({ commit }) {
               events.push(`commit:${commit.changed.has('text')}`);

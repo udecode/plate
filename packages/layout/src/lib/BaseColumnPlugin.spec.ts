@@ -1,9 +1,24 @@
 import { createBaseEditor } from '@platejs/core';
-import { KEYS, NODES, type TColumnGroupElement } from '@platejs/utils';
-import { BaseColumnItemPlugin, BaseColumnPlugin } from './BaseColumnPlugin';
+import { PLUGINS } from '@platejs/utils';
+import {
+  BaseColumnItemPlugin,
+  BaseColumnPlugin,
+  type ColumnElement,
+  type ColumnGroupElement,
+} from './BaseColumnPlugin';
 import { ColumnItemPlugin, ColumnPlugin } from '../react/ColumnPlugin';
 import assert from 'node:assert/strict';
-import { type Selection, type Value } from '@platejs/plite';
+import { type Element, type Selection } from '@platejs/plite';
+
+const columnPlugins = [BaseColumnPlugin] as const;
+
+type ColumnNode = Omit<ColumnElement, 'children'> & {
+  children: readonly Element[];
+};
+type ColumnGroupNode = Omit<ColumnGroupElement, 'children'> & {
+  children: readonly ColumnNode[];
+};
+type ColumnValue = readonly Element[];
 
 describe('BaseColumnPlugin schema', () => {
   it('declares the item as an exact required Base and React dependency', () => {
@@ -30,15 +45,17 @@ describe('BaseColumnPlugin schema', () => {
     expect(editor.read.schema.create(BaseColumnPlugin)).toEqual({
       children: [
         {
-          children: [{ children: [{ text: '' }], type: KEYS.p }],
-          type: KEYS.column,
+          children: [{ children: [{ text: '' }], type: 'paragraph' }],
+          type: 'column',
+          width: '50%',
         },
         {
-          children: [{ children: [{ text: '' }], type: KEYS.p }],
-          type: KEYS.column,
+          children: [{ children: [{ text: '' }], type: 'paragraph' }],
+          type: 'column',
+          width: '50%',
         },
       ],
-      type: NODES.columnGroup,
+      type: 'columnGroup',
     });
     expect(editor.read.schema.element(BaseColumnPlugin)?.groups).toContain(
       'block'
@@ -50,8 +67,9 @@ describe('BaseColumnPlugin schema', () => {
       editor.read.schema.assertDocument({
         children: [
           {
-            children: [{ children: [{ text: '' }], type: KEYS.p }],
-            type: KEYS.column,
+            children: [{ children: [{ text: '' }], type: 'paragraph' }],
+            type: 'column',
+            width: '50%',
           },
         ],
       })
@@ -60,10 +78,10 @@ describe('BaseColumnPlugin schema', () => {
       editor.read.schema.assertFragment([
         {
           children: [
-            { children: [{ text: '' }], type: KEYS.p },
-            { children: [{ text: '' }], type: KEYS.p },
+            { children: [{ text: '' }], type: 'paragraph' },
+            { children: [{ text: '' }], type: 'paragraph' },
           ],
-          type: NODES.columnGroup,
+          type: 'columnGroup',
         },
       ])
     ).toThrow(/cannot contain/i);
@@ -72,11 +90,12 @@ describe('BaseColumnPlugin schema', () => {
         {
           children: [
             {
-              children: [{ children: [{ text: '' }], type: KEYS.p }],
-              type: KEYS.column,
+              children: [{ children: [{ text: '' }], type: 'paragraph' }],
+              type: 'column',
+              width: '50%',
             },
           ],
-          type: NODES.columnGroup,
+          type: 'columnGroup',
         },
       ])
     ).toThrow(/at least 2 children/i);
@@ -86,16 +105,18 @@ describe('BaseColumnPlugin schema', () => {
           {
             children: [
               {
-                children: [{ children: [{ text: '' }], type: KEYS.p }],
-                type: KEYS.column,
+                children: [{ children: [{ text: '' }], type: 'paragraph' }],
+                type: 'column',
+                width: '50%',
               },
               {
-                children: [{ children: [{ text: '' }], type: KEYS.p }],
-                type: KEYS.column,
+                children: [{ children: [{ text: '' }], type: 'paragraph' }],
+                type: 'column',
+                width: '50%',
               },
             ],
             layout: [50, '50'],
-            type: NODES.columnGroup,
+            type: 'columnGroup',
           },
         ],
       })
@@ -104,21 +125,25 @@ describe('BaseColumnPlugin schema', () => {
 });
 
 {
-  const twoColumns: Value = [
+  const twoColumns: ColumnValue = [
     {
       children: [
         {
-          children: [{ children: [{ text: 'Column 1 text' }], type: 'p' }],
+          children: [
+            { children: [{ text: 'Column 1 text' }], type: 'paragraph' },
+          ],
           type: 'column',
           width: '50%',
         },
         {
-          children: [{ children: [{ text: 'Column 2 text' }], type: 'p' }],
+          children: [
+            { children: [{ text: 'Column 2 text' }], type: 'paragraph' },
+          ],
           type: 'column',
           width: '50%',
         },
       ],
-      type: 'column_group',
+      type: 'columnGroup',
     },
   ];
 
@@ -127,16 +152,16 @@ describe('BaseColumnPlugin schema', () => {
     value = twoColumns,
   }: {
     selection?: Selection;
-    value?: Value;
+    value?: ColumnValue;
   } = {}) =>
     createBaseEditor({
-      plugins: [BaseColumnPlugin],
+      plugins: columnPlugins,
       selection,
       initialValue: value,
     });
 
   const getColumnGroup = (editor: ReturnType<typeof createEditor>) => {
-    const entry = editor.read.nodes.get<TColumnGroupElement>([0]);
+    const entry = editor.read.nodes.get<ColumnGroupNode>([0]);
 
     assert(entry);
 
@@ -151,17 +176,21 @@ describe('BaseColumnPlugin schema', () => {
             {
               children: [
                 {
-                  children: [{ children: [{ text: 'First' }], type: 'p' }],
+                  children: [
+                    { children: [{ text: 'First' }], type: 'paragraph' },
+                  ],
                   type: 'column',
                   width: '34%',
                 },
                 {
-                  children: [{ children: [{ text: 'Second' }], type: 'p' }],
+                  children: [
+                    { children: [{ text: 'Second' }], type: 'paragraph' },
+                  ],
                   type: 'column',
                   width: '33%',
                 },
               ],
-              type: 'column_group',
+              type: 'columnGroup',
             },
           ],
         });
@@ -175,7 +204,7 @@ describe('BaseColumnPlugin schema', () => {
         expect(columnGroup.children[2].width).toBe('33%');
         expect(columnGroup.children[0].width).toBe('34%');
         expect(columnGroup.children[2].children[0]).toMatchObject({
-          type: 'p',
+          type: 'paragraph',
         });
       });
 
@@ -185,17 +214,21 @@ describe('BaseColumnPlugin schema', () => {
             {
               children: [
                 {
-                  children: [{ children: [{ text: 'Existing' }], type: 'p' }],
+                  children: [
+                    { children: [{ text: 'Existing' }], type: 'paragraph' },
+                  ],
                   type: 'column',
                   width: '50%',
                 },
                 {
-                  children: [{ children: [{ text: 'Second' }], type: 'p' }],
+                  children: [
+                    { children: [{ text: 'Second' }], type: 'paragraph' },
+                  ],
                   type: 'column',
                   width: '25%',
                 },
               ],
-              type: 'column_group',
+              type: 'columnGroup',
             },
           ],
         });
@@ -215,29 +248,33 @@ describe('BaseColumnPlugin schema', () => {
     describe('insertGroup', () => {
       it('inserts evenly sized columns', () => {
         const editor = createEditor({
-          value: [{ children: [{ text: 'Before' }], type: 'p' }],
+          value: [{ children: [{ text: 'Before' }], type: 'paragraph' }],
         });
 
         editor
           .plugin(BaseColumnItemPlugin)
           .update.insertGroup({ at: [1], columns: 3 });
 
-        const entry = editor.read.nodes.get<TColumnGroupElement>([1]);
+        const entry = editor.read.nodes.get<ColumnGroupNode>([1]);
 
         assert(entry);
         expect(BaseColumnPlugin.name).toBe('columnGroup');
-        expect(BaseColumnPlugin.type).toBe(NODES.columnGroup);
-        expect(entry[0].type).toBe(NODES.columnGroup);
+        expect(BaseColumnPlugin.name).toBe(PLUGINS.columnGroup);
+        expect(entry[0].type).toBe(
+          editor.plugin(BaseColumnPlugin).schema.element.type
+        );
         expect(entry[0].children).toHaveLength(3);
         expect(entry[0].children[0].width).toContain('33.3333');
         expect(entry[0].children[1].width).toContain('33.3333');
         expect(entry[0].children[2].width).toContain('33.3333');
-        expect(entry[0].children[0].children[0]).toMatchObject({ type: 'p' });
+        expect(entry[0].children[0].children[0]).toMatchObject({
+          type: 'paragraph',
+        });
       });
 
       it('selects the first inserted block when asked', () => {
         const editor = createEditor({
-          value: [{ children: [{ text: 'Before' }], type: 'p' }],
+          value: [{ children: [{ text: 'Before' }], type: 'paragraph' }],
         });
 
         editor.update.column.insertGroup({
@@ -257,26 +294,32 @@ describe('BaseColumnPlugin schema', () => {
             {
               children: [
                 {
-                  children: [{ children: [{ text: 'Left' }], type: 'p' }],
+                  children: [
+                    { children: [{ text: 'Left' }], type: 'paragraph' },
+                  ],
                   type: 'column',
                   width: '33%',
                 },
                 {
-                  children: [{ children: [{ text: 'Middle' }], type: 'p' }],
+                  children: [
+                    { children: [{ text: 'Middle' }], type: 'paragraph' },
+                  ],
                   type: 'column',
                   width: '33%',
                 },
                 {
-                  children: [{ children: [{ text: 'Right' }], type: 'p' }],
+                  children: [
+                    { children: [{ text: 'Right' }], type: 'paragraph' },
+                  ],
                   type: 'column',
                   width: '34%',
                 },
               ],
-              type: 'column_group',
+              type: 'columnGroup',
             },
           ],
         });
-        const entry = editor.read.nodes.get<TColumnGroupElement>([0]);
+        const entry = editor.read.nodes.get<ColumnGroupNode>([0]);
 
         assert(entry);
         editor.update.column.moveMiddle(entry, { direction: 'left' });
@@ -292,26 +335,30 @@ describe('BaseColumnPlugin schema', () => {
             {
               children: [
                 {
-                  children: [{ children: [{ text: 'Left' }], type: 'p' }],
+                  children: [
+                    { children: [{ text: 'Left' }], type: 'paragraph' },
+                  ],
                   type: 'column',
                   width: '33%',
                 },
                 {
-                  children: [{ children: [{ text: '' }], type: 'p' }],
+                  children: [{ children: [{ text: '' }], type: 'paragraph' }],
                   type: 'column',
                   width: '33%',
                 },
                 {
-                  children: [{ children: [{ text: 'Right' }], type: 'p' }],
+                  children: [
+                    { children: [{ text: 'Right' }], type: 'paragraph' },
+                  ],
                   type: 'column',
                   width: '34%',
                 },
               ],
-              type: 'column_group',
+              type: 'columnGroup',
             },
           ],
         });
-        const entry = editor.read.nodes.get<TColumnGroupElement>([0]);
+        const entry = editor.read.nodes.get<ColumnGroupNode>([0]);
 
         assert(entry);
         expect(
@@ -335,17 +382,21 @@ describe('BaseColumnPlugin schema', () => {
             {
               children: [
                 {
-                  children: [{ children: [{ text: 'abc' }], type: 'p' }],
+                  children: [
+                    { children: [{ text: 'abc' }], type: 'paragraph' },
+                  ],
                   type: 'column',
                   width: '50%',
                 },
                 {
-                  children: [{ children: [{ text: 'def' }], type: 'p' }],
+                  children: [
+                    { children: [{ text: 'def' }], type: 'paragraph' },
+                  ],
                   type: 'column',
                   width: '50%',
                 },
               ],
-              type: 'column_group',
+              type: 'columnGroup',
             },
           ],
         });
@@ -375,17 +426,21 @@ describe('BaseColumnPlugin schema', () => {
             {
               children: [
                 {
-                  children: [{ children: [{ text: 'abc' }], type: 'p' }],
+                  children: [
+                    { children: [{ text: 'abc' }], type: 'paragraph' },
+                  ],
                   type: 'column',
                   width: '50%',
                 },
                 {
-                  children: [{ children: [{ text: 'def' }], type: 'p' }],
+                  children: [
+                    { children: [{ text: 'def' }], type: 'paragraph' },
+                  ],
                   type: 'column',
                   width: '50%',
                 },
               ],
-              type: 'column_group',
+              type: 'columnGroup',
             },
           ],
         });
@@ -434,27 +489,27 @@ describe('BaseColumnPlugin schema', () => {
             {
               children: [
                 {
-                  children: [{ children: [{ text: 'A' }], type: 'p' }],
+                  children: [{ children: [{ text: 'A' }], type: 'paragraph' }],
                   type: 'column',
                   width: '25%',
                 },
                 {
-                  children: [{ children: [{ text: 'B' }], type: 'p' }],
+                  children: [{ children: [{ text: 'B' }], type: 'paragraph' }],
                   type: 'column',
                   width: '25%',
                 },
                 {
-                  children: [{ children: [{ text: 'C' }], type: 'p' }],
+                  children: [{ children: [{ text: 'C' }], type: 'paragraph' }],
                   type: 'column',
                   width: '25%',
                 },
                 {
-                  children: [{ children: [{ text: 'D' }], type: 'p' }],
+                  children: [{ children: [{ text: 'D' }], type: 'paragraph' }],
                   type: 'column',
                   width: '25%',
                 },
               ],
-              type: 'column_group',
+              type: 'columnGroup',
             },
           ],
         });
@@ -474,7 +529,7 @@ describe('BaseColumnPlugin schema', () => {
           widths: ['33%', '33%', '34%'],
         });
         editor.update.nodes.insert(
-          { children: [{ text: 'Column 3 text' }], type: 'p' },
+          { children: [{ text: 'Column 3 text' }], type: 'paragraph' },
           { at: [0, 2, 1] }
         );
         editor.update.column.set({ at: [0], widths: ['50%', '50%'] });
@@ -519,7 +574,9 @@ describe('BaseColumnPlugin schema', () => {
             anchor: { offset: 0, path: [0, 0] },
             focus: { offset: 0, path: [0, 0] },
           },
-          value: [{ children: [{ text: 'Some paragraph text' }], type: 'p' }],
+          value: [
+            { children: [{ text: 'Some paragraph text' }], type: 'paragraph' },
+          ],
         });
 
         editor.update.column.toggle({ columns: 2 });
@@ -560,22 +617,22 @@ describe('BaseColumnPlugin schema', () => {
             {
               children: [
                 {
-                  children: [{ children: [{ text: 'A' }], type: 'p' }],
+                  children: [{ children: [{ text: 'A' }], type: 'paragraph' }],
                   type: 'column',
                   width: '33%',
                 },
                 {
-                  children: [{ children: [{ text: 'B' }], type: 'p' }],
+                  children: [{ children: [{ text: 'B' }], type: 'paragraph' }],
                   type: 'column',
                   width: '33%',
                 },
                 {
-                  children: [{ children: [{ text: 'C' }], type: 'p' }],
+                  children: [{ children: [{ text: 'C' }], type: 'paragraph' }],
                   type: 'column',
                   width: '34%',
                 },
               ],
-              type: 'column_group',
+              type: 'columnGroup',
             },
           ],
         });
@@ -587,8 +644,8 @@ describe('BaseColumnPlugin schema', () => {
       });
 
       it('does nothing without a selected block', () => {
-        const value: Value = [
-          { children: [{ text: 'Some paragraph text' }], type: 'p' },
+        const value: ColumnValue = [
+          { children: [{ text: 'Some paragraph text' }], type: 'paragraph' },
         ];
         const editor = createEditor({ value });
 
@@ -604,17 +661,17 @@ describe('BaseColumnPlugin schema', () => {
           {
             children: [
               {
-                children: [{ children: [{ text: 'A' }], type: 'p' }],
+                children: [{ children: [{ text: 'A' }], type: 'paragraph' }],
                 type: 'column',
                 width: '20%',
               },
               {
-                children: [{ children: [{ text: 'B' }], type: 'p' }],
+                children: [{ children: [{ text: 'B' }], type: 'paragraph' }],
                 type: 'column',
                 width: '20%',
               },
             ],
-            type: 'column_group',
+            type: 'columnGroup',
           },
         ],
       });

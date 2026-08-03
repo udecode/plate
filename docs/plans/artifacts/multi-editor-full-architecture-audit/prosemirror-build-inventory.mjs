@@ -1302,7 +1302,7 @@ const inventoryMarkdown = [
   '| Metric | Count |',
   '| --- | ---: |',
   `| Source test/support files | ${harvestedTests.length} |`,
-  '| Named `describe`/`it`/`test` rows | ' + harvestNameCount + ' |',
+  `| Named \`describe\`/\`it\`/\`test\` rows | ${harvestNameCount} |`,
   `| Classified files | ${harvestedTests.length} |`,
   '| Unresolved files | 0 |',
   `| Portable | ${categoryCounts.portable ?? 0} |`,

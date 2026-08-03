@@ -310,7 +310,7 @@ export const createPliteViewSelectionDecorationSource = (
   editor: ReactRuntimeEditor<any>,
   options: PliteViewSelectionDecorationSourceOptions = {}
 ): PliteDecorationSource<PliteViewSelectionDecorationData> =>
-  createDecorationSource<PliteViewSelectionDecorationData>(editor, {
+  createDecorationSource(editor, {
     dirtiness: PLITE_VIEW_SELECTION_DECORATION_DIRTINESS,
     id: PLITE_VIEW_SELECTION_DECORATION_SOURCE_ID,
     read: (context) => readPliteViewSelectionDecorations(editor, context),

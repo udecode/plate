@@ -1,7 +1,7 @@
 import {
-  createEditorRuntime,
+  createEditor,
   createEditorView,
-  defineEditorExtension,
+  defineExtension,
   defineEditorSchema,
   editorCommands,
   schema,
@@ -11,6 +11,7 @@ import {
 } from '@platejs/plite';
 import {
   getLastCommit as editorGetLastCommit,
+  getEditorRuntimeOwner,
   getSelection as editorGetSelection,
   string as editorString,
 } from '@platejs/plite/internal';
@@ -63,85 +64,99 @@ const encodePliteFragment = (fragment: unknown) =>
     )
   );
 
-const contentRootExtension = defineEditorSchema({
-  elements: {
-    paragraph: {
-      content: schema.content.text({ default: 'text', min: 1 }),
-    },
-    'content-card': {
-      content: schema.content.open(),
-      contentRoots: {
-        body: schema.content.not(schema.content.text()),
-      },
-      void: 'editable-island',
-    },
-  },
-  id: 'projected-command-test',
-  root: schema.content.not(schema.content.text()),
-  unknown: 'preserve',
-  version: 1,
-});
-
-const splitSchemaDocumentExtension = defineEditorSchema({
-  elements: {},
-  id: 'projected-command-split-schema-document',
-  root: schema.content.not(schema.content.text()),
-  unknown: 'preserve',
-  version: 1,
-});
-
-const splitSchemaSyncedBlockExtension = defineEditorExtension({
-  name: 'projected-command-split-schema-synced-block',
-  schema: {
+const contentRootExtension = defineEditorSchema(
+  'schema:projected-command-test',
+  {
     elements: {
-      'synced-block': {
+      paragraph: {
         content: schema.content.text({ default: 'text', min: 1 }),
+      },
+      'content-card': {
+        content: schema.content.open(),
         contentRoots: {
           body: schema.content.not(schema.content.text()),
         },
+        void: 'editable-island',
       },
     },
-  },
-});
+    id: 'projected-command-test',
+    root: schema.content.not(schema.content.text()),
+    unknown: 'preserve',
+    version: 1,
+  }
+);
 
-const inlineLinkExtension = defineEditorSchema({
-  elements: {
-    link: {
-      content: schema.content.text({ default: 'text', min: 1 }),
-      inline: true,
-    },
-  },
-  id: 'projected-command-inline-test',
-  root: schema.content.not(schema.content.text()),
-  unknown: 'preserve',
-  version: 1,
-});
+const splitSchemaDocumentExtension = defineEditorSchema(
+  'schema:projected-command-split-schema-document',
+  {
+    elements: {},
+    id: 'projected-command-split-schema-document',
+    root: schema.content.not(schema.content.text()),
+    unknown: 'preserve',
+    version: 1,
+  }
+);
 
-const structuralListExtension = defineEditorSchema({
-  elements: {
-    paragraph: {
-      content: schema.content.text({ default: 'text', min: 1 }),
+const splitSchemaSyncedBlockExtension = defineExtension(
+  'projected-command-split-schema-synced-block',
+  {
+    schema: {
+      elements: {
+        'synced-block': {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          contentRoots: {
+            body: schema.content.not(schema.content.text()),
+          },
+        },
+      },
     },
-    'list-item': {
-      content: schema.content.text({ default: 'text', min: 1 }),
-      groups: ['list-item'],
+  }
+);
+
+const inlineLinkExtension = defineEditorSchema(
+  'schema:projected-command-inline-test',
+  {
+    elements: {
+      link: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+        inline: true,
+      },
     },
-    'bulleted-list': {
-      content: schema.content.group('list-item', {
-        default: { type: 'list-item' },
-        min: 1,
-      }),
+    id: 'projected-command-inline-test',
+    root: schema.content.not(schema.content.text()),
+    unknown: 'preserve',
+    version: 1,
+  }
+);
+
+const structuralListExtension = defineEditorSchema(
+  'schema:projected-command-structural-list-test',
+  {
+    elements: {
+      paragraph: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+      },
+      'list-item': {
+        content: schema.content.text({ default: 'text', min: 1 }),
+        groups: ['list-item'],
+      },
+      'bulleted-list': {
+        content: schema.content.group('list-item', {
+          default: { type: 'list-item' },
+          min: 1,
+        }),
+      },
     },
-  },
-  groups: { 'list-item': {} },
-  id: 'projected-command-structural-list-test',
-  root: schema.content.group('block', {
-    default: { type: 'paragraph' },
-    min: 1,
-  }),
-  unknown: 'reject',
-  version: 1,
-});
+    groups: { 'list-item': {} },
+    id: 'projected-command-structural-list-test',
+    root: schema.content.group('block', {
+      default: { type: 'paragraph' },
+      min: 1,
+    }),
+    unknown: 'reject',
+    version: 1,
+  }
+);
 
 const paragraph = (text: string) => ({
   type: 'paragraph',
@@ -177,7 +192,7 @@ const point = (
 });
 
 const createFixture = (extensions: EditorExtension[] = []) => {
-  const runtime = createEditorRuntime({
+  const runtime = createEditor({
     extensions: [history(), dom(), contentRootExtension, ...extensions],
     initialValue: {
       children: [paragraph('Before'), contentCard(), paragraph('After')],
@@ -196,7 +211,7 @@ const createFixture = (extensions: EditorExtension[] = []) => {
 };
 
 const createRepeatedRootFixture = () => {
-  const runtime = createEditorRuntime({
+  const runtime = createEditor({
     extensions: [history(), dom(), contentRootExtension],
     initialValue: {
       children: [
@@ -222,8 +237,7 @@ const createRepeatedRootFixture = () => {
 };
 
 const getCanonicalRuntimeEditor = (editor: ReactRuntimeEditor) =>
-  ((editor as { runtime?: { editor?: ReactRuntimeEditor } }).runtime?.editor ??
-    editor) as ReactRuntimeEditor;
+  getEditorRuntimeOwner(editor) as ReactRuntimeEditor;
 
 const writeForwardProjectedSelection = (
   editor: ReactRuntimeEditor,
@@ -391,18 +405,20 @@ describe('projected editable commands', () => {
 
   it('declining clipboard handlers preserve unsupported projected paste payloads', () => {
     let insertCount = 0;
-    const clipboardExtension = defineEditorExtension({
-      contributions: [
-        clipboardHandler({
-          insertData() {
-            insertCount++;
+    const clipboardExtension = defineExtension(
+      'projected-command-declining-clipboard',
+      {
+        contributions: [
+          clipboardHandler({
+            insertData() {
+              insertCount++;
 
-            return false;
-          },
-        }),
-      ],
-      name: 'projected-command-declining-clipboard',
-    });
+              return false;
+            },
+          }),
+        ],
+      }
+    );
     const { editor, graph } = createFixture([clipboardExtension]);
     const data = new FakeDataTransfer();
 
@@ -514,19 +530,21 @@ describe('projected editable commands', () => {
 
   it('lets clipboard insertData handlers own projected Plite fragment pastes', () => {
     let insertCount = 0;
-    const clipboardExtension = defineEditorExtension({
-      contributions: [
-        clipboardHandler({
-          insertData(_data, { transaction }) {
-            insertCount++;
-            transaction.text.insert('H');
+    const clipboardExtension = defineExtension(
+      'projected-command-custom-clipboard',
+      {
+        contributions: [
+          clipboardHandler({
+            insertData(_data, { tx }) {
+              insertCount++;
+              tx.text.insert('H');
 
-            return true;
-          },
-        }),
-      ],
-      name: 'projected-command-custom-clipboard',
-    });
+              return true;
+            },
+          }),
+        ],
+      }
+    );
     const { editor, graph } = createFixture([clipboardExtension]);
     const data = new FakeDataTransfer();
 
@@ -553,19 +571,21 @@ describe('projected editable commands', () => {
 
   it('offers unsupported projected paste payloads to clipboard handlers', () => {
     let insertCount = 0;
-    const clipboardExtension = defineEditorExtension({
-      contributions: [
-        clipboardHandler({
-          insertData(_data, { transaction }) {
-            insertCount++;
-            transaction.text.insert('H');
+    const clipboardExtension = defineExtension(
+      'projected-command-custom-payload-clipboard',
+      {
+        contributions: [
+          clipboardHandler({
+            insertData(_data, { tx }) {
+              insertCount++;
+              tx.text.insert('H');
 
-            return true;
-          },
-        }),
-      ],
-      name: 'projected-command-custom-payload-clipboard',
-    });
+              return true;
+            },
+          }),
+        ],
+      }
+    );
     const { editor, graph } = createFixture([clipboardExtension]);
     const data = new FakeDataTransfer();
 
@@ -589,16 +609,18 @@ describe('projected editable commands', () => {
 
   it('preserves projected selection when clipboard insertData handlers throw', () => {
     const pasteError = new Error('custom paste failed');
-    const clipboardExtension = defineEditorExtension({
-      contributions: [
-        clipboardHandler({
-          insertData() {
-            throw pasteError;
-          },
-        }),
-      ],
-      name: 'projected-command-throwing-clipboard',
-    });
+    const clipboardExtension = defineExtension(
+      'projected-command-throwing-clipboard',
+      {
+        contributions: [
+          clipboardHandler({
+            insertData() {
+              throw pasteError;
+            },
+          }),
+        ],
+      }
+    );
     const { editor, graph } = createFixture([clipboardExtension]);
     const data = new FakeDataTransfer();
 
@@ -690,7 +712,7 @@ describe('projected editable commands', () => {
   });
 
   it('deletes a projected selection across split-schema main and named roots atomically', () => {
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       extensions: [
         history(),
         dom(),
@@ -922,9 +944,9 @@ describe('projected editable commands', () => {
 
   it('delete-fragment honors an explicit model selection target', () => {
     const seenDirections: Array<string | undefined> = [];
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       extensions: [
-        defineEditorExtension({
+        defineExtension('projected-command-delete-fragment-handler', {
           commands: ({ handle }) => [
             handle(editorCommands.deleteFragment, ({ input }) => {
               seenDirections.push(input.direction);
@@ -932,7 +954,6 @@ describe('projected editable commands', () => {
               return false;
             }),
           ],
-          name: 'projected-command-delete-fragment-handler',
         }),
       ],
       initialValue: [paragraph('alpha beta')],
@@ -971,7 +992,7 @@ describe('projected editable commands', () => {
   });
 
   it('delete-fragment with a collapsed model selection does not delete text', () => {
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       initialValue: [paragraph('alpha')],
     });
     const editor = createEditorView(runtime) as unknown as ReactRuntimeEditor;
@@ -1002,7 +1023,7 @@ describe('projected editable commands', () => {
   });
 
   it('delete-fragment over a whole single paragraph keeps the block', () => {
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       initialValue: [paragraph('alpha')],
     });
     const editor = createEditorView(runtime) as unknown as ReactRuntimeEditor;
@@ -1030,7 +1051,7 @@ describe('projected editable commands', () => {
   });
 
   it('delete-fragment over a whole sibling paragraph removes that block', () => {
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       initialValue: [paragraph('alpha'), paragraph('beta')],
     });
     const editor = createEditorView(runtime) as unknown as ReactRuntimeEditor;
@@ -1060,7 +1081,7 @@ describe('projected editable commands', () => {
   });
 
   it('delete-fragment over a whole sibling paragraph selects the next block', () => {
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       initialValue: [paragraph('alpha'), paragraph('beta')],
     });
     const editor = createEditorView(runtime) as unknown as ReactRuntimeEditor;
@@ -1093,7 +1114,7 @@ describe('projected editable commands', () => {
     const initialValue = Array.from({ length: 1200 }, (_, index) =>
       paragraph(`block-${index}`)
     );
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       initialValue,
     });
     const editor = createEditorView(runtime) as unknown as ReactRuntimeEditor;
@@ -1130,7 +1151,7 @@ describe('projected editable commands', () => {
   });
 
   it('delete-fragment over mixed top-level marks keeps no active marks when the first text is unmarked', () => {
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       initialValue: [
         paragraph('plain'),
         {
@@ -1160,7 +1181,7 @@ describe('projected editable commands', () => {
   });
 
   it('insert-text over a whole text block with inline children preserves the block', () => {
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       extensions: [dom(), inlineLinkExtension],
       initialValue: [
         {
@@ -1214,7 +1235,7 @@ describe('projected editable commands', () => {
   });
 
   it('insert-text over a whole structural block falls back to a paragraph', () => {
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       extensions: [structuralListExtension],
       initialValue: [
         {
@@ -1285,7 +1306,7 @@ describe('projected editable commands', () => {
   });
 
   it('ownerless projected paste undo restores the transaction-start model selection', () => {
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       extensions: [history(), dom()],
       initialValue: [paragraph('Before'), paragraph('After')],
     });
@@ -1363,7 +1384,7 @@ describe('projected editable commands', () => {
     const initialValue = Array.from({ length: blockCount }, (_, index) =>
       paragraph(`block-${index}`)
     );
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       extensions: [history(), dom()],
       initialValue,
     });

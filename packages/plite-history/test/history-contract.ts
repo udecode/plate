@@ -12,7 +12,6 @@ import type {
 } from '@platejs/plite';
 import {
   createEditor,
-  createEditorRuntime,
   createEditorView,
   defineEditorSchema,
   DocumentChange,
@@ -54,32 +53,35 @@ const container = (...children: Descendant[]): Descendant => ({
   type: 'container',
 });
 
-const ContentRootHistorySchema = defineEditorSchema({
-  elements: {
-    paragraph: {
-      content: schema.content.text({ default: 'text', min: 1 }),
-    },
-    portal: {
-      content: schema.content.text({ default: 'text', min: 1 }),
-      contentRoots: {
-        body: {
-          content: schema.content.type('paragraph', {
-            default: { type: 'paragraph' },
-            min: 1,
-          }),
-          ownership: 'exclusive',
+const ContentRootHistorySchema = defineEditorSchema(
+  'schema:content-root-history',
+  {
+    elements: {
+      paragraph: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+      },
+      portal: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+        contentRoots: {
+          body: {
+            content: schema.content.type('paragraph', {
+              default: { type: 'paragraph' },
+              min: 1,
+            }),
+            ownership: 'exclusive',
+          },
         },
       },
     },
-  },
-  id: 'content-root-history',
-  root: schema.content.types(['paragraph', 'portal'], {
-    default: { type: 'paragraph' },
-    min: 1,
-  }),
-  unknown: 'reject',
-  version: 1,
-});
+    id: 'content-root-history',
+    root: schema.content.types(['paragraph', 'portal'], {
+      default: { type: 'paragraph' },
+      min: 1,
+    }),
+    unknown: 'reject',
+    version: 1,
+  }
+);
 
 const historyTestEditor = () => createEditor({ extensions: [history()] });
 
@@ -516,7 +518,7 @@ describe('plite-history contract', () => {
   });
 
   it('does not merge adjacent text history batches across roots', () => {
-    const editor = createEditorRuntime({
+    const editor = createEditor({
       extensions: [history()],
       initialValue: {
         children: [paragraph('x')],
@@ -550,7 +552,7 @@ describe('plite-history contract', () => {
   });
 
   it('does not merge view-local text history batches across roots', () => {
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       extensions: [history()],
       initialValue: {
         children: [paragraph('m')],
@@ -690,7 +692,7 @@ describe('plite-history contract', () => {
   });
 
   it('does not restore a primary selection into a sibling root undo batch', () => {
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       extensions: [history()],
       initialValue: {
         children: [paragraph('body')],
@@ -784,7 +786,7 @@ describe('plite-history contract', () => {
       children: [{ text: '' }],
       type: 'portal',
     } as Descendant;
-    const editor = createEditorRuntime({
+    const editor = createEditor({
       extensions: [ContentRootHistorySchema, history()],
       initialSelection: {
         anchor: { offset: 3, path: [0, 0], root: 'portal:1' },
@@ -967,7 +969,7 @@ describe('plite-history contract', () => {
   it('rebases rootless replacement selections through non-main root edits', () => {
     const oldChild = paragraph('old');
     const newChild = paragraph('new');
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       extensions: [history()],
       initialValue: {
         children: [paragraph('body')],
@@ -1083,7 +1085,7 @@ describe('plite-history contract', () => {
       children,
       type: 'quote',
     });
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       extensions: [history()],
       initialValue: {
         children: [paragraph('main')],
@@ -1092,7 +1094,7 @@ describe('plite-history contract', () => {
         },
       },
     });
-    const editor = runtime.editor;
+    const editor = runtime;
     const headerEditor = createEditorView(runtime, { root: 'header' });
 
     write(headerEditor, (tx) => {

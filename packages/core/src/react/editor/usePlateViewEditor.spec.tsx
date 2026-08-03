@@ -2,7 +2,7 @@ import { jsx } from '@platejs/test-utils';
 /** @jsx jsx */
 import { renderHook } from '@testing-library/react';
 
-import { createBasePlugin } from '../../lib/plugin/createBasePlugin';
+import { defineBasePlugin } from '../../lib/plugin/defineBasePlugin';
 import * as extendStaticEditorModule from '../../static/editor/withStatic';
 import { usePlateViewEditor } from './usePlateViewEditor';
 
@@ -44,9 +44,9 @@ describe('usePlateViewEditor', () => {
       const options = {
         enabled: true as const,
         id: 'custom-id',
-        plugins: [createBasePlugin({ name: 'test' })],
-        initialValue: [{ children: [{ text: 'Hello' }], type: 'p' }],
-      };
+        plugins: [defineBasePlugin('test', {})],
+        initialValue: [{ children: [{ text: 'Hello' }], type: 'paragraph' }],
+      } as const;
 
       const { result } = renderHook(() => usePlateViewEditor(options));
 
@@ -176,7 +176,12 @@ describe('usePlateViewEditor', () => {
         ({ value }) => usePlateViewEditor({ initialValue: value }),
         {
           initialProps: {
-            value: [{ children: [{ text: 'Initial' }], type: 'p' }],
+            value: [
+              {
+                children: [{ text: 'Initial' }],
+                type: 'paragraph' as const,
+              },
+            ],
           },
         }
       );
@@ -185,7 +190,11 @@ describe('usePlateViewEditor', () => {
       expect(mockCreateStaticEditor).toHaveBeenCalledTimes(1);
 
       // Change value (not in dependency list)
-      rerender({ value: [{ children: [{ text: 'Changed' }], type: 'p' }] });
+      rerender({
+        value: [
+          { children: [{ text: 'Changed' }], type: 'paragraph' as const },
+        ],
+      });
 
       const secondEditor = result.current;
       expect(firstEditor).toBe(secondEditor);
@@ -276,16 +285,16 @@ describe('usePlateViewEditor', () => {
         id: 'complex-editor',
         enabled: true,
         plugins: [
-          createBasePlugin({ name: 'plugin1' }),
-          createBasePlugin({ name: 'plugin2' }),
+          defineBasePlugin('plugin1', {}),
+          defineBasePlugin('plugin2', {}),
         ],
         selection: {
           kind: 'text' as const,
           anchor: { offset: 0, path: [0, 0] },
           focus: { offset: 7, path: [0, 0] },
         },
-        initialValue: [{ children: [{ text: 'Complex' }], type: 'p' }],
-      };
+        initialValue: [{ children: [{ text: 'Complex' }], type: 'paragraph' }],
+      } as const;
 
       const { result } = renderHook(() => usePlateViewEditor(complexOptions));
 

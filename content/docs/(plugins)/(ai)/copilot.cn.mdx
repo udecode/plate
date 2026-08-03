@@ -351,7 +351,7 @@ CopilotPlugin.extend(({ api }) => ({
     triggerQuery: ({ editor }) => {
       // 仅在段落块中触发
       const block = editor.api.block();
-      if (!block || block[0].type !== 'p') return false;
+      if (!block || block[0].type !== 'paragraph') return false;
       // 标准检查
       return editor.selection && 
              !editor.api.isExpanded() && 

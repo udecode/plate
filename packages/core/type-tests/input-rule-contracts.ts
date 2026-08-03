@@ -1,19 +1,32 @@
 import {
   type BlockFenceInputRuleMatch,
   type BlockStartInputRuleMatch,
-  createBasePlugin,
+  defineBasePlugin,
   createRuleFactory,
   type TextSubstitutionMatch,
 } from '@platejs/core';
 
-const ListInputRulePlugin = createBasePlugin({
-  name: 'listInputRule',
+const ListInputRulePlugin = defineBasePlugin('listInputRule', {
   update: () => ({
     toggle: (style: 'decimal' | 'disc') => style,
   }),
 });
 
 const createListInputRule = createRuleFactory(ListInputRulePlugin);
+
+createRuleFactory({
+  type: 'mark',
+  mark: ListInputRulePlugin,
+  start: '**',
+  trigger: '*',
+})();
+
+createRuleFactory({
+  type: 'blockStart',
+  match: '-',
+  node: ListInputRulePlugin,
+  trigger: ' ',
+})();
 
 createListInputRule({
   type: 'blockStart',
@@ -52,6 +65,7 @@ const blockFenceRule = createRuleFactory({
 
     void path;
   },
+  block: ListInputRulePlugin,
   fence: '```',
   on: 'match',
 })();

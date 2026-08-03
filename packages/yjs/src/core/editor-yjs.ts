@@ -1,20 +1,24 @@
 import type {
   EditorCoreStateView,
   EditorCoreUpdateTransaction,
+  Value,
 } from '@platejs/plite';
 
 import type { YjsState, YjsTx } from './types';
 
-type EditorYjsStateView = EditorCoreStateView & {
+type EditorYjsStateView<V extends Value> = EditorCoreStateView<V> & {
   yjs: YjsState;
 };
 
-type EditorYjsUpdateTransaction = EditorCoreUpdateTransaction & {
-  yjs: YjsTx;
-};
+type EditorYjsUpdateTransaction<V extends Value> =
+  EditorCoreUpdateTransaction<V> & {
+    yjs: YjsTx;
+  };
 
-export const getEditorYjsState = (state: EditorCoreStateView): YjsState =>
-  (state as EditorYjsStateView).yjs;
+export const getEditorYjsState = <V extends Value>(
+  state: EditorCoreStateView<V>
+): YjsState => (state as EditorYjsStateView<V>).yjs;
 
-export const getEditorYjsTx = (tx: EditorCoreUpdateTransaction): YjsTx =>
-  (tx as EditorYjsUpdateTransaction).yjs;
+export const getEditorYjsTx = <V extends Value>(
+  tx: EditorCoreUpdateTransaction<V>
+): YjsTx => (tx as EditorYjsUpdateTransaction<V>).yjs;

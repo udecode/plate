@@ -1,0 +1,627 @@
+import type {
+  EditorExtensionReference,
+  EditorUpdateContext,
+} from '@platejs/plite';
+
+import {
+  type AnyBasePlugin,
+  type PlatePluginReadState,
+  type PlatePluginTransaction,
+  type PluginSchemaContext,
+  type PluginSchemaDeclaration,
+  type PluginReference,
+  type PluginSelectorMethods,
+  type PluginSelectors,
+  type WithAnyName,
+  type NormalizePluginSelectors,
+  defineBasePlugin,
+} from '../../lib';
+import type { BasePluginDependencyReferences } from '../../lib/plugin/basePluginCompiler.internal';
+import type {
+  PlatePlugin,
+  PlatePluginContext,
+  PlatePluginDefinitionInput,
+  PlateShortcutRecord,
+  UseHooks,
+  ValidatedPlateShortcuts,
+} from './PlatePlugin';
+import type { NormalizePlatePluginInput } from './platePluginCompiler.internal';
+
+import { toPlatePlugin } from './toPlatePlugin';
+
+type PlatePluginDependencies = readonly (
+  | EditorExtensionReference
+  | PluginReference
+)[];
+
+type PlatePluginConstructorContextDefinition<
+  N extends string,
+  D extends PlatePluginDependencies,
+  S extends object,
+  TSchema extends PluginSchemaDeclaration = never,
+  TTargetPlugins extends readonly (PluginReference | string)[] = readonly [],
+  TType extends string = N,
+  TKey extends string = N,
+> = NormalizePlatePluginInput<
+  Readonly<{
+    initialState: S;
+    name: N;
+    schema: TSchema;
+    targetPlugins: TTargetPlugins;
+  }> &
+    PlatePluginConstructorSchemaIdentity<TSchema, TType, TKey>
+> &
+  Readonly<{ dependencies: D }>;
+
+type PlatePluginConstructorInitialStateInput<
+  N extends string,
+  D extends PlatePluginDependencies,
+  TTargetPlugins extends readonly (PluginReference | string)[],
+> =
+  | ((
+      context: PlatePluginContext<
+        PlatePluginConstructorContextDefinition<N, D, {}, never, TTargetPlugins>
+      >
+    ) => any)
+  | Readonly<Record<string, unknown>>;
+
+type ConstructorFactoryResult<TValue> = TValue extends (
+  ...args: any[]
+) => infer TResult
+  ? TResult
+  : TValue;
+
+type IsAny<TValue> = 0 extends 1 & TValue ? true : false;
+
+type PlatePluginConstructorSchemaIdentity<
+  TSchema extends PluginSchemaDeclaration,
+  TType extends string,
+  TKey extends string,
+> = [TSchema] extends [never]
+  ? Readonly<Record<never, never>>
+  : TSchema extends Readonly<{ element: unknown }>
+    ? Readonly<{ type: TType }>
+    : Readonly<{ key: TKey }>;
+
+type PlatePluginConstructorState<
+  TKeys extends PlatePluginConstructorKey,
+  TInitialStateInput,
+> = 'initialState' extends TKeys
+  ? Extract<ConstructorFactoryResult<TInitialStateInput>, object>
+  : {};
+
+type PlatePluginConstructorRestKey = Exclude<
+  PlatePluginConstructorKey,
+  | 'api'
+  | 'conflicts'
+  | 'dependencies'
+  | 'enabled'
+  | 'initialState'
+  | 'key'
+  | 'name'
+  | 'read'
+  | 'schema'
+  | 'selectors'
+  | 'shortcuts'
+  | 'targetPlugins'
+  | 'type'
+  | 'update'
+>;
+
+type PlatePluginConstructorResultInput<
+  TKeys extends PlatePluginConstructorKey,
+  N extends string,
+  D extends PlatePluginDependencies,
+  TConflicts extends PlatePluginDependencies,
+  S extends object,
+  TApi extends object,
+  TRead extends object,
+  TSelectors extends PluginSelectors<S>,
+  TUpdate extends object,
+  TEnabled extends boolean,
+  TSchema extends PluginSchemaDeclaration,
+  TTargetPlugins extends readonly (PluginReference | string)[],
+  TType extends string,
+  TPropertyKey extends string,
+> = Readonly<{
+  [TKey in Exclude<
+    TKeys,
+    | 'api'
+    | 'conflicts'
+    | 'dependencies'
+    | 'enabled'
+    | 'initialState'
+    | 'key'
+    | 'name'
+    | 'read'
+    | 'schema'
+    | 'selectors'
+    | 'targetPlugins'
+    | 'type'
+    | 'update'
+  >]: true;
+}> &
+  Readonly<{ name: N }> &
+  ('type' extends TKeys
+    ? Readonly<{ type: TType }>
+    : Readonly<Record<never, never>>) &
+  ('key' extends TKeys
+    ? Readonly<{ key: TPropertyKey }>
+    : Readonly<Record<never, never>>) &
+  ('dependencies' extends TKeys
+    ? Readonly<{ dependencies: D }>
+    : Readonly<Record<never, never>>) &
+  ('conflicts' extends TKeys
+    ? Readonly<{ conflicts: TConflicts }>
+    : Readonly<Record<never, never>>) &
+  ('enabled' extends TKeys
+    ? Readonly<{ enabled: TEnabled }>
+    : Readonly<Record<never, never>>) &
+  ('initialState' extends TKeys
+    ? Readonly<{ initialState: S }>
+    : Readonly<Record<never, never>>) &
+  ('api' extends TKeys
+    ? Readonly<{ api: () => TApi }>
+    : Readonly<Record<never, never>>) &
+  ('read' extends TKeys
+    ? Readonly<{ read: () => TRead }>
+    : Readonly<Record<never, never>>) &
+  ('selectors' extends TKeys
+    ? Readonly<{
+        selectors: NormalizePluginSelectors<
+          S,
+          PluginSelectorMethods<TSelectors>
+        >;
+      }>
+    : Readonly<Record<never, never>>) &
+  ('update' extends TKeys
+    ? Readonly<{ update: () => TUpdate }>
+    : Readonly<Record<never, never>>) &
+  ('schema' extends TKeys
+    ? Readonly<{ schema: TSchema }>
+    : Readonly<Record<never, never>>) &
+  ('targetPlugins' extends TKeys
+    ? Readonly<{ targetPlugins: TTargetPlugins }>
+    : Readonly<Record<never, never>>);
+
+type PlatePluginConstructorRestInput<
+  TKeys extends PlatePluginConstructorKey,
+  N extends string,
+  D extends PlatePluginDependencies,
+  S extends object,
+  TSchema extends PluginSchemaDeclaration,
+  TTargetPlugins extends readonly (PluginReference | string)[],
+  TType extends string,
+  TPropertyKey extends string,
+> = Readonly<{
+  [TKey in Extract<
+    TKeys,
+    PlatePluginConstructorRestKey
+  >]: PlatePluginConstructorRestFieldInput<
+    NoInfer<
+      PlatePluginConstructorContextDefinition<
+        N,
+        D,
+        S,
+        TSchema,
+        TTargetPlugins,
+        TType,
+        TPropertyKey
+      >
+    >,
+    TKey
+  >;
+}>;
+
+type PlatePluginConstructorRestFieldInput<
+  C extends PlatePluginConstructorContextDefinition<
+    string,
+    PlatePluginDependencies,
+    object,
+    PluginSchemaDeclaration,
+    readonly (PluginReference | string)[]
+  >,
+  TKey extends PlatePluginConstructorRestKey,
+> = TKey extends 'useHooks'
+  ? UseHooks<WithAnyName<C>>
+  : PlatePluginDefinitionInput<C>[TKey];
+
+type PlatePluginConstructorSchemaInput<
+  N extends string,
+  D extends PlatePluginDependencies,
+  S extends object,
+  TTargetPlugins extends readonly (PluginReference | string)[],
+  TSchema extends PluginSchemaDeclaration,
+  TType extends string,
+  TKey extends string,
+> =
+  | ((
+      context: PluginSchemaContext<
+        PlatePluginConstructorContextDefinition<N, D, S, never, TTargetPlugins>,
+        TType,
+        TKey
+      >
+    ) => TSchema)
+  | (TSchema & Readonly<Record<string, unknown>>);
+
+type PlatePluginConstructorSchemaIdentityInput<
+  TSchema extends PluginSchemaDeclaration,
+  TType extends string,
+  TKey extends string,
+> =
+  TSchema extends Readonly<{ element: unknown }>
+    ? Readonly<{ key?: TKey; type?: TType }>
+    : Readonly<{ key?: TKey; type?: never }>;
+
+type PlatePluginConstructorKey = Exclude<
+  keyof PlatePluginDefinitionInput | 'key' | 'type',
+  'name'
+>;
+
+type PlatePluginConstructorDependencies<
+  TKeys extends PlatePluginConstructorKey,
+  D extends PlatePluginDependencies,
+> = BasePluginDependencyReferences<
+  PlatePluginConstructorRawDependencies<TKeys, D>
+>;
+
+type PlatePluginConstructorRawDependencies<
+  TKeys extends PlatePluginConstructorKey,
+  D extends PlatePluginDependencies,
+> = 'dependencies' extends TKeys ? D : readonly [];
+
+type PlatePluginConstructorUpdateFactory<
+  N extends string,
+  D extends PlatePluginDependencies,
+  S extends object,
+  TSchema extends PluginSchemaDeclaration,
+  TTargetPlugins extends readonly (PluginReference | string)[],
+  TType extends string,
+  TKey extends string,
+  TUpdate extends object,
+> = (
+  context: PlatePluginContext<
+    NoInfer<
+      PlatePluginConstructorContextDefinition<
+        N,
+        D,
+        S,
+        TSchema,
+        TTargetPlugins,
+        TType,
+        TKey
+      >
+    >
+  > & {
+    context: EditorUpdateContext;
+    tx: PlatePluginTransaction<
+      NoInfer<
+        PlatePluginConstructorContextDefinition<
+          N,
+          D,
+          S,
+          TSchema,
+          TTargetPlugins,
+          TType,
+          TKey
+        >
+      >
+    >;
+  }
+) => TUpdate;
+
+type PlatePluginConstructorStateConsumerInput<
+  N extends string,
+  D extends PlatePluginDependencies,
+  S extends object,
+  TSchema extends PluginSchemaDeclaration,
+  TApi extends object,
+  TRead extends object,
+  TSelectors extends PluginSelectors<S>,
+  TUpdate extends object,
+  TTargetPlugins extends readonly (PluginReference | string)[],
+  TType extends string,
+  TKey extends string,
+> = Readonly<{
+  api?: (
+    context: PlatePluginContext<
+      NoInfer<
+        PlatePluginConstructorContextDefinition<
+          N,
+          D,
+          S,
+          TSchema,
+          TTargetPlugins,
+          TType,
+          TKey
+        >
+      >
+    >
+  ) => TApi;
+  read?: (
+    context: PlatePluginContext<
+      NoInfer<
+        PlatePluginConstructorContextDefinition<
+          N,
+          D,
+          S,
+          TSchema,
+          TTargetPlugins,
+          TType,
+          TKey
+        >
+      >
+    > & {
+      state: PlatePluginReadState<
+        NoInfer<
+          PlatePluginConstructorContextDefinition<
+            N,
+            D,
+            S,
+            TSchema,
+            TTargetPlugins,
+            TType,
+            TKey
+          >
+        >
+      >;
+    }
+  ) => TRead;
+  selectors?: TSelectors & PluginSelectors<NoInfer<S>>;
+  update?: PlatePluginConstructorUpdateFactory<
+    N,
+    D,
+    S,
+    TSchema,
+    TTargetPlugins,
+    TType,
+    TKey,
+    TUpdate
+  >;
+}>;
+
+// Factory state is fixed by the constructor before derived-state consumers run.
+type PlatePluginConstructorDeferredStateConsumers = Readonly<{
+  api?: never;
+  read?: never;
+  selectors?: never;
+  update?: never;
+}>;
+
+type PlatePluginConstructorStagedStateConsumerInput<
+  TKeys extends PlatePluginConstructorKey,
+  TInitialStateInput,
+  N extends string,
+  D extends PlatePluginDependencies,
+  S extends object,
+  TSchema extends PluginSchemaDeclaration,
+  TApi extends object,
+  TRead extends object,
+  TSelectors extends PluginSelectors<S>,
+  TUpdate extends object,
+  TTargetPlugins extends readonly (PluginReference | string)[],
+  TType extends string,
+  TKey extends string,
+> =
+  Extract<TKeys, 'api' | 'read' | 'selectors' | 'update'> extends never
+    ? Readonly<Record<never, never>>
+    : 'initialState' extends TKeys
+      ? IsAny<TInitialStateInput> extends true
+        ? PlatePluginConstructorDeferredStateConsumers
+        : Extract<TInitialStateInput, (...args: any[]) => any> extends never
+          ? PlatePluginConstructorStateConsumerInput<
+              N,
+              D,
+              S,
+              TSchema,
+              TApi,
+              TRead,
+              TSelectors,
+              TUpdate,
+              TTargetPlugins,
+              TType,
+              TKey
+            >
+          : PlatePluginConstructorDeferredStateConsumers
+      : PlatePluginConstructorStateConsumerInput<
+          N,
+          D,
+          S,
+          TSchema,
+          TApi,
+          TRead,
+          TSelectors,
+          TUpdate,
+          TTargetPlugins,
+          TType,
+          TKey
+        >;
+
+type CompactBasePluginDefinition<TDefinition> = Readonly<{
+  [TKey in keyof TDefinition]: TDefinition[TKey];
+}>;
+
+export function definePlatePlugin<
+  const N extends string,
+  const TKeys extends PlatePluginConstructorKey,
+  TInitialStateInput,
+  const TApi extends object = {},
+  const TUpdate extends object = {},
+  const TSchema extends PluginSchemaDeclaration = never,
+  const TType extends string = N,
+  const TPropertyKey extends string = N,
+  const D extends PlatePluginDependencies = readonly [],
+  const TConflicts extends PlatePluginDependencies = readonly [],
+  const TTargetPlugins extends readonly (
+    | PluginReference
+    | string
+  )[] = readonly [],
+  const TRead extends object = {},
+  const TSelectors extends PluginSelectors<
+    PlatePluginConstructorState<TKeys, TInitialStateInput>
+  > = {},
+  const TEnabled extends boolean = boolean,
+  const TShortcuts extends PlateShortcutRecord = {},
+>(
+  name: N,
+  definition: Readonly<Record<TKeys, unknown>> &
+    ('schema' extends TKeys
+      ? Readonly<{
+          schema: PlatePluginConstructorSchemaInput<
+            N,
+            PlatePluginConstructorDependencies<TKeys, D>,
+            PlatePluginConstructorState<TKeys, TInitialStateInput>,
+            TTargetPlugins,
+            TSchema,
+            TType,
+            TPropertyKey
+          >;
+        }>
+      : Readonly<{ schema?: never }>) &
+    PlatePluginConstructorRestInput<
+      TKeys,
+      N,
+      PlatePluginConstructorDependencies<TKeys, D>,
+      PlatePluginConstructorState<TKeys, TInitialStateInput>,
+      NoInfer<'schema' extends TKeys ? TSchema : never>,
+      TTargetPlugins,
+      TType,
+      TPropertyKey
+    > &
+    ('schema' extends TKeys
+      ? PlatePluginConstructorSchemaIdentityInput<
+          NoInfer<TSchema>,
+          TType,
+          TPropertyKey
+        >
+      : Readonly<{ key?: never; type?: never }>) &
+    ('initialState' extends TKeys
+      ? Readonly<{
+          initialState: PlatePluginConstructorInitialStateInput<
+            N,
+            PlatePluginConstructorDependencies<TKeys, D>,
+            TTargetPlugins
+          >;
+        }> &
+          Readonly<{ initialState: TInitialStateInput }>
+      : Readonly<{ initialState?: never }>) &
+    PlatePluginConstructorStagedStateConsumerInput<
+      TKeys,
+      TInitialStateInput,
+      N,
+      PlatePluginConstructorDependencies<TKeys, D>,
+      PlatePluginConstructorState<TKeys, TInitialStateInput>,
+      'schema' extends TKeys ? TSchema : never,
+      TApi,
+      TRead,
+      TSelectors,
+      TUpdate,
+      TTargetPlugins,
+      TType,
+      TPropertyKey
+    > &
+    ('shortcuts' extends TKeys
+      ? Readonly<{
+          shortcuts?: ValidatedPlateShortcuts<
+            PlatePluginConstructorContextDefinition<
+              N,
+              PlatePluginConstructorDependencies<TKeys, D>,
+              PlatePluginConstructorState<TKeys, TInitialStateInput>,
+              TSchema,
+              TTargetPlugins,
+              TType,
+              TPropertyKey
+            >,
+            TShortcuts
+          >;
+        }>
+      : Readonly<Record<never, never>>) &
+    Readonly<{
+      conflicts?: TConflicts;
+      dependencies?: D;
+      enabled?: TEnabled;
+      targetPlugins?: TTargetPlugins;
+    }>
+): PlatePlugin<
+  CompactBasePluginDefinition<
+    Omit<
+      NormalizePlatePluginInput<
+        PlatePluginConstructorResultInput<
+          TKeys,
+          N,
+          readonly [],
+          TConflicts,
+          PlatePluginConstructorState<TKeys, TInitialStateInput>,
+          TApi,
+          TRead,
+          TSelectors,
+          TUpdate,
+          TEnabled,
+          'schema' extends TKeys ? TSchema : never,
+          TTargetPlugins,
+          TType,
+          TPropertyKey
+        >
+      >,
+      'dependencies'
+    > &
+      ('dependencies' extends TKeys
+        ? Readonly<{
+            dependencies: PlatePluginConstructorDependencies<TKeys, D>;
+          }>
+        : Readonly<Record<never, never>>)
+  >
+>;
+
+export function definePlatePlugin(name: string, definition: unknown): object {
+  return definePlatePluginRuntime(name, definition);
+}
+
+const definePlatePluginRuntime = (name: string, definition: unknown) => {
+  if (typeof name !== 'string' || name.length === 0) {
+    throw new Error('Plate plugins require a non-empty name.');
+  }
+  if (typeof definition !== 'object' || definition === null) {
+    throw new Error('Plate plugin definitions must be objects.');
+  }
+  if (Object.hasOwn(definition, 'name')) {
+    throw new Error(
+      'Plate plugin identity is positional. Remove `name` from the definition.'
+    );
+  }
+
+  const render = Reflect.get(definition, 'render');
+  const api = Reflect.get(definition, 'api');
+  const initialState = Reflect.get(definition, 'initialState');
+
+  if (
+    typeof render === 'object' &&
+    render !== null &&
+    Object.hasOwn(render, 'node')
+  ) {
+    throw new Error(
+      'Plate plugin `render.node` is private. Use top-level `component`.'
+    );
+  }
+  if (Object.hasOwn(definition, 'api') && typeof api !== 'function') {
+    throw new Error('Plate plugin `api` must be a factory.');
+  }
+  if (typeof initialState === 'function') {
+    for (const field of ['api', 'read', 'selectors', 'update'] as const) {
+      if (Object.hasOwn(definition, field)) {
+        throw new Error(
+          `Plate plugin factory \`initialState\` must define \`${field}\` in a following .extend().`
+        );
+      }
+    }
+  }
+
+  const basePlugin = (
+    defineBasePlugin as unknown as (
+      name: string,
+      definition: unknown
+    ) => AnyBasePlugin
+  )(name, definition);
+
+  return Reflect.apply(toPlatePlugin, undefined, [basePlugin]);
+};

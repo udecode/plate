@@ -60,7 +60,7 @@ describe('writeStaticSelectionClipboardData', () => {
     const editor = createStaticEditor();
     const data = createDataTransfer();
     const fragment = [
-      { children: [{ text: 'Alpha' }], type: 'p' },
+      { children: [{ text: 'Alpha' }], type: 'paragraph' },
     ] satisfies Descendant[];
     const html = document.createElement('div');
 
@@ -96,7 +96,7 @@ describe('writeStaticSelectionClipboardData', () => {
         {
           id: 'block-1',
           children: [{ text: 'Alpha' }],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });

@@ -60,15 +60,25 @@ Current priorities:
   projection, and declaration emit. If it only carries a type through, fix the
   owning generic or keep the stage; callback annotations, casts, and `any` are
   not parity.
-- Plite, Base, and Plate public factories are one object call with no caller
-  generics. Their private types may infer a small environment—Plite
+- Plite, Base, and Plate use the sole public factory grammar
+  `define*(name, definition)`, with no caller generics. Their private types may
+  infer a small environment—Plite
   dependencies, or Plate dependencies plus initial state—beside the author
   input when TypeScript needs that split for contextual callbacks. Do not
   expose that environment or pretend one self-referential generic can infer the
   whole definition. Reject excess fields, normalize once, and preserve the
-  exact definition through a private invariant witness. `name` is descriptor
-  identity; `type` is serialized node identity. Do not expose `PluginConfig`,
+  exact definition through a private invariant witness. `name` is capability
+  identity; element `type` and property `key` are persisted schema identities.
+  Omitted schema identities default to `name`, but they are not the same
+  contract. Do not expose `PluginConfig`,
   public `__config`, raw callback graphs, or a second accumulator machine.
+  The required positional name is lower camel case and human-readable; a
+  different serialized identity belongs in `type`.
+- Public roots expose author contracts, not `Any*`, `Internal*`, compiler and
+  normalization graphs, accumulators, or witnesses. Unparameterized editors
+  expose only guaranteed Core capabilities; package consumers carry concrete
+  editor or descriptor generics. Plite's runtime type is `Editor`; Plate owns
+  `BaseEditor` and `PlateEditor`.
 - Raw `PluginReference` carries nominal identity only; it has no definition
   generic or private witness. Concrete Base and Plate descriptors own the
   single invariant definition witness. Plite's root
@@ -85,6 +95,14 @@ Current priorities:
 - Core may internally distinguish contextually typed author source from its
   canonical lowered Plite definition. That aliasing is not a public export or
   authoring concept.
+- Raw plugin tuples infer lightweight runtime capabilities and
+  descriptor-local node shapes while keeping editor-wide `Value` broad. A
+  closed application definition uses `defineEditor(name, definition)` and
+  generated, committed contracts for exact recursive `Value`, concrete schema
+  types, mutations, and runtime fingerprint verification. Do not make ordinary
+  `editor.api`, `editor.read`, or `editor.update` access recursively evaluate
+  the complete application grammar, and do not introduce size heuristics or
+  depth-limited precision.
 - Low-level React composition is `react({ dom })`: one required object with the
   exact DOM descriptor. Keep one explicit erased implementation boundary only
   for the TypeScript 7 invariant-union reduction limit.
@@ -94,6 +112,14 @@ Current priorities:
 - `.extend()` widens the exact definition; `.configure()` is terminal and
   non-widening; `toPlatePlugin()` is the exact live Base-to-React adapter.
   Factories replace `clone()` and any third copy verb.
+- Extensions install through `editor.install(...)`; DOM/React views are created
+  with `createEditorView(editor, options)`. No editor runtime wrapper or
+  `editor.extend(...)` survives. Root standalone utilities are reserved for
+  editor-independent value operations such as `NodeApi`, `PathApi`, and
+  `isEditor`.
+- Descriptor-aware schema calls identify schema elements and groups. Document
+  property reads use typed property handles or semantic plugin APIs, never a
+  one-property descriptor shortcut.
 - All lifecycle and host/DOM events use one root `on` family with prefixless
   names such as `commit`, `keyDown`, `paste`, `nodeChange`, `textChange`, and
   capture variants. Do not expose a second `handlers` bucket. Private runtime
@@ -116,7 +142,7 @@ Current priorities:
   justifies `.extend()`. Use `.extend()` only for an imported/prebuilt
   declaration, a shared factory the constructor cannot access, or a real
   earlier-stage type dependency. Keep `.configure()` terminal and non-widening.
-  `createBasePlugin()` and `createPlatePlugin()` accept root-level `component`
+  `defineBasePlugin()` and `definePlatePlugin()` accept root-level `component`
   for static/RSC and live consumers; terminal `.configure({ component })`
   replaces it. Base `.extend()` rejects it because independent defaults belong
   in the constructor. Use `toPlatePlugin()` at the owning React adapter to
@@ -151,6 +177,10 @@ Current priorities:
   configuration. Values resolved only after configuration, such as a
   configured node type, stay truthfully broad in the author callback and exact
   at runtime.
+- Put `schema` before inline constructor callbacks that consume its inferred
+  shape. Use one real `.extend()` dependency stage when a callback needs a
+  capability introduced by an earlier result; annotations and casts are not
+  inference repair.
 - Plugin state has one public channel: `initialState` declares defaults,
   `.configure({ initialState })` overrides descriptor defaults, builder
   callbacks use inferred `store`, and consumers use
@@ -172,6 +202,15 @@ Current priorities:
   the active transaction; flat native Plite fields own genuine editor-wide
   substrate. Immutable API publication does not imply method purity, but
   document reads and writes still belong in `read` and `update`.
+- Every element plugin gets descriptor-bound `insert`, `set`, and `remove` on
+  `editor.plugin(Plugin).update`. Closed generated editors additionally expose
+  those methods under the capability name on root and transaction updates.
+  Raw tuples keep authored root/transaction methods exact without materializing
+  a schema-wide generic mutation map. These methods target the descriptor's
+  persisted `type`; callers do not restate identity or `match`. An authored
+  same-name method replaces the synthesized default only when it adds real
+  semantics. Delete noun aliases such as `insertTable`; keep distinct verbs
+  such as `insertColumn` and `merge`.
 - Classify behavior before exposing composition: invariants stay in their
   owner, runtime parameters stay in `initialState` and the scoped store,
   substitutable capabilities may become ordinary plugins, and product policy
@@ -210,7 +249,7 @@ Current priorities:
   disabled. Optional product membership changes in the owning app/registry
   array, not through a disabled tombstone.
 - A plugin that does not own another capability's membership in the consumer's
-  final composition may use `override.plugins[pluginName]` as a weak peer: adapt only
+  final composition may use `override.plugins[name]` as a weak peer: adapt only
   an already-installed target, no-op when absent, never install or mutate
   topology, never disable a required dependency, and yield to the target's
   terminal configuration. This applies even when the adapting plugin can
@@ -231,34 +270,47 @@ Current priorities:
   one conflicting member does not become a public plugin without independently
   passing the capability-promotion bar.
 - A concrete inferred editor exposes every non-empty plugin API through
-  `editor.api.<pluginName>` for complete autocomplete and agent discovery.
+  `editor.api.<name>` for complete autocomplete and agent discovery.
   Generic package code may use `editor.plugin(Plugin).api`; exact raw Plite
   ownership uses `editor.extension(Extension).api`. Every path exposes the same
   descriptor-owned API contributed once at root `api` and projected under
   `name`. The root `api` is always a factory, including for context-free
   values; it receives one context object, and consumer configuration cannot
-  replace it. Keep names human-readable and split serialized node `type` when
-  needed. Do not root-merge implementations, add `getApi`/`pluginApi`, create
+  replace it. Keep names human-readable. Resolve element `type` and property
+  `key` from schema-owning portals or authoring context; use `name` only for
+  capability lookup and namespaces. Do not root-merge
+  implementations, add `getApi`/`pluginApi`, create
   API-name aliases, or move mutations outside `editor.update`.
 - Generic code that accepts an optional descriptor checks
-  `editor.plugin(Plugin).installed` before using that portal. Disabled plugins
-  count as absent. Do not infer plugin availability from root `editor.api`,
-  node types, schema properties, caches, or caught access errors.
-- `editor.plugin(Plugin | pluginName)` is the sole public imperative lookup.
-  Descriptor inputs keep exact inference; runtime names return erased portals;
+  `editor.plugin(Plugin).installed` before using its capabilities or resolved
+  descriptor fields. Disabled plugins count as absent. Schema identity is the
+  exception: uninstalled `.type`/`.key` preserve an exact descriptor identity
+  or use the runtime string conventionally, so read them directly and never
+  add an installed fallback. Do not infer plugin
+  availability from root `editor.api`, node types, schema properties, caches,
+  or caught access errors.
+- `editor.plugin(plugin)` is the sole public imperative lookup, where `plugin`
+  accepts an exact descriptor or `string`. Descriptor inputs keep exact
+  inference; runtime names return erased portals;
   names serve dynamic input and family-agnostic slots that intentionally
   accept whichever installed descriptor owns the name;
-  `{ name }` is not a public lookup input. Its consumer
-  portal exposes scoped capabilities, state, type, installation, and the
-  compiled descriptor; authoring-only `editor` and `defineCodecs` remain in
-  callback contexts. Use portal `.type` when descriptor identity matters and
-  `editor.plugin(name).type` when identity is intentionally erased. Missing runtime names expose
-  `installed: false`; other portal fields throw. Reverse/container/render caches are private,
-  public node questions use schema, injection is compiled on the descriptor,
+  `{ name }` is not a public lookup input. Its consumer portal is the resolved
+  descriptor view: descriptor fields such as `name`, `inject`, `render`,
+  `initialState`, and `targetPlugins` sit directly beside scoped `api`, `read`,
+  `update`, `store`, and `installed`. Never nest the descriptor under
+  `portal.plugin`; callback authoring contexts alone expose the current raw
+  descriptor as `plugin`, with `editor` and `defineCodecs`. Use portal `.name` after lookup when the normalized
+  runtime identity is needed. Name every
+  descriptor-aware API input `plugin`; call it `name` only after normalization.
+  Missing runtime names expose `installed: false`; `.type` and `.key` expose
+  exact descriptor identity or the runtime string's conventional identity,
+  while capability and descriptor fields throw. Reverse/container/render caches are private,
+  public node questions use schema, injection is read from
+  `portal.inject.nodeProps`,
   and codec mapping uses one `registry` namespace.
 - Keep operation hooks flat when their parent namespace already fixes format
-  and flow. `parsers.html` directly owns `query`, `transformData`, and
-  `transformFragment`; an `ingress`/`egress` bucket needs a distinct
+  and flow. The `'text/html'` codec directly owns `query`, `transformData`,
+  and `transformFragment`; an `ingress`/`egress` bucket needs a distinct
   independently consumed lifecycle.
 - Multiple callers of one plugin operation reuse its plugin-owned API; they do
   not justify a parallel raw helper. Keep the algorithm in the plugin.
@@ -283,6 +335,11 @@ Current priorities:
   owning generic or declaration-boundary bug, not a public API concept. A
   public capability interface needs a real independent implementation or
   substitution job and its own semantic owner.
+- Keep dependency sources compact and exact so package declaration emit does
+  not serialize installed graphs. A remaining TS7056 boundary may use the
+  minimum private, exact, explicitly marked declaration stages through
+  documented internal type carriers. The exported plugin stays inferred; no
+  public subset interface, cast, widened dependency, or annotation replaces it.
 - React files follow durable families rather than individual symbols or
   implementation kinds. Keep a component family in one `<Family>.tsx` file
   with its subcomponents, variants, render helpers, and component-local

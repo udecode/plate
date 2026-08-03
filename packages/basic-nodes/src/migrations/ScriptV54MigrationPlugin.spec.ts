@@ -1,18 +1,18 @@
-import { createBaseEditor, createBasePlugin } from '@platejs/core';
-import { schema, target } from '@platejs/plite';
-import { KEYS } from '@platejs/utils';
+import { createBaseEditor, defineBasePlugin } from '@platejs/core';
+import { createEditor, schema, target, type Value } from '@platejs/plite';
 
 import { BaseScriptPlugin } from '../lib/BaseMarkPlugins';
 import { ScriptV54MigrationPlugin } from './ScriptV54MigrationPlugin';
 
-const TestRootPlugin = createBasePlugin({
-  name: 'testRoot',
-  schema: ({ own, plugins, type }) => ({
+const TestRootPlugin = defineBasePlugin('testRoot', {
+  schema: ({ name, plugins }) => ({
     contentRoots: [
-      own.contentRoot(plugins.blockContent(), {
+      {
+        content: plugins.blockContent(),
         ownership: 'exclusive',
-        target: target.types([type]),
-      }),
+        slot: name,
+        target: target.element(name),
+      },
     ],
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
@@ -23,8 +23,9 @@ const TestRootPlugin = createBasePlugin({
 describe('ScriptV54MigrationPlugin', () => {
   it('migrates legacy marks during initialization', () => {
     const editor = createBaseEditor({
+      editor: createEditor<Value>(),
       nodeId: false,
-      plugins: [ScriptV54MigrationPlugin, BaseScriptPlugin],
+      plugins: [ScriptV54MigrationPlugin, BaseScriptPlugin] as const,
       initialValue: [
         {
           children: [
@@ -32,7 +33,7 @@ describe('ScriptV54MigrationPlugin', () => {
             { superscript: true, text: '2' },
             { subscript: false, text: 'O' },
           ],
-          type: KEYS.p,
+          type: 'paragraph',
         },
       ],
       selection: {
@@ -49,7 +50,7 @@ describe('ScriptV54MigrationPlugin', () => {
           { script: 'sup', text: '2' },
           { text: 'O' },
         ],
-        type: KEYS.p,
+        type: 'paragraph',
       },
     ]);
     expect(editor.read.selection()).toEqual({
@@ -61,8 +62,13 @@ describe('ScriptV54MigrationPlugin', () => {
 
   it('migrates primary and named roots during deferred document loads', () => {
     const editor = createBaseEditor({
+      editor: createEditor<Value>(),
       nodeId: false,
-      plugins: [ScriptV54MigrationPlugin, BaseScriptPlugin, TestRootPlugin],
+      plugins: [
+        ScriptV54MigrationPlugin,
+        BaseScriptPlugin,
+        TestRootPlugin,
+      ] as const,
       skipInitialization: true,
     });
 
@@ -75,14 +81,14 @@ describe('ScriptV54MigrationPlugin', () => {
         },
         {
           children: [{ subscript: true, text: 'main' }],
-          type: KEYS.p,
+          type: 'paragraph',
         },
       ],
       roots: {
         notes: [
           {
             children: [{ superscript: true, text: 'root' }],
-            type: KEYS.p,
+            type: 'paragraph',
           },
         ],
       },
@@ -90,12 +96,12 @@ describe('ScriptV54MigrationPlugin', () => {
 
     expect(editor.read.children()[1]).toEqual({
       children: [{ script: 'sub', text: 'main' }],
-      type: KEYS.p,
+      type: 'paragraph',
     });
     expect(editor.read.value().roots?.notes).toEqual([
       {
         children: [{ script: 'sup', text: 'root' }],
-        type: KEYS.p,
+        type: 'paragraph',
       },
     ]);
   });
@@ -103,8 +109,9 @@ describe('ScriptV54MigrationPlugin', () => {
   it('rejects ambiguous legacy marks with their document path', () => {
     expect(() =>
       createBaseEditor({
+        editor: createEditor<Value>(),
         nodeId: false,
-        plugins: [ScriptV54MigrationPlugin, BaseScriptPlugin],
+        plugins: [ScriptV54MigrationPlugin, BaseScriptPlugin] as const,
         initialValue: [
           {
             children: [
@@ -114,7 +121,7 @@ describe('ScriptV54MigrationPlugin', () => {
                 text: 'conflict',
               },
             ],
-            type: KEYS.p,
+            type: 'paragraph',
           },
         ],
       })
@@ -124,8 +131,9 @@ describe('ScriptV54MigrationPlugin', () => {
   it('rejects conflicts with an existing canonical mark', () => {
     expect(() =>
       createBaseEditor({
+        editor: createEditor<Value>(),
         nodeId: false,
-        plugins: [ScriptV54MigrationPlugin, BaseScriptPlugin],
+        plugins: [ScriptV54MigrationPlugin, BaseScriptPlugin] as const,
         initialValue: [
           {
             children: [
@@ -135,7 +143,7 @@ describe('ScriptV54MigrationPlugin', () => {
                 text: 'conflict',
               },
             ],
-            type: KEYS.p,
+            type: 'paragraph',
           },
         ],
       })

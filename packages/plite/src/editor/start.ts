@@ -1,5 +1,5 @@
 import { point as editorPoint } from '../interfaces/editor';
-import type { Editor } from '../interfaces/editor';
+import type { AnyEditor as Editor } from '../interfaces/editor';
 import type { Location } from '../interfaces/location';
 import type { Point } from '../interfaces/point';
 

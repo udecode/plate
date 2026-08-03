@@ -9,7 +9,7 @@ import type {
 } from '@platejs/plite';
 import {
   createEditor,
-  defineEditorExtension,
+  defineExtension,
   editorCommands,
   SelectionApi,
 } from '@platejs/plite';
@@ -73,6 +73,60 @@ const write = (editor: EditorType, fn: Parameters<EditorType['update']>[0]) => {
 };
 
 describe('plite-history integrity contract', () => {
+  it('splits automatic groups at the exact idle boundary', () => {
+    let now = 0;
+    const clock = Object.getOwnPropertyDescriptor(
+      globalThis.performance,
+      'now'
+    );
+
+    Object.defineProperty(globalThis.performance, 'now', {
+      configurable: true,
+      value: () => now,
+    });
+
+    try {
+      const editor = createEditor({
+        extensions: [history({ newBatchDelay: 500 })],
+        initialSelection: {
+          kind: 'text',
+          anchor: { path: [0, 0], offset: 0 },
+          focus: { path: [0, 0], offset: 0 },
+        },
+        initialValue: [paragraph('')],
+      });
+
+      editor.update((tx) => tx.text.insert('a'));
+      now = 499;
+      editor.update((tx) => tx.text.insert('b'));
+      now = 999;
+      editor.update((tx) => tx.text.insert('c'));
+      assert.equal(getHistory(editor).undos.length, 1);
+
+      now = 1500;
+      editor.update((tx) => tx.text.insert('d'));
+      assert.equal(getHistory(editor).undos.length, 2);
+
+      now = 5000;
+      editor.update({ history: 'merge' }, (tx) => tx.text.insert('e'));
+      assert.equal(getHistory(editor).undos.length, 2);
+
+      now = 5001;
+      editor.update({ history: 'new-batch' }, (tx) => tx.text.insert('f'));
+      assert.equal(getHistory(editor).undos.length, 3);
+
+      now = 5002;
+      editor.update((tx) => tx.text.insert('g'));
+      assert.equal(getHistory(editor).undos.length, 4);
+    } finally {
+      if (clock) {
+        Object.defineProperty(globalThis.performance, 'now', clock);
+      } else {
+        Reflect.deleteProperty(globalThis.performance, 'now');
+      }
+    }
+  });
+
   it('treats one outer transaction as one undo unit', () => {
     const editor = historyTestEditor();
 
@@ -202,15 +256,14 @@ describe('plite-history integrity contract', () => {
       focus: { path: [0, 0], offset: 0 },
     });
 
-    const unsubscribe = editor.extend(
-      defineEditorExtension({
+    const unsubscribe = editor.install(
+      defineExtension('test-move-command', {
         commands: ({ handle }) => [
           handle(editorCommands.move, () => {
             seenCommands.push(editorCommands.move.id);
             return false;
           }),
         ],
-        name: 'test-move-command',
       })
     );
 
@@ -235,15 +288,14 @@ describe('plite-history integrity contract', () => {
       focus: { path: [0, 0], offset: 3 },
     });
 
-    const unsubscribe = editor.extend(
-      defineEditorExtension({
+    const unsubscribe = editor.install(
+      defineExtension('test-add-mark-command', {
         commands: ({ handle }) => [
           handle(editorCommands.addMark, () => {
             seenCommands.push(editorCommands.addMark.id);
             return false;
           }),
         ],
-        name: 'test-add-mark-command',
       })
     );
 

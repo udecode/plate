@@ -12,7 +12,7 @@ import type {
 } from './types';
 import {
   BaseParagraphPlugin,
-  createBasePlugin,
+  defineBasePlugin,
   DebugPlugin,
   type DefinitionOf,
 } from '@platejs/core';
@@ -46,6 +46,7 @@ import {
 import { clipboardHandler } from '@platejs/plite-dom';
 import {
   KEYS,
+  NODES,
   type TTableCellBorder,
   type TTableCellElement,
   type TTableElement,
@@ -322,8 +323,8 @@ const parseHtmlCssNumber = (value: string | null | undefined) => {
   return Number.isFinite(parsed) ? parsed : undefined;
 };
 
-export const BaseTableRowPlugin = createBasePlugin({
-  name: KEYS.tr,
+export const BaseTableRowPlugin = defineBasePlugin(KEYS.tr, {
+  type: NODES.tr,
   schema: ({ plugins }) => {
     const [cellType, headerCellType] = plugins.elementTypes([
       BaseTableCellPlugin,
@@ -378,8 +379,8 @@ export const BaseTableRowPlugin = createBasePlugin({
     }),
 });
 
-export const BaseTableCellPlugin = createBasePlugin({
-  name: KEYS.td,
+export const BaseTableCellPlugin = defineBasePlugin(KEYS.td, {
+  type: NODES.td,
   schema: ({ plugins }) => ({
     element: {
       content: plugins.blockContent({
@@ -441,8 +442,8 @@ export const BaseTableCellPlugin = createBasePlugin({
   },
 });
 
-export const BaseTableCellHeaderPlugin = createBasePlugin({
-  name: KEYS.th,
+export const BaseTableCellHeaderPlugin = defineBasePlugin(KEYS.th, {
+  type: NODES.th,
   schema: ({ plugins }) => ({
     element: {
       content: plugins.blockContent({
@@ -518,7 +519,7 @@ const escapeCsvField = (value: string) =>
     : value;
 
 /** Enables support for tables. */
-export const BaseTablePlugin = createBasePlugin({
+export const BaseTablePlugin = defineBasePlugin(KEYS.table, {
   api: ({ editor }) => ({
     createCell: ({
       children,
@@ -563,7 +564,6 @@ export const BaseTablePlugin = createBasePlugin({
         ].includes(kind)
       ),
   }),
-  name: KEYS.table,
   dependencies: [
     BaseTableRowPlugin,
     BaseTableCellPlugin,
@@ -692,7 +692,7 @@ export const BaseTablePlugin = createBasePlugin({
                           type: registry.getType(KEYS.p),
                         },
                       ],
-                type: registry.getType(rowIndex === 0 ? KEYS.th : KEYS.td),
+                type: registry.getType(rowIndex === 0 ? NODES.th : NODES.td),
               };
             }),
             type: registry.getType(KEYS.tr),
@@ -1138,14 +1138,14 @@ export const BaseTablePlugin = createBasePlugin({
       };
     },
   }))
-  .extend(() => ({
+  .extend({
     read: ({ state }) => ({
       getLeftCell: ({ at }: { at?: Location } = {}) =>
         state.table.getAdjacentCell({ at, deltaCol: -1 }),
       getTopCell: ({ at }: { at?: Location } = {}) =>
         state.table.getAdjacentCell({ at, deltaRow: -1 }),
     }),
-  }))
+  })
   .extend(({ api, editor, read, type }) => ({
     read: ({ state }) => ({
       getCellBorders: ({

@@ -70,14 +70,11 @@ const MarkdownPreviewExample = () => {
       },
     ],
   });
-  const markdownSource = usePliteRangeDecorationSource<Record<string, true>>(
-    editor,
-    {
-      id: 'markdown-preview',
-      dirtiness: 'text',
-      read: ({ snapshot }) => collectMarkdownRanges(snapshot.children),
-    }
-  );
+  const markdownSource = usePliteRangeDecorationSource(editor, {
+    id: 'markdown-preview',
+    dirtiness: 'text',
+    read: ({ snapshot }) => collectMarkdownRanges(snapshot.children),
+  });
 
   return (
     <Plite decorationSources={[markdownSource]} editor={editor}>

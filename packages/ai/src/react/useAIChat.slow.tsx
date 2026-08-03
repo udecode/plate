@@ -5,6 +5,7 @@ import { BaseParagraphPlugin } from '@platejs/core';
 import { Plate, createPlateEditor } from '@platejs/core/react';
 import { MarkdownPlugin } from '@platejs/markdown';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
+import { createEditor, type Value } from '@platejs/plite';
 
 import { BaseAIPlugin } from '../lib/BaseAIPlugin';
 import { type AIChatDefinition, AIChatPlugin } from './AIChatPlugin';
@@ -20,9 +21,11 @@ import {
   describe('useAIChatEditor', () => {
     it('deserializes markdown and registers the preview value', () => {
       const primaryEditor = createPlateEditor({
+        editor: createEditor<Value>(),
         plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin],
       });
       const editor = createPlateEditor({
+        editor: createEditor<Value>(),
         plugins: [BaseParagraphPlugin, MarkdownPlugin],
       });
       const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -146,6 +149,7 @@ import {
       const onOpenCursor = mock();
       const onOpenSelection = mock();
       const editor = createPlateEditor({
+        editor: createEditor<Value>(),
         plugins: [
           BaseParagraphPlugin,
           BaseAIPlugin,
@@ -153,8 +157,8 @@ import {
           AIChatPlugin,
         ],
         initialValue: [
-          { children: [{ text: 'one' }], id: 'b1', type: 'p' },
-          { children: [{ text: 'two' }], id: 'b2', type: 'p' },
+          { children: [{ text: 'one' }], id: 'b1', type: 'paragraph' },
+          { children: [{ text: 'two' }], id: 'b2', type: 'paragraph' },
         ],
       });
       editor
@@ -176,7 +180,7 @@ import {
       );
 
       expect(onOpenBlockSelection).toHaveBeenCalledWith([
-        [{ children: [{ text: 'one' }], id: 'b1', type: 'p' }, [0]],
+        [{ children: [{ text: 'one' }], id: 'b1', type: 'paragraph' }, [0]],
       ]);
       expect(onOpenCursor).not.toHaveBeenCalled();
       expect(onOpenSelection).not.toHaveBeenCalled();

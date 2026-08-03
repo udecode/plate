@@ -1,8 +1,8 @@
 import type {
-  TTableCellElement,
-  TTableElement,
-  TTableRowElement,
-} from '@platejs/utils';
+  TableCellElement,
+  TableElement,
+  TableRowElement,
+} from '../BaseTablePlugin';
 
 import { createDetachedTableContext } from './context';
 import type { TableCellFactory } from './mutation';
@@ -23,26 +23,26 @@ const createCell: TableCellFactory = ({ header }) => ({
   type: header ? 'th' : 'td',
 });
 
-const createRow = (row: number): TTableRowElement => ({
+const createRow = (row: number): TableRowElement => ({
   children: [],
   id: `created-row-${row}`,
-  type: 'tr',
+  type: 'tableRow',
 });
 
-const denseTable = (size: number, prefix: string): TTableElement => ({
+const denseTable = (size: number, prefix: string): TableElement => ({
   children: Array.from(
     { length: size },
-    (_, row): TTableRowElement => ({
+    (_, row): TableRowElement => ({
       children: Array.from(
         { length: size },
-        (_, col): TTableCellElement => ({
+        (_, col): TableCellElement => ({
           children: [{ text: `${row}:${col}` }],
           id: `${prefix}-cell-${row}-${col}`,
-          type: 'td',
+          type: 'tableCell',
         })
       ),
       id: `${prefix}-row-${row}`,
-      type: 'tr',
+      type: 'tableRow',
     })
   ),
   id: `${prefix}-table`,
@@ -63,7 +63,7 @@ const measure = (run: () => void, iterations = 1) => {
   return performance.now() - startedAt;
 };
 
-const prepare = (table: TTableElement) =>
+const prepare = (table: TableElement) =>
   prepareTablePaste(table, {
     createCell,
     createRow,
@@ -183,7 +183,7 @@ describe('PreparedTablePaste benchmark', () => {
   });
 
   it('bounds a four-boundary span fallback by affected rows', () => {
-    const target: TTableElement = {
+    const target: TableElement = {
       children: [
         {
           children: [
@@ -192,18 +192,18 @@ describe('PreparedTablePaste benchmark', () => {
               colSpan: 64,
               id: 'merged',
               rowSpan: 64,
-              type: 'td',
+              type: 'tableCell',
             },
           ],
           id: 'row-0',
-          type: 'tr',
+          type: 'tableRow',
         },
         ...Array.from(
           { length: 63 },
-          (_, row): TTableRowElement => ({
+          (_, row): TableRowElement => ({
             children: [],
             id: `row-${row + 1}`,
-            type: 'tr',
+            type: 'tableRow',
           })
         ),
       ],

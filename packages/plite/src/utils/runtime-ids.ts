@@ -1,5 +1,5 @@
 import type { Descendant, RuntimeId } from '../interfaces';
-import type { Editor } from '../interfaces/editor';
+import type { AnyEditor as Editor } from '../interfaces/editor';
 
 const NODE_OWNERS = new WeakMap<object, Editor>();
 const NODE_RUNTIME_IDS = new WeakMap<object, WeakMap<Editor, RuntimeId>>();

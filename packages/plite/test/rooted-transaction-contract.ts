@@ -3,7 +3,6 @@ import { describe, it } from 'node:test';
 
 import {
   createEditor,
-  createEditorRuntime,
   createEditorView,
   defineEditorSchema,
   type Element,
@@ -17,7 +16,7 @@ const paragraph = (text: string) =>
     children: [{ text }],
   }) satisfies Element;
 
-const voidBlock = defineEditorSchema({
+const voidBlock = defineEditorSchema('schema:test-void-block', {
   elements: {
     paragraph: { content: schema.content.text() } as const,
     'void-block': { void: 'block' } as const,
@@ -33,7 +32,7 @@ const voidBlock = defineEditorSchema({
 
 describe('rooted transaction contract', () => {
   it('keeps path anchors root-local', () => {
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       initialValue: {
         children: [paragraph('body')],
         roots: { header: [paragraph('header')] },

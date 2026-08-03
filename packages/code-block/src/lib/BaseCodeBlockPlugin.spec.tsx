@@ -1,24 +1,30 @@
 /** @jsx jsxt */
 
 import {
-  createBaseEditor,
+  type BaseEditorOptions,
+  type BasePluginInput,
+  createBaseEditor as createTypedBaseEditor,
   BaseParagraphPlugin,
-  createBasePlugin,
+  defineBasePlugin,
   DebugPlugin,
 } from '@platejs/core';
 import { pipeDecorate } from '@platejs/core/static/internal';
 import {
   type Element,
+  createEditor as createPliteEditor,
+  type InitialValue,
   type NodeEntry,
   SelectionApi,
   ContentSlice,
   type Descendant,
   type TextInsertFragmentOptions,
   ElementApi,
+  type Value,
 } from '@platejs/plite';
 import { createDataTransfer, jsxt, type TestEditor } from '@platejs/test-utils';
-import { NODES, type TCodeBlockElement } from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 import {
+  type CodeBlockElement,
   BaseCodeBlockPlugin,
   BaseCodeHighlightPlugin,
   BaseCodeLinePlugin,
@@ -27,6 +33,19 @@ import assert from 'node:assert/strict';
 import { getPlateRuntime } from '@platejs/core/internal';
 import { CodeBlockRules } from './CodeBlockRules';
 import { createLowlight } from 'lowlight';
+
+const createBaseEditorForFixture = <const P extends readonly BasePluginInput[]>(
+  options: Omit<BaseEditorOptions, 'plugins'> & {
+    initialValue?: InitialValue<Value>;
+    plugins: P;
+  }
+) =>
+  createTypedBaseEditor({
+    ...options,
+    editor: createPliteEditor<Value>(),
+  });
+
+const createBaseEditor = createBaseEditorForFixture;
 
 describe('BaseCodeBlockPlugin', () => {
   it('injects the html query guard and binds the code block tx group', () => {
@@ -39,8 +58,8 @@ describe('BaseCodeBlockPlugin', () => {
       },
       initialValue: [
         {
-          children: [{ children: [{ text: '' }], type: 'code_line' }],
-          type: 'code_block',
+          children: [{ children: [{ text: '' }], type: 'codeLine' }],
+          type: 'codeBlock',
         },
       ],
     });
@@ -51,32 +70,38 @@ describe('BaseCodeBlockPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: '' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
     const html = new Map([['text/html', '<p>pasted</p>']]);
 
     expect(BaseCodeBlockPlugin.name).toBe('codeBlock');
-    expect(BaseCodeBlockPlugin.type).toBe(NODES.codeBlock);
+    expect(BaseCodeBlockPlugin.name).toBe(PLUGINS.codeBlock);
     expect(BaseCodeLinePlugin.name).toBe('codeLine');
-    expect(BaseCodeLinePlugin.type).toBe(NODES.codeLine);
+    expect(BaseCodeLinePlugin.name).toBe(PLUGINS.codeLine);
     expect(BaseCodeHighlightPlugin.name).toBe('codeSyntax');
-    expect(BaseCodeHighlightPlugin.type).toBe(NODES.codeSyntax);
+    expect(BaseCodeHighlightPlugin.name).toBe(PLUGINS.codeSyntax);
     expect(BaseCodeBlockPlugin.dependencies).toEqual([BaseCodeLinePlugin]);
     expect(BaseCodeHighlightPlugin.dependencies).toEqual([BaseCodeBlockPlugin]);
     expect(editorWithCodeLine.read.schema.create(BaseCodeBlockPlugin)).toEqual({
-      children: [{ children: [{ text: '' }], type: NODES.codeLine }],
-      type: NODES.codeBlock,
+      children: [{ children: [{ text: '' }], type: 'codeLine' }],
+      type: 'codeBlock',
     });
     expect(
       editorWithCodeLine.read.schema.getElementSlicePolicy({
-        children: [{ children: [{ text: '' }], type: NODES.codeLine }],
-        type: NODES.codeBlock,
+        children: [{ children: [{ text: '' }], type: 'codeLine' }],
+        type: 'codeBlock',
       })
     ).toEqual({ preserveContext: true, replaceWhenCovered: false });
+    const highlightEditor = createBaseEditor({
+      plugins: [BaseCodeHighlightPlugin],
+    });
+
     expect(
-      createBaseEditor({
-        plugins: [BaseCodeHighlightPlugin],
-      }).read.schema.property(BaseCodeHighlightPlugin)
+      highlightEditor.read.schema.property({
+        key: highlightEditor.plugin(BaseCodeHighlightPlugin).schema.properties
+          .codeSyntax.key,
+        placement: 'text',
+      })
     ).toMatchObject({ value: { kind: 'boolean' } });
     expect(
       editorWithCodeLine.read.schema.element(BaseCodeBlockPlugin)?.groups
@@ -89,7 +114,7 @@ describe('BaseCodeBlockPlugin', () => {
         children: [
           {
             children: [{ text: '' }],
-            type: NODES.codeLine,
+            type: 'codeLine',
           },
         ],
       })
@@ -111,8 +136,8 @@ describe('BaseCodeBlockPlugin', () => {
     editorWithoutCodeLine.plugin(BaseCodeBlockPlugin).update.insert();
 
     expect(editorWithoutCodeLine.read.children().at(-1)).toEqual({
-      children: [{ children: [{ text: '' }], type: 'code_line' }],
-      type: 'code_block',
+      children: [{ children: [{ text: '' }], type: 'codeLine' }],
+      type: 'codeBlock',
     });
   });
 
@@ -124,13 +149,13 @@ describe('BaseCodeBlockPlugin', () => {
       initialValue: [
         {
           children: [
-            { children: [{ text: 'const a = 1;' }], type: NODES.codeLine },
-            { children: [{ text: '' }], type: NODES.codeLine },
-            { children: [{ text: 'const b = 2;' }], type: NODES.codeLine },
-            { children: [{ text: '' }], type: NODES.codeLine },
+            { children: [{ text: 'const a = 1;' }], type: 'codeLine' },
+            { children: [{ text: '' }], type: 'codeLine' },
+            { children: [{ text: 'const b = 2;' }], type: 'codeLine' },
+            { children: [{ text: '' }], type: 'codeLine' },
           ],
           lang: 'typescript',
-          type: NODES.codeBlock,
+          type: 'codeBlock',
         },
       ],
     });
@@ -144,11 +169,11 @@ describe('BaseCodeBlockPlugin', () => {
     ).toEqual([
       {
         children: [
-          { children: [{ text: 'const a = 1;' }], type: NODES.codeLine },
-          { children: [{ text: '' }], type: NODES.codeLine },
-          { children: [{ text: 'const b = 2;' }], type: NODES.codeLine },
+          { children: [{ text: 'const a = 1;' }], type: 'codeLine' },
+          { children: [{ text: '' }], type: 'codeLine' },
+          { children: [{ text: 'const b = 2;' }], type: 'codeLine' },
         ],
-        type: NODES.codeBlock,
+        type: 'codeBlock',
       },
     ]);
 
@@ -193,15 +218,15 @@ describe('BaseCodeBlockPlugin', () => {
     });
     const entry: NodeEntry<Element> = [
       {
-        children: [{ children: [{ text: 'x' }], type: NODES.codeLine }],
-        type: NODES.codeBlock,
+        children: [{ children: [{ text: 'x' }], type: 'codeLine' }],
+        type: 'codeBlock',
       },
       [0],
     ];
 
     pipeDecorate(editor)?.(entry);
 
-    expect(() => editor.plugin(BaseCodeHighlightPlugin).plugin).toThrow(
+    expect(() => editor.plugin(BaseCodeHighlightPlugin).name).toThrow(
       /not installed/i
     );
   });
@@ -224,15 +249,15 @@ describe('BaseCodeBlockPlugin', () => {
       plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
       initialValue: [
         {
-          children: [{ children: [{ text: code }], type: 'code_line' }],
+          children: [{ children: [{ text: code }], type: 'codeLine' }],
           lang,
-          type: 'code_block',
+          type: 'codeBlock',
         },
       ],
     });
 
   const getCodeBlock = (editor: ReturnType<typeof createFormatterEditor>) => {
-    const entry = editor.read.nodes.get<TCodeBlockElement>([0]);
+    const entry = editor.read.nodes.get<CodeBlockElement>([0]);
     assert(entry);
 
     return entry[0];
@@ -269,10 +294,10 @@ describe('BaseCodeBlockPlugin', () => {
       editor.update.codeBlock.format({ element });
 
       expect(getCodeBlock(editor).children).toEqual([
-        { children: [{ text: '{' }], type: 'code_line' },
-        { children: [{ text: '  "name": "plate",' }], type: 'code_line' },
-        { children: [{ text: '  "type": "editor"' }], type: 'code_line' },
-        { children: [{ text: '}' }], type: 'code_line' },
+        { children: [{ text: '{' }], type: 'codeLine' },
+        { children: [{ text: '  "name": "plate",' }], type: 'codeLine' },
+        { children: [{ text: '  "type": "editor"' }], type: 'codeLine' },
+        { children: [{ text: '}' }], type: 'codeLine' },
       ]);
     });
 
@@ -284,11 +309,11 @@ describe('BaseCodeBlockPlugin', () => {
             children: [
               {
                 children: [{ text: '{"name":"plate","type":"editor"}' }],
-                type: 'code_line',
+                type: 'codeLine',
               },
             ],
             lang: 'json',
-            type: 'code_block',
+            type: 'codeBlock',
           },
         ],
       });
@@ -296,10 +321,10 @@ describe('BaseCodeBlockPlugin', () => {
       editor.update.codeBlock.format({ element });
 
       expect(getCodeBlock(editor).children).toEqual([
-        { children: [{ text: '{' }], type: 'code_line' },
-        { children: [{ text: '  "name": "plate",' }], type: 'code_line' },
-        { children: [{ text: '  "type": "editor"' }], type: 'code_line' },
-        { children: [{ text: '}' }], type: 'code_line' },
+        { children: [{ text: '{' }], type: 'codeLine' },
+        { children: [{ text: '  "name": "plate",' }], type: 'codeLine' },
+        { children: [{ text: '  "type": "editor"' }], type: 'codeLine' },
+        { children: [{ text: '}' }], type: 'codeLine' },
       ]);
     });
   });
@@ -1010,7 +1035,7 @@ describe('BaseCodeBlockPlugin input rules', () => {
         anchor: { offset: 2, path: [0, 0] },
         focus: { offset: 2, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: '``' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '``' }], type: 'paragraph' }],
     });
 
     editor.update.text.insert('`');
@@ -1020,10 +1045,10 @@ describe('BaseCodeBlockPlugin input rules', () => {
         children: [
           {
             children: [{ text: '' }],
-            type: 'code_line',
+            type: 'codeLine',
           },
         ],
-        type: 'code_block',
+        type: 'codeBlock',
       },
     ]);
   });
@@ -1060,10 +1085,10 @@ describe('BaseCodeBlockPlugin input rules', () => {
         children: [
           {
             children: [{ text: '' }],
-            type: 'code_line',
+            type: 'codeLine',
           },
         ],
-        type: 'code_block',
+        type: 'codeBlock',
       },
     ]);
   });
@@ -1072,8 +1097,7 @@ describe('BaseCodeBlockPlugin input rules', () => {
 {
   jsxt;
 
-  const BaseCommentCodecPlugin = createBasePlugin({
-    name: 'comment_parser',
+  const BaseCommentCodecPlugin = defineBasePlugin('commentParser', {
     codecs: ({ defineCodecs }) =>
       defineCodecs({
         'text/plain': {
@@ -1273,16 +1297,18 @@ describe('BaseCodeBlockPlugin input rules', () => {
         </editor>
       ) as TestEditor;
       const deserialize = mock(() => [{ text: 'mixed parser' }]);
-      const MixedSelectionCodecPlugin = createBasePlugin({
-        name: 'mixed_selection_parser',
-        codecs: ({ defineCodecs }) =>
-          defineCodecs({
-            'text/plain': {
-              scope: 'document',
-              decode: () => ContentSlice.closed(deserialize()),
-            },
-          }),
-      });
+      const MixedSelectionCodecPlugin = defineBasePlugin(
+        'mixedSelectionParser',
+        {
+          codecs: ({ defineCodecs }) =>
+            defineCodecs({
+              'text/plain': {
+                scope: 'document',
+                decode: () => ContentSlice.closed(deserialize()),
+              },
+            }),
+        }
+      );
       const editor = createBaseEditor({
         plugins: [
           BaseParagraphPlugin,
@@ -1588,7 +1614,7 @@ const highlightResult = (
   ...children: HighlightResult['children']
 ): HighlightResult => ({ children, type: 'root' });
 
-const getCodeLine = (codeBlock: TCodeBlockElement, index = 0) => {
+const getCodeLine = (codeBlock: CodeBlockElement, index = 0) => {
   const codeLine = codeBlock.children[index];
 
   if (!ElementApi.isElement(codeLine)) {
@@ -1614,7 +1640,7 @@ let editor: ReturnType<typeof createHighlightEditor>;
 
 const getDecorations = (
   editor: ReturnType<typeof createHighlightEditor>,
-  [codeBlock, path]: NodeEntry<TCodeBlockElement>
+  [codeBlock, path]: NodeEntry<CodeBlockElement>
 ) => {
   const decorate = pipeDecorate(editor);
 
@@ -1646,10 +1672,10 @@ beforeEach(() => {
 describe('codeBlockToDecorations', () => {
   it('returns empty decorations for plaintext language', () => {
     // Create a code block with plaintext
-    const codeBlock: TCodeBlockElement = {
-      children: [{ children: [{ text: 'const x = 1;' }], type: 'code_line' }],
+    const codeBlock: CodeBlockElement = {
+      children: [{ children: [{ text: 'const x = 1;' }], type: 'codeLine' }],
       lang: 'plaintext',
-      type: 'code_block',
+      type: 'codeBlock',
     };
 
     const blockPath = [0];
@@ -1679,10 +1705,10 @@ describe('codeBlockToDecorations', () => {
     );
 
     // Create a code block with JavaScript
-    const codeBlock: TCodeBlockElement = {
-      children: [{ children: [{ text: 'const x = 1;' }], type: 'code_line' }],
+    const codeBlock: CodeBlockElement = {
+      children: [{ children: [{ text: 'const x = 1;' }], type: 'codeLine' }],
       lang: 'javascript',
-      type: 'code_block',
+      type: 'codeBlock',
     };
 
     const blockPath = [0];
@@ -1735,15 +1761,15 @@ describe('codeBlockToDecorations', () => {
       )
     );
 
-    const codeBlock: TCodeBlockElement = {
+    const codeBlock: CodeBlockElement = {
       children: [
         {
           children: [{ text: '# Python class with type hints' }],
-          type: 'code_line',
+          type: 'codeLine',
         },
       ],
       lang: 'python',
-      type: 'code_block',
+      type: 'codeBlock',
     };
 
     const result = getDecorations(editor, [codeBlock, [0]]);
@@ -1770,10 +1796,10 @@ describe('codeBlockToDecorations', () => {
     );
 
     // Create a code block with auto language
-    const codeBlock: TCodeBlockElement = {
-      children: [{ children: [{ text: 'const x = 1;' }], type: 'code_line' }],
+    const codeBlock: CodeBlockElement = {
+      children: [{ children: [{ text: 'const x = 1;' }], type: 'codeLine' }],
       lang: 'auto',
-      type: 'code_block',
+      type: 'codeBlock',
     };
 
     const blockPath = [0];
@@ -1791,9 +1817,9 @@ describe('codeBlockToDecorations', () => {
     );
 
     // Create a code block with no language
-    const codeBlock: TCodeBlockElement = {
-      children: [{ children: [{ text: 'const x = 1;' }], type: 'code_line' }],
-      type: 'code_block',
+    const codeBlock: CodeBlockElement = {
+      children: [{ children: [{ text: 'const x = 1;' }], type: 'codeLine' }],
+      type: 'codeBlock',
     };
 
     const blockPath = [0];
@@ -1816,14 +1842,14 @@ describe('codeBlockToDecorations', () => {
     );
 
     // Create a multiline code block
-    const codeBlock: TCodeBlockElement = {
+    const codeBlock: CodeBlockElement = {
       children: [
-        { children: [{ text: 'function test() {' }], type: 'code_line' },
-        { children: [{ text: '  return true;' }], type: 'code_line' },
-        { children: [{ text: '}' }], type: 'code_line' },
+        { children: [{ text: 'function test() {' }], type: 'codeLine' },
+        { children: [{ text: '  return true;' }], type: 'codeLine' },
+        { children: [{ text: '}' }], type: 'codeLine' },
       ],
       lang: 'javascript',
-      type: 'code_block',
+      type: 'codeBlock',
     };
 
     const blockPath = [0];
@@ -1866,10 +1892,10 @@ describe('codeBlockToDecorations', () => {
       throw error;
     });
 
-    const codeBlock: TCodeBlockElement = {
-      children: [{ children: [{ text: 'const x = 1;' }], type: 'code_line' }],
+    const codeBlock: CodeBlockElement = {
+      children: [{ children: [{ text: 'const x = 1;' }], type: 'codeLine' }],
       lang: 'javascript',
-      type: 'code_block',
+      type: 'codeBlock',
     };
 
     const result = getDecorations(editor, [codeBlock, [0]]);
@@ -1890,10 +1916,10 @@ describe('codeBlockToDecorations', () => {
       throw error;
     });
 
-    const codeBlock: TCodeBlockElement = {
-      children: [{ children: [{ text: 'SELECT 1' }], type: 'code_line' }],
+    const codeBlock: CodeBlockElement = {
+      children: [{ children: [{ text: 'SELECT 1' }], type: 'codeLine' }],
       lang: 'sql',
-      type: 'code_block',
+      type: 'codeBlock',
     };
 
     const result = getDecorations(editor, [codeBlock, [0]]);

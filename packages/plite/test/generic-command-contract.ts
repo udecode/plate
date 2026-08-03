@@ -1,22 +1,20 @@
 import {
   defineCommand,
-  defineEditorExtension,
+  defineExtension,
   txOnly,
   type Editor,
   type EditorTransactionSpecBuilder,
   type Value,
 } from '@platejs/plite';
 
-const SpecialExtension = defineEditorExtension({
-  name: 'special',
+const SpecialExtension = defineExtension('special', {
   read: () => ({ value: () => 1 }),
   update: () => ({
     unsafe: txOnly(() => {}),
     value: () => 1,
   }),
 });
-const ExtraExtension = defineEditorExtension({
-  name: 'extra',
+const ExtraExtension = defineExtension('extra', {
   read: () => ({ value: () => 2 }),
 });
 
@@ -76,7 +74,7 @@ plain.update.command(specialCommand, { amount: 1 });
 // @ts-expect-error SpecialEditor lacks ExtraExtension
 special.update.command(specialExtraCommand);
 
-defineEditorExtension({
+defineExtension('host-agnostic-handler', {
   commands: ({ handle }) => [
     handle(hostAgnosticCommand, ({ state }) =>
       state.transaction((tx) => {
@@ -87,9 +85,8 @@ defineEditorExtension({
       })
     ),
   ],
-  name: 'host-agnostic-handler',
 });
-defineEditorExtension({
+defineExtension('special-handler', {
   commands: ({ handle }) => [
     handle(specialCommand, ({ state }) => {
       state.special.value();
@@ -100,9 +97,8 @@ defineEditorExtension({
     }),
   ],
   dependencies: [SpecialExtension],
-  name: 'special-handler',
 });
-defineEditorExtension({
+defineExtension('special-extra-handler', {
   commands: ({ handle }) => [
     handle(specialCommand, ({ state }) => {
       state.special.value();
@@ -118,20 +114,17 @@ defineEditorExtension({
     }),
   ],
   dependencies: [SpecialExtension, ExtraExtension],
-  name: 'special-extra-handler',
 });
-defineEditorExtension({
+defineExtension('bad-special-extra-handler', {
   commands: ({ handle }) => [
     // @ts-expect-error command requires ExtraExtension
     handle(specialExtraCommand, () => false),
   ],
   dependencies: [SpecialExtension],
-  name: 'bad-special-extra-handler',
 });
-defineEditorExtension({
+defineExtension('bad-special-handler', {
   commands: ({ handle }) => [
     // @ts-expect-error command requires SpecialExtension
     handle(specialCommand, () => false),
   ],
-  name: 'bad-special-handler',
 });

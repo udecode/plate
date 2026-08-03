@@ -34,7 +34,7 @@ import type {
   Ancestor,
   Descendant,
   DescendantIn,
-  Editor,
+  AnyEditor as Editor,
   EditorAboveOptions,
   EditorLevelsOptions,
   EditorNextOptions,

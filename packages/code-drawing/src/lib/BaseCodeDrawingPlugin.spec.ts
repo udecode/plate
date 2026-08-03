@@ -1,5 +1,5 @@
 import { createBaseEditor } from '@platejs/core';
-import { KEYS, NODES } from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 
 import { BaseCodeDrawingPlugin } from './BaseCodeDrawingPlugin';
 
@@ -9,17 +9,18 @@ describe('BaseCodeDrawingPlugin', () => {
       plugins: [BaseCodeDrawingPlugin],
     });
 
-    const plugin = editor.plugin(BaseCodeDrawingPlugin).plugin;
-    const element = { children: [{ text: '' }], type: NODES.codeDrawing };
+    const plugin = editor.plugin(BaseCodeDrawingPlugin);
+    const element = { children: [{ text: '' }], type: 'codeDrawing' };
 
     expect(plugin.name).toBe('codeDrawing');
     expect(editor.read.schema.isBlock(element)).toBe(true);
     expect(editor.read.schema.isVoid(element)).toBe(true);
-    expect(editor.read.schema.property(BaseCodeDrawingPlugin)?.value.kind).toBe(
-      'json'
-    );
-    expect(editor.plugin(KEYS.codeDrawing).type).toBe(NODES.codeDrawing);
-    expect(plugin.type).toBe(NODES.codeDrawing);
+    expect(
+      editor.read.schema.property({ key: 'data', placement: 'element' })?.value
+        .kind
+    ).toBe('json');
+    expect(editor.plugin(PLUGINS.codeDrawing).name).toBe(PLUGINS.codeDrawing);
+    expect(plugin.name).toBe(PLUGINS.codeDrawing);
 
     editor.update((tx) => {
       expect(typeof tx.codeDrawing.insert).toBe('function');
@@ -37,7 +38,7 @@ describe('BaseCodeDrawingPlugin', () => {
           {
             children: [{ text: '' }],
             data: { drawingMode: 'unsupported' },
-            type: NODES.codeDrawing,
+            type: 'codeDrawing',
           },
         ],
       })
@@ -52,13 +53,13 @@ describe('BaseCodeDrawingPlugin', () => {
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: 'before' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'before' }], type: 'paragraph' }],
     });
 
     editor.update.codeDrawing.insert();
 
     expect(editor.read.children()).toMatchObject([
-      { children: [{ text: 'before' }], type: 'p' },
+      { children: [{ text: 'before' }], type: 'paragraph' },
       {
         children: [{ text: '' }],
         data: {
@@ -66,7 +67,7 @@ describe('BaseCodeDrawingPlugin', () => {
           drawingMode: 'Both',
           drawingType: 'Mermaid',
         },
-        type: NODES.codeDrawing,
+        type: 'codeDrawing',
       },
     ]);
   });
@@ -74,7 +75,7 @@ describe('BaseCodeDrawingPlugin', () => {
   it('merges custom data with the defaults', () => {
     const editor = createBaseEditor({
       plugins: [BaseCodeDrawingPlugin],
-      initialValue: [{ children: [{ text: 'x' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'x' }], type: 'paragraph' }],
     });
 
     editor.update((tx) => {
@@ -93,7 +94,7 @@ describe('BaseCodeDrawingPlugin', () => {
         drawingMode: 'Both',
         drawingType: 'Graphviz',
       },
-      type: NODES.codeDrawing,
+      type: 'codeDrawing',
     });
   });
 });

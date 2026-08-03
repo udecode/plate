@@ -16,5 +16,5 @@ The same transaction group is available as `editor.update.column`.
 
 Remove the standalone column query, transform, resize, and width-helper
 exports. `BaseColumnPlugin` owns the `columnGroup` schema and installs
-`BaseColumnItemPlugin`; it publishes no command surface. Persisted group
-elements remain `column_group`.
+`BaseColumnItemPlugin`; it publishes no command surface. Group elements persist
+under `columnGroup`.

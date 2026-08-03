@@ -42,11 +42,11 @@ describe('findTextRangeInBlock', () => {
           { text: 'a' },
           {
             children: [{ text: 'test' }],
-            type: 'a',
+            type: 'link',
             url: '/docs/heading',
           },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
 
@@ -72,7 +72,7 @@ describe('findTextRangeInBlock', () => {
           { comment: true, text: 's' },
           { kbd: true, text: 't' },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
 
@@ -93,7 +93,7 @@ describe('findTextRangeInBlock', () => {
       {
         id: 'block1',
         children: [{ text: 'This is a tes' }],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
 
@@ -114,7 +114,7 @@ describe('findTextRangeInBlock', () => {
       {
         id: 'block2',
         children: [{ text: 'abc' }],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
 
@@ -132,19 +132,23 @@ describe('findTextRangeInBlock', () => {
         id: '-WVMecrPDQ',
         children: [
           { text: 'Structure your content with ' },
-          { children: [{ text: 'headings' }], type: 'a', url: '/docs/heading' },
+          {
+            children: [{ text: 'headings' }],
+            type: 'link',
+            url: '/docs/heading',
+          },
           { text: ', ' },
-          { children: [{ text: 'lists' }], type: 'a', url: '/docs/list' },
+          { children: [{ text: 'lists' }], type: 'link', url: '/docs/list' },
           { text: ', and ' },
           {
             children: [{ text: 'quotes' }],
-            type: 'a',
+            type: 'link',
             url: '/docs/blockquote',
           },
           { text: '. Apply ' },
           {
             children: [{ text: 'marks' }],
-            type: 'a',
+            type: 'link',
             url: '/docs/basic-marks',
           },
           { text: ' like ' },
@@ -160,13 +164,13 @@ describe('findTextRangeInBlock', () => {
           { text: '. Use ' },
           {
             children: [{ text: 'autoformatting' }],
-            type: 'a',
+            type: 'link',
             url: '/docs/autoformat',
           },
           { text: ' for ' },
           {
             children: [{ text: 'Markdown' }],
-            type: 'a',
+            type: 'link',
             url: '/docs/markdown',
           },
           { text: '-like shortcuts (e.g., ' },
@@ -175,7 +179,7 @@ describe('findTextRangeInBlock', () => {
           { kbd: true, text: '# ' },
           { text: ' for H1).' },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
 
@@ -197,19 +201,23 @@ describe('findTextRangeInBlock', () => {
         id: '-WVMecrPDQ',
         children: [
           { text: 'Structure your content with ' },
-          { children: [{ text: 'headings' }], type: 'a', url: '/docs/heading' },
+          {
+            children: [{ text: 'headings' }],
+            type: 'link',
+            url: '/docs/heading',
+          },
           { text: ', ' },
-          { children: [{ text: 'lists' }], type: 'a', url: '/docs/list' },
+          { children: [{ text: 'lists' }], type: 'link', url: '/docs/list' },
           { text: ', and ' },
           {
             children: [{ text: 'quotes' }],
-            type: 'a',
+            type: 'link',
             url: '/docs/blockquote',
           },
           { text: '. Apply ' },
           {
             children: [{ text: 'marks' }],
-            type: 'a',
+            type: 'link',
             url: '/docs/basic-marks',
           },
           { text: ' like ' },
@@ -225,13 +233,13 @@ describe('findTextRangeInBlock', () => {
           { text: '. Use ' },
           {
             children: [{ text: 'autoformatting' }],
-            type: 'a',
+            type: 'link',
             url: '/docs/autoformat',
           },
           { text: ' for ' },
           {
             children: [{ text: 'Markdown' }],
-            type: 'a',
+            type: 'link',
             url: '/docs/markdown',
           },
           { text: '-like shortcuts (e.g., ' },
@@ -240,7 +248,7 @@ describe('findTextRangeInBlock', () => {
           { kbd: true, text: '# ' },
           { text: ' for H1).' },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
 

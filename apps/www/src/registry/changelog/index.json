@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-08-03-unify-table-cells",
+      "href": "/registry/changelog/2026-08-03-unify-table-cells.json",
+      "status": "draft",
+      "kind": "remove",
+      "summary": "Use one table cell plugin and component",
+      "change": {
+        "type": "source",
+        "date": "2026-08-03",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["table-node", "table-base-kit", "table-kit"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-07-31-simplify-ai-chat-source-commands",
       "href": "/registry/changelog/2026-07-31-simplify-ai-chat-source-commands.json",
       "status": "draft",

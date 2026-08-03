@@ -57,7 +57,7 @@ describe('editor.api.markdown.serialize', () => {
               text: ' of these styles for a visually striking effect.',
             },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ];
       const result = editor.api.markdown.serialize({
@@ -81,7 +81,7 @@ describe('editor.api.markdown.serialize', () => {
               text: ' in a bold paragraph',
             },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
         {
           children: [
@@ -99,7 +99,7 @@ describe('editor.api.markdown.serialize', () => {
               text: ' in a bold paragraph',
             },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ];
 
@@ -116,11 +116,11 @@ describe('editor.api.markdown.serialize', () => {
           children: [
             { bold: true, code: true, italic: true, text: 'Inline code' },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
         {
           children: [{ code: true, italic: true, text: 'Inline code' }],
-          type: 'p',
+          type: 'paragraph',
         },
       ];
 
@@ -152,10 +152,10 @@ describe('editor.api.markdown.serialize', () => {
           children: [
             { text: 'Code block 1 line 1' },
             { text: 'Code block 1 line 2' },
-            { children: [{ text: 'Code block 1 line 3' }], type: 'code_line' },
-            { text: 'Code block 1 line 4', type: 'code_line' },
+            { children: [{ text: 'Code block 1 line 3' }], type: 'codeLine' },
+            { text: 'Code block 1 line 4', type: 'codeLine' },
           ],
-          type: 'code_block',
+          type: 'codeBlock',
         },
       ];
 
@@ -221,7 +221,7 @@ describe('editor.api.markdown.serialize', () => {
             { text: '\n' },
             { text: '\n' },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ];
 
@@ -235,7 +235,7 @@ describe('editor.api.markdown.serialize', () => {
     const slateNodes = [
       {
         children: [{ text: 'Paragaph with a new Line' }, { text: '\n' }],
-        type: 'p',
+        type: 'paragraph',
       },
     ];
 
@@ -248,11 +248,11 @@ describe('editor.api.markdown.serialize', () => {
     const slateNodes = [
       {
         children: [{ text: '\n' }],
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: '\n' }],
-        type: 'p',
+        type: 'paragraph',
       },
     ];
 
@@ -267,14 +267,14 @@ describe('editor.api.markdown.serialize', () => {
         children: [{ text: '1' }],
         indent: 1,
         listStyleType: 'decimal',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: '2' }],
         indent: 1,
         listStart: 2,
         listStyleType: 'decimal',
-        type: 'p',
+        type: 'paragraph',
       },
     ];
 
@@ -302,7 +302,7 @@ describe('editor.api.markdown.serialize', () => {
             text: 'bold',
           },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
     ];
     const result = editor.api.markdown.serialize({
@@ -329,26 +329,26 @@ describe('editor.api.markdown.serialize', () => {
                 children: [
                   {
                     children: [{ text: 'First paragraph' }],
-                    type: 'p',
+                    type: 'paragraph',
                   },
                   {
                     children: [{ text: 'Second paragraph' }],
-                    type: 'p',
+                    type: 'paragraph',
                   },
                 ],
-                type: 'td',
+                type: 'tableCell',
               },
               {
                 children: [
                   {
                     children: [{ text: 'Single paragraph' }],
-                    type: 'p',
+                    type: 'paragraph',
                   },
                 ],
-                type: 'td',
+                type: 'tableCell',
               },
             ],
-            type: 'tr',
+            type: 'tableRow',
           },
         ],
         type: 'table',

@@ -1,6 +1,6 @@
 import { HocuspocusProvider } from '@hocuspocus/provider';
 import {
-  createYjsExtension,
+  yjs,
   type YjsAwarenessLike,
   type YjsProviderEvent,
   type YjsProviderEventHandler,
@@ -22,6 +22,7 @@ import {
   type Path,
   type Range,
 } from '@platejs/plite';
+import { history } from '@platejs/plite-history';
 import {
   Editable,
   type RenderElementProps,
@@ -41,7 +42,10 @@ import type {
   CustomValue,
 } from './custom-types.d';
 
-type YjsEditor = CustomEditor<readonly [ReturnType<typeof createYjsExtension>]>;
+const HistoryExtension = history();
+type YjsEditor = CustomEditor<
+  readonly [typeof HistoryExtension, ReturnType<typeof yjs>]
+>;
 
 type PeerId = 'a' | 'b' | 'c' | 'd';
 
@@ -1144,10 +1148,11 @@ const ProviderBackedPeer = ({
 }) => {
   const editor = usePliteEditor<
     CustomValue,
-    readonly [ReturnType<typeof createYjsExtension>]
+    readonly [typeof HistoryExtension, ReturnType<typeof yjs>]
   >({
     extensions: [
-      createYjsExtension({
+      HistoryExtension,
+      yjs({
         clientId: peer.id,
         provider,
         rootName: '@platejs/plite',

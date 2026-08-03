@@ -15,8 +15,8 @@ const createEditor = (offset: number) =>
       focus: { offset, path: [0, 0] },
     },
     initialValue: [
-      { children: [{ text: 'one' }], type: 'p' },
-      { children: [{ text: 'two' }], type: 'p' },
+      { children: [{ text: 'one' }], type: 'paragraph' },
+      { children: [{ text: 'two' }], type: 'paragraph' },
     ],
   });
 
@@ -51,7 +51,7 @@ describe('TabbableKit', () => {
       [...TabbableKit, ...IndentKit],
     ]) {
       const editor = createPlateEditor({ plugins });
-      const indent = editor.plugin(IndentPlugin).plugin;
+      const indent = editor.plugin(IndentPlugin);
 
       expect(indent.shortcuts.tab).toBeNull();
       expect(indent.shortcuts.untab).toBeNull();

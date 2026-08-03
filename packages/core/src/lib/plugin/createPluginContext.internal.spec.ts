@@ -1,13 +1,13 @@
+import { property, schema } from '@platejs/plite';
+
 import type { BaseEditor } from '../editor';
 
 import { createBaseEditor } from '../editor';
-import { createBasePlugin } from './createBasePlugin';
+import { defineBasePlugin } from './defineBasePlugin';
 import { createPluginContext } from './createPluginContext.internal';
 
 describe('createPluginContext', () => {
-  const TestPlugin = createBasePlugin({
-    name: 'test',
-    type: 'test-type',
+  const TestPlugin = defineBasePlugin('test', {
     initialState: {
       testValue: 'initial',
     },
@@ -36,16 +36,13 @@ describe('createPluginContext', () => {
       installed: true,
       plugin: expect.objectContaining({
         name: 'test',
-        type: 'test-type',
       }),
-      type: 'test-type',
+      name: 'test',
     });
   });
 
   it('works with extension context typing', () => {
-    const plugin = createBasePlugin({
-      name: 'test',
-      type: 'test-type',
+    const plugin = defineBasePlugin('test', {
       initialState: {
         testValue: 'initial',
       },
@@ -73,23 +70,19 @@ describe('createPluginContext', () => {
     const value = context.store.get('testValue');
 
     expect(value satisfies string).toBe('initial');
-    expect(context.plugin.name).toBe('test');
+    expect(context.name).toBe('test');
+    expect(context).not.toHaveProperty('plugin');
     expect(context).not.toHaveProperty('defineCodecs');
     expect(context).not.toHaveProperty('editor');
   });
 
   it('publishes compiled injection defaults on the resolved descriptor', () => {
-    const plugin = createBasePlugin({
+    const plugin = defineBasePlugin('injected', {
       inject: { nodeProps: {} },
-      name: 'injected',
-      type: 'injected-type',
     });
     const typedEditor = createBaseEditor({ plugins: [plugin] });
 
-    expect(typedEditor.plugin(plugin).plugin.inject.nodeProps).toMatchObject({
-      nodeKey: 'injected-type',
-      styleKey: 'injected-type',
-    });
+    expect(typedEditor.plugin(plugin).inject.nodeProps).toEqual({});
   });
 
   it('gets plugin context by plugin name', () => {
@@ -100,9 +93,8 @@ describe('createPluginContext', () => {
       editor,
       plugin: expect.objectContaining({
         name: 'test',
-        type: 'test-type',
       }),
-      type: 'test-type',
+      name: 'test',
     });
   });
 
@@ -115,34 +107,48 @@ describe('createPluginContext', () => {
   });
 
   it('rejects a same-name descriptor from a different family', () => {
-    const foreignPlugin = createBasePlugin({
+    const foreignPlugin = defineBasePlugin('test', {
       api: () => ({
         foreignMethod: () => 'foreign',
       }),
-      name: 'test',
-      type: 'test-type',
     });
     const context = editor.plugin(foreignPlugin);
 
     expect(context.installed).toBe(false);
-    expect(() => context.plugin).toThrow('different descriptor family');
+    expect(() => context.name).toThrow('different descriptor family');
     expect(() => context.api.foreignMethod()).toThrow(
       'different descriptor family'
     );
-    expect(() => editor.plugin(foreignPlugin).plugin).toThrow(
+    expect(() => editor.plugin(foreignPlugin).name).toThrow(
       'different descriptor family'
     );
     const dynamicPortal = editor.plugin('test');
 
     expect(dynamicPortal.installed).toBe(true);
-    expect(dynamicPortal.type).toBe('test-type');
-    expect(dynamicPortal.plugin.name).toBe('test');
+    expect(dynamicPortal.name).toBe('test');
+  });
+
+  it('does not publish resolved schema across an uninstalled same-name family', () => {
+    const InstalledPlugin = defineBasePlugin('shared', {
+      schema: {
+        element: { ...schema.element.textBlock(), type: 'installedType' },
+      },
+    });
+    const RequestedPlugin = defineBasePlugin('shared', {
+      schema: {
+        element: { ...schema.element.textBlock(), type: 'requestedType' },
+      },
+    });
+    const typedEditor = createBaseEditor({ plugins: [InstalledPlugin] });
+    const requested = typedEditor.plugin(RequestedPlugin);
+
+    expect(requested.installed).toBe(false);
+    expect(() => requested.schema).toThrow('different descriptor family');
+    expect(() => requested.name).toThrow('different descriptor family');
   });
 
   it('rejects a plugin that is not installed', () => {
-    const unresolvedPlugin = createBasePlugin({
-      name: 'unresolved',
-      type: 'unresolved-type',
+    const unresolvedPlugin = defineBasePlugin('unresolved', {
       initialState: {
         unresolvedValue: 'initial',
       },
@@ -155,10 +161,10 @@ describe('createPluginContext', () => {
     expect(dynamicPortal.installed).toBe(false);
     for (const capability of [
       () => dynamicPortal.api,
-      () => dynamicPortal.plugin,
+      () => dynamicPortal.name,
+      () => dynamicPortal.inject,
       () => dynamicPortal.read,
       () => dynamicPortal.store,
-      () => dynamicPortal.type,
       () => dynamicPortal.update,
     ]) {
       expect(capability).toThrow('Plate plugin "unresolved" is not installed.');
@@ -168,10 +174,24 @@ describe('createPluginContext', () => {
     );
   });
 
+  it('requires installation before exposing resolved schema handles', () => {
+    const ElementPlugin = defineBasePlugin('uninstalledElement', {
+      schema: { element: schema.element.textBlock() },
+    });
+    const MarkPlugin = defineBasePlugin('uninstalledMark', {
+      schema: { mark: property.boolean() },
+    });
+
+    expect(() => editor.plugin(ElementPlugin).schema).toThrow(
+      'is not installed'
+    );
+    expect(() => editor.plugin(MarkPlugin).schema).toThrow('is not installed');
+    expect(() => editor.plugin('codeBlock').schema).toThrow('is not installed');
+  });
+
   it('reports literal-disabled plugins as not installed', () => {
-    const disabledPlugin = createBasePlugin({
+    const disabledPlugin = defineBasePlugin('disabled', {
       enabled: false,
-      name: 'disabled',
     });
     const disabledEditor = createBaseEditor({
       plugins: [disabledPlugin],
@@ -181,12 +201,11 @@ describe('createPluginContext', () => {
   });
 
   it('publishes plugin API only under its owner namespace', () => {
-    const plugin = createBasePlugin({
+    const plugin = defineBasePlugin('methodPlugin', {
       api: () => ({
         editorMethod: () => 'editor',
         pluginMethod: () => 'plugin',
       }),
-      name: 'methodPlugin',
     });
 
     const typedEditor = createBaseEditor({
@@ -204,8 +223,7 @@ describe('createPluginContext', () => {
   });
 
   it('preserves function introspection on plugin capability facades', () => {
-    const plugin = createBasePlugin({
-      name: 'capability',
+    const plugin = defineBasePlugin('capability', {
       read: () => ({
         isActive: () => true,
       }),
@@ -231,8 +249,7 @@ describe('createPluginContext', () => {
   it('exposes plugin-owned updates without their name namespace', () => {
     let mode: 'edit' | 'view' = 'view';
     let insertedBy: 'command' | null = null;
-    const plugin = createBasePlugin({
-      name: 'command',
+    const plugin = defineBasePlugin('command', {
       update: () => ({
         editorInsertNode: () => {
           insertedBy = 'command';

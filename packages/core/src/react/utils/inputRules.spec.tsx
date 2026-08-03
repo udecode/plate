@@ -8,10 +8,13 @@ import {
   string as editorString,
 } from '@platejs/plite/internal';
 import { BaseParagraphPlugin } from '../../lib/plugins';
-import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
+import {
+  getCompiledPlatePlugin,
+  getPlateRuntime,
+} from '../../internal/plugin/compilePlateModel';
 
 import { createPlateEditor } from '../editor';
-import { createPlatePlugin } from '../plugin';
+import { definePlatePlugin } from '../plugin';
 import {
   createRuleFactory,
   defineInputRule,
@@ -21,8 +24,7 @@ jsxt;
 
 describe('input rules', () => {
   it('retains element schema contributions after configuring input rules', () => {
-    const CalloutPlugin = createPlatePlugin({
-      name: 'callout',
+    const CalloutPlugin = definePlatePlugin('callout', {
       schema: {
         element: { content: schema.content.open({ default: 'text', min: 1 }) },
       },
@@ -54,9 +56,7 @@ describe('input rules', () => {
     });
     const editor = createPlateEditor({
       plugins: [
-        createPlatePlugin({
-          name: 'testPlugin',
-        }).configure({
+        definePlatePlugin('testPlugin', {}).configure({
           inputRules: [strongRule],
         }),
       ],
@@ -77,9 +77,7 @@ describe('input rules', () => {
     const apply = mock(() => true);
     const editor = createPlateEditor({
       plugins: [
-        createPlatePlugin({
-          name: 'testPlugin',
-        }).configure({
+        definePlatePlugin('testPlugin', {}).configure({
           inputRules: [
             defineInputRule({
               apply,
@@ -89,7 +87,7 @@ describe('input rules', () => {
           ],
         }),
       ],
-      initialValue: [{ children: [{ text: '' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     } as any);
 
     insertText(editor, '*');
@@ -103,9 +101,7 @@ describe('input rules', () => {
         const callCounts = Array.from({ length: 8 }, () => 0);
         const editor = createPlateEditor({
           plugins: [
-            createPlatePlugin({
-              name: 'testPlugin',
-            }).configure({
+            definePlatePlugin('testPlugin', {}).configure({
               inputRules: Array.from({ length: 8 }, (_, index) =>
                 defineInputRule({
                   apply: ({ insertText }) => {
@@ -122,7 +118,7 @@ describe('input rules', () => {
               ),
             }),
           ],
-          initialValue: [{ children: [{ text: '' }], type: 'p' }],
+          initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
         } as any);
 
         editor.update.selection.set({
@@ -148,9 +144,7 @@ describe('input rules', () => {
     let applyCount = 0;
     const editor = createPlateEditor({
       plugins: [
-        createPlatePlugin({
-          name: 'testPlugin',
-        }).configure({
+        definePlatePlugin('testPlugin', {}).configure({
           inputRules: [
             defineInputRule({
               apply: ({ tx }) => {
@@ -165,7 +159,7 @@ describe('input rules', () => {
           ],
         }),
       ],
-      initialValue: [{ children: [{ text: '' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     } as any);
 
     editor.update.selection.set({
@@ -177,7 +171,7 @@ describe('input rules', () => {
 
     expect(applyCount).toBe(1);
     expect(editor.read.children()).toEqual([
-      { children: [{ text: 'handled' }], type: 'p' },
+      { children: [{ text: 'handled' }], type: 'paragraph' },
     ]);
   });
 
@@ -185,9 +179,7 @@ describe('input rules', () => {
     const apply = mock(() => true);
     const editor = createPlateEditor({
       plugins: [
-        createPlatePlugin({
-          name: 'testPlugin',
-        }).configure({
+        definePlatePlugin('testPlugin', {}).configure({
           inputRules: [
             defineInputRule({
               apply,
@@ -196,7 +188,7 @@ describe('input rules', () => {
           ],
         }),
       ],
-      initialValue: [{ children: [{ text: 'hello' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'hello' }], type: 'paragraph' }],
     } as any);
 
     editor.update.selection.set({
@@ -208,7 +200,7 @@ describe('input rules', () => {
 
     expect(apply).toHaveBeenCalledTimes(1);
     expect(editor.read.children()).toEqual([
-      { children: [{ text: 'hello' }], type: 'p' },
+      { children: [{ text: 'hello' }], type: 'paragraph' },
     ]);
   });
 
@@ -216,9 +208,7 @@ describe('input rules', () => {
     let applyCount = 0;
     const editor = createPlateEditor({
       plugins: [
-        createPlatePlugin({
-          name: 'testPlugin',
-        }).configure({
+        definePlatePlugin('testPlugin', {}).configure({
           inputRules: [
             defineInputRule({
               apply: ({ tx }) => {
@@ -232,7 +222,7 @@ describe('input rules', () => {
           ],
         }),
       ],
-      initialValue: [{ children: [{ text: 'hello' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'hello' }], type: 'paragraph' }],
     } as any);
 
     editor.update.selection.set({
@@ -244,7 +234,7 @@ describe('input rules', () => {
 
     expect(applyCount).toBe(1);
     expect(editor.read.children()).toEqual([
-      { children: [{ text: 'hello!' }], type: 'p' },
+      { children: [{ text: 'hello!' }], type: 'paragraph' },
     ]);
   });
 
@@ -256,9 +246,7 @@ describe('input rules', () => {
     });
     const editor = createPlateEditor({
       plugins: [
-        createPlatePlugin({
-          name: 'testPlugin',
-        }).configure({
+        definePlatePlugin('testPlugin', {}).configure({
           inputRules: [
             defineInputRule({
               apply,
@@ -268,7 +256,7 @@ describe('input rules', () => {
           ],
         }),
       ],
-      initialValue: [{ children: [{ text: '' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     } as any);
     const dataTransfer = {
       files: [],
@@ -287,7 +275,7 @@ describe('input rules', () => {
     expect(inserted).toBe(true);
     expect(apply).toHaveBeenCalledTimes(1);
     expect(editor.read.children()).toEqual([
-      { children: [{ text: '' }], type: 'p' },
+      { children: [{ text: '' }], type: 'paragraph' },
     ]);
   });
 
@@ -296,9 +284,7 @@ describe('input rules', () => {
     const enabled = mock(() => false);
     const editor = createPlateEditor({
       plugins: [
-        createPlatePlugin({
-          name: 'testPlugin',
-        }).configure({
+        definePlatePlugin('testPlugin', {}).configure({
           inputRules: [
             defineInputRule({
               apply,
@@ -309,7 +295,7 @@ describe('input rules', () => {
           ],
         }),
       ],
-      initialValue: [{ children: [{ text: '' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     } as any);
 
     insertText(editor, '*');
@@ -321,8 +307,7 @@ describe('input rules', () => {
   it('keeps terminal configure-time rules final over definition defaults', () => {
     const editor = createPlateEditor({
       plugins: [
-        createPlatePlugin({
-          name: 'testPlugin',
+        definePlatePlugin('testPlugin', {
           inputRules: [
             defineInputRule({
               apply: () => true,
@@ -353,11 +338,11 @@ describe('input rules', () => {
     ).toHaveLength(1);
   });
 
-  it('provides lazy cached selection getters and pluginName to insertText resolve', () => {
+  it('provides lazy cached selection getters and the owning plugin to insertText resolve', () => {
     const apply = mock(() => true);
     const resolve = mock(
-      ({ getBlockStartRange, getBlockStartText, pluginName }) => {
-        expect(pluginName).toBe('h2');
+      ({ getBlockStartRange, getBlockStartText, plugin }) => {
+        expect(plugin.name).toBe('h2');
         expect(getBlockStartRange()).toBe(getBlockStartRange());
         expect(getBlockStartText()).toBe('##');
         expect(getBlockStartText()).toBe('##');
@@ -367,9 +352,7 @@ describe('input rules', () => {
     );
     const editor = createPlateEditor({
       plugins: [
-        createPlatePlugin({
-          name: 'h2',
-        }).configure({
+        definePlatePlugin('h2', {}).configure({
           inputRules: [
             defineInputRule({
               apply,
@@ -380,7 +363,7 @@ describe('input rules', () => {
           ],
         }),
       ],
-      initialValue: [{ children: [{ text: '##' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '##' }], type: 'paragraph' }],
     } as any);
     editor.update.selection.set({
       kind: 'text',
@@ -406,9 +389,7 @@ describe('input rules', () => {
     });
     const editor = createPlateEditor({
       plugins: [
-        createPlatePlugin({
-          name: 'testPlugin',
-        }).configure({
+        definePlatePlugin('testPlugin', {}).configure({
           inputRules: [
             defineInputRule({
               apply,
@@ -419,7 +400,7 @@ describe('input rules', () => {
           ],
         }),
       ],
-      initialValue: [{ children: [{ text: 'abc' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'abc' }], type: 'paragraph' }],
     } as any);
     editor.update.selection.set({
       kind: 'text',
@@ -444,14 +425,10 @@ describe('input rules', () => {
     const high = { ...baseRule, priority: 200 };
     const editor = createPlateEditor({
       plugins: [
-        createPlatePlugin({
-          name: 'alpha',
-        }).configure({
+        definePlatePlugin('alpha', {}).configure({
           inputRules: [first, second],
         }),
-        createPlatePlugin({
-          name: 'beta',
-        }).configure({
+        definePlatePlugin('beta', {}).configure({
           inputRules: [high],
         }),
       ],
@@ -465,23 +442,21 @@ describe('input rules', () => {
   });
 
   it('supports definition-side inputRules factories with owner-scoped helpers', () => {
-    const editor = createPlateEditor({
-      plugins: [
-        createPlatePlugin({
-          name: 'bold',
-          schema: {
-            mark: property.boolean({ default: false, omitDefault: true }),
-          },
-          inputRules: ({ rule }) => [
-            rule.mark({
-              end: '*',
-              start: '**',
-              trigger: '*',
-            }),
-          ],
+    const BoldPlugin = definePlatePlugin('bold', {
+      schema: {
+        mark: property.boolean({ default: false, omitDefault: true }),
+      },
+      inputRules: ({ rule }) => [
+        rule.mark({
+          end: '*',
+          start: '**',
+          trigger: '*',
         }),
       ],
-      initialValue: [{ children: [{ text: '**hello*' }], type: 'p' }],
+    });
+    const editor = createPlateEditor({
+      plugins: [BoldPlugin],
+      initialValue: [{ children: [{ text: '**hello*' }], type: 'paragraph' }],
     });
 
     editor.update.selection.set({
@@ -497,19 +472,51 @@ describe('input rules', () => {
     expect(
       getPlateRuntime(editor).inputRules.insertText.byTrigger['*']
     ).toHaveLength(1);
+    expect(
+      getPlateRuntime(editor).inputRules.insertText.byTrigger['*'][0]?.plugin
+    ).toBe(getCompiledPlatePlugin(editor, BoldPlugin));
     expect(editor.read.children()).toMatchObject([
       {
         children: [{ bold: true, text: 'hello' }],
-        type: 'p',
+        type: 'paragraph',
       },
+    ]);
+  });
+
+  it('does not serialize unresolved mark plugin names', () => {
+    const editor = createPlateEditor({
+      plugins: [
+        BaseParagraphPlugin,
+        definePlatePlugin('markRuleOwner', {
+          inputRules: ({ rule }) => [
+            rule.mark({
+              end: '*',
+              mark: 'missingMark',
+              start: '**',
+              trigger: '*',
+            }),
+          ],
+        }),
+      ],
+      initialValue: [{ children: [{ text: '**hello*' }], type: 'paragraph' }],
+    });
+
+    editor.update.selection.set({
+      kind: 'text',
+      anchor: { offset: 8, path: [0, 0] },
+      focus: { offset: 8, path: [0, 0] },
+    });
+    insertText(editor, '*');
+
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: '**hello*' }], type: 'paragraph' },
     ]);
   });
 
   it('does not match non-adjacent closing mark delimiters', () => {
     const editor = createPlateEditor({
       plugins: [
-        createPlatePlugin({
-          name: 'bold',
+        definePlatePlugin('bold', {
           inputRules: ({ rule }) => [
             rule.mark({
               end: '*',
@@ -519,7 +526,9 @@ describe('input rules', () => {
           ],
         }),
       ],
-      initialValue: [{ children: [{ text: '**hello* nope' }], type: 'p' }],
+      initialValue: [
+        { children: [{ text: '**hello* nope' }], type: 'paragraph' },
+      ],
     });
 
     editor.update.selection.set({
@@ -530,7 +539,7 @@ describe('input rules', () => {
     insertText(editor, '*');
 
     expect(editor.read.children()).toEqual([
-      { children: [{ text: '**hello* nope*' }], type: 'p' },
+      { children: [{ text: '**hello* nope*' }], type: 'paragraph' },
     ]);
   });
 
@@ -538,19 +547,19 @@ describe('input rules', () => {
     const apply = mock(() => true);
     const editor = createPlateEditor({
       plugins: [
-        createPlatePlugin({
-          name: 'codeBlock',
+        BaseParagraphPlugin,
+        definePlatePlugin('codeBlock', {
           inputRules: ({ rule }) => [
             rule.blockFence({
               apply,
-              block: 'p',
+              block: BaseParagraphPlugin,
               fence: '```',
               on: 'match',
             }),
           ],
         }),
       ],
-      initialValue: [{ children: [{ text: '``' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '``' }], type: 'paragraph' }],
     } as any);
 
     editor.update.selection.set({
@@ -573,10 +582,7 @@ describe('input rules', () => {
     const editor = createPlateEditor({
       plugins: [
         BaseParagraphPlugin,
-        createPlatePlugin({
-          name: 'codeBlock',
-          type: 'code_block',
-        }).configure({
+        definePlatePlugin('codeBlock', {}).configure({
           inputRules: [
             defineInputRule({
               apply: () => true,
@@ -586,7 +592,7 @@ describe('input rules', () => {
           ],
         }),
       ],
-      initialValue: [{ children: [{ text: '``' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '``' }], type: 'paragraph' }],
     } as any);
 
     editor.update.selection.set({
@@ -607,9 +613,7 @@ describe('input rules', () => {
     const editor = createPlateEditor({
       plugins: [
         BaseParagraphPlugin,
-        createPlatePlugin({
-          name: 'equation',
-        }).configure({
+        definePlatePlugin('equation', {}).configure({
           inputRules: [
             defineInputRule({
               apply: () => true,
@@ -618,14 +622,16 @@ describe('input rules', () => {
           ],
         }),
       ],
-      initialValue: [{ children: [{ text: '$$' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '$$' }], type: 'paragraph' }],
     } as any);
 
     expect(
       getPlateRuntime(editor).inputRules.plugins.equation.rules
     ).toHaveLength(1);
     expect(getPlateRuntime(editor).inputRules.insertBreak).toContainEqual(
-      expect.objectContaining({ pluginName: 'equation' })
+      expect.objectContaining({
+        plugin: expect.objectContaining({ name: 'equation' }),
+      })
     );
   });
 
@@ -639,8 +645,7 @@ describe('input rules', () => {
     });
     const editor = createPlateEditor({
       plugins: [
-        createPlatePlugin({
-          name: 'blockquote',
+        definePlatePlugin('blockquote', {
           schema: {
             element: {
               content: schema.content.group('block'),
@@ -650,7 +655,7 @@ describe('input rules', () => {
           inputRules: [blockquoteMarkdown({ marker: '|' })],
         }),
       ],
-      initialValue: [{ children: [{ text: '|' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '|' }], type: 'paragraph' }],
     } as any);
 
     editor.update.selection.set({
@@ -662,35 +667,65 @@ describe('input rules', () => {
 
     expect(editor.read.children()).toMatchObject([
       {
-        children: [{ children: [{ text: '' }], type: 'p' }],
+        children: [{ children: [{ text: '' }], type: 'paragraph' }],
         type: 'blockquote',
       },
     ]);
   });
 
+  it('does not serialize unresolved block plugin names', () => {
+    const editor = createPlateEditor({
+      plugins: [
+        BaseParagraphPlugin,
+        definePlatePlugin('blockRuleOwner', {
+          inputRules: ({ rule }) => [
+            rule.blockStart({
+              match: '>',
+              mode: 'set',
+              node: 'missingBlock',
+              trigger: ' ',
+            }),
+          ],
+        }),
+      ],
+      initialValue: [{ children: [{ text: '>' }], type: 'paragraph' }],
+    });
+
+    editor.update.selection.set({
+      kind: 'text',
+      anchor: { offset: 1, path: [0, 0] },
+      focus: { offset: 1, path: [0, 0] },
+    });
+    insertText(editor, ' ');
+
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: '>' }], type: 'paragraph' },
+    ]);
+  });
+
   it('toggles block-start rules back to paragraph when active', () => {
+    const HeadingPlugin = definePlatePlugin('h2', {
+      schema: {
+        element: {
+          content: schema.content.open({ default: 'text', min: 1 }),
+        },
+      },
+    });
     const headingMarkdown = createRuleFactory({
       type: 'blockStart',
       trigger: ' ',
       mode: 'toggle',
       match: '##',
-      node: 'heading',
+      node: HeadingPlugin,
     });
     const editor = createPlateEditor({
       plugins: [
         BaseParagraphPlugin,
-        createPlatePlugin({
-          name: 'heading',
-          schema: {
-            element: {
-              content: schema.content.open({ default: 'text', min: 1 }),
-            },
-          },
-        }).configure({
+        HeadingPlugin.configure({
           inputRules: [headingMarkdown()],
         }),
       ],
-      initialValue: [{ children: [{ text: '##' }], type: 'heading' }],
+      initialValue: [{ children: [{ text: '##' }], type: 'h2' }],
     } as any);
 
     editor.update.selection.set({
@@ -701,7 +736,7 @@ describe('input rules', () => {
     insertText(editor, ' ');
 
     expect(editor.read.children()).toEqual([
-      { children: [{ text: '' }], type: 'p' },
+      { children: [{ text: '' }], type: 'paragraph' },
     ]);
   });
 
@@ -709,9 +744,7 @@ describe('input rules', () => {
     expect(() =>
       createPlateEditor({
         plugins: [
-          createPlatePlugin({
-            name: 'testPlugin',
-          }).configure({
+          definePlatePlugin('testPlugin', {}).configure({
             inputRules: { markdown: true } as any,
           }),
         ],

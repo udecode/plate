@@ -8,6 +8,7 @@ Export `CsvPluginState` as the complete mutable state contract for `CsvPlugin`.
   through `editor.api.csv.deserialize`
 - Seed CSV codec behavior through `CsvPlugin.initialState`
 - Use the plugin API as the sole CSV deserialization surface
+- Represent CSV header fields as `tableCell` nodes with `header: true`
 
 **Migration:** Configure CSV state through `initialState` and use the inferred
 editor API:

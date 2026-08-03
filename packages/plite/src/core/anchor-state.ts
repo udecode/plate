@@ -1,5 +1,5 @@
 import type {
-  Editor,
+  AnyEditor as Editor,
   EditorCommit,
   EditorDocumentValue,
 } from '../interfaces/editor';

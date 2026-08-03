@@ -1,27 +1,51 @@
-export const NODES = {
-  a: 'a',
+/** First-party Plate capability names. Not a persisted AST identity catalog. */
+export const PLUGINS = {
+  affinity: 'affinity',
   ai: 'ai',
   aiChat: 'aiChat',
   audio: 'audio',
+  backgroundColor: 'backgroundColor',
+  blockMenu: 'blockMenu',
+  blockPlaceholder: 'blockPlaceholder',
+  blockSelection: 'blockSelection',
   blockquote: 'blockquote',
   bold: 'bold',
+  bulletedList: 'bulletedList',
   callout: 'callout',
   code: 'code',
-  codeBlock: 'code_block',
-  codeDrawing: 'code_drawing',
-  codeLine: 'code_line',
-  codeSyntax: 'code_syntax',
+  codeBlock: 'codeBlock',
+  codeDrawing: 'codeDrawing',
+  codeLine: 'codeLine',
+  codeSyntax: 'codeSyntax',
+  color: 'color',
   column: 'column',
-  columnGroup: 'column_group',
+  columnGroup: 'columnGroup',
   comment: 'comment',
+  copilot: 'copilot',
+  csv: 'csv',
+  cursorOverlay: 'cursorOverlay',
   date: 'date',
-  emojiInput: 'emoji_input',
+  debug: 'debug',
+  dnd: 'dnd',
+  dom: 'dom',
+  docx: 'docx',
+  docxIO: 'docxIO',
+  elementState: 'elementState',
+  emoji: 'emoji',
+  emojiInput: 'emojiInput',
   equation: 'equation',
+  eventEditor: 'eventEditor',
   excalidraw: 'excalidraw',
+  exitBreak: 'exitBreak',
   file: 'file',
+  fixedToolbar: 'fixedToolbar',
+  floatingToolbar: 'floatingToolbar',
+  fontFamily: 'fontFamily',
+  fontSize: 'fontSize',
+  fontWeight: 'fontWeight',
+  footnote: 'footnote',
   footnoteDefinition: 'footnoteDefinition',
   footnoteInput: 'footnoteInput',
-  footnoteReference: 'footnoteReference',
   h1: 'h1',
   h2: 'h2',
   h3: 'h3',
@@ -29,104 +53,154 @@ export const NODES = {
   h5: 'h5',
   h6: 'h6',
   highlight: 'highlight',
-  hr: 'hr',
-  img: 'img',
-  inlineEquation: 'inline_equation',
-  italic: 'italic',
-  kbd: 'kbd',
-  li: 'li',
-  lic: 'lic',
-  link: 'a',
-  listTodoClassic: 'action_item',
-  mediaEmbed: 'media_embed',
-  mention: 'mention',
-  mentionInput: 'mention_input',
-  olClassic: 'ol',
-  p: 'p',
-  searchHighlight: 'search_highlight',
-  script: 'script',
-  slashInput: 'slash_input',
-  strikethrough: 'strikethrough',
-  suggestion: 'suggestion',
-  table: 'table',
-  tag: 'tag',
-  taskList: 'taskList',
-  td: 'td',
-  th: 'th',
-  toc: 'toc',
-  toggle: 'toggle',
-  tr: 'tr',
-  ulClassic: 'ul',
-  underline: 'underline',
-  video: 'video',
-} as const;
-
-export const STYLE_KEYS = {
-  backgroundColor: 'backgroundColor',
-  color: 'color',
-  fontFamily: 'fontFamily',
-  fontSize: 'fontSize',
-  fontWeight: 'fontWeight',
-  indent: 'indent',
-  lineHeight: 'lineHeight',
-  listType: 'listStyleType',
-  textAlign: 'textAlign',
-  textIndent: 'textIndent',
-} as const;
-
-export const KEYS = {
-  ...NODES,
-  ...STYLE_KEYS,
-  codeBlock: 'codeBlock',
-  codeDrawing: 'codeDrawing',
-  codeLine: 'codeLine',
-  codeSyntax: 'codeSyntax',
-  columnGroup: 'columnGroup',
-  emojiInput: 'emojiInput',
-  inlineEquation: 'inlineEquation',
-  listTodoClassic: 'listTodoClassic',
-  mediaEmbed: 'mediaEmbed',
-  mentionInput: 'mentionInput',
-  searchHighlight: 'searchHighlight',
-  slashInput: 'slashInput',
-  blockMenu: 'blockMenu',
-  blockPlaceholder: 'blockPlaceholder',
-  blockSelection: 'blockSelection',
-  copilot: 'copilot',
-  csv: 'csv',
-  cursorOverlay: 'cursorOverlay',
-  delete: 'delete',
-  dnd: 'dnd',
-  docx: 'docx',
-  emoji: 'emoji',
-  exitBreak: 'exitBreak',
-  heading: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'] as string[],
+  history: 'history',
+  horizontalRule: 'horizontalRule',
   html: 'html',
+  image: 'image',
+  indent: 'indent',
+  inlineEquation: 'inlineEquation',
+  inputRules: 'inputRules',
+  italic: 'italic',
   juice: 'juice',
+  kbd: 'kbd',
+  lineHeight: 'lineHeight',
+  link: 'link',
   list: 'list',
-  listChecked: 'checked',
   listClassic: 'listClassic',
-  listRestart: 'listRestart',
-  listRestartPolite: 'listRestartPolite',
-  listStart: 'listStart',
-  listTodo: 'todo',
+  listItem: 'listItem',
+  listItemContent: 'listItemContent',
   markdown: 'markdown',
+  mediaEmbed: 'mediaEmbed',
+  mention: 'mention',
+  mentionInput: 'mentionInput',
+  navigationFeedback: 'navigationFeedback',
   nodeId: 'nodeId',
   normalizeTypes: 'normalizeTypes',
-  ol: 'decimal',
+  numberedList: 'numberedList',
+  override: 'override',
+  paragraph: 'paragraph',
   placeholder: 'placeholder',
-  removeEmptyNodes: 'removeEmptyNodes',
-  resetNode: 'resetNode',
+  script: 'script',
+  searchHighlight: 'searchHighlight',
   singleBlock: 'singleBlock',
   singleLine: 'singleLine',
   slashCommand: 'slashCommand',
-  softBreak: 'softBreak',
+  slashInput: 'slashInput',
+  strikethrough: 'strikethrough',
+  suggestion: 'suggestion',
   tabbable: 'tabbable',
+  table: 'table',
+  tableCell: 'tableCell',
+  tableRow: 'tableRow',
+  tag: 'tag',
+  taskList: 'taskList',
+  textAlign: 'textAlign',
+  textIndent: 'textIndent',
+  toc: 'toc',
+  todoList: 'todoList',
+  toggle: 'toggle',
   trailingBlock: 'trailingBlock',
-  ul: 'disc',
+  underline: 'underline',
+  video: 'video',
   yjs: 'yjs',
 } as const;
 
-export type NodeKey = (typeof NODES)[keyof typeof NODES];
-export type StyleKey = (typeof STYLE_KEYS)[keyof typeof STYLE_KEYS];
-export type PlateKey = (typeof KEYS)[keyof typeof KEYS];
+export type PluginName = (typeof PLUGINS)[keyof typeof PLUGINS];
+
+export type PlateAstIdentityMigration = Readonly<{
+  properties?: Readonly<Record<string, string>>;
+  types: Readonly<Record<string, string>>;
+}>;
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  value !== null && typeof value === 'object' && !Array.isArray(value);
+
+/**
+ * Rewrite explicitly declared persisted Plate identities before editor creation.
+ * Unknown identities and nested domain JSON are preserved.
+ */
+export const migratePlateAstIdentities = <T>(
+  value: T,
+  migration: PlateAstIdentityMigration
+): T => {
+  const migrateNode = (
+    node: unknown,
+    root: string,
+    path: readonly number[]
+  ): unknown => {
+    if (!isRecord(node)) return node;
+
+    const next: Record<string, unknown> = {};
+
+    for (const [key, propertyValue] of Object.entries(node)) {
+      const migratedKey = migration.properties?.[key] ?? key;
+
+      if (migratedKey !== key && Object.hasOwn(node, migratedKey)) {
+        throw new Error(
+          `Plate AST identity migration collision at root "${root}" path [${path.join(', ')}]: properties "${key}" and "${migratedKey}" are both present.`
+        );
+      }
+
+      if (key === 'children' && Array.isArray(propertyValue)) {
+        next.children = propertyValue.map((child, index) =>
+          migrateNode(child, root, [...path, index])
+        );
+      } else if (key === 'type' && typeof propertyValue === 'string') {
+        next.type = migration.types[propertyValue] ?? propertyValue;
+      } else {
+        if (Object.hasOwn(next, migratedKey)) {
+          throw new Error(
+            `Plate AST identity migration collision at root "${root}" path [${path.join(', ')}]: multiple properties target "${migratedKey}".`
+          );
+        }
+
+        next[migratedKey] = propertyValue;
+      }
+    }
+
+    return next;
+  };
+
+  const migrateRoot = (rootValue: unknown, root: string): unknown => {
+    if (!Array.isArray(rootValue)) {
+      throw new Error(
+        `Plate AST identity migration expected root "${root}" to be an array.`
+      );
+    }
+
+    return rootValue.map((node, index) => migrateNode(node, root, [index]));
+  };
+
+  if (Array.isArray(value)) {
+    return migrateRoot(value, 'main') as T;
+  }
+
+  if (!isRecord(value) || !Array.isArray(value.children)) {
+    throw new Error(
+      'Plate AST identity migration expected a value array or document object with children.'
+    );
+  }
+
+  const roots = value.roots;
+  const migratedRoots =
+    roots === undefined
+      ? undefined
+      : isRecord(roots)
+        ? Object.fromEntries(
+            Object.entries(roots).map(([root, rootValue]) => [
+              root,
+              migrateRoot(rootValue, root),
+            ])
+          )
+        : (() => {
+            throw new Error(
+              'Plate AST identity migration expected document roots to be an object.'
+            );
+          })();
+
+  return {
+    ...value,
+    children: migrateRoot(value.children, 'main'),
+    ...(migratedRoots === undefined ? {} : { roots: migratedRoots }),
+  } as T;
+};

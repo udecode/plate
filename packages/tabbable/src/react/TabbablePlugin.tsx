@@ -1,5 +1,5 @@
 import type { DefinitionOf } from '@platejs/core';
-import { createPlatePlugin } from '@platejs/core/react';
+import { definePlatePlugin } from '@platejs/core/react';
 import { PathApi } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
@@ -10,8 +10,7 @@ import type {
 } from '../lib/TabbablePluginTypes';
 import { TabbableEffects } from './TabbableEffects';
 
-export const TabbablePlugin = createPlatePlugin({
-  name: KEYS.tabbable,
+export const TabbablePlugin = definePlatePlugin(KEYS.tabbable, {
   initialState: ({ editor }): TabbablePluginState => ({
     globalEventListener: false,
     insertTabbableEntries: (_event) => [],

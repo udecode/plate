@@ -8,7 +8,7 @@ import { DndPlugin, useDraggable, useDropLine } from '@platejs/dnd';
 import { ListPlugin } from '@platejs/list/react';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import { GripVertical } from 'lucide-react';
-import { ElementApi, KEYS } from 'platejs';
+import { ElementApi, KEYS, NODES } from 'platejs';
 import {
   type PlateEditor,
   type PlateElementProps,
@@ -51,7 +51,7 @@ export const BlockDraggable: RenderNodeWrapper = (props) => {
       const column = editor.plugin(KEYS.column);
       const block = editor.read.nodes.some({
         at: path,
-        match: { type: column.installed ? column.type : KEYS.column },
+        match: { type: column.installed ? column.type : NODES.column },
       });
 
       if (block) {
@@ -62,7 +62,7 @@ export const BlockDraggable: RenderNodeWrapper = (props) => {
       const table = editor.plugin(KEYS.table);
       const block = editor.read.nodes.some({
         at: path,
-        match: { type: table.installed ? table.type : KEYS.table },
+        match: { type: table.installed ? table.type : NODES.table },
       });
 
       if (block) {

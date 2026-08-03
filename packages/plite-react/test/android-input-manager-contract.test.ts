@@ -1,8 +1,4 @@
-import {
-  createEditor,
-  defineEditorExtension,
-  editorCommands,
-} from '@platejs/plite';
+import { createEditor, defineExtension, editorCommands } from '@platejs/plite';
 import {
   addMark as editorAddMark,
   getSnapshot as editorGetSnapshot,
@@ -335,11 +331,10 @@ describe('Android input manager command-handler flush policy', () => {
   it('flushes stored text diffs when an insertText command handler is registered', () => {
     const editor = createEditor({
       extensions: [
-        defineEditorExtension({
+        defineExtension('insert-text-command', {
           commands: ({ handle }) => [
             handle(editorCommands.insertText, (_context) => false),
           ],
-          name: 'insert-text-command',
         }),
       ],
     });
@@ -368,11 +363,10 @@ describe('Android input manager command-handler flush policy', () => {
   it('does not fast-flush delete diffs through insertText command handlers', () => {
     const editor = createEditor({
       extensions: [
-        defineEditorExtension({
+        defineExtension('insert-text-command', {
           commands: ({ handle }) => [
             handle(editorCommands.insertText, (_context) => false),
           ],
-          name: 'insert-text-command',
         }),
       ],
     });
@@ -389,11 +383,10 @@ describe('Android input manager command-handler flush policy', () => {
   it('does not treat unrelated command handlers as insertText policy', () => {
     const editor = createEditor({
       extensions: [
-        defineEditorExtension({
+        defineExtension('insert-break-command', {
           commands: ({ handle }) => [
             handle(editorCommands.insertBreak, (_context) => false),
           ],
-          name: 'insert-break-command',
         }),
       ],
     });

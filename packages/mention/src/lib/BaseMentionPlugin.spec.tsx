@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { createBaseEditor } from '@platejs/core';
 import type { Element } from '@platejs/plite';
-import { KEYS, NODES } from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 
 import { BaseMentionInputPlugin, BaseMentionPlugin } from './BaseMentionPlugin';
 import { MentionInputPlugin, MentionPlugin } from '../react/MentionPlugin';
@@ -33,13 +33,13 @@ describe('BaseMentionPlugin', () => {
         anchor: { offset: 2, path: [0, 0] },
         focus: { offset: 2, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: 'hello' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'hello' }], type: 'paragraph' }],
     });
-    const inputPlugin = editor.plugin(BaseMentionInputPlugin).plugin;
+    const inputPlugin = editor.plugin(BaseMentionInputPlugin);
     const state = editor.plugin(BaseMentionPlugin).store.get();
 
     expect(inputPlugin.name).toBe('mentionInput');
-    expect(inputPlugin.type).toBe(NODES.mentionInput);
+    expect(inputPlugin.name).toBe(PLUGINS.mentionInput);
     expect(
       editor.read.schema.element(BaseMentionPlugin)?.behavior
     ).toMatchObject({
@@ -52,7 +52,7 @@ describe('BaseMentionPlugin', () => {
     expect(state.createComboboxInput?.('@')).toEqual({
       children: [{ text: '' }],
       trigger: '@',
-      type: NODES.mentionInput,
+      type: 'mentionInput',
     });
     expect(
       editor.read.schema.element(BaseMentionInputPlugin)?.behavior
@@ -72,7 +72,7 @@ describe('BaseMentionPlugin', () => {
     expect(children[1]).toMatchObject({
       children: [{ text: '' }],
       key: 'u1',
-      type: KEYS.mention,
+      type: 'mention',
       value: 'Ada',
     });
     expect(children[2]).toEqual({ text: 'llo' });
@@ -86,7 +86,7 @@ describe('BaseMentionPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
 
     editor.update.text.insert('@');
@@ -98,11 +98,11 @@ describe('BaseMentionPlugin', () => {
           {
             children: [{ text: '' }],
             trigger: '@',
-            type: NODES.mentionInput,
+            type: 'mentionInput',
           },
           { text: '' },
         ],
-        type: KEYS.p,
+        type: 'paragraph',
       },
     ]);
   });
@@ -118,7 +118,7 @@ describe('BaseMentionPlugin', () => {
         anchor: { offset: 2, path: [0, 0] },
         focus: { offset: 2, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: 'hi' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'hi' }], type: 'paragraph' }],
     });
 
     editor.plugin(MentionPlugin).update.insert({ key: 'u1', value: 'Ada' });
@@ -130,7 +130,7 @@ describe('BaseMentionPlugin', () => {
     expect(children[1]).toMatchObject({
       children: [{ text: '' }],
       key: 'u1',
-      type: KEYS.mention,
+      type: 'mention',
       value: 'Ada',
     });
     expect(children[2]).toEqual({ text: ' ' });
@@ -152,7 +152,7 @@ describe('BaseMentionPlugin', () => {
         anchor: { offset: 2, path: [0, 0] },
         focus: { offset: 2, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: 'hello' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'hello' }], type: 'paragraph' }],
     });
 
     editor.plugin(MentionPlugin).update.insert({ key: 'u1', value: 'Ada' });
@@ -165,7 +165,7 @@ describe('BaseMentionPlugin', () => {
       {
         children: [{ text: '' }],
         key: 'u1',
-        type: KEYS.mention,
+        type: 'mention',
         value: 'Ada',
       },
       { text: 'llo' },
@@ -187,12 +187,12 @@ describe('BaseMentionPlugin', () => {
             {
               children: [{ text: '' }],
               key: 'u1',
-              type: KEYS.mention,
+              type: 'mention',
               value: 'Ada',
             },
             { text: ' after' },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
@@ -202,7 +202,7 @@ describe('BaseMentionPlugin', () => {
     expect(editor.read.children()).toMatchObject([
       {
         children: [{ text: 'hi  after' }],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
     expect(editor.read.selection()).toEqual({
@@ -227,12 +227,12 @@ describe('BaseMentionPlugin', () => {
             {
               children: [{ text: '' }],
               key: 'u1',
-              type: KEYS.mention,
+              type: 'mention',
               value: 'Ada',
             },
             { text: ' after' },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
@@ -242,7 +242,7 @@ describe('BaseMentionPlugin', () => {
     expect(editor.read.children()).toMatchObject([
       {
         children: [{ text: 'hi  after' }],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
     expect(editor.read.selection()).toEqual({
@@ -267,12 +267,12 @@ describe('BaseMentionPlugin', () => {
             {
               children: [{ text: '' }],
               key: 'u1',
-              type: KEYS.mention,
+              type: 'mention',
               value: 'Ada',
             },
             { text: ' after' },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
@@ -301,12 +301,12 @@ describe('BaseMentionPlugin', () => {
             {
               children: [{ text: '' }],
               key: 'u1',
-              type: KEYS.mention,
+              type: 'mention',
               value: 'Ada',
             },
             { text: ' after' },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });

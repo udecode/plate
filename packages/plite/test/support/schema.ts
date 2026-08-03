@@ -42,7 +42,7 @@ export const defineTestSchema = (
     )
   );
 
-  return defineEditorSchema({
+  return defineEditorSchema('schema:derived', {
     elements: elementDeclarations,
     id,
     root: schema.content.types(Object.keys(elementDeclarations)),
@@ -54,4 +54,4 @@ export const defineTestSchema = (
 export const extendTestSchema = (
   editor: Editor,
   elements: Readonly<Record<string, SchemaElementInput>>
-) => editor.extend(defineTestSchema(`test-schema-${index++}`, elements));
+) => editor.install(defineTestSchema(`test-schema-${index++}`, elements));

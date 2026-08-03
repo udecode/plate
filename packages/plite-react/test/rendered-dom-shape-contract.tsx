@@ -10,18 +10,21 @@ import { replace as editorReplace } from '@platejs/plite/internal';
 
 import { createReactEditor, Editable, Plite } from '../src';
 
-const inlineLinkSchema = defineEditorSchema({
-  elements: {
-    link: {
-      content: schema.content.text({ default: 'text', min: 1 }),
-      inline: true,
+const inlineLinkSchema = defineEditorSchema(
+  'schema:rendered-dom-shape-inline-link',
+  {
+    elements: {
+      link: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+        inline: true,
+      },
     },
-  },
-  id: 'rendered-dom-shape-inline-link',
-  root: schema.content.not(schema.content.text()),
-  unknown: 'preserve',
-  version: 1,
-});
+    id: 'rendered-dom-shape-inline-link',
+    root: schema.content.not(schema.content.text()),
+    unknown: 'preserve',
+    version: 1,
+  }
+);
 
 const getFirstElement = (container: HTMLElement) => {
   const element = container.querySelector('[data-plite-node="element"]');
@@ -87,7 +90,7 @@ describe('rendered DOM shape contract', () => {
   test('schema reconfiguration republishes mounted element classification without document writes', async () => {
     const slot = defineExtensionSlot('rendered-dom-schema-reconfiguration');
     const createSchema = (profile: 'block' | 'inline' | 'void') =>
-      defineEditorSchema({
+      defineEditorSchema('schema:rendered-dom-schema-reconfiguration', {
         elements: {
           probe:
             profile === 'void'
@@ -258,7 +261,7 @@ describe('rendered DOM shape contract', () => {
   test('empty inline elements inside non-empty blocks do not render visual line breaks', () => {
     const editor = createReactEditor();
 
-    editor.extend(inlineLinkSchema);
+    editor.install(inlineLinkSchema);
 
     editorReplace(editor, {
       children: [

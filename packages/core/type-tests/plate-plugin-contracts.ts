@@ -1,5 +1,5 @@
 import type { DefinitionOf } from '@platejs/core';
-import { createPlateEditor, createPlatePlugin } from '@platejs/core/react';
+import { createPlateEditor, definePlatePlugin } from '@platejs/core/react';
 import { createPluginContext } from '../src/react/plugin/createPluginContext.internal';
 import { ContentSlice } from '@platejs/plite';
 
@@ -7,26 +7,30 @@ type IsAny<T> = 0 extends 1 & T ? true : false;
 type AssertFalse<T extends false> = T;
 type AssertTrue<T extends true> = T;
 
-const ConfiguredPlateCodecContractPlugin = createPlatePlugin({
-  name: 'configuredPlateCodecContract',
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      'application/x-plate-codec-contract': {
-        decode: () => ContentSlice.closed([{ text: 'value' }]),
-        scope: 'document',
-      },
-    }),
-}).configure({});
+const ConfiguredPlateCodecContractPlugin = definePlatePlugin(
+  'configuredPlateCodecContract',
+  {
+    codecs: ({ defineCodecs }) =>
+      defineCodecs({
+        'application/x-plate-codec-contract': {
+          decode: () => ContentSlice.closed([{ text: 'value' }]),
+          scope: 'document',
+        },
+      }),
+  }
+).configure({});
 
 // @ts-expect-error Consumer configuration is terminal for React codec authoring.
 ConfiguredPlateCodecContractPlugin.extend(({ defineCodecs }) => ({
   codecs: defineCodecs({}),
 }));
 
-export const MinimalPlateDefinitionPlugin = createPlatePlugin({
-  name: 'minimalPlateDefinition',
-  editOnly: true,
-});
+export const MinimalPlateDefinitionPlugin = definePlatePlugin(
+  'minimalPlateDefinition',
+  {
+    editOnly: true,
+  }
+);
 type MinimalPlateDefinition = DefinitionOf<typeof MinimalPlateDefinitionPlugin>;
 declare const minimalPlateDefinition: MinimalPlateDefinition;
 const exactMinimalPlateDefinitionName: 'minimalPlateDefinition' =
@@ -61,7 +65,7 @@ export type {
   MinimalPlateRuntimeHasRender,
 };
 
-const ObjectStateInferencePlugin = createPlatePlugin({
+const ObjectStateInferencePlugin = definePlatePlugin('objectStateInference', {
   api: ({ editor, store }) => {
     const editorIsAny: IsAny<typeof editor> = false;
     const pluginState = store.get();
@@ -80,7 +84,6 @@ const ObjectStateInferencePlugin = createPlatePlugin({
   initialState: {
     mode: 'object' as const,
   },
-  name: 'objectStateInference',
   read: ({ editor, store }) => {
     const editorIsAny: IsAny<typeof editor> = false;
     const pluginState = store.get();
@@ -98,51 +101,55 @@ const ObjectStateInferencePlugin = createPlatePlugin({
   },
 });
 
-const ObjectStateFirstInferencePlugin = createPlatePlugin({
-  initialState: {
-    mode: 'objectStateFirst' as const,
-  },
-  name: 'objectStateFirstInference',
-  api: ({ editor, store }) => {
-    const editorIsAny: IsAny<typeof editor> = false;
-    const pluginState = store.get();
-    const pluginStateModeIsAny: IsAny<typeof pluginState.mode> = false;
-    const exactMode: 'objectStateFirst' = pluginState.mode;
+const ObjectStateFirstInferencePlugin = definePlatePlugin(
+  'objectStateFirstInference',
+  {
+    initialState: {
+      mode: 'objectStateFirst' as const,
+    },
+    api: ({ editor, store }) => {
+      const editorIsAny: IsAny<typeof editor> = false;
+      const pluginState = store.get();
+      const pluginStateModeIsAny: IsAny<typeof pluginState.mode> = false;
+      const exactMode: 'objectStateFirst' = pluginState.mode;
 
-    void editorIsAny;
-    void pluginStateModeIsAny;
+      void editorIsAny;
+      void pluginStateModeIsAny;
 
-    return {
-      getMode: () => exactMode,
-    };
-  },
-  read: ({ editor, store }) => {
-    const editorIsAny: IsAny<typeof editor> = false;
-    const pluginState = store.get();
-    const pluginStateModeIsAny: IsAny<typeof pluginState.mode> = false;
-    const exactMode: 'objectStateFirst' = pluginState.mode;
+      return {
+        getMode: () => exactMode,
+      };
+    },
+    read: ({ editor, store }) => {
+      const editorIsAny: IsAny<typeof editor> = false;
+      const pluginState = store.get();
+      const pluginStateModeIsAny: IsAny<typeof pluginState.mode> = false;
+      const exactMode: 'objectStateFirst' = pluginState.mode;
 
-    void editorIsAny;
-    void pluginStateModeIsAny;
+      void editorIsAny;
+      void pluginStateModeIsAny;
 
-    return {
-      getMode: () => exactMode,
-    };
-  },
-});
+      return {
+        getMode: () => exactMode,
+      };
+    },
+  }
+);
 
-const ExplicitFactoryStateInferencePlugin = createPlatePlugin({
-  initialState: ({ editor }): { mode: 'explicitFactory' } => {
-    const editorIsAny: IsAny<typeof editor> = false;
-    const editorId: string = editor.id;
+const ExplicitFactoryStateInferencePlugin = definePlatePlugin(
+  'explicitFactoryStateInference',
+  {
+    initialState: ({ editor }): { mode: 'explicitFactory' } => {
+      const editorIsAny: IsAny<typeof editor> = false;
+      const editorId: string = editor.id;
 
-    void editorId;
-    void editorIsAny;
+      void editorId;
+      void editorIsAny;
 
-    return { mode: 'explicitFactory' };
-  },
-  name: 'explicitFactoryStateInference',
-}).extend(({ editor, store }) => {
+      return { mode: 'explicitFactory' };
+    },
+  }
+).extend(({ editor, store }) => {
   const editorIsAny: IsAny<typeof editor> = false;
   const pluginState = store.get();
   const pluginStateIsAny: IsAny<typeof pluginState> = false;
@@ -163,18 +170,20 @@ const ExplicitFactoryStateInferencePlugin = createPlatePlugin({
   };
 });
 
-const InferredFactoryStateInferencePlugin = createPlatePlugin({
-  initialState: ({ editor }) => {
-    const editorIsAny: IsAny<typeof editor> = false;
-    const editorId: string = editor.id;
+const InferredFactoryStateInferencePlugin = definePlatePlugin(
+  'inferredFactoryStateInference',
+  {
+    initialState: ({ editor }) => {
+      const editorIsAny: IsAny<typeof editor> = false;
+      const editorId: string = editor.id;
 
-    void editorId;
-    void editorIsAny;
+      void editorId;
+      void editorIsAny;
 
-    return { mode: 'inferredFactory' as const };
-  },
-  name: 'inferredFactoryStateInference',
-}).extend(({ editor, store }) => {
+      return { mode: 'inferredFactory' as const };
+    },
+  }
+).extend(({ editor, store }) => {
   const editorIsAny: IsAny<typeof editor> = false;
   const pluginState = store.get();
   const pluginStateIsAny: IsAny<typeof pluginState> = false;
@@ -195,10 +204,9 @@ const InferredFactoryStateInferencePlugin = createPlatePlugin({
   };
 });
 
-export const SequentialPlatePlugin = createPlatePlugin({
+export const SequentialPlatePlugin = definePlatePlugin('sequentialPlate', {
   api: () => ({ first: () => 1 as const }),
   initialState: { count: 1 },
-  name: 'sequentialPlate',
   read: () => ({ first: () => 1 as const }),
   update: () => ({ first: () => 1 as const }),
 })
@@ -256,20 +264,18 @@ void (sequentialPlateEditor
 // @ts-expect-error Sequential stages keep exact API members.
 sequentialPlateEditor.api.sequentialPlate.missing();
 
-createPlatePlugin({
+definePlatePlugin('apiBeforeFactoryState', {
   // @ts-expect-error Factory state consumers belong in a following .extend().
   api: () => ({}),
   initialState: ({ editor }) => ({
     mode: editor.id.length > 0,
   }),
-  name: 'apiBeforeFactoryState',
 });
 
-createPlatePlugin({
+definePlatePlugin('apiAfterFactoryState', {
   initialState: ({ editor }) => ({
     mode: editor.id.length > 0,
   }),
-  name: 'apiAfterFactoryState',
   // @ts-expect-error Factory state consumers belong in a following .extend().
   api: () => ({}),
 });
@@ -308,14 +314,14 @@ void objectStateFirstDefinitionModeIsAny;
 void explicitFactoryDefinitionModeIsAny;
 void inferredFactoryDefinitionModeIsAny;
 
-const authoredPlateTargets = ['paragraph', 'heading'] as const;
-const configuredPlateTargets: readonly string[] = ['quote', 'toggle'];
-const AuthoredPlateTargetsPlugin = createPlatePlugin({
-  name: 'authoredPlateTargets',
-  targetPluginNames: authoredPlateTargets,
+const PlateTargetPlugin = definePlatePlugin('plateTarget', {});
+const authoredPlateTargets = [PlateTargetPlugin, 'heading'] as const;
+const configuredPlateTargets = ['quote', PlateTargetPlugin] as const;
+const AuthoredPlateTargetsPlugin = definePlatePlugin('authoredPlateTargets', {
+  targetPlugins: authoredPlateTargets,
 });
 const ConfiguredPlateTargetsPlugin = AuthoredPlateTargetsPlugin.configure({
-  targetPluginNames: configuredPlateTargets,
+  targetPlugins: configuredPlateTargets,
 });
 type AuthoredPlateTargetsDefinition = DefinitionOf<
   typeof AuthoredPlateTargetsPlugin
@@ -325,13 +331,17 @@ type ConfiguredPlateTargetsDefinition = DefinitionOf<
 >;
 declare const authoredPlateTargetsDefinition: AuthoredPlateTargetsDefinition;
 declare const configuredPlateTargetsDefinition: ConfiguredPlateTargetsDefinition;
-const exactAuthoredPlateTargets: readonly ['paragraph', 'heading'] =
-  authoredPlateTargetsDefinition.targetPluginNames;
-const exactConfiguredPlateTargets: readonly ['paragraph', 'heading'] =
-  configuredPlateTargetsDefinition.targetPluginNames;
+const exactAuthoredPlateTargets: readonly [
+  typeof PlateTargetPlugin,
+  'heading',
+] = authoredPlateTargetsDefinition.targetPlugins;
+const exactConfiguredPlateTargets: readonly [
+  typeof PlateTargetPlugin,
+  'heading',
+] = configuredPlateTargetsDefinition.targetPlugins;
 // @ts-expect-error Configuration does not rewrite the authored definition witness.
 const invalidConfiguredPlateTarget: 'quote' =
-  configuredPlateTargetsDefinition.targetPluginNames[0];
+  configuredPlateTargetsDefinition.targetPlugins[0];
 
 void exactAuthoredPlateTargets;
 void exactConfiguredPlateTargets;
@@ -341,37 +351,33 @@ const toolbarInitialState: { floating: boolean } = {
   floating: true,
 };
 
-const ToolbarPlugin = createPlatePlugin({
+const ToolbarPlugin = definePlatePlugin('toolbar', {
   api: ({ store }) => ({
     isFloating: () => store.get().floating,
     toggleFloating: () => store.get().floating,
   }),
-  name: 'toolbar',
   initialState: toolbarInitialState,
 });
 
-const MentionPlugin = createPlatePlugin({
+const MentionPlugin = definePlatePlugin('mention', {
   api: ({ store }) => ({
     getTrigger: () => store.get().trigger,
   }),
-  name: 'mention',
   initialState: {
     trigger: '@' as const,
   },
 });
 
-const ExplicitPlugin = createPlatePlugin({
+const ExplicitPlugin = definePlatePlugin('explicitPlugin', {
   api: ({ store }) => ({
     isEnabled: () => store.get().enabled,
   }),
-  name: 'explicitPlugin',
   initialState: {
     enabled: false,
   },
 });
 
-const DeclaredPlateTxPlugin = createPlatePlugin({
-  name: 'declaredPlateTx',
+const DeclaredPlateTxPlugin = definePlatePlugin('declaredPlateTx', {
   update: () => ({
     run: (value: 'typed', initialState: { count?: number } = {}) => {
       const exactValue: 'typed' = value;
@@ -384,8 +390,7 @@ const DeclaredPlateTxPlugin = createPlatePlugin({
 
 void DeclaredPlateTxPlugin;
 
-const ReactOnPlugin = createPlatePlugin({
-  name: 'reactOn',
+const ReactOnPlugin = definePlatePlugin('reactOn', {
   initialState: {
     mode: 'inline' as 'inline' | 'block',
   },
@@ -398,23 +403,20 @@ const ReactOnPlugin = createPlatePlugin({
   },
 });
 
-const DependencyApiPlugin = createPlatePlugin({
+const DependencyApiPlugin = definePlatePlugin('dependencyApi', {
   api: () => ({
     read: () => true as const,
   }),
-  name: 'dependencyApi',
 });
 
-const DependencyEditorApiPlugin = createPlatePlugin({
+const DependencyEditorApiPlugin = definePlatePlugin('dependencyEditorApi', {
   api: () => ({
     read: () => true as const,
   }),
-  name: 'dependencyEditorApi',
 });
 
-const DependentHooksPlugin = createPlatePlugin({
+const DependentHooksPlugin = definePlatePlugin('dependentHooks', {
   dependencies: [DependencyApiPlugin, DependencyEditorApiPlugin],
-  name: 'dependentHooks',
   useHooks: ({ editor }) => {
     const dependencyValue: true = editor.api.dependencyApi.read();
     const dependencyEditorValue: true = editor.api.dependencyEditorApi.read();
@@ -424,8 +426,7 @@ const DependentHooksPlugin = createPlatePlugin({
   },
 });
 
-const PlateReadContextPlugin = createPlatePlugin({
-  name: 'plateReadContext',
+const PlateReadContextPlugin = definePlatePlugin('plateReadContext', {
   read: ({ state }) => ({
     childCount: () => state.children().length,
   }),
@@ -476,7 +477,7 @@ const stateInferenceEditor = createPlateEditor({
   ],
 });
 const emptyApiEditor = createPlateEditor({
-  plugins: [createPlatePlugin({ name: 'emptyApi' })],
+  plugins: [definePlatePlugin('emptyApi', {})],
 });
 
 const floating: boolean = plateEditor.api.toolbar.toggleFloating();

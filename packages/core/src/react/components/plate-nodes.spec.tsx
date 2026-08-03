@@ -5,7 +5,11 @@ import React from 'react';
 import { render } from '@testing-library/react';
 import { renderToString } from 'react-dom/server';
 
-import { type PlateEditor, createPlateEditor } from '../editor';
+import {
+  type PlateEditor,
+  type PlateEditorReference,
+  createPlateEditor,
+} from '../editor';
 import { PlateStoreProvider } from '../stores';
 import { PlateElement } from './plate-nodes';
 
@@ -13,10 +17,12 @@ const createElement = (id?: string) =>
   ({
     ...(id ? { id } : {}),
     children: [{ text: 'Body' }],
-    type: 'p',
+    type: 'paragraph',
   }) as any;
 
-const createProps = (editor: PlateEditor, id?: string) =>
+type TestPlateEditor = PlateEditorReference & Pick<PlateEditor, 'id'>;
+
+const createProps = (editor: TestPlateEditor, id?: string) =>
   ({
     attributes: {} as any,
     children: 'Body',
@@ -29,7 +35,7 @@ const renderWithStore = ({
   editor,
   isMounted,
 }: {
-  editor: PlateEditor;
+  editor: TestPlateEditor;
   isMounted: boolean;
 }) =>
   render(

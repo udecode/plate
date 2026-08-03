@@ -22,6 +22,7 @@ apps/www/next-env.d.ts
 **/out/
 node_modules/
 report.*
+!docs/editor-test-harvester/**/report.md
 *.tsv
 !docs/editor-issue-harvester/**/*.tsv
 

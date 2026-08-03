@@ -47,7 +47,7 @@ describe('convertNodesDeserialize', () => {
 
   const mockParagraphNodeSlate = {
     children: [{ text: 'Hello' }],
-    type: 'p',
+    type: 'paragraph',
   };
 
   const mockHeadingNodeSlate = {
@@ -57,12 +57,12 @@ describe('convertNodesDeserialize', () => {
 
   const mockThematicBreakNodeSlate = {
     children: [{ text: '' }],
-    type: 'hr',
+    type: 'horizontalRule',
   };
 
   const mockBoldNodeSlate = {
     children: [{ bold: true, text: 'Hello' }, { text: 'World' }],
-    type: 'p',
+    type: 'paragraph',
   };
 
   const mockNodesSlate = [
@@ -151,7 +151,7 @@ describe('convertNodesDeserialize', () => {
         mockThematicBreakNodeSlate,
         {
           children: [{ text: 'World' }],
-          type: 'p',
+          type: 'paragraph',
         },
       ]);
     });
@@ -163,7 +163,7 @@ describe('convertNodesDeserialize', () => {
         ...baseOptions,
         allowNode: {
           deserialize(node) {
-            if (node.type === 'hr') return false;
+            if (node.type === 'horizontalRule') return false;
 
             return true;
           },
@@ -197,7 +197,7 @@ describe('convertNodesDeserialize', () => {
         mockThematicBreakNodeSlate,
         {
           children: [{ text: 'World' }],
-          type: 'p',
+          type: 'paragraph',
         },
       ]);
     });
@@ -245,7 +245,7 @@ describe('convertNodesDeserialize', () => {
           children: [
             {
               children: [{ text: 'Column content' }],
-              type: 'p',
+              type: 'paragraph',
             },
           ],
           type: 'column',
@@ -305,7 +305,7 @@ describe('convertNodesDeserialize', () => {
       ).toEqual([
         {
           children: [{ text: '<Widget />' }],
-          type: 'p',
+          type: 'paragraph',
         },
       ]);
     });

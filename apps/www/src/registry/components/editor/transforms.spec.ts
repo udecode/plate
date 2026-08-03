@@ -1,23 +1,28 @@
+import { PLUGINS } from '@platejs/utils';
 import { CodeBlockPlugin } from '@platejs/code-block/react';
 import { LinkPlugin } from '@platejs/link/react';
 import { BasePlaceholderPlugin } from '@platejs/media';
 import { SuggestionPlugin } from '@platejs/suggestion/react';
-import { type Selection, type Value, KEYS, schema } from 'platejs';
-import { createPlateEditor, createPlatePlugin } from 'platejs/react';
+import { type Selection, type Value, schema } from 'platejs';
+import { createPlateEditor, definePlatePlugin } from 'platejs/react';
 
 import { BaseBasicBlocksKit } from './plugins/basic-blocks-base-kit';
 import { BaseListKit } from './plugins/list-base-kit';
 import { BaseToggleKit } from './plugins/toggle-base-kit';
-import { insertBlock, insertInlineElement, setBlockType } from './transforms';
 import {
+  applyBlockAction,
+  insertBlock,
+  insertInlineElement,
+} from './transforms';
+import {
+  applyBlockAction as applyClassicBlockAction,
   insertBlock as insertClassicBlock,
-  setBlockType as setClassicBlockType,
 } from './transforms-classic';
 
-const CustomBlockPlugin = createPlatePlugin({
-  name: 'customOwner',
-  schema: { element: schema.element.textBlock() },
-  type: 'custom',
+const CustomBlockPlugin = definePlatePlugin('customOwner', {
+  schema: {
+    element: { ...schema.element.textBlock(), type: 'customBlock' },
+  },
 });
 
 const createEditor = ({
@@ -27,8 +32,8 @@ const createEditor = ({
     focus: { offset: 2, path: [1, 0] },
   },
   initialValue = [
-    { children: [{ text: 'one' }], type: 'p' },
-    { children: [{ text: 'two' }], type: 'p' },
+    { children: [{ text: 'one' }], type: 'paragraph' },
+    { children: [{ text: 'two' }], type: 'paragraph' },
   ],
 }: Partial<{
   initialValue: Value;
@@ -53,7 +58,7 @@ describe('editor block transforms', () => {
   it('opens the floating link owner without a stale trigger API', () => {
     const editor = createEditor();
 
-    insertInlineElement(editor, KEYS.link);
+    insertInlineElement(editor, PLUGINS.link);
 
     expect(editor.plugin(LinkPlugin).store.get()).toMatchObject({
       mode: 'insert',
@@ -65,12 +70,12 @@ describe('editor block transforms', () => {
   it('keeps selection inside the wrapped paragraph when turning a block into a blockquote', () => {
     const editor = createEditor();
 
-    setBlockType(editor, KEYS.blockquote);
+    applyBlockAction(editor, PLUGINS.blockquote);
 
     expect(editor.read.children()).toMatchObject([
-      { children: [{ text: 'one' }], type: 'p' },
+      { children: [{ text: 'one' }], type: 'paragraph' },
       {
-        children: [{ children: [{ text: 'two' }], type: 'p' }],
+        children: [{ children: [{ text: 'two' }], type: 'paragraph' }],
         type: 'blockquote',
       },
     ]);
@@ -84,12 +89,12 @@ describe('editor block transforms', () => {
   it('keeps selection inside the wrapped paragraph when turning a path into a blockquote', () => {
     const editor = createEditor();
 
-    setBlockType(editor, KEYS.blockquote, { at: [1] });
+    applyBlockAction(editor, PLUGINS.blockquote, { at: [1] });
 
     expect(editor.read.children()).toMatchObject([
-      { children: [{ text: 'one' }], type: 'p' },
+      { children: [{ text: 'one' }], type: 'paragraph' },
       {
-        children: [{ children: [{ text: 'two' }], type: 'p' }],
+        children: [{ children: [{ text: 'two' }], type: 'paragraph' }],
         type: 'blockquote',
       },
     ]);
@@ -109,18 +114,18 @@ describe('editor block transforms', () => {
       },
       initialValue: [
         {
-          children: [{ children: [{ text: 'two' }], type: 'p' }],
-          type: KEYS.blockquote,
+          children: [{ children: [{ text: 'two' }], type: 'paragraph' }],
+          type: 'blockquote',
         },
       ],
     });
 
-    setBlockType(editor, KEYS.blockquote);
+    applyBlockAction(editor, PLUGINS.blockquote);
 
     expect(editor.read.children()).toMatchObject([
       {
-        children: [{ children: [{ text: 'two' }], type: 'p' }],
-        type: KEYS.blockquote,
+        children: [{ children: [{ text: 'two' }], type: 'paragraph' }],
+        type: 'blockquote',
       },
     ]);
   });
@@ -128,15 +133,15 @@ describe('editor block transforms', () => {
   it('turns a paragraph into a list inside the owning update', () => {
     const editor = createEditor();
 
-    setBlockType(editor, KEYS.ul);
+    applyBlockAction(editor, 'disc');
 
     expect(editor.read.children()).toMatchObject([
-      { children: [{ text: 'one' }], type: 'p' },
+      { children: [{ text: 'one' }], type: 'paragraph' },
       {
         children: [{ text: 'two' }],
         indent: 1,
-        listStyleType: KEYS.ul,
-        type: KEYS.p,
+        listStyleType: 'disc',
+        type: 'paragraph',
       },
     ]);
   });
@@ -144,13 +149,13 @@ describe('editor block transforms', () => {
   it('selects the inserted blockquote paragraph instead of the previous block', () => {
     const editor = createEditor();
 
-    insertBlock(editor, KEYS.blockquote);
+    insertBlock(editor, PLUGINS.blockquote);
 
     expect(editor.read.children()).toMatchObject([
-      { children: [{ text: 'one' }], type: 'p' },
-      { children: [{ text: 'two' }], type: 'p' },
+      { children: [{ text: 'one' }], type: 'paragraph' },
+      { children: [{ text: 'two' }], type: 'paragraph' },
       {
-        children: [{ children: [{ text: '' }], type: 'p' }],
+        children: [{ children: [{ text: '' }], type: 'paragraph' }],
         type: 'blockquote',
       },
     ]);
@@ -169,17 +174,17 @@ describe('editor block transforms', () => {
         focus: { offset: 0, path: [1, 0] },
       },
       initialValue: [
-        { children: [{ text: 'one' }], type: 'p' },
-        { children: [{ text: '' }], type: 'p' },
+        { children: [{ text: 'one' }], type: 'paragraph' },
+        { children: [{ text: '' }], type: 'paragraph' },
       ],
     });
 
-    insertBlock(editor, KEYS.blockquote);
+    insertBlock(editor, PLUGINS.blockquote);
 
     expect(editor.read.children()).toMatchObject([
-      { children: [{ text: 'one' }], type: 'p' },
+      { children: [{ text: 'one' }], type: 'paragraph' },
       {
-        children: [{ children: [{ text: '' }], type: 'p' }],
+        children: [{ children: [{ text: '' }], type: 'paragraph' }],
         type: 'blockquote',
       },
     ]);
@@ -198,18 +203,18 @@ describe('editor block transforms', () => {
         focus: { offset: 0, path: [1, 0] },
       },
       initialValue: [
-        { children: [{ text: 'one' }], type: 'p' },
-        { children: [{ text: '' }], type: 'p' },
+        { children: [{ text: 'one' }], type: 'paragraph' },
+        { children: [{ text: '' }], type: 'paragraph' },
       ],
     });
     const version = editor.read.lastCommit()?.version ?? 0;
 
-    insertBlock(editor, KEYS.h2);
+    insertBlock(editor, PLUGINS.h2);
 
     expect(editor.read.lastCommit()?.version).toBe(version + 1);
     expect(editor.read.children()).toMatchObject([
-      { children: [{ text: 'one' }], type: 'p' },
-      { children: [{ text: '' }], type: KEYS.h2 },
+      { children: [{ text: 'one' }], type: 'paragraph' },
+      { children: [{ text: '' }], type: 'h2' },
     ]);
   });
 
@@ -221,26 +226,26 @@ describe('editor block transforms', () => {
         focus: { offset: 0, path: [1, 0] },
       },
       initialValue: [
-        { children: [{ text: 'one' }], type: 'p' },
-        { children: [{ text: '' }], type: 'p' },
+        { children: [{ text: 'one' }], type: 'paragraph' },
+        { children: [{ text: '' }], type: 'paragraph' },
       ],
     });
 
-    insertBlock(editor, KEYS.codeBlock);
+    insertBlock(editor, PLUGINS.codeBlock);
 
     expect(editor.read.children()).toMatchObject([
-      { children: [{ text: 'one' }], type: 'p' },
+      { children: [{ text: 'one' }], type: 'paragraph' },
       {
-        children: [{ children: [{ text: '' }], type: 'code_line' }],
-        type: 'code_block',
+        children: [{ children: [{ text: '' }], type: 'codeLine' }],
+        type: 'codeBlock',
       },
     ]);
   });
 
   it.each([
-    KEYS.audio,
-    KEYS.file,
-    KEYS.video,
+    PLUGINS.audio,
+    PLUGINS.file,
+    PLUGINS.video,
   ])('inserts a %s placeholder through its plugin owner', (mediaType) => {
     const editor = createEditor({
       selection: {
@@ -249,45 +254,45 @@ describe('editor block transforms', () => {
         focus: { offset: 0, path: [1, 0] },
       },
       initialValue: [
-        { children: [{ text: 'one' }], type: KEYS.p },
-        { children: [{ text: '' }], type: KEYS.p },
+        { children: [{ text: 'one' }], type: 'paragraph' },
+        { children: [{ text: '' }], type: 'paragraph' },
       ],
     });
 
     insertBlock(editor, mediaType);
 
     expect(editor.read.children()).toMatchObject([
-      { children: [{ text: 'one' }], type: KEYS.p },
+      { children: [{ text: 'one' }], type: 'paragraph' },
       {
         children: [{ text: '' }],
         mediaType,
-        type: KEYS.placeholder,
+        type: 'placeholder',
       },
     ]);
   });
 });
 
 describe('classic editor block transforms', () => {
-  it('keeps raw block types when no plugin owns the name', () => {
+  it('resolves a block action through the owning plugin capability', () => {
     const editor = createEditor();
 
-    setClassicBlockType(editor, 'custom');
+    applyClassicBlockAction(editor, CustomBlockPlugin.name);
 
     expect(editor.read.children()).toMatchObject([
-      { children: [{ text: 'one' }], type: 'p' },
-      { children: [{ text: 'two' }], type: 'custom' },
+      { children: [{ text: 'one' }], type: 'paragraph' },
+      { children: [{ text: 'two' }], type: 'customBlock' },
     ]);
   });
 
-  it('inserts raw block types when no plugin owns the name', () => {
+  it('resolves an insert action through the owning plugin capability', () => {
     const editor = createEditor();
 
-    insertClassicBlock(editor, 'custom');
+    insertClassicBlock(editor, CustomBlockPlugin.name);
 
     expect(editor.read.children()).toMatchObject([
-      { children: [{ text: 'one' }], type: 'p' },
-      { children: [{ text: 'two' }], type: 'p' },
-      { children: [{ text: '' }], type: 'custom' },
+      { children: [{ text: 'one' }], type: 'paragraph' },
+      { children: [{ text: 'two' }], type: 'paragraph' },
+      { children: [{ text: '' }], type: 'customBlock' },
     ]);
   });
 });

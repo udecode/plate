@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { createEditorRuntime, createEditorView } from '@platejs/plite';
+import { createEditor, createEditorView } from '@platejs/plite';
 import {
   delete as editorDelete,
   deleteBackward as editorDeleteBackward,
@@ -63,7 +63,7 @@ const runFixtureTree = (
 };
 
 const withTest = (editor: any) => {
-  editor.extend(history());
+  editor.install(history());
 
   Object.defineProperties(editor, {
     delete: { value: (...args: any[]) => editorDelete(editor, ...args) },
@@ -109,12 +109,12 @@ describe('@platejs/plite-history', () => {
   });
 
   it('records before and after selection roots from the commit', () => {
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       extensions: [history()],
       initialValue: {
-        children: [{ children: [{ text: 'body' }], type: 'p' }],
+        children: [{ children: [{ text: 'body' }], type: 'paragraph' }],
         roots: {
-          header: [{ children: [{ text: 'header' }], type: 'p' }],
+          header: [{ children: [{ text: 'header' }], type: 'paragraph' }],
         },
       },
     });

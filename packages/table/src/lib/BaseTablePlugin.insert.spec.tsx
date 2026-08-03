@@ -1,7 +1,9 @@
 /** @jsx jsxt */
 
-import { getTestTablePlugins } from './__tests__/getTestTablePlugins';
-import { createPlateEditor } from '@platejs/core/react';
+import {
+  createTestTableEditor,
+  getTestTablePlugins,
+} from './__tests__/getTestTablePlugins';
 import { jsxt } from '@platejs/test-utils';
 import type { TestEditor } from '@platejs/test-utils';
 
@@ -76,7 +78,7 @@ describe('table insertion', () => {
         </editor>
       ) as TestEditor;
 
-      const editor = createPlateEditor({
+      const editor = createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
@@ -158,7 +160,7 @@ describe('table insertion', () => {
         </editor>
       ) as TestEditor;
 
-      const editor = createPlateEditor({
+      const editor = createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
@@ -240,7 +242,7 @@ describe('table insertion', () => {
         </editor>
       ) as TestEditor;
 
-      const editor = createPlateEditor({
+      const editor = createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,

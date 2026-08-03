@@ -24,7 +24,7 @@ describe('ImageElementStatic', () => {
         element={
           {
             children: [{ text: 'Caption' }],
-            type: 'img',
+            type: 'image',
             url: '/image.png',
           } as never
         }

@@ -542,5 +542,3 @@ writeFileSync(
     2
   )}\n`
 );
-
-console.log(JSON.stringify(summary, null, 2));

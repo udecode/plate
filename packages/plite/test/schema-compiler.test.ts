@@ -3,7 +3,7 @@ import { afterEach, describe, it } from 'node:test';
 
 import {
   createEditor,
-  defineEditorExtension,
+  defineExtension,
   defineEditorSchema,
   defineExtensionSlot,
   property,
@@ -16,6 +16,7 @@ import {
   EditorSchemaCompileError,
   getCompiledEditorConfiguration,
   getCompiledEditorSchema,
+  getCompiledSchemaPropertyId,
   getCompiledPropertyMergeStrategy,
   matchesCompiledSchemaTarget,
   resolveCompiledSchemaProperty,
@@ -40,7 +41,7 @@ const record = (
 ): EditorSchemaContributionRecord => ({ contribution, extensionName });
 
 const createBasicSchema = () =>
-  defineEditorSchema({
+  defineEditorSchema('schema:article', {
     elements: {
       paragraph: { content: schema.content.text() } as const,
     },
@@ -59,8 +60,135 @@ afterEach(() => {
 });
 
 describe('schema compiler', () => {
+  it('applies schema overrides before compiling every relationship', () => {
+    const indent = schema.elementProperty('indent', property.number(), {
+      target: target.type('quote'),
+    });
+    const indentId = getCompiledSchemaPropertyId(indent);
+    const records = [
+      record('paragraph', {
+        elements: {
+          paragraph: {
+            content: schema.content.text({ default: 'text', min: 1 }),
+          },
+        },
+      }),
+      record('quote', {
+        elements: {
+          quote: {
+            content: schema.content.type('paragraph', {
+              default: { type: 'paragraph' },
+              min: 1,
+            }),
+          },
+        },
+        properties: [indent],
+      }),
+      record('schema', {
+        id: 'overridden-article',
+        root: schema.content.type('quote', { min: 1 }),
+        unknown: 'reject',
+        version: 1,
+      }),
+      record('application', {
+        overrides: [
+          {
+            element: 'paragraph',
+            kind: 'element',
+            source: 'paragraph',
+            type: 'p',
+          },
+          {
+            id: indentId,
+            kind: 'property',
+            source: 'quote',
+            target: target.type('p'),
+          },
+        ],
+      }),
+    ] as const;
+    const compiled = compileEditorSchemaContributions(records);
+    const quote = compiled.elements.byType.get('quote')!;
+    const overriddenIndent = [...compiled.properties.byId.values()].find(
+      (candidate) => candidate.key === 'indent'
+    )!;
+
+    assert.equal(compiled.elements.byType.has('paragraph'), false);
+    assert.equal(compiled.elements.byType.has('p'), true);
+    assert.deepEqual([...quote.content!.allowedElementTypes], ['p']);
+    assert.deepEqual(quote.content!.defaultPlan, {
+      kind: 'element',
+      type: 'p',
+    });
+    assert.deepEqual(overriddenIndent.target, target.type('p'));
+
+    const permuted = compileEditorSchemaContributions([...records].reverse());
+    assert.equal(permuted.identity.fingerprint, compiled.identity.fingerprint);
+  });
+
+  it('rejects ambiguous and unknown schema overrides', () => {
+    const paragraph = record('paragraph', {
+      elements: {
+        paragraph: { content: schema.content.text() },
+      },
+    });
+    const rename = {
+      element: 'paragraph',
+      kind: 'element' as const,
+      source: 'paragraph',
+      type: 'p',
+    };
+
+    assert.throws(
+      () =>
+        compileEditorSchemaContributions([
+          paragraph,
+          record('first-policy', { overrides: [rename] }),
+          record('second-policy', {
+            overrides: [{ ...rename, type: 'textBlock' }],
+          }),
+        ]),
+      /override facet.*owned by both/i
+    );
+    assert.throws(
+      () =>
+        compileEditorSchemaContributions([
+          paragraph,
+          record('application', {
+            overrides: [{ ...rename, element: 'missing' }],
+          }),
+        ]),
+      /targets unknown element/i
+    );
+  });
+
+  it('remaps the implicit derived root when its paragraph owner is overridden', () => {
+    const compiled = compileEditorSchemaContributions([
+      record('paragraph', {
+        elements: {
+          paragraph: {
+            content: schema.content.text({ default: 'text', min: 1 }),
+          },
+        },
+      }),
+      record('application', {
+        overrides: [
+          {
+            element: 'paragraph',
+            kind: 'element',
+            source: 'paragraph',
+            type: 'p',
+          },
+        ],
+      }),
+    ]);
+
+    assert.equal(compiled.elements.byType.has('paragraph'), false);
+    assert.equal(compiled.elements.byType.has('p'), true);
+  });
+
   it('projects targeted content-root ownership into matching element types', () => {
-    const Article = defineEditorSchema({
+    const Article = defineEditorSchema('schema:derived', {
       contentRoots: [
         {
           content: schema.content.type('paragraph', {
@@ -186,8 +314,7 @@ describe('schema compiler', () => {
   it('admits contributed inline elements into the derived paragraph', () => {
     const editor = createEditor({
       extensions: [
-        defineEditorExtension({
-          name: 'inline-elements',
+        defineExtension('inline-elements', {
           schema: {
             elements: {
               image: { void: 'block' },
@@ -280,7 +407,7 @@ describe('schema compiler', () => {
       value: true,
     });
     Object.defineProperty(element, symbol, { enumerable: true, value: true });
-    const Closed = defineEditorSchema({
+    const Closed = defineEditorSchema('schema:article', {
       elements: { paragraph: element },
       id: 'article',
       root: schema.content.type('paragraph', { min: 1 }),
@@ -508,7 +635,7 @@ describe('schema compiler', () => {
       validate: (value: unknown) => value is number,
       validationVersion = 2
     ) =>
-      defineEditorSchema({
+      defineEditorSchema('schema:article', {
         elements: {
           paragraph: {
             content: schema.content.text(),
@@ -580,7 +707,7 @@ describe('schema compiler', () => {
 
   it('canonicalizes target type sets at compilation', () => {
     const create = (types: readonly string[]) =>
-      defineEditorSchema({
+      defineEditorSchema('schema:canonical-target-types', {
         elements: {
           paragraph: { content: schema.content.text() },
           quote: { content: schema.content.text() },
@@ -611,7 +738,7 @@ describe('schema compiler', () => {
   });
 
   it('compiles built-in and hierarchical groups without allowing group spoofing', () => {
-    const Article = defineEditorSchema({
+    const Article = defineEditorSchema('schema:article', {
       elements: {
         callout: {
           content: schema.content.text(),
@@ -666,7 +793,7 @@ describe('schema compiler', () => {
       'text',
     ]);
 
-    const Reserved = defineEditorSchema({
+    const Reserved = defineEditorSchema('schema:reserved', {
       elements: { paragraph: { content: schema.content.text() } },
       groups: { block: {} as const },
       id: 'reserved',
@@ -683,7 +810,7 @@ describe('schema compiler', () => {
       /compiler-owned/
     );
 
-    const Contradictory = defineEditorSchema({
+    const Contradictory = defineEditorSchema('schema:contradictory', {
       elements: {
         paragraph: {
           content: schema.content.text(),
@@ -707,7 +834,7 @@ describe('schema compiler', () => {
       /contradicts its behavior/
     );
 
-    const RedundantBlock = defineEditorSchema({
+    const RedundantBlock = defineEditorSchema('schema:redundant-block', {
       elements: {
         link: {
           content: schema.content.text(),
@@ -731,7 +858,7 @@ describe('schema compiler', () => {
   });
 
   it('compiles finite content algebra, cardinality, and unique defaults', () => {
-    const Article = defineEditorSchema({
+    const Article = defineEditorSchema('schema:article', {
       elements: {
         image: { void: 'block' } as const,
         paragraph: {
@@ -789,7 +916,7 @@ describe('schema compiler', () => {
         /derives its canonical empty text child/u,
       ],
     ] as const) {
-      const Invalid = defineEditorSchema({
+      const Invalid = defineEditorSchema('schema:derived', {
         elements: { invalid: element },
         id,
         root: schema.content.type('invalid'),
@@ -809,7 +936,7 @@ describe('schema compiler', () => {
 
   it('requires canonical text spacers around declared inline children', () => {
     const createNestedInlineSchema = (id: string, content: SchemaContent) =>
-      defineEditorSchema({
+      defineEditorSchema('schema:derived', {
         elements: {
           inner: {
             content: schema.content.text({ default: 'text', min: 1 }),
@@ -941,7 +1068,7 @@ describe('schema compiler', () => {
   });
 
   it('rejects declared block children in inline element content', () => {
-    const Invalid = defineEditorSchema({
+    const Invalid = defineEditorSchema('schema:inline-with-block-child', {
       elements: {
         block: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -987,7 +1114,7 @@ describe('schema compiler', () => {
   });
 
   it('rejects unknown element children in inline element content', () => {
-    const Invalid = defineEditorSchema({
+    const Invalid = defineEditorSchema('schema:inline-with-unknown-child', {
       elements: {
         inline: {
           content: schema.content.open(),
@@ -1023,7 +1150,7 @@ describe('schema compiler', () => {
   });
 
   it('keeps declared and unknown block children valid in block content', () => {
-    const Declared = defineEditorSchema({
+    const Declared = defineEditorSchema('schema:declared-block-child', {
       elements: {
         child: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -1058,7 +1185,7 @@ describe('schema compiler', () => {
     );
     assert.equal(declaredEditor.read.text.string([]), 'x!');
 
-    const Open = defineEditorSchema({
+    const Open = defineEditorSchema('schema:unknown-block-child', {
       elements: {
         parent: {
           content: schema.content.open({ default: 'text', min: 1 }),
@@ -1089,7 +1216,7 @@ describe('schema compiler', () => {
   });
 
   it('rejects ambiguous and cyclic construction defaults', () => {
-    const Ambiguous = defineEditorSchema({
+    const Ambiguous = defineEditorSchema('schema:ambiguous', {
       elements: {
         paragraph: { content: schema.content.text() } as const,
         section: {
@@ -1113,7 +1240,7 @@ describe('schema compiler', () => {
       /needs an explicit default/
     );
 
-    const Cyclic = defineEditorSchema({
+    const Cyclic = defineEditorSchema('schema:cyclic', {
       elements: {
         a: {
           content: schema.content.type('b', { min: 1 }),
@@ -1136,7 +1263,7 @@ describe('schema compiler', () => {
   });
 
   it('compiles placement-aware property targets, lifecycle, and merge lookup', () => {
-    const Article = defineEditorSchema({
+    const Article = defineEditorSchema('schema:article', {
       elements: {
         paragraph: {
           content: schema.content.text(),
@@ -1221,7 +1348,7 @@ describe('schema compiler', () => {
 
   it('compiles exclusive text-property groups into symmetric conflict maps', () => {
     const ScriptPosition = schema.property.exclusive('plate:script-position');
-    const Article = defineEditorSchema({
+    const Article = defineEditorSchema('schema:article', {
       elements: {
         paragraph: { content: schema.content.text() },
       },
@@ -1322,9 +1449,9 @@ describe('schema compiler', () => {
 
   it('rejects overlapping exact and prefix selectors but allows disjoint targets', () => {
     const create = (
-      properties: Parameters<typeof defineEditorSchema>[0]['properties']
+      properties: Parameters<typeof defineEditorSchema>[1]['properties']
     ) =>
-      defineEditorSchema({
+      defineEditorSchema('schema:selectors', {
         elements: {
           paragraph: { content: schema.content.text() } as const,
           section: { content: schema.content.text() } as const,
@@ -1425,7 +1552,7 @@ describe('schema compiler', () => {
       /unknown group "missing"/
     );
 
-    const Groups = defineEditorSchema({
+    const Groups = defineEditorSchema('schema:groups', {
       elements: { paragraph: { content: schema.content.text() } as const },
       groups: {
         a: { extends: ['b'] } as const,
@@ -1492,7 +1619,7 @@ describe('schema compiler', () => {
   });
 
   it('applies slice policy defaults and records compiler timing', () => {
-    const Article = defineEditorSchema({
+    const Article = defineEditorSchema('schema:article', {
       elements: {
         image: {
           slice: { replaceWhenCovered: false },
@@ -1552,16 +1679,19 @@ describe('schema compiler', () => {
       ],
       ['void', { slice: { preserveContext: true }, void: 'block' } as const],
     ] as const) {
-      const Invalid = defineEditorSchema({
-        elements: {
-          invalid,
-          paragraph: { content: schema.content.text() } as const,
-        },
-        id: `invalid-${type}-slice-policy`,
-        root: schema.content.type('paragraph'),
-        unknown: 'reject',
-        version: 1,
-      });
+      const Invalid = defineEditorSchema(
+        `schema:invalid-${type}-slice-policy`,
+        {
+          elements: {
+            invalid,
+            paragraph: { content: schema.content.text() } as const,
+          },
+          id: `invalid-${type}-slice-policy`,
+          root: schema.content.type('paragraph'),
+          unknown: 'reject',
+          version: 1,
+        }
+      );
 
       assert.throws(
         () =>
@@ -1573,10 +1703,10 @@ describe('schema compiler', () => {
     }
   });
 
-  it('reuses compiled schema across equivalent configuration publications', () => {
+  it('reuses compiled schema while publishing a new descriptor identity', () => {
     const slot = defineExtensionSlot('article-schema');
     const create = () =>
-      defineEditorSchema({
+      defineEditorSchema('schema:article', {
         elements: {
           paragraph: { content: schema.content.text() } as const,
         },
@@ -1601,15 +1731,15 @@ describe('schema compiler', () => {
     assert.equal(getCompiledEditorSchema(editor), before);
     assert.equal(
       getCompiledEditorConfiguration(editor).revision,
-      configurationRevision
+      configurationRevision + 1
     );
-    assert.equal(commits, 0);
+    assert.equal(commits, 1);
   });
 
   it('reuses structural compilation while rebinding changed live schema state', () => {
     const slot = defineExtensionSlot('article-schema');
     const create = (validate: (value: unknown) => value is string) =>
-      defineEditorSchema({
+      defineEditorSchema('schema:article', {
         elements: {
           paragraph: {
             content: schema.content.text(),
@@ -1688,7 +1818,7 @@ describe('schema compiler', () => {
   it('rebinds a changed live validator nested in a set descriptor', () => {
     const slot = defineExtensionSlot('article-schema');
     const create = (validate: (value: unknown) => value is string) =>
-      defineEditorSchema({
+      defineEditorSchema('schema:article', {
         elements: {
           paragraph: {
             content: schema.content.text(),
@@ -1748,7 +1878,7 @@ describe('schema compiler', () => {
 
   it('keeps named lineage outside the semantic fingerprint', () => {
     const create = (id: string, version: number) =>
-      defineEditorSchema({
+      defineEditorSchema('schema:derived', {
         elements: {
           paragraph: { content: schema.content.text() },
         },

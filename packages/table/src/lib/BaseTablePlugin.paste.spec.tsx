@@ -2,21 +2,26 @@
 
 import assert from 'node:assert/strict';
 
-import { createPlateEditor, type PlateEditor } from '@platejs/core/react';
+import { type PlateEditorReference } from '@platejs/core/react';
 import { NodeApi } from '@platejs/plite';
 import type { Element, Value } from '@platejs/plite';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
-import type { TTableElement } from '@platejs/utils';
+import type { TableElement } from './BaseTablePlugin';
 import { BaseYjsPlugin } from '@platejs/yjs';
 
-import { getTestTablePlugins } from './__tests__/getTestTablePlugins';
+import {
+  createTestTableEditor,
+  getTestTablePlugins,
+} from './__tests__/getTestTablePlugins';
 import { BaseTablePlugin } from './BaseTablePlugin';
 import { compileTableGrid } from './internal/grid';
 
 jsxt;
 
-const tableText = (editor: PlateEditor<any, any>) => {
-  const table = editor.read.children()[0] as TTableElement;
+const tableText = (
+  editor: PlateEditorReference & { read: { children: () => Value } }
+) => {
+  const table = editor.read.children()[0] as TableElement;
   const grid = compileTableGrid(table);
 
   return grid.slots.map((row) =>
@@ -52,7 +57,7 @@ const createTarget = () => {
     </editor>
   ) as TestEditor;
 
-  return createPlateEditor({
+  return createTestTableEditor({
     nodeId: true,
     plugins: getTestTablePlugins(),
     selection: input.selection,
@@ -119,7 +124,7 @@ describe('BaseTablePlugin prepared paste', () => {
         </htable>
       </editor>
     ) as TestEditor;
-    const source = createPlateEditor({
+    const source = createTestTableEditor({
       nodeId: true,
       plugins: getTestTablePlugins(),
       selection: sourceInput.selection,
@@ -202,7 +207,7 @@ describe('BaseTablePlugin prepared paste', () => {
         </htable>
       </editor>
     ) as TestEditor;
-    const editor = createPlateEditor({
+    const editor = createTestTableEditor({
       nodeId: true,
       plugins: getTestTablePlugins(),
       selection: input.selection,
@@ -248,18 +253,18 @@ describe('BaseTablePlugin prepared paste', () => {
           {
             children: [
               {
-                children: [{ children: [{ text: 'a' }], type: 'p' }],
+                children: [{ children: [{ text: 'a' }], type: 'paragraph' }],
                 id: 'a',
-                type: 'td',
+                type: 'tableCell',
               },
               {
-                children: [{ children: [{ text: 'b' }], type: 'p' }],
+                children: [{ children: [{ text: 'b' }], type: 'paragraph' }],
                 id: 'b',
-                type: 'td',
+                type: 'tableCell',
               },
             ],
             id: 'row',
-            type: 'tr',
+            type: 'tableRow',
           },
         ],
         id: 'table',
@@ -271,7 +276,7 @@ describe('BaseTablePlugin prepared paste', () => {
       focus: { offset: 0, path: [0, 0, 0, 0, 0] },
       kind: 'text' as const,
     };
-    const source = createPlateEditor({
+    const source = createTestTableEditor({
       nodeId: true,
       plugins: [
         BaseTablePlugin,
@@ -280,8 +285,8 @@ describe('BaseTablePlugin prepared paste', () => {
       selection,
       initialValue,
     });
-    const doc = source.read((state) => state.yjs.doc());
-    const replay = createPlateEditor({
+    const doc = source.extension(BaseYjsPlugin).read.doc();
+    const replay = createTestTableEditor({
       nodeId: true,
       plugins: [
         BaseTablePlugin,
@@ -289,7 +294,7 @@ describe('BaseTablePlugin prepared paste', () => {
           initialState: { clientId: 'replay', doc },
         }),
       ],
-      initialValue: [{ children: [{ text: 'local' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'local' }], type: 'paragraph' }],
     });
     const pasted = (
       <fragment>

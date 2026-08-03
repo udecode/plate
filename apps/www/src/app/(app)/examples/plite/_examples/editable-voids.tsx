@@ -1,5 +1,6 @@
 import type { PointerEvent } from 'react';
-import { defineEditorExtension, schema } from '@platejs/plite';
+import { defineExtension, schema } from '@platejs/plite';
+import { history } from '@platejs/plite-history';
 import {
   Editable,
   type EditableProps,
@@ -71,7 +72,7 @@ const textInvariantDOMStrategy: EditableProps['domStrategy'] = {
 
 const EditableVoidsExample = () => {
   const editor = usePliteEditor({
-    extensions: [editableVoid()],
+    extensions: [history(), editableVoid()],
     initialValue: {
       children: [
         {
@@ -116,8 +117,7 @@ const EditableVoidsExample = () => {
 };
 
 const editableVoid = () =>
-  defineEditorExtension({
-    name: 'editable-voids',
+  defineExtension('editable-voids', {
     schema: {
       elements: {
         'editable-void': {

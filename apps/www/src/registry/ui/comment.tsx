@@ -1,4 +1,5 @@
 'use client';
+import { NODES } from '@platejs/utils';
 
 import * as React from 'react';
 
@@ -18,7 +19,7 @@ import {
   TrashIcon,
   XIcon,
 } from 'lucide-react';
-import { type Value, KEYS, nanoid, NodeApi } from 'platejs';
+import { type Value, nanoid, NodeApi } from 'platejs';
 import {
   Plate,
   type PlateEditor,
@@ -451,7 +452,7 @@ export function CommentCreateForm({
   const commentContent = React.useMemo(
     () =>
       commentValue
-        ? NodeApi.string({ children: commentValue, type: KEYS.p })
+        ? NodeApi.string({ children: commentValue, type: NODES.p })
         : '',
     [commentValue]
   );

@@ -60,7 +60,7 @@ export const testValue = [
         text: ' with others',
       },
     ],
-    type: 'p',
+    type: 'paragraph',
   },
   {
     type: 'h3',
@@ -71,7 +71,7 @@ export const testValue = [
     ],
   },
   {
-    type: 'p',
+    type: 'paragraph',
     indent: 1,
     listStyleType: 'disc',
     children: [
@@ -81,7 +81,7 @@ export const testValue = [
     ],
   },
   {
-    type: 'p',
+    type: 'paragraph',
     indent: 2,
     listStyleType: 'disc',
     children: [
@@ -91,7 +91,7 @@ export const testValue = [
     ],
   },
   {
-    type: 'p',
+    type: 'paragraph',
     indent: 3,
     listStyleType: 'disc',
     children: [
@@ -101,7 +101,7 @@ export const testValue = [
     ],
   },
   {
-    type: 'p',
+    type: 'paragraph',
     indent: 4,
     listStyleType: 'disc',
     children: [
@@ -111,7 +111,7 @@ export const testValue = [
     ],
   },
   {
-    type: 'p',
+    type: 'paragraph',
     indent: 1,
     listStyleType: 'disc',
     children: [
@@ -121,7 +121,7 @@ export const testValue = [
     ],
   },
   {
-    type: 'p',
+    type: 'paragraph',
     indent: 2,
     listStyleType: 'decimal',
     listStart: 1,
@@ -132,7 +132,7 @@ export const testValue = [
     ],
   },
   {
-    type: 'p',
+    type: 'paragraph',
     indent: 2,
     listStyleType: 'disc',
     listStart: 1,
@@ -143,7 +143,7 @@ export const testValue = [
     ],
   },
   {
-    type: 'p',
+    type: 'paragraph',
     indent: 2,
     listStyleType: 'todo',
     checked: true,
@@ -165,10 +165,10 @@ export const testValue = [
                     text: '1-1',
                   },
                 ],
-                type: 'p',
+                type: 'paragraph',
               },
             ],
-            type: 'td',
+            type: 'tableCell',
           },
           {
             children: [
@@ -178,13 +178,13 @@ export const testValue = [
                     text: '1-2',
                   },
                 ],
-                type: 'p',
+                type: 'paragraph',
               },
             ],
-            type: 'td',
+            type: 'tableCell',
           },
         ],
-        type: 'tr',
+        type: 'tableRow',
       },
       {
         children: [
@@ -196,10 +196,10 @@ export const testValue = [
                     text: '2-1',
                   },
                 ],
-                type: 'p',
+                type: 'paragraph',
               },
             ],
-            type: 'td',
+            type: 'tableCell',
           },
           {
             children: [
@@ -209,13 +209,13 @@ export const testValue = [
                     text: '2-2',
                   },
                 ],
-                type: 'p',
+                type: 'paragraph',
               },
             ],
-            type: 'td',
+            type: 'tableCell',
           },
         ],
-        type: 'tr',
+        type: 'tableRow',
       },
     ],
     type: 'table',
@@ -234,7 +234,7 @@ export const testValue = [
         text: '',
       },
     ],
-    type: 'hr',
+    type: 'horizontalRule',
   },
   {
     children: [
@@ -264,7 +264,7 @@ export const testValue = [
       },
       {
         children: [{ text: 'link' }],
-        type: 'a',
+        type: 'link',
         url: 'https://example.com',
         target: '_blank',
       },
@@ -275,22 +275,22 @@ export const testValue = [
           },
         ],
         texExpression: 'E=mc^2',
-        type: 'inline_equation',
+        type: 'inlineEquation',
       },
     ],
-    type: 'p',
+    type: 'paragraph',
   },
   {
     children: [{ text: 'test' }],
-    type: 'img',
+    type: 'image',
     url: 'https://images.unsplash.com/photo-1712688930249-98e1963af7bd?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
   },
   {
-    type: 'code_block',
+    type: 'codeBlock',
     lang: 'javascript',
     children: [
       {
-        type: 'code_line',
+        type: 'codeLine',
         children: [
           {
             text: '// Use code blocks to showcase code snippets',
@@ -298,7 +298,7 @@ export const testValue = [
         ],
       },
       {
-        type: 'code_line',
+        type: 'codeLine',
         children: [
           {
             text: 'function greet() {',
@@ -306,7 +306,7 @@ export const testValue = [
         ],
       },
       {
-        type: 'code_line',
+        type: 'codeLine',
         children: [
           {
             text: "  console.info('Hello World!');",
@@ -314,7 +314,7 @@ export const testValue = [
         ],
       },
       {
-        type: 'code_line',
+        type: 'codeLine',
         children: [
           {
             text: '}',
@@ -341,7 +341,7 @@ export const testValue = [
     ],
   },
   {
-    type: 'p',
+    type: 'paragraph',
     checked: true,
     indent: 1,
     listStyleType: 'todo',
@@ -352,7 +352,7 @@ export const testValue = [
     ],
   },
   {
-    type: 'p',
+    type: 'paragraph',
     indent: 1,
     listStyleType: 'decimal',
     children: [
@@ -370,8 +370,8 @@ export const testValue = [
     ],
   },
   {
-    type: 'p',
-    align: 'center',
+    type: 'paragraph',
+    textAlign: 'center',
     children: [
       {
         text: 'Centered text',
@@ -379,7 +379,7 @@ export const testValue = [
     ],
   },
   {
-    type: 'p',
+    type: 'paragraph',
     lineHeight: 2,
     children: [
       {
@@ -421,11 +421,11 @@ export const testValue = [
         text: '',
       },
     ],
-    type: 'media_embed',
+    type: 'mediaEmbed',
     url: 'https://www.youtube.com/watch?v=example',
   },
   {
-    type: 'column_group',
+    type: 'columnGroup',
     layout: [50, 50],
     children: [
       {
@@ -433,7 +433,7 @@ export const testValue = [
         width: '50%',
         children: [
           {
-            type: 'p',
+            type: 'paragraph',
             children: [
               {
                 text: 'Left column',
@@ -447,7 +447,7 @@ export const testValue = [
         width: '50%',
         children: [
           {
-            type: 'p',
+            type: 'paragraph',
             children: [
               {
                 text: 'Right column',
@@ -459,7 +459,7 @@ export const testValue = [
     ],
   },
   {
-    type: 'p',
+    type: 'paragraph',
     children: [
       {
         text: 'Mention: ',
@@ -476,7 +476,7 @@ export const testValue = [
     ],
   },
   {
-    type: 'p',
+    type: 'paragraph',
     children: [
       {
         text: 'Date: ',
@@ -493,7 +493,7 @@ export const testValue = [
     ],
   },
   {
-    type: 'p',
+    type: 'paragraph',
     children: [
       {
         text: 'Text with ',
@@ -522,7 +522,7 @@ export const testValue = [
     ],
   },
   {
-    type: 'p',
+    type: 'paragraph',
     children: [
       {
         text: 'Text with ',
@@ -544,7 +544,7 @@ export const testValue = [
     ],
   },
   {
-    type: 'p',
+    type: 'paragraph',
     children: [
       {
         text: 'Superscript: x',

@@ -1,16 +1,14 @@
-import { KEYS } from '@platejs/utils';
-import type { TTableCellElement } from '@platejs/utils';
-import { createPlateEditor } from '@platejs/core/react';
+import type { TableCellElement } from './BaseTablePlugin';
 import { SelectionApi } from '@platejs/plite';
 
+import { createTestTableEditor } from './__tests__/getTestTablePlugins';
+
 import {
-  BaseTableCellHeaderPlugin,
   BaseTableCellPlugin,
   BaseTablePlugin,
   BaseTableRowPlugin,
 } from './BaseTablePlugin';
 import {
-  TableCellHeaderPlugin,
   TableCellPlugin,
   TablePlugin,
   TableRowPlugin,
@@ -18,37 +16,27 @@ import {
 
 describe('BaseTablePlugin', () => {
   it('declares exact required Base and React table dependencies', () => {
-    expect(BaseTablePlugin.dependencies).toEqual([
-      BaseTableRowPlugin,
-      BaseTableCellPlugin,
-      BaseTableCellHeaderPlugin,
-    ]);
-    expect(TablePlugin.dependencies).toEqual([
-      TableRowPlugin,
-      TableCellPlugin,
-      TableCellHeaderPlugin,
-    ]);
+    expect(BaseTablePlugin.dependencies).toEqual([BaseTableRowPlugin]);
+    expect(TablePlugin.dependencies).toEqual([TableRowPlugin]);
+    expect(TableRowPlugin.dependencies).toEqual([TableCellPlugin]);
   });
 
   it.each([
     ['row', BaseTableRowPlugin.configure({ enabled: false })],
     ['cell', BaseTableCellPlugin.configure({ enabled: false })],
-    ['header cell', BaseTableCellHeaderPlugin.configure({ enabled: false })],
   ])('rejects a disabled required %s dependency', (_, dependency) => {
     expect(() =>
-      createPlateEditor({
+      createTestTableEditor({
         plugins: [BaseTablePlugin, dependency],
       })
     ).toThrow(/table.*disabled|disabled.*table/i);
   });
 
   it('translates HTML span attributes to canonical model fields', () => {
-    const editor = createPlateEditor({
+    const editor = createTestTableEditor({
       plugins: [BaseTablePlugin],
     });
-    const tdProps = editor.plugin(BaseTableCellPlugin).plugin.render?.nodeProps;
-    const thProps = editor.plugin(BaseTableCellHeaderPlugin).plugin.render
-      ?.nodeProps;
+    const cellProps = editor.plugin(BaseTableCellPlugin).render?.nodeProps;
     const decoded = editor.api.html.deserialize({
       element: `
         <table style="margin-left: 12px">
@@ -73,11 +61,11 @@ describe('BaseTablePlugin', () => {
       {
         colSizes: [120, 180],
         marginLeft: 12,
-        type: KEYS.table,
+        type: 'table',
         children: [
           {
             size: 36,
-            type: KEYS.tr,
+            type: 'tableRow',
             children: [
               {
                 background: 'red',
@@ -89,40 +77,42 @@ describe('BaseTablePlugin', () => {
                   },
                 },
                 colSpan: 2,
+                header: true,
                 rowSpan: 3,
                 size: 120,
-                type: KEYS.th,
+                type: 'tableCell',
               },
             ],
           },
         ],
       },
     ]);
-    if (typeof tdProps !== 'function' || typeof thProps !== 'function') {
+    if (typeof cellProps !== 'function') {
       throw new TypeError('Table cell props must be functions');
     }
 
-    const getProps = (props: Function, element: TTableCellElement): unknown =>
+    const getProps = (props: Function, element: TableCellElement): unknown =>
       props({ element });
 
-    const tdElement: TTableCellElement = {
+    const tdElement: TableCellElement = {
       children: [{ text: '' }],
       colSpan: 2,
       rowSpan: 3,
-      type: editor.plugin(KEYS.td).type,
+      type: editor.plugin(BaseTableCellPlugin).schema.element.type,
     };
-    const thElement: TTableCellElement = {
+    const thElement: TableCellElement = {
       children: [{ text: '' }],
       colSpan: 4,
+      header: true,
       rowSpan: 5,
-      type: editor.plugin(KEYS.th).type,
+      type: editor.plugin(BaseTableCellPlugin).schema.element.type,
     };
 
-    expect(getProps(tdProps, tdElement)).toEqual({
+    expect(getProps(cellProps, tdElement)).toEqual({
       colSpan: 2,
       rowSpan: 3,
     });
-    expect(getProps(thProps, thElement)).toEqual({
+    expect(getProps(cellProps, thElement)).toEqual({
       colSpan: 4,
       rowSpan: 5,
     });
@@ -130,7 +120,7 @@ describe('BaseTablePlugin', () => {
 
   it('encodes table structure and presentation with standard HTML', () => {
     const point = { offset: 0, path: [0, 0, 0, 0, 0] };
-    const editor = createPlateEditor({
+    const editor = createTestTableEditor({
       plugins: [BaseTablePlugin],
       selection: SelectionApi.node([0], { anchor: point, focus: point }),
       initialValue: [
@@ -143,19 +133,22 @@ describe('BaseTablePlugin', () => {
                   borders: {
                     top: { color: 'blue', size: 2, style: 'dashed' },
                   },
-                  children: [{ children: [{ text: 'Header' }], type: KEYS.p }],
+                  children: [
+                    { children: [{ text: 'Header' }], type: 'paragraph' },
+                  ],
                   colSpan: 2,
+                  header: true,
                   size: 120,
-                  type: KEYS.th,
+                  type: 'tableCell',
                 },
               ],
               size: 36,
-              type: KEYS.tr,
+              type: 'tableRow',
             },
           ],
           colSizes: [120, 180],
           marginLeft: 12,
-          type: KEYS.table,
+          type: 'table',
         },
       ],
     });

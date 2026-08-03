@@ -84,7 +84,6 @@ const editor = createPlateEditor({
 ```tsx
 import { IndentPlugin } from '@platejs/indent/react';
 import { TogglePlugin } from '@platejs/toggle/react';
-import { KEYS } from 'platejs';
 import { createPlateEditor, ParagraphPlugin } from 'platejs/react';
 import { ToggleElement } from '@/components/ui/toggle-node';
 
@@ -92,10 +91,10 @@ const editor = createPlateEditor({
   plugins: [
     // ...其他插件,
     IndentPlugin.configure({
-      targetPluginNames: [
-        ...KEYS.heading,
-        ParagraphPlugin.name,
-        TogglePlugin.name,
+      targetPlugins: [
+        PLUGINS.h1, PLUGINS.h2, PLUGINS.h3, PLUGINS.h4, PLUGINS.h5, PLUGINS.h6,
+        ParagraphPlugin,
+        TogglePlugin,
       ],
     }),
     TogglePlugin.configure({ component: ToggleElement }),
@@ -104,7 +103,7 @@ const editor = createPlateEditor({
 ```
 
 - `component`: 指定 [`ToggleElement`](/docs/components/toggle-node) 渲染折叠元素
-- `IndentPlugin.targetPluginNames`: 配置支持缩进的元素插件名称（包括折叠项）
+- `IndentPlugin.targetPlugins`: 配置支持缩进的元素插件名称（包括折叠项）
 
 ### 添加工具栏按钮
 
@@ -118,7 +117,7 @@ const editor = createPlateEditor({
 {
   icon: <ChevronRightIcon />,
   label: '折叠列表',
-  value: KEYS.toggle,
+  value: PLUGINS.toggle,
 }
 ```
 
@@ -130,7 +129,7 @@ const editor = createPlateEditor({
 {
   icon: <ChevronRightIcon />,
   label: '折叠列表',
-  value: KEYS.toggle,
+  value: PLUGINS.toggle,
 }
 ```
 
@@ -169,7 +168,7 @@ const editor = createPlateEditor({
 切换折叠项展开状态
 
 <APIParameters>
-  <APIItem name="ids" type="string[]">
+  <APIItem name="ids" type="readonly (PluginReference | string)[]">
     需要切换的元素ID数组
   </APIItem>
   <APIItem name="force" type="boolean | null" optional>

@@ -6,7 +6,7 @@ import {
   useState,
   useSyncExternalStore,
 } from 'react';
-import type { Editor, Range } from '@platejs/plite';
+import type { Editor, Range, Value } from '@platejs/plite';
 import { getInstalledEditorExtension } from '@platejs/plite/internal';
 import {
   type PliteDecorationSource,
@@ -84,22 +84,42 @@ const DOM_RECT_FIELDS = [
 const useIsomorphicLayoutEffect =
   typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
-const readYjsState = <T>(editor: Editor, selector: (state: YjsState) => T): T =>
-  editor.read((state) => selector(getEditorYjsState(state)));
+const readYjsState = <
+  T,
+  V extends Value,
+  TExtensions extends readonly unknown[],
+>(
+  editor: Editor<V, TExtensions>,
+  selector: (state: YjsState) => T
+): T => editor.read((state) => selector(getEditorYjsState(state)));
 
-const useYjsRevision = (
-  editor: Editor,
-  subscribe: (state: YjsState, listener: () => void) => () => void,
-  getSnapshot: (editor: Editor) => number
-): number =>
-  useSyncExternalStore(
-    (listener) => readYjsState(editor, (state) => subscribe(state, listener)),
+const useYjsRevision = <
+  V extends Value,
+  TExtensions extends readonly unknown[],
+>(
+  editor: Editor<V, TExtensions>,
+  subscription: 'subscribeAwareness' | 'subscribeProvider',
+  getSnapshot: (editor: Editor<V, TExtensions>) => number
+): number => {
+  const subscribe = useCallback(
+    (listener: () => void) =>
+      readYjsState(editor, (state) => state[subscription](listener)),
+    [editor, subscription]
+  );
+  const readSnapshot = useCallback(
     () => getSnapshot(editor),
-    () => getSnapshot(editor)
+    [editor, getSnapshot]
   );
 
-const useYjsAwarenessValue = <T>(
-  editor: Editor,
+  return useSyncExternalStore(subscribe, readSnapshot, readSnapshot);
+};
+
+const useYjsAwarenessValue = <
+  T,
+  V extends Value,
+  TExtensions extends readonly unknown[],
+>(
+  editor: Editor<V, TExtensions>,
   selector: (state: YjsState) => T
 ): T => {
   useYjsAwarenessRevision(editor);
@@ -107,13 +127,22 @@ const useYjsAwarenessValue = <T>(
   return readYjsState(editor, selector);
 };
 
-const useYjsProviderValue = <T>(
-  editor: Editor,
+const useYjsProviderValue = <
+  T,
+  V extends Value,
+  TExtensions extends readonly unknown[],
+>(
+  editor: Editor<V, TExtensions>,
   selector: (state: YjsState) => T
 ): T => {
-  useYjsProviderRevision(editor);
+  const subscribe = useCallback(
+    (listener: () => void) =>
+      readYjsState(editor, (state) => state.subscribeProvider(listener)),
+    [editor]
+  );
+  const readSnapshot = () => readYjsState(editor, selector);
 
-  return readYjsState(editor, selector);
+  return useSyncExternalStore(subscribe, readSnapshot, readSnapshot);
 };
 
 const createCursorData = <
@@ -137,11 +166,18 @@ const createCursorData = <
   return data;
 };
 
-const isEditorFocused = (editor: Editor): boolean =>
-  editor.read.view.isFocused();
+const isEditorFocused = <
+  V extends Value,
+  TExtensions extends readonly unknown[],
+>(
+  editor: Editor<V, TExtensions>
+): boolean => editor.read.view.isFocused();
 
-const resolveCursorRect = (
-  editor: ReactEditor,
+const resolveCursorRect = <
+  V extends Value,
+  TExtensions extends readonly unknown[],
+>(
+  editor: ReactEditor<V, TExtensions>,
   range: Range
 ): DOMRect | null => {
   try {
@@ -327,8 +363,10 @@ const overlayPositionsEqual = <
 const readYjsRemoteCursorOverlayPositions = <
   TCursorData extends YjsRemoteCursorData = YjsRemoteCursorData,
   TPositionData = never,
+  V extends Value = Value,
+  TExtensions extends readonly unknown[] = readonly [],
 >(
-  editor: ReactEditor,
+  editor: ReactEditor<V, TExtensions>,
   options:
     | UseYjsRemoteCursorOverlayPositionsOptions<TCursorData>
     | UseYjsRemoteCursorOverlayPositionsOptions<TCursorData, TPositionData>
@@ -384,47 +422,71 @@ const readYjsRemoteCursorOverlayPositions = <
     return positions;
   });
 
-export const getYjsAwarenessRevision = (editor: Editor): number =>
-  readYjsState(editor, (state) => state.awarenessRevision());
+export const getYjsAwarenessRevision = <
+  V extends Value,
+  TExtensions extends readonly unknown[],
+>(
+  editor: Editor<V, TExtensions>
+): number => readYjsState(editor, (state) => state.awarenessRevision());
 
-export const getYjsProviderRevision = (editor: Editor): number =>
-  readYjsState(editor, (state) => state.providerRevision());
+export const getYjsProviderRevision = <
+  V extends Value,
+  TExtensions extends readonly unknown[],
+>(
+  editor: Editor<V, TExtensions>
+): number => readYjsState(editor, (state) => state.providerRevision());
 
-export const getYjsProviderStatus = (
-  editor: Editor
+export const getYjsProviderStatus = <
+  V extends Value,
+  TExtensions extends readonly unknown[],
+>(
+  editor: Editor<V, TExtensions>
 ): YjsProviderStatus | null =>
   readYjsState(editor, (state) => state.providerStatus());
 
-export const getYjsProviderSynced = (editor: Editor): boolean | null =>
-  readYjsState(editor, (state) => state.providerSynced());
+export const getYjsProviderSynced = <
+  V extends Value,
+  TExtensions extends readonly unknown[],
+>(
+  editor: Editor<V, TExtensions>
+): boolean | null => readYjsState(editor, (state) => state.providerSynced());
 
-export function useYjsAwarenessRevision(editor: Editor): number {
-  return useYjsRevision(
-    editor,
-    (state, listener) => state.subscribeAwareness(listener),
-    getYjsAwarenessRevision
-  );
+export function useYjsAwarenessRevision<
+  V extends Value,
+  TExtensions extends readonly unknown[],
+>(editor: Editor<V, TExtensions>): number {
+  return useYjsRevision(editor, 'subscribeAwareness', getYjsAwarenessRevision);
 }
 
-export function useYjsProviderRevision(editor: Editor): number {
-  return useYjsRevision(
-    editor,
-    (state, listener) => state.subscribeProvider(listener),
-    getYjsProviderRevision
-  );
+export function useYjsProviderRevision<
+  V extends Value,
+  TExtensions extends readonly unknown[],
+>(editor: Editor<V, TExtensions>): number {
+  return useYjsRevision(editor, 'subscribeProvider', getYjsProviderRevision);
 }
 
-export function useYjsProviderStatus(editor: Editor): YjsProviderStatus | null {
+export function useYjsProviderStatus<
+  V extends Value,
+  TExtensions extends readonly unknown[],
+>(editor: Editor<V, TExtensions>): YjsProviderStatus | null {
   return useYjsProviderValue(editor, (state) => state.providerStatus());
 }
 
-export function useYjsProviderSynced(editor: Editor): boolean | null {
+export function useYjsProviderSynced<
+  V extends Value,
+  TExtensions extends readonly unknown[],
+>(editor: Editor<V, TExtensions>): boolean | null {
   return useYjsProviderValue(editor, (state) => state.providerSynced());
 }
 
 export function useYjsRemoteCursor<
   TCursorData extends YjsRemoteCursorData = YjsRemoteCursorData,
->(editor: Editor, clientId: number): YjsRemoteCursor<TCursorData> | null {
+  V extends Value = Value,
+  TExtensions extends readonly unknown[] = readonly [],
+>(
+  editor: Editor<V, TExtensions>,
+  clientId: number
+): YjsRemoteCursor<TCursorData> | null {
   return useYjsAwarenessValue(editor, (state) =>
     state.remoteCursor<TCursorData>(clientId)
   );
@@ -432,7 +494,9 @@ export function useYjsRemoteCursor<
 
 export function useYjsRemoteCursors<
   TCursorData extends YjsRemoteCursorData = YjsRemoteCursorData,
->(editor: Editor): readonly YjsRemoteCursor<TCursorData>[] {
+  V extends Value = Value,
+  TExtensions extends readonly unknown[] = readonly [],
+>(editor: Editor<V, TExtensions>): readonly YjsRemoteCursor<TCursorData>[] {
   return useYjsAwarenessValue(editor, (state) =>
     state.remoteCursors<TCursorData>()
   );
@@ -440,15 +504,19 @@ export function useYjsRemoteCursors<
 
 export function useYjsRemoteCursorDecorationSource<
   TCursorData extends YjsRemoteCursorData = YjsRemoteCursorData,
+  V extends Value = Value,
+  TExtensions extends readonly unknown[] = readonly [],
 >(
-  editor: Editor,
+  editor: Editor<V, TExtensions>,
   options?: UseYjsRemoteCursorDecorationSourceOptions<TCursorData>
 ): PliteDecorationSource<YjsRemoteCursorDecorationData<TCursorData>>;
 export function useYjsRemoteCursorDecorationSource<
   TCursorData extends YjsRemoteCursorData,
   TDecorationData,
+  V extends Value = Value,
+  TExtensions extends readonly unknown[] = readonly [],
 >(
-  editor: Editor,
+  editor: Editor<V, TExtensions>,
   options: UseYjsRemoteCursorDecorationSourceOptions<
     TCursorData,
     TDecorationData
@@ -461,8 +529,10 @@ export function useYjsRemoteCursorDecorationSource<
 export function useYjsRemoteCursorDecorationSource<
   TCursorData extends YjsRemoteCursorData,
   TDecorationData,
+  V extends Value = Value,
+  TExtensions extends readonly unknown[] = readonly [],
 >(
-  editor: Editor,
+  editor: Editor<V, TExtensions>,
   options:
     | UseYjsRemoteCursorDecorationSourceOptions<TCursorData>
     | UseYjsRemoteCursorDecorationSourceOptions<
@@ -478,6 +548,8 @@ export function useYjsRemoteCursorDecorationSource<
   optionsRef.current = options;
 
   const source = usePliteRangeDecorationSource<
+    V,
+    TExtensions,
     TDecorationData | YjsRemoteCursorDecorationData<TCursorData>
   >(editor, {
     id,
@@ -546,8 +618,10 @@ export function useYjsRemoteCursorDecorationSource<
 
 export function useYjsRemoteCursorOverlayPositions<
   TCursorData extends YjsRemoteCursorData = YjsRemoteCursorData,
+  V extends Value = Value,
+  TExtensions extends readonly unknown[] = readonly [],
 >(
-  editor: ReactEditor,
+  editor: ReactEditor<V, TExtensions>,
   options?: UseYjsRemoteCursorOverlayPositionsOptions<TCursorData>
 ): readonly [
   readonly YjsRemoteCursorOverlayPosition<
@@ -559,8 +633,10 @@ export function useYjsRemoteCursorOverlayPositions<
 export function useYjsRemoteCursorOverlayPositions<
   TCursorData extends YjsRemoteCursorData,
   TPositionData,
+  V extends Value = Value,
+  TExtensions extends readonly unknown[] = readonly [],
 >(
-  editor: ReactEditor,
+  editor: ReactEditor<V, TExtensions>,
   options: UseYjsRemoteCursorOverlayPositionsOptions<
     TCursorData,
     TPositionData
@@ -574,8 +650,10 @@ export function useYjsRemoteCursorOverlayPositions<
 export function useYjsRemoteCursorOverlayPositions<
   TCursorData extends YjsRemoteCursorData,
   TPositionData,
+  V extends Value = Value,
+  TExtensions extends readonly unknown[] = readonly [],
 >(
-  editor: ReactEditor,
+  editor: ReactEditor<V, TExtensions>,
   options:
     | UseYjsRemoteCursorOverlayPositionsOptions<TCursorData>
     | UseYjsRemoteCursorOverlayPositionsOptions<TCursorData, TPositionData> = {}
@@ -593,10 +671,12 @@ export function useYjsRemoteCursorOverlayPositions<
 
   const readPositions = useCallback(
     () =>
-      readYjsRemoteCursorOverlayPositions<TCursorData, TPositionData>(
-        editor,
-        optionsRef.current
-      ),
+      readYjsRemoteCursorOverlayPositions<
+        TCursorData,
+        TPositionData,
+        V,
+        TExtensions
+      >(editor, optionsRef.current),
     [editor]
   );
   const [positions, setPositions] = useState(readPositions);

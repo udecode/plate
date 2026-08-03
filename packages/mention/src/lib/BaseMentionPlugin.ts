@@ -1,8 +1,8 @@
 import {
-  createTriggerComboboxExtension,
+  triggerCombobox,
   type TriggerComboboxPluginState,
 } from '@platejs/combobox';
-import { type DefinitionOf, createBasePlugin } from '@platejs/core';
+import { type DefinitionOf, defineBasePlugin } from '@platejs/core';
 import { property } from '@platejs/plite';
 import { KEYS, NODES } from '@platejs/utils';
 
@@ -37,8 +37,7 @@ const initialState: MentionPluginState = {
   }),
 };
 
-export const BaseMentionInputPlugin = createBasePlugin({
-  name: KEYS.mentionInput,
+export const BaseMentionInputPlugin = defineBasePlugin(KEYS.mentionInput, {
   schema: {
     element: {
       properties: {
@@ -53,8 +52,7 @@ export const BaseMentionInputPlugin = createBasePlugin({
 });
 
 /** Enables support for autocompleting @mentions. */
-export const BaseMentionPlugin = createBasePlugin({
-  name: KEYS.mention,
+export const BaseMentionPlugin = defineBasePlugin(KEYS.mention, {
   dependencies: [BaseMentionInputPlugin],
   schema: {
     element: {
@@ -119,7 +117,7 @@ export const BaseMentionPlugin = createBasePlugin({
     },
   }),
 }).extend(({ editor, plugin, store, type }) =>
-  createTriggerComboboxExtension({
+  triggerCombobox({
     editor,
     getState: () => store.get(),
     name: plugin.name,

@@ -1,4 +1,4 @@
-import { createBasePlugin, type DefinitionOf } from '@platejs/core';
+import { defineBasePlugin, type DefinitionOf } from '@platejs/core';
 import {
   type Descendant,
   ElementApi,
@@ -7,7 +7,7 @@ import {
   PathApi,
 } from '@platejs/plite';
 
-import { KEYS } from '../plate-keys';
+import { PLUGINS } from '../plate-keys';
 
 export type TrailingBlockPluginState = {
   /** Wrap the default insertion without exposing the active transaction. */
@@ -20,11 +20,10 @@ export type TrailingBlockPluginState = {
   type: string;
 };
 
-export const TrailingBlockPlugin = createBasePlugin({
-  name: KEYS.trailingBlock,
+export const TrailingBlockPlugin = defineBasePlugin(PLUGINS.trailingBlock, {
   initialState: ({ editor }): TrailingBlockPluginState => ({
     level: 0,
-    type: editor.plugin(KEYS.p).type,
+    type: editor.plugin(PLUGINS.paragraph).type,
   }),
   corrections: [
     {

@@ -10,14 +10,14 @@ import { Editor, EditorContainer } from '@/registry/ui/editor';
 const initialValue = [
   {
     children: [{ text: 'Initial Value' }],
-    type: 'p',
+    type: 'paragraph',
   },
 ];
 
 const replacedValue = [
   {
     children: [{ text: 'Replaced Value' }],
-    type: 'p',
+    type: 'paragraph',
   },
 ];
 
@@ -80,7 +80,7 @@ function AsyncControlledEditorDemo() {
       setInitialValue([
         {
           children: [{ text: 'Loaded async value!' }],
-          type: 'p',
+          type: 'paragraph',
         },
       ]);
       setLoading(false);

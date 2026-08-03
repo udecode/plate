@@ -1,7 +1,7 @@
 import type { Emoji } from '@emoji-mart/data';
-import { createBaseEditor, createBasePlugin } from '@platejs/core';
+import { createBaseEditor, defineBasePlugin } from '@platejs/core';
 import { property, schema } from '@platejs/plite';
-import { KEYS, NODES } from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 
 import { BaseEmojiInputPlugin, BaseEmojiPlugin } from './BaseEmojiPlugin';
 import { DEFAULT_EMOJI_LIBRARY } from './EmojiLibrary';
@@ -21,16 +21,16 @@ describe('BaseEmojiPlugin', () => {
       plugins: [BaseEmojiPlugin],
     });
 
-    const inputPlugin = editor.plugin(BaseEmojiInputPlugin).plugin;
-    const input = { children: [{ text: '' }], type: NODES.emojiInput };
+    const inputPlugin = editor.plugin(BaseEmojiInputPlugin);
+    const input = { children: [{ text: '' }], type: 'emojiInput' };
     const inputHandle = schema.handle.element(
       BaseEmojiInputPlugin,
-      BaseEmojiInputPlugin.type
+      editor.plugin(BaseEmojiInputPlugin).schema.element.type
     );
     const value = schema.handle.property(inputHandle, 'value');
 
     expect(inputPlugin.name).toBe('emojiInput');
-    expect(inputPlugin.type).toBe(NODES.emojiInput);
+    expect(inputPlugin.name).toBe(PLUGINS.emojiInput);
     expect(inputPlugin.editOnly).toBe(true);
     expect(editor.read.schema.isInline(input)).toBe(true);
     expect(editor.read.schema.isVoid(input)).toBe(true);
@@ -58,7 +58,7 @@ describe('BaseEmojiPlugin', () => {
       plugins: [BaseEmojiPlugin],
     });
 
-    const plugin = editor.plugin(BaseEmojiPlugin).plugin;
+    const plugin = editor.plugin(BaseEmojiPlugin);
     const state = editor.plugin(BaseEmojiPlugin).store.get();
     const triggerPreviousCharPattern = state.triggerPreviousCharPattern;
     const createComboboxInput = state.createComboboxInput;
@@ -80,7 +80,7 @@ describe('BaseEmojiPlugin', () => {
     expect(triggerPreviousCharPattern.test('x')).toBe(false);
     expect(createComboboxInput('')).toEqual({
       children: [{ text: '' }],
-      type: NODES.emojiInput,
+      type: 'emojiInput',
     });
     expect(createEmojiNode(fireEmoji)).toEqual({
       text: '🔥',
@@ -92,9 +92,7 @@ describe('BaseEmojiPlugin', () => {
       plugins: [BaseEmojiPlugin],
     });
 
-    expect(editor.plugin(BaseEmojiInputPlugin).plugin.name).toBe(
-      KEYS.emojiInput
-    );
+    expect(editor.plugin(BaseEmojiInputPlugin).name).toBe(PLUGINS.emojiInput);
   });
 
   it('inserts the first native skin text by default', () => {
@@ -105,7 +103,7 @@ describe('BaseEmojiPlugin', () => {
         anchor: { offset: 3, path: [0, 0] },
         focus: { offset: 3, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: 'hi ' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'hi ' }], type: 'paragraph' }],
     });
 
     editor.plugin(BaseEmojiPlugin).update.insert(fireEmoji);
@@ -114,8 +112,7 @@ describe('BaseEmojiPlugin', () => {
   });
 
   it('uses the configured createEmojiNode override', () => {
-    const EmojiChipPlugin = createBasePlugin({
-      name: 'emoji-chip',
+    const EmojiChipPlugin = defineBasePlugin('emojiChip', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -129,7 +126,7 @@ describe('BaseEmojiPlugin', () => {
           initialState: {
             createEmojiNode: (emoji) => ({
               children: [{ text: emoji.id }],
-              type: 'emoji-chip',
+              type: 'emojiChip',
             }),
           },
         }),
@@ -139,23 +136,22 @@ describe('BaseEmojiPlugin', () => {
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: 'x' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'x' }], type: 'paragraph' }],
     });
 
     editor.plugin(BaseEmojiPlugin).update.insert(fireEmoji);
 
     expect(editor.read.children()).toMatchObject([
-      { children: [{ text: 'x' }], type: 'p' },
+      { children: [{ text: 'x' }], type: 'paragraph' },
       {
         children: [{ text: 'fire' }],
-        type: 'emoji-chip',
+        type: 'emojiChip',
       },
     ]);
   });
 
   it('preserves custom properties on text emoji nodes', () => {
-    const EmojiIdPlugin = createBasePlugin({
-      name: 'emojiId',
+    const EmojiIdPlugin = defineBasePlugin('emojiId', {
       schema: { mark: property.string() },
     });
     const editor = createBaseEditor({
@@ -175,7 +171,7 @@ describe('BaseEmojiPlugin', () => {
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: 'x' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'x' }], type: 'paragraph' }],
     });
 
     editor.plugin(BaseEmojiPlugin).update.insert(fireEmoji);
@@ -183,7 +179,7 @@ describe('BaseEmojiPlugin', () => {
     expect(editor.read.children()).toMatchObject([
       {
         children: [{ text: 'x' }, { emojiId: 'fire', text: '🔥' }],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
   });

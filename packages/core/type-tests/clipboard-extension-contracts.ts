@@ -1,8 +1,7 @@
-import { createBasePlugin } from '@platejs/core';
+import { defineBasePlugin } from '@platejs/core';
 import { clipboardHandler } from '@platejs/plite-dom';
 
-const ImagePlugin = createBasePlugin({
-  name: 'img',
+const ImagePlugin = defineBasePlugin('img', {
   update: () => ({
     insert: ({ url }: { url: string }) => {
       void url;
@@ -11,7 +10,7 @@ const ImagePlugin = createBasePlugin({
 }).extend(() => ({
   contributions: [
     clipboardHandler({
-      insertData(_data, { transaction: tx }) {
+      insertData(_data, { tx }) {
         tx.img.insert({ url: 'https://example.com/image.png' });
 
         // @ts-expect-error The installed image transaction keeps its input type.
@@ -23,7 +22,7 @@ const ImagePlugin = createBasePlugin({
   ],
 }));
 
-const ContextFreeClipboardPlugin = createBasePlugin({
+const ContextFreeClipboardPlugin = defineBasePlugin('contextFreeClipboard', {
   contributions: [
     clipboardHandler({
       insertData() {
@@ -31,7 +30,6 @@ const ContextFreeClipboardPlugin = createBasePlugin({
       },
     }),
   ],
-  name: 'context-free-clipboard',
 });
 
 declare const editor: import('@platejs/core').BaseEditor;

@@ -25,7 +25,7 @@ const editor = createPlateEditor({
 const editor = createPlateEditor({
   initialValue: [
     {
-      type: 'p',
+      type: 'paragraph',
       children: [{ text: '你好，Plate!' }],
     },
   ],
@@ -51,7 +51,7 @@ const editor = createPlateEditor({
 
 ### Schema 身份
 
-Plate 根据已安装插件编译文档 schema。普通编辑器省略 `schema` 即可。
+Plate 根据已安装插件编译文档 schema。普通编辑器省略 `schemaIdentity` 即可。
 `editor.read.schema.identity()` 返回带有精确编译指纹的派生身份：
 
 ```ts
@@ -97,7 +97,7 @@ function AsyncEditor() {
     setTimeout(() => {
       setInitialValue([
         {
-          type: 'p',
+          type: 'paragraph',
           children: [{ text: '异步加载的值！' }],
         },
       ]);
@@ -139,6 +139,87 @@ const editor = createPlateEditor({
   plugins: [H1Plugin, ListPlugin],
 });
 ```
+
+### 精确的生成编辑器类型
+
+原始插件数组会推断插件 API、read、update、store 和单个元素结构。当应用还需要
+整个插件图对应的精确递归 `Value` 时，使用生成的编辑器 contract。
+
+在一个源文件中定义封闭的应用编辑器：
+
+```tsx title="src/editor/editor-definition.tsx"
+import { H1Plugin } from '@platejs/basic-nodes/react';
+import { TablePlugin } from '@platejs/table/react';
+import { defineEditor, property, schema, target } from 'platejs';
+
+export default defineEditor('app', {
+  plugins: [H1Plugin, TablePlugin] as const,
+  schema: {
+    overrides: [
+      schema.override(H1Plugin, {
+        element: { type: 'headingOne' },
+      }),
+    ],
+    properties: {
+      reviewState: schema.elementProperty(
+        property.enum(['draft', 'approved'] as const),
+        { target: target.element(H1Plugin) }
+      ),
+    },
+  },
+  schemaIdentity: { id: 'app-document', version: 1 },
+});
+```
+
+只有闭合的 editor definition 可以覆盖 schema 关系。它可以重映射 element type、
+content、groups 或现有 property 的 target，也可以添加应用拥有的 property。插件拥有的
+property key 和 value law 保持固定；更改它们需要新字段和显式 migration。
+
+已安装代码从 schema handle 读取最终 identity：
+
+```ts
+editor.plugin(H1Plugin).schema.element.type; // 'headingOne'
+EditorKit.schema.properties.reviewState.key; // 'reviewState'
+```
+
+生成并提交 TypeScript 和 JSON contract：
+
+```bash
+pnpm add -D @platejs/cli
+pnpm exec plate generate src/editor/editor-definition.tsx
+```
+
+生成模块会导出 kit 及其精确的 editor/value 类型，无需显式 editor 泛型：
+
+```tsx title="src/editor/document-editor.tsx"
+import { Plate, usePlateEditor } from 'platejs/react';
+
+import {
+  EditorKit,
+  type Value,
+} from './editor.generated';
+
+export function DocumentEditor({ initialValue }: { initialValue: Value }) {
+  const editor = usePlateEditor({ plugins: EditorKit, initialValue });
+
+  editor.update.h1.insert();
+  editor.update.table.set({ marginLeft: 24 });
+
+  return <Plate editor={editor} />;
+}
+```
+
+在 CI 中使用同一命令并加上 `--check`。Plate 会在发布 editor 前比较生成指纹和
+已安装的运行时 schema；过期 contract 会直接失败，而不会提供错误的 `Value`。
+
+需要处理已存储文档的 schema 变更使用显式 scaffold：
+
+```bash
+pnpm exec plate migrate new src/editor/editor-definition.tsx add-caption
+```
+
+scaffold 包含带类型的 `FromValue`、`ToValue` 快照和结构 diff。应用的存储或协作
+代码决定何时以及如何运行这个纯迁移；Plate 不会自动应用它。
 
 ### 最大长度
 
@@ -200,7 +281,7 @@ const editor = usePlateEditor({
     allow: ['p', 'h1'], 
 
     // 排除特定节点类型获取ID（默认：[]）
-    exclude: ['code_block'],
+    exclude: ['codeBlock'],
 
     // 自定义过滤函数决定节点是否获取ID
     filter: ([node, path]) => {
@@ -294,11 +375,10 @@ const editor = createPlateEditor({
 包插件可能需要适配另一个已安装的包，但不能导入它，也不能控制使用者的编辑器 kit：
 
 ```ts
-const SingleBlockPlugin = createPlatePlugin({
-  name: KEYS.singleBlock,
+const SingleBlockPlugin = definePlatePlugin(PLUGINS.singleBlock, {
   override: {
     plugins: {
-      [KEYS.trailingBlock]: {
+      ['trailingBlock']: {
         enabled: false,
       },
     },
@@ -317,7 +397,7 @@ const SingleBlockPlugin = createPlatePlugin({
 
 ```ts
 const AppParagraphPlugin = ParagraphPlugin.configure({
-  type: 'paragraph',
+  component: AppParagraphElement,
 });
 
 const editor = createPlateEditor({
@@ -327,13 +407,15 @@ const editor = createPlateEditor({
 
 ## 类型化编辑器
 
-`createPlateEditor`会根据传递的值和插件自动推断编辑器的类型。要显式创建类型，可以使用泛型：
+`createPlateEditor` 会根据安装的插件元组派生文档值和插件 API。
+`initialValue` 会根据该 schema 派生的值进行检查。
 
 ### 插件类型
 
 ```ts
-const editor = createPlateEditor<Value, typeof TablePlugin | typeof LinkPlugin>({
-  plugins: [TablePlugin, LinkPlugin],
+const AppKit = [TablePlugin, LinkPlugin] as const;
+const editor = createPlateEditor({
+  plugins: AppKit,
 });
 
 // 使用
@@ -344,55 +426,27 @@ editor.update((tx) => {
 
 ### 值类型
 
-对于更复杂的编辑器，可以在单独的文件中定义类型（例如`plate-types.ts`）：
+当其他模块需要编辑器类型时，使用 `PlateEditor<typeof Kit>`；当命名值类型能提高
+可读性时，使用 `ValueOf<MyEditor>`。不要用手写元素接口重复 schema。
 
 ```ts
-import type { Element, Text } from 'platejs';
+import type { ValueOf } from 'platejs';
 import { type PlateEditor, useEditor } from 'platejs/react';
 
-// 定义自定义元素类型
-interface ParagraphElement extends Element {
-  align?: 'left' | 'center' | 'right' | 'justify';
-  children: RichText[];
-  type: typeof ParagraphPlugin.name;
-}
+const AppKit = [TablePlugin, LinkPlugin] as const;
 
-interface ImageElement extends Element {
-  children: [{ text: '' }]
-  type: typeof ImagePlugin.name;
-  url: string;
-}
-
-// 定义自定义文本类型
-interface FormattedText extends Text {
-  bold?: boolean;
-  italic?: boolean;
-}
-
-export type MyRootBlock = ParagraphElement | ImageElement;
-
-// 定义编辑器的值类型
-export type MyValue = MyRootBlock[];
-
-// 定义自定义编辑器类型
-export type MyEditor = PlateEditor<MyValue, typeof TablePlugin | typeof LinkPlugin>;
+export type MyEditor = PlateEditor<typeof AppKit>;
+export type MyValue = ValueOf<MyEditor>;
 
 export const useMyEditor = () => useEditor<MyEditor>();
 
-// 使用
 const value: MyValue = [{
-  type: 'p',
+  type: ParagraphPlugin.type,
   children: [{ text: '你好，Plate!' }],
-}]
+}];
 
-const editorInferred = createPlateEditor({
-  plugins: [TablePlugin, LinkPlugin],
-  initialValue: value,
-});
-
-// 或 
-const editorExplicit = createPlateEditor<MyValue, typeof TablePlugin | typeof LinkPlugin>({
-  plugins: [TablePlugin, LinkPlugin],
+const editor = createPlateEditor({
+  plugins: AppKit,
   initialValue: value,
 });
 ```

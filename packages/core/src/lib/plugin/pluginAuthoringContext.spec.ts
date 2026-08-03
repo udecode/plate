@@ -1,4 +1,4 @@
-import { createBasePlugin } from './createBasePlugin';
+import { defineBasePlugin } from './defineBasePlugin';
 import { createDefinePluginCodecs } from './pluginAuthoringContext';
 
 describe('createDefinePluginCodecs', () => {
@@ -18,7 +18,7 @@ describe('createDefinePluginCodecs', () => {
   });
 
   it('binds every node declaration in a foreign-target tuple', () => {
-    const TargetPlugin = createBasePlugin({ name: 'target' });
+    const TargetPlugin = defineBasePlugin('target', {});
     const defineCodecs = createDefinePluginCodecs();
     const first = { kind: 'node' };
     const second = { kind: 'node' };

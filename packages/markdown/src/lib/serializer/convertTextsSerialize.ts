@@ -9,13 +9,12 @@ export const basicMarkdownMarks = ['italic', 'bold', 'strikethrough', 'code'];
 
 export const convertTextsSerialize = (
   slateTexts: readonly Text[],
-  options: SerializeMdContext,
-  _pluginName?: string
+  options: SerializeMdContext
 ): MdMark[] => {
   const customLeaf = options.rules
     ? Object.entries(options.rules)
         .filter(([, parser]) => parser?.mark)
-        .map(([pluginName]) => pluginName)
+        .map(([name]) => name)
     : [];
 
   const mdastTexts: MdMark[] = [];
@@ -40,28 +39,28 @@ export const convertTextsSerialize = (
         // exclude repeated marks
         ...customLeaf.filter((k) => !basicMarkdownMarks.includes(k)),
       ] as const
-    ).forEach((pluginName) => {
-      const nodeType = options.registry.getType(pluginName);
+    ).forEach((name) => {
+      const nodeType = options.registry.getType(name);
 
       if (cur[nodeType]) {
         // Skip marks that should be treated as plain text
-        if (options.plainMarks?.includes(pluginName)) {
+        if (options.plainMarks?.includes(name)) {
           return;
         }
 
         if (!prev?.[nodeType]) {
-          starts.push(pluginName);
+          starts.push(name);
         }
         if (!next?.[nodeType]) {
-          ends.push(pluginName);
+          ends.push(name);
         }
       }
     });
 
-    const endsToRemove = starts.reduce<{ index: number; pluginName: string }[]>(
-      (acc, pluginName, pluginIndex) => {
-        if (ends.includes(pluginName)) {
-          acc.push({ index: pluginIndex, pluginName });
+    const endsToRemove = starts.reduce<{ index: number; name: string }[]>(
+      (acc, name, pluginIndex) => {
+        if (ends.includes(name)) {
+          acc.push({ index: pluginIndex, name });
         }
         return acc;
       },
@@ -95,8 +94,8 @@ export const convertTextsSerialize = (
       starts
         .slice()
         .reverse()
-        .forEach((pluginName) => {
-          const nodeParser = options.rules?.[pluginName]?.serialize;
+        .forEach((name) => {
+          const nodeParser = options.rules?.[name]?.serialize;
 
           if (nodeParser) {
             const node = nodeParser(cur, options);
@@ -109,7 +108,7 @@ export const convertTextsSerialize = (
             }
           }
 
-          switch (pluginName) {
+          switch (name) {
             case 'bold': {
               res = {
                 children: [res],

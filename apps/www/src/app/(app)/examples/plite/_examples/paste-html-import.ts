@@ -1,4 +1,4 @@
-import { type Descendant, defineEditorExtension, schema } from '@platejs/plite';
+import { type Descendant, defineExtension, schema } from '@platejs/plite';
 import { clipboardHandler, parseDOMClipboardHtml } from '@platejs/plite-dom';
 import { jsx } from '@platejs/plite-hyperscript';
 
@@ -670,11 +670,10 @@ export const deserialize = (
 };
 
 export const html = () =>
-  defineEditorExtension({
-    name: 'paste-html',
+  defineExtension('paste-html', {
     contributions: [
       clipboardHandler({
-        insertData(data, { next, transaction }) {
+        insertData(data, { next, tx }) {
           const html = data.getData('text/html');
 
           if (!html) return next();
@@ -697,7 +696,7 @@ export const html = () =>
                 : [deserialized]
           ).filter(isDescendant);
 
-          transaction.fragment.replace(fragment);
+          tx.fragment.replace(fragment);
           return true;
         },
       }),

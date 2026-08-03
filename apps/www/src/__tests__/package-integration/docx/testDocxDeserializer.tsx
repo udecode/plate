@@ -37,12 +37,7 @@ import { createBaseEditor } from '../../../../../../packages/core/src/lib/editor
 jsx;
 
 const targetPluginConfig = {
-  targetPluginNames: [
-    BaseParagraphPlugin.name,
-    H1Plugin.name,
-    H2Plugin.name,
-    H3Plugin.name,
-  ],
+  targetPlugins: [BaseParagraphPlugin, H1Plugin, H2Plugin, H3Plugin],
 };
 
 export const createClipboardData = (html: string, rtf?: string): DataTransfer =>
@@ -99,8 +94,8 @@ export const testDocxDeserializer = ({
         TextIndentPlugin.configure(targetPluginConfig),
         IndentPlugin.configure(targetPluginConfig),
         BaseListPlugin.configure(targetPluginConfig),
-        DocxPlugin,
         JuicePlugin,
+        DocxPlugin,
       ],
       selection: input.selection,
       initialValue: input.children,

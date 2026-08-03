@@ -133,42 +133,42 @@ const editor = createPlateEditor({
 
 **代码块：**
 ```tsx
-<codeblock>                              // ← 退出点（顶层块）
-  <codeline>代码|</codeline>             // ← 起始位置
-</codeblock>
-<p>|</p>                                 // ← 在此处插入新段落
+<codeBlock>                              // ← 退出点（顶层块）
+  <codeLine>代码|</codeLine>             // ← 起始位置
+</codeBlock>
+<paragraph>|</paragraph>                 // ← 在此处插入新段落
 ```
 
 **列中的表格（在表格层级退出）：**
 ```tsx
 // 第一次退出
-<column_group>                           
+<columnGroup>
   <column>                               
     <table>                              // ← 退出点（列允许块）
-      <tr>                               // 表格只允许行
-        <td>                             // 行只允许单元格
-          <p>内容|</p>                   // ← 起始位置
-        </td>
-      </tr>
+      <tableRow>                         // 表格只允许行
+        <tableCell>                      // 行只允许单元格
+          <paragraph>内容|</paragraph>   // ← 起始位置
+        </tableCell>
+      </tableRow>
     </table>
-    <p>|</p>                             // ← 在此处插入新段落
+    <paragraph>|</paragraph>             // ← 在此处插入新段落
   </column>
-</column_group>
+</columnGroup>
 
 // 第二次退出
-<column_group>                           // ← 退出点（根允许块）
+<columnGroup>                            // ← 退出点（根允许块）
   <column>                               // 分组只允许列
     <table>                              
-      <tr>                               
-        <td>                             
-          <p>内容</p>
-        </td>
-      </tr>
+      <tableRow>
+        <tableCell>
+          <paragraph>内容</paragraph>
+        </tableCell>
+      </tableRow>
     </table>
-    <p>|</p>                             // ← 起始位置
+    <paragraph>|</paragraph>             // ← 起始位置
   </column>
-</column_group>
-<p>|</p>                                 // ← 在此处插入新段落
+</columnGroup>
+<paragraph>|</paragraph>                 // ← 在此处插入新段落
 ```
 
 ### 自定义插件配置
@@ -179,8 +179,7 @@ const editor = createPlateEditor({
 import { schema } from 'platejs';
 
 // 表格结构
-const CustomTablePlugin = createBasePlugin({
-  name: 'table',
+const CustomTablePlugin = defineBasePlugin('table', {
   schema: {
     element: {
       content: schema.content.type('tr', { min: 1 }),
@@ -188,8 +187,7 @@ const CustomTablePlugin = createBasePlugin({
   },
 });
 
-const CustomTableRowPlugin = createBasePlugin({
-  name: 'tr',
+const CustomTableRowPlugin = defineBasePlugin('tr', {
   schema: {
     element: {
       content: schema.content.types(['td', 'th'], { min: 1 }),
@@ -197,8 +195,7 @@ const CustomTableRowPlugin = createBasePlugin({
   },
 });
 
-const CustomTableCellPlugin = createBasePlugin({
-  name: 'td',
+const CustomTableCellPlugin = defineBasePlugin('td', {
   schema: {
     element: {
       content: schema.content.group('block', { min: 1 }),

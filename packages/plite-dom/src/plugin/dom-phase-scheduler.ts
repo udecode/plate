@@ -1,4 +1,4 @@
-import type { Editor } from '@platejs/plite';
+import type { AnyEditor as Editor } from '@platejs/plite/internal';
 
 import {
   EDITOR_TO_DOM_ROOT,

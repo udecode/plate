@@ -1,6 +1,5 @@
 import { createBaseEditor } from '@platejs/core';
 import { createPlateEditor } from '@platejs/core/react';
-import { KEYS } from '@platejs/utils';
 
 import {
   BaseBlockquotePlugin,
@@ -59,7 +58,7 @@ describe('basic node plugin composition', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: 'text' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'text' }], type: 'paragraph' }],
     });
 
     editor.update.h1.toggle();
@@ -67,7 +66,7 @@ describe('basic node plugin composition', () => {
 
     expect(editor.read.children()[0]).toMatchObject({
       children: [{ bold: true, text: 'text' }],
-      type: KEYS.h1,
+      type: 'h1',
     });
   });
 
@@ -79,7 +78,7 @@ describe('basic node plugin composition', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: 'text' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'text' }], type: 'paragraph' }],
     });
 
     editor.update.script.toggle('sub');
@@ -107,7 +106,7 @@ describe('basic node plugin composition', () => {
           anchor: { offset: 0, path: [0, 0] },
           focus: { offset: 4, path: [0, 0] },
         },
-        initialValue: [{ children: [{ text: 'text' }], type: KEYS.p }],
+        initialValue: [{ children: [{ text: 'text' }], type: 'paragraph' }],
       });
     const rootEditor = createEditor();
     const portalEditor = createEditor();
@@ -141,7 +140,7 @@ describe('basic node plugin composition', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: 'text' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'text' }], type: 'paragraph' }],
     });
 
     editor.update.h6.toggle();
@@ -149,7 +148,7 @@ describe('basic node plugin composition', () => {
 
     expect(editor.read.children()[0]).toMatchObject({
       children: [{ italic: true, text: 'text' }],
-      type: KEYS.h6,
+      type: 'h6',
     });
   });
 });

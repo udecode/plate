@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-01T15:42:30.360Z",
+  "wordgardHead": "c715d4ded8fc780f52c13206e589ea31e4148dd4",
+  "collab": {
+    "derivedBeforeReservation": "AB",
+    "reservation": "A",
+    "derivedAfterReservation": "A",
+    "observationallyPure": false
+  },
+  "history": {
+    "branchIdentityPreserved": false,
+    "fieldIdentityPreserved": true
+  }
+}

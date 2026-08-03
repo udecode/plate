@@ -20,6 +20,7 @@
   "sideEffects": false,
   "exports": {
     ".": "./dist/index.js",
+    "./migrations": "./dist/migrations/index.js",
     "./react": "./dist/react/index.js",
     "./package.json": "./package.json"
   },

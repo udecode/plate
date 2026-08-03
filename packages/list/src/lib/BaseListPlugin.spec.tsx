@@ -2,25 +2,31 @@
 
 import {
   BaseParagraphPlugin,
-  createBaseEditor,
-  createBasePlugin,
+  createBaseEditor as createTypedBaseEditor,
+  defineBasePlugin,
+  type BaseEditorOptions,
+  type BasePluginInput,
 } from '@platejs/core';
 import {
   getPlateRuntime,
   prepareHtmlPluginContext,
+  prepareHtmlRegistry,
 } from '@platejs/core/internal';
 import { BaseIndentPlugin } from '@platejs/indent';
 import {
   ContentSlice,
+  createEditor as createPliteEditor,
   DocumentChange,
   schema,
   type Element,
+  type InitialValue,
   type NodeEntry,
+  type Value,
 } from '@platejs/plite';
 import { writeHostFragmentData } from '@platejs/plite-dom';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 
-import { KEYS } from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 import {
   BaseListPlugin,
   BulletedListRules,
@@ -32,8 +38,18 @@ import {
 
 jsxt;
 
-const FixtureHeadingPlugin = createBasePlugin({
-  name: KEYS.h1,
+const createBaseEditor = <const P extends readonly BasePluginInput[]>(
+  options: Omit<BaseEditorOptions, 'plugins'> & {
+    initialValue?: InitialValue<Value>;
+    plugins: P;
+  }
+) =>
+  createTypedBaseEditor({
+    ...options,
+    editor: createPliteEditor<Value>(),
+  });
+
+const FixtureHeadingPlugin = defineBasePlugin(PLUGINS.h1, {
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
@@ -47,7 +63,7 @@ const createListEditorFromFixture = (fixture: TestEditor) =>
     initialValue:
       fixture.children.length > 0
         ? fixture.children
-        : [{ children: [{ text: '' }], type: KEYS.p }],
+        : [{ children: [{ text: '' }], type: 'paragraph' }],
   });
 
 const assertScopedListTypes = () => {
@@ -90,8 +106,9 @@ describe('BaseListPlugin', () => {
     });
     const createContext = prepareHtmlPluginContext(editor, BaseListPlugin);
     const context = editor.read((state) => createContext(state));
-    const transformData =
-      editor.plugin(BaseListPlugin).plugin.parsers.html?.transformData;
+    const transformData = prepareHtmlRegistry(editor).plugins.find(
+      ({ name }) => name === BaseListPlugin.name
+    )?.transformData;
 
     if (!transformData) {
       throw new Error('Missing HTML transformData');
@@ -119,7 +136,7 @@ describe('BaseListPlugin', () => {
           children: [{ text: 'Item' }],
           indent: 1,
           listStyleType: 'disc',
-          type: KEYS.p,
+          type: 'paragraph',
         },
       ],
     });
@@ -135,17 +152,15 @@ describe('BaseListPlugin', () => {
   });
 
   it('uses configured targets for both model validation and injection', () => {
-    const CalloutPlugin = createBasePlugin({
-      name: 'callout',
+    const CalloutPlugin = defineBasePlugin('callout', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
         },
       },
-      type: 'note',
     });
     const ListCalloutPlugin = BaseListPlugin.configure({
-      targetPluginNames: ['callout'],
+      targetPlugins: ['callout'],
     });
     const editor = createBaseEditor({
       plugins: [CalloutPlugin, ListCalloutPlugin],
@@ -153,20 +168,18 @@ describe('BaseListPlugin', () => {
         {
           children: [{ text: 'Callout' }],
           listStyleType: 'disc',
-          type: 'note',
+          type: 'callout',
         },
       ],
     });
 
-    expect(editor.plugin(BaseListPlugin).plugin.targetPluginNames.join()).toBe(
+    expect(editor.plugin(BaseListPlugin).targetPlugins.join()).toBe('callout');
+    expect(editor.plugin(BaseIndentPlugin).targetPlugins.join()).toBe(
       'callout'
     );
-    expect(
-      editor.plugin(BaseIndentPlugin).plugin.targetPluginNames.join()
-    ).toBe('callout');
     expect(editor.read.children()[0]).toMatchObject({
       listStyleType: 'disc',
-      type: 'note',
+      type: 'callout',
     });
 
     editor.plugin(BaseListPlugin).update.indent({ at: [0] });
@@ -174,7 +187,7 @@ describe('BaseListPlugin', () => {
     expect(editor.read.children()[0]).toMatchObject({
       indent: 1,
       listStyleType: 'disc',
-      type: 'note',
+      type: 'callout',
     });
     expect(() =>
       editor.read.schema.assertDocument(editor.read.value())
@@ -188,14 +201,14 @@ describe('BaseListPlugin', () => {
         children: [{ text: 'Imported' }],
         indent: 2,
         listStyleType: undefined,
-        type: 'note',
+        type: 'callout',
       },
     ]);
     const multiTargetEditor = createBaseEditor({
       plugins: [
         CalloutPlugin,
         BaseListPlugin.configure({
-          targetPluginNames: ['callout', KEYS.p],
+          targetPlugins: ['callout', PLUGINS.paragraph],
         }),
       ],
     });
@@ -207,7 +220,7 @@ describe('BaseListPlugin', () => {
     ).toEqual([
       {
         children: [{ text: 'Paragraph list item' }],
-        type: 'note',
+        type: 'callout',
       },
     ]);
     expect(() =>
@@ -215,11 +228,11 @@ describe('BaseListPlugin', () => {
         {
           children: [{ text: 'Paragraph' }],
           listStyleType: 'disc',
-          type: KEYS.p,
+          type: 'paragraph',
         },
       ])
     ).toThrow(
-      /Schema element property "listStyleType" cannot target element "p"/
+      /Schema element property "listStyleType" cannot target element "paragraph"/
     );
   });
 
@@ -231,15 +244,15 @@ describe('BaseListPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: 'Item' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'Item' }], type: 'paragraph' }],
     });
     const list = editor.plugin(BaseListPlugin);
-    const pluginNames = getPlateRuntime(editor).pluginList.map(
+    const names = getPlateRuntime(editor).pluginList.map(
       (plugin) => plugin.name
     );
 
-    expect(pluginNames.indexOf(KEYS.indent)).toBeLessThan(
-      pluginNames.indexOf(KEYS.list)
+    expect(names.indexOf(PLUGINS.indent)).toBeLessThan(
+      names.indexOf(PLUGINS.list)
     );
     expect(list.read.isActive('disc')).toBe(false);
 
@@ -253,7 +266,7 @@ describe('BaseListPlugin', () => {
   });
 
   it('publishes staged list queries to required dependents', () => {
-    const ListDependentPlugin = createBasePlugin({
+    const ListDependentPlugin = defineBasePlugin('listDependent', {
       api: ({ editor }) => ({
         getPreviousType: () => {
           const entry = editor.read.nodes.get<Element>([1]);
@@ -264,7 +277,6 @@ describe('BaseListPlugin', () => {
         },
       }),
       dependencies: [BaseListPlugin],
-      name: 'listDependent',
     });
     const editor = createBaseEditor({
       plugins: [ListDependentPlugin],
@@ -273,19 +285,19 @@ describe('BaseListPlugin', () => {
           children: [{ text: 'First' }],
           indent: 1,
           listStyleType: 'disc',
-          type: KEYS.p,
+          type: 'paragraph',
         },
         {
           children: [{ text: 'Second' }],
           indent: 1,
           listStyleType: 'disc',
-          type: KEYS.p,
+          type: 'paragraph',
         },
       ],
     });
     const firstEntry = editor.read.nodes.get<Element>([0]);
 
-    expect(editor.api.listDependent.getPreviousType()).toBe(KEYS.p);
+    expect(editor.api.listDependent.getPreviousType()).toBe(PLUGINS.paragraph);
     expect(
       firstEntry
         ? editor.plugin(BaseListPlugin).read.getNext(firstEntry)?.[1]
@@ -301,13 +313,13 @@ describe('BaseListPlugin', () => {
           children: [{ text: 'First' }],
           indent: 1,
           listStyleType: 'disc',
-          type: KEYS.p,
+          type: 'paragraph',
         },
         {
           children: [{ text: 'Second' }],
           indent: 1,
           listStyleType: 'disc',
-          type: KEYS.p,
+          type: 'paragraph',
         },
       ],
     });
@@ -318,7 +330,7 @@ describe('BaseListPlugin', () => {
           children: [{ text: 'Inserted' }],
           indent: 1,
           listStyleType: 'disc',
-          type: KEYS.p,
+          type: 'paragraph',
         },
         { at: [1] }
       );
@@ -334,7 +346,7 @@ describe('BaseListPlugin', () => {
   });
 
   it('composes indent and outdent into one undoable update', () => {
-    const value = [{ children: [{ text: 'Item' }], type: KEYS.p }];
+    const value = [{ children: [{ text: 'Item' }], type: 'paragraph' }];
     const editor = createBaseEditor({
       plugins: [BaseListPlugin],
       initialValue: value,
@@ -369,7 +381,7 @@ describe('BaseListPlugin', () => {
           listRestartPolite: 5,
           listStart: 4,
           listStyleType: 'decimal',
-          type: KEYS.p,
+          type: 'paragraph',
         },
       ],
     });
@@ -377,14 +389,14 @@ describe('BaseListPlugin', () => {
     editor.plugin(BaseListPlugin).update.outdent({ at: [0] });
 
     expect(editor.read.children()).toEqual([
-      { children: [{ text: 'Item' }], type: KEYS.p },
+      { children: [{ text: 'Item' }], type: 'paragraph' },
     ]);
   });
 
   it('replays a frozen list update without replaying local selection or history', () => {
     const value = [
-      { children: [{ text: 'First' }], type: KEYS.p },
-      { children: [{ text: 'Second' }], type: KEYS.p },
+      { children: [{ text: 'First' }], type: 'paragraph' },
+      { children: [{ text: 'Second' }], type: 'paragraph' },
     ];
     const source = createBaseEditor({
       plugins: [BaseListPlugin],
@@ -456,6 +468,14 @@ describe('BaseListPlugin', () => {
     expect(item.dataset.listStyleType).toBe('square');
   });
 
+  it('leaves non-list HTML untouched for later transforms', () => {
+    const input =
+      '<style>.item { line-height: 150%; }</style><p class="item">Text</p>';
+    const html = transformListHtml(input);
+
+    expect(html).toBe(input);
+  });
+
   it('parses list metadata for list items', () => {
     const editor = createBaseEditor({
       plugins: [BaseListPlugin],
@@ -471,7 +491,7 @@ describe('BaseListPlugin', () => {
         children: [{ text: 'Parsed' }],
         indent: 2,
         listStyleType: 'circle',
-        type: editor.plugin(KEYS.p).type,
+        type: editor.plugin(PLUGINS.paragraph).schema.element!.type,
       },
     ]);
   });
@@ -490,13 +510,13 @@ describe('BaseListPlugin', () => {
         children: [{ text: 'Four' }],
         listStart: 4,
         listStyleType: 'decimal',
-        type: KEYS.p,
+        type: 'paragraph',
       },
       {
         children: [{ text: 'Five' }],
         listStart: 5,
         listStyleType: 'decimal',
-        type: KEYS.p,
+        type: 'paragraph',
       },
     ]);
   });
@@ -513,7 +533,7 @@ describe('BaseListPlugin', () => {
           listRestartPolite: 5,
           listStart: 6,
           listStyleType: 'decimal',
-          type: KEYS.p,
+          type: 'paragraph',
         },
       ],
     });
@@ -568,7 +588,7 @@ describe('list input rules', () => {
         anchor: { offset, path: [0, 0] },
         focus: { offset, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text }], type: 'p' }],
+      initialValue: [{ children: [{ text }], type: 'paragraph' }],
     });
 
   it('creates a bullet list item when markdown group is enabled', () => {
@@ -580,7 +600,7 @@ describe('list input rules', () => {
       children: [{ text: '' }],
       indent: 1,
       listStyleType: 'disc',
-      type: 'p',
+      type: 'paragraph',
     });
     expect(editor.read.selection()).toEqual({
       kind: 'text',
@@ -600,7 +620,7 @@ describe('list input rules', () => {
       listStart: 3,
       listRestartPolite: 3,
       listStyleType: 'decimal',
-      type: 'p',
+      type: 'paragraph',
     });
     expect(editor.read.selection()).toEqual({
       kind: 'text',
@@ -618,8 +638,8 @@ describe('list input rules', () => {
       checked: true,
       children: [{ text: '' }],
       indent: 1,
-      listStyleType: KEYS.listTodo,
-      type: 'p',
+      listStyleType: 'todo',
+      type: 'paragraph',
     });
     expect(editor.read.selection()).toEqual({
       kind: 'text',
@@ -629,8 +649,7 @@ describe('list input rules', () => {
   });
 });
 
-const InlinePlugin = createBasePlugin({
-  name: 'inline',
+const InlinePlugin = defineBasePlugin('inline', {
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
@@ -978,7 +997,7 @@ describe('keyboard handling', () => {
             ],
             indent: 2,
             listStyleType: 'disc',
-            type: 'p',
+            type: 'paragraph',
           },
         ],
       });
@@ -997,7 +1016,7 @@ describe('keyboard handling', () => {
           ],
           indent: 1,
           listStyleType: 'disc',
-          type: 'p',
+          type: 'paragraph',
         },
       ]);
     });
@@ -1075,7 +1094,7 @@ describe('apply override', () => {
           children: [{ text: 'a' }],
           indent: 1,
           listStyleType: 'lower-alpha',
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
@@ -1086,13 +1105,13 @@ describe('apply override', () => {
           children: [{ text: 'i' }],
           indent: 1,
           listStyleType: 'lower-roman',
-          type: 'p',
+          type: 'paragraph',
         },
         {
           children: [{ text: 'ii' }],
           indent: 1,
           listStyleType: 'lower-roman',
-          type: 'p',
+          type: 'paragraph',
         },
       ],
       { at: [1] }
@@ -1113,7 +1132,7 @@ describe('apply override', () => {
           children: [{ text: 'a' }],
           indent: 1,
           listStyleType: 'lower-alpha',
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
@@ -1122,7 +1141,7 @@ describe('apply override', () => {
       children: [{ text: 'i' }],
       indent: 1,
       listStyleType: 'lower-roman',
-      type: 'p',
+      type: 'paragraph',
     });
 
     expect(editor.read.children()[1]?.listStyleType).toBe('lower-alpha');
@@ -1143,7 +1162,7 @@ describe('apply override', () => {
           listRestart: 5,
           listRestartPolite: 5,
           listStyleType: 'decimal',
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
@@ -1158,14 +1177,14 @@ describe('apply override', () => {
         listRestartPolite: 5,
         listStart: 5,
         listStyleType: 'decimal',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: '2' }],
         indent: 1,
         listStart: 6,
         listStyleType: 'decimal',
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
   });
@@ -1175,7 +1194,7 @@ describe('withInsertBreakList', () => {
   it('insert a new todo list line with the same formatting', () => {
     const input = (
       <editor>
-        <hp checked={false} indent={1} listStyleType={KEYS.listTodo}>
+        <hp checked={false} indent={1} listStyleType={'todo'}>
           Todo item
           <cursor />
         </hp>
@@ -1184,15 +1203,10 @@ describe('withInsertBreakList', () => {
 
     const output = (
       <editor>
-        <hp checked={false} indent={1} listStyleType={KEYS.listTodo}>
+        <hp checked={false} indent={1} listStyleType={'todo'}>
           Todo item
         </hp>
-        <hp
-          checked={false}
-          indent={1}
-          listStart={2}
-          listStyleType={KEYS.listTodo}
-        >
+        <hp checked={false} indent={1} listStart={2} listStyleType={'todo'}>
           <cursor />
         </hp>
       </editor>
@@ -1244,7 +1258,7 @@ describe('withInsertBreakList', () => {
   it('behave like a normal break if selection is expanded', () => {
     const input = (
       <editor>
-        <hp checked={false} indent={1} listStyleType={KEYS.listTodo}>
+        <hp checked={false} indent={1} listStyleType={'todo'}>
           Todo <anchor />
           item
           <focus />
@@ -1254,15 +1268,10 @@ describe('withInsertBreakList', () => {
 
     const output = (
       <editor>
-        <hp checked={false} indent={1} listStyleType={KEYS.listTodo}>
+        <hp checked={false} indent={1} listStyleType={'todo'}>
           Todo <cursor />
         </hp>
-        <hp
-          checked={false}
-          indent={1}
-          listStart={2}
-          listStyleType={KEYS.listTodo}
-        >
+        <hp checked={false} indent={1} listStart={2} listStyleType={'todo'}>
           <cursor />
         </hp>
       </editor>
@@ -1595,8 +1604,8 @@ describe('isOrderedList', () => {
     [ListStyleType.DecimalLeadingZero, true],
     [ListStyleType.LowerRoman, true],
   ])('treats %s as ordered=%s', (listStyleType, expected) => {
-    expect(isOrderedList({ children: [], listStyleType, type: KEYS.p })).toBe(
-      expected
-    );
+    expect(
+      isOrderedList({ children: [], listStyleType, type: 'paragraph' })
+    ).toBe(expected);
   });
 });

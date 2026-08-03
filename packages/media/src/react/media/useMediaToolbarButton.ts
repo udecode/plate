@@ -28,7 +28,7 @@ export const insertMediaUrl = async (
   }: InsertMediaUrlOptions = {}
 ) => {
   const image = editor.plugin(KEYS.img);
-  const imageType = image.installed ? image.type : KEYS.img;
+  const imageType = image.installed ? image.type : NODES.img;
   const type = requestedType ?? imageType;
   const atAnchor =
     at === undefined
@@ -44,7 +44,7 @@ export const insertMediaUrl = async (
       ? await getUrl()
       : // biome-ignore lint/suspicious/noAlert: intentional user input for media URL
         window.prompt(
-          `Enter the URL of the ${type === imageType ? KEYS.img : NODES.mediaEmbed}`
+          `Enter the URL of the ${type === imageType ? NODES.img : NODES.mediaEmbed}`
         );
 
     if (!url) return;

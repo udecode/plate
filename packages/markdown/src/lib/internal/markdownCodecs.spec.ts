@@ -1,12 +1,11 @@
-import { createBaseEditor, createBasePlugin } from '@platejs/core';
-import { schema } from '@platejs/plite';
+import { createBaseEditor, defineBasePlugin } from '@platejs/core';
+import { property, schema } from '@platejs/plite';
 
 import { MarkdownPlugin } from '../MarkdownPlugin';
 import { compileMarkdownCodecs } from './markdownCodecs';
 
 const elementPlugin = (name: string) =>
-  createBasePlugin({
-    name,
+  defineBasePlugin(name, {
     schema: {
       element: {
         content: schema.content.text({ default: 'text', min: 1 }),
@@ -15,13 +14,81 @@ const elementPlugin = (name: string) =>
   });
 
 describe('Markdown node codec compiler', () => {
+  it('indexes codecs and contexts by persisted schema identity', () => {
+    let elementIdentity: string | undefined;
+    let markIdentity: string | undefined;
+    const ElementPlugin = defineBasePlugin('elementCapability', {
+      schema: {
+        element: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          type: 'persistedElement',
+        },
+      },
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/markdown': {
+            encode: ({ element }) => {
+              elementIdentity = element.type;
+
+              return { type: 'text', value: 'element' };
+            },
+            kind: 'node',
+          },
+        }),
+    });
+    const MarkPlugin = defineBasePlugin('markCapability', {
+      schema: {
+        mark: {
+          key: 'persistedMark',
+          property: property.boolean({ default: false, omitDefault: true }),
+        },
+      },
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/markdown': {
+            encode: ({ properties }) => {
+              markIdentity = properties.persistedMark.key;
+
+              return { type: 'text', value: 'mark' };
+            },
+            kind: 'node',
+            mark: true,
+          },
+        }),
+    });
+    const editor = createBaseEditor({
+      plugins: [ElementPlugin, MarkPlugin, MarkdownPlugin],
+    });
+    const compiled = compileMarkdownCodecs(editor);
+    const options = {
+      isBlock: () => false,
+      isInline: () => true,
+      registry: {},
+      value: [],
+    } as any;
+
+    compiled.rules.persistedElement!.serialize!(
+      { children: [{ text: 'element' }], type: 'persistedElement' } as any,
+      options
+    );
+    compiled.rules.persistedMark!.serialize!(
+      { persistedMark: true, text: 'mark' } as any,
+      options
+    );
+
+    expect(compiled.rules.elementCapability).toBeUndefined();
+    expect(compiled.rules.markCapability).toBeUndefined();
+    expect(elementIdentity).toBe('persistedElement');
+    expect(markIdentity).toBe('persistedMark');
+  });
+
   it('orders decode claims by priority and caches the compiled editor view', () => {
     const LowPlugin = elementPlugin('low').extend(({ defineCodecs }) => ({
       codecs: defineCodecs({
         'text/markdown': {
-          decode: ({ type }) => ({
+          decode: ({ element }) => ({
             children: [{ text: '' }],
-            type,
+            type: element!.type,
           }),
           from: 'toc',
           kind: 'node',
@@ -32,9 +99,9 @@ describe('Markdown node codec compiler', () => {
     const HighPlugin = elementPlugin('high').extend(({ defineCodecs }) => ({
       codecs: defineCodecs({
         'text/markdown': {
-          decode: ({ type }) => ({
+          decode: ({ element }) => ({
             children: [{ text: '' }],
-            type,
+            type: element!.type,
           }),
           from: 'toc',
           kind: 'node',
@@ -59,9 +126,9 @@ describe('Markdown node codec compiler', () => {
       .extend(({ defineCodecs }) => ({
         codecs: defineCodecs({
           'text/markdown': {
-            decode: ({ type }) => ({
+            decode: ({ element }) => ({
               children: [{ text: '' }],
-              type,
+              type: element!.type,
             }),
             from: 'toc',
             kind: 'node',
@@ -84,17 +151,17 @@ describe('Markdown node codec compiler', () => {
         codecs: defineCodecs({
           'text/markdown': [
             {
-              decode: ({ type }) => ({
+              decode: ({ element }) => ({
                 children: [{ text: '' }],
-                type,
+                type: element!.type,
               }),
               from: 'toc',
               kind: 'node',
             },
             {
-              decode: ({ type }) => ({
+              decode: ({ element }) => ({
                 children: [{ text: '' }],
-                type,
+                type: element!.type,
               }),
               from: 'toc',
               kind: 'node',

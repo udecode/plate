@@ -1,4 +1,5 @@
 import { renderHook } from '@testing-library/react';
+import type { PluginReference } from '@platejs/core';
 import * as actualPlatejsReact from '@platejs/core/react';
 import * as actualUtils from '@platejs/utils';
 
@@ -35,13 +36,21 @@ describe('useMediaState', () => {
     );
 
     useEditorMock.mockReturnValue({
-      plugin: (pluginName: string) => ({
-        installed: true,
-        type:
-          pluginName === actualUtils.KEYS.mediaEmbed
-            ? actualUtils.NODES.mediaEmbed
-            : pluginName,
-      }),
+      plugin: (plugin: PluginReference | string) => {
+        const name = typeof plugin === 'string' ? plugin : plugin.name;
+
+        return {
+          installed: true,
+          schema: {
+            element: {
+              type:
+                name === actualUtils.PLUGINS.mediaEmbed
+                  ? 'mediaEmbed'
+                  : 'video',
+            },
+          },
+        };
+      },
     });
     useElementMock.mockReturnValue(element);
     useEditorFocusedMock.mockReturnValue(false);
@@ -68,7 +77,7 @@ describe('useMediaState', () => {
   it('matches selection only when the media node itself is selected', async () => {
     const state = await renderMediaState({
       children: [{ text: 'Caption caret' }],
-      type: actualUtils.NODES.mediaEmbed,
+      type: 'mediaEmbed',
       url: 'https://platejs.org/embed',
     });
 
@@ -81,7 +90,7 @@ describe('useMediaState', () => {
       children: [{ text: '' }],
       provider: 'vimeo',
       sourceUrl: 'https://vimeo.com/1',
-      type: actualUtils.NODES.mediaEmbed,
+      type: 'mediaEmbed',
       url: "javascript:parent.postMessage('plate-media-xss','*')",
     });
 
@@ -95,7 +104,7 @@ describe('useMediaState', () => {
       id: 'attacker-controlled',
       provider: 'youtube',
       sourceUrl: 'https://vimeo.com/1',
-      type: actualUtils.NODES.mediaEmbed,
+      type: 'mediaEmbed',
       url: 'https://player.vimeo.com/video/76979871',
     });
 

@@ -18,7 +18,7 @@ type ExpectedEditorApiKeys =
   | 'elementState'
   | 'file'
   | 'html'
-  | 'img'
+  | 'image'
   | 'link'
   | 'list'
   | 'markdown'
@@ -50,7 +50,7 @@ type _CsvApiKeepsItsMethods = Assert<
   'deserialize' extends keyof MyEditor['api']['csv'] ? true : false
 >;
 type _MediaApiKeepsItsMethods = Assert<
-  'normalizeUrl' extends keyof MyEditor['api']['img'] ? true : false
+  'normalizeUrl' extends keyof MyEditor['api']['image'] ? true : false
 >;
 type _DomApiKeepsClipboardMethods = Assert<
   'insertData' extends keyof MyEditor['api']['dom']['clipboard'] ? true : false

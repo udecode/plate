@@ -1,9 +1,6 @@
 /** @jsx jsxt */
 
-import {
-  type BaseSuggestionDefinition,
-  BaseSuggestionPlugin,
-} from '@platejs/suggestion';
+import { BaseSuggestionPlugin } from '@platejs/suggestion';
 import { jsxt, type TestEditorFixture } from '@platejs/test-utils';
 import { type BaseEditor, createBaseEditor } from 'platejs';
 
@@ -125,7 +122,7 @@ describe('suggestion link integration', () => {
     });
 
     (
-      editor as BaseEditor<any, BaseSuggestionDefinition>
+      editor as BaseEditor<readonly [typeof BaseSuggestionPlugin]>
     ).update.suggestion.accept({
       keyId: editor.plugin(BaseSuggestionPlugin).api.key('1'),
       suggestionId: '1',
@@ -165,7 +162,7 @@ describe('suggestion link integration', () => {
     const editor = createEditor(input);
 
     (
-      editor as BaseEditor<any, BaseSuggestionDefinition>
+      editor as BaseEditor<readonly [typeof BaseSuggestionPlugin]>
     ).update.suggestion.reject({
       keyId: 'suggestion_1',
       suggestionId: '1',

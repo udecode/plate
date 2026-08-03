@@ -4,6 +4,7 @@ import { StrictMode } from 'react';
 import type React from 'react';
 import {
   type Descendant,
+  defineExtension,
   type EditorUpdateTransaction,
   NodeApi,
 } from '@platejs/plite';
@@ -49,7 +50,7 @@ describe('plite-react app-owned customization', () => {
     const sources: PliteDecorationSource<{ token: string }>[] = [];
 
     const Probe = ({ token }: { token: string }) => {
-      const source = usePliteDecorationSource<{ token: string }>(editor, {
+      const source = usePliteDecorationSource(editor, {
         id: 'hook-source',
         read: () => [
           {
@@ -106,7 +107,7 @@ describe('plite-react app-owned customization', () => {
     const sources: PliteDecorationSource<{ token: string }>[] = [];
 
     const Probe = ({ token }: { token: string }) => {
-      const source = usePliteDecorationSource<{ token: string }>(editor, {
+      const source = usePliteDecorationSource(editor, {
         dirtiness: ['text', 'node'],
         id: 'hook-deps-source',
         read: () => [
@@ -163,7 +164,7 @@ describe('plite-react app-owned customization', () => {
     const sources: PliteDecorationSource<{ token: string }>[] = [];
 
     const Probe = ({ token }: { token: string }) => {
-      const source = usePliteRangeDecorationSource<{ token: string }>(editor, {
+      const source = usePliteRangeDecorationSource(editor, {
         data: { token },
         dirtiness: ['text', 'node'],
         id: 'range-hook-source',
@@ -211,7 +212,7 @@ describe('plite-react app-owned customization', () => {
     const editor = createReactEditor({ initialValue: createChildren('alpha') });
 
     const Probe = () => {
-      const source = usePliteRangeDecorationSource<{ token: string }>(editor, {
+      const source = usePliteRangeDecorationSource(editor, {
         data: { token: 'alpha' },
         dirtiness: 'text',
         id: 'strict-range-hook-source',
@@ -316,7 +317,7 @@ describe('plite-react app-owned customization', () => {
       selection: null,
     });
 
-    const markdownSource = createDecorationSource<{ type: string }>(editor, {
+    const markdownSource = createDecorationSource(editor, {
       id: 'markdown-preview',
       read: ({ snapshot }) =>
         (snapshot.children[0] &&
@@ -489,31 +490,32 @@ describe('plite-react app-owned customization', () => {
       selection: null,
     });
 
-    editor.extend({
-      corrections: [
-        {
-          correct({ tx }) {
-            const [first, second] = tx.value().children;
+    editor.install(
+      defineExtension('forced-layout', {
+        corrections: [
+          {
+            correct({ tx }) {
+              const [first, second] = tx.value().children;
 
-            if (
-              first &&
-              'children' in first &&
-              first.type === 'title' &&
-              getNodeText(first) === '' &&
-              second &&
-              getNodeText(second) === ''
-            ) {
-              tx.nodes.replaceChildren([createTitle(), createParagraph()], {
-                at: [],
-              });
-            }
+              if (
+                first &&
+                'children' in first &&
+                first.type === 'title' &&
+                getNodeText(first) === '' &&
+                second &&
+                getNodeText(second) === ''
+              ) {
+                tx.nodes.replaceChildren([createTitle(), createParagraph()], {
+                  at: [],
+                });
+              }
+            },
+            event: 'content',
+            query: 'root',
           },
-          event: 'content',
-          query: 'root',
-        },
-      ],
-      name: 'forced-layout',
-    });
+        ],
+      })
+    );
 
     const rendered = render(
       <TestEditorSurface

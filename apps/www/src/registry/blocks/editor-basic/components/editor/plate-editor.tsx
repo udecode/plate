@@ -38,7 +38,7 @@ const value = normalizeStaticValue([
     children: [
       {
         children: [{ text: 'This blockquote contains more than one block.' }],
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [
@@ -46,7 +46,7 @@ const value = normalizeStaticValue([
             text: 'It can also wrap nested quotes instead of flattening them.',
           },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [
@@ -56,7 +56,7 @@ const value = normalizeStaticValue([
                 text: 'Nested blockquotes keep the quote hierarchy intact.',
               },
             ],
-            type: 'p',
+            type: 'paragraph',
           },
         ],
         type: 'blockquote',
@@ -76,6 +76,6 @@ const value = normalizeStaticValue([
       { strikethrough: true, text: 'strikethrough' },
       { text: '.' },
     ],
-    type: 'p',
+    type: 'paragraph',
   },
 ]);

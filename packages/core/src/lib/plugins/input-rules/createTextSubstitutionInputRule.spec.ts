@@ -1,7 +1,7 @@
 import { insertText } from '@platejs/plite/internal';
 
 import { createBaseEditor } from '../../editor';
-import { createBasePlugin } from '../../plugin';
+import { defineBasePlugin } from '../../plugin';
 import { createTextSubstitutionInputRule } from './createInputRules';
 
 const createEditor = (
@@ -9,8 +9,7 @@ const createEditor = (
 ) =>
   createBaseEditor({
     plugins: [
-      createBasePlugin({
-        name: 'shortcuts',
+      defineBasePlugin('shortcuts', {
         inputRules: [rule],
       }),
     ],
@@ -19,7 +18,7 @@ const createEditor = (
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     },
-    initialValue: [{ children: [{ text: '' }], type: 'p' }],
+    initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
   } as any);
 
 describe('createTextSubstitutionInputRule', () => {
@@ -33,7 +32,7 @@ describe('createTextSubstitutionInputRule', () => {
     insertText(editor, '>');
 
     expect(editor.read.children()).toEqual([
-      { children: [{ text: '→' }], type: 'p' },
+      { children: [{ text: '→' }], type: 'paragraph' },
     ]);
   });
 
@@ -46,7 +45,7 @@ describe('createTextSubstitutionInputRule', () => {
     insertText(editor, '-');
 
     expect(editor.read.children()).toEqual([
-      { children: [{ text: '-' }], type: 'p' },
+      { children: [{ text: '-' }], type: 'paragraph' },
     ]);
   });
 
@@ -61,7 +60,7 @@ describe('createTextSubstitutionInputRule', () => {
     insertText(editor, ')');
 
     expect(editor.read.children()).toEqual([
-      { children: [{ text: '©' }], type: 'p' },
+      { children: [{ text: '©' }], type: 'paragraph' },
     ]);
   });
 
@@ -77,7 +76,7 @@ describe('createTextSubstitutionInputRule', () => {
     insertText(editor, '"');
 
     expect(editor.read.children()).toEqual([
-      { children: [{ text: '“hi”' }], type: 'p' },
+      { children: [{ text: '“hi”' }], type: 'paragraph' },
     ]);
   });
 
@@ -93,7 +92,7 @@ describe('createTextSubstitutionInputRule', () => {
     insertText(editor, ' ');
 
     expect(editor.read.children()).toEqual([
-      { children: [{ text: 'FOO' }], type: 'p' },
+      { children: [{ text: 'FOO' }], type: 'paragraph' },
     ]);
   });
 });

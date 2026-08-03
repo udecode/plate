@@ -1,7 +1,7 @@
 import type { Element, NodeEntry, Range } from '@platejs/plite';
 
 import { createBaseEditor } from '../../lib/editor';
-import { createBasePlugin } from '../../lib/plugin';
+import { defineBasePlugin } from '../../lib/plugin';
 import { pipeDecorate } from './pipeDecorate';
 
 describe('pipeDecorate', () => {
@@ -22,8 +22,7 @@ describe('pipeDecorate', () => {
       focus: { offset: 4, path: [0, 0] },
       comment: true,
     } satisfies Range & { comment: true };
-    const HighlightPlugin = createBasePlugin({
-      name: 'highlight',
+    const HighlightPlugin = defineBasePlugin('highlight', {
       decorate: () => [rangeFromPlugin],
     });
     const editor = createBaseEditor({
@@ -31,7 +30,7 @@ describe('pipeDecorate', () => {
     });
     const decorate = pipeDecorate(editor, () => [rangeFromProp])!;
     const entry = [
-      { children: [{ text: 'alpha' }], type: 'p' },
+      { children: [{ text: 'alpha' }], type: 'paragraph' },
       [0],
     ] satisfies NodeEntry<Element>;
 

@@ -27,18 +27,21 @@ class FakeDataTransfer {
   }
 }
 
-const keyboardSelectableSchema = defineEditorSchema({
-  elements: {
-    media: {
-      content: schema.content.text({ default: 'text', min: 1 }),
-      keyboardSelectable: true,
+const keyboardSelectableSchema = defineEditorSchema(
+  'schema:keyboard-selectable-selection',
+  {
+    elements: {
+      media: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+        keyboardSelectable: true,
+      },
     },
-  },
-  id: 'keyboard-selectable-selection',
-  root: schema.content.not(schema.content.text()),
-  unknown: 'preserve',
-  version: 1,
-});
+    id: 'keyboard-selectable-selection',
+    root: schema.content.not(schema.content.text()),
+    unknown: 'preserve',
+    version: 1,
+  }
+);
 
 const initialValue = (): Descendant[] => [
   { type: 'paragraph', children: [{ text: 'start' }] },

@@ -46,9 +46,16 @@ Copy:
 - [CopilotPlugin.tsx](../../../../packages/ai/src/react/CopilotPlugin.tsx)
 - [BlockSelectionPlugin.tsx](../../../../packages/selection/src/react/BlockSelectionPlugin.tsx)
 
-Copy direct `createPlatePlugin` only when the behavior is genuinely hook,
+Copy direct `definePlatePlugin` only when the behavior is genuinely hook,
 DOM/editor-surface, or React-native. Do not copy explicit types or file
 topology without checking current owner law.
+
+Audit every first-party descriptor for the exact positional shape
+`define*Plugin(PLUGINS.foo, definition)`. Treat `PLUGINS.foo` as capability
+identity only. Element `type` and property `key` default to the name when
+omitted but may differ at creation. Plugin lookup inputs accept the exact
+descriptor or name; runtime AST work resolves `.type`/`.key`, while copied
+registry data and deliberate fixtures use explicit persisted literals.
 
 ## Owner-First Production Colocation
 
@@ -106,12 +113,13 @@ Copy:
   `defineCodecs(TargetPlugin, map)` for foreign maps without manual targets;
 - Plate authoring objects and callback returns stay plain; context capture
   stays inline, extracted helpers receive domain inputs, and independently
-  reusable standalone descriptors use Plite `defineEditorExtension`;
-- concrete editors expose `editor.api.<pluginName>`;
+  reusable standalone descriptors use Plite `defineExtension`;
+- concrete editors expose `editor.api.<name>`;
 - generic package code can use `editor.plugin(Plugin).api`, `.read`, `.update`,
   and `.store`;
-- optional generic integrations check `.installed` before any other portal
-  access;
+- optional generic integrations check `.installed` before capability or
+  descriptor access; uninstalled `.type`/`.key` resolve their conventional
+  identity directly;
 - copied registry UI stays generic and never imports a host editor type;
 - scoped portal methods use direct verbs instead of repeating the plugin noun.
 
@@ -135,7 +143,7 @@ Reject:
 - explicit plugin export types or casts;
 - empty `PluginConfig` aliases;
 - manual callback/local/test annotations hiding weak inference;
-- editor-locked helpers created only to carry `editor`, resolved `type`,
+- editor-locked helpers created only to carry `editor`, resolved `name`,
   `store`, resolved plugin state, or `tx`;
 - top-level Plate plugin `config`;
 - deleted option accessors or arbitrary plugin fields on the editor root;

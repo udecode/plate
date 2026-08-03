@@ -4,11 +4,13 @@ import clsx from 'clsx';
 
 import type {
   AnyBasePlugin,
-  AnyResolvedBasePlugin,
+  AnyBasePluginPortal,
+  AnyPluginBase,
   BaseEditor,
   RenderLeafProps,
 } from '../lib';
 import {
+  getCompiledPlateModelBinding,
   getCompiledPlatePlugin,
   getPlateRuntime,
 } from '../internal/plugin/compilePlateModel';
@@ -22,14 +24,15 @@ export type PliteRenderLeaf = (
 
 export const pluginRenderLeafStatic = (
   editor: BaseEditor,
-  plugin: AnyResolvedBasePlugin
+  plugin: AnyBasePluginPortal | AnyPluginBase
 ): PliteRenderLeaf =>
   function render(props) {
     const { children, leaf } = props;
+    const leafKey = getCompiledPlateModelBinding(editor, plugin)?.propertyKey;
 
-    if (leaf[plugin.type]) {
+    if (leafKey && leaf[leafKey]) {
       const Component = (plugin.render.leaf ??
-        getPlateRuntime(editor).components[plugin.name]) as any;
+        getPlateRuntime(editor).components[leafKey]) as any;
       const Leaf = Component ?? PliteLeaf;
 
       const ctxProps = getRenderNodeStaticProps({
@@ -57,22 +60,24 @@ export const pipeRenderLeafStatic = (
   { renderLeaf: renderLeafProp }: { renderLeaf?: PliteRenderLeaf } = {}
 ): PliteRenderLeaf => {
   const renderLeafs: PliteRenderLeaf[] = [];
-  const leafPropsPlugins: AnyBasePlugin[] = [];
+  const leafPropsEntries: Array<{ key: string; plugin: AnyBasePlugin }> = [];
 
-  getPlateRuntime(editor).pluginCache.node.decoratedMarks.forEach(
-    (pluginName) => {
-      const plugin = getCompiledPlatePlugin(editor, pluginName)!;
+  getPlateRuntime(editor).pluginCache.node.decoratedMarks.forEach((name) => {
+    const plugin = getCompiledPlatePlugin(editor, name)!;
 
-      if (plugin) {
-        renderLeafs.push(pluginRenderLeafStatic(editor, plugin as any));
-      }
-    }
-  );
-
-  getPlateRuntime(editor).pluginCache.node.leafProps.forEach((pluginName) => {
-    const plugin = getCompiledPlatePlugin(editor, pluginName)!;
     if (plugin) {
-      leafPropsPlugins.push(plugin as any);
+      renderLeafs.push(pluginRenderLeafStatic(editor, plugin as any));
+    }
+  });
+
+  getPlateRuntime(editor).pluginCache.node.leafProps.forEach((name) => {
+    const plugin = getCompiledPlatePlugin(editor, name)!;
+    const key = plugin
+      ? getCompiledPlateModelBinding(editor, plugin)?.propertyKey
+      : undefined;
+
+    if (plugin && key) {
+      leafPropsEntries.push({ key, plugin });
     }
   });
 
@@ -87,8 +92,8 @@ export const pipeRenderLeafStatic = (
       }
     });
 
-    leafPropsPlugins.forEach((plugin) => {
-      if (props.leaf[plugin.type]) {
+    leafPropsEntries.forEach(({ key, plugin }) => {
+      if (props.leaf[key]) {
         const pluginLeafProps =
           typeof plugin.render.leafProps === 'function'
             ? plugin.render.leafProps({ ...props, children } as any)

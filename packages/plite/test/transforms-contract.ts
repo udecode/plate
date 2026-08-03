@@ -11,8 +11,8 @@ import {
 
 import {
   createEditor,
-  createEditorRuntime,
   createEditorView,
+  defineEditorSchema,
   type Descendant,
   type Element,
   type Editor,
@@ -37,7 +37,7 @@ const paragraph = (text: string): Element => ({
 });
 
 const getNodeEntry = <T extends Node>(
-  editor: Editor,
+  editor: Editor<any, any>,
   path: Path
 ): NodeEntry<T> => {
   const entry = editor.read.nodes.get<T>(path);
@@ -523,7 +523,7 @@ describe('plite transforms contract', () => {
 
   it('insertText replaces a selection spanning a block void without keeping a void anchor', () => {
     const editor = createEditor();
-    editor.extend(
+    editor.install(
       defineTestSchema('block-void-insert-selection-contract', {
         image: { void: 'block' },
       })
@@ -568,7 +568,7 @@ describe('plite transforms contract', () => {
 
   it('mergeNodes does not cross an isolating block boundary', () => {
     const editor = createEditor();
-    editor.extend(
+    editor.install(
       defineTestSchema('isolating-merge-boundary', {
         callout: { isolating: true },
       })
@@ -600,7 +600,7 @@ describe('plite transforms contract', () => {
 
   it('setNodes can target the selected inline element through match without an explicit path', () => {
     const editor = createEditor();
-    editor.extend(defineTestSchema('inline', { inline: { inline: true } }));
+    editor.install(defineTestSchema('inline', { inline: { inline: true } }));
 
     editorReplace(editor, {
       children: [
@@ -710,25 +710,25 @@ describe('plite transforms contract', () => {
 
     assert.deepEqual(editor.read.children(), [paragraph('two')]);
 
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       initialValue: {
         children: [paragraph('body')],
         roots: { header: [paragraph('header')] },
       },
     });
     const header = createEditorView(runtime, { root: 'header' });
-    const [bodyNode] = getNodeEntry<Element>(runtime.editor, [0]);
+    const [bodyNode] = getNodeEntry<Element>(runtime, [0]);
     const [headerNode] = getNodeEntry<Element>(header, [0]);
 
     header.update.nodes.replaceChildren([{ text: 'next' }], {
       at: headerNode,
     });
-    runtime.editor.update.nodes.replaceChildren([{ text: 'wrong' }], {
+    runtime.update.nodes.replaceChildren([{ text: 'wrong' }], {
       at: headerNode,
     });
     header.update.nodes.replaceChildren([{ text: 'wrong' }], { at: bodyNode });
 
-    assert.deepEqual(runtime.editor.read.children(), [paragraph('body')]);
+    assert.deepEqual(runtime.read.children(), [paragraph('body')]);
     assert.deepEqual(header.read.children(), [paragraph('next')]);
   });
 
@@ -777,20 +777,20 @@ describe('plite transforms contract', () => {
 
     assert.deepEqual(editor.read.children(), [paragraph('body')]);
 
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       initialValue: {
         children: [paragraph('body')],
         roots: { header: [paragraph('header')] },
       },
     });
     const header = createEditorView(runtime, { root: 'header' });
-    const [bodyNode] = getNodeEntry<Element>(runtime.editor, [0]);
+    const [bodyNode] = getNodeEntry<Element>(runtime, [0]);
     const [headerNode] = getNodeEntry<Element>(header, [0]);
 
-    runtime.editor.update.nodes.set({ tone: 'wrong' }, { at: headerNode });
+    runtime.update.nodes.set({ tone: 'wrong' }, { at: headerNode });
     header.update.nodes.set({ tone: 'wrong' }, { at: bodyNode });
 
-    assert.deepEqual(runtime.editor.read.children(), [paragraph('body')]);
+    assert.deepEqual(runtime.read.children(), [paragraph('body')]);
     assert.deepEqual(header.read.children(), [paragraph('header')]);
   });
 
@@ -928,7 +928,7 @@ describe('plite transforms contract', () => {
   it('setNodes with marks respects the caller match', () => {
     const editor = createEditor();
 
-    editor.extend(
+    editor.install(
       defineTestSchema('mention', { mention: { void: 'markable-inline' } })
     );
     editorReplace(editor, {
@@ -1006,8 +1006,21 @@ describe('plite transforms contract', () => {
     ]);
   });
 
-  it('blocks.toggle uses the editor default block type', () => {
-    const editor = createEditor({ defaultBlockType: 'paragraph' });
+  it('blocks.toggle uses the grammar default block type', () => {
+    const editor = createEditor({
+      extensions: [
+        defineEditorSchema('schema:toggle-block-default', {
+          elements: {
+            blockquote: { content: schema.content.text() },
+            paragraph: { content: schema.content.text() },
+          },
+          root: schema.content.types(['paragraph', 'blockquote'], {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+        }),
+      ],
+    });
 
     editorReplace(editor, {
       children: [{ type: 'paragraph', children: [{ text: 'one' }] }],
@@ -1176,7 +1189,7 @@ describe('plite transforms contract', () => {
           children: [{ text: 'one' }],
         } as Descendant,
         {
-          type: 'slash_input',
+          type: 'slashInput',
           children: [{ text: '' }],
         } as Descendant,
       ],
@@ -1185,7 +1198,7 @@ describe('plite transforms contract', () => {
 
     editorRemoveNodes(editor, {
       at: [],
-      match: (node) => 'type' in node && node.type === 'slash_input',
+      match: (node) => 'type' in node && node.type === 'slashInput',
     });
 
     assert.deepEqual(
@@ -1201,7 +1214,7 @@ describe('plite transforms contract', () => {
 
   it('setNodes can target the highest matching inline when mode is highest', () => {
     const editor = createEditor();
-    editor.extend(
+    editor.install(
       defineTestSchema('nested-inline-highest', {
         inline: {
           content: schema.content.any([
@@ -1276,7 +1289,7 @@ describe('plite transforms contract', () => {
     });
 
     editor.update((tx) => {
-      tx.nodes.toggle('blockquote', { defaultType: 'paragraph' });
+      tx.nodes.toggle('blockquote');
     });
 
     assert.deepEqual(editorGetSnapshot(editor).children, [
@@ -1285,7 +1298,20 @@ describe('plite transforms contract', () => {
   });
 
   it('toggleNodes switches an active block to the default type', () => {
-    const editor = createEditor();
+    const editor = createEditor({
+      extensions: [
+        defineEditorSchema('schema:toggle-node-default', {
+          elements: {
+            blockquote: { content: schema.content.text() },
+            paragraph: { content: schema.content.text() },
+          },
+          root: schema.content.types(['paragraph', 'blockquote'], {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+        }),
+      ],
+    });
 
     editorReplace(editor, {
       children: [{ type: 'blockquote', children: [{ text: 'one' }] }],
@@ -1293,7 +1319,7 @@ describe('plite transforms contract', () => {
     });
 
     editor.update((tx) => {
-      tx.nodes.toggle('blockquote', { defaultType: 'paragraph' });
+      tx.nodes.toggle('blockquote');
     });
 
     assert.deepEqual(editorGetSnapshot(editor).children, [
@@ -1477,7 +1503,7 @@ describe('plite transforms contract', () => {
 
   it('liftNodes preserves canonical void content when voids is true', () => {
     const editor = createEditor();
-    editor.extend(
+    editor.install(
       defineTestSchema('void-flag', { 'void-block': { void: 'block' } })
     );
 

@@ -10,8 +10,12 @@ candidate in schema-free `normalizeNodeId`; use `match` to filter raw types.
 Rename Plate plugin identity from `key` to `name` across descriptor
 definitions, inferred contracts, installed descriptors, lookup parameters,
 transaction groups, targets, and overrides. Declare
-`createPlatePlugin({ name: 'foo' })`, read `plugin.name`, and pass
-`pluginName` to name-based lookups.
+`definePlatePlugin('foo', definition)`, read `plugin.name`, and pass the plugin
+descriptor or a dynamic name string to descriptor-aware lookups.
+Use `name` solely for capability identity. Element plugins expose a persisted
+`type`; mark/property plugins expose a persisted `key`. Both default to `name`
+when omitted and may differ only at plugin creation. Behavior plugins expose
+neither. Remove public reverse identity lookup and name/type translation.
 Publish every installed non-empty plugin API under its inferred plugin name on
 `editor.api`, while retaining `editor.plugin(FooPlugin).api` as the exact
 generic portal. Both paths reference the same immutable API object. Reject
@@ -45,8 +49,7 @@ surface and names such as `onKeyDown`; use `keyDown`, `paste`, `nodeChange`,
 and the matching prefixless event names:
 
 ```tsx
-const AnalyticsPlugin = createPlatePlugin({
-  name: 'analytics',
+const AnalyticsPlugin = definePlatePlugin('analytics', {
   on: {
     commit: ({ commit }) => reportCommit(commit),
     keyDown: ({ event }) => reportKey(event.key),
@@ -78,12 +81,17 @@ Remove parallel plugin lookup APIs: `getBasePlugin`, `getEditorPlugin`, React
 `getPlugin`, `editor.getPlugin`, `getPluginType(s)`, `getPluginName(s)`,
 `getPluginByType`, `getContainerTypes`, `editor.getType`, and
 `editor.getInjectProps`. Use `editor.plugin(Plugin)` for an exact typed portal
-and `editor.plugin(pluginName)` for an erased dynamic or family-agnostic
+and `editor.plugin(plugin)` for an erased dynamic or family-agnostic
 runtime-name portal. Reject weak `{ name }` lookup objects. A missing runtime
-name reports `installed: false`; other portal fields throw instead of falling
-back to the supplied name. React `useEditorPlugin` accepts the same
+name reports `installed: false`; `.type` and `.key` preserve an exact schema
+descriptor's authored/default identity or use the supplied runtime string as
+conventional identity, while capability and descriptor fields throw. React
+`useEditorPlugin` accepts the same
 descriptor-or-name inputs. Read compiled injection data from
-`editor.plugin(Plugin).plugin.inject.nodeProps`.
+`editor.plugin(Plugin).inject.nodeProps`. The consumer portal exposes every
+resolved descriptor field directly beside scoped `api`, `read`, `update`,
+`store`, and `installed`; it has no nested `plugin` alias. Authoring callback
+contexts retain `plugin` for the current raw descriptor.
 
 Pass each render wrapper its owning plugin portal context and forward Plite DOM
 strategy props through Plate content.
@@ -114,8 +122,8 @@ Yjs, or migration lineage. Editor factories derive identity when called
 without a `schema` option.
 
 Seed one mutable editor-local plugin store through `initialState`. Put every
-independent author contribution in `createBasePlugin()` or
-`createPlatePlugin()`: plugin-owned
+independent author contribution in `defineBasePlugin()` or
+`definePlatePlugin()`: plugin-owned
 `api`, `read`, `update`, `selectors`, native Plite capabilities, format
 `codecs`, and ordinary static fields. Constructor callbacks receive the typed
 authoring context. Use `.extend()` only for an imported/prebuilt declaration,
@@ -127,9 +135,8 @@ constructor. When `initialState` is a factory, stage fields that consume its
 inferred store type in a following `.extend()`:
 
 ```tsx
-const FeaturePlugin = createPlatePlugin({
+const FeaturePlugin = definePlatePlugin('feature', {
   initialState: ({ editor }) => ({ enabled: editor.read.isEmpty() }),
-  name: 'feature',
 }).extend({
   api: ({ store }) => ({
     isEnabled: () => store.get('enabled'),
@@ -162,7 +169,7 @@ the owning React adapter to publish a reusable Plate-layer descriptor or add
 genuine Plate-only authoring. A terminal consumer does not convert merely to
 set `component`.
 Independently reusable raw Plite descriptors use
-`defineEditorExtension(...)`; Plate-owned capabilities stay on the plugin root.
+`defineExtension(...)`; Plate-owned capabilities stay on the plugin root.
 Apply at most one terminal consumer `.configure(...)` call per descriptor:
 object configuration can set descriptor fields, while contextual configuration
 can derive initial state, `on` events, foreign-plugin overrides, renderers, and
@@ -178,8 +185,7 @@ Named selectors are pure state-first functions. Remove `getOption`,
 
 ```tsx
 // Before
-const Plugin = createPlatePlugin({
-  key: 'counter',
+const Plugin = definePlatePlugin('counter', {
   options: { count: 0 },
   selectors: ({ getOptions }) => ({
     doubled: () => getOptions().count * 2,
@@ -190,9 +196,8 @@ editor.plugin(Plugin).setOption('count', 1);
 const count = usePluginOption(Plugin, 'count');
 
 // After
-const Plugin = createPlatePlugin({
+const Plugin = definePlatePlugin('counter', {
   initialState: { count: 0 },
-  name: 'counter',
   selectors: {
     doubled: (state) => state.count * 2,
   },
@@ -203,7 +208,7 @@ const count = usePluginStore(Plugin, 'count');
 ```
 
 Declare cross-plugin schema and render targets with the plugin's top-level
-`targetPluginNames` field.
+`targetPlugins` field.
 
 Register semantic command policy through root
 `commands: ({ handle, around }) => [...]` factories. Handlers return
@@ -238,16 +243,20 @@ editor.api.foo.method();
 // Generic package code
 editor.plugin(FooPlugin).api.method();
 
-// Compiled descriptor and type
+// Compiled descriptor
 const foo = editor.plugin(FooPlugin);
-foo.plugin;
-foo.type;
+foo.name;
+foo.inject.nodeProps;
+foo.render;
 
 // Dynamic runtime name
-const dynamicPlugin = editor.plugin(pluginName);
+const dynamicPlugin = editor.plugin(plugin);
+
+const elementType = dynamicPlugin.type;
+const propertyKey = dynamicPlugin.key;
 
 if (dynamicPlugin.installed) {
-  dynamicPlugin.type;
+  dynamicPlugin.name;
 }
 ```
 
@@ -273,9 +282,7 @@ object, for example `dependencies: [BaseFeaturePlugin]`.
 Replace the overloaded `node` declaration with explicit model and render fields:
 
 ```tsx
-createPlatePlugin({
-  name: 'link',
-  type: 'a',
+definePlatePlugin('link', {
   schema: { element: { inline: true } },
 }).configure({ component: LinkElement });
 ```
@@ -328,12 +335,11 @@ import { serializeHtml } from 'platejs/static';
 import { renderStaticHtml } from 'platejs/static';
 ```
 
-Replace `inject.targetPlugins` with top-level `targetPluginNames`:
+Replace `inject.targetPlugins` with top-level `targetPlugins`:
 
 ```tsx
-createPlatePlugin({
-  name: 'align',
-  targetPluginNames: [KEYS.p],
+definePlatePlugin('align', {
+  targetPlugins: [PLUGINS.paragraph],
   inject: { nodeProps: { styleKey: 'textAlign' } },
 });
 ```
@@ -341,7 +347,7 @@ createPlatePlugin({
 Replace `inject.targetPluginToInject` with a typed foreign codec contribution,
 `codecs: ({ defineCodecs }) =>
 defineCodecs(TargetPlugin, { 'text/html': ... })`, or use
-`override.plugins[pluginName]` for package-owned adaptation of an installed peer.
+`override.plugins[name]` for package-owned adaptation of an installed peer.
 
 Classify plugin relationships explicitly:
 
@@ -371,24 +377,24 @@ share a name.
 Remove `configurePlugin`, `extendPlugin`, `rootPlugin`, and
 `override.enabled`. Configure imported target descriptors directly. Package
 plugins that cannot import a foreign target or control the editor kit may use
-`override.plugins[pluginName]` to adapt an already-installed peer; missing targets are
+`override.plugins[name]` to adapt an already-installed peer; missing targets are
 ignored, topology is immutable, required dependencies cannot be disabled, and
 target configuration wins.
 
 Replace `parsers.html.deserializer`, serializer declarations, and injected HTML
 node-rule projections with schema-inferred `codecs['text/html']` contributions
-in the constructor callback. Keep whole-input HTML hooks directly under
-`parsers.html`:
+in the constructor callback. Keep whole-input HTML hooks on the same codec:
 
 ```tsx
-createPlatePlugin({
-  name: 'docx',
-  parsers: {
-    html: { query, transformData, transformFragment },
-  },
+definePlatePlugin('docx', {
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'text/html': { query, transformData, transformFragment },
+    }),
 });
 
-const BoldPlugin = createPlatePlugin({
+const BoldPlugin = definePlatePlugin('bold', {
+  schema: { mark: property.boolean() },
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       'text/html': {
@@ -397,7 +403,10 @@ const BoldPlugin = createPlatePlugin({
         match: [{ tag: ['strong', 'b'] }],
       },
     }),
-  name: 'bold',
-  schema: { mark: property.boolean() },
 });
 ```
+
+Use the flat `PLUGINS` catalog for built-in capability names. Resolve persisted
+element types and property keys through schema-owning plugin context or
+`editor.plugin(Plugin).type/.key`; use explicit persisted literals for copied
+registry data and document fixtures.

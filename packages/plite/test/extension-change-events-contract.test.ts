@@ -4,7 +4,7 @@ import { describe, it } from 'node:test';
 import {
   createEditor,
   defineEditorSchema,
-  defineEditorExtension,
+  defineExtension,
   schema,
   type SnapshotIndex,
 } from '@platejs/plite';
@@ -16,7 +16,7 @@ import {
 
 const paragraph = (text: string) => ({
   children: [{ text }],
-  type: 'p',
+  type: 'paragraph',
 });
 
 const section = (text: string) => ({
@@ -29,16 +29,14 @@ describe('extension change events', () => {
     const calls: string[] = [];
     const editor = createEditor({
       extensions: [
-        defineEditorExtension({
-          name: 'first-lifecycle-listener',
+        defineExtension('first-lifecycle-listener', {
           on: {
             commit() {
               calls.push('first');
             },
           },
         }),
-        defineEditorExtension({
-          name: 'second-lifecycle-listener',
+        defineExtension('second-lifecycle-listener', {
           on: {
             commit() {
               calls.push('second');
@@ -60,8 +58,7 @@ describe('extension change events', () => {
     const events: unknown[] = [];
     const editor = createEditor({
       extensions: [
-        defineEditorExtension({
-          name: 'node-observer',
+        defineExtension('node-observer', {
           on: {
             nodeChange(context) {
               events.push({
@@ -69,14 +66,14 @@ describe('extension change events', () => {
                 node: context.node,
                 path: context.path,
                 previousPath: context.previousPath,
-                prevNode: context.prevNode,
+                previousNode: context.previousNode,
                 root: context.root,
               });
             },
           },
         }),
       ],
-      initialValue: [{ children: [{ text: 'hello' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'hello' }], type: 'paragraph' }],
     });
 
     editor.update.nodes.set({ variant: 'lead' } as never, { at: [0] });
@@ -86,14 +83,14 @@ describe('extension change events', () => {
         kind: 'update',
         node: {
           children: [{ text: 'hello' }],
-          type: 'p',
+          type: 'paragraph',
           variant: 'lead',
         },
         path: [0],
         previousPath: [0],
-        prevNode: {
+        previousNode: {
           children: [{ text: 'hello' }],
-          type: 'p',
+          type: 'paragraph',
         },
         root: undefined,
       },
@@ -104,15 +101,14 @@ describe('extension change events', () => {
     const events: unknown[] = [];
     const editor = createEditor({
       extensions: [
-        defineEditorExtension({
-          name: 'text-observer',
+        defineExtension('text-observer', {
           on: {
             textChange(context) {
               events.push({
                 node: context.node,
                 path: context.path,
                 previousPath: context.previousPath,
-                prevText: context.prevText,
+                previousText: context.previousText,
                 root: context.root,
                 text: context.text,
               });
@@ -125,7 +121,7 @@ describe('extension change events', () => {
         anchor: { offset: 5, path: [0, 0] },
         focus: { offset: 5, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: 'hello' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'hello' }], type: 'paragraph' }],
     });
 
     editor.update.text.insert('!');
@@ -134,11 +130,11 @@ describe('extension change events', () => {
       {
         node: {
           children: [{ text: 'hello!' }],
-          type: 'p',
+          type: 'paragraph',
         },
         path: [0, 0],
         previousPath: [0, 0],
-        prevText: 'hello',
+        previousText: 'hello',
         root: undefined,
         text: 'hello!',
       },
@@ -149,8 +145,7 @@ describe('extension change events', () => {
     const events: unknown[] = [];
     const editor = createEditor({
       extensions: [
-        defineEditorExtension({
-          name: 'node-observer',
+        defineExtension('node-observer', {
           on: {
             nodeChange({ kind, path, root }) {
               events.push({ kind, path, root });
@@ -188,8 +183,7 @@ describe('extension change events', () => {
     const events: unknown[] = [];
     const editor = createEditor({
       extensions: [
-        defineEditorExtension({
-          name: 'node-observer',
+        defineExtension('node-observer', {
           on: {
             nodeChange({ kind, path, previousPath }) {
               events.push({ kind, path, previousPath });
@@ -213,8 +207,7 @@ describe('extension change events', () => {
     const events: unknown[] = [];
     const editor = createEditor({
       extensions: [
-        defineEditorExtension({
-          name: 'node-observer',
+        defineExtension('node-observer', {
           on: {
             nodeChange({ kind, path, previousPath }) {
               events.push({ kind, path, previousPath });
@@ -236,8 +229,7 @@ describe('extension change events', () => {
         const events: unknown[] = [];
         const editor = createEditor({
           extensions: [
-            defineEditorExtension({
-              name: `insert-observer-${size}-${index}`,
+            defineExtension(`insert-observer-${size}-${index}`, {
               on: {
                 nodeChange({ kind, node, path, previousPath }) {
                   events.push({ kind, node, path, previousPath });
@@ -266,11 +258,10 @@ describe('extension change events', () => {
         const events: unknown[] = [];
         const editor = createEditor({
           extensions: [
-            defineEditorExtension({
-              name: `remove-observer-${size}-${index}`,
+            defineExtension(`remove-observer-${size}-${index}`, {
               on: {
-                nodeChange({ kind, node, path, previousPath, prevNode }) {
-                  events.push({ kind, node, path, previousPath, prevNode });
+                nodeChange({ kind, node, path, previousPath, previousNode }) {
+                  events.push({ kind, node, path, previousPath, previousNode });
                 },
               },
             }),
@@ -288,7 +279,7 @@ describe('extension change events', () => {
             node: null,
             path: [index],
             previousPath: [index],
-            prevNode: section(`item-${index}`),
+            previousNode: section(`item-${index}`),
           },
         ]);
       }
@@ -300,8 +291,7 @@ describe('extension change events', () => {
           const events: unknown[] = [];
           const editor = createEditor({
             extensions: [
-              defineEditorExtension({
-                name: `move-observer-${size}-${source}-${target}`,
+              defineExtension(`move-observer-${size}-${source}-${target}`, {
                 on: {
                   nodeChange({ kind, node, path, previousPath }) {
                     events.push({ kind, node, path, previousPath });
@@ -331,28 +321,30 @@ describe('extension change events', () => {
 
   it('reports a cross-parent move separately from schema default insertion', () => {
     const events: unknown[] = [];
-    const documentSchema = defineEditorSchema({
-      elements: {
-        paragraph: {
-          content: schema.content.text({ default: 'text', min: 1 }),
-        } as const,
-        section: {
-          content: schema.content.group('block', {
-            default: { type: 'paragraph' },
-            min: 1,
-          }),
-        } as const,
-      },
-      id: 'change-event-default-insertion',
-      root: schema.content.type('section'),
-      unknown: 'reject',
-      version: 1,
-    });
+    const documentSchema = defineEditorSchema(
+      'schema:change-event-default-insertion',
+      {
+        elements: {
+          paragraph: {
+            content: schema.content.text({ default: 'text', min: 1 }),
+          } as const,
+          section: {
+            content: schema.content.group('block', {
+              default: { type: 'paragraph' },
+              min: 1,
+            }),
+          } as const,
+        },
+        id: 'change-event-default-insertion',
+        root: schema.content.type('section'),
+        unknown: 'reject',
+        version: 1,
+      }
+    );
     const editor = createEditor({
       extensions: [
         documentSchema,
-        defineEditorExtension({
-          name: 'cross-parent-observer',
+        defineExtension('cross-parent-observer', {
           on: {
             nodeChange({ kind, node, path, previousPath }) {
               events.push({ kind, node, path, previousPath });

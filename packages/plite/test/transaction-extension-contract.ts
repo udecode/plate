@@ -4,13 +4,14 @@ import { describe, it } from 'node:test';
 import {
   createEditor,
   defineCommand,
-  defineEditorExtension,
+  defineExtension,
   defineEditorSchema,
   defineEffect,
   defineExtensionSlot,
   defineFacet,
   defineStateField,
   defineUpdateAnnotation,
+  EditorExtensionPublicationError,
   type EditorCommit,
   schema,
 } from '@platejs/plite';
@@ -29,12 +30,12 @@ describe('transaction extension values', () => {
       reduce: (value, effect) =>
         effect.type === increment ? value + effect.value : value,
     });
-    const incrementExtension = defineEditorExtension({
+    const incrementExtension = defineExtension('counter-increment-effect', {
       effectTypes: [increment],
-      name: 'counter-increment-effect',
+      stateFields: [counter],
     });
     const editor = createEditor({
-      extensions: [counter, incrementExtension],
+      extensions: [incrementExtension],
     });
     const commits: EditorCommit[] = [];
 
@@ -83,7 +84,7 @@ describe('transaction extension values', () => {
     let computeCount = 0;
     const editor = createEditor({
       extensions: [
-        defineEditorExtension({
+        defineExtension('facet-providers', {
           facetProviders: [
             labels.of('static'),
             labels.compute(() => {
@@ -91,7 +92,6 @@ describe('transaction extension values', () => {
               return 'computed';
             }),
           ],
-          name: 'facet-providers',
         }),
       ],
     });
@@ -115,8 +115,7 @@ describe('transaction extension values', () => {
     let selectionComputes = 0;
     const editor = createEditor({
       extensions: [
-        counter,
-        defineEditorExtension({
+        defineExtension('dependency-scoped-facets', {
           facetProviders: [
             documentLength.compute(
               (state) => {
@@ -133,7 +132,7 @@ describe('transaction extension values', () => {
               { dependencies: ['selection'] }
             ),
           ],
-          name: 'dependency-scoped-facets',
+          stateFields: [counter],
         }),
       ],
       initialValue: [{ type: 'paragraph', children: [{ text: 'alpha' }] }],
@@ -177,12 +176,11 @@ describe('transaction extension values', () => {
     let derivedComputes = 0;
     let schemaComputes = 0;
     const sourceMode = (value: string) =>
-      defineEditorExtension({
+      defineExtension(`facet-source-${value}`, {
         facetProviders: [source.of(value)],
-        name: `facet-source-${value}`,
       });
     const schemaMode = (voidKind?: 'block') =>
-      defineEditorSchema({
+      defineEditorSchema('schema:facet-schema', {
         elements: {
           quote: voidKind
             ? { void: voidKind }
@@ -195,7 +193,7 @@ describe('transaction extension values', () => {
       });
     const editor = createEditor({
       extensions: [
-        defineEditorExtension({
+        defineExtension('dependent-facet-readers', {
           facetProviders: [
             derived.compute(
               (state) => {
@@ -214,7 +212,6 @@ describe('transaction extension values', () => {
               { dependencies: ['schema'] }
             ),
           ],
-          name: 'dependent-facet-readers',
         }),
         sourceSlot.of(sourceMode('one')),
         schemaSlot.of(schemaMode()),
@@ -248,12 +245,11 @@ describe('transaction extension values', () => {
     const right = defineFacet<string>({ key: 'cycle-right' });
     const editor = createEditor({
       extensions: [
-        defineEditorExtension({
+        defineExtension('cyclic-facets', {
           facetProviders: [
             left.compute(() => 'left', { dependencies: [right] }),
             right.compute(() => 'right', { dependencies: [left] }),
           ],
-          name: 'cyclic-facets',
         }),
       ],
     });
@@ -278,16 +274,15 @@ describe('transaction extension values', () => {
       initial: () => 'installed',
       key: 'mode-state',
     });
-    const errors: Array<{ extension: string; phase: string }> = [];
+    const errors: Array<{ extensionName: string; phase: string }> = [];
     const mode = (value: string) =>
-      defineEditorExtension({
+      defineExtension('mode-value', {
         facetProviders: [label.of(value)],
-        name: 'mode-value',
       });
     const editor = createEditor({
       extensions: [slot.of(mode('read'))] as const,
       lifecycleErrorSink(error) {
-        errors.push({ extension: error.extension, phase: error.phase });
+        errors.push({ extensionName: error.extensionName, phase: error.phase });
       },
     });
 
@@ -298,22 +293,25 @@ describe('transaction extension values', () => {
     });
     assert.equal(editor.read.facet(label), 'write');
 
-    editor.update((tx) => {
-      tx.extensions.reconfigure(
-        slot,
-        defineEditorExtension({
-          facetProviders: [label.of('broken')],
-          stateFields: [persisted],
-          name: 'broken-mode',
-          activate() {
-            throw new Error('broken mode');
-          },
-        })
-      );
-    });
-    assert.equal(editor.read.facet(label), 'broken');
-    assert.equal(editor.read.getField(persisted), 'installed');
-    assert.deepEqual(errors, [{ extension: 'broken-mode', phase: 'activate' }]);
+    assert.throws(
+      () =>
+        editor.update((tx) => {
+          tx.extensions.reconfigure(
+            slot,
+            defineExtension('broken-mode', {
+              facetProviders: [label.of('broken')],
+              stateFields: [persisted],
+              activate() {
+                throw new Error('broken mode');
+              },
+            })
+          );
+        }),
+      EditorExtensionPublicationError
+    );
+    assert.equal(editor.read.facet(label), 'write');
+    assert.throws(() => editor.read.getField(persisted), /not installed/);
+    assert.deepEqual(errors, []);
   });
 
   it('runs typed command defaults headlessly inside one update', () => {
@@ -325,7 +323,11 @@ describe('transaction extension values', () => {
           tx.setField(counter, (value) => value + input.amount);
         }),
     });
-    const editor = createEditor({ extensions: [counter] as const });
+    const editor = createEditor({
+      extensions: [
+        defineExtension('counter-state', { stateFields: [counter] }),
+      ] as const,
+    });
 
     assert.equal(dispatchCommand(editor, add, { amount: 4 }), true);
     assert.equal(editor.read.getField(counter), 4);

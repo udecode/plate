@@ -1,24 +1,22 @@
-import { defineEditorExtension } from '@platejs/plite';
+import { defineExtension } from '@platejs/plite';
 import { getInstalledEditorExtension } from '@platejs/plite/internal';
 
 import { createBaseEditor } from '../editor';
-import { createBasePlugin } from '../plugin';
+import { defineBasePlugin } from '../plugin';
 
 describe('plugin API projection', () => {
   it('publishes one immutable API object through every Plate and Plite portal', () => {
-    const NativeExtension = defineEditorExtension({
+    const NativeExtension = defineExtension('projection', {
       api: () => ({
         nativeName: () => 'projection',
         source: () => 'native',
       }),
-      name: 'projection',
     });
-    const ProjectionPlugin = createBasePlugin({
+    const ProjectionPlugin = defineBasePlugin('projection', {
       api: () => ({
         plate: () => 'plate',
         source: () => 'plate',
       }),
-      name: 'projection',
     })
       .extend(NativeExtension)
       .extend(() => ({
@@ -45,12 +43,11 @@ describe('plugin API projection', () => {
   });
 
   it('merges repeated owner-local API stages in declaration order', () => {
-    const Plugin = createBasePlugin({
+    const Plugin = defineBasePlugin('staged', {
       api: () => ({
         first: () => 1,
         value: () => 1,
       }),
-      name: 'staged',
     })
       .extend(({ api }) => ({
         api: () => ({
@@ -73,13 +70,11 @@ describe('plugin API projection', () => {
   });
 
   it('keeps identical method names isolated by plugin owner', () => {
-    const FirstPlugin = createBasePlugin({
+    const FirstPlugin = defineBasePlugin('first', {
       api: () => ({ method: () => 'first' }),
-      name: 'first',
     });
-    const SecondPlugin = createBasePlugin({
+    const SecondPlugin = defineBasePlugin('second', {
       api: () => ({ method: () => 'second' }),
-      name: 'second',
     });
     const editor = createBaseEditor({
       plugins: [FirstPlugin, SecondPlugin],
@@ -92,7 +87,7 @@ describe('plugin API projection', () => {
 
   it('resolves API factories once per editor against owner state', () => {
     let calls = 0;
-    const StatefulPlugin = createBasePlugin({
+    const StatefulPlugin = defineBasePlugin('stateful', {
       api: ({ store }) => {
         calls++;
 
@@ -100,7 +95,6 @@ describe('plugin API projection', () => {
           value: () => store.get().value,
         };
       },
-      name: 'stateful',
       initialState: { value: 7 },
     });
     const first = createBaseEditor({ plugins: [StatefulPlugin] });

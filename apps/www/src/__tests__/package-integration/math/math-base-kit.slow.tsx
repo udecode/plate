@@ -59,7 +59,7 @@ describe('BaseMathKit', () => {
 
     expect(editor.read.children()).toMatchObject([
       {
-        type: 'p',
+        type: 'paragraph',
       },
       {
         texExpression: '',

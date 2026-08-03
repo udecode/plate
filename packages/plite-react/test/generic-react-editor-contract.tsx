@@ -2,7 +2,7 @@ import {
   createEditor,
   type CompatibleEditorCommand,
   defineCommand,
-  defineEditorExtension,
+  defineExtension,
   defineEditorSchema,
   editorCommands,
   type EditorCommit,
@@ -82,18 +82,15 @@ const reactWithoutClipboardEditor = createEditor({
 const HistoryExtension = history();
 const _historyExtensionName: 'history' = HistoryExtension.name;
 const DisabledHistoryExtension = history({ enabled: false });
-const CustomApiExtension = defineEditorExtension({
+const CustomApiExtension = defineExtension('custom-api', {
   api: () => ({
     ping: () => 'pong' as const,
   }),
-  name: 'custom-api',
 });
-const SpecialCommandExtension = defineEditorExtension({
-  name: 'special-command',
+const SpecialCommandExtension = defineExtension('special-command', {
   read: () => ({ value: () => 1 }),
 });
-const ExtraCommandExtension = defineEditorExtension({
-  name: 'extra-command',
+const ExtraCommandExtension = defineExtension('extra-command', {
   read: () => ({ value: () => 2 }),
 });
 type SpecialCommandEditor = ReactEditor<
@@ -144,7 +141,7 @@ const customApiReactEditor = createReactEditor({
   extensions: [CustomApiExtension],
   initialValue,
 });
-const InferredSchema = defineEditorSchema({
+const InferredSchema = defineEditorSchema('schema:derived', {
   elements: {
     paragraph: {
       content: schema.content.text(),

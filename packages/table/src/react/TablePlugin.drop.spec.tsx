@@ -2,18 +2,18 @@
 
 import type React from 'react';
 
+import { definePlatePlugin } from '@platejs/core/react';
 import {
-  createPlateEditor,
-  createPlatePlugin,
-  type PlateEditor,
-} from '@platejs/core/react';
-import { createPluginContext } from '@platejs/core/react/internal';
-import { DebugPlugin } from '@platejs/core';
+  createPluginContext,
+  type InternalPlateEditorWithInstalledPlugins,
+} from '@platejs/core/react/internal';
+import { type BasePluginDefinition, DebugPlugin } from '@platejs/core';
 import type { Element, Location, Range, Value } from '@platejs/plite';
 import { NodeApi, schema } from '@platejs/plite';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { BaseTablePlugin } from '../lib/BaseTablePlugin';
+import { createTestTableEditor } from '../lib/__tests__/getTestTablePlugins';
 import { TablePlugin } from './TablePlugin';
 
 jsxt;
@@ -22,7 +22,7 @@ const createTableEditor = (
   input: TestEditor,
   { nodeId = true }: { nodeId?: boolean } = {}
 ) => {
-  const editor = createPlateEditor({
+  const editor = createTestTableEditor({
     nodeId: nodeId
       ? true
       : {
@@ -158,12 +158,12 @@ const rootTable = (
   children: [
     {
       children: values.map((text, index) => ({
-        children: [{ children: [{ text }], type: 'p' }],
+        children: [{ children: [{ text }], type: 'paragraph' }],
         id: `${prefix}${index + 1}`,
-        type: 'td',
+        type: 'tableCell',
       })),
       id: `${prefix}-row`,
-      type: 'tr',
+      type: 'tableRow',
     },
   ],
   id,
@@ -179,8 +179,7 @@ const rootPoint = (root: string | undefined, cell: number) => ({
 const createRootMoveEditor = (
   direction: 'named-to-primary' | 'primary-to-named'
 ) => {
-  const RootHolderPlugin = createPlatePlugin({
-    name: 'tableDropRootHolder',
+  const RootHolderPlugin = definePlatePlugin('tableDropRootHolder', {
     schema: {
       element: {
         contentRoots: {
@@ -216,7 +215,7 @@ const createRootMoveEditor = (
     anchor: rootPoint(sourceRoot, 0),
     focus: rootPoint(sourceRoot, 1),
   };
-  const editor = createPlateEditor({
+  const editor = createTestTableEditor({
     nodeId: true,
     plugins: [TablePlugin, RootHolderPlugin],
     initialValue: { children, roots },
@@ -237,8 +236,6 @@ const createRootMoveEditor = (
     targetRoot,
   };
 };
-
-type TableEditor = PlateEditor<any, any>;
 
 type TestDragEvent = React.DragEvent & {
   preventDefault: AnyTestMock;
@@ -276,7 +273,10 @@ const createDragEvent = (
     ...modifiers,
   }) as unknown as TestDragEvent;
 
-const rangeAt = (editor: TableEditor, at: Location) => {
+const rangeAt = <V extends Value, D extends BasePluginDefinition>(
+  editor: InternalPlateEditorWithInstalledPlugins<V, D>,
+  at: Location
+) => {
   const range = editor.read.ranges.get(at);
 
   if (!range) throw new Error(`Expected range at ${JSON.stringify(at)}`);
@@ -284,8 +284,8 @@ const rangeAt = (editor: TableEditor, at: Location) => {
   return range;
 };
 
-const installEventRangeApi = (
-  editor: TableEditor,
+const installEventRangeApi = <V extends Value, D extends BasePluginDefinition>(
+  editor: InternalPlateEditorWithInstalledPlugins<V, D>,
   locations: readonly Location[]
 ) => {
   const eventRanges = locations.map((at) => rangeAt(editor, at));
@@ -299,14 +299,14 @@ const installEventRangeApi = (
   return warn;
 };
 
-const runHandler = (
-  editor: TableEditor,
+const runHandler = <V extends Value, D extends BasePluginDefinition>(
+  editor: InternalPlateEditorWithInstalledPlugins<V, D>,
   ...[key, event]:
     | [key: 'dragEnd' | 'dragStart' | 'drop', event: React.DragEvent]
     | [key: 'mouseUp', event: React.MouseEvent]
 ) => {
   const context = createPluginContext(editor, TablePlugin);
-  const plugin = editor.plugin(TablePlugin).plugin;
+  const plugin = editor.plugin(TablePlugin);
 
   if (key === 'mouseUp') {
     const handler = plugin.on.mouseUp;
@@ -323,8 +323,11 @@ const runHandler = (
   return handler({ ...context, event });
 };
 
-const installDOMSelectionApi = (
-  editor: TableEditor,
+const installDOMSelectionApi = <
+  V extends Value,
+  D extends BasePluginDefinition,
+>(
+  editor: InternalPlateEditorWithInstalledPlugins<V, D>,
   range: Range | null,
   {
     collapsed = false,
@@ -345,7 +348,10 @@ const installDOMSelectionApi = (
   spyOn(editor.api.dom, 'resolvePliteRange').mockReturnValue(range);
 };
 
-const readTable = (editor: TableEditor, index: number) => {
+const readTable = <V extends Value, D extends BasePluginDefinition>(
+  editor: InternalPlateEditorWithInstalledPlugins<V, D>,
+  index: number
+) => {
   const table = editor.read.children()[index] as Element;
 
   return table.children.map((row) =>
@@ -353,7 +359,10 @@ const readTable = (editor: TableEditor, index: number) => {
   );
 };
 
-const readRootTable = (editor: TableEditor, root?: string) => {
+const readRootTable = <V extends Value, D extends BasePluginDefinition>(
+  editor: InternalPlateEditorWithInstalledPlugins<V, D>,
+  root?: string
+) => {
   const value = editor.read.value();
   const table = (
     root === undefined ? value.children[0] : value.roots?.[root]?.[0]
@@ -364,8 +373,8 @@ const readRootTable = (editor: TableEditor, root?: string) => {
   );
 };
 
-const dragSelectedCells = (
-  editor: TableEditor,
+const dragSelectedCells = <V extends Value, D extends BasePluginDefinition>(
+  editor: InternalPlateEditorWithInstalledPlugins<V, D>,
   {
     copy = false,
     target,

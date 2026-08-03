@@ -15,6 +15,7 @@ import React, {
   useState,
 } from 'react';
 import type { Editor, Value } from '@platejs/plite';
+import { history } from '@platejs/plite-history';
 import {
   createReactEditor,
   Editable,
@@ -193,7 +194,7 @@ const fallbackInitialValue: Value = [
 // The huge-document bench remounts editors from URL/config controls. Normal
 // React-owned examples should use `usePliteEditor`.
 const createEditor = (_config: Config, initialValue: Value) =>
-  createReactEditor({ initialValue });
+  createReactEditor({ extensions: [history()], initialValue });
 
 const toDOMStrategy = (config: Config): EditableProps['domStrategy'] => {
   switch (config.domStrategyMode) {

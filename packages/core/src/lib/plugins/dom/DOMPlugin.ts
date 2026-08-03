@@ -14,7 +14,7 @@ import isUndefined from 'lodash/isUndefined.js';
 import omitBy from 'lodash/omitBy.js';
 
 import { plateDOMExtension } from '../../../internal/plugin/plateNativeExtensions';
-import { createBasePlugin, type DefinitionOf } from '../../plugin';
+import { defineBasePlugin, type DefinitionOf } from '../../plugin';
 
 const AUTO_SCROLL = new WeakMap<object, boolean>();
 
@@ -77,11 +77,10 @@ const initialState: DomPluginState = {
   },
 };
 
-export const DOMPluginBase = createBasePlugin({
+export const DOMPluginBase = defineBasePlugin('dom', {
   api: ({ editor }): PlateDomApi => ({
     isAutoScrolling: () => AUTO_SCROLL.get(editor) ?? false,
   }),
-  name: 'dom',
   initialState,
   on: {
     transactionChange({ changed, editor, selectionAfterRoot, store, tx }) {

@@ -13,3 +13,5 @@ and mutate them through `editor.update.footnote`, including
 The plugin requires the matching footnote-input descriptor. Footnote queries,
 navigation, insertion, definition creation, and duplicate normalization are
 owned by the plugin instead of exported editor/transaction helper functions.
+Footnote reference elements persist under the canonical `footnote` plugin
+identity.

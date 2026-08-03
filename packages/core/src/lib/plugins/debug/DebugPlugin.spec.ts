@@ -1,12 +1,11 @@
 import { createBaseEditor } from '../../editor';
-import { createBasePlugin } from '../../plugin';
+import { defineBasePlugin } from '../../plugin';
 import { DebugPlugin, PlateError } from './DebugPlugin';
 
-const SamplePlugin = createBasePlugin({
+const SamplePlugin = defineBasePlugin('sample', {
   api: () => ({
     sampleMethod: () => {},
   }),
-  name: 'sample',
 });
 
 describe('DebugPlugin', () => {

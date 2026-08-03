@@ -1,12 +1,11 @@
 'use client';
 
-import { createPlatePlugin } from 'platejs/react';
+import { definePlatePlugin } from 'platejs/react';
 
 import { FixedToolbar } from '@/registry/ui/fixed-toolbar';
 import { FixedToolbarButtons } from '@/registry/ui/fixed-toolbar-buttons';
 
-export const FixedToolbarPlugin = createPlatePlugin({
-  name: 'fixed-toolbar',
+export const FixedToolbarPlugin = definePlatePlugin('fixedToolbar', {
   render: {
     beforeEditable: () => (
       <FixedToolbar>

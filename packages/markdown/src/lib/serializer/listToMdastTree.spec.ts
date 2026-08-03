@@ -49,14 +49,14 @@ describe('listToMdastTree', () => {
         indent: 1,
         listStart: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'list2' }],
         indent: 1,
         listStart: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
     ];
 
@@ -103,21 +103,21 @@ describe('listToMdastTree', () => {
         indent: 1,
         listStart: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'list2' }],
         indent: 1,
         listStart: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'list3' }],
         indent: 2,
         listStart: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
     ];
 
@@ -183,14 +183,14 @@ describe('listToMdastTree', () => {
         indent: 1,
         listStart: 1,
         listStyleType: 'decimal',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'list2' }],
         indent: 1,
         listStart: 2,
         listStyleType: 'decimal',
-        type: 'p',
+        type: 'paragraph',
       },
     ];
 
@@ -237,35 +237,35 @@ describe('listToMdastTree', () => {
         indent: 1,
         listStart: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'level2-1' }],
         indent: 2,
         listStart: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'level3-1' }],
         indent: 3,
         listStart: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'level2-2' }],
         indent: 2,
         listStart: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'level1-2' }],
         indent: 1,
         listStart: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
     ];
 
@@ -292,28 +292,28 @@ describe('listToMdastTree', () => {
         indent: 1,
         listStart: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'ordered 1' }],
         indent: 2,
         listStart: 1,
         listStyleType: 'decimal',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'ordered 2' }],
         indent: 2,
         listStart: 2,
         listStyleType: 'decimal',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'unordered sub' }],
         indent: 3,
         listStart: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
     ];
 
@@ -335,21 +335,21 @@ describe('listToMdastTree', () => {
         indent: 1,
         listStart: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'child ordered' }],
         indent: 2,
         listStart: 1,
         listStyleType: 'decimal',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'child bullet' }],
         indent: 2,
         listStart: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
     ];
 
@@ -369,14 +369,14 @@ describe('listToMdastTree', () => {
         indent: 1,
         listStart: 3,
         listStyleType: 'decimal',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'nested start from 5' }],
         indent: 2,
         listStart: 5,
         listStyleType: 'decimal',
-        type: 'p',
+        type: 'paragraph',
       },
     ];
 
@@ -396,35 +396,35 @@ describe('listToMdastTree', () => {
         indent: 1,
         listStart: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'level 2' }],
         indent: 2,
         listStart: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'level 3' }],
         indent: 3,
         listStart: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'level 4' }],
         indent: 4,
         listStart: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'back to level 1' }],
         indent: 1,
         listStart: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
     ];
 
@@ -455,21 +455,21 @@ describe('listToMdastTree', () => {
         indent: 1,
         listStart: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [
           { text: 'with ', type: 'text' },
           {
             children: [{ text: 'link', type: 'text' }],
-            type: 'a',
+            type: 'link',
             url: 'https://example.com',
           },
         ],
         indent: 2,
         listStart: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
     ];
 
@@ -498,7 +498,7 @@ describe('listToMdastTree', () => {
         indent: 1,
         listStart: 1,
         listStyleType: 'todo',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         checked: false,
@@ -506,7 +506,7 @@ describe('listToMdastTree', () => {
         indent: 1,
         listStart: 1,
         listStyleType: 'todo',
-        type: 'p',
+        type: 'paragraph',
       },
     ];
 
@@ -524,14 +524,14 @@ describe('listToMdastTree', () => {
         indent: 1,
         listStart: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'list2' }],
         indent: 1,
         listStart: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
     ];
 
@@ -558,21 +558,21 @@ describe('listToMdastTree', () => {
         indent: 1,
         listStart: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'unordered child' }],
         indent: 2,
         listStart: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'ordered child' }],
         indent: 2,
         listStart: 3,
         listStyleType: 'decimal',
-        type: 'p',
+        type: 'paragraph',
       },
     ];
 
@@ -629,14 +629,14 @@ describe('listToMdastTree', () => {
         indent: 1,
         listStart: 7,
         listStyleType: 'decimal',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'second' }],
         indent: 1,
         listStart: 8,
         listStyleType: 'decimal',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         checked: true,
@@ -645,7 +645,7 @@ describe('listToMdastTree', () => {
         indent: 1,
         listStart: 1,
         listStyleType: 'todo',
-        type: 'p',
+        type: 'paragraph',
       },
     ];
 

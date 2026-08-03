@@ -1,5 +1,4 @@
 import { createBaseEditor } from '@platejs/core';
-import { KEYS } from '@platejs/utils';
 
 import { BasePlaceholderPlugin } from './BasePlaceholderPlugin';
 
@@ -21,38 +20,23 @@ describe('BasePlaceholderPlugin', () => {
   });
 
   it.each([
-    KEYS.audio,
-    KEYS.file,
-    KEYS.img,
-    KEYS.video,
+    'audio',
+    'file',
+    'image',
+    'video',
   ])('inserts a %s placeholder through the flat scoped update', (mediaType) => {
     const editor = createBaseEditor({
       plugins: [BasePlaceholderPlugin],
-      initialValue: [{ children: [{ text: 'one' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'paragraph' }],
     });
 
-    editor.plugin(BasePlaceholderPlugin).update.insert(mediaType, { at: [1] });
+    editor
+      .plugin(BasePlaceholderPlugin)
+      .update.insert({ mediaType }, { at: [1] });
 
     expect(editor.read.children()[1]).toMatchObject({
       mediaType,
-      type: KEYS.placeholder,
-    });
-  });
-
-  it('supports grouped transaction insertion', () => {
-    const editor = createBaseEditor({
-      plugins: [BasePlaceholderPlugin],
-      initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
-    });
-
-    editor.update((tx) => {
-      tx.placeholder.insert(KEYS.img, { at: [1] });
-    });
-
-    expect(editor.read.children()[1]).toEqual({
-      children: [{ text: '' }],
-      mediaType: KEYS.img,
-      type: KEYS.placeholder,
+      type: 'placeholder',
     });
   });
 });

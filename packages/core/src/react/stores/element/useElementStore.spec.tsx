@@ -8,7 +8,7 @@ import { act, render } from '@testing-library/react';
 
 import { TestPlate as Plate } from '../../__tests__/TestPlate';
 import { createPlateEditor } from '../../editor';
-import { createBasePlugin } from '../../../lib';
+import { defineBasePlugin } from '../../../lib';
 import { DebugPlugin } from '../../../lib/plugins/debug/DebugPlugin';
 import { useElement, useOptionalElement } from './useElement';
 import {
@@ -44,8 +44,7 @@ describe('ElementProvider', () => {
     type: 'age';
   }
 
-  const NamePlugin = createBasePlugin({
-    name: 'name',
+  const NamePlugin = defineBasePlugin('name', {
     schema: {
       element: {
         content: schema.content.text(),
@@ -53,8 +52,7 @@ describe('ElementProvider', () => {
       },
     },
   });
-  const AgePlugin = createBasePlugin({
-    name: 'age',
+  const AgePlugin = defineBasePlugin('age', {
     schema: {
       element: {
         content: schema.content.text(),
@@ -62,8 +60,7 @@ describe('ElementProvider', () => {
       },
     },
   });
-  const MissingPlugin = createBasePlugin({
-    name: 'missing',
+  const MissingPlugin = defineBasePlugin('missing', {
     schema: { element: { content: schema.content.text() } },
   });
 

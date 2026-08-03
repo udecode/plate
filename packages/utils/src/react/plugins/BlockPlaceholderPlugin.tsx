@@ -1,5 +1,5 @@
 import type { DefinitionOf } from '@platejs/core';
-import { type PlateEditor, createPlatePlugin } from '@platejs/core/react';
+import { type PlateEditor, definePlatePlugin } from '@platejs/core/react';
 import { type Element, type Path, PathApi } from '@platejs/plite';
 
 import { KEYS } from '../../lib';
@@ -27,8 +27,7 @@ export type BlockPlaceholderPluginState = {
   query: (context: BlockPlaceholderQueryContext) => boolean;
 };
 
-const BlockPlaceholderPluginBase = createPlatePlugin({
-  name: KEYS.blockPlaceholder,
+const BlockPlaceholderPluginBase = definePlatePlugin(KEYS.blockPlaceholder, {
   initialState: (): BlockPlaceholderPluginState => ({
     _target: null,
     className: undefined,

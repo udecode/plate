@@ -4,26 +4,21 @@ import * as copyToClipboardModule from 'copy-to-clipboard';
 
 import {
   BaseParagraphPlugin,
+  type IdElement,
   type PluginReference,
   createBaseEditor,
-  createBasePlugin,
+  defineBasePlugin,
 } from '@platejs/core';
-import type { BaseEditor } from '@platejs/core';
 import { getPlateRuntime } from '@platejs/core/internal';
 import { createPlateEditor } from '@platejs/core/react';
-import type { PlateEditor } from '@platejs/core/react';
 import { NodeApi, property, schema, target } from '@platejs/plite';
+import { createEditor as createPliteEditor } from '@platejs/plite';
 import type { NodeEntry, Value } from '@platejs/plite';
 import * as PliteDOM from '@platejs/plite-dom';
 import { EDITOR_TO_WINDOW } from '@platejs/plite-dom/internal';
 import { jsxt } from '@platejs/test-utils';
-import type { TIdElement } from '@platejs/utils';
-
 import { BlockMenuPlugin } from './BlockMenuPlugin';
-import {
-  type BlockSelectionDefinition,
-  BlockSelectionPlugin,
-} from './BlockSelectionPlugin';
+import { BlockSelectionPlugin } from './BlockSelectionPlugin';
 
 const createTestContainerPlugin = <
   const TName extends string,
@@ -32,70 +27,81 @@ const createTestContainerPlugin = <
   name: TName,
   child: TChild
 ) =>
-  createBasePlugin({
-    name,
-    schema: ({ plugins }) => {
-      const childType = plugins.elementType(child);
-
-      return {
-        element: {
-          content: schema.content.type(childType, {
-            default: { type: childType },
-            min: 1,
-          }),
-        },
-      };
+  defineBasePlugin(name, {
+    schema: {
+      element: {
+        content: schema.content.element(child, { min: 1 }),
+      },
     },
   });
 
 const createTestBlockContainerPlugin = <const TName extends string>(
   name: TName
 ) =>
-  createBasePlugin({
-    name,
+  defineBasePlugin(name, {
     schema: ({ plugins }) => ({
       element: {
         content: plugins.blockContent({
-          default: { type: plugins.elementType(BaseParagraphPlugin) },
+          default: BaseParagraphPlugin,
           min: 1,
         }),
       },
     }),
   });
 
-const TestBoldPlugin = createBasePlugin({
-  name: 'bold',
+const TestBoldPlugin = defineBasePlugin('bold', {
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
 });
 
-const TestElementPropertiesPlugin = createBasePlugin({
-  name: 'testElementProperties',
+const TestElementPropertiesPlugin = defineBasePlugin('testElementProperties', {
   schema: {
-    properties: [
-      schema.elementProperty('align', property.string(), {
+    properties: {
+      align: schema.elementProperty(property.string(), {
         target: target.group('element'),
       }),
-      schema.elementProperty('indent', property.number(), {
+      indent: schema.elementProperty(property.number(), {
         target: target.group('element'),
       }),
-      schema.elementProperty('variant', property.string(), {
+      variant: schema.elementProperty(property.string(), {
         target: target.group('element'),
       }),
-    ],
+    },
   },
 });
 
 const TestColumnPlugin = createTestBlockContainerPlugin('column');
 const TestColumnGroupPlugin = createTestContainerPlugin(
-  'column_group',
+  'columnGroup',
   TestColumnPlugin
 );
 const TestDivPlugin = createTestBlockContainerPlugin('div');
-const TestTableCellPlugin = createTestBlockContainerPlugin('td');
-const TestTableRowPlugin = createTestContainerPlugin('tr', TestTableCellPlugin);
+const TestTableCellPlugin = createTestBlockContainerPlugin('tableCell');
+const TestTableRowPlugin = createTestContainerPlugin(
+  'tableRow',
+  TestTableCellPlugin
+);
 const TestTablePlugin = createTestContainerPlugin('table', TestTableRowPlugin);
+
+const selectionTestPlugins = [
+  BlockSelectionPlugin,
+  TestDivPlugin,
+  TestColumnPlugin,
+  TestColumnGroupPlugin,
+  TestTableCellPlugin,
+  TestTableRowPlugin,
+  TestTablePlugin,
+] as const;
+
+const createSelectionTestEditor = (initialValue: Value) =>
+  createPlateEditor({
+    editor: createPliteEditor<Value>(),
+    plugins: selectionTestPlugins,
+    initialValue,
+  });
+
+type SelectionTestEditor = ReturnType<typeof createSelectionTestEditor>;
 
 const createBlockSelectionEditor = ({
   withBlockMenu = false,
@@ -103,6 +109,7 @@ const createBlockSelectionEditor = ({
   withBlockMenu?: boolean;
 } = {}) =>
   createPlateEditor({
+    editor: createPliteEditor<Value>(),
     plugins: [
       BlockSelectionPlugin,
       ...(withBlockMenu ? [BlockMenuPlugin] : []),
@@ -113,12 +120,12 @@ const createBlockSelectionEditor = ({
       {
         id: 'block1',
         children: [{ text: 'One' }],
-        type: 'p',
+        type: 'paragraph',
       },
       {
         id: 'block2',
         children: [{ text: 'Two' }],
-        type: 'p',
+        type: 'paragraph',
       },
     ],
   });
@@ -271,29 +278,26 @@ describe('BlockSelectionPlugin', () => {
 jsxt;
 
 describe('moveSelection', () => {
-  let editor: PlateEditor;
+  let editor: SelectionTestEditor;
 
   beforeEach(() => {
-    editor = createPlateEditor({
-      plugins: [BlockSelectionPlugin],
-      initialValue: [
-        {
-          id: 'block1',
-          children: [{ text: 'Block One' }],
-          type: 'p',
-        },
-        {
-          id: 'block2',
-          children: [{ text: 'Block Two' }],
-          type: 'p',
-        },
-        {
-          id: 'block3',
-          children: [{ text: 'Block Three' }],
-          type: 'p',
-        },
-      ],
-    });
+    editor = createSelectionTestEditor([
+      {
+        id: 'block1',
+        children: [{ text: 'Block One' }],
+        type: 'paragraph',
+      },
+      {
+        id: 'block2',
+        children: [{ text: 'Block Two' }],
+        type: 'paragraph',
+      },
+      {
+        id: 'block3',
+        children: [{ text: 'Block Three' }],
+        type: 'paragraph',
+      },
+    ]);
   });
 
   describe('when pressing arrow down without shift', () => {
@@ -416,27 +420,24 @@ describe('moveSelection', () => {
 
   describe('when pressing arrow up with nested blocks', () => {
     it('select parent block if no previous sibling exists', () => {
-      editor = createPlateEditor({
-        plugins: [BlockSelectionPlugin, TestDivPlugin],
-        initialValue: [
-          {
-            id: 'parent1',
-            children: [
-              {
-                id: 'child1',
-                children: [{ text: 'Child One' }],
-                type: 'p',
-              },
-              {
-                id: 'child2',
-                children: [{ text: 'Child Two' }],
-                type: 'p',
-              },
-            ],
-            type: 'div',
-          },
-        ],
-      });
+      editor = createSelectionTestEditor([
+        {
+          id: 'parent1',
+          children: [
+            {
+              id: 'child1',
+              children: [{ text: 'Child One' }],
+              type: 'paragraph',
+            },
+            {
+              id: 'child2',
+              children: [{ text: 'Child Two' }],
+              type: 'paragraph',
+            },
+          ],
+          type: 'div',
+        },
+      ]);
 
       // Select child1
       editor
@@ -482,83 +483,75 @@ describe('moveSelection', () => {
 
   describe('when pressing arrow down with nested blocks', () => {
     beforeEach(() => {
-      editor = createPlateEditor({
-        plugins: [
-          BlockSelectionPlugin,
-          TestTablePlugin,
-          TestTableRowPlugin,
-          TestTableCellPlugin,
-        ],
-        initialValue: [
-          {
-            id: 'table1',
-            children: [
-              {
-                id: 'tr1',
-                children: [
-                  {
-                    id: 'td11',
-                    children: [
-                      {
-                        id: 'p11',
-                        children: [{ text: 'Cell 1-1' }],
-                        type: 'p',
-                      },
-                    ],
-                    type: 'td',
-                  },
-                  {
-                    id: 'td12',
-                    children: [
-                      {
-                        id: 'p12',
-                        children: [{ text: 'Cell 1-2' }],
-                        type: 'p',
-                      },
-                    ],
-                    type: 'td',
-                  },
-                ],
-                type: 'tr',
-              },
-              {
-                id: 'tr2',
-                children: [
-                  {
-                    id: 'td21',
-                    children: [
-                      {
-                        id: 'p21',
-                        children: [{ text: 'Cell 2-1' }],
-                        type: 'p',
-                      },
-                    ],
-                    type: 'td',
-                  },
-                  {
-                    id: 'td22',
-                    children: [
-                      {
-                        id: 'p22',
-                        children: [{ text: 'Cell 2-2' }],
-                        type: 'p',
-                      },
-                    ],
-                    type: 'td',
-                  },
-                ],
-                type: 'tr',
-              },
-            ],
-            type: 'table',
-          },
-        ],
-      });
+      editor = createSelectionTestEditor([
+        {
+          id: 'table1',
+          children: [
+            {
+              id: 'tr1',
+              children: [
+                {
+                  id: 'td11',
+                  children: [
+                    {
+                      id: 'p11',
+                      children: [{ text: 'Cell 1-1' }],
+                      type: 'paragraph',
+                    },
+                  ],
+                  type: 'tableCell',
+                },
+                {
+                  id: 'td12',
+                  children: [
+                    {
+                      id: 'p12',
+                      children: [{ text: 'Cell 1-2' }],
+                      type: 'paragraph',
+                    },
+                  ],
+                  type: 'tableCell',
+                },
+              ],
+              type: 'tableRow',
+            },
+            {
+              id: 'tr2',
+              children: [
+                {
+                  id: 'td21',
+                  children: [
+                    {
+                      id: 'p21',
+                      children: [{ text: 'Cell 2-1' }],
+                      type: 'paragraph',
+                    },
+                  ],
+                  type: 'tableCell',
+                },
+                {
+                  id: 'td22',
+                  children: [
+                    {
+                      id: 'p22',
+                      children: [{ text: 'Cell 2-2' }],
+                      type: 'paragraph',
+                    },
+                  ],
+                  type: 'tableCell',
+                },
+              ],
+              type: 'tableRow',
+            },
+          ],
+          type: 'table',
+        },
+      ]);
 
       editor.plugin(BlockSelectionPlugin).store.set({
         isSelectable: (node) => {
           // Only table and tr are selectable
-          return node.type === 'table' || node.type === 'tr';
+          return node.type === 'table' || node.type === 'tableRow';
         },
       });
     });
@@ -629,65 +622,57 @@ describe('moveSelection', () => {
 
   describe('when pressing arrow up with complex nested blocks', () => {
     beforeEach(() => {
-      editor = createPlateEditor({
-        plugins: [
-          BlockSelectionPlugin,
-          TestDivPlugin,
-          TestColumnGroupPlugin,
-          TestColumnPlugin,
-        ],
-        initialValue: [
-          {
-            id: 'block1',
-            children: [{ text: 'Block One' }],
-            type: 'p',
-          },
-          {
-            id: 'parent1',
-            children: [
-              {
-                id: 'child1',
-                children: [{ text: 'Child One' }],
-                type: 'p',
-              },
-              {
-                id: 'child2',
-                children: [{ text: 'Child Two' }],
-                type: 'p',
-              },
-            ],
-            type: 'div',
-          },
-          {
-            id: 'column_group1',
-            children: [
-              {
-                id: 'column1',
-                children: [
-                  {
-                    id: 'grandchild1',
-                    children: [{ text: 'Grandchild One' }],
-                    type: 'p',
-                  },
-                ],
-                type: 'column',
-              },
-              {
-                id: 'column2',
-                children: [
-                  {
-                    id: 'grandchild2',
-                    children: [{ text: 'Grandchild Two' }],
-                    type: 'p',
-                  },
-                ],
-                type: 'column',
-              },
-            ],
-            type: 'column_group',
-          },
-        ],
-      });
+      editor = createSelectionTestEditor([
+        {
+          id: 'block1',
+          children: [{ text: 'Block One' }],
+          type: 'paragraph',
+        },
+        {
+          id: 'parent1',
+          children: [
+            {
+              id: 'child1',
+              children: [{ text: 'Child One' }],
+              type: 'paragraph',
+            },
+            {
+              id: 'child2',
+              children: [{ text: 'Child Two' }],
+              type: 'paragraph',
+            },
+          ],
+          type: 'div',
+        },
+        {
+          id: 'column_group1',
+          children: [
+            {
+              id: 'column1',
+              children: [
+                {
+                  id: 'grandchild1',
+                  children: [{ text: 'Grandchild One' }],
+                  type: 'paragraph',
+                },
+              ],
+              type: 'column',
+            },
+            {
+              id: 'column2',
+              children: [
+                {
+                  id: 'grandchild2',
+                  children: [{ text: 'Grandchild Two' }],
+                  type: 'paragraph',
+                },
+              ],
+              type: 'column',
+            },
+          ],
+          type: 'columnGroup',
+        },
+      ]);
 
       // For testing, let's skip columns
       editor
@@ -743,7 +728,7 @@ describe('moveSelection', () => {
       // Make column_group1 not selectable as well
       editor.plugin(BlockSelectionPlugin).store.set({
         isSelectable: (node) =>
-          node.type !== 'column' && node.type !== 'column_group',
+          node.type !== 'column' && node.type !== 'columnGroup',
       });
 
       // Select grandchild1
@@ -772,6 +757,7 @@ describe('moveSelection', () => {
 
 const createTestEditor = () =>
   createBaseEditor({
+    editor: createPliteEditor<Value>(),
     plugins: [
       BlockSelectionPlugin,
       TestTablePlugin,
@@ -782,7 +768,7 @@ const createTestEditor = () =>
       {
         id: 'existing',
         children: [{ text: 'Existing' }],
-        type: 'p',
+        type: 'paragraph',
       },
       {
         id: 'table',
@@ -794,13 +780,13 @@ const createTestEditor = () =>
                 children: [
                   {
                     children: [{ text: 'Row 1' }],
-                    type: 'p',
+                    type: 'paragraph',
                   },
                 ],
-                type: 'td',
+                type: 'tableCell',
               },
             ],
-            type: 'tr',
+            type: 'tableRow',
           },
           {
             id: 'row-2',
@@ -809,13 +795,13 @@ const createTestEditor = () =>
                 children: [
                   {
                     children: [{ text: 'Row 2' }],
-                    type: 'p',
+                    type: 'paragraph',
                   },
                 ],
-                type: 'td',
+                type: 'tableCell',
               },
             ],
-            type: 'tr',
+            type: 'tableRow',
           },
         ],
         type: 'table',
@@ -831,13 +817,15 @@ const createSelectableElement = (id?: string) => {
   return element;
 };
 
-const getSelectedIds = (editor: BaseEditor) =>
+type BlockSelectionTestEditor = ReturnType<typeof createTestEditor>;
+
+const getSelectedIds = (editor: BlockSelectionTestEditor) =>
   Array.from(
     editor.plugin(BlockSelectionPlugin).store.get('selectedIds') ?? []
   ).sort();
 
 describe('setSelectedIds', () => {
-  let editor: BaseEditor;
+  let editor: BlockSelectionTestEditor;
   let querySelectorSpy: AnyTestMock;
 
   beforeEach(() => {
@@ -934,30 +922,27 @@ describe('setSelectedIds', () => {
 jsxt;
 
 describe('shiftSelection', () => {
-  let editor: PlateEditor;
+  let editor: SelectionTestEditor;
 
   describe('Flat structure', () => {
     beforeEach(() => {
-      editor = createPlateEditor({
-        plugins: [BlockSelectionPlugin],
-        initialValue: [
-          {
-            id: 'block1',
-            children: [{ text: 'Block One' }],
-            type: 'p',
-          },
-          {
-            id: 'block2',
-            children: [{ text: 'Block Two' }],
-            type: 'p',
-          },
-          {
-            id: 'block3',
-            children: [{ text: 'Block Three' }],
-            type: 'p',
-          },
-        ],
-      });
+      editor = createSelectionTestEditor([
+        {
+          id: 'block1',
+          children: [{ text: 'Block One' }],
+          type: 'paragraph',
+        },
+        {
+          id: 'block2',
+          children: [{ text: 'Block Two' }],
+          type: 'paragraph',
+        },
+        {
+          id: 'block3',
+          children: [{ text: 'Block Three' }],
+          type: 'paragraph',
+        },
+      ]);
     });
 
     describe('when anchor is top-most and SHIFT+DOWN', () => {
@@ -1051,37 +1036,34 @@ describe('shiftSelection', () => {
 
   describe('Nested structure', () => {
     beforeEach(() => {
-      editor = createPlateEditor({
-        plugins: [BlockSelectionPlugin, TestDivPlugin],
-        initialValue: [
-          {
-            id: 'parent1',
-            children: [
-              {
-                id: 'child1',
-                children: [{ text: 'Child One' }],
-                type: 'p',
-              },
-              {
-                id: 'child2',
-                children: [{ text: 'Child Two' }],
-                type: 'p',
-              },
-            ],
-            type: 'div',
-          },
-          {
-            id: 'block3',
-            children: [{ text: 'Block Three' }],
-            type: 'p',
-          },
-          {
-            id: 'block4',
-            children: [{ text: 'Block Four' }],
-            type: 'p',
-          },
-        ],
-      });
+      editor = createSelectionTestEditor([
+        {
+          id: 'parent1',
+          children: [
+            {
+              id: 'child1',
+              children: [{ text: 'Child One' }],
+              type: 'paragraph',
+            },
+            {
+              id: 'child2',
+              children: [{ text: 'Child Two' }],
+              type: 'paragraph',
+            },
+          ],
+          type: 'div',
+        },
+        {
+          id: 'block3',
+          children: [{ text: 'Block Three' }],
+          type: 'paragraph',
+        },
+        {
+          id: 'block4',
+          children: [{ text: 'Block Four' }],
+          type: 'paragraph',
+        },
+      ]);
 
       // For testing skipping, let's say child2 is not selectable or something
       editor.plugin(BlockSelectionPlugin).store.set({
@@ -1179,87 +1161,80 @@ describe('shiftSelection', () => {
 
   describe('Complex columns or table-like structure', () => {
     beforeEach(() => {
-      editor = createPlateEditor({
-        plugins: [
-          BlockSelectionPlugin,
-          TestTablePlugin,
-          TestTableRowPlugin,
-          TestTableCellPlugin,
-        ],
-        initialValue: [
-          {
-            id: 'table1',
-            children: [
-              {
-                id: 'tr1',
-                children: [
-                  {
-                    id: 'td11',
-                    children: [
-                      {
-                        id: 'p11',
-                        children: [{ text: 'Cell 1-1' }],
-                        type: 'p',
-                      },
-                    ],
-                    type: 'td',
-                  },
-                  {
-                    id: 'td12',
-                    children: [
-                      {
-                        id: 'p12',
-                        children: [{ text: 'Cell 1-2' }],
-                        type: 'p',
-                      },
-                    ],
-                    type: 'td',
-                  },
-                ],
-                type: 'tr',
-              },
-              {
-                id: 'tr2',
-                children: [
-                  {
-                    id: 'td21',
-                    children: [
-                      {
-                        id: 'p21',
-                        children: [{ text: 'Cell 2-1' }],
-                        type: 'p',
-                      },
-                    ],
-                    type: 'td',
-                  },
-                  {
-                    id: 'td22',
-                    children: [
-                      {
-                        id: 'p22',
-                        children: [{ text: 'Cell 2-2' }],
-                        type: 'p',
-                      },
-                    ],
-                    type: 'td',
-                  },
-                ],
-                type: 'tr',
-              },
-            ],
-            type: 'table',
-          },
-          {
-            id: 'blockZ',
-            children: [{ text: 'Below Table' }],
-            type: 'p',
-          },
-        ],
-      });
+      editor = createSelectionTestEditor([
+        {
+          id: 'table1',
+          children: [
+            {
+              id: 'tr1',
+              children: [
+                {
+                  id: 'td11',
+                  children: [
+                    {
+                      id: 'p11',
+                      children: [{ text: 'Cell 1-1' }],
+                      type: 'paragraph',
+                    },
+                  ],
+                  type: 'tableCell',
+                },
+                {
+                  id: 'td12',
+                  children: [
+                    {
+                      id: 'p12',
+                      children: [{ text: 'Cell 1-2' }],
+                      type: 'paragraph',
+                    },
+                  ],
+                  type: 'tableCell',
+                },
+              ],
+              type: 'tableRow',
+            },
+            {
+              id: 'tr2',
+              children: [
+                {
+                  id: 'td21',
+                  children: [
+                    {
+                      id: 'p21',
+                      children: [{ text: 'Cell 2-1' }],
+                      type: 'paragraph',
+                    },
+                  ],
+                  type: 'tableCell',
+                },
+                {
+                  id: 'td22',
+                  children: [
+                    {
+                      id: 'p22',
+                      children: [{ text: 'Cell 2-2' }],
+                      type: 'paragraph',
+                    },
+                  ],
+                  type: 'tableCell',
+                },
+              ],
+              type: 'tableRow',
+            },
+          ],
+          type: 'table',
+        },
+        {
+          id: 'blockZ',
+          children: [{ text: 'Below Table' }],
+          type: 'paragraph',
+        },
+      ]);
 
-      // Let’s make only 'table' and 'tr' selectable
+      // Let’s make only 'table' and 'tableRow' selectable
       editor.plugin(BlockSelectionPlugin).store.set({
-        isSelectable: (node) => node.type === 'table' || node.type === 'tr',
+        isSelectable: (node) =>
+          node.type === 'table' || node.type === 'tableRow',
       });
     });
 
@@ -1356,12 +1331,14 @@ describe('shiftSelection', () => {
         .plugin(BlockSelectionPlugin)
         .store.get('selectedIds');
       // Now includes blockZ only if blockZ is selectable.
-      // Since we only made 'table' or 'tr' selectable, blockZ might be skipped.
+      // Since we only made 'table' or 'tableRow' selectable, blockZ might be skipped.
       // For this test let's assume blockZ is also selectable => let's set isSelectable accordingly.
       // We'll do that quickly:
       editor.plugin(BlockSelectionPlugin).store.set({
         isSelectable: (node) =>
-          node.type === 'table' || node.type === 'tr' || node.id === 'blockZ',
+          node.type === 'table' ||
+          node.type === 'tableRow' ||
+          node.id === 'blockZ',
       });
       // Re-run shiftSelection to see if blockZ is included
       editor.plugin(BlockSelectionPlugin).api.shiftSelection('down');
@@ -1379,14 +1356,11 @@ describe('shiftSelection', () => {
     it('set anchor to top-most for SHIFT+DOWN', () => {
       // We have block1, block2.
       // Let's select block2 only, no anchor set => SHIFT+DOWN => anchor=top-most => block2 => expand => block3.
-      editor = createPlateEditor({
-        plugins: [BlockSelectionPlugin],
-        initialValue: [
-          { id: 'block1', children: [{ text: 'One' }], type: 'p' },
-          { id: 'block2', children: [{ text: 'Two' }], type: 'p' },
-          { id: 'block3', children: [{ text: 'Three' }], type: 'p' },
-        ],
-      });
+      editor = createSelectionTestEditor([
+        { id: 'block1', children: [{ text: 'One' }], type: 'paragraph' },
+        { id: 'block2', children: [{ text: 'Two' }], type: 'paragraph' },
+        { id: 'block3', children: [{ text: 'Three' }], type: 'paragraph' },
+      ]);
 
       editor
         .plugin(BlockSelectionPlugin)
@@ -1432,11 +1406,9 @@ describe('shiftSelection', () => {
   });
 });
 
-const createDocumentTransformEditor = (): BaseEditor<
-  Value,
-  BlockSelectionDefinition
-> =>
+const createDocumentTransformEditor = () =>
   createBaseEditor({
+    editor: createPliteEditor<Value>(),
     plugins: [
       BlockSelectionPlugin,
       TestBoldPlugin,
@@ -1446,12 +1418,12 @@ const createDocumentTransformEditor = (): BaseEditor<
       {
         id: 'block1',
         children: [{ text: 'One' }],
-        type: 'p',
+        type: 'paragraph',
       },
       {
         id: 'block2',
         children: [{ text: 'Two' }],
-        type: 'p',
+        type: 'paragraph',
       },
     ],
   });
@@ -1467,7 +1439,7 @@ describe('block selection document transforms', () => {
           {
             id: 'block3',
             children: [{ text: 'Three' }],
-            type: 'p',
+            type: 'paragraph',
           },
         ],
         { at: [1], insertedCallback }
@@ -1499,7 +1471,7 @@ describe('block selection document transforms', () => {
             {
               id: 'block3',
               children: [{ text: 'Three' }],
-              type: 'p',
+              type: 'paragraph',
             },
           ],
           { at: [1], insertedCallback }
@@ -1558,7 +1530,7 @@ describe('block selection document transforms', () => {
 
     editor.update((tx) => {
       tx.nodes.insert(
-        { id: 'block3', children: [{ text: 'Three' }], type: 'p' },
+        { id: 'block3', children: [{ text: 'Three' }], type: 'paragraph' },
         { at: [1] }
       );
       tx.blockSelection.setNodes({ align: 'center' } as any);
@@ -1600,22 +1572,22 @@ describe('block selection document transforms', () => {
 
 describe('duplicateBlockSelectionNodes', () => {
   it('duplicates selected blocks through the editor update transaction', () => {
-    const editor: BaseEditor<Value, BlockSelectionDefinition> =
-      createBaseEditor({
-        plugins: [BlockSelectionPlugin],
-        initialValue: [
-          {
-            id: 'block1',
-            children: [{ text: 'One' }],
-            type: 'p',
-          },
-          {
-            id: 'block2',
-            children: [{ text: 'Two' }],
-            type: 'p',
-          },
-        ],
-      });
+    const editor = createBaseEditor({
+      editor: createPliteEditor<Value>(),
+      plugins: [BlockSelectionPlugin],
+      initialValue: [
+        {
+          id: 'block1',
+          children: [{ text: 'One' }],
+          type: 'paragraph',
+        },
+        {
+          id: 'block2',
+          children: [{ text: 'Two' }],
+          type: 'paragraph',
+        },
+      ],
+    });
 
     editor
       .plugin(BlockSelectionPlugin)
@@ -1632,17 +1604,17 @@ describe('duplicateBlockSelectionNodes', () => {
       {
         id: 'block1',
         children: [{ text: 'One' }],
-        type: 'p',
+        type: 'paragraph',
       },
       {
         id: 'block1',
         children: [{ text: 'One' }],
-        type: 'p',
+        type: 'paragraph',
       },
       {
         id: 'block2',
         children: [{ text: 'Two' }],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
     expect(
@@ -1651,17 +1623,17 @@ describe('duplicateBlockSelectionNodes', () => {
   });
 
   it('does not schedule plugin state after a rolled-back duplicate', async () => {
-    const editor: BaseEditor<Value, BlockSelectionDefinition> =
-      createBaseEditor({
-        plugins: [BlockSelectionPlugin],
-        initialValue: [
-          {
-            id: 'block1',
-            children: [{ text: 'One' }],
-            type: 'p',
-          },
-        ],
-      });
+    const editor = createBaseEditor({
+      editor: createPliteEditor<Value>(),
+      plugins: [BlockSelectionPlugin],
+      initialValue: [
+        {
+          id: 'block1',
+          children: [{ text: 'One' }],
+          type: 'paragraph',
+        },
+      ],
+    });
 
     editor
       .plugin(BlockSelectionPlugin)
@@ -1687,22 +1659,22 @@ describe('duplicateBlockSelectionNodes', () => {
 
 describe('selectBlockSelectionNodes', () => {
   it('sets the editor selection through the editor update transaction', () => {
-    const editor: BaseEditor<Value, BlockSelectionDefinition> =
-      createBaseEditor({
-        plugins: [BlockSelectionPlugin],
-        initialValue: [
-          {
-            id: 'block1',
-            children: [{ text: 'One' }],
-            type: 'p',
-          },
-          {
-            id: 'block2',
-            children: [{ text: 'Two' }],
-            type: 'p',
-          },
-        ],
-      });
+    const editor = createBaseEditor({
+      editor: createPliteEditor<Value>(),
+      plugins: [BlockSelectionPlugin],
+      initialValue: [
+        {
+          id: 'block1',
+          children: [{ text: 'One' }],
+          type: 'paragraph',
+        },
+        {
+          id: 'block2',
+          children: [{ text: 'Two' }],
+          type: 'paragraph',
+        },
+      ],
+    });
 
     editor
       .plugin(BlockSelectionPlugin)
@@ -1723,22 +1695,22 @@ describe('selectBlockSelectionNodes', () => {
   });
 
   it('sets a range across all selected blocks', () => {
-    const editor: BaseEditor<Value, BlockSelectionDefinition> =
-      createBaseEditor({
-        plugins: [BlockSelectionPlugin],
-        initialValue: [
-          {
-            id: 'block1',
-            children: [{ text: 'One' }],
-            type: 'p',
-          },
-          {
-            id: 'block2',
-            children: [{ text: 'Two' }],
-            type: 'p',
-          },
-        ],
-      });
+    const editor = createBaseEditor({
+      editor: createPliteEditor<Value>(),
+      plugins: [BlockSelectionPlugin],
+      initialValue: [
+        {
+          id: 'block1',
+          children: [{ text: 'One' }],
+          type: 'paragraph',
+        },
+        {
+          id: 'block2',
+          children: [{ text: 'Two' }],
+          type: 'paragraph',
+        },
+      ],
+    });
 
     editor
       .plugin(BlockSelectionPlugin)
@@ -1759,17 +1731,17 @@ describe('selectBlockSelectionNodes', () => {
   });
 
   it('does not mutate plugin state when no model range is found', () => {
-    const editor: BaseEditor<Value, BlockSelectionDefinition> =
-      createBaseEditor({
-        plugins: [BlockSelectionPlugin],
-        initialValue: [
-          {
-            id: 'block1',
-            children: [{ text: 'One' }],
-            type: 'p',
-          },
-        ],
-      });
+    const editor = createBaseEditor({
+      editor: createPliteEditor<Value>(),
+      plugins: [BlockSelectionPlugin],
+      initialValue: [
+        {
+          id: 'block1',
+          children: [{ text: 'One' }],
+          type: 'paragraph',
+        },
+      ],
+    });
 
     editor
       .plugin(BlockSelectionPlugin)
@@ -1790,17 +1762,17 @@ describe('selectBlockSelectionNodes', () => {
   });
 
   it('keeps plugin selection intact when publication rolls back', () => {
-    const editor: BaseEditor<Value, BlockSelectionDefinition> =
-      createBaseEditor({
-        plugins: [BlockSelectionPlugin],
-        initialValue: [
-          {
-            id: 'block1',
-            children: [{ text: 'One' }],
-            type: 'p',
-          },
-        ],
-      });
+    const editor = createBaseEditor({
+      editor: createPliteEditor<Value>(),
+      plugins: [BlockSelectionPlugin],
+      initialValue: [
+        {
+          id: 'block1',
+          children: [{ text: 'One' }],
+          type: 'paragraph',
+        },
+      ],
+    });
 
     editor
       .plugin(BlockSelectionPlugin)
@@ -1822,17 +1794,17 @@ describe('selectBlockSelectionNodes', () => {
   });
 
   it('reads blocks inserted earlier in the same transaction', () => {
-    const editor: BaseEditor<Value, BlockSelectionDefinition> =
-      createBaseEditor({
-        plugins: [BlockSelectionPlugin],
-        initialValue: [
-          {
-            id: 'block1',
-            children: [{ text: 'One' }],
-            type: 'p',
-          },
-        ],
-      });
+    const editor = createBaseEditor({
+      editor: createPliteEditor<Value>(),
+      plugins: [BlockSelectionPlugin],
+      initialValue: [
+        {
+          id: 'block1',
+          children: [{ text: 'One' }],
+          type: 'paragraph',
+        },
+      ],
+    });
 
     editor
       .plugin(BlockSelectionPlugin)
@@ -1840,7 +1812,7 @@ describe('selectBlockSelectionNodes', () => {
 
     editor.update((tx) => {
       tx.nodes.insert(
-        { id: 'block2', children: [{ text: 'Two' }], type: 'p' },
+        { id: 'block2', children: [{ text: 'Two' }], type: 'paragraph' },
         { at: [1] }
       );
       tx.blockSelection.select();
@@ -1876,8 +1848,7 @@ const createDataTransfer = () => {
   return { data, values };
 };
 
-const CopyTableCellPlugin = createBasePlugin({
-  name: 'td',
+const CopyTableCellPlugin = defineBasePlugin('tableCell', {
   schema: ({ plugins }) => ({
     element: {
       content: plugins.blockContent(),
@@ -1886,29 +1857,27 @@ const CopyTableCellPlugin = createBasePlugin({
   }),
 });
 
-const CopyTableRowPlugin = createBasePlugin({
+const CopyTableRowPlugin = defineBasePlugin('tableRow', {
   dependencies: [CopyTableCellPlugin],
-  name: 'tr',
   schema: {
     element: {
-      content: schema.content.type('td', { min: 1 }),
+      content: schema.content.type('tableCell', { min: 1 }),
       blockContent: false,
     },
   },
 });
 
-const CopyTablePlugin = createBasePlugin({
+const CopyTablePlugin = defineBasePlugin('table', {
   dependencies: [CopyTableRowPlugin],
-  name: 'table',
   schema: {
     element: {
-      content: schema.content.type('tr', { min: 1 }),
+      content: schema.content.type('tableRow', { min: 1 }),
     },
   },
 });
 
 const createCopyEditor = (
-  entries: NodeEntry<TIdElement>[],
+  entries: NodeEntry<IdElement>[],
   documentEntries = entries
 ) => {
   const selection = {
@@ -1921,6 +1890,7 @@ const createCopyEditor = (
   );
 
   const editor = createPlateEditor({
+    editor: createPliteEditor<Value>(),
     plugins: [
       BaseParagraphPlugin,
       CopyTablePlugin,
@@ -1932,7 +1902,7 @@ const createCopyEditor = (
     initialValue:
       documentEntries.length > 0
         ? documentEntries.map(([node]) => node)
-        : [{ children: [{ text: '' }], type: 'p' }],
+        : [{ children: [{ text: '' }], type: 'paragraph' }],
   });
 
   EDITOR_TO_WINDOW.set(editor, window);
@@ -1964,7 +1934,7 @@ describe('api.copy', () => {
       'writeDOMRangeData'
     ).mockImplementation((editor, data, range) => {
       const entry = editor.read.nodes.get(range.anchor.path.slice(0, 1)) as
-        | NodeEntry<TIdElement>
+        | NodeEntry<IdElement>
         | undefined;
       const text = entry ? NodeApi.string(entry[0]) : '';
 
@@ -1985,10 +1955,20 @@ describe('api.copy', () => {
 
   it('writes one exact Plite slice while preserving model selection', () => {
     const entries = [
-      [{ id: 'block1', children: [{ text: 'First block' }], type: 'p' }, [0]],
-      [{ id: 'block2', children: [{ text: '' }], type: 'p' }, [1]],
-      [{ id: 'block3', children: [{ text: 'Last block' }], type: 'p' }, [2]],
-    ] satisfies NodeEntry<TIdElement>[];
+      [
+        {
+          id: 'block1',
+          children: [{ text: 'First block' }],
+          type: 'paragraph',
+        },
+        [0],
+      ],
+      [{ id: 'block2', children: [{ text: '' }], type: 'paragraph' }, [1]],
+      [
+        { id: 'block3', children: [{ text: 'Last block' }], type: 'paragraph' },
+        [2],
+      ],
+    ] satisfies NodeEntry<IdElement>[];
     const editor = createCopyEditor(entries);
     const { data, values } = createDataTransfer();
     const selection = editor.read.selection();
@@ -2020,9 +2000,23 @@ describe('api.copy', () => {
 
   it('writes directly to provided clipboard data without synthetic copy', () => {
     const entries = [
-      [{ id: 'block1', children: [{ text: 'First block' }], type: 'p' }, [0]],
-      [{ id: 'block2', children: [{ text: 'Second block' }], type: 'p' }, [1]],
-    ] satisfies NodeEntry<TIdElement>[];
+      [
+        {
+          id: 'block1',
+          children: [{ text: 'First block' }],
+          type: 'paragraph',
+        },
+        [0],
+      ],
+      [
+        {
+          id: 'block2',
+          children: [{ text: 'Second block' }],
+          type: 'paragraph',
+        },
+        [1],
+      ],
+    ] satisfies NodeEntry<IdElement>[];
     const editor = createCopyEditor(entries);
     const { data, values } = createDataTransfer();
 
@@ -2036,24 +2030,24 @@ describe('api.copy', () => {
     const firstRow = {
       children: [
         {
-          children: [{ children: [{ text: 'one' }], type: 'p' }],
+          children: [{ children: [{ text: 'one' }], type: 'paragraph' }],
           id: 'cell1',
-          type: 'td',
+          type: 'tableCell',
         },
       ],
       id: 'row1',
-      type: 'tr',
+      type: 'tableRow',
     };
     const secondRow = {
       children: [
         {
-          children: [{ children: [{ text: 'two' }], type: 'p' }],
+          children: [{ children: [{ text: 'two' }], type: 'paragraph' }],
           id: 'cell2',
-          type: 'td',
+          type: 'tableCell',
         },
       ],
       id: 'row2',
-      type: 'tr',
+      type: 'tableRow',
     };
     const selectedTable = {
       children: [firstRow],
@@ -2100,16 +2094,18 @@ describe('selection block utils', () => {
 
   describe('update.selectInserted', () => {
     it('selects blocks introduced by the last canonical change', () => {
-      const editor: BaseEditor<Value, BlockSelectionDefinition> =
-        createBaseEditor({
-          plugins: [BlockSelectionPlugin],
-          initialValue: [{ children: [{ text: 'one' }], id: 'p1', type: 'p' }],
-        });
+      const editor = createBaseEditor({
+        editor: createPliteEditor<Value>(),
+        plugins: [BlockSelectionPlugin],
+        initialValue: [
+          { children: [{ text: 'one' }], id: 'p1', type: 'paragraph' },
+        ],
+      });
 
       editor.update.nodes.insert(
         [
-          { children: [{ text: 'a' }], id: 'a', type: 'p' },
-          { children: [{ text: 'b' }], id: 'b', type: 'p' },
+          { children: [{ text: 'a' }], id: 'a', type: 'paragraph' },
+          { children: [{ text: 'b' }], id: 'b', type: 'paragraph' },
         ],
         { at: [1] }
       );
@@ -2122,11 +2118,13 @@ describe('selection block utils', () => {
     });
 
     it('does not select existing blocks changed by the last commit', () => {
-      const editor: BaseEditor<Value, BlockSelectionDefinition> =
-        createBaseEditor({
-          plugins: [BlockSelectionPlugin, TestElementPropertiesPlugin],
-          initialValue: [{ children: [{ text: 'one' }], id: 'p1', type: 'p' }],
-        });
+      const editor = createBaseEditor({
+        editor: createPliteEditor<Value>(),
+        plugins: [BlockSelectionPlugin, TestElementPropertiesPlugin],
+        initialValue: [
+          { children: [{ text: 'one' }], id: 'p1', type: 'paragraph' },
+        ],
+      });
 
       editor.update.nodes.set({ variant: 'lead' }, { at: [0] });
 
@@ -2140,11 +2138,13 @@ describe('selection block utils', () => {
 
   describe('update.paste', () => {
     it('inserts a spacer block after the last non-empty selected block and pastes clipboard data', () => {
-      const editor: BaseEditor<Value, BlockSelectionDefinition> =
-        createBaseEditor({
-          plugins: [BlockSelectionPlugin],
-          initialValue: [{ children: [{ text: 'one' }], id: 'p1', type: 'p' }],
-        });
+      const editor = createBaseEditor({
+        editor: createPliteEditor<Value>(),
+        plugins: [BlockSelectionPlugin],
+        initialValue: [
+          { children: [{ text: 'one' }], id: 'p1', type: 'paragraph' },
+        ],
+      });
       const initialValue = editor.read.children();
       let commits = 0;
       const unsubscribe = editor.subscribeCommit(() => commits++);
@@ -2162,7 +2162,7 @@ describe('selection block utils', () => {
 
       expect(editor.read.children()[1]).toEqual({
         children: [{ text: 'pasted' }],
-        type: 'p',
+        type: 'paragraph',
       });
       expect(commits).toBe(1);
       expect(editor.read.history.undos()).toHaveLength(1);
@@ -2174,7 +2174,7 @@ describe('selection block utils', () => {
     });
 
     it('rolls back the spacer and block-selection side effect when clipboard insertion throws', () => {
-      const throwingClipboardPlugin = createBasePlugin({
+      const throwingClipboardPlugin = defineBasePlugin('throwingClipboard', {
         contributions: [
           PliteDOM.clipboardHandler({
             insertData() {
@@ -2182,13 +2182,14 @@ describe('selection block utils', () => {
             },
           }),
         ],
-        name: 'throwing-clipboard',
       });
-      const editor: BaseEditor<Value, BlockSelectionDefinition> =
-        createBaseEditor({
-          plugins: [BlockSelectionPlugin, throwingClipboardPlugin],
-          initialValue: [{ children: [{ text: 'one' }], id: 'p1', type: 'p' }],
-        });
+      const editor = createBaseEditor({
+        editor: createPliteEditor<Value>(),
+        plugins: [BlockSelectionPlugin, throwingClipboardPlugin],
+        initialValue: [
+          { children: [{ text: 'one' }], id: 'p1', type: 'paragraph' },
+        ],
+      });
       const initialValue = editor.read.children();
       const selectedIds = new Set(['p1']);
       let commits = 0;
@@ -2217,26 +2218,30 @@ describe('selection block utils', () => {
 
 describe('isSelecting', () => {
   it('returns true when the editor selection is expanded', () => {
-    const editor: BaseEditor<Value, BlockSelectionDefinition> =
-      createBaseEditor({
-        plugins: [BlockSelectionPlugin],
-        selection: {
-          kind: 'text',
-          anchor: { offset: 0, path: [0, 0] },
-          focus: { offset: 1, path: [0, 0] },
-        },
-        initialValue: [{ children: [{ text: 'a' }], id: 'block1', type: 'p' }],
-      });
+    const editor = createBaseEditor({
+      editor: createPliteEditor<Value>(),
+      plugins: [BlockSelectionPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 1, path: [0, 0] },
+      },
+      initialValue: [
+        { children: [{ text: 'a' }], id: 'block1', type: 'paragraph' },
+      ],
+    });
 
     expect(editor.plugin(BlockSelectionPlugin).read.isSelecting()).toBe(true);
   });
 
   it('returns true when block selection says some blocks are being selected', () => {
-    const editor: BaseEditor<Value, BlockSelectionDefinition> =
-      createBaseEditor({
-        plugins: [BlockSelectionPlugin],
-        initialValue: [{ children: [{ text: 'a' }], id: 'block1', type: 'p' }],
-      });
+    const editor = createBaseEditor({
+      editor: createPliteEditor<Value>(),
+      plugins: [BlockSelectionPlugin],
+      initialValue: [
+        { children: [{ text: 'a' }], id: 'block1', type: 'paragraph' },
+      ],
+    });
 
     editor
       .plugin(BlockSelectionPlugin)
@@ -2246,11 +2251,13 @@ describe('isSelecting', () => {
   });
 
   it('returns false when neither selection state is active', () => {
-    const editor: BaseEditor<Value, BlockSelectionDefinition> =
-      createBaseEditor({
-        plugins: [BlockSelectionPlugin],
-        initialValue: [{ children: [{ text: 'a' }], id: 'block1', type: 'p' }],
-      });
+    const editor = createBaseEditor({
+      editor: createPliteEditor<Value>(),
+      plugins: [BlockSelectionPlugin],
+      initialValue: [
+        { children: [{ text: 'a' }], id: 'block1', type: 'paragraph' },
+      ],
+    });
 
     expect(editor.plugin(BlockSelectionPlugin).read.isSelecting()).toBe(false);
   });

@@ -1,4 +1,7 @@
-import type { BaseEditor } from '../../lib/editor';
+import type {
+  BaseEditor,
+  InternalBaseEditorWithInstalledPlugins,
+} from '../../lib/editor';
 import {
   DocumentChange,
   ElementApi,
@@ -95,8 +98,8 @@ export const transformInitialValue = (
   editor.runtime.isNormalizing = true;
   try {
     getPlateRuntime(editor).pluginCache.transformInitialValue.forEach(
-      (pluginName) => {
-        const plugin = getCompiledPlatePlugin(editor, pluginName)!;
+      (name) => {
+        const plugin = getCompiledPlatePlugin(editor, name)!;
 
         if (
           isEditOnly(
@@ -126,7 +129,7 @@ export const transformInitialValue = (
           !Array.isArray(nextValue.children)
         ) {
           throw new Error(
-            `Plugin "${pluginName}" transformInitialValue must return an editor document with primary-root children.`
+            `Plugin "${name}" transformInitialValue must return an editor document with primary-root children.`
           );
         }
 
@@ -172,7 +175,7 @@ export const pipeTransformInitialValue = <
   V extends Value,
   P extends AnyBasePluginDefinition,
 >(
-  editor: BaseEditor<V, P>
+  editor: InternalBaseEditorWithInstalledPlugins<V, P>
 ) => {
   runTrustedUpdate(editor as unknown as PliteEditor<V>, (tx) => {
     tx.value.replace({

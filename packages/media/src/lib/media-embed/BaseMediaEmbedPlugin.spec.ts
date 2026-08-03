@@ -1,22 +1,25 @@
 import assert from 'node:assert/strict';
 
 import { createBaseEditor } from '@platejs/core';
-import { ElementApi, SelectionApi, createEditor } from '@platejs/plite';
-import { KEYS, NODES, type TMediaEmbedElement } from '@platejs/utils';
+import { NodeApi, SelectionApi, createEditor } from '@platejs/plite';
+import { PLUGINS } from '@platejs/utils';
 
 import { parseMediaUrl, parseVideoUrl } from '../media/parseMediaUrl';
-import { BaseMediaEmbedPlugin } from './BaseMediaEmbedPlugin';
+import {
+  BaseMediaEmbedPlugin,
+  type MediaEmbedElement,
+} from './BaseMediaEmbedPlugin';
 
 describe('BaseMediaEmbedPlugin', () => {
   it('configures media embeds as direct caption owners with iframe parsing', () => {
     const editor = createBaseEditor({
       plugins: [BaseMediaEmbedPlugin],
     });
-    const plugin = editor.plugin(BaseMediaEmbedPlugin).plugin;
+    const plugin = editor.plugin(BaseMediaEmbedPlugin);
     const transformUrl = plugin.initialState.transformUrl!;
 
     expect(plugin.name).toBe('mediaEmbed');
-    expect(plugin.type).toBe(NODES.mediaEmbed);
+    expect(plugin.name).toBe(PLUGINS.mediaEmbed);
     expect(
       editor.read.schema.element(BaseMediaEmbedPlugin)?.behavior.void
     ).toBe(false);
@@ -45,7 +48,7 @@ describe('BaseMediaEmbedPlugin', () => {
     ).toEqual([
       {
         children: [{ text: '' }],
-        type: NODES.mediaEmbed,
+        type: 'mediaEmbed',
         url: 'https://example.com/embed',
       },
     ]);
@@ -67,7 +70,7 @@ describe('BaseMediaEmbedPlugin', () => {
       initialValue: [
         {
           children: [{ text: 'Embed caption' }],
-          type: NODES.mediaEmbed,
+          type: 'mediaEmbed',
           url: 'https://example.com/embed',
           width: 640,
         },
@@ -105,7 +108,7 @@ describe('BaseMediaEmbedPlugin', () => {
     ).toEqual([
       {
         children: [{ text: 'Embed caption' }],
-        type: NODES.mediaEmbed,
+        type: 'mediaEmbed',
         url: 'https://example.com/embed',
         width: '640px',
       },
@@ -118,7 +121,7 @@ describe('BaseMediaEmbedPlugin', () => {
     ).toEqual([
       {
         children: [{ text: 'Embed caption' }],
-        type: NODES.mediaEmbed,
+        type: 'mediaEmbed',
         url: 'https://example.com/embed',
         width: '640px',
       },
@@ -134,7 +137,7 @@ describe('BaseMediaEmbedPlugin', () => {
     ).toEqual([
       {
         children: [{ text: 'Embed caption' }],
-        type: NODES.mediaEmbed,
+        type: 'mediaEmbed',
         url: 'https://example.com/embed',
       },
     ]);
@@ -146,7 +149,9 @@ describe('BaseMediaEmbedPlugin', () => {
             'data-plate-media-url="javascript:alert(1)">' +
             '<figcaption>Embed caption</figcaption></figure>',
         })
-        ?.some((node) => node.type === NODES.mediaEmbed) ?? false
+        ?.some(
+          (node) => NodeApi.isElement(node) && node.type === 'mediaEmbed'
+        ) ?? false
     ).toBe(false);
 
     const reports: unknown[] = [];
@@ -159,7 +164,7 @@ describe('BaseMediaEmbedPlugin', () => {
       initialValue: [
         {
           children: [{ text: '' }],
-          type: NODES.mediaEmbed,
+          type: 'mediaEmbed',
           url: 'javascript:alert(1)',
         },
       ],
@@ -188,7 +193,7 @@ describe('BaseMediaEmbedPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
 
     editor.plugin(BaseMediaEmbedPlugin).update.insert({
@@ -199,22 +204,22 @@ describe('BaseMediaEmbedPlugin', () => {
 
     if (
       !media ||
-      !ElementApi.isElement(media) ||
-      typeof media.url !== 'string'
+      media.type !== editor.plugin(BaseMediaEmbedPlugin).schema.element.type
     ) {
       throw new Error('Expected the inserted media embed element.');
     }
+    const mediaElement = media as MediaEmbedElement;
 
-    expect(media).toMatchObject({
+    expect(mediaElement).toMatchObject({
       provider: 'youtube',
       sourceUrl: 'https://www.youtube.com/watch?v=M7lc1UVf-VE',
-      type: NODES.mediaEmbed,
+      type: 'mediaEmbed',
       url: 'https://www.youtube.com/embed/M7lc1UVf-VE',
     });
-    expect(media).not.toHaveProperty('id');
-    expect(parseMediaUrl(media.url, { urlParsers: [parseVideoUrl] })?.id).toBe(
-      'M7lc1UVf-VE'
-    );
+    expect(mediaElement).not.toHaveProperty('id');
+    expect(
+      parseMediaUrl(mediaElement.url, { urlParsers: [parseVideoUrl] })?.id
+    ).toBe('M7lc1UVf-VE');
   });
 
   it('applies the configured URL transform before normalization', () => {
@@ -225,7 +230,7 @@ describe('BaseMediaEmbedPlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
 
     editor.plugin(BaseMediaEmbedPlugin).update.insert({
@@ -235,7 +240,7 @@ describe('BaseMediaEmbedPlugin', () => {
     expect(editor.read.children()[1]).toMatchObject({
       provider: 'youtube',
       sourceUrl: 'https://www.youtube.com/watch?v=M7lc1UVf-VE',
-      type: NODES.mediaEmbed,
+      type: 'mediaEmbed',
       url: 'https://www.youtube.com/embed/M7lc1UVf-VE',
     });
   });
@@ -246,12 +251,12 @@ describe('BaseMediaEmbedPlugin', () => {
       initialValue: [
         {
           children: [{ text: '' }],
-          type: NODES.mediaEmbed,
+          type: 'mediaEmbed',
           url: 'https://example.com/old',
         },
       ],
     });
-    const element = editor.read.nodes.get<TMediaEmbedElement>([0])?.[0];
+    const element = editor.read.nodes.get<MediaEmbedElement>([0])?.[0];
 
     assert(element);
     expect(
@@ -273,12 +278,12 @@ describe('BaseMediaEmbedPlugin', () => {
       initialValue: [
         {
           children: [{ text: '' }],
-          type: NODES.mediaEmbed,
+          type: 'mediaEmbed',
           url: 'https://example.com/old',
         },
       ],
     });
-    const element = editor.read.nodes.get<TMediaEmbedElement>([0])?.[0];
+    const element = editor.read.nodes.get<MediaEmbedElement>([0])?.[0];
 
     assert(element);
     expect(
@@ -302,12 +307,12 @@ describe('BaseMediaEmbedPlugin', () => {
           children: [{ text: '' }],
           provider: 'youtube',
           sourceUrl: 'https://www.youtube.com/watch?v=M7lc1UVf-VE',
-          type: NODES.mediaEmbed,
+          type: 'mediaEmbed',
           url: 'https://www.youtube.com/embed/M7lc1UVf-VE',
         },
       ],
     });
-    const element = editor.read.nodes.get<TMediaEmbedElement>([0])?.[0];
+    const element = editor.read.nodes.get<MediaEmbedElement>([0])?.[0];
 
     assert(element);
     expect(
@@ -317,7 +322,7 @@ describe('BaseMediaEmbedPlugin', () => {
       })
     ).toBe(true);
     expect(editor.read.children()[0]).toMatchObject({
-      type: NODES.mediaEmbed,
+      type: 'mediaEmbed',
       url: 'https://example.com/current',
     });
     expect(editor.read.children()[0]).not.toHaveProperty('provider');
@@ -330,12 +335,12 @@ describe('BaseMediaEmbedPlugin', () => {
       initialValue: [
         {
           children: [{ text: '' }],
-          type: NODES.mediaEmbed,
+          type: 'mediaEmbed',
           url: 'https://example.com/old',
         },
       ],
     });
-    const element = editor.read.nodes.get<TMediaEmbedElement>([0])?.[0];
+    const element = editor.read.nodes.get<MediaEmbedElement>([0])?.[0];
 
     assert(element);
     expect(
@@ -352,7 +357,7 @@ describe('BaseMediaEmbedPlugin', () => {
   it('does nothing without a selection or explicit target', () => {
     const editor = createBaseEditor({
       plugins: [BaseMediaEmbedPlugin],
-      initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
 
     editor
@@ -365,7 +370,7 @@ describe('BaseMediaEmbedPlugin', () => {
   it('inserts at an exact explicit target without a selection', () => {
     const editor = createBaseEditor({
       plugins: [BaseMediaEmbedPlugin],
-      initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
 
     editor
@@ -373,10 +378,12 @@ describe('BaseMediaEmbedPlugin', () => {
       .update.insert({ url: 'https://platejs.org/embed' }, { at: [0] });
 
     expect(editor.read.children()[0]).toMatchObject({
-      type: NODES.mediaEmbed,
+      type: 'mediaEmbed',
       url: 'https://platejs.org/embed',
     });
-    expect(editor.read.children()[1]).toMatchObject({ type: KEYS.p });
+    expect(editor.read.children()[1]).toMatchObject({
+      type: 'paragraph',
+    });
   });
 
   it('coexists with the global node-id schema without claiming provider IDs', () => {
@@ -385,11 +392,11 @@ describe('BaseMediaEmbedPlugin', () => {
         idCreator: () => 'document-node-id',
       },
       plugins: [BaseMediaEmbedPlugin],
-      initialValue: [
+      initialValue: ({ editor }) => [
         {
           children: [{ text: '' }],
           id: 'document-node-id',
-          type: NODES.mediaEmbed,
+          type: editor.plugin(BaseMediaEmbedPlugin).schema.element.type,
           url: 'https://www.youtube.com/embed/M7lc1UVf-VE',
         },
       ],
@@ -397,7 +404,7 @@ describe('BaseMediaEmbedPlugin', () => {
 
     expect(editor.read.children()[0]).toMatchObject({
       id: 'document-node-id',
-      type: NODES.mediaEmbed,
+      type: 'mediaEmbed',
     });
   });
 });

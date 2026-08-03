@@ -50,15 +50,17 @@ toc: true
 ### 挂载套件
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import {
+  PLUGINS,
+  createPlateEditor } from 'platejs/react';
 import { MarkdownKit } from '@/components/editor/plugins/markdown-kit';
 
 const editor = createPlateEditor({
   plugins: [
     // ...其它插件,
-    ...MarkdownKit,
+  ...MarkdownKit,
   ],
-});
+  });
 ```
 
 </Steps>
@@ -82,9 +84,9 @@ import { createPlateEditor } from 'platejs/react';
 const editor = createPlateEditor({
   plugins: [
     // ...其它插件,
-    MarkdownPlugin,
+  MarkdownPlugin,
   ],
-});
+  });
 ```
 
 ### 配置插件
@@ -99,7 +101,7 @@ import {
   MarkdownPlugin,
   remarkMention,
   remarkMdx,
-} from '@platejs/markdown';
+  } from '@platejs/markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
@@ -109,11 +111,14 @@ const editor = createPlateEditor({
     MarkdownPlugin.configure({
       initialState: {
         // 通过 remarkPlugins 添加语法扩展（如 GFM、数学、MDX）
-        remarkPlugins: [remarkMath, remarkGfm, remarkMdx, remarkMention],
-      },
-    }),
+        remarkPlugins: [remarkMath,
+  remarkGfm,
+  remarkMdx,
+  remarkMention],
+  },
+  }),
   ],
-});
+  });
 ```
 
 <Callout type="info">
@@ -177,14 +182,16 @@ console.info(markdownOutput);
 
 ```tsx
 const specificNodes = [
-  { type: 'p', children: [{ text: '仅序列化这一段。' }] },
-  { type: 'h1', children: [{ text: '以及这个标题。' }] },
-];
+  { type: 'paragraph',
+  children: [{ text: '仅序列化这一段。' }] },
+  { type: 'h1',
+  children: [{ text: '以及这个标题。' }] },
+  ];
 
 // 假设 editor 是你的 Plate 实例
 const partialMarkdownOutput = editor.api.markdown.serialize({
   value: { children: specificNodes },
-});
+  });
 console.info(partialMarkdownOutput);
 ```
 
@@ -201,12 +208,14 @@ Markdown 图片的 alt 文本映射到图片的一个段落 child。富 MDX 媒�
 
 ```ts
 {
-  type: 'p',
+  type: 'paragraph',
   children: [
     { text: 'Today is ' },
-    { type: 'date', date: '2025-03-31', children: [{ text: '' }] } // 叶节点需有 text
+  { type: 'date',
+  date: '2025-03-31',
+  children: [{ text: '' }] } // 叶节点需有 text
   ],
-}
+  }
 ```
 
 **功能插件 codec：**
@@ -217,44 +226,48 @@ Markdown 运行时即可声明 codec。
 对象中声明两个格式键。每种格式都会保留基于 schema 的类型推断。
 
 ```tsx title="lib/plate-editor.ts"
-import { createBasePlugin } from '@platejs/core';
+import { defineBasePlugin } from '@platejs/core';
 import { property } from '@platejs/plite';
 
-export const BaseDatePlugin = createBasePlugin({
+export const BaseDatePlugin = defineBasePlugin('date',
+  {
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       'text/html': {
         decode: ({ element }) => ({ date: element.dataset.date }),
-        encode: ({ node }) => ({
+  encode: ({ node }) => ({
           attributes: { 'data-date': node.date },
-          tag: 'span',
-        }),
-        match: [{ attributes: { 'data-date': true }, tag: 'span' }],
-      },
-      'text/markdown': {
-        decode: ({ node, parseAttributes, type }) => ({
+  tag: 'span',
+  }),
+  match: [{ attributes: { 'data-date': true },
+  tag: 'span' }],
+  },
+  'text/markdown': {
+        decode: ({ node,
+  name,
+  parseAttributes }) => ({
           children: [{ text: '' }],
-          date: String(parseAttributes(node.attributes).value ?? ''),
-          type,
-        }),
-        encode: ({ node, propsToAttributes }) => ({
+  date: String(parseAttributes(node.attributes).value ?? ''),
+  type,
+  }),
+  encode: ({ node,
+  propsToAttributes }) => ({
           attributes: propsToAttributes({ value: node.date }),
-          children: [],
-          name: 'date',
-          type: 'mdxJsxTextElement',
-        }),
-        from: 'date',
-        kind: 'node',
-      },
-    }),
+  children: [],
   name: 'date',
+  type: 'mdxJsxTextElement',
+  }),
+  from: 'date',
+  kind: 'node',
+  },
+  }),
   schema: {
     element: {
       properties: { date: property.string() },
-      void: 'inline',
-    },
+  void: 'inline',
   },
-});
+  },
+  });
 ```
 
 **转换流程说明：**
@@ -477,16 +490,17 @@ const editor = createPlateEditor({
   plugins: [
     // ...其他插件
     TablePlugin,
-    TodoListPlugin, // 或你当前使用的任务列表插件
+  TodoListPlugin,
+  // 或你当前使用的任务列表插件
     StrikethroughPlugin,
-    LinkPlugin,
-    MarkdownPlugin.configure({
+  LinkPlugin,
+  MarkdownPlugin.configure({
       initialState: {
         remarkPlugins: [remarkGfm],
-      },
-    }),
+  },
+  }),
   ],
-});
+  });
 ```
 
 **用法示例：**
@@ -521,13 +535,13 @@ const markdownOutput = editor.api.markdown.serialize();
 
 **背景说明：**
 
-- `@platejs/markdown` 会将 Markdown 的代码块（如 \`\`\`js ... \`\`\`）转换为 Plate 的 `code_block` 元素，子元素为 `code_line`。
+- `@platejs/markdown` 会将 Markdown 的代码块（如 \`\`\`js ... \`\`\`）转换为 Plate 的 `codeBlock` 元素，子元素为 `codeLine`。
 - Plate 的 `CodeBlockElement`（通常来自 `@platejs/code-block/react`）负责渲染这一结构。
 - 语法高亮由 `CodeHighlightPlugin` 和 `lowlight` 提供。详见 [代码块插件文档](/docs/plugins/code-block)。
 
 **方式一：自定义渲染组件（推荐 UI 层改动时使用）**
 
-自定义 `code_block` 插件的渲染组件即可更改代码块的外观。
+自定义 `codeBlock` 插件的渲染组件即可更改代码块的外观。
 
 ```tsx title="components/my-editor.tsx"
 import { createPlateEditor } from 'platejs/react';
@@ -535,19 +549,21 @@ import {
   CodeBlockPlugin,
   CodeHighlightPlugin,
   CodeLinePlugin,
-} from '@platejs/code-block/react';
+  } from '@platejs/code-block/react';
 import { MarkdownPlugin } from '@platejs/markdown';
 import { MyCustomCodeBlockElement } from './my-custom-code-block'; // 你的自定义组件
 
 const editor = createPlateEditor({
   plugins: [
-    CodeBlockPlugin.configure({ component: MyCustomCodeBlockElement }), // 基础插件 + 自定义渲染
+    CodeBlockPlugin.configure({ component: MyCustomCodeBlockElement }),
+  // 基础插件 + 自定义渲染
     CodeLinePlugin.configure({ component: MyCustomCodeLineElement }),
-    CodeHighlightPlugin.configure({ component: MyCustomCodeSyntaxElement }),
-    MarkdownPlugin, // 用于 Markdown 转换
+  CodeHighlightPlugin.configure({ component: MyCustomCodeSyntaxElement }),
+  MarkdownPlugin,
+  // 用于 Markdown 转换
     // ... 其他插件
   ],
-});
+  });
 
 // MyCustomCodeBlockElement.tsx 内实现自定义渲染（如用 react-syntax-highlighter），并消费 PlateElement 的 props。
 ```
@@ -560,16 +576,15 @@ const editor = createPlateEditor({
 代码块行为应由代码块功能插件的 `text/markdown` codec 持有。
 
 ```tsx title="lib/plate-editor.ts"
-import { NODES } from 'platejs';
 
 const value = editor.api.markdown.deserialize(markdown, {
   rules: {
-    [NODES.codeBlock]: {
+    ['codeBlock']: {
       deserialize: (mdastNode) => ({
         children: [{ text: '' }],
         lang: mdastNode.lang ?? undefined,
         rawCode: mdastNode.value || '',
-        type: NODES.codeBlock,
+        type: 'codeBlock',
       }),
     },
   },
@@ -578,7 +593,7 @@ const value = editor.api.markdown.deserialize(markdown, {
 const output = editor.api.markdown.serialize({
   value,
   rules: {
-    [NODES.codeBlock]: {
+    ['codeBlock']: {
       serialize: (node) => ({
         lang: node.lang,
         type: 'code',
@@ -632,7 +647,7 @@ $$
 
 // 假设 `editor` 为已配置 Plate 编辑器实例
 const document = editor.api.markdown.deserialize(markdown);
-// document.children 包含 'inline_equation' 及 'equation' 节点
+// document.children 包含 'inlineEquation' 及 'equation' 节点
 
 const markdownOutput = editor.api.markdown.serialize({ value: document });
 // 输出 Markdown 字符串包含 $...$ 和 $$...$$ 语法
@@ -730,7 +745,7 @@ const markdown = `
 
 // 假设 `editor` 为已配置好的 Plate 编辑器
 const slateValue = editor.api.markdown.deserialize(markdown);
-// 生成包含嵌套 column 元素的 column_group 节点
+// 生成包含嵌套 column 元素的 columnGroup 节点
 
 const markdownOutput = editor.api.markdown.serialize({ value: slateValue });
 // 输出的 Markdown 保持列结构和宽度属性
@@ -842,7 +857,7 @@ Options 示例使用 `import { MarkdownPlugin } from '@platejs/markdown'`。
 | `remarkPlugins`                 | `MarkdownPlugin.configure({ initialState: { remarkPlugins: [...] } })`                                                | 在 mdast 层操作                                                      |
 | `rehypePlugins`                 | 不属于 `MarkdownPlugin` 转换管线                                                                     | 将 Markdown 或 Plate 节点交给 Plate 前，单独运行 HTML 管线            |
 | `components={{ h1: MyH1 }}`     | `createPlateEditor({ components: { h1: MyH1 } })`                                                    | 设置已安装 `H1Plugin` 键对应的渲染组件                               |
-| `components={{ code: MyCode }}` | 功能插件的 `text/markdown` codec 加 `components: { [KEYS.codeBlock]: MyCode }` | codec 负责 mdast ↔ Plate；component 负责渲染 |
+| `components={{ code: MyCode }}` | 功能插件的 `text/markdown` codec 加 `components: { ['codeBlock']: MyCode }` | codec 负责 mdast ↔ Plate；component 负责渲染 |
 | `allowedElements`               | `MarkdownPlugin.configure({ initialState: { allowedNodes: [...] } })`                                                 | 转换时过滤 mdast/Plate 节点                                          |
 | `disallowedElements`            | `MarkdownPlugin.configure({ initialState: { disallowedNodes: [...] } })`                                              | 转换时过滤不支持节点                                                 |
 | `unwrapDisallowed`              | 无直接等价项，默认过滤节点                                      | 可通过单次 `rules` 覆盖实现展开逻辑                                 |
@@ -878,7 +893,7 @@ codec，让转换始终留在 Plate 支持的 Markdown 管线内。
 当一次 `deserialize` 或 `serialize` 操作需要不同结果时，才传入 `rules`。
 
 - **插件 decode：** `from` 指定 mdast 节点类型或 MDX 标签。`decode` 接收类型化
-  节点，以及 children、attributes、captions 和已解析插件 type 的 helper。
+  节点，以及 children、attributes、captions 和所属插件 name 的 helper。
 - **插件 encode：** `encode` 接收由 schema 推断出的 Plate 节点，以及保证
   phrasing、block 或 flow 内容合法的 helper。
 - **操作覆盖：** `rules` 在编码时使用 Plate 插件 name，在解码时使用已解析的
@@ -891,7 +906,7 @@ import { convertChildrenDeserialize } from '@platejs/markdown';
 
 editor.api.markdown.deserialize(markdown, {
   rules: {
-    a: {
+    link: {
       deserialize: (node, decoration, options) => ({
         children: convertChildrenDeserialize(
           node.children,
@@ -900,7 +915,7 @@ editor.api.markdown.deserialize(markdown, {
         ),
         customProp: 'this import only',
         title: node.title,
-        type: options.registry.getType('a'),
+        type: 'link',
         url: node.url,
       }),
     },
@@ -944,7 +959,7 @@ editor.api.markdown.deserialize(markdown, {
 | `<video src="..." />`                | `video`                   | 自定义视频元素                      |
 | `<toc />`                            | `toc`                     | 目录                                |
 | `<callout>...</callout>`             | `callout`                 | 提示块                              |
-| `<column_group>...</column_group>`   | `column_group`            | 多列布局容器                        |
+| `<column_group>...</column_group>`   | `columnGroup`             | 多列布局容器                        |
 | `<column width="50%">...</column>`   | `column`                  | 单列，可指定宽度属性                 |
 
 ## 附录C：渲染 Plate 节点的组件配置

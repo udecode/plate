@@ -40,3 +40,7 @@ shell components outside a `<Plite>` root.
   editor
 - Keep placeholder and drop-cursor presentation in applications while
   retaining structural DOM, geometry, and selection behavior in Plite React
+- Resolve physical left/right caret and word movement through the DOM
+  visual-point API, preserving affinity across mixed-direction text
+- Remove view-level `Editable` maximum-length configuration; set `maxLength`
+  when creating the editor

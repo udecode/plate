@@ -1,5 +1,8 @@
 import { NodeApi } from '../interfaces';
-import type { Editor, EditorFragmentReadOptions } from '../interfaces/editor';
+import type {
+  AnyEditor as Editor,
+  EditorFragmentReadOptions,
+} from '../interfaces/editor';
 import type { Descendant } from '../interfaces/node';
 import { getLiveSelection } from './public-state';
 

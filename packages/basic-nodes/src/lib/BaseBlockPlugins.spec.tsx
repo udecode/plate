@@ -9,7 +9,6 @@ import {
 import { BaseParagraphPlugin, createBaseEditor } from '@platejs/core';
 import { SelectionApi } from '@platejs/plite';
 import { jsxt } from '@platejs/test-utils';
-import { KEYS } from '@platejs/utils';
 
 jsxt;
 
@@ -21,8 +20,8 @@ describe('BaseBlockquotePlugin', () => {
       selection: SelectionApi.node([0], { anchor: point, focus: point }),
       initialValue: [
         {
-          children: [{ children: [{ text: 'Quote' }], type: KEYS.p }],
-          type: KEYS.blockquote,
+          children: [{ children: [{ text: 'Quote' }], type: 'paragraph' }],
+          type: 'blockquote',
         },
       ],
     });
@@ -34,8 +33,8 @@ describe('BaseBlockquotePlugin', () => {
       })
     ).toEqual([
       {
-        children: [{ children: [{ text: 'Quote' }], type: KEYS.p }],
-        type: KEYS.blockquote,
+        children: [{ children: [{ text: 'Quote' }], type: 'paragraph' }],
+        type: 'blockquote',
       },
     ]);
 
@@ -57,26 +56,32 @@ describe('BaseBlockquotePlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 5, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: 'Quote' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'Quote' }], type: 'paragraph' }],
     });
     const before = { children: editor.read.children() };
 
     expect(
-      editor.read.schema.isElementTypeInGroup(KEYS.blockquote, 'block')
+      editor.read.schema.isElementTypeInGroup(
+        editor.plugin(BaseBlockquotePlugin).schema.element.type,
+        'block'
+      )
     ).toBe(true);
-    expect(editor.read.schema.allowsElementType(KEYS.blockquote, KEYS.p)).toBe(
-      true
-    );
+    expect(
+      editor.read.schema.allowsElementType(
+        editor.plugin(BaseBlockquotePlugin).schema.element.type,
+        editor.plugin(BaseParagraphPlugin).schema.element.type
+      )
+    ).toBe(true);
     expect(editor.read.schema.create(BaseBlockquotePlugin)).toEqual({
-      children: [{ children: [{ text: '' }], type: KEYS.p }],
-      type: KEYS.blockquote,
+      children: [{ children: [{ text: '' }], type: 'paragraph' }],
+      type: 'blockquote',
     });
 
     editor.update.blockquote.toggle();
 
     expect(editor.read.children()).toMatchObject([
       {
-        children: [{ children: [{ text: 'Quote' }], type: KEYS.p }],
+        children: [{ children: [{ text: 'Quote' }], type: 'paragraph' }],
         type: 'blockquote',
       },
     ]);
@@ -100,8 +105,11 @@ describe('BaseBlockquotePlugin', () => {
       initialValue: [
         {
           children: [
-            { children: [{ text: 'Quote' }], type: KEYS.p },
-            { children: [{ text: 'Second paragraph' }], type: KEYS.p },
+            { children: [{ text: 'Quote' }], type: 'paragraph' },
+            {
+              children: [{ text: 'Second paragraph' }],
+              type: 'paragraph',
+            },
           ],
           type: 'blockquote',
         },
@@ -113,8 +121,8 @@ describe('BaseBlockquotePlugin', () => {
     expect(editor.read.children()).toEqual([
       {
         children: [
-          { children: [{ text: 'Quote' }], type: KEYS.p },
-          { children: [{ text: 'Second paragraph' }], type: KEYS.p },
+          { children: [{ text: 'Quote' }], type: 'paragraph' },
+          { children: [{ text: 'Second paragraph' }], type: 'paragraph' },
         ],
         type: 'blockquote',
       },
@@ -139,11 +147,11 @@ describe('BaseBlockquotePlugin', () => {
           children: [
             {
               children: [{ text: 'One' }],
-              type: KEYS.p,
+              type: 'paragraph',
             },
             {
               children: [{ text: 'Two' }],
-              type: KEYS.p,
+              type: 'paragraph',
             },
           ],
           type: 'blockquote',
@@ -155,13 +163,13 @@ describe('BaseBlockquotePlugin', () => {
     expect(editor.read.children()).toMatchObject([
       {
         children: [{ text: 'One' }],
-        type: KEYS.p,
+        type: 'paragraph',
       },
       {
         children: [
           {
             children: [{ text: 'Two' }],
-            type: KEYS.p,
+            type: 'paragraph',
           },
         ],
         type: 'blockquote',
@@ -177,12 +185,12 @@ describe('BaseBlockquotePlugin', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 3, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: 'One' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: 'One' }], type: 'paragraph' }],
     });
 
     expect(editor.update.blockquote.untab()).toBe(false);
     expect(editor.read.children()).toEqual([
-      { children: [{ text: 'One' }], type: KEYS.p },
+      { children: [{ text: 'One' }], type: 'paragraph' },
     ]);
   });
 
@@ -199,7 +207,7 @@ describe('BaseBlockquotePlugin', () => {
           children: [
             {
               children: [{ text: '' }],
-              type: KEYS.p,
+              type: 'paragraph',
             },
           ],
           type: 'blockquote',
@@ -212,7 +220,7 @@ describe('BaseBlockquotePlugin', () => {
     expect(editor.read.children()).toMatchObject([
       {
         children: [{ text: '' }],
-        type: KEYS.p,
+        type: 'paragraph',
       },
     ]);
   });
@@ -230,7 +238,7 @@ describe('BaseBlockquotePlugin', () => {
           children: [
             {
               children: [{ text: '' }],
-              type: KEYS.p,
+              type: 'paragraph',
             },
           ],
           type: 'blockquote',
@@ -243,7 +251,7 @@ describe('BaseBlockquotePlugin', () => {
     expect(editor.read.children()).toMatchObject([
       {
         children: [{ text: '' }],
-        type: KEYS.p,
+        type: 'paragraph',
       },
     ]);
   });
@@ -258,7 +266,7 @@ describe('BaseHorizontalRulePlugin', () => {
       initialValue: [
         {
           children: [{ text: '' }],
-          type: KEYS.hr,
+          type: 'horizontalRule',
         },
       ],
     });
@@ -271,7 +279,7 @@ describe('BaseHorizontalRulePlugin', () => {
     ).toEqual([
       {
         children: [{ text: '' }],
-        type: KEYS.hr,
+        type: 'horizontalRule',
       },
     ]);
 
@@ -337,8 +345,8 @@ describe('basic block input rules', () => {
       },
       initialValue: [
         {
-          children: [{ children: [{ text: '>hello' }], type: KEYS.p }],
-          type: KEYS.blockquote,
+          children: [{ children: [{ text: '>hello' }], type: 'paragraph' }],
+          type: 'blockquote',
         },
       ],
     });
@@ -349,11 +357,11 @@ describe('basic block input rules', () => {
       {
         children: [
           {
-            children: [{ children: [{ text: 'hello' }], type: KEYS.p }],
-            type: KEYS.blockquote,
+            children: [{ children: [{ text: 'hello' }], type: 'paragraph' }],
+            type: 'blockquote',
           },
         ],
-        type: KEYS.blockquote,
+        type: 'blockquote',
       },
     ]);
     expect(editor.read.selection()).toEqual({
@@ -376,18 +384,18 @@ describe('basic block input rules', () => {
         anchor: { offset: 2, path: [0, 0] },
         focus: { offset: 2, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: '--' }], type: KEYS.p }],
+      initialValue: [{ children: [{ text: '--' }], type: 'paragraph' }],
     });
 
     editor.update.text.insert('-');
 
     expect(editor.read.children()).toMatchObject([
       {
-        type: KEYS.hr,
+        type: 'horizontalRule',
       },
       {
         children: [{ text: '' }],
-        type: KEYS.p,
+        type: 'paragraph',
       },
     ]);
   });

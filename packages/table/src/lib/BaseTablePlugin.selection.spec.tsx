@@ -1,11 +1,13 @@
 /** @jsx jsxt */
 
 import { BaseTablePlugin } from './BaseTablePlugin';
-import { getTestTablePlugins } from './__tests__/getTestTablePlugins';
-import { createPlateEditor } from '@platejs/core/react';
+import {
+  createTestTableEditor,
+  getTestTablePlugins,
+} from './__tests__/getTestTablePlugins';
 import { jsx, jsxt } from '@platejs/test-utils';
 import type { TestEditor } from '@platejs/test-utils';
-import type { TTableCellElement, TTableElement } from '@platejs/utils';
+import type { TableCellElement, TableElement } from './BaseTablePlugin';
 import assert from 'node:assert/strict';
 
 describe('table selection', () => {
@@ -53,7 +55,7 @@ describe('table selection', () => {
     ) as TestEditor;
 
     const createEditor = () =>
-      createPlateEditor({
+      createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins(),
         initialValue: value.children,
@@ -63,7 +65,7 @@ describe('table selection', () => {
       editor: ReturnType<typeof createEditor>,
       path: number[]
     ) => {
-      const entry = editor.read.nodes.get<TTableCellElement>(path);
+      const entry = editor.read.nodes.get<TableCellElement>(path);
       assert(entry);
 
       return entry[0];
@@ -154,7 +156,7 @@ describe('table selection', () => {
             </htable>
           </editor>
         ) as TestEditor;
-        const spanningEditor = createPlateEditor({
+        const spanningEditor = createTestTableEditor({
           nodeId: true,
           plugins: getTestTablePlugins(),
           initialValue: spanningInput.children,
@@ -206,7 +208,7 @@ describe('table selection', () => {
             </htable>
           </editor>
         ) as TestEditor;
-        const editor = createPlateEditor({
+        const editor = createTestTableEditor({
           nodeId: true,
           plugins: getTestTablePlugins(),
           selection: input.selection,
@@ -309,7 +311,7 @@ describe('table selection', () => {
     });
   }
   {
-    const editor = createPlateEditor({
+    const editor = createTestTableEditor({
       plugins: getTestTablePlugins(),
     });
 
@@ -320,22 +322,22 @@ describe('table selection', () => {
             children: [
               {
                 children: [
-                  { children: [{ text: '11' }], colSpan: 2, type: 'td' },
-                  { children: [{ text: '13' }], type: 'td' },
+                  { children: [{ text: '11' }], colSpan: 2, type: 'tableCell' },
+                  { children: [{ text: '13' }], type: 'tableCell' },
                 ],
-                type: 'tr',
+                type: 'tableRow',
               },
               {
                 children: [
-                  { children: [{ text: '21' }], type: 'td' },
-                  { children: [{ text: '22' }], type: 'td' },
-                  { children: [{ text: '23' }], type: 'td' },
+                  { children: [{ text: '21' }], type: 'tableCell' },
+                  { children: [{ text: '22' }], type: 'tableCell' },
+                  { children: [{ text: '23' }], type: 'tableCell' },
                 ],
-                type: 'tr',
+                type: 'tableRow',
               },
             ],
             type: 'table',
-          } satisfies TTableElement)
+          } satisfies TableElement)
         ).toBe(true);
       });
 
@@ -345,19 +347,19 @@ describe('table selection', () => {
             children: [
               {
                 children: [
-                  { children: [{ text: '11' }], rowSpan: 2, type: 'td' },
-                  { children: [{ text: '12' }], type: 'td' },
-                  { children: [{ text: '13' }], type: 'td' },
+                  { children: [{ text: '11' }], rowSpan: 2, type: 'tableCell' },
+                  { children: [{ text: '12' }], type: 'tableCell' },
+                  { children: [{ text: '13' }], type: 'tableCell' },
                 ],
-                type: 'tr',
+                type: 'tableRow',
               },
               {
-                children: [{ children: [{ text: '22' }], type: 'td' }],
-                type: 'tr',
+                children: [{ children: [{ text: '22' }], type: 'tableCell' }],
+                type: 'tableRow',
               },
             ],
             type: 'table',
-          } satisfies TTableElement)
+          } satisfies TableElement)
         ).toBe(false);
       });
     });
@@ -367,7 +369,7 @@ describe('table selection', () => {
     jsxt;
 
     const createTableEditor = (input: TestEditor) =>
-      createPlateEditor({
+      createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins(),
         selection: input.selection,
@@ -611,7 +613,7 @@ describe('table selection', () => {
     jsxt;
 
     const createTableEditor = (input: TestEditor) =>
-      createPlateEditor({
+      createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins(),
         selection: input.selection,

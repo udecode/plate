@@ -118,7 +118,7 @@ describe('plite-react provider hooks contract', () => {
     expect(seen.at(-1)).toBe(editorB);
   });
 
-  test('Editable maxLength overrides the runtime limit while mounted', () => {
+  test('multiple Editable views preserve the constructor maxLength', () => {
     const selection = {
       kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
@@ -127,12 +127,13 @@ describe('plite-react provider hooks contract', () => {
     const editor = createReactEditor({
       initialSelection: selection,
       initialValue: [{ type: 'block', children: [{ text: '' }] }],
-      maxLength: 10,
+      maxLength: 3,
     });
 
     const rendered = render(
       <Plite editor={editor}>
-        <Editable maxLength={3} />
+        <Editable />
+        <Editable />
       </Plite>
     );
 
@@ -144,23 +145,17 @@ describe('plite-react provider hooks contract', () => {
 
     rendered.rerender(
       <Plite editor={editor}>
-        <Editable maxLength={5} />
+        <Editable />
       </Plite>
     );
+
+    rendered.unmount();
 
     act(() => {
       editor.update.text.insert('def');
     });
 
-    expect(editor.read.text.string([])).toBe('abcde');
-
-    rendered.unmount();
-
-    act(() => {
-      editor.update.text.insert('fghij');
-    });
-
-    expect(editor.read.text.string([])).toBe('abcdefghij');
+    expect(editor.read.text.string([])).toBe('abc');
   });
 
   test('Plite publishes editor commits from child mount layout effects', () => {

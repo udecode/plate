@@ -16,6 +16,7 @@ import {
   type SchemaText,
   TextApi,
 } from '@platejs/plite';
+import { history } from '@platejs/plite-history';
 import {
   Editable,
   type RenderElementProps,
@@ -29,7 +30,7 @@ import {
 import { cn } from '@/utils/cn';
 import { Portal } from './components';
 
-const MentionSchema = defineEditorSchema({
+const MentionSchema = defineEditorSchema('schema:derived', {
   elements: {
     mention: {
       properties: { character: property.string() },
@@ -105,7 +106,7 @@ const MentionExample = () => {
   const [index, setIndex] = useState(0);
   const [search, setSearch] = useState('');
   const editor = usePliteEditor({
-    extensions: [MentionSchema],
+    extensions: [history(), MentionSchema],
     initialValue: [
       {
         type: 'paragraph',

@@ -10,7 +10,6 @@ import {
 } from '@platejs/basic-nodes/react';
 import { BaseBlockquotePlugin } from '@platejs/basic-nodes';
 import { BaseSuggestionPlugin } from '@platejs/suggestion';
-import { SuggestionPlugin } from '@platejs/suggestion/react';
 import { jsxt } from '@platejs/test-utils';
 import { createBaseEditor } from 'platejs';
 import remarkGfm from 'remark-gfm';
@@ -22,7 +21,7 @@ jsxt;
 
 const markdownPlugin = MarkdownPlugin.configure({
   initialState: {
-    disallowedNodes: [SuggestionPlugin.name],
+    disallowedNodes: ['suggestion'],
     remarkPlugins: [remarkMath, remarkGfm],
   },
 });

@@ -13,7 +13,7 @@ description: 编写和配置 Plate 插件。
 | `.extend()` | 适配 import/prebuilt descriptor、使用 constructor 无法访问的 shared factory，或消费前一阶段类型。 | 扩展插件类型。 |
 | `.configure()` | 为一个用户覆盖现有字段。 | 终结调用，不扩展类型。 |
 
-`createBasePlugin()` 和 `createPlatePlugin()` 拥有所有互相独立的作者贡献：
+`defineBasePlugin()` 和 `definePlatePlugin()` 拥有所有互相独立的作者贡献：
 
 | 字段 | 所有权 |
 | --- | --- |
@@ -34,21 +34,19 @@ description: 编写和配置 Plate 插件。
 declaration 或前一阶段新增的类型才使用 `.extend()`。
 
 ```tsx title="counter-plugin.tsx" showLineNumbers
-import { createPlatePlugin, usePluginStore } from 'platejs/react';
+import { definePlatePlugin, usePluginStore } from 'platejs/react';
 
 export type CounterPluginState = {
   value: number;
 };
 
-export const CounterPlugin = createPlatePlugin({
+export const CounterPlugin = definePlatePlugin('counter', {
   api: ({ store }) => ({
     isEmpty: () => store.get('value') === 0,
   }),
   initialState: {
     value: 0,
-  } satisfies CounterPluginState,
-  name: 'counter',
-  selectors: {
+  } satisfies CounterPluginState,  selectors: {
     doubled: (state, factor: number) => state.value * factor,
     isEven: (state) => state.value % 2 === 0,
   },
@@ -104,16 +102,14 @@ middleware、state/effect/facet/selection descriptor、contribution、
 lifecycle、activation 和 validation。
 
 ```ts title="single-line-plugin.ts" showLineNumbers
-import { createBasePlugin, editorCommands } from 'platejs';
+import { defineBasePlugin, editorCommands } from 'platejs';
 
-export const SingleLinePlugin = createBasePlugin({
+export const SingleLinePlugin = defineBasePlugin('singleLine', {
   commands: ({ handle }) => [
     handle(editorCommands.insertBreak, ({ state }) =>
       state.transaction(() => {})
     ),
-  ],
-  name: 'singleLine',
-});
+  ],});
 ```
 
 原生 callback 只接收对应的 Plite capability context。需要前一阶段的
@@ -121,12 +117,10 @@ plugin store、read、API 或 update group 时，增加一次 `.extend()` 并在
 使用该能力。不要为了转发 owner context 新增 helper 参数：
 
 ```ts title="trigger-plugin.ts" showLineNumbers
-import { createBasePlugin, editorCommands } from 'platejs';
+import { defineBasePlugin, editorCommands } from 'platejs';
 
-export const TriggerPlugin = createBasePlugin({
-  initialState: { enabled: true },
-  name: 'trigger',
-}).extend(({ store }) => ({
+export const TriggerPlugin = defineBasePlugin('trigger', {
+  initialState: { enabled: true },}).extend(({ store }) => ({
   commands: ({ handle }) => [
     handle(editorCommands.insertBreak, ({ state }) => {
       if (!store.get('enabled')) return false;
@@ -138,7 +132,7 @@ export const TriggerPlugin = createBasePlugin({
 ```
 
 独立复用的 Plite descriptor 使用从 `@platejs/plite` import 的
-`defineEditorExtension`，然后把 descriptor 放进 `dependencies`。
+`defineExtension`，然后把 descriptor 放进 `dependencies`。
 
 插件专用和 editor-wide host service 共用根级 `api` channel；Plite 会按插件
 name 投影它。不要发布两份实现。
@@ -150,9 +144,9 @@ name 投影它。不要发布两份实现。
 
 ```ts title="records-plugin.ts" showLineNumbers
 import { ContentSlice } from '@platejs/plite';
-import { createBasePlugin } from 'platejs';
+import { defineBasePlugin } from 'platejs';
 
-export const RecordsPlugin = createBasePlugin({
+export const RecordsPlugin = defineBasePlugin('records', {
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       'application/json': {
@@ -160,9 +154,7 @@ export const RecordsPlugin = createBasePlugin({
         decode: ({ data }) => ContentSlice.fromJSON(JSON.parse(data)),
         encode: ({ slice }) => JSON.stringify(slice),
       },
-    }),
-  name: 'records',
-});
+    }),});
 ```
 
 只有格式表示完整文档时才使用 document scope。
@@ -224,13 +216,10 @@ const initialState: CellPluginState = {
   padding: 12,
 };
 
-const CellPlugin = createPlatePlugin({
-  initialState,
-  name: 'cell',
-});
+const CellPlugin = definePlatePlugin('cell', {
+  initialState,});
 
-const GridPlugin = createPlatePlugin({
-  name: 'grid',
+const GridPlugin = definePlatePlugin('grid', {
   dependencies: [CellPlugin],
 });
 
@@ -250,14 +239,13 @@ export const AppGridPlugins = [
 
 ```tsx title="script-plugin.tsx" showLineNumbers
 import { BaseScriptPlugin } from '@platejs/basic-nodes';
-import { KEYS } from 'platejs';
 import { PlateLeaf, toPlatePlugin } from 'platejs/react';
 
 export const ScriptPlugin = toPlatePlugin(BaseScriptPlugin, {
   component: (props) => (
     <PlateLeaf
       {...props}
-      as={props.leaf[KEYS.script] === 'sub' ? 'sub' : 'sup'}
+      as={props.leaf['script'] === 'sub' ? 'sub' : 'sup'}
     >
       {props.children}
     </PlateLeaf>

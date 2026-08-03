@@ -1,15 +1,17 @@
-import type { Value } from '@platejs/plite';
-
-import type { BaseEditor } from '../../lib/editor';
-import type { AnyBasePlugin, AnyBasePluginDefinition } from '../../lib/plugin';
-import { getCompiledPlatePlugin, getPlateRuntime } from './compilePlateModel';
+import type { AnyBasePlugin } from '../../lib/plugin';
+import {
+  getCompiledPlateModelBinding,
+  getCompiledPlatePlugin,
+  getPlateRuntime,
+} from './compilePlateModel';
 
 export type PlateNodeCodecContribution = Readonly<{
   declaration: Readonly<Record<string, unknown>>;
   format: string;
   owner: string;
-  targetPluginName: string;
-  targetType: string;
+  targetKey: string | null;
+  targetPlugin: string;
+  targetType: string | null;
 }>;
 
 const NODE_CODEC_CACHE = new WeakMap<
@@ -20,8 +22,8 @@ const NODE_CODEC_CACHE = new WeakMap<
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
-const getTargetPlugin = <V extends Value, P extends AnyBasePluginDefinition>(
-  editor: BaseEditor<V, P>,
+const getTargetPlugin = (
+  editor: object,
   owner: AnyBasePlugin,
   target: unknown
 ) => {
@@ -35,9 +37,7 @@ const getTargetPlugin = <V extends Value, P extends AnyBasePluginDefinition>(
   return getCompiledPlatePlugin(editor, target.name)!;
 };
 
-const collect = <V extends Value, P extends AnyBasePluginDefinition>(
-  editor: BaseEditor<V, P>
-) => {
+const collect = (editor: object) => {
   const byFormat = new Map<string, PlateNodeCodecContribution[]>();
 
   getPlateRuntime(editor).pluginList.forEach((owner) => {
@@ -68,6 +68,13 @@ const collect = <V extends Value, P extends AnyBasePluginDefinition>(
         }
 
         const target = getTargetPlugin(editor, owner, declaration.target);
+        const binding = getCompiledPlateModelBinding(editor, target);
+
+        if (!binding?.elementType && !binding?.propertyKey) {
+          throw new Error(
+            `Plate node codec target "${target.name}" must own an element type or property key.`
+          );
+        }
         const { target: _target, ...publicDeclaration } = declaration;
         const formatContributions = byFormat.get(format) ?? [];
 
@@ -76,8 +83,9 @@ const collect = <V extends Value, P extends AnyBasePluginDefinition>(
             declaration: Object.freeze(publicDeclaration),
             format,
             owner: owner.name,
-            targetPluginName: target.name,
-            targetType: target.type,
+            targetKey: binding.propertyKey,
+            targetPlugin: target.name,
+            targetType: binding.elementType,
           })
         );
         byFormat.set(format, formatContributions);
@@ -94,11 +102,8 @@ const collect = <V extends Value, P extends AnyBasePluginDefinition>(
 };
 
 /** @internal Read schema-bound product codecs without importing format ASTs. */
-export const getPlateNodeCodecContributions = <
-  V extends Value,
-  P extends AnyBasePluginDefinition,
->(
-  editor: BaseEditor<V, P>,
+export const getPlateNodeCodecContributions = (
+  editor: object,
   format: string
 ): readonly PlateNodeCodecContribution[] => {
   let byFormat = NODE_CODEC_CACHE.get(editor);

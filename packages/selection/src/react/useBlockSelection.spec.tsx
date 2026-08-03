@@ -37,7 +37,7 @@ describe('block selection hooks', () => {
 
   it('returns selectable element props from the plugin API', async () => {
     const addOnContextMenu = mock();
-    const element = { id: 'a', children: [{ text: '' }], type: 'p' };
+    const element = { id: 'a', children: [{ text: '' }], type: 'paragraph' };
 
     useElementContextMock.mockReturnValue({ element, path: [0] });
     useEditorPluginMock.mockReturnValue({
@@ -57,7 +57,7 @@ describe('block selection hooks', () => {
   });
 
   it('returns no props for a non-selectable explicit target', async () => {
-    const element = { id: 'a', children: [{ text: '' }], type: 'p' };
+    const element = { id: 'a', children: [{ text: '' }], type: 'paragraph' };
 
     useElementContextMock.mockReturnValue(undefined);
     useEditorPluginMock.mockReturnValue({
@@ -76,7 +76,7 @@ describe('block selection hooks', () => {
   });
 
   it('reads selected state from the typed plugin portal', async () => {
-    const element = { id: 'a', children: [{ text: '' }], type: 'p' };
+    const element = { id: 'a', children: [{ text: '' }], type: 'paragraph' };
 
     useElementContextMock.mockReturnValue({ element, path: [0] });
     useEditorPluginMock.mockReturnValue({
@@ -91,8 +91,8 @@ describe('block selection hooks', () => {
 
   it('returns selected nodes, fragments, and fragment props', async () => {
     const blocks = [
-      [{ dir: 'rtl', id: 'a', type: 'p' }, [0]],
-      [{ dir: 'rtl', id: 'b', type: 'p' }, [1]],
+      [{ dir: 'rtl', id: 'a', type: 'paragraph' }, [0]],
+      [{ dir: 'rtl', id: 'b', type: 'paragraph' }, [1]],
     ];
 
     useEditorMock.mockReturnValue({

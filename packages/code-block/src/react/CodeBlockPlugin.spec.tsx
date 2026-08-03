@@ -2,20 +2,24 @@
 
 import {
   type BaseEditor,
+  type BaseEditorOptions,
+  type BasePluginInput,
   BaseParagraphPlugin,
-  createBaseEditor,
-  createBasePlugin,
+  createBaseEditor as createTypedBaseEditor,
+  defineBasePlugin,
 } from '@platejs/core';
 import {
   ContentSlice,
-  defineEditorExtension,
+  createEditor as createPliteEditor,
+  defineExtension,
   DocumentChange,
   property,
   schema,
   target,
+  type InitialValue,
+  type Value,
 } from '@platejs/plite';
 import { createDataTransfer, jsxt, type TestEditor } from '@platejs/test-utils';
-import { NODES } from '@platejs/utils';
 import { createLowlight } from 'lowlight';
 import {
   CodeBlockPlugin,
@@ -24,30 +28,42 @@ import {
 } from './CodeBlockPlugin';
 import { BaseCodeBlockPlugin } from '../lib/BaseCodeBlockPlugin';
 
+const createBaseEditor = <const P extends readonly BasePluginInput[]>(
+  options: Omit<BaseEditorOptions, 'plugins'> & {
+    initialValue?: InitialValue<Value>;
+    plugins: P;
+  }
+) =>
+  createTypedBaseEditor({
+    ...options,
+    editor: createPliteEditor<Value>(),
+  });
+
 {
   jsxt;
 
-  const TestCodeBlockPropertyPlugin = createBasePlugin({
-    name: 'testCodeBlockProperty',
-    schema: {
-      properties: [
-        schema.elementProperty('foo', property.string(), {
-          target: target.type(NODES.codeBlock),
-        }),
-      ],
-    },
-  });
+  const TestCodeBlockPropertyPlugin = defineBasePlugin(
+    'testCodeBlockProperty',
+    {
+      schema: {
+        properties: {
+          foo: schema.elementProperty(property.string(), {
+            target: target.element(BaseCodeBlockPlugin),
+          }),
+        },
+      },
+    }
+  );
 
   const installRefreshDecorationsProbe = (
     editor: BaseEditor,
     refreshDecorations: () => void
   ) => {
-    editor.extend(
-      defineEditorExtension({
+    editor.install(
+      defineExtension('react', {
         api: () => ({
           refreshDecorations,
         }),
-        name: 'react',
       })
     );
   };
@@ -83,8 +99,7 @@ import { BaseCodeBlockPlugin } from '../lib/BaseCodeBlockPlugin';
           plugins: [
             BaseParagraphPlugin,
             CodeBlockPlugin,
-            createBasePlugin({
-              name: 'a',
+            defineBasePlugin('a', {
               codecs: ({ defineCodecs }) =>
                 defineCodecs({
                   'text/plain': {
@@ -292,9 +307,9 @@ import { BaseCodeBlockPlugin } from '../lib/BaseCodeBlockPlugin';
     it('refreshes decorations for a classification-free language change', () => {
       const value = [
         {
-          children: [{ children: [{ text: 'aa' }], type: 'code_line' }],
+          children: [{ children: [{ text: 'aa' }], type: 'codeLine' }],
           lang: 'javascript',
-          type: 'code_block',
+          type: 'codeBlock',
         },
       ];
       const source = createBaseEditor({
@@ -490,6 +505,6 @@ describe('toggle code block', () => {
       tx.codeBlock.toggle();
     });
 
-    expect(editor.read.children()[0]).toMatchObject({ type: 'code_block' });
+    expect(editor.read.children()[0]).toMatchObject({ type: 'codeBlock' });
   });
 });

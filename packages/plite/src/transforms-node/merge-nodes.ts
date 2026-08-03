@@ -17,7 +17,7 @@ import {
   shouldMergeNodesRemovePrevNode as editorShouldMergeNodesRemovePrevNode,
   unhangRange as editorUnhangRange,
 } from '../interfaces/editor';
-import type { Editor } from '../interfaces/editor';
+import type { AnyEditor as Editor } from '../interfaces/editor';
 import { type Ancestor, type Node, NodeApi } from '../interfaces/node';
 import { type Path, PathApi } from '../interfaces/path';
 import { RangeApi } from '../interfaces/range';
@@ -48,14 +48,14 @@ const crossesIsolatingBoundary = (
   previous: readonly [Node, Path],
   current: readonly [Node, Path]
 ) => {
-  const [prevNode, prevPath] = previous;
+  const [previousNode, prevPath] = previous;
   const [node, path] = current;
   const prevIsolating = getClosestIsolatingAncestor(editor, prevPath);
   const currentIsolating = getClosestIsolatingAncestor(editor, path);
 
   return (
-    (NodeApi.isElement(prevNode) &&
-      getEditorSchema(editor).isIsolating(prevNode) &&
+    (NodeApi.isElement(previousNode) &&
+      getEditorSchema(editor).isIsolating(previousNode) &&
       !pathContainsPath(prevPath, path)) ||
     (NodeApi.isElement(node) &&
       getEditorSchema(editor).isIsolating(node) &&
@@ -136,7 +136,7 @@ export const mergeNodes: NodeMutationMethods['mergeNodes'] = (
     }
 
     const [node, path] = current;
-    const [prevNode, prevPath] = prev;
+    const [previousNode, prevPath] = prev;
 
     if (path.length === 0 || prevPath.length === 0) {
       return;
@@ -169,14 +169,14 @@ export const mergeNodes: NodeMutationMethods['mergeNodes'] = (
       : null;
     if (
       !(
-        (NodeApi.isText(node) && NodeApi.isText(prevNode)) ||
-        (NodeApi.isElement(node) && NodeApi.isElement(prevNode))
+        (NodeApi.isText(node) && NodeApi.isText(previousNode)) ||
+        (NodeApi.isElement(node) && NodeApi.isElement(previousNode))
       )
     ) {
       throw new Error(
         `Cannot merge the node at path [${path}] with the previous sibling because it is not the same kind: ${formatDebugValue(
           node
-        )} ${formatDebugValue(prevNode)}`
+        )} ${formatDebugValue(previousNode)}`
       );
     }
 

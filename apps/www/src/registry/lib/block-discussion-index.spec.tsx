@@ -4,17 +4,15 @@ import { BaseSuggestionPlugin } from '@platejs/suggestion';
 import { jsxt, type TestEditorFixture } from '@platejs/test-utils';
 import { describe, expect, it } from 'bun:test';
 import {
+  PLUGINS,
   type BaseEditor,
   type Element,
   type Node,
   type NodeEntry,
-  type TCommentText,
   type Text,
   createBaseEditor,
-  createBasePlugin,
+  defineBasePlugin,
   ElementApi,
-  KEYS,
-  NODES,
   property,
 } from 'platejs';
 
@@ -32,12 +30,12 @@ const suggestionData = {
   userId: 'u1',
 } as const;
 
-type DiscussionEntry = NodeEntry<Element | TCommentText>;
+type DiscussionEntry = NodeEntry<Element | Text>;
 
 const collectEntries = (children: readonly Element[]) => {
   const entries: DiscussionEntry[] = [];
 
-  const visit = (node: Element | TCommentText, path: number[]) => {
+  const visit = (node: Element | Text, path: number[]) => {
     entries.push([node, path]);
 
     if (!ElementApi.isElement(node)) return;
@@ -65,15 +63,14 @@ const getSuggestionDataList = (node: Text) =>
     .map((key) => node[key] as typeof suggestionData);
 
 const getSuggestionId = (node: Node) => getSuggestionData(node)?.id;
-const getSuggestionKey = (id: string) => `${KEYS.suggestion}_${id}`;
+const getSuggestionKey = (id: string) => `suggestion_${id}`;
 
 const getBlockSuggestionData = (node: Node) =>
   ElementApi.isElement(node)
     ? (node.suggestion as typeof suggestionData | undefined)
     : undefined;
 
-const MentionPlugin = createBasePlugin({
-  name: KEYS.mention,
+const MentionPlugin = defineBasePlugin(PLUGINS.mention, {
   schema: {
     element: {
       inline: true,
@@ -86,8 +83,7 @@ const MentionPlugin = createBasePlugin({
   },
 });
 
-const InlineEquationPlugin = createBasePlugin({
-  name: KEYS.inlineEquation,
+const InlineEquationPlugin = defineBasePlugin(PLUGINS.inlineEquation, {
   schema: {
     element: {
       inline: true,
@@ -95,7 +91,6 @@ const InlineEquationPlugin = createBasePlugin({
       void: 'inline',
     },
   },
-  type: NODES.inlineEquation,
 });
 
 const getResolvedSuggestions = (editor: BaseEditor) => {
@@ -111,6 +106,8 @@ const getResolvedSuggestions = (editor: BaseEditor) => {
       getSuggestionId: (node) => suggestionApi.nodeId(node),
       getSuggestionKey: (id) => suggestionApi.key(id),
       isBlockSuggestion: (node) => suggestionApi.isBlockSuggestion(node),
+      isInlineEquation: (node) =>
+        node.type === editor.plugin(InlineEquationPlugin).schema.element.type,
     }).suggestionsByBlock.get('0') ?? []
   );
 };
@@ -153,6 +150,7 @@ describe('buildBlockDiscussionIndex', () => {
       getSuggestionDataList,
       getSuggestionId,
       getSuggestionKey,
+      isInlineEquation: (node) => node.type === 'inlineEquation',
       isBlockSuggestion: () => false,
     });
 
@@ -259,6 +257,7 @@ describe('buildBlockDiscussionIndex', () => {
       discussions: [],
       entries: collectEntries(input.children),
       getCommentId: () => {},
+      getBlockLabel: () => 'Equation',
       getSuggestionData: getBlockSuggestionData,
       getSuggestionDataList,
       getSuggestionId: (node) => getBlockSuggestionData(node)?.id,

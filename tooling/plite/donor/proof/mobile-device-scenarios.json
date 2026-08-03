@@ -1,0 +1,66 @@
+{
+  "route": "/mobile-lab",
+  "scenarios": [
+    { "action": "tap a text position", "id": "tap", "updateCount": 0 },
+    { "action": "double-tap a word", "id": "double-tap", "updateCount": 0 },
+    { "action": "long-press a word", "id": "long-press", "updateCount": 0 },
+    {
+      "action": "drag the forward native selection handle",
+      "id": "selection-handle-forward",
+      "updateCount": 0
+    },
+    {
+      "action": "drag the backward native selection handle",
+      "id": "selection-handle-backward",
+      "updateCount": 0
+    },
+    {
+      "action": "extend selection across inline formatting",
+      "id": "cross-inline-selection",
+      "updateCount": 0
+    },
+    {
+      "action": "extend selection across block boundaries",
+      "id": "cross-block-selection",
+      "updateCount": 0
+    },
+    {
+      "action": "drag a selection handle beyond the viewport",
+      "id": "selection-autoscroll",
+      "updateCount": 0
+    },
+    {
+      "action": "swipe-scroll with a collapsed selection",
+      "id": "swipe-collapsed",
+      "updateCount": 0
+    },
+    {
+      "action": "swipe-scroll with an expanded selection",
+      "id": "swipe-expanded",
+      "updateCount": 0
+    },
+    {
+      "action": "move across both sides of an inline void",
+      "id": "inline-void-boundary",
+      "updateCount": 0
+    },
+    { "action": "press Enter once", "id": "enter", "updateCount": 1 },
+    { "action": "press Backspace once", "id": "backspace", "updateCount": 1 },
+    {
+      "action": "type one autocapitalized word",
+      "id": "autocapitalization",
+      "updateCount": 1
+    },
+    {
+      "action": "commit one native composition",
+      "id": "composition-ime",
+      "updateCount": 1
+    },
+    {
+      "action": "paste once through the native clipboard",
+      "id": "native-clipboard",
+      "updateCount": 1
+    }
+  ],
+  "schemaVersion": 1
+}

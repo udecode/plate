@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import Image from 'next/image';
 
 import { Card, Cards } from '@/components/cards';
+import { APIReference } from '@/components/api-reference';
 import { CodeTabs } from '@/components/code-tabs';
 import { ComponentInstallation } from '@/components/component-installation';
 import { File, Files, Folder } from '@/components/docs-files';
@@ -87,6 +88,7 @@ export const mdxComponents = {
   APIMethods,
   APIOptions,
   APIParameters,
+  APIReference,
   APIProps,
   APIReturns,
   APIState,

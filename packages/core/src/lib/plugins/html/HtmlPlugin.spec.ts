@@ -7,7 +7,7 @@ describe('HtmlPlugin', () => {
 
     expect(editor.api.html).toBe(editor.plugin(HtmlPlugin).api);
     expect(Object.isFrozen(editor.api.html)).toBe(true);
-    expect('parser' in editor.plugin(HtmlPlugin).plugin).toBe(false);
+    expect('parser' in editor.plugin(HtmlPlugin)).toBe(false);
   });
 
   it('deserializes the document body through one exact-slice codec', () => {
@@ -18,7 +18,7 @@ describe('HtmlPlugin', () => {
 
     expect(editor.api.dom.clipboard.insertData(transfer)).toBe(true);
     expect(editor.read.children()).toEqual([
-      { children: [{ text: 'Hello' }], type: 'p' },
+      { children: [{ text: 'Hello' }], type: 'paragraph' },
     ]);
   });
 });

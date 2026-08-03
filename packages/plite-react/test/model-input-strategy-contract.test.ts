@@ -1,8 +1,4 @@
-import {
-  createEditor,
-  defineEditorExtension,
-  editorCommands,
-} from '@platejs/plite';
+import { createEditor, defineExtension, editorCommands } from '@platejs/plite';
 import {
   getChildren as editorGetChildren,
   getSelection as editorGetSelection,
@@ -472,8 +468,8 @@ describe('model input strategy', () => {
   it('routes model-owned insertText through command handlers', () => {
     const editor = createTextEditor('-', 1);
 
-    editor.extend(
-      defineEditorExtension({
+    editor.install(
+      defineExtension('markdown-shortcut-command', {
         commands: ({ handle }) => [
           handle(editorCommands.insertText, ({ input, state }) => {
             if (input.text !== ' ') return false;
@@ -489,7 +485,6 @@ describe('model input strategy', () => {
             });
           }),
         ],
-        name: 'markdown-shortcut-command',
       })
     );
 

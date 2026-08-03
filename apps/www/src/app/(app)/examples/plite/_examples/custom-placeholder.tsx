@@ -1,3 +1,4 @@
+import { history } from '@platejs/plite-history';
 import {
   Editable,
   type RenderPlaceholderProps,
@@ -7,6 +8,7 @@ import {
 
 const PlainTextExample = () => {
   const editor = usePliteEditor({
+    extensions: [history()],
     initialValue: [
       {
         type: 'paragraph',

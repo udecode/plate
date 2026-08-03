@@ -1,4 +1,4 @@
-import type { Editor, Selection } from '../interfaces/editor';
+import type { AnyEditor as Editor, Selection } from '../interfaces/editor';
 import { MAIN_ROOT_KEY } from '../internal/root-location';
 import { cloneEditorJsonValue } from './value-codec';
 

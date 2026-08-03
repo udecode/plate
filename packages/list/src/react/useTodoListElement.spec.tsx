@@ -1,6 +1,5 @@
 import { createPlateEditor, Plate } from '@platejs/core/react';
-import type { Element } from '@platejs/plite';
-import { KEYS } from '@platejs/utils';
+import { createEditor, type Element, type Value } from '@platejs/plite';
 import { act, renderHook } from '@testing-library/react';
 import React from 'react';
 
@@ -18,11 +17,12 @@ describe('useTodoListElement', () => {
         children: [{ text: '' }],
         id: 'todo-1',
         indent: 1,
-        listStyleType: KEYS.listTodo,
-        type: KEYS.p,
+        listStyleType: 'todo',
+        type: 'paragraph',
       },
     ];
     const editor = createPlateEditor({
+      editor: createEditor<Value>(),
       initialValue,
       plugins: [ListPlugin],
     });

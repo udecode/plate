@@ -8,6 +8,7 @@ import {
 } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import type { Descendant } from '@platejs/plite';
+import { history } from '@platejs/plite-history';
 
 import {
   createReactEditor,
@@ -41,6 +42,7 @@ const editorChildren = (editor: {
 describe('usePliteHistory', () => {
   test('exposes undo and redo availability from the active root history', async () => {
     const editor = createReactEditor({
+      extensions: [history()],
       initialValue: [paragraph('body')],
     });
     const wrapper = ({ children }: { children: ReactNode }) => (
@@ -66,6 +68,7 @@ describe('usePliteHistory', () => {
 
   test('undoes and redoes through the controller', async () => {
     const editor = createReactEditor({
+      extensions: [history()],
       initialValue: [paragraph('body')],
     });
     const wrapper = ({ children }: { children: ReactNode }) => (
@@ -104,6 +107,7 @@ describe('usePliteHistory', () => {
       paragraph(`block-${index}`)
     );
     const editor = createReactEditor({
+      extensions: [history()],
       initialValue,
     });
     const wrapper = ({ children }: { children: ReactNode }) => (
@@ -154,6 +158,7 @@ describe('usePliteHistory', () => {
 
   test('fixed-root external shortcut preserves the input focus', async () => {
     const editor = createReactEditor({
+      extensions: [history()],
       initialValue: {
         children: [paragraph('body')],
         roots: { header: [paragraph('header')] },
@@ -200,6 +205,7 @@ describe('usePliteHistory', () => {
 
   test('restore-root focuses the active mounted copy of a shared root', async () => {
     const editor = createReactEditor({
+      extensions: [history()],
       initialValue: {
         children: [paragraph('body')],
         roots: { shared: [paragraph('shared')] },
@@ -255,6 +261,7 @@ describe('usePliteHistory', () => {
 
   test('fixed-root availability follows sibling root history changes', async () => {
     const editor = createReactEditor({
+      extensions: [history()],
       initialValue: {
         children: [paragraph('body')],
         roots: { header: [paragraph('header')] },

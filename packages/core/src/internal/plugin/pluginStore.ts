@@ -12,6 +12,7 @@ import type {
 import type { InternalPluginDefinitionOf } from '../../lib/plugin/pluginDefinitionLookup.internal';
 import {
   brandPluginDescriptor,
+  getPluginSchemaFamily,
   isNominalPluginDescriptor,
 } from '../utils/mergePlugins';
 import { getPlateRuntimeOwner } from './plateRuntime';
@@ -34,16 +35,17 @@ export type InternalPluginStore<
 };
 
 export const createPluginStore = <C extends AnyBasePluginDefinition>(
-  pluginName: C['name'],
+  plugin: AnyBasePlugin | PluginReference<C['name']> | C['name'],
   base: PluginStoreBase<C>,
   selectors: InferSelectors<C>
 ): InternalPluginStore<C> => {
+  const name = typeof plugin === 'string' ? plugin : plugin.name;
   const state = base.store.getState();
 
   for (const key of Object.keys(selectors)) {
     if (Object.hasOwn(state, key)) {
       throw new Error(
-        `Plate plugin "${pluginName}" defines "${key}" as both state and selector.`
+        `Plate plugin "${name}" defines "${key}" as both state and selector.`
       );
     }
   }
@@ -66,7 +68,7 @@ export const createPluginStore = <C extends AnyBasePluginDefinition>(
       }
 
       throw new Error(
-        `Plate plugin "${pluginName}" has no state field or selector "${String(key)}".`
+        `Plate plugin "${name}" has no state field or selector "${String(key)}".`
       );
     },
     set(value) {
@@ -90,10 +92,10 @@ export const createPluginStore = <C extends AnyBasePluginDefinition>(
 
 const isMinimalPluginReference = (value: object) =>
   Object.isFrozen(value) &&
-  Reflect.ownKeys(value).every((key) => key === 'name' || key === 'type');
+  Reflect.ownKeys(value).every((key) => key === 'name');
 
 type PluginStateSnapshotContext = Readonly<{
-  canonicalReferences?: Map<string, Map<string, unknown>>;
+  canonicalReferences?: WeakMap<object, Map<string, unknown>>;
   references: WeakMap<object, unknown>;
   snapshots: WeakMap<object, unknown>;
 }>;
@@ -104,16 +106,19 @@ const snapshotPluginStateValue = (
 ): unknown => {
   if (!value || typeof value !== 'object') return value;
   if (isNominalPluginDescriptor(value)) {
-    const canonicalByType = context.canonicalReferences?.get(value.name);
-    const canonicalReference = canonicalByType?.get(value.type);
+    const family = getPluginSchemaFamily(value);
+    const canonicalByName = family
+      ? context.canonicalReferences?.get(family)
+      : undefined;
+    const canonicalReference = canonicalByName?.get(value.name);
 
     if (canonicalReference) return canonicalReference;
     if (isMinimalPluginReference(value)) {
-      if (context.canonicalReferences) {
-        const byType = canonicalByType ?? new Map<string, unknown>();
+      if (context.canonicalReferences && family) {
+        const byName = canonicalByName ?? new Map<string, unknown>();
 
-        byType.set(value.type, value);
-        context.canonicalReferences.set(value.name, byType);
+        byName.set(value.name, value);
+        context.canonicalReferences.set(family, byName);
       }
 
       return value;
@@ -122,15 +127,15 @@ const snapshotPluginStateValue = (
 
     if (existingReference) return existingReference;
     const reference = Object.freeze(
-      brandPluginDescriptor({ name: value.name, type: value.type })
+      brandPluginDescriptor({ name: value.name }, value)
     );
 
     context.references.set(value, reference);
-    if (context.canonicalReferences) {
-      const byType = canonicalByType ?? new Map<string, unknown>();
+    if (context.canonicalReferences && family) {
+      const byName = canonicalByName ?? new Map<string, unknown>();
 
-      byType.set(value.type, reference);
-      context.canonicalReferences.set(value.name, byType);
+      byName.set(value.name, reference);
+      context.canonicalReferences.set(family, byName);
     }
 
     return reference;
@@ -182,7 +187,7 @@ export const snapshotPluginState = <T>(value: T): T =>
 /** Canonicalize resolved state graphs through one editor-local token set. */
 export const createPluginStateSnapshot = () => {
   const context: PluginStateSnapshotContext = {
-    canonicalReferences: new Map(),
+    canonicalReferences: new WeakMap(),
     references: new WeakMap<object, unknown>(),
     snapshots: new WeakMap<object, unknown>(),
   };
@@ -202,22 +207,27 @@ export function getPluginStore<P extends AnyBasePlugin & PluginReference>(
 ): InternalPluginStore<InternalPluginDefinitionOf<P>> | undefined;
 export function getPluginStore<C extends AnyBasePluginDefinition>(
   editor: object,
-  pluginName: C['name']
+  plugin: C['name']
 ): InternalPluginStore<C> | undefined;
 export function getPluginStore(
   editor: object,
-  plugin: PluginReference | string
+  plugin: AnyBasePlugin | PluginReference | string
+): InternalPluginStore | undefined;
+export function getPluginStore(
+  editor: object,
+  plugin: AnyBasePlugin | PluginReference | string
 ): unknown {
-  const pluginName = typeof plugin === 'string' ? plugin : plugin.name;
+  const name = typeof plugin === 'string' ? plugin : plugin.name;
 
-  return PLUGIN_STORES.get(getPlateRuntimeOwner(editor))?.get(pluginName);
+  return PLUGIN_STORES.get(getPlateRuntimeOwner(editor))?.get(name);
 }
 
 export const setPluginStore = <C extends AnyBasePluginDefinition>(
   editor: object,
-  pluginName: C['name'],
+  plugin: AnyBasePlugin | PluginReference<C['name']> | C['name'],
   store: InternalPluginStore<C>
 ) => {
+  const name = typeof plugin === 'string' ? plugin : plugin.name;
   const owner = getPlateRuntimeOwner(editor);
   let stores = PLUGIN_STORES.get(owner);
 
@@ -225,5 +235,5 @@ export const setPluginStore = <C extends AnyBasePluginDefinition>(
     stores = new Map();
     PLUGIN_STORES.set(owner, stores);
   }
-  stores.set(pluginName, store);
+  stores.set(name, store);
 };

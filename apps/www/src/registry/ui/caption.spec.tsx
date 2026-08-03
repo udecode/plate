@@ -52,7 +52,7 @@ describe('Caption', () => {
     const view = render(
       <Caption
         active={false}
-        element={{ children: [{ text: '' }], type: 'img' }}
+        element={{ children: [{ text: '' }], type: 'image' }}
         slots={{ contentBoundary } as any}
       >
         <span>Hidden caption</span>
@@ -78,7 +78,7 @@ describe('Caption', () => {
     const view = render(
       <Caption
         active
-        element={{ children: [{ text: '' }], type: 'img' }}
+        element={{ children: [{ text: '' }], type: 'image' }}
         slots={{ contentBoundary: () => null } as any}
       >
         <span data-testid="caption-content" />
@@ -101,7 +101,7 @@ describe('Caption', () => {
     const view = render(
       <Caption
         active
-        element={{ children: [{ text: '' }], type: 'img' }}
+        element={{ children: [{ text: '' }], type: 'image' }}
         slots={{ contentBoundary: () => null } as any}
       >
         <span data-testid="caption-content" />
@@ -119,7 +119,7 @@ describe('Caption', () => {
     const view = render(
       <Caption
         active={false}
-        element={{ children: [{ text: 'Visible caption' }], type: 'img' }}
+        element={{ children: [{ text: 'Visible caption' }], type: 'image' }}
         slots={{ contentBoundary: () => null } as any}
       >
         <span data-testid="caption-content">Visible caption</span>
@@ -189,7 +189,7 @@ describe('Caption', () => {
     const setSelection = mock();
     const element = {
       children: [{ text: 'Caption' }],
-      type: 'img',
+      type: 'image',
     };
 
     useEditorMock.mockReturnValue({
@@ -219,7 +219,7 @@ describe('Caption', () => {
       read: { points: { start: mock(() => null) } },
       update: { selection: { set: setSelection } },
     });
-    useElementMock.mockReturnValue({ children: [], type: 'img' });
+    useElementMock.mockReturnValue({ children: [], type: 'image' });
 
     const { CaptionButton } = await import(
       `./caption?empty-button=${Math.random().toString(36).slice(2)}`
@@ -239,7 +239,9 @@ describe('CaptionStatic', () => {
       `./caption-static?visible=${Math.random().toString(36).slice(2)}`
     );
     const view = render(
-      <CaptionStatic element={{ children: [{ text: 'Caption' }], type: 'img' }}>
+      <CaptionStatic
+        element={{ children: [{ text: 'Caption' }], type: 'image' }}
+      >
         <span data-testid="caption-content">Caption</span>
       </CaptionStatic>
     );
@@ -255,7 +257,7 @@ describe('CaptionStatic', () => {
       `./caption-static?empty=${Math.random().toString(36).slice(2)}`
     );
     const view = render(
-      <CaptionStatic element={{ children: [{ text: '' }], type: 'img' }}>
+      <CaptionStatic element={{ children: [{ text: '' }], type: 'image' }}>
         <span data-testid="caption-content" />
       </CaptionStatic>
     );

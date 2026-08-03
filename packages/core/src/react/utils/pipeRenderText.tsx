@@ -27,6 +27,11 @@ type RenderTextEntry = {
   textKey: string;
 };
 
+type TextPropsEntry = {
+  plugin: AnyBasePlugin;
+  textKey: string;
+};
+
 /** @see {@link RenderText} */
 export const pipeRenderText = (
   editor: PlateEditor,
@@ -36,7 +41,7 @@ export const pipeRenderText = (
   const renderTextByKey = new Map<string, true>();
   const simpleRenderTexts: SimpleRenderText[] = [];
   const simpleRenderTextByKey = new Map<string, true>();
-  const textPropsPlugins: AnyBasePlugin[] = [];
+  const textPropsEntries: TextPropsEntry[] = [];
   const hasInjectNodeProps =
     getPlateRuntime(editor).pluginCache.inject.nodeProps.length > 0;
 
@@ -48,10 +53,10 @@ export const pipeRenderText = (
 
       if (canUsePlainText) {
         const entry = {
-          className: getPluginNodeClass(plugin.type) || undefined,
+          className: getPluginNodeClass(plugin.name) || undefined,
           plugin,
           tag: (plugin.render?.as ?? 'span') as keyof HTMLElementTagNameMap,
-          textKey: plugin.type,
+          textKey: binding.propertyKey!,
         };
 
         simpleRenderTexts.push(entry);
@@ -59,7 +64,7 @@ export const pipeRenderText = (
       } else {
         const entry = {
           renderText: pluginRenderText(editor, plugin),
-          textKey: plugin.type,
+          textKey: binding.propertyKey!,
         };
 
         renderTexts.push(entry);
@@ -67,8 +72,8 @@ export const pipeRenderText = (
       }
     }
 
-    if (plugin.render.textProps) {
-      textPropsPlugins.push(plugin);
+    if (plugin.render.textProps && binding?.propertyKey) {
+      textPropsEntries.push({ plugin, textKey: binding.propertyKey });
     }
   });
 
@@ -76,7 +81,7 @@ export const pipeRenderText = (
     !hasInjectNodeProps &&
     simpleRenderTexts.length === 0 &&
     renderTexts.length === 0 &&
-    textPropsPlugins.length === 0
+    textPropsEntries.length === 0
   ) {
     if (renderTextProp) {
       return renderTextProp;
@@ -88,7 +93,7 @@ export const pipeRenderText = (
   }
 
   const canUsePlainOuterText =
-    !hasInjectNodeProps && !renderTextProp && textPropsPlugins.length === 0;
+    !hasInjectNodeProps && !renderTextProp && textPropsEntries.length === 0;
 
   return function render({ attributes, ...props }) {
     const readOnly = editor.read.view.isReadOnly();
@@ -134,8 +139,8 @@ export const pipeRenderText = (
       }
     }
 
-    textPropsPlugins.forEach((plugin) => {
-      if (props.text[plugin.type]) {
+    textPropsEntries.forEach(({ plugin, textKey }) => {
+      if (props.text[textKey]) {
         const pluginTextProps =
           typeof plugin.render.textProps === 'function'
             ? plugin.render.textProps(props as any)

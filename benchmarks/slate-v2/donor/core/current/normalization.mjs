@@ -17,13 +17,13 @@ const observedBlocks = Number(
 );
 const observedOps = Number(process.env.NORMALIZATION_BENCH_OBSERVED_OPS || 50);
 
-const InlineNormalizationSchema = defineEditorSchema({
+const InlineNormalizationSchema = defineEditorSchema("schema:normalization-benchmark-inline", {
   elements: {
     inline: { content: schema.content.open(), inline: true },
     paragraph: { content: schema.content.open() },
   },
   id: 'normalization-benchmark-inline',
-  root: { content: schema.content.type('paragraph') },
+  root: schema.content.type('paragraph'),
   unknown: 'preserve',
   version: 1,
 });

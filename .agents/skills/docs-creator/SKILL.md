@@ -561,7 +561,8 @@ Required shape:
    - import plugin APIs from the actual `platejs` or `@platejs/*` path
    - add the plugin to `createPlateEditor`
    - declare an ordinary node `component` in
-     `createBasePlugin({ component })` or `createPlatePlugin({ component })`
+     `defineBasePlugin(name, { component })` or
+     `definePlatePlugin(name, { component })`
    - replace an existing descriptor's component with one terminal
      `.configure({ component })`
    - keep Base `.extend()` free of `component`; independent defaults belong in
@@ -587,11 +588,11 @@ Required shape:
    - keep Plate-context capture inside the authoring callback and extract
      domain inputs; never teach a context identity helper, callback annotation,
      cast, or `any` to recover erased inference
-   - use `defineEditorExtension` imported from `@platejs/plite` only for
+   - use `defineExtension` imported from `@platejs/plite` only for
      independently reusable standalone Plite descriptors composed as
      dependencies
    - put constructor-accessible fields and their context callbacks directly in
-     `createBasePlugin()` / `createPlatePlugin()`; use `.extend()` only for an
+     `defineBasePlugin()` / `definePlatePlugin()`; use `.extend()` only for an
      imported/prebuilt plugin descriptor, a shared factory the constructor cannot
      access, or a real earlier-stage type dependency
    - teach `name` as descriptor identity and `type` as serialized node identity
@@ -633,7 +634,7 @@ Required shape:
      core-read policy as `readMiddleware`, and config-free `validate`
 5. Style plugins without distinct components should document their schema
    placement truth. Cross-cut block styles configure
-   root `targetPluginNames`; render/parser injection is derived and must not
+   root `targetPlugins`; render/parser injection is derived and must not
    be taught as a second target configuration. Text styles declare marks and
    do not invent block target lists. Document `inject.nodeProps` only for real
    rendering defaults and mappings.
@@ -642,7 +643,7 @@ Required shape:
    controls.
 7. `## Plugins` for actual plugin objects.
 8. `## API Reference` and `## Transforms` only for real
-   `editor.api.<pluginName>.*` and `editor.update.<group>.*` surfaces. Teach
+   `editor.api.<name>.*` and `editor.update.<group>.*` surfaces. Teach
    `editor.plugin(Plugin).api.*` only when the example is intentionally generic
    package code or needs exact descriptor ownership; teach
    `editor.extension(Extension).api.*` for exact raw Plite ownership. These

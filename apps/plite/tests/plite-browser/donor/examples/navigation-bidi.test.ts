@@ -149,12 +149,12 @@ test.describe('browser-native mixed-bidi caret proof', () => {
       });
 
       try {
+        await page.addStyleTag({
+          content: `[data-plite-editor="true"] { direction: ${fixture.direction}; }`,
+        });
         await editor.selection.selectAll();
         await page.keyboard.insertText(fixture.text);
         await expect.poll(() => editor.get.modelText()).toBe(fixture.text);
-        await editor.root.evaluate((element: HTMLElement, direction) => {
-          element.dir = direction;
-        }, fixture.direction);
         await editor.selection.selectDOM({
           kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
@@ -187,11 +187,6 @@ test.describe('browser-native mixed-bidi caret proof', () => {
         await editor.assert.noDoubleSelectionHighlight();
         runtimeErrors.assertNone();
       } finally {
-        await editor.root
-          .evaluate((element: HTMLElement) => {
-            element.removeAttribute('dir');
-          })
-          .catch(() => {});
         runtimeErrors.stop();
       }
     });
@@ -216,6 +211,9 @@ test.describe('browser-native mixed-bidi caret proof', () => {
     const stableOffsets = [0, 1, 2, 3, 4, 5, 6, 7, 15, 16, 17] as const;
 
     try {
+      await page.addStyleTag({
+        content: '[data-plite-editor="true"] { direction: ltr; }',
+      });
       await editor.selectAll();
       await editor.deleteFragment();
       await editor.insertText(text);
@@ -230,9 +228,6 @@ test.describe('browser-native mixed-bidi caret proof', () => {
       await page.getByTestId('mark-button-bold').click();
       await expect(editor.root.locator('strong')).toHaveText(leaves[1]);
       await expect.poll(() => editor.get.modelText()).toBe(text);
-      await editor.root.evaluate((element: HTMLElement) => {
-        element.dir = 'ltr';
-      });
       await editor.selection.selectDOM({
         kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
@@ -261,11 +256,6 @@ test.describe('browser-native mixed-bidi caret proof', () => {
       await editor.assert.noDoubleSelectionHighlight();
       runtimeErrors.assertNone();
     } finally {
-      await editor.root
-        .evaluate((element: HTMLElement) => {
-          element.removeAttribute('dir');
-        })
-        .catch(() => {});
       runtimeErrors.stop();
     }
   });

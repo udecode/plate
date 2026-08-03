@@ -77,4 +77,49 @@ describe('Plate registry editor files', () => {
       ])
     );
   });
+
+  it('ships every generated editor contract from its registry owner', () => {
+    const itemsByName = new Map(items.map((item) => [item.name, item]));
+
+    expect(itemsByName.has('plate-types')).toBe(false);
+    expect(itemsByName.get('editor-kit')?.files).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          target: '@components/editor/editor-definition.tsx',
+        }),
+        expect.objectContaining({
+          target: '@components/editor/editor.generated.ts',
+        }),
+        expect.objectContaining({
+          target: '@components/editor/editor.schema.json',
+        }),
+      ])
+    );
+    expect(itemsByName.get('editor-ai')?.files).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          target: '@components/editor/editor-definition.tsx',
+        }),
+        expect.objectContaining({
+          target: '@components/editor/editor.generated.ts',
+        }),
+        expect.objectContaining({
+          target: '@components/editor/editor.schema.json',
+        }),
+      ])
+    );
+    expect(itemsByName.get('copilot-demo')?.files).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          path: 'examples/copilot-editor-definition.tsx',
+        }),
+        expect.objectContaining({
+          path: 'examples/copilot-editor.generated.ts',
+        }),
+        expect.objectContaining({
+          path: 'examples/copilot-editor.schema.json',
+        }),
+      ])
+    );
+  });
 });

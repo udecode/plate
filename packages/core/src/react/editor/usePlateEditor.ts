@@ -1,12 +1,9 @@
 import React from 'react';
 
-import type { Value } from '@platejs/plite';
+import type { PlateEditor } from './PlateEditor';
+import type { BasePluginInput } from '../../lib';
 
-import {
-  type CreatePlateEditorOptions,
-  type PlateCorePlugin,
-  createPlateEditor,
-} from './withPlate';
+import { type CreatePlateEditorOptions, createPlateEditor } from './withPlate';
 
 type UsePlateEditorReturn<TEnabled, TEditor> = TEnabled extends false
   ? null
@@ -14,10 +11,8 @@ type UsePlateEditorReturn<TEnabled, TEditor> = TEnabled extends false
     ? TEditor
     : TEditor | null;
 
-type UsePlateEditorResult<
-  V extends Value,
-  TPlugins extends readonly unknown[],
-> = ReturnType<typeof createPlateEditor<V, TPlugins>>;
+type UsePlateEditorResult<TPlugins extends readonly BasePluginInput[]> =
+  PlateEditor<TPlugins>;
 
 /**
  * Creates a memoized Plate editor for React components.
@@ -31,7 +26,7 @@ type UsePlateEditorResult<
  * ```ts
  * const editor = usePlateEditor({
  *   plugins: [ParagraphPlugin, H1Plugin],
- *   initialValue: [{ type: 'p', children: [{ text: 'Hello world!' }] }],
+ *   initialValue: [{ type: 'paragraph', children: [{ text: 'Hello world!' }] }],
  * });
  *
  * // Editor with custom dependencies
@@ -53,30 +48,15 @@ type UsePlateEditorResult<
  * @param deps - Additional dependencies for the useMemo hook (default: [])
  * @see {@link createPlateEditor} for detailed information on React editor creation and configuration.
  * @see {@link createBaseEditor} for a non-React version of editor creation.
- * @see {@link extendPlateEditor} for the underlying React-specific enhancement function.
+ * @see {@link createPlateEditor} for the underlying React-specific enhancement function.
  */
-export function usePlateEditor<V extends Value = Value>(): UsePlateEditorResult<
-  V,
-  readonly PlateCorePlugin[]
->;
-
 export function usePlateEditor<
-  V extends Value = Value,
-  const TPlugins extends readonly unknown[] = readonly PlateCorePlugin[],
+  const TPlugins extends readonly BasePluginInput[] = readonly [],
   TEnabled extends boolean | undefined = undefined,
 >(
-  options: CreatePlateEditorOptions<V, TPlugins> & { enabled?: TEnabled },
-  deps?: React.DependencyList
-): UsePlateEditorReturn<TEnabled, UsePlateEditorResult<V, TPlugins>>;
-
-export function usePlateEditor<
-  V extends Value = Value,
-  const TPlugins extends readonly unknown[] = readonly PlateCorePlugin[],
-  TEnabled extends boolean | undefined = undefined,
->(
-  options: CreatePlateEditorOptions<V, TPlugins> & { enabled?: TEnabled } = {},
+  options: CreatePlateEditorOptions<TPlugins> & { enabled?: TEnabled } = {},
   deps: React.DependencyList = []
-): UsePlateEditorReturn<TEnabled, UsePlateEditorResult<V, TPlugins>> {
+): UsePlateEditorReturn<TEnabled, UsePlateEditorResult<TPlugins>> {
   const { enabled, ...editorOptions } = options;
 
   return React.useMemo(
@@ -87,5 +67,5 @@ export function usePlateEditor<
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [editorOptions.id, enabled, ...deps]
-  ) as UsePlateEditorReturn<TEnabled, UsePlateEditorResult<V, TPlugins>>;
+  ) as UsePlateEditorReturn<TEnabled, UsePlateEditorResult<TPlugins>>;
 }

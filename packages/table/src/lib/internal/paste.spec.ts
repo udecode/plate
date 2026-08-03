@@ -1,9 +1,9 @@
 import { ContentSlice, NodeApi } from '@platejs/plite';
 import type {
-  TTableCellElement,
-  TTableElement,
-  TTableRowElement,
-} from '@platejs/utils';
+  TableCellElement,
+  TableElement,
+  TableRowElement,
+} from '../BaseTablePlugin';
 
 import { createDetachedTableContext } from './context';
 import { compileTableGrid } from './grid';
@@ -24,28 +24,28 @@ let generatedId = 0;
 
 const cell = (
   text: string,
-  options: Partial<TTableCellElement> = {}
-): TTableCellElement => ({
+  options: Partial<TableCellElement> = {}
+): TableCellElement => ({
   children: [{ text }],
   id: options.id ?? `cell-${generatedId++}`,
-  type: 'td',
+  type: 'tableCell',
   ...options,
 });
 
 const row = (
-  children: readonly TTableCellElement[],
-  options: Partial<TTableRowElement> = {}
-): TTableRowElement => ({
+  children: readonly TableCellElement[],
+  options: Partial<TableRowElement> = {}
+): TableRowElement => ({
   children: [...children],
   id: options.id ?? `row-${generatedId++}`,
-  type: 'tr',
+  type: 'tableRow',
   ...options,
 });
 
 const table = (
-  rows: readonly TTableRowElement[],
-  options: Partial<TTableElement> = {}
-): TTableElement => ({
+  rows: readonly TableRowElement[],
+  options: Partial<TableElement> = {}
+): TableElement => ({
   children: [...rows],
   id: options.id ?? `table-${generatedId++}`,
   type: 'table',
@@ -53,11 +53,11 @@ const table = (
 });
 
 const createCell: TableCellFactory = ({ header }) =>
-  cell('', { type: header ? 'th' : 'td' });
+  cell('', { ...(header ? { header: true } : {}), type: 'tableCell' });
 
 const createRow = () => row([]);
 
-const prepare = (source: TTableElement) =>
+const prepare = (source: TableElement) =>
   prepareTablePaste(source, {
     createCell,
     createRow,
@@ -65,8 +65,8 @@ const prepare = (source: TTableElement) =>
   });
 
 const paste = (
-  target: TTableElement,
-  source: TTableElement,
+  target: TableElement,
+  source: TableElement,
   options: Partial<Parameters<typeof planPreparedTablePaste>[2]> = {}
 ) => {
   const prepared = prepare(source);
@@ -100,7 +100,7 @@ const paste = (
   return { output: output!, plan: result, prepared };
 };
 
-const logicalText = (value: TTableElement) => {
+const logicalText = (value: TableElement) => {
   const grid = compileTableGrid(value);
 
   return grid.slots.map((slots) =>
@@ -109,8 +109,8 @@ const logicalText = (value: TTableElement) => {
 };
 
 const types = {
-  cellTypes: ['td', 'th'],
-  rowType: 'tr',
+  cellTypes: ['tableCell'],
+  rowType: 'tableRow',
   tableType: 'table',
 } as const;
 
@@ -126,7 +126,7 @@ const tableWithSpan = (
 ) =>
   table(
     Array.from({ length: height }, (_, rowIndex) => {
-      const cells: TTableCellElement[] = [];
+      const cells: TableCellElement[] = [];
 
       for (let colIndex = 0; colIndex < width; colIndex++) {
         const insideSpan =

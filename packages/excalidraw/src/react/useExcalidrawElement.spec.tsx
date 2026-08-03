@@ -2,7 +2,7 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import type { OrderedExcalidrawElement } from '@excalidraw/excalidraw/element/types';
 import type { LibraryItems } from '@excalidraw/excalidraw/types';
 
-import type { TExcalidrawElement } from '../lib';
+import type { ExcalidrawElement } from '../lib';
 
 const useEditorMock = mock();
 const useEditorReadOnlyMock = mock();
@@ -63,9 +63,8 @@ describe('useExcalidrawElement', () => {
         elements: [{ id: 'el-1' } as OrderedExcalidrawElement],
         state: { viewBackgroundColor: '#fff' },
       },
-      id: 'node-1',
       type: 'excalidraw',
-    } satisfies TExcalidrawElement;
+    } satisfies ExcalidrawElement;
 
     const { result } = renderHook(() => useExcalidrawElement({ element }));
 
@@ -130,7 +129,7 @@ describe('useExcalidrawElement', () => {
     const element = {
       children: [{ text: '' }],
       type: 'excalidraw',
-    } satisfies TExcalidrawElement;
+    } satisfies ExcalidrawElement;
     const { result } = renderHook(() =>
       useExcalidrawElement({
         element,

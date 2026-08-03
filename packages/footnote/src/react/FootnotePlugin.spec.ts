@@ -3,7 +3,6 @@ import {
   NavigationFeedbackPlugin,
 } from '@platejs/core/react';
 import { DOMEditor } from '@platejs/plite-dom/internal';
-import { KEYS } from '@platejs/utils';
 
 import {
   FootnoteDefinitionPlugin,
@@ -37,16 +36,16 @@ describe('FootnotePlugin', () => {
             {
               children: [{ text: '' }],
               identifier: '1',
-              type: KEYS.footnoteReference,
+              type: 'footnote',
             },
             { text: 'b' },
           ],
-          type: KEYS.p,
+          type: 'paragraph',
         },
         {
-          children: [{ children: [{ text: 'body' }], type: KEYS.p }],
+          children: [{ children: [{ text: 'body' }], type: 'paragraph' }],
           identifier: '1',
-          type: KEYS.footnoteDefinition,
+          type: 'footnoteDefinition',
         },
       ],
     });

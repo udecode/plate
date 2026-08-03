@@ -60,7 +60,7 @@ const createEditor = ({
       anchor: { offset: offset ?? text.length, path: [0, 0] },
       focus: { offset: offset ?? text.length, path: [0, 0] },
     },
-    initialValue: [{ children: [{ text }], type: 'p' }],
+    initialValue: [{ children: [{ text }], type: 'paragraph' }],
   } as any);
 
 const insertText = (editor: ReturnType<typeof createEditor>, text: string) => {
@@ -123,7 +123,7 @@ describe('playground rules current contract', () => {
       insertText(editor, ' ');
 
       expect(editor.read.children()[0]).toMatchObject({
-        children: [{ children: [{ text: 'hello' }], type: 'p' }],
+        children: [{ children: [{ text: 'hello' }], type: 'paragraph' }],
         type: 'blockquote',
       });
       expect(editor.read.selection()).toEqual({
@@ -142,8 +142,8 @@ describe('playground rules current contract', () => {
       insertText(editor, finalInput);
 
       expect(editor.read.children()).toMatchObject([
-        { type: 'hr' },
-        { children: [{ text: '' }], type: 'p' },
+        { type: 'horizontalRule' },
+        { children: [{ text: '' }], type: 'paragraph' },
       ]);
     });
   });
@@ -198,7 +198,7 @@ describe('playground rules current contract', () => {
 
       expect(editor.read.children()[0]).toMatchObject({
         children: [expectedLeaf],
-        type: 'p',
+        type: 'paragraph',
       });
     });
   });
@@ -226,12 +226,17 @@ describe('playground rules current contract', () => {
       });
 
     it.each([
-      ['-', ' ', { indent: 1, listStyleType: 'disc', type: 'p' }],
-      ['*', ' ', { indent: 1, listStyleType: 'disc', type: 'p' }],
+      ['-', ' ', { indent: 1, listStyleType: 'disc', type: 'paragraph' }],
+      ['*', ' ', { indent: 1, listStyleType: 'disc', type: 'paragraph' }],
       [
         '3.',
         ' ',
-        { indent: 1, listStart: 3, listStyleType: 'decimal', type: 'p' },
+        {
+          indent: 1,
+          listStart: 3,
+          listStyleType: 'decimal',
+          type: 'paragraph',
+        },
       ],
       [
         '3)',
@@ -241,18 +246,18 @@ describe('playground rules current contract', () => {
           listRestartPolite: 3,
           listStart: 3,
           listStyleType: 'decimal',
-          type: 'p',
+          type: 'paragraph',
         },
       ],
       [
         '[]',
         ' ',
-        { checked: false, indent: 1, listStyleType: 'todo', type: 'p' },
+        { checked: false, indent: 1, listStyleType: 'todo', type: 'paragraph' },
       ],
       [
         '[x]',
         ' ',
-        { checked: true, indent: 1, listStyleType: 'todo', type: 'p' },
+        { checked: true, indent: 1, listStyleType: 'todo', type: 'paragraph' },
       ],
     ])('promotes list shorthand `%s`', (prefix, finalInput, expectedNode) => {
       const editor = createListsEditor(prefix, prefix.length);
@@ -294,10 +299,10 @@ describe('playground rules current contract', () => {
       expect(editor.read.children()[0]).toMatchObject({
         children: [
           { text: 'Math: ' },
-          { texExpression: 'x', type: 'inline_equation' },
+          { texExpression: 'x', type: 'inlineEquation' },
           { text: '' },
         ],
-        type: 'p',
+        type: 'paragraph',
       });
     });
   });
@@ -328,12 +333,12 @@ describe('playground rules current contract', () => {
           { text: '' },
           {
             children: [{ text: 'Example' }],
-            type: 'a',
+            type: 'link',
             url: 'https://example.com',
           },
           { text: '' },
         ],
-        type: 'p',
+        type: 'paragraph',
       });
       expect(editor.read.selection()).toEqual({
         kind: 'text',

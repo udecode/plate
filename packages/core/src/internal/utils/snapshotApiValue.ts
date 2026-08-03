@@ -1,8 +1,11 @@
+import { isNominalPluginDescriptor } from './mergePlugins';
+
 export const snapshotApiValue = <T>(
   value: T,
   snapshots = new WeakMap<object, unknown>()
 ): T => {
   if (!value || typeof value !== 'object') return value;
+  if (isNominalPluginDescriptor(value)) return value;
 
   const existing = snapshots.get(value);
 

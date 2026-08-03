@@ -1,7 +1,6 @@
 import React from 'react';
 
 import {
-  type Editor,
   type EditorCommit,
   type EditorStateView,
   type ExtensionsOf,
@@ -26,8 +25,7 @@ import {
 } from '../plate-controller';
 
 export type PlateStore = ReturnType<typeof usePlateStore>;
-export type PlateEditorWithStore<E extends Editor<any, any> = PlateEditor> =
-  E & { store: PlateStore };
+export type PlateEditorWithStore<E = PlateEditor> = E & { store: PlateStore };
 
 export const PLATE_SCOPE = 'plate';
 
@@ -44,9 +42,7 @@ const selectionEqual = (previous: Selection, next: Selection) => {
   return RangeApi.equals(previous, next);
 };
 
-export const createPlateStore = <
-  E extends PlateStoreEditor = PlateStoreEditor,
->({
+export const createPlateStore = <E = PlateStoreEditor>({
   containerRef = { current: null },
   decorate = null,
   editor,
@@ -102,15 +98,16 @@ type BasePlateStoreProviderProps = React.ComponentProps<
   typeof BasePlateStoreProvider
 >;
 
-export type PlateStoreProviderProps<
-  E extends PlateStoreEditor = PlateStoreEditor,
-> = Omit<BasePlateStoreProviderProps, keyof PlateStoreState | 'editor'> &
+export type PlateStoreProviderProps<E = PlateStoreEditor> = Omit<
+  BasePlateStoreProviderProps,
+  keyof PlateStoreState | 'editor'
+> &
   Partial<PlateStoreState<E>> & {
     editor: E;
   };
 
 const PlateStoreProvider = BasePlateStoreProvider as unknown as <
-  E extends PlateStoreEditor = PlateStoreEditor,
+  E = PlateStoreEditor,
 >(
   props: PlateStoreProviderProps<E>
 ) => React.ReactElement | null;
@@ -198,7 +195,7 @@ export type UseEditorOptions = {
   id?: string;
 };
 
-const useInternalEditor = <E extends Editor<any, any> = PlateEditor>(
+const useInternalEditor = <E = PlateEditor>(
   id?: string
 ): PlateEditorWithStore<E> => {
   const store = usePlateStore(id);
@@ -217,13 +214,13 @@ const useInternalEditor = <E extends Editor<any, any> = PlateEditor>(
 export function useEditor(
   options?: UseEditorOptions
 ): PlateEditorWithStore<PlateEditor>;
-export function useEditor<E extends Editor<any, any>>(
+export function useEditor<E>(
   options?: UseEditorOptions
 ): PlateEditorWithStore<E>;
 export function useEditor(
   options?: UseEditorOptions
 ): PlateEditorWithStore<PlateEditor>;
-export function useEditor<E extends Editor<any, any> = PlateEditor>({
+export function useEditor<E = PlateEditor>({
   id,
 }: UseEditorOptions = {}): PlateEditorWithStore<E> {
   const editor = useInternalEditor<E>(id);
@@ -236,7 +233,7 @@ export function useEditor<E extends Editor<any, any> = PlateEditor>({
 }
 
 /** Get the active editor, or `null` while its controller has no editor. */
-export const useActiveEditor = <E extends Editor<any, any> = PlateEditor>({
+export const useActiveEditor = <E = PlateEditor>({
   id,
 }: UseEditorOptions = {}): PlateEditorWithStore<E> | null => {
   const editor = useInternalEditor<E>(id);

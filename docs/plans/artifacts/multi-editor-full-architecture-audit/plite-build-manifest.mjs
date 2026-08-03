@@ -133,7 +133,10 @@ const sourceFiles = [
   normalizePath(left).localeCompare(normalizePath(right))
 );
 
-const add = (set, ...ids) => ids.forEach((id) => set.add(id));
+const add = (set, ...ids) =>
+  ids.forEach((id) => {
+    set.add(id);
+  });
 
 const inferTestConcepts = (relative, set) => {
   const lower = relative.toLowerCase();
@@ -716,15 +719,6 @@ if (checkOnly) {
     );
     process.exit(1);
   }
-
-  console.log(
-    `Plite source manifest verified: ${manifest.summary.files} files, ${manifest.summary.declarations} declarations, 0 unmapped.`
-  );
 } else {
   fs.writeFileSync(outputPath, serialized);
-  console.log(
-    `Wrote ${path.relative(repoRoot, outputPath)}: ${
-      manifest.summary.files
-    } files, ${manifest.summary.declarations} declarations, 0 unmapped.`
-  );
 }

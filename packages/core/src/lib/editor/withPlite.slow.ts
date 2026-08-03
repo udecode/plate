@@ -1,24 +1,33 @@
 import {
+  createEditorSchemaContract,
   createEditor,
   property,
   schema,
   target,
   type Value,
 } from '@platejs/plite';
+import { getCompiledEditorSchema } from '@platejs/plite/internal';
 import { NavigationFeedbackPlugin, ParagraphPlugin } from '../../react';
 import {
   getCompiledPlateContainerTypes,
+  getPlateModelPublication,
   getPlateRuntime,
 } from '../../internal/plugin/compilePlateModel';
 import { getPlateCorePlugins } from '../../react/editor/getPlateCorePlugins';
-import { extendPlateEditor } from '../../react/editor/withPlate';
-import { createPlatePlugin } from '../../react/plugin/createPlatePlugin';
+import { createPlateEditor } from '../../react/editor/withPlate';
+import { definePlatePlugin } from '../../react/plugin/definePlatePlugin';
 import { EventEditorPlugin } from '../../react/plugins/event-editor/EventEditorPlugin';
 import { InputRulesPlugin } from '../plugins/input-rules/InputRulesPlugin';
 import {
+  bindGeneratedEditor,
+  defineEditor,
+  type GeneratedEditorTypes,
+} from './defineEditor';
+import {
   AffinityPlugin,
   type BaseEditor,
-  createBasePlugin,
+  type BasePluginInput,
+  defineBasePlugin,
   createBaseEditor,
   DebugPlugin,
   DOMPlugin,
@@ -27,7 +36,6 @@ import {
   HtmlPlugin,
   NodeIdPlugin,
   OverridePlugin,
-  extendBaseEditor,
 } from '../index';
 
 const coreNames = [
@@ -42,12 +50,12 @@ const coreNames = [
   NodeIdPlugin.name,
   AffinityPlugin.name,
   ParagraphPlugin.name,
+  'react',
   EventEditorPlugin.name,
   NavigationFeedbackPlugin.name,
 ];
 
-const TestBoldPlugin = createBasePlugin({
-  name: 'bold',
+const TestBoldPlugin = defineBasePlugin('bold', {
   schema: { mark: property.boolean({ default: false, omitDefault: true }) },
   codecs: ({ defineCodecs }) =>
     defineCodecs({
@@ -59,8 +67,7 @@ const TestBoldPlugin = createBasePlugin({
     }),
 });
 
-const TestItalicPlugin = createBasePlugin({
-  name: 'italic',
+const TestItalicPlugin = defineBasePlugin('italic', {
   schema: { mark: property.boolean({ default: false, omitDefault: true }) },
 });
 
@@ -68,10 +75,143 @@ const TextBlockElement = {
   content: schema.content.text({ default: 'text', min: 1 }),
 };
 
-describe('extendPlateEditor', () => {
+describe('createPlateEditor', () => {
+  describe('generated editor contracts', () => {
+    const compileContract = (plugins: readonly BasePluginInput[]) => {
+      const editor = createBaseEditor({ plugins, skipInitialization: true });
+      const compiled = getCompiledEditorSchema(editor);
+
+      return createEditorSchemaContract(compiled);
+    };
+
+    it('accepts the exact generated fingerprint and publishes its schema identity', () => {
+      const CalloutPlugin = defineBasePlugin('generatedCallout', {
+        schema: { element: schema.element.textBlock() },
+      });
+      const definition = defineEditor('generatedContract', {
+        plugins: [CalloutPlugin],
+        schemaIdentity: { id: 'generated-document', version: 4 },
+      });
+      const schemaContract = compileContract(definition.plugins);
+      const EditorKit = bindGeneratedEditor(definition, {
+        bindings: { plugins: {}, properties: {} },
+        fingerprint: schemaContract.fingerprint,
+        schema: schemaContract,
+        types: undefined as unknown as GeneratedEditorTypes,
+      });
+      const editor = createBaseEditor({ plugins: EditorKit });
+
+      expect(editor.read.schema.identity()).toMatchObject({
+        fingerprint: schemaContract.fingerprint,
+        id: 'generated-document',
+        version: 4,
+      });
+    });
+
+    it('applies closed editor schema overrides before generation and publication', () => {
+      const CardPlugin = defineBasePlugin('applicationCard', {
+        schema: {
+          element: {
+            content: schema.content.text({ default: 'text', min: 1 }),
+            type: 'application_card',
+          },
+        },
+      });
+      const MetadataPlugin = defineBasePlugin('applicationMetadata', {
+        schema: {
+          properties: {
+            tone: schema.elementProperty(
+              property.string({ default: 'neutral' }),
+              { target: target.element(CardPlugin) }
+            ),
+          },
+        },
+      });
+      const definition = defineEditor('applicationOverride', {
+        plugins: [CardPlugin, MetadataPlugin],
+        schema: {
+          overrides: [
+            schema.override(CardPlugin, {
+              element: { type: 'card' },
+            }),
+            schema.override(MetadataPlugin, {
+              properties: {
+                tone: { target: target.element(CardPlugin) },
+              },
+            }),
+          ],
+          properties: {
+            reviewState: schema.elementProperty(
+              property.enum(['draft', 'approved'] as const),
+              { target: target.element(CardPlugin) }
+            ),
+          },
+        },
+      });
+      const editor = createBaseEditor({
+        plugins: definition.plugins,
+        skipInitialization: true,
+      });
+      const card = editor.read.schema.create(
+        editor.plugin(CardPlugin).schema.element
+      );
+
+      expect(editor.plugin(CardPlugin).schema.element.type).toBe('card');
+      expect(card.type).toBe('card');
+      expect(editor.read.schema.element('application_card')).toBeNull();
+      expect(editor.read.schema.element('card')?.type).toBe('card');
+      expect(
+        editor.read.schema.getProperty(
+          card,
+          editor.plugin(MetadataPlugin).schema.properties.tone
+        )
+      ).toBe('neutral');
+      expect(
+        editor.read.schema.property({
+          key: 'reviewState',
+          placement: 'element',
+        })
+      ).not.toBeNull();
+    });
+
+    it('rejects a stale generated fingerprint before initialization or publication', () => {
+      let initialValueTransforms = 0;
+      const ExpectedPlugin = defineBasePlugin('generatedExpected', {
+        schema: { element: schema.element.textBlock() },
+        transformInitialValue: ({ value }) => {
+          initialValueTransforms++;
+
+          return value;
+        },
+      });
+      const OtherPlugin = defineBasePlugin('generatedOther', {
+        schema: { element: schema.element.textBlock() },
+      });
+      const definition = defineEditor('staleGeneratedContract', {
+        plugins: [ExpectedPlugin],
+      });
+      const staleSchema = compileContract([OtherPlugin]);
+      const StaleEditorKit = bindGeneratedEditor(definition, {
+        bindings: { plugins: {}, properties: {} },
+        fingerprint: staleSchema.fingerprint,
+        schema: staleSchema,
+        types: undefined as unknown as GeneratedEditorTypes,
+      });
+      const rawEditor = createEditor();
+      const schemaBefore = rawEditor.read.schema.identity();
+
+      expect(() =>
+        createBaseEditor({ editor: rawEditor, plugins: StaleEditorKit })
+      ).toThrow('Generated editor schema is stale');
+      expect(initialValueTransforms).toBe(0);
+      expect(getPlateModelPublication(rawEditor as BaseEditor)).toBeUndefined();
+      expect(rawEditor.read.schema.identity()).toEqual(schemaBefore);
+    });
+  });
+
   describe('when default plugins', () => {
     it('have core plugins', () => {
-      const editor = extendPlateEditor(createEditor(), {});
+      const editor = createPlateEditor({ editor: createEditor() });
 
       expect(editor.id).toBeDefined();
       expect(editor.read((state) => state.history())).toBeDefined();
@@ -79,12 +219,12 @@ describe('extendPlateEditor', () => {
         getPlateRuntime(editor).pluginList.map((plugin) => plugin.name)
       ).toEqual(coreNames);
       expect(
-        getPlateRuntime(editor).pluginList.map((plugin) => plugin.type)
+        getPlateRuntime(editor).pluginList.map((plugin) => plugin.name)
       ).toEqual(coreNames);
       expect(Object.keys(getPlateRuntime(editor).plugins)).toEqual(coreNames);
 
       expect(editor.read.children()).toEqual([
-        { children: [{ text: '' }], type: 'p' },
+        { children: [{ text: '' }], type: 'paragraph' },
       ]);
       expect(editor.read.view.isReadOnly()).toBe(false);
     });
@@ -103,12 +243,12 @@ describe('extendPlateEditor', () => {
         });
       });
 
-      extendPlateEditor(editor, {});
+      createPlateEditor({ editor });
 
       expect(observations).toEqual([]);
       expect(editor.read.schema.identity()).not.toBeNull();
       expect(editor.read.children()).toEqual([
-        { children: [{ text: '' }], type: 'p' },
+        { children: [{ text: '' }], type: 'paragraph' },
       ]);
 
       editor.update.text.insert('x', {
@@ -117,7 +257,7 @@ describe('extendPlateEditor', () => {
 
       expect(observations).toEqual([
         {
-          children: [{ children: [{ text: 'x' }], type: 'p' }],
+          children: [{ children: [{ text: 'x' }], type: 'paragraph' }],
           schema: editor.read.schema.identity(),
         },
       ]);
@@ -125,13 +265,14 @@ describe('extendPlateEditor', () => {
       editor.update((tx) => tx.history.undo());
 
       expect(editor.read.children()).toEqual([
-        { children: [{ text: '' }], type: 'p' },
+        { children: [{ text: '' }], type: 'paragraph' },
       ]);
     });
 
     it('rejects an invalid initial root', () => {
       expect(() =>
-        extendPlateEditor(createEditor(), {
+        createPlateEditor({
+          editor: createEditor(),
           initialValue: [
             { children: [{ text: 'stable' }], type: 'not-a-plate-element' },
           ],
@@ -142,21 +283,21 @@ describe('extendPlateEditor', () => {
     it('registers the node id schema without generating ids in tests', () => {
       const editor = createBaseEditor({
         initialValue: [
-          { children: [{ text: 'known' }], id: 'known', type: 'p' },
-          { children: [{ text: 'missing' }], type: 'p' },
+          { children: [{ text: 'known' }], id: 'known', type: 'paragraph' },
+          { children: [{ text: 'missing' }], type: 'paragraph' },
         ],
       });
 
       expect(editor.read.children()).toEqual([
-        { children: [{ text: 'known' }], id: 'known', type: 'p' },
-        { children: [{ text: 'missing' }], type: 'p' },
+        { children: [{ text: 'known' }], id: 'known', type: 'paragraph' },
+        { children: [{ text: 'missing' }], type: 'paragraph' },
       ]);
       expect(() =>
         editor.read.schema.assertDocument(editor.read.value())
       ).not.toThrow();
 
       editor.update.nodes.insert(
-        { children: [{ text: 'inserted' }], type: 'p' },
+        { children: [{ text: 'inserted' }], type: 'paragraph' },
         { at: [2] }
       );
 
@@ -173,27 +314,27 @@ describe('extendPlateEditor', () => {
       ).toBe(false);
       expect(() =>
         disabledEditor.update.nodes.insert(
-          { children: [{ text: 'unknown' }], id: 'unknown', type: 'p' },
+          { children: [{ text: 'unknown' }], id: 'unknown', type: 'paragraph' },
           { at: [0] }
         )
       ).toThrow(/unknown element property "id"/i);
     });
 
     it('executes tx-backed plugin commands through update on the current editor runtime', () => {
-      const TxPlugin = createBasePlugin({
-        name: 'txPlugin',
+      const TxPlugin = defineBasePlugin('txPlugin', {
         update: ({ tx }) => ({
           bold: () => tx.marks.add('bold', true),
         }),
       });
-      const editor = extendPlateEditor(createEditor(), {
+      const editor = createPlateEditor({
+        editor: createEditor(),
         plugins: [TxPlugin, TestBoldPlugin],
         selection: {
           kind: 'text',
           anchor: { offset: 0, path: [0, 0] },
           focus: { offset: 4, path: [0, 0] },
         },
-        initialValue: [{ children: [{ text: 'text' }], type: 'p' }],
+        initialValue: [{ children: [{ text: 'text' }], type: 'paragraph' }],
       });
 
       editor.update((tx) => tx.txPlugin.bold());
@@ -205,29 +346,27 @@ describe('extendPlateEditor', () => {
     });
 
     it('installs plugin dependencies before their dependent', () => {
-      const DependencyPlugin = createBasePlugin({ name: 'dependency' });
-      const DependentPlugin = createBasePlugin({
+      const DependencyPlugin = defineBasePlugin('dependency', {});
+      const DependentPlugin = defineBasePlugin('dependent', {
         dependencies: [DependencyPlugin],
-        name: 'dependent',
       });
-      const editor = extendPlateEditor(createEditor(), {
+      const editor = createPlateEditor({
+        editor: createEditor(),
         plugins: [DependentPlugin],
       });
-      const pluginNames = getPlateRuntime(editor).pluginList.map(
+      const names = getPlateRuntime(editor).pluginList.map(
         (plugin) => plugin.name
       );
 
-      expect(pluginNames.indexOf('dependency')).toBeLessThan(
-        pluginNames.indexOf('dependent')
+      expect(names.indexOf('dependency')).toBeLessThan(
+        names.indexOf('dependent')
       );
-      expect(pluginNames.filter((name) => name === 'dependency')).toHaveLength(
-        1
-      );
+      expect(names.filter((name) => name === 'dependency')).toHaveLength(1);
     });
 
     it('runs shared dependency factories once and keeps distinct extensions', () => {
       const calls = { api: 0, distinct: 0, selectors: 0, tx: 0 };
-      const DependencyPlugin = createBasePlugin({ name: 'dependency' })
+      const DependencyPlugin = defineBasePlugin('dependency', {})
         .extend(() => {
           calls.api += 1;
 
@@ -248,12 +387,12 @@ describe('extendPlateEditor', () => {
 
         return { api: () => ({ distinct: () => true }) };
       });
-      const DependentPlugin = createBasePlugin({
+      const DependentPlugin = defineBasePlugin('dependent', {
         dependencies: [DependencyPlugin],
-        name: 'dependent',
       });
 
-      extendPlateEditor(createEditor(), {
+      createPlateEditor({
+        editor: createEditor(),
         plugins: [DependentPlugin, ExplicitDependencyPlugin],
       });
 
@@ -261,14 +400,15 @@ describe('extendPlateEditor', () => {
     });
 
     it('runs update callbacks through the current Plite runtime', () => {
-      const editor = extendPlateEditor(createEditor(), {
+      const editor = createPlateEditor({
+        editor: createEditor(),
         plugins: [TestItalicPlugin],
         selection: {
           kind: 'text',
           anchor: { offset: 0, path: [0, 0] },
           focus: { offset: 4, path: [0, 0] },
         },
-        initialValue: [{ children: [{ text: 'text' }], type: 'p' }],
+        initialValue: [{ children: [{ text: 'text' }], type: 'paragraph' }],
       });
 
       editor.update((tx, context) => {
@@ -284,32 +424,37 @@ describe('extendPlateEditor', () => {
     });
 
     it('installs schema.element behavior before tx groups insert inline nodes', () => {
-      const InlineTxPlugin = createBasePlugin({
-        name: 'mention',
-        type: 'mention',
+      const InlineTxPlugin = defineBasePlugin('mention', {
         schema: {
           element: {
             void: 'inline',
           },
         },
-      }).extend(({ type }) => ({
-        update: ({ tx }) => ({
-          insert: () => {
-            tx.nodes.insert([
-              { children: [{ text: '' }], type },
-              { text: ' ' },
-            ]);
+      }).extend(
+        ({
+          schema: {
+            element: { type },
           },
-        }),
-      }));
-      const editor = extendPlateEditor(createEditor(), {
+        }) => ({
+          update: ({ tx }) => ({
+            insert: () => {
+              tx.nodes.insert([
+                { children: [{ text: '' }], type },
+                { text: ' ' },
+              ]);
+            },
+          }),
+        })
+      );
+      const editor = createPlateEditor({
+        editor: createEditor(),
         plugins: [InlineTxPlugin],
         selection: {
           kind: 'text',
           anchor: { offset: 2, path: [0, 0] },
           focus: { offset: 2, path: [0, 0] },
         },
-        initialValue: [{ children: [{ text: 'hello' }], type: 'p' }],
+        initialValue: [{ children: [{ text: 'hello' }], type: 'paragraph' }],
       });
       const mentionElement = { children: [{ text: '' }], type: 'mention' };
 
@@ -326,14 +471,12 @@ describe('extendPlateEditor', () => {
           { children: [{ text: '' }], type: 'mention' },
           { text: ' llo' },
         ],
-        type: 'p',
+        type: 'paragraph',
       });
     });
 
     it('installs schema.element selection behavior through the schema adapter', () => {
-      const NonSelectableVoidPlugin = createBasePlugin({
-        name: 'badge',
-        type: 'badge',
+      const NonSelectableVoidPlugin = defineBasePlugin('badge', {
         schema: {
           element: {
             selectable: false,
@@ -341,9 +484,10 @@ describe('extendPlateEditor', () => {
           },
         },
       });
-      const editor = extendPlateEditor(createEditor(), {
+      const editor = createPlateEditor({
+        editor: createEditor(),
         plugins: [NonSelectableVoidPlugin],
-        initialValue: [{ children: [{ text: '' }], type: 'p' }],
+        initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
       });
       const badgeElement = { children: [{ text: '' }], type: 'badge' };
 
@@ -353,39 +497,31 @@ describe('extendPlateEditor', () => {
     });
 
     it('compiles boolean marks, parameterized marks, and element grammar', () => {
-      const CellPlugin = createBasePlugin({
-        name: 'cell',
-        type: 'configured-cell',
-        schema: { element: TextBlockElement },
-      });
-      const RowPlugin = createBasePlugin({
-        name: 'row',
-        type: 'configured-row',
-        schema: ({ plugins }) => {
-          const cellType = plugins.elementType(CellPlugin);
-
-          return {
-            element: {
-              content: schema.content.type(cellType, {
-                default: { type: cellType },
-                min: 1,
-              }),
-              selectable: false,
-            },
-          };
+      const CellPlugin = defineBasePlugin('cell', {
+        schema: {
+          element: { ...TextBlockElement, type: 'configured-cell' },
         },
       });
-      const TonePlugin = createBasePlugin({
-        name: 'tone',
-        schema: ({ plugins }) => ({
+      const RowPlugin = defineBasePlugin('row', {
+        schema: {
+          element: {
+            content: schema.content.element(CellPlugin, { min: 1 }),
+            selectable: false,
+            type: 'configured-row',
+          },
+        },
+      });
+      const TonePlugin = defineBasePlugin('tone', {
+        schema: () => ({
           mark: {
             split: 'drop',
-            target: target.type(plugins.elementType(CellPlugin)),
+            target: target.element(CellPlugin),
             property: property.string(),
           },
         }),
       });
-      const editor = extendPlateEditor(createEditor(), {
+      const editor = createPlateEditor({
+        editor: createEditor(),
         plugins: [RowPlugin, CellPlugin, TonePlugin],
         schemaIdentity: { id: 'plate-core-test', version: 4 },
         initialValue: [
@@ -435,63 +571,63 @@ describe('extendPlateEditor', () => {
     });
 
     it('wraps directly fittable external content before publishing it', () => {
-      const editor = extendBaseEditor(createEditor(), {
+      const editor = createBaseEditor({
+        editor: createEditor(),
         initialValue: [{ text: 'wrapped' }] as unknown as Value,
       });
 
       expect(editor.read.children()).toEqual([
-        { children: [{ text: 'wrapped' }], type: 'p' },
+        { children: [{ text: 'wrapped' }], type: 'paragraph' },
       ]);
     });
 
     it('decodes and transforms HTML before fitting its root content', () => {
       let transformedInput: ReturnType<BaseEditor['read']['value']> | undefined;
-      const TransformHtmlPlugin = createBasePlugin({
-        name: 'transformHtml',
+      const TransformHtmlPlugin = defineBasePlugin('transformHtml', {
         transformInitialValue: ({ value }) => {
           transformedInput = value;
 
           return {
             ...value,
-            children: [{ children: [], type: 'p' }],
+            children: [{ children: [], type: 'paragraph' }],
           };
         },
       });
-      const editor = extendBaseEditor(createEditor(), {
+      const editor = createBaseEditor({
+        editor: createEditor(),
         plugins: [TransformHtmlPlugin, HtmlPlugin],
         initialValue: ({ editor }) =>
           editor.plugin(HtmlPlugin).api.deserialize({ element: '<p>html</p>' }),
       });
 
       expect(transformedInput).toEqual({
-        children: [{ children: [{ text: 'html' }], type: 'p' }],
+        children: [{ children: [{ text: 'html' }], type: 'paragraph' }],
       });
       expect(editor.read.children()).toEqual([
-        { children: [{ text: '' }], type: 'p' },
+        { children: [{ text: '' }], type: 'paragraph' },
       ]);
     });
 
     it('preserves an existing document when initialValue is omitted', () => {
       const rawEditor = createEditor({
-        initialValue: [{ children: [{ text: 'existing' }], type: 'p' }],
+        initialValue: [{ children: [{ text: 'existing' }], type: 'paragraph' }],
       });
 
-      const editor = extendBaseEditor(rawEditor, {});
+      const editor = createBaseEditor({ editor: rawEditor });
 
       expect(editor.read.children()).toEqual([
-        { children: [{ text: 'existing' }], type: 'p' },
+        { children: [{ text: 'existing' }], type: 'paragraph' },
       ]);
     });
 
     it('initializes and transforms one full multi-root document', () => {
-      const FigurePlugin = createBasePlugin({
-        name: 'figure',
+      const FigurePlugin = defineBasePlugin('figure', {
         schema: {
           element: {
             contentRoots: {
               caption: {
-                content: schema.content.type('p', {
-                  default: { type: 'p' },
+                content: schema.content.type('paragraph', {
+                  default: { type: 'paragraph' },
                   min: 1,
                 }),
                 ownership: 'exclusive',
@@ -502,14 +638,13 @@ describe('extendPlateEditor', () => {
           },
         },
       });
-      const TransformDocumentPlugin = createBasePlugin({
-        name: 'transformDocument',
+      const TransformDocumentPlugin = defineBasePlugin('transformDocument', {
         schema: {
-          properties: [
-            schema.elementProperty('transformed', property.boolean(), {
+          properties: {
+            transformed: schema.elementProperty(property.boolean(), {
               target: target.group('element'),
             }),
-          ],
+          },
         },
         transformInitialValue: ({ value }) => ({
           ...value,
@@ -538,7 +673,9 @@ describe('extendPlateEditor', () => {
           ],
           meta: { revision: 7 },
           roots: {
-            'caption:1': [{ children: [{ text: 'Caption' }], type: 'p' }],
+            'caption:1': [
+              { children: [{ text: 'Caption' }], type: 'paragraph' },
+            ],
           },
         }),
       });
@@ -558,7 +695,7 @@ describe('extendPlateEditor', () => {
             {
               children: [{ text: 'Caption' }],
               transformed: true,
-              type: 'p',
+              type: 'paragraph',
             },
           ],
         },
@@ -567,13 +704,14 @@ describe('extendPlateEditor', () => {
 
     it('requires explicit initialValue to contain a root element', () => {
       expect(() =>
-        extendBaseEditor(createEditor(), { initialValue: [] })
+        createBaseEditor({ editor: createEditor(), initialValue: [] })
       ).toThrow('initialValue must contain at least one primary-root element');
     });
 
     it('rejects impossible external content before replacing the document', () => {
       expect(() =>
-        extendBaseEditor(createEditor(), {
+        createBaseEditor({
+          editor: createEditor(),
           initialValue: [
             {
               children: [{ text: 'invalid' }],
@@ -585,12 +723,10 @@ describe('extendPlateEditor', () => {
     });
 
     it('keeps schema fingerprints independent of plugin order', () => {
-      const QuotePlugin = createBasePlugin({
-        name: 'quote',
+      const QuotePlugin = defineBasePlugin('quote', {
         schema: { element: { ...TextBlockElement } },
       });
-      const TonePlugin = createBasePlugin({
-        name: 'tone',
+      const TonePlugin = defineBasePlugin('tone', {
         schema: { mark: { property: property.string() } },
       });
       const options = {
@@ -598,11 +734,13 @@ describe('extendPlateEditor', () => {
           { children: [{ text: 'body', tone: 'quiet' }], type: 'quote' },
         ] as Value,
       };
-      const first = extendPlateEditor(createEditor(), {
+      const first = createPlateEditor({
+        editor: createEditor(),
         ...options,
         plugins: [QuotePlugin, TonePlugin],
       });
-      const second = extendPlateEditor(createEditor(), {
+      const second = createPlateEditor({
+        editor: createEditor(),
         ...options,
         plugins: [TonePlugin, QuotePlugin],
       });
@@ -613,33 +751,30 @@ describe('extendPlateEditor', () => {
     });
 
     it('uses configured pure schema targets without global property leakage', () => {
-      const BadgePlugin = createBasePlugin({
-        name: 'badge',
-        type: 'badge-node',
+      const BadgePlugin = defineBasePlugin('badge', {
         schema: {
           element: {
             ...TextBlockElement,
             properties: { variant: property.string() },
+            type: 'badge-node',
           },
         },
       });
-      const IdentityPlugin = createBasePlugin({
-        name: 'identity',
-        schema: ({ own, plugins, targetPluginNames }) => ({
-          properties: [
-            own.elementProperty(property.string(), {
-              target: target.types(
-                plugins.elementTypesByName(targetPluginNames)
-              ),
+      const IdentityPlugin = defineBasePlugin('identity', {
+        schema: ({ targetElementTypes }) => ({
+          properties: {
+            identity: schema.elementProperty(property.string(), {
+              target: target.types(targetElementTypes),
             }),
-          ],
+          },
         }),
-        targetPluginNames: [BadgePlugin.name] as const,
+        targetPlugins: [BadgePlugin] as const,
       });
-      const editor = extendPlateEditor(createEditor(), {
+      const editor = createPlateEditor({
+        editor: createEditor(),
         plugins: [IdentityPlugin, BadgePlugin],
         initialValue: [
-          { children: [{ text: 'paragraph' }], type: 'p' },
+          { children: [{ text: 'paragraph' }], type: 'paragraph' },
           {
             children: [{ text: 'badge' }],
             identity: 'badge-1',
@@ -651,7 +786,7 @@ describe('extendPlateEditor', () => {
 
       expect(() =>
         editor.read.schema.assertFragment([
-          { children: [{ text: '' }], identity: 'leak', type: 'p' },
+          { children: [{ text: '' }], identity: 'leak', type: 'paragraph' },
         ])
       ).toThrow(/identity/i);
       expect(() =>
@@ -662,16 +797,16 @@ describe('extendPlateEditor', () => {
     });
 
     it('derives container types from compiled schema grammar', () => {
-      const ContainerPlugin = createBasePlugin({
-        name: 'container',
-        type: 'container-node',
+      const ContainerPlugin = defineBasePlugin('container', {
         schema: {
           element: {
             content: schema.content.group('block'),
+            type: 'container-node',
           },
         },
       });
-      const editor = extendPlateEditor(createEditor(), {
+      const editor = createPlateEditor({
+        editor: createEditor(),
         plugins: [ContainerPlugin],
       });
 
@@ -685,19 +820,19 @@ describe('extendPlateEditor', () => {
       const identityBefore = editor.read.schema.identity();
       const valueBefore = editor.read.value();
       const duplicatePropertyPlugin = (name: string) =>
-        createBasePlugin({
-          name,
+        defineBasePlugin(name, {
           schema: {
-            properties: [
-              schema.elementProperty('duplicate', property.string(), {
+            properties: {
+              duplicate: schema.elementProperty(property.string(), {
                 target: target.group('element'),
               }),
-            ],
+            },
           },
         });
 
       expect(() =>
-        extendBaseEditor(editor, {
+        createBaseEditor({
+          editor,
           plugins: [duplicatePropertyPlugin('a'), duplicatePropertyPlugin('b')],
         })
       ).toThrow(/duplicate/i);
@@ -710,8 +845,9 @@ describe('extendPlateEditor', () => {
 
   describe('when plugins is an array', () => {
     it('add custom plugins to core plugins', () => {
-      const customPlugin = createBasePlugin({ name: 'custom' });
-      const editor = extendPlateEditor(createEditor(), {
+      const customPlugin = defineBasePlugin('custom', {});
+      const editor = createPlateEditor({
+        editor: createEditor(),
         override: {
           components: {},
         },
@@ -721,15 +857,13 @@ describe('extendPlateEditor', () => {
       expect(
         getPlateRuntime(editor).pluginList.map((plugin) => plugin.name)
       ).toEqual([...coreNames, 'custom']);
-      expect(editor.plugin('custom').plugin).toBeDefined();
+      expect(editor.plugin('custom')).toBeDefined();
     });
   });
 
   describe('when plugins is an empty array', () => {
     it('only have core plugins', () => {
-      const editor = extendPlateEditor(createEditor(), {
-        plugins: [],
-      });
+      const editor = createPlateEditor({ editor: createEditor(), plugins: [] });
 
       expect(
         getPlateRuntime(editor).pluginList.map((plugin) => plugin.name)
@@ -740,22 +874,23 @@ describe('extendPlateEditor', () => {
   describe('when using override', () => {
     it('publishes components declared by Base plugins to live Plate editors', () => {
       const Component = () => null;
-      const Plugin = createBasePlugin({
+      const Plugin = defineBasePlugin('baseComponent', {
         component: Component,
-        name: 'base-component',
       });
-      const editor = extendPlateEditor(createEditor(), {
+      const editor = createPlateEditor({
+        editor: createEditor(),
         plugins: [Plugin],
       });
 
-      expect(editor.plugin(Plugin).plugin.render.node).toBe(Component);
+      expect(editor.plugin(Plugin).render.node).toBe(Component);
     });
 
     it('merge components', () => {
-      const HeadingPlugin = createPlatePlugin({ name: 'h1' });
+      const HeadingPlugin = definePlatePlugin('h1', {});
       const customComponent = () => null;
 
-      const editor = extendPlateEditor(createEditor(), {
+      const editor = createPlateEditor({
+        editor: createEditor(),
         override: {
           components: {
             h1: customComponent,
@@ -764,26 +899,27 @@ describe('extendPlateEditor', () => {
         plugins: [HeadingPlugin],
       });
 
-      const h1Plugin = editor.plugin('h1').plugin;
+      const h1Plugin = editor.plugin('h1');
       expect(h1Plugin.render.node).toBe(customComponent);
     });
 
     it('lets terminal editor component configuration override a plugin component', () => {
       const originalComponent = () => null;
       const overrideComponent = () => null;
-      const HeadingPlugin = createPlatePlugin({
+      const HeadingPlugin = definePlatePlugin('h1', {
         component: originalComponent,
-        name: 'h1',
       });
 
-      let editor = extendPlateEditor(createEditor(), {
+      let editor = createPlateEditor({
+        editor: createEditor(),
         plugins: [HeadingPlugin],
       });
 
-      let h1Plugin = editor.plugin(HeadingPlugin).plugin;
+      let h1Plugin = editor.plugin(HeadingPlugin);
       expect(h1Plugin.render.node).toBe(originalComponent);
 
-      editor = extendPlateEditor(createEditor(), {
+      editor = createPlateEditor({
+        editor: createEditor(),
         override: {
           components: {
             h1: overrideComponent,
@@ -792,41 +928,33 @@ describe('extendPlateEditor', () => {
         plugins: [HeadingPlugin],
       });
 
-      h1Plugin = editor.plugin(HeadingPlugin).plugin;
+      h1Plugin = editor.plugin(HeadingPlugin);
       expect(h1Plugin.render.node).toBe(overrideComponent);
     });
   });
 
   describe('when replacing core plugins', () => {
     it('replace core plugins with custom plugins, maintain order, and add additional plugins', () => {
-      const additionalPlugin = createBasePlugin({
-        name: 'additional',
-        type: 'additional',
-      });
+      const additionalPlugin = defineBasePlugin('additional', {});
       const [ReactDOMPlugin] = getPlateCorePlugins();
 
-      const editor = extendPlateEditor(createEditor(), {
+      const editor = createPlateEditor({
+        editor: createEditor(),
         plugins: [ParagraphPlugin, ReactDOMPlugin, additionalPlugin],
       });
 
       const pluginCache = getPlateRuntime(editor).pluginList.map(
         (plugin) => plugin.name
       );
-      const pluginTypes = getPlateRuntime(editor).pluginList.map(
-        (plugin) => plugin.type
-      );
 
       // Check if React DOM replacement plugin replaced DOMPlugin.
       expect(pluginCache).toContain(ReactDOMPlugin.name);
-      expect(pluginTypes).toContain(ReactDOMPlugin.type);
 
       // Check if ParagraphPlugin is present
       expect(pluginCache).toContain(ParagraphPlugin.name);
-      expect(pluginTypes).toContain(ParagraphPlugin.type);
 
       // Check if additional plugin is added
       expect(pluginCache).toContain('additional');
-      expect(pluginTypes).toContain('additional');
 
       // Check if the order is correct
       const reactIndex = pluginCache.indexOf(ReactDOMPlugin.name);
@@ -854,46 +982,46 @@ describe('extendPlateEditor', () => {
     it('does not duplicate core plugins', () => {
       const existingEditor = createEditor() as any;
       existingEditor.plugins = [
-        createBasePlugin({ name: 'dom' }),
-        createBasePlugin({ name: 'history' }),
+        defineBasePlugin('dom', {}),
+        defineBasePlugin('history', {}),
       ];
 
-      const editor = extendPlateEditor(existingEditor, {});
+      const editor = createPlateEditor({ editor: existingEditor });
 
-      const pluginNames = getPlateRuntime(editor).pluginList.map(
+      const names = getPlateRuntime(editor).pluginList.map(
         (plugin) => plugin.name
       );
-      expect(pluginNames.filter((name) => name === 'dom')).toHaveLength(1);
-      expect(pluginNames.filter((name) => name === 'history')).toHaveLength(1);
+      expect(names.filter((name) => name === 'dom')).toHaveLength(1);
+      expect(names.filter((name) => name === 'history')).toHaveLength(1);
     });
 
     it('add missing core plugins', () => {
       const existingEditor = createEditor() as any;
       existingEditor.pluginList = [
-        createBasePlugin({ name: 'dom' }),
-        createBasePlugin({ name: 'history' }),
+        defineBasePlugin('dom', {}),
+        defineBasePlugin('history', {}),
       ];
 
-      const editor = extendPlateEditor(existingEditor, {});
+      const editor = createPlateEditor({ editor: existingEditor });
 
-      const pluginNames = getPlateRuntime(editor).pluginList.map(
+      const names = getPlateRuntime(editor).pluginList.map(
         (plugin) => plugin.name
       );
       coreNames.forEach((name) => {
-        expect(pluginNames).toContain(name);
+        expect(names).toContain(name);
       });
     });
 
     it('does not preserve custom plugins', () => {
-      const customPlugin = createBasePlugin({ name: 'custom' });
+      const customPlugin = defineBasePlugin('custom', {});
       const existingEditor = createEditor() as any;
       existingEditor.plugins = [
-        createBasePlugin({ name: 'dom' }),
-        createBasePlugin({ name: 'history' }),
+        defineBasePlugin('dom', {}),
+        defineBasePlugin('history', {}),
         customPlugin,
       ];
 
-      const editor = extendPlateEditor(existingEditor, {});
+      const editor = createPlateEditor({ editor: existingEditor });
 
       expect(
         getPlateRuntime(editor).pluginList.map((plugin) => plugin.name)
@@ -905,7 +1033,7 @@ describe('extendPlateEditor', () => {
     const editor = createBaseEditor({
       autoSelect: 'end',
       maxLength: 5,
-      initialValue: [{ children: [{ text: '' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
 
     editor.update.text.insert('Hello world');
@@ -924,31 +1052,31 @@ describe('extendPlateEditor', () => {
   });
 
   it('syncs explicit readOnly into the Plite view state', () => {
-    const editor = extendBaseEditor(createEditor(), {
-      readOnly: true,
-    });
+    const editor = createBaseEditor({ editor: createEditor(), readOnly: true });
 
     expect(editor.read.view.isReadOnly()).toBe(true);
   });
 
   it('preserves existing Plite readOnly state when readOnly is omitted', () => {
-    const editor = extendBaseEditor(createEditor({ readOnly: true }), {});
+    const editor = createBaseEditor({
+      editor: createEditor({ readOnly: true }),
+    });
 
     expect(editor.read.view.isReadOnly()).toBe(true);
   });
 
-  it('syncs the Plate paragraph type into Plite block toggles', () => {
-    const BlockquotePlugin = createBasePlugin({
-      name: 'blockquote',
+  it('syncs a constructor-declared Plate element type into Plite block toggles', () => {
+    const BlockquotePlugin = defineBasePlugin('blockquote', {
       schema: { element: { ...TextBlockElement } },
     });
-    const editor = extendBaseEditor(createEditor(), {
-      plugins: [
-        ParagraphPlugin.configure({
-          type: 'paragraph',
-        }),
-        BlockquotePlugin,
-      ],
+    const CustomParagraphPlugin = defineBasePlugin('customParagraph', {
+      schema: {
+        element: { ...TextBlockElement, type: 'custom-paragraph' },
+      },
+    });
+    const editor = createBaseEditor({
+      editor: createEditor(),
+      plugins: [CustomParagraphPlugin, BlockquotePlugin],
       initialValue: [{ children: [{ text: 'one' }], type: 'blockquote' }],
     });
 
@@ -956,27 +1084,25 @@ describe('extendPlateEditor', () => {
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     });
-    editor.update.blocks.toggle('blockquote');
+    editor.update.blocks.toggle('custom-paragraph');
 
     expect(editor.read.children()).toEqual([
-      { children: [{ text: 'one' }], type: 'paragraph' },
+      { children: [{ text: 'one' }], type: 'custom-paragraph' },
     ]);
   });
 
   it('preserves Plate marks allowed by the destination block schema', () => {
-    const HeadingPlugin = createBasePlugin({
-      name: 'heading',
+    const HeadingPlugin = defineBasePlugin('heading', {
       schema: { element: { ...TextBlockElement } },
     });
-    const TonePlugin = createBasePlugin({
-      name: 'tone',
+    const TonePlugin = defineBasePlugin('tone', {
       schema: { mark: { property: property.string() } },
     });
-    const EphemeralPlugin = createBasePlugin({
-      name: 'ephemeral',
+    const EphemeralPlugin = defineBasePlugin('ephemeral', {
       schema: { mark: { typeChange: 'drop', property: property.boolean() } },
     });
-    const editor = extendBaseEditor(createEditor(), {
+    const editor = createBaseEditor({
+      editor: createEditor(),
       plugins: [HeadingPlugin, TestBoldPlugin, TonePlugin, EphemeralPlugin],
       selection: {
         kind: 'text',
@@ -988,7 +1114,7 @@ describe('extendPlateEditor', () => {
           children: [
             { bold: true, ephemeral: true, text: 'one', tone: 'warm' },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
@@ -1005,14 +1131,15 @@ describe('extendPlateEditor', () => {
 
   it('handle value, selection, and autoSelect options correctly', () => {
     const editor = createEditor();
-    const value = [{ children: [{ text: 'Hello' }], type: 'p' }];
+    const value = [{ children: [{ text: 'Hello' }], type: 'paragraph' }];
     const selection = {
       kind: 'text' as const,
       anchor: { offset: 2, path: [0, 0] },
       focus: { offset: 4, path: [0, 0] },
     };
 
-    const result = extendBaseEditor(editor, {
+    const result = createBaseEditor({
+      editor,
       selection,
       shouldNormalizeEditor: true,
       initialValue: value,
@@ -1022,7 +1149,8 @@ describe('extendPlateEditor', () => {
     expect(result.read.selection()).toEqual(selection);
 
     // Test autoSelect start
-    const editorWithAutoSelectStart = extendBaseEditor(createEditor(), {
+    const editorWithAutoSelectStart = createBaseEditor({
+      editor: createEditor(),
       autoSelect: 'start',
       initialValue: value,
     });
@@ -1036,7 +1164,8 @@ describe('extendPlateEditor', () => {
     );
 
     // Test autoSelect end
-    const editorWithAutoSelectEnd = extendBaseEditor(createEditor(), {
+    const editorWithAutoSelectEnd = createBaseEditor({
+      editor: createEditor(),
       autoSelect: 'end',
       initialValue: value,
     });
@@ -1049,7 +1178,8 @@ describe('extendPlateEditor', () => {
       expectedEndSelection
     );
 
-    const editorWithElementPathSelection = extendBaseEditor(createEditor(), {
+    const editorWithElementPathSelection = createBaseEditor({
+      editor: createEditor(),
       selection: {
         kind: 'text',
         anchor: { offset: 0, path: [0] },
@@ -1064,9 +1194,11 @@ describe('extendPlateEditor', () => {
     });
 
     // Test empty children
-    const editorWithEmptyChildren = extendBaseEditor(createEditor(), {});
+    const editorWithEmptyChildren = createBaseEditor({
+      editor: createEditor(),
+    });
     expect(editorWithEmptyChildren.read.children()).toEqual([
-      { children: [{ text: '' }], type: 'p' },
+      { children: [{ text: '' }], type: 'paragraph' },
     ]);
   });
 
@@ -1076,12 +1208,12 @@ describe('extendPlateEditor', () => {
         return node;
       }
 
-      if (node.type === 'td') {
+      if (node.type === 'tableCell') {
         return {
           ...node,
           children: node.children.map((child: any) =>
             child && typeof child === 'object' && 'text' in child
-              ? { children: [child], type: 'p' }
+              ? { children: [child], type: 'paragraph' }
               : wrapCellText(child)
           ),
         };
@@ -1092,8 +1224,7 @@ describe('extendPlateEditor', () => {
         children: node.children.map(wrapCellText),
       };
     };
-    const WrapTextPlugin = createBasePlugin({
-      name: 'wrapText',
+    const WrapTextPlugin = defineBasePlugin('wrapText', {
       transformInitialValue: ({ value: initialValue }) => ({
         ...initialValue,
         children: initialValue.children.map(wrapCellText) as Value,
@@ -1105,40 +1236,38 @@ describe('extendPlateEditor', () => {
         ),
       }),
     });
-    const TablePlugin = createBasePlugin({
-      name: 'table',
+    const TablePlugin = defineBasePlugin('table', {
       schema: {
         element: {
-          content: schema.content.type('tr', {
-            default: { type: 'tr' },
+          content: schema.content.type('tableRow', {
+            default: { type: 'tableRow' },
             min: 1,
           }),
         },
       },
     });
-    const TableRowPlugin = createBasePlugin({
-      name: 'tr',
+    const TableRowPlugin = defineBasePlugin('tableRow', {
       schema: {
         element: {
-          content: schema.content.type('td', {
-            default: { type: 'td' },
+          content: schema.content.type('tableCell', {
+            default: { type: 'tableCell' },
             min: 1,
           }),
         },
       },
     });
-    const TableCellPlugin = createBasePlugin({
-      name: 'td',
+    const TableCellPlugin = defineBasePlugin('tableCell', {
       schema: {
         element: {
           content: schema.content.group('block', {
-            default: { type: 'p' },
+            default: { type: 'paragraph' },
             min: 1,
           }),
         },
       },
     });
-    const editor = extendBaseEditor(createEditor(), {
+    const editor = createBaseEditor({
+      editor: createEditor(),
       plugins: [WrapTextPlugin, TablePlugin, TableRowPlugin, TableCellPlugin],
       selection: {
         kind: 'text',
@@ -1150,17 +1279,17 @@ describe('extendPlateEditor', () => {
           children: [
             {
               children: [
-                { children: [{ text: '11' }], type: 'td' },
-                { children: [{ text: '12' }], type: 'td' },
+                { children: [{ text: '11' }], type: 'tableCell' },
+                { children: [{ text: '12' }], type: 'tableCell' },
               ],
-              type: 'tr',
+              type: 'tableRow',
             },
             {
               children: [
-                { children: [{ text: '21' }], type: 'td' },
-                { children: [{ text: '22' }], type: 'td' },
+                { children: [{ text: '21' }], type: 'tableCell' },
+                { children: [{ text: '22' }], type: 'tableCell' },
               ],
-              type: 'tr',
+              type: 'tableRow',
             },
           ],
           type: 'table',
@@ -1179,7 +1308,8 @@ describe('extendPlateEditor', () => {
     it('deserializes HTML through the configured feature API', () => {
       const htmlString = '<p>Hello, <b>world!</b></p>';
 
-      const editor = extendBaseEditor(createEditor(), {
+      const editor = createBaseEditor({
+        editor: createEditor(),
         plugins: [TestBoldPlugin, HtmlPlugin],
         initialValue: ({ editor }) =>
           editor.plugin(HtmlPlugin).api.deserialize({ element: htmlString }),
@@ -1188,7 +1318,7 @@ describe('extendPlateEditor', () => {
       expect(editor.read.children()).toEqual([
         {
           children: [{ text: 'Hello, ' }, { bold: true, text: 'world!' }],
-          type: 'p',
+          type: 'paragraph',
         },
       ]);
     });
@@ -1196,7 +1326,7 @@ describe('extendPlateEditor', () => {
 
   describe('when the previous editor has an id', () => {
     it('reuses the raw editor id', () => {
-      const editor = extendBaseEditor(createEditor({ id: 'old' }), {});
+      const editor = createBaseEditor({ editor: createEditor({ id: 'old' }) });
       expect(editor.id).toBe('old');
     });
   });
@@ -1212,8 +1342,8 @@ describe('extendPlateEditor', () => {
 
   describe('when no id is provided', () => {
     it('use a unique id for each editor', () => {
-      const id1 = extendBaseEditor(createEditor(), {}).id;
-      const id2 = extendBaseEditor(createEditor(), {}).id;
+      const id1 = createBaseEditor({ editor: createEditor() }).id;
+      const id2 = createBaseEditor({ editor: createEditor() }).id;
       expect(id1).toBeTruthy();
       expect(id2).toBeTruthy();
       expect(id1).not.toEqual(id2);

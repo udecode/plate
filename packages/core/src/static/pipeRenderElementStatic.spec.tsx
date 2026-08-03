@@ -1,9 +1,12 @@
-import { schema } from '@platejs/plite';
-
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
+import { schema } from '@platejs/plite';
 
-import { type RenderElementProps, createBasePlugin } from '../lib';
+import {
+  BaseParagraphPlugin,
+  type RenderElementProps,
+  defineBasePlugin,
+} from '../lib';
 import { createStaticEditor } from './editor/withStatic';
 import { pipeRenderElementStatic } from './pipeRenderElementStatic';
 
@@ -13,14 +16,9 @@ describe('pipeRenderElementStatic', () => {
   });
 
   it('uses the element plugin renderer before the fallback renderElement prop', () => {
-    const ParagraphPlugin = createBasePlugin({
-      name: 'p',
-      type: 'p',
-      schema: {
-        element: { content: schema.content.open({ default: 'text', min: 1 }) },
-      },
+    const ParagraphPlugin = BaseParagraphPlugin.extend(() => ({
       render: { as: 'article' },
-    });
+    }));
     const renderElement = mock(() => <mark data-kind="fallback" />);
     const editor = createStaticEditor({
       plugins: [ParagraphPlugin],
@@ -33,7 +31,7 @@ describe('pipeRenderElementStatic', () => {
         children: 'Body',
         element: {
           children: [{ text: 'Body' }],
-          type: 'p',
+          type: 'paragraph',
         },
         slots: {
           children: () => null,
@@ -44,6 +42,40 @@ describe('pipeRenderElementStatic', () => {
     );
 
     expect(renderElement).not.toHaveBeenCalled();
+    expect(markup).toContain('<article');
+  });
+
+  it('indexes element renderers by persisted type rather than plugin name', () => {
+    const ElementPlugin = defineBasePlugin('elementCapability', {
+      schema: {
+        element: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          type: 'persistedElement',
+        },
+      },
+      render: { as: 'article' },
+    });
+    const editor = createStaticEditor({ plugins: [ElementPlugin] });
+    const markup = ReactDOMServer.renderToStaticMarkup(
+      pipeRenderElementStatic(editor)({
+        attributes: { 'data-plite-node': 'element' },
+        children: 'Body',
+        element: {
+          children: [{ text: 'Body' }],
+          type: 'persistedElement',
+        },
+        slots: {
+          children: () => null,
+          contentBoundary: ({ children }) => children,
+          contentRoot: () => null,
+        },
+      } satisfies RenderElementProps)
+    );
+
+    expect(ElementPlugin.name).toBe('elementCapability');
+    expect(editor.plugin(ElementPlugin).schema.element.type).toBe(
+      'persistedElement'
+    );
     expect(markup).toContain('<article');
   });
 
@@ -80,8 +112,7 @@ describe('pipeRenderElementStatic', () => {
   });
 
   it('renders belowRootNodes around the default PliteElement output', () => {
-    const RootPlugin = createBasePlugin({
-      name: 'root-extra',
+    const RootPlugin = defineBasePlugin('rootExtra', {
       render: {
         belowRootNodes: () => <aside data-role="root" />,
       },

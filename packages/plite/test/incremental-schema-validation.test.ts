@@ -51,7 +51,7 @@ const section = (children: Element[]): Element => ({
 const createValidationEditor = () =>
   createEditor({
     extensions: [
-      defineEditorSchema({
+      defineEditorSchema('schema:incremental-validation-laws', {
         elements: {
           heading: {
             content: schema.content.text({ default: 'text', min: 1 }),
@@ -101,43 +101,46 @@ const createValidationEditor = () =>
   });
 
 const OWNED_ROOT = 'owned:shared';
-const ownedRootExtension = defineEditorSchema({
-  elements: {
-    container: {
-      content: schema.content.types(['heading-owner', 'paragraph-owner'], {
-        default: { type: 'paragraph-owner' },
-        min: 1,
-      }),
-    } as const,
-    heading: {
-      content: schema.content.text({ default: 'text', min: 1 }),
-    } as const,
-    paragraph: {
-      content: schema.content.text({ default: 'text', min: 1 }),
-    } as const,
-    'heading-owner': {
-      content: schema.content.text({ default: 'text', min: 1 }),
-      contentRoots: {
-        body: schema.content.type('heading', { min: 1 }),
-      },
-    } as const,
-    'paragraph-owner': {
-      content: schema.content.text({ default: 'text', min: 1 }),
-      contentRoots: {
-        body: schema.content.type('paragraph', { min: 1 }),
-      },
-    } as const,
-  },
-  id: 'incremental-owned-root-index',
-  root: schema.content.types([
-    'container',
-    'heading-owner',
-    'paragraph',
-    'paragraph-owner',
-  ]),
-  unknown: 'reject',
-  version: 1,
-});
+const ownedRootExtension = defineEditorSchema(
+  'schema:incremental-owned-root-index',
+  {
+    elements: {
+      container: {
+        content: schema.content.types(['heading-owner', 'paragraph-owner'], {
+          default: { type: 'paragraph-owner' },
+          min: 1,
+        }),
+      } as const,
+      heading: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+      } as const,
+      paragraph: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+      } as const,
+      'heading-owner': {
+        content: schema.content.text({ default: 'text', min: 1 }),
+        contentRoots: {
+          body: schema.content.type('heading', { min: 1 }),
+        },
+      } as const,
+      'paragraph-owner': {
+        content: schema.content.text({ default: 'text', min: 1 }),
+        contentRoots: {
+          body: schema.content.type('paragraph', { min: 1 }),
+        },
+      } as const,
+    },
+    id: 'incremental-owned-root-index',
+    root: schema.content.types([
+      'container',
+      'heading-owner',
+      'paragraph',
+      'paragraph-owner',
+    ]),
+    unknown: 'reject',
+    version: 1,
+  }
+);
 const ownedRootElement = (
   type: 'heading-owner' | 'paragraph-owner',
   root = OWNED_ROOT,
@@ -252,7 +255,7 @@ describe('incremental schema validation', () => {
     });
     const editor = createEditor({
       extensions: [
-        defineEditorSchema({
+        defineEditorSchema('schema:incremental-validation-locality', {
           elements: {
             paragraph: {
               content: schema.content.text(),
@@ -294,7 +297,7 @@ describe('incremental schema validation', () => {
   it('prunes descendant validation without confusing sibling path prefixes', () => {
     const editor = createEditor({
       extensions: [
-        defineEditorSchema({
+        defineEditorSchema('schema:incremental-validation-siblings', {
           elements: {
             paragraph: {
               content: schema.content.text({ default: 'text', min: 1 }),
@@ -914,7 +917,10 @@ describe('incremental schema validation', () => {
       editor.update((tx) =>
         tx.text.insert('!', { at: { offset: 1, path: [1, 0] } })
       );
-      editor.update.nodes.insert(paragraph('prefix'), { at: [0] });
+      editor.update.nodes.insert(
+        { children: [{ text: 'prefix' }], type: 'paragraph' },
+        { at: [0] }
+      );
       events.length = 0;
       const before = editor.read.value();
       const candidate: EditorDocumentValue = {

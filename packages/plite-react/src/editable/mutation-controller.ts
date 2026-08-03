@@ -49,6 +49,7 @@ import {
   type Editor,
   failInvariant,
   getEditorExtensionContributions,
+  getEditorRuntimeOwner,
   type Editor as RuntimeEditor,
   before as editorBefore,
   after as editorAfter,
@@ -170,8 +171,7 @@ const advancePointByText = (point: Point, text: string): Point => ({
 });
 
 const getCanonicalRuntimeEditor = (editor: RuntimeEditor): RuntimeEditor =>
-  ((editor as { runtime?: { editor?: RuntimeEditor } }).runtime?.editor ??
-    editor) as RuntimeEditor;
+  getEditorRuntimeOwner(editor) as RuntimeEditor;
 
 const getProjectedClipboardInsertDataHandlers = (editor: RuntimeEditor) =>
   getEditorExtensionContributions(editor, DOM_CLIPBOARD_HANDLERS);

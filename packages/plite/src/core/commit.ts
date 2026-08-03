@@ -4,7 +4,7 @@ import type {
   EditorCommitChanged,
   EditorCommitRuntimeChangeKind,
   EditorDocumentValue,
-  Editor,
+  AnyEditor as Editor,
   EditorSnapshot,
   RootKey,
   RuntimeId,

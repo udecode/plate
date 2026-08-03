@@ -108,7 +108,7 @@ if (selectedText && !editor.api.hasMark('bold')) {
 editor.update((tx) => {
   tx.nodes.insert({
     children: [{ text: 'New paragraph' }],
-    type: 'p',
+    type: 'paragraph',
   });
 });
 ```
@@ -120,7 +120,7 @@ editor.update((tx) => {
 
 ## 插件方法
 
-将插件描述符传给 `editor.plugin(plugin)`，即可打开它的类型化 portal。该 portal 包含插件拥有的 API、一次性 update 命令、type 和实时 store。
+将插件描述符传给 `editor.plugin(plugin)`，即可打开它的类型化 portal。该 portal 包含插件拥有的 API、一次性 update 命令、name 和实时 store。
 
 ```ts title="html-methods.ts" showLineNumbers
 import { BoldPlugin } from '@platejs/basic-nodes/react';
@@ -130,27 +130,29 @@ editor.plugin(BoldPlugin).update.toggle();
 
 | 方法 | 用途 |
 | --- | --- |
-| `editor.plugin(plugin)` | 类型安全地访问一个插件的 API、updates、type 和 store。 |
-| `editor.plugin(plugin).plugin` | 读取已解析插件实例。 |
-| `editor.plugin(pluginName).type` | 读取插件名称注册的节点 type。 |
-| `editor.plugin(plugin).plugin.inject.nodeProps` | 读取 compiled injected node props。 |
+| `editor.plugin(plugin)` | 类型安全地读取 descriptor 字段以及 scoped API、reads、updates 和 store。 |
+| `editor.plugin(plugin).name` | 读取已安装插件的能力身份。 |
+| `editor.plugin(ElementPlugin).schema.element.type` | 读取解析后的持久化元素类型。 |
+| `editor.plugin(BoldPlugin).schema.properties.bold.key` | 读取解析后的持久化属性键。 |
+| `editor.plugin(plugin).inject.nodeProps` | 读取 compiled injected node props。 |
 
 运行时 name portal 会擦除具体类型，适用于动态 name 或接受任意同名已安装 descriptor 的 family-agnostic 插件槽。如果对应插件可选，先检查 `.installed`；插件不存在时，其他字段会抛出错误。
 
-### Compiled plugin
+### 已解析的 descriptor 字段
 
-通过插件描述符获取编辑器插件实例：
+通过插件描述符直接读取已解析字段：
 
 ```ts
-const codeBlockPlugin = editor.plugin(CodeBlockPlugin).plugin;
+const codeBlockPlugin = editor.plugin(CodeBlockPlugin);
+const component = codeBlockPlugin.render.node;
 ```
 
-### Plugin type
+### Plugin name
 
-获取与插件关联的节点类型：
+获取插件身份：
 
 ```ts
-const paragraphType = editor.plugin(KEYS.p).type;
+const paragraphType = editor.plugin(PLUGINS.paragraph).schema.element!.type;
 ```
 
 ## 插件 Store

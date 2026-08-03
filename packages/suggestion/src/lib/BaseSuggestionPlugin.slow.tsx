@@ -3,7 +3,7 @@
 import {
   type BaseEditor,
   createBaseEditor,
-  createBasePlugin,
+  defineBasePlugin,
 } from '@platejs/core';
 import {
   ContentSlice,
@@ -12,7 +12,7 @@ import {
   property,
   schema,
 } from '@platejs/plite';
-import { KEYS } from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 import { jsxt } from '@platejs/test-utils';
 
 import { BaseSuggestionPlugin } from './BaseSuggestionPlugin';
@@ -25,8 +25,7 @@ const suggestionPlugin = BaseSuggestionPlugin.configure({
   },
 });
 
-const MentionPlugin = createBasePlugin({
-  name: KEYS.mention,
+const MentionPlugin = defineBasePlugin(PLUGINS.mention, {
   schema: {
     element: {
       properties: {
@@ -38,8 +37,7 @@ const MentionPlugin = createBasePlugin({
   },
 });
 
-const DatePlugin = createBasePlugin({
-  name: KEYS.date,
+const DatePlugin = defineBasePlugin(PLUGINS.date, {
   schema: {
     element: {
       properties: {
@@ -51,15 +49,13 @@ const DatePlugin = createBasePlugin({
   },
 });
 
-const TocPlugin = createBasePlugin({
-  name: KEYS.toc,
+const TocPlugin = defineBasePlugin(PLUGINS.toc, {
   schema: {
     element: { void: 'block' },
   },
 });
 
-const BlockquotePlugin = createBasePlugin({
-  name: KEYS.blockquote,
+const BlockquotePlugin = defineBasePlugin(PLUGINS.blockquote, {
   schema: ({ plugins }) => ({
     element: {
       content: plugins.blockContent(),
@@ -67,18 +63,15 @@ const BlockquotePlugin = createBasePlugin({
   }),
 });
 
-const SlashInputPlugin = createBasePlugin({
-  name: 'slashInput',
+const SlashInputPlugin = defineBasePlugin('slashInput', {
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
     },
   },
-  type: 'slash_input',
 });
 
-const MetadataMarkPlugin = createBasePlugin({
-  name: 'metadata',
+const MetadataMarkPlugin = defineBasePlugin('metadata', {
   schema: { mark: property.json() },
 });
 
@@ -104,10 +97,10 @@ describe('BaseSuggestionPlugin behavior', () => {
         focus: { offset: focus, path: [0, 0] },
         kind: 'text',
       },
-      initialValue: [{ children: [{ text: 'abc' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'abc' }], type: 'paragraph' }],
     });
     const slice = ContentSlice.fromJSON({
-      content: [{ children: [{ text: 'X' }], type: 'p' }],
+      content: [{ children: [{ text: 'X' }], type: 'paragraph' }],
       openEnd: 1,
       openStart: 1,
     });
@@ -130,7 +123,7 @@ describe('BaseSuggestionPlugin behavior', () => {
       initialValue: [
         {
           children: [{ metadata: { ids: ['one'] }, text: 'test' }],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     } as any);
@@ -204,7 +197,10 @@ describe('BaseSuggestionPlugin behavior', () => {
           editor.update.text.insert('test');
 
           expect(
-            editor.read.children()[0].children[1][BaseSuggestionPlugin.name]
+            editor.read.children()[0].children[1][
+              editor.plugin(BaseSuggestionPlugin).schema.properties.suggestion
+                .key
+            ]
           ).toBeTruthy();
 
           const data = inlineData(
@@ -1189,7 +1185,7 @@ describe('insertNodes when editor.plugin(SuggestionPlugin).store.get().isSuggest
 
     editor.update.nodes.insert({
       children: [{ text: 'two' }],
-      type: 'p',
+      type: 'paragraph',
     } as any);
 
     expect((editor.read.children()[1] as any).suggestion).toMatchObject({
@@ -1217,12 +1213,12 @@ describe('insertNodes when editor.plugin(SuggestionPlugin).store.get().isSuggest
 
     editor.update.nodes.insert({
       children: [{ text: '' }],
-      type: 'slash_input',
+      type: 'slashInput',
     } as any);
 
     expect(editor.read.children()[1]).toMatchObject({
       children: [{ text: '' }],
-      type: 'slash_input',
+      type: 'slashInput',
     });
     expect((editor.read.children()[1] as any).suggestion).toBeUndefined();
   });
@@ -1252,7 +1248,7 @@ describe('removeNodes when editor.plugin(SuggestionPlugin).store.get().isSuggest
 
     editor.update.nodes.remove({
       at: [],
-      match: { type: 'p' },
+      match: { type: 'paragraph' },
     });
 
     const firstSuggestion = (editor.read.children()[0] as any).suggestion;
@@ -1270,11 +1266,11 @@ describe('removeNodes when editor.plugin(SuggestionPlugin).store.get().isSuggest
       initialValue: [
         {
           children: [{ text: 'one' }],
-          type: 'p',
+          type: 'paragraph',
         },
         {
           children: [{ text: '' }],
-          type: 'slash_input',
+          type: 'slashInput',
         },
       ],
     });
@@ -1282,13 +1278,13 @@ describe('removeNodes when editor.plugin(SuggestionPlugin).store.get().isSuggest
 
     editor.update.nodes.remove({
       at: [],
-      match: { type: 'slash_input' },
+      match: { type: 'slashInput' },
     });
 
     expect(editor.read.children()).toHaveLength(1);
     expect(editor.read.children()[0]).toMatchObject({
       children: [{ text: 'one' }],
-      type: 'p',
+      type: 'paragraph',
     });
   });
 });

@@ -15,9 +15,7 @@ Plate 插件具有高度可配置性，允许您根据需要定制其行为。�
 最基本的插件配置只需一个`name`：
 
 ```ts
-const MyPlugin = createPlatePlugin({
-  name: "minimal",
-});
+const MyPlugin = definePlatePlugin("minimal", {});
 ```
 
 虽然这个插件目前没有任何功能，但它是更复杂配置的起点。
@@ -36,8 +34,7 @@ const ConfiguredPlugin = MyPlugin.configure({
 
 ## Schema 插件
 
-Schema 插件在顶层声明文档类型，并在 `schema` 下声明模型行为。React
-渲染配置位于 `render` 下。
+Schema 插件在 `schema` 下声明持久化文档身份和结构。React component 位于插件根级。
 
 ### 元素
 
@@ -46,11 +43,12 @@ Schema 插件在顶层声明文档类型，并在 `schema` 下声明模型行为
 ```ts
 import { schema } from "platejs";
 
-const ParagraphPlugin = createPlatePlugin({
-  name: "p",
-  type: "p",
+const ParagraphPlugin = definePlatePlugin("paragraphFeature", {
   schema: {
-    element: { content: schema.content.text({ default: "text", min: 1 }) },
+    element: {
+      content: schema.content.text({ default: "text", min: 1 }),
+      type: "paragraph",
+    },
   },
 });
 ```
@@ -60,13 +58,15 @@ const ParagraphPlugin = createPlatePlugin({
 ```ts
 import { schema } from "platejs";
 
-const ParagraphPlugin = createPlatePlugin({
-  name: "p",
-  type: "p",
+const ParagraphPlugin = definePlatePlugin("paragraphFeature", {
+  component: ParagraphElement,
   schema: {
-    element: { content: schema.content.text({ default: "text", min: 1 }) },
+    element: {
+      content: schema.content.text({ default: "text", min: 1 }),
+      type: "paragraph",
+    },
   },
-}).configure({ component: ParagraphElement });
+});
 ```
 
 ### 行内元素、Void 元素和文本属性
@@ -76,9 +76,7 @@ const ParagraphPlugin = createPlatePlugin({
 ```ts
 import { property, schema } from "platejs";
 
-const LinkPlugin = createPlatePlugin({
-  name: "link",
-  type: "a",
+const LinkPlugin = definePlatePlugin("link", {
   schema: {
     element: {
       content: schema.content.text({ default: "text", min: 1 }),
@@ -87,14 +85,11 @@ const LinkPlugin = createPlatePlugin({
   },
 });
 
-const ImagePlugin = createPlatePlugin({
-  name: "image",
-  type: "img",
+const ImagePlugin = definePlatePlugin("image", {
   schema: { element: { void: "block" } },
 });
 
-const BoldPlugin = createPlatePlugin({
-  name: "bold",
+const BoldPlugin = definePlatePlugin("bold", {
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
@@ -132,7 +127,7 @@ H1Plugin.configure({
 和 `textChange`；DOM handler 使用 `keyDown`、`paste` 和 `click`。
 
 ```ts showLineNumbers
-const ExamplePlugin = createPlatePlugin({
+const ExamplePlugin = definePlatePlugin("example", {
   on: {
     commit: ({ editor, snapshot }) => {
       console.info(editor, snapshot.children);
@@ -140,19 +135,18 @@ const ExamplePlugin = createPlatePlugin({
     keyDown: ({ editor, event }) => {
       console.info(`You pressed ${event.key}`);
     },
-  },
-  name: "example",
-});
+  },});
 ```
 
 ### 注入属性
 
-您可能希望向具有特定属性的任何节点注入类名或 CSS 属性。例如，以下插件为具有`align`属性的段落设置`textAlign` CSS 属性。
+您可能希望向具有特定属性的任何节点注入类名或 CSS 属性。例如，以下插件为具有 `textAlign` 属性的段落设置 `textAlign` CSS 属性。
 
 ```ts showLineNumbers
-import { KEYS, property, target } from "platejs";
+import { ParagraphPlugin } from "@platejs/basic-nodes/react";
+import { property, schema, target } from "platejs";
 
-const TextAlignPlugin = createPlatePlugin({
+const TextAlignPlugin = definePlatePlugin("textAlign", {
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       "text/html": {
@@ -175,29 +169,29 @@ const TextAlignPlugin = createPlatePlugin({
       validNodeValues: ["start", "left", "center", "right", "end", "justify"],
     },
   },
-  name: "align",
-  schema: ({ own, plugins, targetPluginNames }) => ({
-    properties: [
-      own.elementProperty(property.string(), {
-        target: target.types(plugins.elementTypesByName(targetPluginNames)),
+  schema: ({ targetElementTypes }) => ({
+    properties: {
+      textAlign: schema.elementProperty(property.string(), {
+        target: target.types(targetElementTypes),
         typeChange: "preserve-if-allowed",
       }),
-    ],
+    },
   }),
-  targetPluginNames: [KEYS.p],
+  targetPlugins: [ParagraphPlugin],
 });
 ```
 
 `inject.nodeProps` 负责渲染，constructor 的 `codecs` callback 把双向 HTML
 声明绑定到插件 schema。`defineCodecs` 根据 property 声明推断 `value`。两条
-路径都使用插件解析后的 `type`，因此最终的 `.configure({ type })` 可以修改
-存储属性，而不需要在 codec 中重复插件名称。
+路径都使用编译后的 `schema.properties.textAlign.key`；`name` 只标识能力
+namespace。`.configure()` 和 `.extend()` 不更改 schema identity。闭合的
+`defineEditor()` 可以重映射 element type 或关系；插件拥有的 property key 保持固定。
 
 受该插件影响的段落节点如下：
 
 ```ts showLineNumbers {3}
 {
-  type: 'p',
+  type: 'paragraph',
   align: 'right',
   children: [{ text: '本段落右对齐！' }],
 }
@@ -213,15 +207,13 @@ export type CustomPluginState = {
   prefix: string;
 };
 
-const CustomPlugin = createPlatePlugin({
+const CustomPlugin = definePlatePlugin("custom", {
   api: ({ store }) => ({
     getPrefix: () => store.get("prefix"),
   }),
   initialState: {
     prefix: "Note: ",
-  } satisfies CustomPluginState,
-  name: "custom",
-  update: ({ store, tx }) => ({
+  } satisfies CustomPluginState,  update: ({ store, tx }) => ({
     insertPrefix: () => {
       tx.text.insert(store.get("prefix"));
     },
@@ -248,15 +240,14 @@ Plate 插件直接在插件根级声明 Plite 能力。使用 `readMiddleware`�
 不再添加第二层 wrapper。
 
 ```ts showLineNumbers
-import { createPlatePlugin, defineStateField } from "platejs";
+import { definePlatePlugin, defineStateField } from "platejs";
 
 const enabledField = defineStateField({
   initial: false,
   key: "customState.enabled",
 });
 
-const CustomStatePlugin = createPlatePlugin({
-  name: "customState",
+const CustomStatePlugin = definePlatePlugin("customState", {
   stateFields: [enabledField],
   read: ({ state }) => ({
     enabled: () => state.getField(enabledField),
@@ -275,7 +266,7 @@ const CustomStatePlugin = createPlatePlugin({
 </Callout>
 
 独立复用的 standalone Plite descriptor 使用从 `@platejs/plite` import 的
-`defineEditorExtension`。详见
+`defineExtension`。详见
 [插件方法](/docs/plugin-methods#install-plite-capabilities)。
 
 ## 高级插件配置
@@ -293,10 +284,8 @@ const initialState: MyPluginState = {
   count: 0,
 };
 
-const MyPlugin = createPlatePlugin({
-  initialState,
-  name: "myPlugin",
-  on: {
+const MyPlugin = definePlatePlugin("myPlugin", {
+  initialState,  on: {
     click: ({ store }) => {
       store.set({ count: 1 });
     },
@@ -335,8 +324,7 @@ const MyComponent = () => {
 使用插件对象声明所需依赖项。Plate 会递归安装依赖图，按插件名称去重，并在依赖插件之后加载当前插件。
 
 ```ts
-const MyPlugin = createPlatePlugin({
-  name: "myPlugin",
+const MyPlugin = definePlatePlugin("myPlugin", {
   dependencies: [ParagraphPlugin, ListPlugin],
 });
 ```
@@ -346,8 +334,7 @@ const MyPlugin = createPlatePlugin({
 `enabled`属性允许您有条件地启用或禁用插件：
 
 ```ts
-const MyPlugin = createPlatePlugin({
-  name: "myPlugin",
+const MyPlugin = definePlatePlugin("myPlugin", {
   enabled: true, // 或false禁用
 });
 ```
@@ -358,8 +345,7 @@ const MyPlugin = createPlatePlugin({
 能力依赖宿主：
 
 ```ts
-const CodeHighlightPlugin = createPlatePlugin({
-  name: "codeHighlight",
+const CodeHighlightPlugin = definePlatePlugin("codeHighlight", {
   dependencies: [CodeBlockPlugin],
 });
 
@@ -381,33 +367,33 @@ const plugins = [LinkPlugin, MentionPlugin, CommentPlugin];
 
 ### HTML 输入钩子
 
-使用 `parsers.html` 下的扁平钩子决定插件是否参与 HTML 输入、转换源字符串，
+使用插件 `'text/html'` codec 上的扁平钩子决定插件是否参与 HTML 输入、转换源字符串，
 或转换已解码的 fragment。
 
 ```ts
-const HtmlCleanupPlugin = createPlatePlugin({
-  name: "htmlCleanup",
-  parsers: {
-    html: {
-      query: ({ data, format }) =>
-        format === "text/html" && data.includes("<!--StartFragment-->"),
-      transformData: ({ data }) =>
-        data.replaceAll(/<!--(?:Start|End)Fragment-->/g, ""),
-    },
-  },
+const HtmlCleanupPlugin = definePlatePlugin("htmlCleanup", {
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      "text/html": {
+        query: ({ data, format }) =>
+          format === "text/html" && data.includes("<!--StartFragment-->"),
+        transformData: ({ data }) =>
+          data.replaceAll(/<!--(?:Start|End)Fragment-->/g, ""),
+      },
+    }),
 });
 ```
 
 `query`、`transformData` 和 `transformFragment` 都直接位于
-`parsers.html` 下。节点级 HTML 转换与这些完整输入钩子分开。
+`'text/html'` codec 上。节点级 HTML 转换与这些完整输入钩子分开。
 
 ## 类型化插件
 
-`createPlatePlugin` 会从 author object 推断一个精确 definition。通过带类型的
+`definePlatePlugin` 会从 author object 推断一个精确 definition。通过带类型的
 `initialState` 值或 `satisfies` 固定 state contract；不要向 factory 传入调用方
 泛型。
 
-### 使用 createPlatePlugin
+### 使用 definePlatePlugin
 
 推断后的 definition 会携带插件 name、state、API、read 和 update：
 
@@ -424,18 +410,17 @@ const initialState: CodeBlockPluginState = {
   syntaxPopularFirst: false,
 };
 
-export const CodeBlockPlugin = createPlatePlugin({
+export const CodeBlockPlugin = definePlatePlugin("codeBlock", {
   api: ({ store }) => ({
     getLanguage: () => store.get("language"),
     getSyntaxState: () => store.get("syntax"),
   }),
   initialState,
-  name: "codeBlock",
-  type: "code_block",
+  type: "codeBlock",
   update: ({ store, tx }) => ({
-    insertCodeBlock: () => {
+    insert: () => {
       tx.nodes.insert({
-        type: "code_block",
+        type: "codeBlock",
         language: store.get("language"),
         children: [{ text: "" }],
       });
@@ -464,7 +449,7 @@ editor.api.codeBlock.getSyntaxState();
 editor.api.codeBlock.getLanguage();
 
 // 类型安全的更新
-editor.update.codeBlock.insertCodeBlock();
+editor.update.codeBlock.insert();
 ```
 
 ## 另请参阅

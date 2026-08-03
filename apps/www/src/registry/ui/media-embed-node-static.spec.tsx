@@ -24,7 +24,7 @@ describe('MediaEmbedElementStatic', () => {
         element={
           {
             children: [{ text: 'Caption' }],
-            type: 'media_embed',
+            type: 'mediaEmbed',
             url: 'https://www.youtube.com/embed/M7lc1UVf-VE',
           } as never
         }
@@ -54,7 +54,7 @@ describe('MediaEmbedElementStatic', () => {
           {
             children: [{ text: '' }],
             provider: 'youtube',
-            type: 'media_embed',
+            type: 'mediaEmbed',
             url: 'javascript:alert(1)',
           } as never
         }

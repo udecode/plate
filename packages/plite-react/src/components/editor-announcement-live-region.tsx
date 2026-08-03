@@ -3,6 +3,7 @@ import {
   screenReaderAnnouncementEffect,
   type Editor,
   type EditorCommit,
+  type Value,
 } from '@platejs/plite';
 
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
@@ -24,7 +25,9 @@ type Announcement = {
   message: string;
 };
 
-const getCommitAnnouncement = (commit: EditorCommit): string | null => {
+const getCommitAnnouncement = <V extends Value>(
+  commit: EditorCommit<V>
+): string | null => {
   const messages = commit.effects.flatMap((effect) =>
     effect.type.key === screenReaderAnnouncementEffect.key &&
     typeof effect.value === 'string' &&
@@ -37,10 +40,13 @@ const getCommitAnnouncement = (commit: EditorCommit): string | null => {
 };
 
 /** One polite live region owned by a logical Plite React editor runtime. */
-export const EditorAnnouncementLiveRegion = ({
+export const EditorAnnouncementLiveRegion = <
+  V extends Value,
+  TExtensions extends readonly unknown[],
+>({
   editor,
 }: {
-  editor: Editor;
+  editor: Editor<V, TExtensions>;
 }) => {
   const lastEditorRef = useRef(editor);
   const lastCommitVersionRef = useRef(editor.read.lastCommit()?.version ?? 0);
@@ -54,7 +60,7 @@ export const EditorAnnouncementLiveRegion = ({
   useIsomorphicLayoutEffect(() => {
     setAnnouncement(null);
 
-    const onCommit = (commit: EditorCommit) => {
+    const onCommit = (commit: EditorCommit<V>) => {
       lastCommitVersionRef.current = commit.version;
 
       const message = getCommitAnnouncement(commit);

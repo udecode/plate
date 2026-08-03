@@ -17,7 +17,7 @@ import {
   isBlock as editorIsBlock,
   range as editorRange,
 } from '../interfaces/editor';
-import type { Editor } from '../interfaces/editor';
+import type { AnyEditor as Editor } from '../interfaces/editor';
 import { type Path, PathApi } from '../interfaces/path';
 import type { Point } from '../interfaces/point';
 import type { NodeMutationMethods } from '../interfaces/transforms/node';

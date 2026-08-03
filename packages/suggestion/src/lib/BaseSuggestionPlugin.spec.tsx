@@ -4,22 +4,19 @@ import {
   BaseParagraphPlugin,
   type BaseEditor,
   createBaseEditor,
-  createBasePlugin,
+  defineBasePlugin,
 } from '@platejs/core';
 import { ElementApi, property, schema, TextApi } from '@platejs/plite';
 import { jsxt } from '@platejs/test-utils';
-import {
-  KEYS,
-  type TSuggestionData,
-  type TSuggestionElement,
-  type TSuggestionText,
-  type TUpdateSuggestionData,
-} from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 
 import {
   BaseSuggestionPlugin,
+  type SuggestionData,
+  type SuggestionText,
   SUGGESTION_TRANSIENT_KEY,
   SuggestionUpdatePolicy,
+  type UpdateSuggestionData,
 } from './BaseSuggestionPlugin';
 
 // biome-ignore lint/complexity/noUselessLoneBlockStatements: keeps each merged test source isolated.
@@ -41,7 +38,7 @@ import {
         },
         initialValue: [
           {
-            type: 'p',
+            type: 'paragraph',
             children: [
               {
                 text: 'old',
@@ -101,7 +98,7 @@ import {
           anchor: { offset: 0, path: [0, 0] },
           focus: { offset: 0, path: [0, 0] },
         },
-        initialValue: [{ type: 'p', children: [{ text: 'plain' }] }],
+        initialValue: [{ type: 'paragraph', children: [{ text: 'plain' }] }],
       });
 
       expect(
@@ -119,7 +116,7 @@ import {
         },
         initialValue: [
           {
-            type: 'p',
+            type: 'paragraph',
             children: [
               {
                 text: 'gone',
@@ -151,8 +148,7 @@ import {
 }
 
 {
-  const BoldPlugin = createBasePlugin({
-    name: 'bold',
+  const BoldPlugin = defineBasePlugin('bold', {
     schema: {
       mark: property.boolean({ default: false, omitDefault: true }),
     },
@@ -164,7 +160,7 @@ import {
         plugins: [BaseSuggestionPlugin, BoldPlugin],
         initialValue: [
           {
-            type: 'p',
+            type: 'paragraph',
             children: [
               { text: 'plain' },
               {
@@ -194,7 +190,7 @@ import {
         plugins: [BaseSuggestionPlugin, BoldPlugin],
         initialValue: [
           {
-            type: 'p',
+            type: 'paragraph',
             children: [
               {
                 bold: true,
@@ -244,8 +240,7 @@ import {
 // biome-ignore lint/complexity/noUselessLoneBlockStatements: keeps each merged test source isolated.
 {
   describe('BaseSuggestionPlugin.read.findIdentity', () => {
-    const MentionPlugin = createBasePlugin({
-      name: KEYS.mention,
+    const MentionPlugin = defineBasePlugin(PLUGINS.mention, {
       schema: {
         element: {
           inline: true,
@@ -274,7 +269,7 @@ import {
         },
         initialValue: [
           {
-            type: 'p',
+            type: 'paragraph',
             children: [
               {
                 text: 'a',
@@ -328,7 +323,7 @@ import {
         },
         initialValue: [
           {
-            type: 'p',
+            type: 'paragraph',
             suggestion: {
               id: 'line-break',
               createdAt: 42,
@@ -338,7 +333,7 @@ import {
             },
             children: [{ text: 'one' }],
           },
-          { type: 'p', children: [{ text: '' }] },
+          { type: 'paragraph', children: [{ text: '' }] },
         ],
       });
 
@@ -370,11 +365,11 @@ import {
         },
         initialValue: [
           {
-            type: 'p',
+            type: 'paragraph',
             children: [
               { text: 'like ' },
               {
-                type: KEYS.mention,
+                type: 'mention',
                 value: 'Alice',
                 key: 'u1',
                 suggestion: true,
@@ -406,15 +401,17 @@ import {
 }
 
 {
-  const InlineSuggestionTargetPlugin = createBasePlugin({
-    name: 'inlineSuggestionTarget',
-    schema: {
-      element: {
-        content: schema.content.text({ default: 'text', min: 1 }),
-        inline: true,
+  const InlineSuggestionTargetPlugin = defineBasePlugin(
+    'inlineSuggestionTarget',
+    {
+      schema: {
+        element: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          inline: true,
+        },
       },
-    },
-  });
+    }
+  );
 
   describe('BaseSuggestionPlugin.api.getProps', () => {
     const createEditor = () =>
@@ -425,7 +422,7 @@ import {
           }),
           InlineSuggestionTargetPlugin,
         ],
-        initialValue: [{ children: [{ text: '' }], type: 'p' }],
+        initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
       });
 
     it('returns inline suggestion props for text nodes', () => {
@@ -439,7 +436,7 @@ import {
       );
 
       expect(result).toEqual({
-        [KEYS.suggestion]: true,
+        suggestion: true,
         [editor.plugin(BaseSuggestionPlugin).api.key('abc')]: {
           createdAt: 123,
           id: 'abc',
@@ -454,12 +451,12 @@ import {
       const result = editor
         .plugin(BaseSuggestionPlugin)
         .api.getProps(
-          { children: [], type: 'p' },
+          { children: [], type: 'paragraph' },
           { createdAt: 456, id: 'def', suggestionDeletion: true }
         );
 
       expect(result).toEqual({
-        [KEYS.suggestion]: {
+        suggestion: {
           createdAt: 456,
           id: 'def',
           type: 'remove',
@@ -473,13 +470,13 @@ import {
       const result = editor.plugin(BaseSuggestionPlugin).api.getProps(
         {
           children: [{ text: '' }],
-          type: InlineSuggestionTargetPlugin.name,
+          type: editor.plugin(InlineSuggestionTargetPlugin).schema.element.type,
         },
         { createdAt: 456, id: 'def', suggestionDeletion: true }
       );
 
       expect(result).toEqual({
-        [KEYS.suggestion]: true,
+        suggestion: true,
         [editor.plugin(BaseSuggestionPlugin).api.key('def')]: {
           createdAt: 456,
           id: 'def',
@@ -545,7 +542,7 @@ import {
         plugins: [BaseSuggestionPlugin],
         initialValue: [
           {
-            type: 'p',
+            type: 'paragraph',
             children: [
               {
                 text: 'old',
@@ -570,7 +567,7 @@ import {
             ],
           },
           {
-            type: 'p',
+            type: 'paragraph',
             children: [
               {
                 text: 'new',
@@ -635,8 +632,8 @@ import {
       });
 
       it('returns empty string for text node with remove suggestion', () => {
-        const node: TSuggestionText = {
-          [KEYS.suggestion]: true,
+        const node: SuggestionText = {
+          suggestion: true,
           suggestion_1: {
             id: '1',
             createdAt: Date.now(),
@@ -652,8 +649,8 @@ import {
       });
 
       it('returns full text for text node with insert suggestion', () => {
-        const node: TSuggestionText = {
-          [KEYS.suggestion]: true,
+        const node: SuggestionText = {
+          suggestion: true,
           suggestion_1: {
             id: '1',
             createdAt: Date.now(),
@@ -669,8 +666,8 @@ import {
       });
 
       it('returns full text for text node with update suggestion', () => {
-        const node: TSuggestionText = {
-          [KEYS.suggestion]: true,
+        const node: SuggestionText = {
+          suggestion: true,
           suggestion_1: {
             id: '1',
             createdAt: Date.now(),
@@ -707,7 +704,7 @@ import {
           children: [
             { text: 'keep this ' },
             {
-              [KEYS.suggestion]: true,
+              suggestion: true,
               suggestion_1: {
                 id: '1',
                 createdAt: Date.now(),
@@ -715,7 +712,7 @@ import {
                 userId: 'testId',
               },
               text: 'delete this ',
-            } as TSuggestionText,
+            } as SuggestionText,
             { text: 'keep this too' },
           ],
           type: 'paragraph',
@@ -755,7 +752,7 @@ import {
                   children: [
                     { text: 'item 1 ' },
                     {
-                      [KEYS.suggestion]: true,
+                      suggestion: true,
                       suggestion_1: {
                         id: '1',
                         createdAt: Date.now(),
@@ -763,7 +760,7 @@ import {
                         userId: 'testId',
                       },
                       text: 'deleted ',
-                    } as TSuggestionText,
+                    } as SuggestionText,
                     { text: 'content' },
                   ],
                   type: 'paragraph',
@@ -804,7 +801,7 @@ import {
         const node = {
           children: [
             {
-              [KEYS.suggestion]: true,
+              suggestion: true,
               suggestion_1: {
                 id: '1',
                 createdAt: Date.now(),
@@ -812,7 +809,7 @@ import {
                 userId: 'testId',
               },
               text: 'all deleted',
-            } as TSuggestionText,
+            } as SuggestionText,
           ],
           type: 'paragraph',
         };
@@ -834,9 +831,9 @@ import {
 
       it('handle text node with suggestion but no suggestion data', () => {
         const node = {
-          [KEYS.suggestion]: true,
+          suggestion: true,
           text: 'text with suggestion flag',
-        } as TSuggestionText;
+        } as SuggestionText;
         const result = editor
           .plugin(BaseSuggestionPlugin)
           .api.skipDeletes(node);
@@ -844,8 +841,8 @@ import {
       });
 
       it('handle multiple suggestion keys on same node', () => {
-        const node: TSuggestionText = {
-          [KEYS.suggestion]: true,
+        const node: SuggestionText = {
+          suggestion: true,
           suggestion_1: {
             id: '1',
             createdAt: Date.now() - 1000,
@@ -879,15 +876,13 @@ import {
     },
   });
 
-  const BoldPlugin = createBasePlugin({
-    name: 'bold',
+  const BoldPlugin = defineBasePlugin('bold', {
     schema: {
       mark: property.boolean({ default: false, omitDefault: true }),
     },
   });
 
-  const ItalicPlugin = createBasePlugin({
-    name: 'italic',
+  const ItalicPlugin = defineBasePlugin('italic', {
     schema: {
       mark: property.boolean({ default: false, omitDefault: true }),
     },
@@ -918,11 +913,13 @@ import {
         .plugin(BaseSuggestionPlugin)
         .api.inlineData(
           editor.read.children()[0].children[0] as any
-        ) as TUpdateSuggestionData;
+        ) as UpdateSuggestionData;
 
       expect(editor.read.children()[0].children[0].bold).toBe(true);
       expect(
-        editor.read.children()[0].children[0][BaseSuggestionPlugin.name]
+        editor.read.children()[0].children[0][
+          editor.plugin(BaseSuggestionPlugin).schema.properties.suggestion.key
+        ]
       ).toBe(true);
       expect(data).toBeDefined();
       expect(data?.type).toBe('update');
@@ -954,7 +951,7 @@ import {
       const node = editor.read.children()[0].children[0] as any;
       const data = editor
         .plugin(BaseSuggestionPlugin)
-        .api.inlineData(node) as TUpdateSuggestionData;
+        .api.inlineData(node) as UpdateSuggestionData;
 
       expect(node.bold).toBe(true);
       expect(data.newProperties).toEqual({ bold: true });
@@ -995,7 +992,7 @@ import {
         .plugin(BaseSuggestionPlugin)
         .api.dataList(
           editor.read.children()[0].children[1] as any
-        ) as TUpdateSuggestionData[];
+        ) as UpdateSuggestionData[];
 
       expect(dataList).toHaveLength(2);
       expect(dataList[0]).toEqual(existingData);
@@ -1059,16 +1056,24 @@ import {
     id?: string;
     text?: string;
     type?: 'insert' | 'remove';
-  } = {}) => ({
-    [KEYS.suggestion]: true,
-    [`${KEYS.suggestion}_${id}`]: {
+  } = {}): SuggestionText => {
+    const suggestionKey = `suggestion_${id}` as const;
+    const properties: Partial<Record<`suggestion_${string}`, SuggestionData>> =
+      {};
+
+    properties[suggestionKey] = {
       id,
       createdAt: 1,
       type,
       userId: 'alice',
-    },
-    text,
-  });
+    };
+
+    return {
+      ...properties,
+      suggestion: true,
+      text,
+    };
+  };
 
   describe('editor.update.suggestion.delete', () => {
     it('removes empty inserted block suggestions instead of converting them to remove suggestions', () => {
@@ -1082,11 +1087,11 @@ import {
         initialValue: [
           {
             children: [createSuggestionText()],
-            type: 'p',
+            type: 'paragraph',
           },
           {
             children: [{ text: 'next' }],
-            type: 'p',
+            type: 'paragraph',
           },
         ],
       });
@@ -1099,7 +1104,7 @@ import {
       expect(editor.read.children()).toEqual([
         {
           children: [{ text: 'next' }],
-          type: 'p',
+          type: 'paragraph',
         },
       ]);
     });
@@ -1115,7 +1120,7 @@ import {
         initialValue: [
           {
             children: [createSuggestionText({ text: 'x' })],
-            type: 'p',
+            type: 'paragraph',
           },
         ],
       });
@@ -1129,8 +1134,8 @@ import {
         {
           children: [
             {
-              [KEYS.suggestion]: true,
-              [`${KEYS.suggestion}_s1`]: {
+              suggestion: true,
+              suggestion_s1: {
                 id: 's1',
                 createdAt: 1,
                 type: 'insert',
@@ -1139,7 +1144,7 @@ import {
               text: '',
             },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ]);
     });
@@ -1155,11 +1160,11 @@ import {
         initialValue: [
           {
             children: [{ text: 'one' }],
-            type: 'p',
+            type: 'paragraph',
           },
           {
             children: [{ text: 'two' }],
-            type: 'p',
+            type: 'paragraph',
           },
         ],
       });
@@ -1188,18 +1193,18 @@ import {
           anchor: { offset: 0, path: [0, 0] },
           focus: { offset: 0, path: [0, 0] },
         },
-        initialValue: [{ children: [{ text: '' }], type: 'p' }],
+        initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
       });
       const suggestionApi = editor.plugin(BaseSuggestionPlugin).api;
       const fragment = [
         {
-          [KEYS.suggestion]: true,
+          suggestion: true,
           [suggestionApi.key('other-user')]: { id: 'other-user' },
           text: 'text',
         },
         {
           children: [{ text: '' }],
-          type: 'p',
+          type: 'paragraph',
         },
       ];
 
@@ -1221,7 +1226,7 @@ import {
         inline && TextApi.isText(inline)
           ? suggestionApi.inlineData(inline)
           : undefined;
-      const blockSuggestion = block?.[KEYS.suggestion];
+      const blockSuggestion = block?.suggestion;
 
       expect(fragment[0]).toHaveProperty(suggestionApi.key('other-user'));
       expect(inlineData).toMatchObject({
@@ -1247,15 +1252,13 @@ import {
     },
   });
 
-  const BoldPlugin = createBasePlugin({
-    name: 'bold',
+  const BoldPlugin = defineBasePlugin('bold', {
     schema: {
       mark: property.boolean({ default: false, omitDefault: true }),
     },
   });
 
-  const ItalicPlugin = createBasePlugin({
-    name: 'italic',
+  const ItalicPlugin = defineBasePlugin('italic', {
     schema: {
       mark: property.boolean({ default: false, omitDefault: true }),
     },
@@ -1288,11 +1291,13 @@ import {
         .plugin(BaseSuggestionPlugin)
         .api.inlineData(
           editor.read.children()[0].children[0] as any
-        ) as TUpdateSuggestionData;
+        ) as UpdateSuggestionData;
 
       expect(editor.read.children()[0].children[0].bold).toBeUndefined();
       expect(
-        editor.read.children()[0].children[0][BaseSuggestionPlugin.name]
+        editor.read.children()[0].children[0][
+          editor.plugin(BaseSuggestionPlugin).schema.properties.suggestion.key
+        ]
       ).toBe(true);
       expect(data).toBeDefined();
       expect(data?.type).toBe('update');
@@ -1326,7 +1331,7 @@ import {
       const node = editor.read.children()[0].children[0] as any;
       const data = editor
         .plugin(BaseSuggestionPlugin)
-        .api.inlineData(node) as TUpdateSuggestionData;
+        .api.inlineData(node) as UpdateSuggestionData;
 
       expect(node.bold).toBeUndefined();
       expect(data.properties).toEqual({ bold: true });
@@ -1367,7 +1372,7 @@ import {
         .plugin(BaseSuggestionPlugin)
         .api.dataList(
           editor.read.children()[0].children[0] as any
-        ) as TUpdateSuggestionData[];
+        ) as UpdateSuggestionData[];
 
       expect(dataList).toHaveLength(2);
       expect(dataList[0]).toEqual(existingData);
@@ -1427,7 +1432,7 @@ import {
           anchor: { offset: 0, path: [0, 0] },
           focus: { offset: 0, path: [0, 0] },
         },
-        initialValue: [{ type: 'p', children: [{ text: 'one' }] }],
+        initialValue: [{ type: 'paragraph', children: [{ text: 'one' }] }],
       });
 
       editor.update.suggestion.removeNodes([]);
@@ -1452,8 +1457,8 @@ import {
           focus: { offset: 0, path: [0, 0] },
         },
         initialValue: [
-          { type: 'p', children: [{ text: 'one' }] },
-          { type: 'p', children: [{ text: 'two' }] },
+          { type: 'paragraph', children: [{ text: 'one' }] },
+          { type: 'paragraph', children: [{ text: 'two' }] },
         ],
       });
 
@@ -1486,8 +1491,7 @@ import {
     initialState: { currentUserId: 'user-1' },
   });
 
-  const MentionPlugin = createBasePlugin({
-    name: KEYS.mention,
+  const MentionPlugin = defineBasePlugin(PLUGINS.mention, {
     schema: {
       element: {
         inline: true,
@@ -1512,10 +1516,10 @@ import {
           {
             children: [
               { text: 'ab ' },
-              { children: [{ text: '' }], type: KEYS.mention, value: 'Ada' },
+              { children: [{ text: '' }], type: 'mention', value: 'Ada' },
               { text: ' cd' },
             ],
-            type: 'p',
+            type: 'paragraph',
           },
         ],
       });
@@ -1532,7 +1536,7 @@ import {
           editor.plugin(BaseSuggestionPlugin).api.inlineData(node)?.id === 's-1'
       );
       const mentionNode = children.find(
-        (node) => 'type' in node && node.type === KEYS.mention
+        (node) => 'type' in node && node.type === 'mention'
       );
       const mentionData =
         mentionNode &&
@@ -1542,7 +1546,11 @@ import {
           ? mentionNode.children[0]
           : undefined;
 
-      expect(markedTextNodes.map((node) => node.text)).toEqual(['b ', ' ']);
+      expect(
+        markedTextNodes.map((node) =>
+          TextApi.isText(node) ? node.text : undefined
+        )
+      ).toEqual(['b ', ' ']);
       expect(mentionData).toMatchObject({
         createdAt: 123,
         id: 's-1',
@@ -1567,9 +1575,9 @@ import {
           {
             children: [
               { text: 'abc' },
-              { children: [{ text: '' }], type: KEYS.mention, value: 'Ada' },
+              { children: [{ text: '' }], type: 'mention', value: 'Ada' },
             ],
-            type: 'p',
+            type: 'paragraph',
           },
         ],
       });
@@ -1586,10 +1594,14 @@ import {
           editor.plugin(BaseSuggestionPlugin).api.inlineData(node)?.id === 's-1'
       );
       const mentionNode = children.find(
-        (node) => 'type' in node && node.type === KEYS.mention
+        (node) => 'type' in node && node.type === 'mention'
       );
 
-      expect(markedTextNode?.text).toBe('b');
+      expect(
+        markedTextNode && TextApi.isText(markedTextNode)
+          ? markedTextNode.text
+          : undefined
+      ).toBe('b');
       expect(
         mentionNode &&
           editor.plugin(BaseSuggestionPlugin).api.inlineData(mentionNode)
@@ -1646,7 +1658,7 @@ import {
 
       const data = editor.read.children()[0][
         BaseSuggestionPlugin.name
-      ] as TSuggestionData;
+      ] as SuggestionData;
 
       expect(editor.read.children()).toHaveLength(2);
       expect(data).toBeDefined();
@@ -1780,10 +1792,11 @@ import {
       editor.update.text.deleteBackward({ unit: 'line' });
       editor.update.text.deleteBackward({ unit: 'character' });
 
+      const firstBlock = editor.read.children()[0];
       const lineBreakData = editor
         .plugin(BaseSuggestionPlugin)
-        .api.isBlockSuggestion(editor.read.children()[0] as any)
-        ? (editor.read.children()[0].suggestion as TSuggestionElement)
+        .api.isBlockSuggestion(firstBlock)
+        ? firstBlock.suggestion
         : undefined;
 
       const suggestionTextData = editor
@@ -1877,8 +1890,7 @@ import {
     },
   });
 
-  const BoldPlugin = createBasePlugin({
-    name: 'bold',
+  const BoldPlugin = defineBasePlugin('bold', {
     schema: {
       mark: property.boolean({ default: false, omitDefault: true }),
     },
@@ -2089,8 +2101,8 @@ import {
           focus: { offset: 0, path: [1, 0] },
         },
         initialValue: [
-          { type: 'p', children: [{ text: 'test1' }] },
-          { type: 'p', children: [{ text: 'test2' }] },
+          { type: 'paragraph', children: [{ text: 'test1' }] },
+          { type: 'paragraph', children: [{ text: 'test2' }] },
         ],
       });
 
@@ -2246,22 +2258,19 @@ import {
     },
   });
 
-  const BoldPlugin = createBasePlugin({
-    name: 'bold',
+  const BoldPlugin = defineBasePlugin('bold', {
     schema: {
       mark: property.boolean({ default: false, omitDefault: true }),
     },
   });
 
-  const ItalicPlugin = createBasePlugin({
-    name: 'italic',
+  const ItalicPlugin = defineBasePlugin('italic', {
     schema: {
       mark: property.boolean({ default: false, omitDefault: true }),
     },
   });
 
-  const ExplicitFalseItalicPlugin = createBasePlugin({
-    name: 'italic',
+  const ExplicitFalseItalicPlugin = defineBasePlugin('italic', {
     schema: {
       mark: property.boolean({ default: true, omitDefault: true }),
     },
@@ -2428,7 +2437,7 @@ import {
             { italic: false, text: 'updated' },
             { text: 'text' },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ]);
     });
@@ -2627,8 +2636,7 @@ import {
 }
 
 {
-  const SuggestionTargetPlugin = createBasePlugin({
-    name: 'suggestionTarget',
+  const SuggestionTargetPlugin = defineBasePlugin('suggestionTarget', {
     schema: {
       element: {
         content: schema.content.text({ default: 'text', min: 1 }),
@@ -2636,15 +2644,17 @@ import {
     },
   });
 
-  const InlineSuggestionTargetPlugin = createBasePlugin({
-    name: 'inlineSuggestionTarget',
-    schema: {
-      element: {
-        content: schema.content.text({ default: 'text', min: 1 }),
-        inline: true,
+  const InlineSuggestionTargetPlugin = defineBasePlugin(
+    'inlineSuggestionTarget',
+    {
+      schema: {
+        element: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          inline: true,
+        },
       },
-    },
-  });
+    }
+  );
 
   describe('BaseSuggestionPlugin', () => {
     const inlineSuggestion = {
@@ -2677,12 +2687,12 @@ import {
                 text: 'inline',
               },
             ],
-            type: 'p',
+            type: 'paragraph',
           },
           {
             children: [{ text: 'block' }],
             suggestion: blockSuggestion,
-            type: 'p',
+            type: 'paragraph',
           },
           {
             children: [
@@ -2698,7 +2708,7 @@ import {
                 text: 'transient',
               },
             ],
-            type: 'p',
+            type: 'paragraph',
           },
         ],
       } as any);
@@ -2709,17 +2719,20 @@ import {
       expect(
         editor.read.schema.fitDocument({
           children: [
-            { children: [{ suggestion: false, text: 'plain' }], type: 'p' },
+            {
+              children: [{ suggestion: false, text: 'plain' }],
+              type: 'paragraph',
+            },
           ],
         })
       ).toEqual({
-        children: [{ children: [{ text: 'plain' }], type: 'p' }],
+        children: [{ children: [{ text: 'plain' }], type: 'paragraph' }],
       });
     });
 
     it('compiles suggestion placement, namespace, lifecycle, and merge laws', () => {
       const editor = createEditor();
-      const paragraph = { children: [{ text: '' }], type: 'p' };
+      const paragraph = { children: [{ text: '' }], type: 'paragraph' };
       const replacement = {
         createdAt: 4,
         id: 'replacement',
@@ -2731,35 +2744,35 @@ import {
         editor.read.schema.property({
           key: 'suggestion',
           placement: 'element',
-          type: 'p',
+          type: 'paragraph',
         })
       ).toMatchObject({ value: { kind: 'json' } });
       expect(
         editor.read.schema.property({
           key: 'suggestion_any',
           placement: 'element',
-          type: 'p',
+          type: 'paragraph',
         })
       ).toBeNull();
       expect(
         editor.read.schema.property({
           key: 'suggestion',
           placement: 'element',
-          type: InlineSuggestionTargetPlugin.name,
+          type: editor.plugin(InlineSuggestionTargetPlugin).schema.element.type,
         })
       ).toMatchObject({ value: { kind: 'boolean' } });
       expect(
         editor.read.schema.property({
           key: 'suggestion_any',
           placement: 'element',
-          type: InlineSuggestionTargetPlugin.name,
+          type: editor.plugin(InlineSuggestionTargetPlugin).schema.element.type,
         })
       ).toMatchObject({ value: { kind: 'json' } });
       expect(
         editor.read.schema.property({
           key: 'suggestion',
           placement: 'text',
-          type: 'p',
+          type: 'paragraph',
         })
       ).toMatchObject({
         lifecycle: {
@@ -2773,7 +2786,7 @@ import {
         editor.read.schema.property({
           key: 'suggestion_any',
           placement: 'text',
-          type: 'p',
+          type: 'paragraph',
         })
       ).toMatchObject({
         lifecycle: {
@@ -2787,7 +2800,7 @@ import {
         editor.read.schema.property({
           key: SUGGESTION_TRANSIENT_KEY,
           placement: 'text',
-          type: 'p',
+          type: 'paragraph',
         })
       ).toMatchObject({ value: { kind: 'boolean' } });
       expect(
@@ -2808,7 +2821,7 @@ import {
         editor.read.schema.property({
           key: 'suggestion_any',
           placement: 'element',
-          type: InlineSuggestionTargetPlugin.name,
+          type: editor.plugin(InlineSuggestionTargetPlugin).schema.element.type,
         })?.role
       ).toBe('content');
 
@@ -2837,12 +2850,12 @@ import {
       const block = editor.read.schema.property({
         key: 'suggestion',
         placement: 'element',
-        type: 'p',
+        type: 'paragraph',
       })?.value.validate;
       const inline = editor.read.schema.property({
         key: 'suggestion_any',
         placement: 'text',
-        type: 'p',
+        type: 'paragraph',
       })?.value.validate;
 
       expect(block?.(blockSuggestion)).toBe(true);
@@ -2895,7 +2908,7 @@ import {
     it('bypasses suggestion tracking with the skip policy', () => {
       const editor = createBaseEditor({
         plugins: [BaseParagraphPlugin, BaseSuggestionPlugin],
-        initialValue: [{ children: [{ text: 'plain' }], type: 'p' }],
+        initialValue: [{ children: [{ text: 'plain' }], type: 'paragraph' }],
       } as any);
 
       editor.plugin(BaseSuggestionPlugin).store.set({ isSuggesting: true });
@@ -2919,7 +2932,7 @@ import {
             },
           }),
         ],
-        initialValue: [{ children: [{ text: 'plain' }], type: 'p' }],
+        initialValue: [{ children: [{ text: 'plain' }], type: 'paragraph' }],
       } as any);
       const suggestion = editor.plugin(BaseSuggestionPlugin);
 
@@ -2932,10 +2945,10 @@ import {
       ).toEqual({});
       expect(
         suggestion.api.createFragment(
-          [{ children: [{ text: 'inserted' }], type: 'p' }],
+          [{ children: [{ text: 'inserted' }], type: 'paragraph' }],
           { id: 'suggestion-1', createdAt: 1 }
         )
-      ).toEqual([{ children: [{ text: 'inserted' }], type: 'p' }]);
+      ).toEqual([{ children: [{ text: 'inserted' }], type: 'paragraph' }]);
 
       editor.update.selection.set({ offset: 5, path: [0, 0] });
       editor.update.text.insert('!');
@@ -2978,8 +2991,8 @@ import {
       const value = editor
         .plugin(BaseSuggestionPlugin)
         .api.diff(
-          [{ type: 'p', children: [{ text: 'a' }] }],
-          [{ type: 'p', children: [{ text: 'ab' }] }]
+          [{ type: 'paragraph', children: [{ text: 'a' }] }],
+          [{ type: 'paragraph', children: [{ text: 'ab' }] }]
         );
 
       expect(value[0].children).toHaveLength(2);
@@ -3004,8 +3017,8 @@ import {
       const value = editor
         .plugin(BaseSuggestionPlugin)
         .api.diff(
-          [{ type: 'p', children: [{ text: 'ab' }] }],
-          [{ type: 'p', children: [{ text: 'ac' }] }]
+          [{ type: 'paragraph', children: [{ text: 'ab' }] }],
+          [{ type: 'paragraph', children: [{ text: 'ac' }] }]
         );
 
       const removed = value[0].children[1];
@@ -3032,13 +3045,13 @@ import {
         [
           {
             type: 'blockquote',
-            children: [{ type: 'p', children: [{ text: 'a' }] }],
+            children: [{ type: 'paragraph', children: [{ text: 'a' }] }],
           },
         ],
         [
           {
             type: 'blockquote',
-            children: [{ type: 'p', children: [{ text: 'ab' }] }],
+            children: [{ type: 'paragraph', children: [{ text: 'ab' }] }],
           },
         ]
       );
@@ -3062,12 +3075,12 @@ import {
 
       const value = editor.plugin(BaseSuggestionPlugin).api.diff(
         [
-          { type: 'p', children: [{ text: 'ab' }] },
-          { type: 'p', children: [{ text: 'cd' }] },
+          { type: 'paragraph', children: [{ text: 'ab' }] },
+          { type: 'paragraph', children: [{ text: 'cd' }] },
         ],
         [
-          { type: 'p', children: [{ text: 'ac' }] },
-          { type: 'p', children: [{ text: 'ce' }] },
+          { type: 'paragraph', children: [{ text: 'ac' }] },
+          { type: 'paragraph', children: [{ text: 'ce' }] },
         ]
       );
 

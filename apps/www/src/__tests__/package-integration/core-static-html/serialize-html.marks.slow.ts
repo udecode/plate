@@ -11,7 +11,7 @@ describe('core static renderStaticHtml mark rendering', () => {
           { bold: true, text: 'bold' },
           { text: ' part.' },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
 
@@ -21,7 +21,7 @@ describe('core static renderStaticHtml mark rendering', () => {
     });
 
     expect(html).toContain(
-      '<span data-plite-leaf="true" data-plite-bold="true"><strong><span data-plite-string="true">bold</span></strong></span>'
+      '<span data-plite-leaf="true"><strong><span data-plite-string="true">bold</span></strong></span>'
     );
   });
 
@@ -33,7 +33,7 @@ describe('core static renderStaticHtml mark rendering', () => {
           { italic: true, text: 'italic' },
           { text: ' part.' },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
 
@@ -43,7 +43,7 @@ describe('core static renderStaticHtml mark rendering', () => {
     });
 
     expect(html).toContain(
-      '<span data-plite-leaf="true" data-plite-italic="true"><em><span data-plite-string="true">italic</span></em></span>'
+      '<span data-plite-leaf="true"><em><span data-plite-string="true">italic</span></em></span>'
     );
   });
 
@@ -55,7 +55,7 @@ describe('core static renderStaticHtml mark rendering', () => {
           { text: 'underlined', underline: true },
           { text: ' part.' },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
 
@@ -65,7 +65,7 @@ describe('core static renderStaticHtml mark rendering', () => {
     });
 
     expect(html).toContain(
-      '<span data-plite-leaf="true" data-plite-underline="true"><u><span data-plite-string="true">underlined</span></u></span>'
+      '<span data-plite-leaf="true"><u><span data-plite-string="true">underlined</span></u></span>'
     );
   });
 
@@ -77,7 +77,7 @@ describe('core static renderStaticHtml mark rendering', () => {
           { strikethrough: true, text: 'strikethrough' },
           { text: ' part.' },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
 
@@ -87,7 +87,7 @@ describe('core static renderStaticHtml mark rendering', () => {
     });
 
     expect(html).toContain(
-      '<span data-plite-leaf="true" data-plite-strikethrough="true"><s><span data-plite-string="true">strikethrough</span></s></span>'
+      '<span data-plite-leaf="true"><s><span data-plite-string="true">strikethrough</span></s></span>'
     );
   });
 
@@ -99,7 +99,7 @@ describe('core static renderStaticHtml mark rendering', () => {
           { code: true, text: 'some code' },
           { text: ' part.' },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
 
@@ -109,7 +109,7 @@ describe('core static renderStaticHtml mark rendering', () => {
     });
 
     expect(html).toContain(
-      '<span data-plite-leaf="true" data-plite-code="true"><code><span data-plite-string="true">some code</span></code></span>'
+      '<span data-plite-leaf="true"><code><span data-plite-string="true">some code</span></code></span>'
     );
   });
 
@@ -121,7 +121,7 @@ describe('core static renderStaticHtml mark rendering', () => {
           { script: 'sub', text: 'subscripted' },
           { text: ' part.' },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
 
@@ -143,7 +143,7 @@ describe('core static renderStaticHtml mark rendering', () => {
           { script: 'sup', text: 'superscripted' },
           { text: ' part.' },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
 
@@ -165,7 +165,7 @@ describe('core static renderStaticHtml mark rendering', () => {
           { kbd: true, text: 'keyboard shortcut' },
           { text: ' part.' },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
 
@@ -175,7 +175,7 @@ describe('core static renderStaticHtml mark rendering', () => {
     });
 
     expect(html).toContain(
-      '<span data-plite-leaf="true" data-plite-kbd="true"><kbd><span data-plite-string="true">keyboard shortcut</span></kbd></span>'
+      '<span data-plite-leaf="true"><kbd><span data-plite-string="true">keyboard shortcut</span></kbd></span>'
     );
   });
 
@@ -187,7 +187,7 @@ describe('core static renderStaticHtml mark rendering', () => {
           { bold: true, italic: true, text: 'bold and italic' },
           { text: ' part.' },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
 
@@ -197,7 +197,7 @@ describe('core static renderStaticHtml mark rendering', () => {
     });
 
     expect(html).toContain(
-      '<span data-plite-leaf="true" data-plite-bold="true" data-plite-italic="true"><em><strong><span data-plite-string="true">bold and italic</span></strong></em></span>'
+      '<span data-plite-leaf="true"><em><strong><span data-plite-string="true">bold and italic</span></strong></em></span>'
     );
   });
 });

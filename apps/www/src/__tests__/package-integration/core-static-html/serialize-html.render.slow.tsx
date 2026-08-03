@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { property } from 'platejs';
-import { createBaseEditor, createBasePlugin } from 'platejs';
+import { createBaseEditor, defineBasePlugin } from 'platejs';
 import { renderStaticHtml } from 'platejs/static';
 
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
@@ -10,8 +10,7 @@ import { createStaticEditor } from './create-static-editor';
 
 describe('core static renderStaticHtml custom render hooks', () => {
   it('renders belowNodes output around children', async () => {
-    const renderBelowPlugin = createBasePlugin({
-      name: 'test-list',
+    const renderBelowPlugin = defineBasePlugin('testList', {
       render: {
         belowNodes: (_injectProps: any) =>
           function Component({ children }: { children: React.ReactNode }) {
@@ -29,7 +28,7 @@ describe('core static renderStaticHtml custom render hooks', () => {
       initialValue: [
         {
           children: [{ text: 'test render below' }],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
@@ -53,11 +52,11 @@ describe('core static renderStaticHtml custom render hooks', () => {
             text: 'None encoded string 100%',
           },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [{ text: 'Encoded string 100%25' }],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
 
@@ -75,11 +74,10 @@ describe('core static renderStaticHtml custom render hooks', () => {
   });
 
   it('applies both node and leaf renderers', async () => {
-    const testPlugin = createBasePlugin({
+    const testPlugin = defineBasePlugin('test', {
       component: ({ children }) => (
         <span data-plite-test="node-wrapper">{children}</span>
       ),
-      name: 'test',
       schema: {
         mark: property.boolean({ default: false, omitDefault: true }),
       },
@@ -101,7 +99,7 @@ describe('core static renderStaticHtml custom render hooks', () => {
               text: 'test content',
             },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
@@ -117,11 +115,10 @@ describe('core static renderStaticHtml custom render hooks', () => {
   });
 
   it('applies a component renderer to decoration leaves', async () => {
-    const testPlugin = createBasePlugin({
+    const testPlugin = defineBasePlugin('test', {
       component: ({ children }) => (
         <span data-plite-test="node-wrapper">{children}</span>
       ),
-      name: 'test',
       schema: {
         mark: property.boolean({ default: false, omitDefault: true }),
       },
@@ -140,7 +137,7 @@ describe('core static renderStaticHtml custom render hooks', () => {
               text: 'test content',
             },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
@@ -156,11 +153,10 @@ describe('core static renderStaticHtml custom render hooks', () => {
   });
 
   it('applies a component renderer to non-decoration leaves', async () => {
-    const testPlugin = createBasePlugin({
+    const testPlugin = defineBasePlugin('test', {
       component: ({ children }) => (
         <span data-plite-test="node-wrapper">{children}</span>
       ),
-      name: 'test',
       schema: {
         mark: property.boolean({ default: false, omitDefault: true }),
       },
@@ -179,7 +175,7 @@ describe('core static renderStaticHtml custom render hooks', () => {
               text: 'test content',
             },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });

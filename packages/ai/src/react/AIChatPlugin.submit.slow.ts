@@ -1,6 +1,6 @@
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import { BaseParagraphPlugin } from '@platejs/core';
-import { type Value } from '@platejs/plite';
+import { createEditor as createPliteEditor, type Value } from '@platejs/plite';
 import { createPlateEditor } from '@platejs/core/react';
 
 import { BaseAIPlugin } from '../lib/BaseAIPlugin';
@@ -8,10 +8,11 @@ import { type AIChatDefinition, AIChatPlugin } from './AIChatPlugin';
 
 const createEditor = (sendMessage: ReturnType<typeof mock>) => {
   const initialValue: Value = [
-    { children: [{ text: 'one' }], id: 'b1', type: 'p' },
-    { children: [{ text: 'two' }], id: 'b2', type: 'p' },
+    { children: [{ text: 'one' }], id: 'b1', type: 'paragraph' },
+    { children: [{ text: 'two' }], id: 'b2', type: 'paragraph' },
   ];
   const editor = createPlateEditor({
+    editor: createPliteEditor<Value>(),
     plugins: [
       BaseParagraphPlugin,
       BaseAIPlugin,

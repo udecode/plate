@@ -1,6 +1,6 @@
 import type {
   DescendantIn,
-  Editor,
+  AnyEditor as Editor,
   ContentSlice,
   ElementOrTextIn,
   Location,

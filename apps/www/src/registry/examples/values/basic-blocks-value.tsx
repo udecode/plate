@@ -1,7 +1,6 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@platejs/test-utils';
-import { KEYS } from 'platejs';
 
 jsx;
 
@@ -39,7 +38,7 @@ export const basicBlocksValue = (
       navigate your content effectively. Combine them with blockquotes to
       emphasize important information.
     </hp>
-    <element type={KEYS.hr}>
+    <element type="horizontalRule">
       <htext />
     </element>
     <hp>

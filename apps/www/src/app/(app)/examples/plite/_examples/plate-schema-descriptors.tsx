@@ -12,7 +12,7 @@ import { writeHostFragmentData } from '@platejs/plite-dom';
 import { TablePlugin } from '@platejs/table/react';
 import { useState } from 'react';
 import {
-  createPlatePlugin,
+  definePlatePlugin,
   ParagraphPlugin,
   Plate,
   PlateContent,
@@ -34,8 +34,7 @@ type CodecProofPluginState = {
 const parseCodecProofPayload = (data: string): CodecProofPayload =>
   JSON.parse(data) as CodecProofPayload;
 
-const CodecProofFallbackPlugin = createPlatePlugin({
-  name: 'codecProofFallback',
+const CodecProofFallbackPlugin = definePlatePlugin('codecProofFallback', {
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       [CODEC_PROOF_FORMAT]: {
@@ -48,7 +47,7 @@ const CodecProofFallbackPlugin = createPlatePlugin({
           return ContentSlice.closed([
             {
               children: [{ text: `fallback:${kind}` }],
-              type: 'p',
+              type: 'paragraph',
             },
           ]);
         },
@@ -60,9 +59,8 @@ const codecProofInitialState: CodecProofPluginState = {
   label: 'initial',
 };
 
-const CodecProofPlugin = createPlatePlugin({
+const CodecProofPlugin = definePlatePlugin('codecProof', {
   initialState: codecProofInitialState,
-  name: 'codecProof',
   codecs: ({ defineCodecs, editor, store }) =>
     defineCodecs({
       [CODEC_PROOF_FORMAT]: {
@@ -81,7 +79,7 @@ const CodecProofPlugin = createPlatePlugin({
               content: [
                 {
                   children: [{ bold: true, text: `${label}:inline` }],
-                  type: 'p',
+                  type: 'paragraph',
                 },
               ],
               openEnd: 1,
@@ -95,10 +93,10 @@ const CodecProofPlugin = createPlatePlugin({
                   children: [
                     {
                       children: [{ text: `${label}:code` }],
-                      type: editor.plugin(CodeLinePlugin.name).type,
+                      type: editor.plugin(CodeLinePlugin).type,
                     },
                   ],
-                  type: editor.plugin(CodeBlockPlugin.name).type,
+                  type: editor.plugin(CodeBlockPlugin).type,
                 },
               ],
               openEnd: 2,
@@ -109,11 +107,11 @@ const CodecProofPlugin = createPlatePlugin({
           return ContentSlice.closed([
             {
               children: [{ text: `${label}:block-a` }],
-              type: 'p',
+              type: 'paragraph',
             },
             {
               children: [{ text: `${label}:block-b` }],
-              type: 'p',
+              type: 'paragraph',
             },
           ]);
         },
@@ -126,8 +124,7 @@ const CodecProofPlugin = createPlatePlugin({
     }),
 });
 
-const AdvancedMarkPlugin = createPlatePlugin({
-  name: 'schemaAdvanced',
+const AdvancedMarkPlugin = definePlatePlugin('schemaAdvanced', {
   schema: {
     mark: {
       inclusive: false,
@@ -159,7 +156,10 @@ const PlateSchemaDescriptorControls = () => {
   const document = useEditorSelector((editor) =>
     JSON.stringify(editor.read.children())
   );
-  const advancedMark = editor.read.schema.property(AdvancedMarkPlugin);
+  const advancedMark = editor.read.schema.property({
+    key: editor.plugin(AdvancedMarkPlugin).key,
+    placement: 'text',
+  });
   const insertCodecProof = (kind: CodecProofPayload['kind']) => {
     const data = new DataTransfer();
 
@@ -178,7 +178,7 @@ const PlateSchemaDescriptorControls = () => {
       children: [
         {
           children: [{ text: 'left  right' }],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
       selection: {
@@ -190,7 +190,7 @@ const PlateSchemaDescriptorControls = () => {
   };
   const resetBlockTarget = () => {
     editor.update.value.replace({
-      children: [{ children: [{ text: '' }], type: 'p' }],
+      children: [{ children: [{ text: '' }], type: 'paragraph' }],
       selection: {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
@@ -212,17 +212,17 @@ const PlateSchemaDescriptorControls = () => {
             {
               children: [{ text: 'a link' }],
               target: '_self',
-              type: editor.plugin(LinkPlugin.name).type,
+              type: editor.plugin(LinkPlugin).type,
               url: 'https://example.com/docs',
             },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
         {
           children: [{ text: 'Modern list item' }],
           indent: 1,
           listStyleType: 'disc',
-          type: 'p',
+          type: 'paragraph',
         },
         {
           children: [
@@ -240,15 +240,15 @@ const PlateSchemaDescriptorControls = () => {
                   children: [
                     {
                       children: [{ text: 'Table cell' }],
-                      type: 'p',
+                      type: 'paragraph',
                     },
                   ],
                   size: 180,
-                  type: 'td',
+                  type: 'tableCell',
                 },
               ],
               size: 44,
-              type: 'tr',
+              type: 'tableRow',
             },
           ],
           colSizes: [180],
@@ -259,22 +259,22 @@ const PlateSchemaDescriptorControls = () => {
           children: [
             {
               children: [{ text: 'const codec = true;' }],
-              type: editor.plugin(CodeLinePlugin.name).type,
+              type: editor.plugin(CodeLinePlugin).type,
             },
             {
               children: [{ text: '' }],
-              type: editor.plugin(CodeLinePlugin.name).type,
+              type: editor.plugin(CodeLinePlugin).type,
             },
           ],
           lang: 'typescript',
-          type: editor.plugin(CodeBlockPlugin.name).type,
+          type: editor.plugin(CodeBlockPlugin).type,
         },
         {
           alt: 'Plate codec image',
           children: [{ text: 'Image caption' }],
           initialHeight: 180,
           initialWidth: 320,
-          type: editor.plugin(ImagePlugin.name).type,
+          type: editor.plugin(ImagePlugin).type,
           url: 'https://example.com/plate-codec.png',
           width: '50%',
         },
@@ -282,7 +282,7 @@ const PlateSchemaDescriptorControls = () => {
           children: [{ text: 'Media caption' }],
           provider: 'youtube',
           sourceUrl: 'https://www.youtube.com/watch?v=M7lc1UVf-VE',
-          type: editor.plugin(MediaEmbedPlugin.name).type,
+          type: editor.plugin(MediaEmbedPlugin).type,
           url: 'https://www.youtube.com/embed/M7lc1UVf-VE',
           width: 480,
         },
@@ -297,10 +297,10 @@ const PlateSchemaDescriptorControls = () => {
           children: [
             {
               children: [{ text: 'left  right' }],
-              type: editor.plugin(CodeLinePlugin.name).type,
+              type: editor.plugin(CodeLinePlugin).type,
             },
           ],
-          type: editor.plugin(CodeBlockPlugin.name).type,
+          type: editor.plugin(CodeBlockPlugin).type,
         },
       ],
       selection: {
@@ -320,7 +320,7 @@ const PlateSchemaDescriptorControls = () => {
         content: [
           {
             children: [{ text: 'main' }],
-            type: 'p',
+            type: 'paragraph',
           },
         ],
         openEnd: 0,
@@ -329,13 +329,13 @@ const PlateSchemaDescriptorControls = () => {
           notes: [
             {
               children: [{ text: 'named' }],
-              type: 'p',
+              type: 'paragraph',
             },
           ],
           'projected:body': [
             {
               children: [{ text: 'projected' }],
-              type: 'p',
+              type: 'paragraph',
             },
           ],
         },
@@ -354,6 +354,8 @@ const PlateSchemaDescriptorControls = () => {
               element:
                 '<p><strong><span style="font-size: 22px"><mark data-schema-advanced="proof">Descriptor proof</mark></span></strong></p>',
             });
+
+            if (!children) return;
 
             editor.update.value.replace({ children, selection: null });
           }}
@@ -477,7 +479,7 @@ const PlateSchemaDescriptorsExample = () => {
         },
       }),
     ],
-    initialValue: [{ children: [{ text: '' }], type: 'p' }],
+    initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
   });
 
   return (

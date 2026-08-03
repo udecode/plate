@@ -1,7 +1,7 @@
-import { createBasePlugin } from '@platejs/core';
+import { defineBasePlugin } from '@platejs/core';
 import { PathApi, type Element, type Node, type Path } from '@platejs/plite';
 
-import { KEYS } from '../plate-keys';
+import { PLUGINS } from '../plate-keys';
 
 type ExitBreakNodeMatch = (node: Node, path: Path) => boolean;
 
@@ -13,9 +13,7 @@ type ExitBreakOptions = {
 /**
  * Inserts an exit block before or after the current block structure.
  */
-export const ExitBreakPlugin = createBasePlugin({
-  name: KEYS.exitBreak,
-
+export const ExitBreakPlugin = defineBasePlugin(PLUGINS.exitBreak, {
   editOnly: true,
   update: ({ editor, tx }) => {
     const insertExitBreak = ({ match, reverse }: ExitBreakOptions = {}) => {
@@ -27,7 +25,7 @@ export const ExitBreakPlugin = createBasePlugin({
 
       if (!block) return;
 
-      const paragraphType = editor.plugin(KEYS.p).type;
+      const paragraphType = editor.plugin(PLUGINS.paragraph).type;
 
       const target = tx.nodes.above({
         at: block[1],

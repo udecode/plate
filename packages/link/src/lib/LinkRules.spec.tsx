@@ -1,39 +1,31 @@
-import { createBaseEditor, createBasePlugin } from '@platejs/core';
-import { schema, type Selection, type Value } from '@platejs/plite';
+import { createBaseEditor, defineBasePlugin } from '@platejs/core';
+import {
+  createEditor as createPliteEditor,
+  schema,
+  type Selection,
+  type Value,
+} from '@platejs/plite';
 import { createDataTransfer } from '@platejs/test-utils';
-import type { TLinkElement } from '@platejs/utils';
-
 import type { BaseLinkDefinition } from './BaseLinkPlugin';
-import { BaseLinkPlugin } from './BaseLinkPlugin';
+import { BaseLinkPlugin, type LinkElement } from './BaseLinkPlugin';
 import { LinkRules } from './BaseLinkPlugin';
 
-const BaseCodeLinePlugin = createBasePlugin({
-  name: 'codeLine',
+const BaseCodeLinePlugin = defineBasePlugin('codeLine', {
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
       blockContent: false,
     },
   },
-  type: 'code_line',
 });
 
-const BaseCodeBlockPlugin = createBasePlugin({
-  name: 'codeBlock',
+const BaseCodeBlockPlugin = defineBasePlugin('codeBlock', {
   dependencies: [BaseCodeLinePlugin],
-  schema: ({ plugins }) => {
-    const codeLineType = plugins.elementType(BaseCodeLinePlugin);
-
-    return {
-      element: {
-        content: schema.content.type(codeLineType, {
-          default: { type: codeLineType },
-          min: 1,
-        }),
-      },
-    };
+  schema: {
+    element: {
+      content: schema.content.element(BaseCodeLinePlugin, { min: 1 }),
+    },
   },
-  type: 'code_block',
 });
 
 const createAutolinkRules = () => [
@@ -57,6 +49,7 @@ const createEditor = ({
   removeEmpty?: boolean;
 }) =>
   createBaseEditor({
+    editor: createPliteEditor<Value>(),
     plugins: [
       BaseCodeBlockPlugin,
       BaseLinkPlugin.configure({
@@ -80,9 +73,9 @@ const paste = (editor: ReturnType<typeof createEditor>, text: string) => {
 };
 
 const findLink = (editor: ReturnType<typeof createEditor>) =>
-  editor.read.nodes.find<TLinkElement>({
+  editor.read.nodes.find<LinkElement>({
     at: [],
-    match: { type: 'a' },
+    match: { type: 'link' },
   })?.[0];
 
 describe('LinkRules', () => {
@@ -93,7 +86,7 @@ describe('LinkRules', () => {
         anchor: { offset: 4, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'test' }], type: 'p' }],
+      value: [{ children: [{ text: 'test' }], type: 'paragraph' }],
     });
 
     paste(editor, 'https://example.com');
@@ -113,12 +106,10 @@ describe('LinkRules', () => {
       },
       value: [
         {
-          children: [
-            { children: [{ text: 'const x = 1' }], type: 'code_line' },
-          ],
-          type: 'code_block',
+          children: [{ children: [{ text: 'const x = 1' }], type: 'codeLine' }],
+          type: 'codeBlock',
         },
-        { children: [{ text: 'test' }], type: 'p' },
+        { children: [{ text: 'test' }], type: 'paragraph' },
       ],
     });
 
@@ -136,7 +127,9 @@ describe('LinkRules', () => {
       anchor: { offset: 6, path: [0, 0] },
       focus: { offset: 14, path: [0, 0] },
     } satisfies Selection;
-    const value = [{ children: [{ text: 'start selected' }], type: 'p' }];
+    const value = [
+      { children: [{ text: 'start selected' }], type: 'paragraph' },
+    ];
     const keepEditor = createEditor({ selection, value });
     const replaceEditor = createEditor({
       options: { keepSelectedTextOnPaste: false },
@@ -163,9 +156,9 @@ describe('LinkRules', () => {
       value: [
         {
           children: [
-            { children: [{ text: 'selected code' }], type: 'code_line' },
+            { children: [{ text: 'selected code' }], type: 'codeLine' },
           ],
-          type: 'code_block',
+          type: 'codeBlock',
         },
       ],
     });
@@ -183,7 +176,7 @@ describe('LinkRules', () => {
         anchor: { offset: 10, path: [0, 0] },
         focus: { offset: 10, path: [0, 0] },
       },
-      value: [{ children: [{ text: '[Example](' }], type: 'p' }],
+      value: [{ children: [{ text: '[Example](' }], type: 'paragraph' }],
     });
 
     paste(editor, 'https://example.com');
@@ -200,7 +193,7 @@ describe('LinkRules', () => {
         anchor: { offset: text.length, path: [0, 0] },
         focus: { offset: text.length, path: [0, 0] },
       },
-      value: [{ children: [{ text }], type: 'p' }],
+      value: [{ children: [{ text }], type: 'paragraph' }],
     });
 
     editor.update.text.insert(' ');
@@ -224,7 +217,7 @@ describe('LinkRules', () => {
         anchor: { offset: text.length, path: [0, 0] },
         focus: { offset: text.length, path: [0, 0] },
       },
-      value: [{ children: [{ text }], type: 'p' }],
+      value: [{ children: [{ text }], type: 'paragraph' }],
     });
 
     editor.update.text.insert(' ');
@@ -243,7 +236,7 @@ describe('LinkRules', () => {
         anchor: { offset: text.length, path: [0, 0] },
         focus: { offset: text.length, path: [0, 0] },
       },
-      value: [{ children: [{ text }], type: 'p' }],
+      value: [{ children: [{ text }], type: 'paragraph' }],
     });
 
     editor.update.break.insert();
@@ -260,7 +253,7 @@ describe('LinkRules', () => {
         anchor: { offset: text.length, path: [0, 0] },
         focus: { offset: text.length, path: [0, 0] },
       },
-      value: [{ children: [{ text }], type: 'p' }],
+      value: [{ children: [{ text }], type: 'paragraph' }],
     });
 
     editor.update.text.insert(')');
@@ -290,23 +283,23 @@ describe('LinkRules', () => {
             { text: '' },
             {
               children: [{ text: 'existing' }],
-              type: 'a',
+              type: 'link',
               url: 'https://existing.example.com',
             },
             { text: '' },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
-        { children: [{ text }], type: 'p' },
+        { children: [{ text }], type: 'paragraph' },
       ],
     });
 
     editor.update.text.insert(')');
 
     expect(
-      editor.read.nodes.find<TLinkElement>({
+      editor.read.nodes.find<LinkElement>({
         at: [1],
-        match: { type: 'a' },
+        match: { type: 'link' },
       })?.[0]
     ).toMatchObject({
       children: [{ text: 'Example' }],
@@ -328,12 +321,12 @@ describe('LinkRules', () => {
               { text: '' },
               {
                 children: [{ text }],
-                type: 'a',
+                type: 'link',
                 url: 'https://example.com',
               },
               { text: '' },
             ],
-            type: 'p',
+            type: 'paragraph',
           },
         ],
       });
@@ -354,7 +347,7 @@ describe('LinkRules', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      value: [{ children: [{ text: '' }], type: 'p' }],
+      value: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
 
     editor.update.value.replace({
@@ -364,12 +357,12 @@ describe('LinkRules', () => {
             { text: '' },
             {
               children: [{ text: '' }],
-              type: 'a',
+              type: 'link',
               url: 'https://example.com',
             },
             { text: '' },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
@@ -385,7 +378,7 @@ describe('LinkRules', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      value: [{ children: [{ text: '' }], type: 'p' }],
+      value: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
 
     editor.update.value.replace({
@@ -395,12 +388,12 @@ describe('LinkRules', () => {
             { text: '' },
             {
               children: [{ text: '' }],
-              type: 'a',
+              type: 'link',
               url: 'https://example.com',
             },
             { text: '' },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });

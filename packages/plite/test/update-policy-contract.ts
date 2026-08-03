@@ -4,7 +4,7 @@ import { describe, it } from 'node:test';
 import {
   createEditor,
   defineCommand,
-  defineEditorExtension,
+  defineExtension,
   defineStateField,
   type Element,
   type EditorUpdateTag,
@@ -18,13 +18,11 @@ const paragraph = (text: string): Element => ({
   children: [{ text }],
 });
 
-const historyCapability = defineEditorExtension({
-  name: 'history',
+const historyCapability = defineExtension('history', {
   update: () => ({}),
 });
 
-const workflowCapability = defineEditorExtension({
-  name: 'workflow',
+const workflowCapability = defineExtension('workflow', {
   update: ({ tx }) => ({
     direct(text: string) {
       tx.text.insert(text);
@@ -166,7 +164,7 @@ describe('update policy contract', () => {
         return state.transaction((tx) => tx.text.insert(input.text));
       },
     });
-    const extension = defineEditorExtension({
+    const extension = defineExtension('update-policy.command-tag-observer', {
       commands: ({ around, handle }) => [
         around(command, ({ state, next }) =>
           next.after(state.transaction((tx) => tx.tags.add('command-prefix')))
@@ -179,7 +177,6 @@ describe('update policy contract', () => {
           return false;
         }),
       ],
-      name: 'update-policy.command-tag-observer',
     });
 
     const editor = createEditor({ extensions: [extension] as const });
@@ -266,7 +263,7 @@ describe('update policy contract', () => {
       extensions: [
         historyCapability,
         workflowCapability,
-        escapedState,
+        defineExtension('escaped-state', { stateFields: [escapedState] }),
       ] as const,
     });
 
@@ -352,7 +349,7 @@ describe('update policy contract', () => {
 
   it('revalidates History when invoking a cached semantic facade', () => {
     const editor = createEditor();
-    const removeHistory = editor.extend(historyCapability);
+    const removeHistory = editor.install(historyCapability);
     const configureUpdate = editor.update as unknown as (policy: {
       history: 'skip';
     }) => typeof editor.update;

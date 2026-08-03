@@ -37,7 +37,7 @@ test('detects rejected final extension and Plate plugin shapes', () => {
     removedExtensionValidationPattern
   );
   assert.match(
-    'defineEditorExtension<Editor>()({ name: "typed" })',
+    'defineExtension<Editor>()({ name: "typed" })',
     removedExplicitExtensionGenericPattern
   );
   assert.match(
@@ -73,7 +73,7 @@ test('detects rejected final extension and Plate plugin shapes', () => {
   for (const source of [
     'editor.extension(HistoryExtension).api.undo()',
     'validate(context) {}',
-    'defineEditorExtension({ name: "typed" })',
+    'defineExtension("typed", { })',
     'extension<const D extends EditorExtensionReference>(extension: D)',
     'on: { keyDown() {} }',
     'commands: () => []',
@@ -87,7 +87,7 @@ test('detects rejected final extension and Plate plugin shapes', () => {
 
 test('accepts Base constructor components and rejects terminal conversion', () => {
   assert.doesNotMatch(
-    'createBasePlugin({ component: ParagraphStatic, name: "p" })',
+    'defineBasePlugin("p", { component: ParagraphStatic, })',
     terminalComponentConversionPattern
   );
   assert.match(
@@ -247,7 +247,6 @@ test('detects removed Plate schema flags without banning parser overrides', () =
     'node.component owns rendering',
     'node.isElement: true',
     'node.isLeaf: true',
-    'The mention node is isMarkableVoid',
     'setting both isElement and isLeaf to true',
   ]) {
     assert.match(source, removedPlateSchemaFlagsPattern, source);
@@ -259,7 +258,7 @@ test('detects removed Plate schema flags without banning parser overrides', () =
     'ParagraphPlugin.configure({ component: ParagraphElement })',
     'render: { leaf: ParagraphLeaf }',
     "schema: { element: { void: 'markable-inline' } }",
-    'state.schema.markableVoid(element)',
+    'state.schema.isMarkableVoid(element)',
   ]) {
     assert.doesNotMatch(source, removedPlateSchemaFlagsPattern, source);
   }
@@ -291,11 +290,11 @@ test('detects the deleted Plate node bag without matching unrelated node or mark
 
 test('detects schema target strings stored in runtime options', () => {
   assert.match(
-    'options: { targetPluginNames: [KEYS.p] }',
+    'options: { targetPlugins: [KEYS.p] }',
     removedSchemaTargetOptionsPattern
   );
   assert.doesNotMatch(
-    'targetPluginNames: [KEYS.p]',
+    'targetPlugins: [KEYS.p]',
     removedSchemaTargetOptionsPattern
   );
 });
@@ -306,7 +305,7 @@ test('detects caption targets stored in runtime query options', () => {
     removedCaptionTargetOptionsPattern
   );
   assert.doesNotMatch(
-    'targetPluginNames: [KEYS.img]',
+    'targetPlugins: [KEYS.img]',
     removedCaptionTargetOptionsPattern
   );
 });

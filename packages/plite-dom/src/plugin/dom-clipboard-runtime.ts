@@ -1,10 +1,5 @@
+import { dispatchCommand, void as editorVoid } from '@platejs/plite/internal';
 import {
-  dispatchCommand,
-  type InternalEditorUpdateTransactionOf,
-  void as editorVoid,
-} from '@platejs/plite/internal';
-import {
-  type BaseEditor,
   ContentSlice,
   type ContentSlice as ContentSliceValue,
   type Descendant,
@@ -14,6 +9,7 @@ import {
   type EditorExtensionPoint,
   editorCommands,
   type EditorUpdateTransaction,
+  type EditorUpdateTransactionOf,
   NodeApi as PliteNode,
   type Range,
   RangeApi,
@@ -47,14 +43,13 @@ export type ClipboardSliceWrite<V extends Value = Value> = Readonly<{
   slice: ContentSliceValue<V>;
 }>;
 
-export type DOMClipboardInsertContext<
-  TEditor extends BaseEditor<any> = Editor,
-> = Readonly<{
-  next: (data?: DataTransfer) => boolean;
-  transaction: InternalEditorUpdateTransactionOf<TEditor>;
-}>;
+export type DOMClipboardInsertContext<TEditor extends Editor<any> = Editor> =
+  Readonly<{
+    next: (data?: DataTransfer) => boolean;
+    tx: EditorUpdateTransactionOf<TEditor>;
+  }>;
 
-export type DOMClipboardHandler<TEditor extends BaseEditor<any> = Editor> =
+export type DOMClipboardHandler<TEditor extends Editor<any> = Editor> =
   Readonly<{
     insertData(
       data: DataTransfer,
@@ -70,7 +65,7 @@ export const DOM_CLIPBOARD_HANDLERS: EditorExtensionPoint<
 
 /** Contribute one DOM clipboard ingress handler from an editor extension. */
 export const clipboardHandler = <
-  TEditor extends BaseEditor<any> = Editor,
+  TEditor extends Editor<any> = Editor,
   const TInsertData extends (
     ...args: any[]
   ) => boolean = DOMClipboardHandler<TEditor>['insertData'],
@@ -79,7 +74,7 @@ export const clipboardHandler = <
 ): EditorExtensionContribution<
   DOMClipboardHandler<TEditor>,
   Parameters<TInsertData> extends [] | [DataTransfer]
-    ? BaseEditor<any, any>
+    ? Editor<any, any>
     : TEditor
 > => DOM_CLIPBOARD_HANDLERS.of(handler);
 
@@ -90,7 +85,7 @@ export const dispatchDOMClipboardHandlers = <
 >(
   handlers: readonly DOMClipboardHandler<any>[],
   data: DataTransfer,
-  transaction: EditorUpdateTransaction<V, TExtensions>,
+  tx: EditorUpdateTransaction<V, TExtensions>,
   fallback: (data: DataTransfer) => boolean
 ) => {
   const dispatch = (index: number, nextData: DataTransfer): boolean => {
@@ -111,7 +106,7 @@ export const dispatchDOMClipboardHandlers = <
 
           return dispatch(index - 1, replacement);
         },
-        transaction,
+        tx,
       }) === true
     );
   };

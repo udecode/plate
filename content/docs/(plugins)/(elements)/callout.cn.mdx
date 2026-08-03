@@ -170,16 +170,16 @@ const editor = createPlateEditor({
 
 ## 类型
 
-### `TCalloutElement`
+### `CalloutElement`
 
 ```typescript
-interface TCalloutElement extends Element {
-  variant?: string;
-  icon?: string;
-}
+import type { CalloutElement } from '@platejs/callout';
 ```
 
-<API name="TCalloutElement">
+`CalloutElement` 从 `BaseCalloutPlugin` 派生。其 schema 提供可选的
+`backgroundColor`、`icon` 和 `variant` 属性。
+
+<API name="CalloutElement">
 <APIAttributes>
   <APIItem name="variant" type="string" optional>
     提示框的变体类型

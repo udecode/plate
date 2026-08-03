@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { Plate } from '../components/Plate';
+import { Plate, type PlateProps } from '../components/Plate';
 
-export const TestPlate = (props: React.ComponentProps<typeof Plate>) => (
+export const TestPlate = (props: PlateProps<any>) => (
   <Plate suppressInstanceWarning {...props} />
 );

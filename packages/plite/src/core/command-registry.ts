@@ -1,6 +1,6 @@
 import type {
   BaseEditor,
-  Editor,
+  AnyEditor as Editor,
   EditorCommand,
   EditorCommandDescriptor,
   EditorCommandContext,

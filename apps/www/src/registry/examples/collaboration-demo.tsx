@@ -16,12 +16,7 @@ import {
   YjsPlugin,
 } from '@platejs/yjs/react';
 import { RefreshCwIcon, Redo2Icon, Undo2Icon, UnplugIcon } from 'lucide-react';
-import {
-  createPlateEditor,
-  Plate,
-  useEditor,
-  useEditorSelector,
-} from 'platejs/react';
+import { createPlateEditor, Plate, useEditorSelector } from 'platejs/react';
 import * as Y from 'yjs';
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -51,7 +46,7 @@ const INITIAL_VALUE = [
         text: 'Ada and Lin edit independent documents through a local Yjs room.',
       },
     ],
-    type: 'p',
+    type: 'paragraph',
   },
 ];
 
@@ -701,19 +696,20 @@ function PeerCard({ editor, peer }: { editor: DemoEditor; peer: DemoPeer }) {
           <RemoteCursorOverlay />
         </EditorContainer>
       </CardContent>
-      <PeerControls connected={connected} peer={peer} />
+      <PeerControls connected={connected} editor={editor} peer={peer} />
     </Card>
   );
 }
 
 function PeerControls({
   connected,
+  editor,
   peer,
 }: {
   connected: boolean;
+  editor: DemoEditor;
   peer: DemoPeer;
 }) {
-  const editor = useEditor<DemoEditor>();
   const undoDepth = useEditorSelector<number, DemoEditor>(
     (currentEditor) => currentEditor.read.history.undos().length
   );
@@ -722,22 +718,18 @@ function PeerControls({
   );
 
   React.useEffect(() => {
-    editor.update((tx) => {
-      tx.yjs.sendCursorData({
-        color: peer.color,
-        name: peer.name,
-      });
+    editor.update.yjs.sendCursorData({
+      color: peer.color,
+      name: peer.name,
     });
   }, [editor, peer.color, peer.name]);
 
   const toggleConnection = () => {
-    editor.update((tx) => {
-      if (connected) {
-        tx.yjs.disconnect();
-      } else {
-        tx.yjs.connect();
-      }
-    });
+    if (connected) {
+      editor.update.yjs.disconnect();
+    } else {
+      editor.update.yjs.connect();
+    }
   };
 
   return (
@@ -768,7 +760,6 @@ function PeerControls({
       </Button>
       <Button
         data-connection-action={connected ? 'disconnect' : 'connect'}
-        onMouseDown={(event) => event.preventDefault()}
         onClick={toggleConnection}
         size="sm"
         variant="outline"

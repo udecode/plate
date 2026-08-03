@@ -273,10 +273,3 @@ if (JSON.stringify(recomputed) !== JSON.stringify(manifest.summary)) {
     )} actual=${JSON.stringify(manifest.summary)}`
   );
 }
-
-console.log(
-  `plate coverage ok: ${manifest.summary.includedFiles} included files, ` +
-    `${manifest.summary.declarations} declarations, ` +
-    `${manifest.summary.exportedDeclarations} exported declarations, ` +
-    `${manifest.summary.excludedFiles} explicit exclusions`
-);

@@ -17,10 +17,9 @@ const editor = createEditor({
 Use `isEditor` when library code needs to validate an unknown value before
 treating it as an editor.
 
-Use `createEditorRuntime` and `createEditorView` when framework/runtime
-packages need multiple root-scoped editor views over one committed editor
-runtime. App UI should normally use framework helpers, such as
-`usePliteEditor` in `plite-react`.
+Use `createEditorView(editor, options)` when framework packages need a
+root-scoped view over a committed editor. App UI should normally use framework
+helpers such as `usePliteEditor` in `plite-react`.
 
 Read committed state with `editor.read(...)`. Use direct read methods for
 one-shot reads and the callback form when several reads must share one state
@@ -51,7 +50,7 @@ editor.update((tx) => {
 ```
 
 Use `defineEditorSchema`, `element`, `schema`, and `property` for declarative
-document grammar and property laws. Use `defineEditorExtension` and
+document grammar and property laws. Use `defineExtension` and
 `defineStateField` for state groups, transaction groups, corrections, commit
 listeners, and mounted runtime APIs.
 
@@ -84,13 +83,13 @@ const documentTitle = defineStateField({
 ```
 
 ```ts
-import { defineEditorExtension, defineEffect } from '@platejs/plite'
+import { defineExtension, defineEffect } from '@platejs/plite'
 
 const refreshIndex = defineEffect({ key: 'search.refresh-index' })
 
-const searchEffects = defineEditorExtension({
+const searchEffects = defineExtension('search-effects', {
   effectTypes: [refreshIndex],
-  name: 'search-effects',
+
 })
 ```
 

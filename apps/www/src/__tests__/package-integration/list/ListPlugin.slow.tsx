@@ -37,12 +37,7 @@ import { BaseListPlugin } from '../../../../../../packages/list/src/lib/BaseList
 jsxt;
 
 const targetPluginConfig = {
-  targetPluginNames: [
-    BaseParagraphPlugin.name,
-    H1Plugin.name,
-    H2Plugin.name,
-    H3Plugin.name,
-  ],
+  targetPlugins: [BaseParagraphPlugin, H1Plugin, H2Plugin, H3Plugin],
 };
 
 const basicNodePlugins = [
@@ -64,7 +59,10 @@ const basicNodePlugins = [
 
 const createClipboardData = (html: string, rtf?: string): DataTransfer =>
   ({
-    getData: (format: string) => (format === 'text/html' ? html : rtf),
+    files: [],
+    getData: (format: string) => (format === 'text/html' ? html : rtf) ?? '',
+    items: [],
+    types: rtf ? ['text/html', 'text/rtf'] : ['text/html'],
   }) as any;
 
 const insertData = (editor: BaseEditor, data: DataTransfer) => {
@@ -91,8 +89,8 @@ describe('when insertData disc and decimal from gdocs', () => {
         TextAlignPlugin.configure(targetPluginConfig) as BasePluginInput,
         IndentPlugin.configure(targetPluginConfig) as BasePluginInput,
         BaseListPlugin.configure(targetPluginConfig),
-        DocxPlugin,
         JuicePlugin,
+        DocxPlugin,
       ],
       selection: e.selection,
       initialValue: e.children,
@@ -114,7 +112,7 @@ describe('when insertData disc and decimal from gdocs', () => {
         ],
         indent: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [
@@ -124,7 +122,7 @@ describe('when insertData disc and decimal from gdocs', () => {
         ],
         indent: 2,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [
@@ -134,7 +132,7 @@ describe('when insertData disc and decimal from gdocs', () => {
         ],
         indent: 1,
         listStyleType: 'decimal',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [
@@ -144,7 +142,7 @@ describe('when insertData disc and decimal from gdocs', () => {
         ],
         indent: 2,
         listStyleType: 'lower-alpha',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [
@@ -154,7 +152,7 @@ describe('when insertData disc and decimal from gdocs', () => {
         ],
         indent: 4,
         listStyleType: 'decimal',
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
   });
@@ -180,8 +178,8 @@ describe('when insertData with nested ul inside li', () => {
         TextAlignPlugin.configure(targetPluginConfig),
         IndentPlugin.configure(targetPluginConfig),
         BaseListPlugin.configure(targetPluginConfig),
-        DocxPlugin,
         JuicePlugin,
+        DocxPlugin,
       ],
       selection: e.selection,
       initialValue: e.children,
@@ -214,7 +212,7 @@ describe('when insertData with nested ul inside li', () => {
         ],
         indent: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [
@@ -224,7 +222,7 @@ describe('when insertData with nested ul inside li', () => {
         ],
         indent: 2,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [
@@ -234,7 +232,7 @@ describe('when insertData with nested ul inside li', () => {
         ],
         indent: 3,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         children: [
@@ -244,7 +242,7 @@ describe('when insertData with nested ul inside li', () => {
         ],
         indent: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
   });

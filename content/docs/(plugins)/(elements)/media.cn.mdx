@@ -244,7 +244,7 @@ editor.plugin(ImagePlugin).update.insert({
 
 ```ts
 {
-  type: 'img',
+  type: 'image',
   url: 'https://example.com/image.png',
   children: [{ text: 'Plain caption' }],
 }
@@ -254,7 +254,7 @@ editor.plugin(ImagePlugin).update.insert({
 
 ```ts
 {
-  type: 'img',
+  type: 'image',
   url: 'https://example.com/image.png',
   children: [{ text: '' }],
 }
@@ -364,14 +364,16 @@ export function useUploadFile({
 然后将你的自定义上传钩子与媒体组件集成:
 
 ```tsx
-import { KEYS, type TPlaceholderElement } from 'platejs';
+import {
+  type PlaceholderElement,
+} from 'platejs';
 import { type PlateElementProps, useEditor } from 'platejs/react';
 
 import { useUploadFile } from '@/hooks/use-upload-file'; // 你的自定义钩子
 
 export function PlaceholderElement({
   element,
-}: PlateElementProps<TPlaceholderElement>) {
+}: PlateElementProps<PlaceholderElement>) {
   const editor = useEditor();
   const { uploadFile, isUploading, progress } = useUploadFile({
     onUploadComplete: (uploadedFile) => {
@@ -385,7 +387,7 @@ export function PlaceholderElement({
           {
             children: [{ text: '' }],
             isUpload: true,
-            name: element.mediaType === KEYS.file ? uploadedFile.name : '',
+            name: element.mediaType === PLUGINS.file ? uploadedFile.name : '',
             placeholderId: element.id as string,
             type: element.mediaType,
             url: uploadedFile.url,
@@ -415,7 +417,7 @@ export function PlaceholderElement({
 {
   icon: <ImageIcon />,
   label: '图片',
-  value: KEYS.img,
+  value: PLUGINS.image,
 }
 ```
 
@@ -492,37 +494,37 @@ export function PlaceholderElement({
   audio: {
     maxFileCount: 1,
     maxFileSize: '8MB',
-    mediaType: KEYS.audio,
+    mediaType: PLUGINS.audio,
     minFileCount: 1,
   },
   blob: {
     maxFileCount: 1,
     maxFileSize: '8MB',
-    mediaType: KEYS.file,
+    mediaType: PLUGINS.file,
     minFileCount: 1,
   },
   image: {
     maxFileCount: 3,
     maxFileSize: '4MB',
-    mediaType: KEYS.img,
+    mediaType: PLUGINS.image,
     minFileCount: 1,
   },
   pdf: {
     maxFileCount: 1,
     maxFileSize: '4MB',
-    mediaType: KEYS.file,
+    mediaType: PLUGINS.file,
     minFileCount: 1,
   },
   text: {
     maxFileCount: 1,
     maxFileSize: '64KB',
-    mediaType: KEYS.file,
+    mediaType: PLUGINS.file,
     minFileCount: 1,
   },
   video: {
     maxFileCount: 1,
     maxFileSize: '16MB',
-    mediaType: KEYS.video,
+    mediaType: PLUGINS.video,
     minFileCount: 1,
   },
 }
@@ -655,10 +657,10 @@ enum UploadErrorCode {
 <API name="insert">
 <APIParameters>
   <APIItem name="mediaType" type="string">
-    上传完成后创建的媒体节点类型，例如 `KEYS.img`、`KEYS.video`、
-    `KEYS.audio` 或 `KEYS.file`。
+    上传完成后创建的媒体节点类型，例如 `PLUGINS.image`、`PLUGINS.video`、
+    `PLUGINS.audio` 或 `PLUGINS.file`。
   </APIItem>
-  <APIItem name="options" type="NodeInsertNodesOptions<TPlaceholderElement>" optional>
+  <APIItem name="options" type="NodeInsertNodesOptions<PlaceholderElement>" optional>
     精确路径和选区选项。
   </APIItem>
 </APIParameters>
@@ -673,12 +675,12 @@ enum UploadErrorCode {
   <APIItem name="url" type="string">
     图片 URL。
   </APIItem>
-  <APIItem name="options" type="NodeInsertNodesOptions<TImageElement>" optional>
+  <APIItem name="options" type="NodeInsertNodesOptions<ImageElement>" optional>
     精确路径和选区选项。
   </APIItem>
 </APIParameters>
 
-<APIOptions type="NodeInsertNodesOptions<TImageElement>">
+<APIOptions type="NodeInsertNodesOptions<ImageElement>">
   <APIItem name="at" type="Location" optional>
     精确插入目标。省略时插入到选中的块之后。
   </APIItem>
@@ -697,12 +699,12 @@ enum UploadErrorCode {
   <APIItem name="url" type="string">
     媒体 URL 或嵌入代码。
   </APIItem>
-  <APIItem name="options" type="NodeInsertNodesOptions<TMediaEmbedElement>" optional>
+  <APIItem name="options" type="NodeInsertNodesOptions<MediaEmbedElement>" optional>
     精确路径和选区选项。
   </APIItem>
 </APIParameters>
 
-<APIOptions type="NodeInsertNodesOptions<TMediaEmbedElement>">
+<APIOptions type="NodeInsertNodesOptions<MediaEmbedElement>">
   <APIItem name="at" type="Location" optional>
     精确插入目标。省略时必须存在当前选区。
   </APIItem>
@@ -732,7 +734,7 @@ enum UploadErrorCode {
     不显示浏览器提示框，直接解析 URL。
   </APIItem>
   <APIItem name="type" type="string" optional>
-    `KEYS.img` 或 `KEYS.mediaEmbed`。默认值为 `KEYS.img`。
+    `PLUGINS.image` 或 `PLUGINS.mediaEmbed`。默认值为 `PLUGINS.image`。
   </APIItem>
 </APIOptions>
 </API>
@@ -754,8 +756,8 @@ enum UploadErrorCode {
   <APIItem name="maxWidth" type="ResizeLength">
     可调整大小元素可以调整到的最大宽度。
   </APIItem>
-  <APIItem name="setNodeWidth" type="(width: number | string) => void">
-    调整大小时设置节点宽度的函数。
+  <APIItem name="onResizeEnd" type="((width: ResizeLength) => void) | undefined">
+    媒体所有者提供的提交回调。
   </APIItem>
   <APIItem name="setWidth" type="(width: number | string) => void">
     直接设置可调整大小元素宽度的函数。
@@ -775,11 +777,17 @@ enum UploadErrorCode {
   <APIItem name="props.style" type="CSSProperties">
     可调整大小元素的 CSS 样式。
   </APIItem>
-  <APIItem name="context.onResize" type="() => void">
-    元素调整大小时调用的回调函数。
+  <APIItem name="context.onResize" type="(event: ResizeEvent) => void">
+    拖动期间更新预览宽度，并在完成时通过 `onResizeEnd` 提交。
+  </APIItem>
+  <APIItem name="context.nudgeWidth" type="(delta: number) => void">
+    限制并提交一次键盘调整步长。
   </APIItem>
 </APIReturns>
 </API>
+
+可调整大小包负责指针和键盘计算，不负责文档写入。图片 UI 通过
+`editor.plugin(ImagePlugin).update.setWidth(width, { at: element })` 提交。
 
 ### `useMediaState`
 
@@ -975,32 +983,29 @@ enum UploadErrorCode {
 
 ## 类型
 
-### `TMediaElement`
+### 媒体元素类型
 
 ```tsx
-export type TMediaElement = Element & TMediaProps;
-
-export type TMediaProps = {
-  url: string;
-  id?: string;
-  isUpload?: boolean;
-  name?: string;
-  placeholderId?: string;
-  provider?: string;
-  sourceUrl?: string;
-};
+import type {
+  AudioElement,
+  FileElement,
+  ImageElement,
+  MediaEmbedElement,
+  VideoElement,
+} from '@platejs/media';
 ```
 
-`Element.children` 存储标题的直接行内内容。标题缺失时使用
+每个别名都从其所属插件的 schema 派生。`Element.children` 存储标题的直接行内内容。标题缺失时使用
 `[{ text: '' }]`。
 
-### `TPlaceholderElement`
+### `PlaceholderElement`
 
 ```tsx
-export interface TPlaceholderElement extends Element {
-  mediaType: string;
-}
+import type { PlaceholderElement } from '@platejs/media';
 ```
+
+`PlaceholderElement` 从 `BasePlaceholderPlugin` 派生，并且需要字符串
+`mediaType`。
 
 ### `EmbedUrlData`
 

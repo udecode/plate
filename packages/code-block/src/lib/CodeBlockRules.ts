@@ -1,11 +1,11 @@
 import { createRuleFactory } from '@platejs/core';
-import type { BlockFenceInputRuleMatch } from '@platejs/core';
+import type { BlockFenceInputRuleMatch, PluginReference } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
 
 export const CodeBlockRules = {
   markdown: createRuleFactory<
     { on: 'break' | 'match' },
-    { block: string; fence: string },
+    { block: PluginReference | string; fence: string },
     BlockFenceInputRuleMatch
   >({
     type: 'blockFence',

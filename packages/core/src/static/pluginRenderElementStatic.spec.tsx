@@ -1,40 +1,34 @@
-import { schema } from '@platejs/plite';
-
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
 
-import { type RenderElementProps, createBasePlugin } from '../lib';
+import {
+  BaseParagraphPlugin,
+  type RenderElementProps,
+  defineBasePlugin,
+} from '../lib';
 import { createStaticEditor } from './editor/withStatic';
 import { pluginRenderElementStatic } from './pluginRenderElementStatic';
 
 describe('pluginRenderElementStatic', () => {
   it('applies above/below wrappers and below-root renderers around the element output', () => {
-    const ParagraphPlugin = createBasePlugin({
-      name: 'p',
-      type: 'p',
-      schema: {
-        element: { content: schema.content.open({ default: 'text', min: 1 }) },
-      },
+    const ParagraphPlugin = BaseParagraphPlugin.extend(() => ({
       render: { as: 'article' },
-    });
-    const AbovePlugin = createBasePlugin({
-      name: 'above',
+    }));
+    const AbovePlugin = defineBasePlugin('above', {
       render: {
         aboveNodes:
           () =>
           ({ children }) => <section data-role="above">{children}</section>,
       },
     });
-    const BelowPlugin = createBasePlugin({
-      name: 'below',
+    const BelowPlugin = defineBasePlugin('below', {
       render: {
         belowNodes:
           () =>
           ({ children }) => <div data-role="below">{children}</div>,
       },
     });
-    const RootPlugin = createBasePlugin({
-      name: 'root-extra',
+    const RootPlugin = defineBasePlugin('rootExtra', {
       render: {
         belowRootNodes: ({ element }) => (
           <aside data-id={element.id} data-role="root" />
@@ -47,14 +41,14 @@ describe('pluginRenderElementStatic', () => {
     const markup = ReactDOMServer.renderToStaticMarkup(
       pluginRenderElementStatic(
         editor,
-        editor.plugin(ParagraphPlugin).plugin
+        editor.plugin(ParagraphPlugin)
       )({
         attributes: { 'data-plite-node': 'element' },
         children: 'Body',
         element: {
           children: [{ text: 'Body' }],
           id: 'block-1',
-          type: 'p',
+          type: 'paragraph',
         },
         slots: {
           children: () => null,
@@ -69,6 +63,6 @@ describe('pluginRenderElementStatic', () => {
     expect(markup).toContain('data-role="root"');
     expect(markup).toContain('data-id="block-1"');
     expect(markup).toContain('data-block-id="block-1"');
-    expect(markup).toContain('class="plite-p"');
+    expect(markup).toContain('class="plite-paragraph"');
   });
 });

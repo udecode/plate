@@ -1,11 +1,10 @@
-import { createBaseEditor, createBasePlugin } from '@platejs/core';
+import { createBaseEditor, defineBasePlugin } from '@platejs/core';
 import { schema } from '@platejs/plite';
-import { KEYS } from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 
 import { BaseTocPlugin } from './BaseTocPlugin';
 
-const TestParagraphPlugin = createBasePlugin({
-  name: 'paragraph',
+const TestParagraphPlugin = defineBasePlugin(PLUGINS.paragraph, {
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
@@ -14,24 +13,21 @@ const TestParagraphPlugin = createBasePlugin({
 });
 
 const TestHeadingPlugins = [
-  createBasePlugin({
-    name: 'h1',
+  defineBasePlugin(PLUGINS.h1, {
     schema: {
       element: {
         content: schema.content.text({ default: 'text', min: 1 }),
       },
     },
   }),
-  createBasePlugin({
-    name: 'h2',
+  defineBasePlugin(PLUGINS.h2, {
     schema: {
       element: {
         content: schema.content.text({ default: 'text', min: 1 }),
       },
     },
   }),
-  createBasePlugin({
-    name: 'h3',
+  defineBasePlugin(PLUGINS.h3, {
     schema: {
       element: {
         content: schema.content.text({ default: 'text', min: 1 }),
@@ -45,9 +41,9 @@ describe('BaseTocPlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseTocPlugin],
     });
-    const plugin = editor.plugin(BaseTocPlugin).plugin;
+    const plugin = editor.plugin(BaseTocPlugin);
 
-    expect(plugin.name).toBe(KEYS.toc);
+    expect(plugin.name).toBe(PLUGINS.toc);
     expect(editor.read.schema.element(BaseTocPlugin)?.behavior.void).toBe(true);
     expect(editor.read.schema.element(BaseTocPlugin)?.behavior.voidKind).toBe(
       'block'
@@ -59,13 +55,13 @@ describe('BaseTocPlugin', () => {
     expect(
       editor.read.schema.getElementBehavior({
         children: [{ text: '' }],
-        type: KEYS.toc,
+        type: 'toc',
       })
     ).toMatchObject({ atom: true, inline: false, void: true });
     expect(editor.read.schema.element(BaseTocPlugin)?.groups).toContain(
       'block'
     );
-    expect(editor.update.toc.insert).toBeDefined();
+    expect(editor.plugin(BaseTocPlugin).update.insert).toBeDefined();
   });
 
   it('deleteForward removes the selected toc block', () => {
@@ -79,11 +75,11 @@ describe('BaseTocPlugin', () => {
       initialValue: [
         {
           children: [{ text: '' }],
-          type: KEYS.toc,
+          type: 'toc',
         },
         {
           children: [{ text: 'after' }],
-          type: KEYS.p,
+          type: 'paragraph',
         },
       ],
     });
@@ -93,7 +89,7 @@ describe('BaseTocPlugin', () => {
     expect(editor.read.children()).toMatchObject([
       {
         children: [{ text: 'after' }],
-        type: KEYS.p,
+        type: 'paragraph',
       },
     ]);
     expect(editor.read.selection()).toEqual({
@@ -114,11 +110,11 @@ describe('BaseTocPlugin', () => {
       initialValue: [
         {
           children: [{ text: '' }],
-          type: KEYS.toc,
+          type: 'toc',
         },
         {
           children: [{ text: 'after' }],
-          type: KEYS.p,
+          type: 'paragraph',
         },
       ],
     });
@@ -144,11 +140,11 @@ describe('BaseTocPlugin', () => {
       initialValue: [
         {
           children: [{ text: '' }],
-          type: KEYS.toc,
+          type: 'toc',
         },
         {
           children: [{ text: 'after' }],
-          type: KEYS.p,
+          type: 'paragraph',
         },
       ],
     });
@@ -173,11 +169,11 @@ describe('BaseTocPlugin', () => {
       initialValue: [
         {
           children: [{ text: '' }],
-          type: KEYS.toc,
+          type: 'toc',
         },
         {
           children: [{ text: 'after' }],
-          type: KEYS.p,
+          type: 'paragraph',
         },
       ],
     });
@@ -187,7 +183,7 @@ describe('BaseTocPlugin', () => {
     expect(editor.read.children()).toEqual([
       {
         children: [{ text: '' }],
-        type: KEYS.toc,
+        type: 'toc',
       },
       {
         children: [{ text: '' }],
@@ -195,7 +191,7 @@ describe('BaseTocPlugin', () => {
       },
       {
         children: [{ text: 'after' }],
-        type: KEYS.p,
+        type: 'paragraph',
       },
     ]);
     expect(editor.read.selection()).toEqual({
@@ -224,7 +220,7 @@ describe('BaseTocPlugin.read.headings', () => {
         {
           children: [{ text: 'Body' }],
           id: 'skip-paragraph',
-          type: 'p',
+          type: 'paragraph',
         },
         {
           children: [{ text: 'Section' }],
@@ -298,21 +294,21 @@ describe('BaseTocPlugin.update.insert', () => {
       initialValue: [
         {
           children: [{ text: 'a' }],
-          type: KEYS.p,
+          type: 'paragraph',
         },
       ],
     });
 
-    editor.plugin(BaseTocPlugin).update.insert({ at: [1] });
+    editor.plugin(BaseTocPlugin).update.insert({}, { at: [1] });
 
     expect(editor.read.children()).toMatchObject([
       {
         children: [{ text: 'a' }],
-        type: KEYS.p,
+        type: 'paragraph',
       },
       {
         children: [{ text: '' }],
-        type: KEYS.toc,
+        type: 'toc',
       },
     ]);
   });

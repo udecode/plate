@@ -36,6 +36,17 @@ export {
   parseDebugSnapshot,
 } from './proof';
 export {
+  assertPliteRawMobileProof,
+  PLITE_RAW_MOBILE_SCENARIOS,
+  type PliteRawMobileArtifactPointer,
+  type PliteRawMobileProofResult,
+  type PliteRawMobileReceipt,
+  type PliteRawMobileReceiptBundle,
+  type PliteRawMobileScenarioId,
+  type PliteRawMobileSnapshot,
+  validatePliteRawMobileProof,
+} from './raw-mobile-proof';
+export {
   assertPliteBrowserReleaseProof,
   createBrowserMobileReleaseProofArtifact,
   createPersistentBrowserSoakProofArtifact,

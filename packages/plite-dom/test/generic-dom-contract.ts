@@ -1,7 +1,7 @@
 import {
   ContentSlice,
   createEditor,
-  defineEditorExtension,
+  defineExtension,
   type Editor,
   type EditorExtensionContribution,
   type EditorExtensionDefinitionInput,
@@ -51,8 +51,7 @@ const jsonCodec = defineHostCodec<CustomValue>({
 });
 
 const DomExtension = dom();
-const ImageExtension = defineEditorExtension({
-  name: 'img',
+const ImageExtension = defineExtension('img', {
   update: () => ({
     insert: ({ url }: { url: string }) => {
       void url;
@@ -60,26 +59,24 @@ const ImageExtension = defineEditorExtension({
   }),
 });
 const typedClipboardContribution = clipboardHandler({
-  insertData(_data, { transaction }) {
-    transaction.img.insert({ url: 'https://example.com/image.png' });
+  insertData(_data, { tx }) {
+    tx.img.insert({ url: 'https://example.com/image.png' });
 
     // @ts-expect-error Dependency transactions preserve command inputs.
-    transaction.img.insert({ src: 'https://example.com/image.png' });
+    tx.img.insert({ src: 'https://example.com/image.png' });
 
     return true;
   },
 });
-const TypedClipboardExtension = defineEditorExtension({
+const TypedClipboardExtension = defineExtension('typed-clipboard-handler', {
   dependencies: [ImageExtension],
   contributions: [typedClipboardContribution],
-  name: 'typed-clipboard-handler',
 });
-const ClipboardExtension = defineEditorExtension({
-  name: 'clipboard-handler',
+const ClipboardExtension = defineExtension('clipboard-handler', {
   contributions: [
     clipboardHandler({
-      insertData(_data, { next, transaction }) {
-        transaction.selection();
+      insertData(_data, { next, tx }) {
+        tx.selection();
 
         return next();
       },

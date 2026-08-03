@@ -1,5 +1,5 @@
 import {
-  createEditorRuntime,
+  createEditor,
   createEditorView,
   defineEditorSchema,
   schema,
@@ -91,24 +91,27 @@ import {
 
 const PROJECTED_SELECTION_ROOT: RootKey = 'selection-controller:projected-root';
 
-const projectedSelectionSchema = defineEditorSchema({
-  elements: {
-    paragraph: {
-      content: schema.content.text({ default: 'text', min: 1 }),
-    },
-    'content-card': {
-      content: schema.content.open(),
-      contentRoots: {
-        body: schema.content.not(schema.content.text()),
+const projectedSelectionSchema = defineEditorSchema(
+  'schema:selection-controller-projected-selection',
+  {
+    elements: {
+      paragraph: {
+        content: schema.content.text({ default: 'text', min: 1 }),
       },
-      void: 'editable-island',
+      'content-card': {
+        content: schema.content.open(),
+        contentRoots: {
+          body: schema.content.not(schema.content.text()),
+        },
+        void: 'editable-island',
+      },
     },
-  },
-  id: 'selection-controller-projected-selection',
-  root: schema.content.not(schema.content.text()),
-  unknown: 'preserve',
-  version: 1,
-});
+    id: 'selection-controller-projected-selection',
+    root: schema.content.not(schema.content.text()),
+    unknown: 'preserve',
+    version: 1,
+  }
+);
 
 const markEditable = (element: HTMLElement) => {
   Object.defineProperty(element, 'isContentEditable', {
@@ -435,7 +438,7 @@ test('view selection export clears stale native selection ranges', () => {
 });
 
 test('model selection export is owned by the matching root view only', () => {
-  const runtime = createEditorRuntime({
+  const runtime = createEditor({
     initialValue: {
       children: [{ type: 'paragraph', children: [{ text: 'main' }] }],
       roots: { child: [{ type: 'paragraph', children: [{ text: 'child' }] }] },
@@ -760,7 +763,7 @@ test('changed expanded DOM selection import publishes a selection commit', () =>
 });
 
 test('projected DOM selection import publishes its anchor selection commit', () => {
-  const runtime = createEditorRuntime({
+  const runtime = createEditor({
     extensions: [react({ dom: dom() }), projectedSelectionSchema],
     initialValue: {
       children: [

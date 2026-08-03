@@ -2,10 +2,9 @@
 
 import assert from 'node:assert/strict';
 
-import { BaseTablePlugin } from './BaseTablePlugin';
+import { BaseTableCellPlugin, BaseTablePlugin } from './BaseTablePlugin';
 import type { TableDefinition } from './BaseTablePlugin';
-import { createBasePlugin } from '@platejs/core';
-import { createPlateEditor } from '@platejs/core/react';
+import { defineBasePlugin } from '@platejs/core';
 import {
   createEditorView,
   property,
@@ -13,10 +12,12 @@ import {
   target,
   TextApi,
 } from '@platejs/plite';
-import type { EditorRuntime, Element, Text } from '@platejs/plite';
+import type { Element, Text } from '@platejs/plite';
 import { jsxt } from '@platejs/test-utils';
 import type { TestEditor } from '@platejs/test-utils';
-import type { TTableCellElement } from '@platejs/utils';
+import type { TableCellElement } from './BaseTablePlugin';
+
+import { createTestTableEditor } from './__tests__/getTestTablePlugins';
 
 import {
   readTableSelection,
@@ -30,19 +31,18 @@ describe('table selection slow contracts', () => {
     const getTestTablePlugins = (
       options?: Partial<TableDefinition['initialState']>
     ) => [
-      createBasePlugin({
-        name: 'tableSelectionTestSchema',
+      defineBasePlugin('tableSelectionTestSchema', {
         schema: {
-          properties: [
-            schema.textProperty('bold', property.boolean()),
-            schema.textProperty('italic', property.boolean()),
-            schema.elementProperty('align', property.string(), {
+          properties: {
+            align: schema.elementProperty(property.string(), {
               target: target.group('element'),
             }),
-            schema.elementProperty('indent', property.number(), {
+            bold: schema.textProperty(property.boolean()),
+            indent: schema.elementProperty(property.number(), {
               target: target.group('element'),
             }),
-          ],
+            italic: schema.textProperty(property.boolean()),
+          },
         },
       }),
       BaseTablePlugin.configure({
@@ -57,7 +57,7 @@ describe('table selection slow contracts', () => {
       input: TestEditor,
       options?: Partial<TableDefinition['initialState']>
     ) => {
-      const editor = createPlateEditor({
+      const editor = createTestTableEditor({
         plugins: getTestTablePlugins(options),
         selection: input.selection,
         initialValue: input.children,
@@ -355,7 +355,7 @@ describe('table selection slow contracts', () => {
           const editor = createTableEditor(input);
           editor.update.nodes.set(
             { align: 'center' },
-            { match: { type: 'p' } }
+            { match: { type: 'paragraph' } }
           );
 
           expect(editor.read.children()).toEqual(
@@ -468,7 +468,7 @@ describe('table selection slow contracts', () => {
 
           const editor = createTableEditor(input);
           editor.update.nodes.unset(['align', 'indent'], {
-            match: { type: 'p' },
+            match: { type: 'paragraph' },
           });
 
           expect(editor.read.children()).toEqual(
@@ -722,7 +722,7 @@ describe('table selection slow contracts', () => {
     jsxt;
 
     const createTableEditor = (input: TestEditor) =>
-      createPlateEditor({
+      createTestTableEditor({
         nodeId: true,
         plugins: [
           BaseTablePlugin.configure({
@@ -881,20 +881,20 @@ describe('table selection slow contracts', () => {
           const id = `${prefix}-${row}${col}`;
 
           return {
-            children: [{ children: [{ text: id }], type: 'p' }],
+            children: [{ children: [{ text: id }], type: 'paragraph' }],
             id,
-            type: 'td',
+            type: 'tableCell',
           };
         }),
-        type: 'tr',
+        type: 'tableRow',
       })),
       id: `${prefix}-table`,
       type: 'table',
     });
-    const RootHolderPlugin = createBasePlugin({
-      name: 'tableSelectionRootHolder',
+    const RootHolderPlugin = defineBasePlugin('tableSelectionRootHolder', {
       schema: {
         element: {
+          type: 'rootHolder',
           contentRoots: {
             body: {
               content: schema.content.type('table', {
@@ -909,6 +909,12 @@ describe('table selection slow contracts', () => {
         },
       },
     });
+    const getSelectionTypes = (
+      editor: ReturnType<typeof createTestTableEditor>
+    ) => ({
+      cellTypes: [editor.plugin(BaseTableCellPlugin).schema.element.type],
+      tableType: editor.plugin(BaseTablePlugin).schema.element.type,
+    });
 
     it('resolves explicit cell geometry by identity across named roots', () => {
       const root = 'table-selection-bounds-root';
@@ -917,34 +923,36 @@ describe('table selection slow contracts', () => {
           {
             children: [
               {
-                children: [{ children: [{ text: 'span' }], type: 'p' }],
+                children: [{ children: [{ text: 'span' }], type: 'paragraph' }],
                 id: 'span',
                 rowSpan: 2,
-                type: 'td',
+                type: 'tableCell',
               },
               {
-                children: [{ children: [{ text: 'top' }], type: 'p' }],
+                children: [{ children: [{ text: 'top' }], type: 'paragraph' }],
                 id: 'top',
-                type: 'td',
+                type: 'tableCell',
               },
             ],
-            type: 'tr',
+            type: 'tableRow',
           },
           {
             children: [
               {
-                children: [{ children: [{ text: 'target' }], type: 'p' }],
+                children: [
+                  { children: [{ text: 'target' }], type: 'paragraph' },
+                ],
                 id: 'target',
-                type: 'td',
+                type: 'tableCell',
               },
             ],
-            type: 'tr',
+            type: 'tableRow',
           },
         ],
         id: 'root-table',
         type: 'table',
       };
-      const editor = createPlateEditor({
+      const editor = createTestTableEditor({
         nodeId: true,
         plugins: [BaseTablePlugin, RootHolderPlugin],
         initialValue: {
@@ -952,29 +960,19 @@ describe('table selection slow contracts', () => {
             {
               childRoots: { body: root },
               children: [{ text: '' }],
-              type: RootHolderPlugin.name,
+              type: 'rootHolder',
             },
             createTable('main'),
           ],
           roots: { [root]: [rootTable] },
         },
       });
-      const runtime = Object.freeze({
-        api: editor.api,
-        anchor: editor.anchor,
-        editor,
-        extend: editor.extend,
-        read: editor.read,
-        subscribe: editor.subscribe,
-        subscribeCommit: editor.subscribeCommit,
-        update: editor.update,
-      }) as unknown as EditorRuntime;
-      const rootEditor = createEditorView(runtime, {
+      const rootEditor = createEditorView(editor, {
         root,
       }) as unknown as typeof editor;
       const mainAnchor = editor.read.points.start([1, 0, 0]);
       const mainFocus = editor.read.points.end([1, 0, 1]);
-      const target = rootEditor.read.nodes.get<TTableCellElement>([0, 1, 0]);
+      const target = rootEditor.read.nodes.get<TableCellElement>([0, 1, 0]);
 
       assert(mainAnchor);
       assert(mainFocus);
@@ -992,7 +990,7 @@ describe('table selection slow contracts', () => {
       const ids = ['a', 'b', 'c', 'd', 'e'];
 
       for (const removedIndex of ids.keys()) {
-        const editor = createPlateEditor({
+        const editor = createTestTableEditor({
           nodeId: true,
           plugins: [BaseTablePlugin],
           initialValue: [
@@ -1000,11 +998,11 @@ describe('table selection slow contracts', () => {
               children: [
                 {
                   children: ids.map((id) => ({
-                    children: [{ children: [{ text: id }], type: 'p' }],
+                    children: [{ children: [{ text: id }], type: 'paragraph' }],
                     id,
-                    type: 'td',
+                    type: 'tableCell',
                   })),
-                  type: 'tr',
+                  type: 'tableRow',
                 },
               ],
               type: 'table',
@@ -1055,7 +1053,7 @@ describe('table selection slow contracts', () => {
     });
 
     it('rejects duplicate and reversed persisted cell ranges', () => {
-      const editor = createPlateEditor({
+      const editor = createTestTableEditor({
         nodeId: true,
         plugins: [BaseTablePlugin],
         initialValue: [createTable('codec')],
@@ -1105,7 +1103,7 @@ describe('table selection slow contracts', () => {
 
     it('rebases every persisted cell range across generated named-root versions', () => {
       const root = 'table-selection-root';
-      const editor = createPlateEditor({
+      const editor = createTestTableEditor({
         nodeId: true,
         plugins: [BaseTablePlugin, RootHolderPlugin],
         initialValue: {
@@ -1113,7 +1111,7 @@ describe('table selection slow contracts', () => {
             {
               childRoots: { body: root },
               children: [{ text: '' }],
-              type: RootHolderPlugin.name,
+              type: 'rootHolder',
             },
             createTable('main'),
           ],
@@ -1122,17 +1120,7 @@ describe('table selection slow contracts', () => {
           },
         },
       });
-      const runtime = Object.freeze({
-        api: editor.api,
-        anchor: editor.anchor,
-        editor,
-        extend: editor.extend,
-        read: editor.read,
-        subscribe: editor.subscribe,
-        subscribeCommit: editor.subscribeCommit,
-        update: editor.update,
-      }) as unknown as EditorRuntime;
-      const rootEditor = createEditorView(runtime, {
+      const rootEditor = createEditorView(editor, {
         root,
       }) as unknown as typeof editor;
       const anchor = rootEditor.read.points.start([0, 0, 0]);
@@ -1144,13 +1132,11 @@ describe('table selection slow contracts', () => {
       const rootRange = Object.freeze({ anchor, focus });
       const rootSelectionView = readTableSelection(rootEditor.read, {
         at: rootRange,
-        cellTypes: ['td', 'th'],
-        tableType: 'table',
+        ...getSelectionTypes(editor),
       });
       const baseSelectionView = readTableSelection(editor.read, {
         at: rootRange,
-        cellTypes: ['td', 'th'],
-        tableType: 'table',
+        ...getSelectionTypes(editor),
       });
 
       assert(rootSelectionView, 'root-scoped table selection view');
@@ -1224,13 +1210,11 @@ describe('table selection slow contracts', () => {
         ]);
 
         const view = readTableSelection(rootEditor.read, {
-          cellTypes: ['td', 'th'],
-          tableType: 'table',
+          ...getSelectionTypes(editor),
         });
         const beforeHotRead = readTableSelectionViewMetrics();
         const hotView = readTableSelection(rootEditor.read, {
-          cellTypes: ['td', 'th'],
-          tableType: 'table',
+          ...getSelectionTypes(editor),
         });
         const afterHotRead = readTableSelectionViewMetrics();
 
@@ -1277,7 +1261,7 @@ describe('table selection slow contracts', () => {
 
       editor.update((tx) => {
         tx.nodes.insert(
-          { children: [{ text: 'main-only' }], type: 'p' },
+          { children: [{ text: 'main-only' }], type: 'paragraph' },
           { at: [0] }
         );
       });

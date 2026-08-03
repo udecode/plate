@@ -2,7 +2,7 @@ import { performance } from 'node:perf_hooks';
 
 import {
   createEditor,
-  defineEditorExtension,
+  defineExtension,
 } from '../../../../../packages/plite/src/index.ts';
 import { summarize, writeBenchmarkArtifact } from '../../shared/stats.mjs';
 
@@ -19,8 +19,7 @@ const retainedPolicies = Number.parseInt(
   10
 );
 
-const historyCapability = defineEditorExtension({
-  name: 'benchmark-history',
+const historyCapability = defineExtension('benchmark-history', {
   update: () => ({
     history() {
       return {};

@@ -1,5 +1,5 @@
 import {
-  defineEditorExtension,
+  defineExtension,
   editorCommands,
   NodeApi,
   PointApi,
@@ -190,8 +190,7 @@ const TablesExample = () => {
 };
 
 const table = () =>
-  defineEditorExtension({
-    name: 'table',
+  defineExtension('table', {
     commands: ({ handle }) => [
       handle(editorCommands.delete, ({ input, state }) => {
         const selection = state.selection();

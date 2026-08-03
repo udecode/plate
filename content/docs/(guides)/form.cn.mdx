@@ -30,7 +30,7 @@ type FormData = {
 
 export function RHFEditorForm() {
   const initialValue = [
-    { type: "p", children: [{ text: "来自 react-hook-form 的问候！" }] },
+    { type: "paragraph", children: [{ text: "来自 react-hook-form 的问候！" }] },
   ];
 
   // 设置 react-hook-form
@@ -108,7 +108,7 @@ export function EditorForm() {
     defaultValues: {
       content: {
         children: [
-          { type: "p", children: [{ text: "来自 shadcn/ui Form 的问候！" }] },
+          { type: "paragraph", children: [{ text: "来自 shadcn/ui Form 的问候！" }] },
         ],
       },
     },
@@ -206,7 +206,7 @@ function MyForm() {
   const form = useForm({
     defaultValues: {
       content: {
-        children: [{ type: "p", children: [{ text: "初始内容..." }] }],
+        children: [{ type: "paragraph", children: [{ text: "初始内容..." }] }],
       },
     },
   });
@@ -340,7 +340,7 @@ export const EditorField = React.forwardRef<HTMLDivElement, EditorFieldProps>(
     ref
   ) {
     const editor = usePlateEditor({
-      initialValue: initialValue ?? [{ type: "p", children: [{ text: "" }] }],
+      initialValue: initialValue ?? [{ type: "paragraph", children: [{ text: "" }] }],
     });
 
     return (
@@ -394,7 +394,7 @@ export function EditorForm() {
     resolver: zodResolver(FormSchema),
     defaultValues: {
       bio: {
-        children: [{ type: "p", children: [{ text: "" }] }],
+        children: [{ type: "paragraph", children: [{ text: "" }] }],
       },
     },
   });

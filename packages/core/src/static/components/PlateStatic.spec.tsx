@@ -3,26 +3,31 @@
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
 
-import { property, schema, target, type Value } from '@platejs/plite';
+import {
+  createEditor as createPliteEditor,
+  property,
+  schema,
+  target,
+  type Value,
+} from '@platejs/plite';
 import { render } from '@testing-library/react';
 
-import { type BaseEditor, createBaseEditor, createBasePlugin } from '../../lib';
+import { type BaseEditor, createBaseEditor, defineBasePlugin } from '../../lib';
 import { PlateStatic } from './PlateStatic';
 import { PliteElement, PliteLeaf } from './plite-nodes';
 
 const components = {
   bold: LeafStaticMock,
-  p: ElementStaticMock,
+  paragraph: ElementStaticMock,
 };
 
-const RevisionPlugin = createBasePlugin({
-  name: 'revision',
+const RevisionPlugin = defineBasePlugin('revision', {
   schema: {
-    properties: [
-      schema.elementProperty('revision', property.number(), {
-        target: target.type('p'),
+    properties: {
+      revision: schema.elementProperty(property.number(), {
+        target: target.type('paragraph'),
       }),
-    ],
+    },
   },
 });
 
@@ -34,7 +39,7 @@ const createEditor = ({
         { bold: true, text: 'two' },
         { text: 'three' },
       ],
-      type: 'p',
+      type: 'paragraph',
     },
   ],
 }: {
@@ -42,9 +47,9 @@ const createEditor = ({
 } = {}) =>
   createBaseEditor({
     components,
+    editor: createPliteEditor<Value>(),
     plugins: [
-      createBasePlugin({
-        name: 'bold',
+      defineBasePlugin('bold', {
         schema: {
           mark: property.boolean({ default: false, omitDefault: true }),
         },
@@ -67,11 +72,11 @@ const createEditorWithMultipleElements = ({
         { bold: true, text: 'two' },
         { text: 'three' },
       ],
-      type: 'p',
+      type: 'paragraph',
     },
     {
       children: [{ text: '4' }, { bold: true, text: '5' }, { text: '6' }],
-      type: 'p',
+      type: 'paragraph',
     },
   ],
 }: {
@@ -79,9 +84,9 @@ const createEditorWithMultipleElements = ({
 } = {}) =>
   createBaseEditor({
     components,
+    editor: createPliteEditor<Value>(),
     plugins: [
-      createBasePlugin({
-        name: 'bold',
+      defineBasePlugin('bold', {
         schema: {
           mark: property.boolean({ default: false, omitDefault: true }),
         },
@@ -169,7 +174,7 @@ describe('PlateStatic Memoization', () => {
     const newValueRef = [
       {
         children: [{ text: 'Hello world' }], // same text, but new object
-        type: 'p',
+        type: 'paragraph',
       },
     ];
 
@@ -231,7 +236,7 @@ describe('PlateStatic Memoization', () => {
 
     replaceRoot(editor, [
       ...initialValue,
-      { children: [{ text: 'New Paragraph' }], type: 'p' },
+      { children: [{ text: 'New Paragraph' }], type: 'paragraph' },
     ]);
 
     rerender(<PlateStatic editor={editor} />);
@@ -250,8 +255,7 @@ describe('PlateStatic Memoization', () => {
     it('uses the registered element fallback', () => {
       const editor = createBaseEditor({
         plugins: [
-          createBasePlugin({
-            name: 'fallback-element',
+          defineBasePlugin('fallbackElement', {
             schema: {
               element: {
                 content: schema.content.text({ default: 'text', min: 1 }),
@@ -266,7 +270,7 @@ describe('PlateStatic Memoization', () => {
                 text: 'This registered element has no component.',
               },
             ],
-            type: 'fallback-element',
+            type: 'fallbackElement',
           },
         ],
       });
@@ -278,8 +282,7 @@ describe('PlateStatic Memoization', () => {
   });
 
   it('renders text node injections when the path is already known', () => {
-    const TonePlugin = createBasePlugin({
-      name: 'tone',
+    const TonePlugin = defineBasePlugin('tone', {
       schema: { mark: { property: property.string() } },
       inject: {
         nodeProps: {
@@ -293,7 +296,7 @@ describe('PlateStatic Memoization', () => {
       initialValue: [
         {
           children: [{ text: 'hi', tone: 'red' }],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     });
@@ -312,18 +315,17 @@ describe('PlateStatic Memoization', () => {
             <figcaption>{slots.contentRoot('caption')}</figcaption>
           </figure>
         ),
-        p: ({ children }) => <p data-caption-block>{children}</p>,
+        paragraph: ({ children }) => <p data-caption-block>{children}</p>,
       },
       nodeId: false,
       plugins: [
-        createBasePlugin({
-          name: 'figure',
+        defineBasePlugin('figure', {
           schema: {
             element: {
               contentRoots: {
                 caption: {
-                  content: schema.content.type('p', {
-                    default: { type: 'p' },
+                  content: schema.content.type('paragraph', {
+                    default: { type: 'paragraph' },
                     min: 1,
                   }),
                   ownership: 'exclusive',
@@ -344,7 +346,9 @@ describe('PlateStatic Memoization', () => {
           },
         ],
         roots: {
-          'caption:1': [{ children: [{ text: 'First caption' }], type: 'p' }],
+          'caption:1': [
+            { children: [{ text: 'First caption' }], type: 'paragraph' },
+          ],
         },
       },
     });
@@ -357,7 +361,7 @@ describe('PlateStatic Memoization', () => {
 
     editor.update((tx) => {
       tx.roots.replace('caption:1', [
-        { children: [{ text: 'Updated caption' }], type: 'p' },
+        { children: [{ text: 'Updated caption' }], type: 'paragraph' },
       ]);
     });
     view.rerender(<PlateStatic editor={editor} />);

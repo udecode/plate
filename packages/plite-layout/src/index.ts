@@ -808,8 +808,11 @@ export const createPlitePageBreakSnapshot = ({
   };
 };
 
-const readPlitePageBreakSnapshot = (
-  editor: EditorType<Value>,
+const readPlitePageBreakSnapshot = <
+  V extends Value,
+  TExtensions extends readonly unknown[],
+>(
+  editor: EditorType<V, TExtensions>,
   source: PlitePageBreakSnapshotSource
 ) => {
   if (!source) {
@@ -1789,8 +1792,11 @@ const resolveNodeLayoutPlan = (
   };
 };
 
-const extractLayoutBlocks = (
-  editor: EditorType<Value>,
+const extractLayoutBlocks = <
+  V extends Value,
+  TExtensions extends readonly unknown[],
+>(
+  editor: EditorType<V, TExtensions>,
   root: RootKey,
   settings: PlitePageSettings,
   measurementProfile: PlitePageLayoutMeasurementProfile,
@@ -1861,8 +1867,12 @@ const isPlitePageSettings = <TSettings extends PlitePageSettings>(
   source: PlitePageSettingsSource<TSettings>
 ): source is TSettings => 'margins' in source && 'preset' in source;
 
-const readLayoutSettings = <TSettings extends PlitePageSettings>(
-  editor: EditorType<Value>,
+const readLayoutSettings = <
+  TSettings extends PlitePageSettings,
+  V extends Value,
+  TExtensions extends readonly unknown[],
+>(
+  editor: EditorType<V, TExtensions>,
   source: PlitePageSettingsSource<TSettings> | null | undefined
 ): PlitePageSettings => {
   if (!source) {
@@ -2045,8 +2055,12 @@ export const getPlitePageLayoutFragments = (
   }));
 };
 
-const readLayoutRoot = <TSettings extends PlitePageSettings>(
-  editor: EditorType<Value>,
+const readLayoutRoot = <
+  TSettings extends PlitePageSettings,
+  V extends Value,
+  TExtensions extends readonly unknown[],
+>(
+  editor: EditorType<V, TExtensions>,
   options: PlitePageLayoutOptions<TSettings>
 ): RootKey => {
   assertPublicRootKey(options.root);
@@ -3044,8 +3058,10 @@ export const paginatePlitePageLayoutBlocks = ({
 /** Create a page-layout reader with an explicit measurement engine. */
 export const createPlitePageLayout = <
   TSettings extends PlitePageSettings = PlitePageSettings,
+  V extends Value = Value,
+  TExtensions extends readonly unknown[] = readonly [],
 >(
-  editor: EditorType<Value>,
+  editor: EditorType<V, TExtensions>,
   initialOptions: PlitePageLayoutOptions<TSettings>
 ): PlitePageLayout<PlitePageLayoutOptions<TSettings>> => {
   const connectionDeferred = isLayoutRuntimeConnectionDeferred(initialOptions);
@@ -3470,8 +3486,10 @@ export const createPlitePageLayout = <
 /** Create a layout reader with the built-in browser or estimated engine. */
 export const createPliteLayout = <
   TSettings extends PlitePageSettings = PlitePageSettings,
+  V extends Value = Value,
+  TExtensions extends readonly unknown[] = readonly [],
 >(
-  editor: EditorType<Value>,
+  editor: EditorType<V, TExtensions>,
   initialOptions: PliteLayoutOptions<TSettings>
 ): PlitePageLayout<PliteLayoutOptions<TSettings>> => {
   const fallbackEngine = canUseCanvasTextMeasurement()
@@ -3491,7 +3509,7 @@ export const createPliteLayout = <
   });
   const connectionDeferred = isLayoutRuntimeConnectionDeferred(initialOptions);
   const pageLayoutOptions = toPageLayoutOptions(initialOptions);
-  const runtime = createPlitePageLayout(
+  const runtime = createPlitePageLayout<TSettings, V, TExtensions>(
     editor,
     connectionDeferred
       ? deferLayoutRuntimeConnection(pageLayoutOptions)

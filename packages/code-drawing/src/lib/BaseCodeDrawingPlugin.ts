@@ -1,4 +1,4 @@
-import { createBasePlugin } from '@platejs/core';
+import { defineBasePlugin } from '@platejs/core';
 import {
   type Element,
   type NodeInsertNodesOptions,
@@ -74,8 +74,7 @@ export interface TCodeDrawingElement extends Element {
 }
 
 /** Enables support for PlantUML, Graphviz, Flowchart, and Mermaid drawings. */
-export const BaseCodeDrawingPlugin = createBasePlugin({
-  name: KEYS.codeDrawing,
+export const BaseCodeDrawingPlugin = defineBasePlugin(KEYS.codeDrawing, {
   schema: {
     element: {
       properties: {

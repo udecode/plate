@@ -15,11 +15,11 @@ describe('math package surfaces', () => {
           {
             children: [{ text: '' }],
             texExpression: 'x+1',
-            type: 'inline_equation',
+            type: 'inlineEquation',
           },
           { text: ' math' },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
 

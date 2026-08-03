@@ -25,7 +25,8 @@ describe('plite-history package README contract', () => {
       readme,
       /import \{ History, history \} from '@platejs\/plite-history'/
     );
-    assert.match(readme, /extensions: \[history\(\)\]/);
+    assert.match(readme, /extensions: \[history\(\{ newBatchDelay: 500 \}\)\]/);
+    assert.match(readme, /`newBatchDelay` defaults to 500 milliseconds/);
     assert.match(readme, /state\.history\(\)/);
     assert.match(readme, /editor\.update\.history\.undo\(\)/);
     assert.match(readme, /editor\.update\(\{ history: 'skip' \}\)/);

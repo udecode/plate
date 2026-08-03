@@ -39,8 +39,9 @@ embed, and React placeholder descriptors.
   form, into direct inline children before schema fitting.
 - Accept caption strings or inline children as construction input and persist
   them as direct media children.
-- Use `mediaEmbed` as the media-embed plugin identity while preserving
-  `media_embed` elements and relative media widths.
+- Use capability name `mediaEmbed` and persisted element type `mediaEmbed`,
+  persist media alignment as `textAlign`, preserve relative media widths, and
+  expose plugin-owned `update.setWidth`.
 - Preserve standalone media embeds through clipboard sanitization by carrying
   sanitized URL and normalized width metadata on the owning figure.
 

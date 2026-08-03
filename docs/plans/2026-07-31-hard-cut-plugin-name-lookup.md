@@ -120,12 +120,12 @@ Decision brief:
 - outcome: one imperative Plate plugin lookup with no type-only alternative.
 - chosen shape: `editor.plugin(Plugin \| name)` and `useEditorPlugin(Plugin \| name)`.
 - strongest rejected alternative: retain `getType(name)` or public `{ name }` references for dynamic lookup.
-- consequence: missing-plugin policy becomes explicit through `.installed`; required `.type` access fails loudly.
+- consequence: missing-plugin capability policy is explicit through `.installed`; uninstalled `.type`/`.key` expose the conventional supplied-name identity.
 
 Decision ledger:
 | Surface | Current | Target | Owner | Reason | Adoption | Proof | Risk | Verdict |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Runtime type lookup | `editor.plugin(name).type` silently falls back to `name` | `editor.plugin(name).type` with explicit `.installed` for optional lookup | Core | One lookup noun and truthful absence | Migrate all source/tests/docs | Compile/runtime/source audit | Hidden fallback consumers | cut |
+| Runtime type lookup | Parallel lookup helpers and caller-authored fallbacks | `editor.plugin(name).type` directly; `.installed` guards behavior only | Core | One lookup noun and conventional identity | Migrate all source/tests/docs | Compile/runtime/source audit | Hidden fallback consumers | cut |
 | Portal input | Descriptor or `{ name }` object | Descriptor or `string` | Core | Remove object ceremony while preserving descriptor inference | Base/Plate types, runtime, React hook, callers | Type and runtime tests | Overload widening | rearchitect |
 | Codec registry | `registry.getType(name)` | Keep | Core codec context | Separate immutable format registry job | None | Existing codec tests | Accidental over-cut | keep |
 | Durable doctrine | Dynamic-name `getType` exception | String portal is sole dynamic lookup | Vision/best-api | Prevent recurrence | Source rule, Vision, regenerated skill | Source audit and sync | Stale worker wording | rearchitect |

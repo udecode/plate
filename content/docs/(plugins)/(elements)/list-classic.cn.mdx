@@ -242,13 +242,13 @@ const editor = createPlateEditor({
 
 ## 转换
 
-### `editor.update.ul.toggle()`
+### `editor.update.bulletedList.toggle()`
 
 切换项目符号列表（ul）。
 
 示例快捷键：`Mod+Alt+5`
 
-### `editor.update.ol.toggle()`
+### `editor.update.numberedList.toggle()`
 
 切换编号列表（ol）。
 
@@ -462,9 +462,9 @@ const editor = createPlateEditor({
   <APIItem name="pressed" type="boolean">
     按钮按下状态。
   </APIItem>
-  <APIItem name="nodeType" type="string">
-    列表节点类型。
-    - **默认：** `BulletedListPlugin.name`
+  <APIItem name="plugin" type="PluginReference | string">
+    列表插件描述符或能力名称。
+    - **默认：** `PLUGINS.bulletedList`
   </APIItem>
 </APIState>
 

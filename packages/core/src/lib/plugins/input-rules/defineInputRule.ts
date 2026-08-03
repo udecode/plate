@@ -1,6 +1,6 @@
 import type { BaseEditor } from '../../editor';
 import type {
-  AnyInputRule,
+  InputRule,
   InsertBreakInputRule,
   InsertDataInputRule,
   InsertTextInputRule,
@@ -24,7 +24,7 @@ export function defineInputRule<
 >(
   rule: InsertTextInputRule<TMatch, TEditor>
 ): InsertTextInputRule<TMatch, TEditor>;
-export function defineInputRule<TRule extends AnyInputRule>(rule: TRule): TRule;
-export function defineInputRule<TRule extends AnyInputRule>(rule: TRule) {
+export function defineInputRule<TRule extends InputRule>(rule: TRule): TRule;
+export function defineInputRule<TRule extends InputRule>(rule: TRule) {
   return rule;
 }

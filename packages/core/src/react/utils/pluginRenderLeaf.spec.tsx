@@ -5,14 +5,12 @@ import React from 'react';
 
 import { render } from '@testing-library/react';
 
-import { createBasePlugin } from '../../lib/plugin';
+import { defineBasePlugin } from '../../lib/plugin';
 import { createPlateEditor } from '../editor/withPlate';
 import { pluginRenderLeaf } from './pluginRenderLeaf';
 
 it('uses a plain render.as fast path for simple leaf plugins', () => {
-  const testPlugin = createBasePlugin({
-    name: 'test',
-    type: 'test',
+  const testPlugin = defineBasePlugin('test', {
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
       as: 'strong',
@@ -47,9 +45,7 @@ it('uses a plain render.as fast path for simple leaf plugins', () => {
 });
 
 it('renders simple hard-affinity leaves without spacers when inactive', () => {
-  const testPlugin = createBasePlugin({
-    name: 'test',
-    type: 'test',
+  const testPlugin = defineBasePlugin('test', {
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
       as: 'code',
@@ -85,9 +81,7 @@ it('renders simple hard-affinity leaves without spacers when inactive', () => {
 });
 
 it('renders simple directional-affinity leaves without PlateLeaf fallback', () => {
-  const testPlugin = createBasePlugin({
-    name: 'test',
-    type: 'test',
+  const testPlugin = defineBasePlugin('test', {
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
       as: 's',
@@ -120,9 +114,7 @@ it('renders simple directional-affinity leaves without PlateLeaf fallback', () =
 });
 
 it('renders boundary spacers only for the active hard-affinity edge', () => {
-  const testPlugin = createBasePlugin({
-    name: 'test',
-    type: 'test',
+  const testPlugin = defineBasePlugin('test', {
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
       as: 'code',
@@ -144,7 +136,7 @@ it('renders boundary spacers only for the active hard-affinity edge', () => {
     initialValue: [
       {
         children: [{ test: true, text: 'test content' }],
-        type: 'p',
+        type: 'paragraph',
       },
     ] as any,
   });

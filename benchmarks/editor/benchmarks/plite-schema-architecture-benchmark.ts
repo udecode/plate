@@ -4,7 +4,6 @@ import { resolve } from 'node:path';
 
 import {
   createEditor,
-  createEditorRuntime,
   createEditorView,
   defineEditorSchema,
   defineExtensionSlot,
@@ -37,7 +36,7 @@ import {
 } from '../../../packages/plite-dom/src/internal/index';
 import {
   createBaseEditor,
-  createBasePlugin,
+  defineBasePlugin,
 } from '../../../packages/core/src/index';
 import { getSchemaInvalidatedRuntimeIds } from '../../../packages/plite-react/src/editable/schema-runtime-invalidation';
 import {
@@ -179,12 +178,10 @@ const createContributionRecords = (
               [type]: { content: schema.content.text() },
             },
             id: `schema-contribution-benchmark-${count}`,
-            root: {
-              content: schema.content.types(types, {
-                default: { type },
-                min: 1,
-              }),
-            },
+            root: schema.content.types(types, {
+              default: { type },
+              min: 1,
+            }),
             unknown: 'reject',
             version: 1,
           }
@@ -311,8 +308,7 @@ const createPlateDescriptorPlugins = (
   cohort: string
 ) =>
   Array.from({ length: count }, (_value, index) =>
-    createBasePlugin({
-      name: `plate_descriptor_${cohort}_${count}_${index}`,
+    defineBasePlugin(`plateDescriptor${cohort}${count}${index}`, {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -433,35 +429,36 @@ const constructionIterations = argument('construction-iterations', 5000);
 const measureConstructionPropertyCohort = (
   properties: (typeof CONSTRUCTION_PROPERTY_COHORTS)[number]
 ) => {
-  const definition = defineEditorSchema({
-    elements: {
-      construction_target: {
-        content: schema.content.text({ default: 'text', min: 1 }),
-        properties: {
-          localDefault: property.number({ default: 1 }),
+  const definition = defineEditorSchema(
+    `schema:schema-construction-property-budget-${properties}`,
+    {
+      elements: {
+        construction_target: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          properties: {
+            localDefault: property.number({ default: 1 }),
+          },
+        },
+        construction_unrelated: {
+          content: schema.content.text({ default: 'text', min: 1 }),
         },
       },
-      construction_unrelated: {
-        content: schema.content.text({ default: 'text', min: 1 }),
-      },
-    },
-    id: `schema-construction-property-budget-${properties}`,
-    properties: Array.from({ length: properties }, (_value, index) =>
-      schema.elementProperty(
-        `unrelatedDefault${index}`,
-        property.number({ default: index }),
-        { target: target.type('construction_unrelated') }
-      )
-    ),
-    root: {
-      content: schema.content.types(
+      id: `schema-construction-property-budget-${properties}`,
+      properties: Array.from({ length: properties }, (_value, index) =>
+        schema.elementProperty(
+          `unrelatedDefault${index}`,
+          property.number({ default: index }),
+          { target: target.type('construction_unrelated') }
+        )
+      ),
+      root: schema.content.types(
         ['construction_target', 'construction_unrelated'],
         { default: { type: 'construction_target' }, min: 1 }
       ),
-    },
-    unknown: 'reject',
-    version: 1,
-  });
+      unknown: 'reject',
+      version: 1,
+    }
+  );
   const editor = createEditor({ extensions: [definition] });
   const compiledElement = getCompiledEditorSchema(editor)?.elements.byType.get(
     'construction_target'
@@ -637,7 +634,7 @@ const wrapperQueryNs = measureQuery(
     editor.read.schema.findWrapping(wrapperParent, wrapperChild) === wrapperPlan
 );
 const createUnknownWrapperDefinition = () =>
-  defineEditorSchema({
+  defineEditorSchema('schema:schema-architecture-unknown-wrapper-benchmark', {
     elements: {
       paragraph: { content: schema.content.text() },
       wrapper: {
@@ -645,7 +642,7 @@ const createUnknownWrapperDefinition = () =>
       },
     },
     id: 'schema-architecture-unknown-wrapper-benchmark',
-    root: { content: schema.content.type('wrapper') },
+    root: schema.content.type('wrapper'),
     unknown: 'preserve',
     version: 1,
   });
@@ -810,23 +807,24 @@ const createMigrationSchema = (
   blocks: (typeof MIGRATION_DOCUMENT_COHORTS)[number],
   version: number
 ) =>
-  defineEditorSchema({
-    elements: {
-      migration_paragraph: {
-        content: schema.content.text({ default: 'text', min: 1 }),
-        readOnly: version === 2,
+  defineEditorSchema(
+    `schema:schema-architecture-large-document-migration-${blocks}`,
+    {
+      elements: {
+        migration_paragraph: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          readOnly: version === 2,
+        },
       },
-    },
-    id: `schema-architecture-large-document-migration-${blocks}`,
-    root: {
-      content: schema.content.type('migration_paragraph', {
+      id: `schema-architecture-large-document-migration-${blocks}`,
+      root: schema.content.type('migration_paragraph', {
         default: { type: 'migration_paragraph' },
         min: 1,
       }),
-    },
-    unknown: 'reject',
-    version,
-  });
+      unknown: 'reject',
+      version,
+    }
+  );
 const createMigrationValue = (blocks: number): EditorDocumentValue => ({
   children: Array.from({ length: blocks }, (_value, index) => ({
     children: [{ text: `migration-${index}` }],
@@ -931,7 +929,7 @@ const localityDescriptor = property.json({
   },
   validationVersion: 1,
 });
-const LocalitySchema = defineEditorSchema({
+const LocalitySchema = defineEditorSchema('schema:schema-validation-locality', {
   elements: {
     paragraph: {
       content: schema.content.text(),
@@ -944,13 +942,9 @@ const LocalitySchema = defineEditorSchema({
       target: target.type('paragraph'),
     }),
   ],
-  root: {
-    content: schema.content.type('paragraph', { min: 1 }),
-  },
+  root: schema.content.type('paragraph', { min: 1 }),
   roots: {
-    aux: {
-      content: schema.content.type('paragraph', { min: 1 }),
-    },
+    aux: schema.content.type('paragraph', { min: 1 }),
   },
   unknown: 'reject',
   version: 1,
@@ -1042,7 +1036,7 @@ const createInvalidationSchema = (
   readOnlyTypes: ReadonlySet<string>,
   propertySplit: 'drop' | 'preserve' = 'preserve'
 ) =>
-  defineEditorSchema({
+  defineEditorSchema('schema:schema-architecture-invalidation', {
     elements: {
       schema_delta_affected: {
         content: schema.content.text(),
@@ -1089,23 +1083,21 @@ const createInvalidationSchema = (
         target: target.type('schema_delta_affected'),
       }),
     ],
-    root: {
-      content: schema.content.any(
-        [
-          schema.content.type('schema_delta_affected'),
-          schema.content.type('schema_delta_dormant_0'),
-          schema.content.type('schema_delta_dormant_1'),
-          schema.content.type('schema_delta_dormant_2'),
-          schema.content.type('schema_delta_dormant_3'),
-          schema.content.type('schema_delta_dormant_4'),
-          schema.content.type('schema_delta_dormant_5'),
-          schema.content.type('schema_delta_dormant_6'),
-          schema.content.type('schema_delta_dormant_7'),
-          schema.content.type('schema_delta_unrelated'),
-        ],
-        { default: { type: 'schema_delta_affected' }, min: 1 }
-      ),
-    },
+    root: schema.content.any(
+      [
+        schema.content.type('schema_delta_affected'),
+        schema.content.type('schema_delta_dormant_0'),
+        schema.content.type('schema_delta_dormant_1'),
+        schema.content.type('schema_delta_dormant_2'),
+        schema.content.type('schema_delta_dormant_3'),
+        schema.content.type('schema_delta_dormant_4'),
+        schema.content.type('schema_delta_dormant_5'),
+        schema.content.type('schema_delta_dormant_6'),
+        schema.content.type('schema_delta_dormant_7'),
+        schema.content.type('schema_delta_unrelated'),
+      ],
+      { default: { type: 'schema_delta_affected' }, min: 1 }
+    ),
     unknown: 'reject',
     version,
   });
@@ -1255,29 +1247,30 @@ assert.equal(propertyInvalidationRuntimeIds, INVALIDATION_AFFECTED_RUNTIME_IDS);
 const PROJECTED_CLIPBOARD_DOCUMENT_COHORTS = [1000, 50_000] as const;
 const PROJECTED_CLIPBOARD_ROOT =
   'schema-architecture-projected-root' as RootKey;
-const projectedClipboardSchema = defineEditorSchema({
-  elements: {
-    projected_card: {
-      content: schema.content.open(),
-      contentRoots: {
-        body: schema.content.not(schema.content.text()),
+const projectedClipboardSchema = defineEditorSchema(
+  'schema:schema-architecture-projected-clipboard',
+  {
+    elements: {
+      projected_card: {
+        content: schema.content.open(),
+        contentRoots: {
+          body: schema.content.not(schema.content.text()),
+        },
+        void: 'editable-island',
       },
-      void: 'editable-island',
+      projected_paragraph: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+      },
     },
-    projected_paragraph: {
-      content: schema.content.text({ default: 'text', min: 1 }),
-    },
-  },
-  id: 'schema-architecture-projected-clipboard',
-  root: {
-    content: schema.content.types(['projected_card', 'projected_paragraph'], {
+    id: 'schema-architecture-projected-clipboard',
+    root: schema.content.types(['projected_card', 'projected_paragraph'], {
       default: { type: 'projected_paragraph' },
       min: 1,
     }),
-  },
-  unknown: 'reject',
-  version: 1,
-});
+    unknown: 'reject',
+    version: 1,
+  }
+);
 const projectedParagraph = (text: string) => ({
   children: [{ text }],
   type: 'projected_paragraph',
@@ -1302,7 +1295,7 @@ const projectedOwner = {
   ownerRoot: 'main',
 } satisfies PliteProjectionOwner;
 const createProjectedClipboardEditor = (blocks: number) => {
-  const runtime = createEditorRuntime({
+  const owner = createEditor({
     extensions: [projectedClipboardSchema],
     initialValue: {
       children: [
@@ -1320,7 +1313,7 @@ const createProjectedClipboardEditor = (blocks: number) => {
       },
     },
   });
-  const editor = createEditorView(runtime) as unknown as ReactRuntimeEditor;
+  const editor = createEditorView(owner) as unknown as ReactRuntimeEditor;
   const graph = createPliteProjectionGraph([
     { path: [0], root: 'main' },
     { owner: projectedOwner, path: [0], root: PROJECTED_CLIPBOARD_ROOT },
@@ -1544,19 +1537,17 @@ const declarationBytesProxy = Buffer.byteLength(
   JSON.stringify(definition.schema)
 );
 const createMinimalSchema = () =>
-  defineEditorSchema({
+  defineEditorSchema('schema:schema-architecture-minimal', {
     elements: {
       minimal_block: {
         content: schema.content.text({ default: 'text', min: 1 }),
       },
     },
     id: 'schema-architecture-minimal',
-    root: {
-      content: schema.content.type('minimal_block', {
-        default: { type: 'minimal_block' },
-        min: 1,
-      }),
-    },
+    root: schema.content.type('minimal_block', {
+      default: { type: 'minimal_block' },
+      min: 1,
+    }),
     roots: Object.fromEntries(
       Array.from(
         { length: SCHEMA_ARCHITECTURE_CORPUS.namedRoots },

@@ -1,13 +1,11 @@
 import { ElementApi, property, schema, target } from '@platejs/plite';
 
-import { createBaseEditor, createBasePlugin } from '../../lib';
+import { createBaseEditor, defineBasePlugin } from '../../lib';
 import { getRenderNodeStaticProps } from './getRenderNodeStaticProps';
 
 describe('getRenderNodeStaticProps', () => {
   it('merges plugin props, allowed attrs, Plite classes, and injected node props', () => {
-    const ParagraphPlugin = createBasePlugin({
-      name: 'p',
-      type: 'p',
+    const ParagraphPlugin = defineBasePlugin('staticParagraph', {
       schema: {
         element: {
           content: schema.content.open({ default: 'text', min: 1 }),
@@ -32,16 +30,15 @@ describe('getRenderNodeStaticProps', () => {
         },
       },
     });
-    const AlignPlugin = createBasePlugin({
-      targetPluginNames: ['p'],
-      name: 'align',
-      schema: {
-        properties: [
-          schema.elementProperty('align', property.string(), {
-            target: target.type('p'),
+    const AlignPlugin = defineBasePlugin('align', {
+      targetPlugins: [ParagraphPlugin],
+      schema: () => ({
+        properties: {
+          align: schema.elementProperty(property.string(), {
+            target: target.element(ParagraphPlugin),
           }),
-        ],
-      },
+        },
+      }),
       inject: {
         nodeProps: {
           nodeKey: 'align',
@@ -56,7 +53,7 @@ describe('getRenderNodeStaticProps', () => {
           align: 'center',
           attributes: { ignored: 'nope', target: '_blank' },
           children: [{ text: 'hello' }],
-          type: 'p',
+          type: 'staticParagraph',
         },
       ],
     });
@@ -68,7 +65,7 @@ describe('getRenderNodeStaticProps', () => {
 
     const result = getRenderNodeStaticProps({
       editor,
-      plugin: editor.plugin(ParagraphPlugin).plugin,
+      plugin: editor.plugin(ParagraphPlugin),
       props: {
         attributes: { 'data-plite-align': 'center' },
         children: null,
@@ -85,7 +82,7 @@ describe('getRenderNodeStaticProps', () => {
     });
     expect(result.attributes?.ignored).toBeUndefined();
     expect(result.attributes?.title).toBeUndefined();
-    expect(result.attributes?.className).toContain('plite-p');
+    expect(result.attributes?.className).toContain('plite-staticParagraph');
     expect(result.attributes?.className).toContain('plugin-class');
     expect(result.attributes?.className).toContain('user-class');
     expect(result.attributes?.className).toContain('plite-align-center');

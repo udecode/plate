@@ -1,8 +1,9 @@
 import {
-  defineEditorExtension,
+  defineExtension,
   NodeApi,
   type Element as PliteElement,
 } from '@platejs/plite';
+import { history } from '@platejs/plite-history';
 import {
   Editable,
   type RenderElementProps,
@@ -30,8 +31,7 @@ const setType = (type: CustomElementType) =>
   ({ type }) satisfies Partial<PliteElement>;
 
 const forcedLayout = () =>
-  defineEditorExtension({
-    name: 'forced-layout',
+  defineExtension('forced-layout', {
     corrections: [
       {
         event: 'children',
@@ -86,7 +86,7 @@ const renderElement = (props: RenderElementProps<CustomElement>) => {
 
 const ForcedLayoutExample = () => {
   const editor = usePliteEditor({
-    extensions: [forcedLayout()],
+    extensions: [history(), forcedLayout()],
     initialValue: [
       {
         type: 'title',

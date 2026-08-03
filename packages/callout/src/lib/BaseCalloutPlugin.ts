@@ -1,4 +1,4 @@
-import { createBasePlugin } from '@platejs/core';
+import { defineBasePlugin } from '@platejs/core';
 import {
   ElementApi,
   type NodeInsertNodesOptions,
@@ -12,7 +12,7 @@ export type InsertCalloutOptions = NodeInsertNodesOptions<TCalloutElement> & {
   variant?: TCalloutElement['variant'];
 };
 
-export const BaseCalloutPlugin = createBasePlugin({
+export const BaseCalloutPlugin = defineBasePlugin(KEYS.callout, {
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       'text/markdown': {
@@ -70,7 +70,6 @@ export const BaseCalloutPlugin = createBasePlugin({
         },
       },
     }),
-  name: KEYS.callout,
   schema: {
     element: schema.element.textBlock({
       properties: {

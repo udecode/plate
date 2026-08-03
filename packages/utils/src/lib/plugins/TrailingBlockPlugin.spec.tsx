@@ -16,8 +16,8 @@ describe('TrailingBlockPlugin', () => {
       initialValue: [{ type: 'h1', children: [{ text: 'x' }] }],
     });
 
-    expect(editor.plugin(TrailingBlockPlugin).plugin.initialState.type).toBe(
-      editor.plugin(ParagraphPlugin.name).type
+    expect(editor.plugin(TrailingBlockPlugin).initialState.type).toBe(
+      editor.plugin(ParagraphPlugin.name).name
     );
   });
 
@@ -62,7 +62,7 @@ describe('TrailingBlockPlugin', () => {
         TrailingBlockPlugin.configure({
           initialState: {
             level: 0,
-            type: ParagraphPlugin.name,
+            type: 'paragraph',
           },
         }),
       ],
@@ -93,7 +93,7 @@ describe('TrailingBlockPlugin', () => {
         TrailingBlockPlugin.configure({
           initialState: {
             level: 1,
-            type: ParagraphPlugin.name,
+            type: 'paragraph',
           },
         }),
       ],
@@ -117,7 +117,7 @@ describe('TrailingBlockPlugin', () => {
           initialState: {
             level: 0,
             match: (node) => !('type' in node) || node.type !== 'h1',
-            type: ParagraphPlugin.name,
+            type: 'paragraph',
           },
         }),
       ],

@@ -1,6 +1,7 @@
 import type React from 'react';
 import { useMemo } from 'react';
 import type { Element as PliteElement } from '@platejs/plite';
+import { history } from '@platejs/plite-history';
 import {
   Editable,
   type RenderElementProps,
@@ -24,7 +25,7 @@ import { html } from './paste-html-import';
 
 const PasteHtmlExample = () => {
   const editor = usePliteEditor({
-    extensions: [html()],
+    extensions: [history(), html()],
     initialValue: [
       {
         type: 'paragraph',

@@ -126,12 +126,11 @@ const editor = createPlateEditor({
 
 ```tsx
 import {
-  createBasePlugin,
+  defineBasePlugin,
   createTextSubstitutionInputRule,
 } from 'platejs';
 
-const ShortcutsPlugin = createBasePlugin({
-  name: 'shortcuts',
+const ShortcutsPlugin = defineBasePlugin('shortcuts', {
   inputRules: [
     createTextSubstitutionInputRule({
       patterns: [{ format: '—', match: '--' }],

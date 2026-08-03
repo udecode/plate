@@ -3,7 +3,7 @@
 import * as React from 'react';
 
 import type { DecoratedRange, Text } from '@platejs/plite';
-import { type RenderLeafProps, createBasePlugin, TextApi } from 'platejs';
+import { type RenderLeafProps, defineBasePlugin, TextApi } from 'platejs';
 import { Plate, usePlateEditor } from 'platejs/react';
 import Prism, { type TokenStream } from 'prismjs';
 
@@ -55,8 +55,7 @@ export default function PreviewMdDemo() {
     {
       plugins: [
         ...BasicNodesKit,
-        createBasePlugin({
-          name: 'preview-markdown',
+        defineBasePlugin('previewMarkdown', {
           decorate: ({ entry: [node, path] }) => {
             if (!TextApi.isText(node)) return [];
 

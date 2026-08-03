@@ -2,13 +2,16 @@
 
 import {
   BaseParagraphPlugin,
-  createBaseEditor,
-  createBasePlugin,
+  createBaseEditor as createTypedBaseEditor,
+  defineBasePlugin,
   type BaseEditor,
+  type BaseEditorOptions,
   type BasePluginInput,
+  type PluginReference,
 } from '@platejs/core';
 import { BaseIndentPlugin } from '@platejs/indent';
 import {
+  createEditor as createPliteEditor,
   DocumentChange,
   ElementApi,
   PathApi,
@@ -16,15 +19,27 @@ import {
   schema,
   target,
   type Element,
+  type InitialValue,
   type Value,
 } from '@platejs/plite';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
-import { KEYS } from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 import { omit } from 'lodash';
 
 import { BaseListPlugin, type ToggleListOptions } from './BaseListPlugin';
 
 jsxt;
+
+const createBaseEditor = <const P extends readonly BasePluginInput[]>(
+  options: Omit<BaseEditorOptions, 'plugins'> & {
+    initialValue?: InitialValue<Value>;
+    plugins: P;
+  }
+) =>
+  createTypedBaseEditor({
+    ...options,
+    editor: createPliteEditor<Value>(),
+  });
 
 const listPluginPage = BaseListPlugin.configure({
   initialState: {
@@ -69,11 +84,11 @@ const listPluginPage = BaseListPlugin.configure({
           return [lastNode, prevPagePath.concat(node.children.length - 1)];
         }
 
-        const prevNode = nodes.get<Element>(prevPath)?.[0];
+        const previousNode = nodes.get<Element>(prevPath)?.[0];
 
-        if (!prevNode) return;
+        if (!previousNode) return;
 
-        return [prevNode, prevPath];
+        return [previousNode, prevPath];
       },
     },
   },
@@ -82,8 +97,7 @@ const listPluginPage = BaseListPlugin.configure({
 describe('BaseListPlugin toggle behavior', () => {
   const CUSTOM_H1 = 'heading-one';
 
-  const H1Plugin = createBasePlugin({
-    name: KEYS.h1,
+  const H1Plugin = defineBasePlugin(PLUGINS.h1, {
     schema: {
       element: {
         content: schema.content.text({ default: 'text', min: 1 }),
@@ -91,31 +105,28 @@ describe('BaseListPlugin toggle behavior', () => {
     },
   });
 
-  const CustomH1Plugin = createBasePlugin({
-    name: KEYS.h1,
+  const CustomH1Plugin = defineBasePlugin(PLUGINS.h1, {
+    schema: {
+      element: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+        type: CUSTOM_H1,
+      },
+    },
+  });
+
+  const BlockquotePlugin = defineBasePlugin(PLUGINS.blockquote, {
     schema: {
       element: {
         content: schema.content.text({ default: 'text', min: 1 }),
       },
     },
-    type: CUSTOM_H1,
   });
 
-  const BlockquotePlugin = createBasePlugin({
-    name: KEYS.blockquote,
-    schema: {
-      element: {
-        content: schema.content.text({ default: 'text', min: 1 }),
-      },
-    },
-  });
-
-  const PagePlugin = createBasePlugin({
-    name: 'page',
+  const PagePlugin = defineBasePlugin('page', {
     schema: ({ plugins }) => ({
       element: {
         content: plugins.blockContent({
-          default: { type: plugins.elementType(BaseParagraphPlugin) },
+          default: BaseParagraphPlugin,
           min: 1,
         }),
       },
@@ -126,10 +137,10 @@ describe('BaseListPlugin toggle behavior', () => {
     H1Plugin,
     BlockquotePlugin,
     BaseListPlugin.configure({
-      targetPluginNames: [KEYS.blockquote, KEYS.h1, KEYS.p],
+      targetPlugins: [PLUGINS.blockquote, PLUGINS.h1, PLUGINS.paragraph],
     }),
     BaseIndentPlugin.configure({
-      targetPluginNames: [KEYS.blockquote, KEYS.h1, KEYS.p],
+      targetPlugins: [PLUGINS.blockquote, PLUGINS.h1, PLUGINS.paragraph],
     }),
   ];
 
@@ -137,10 +148,10 @@ describe('BaseListPlugin toggle behavior', () => {
     CustomH1Plugin,
     BlockquotePlugin,
     BaseListPlugin.configure({
-      targetPluginNames: [KEYS.blockquote, KEYS.h1, KEYS.p],
+      targetPlugins: [PLUGINS.blockquote, PLUGINS.h1, PLUGINS.paragraph],
     }),
     BaseIndentPlugin.configure({
-      targetPluginNames: [KEYS.blockquote, KEYS.h1, KEYS.p],
+      targetPlugins: [PLUGINS.blockquote, PLUGINS.h1, PLUGINS.paragraph],
     }),
   ];
 
@@ -168,7 +179,7 @@ describe('BaseListPlugin toggle behavior', () => {
     it('uses a selection written earlier in the same transaction', () => {
       const editor = createBaseEditor({
         plugins: [BaseListPlugin],
-        initialValue: [{ children: [{ text: 'Item' }], type: KEYS.p }],
+        initialValue: [{ children: [{ text: 'Item' }], type: 'paragraph' }],
       });
 
       editor.update((tx) => {
@@ -196,8 +207,8 @@ describe('BaseListPlugin toggle behavior', () => {
         plugins: [BaseListPlugin],
         selection,
         initialValue: [
-          { children: [{ text: 'First' }], type: KEYS.p },
-          { children: [{ text: 'Second' }], type: KEYS.p },
+          { children: [{ text: 'First' }], type: 'paragraph' },
+          { children: [{ text: 'Second' }], type: 'paragraph' },
         ],
       });
 
@@ -215,9 +226,9 @@ describe('BaseListPlugin toggle behavior', () => {
 
     it('targets one point and every block in a range', () => {
       const value = [
-        { children: [{ text: 'First' }], type: KEYS.p },
-        { children: [{ text: 'Second' }], type: KEYS.p },
-        { children: [{ text: 'Third' }], type: KEYS.p },
+        { children: [{ text: 'First' }], type: 'paragraph' },
+        { children: [{ text: 'Second' }], type: 'paragraph' },
+        { children: [{ text: 'Third' }], type: 'paragraph' },
       ];
       const pointEditor = createBaseEditor({
         plugins: [BaseListPlugin],
@@ -266,7 +277,7 @@ describe('BaseListPlugin toggle behavior', () => {
     it('does nothing for the root path', () => {
       const editor = createBaseEditor({
         plugins: [BaseListPlugin],
-        initialValue: [{ children: [{ text: 'Item' }], type: KEYS.p }],
+        initialValue: [{ children: [{ text: 'Item' }], type: 'paragraph' }],
       });
       const before = editor.read.children();
 
@@ -285,9 +296,9 @@ describe('BaseListPlugin toggle behavior', () => {
             children: [{ text: 'First' }],
             indent: 1,
             listStyleType: 'decimal',
-            type: KEYS.p,
+            type: 'paragraph',
           },
-          { children: [{ text: 'Second' }], type: KEYS.p },
+          { children: [{ text: 'Second' }], type: 'paragraph' },
         ],
       });
 
@@ -1195,8 +1206,7 @@ describe('BaseListPlugin toggle behavior', () => {
 describe('BaseListPlugin numbering behavior', () => {
   const CUSTOM_H1 = 'heading-one';
 
-  const H1Plugin = createBasePlugin({
-    name: KEYS.h1,
+  const H1Plugin = defineBasePlugin(PLUGINS.h1, {
     schema: {
       element: {
         content: schema.content.text({ default: 'text', min: 1 }),
@@ -1204,45 +1214,41 @@ describe('BaseListPlugin numbering behavior', () => {
     },
   });
 
-  const CustomH1Plugin = createBasePlugin({
-    name: KEYS.h1,
+  const CustomH1Plugin = defineBasePlugin(PLUGINS.h1, {
+    schema: {
+      element: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+        type: CUSTOM_H1,
+      },
+    },
+  });
+
+  const BlockquotePlugin = defineBasePlugin(PLUGINS.blockquote, {
     schema: {
       element: {
         content: schema.content.text({ default: 'text', min: 1 }),
       },
     },
-    type: CUSTOM_H1,
   });
 
-  const BlockquotePlugin = createBasePlugin({
-    name: KEYS.blockquote,
-    schema: {
-      element: {
-        content: schema.content.text({ default: 'text', min: 1 }),
-      },
-    },
-  });
-
-  const PagePlugin = createBasePlugin({
-    name: 'page',
+  const PagePlugin = defineBasePlugin('page', {
     schema: ({ plugins }) => ({
       element: {
         content: plugins.blockContent({
-          default: { type: plugins.elementType(BaseParagraphPlugin) },
+          default: BaseParagraphPlugin,
           min: 1,
         }),
       },
     }),
   });
 
-  const VisitedPlugin = createBasePlugin({
-    name: 'visited',
+  const VisitedPlugin = defineBasePlugin('visited', {
     schema: {
-      properties: [
-        schema.elementProperty('visited', property.boolean(), {
+      properties: {
+        visited: schema.elementProperty(property.boolean(), {
           target: target.group('block'),
         }),
-      ],
+      },
     },
   });
 
@@ -1250,14 +1256,14 @@ describe('BaseListPlugin numbering behavior', () => {
     headingPlugin = H1Plugin,
     normalizeInitial = false,
     pages = false,
-    targetPluginNames = [KEYS.p],
+    targetPlugins = ['paragraph'],
     value,
   }: {
     value: Value;
     headingPlugin?: typeof CustomH1Plugin | typeof H1Plugin;
     normalizeInitial?: boolean;
     pages?: boolean;
-    targetPluginNames?: readonly string[];
+    targetPlugins?: readonly (PluginReference | string)[];
   }) =>
     createBaseEditor({
       plugins: [
@@ -1266,12 +1272,12 @@ describe('BaseListPlugin numbering behavior', () => {
         BlockquotePlugin,
         PagePlugin,
         BaseIndentPlugin.configure({
-          targetPluginNames,
+          targetPlugins,
         }),
         pages
           ? listPluginPage
           : BaseListPlugin.configure({
-              targetPluginNames,
+              targetPlugins,
             }),
       ],
       shouldNormalizeEditor: normalizeInitial,
@@ -1296,7 +1302,7 @@ describe('BaseListPlugin numbering behavior', () => {
   ) => ({
     children: [{ text }],
     indent,
-    type: KEYS.p,
+    type: 'paragraph',
     ...(listRestart === undefined ? {} : { listRestart }),
     ...(listRestartPolite === undefined ? {} : { listRestartPolite }),
     ...(listStart === undefined ? {} : { listStart }),
@@ -1312,7 +1318,7 @@ describe('BaseListPlugin numbering behavior', () => {
       type?: string;
     } = {}
   ) => {
-    const { indent = 1, listStart, type = KEYS.h1 } = options;
+    const { indent = 1, listStart, type = 'h1' } = options;
     const listStyleType =
       'listStyleType' in options ? options.listStyleType : 'decimal';
 
@@ -1341,7 +1347,7 @@ describe('BaseListPlugin numbering behavior', () => {
     indent,
     ...(listStart === undefined ? {} : { listStart }),
     ...(listStyleType === undefined ? {} : { listStyleType }),
-    type: KEYS.blockquote,
+    type: 'blockquote',
   });
 
   const expectAlreadyNormalized = (editor: BaseEditor) => {
@@ -1468,7 +1474,7 @@ describe('BaseListPlugin numbering behavior', () => {
 
         const editor = createEditor({
           normalizeInitial: true,
-          targetPluginNames: [KEYS.h1, KEYS.p],
+          targetPlugins: [PLUGINS.h1, PLUGINS.paragraph],
           value: input,
         });
 
@@ -1490,7 +1496,7 @@ describe('BaseListPlugin numbering behavior', () => {
 
         const editor = createEditor({
           normalizeInitial: true,
-          targetPluginNames: [KEYS.h1, KEYS.p],
+          targetPlugins: [PLUGINS.h1, PLUGINS.paragraph],
           value: input,
         });
 
@@ -1512,7 +1518,7 @@ describe('BaseListPlugin numbering behavior', () => {
 
         const editor = createEditor({
           normalizeInitial: true,
-          targetPluginNames: [KEYS.h1, KEYS.p],
+          targetPlugins: [PLUGINS.h1, PLUGINS.paragraph],
           value: input,
         });
 
@@ -1536,7 +1542,7 @@ describe('BaseListPlugin numbering behavior', () => {
 
         const editor = createEditor({
           normalizeInitial: true,
-          targetPluginNames: [KEYS.h1, KEYS.p],
+          targetPlugins: [PLUGINS.h1, PLUGINS.paragraph],
           value: input,
         });
 
@@ -1559,7 +1565,7 @@ describe('BaseListPlugin numbering behavior', () => {
         const editor = createEditor({
           headingPlugin: CustomH1Plugin,
           normalizeInitial: true,
-          targetPluginNames: [KEYS.h1, KEYS.p],
+          targetPlugins: [PLUGINS.h1, PLUGINS.paragraph],
           value: input,
         });
 
@@ -1581,7 +1587,7 @@ describe('BaseListPlugin numbering behavior', () => {
 
         const editor = createEditor({
           normalizeInitial: true,
-          targetPluginNames: [KEYS.blockquote, KEYS.p],
+          targetPlugins: [PLUGINS.blockquote, PLUGINS.paragraph],
           value: input,
         });
 

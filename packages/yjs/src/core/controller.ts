@@ -285,6 +285,11 @@ export class YjsController {
     this.rootsObserver = (events, transaction) => {
       if (this.shouldIgnoreRemoteTransaction(transaction)) return;
 
+      this.pendingRemoteEvents = mergeYjsEventBatches(
+        this.pendingRemoteEvents,
+        captureYjsEventBatch(events, transaction)
+      );
+
       for (const event of events) {
         if (event.target === this.roots && event instanceof Y.YMapEvent) {
           for (const root of event.keysChanged) {
@@ -834,7 +839,9 @@ export class YjsController {
     this.pendingRemoteEffects = false;
     this.pendingRemoteSchemaChange = false;
 
-    if (namedRoots.size > 0) {
+    if (!rootChanged && namedRoots.size === 1 && events !== null) {
+      this.importYjsEvents(events, pending.effects, [...namedRoots][0]!);
+    } else if (namedRoots.size > 0) {
       this.importDocumentFromYjs('remote-reconcile', pending.effects, {
         main: rootChanged,
         named: namedRoots,
@@ -1319,12 +1326,13 @@ export class YjsController {
 
   private importYjsEvents(
     events: CapturedYjsEventBatch,
-    effects: readonly EditorEffect[]
+    effects: readonly EditorEffect[],
+    root = MAIN_ROOT_KEY
   ): void {
-    const binding = this.bindings.get(MAIN_ROOT_KEY);
+    const binding = this.bindings.get(root);
 
     if (!binding) {
-      throw new Error('Yjs primary root binding is unavailable.');
+      throw new Error(`Yjs root binding "${root}" is unavailable.`);
     }
     let normalization: YjsEventNormalization = {
       changedNodes: new Set(),
@@ -1352,6 +1360,7 @@ export class YjsController {
       importKind: 'event-change',
       mode: 'remote-reconcile',
       readTopLevelNodes: result.import.readTopLevelNodes,
+      ...(root === MAIN_ROOT_KEY ? {} : { root }),
     });
     this.editorAdapter.applyRemote({
       change: result.import.change,

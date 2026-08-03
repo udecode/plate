@@ -19,23 +19,26 @@ const registryPath = resolve(root, 'benchmarks/targets/slate-v2.json');
 
 describe('fitContent locality benchmark authority', () => {
   it('exercises the live detached fitting API without publishing', () => {
-    const definition = defineEditorSchema({
-      elements: {
-        cell: {
-          content: schema.content.type('paragraph', {
-            default: { type: 'paragraph' },
-            min: 1,
-          }),
+    const definition = defineEditorSchema(
+      'schema:fit-content-locality-authority',
+      {
+        elements: {
+          cell: {
+            content: schema.content.type('paragraph', {
+              default: { type: 'paragraph' },
+              min: 1,
+            }),
+          },
+          paragraph: {
+            content: schema.content.text({ default: 'text', min: 1 }),
+          },
         },
-        paragraph: {
-          content: schema.content.text({ default: 'text', min: 1 }),
-        },
-      },
-      id: 'fit-content-locality-authority',
-      root: { content: schema.content.type('paragraph') },
-      unknown: 'reject',
-      version: 1,
-    });
+        id: 'fit-content-locality-authority',
+        root: schema.content.type('paragraph'),
+        unknown: 'reject',
+        version: 1,
+      }
+    );
     const editor = createEditor({
       extensions: [definition],
       initialValue: [{ children: [{ text: 'document' }], type: 'paragraph' }],

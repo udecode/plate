@@ -1,7 +1,7 @@
 import type { EditorExtension } from '../../../packages/plite/src/index';
 import {
   createEditor,
-  defineEditorExtension,
+  defineExtension,
 } from '../../../packages/plite/src/index';
 import { getExtensionRegistry } from '../../../packages/plite/src/internal';
 
@@ -47,7 +47,7 @@ const createGraph = (
     const branch = index > 2 ? extensions[Math.floor(index / 2)] : undefined;
 
     extensions.push(
-      defineEditorExtension({
+      defineExtension(`${prefix}-${index}`, {
         ...(lifecycle
           ? {
               activate(_editor, context) {
@@ -62,7 +62,6 @@ const createGraph = (
           ...(previous ? [previous] : []),
           ...(branch && branch !== previous ? [branch] : []),
         ],
-        name: `${prefix}-${index}`,
       })
     );
   }
@@ -106,7 +105,7 @@ const rows = cohorts.map(
 
     for (let index = 0; index < reconfigureSamples; index++) {
       const installStartedAt = performance.now();
-      const cleanup = editor.extend(reconfigureGraph.root);
+      const cleanup = editor.install(reconfigureGraph.root);
 
       installMs.push(performance.now() - installStartedAt);
       const installedRegistry = getExtensionRegistry(editor);

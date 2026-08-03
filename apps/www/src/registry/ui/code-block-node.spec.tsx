@@ -2,12 +2,12 @@ import * as React from 'react';
 
 import { render } from '@testing-library/react';
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
-import type { TCodeBlockElement } from 'platejs';
+import type { CodeBlockElement } from '@platejs/code-block';
 import type { PlateEditor } from 'platejs/react';
 
 const useReadOnlyMock = mock(() => true);
 
-let currentElement: TCodeBlockElement;
+let currentElement: CodeBlockElement;
 const editor = {} as PlateEditor;
 
 mock.module('platejs', () => ({
@@ -69,7 +69,7 @@ describe('CodeBlockElement', () => {
     currentElement = {
       children: [{ text: '' }],
       lang: 'javascript',
-      type: 'code_block',
+      type: 'codeBlock',
     };
     useReadOnlyMock.mockClear();
     useReadOnlyMock.mockReturnValue(true);

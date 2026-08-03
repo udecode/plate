@@ -6,8 +6,8 @@ Export `BaseLinkPluginState` and `LinkPluginState` as the complete mutable
 state contracts for the headless and React link descriptors.
 
 Move link behavior to `BaseLinkPlugin`, `LinkPlugin`, and the installed editor
-API, register link properties in compiled schemas, and use the readable
-descriptor name `link` while preserving the serialized element type `a`.
+API, register link properties in compiled schemas, and use capability name
+`link` with persisted element type `link`.
 
 **Migration:** Replace standalone link transforms with `editor.update.link`:
 

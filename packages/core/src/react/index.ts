@@ -8,9 +8,60 @@ export * from './components/PlateRoot';
 export * from './components/PlateView';
 export * from './components/plate-nodes';
 export * from './components/withHOC';
-export * from './editor/index';
+export type {
+  PlateEditor,
+  PlateEditorReference,
+} from './editor/PlateEditor';
+export {
+  getPlateCorePlugins,
+  type PlateCorePlugin,
+  type PlateCorePlugins,
+} from './editor/getPlateCorePlugins';
+export { usePlateEditor } from './editor/usePlateEditor';
+export { usePlateViewEditor } from './editor/usePlateViewEditor';
+export {
+  createPlateEditor,
+  type CreatePlateEditorOptions,
+} from './editor/withPlate';
 export * from './hooks/index';
-export * from './plugin/index';
+export type {
+  DOMHandler,
+  DOMHandlerProp,
+  DOMHandlers,
+} from './plugin/DOMHandlers';
+export type { KeyboardHandler } from './plugin/KeyboardHandler';
+export type {
+  ConfiguredPlatePlugin,
+  Decorate,
+  EditableSiblingComponent,
+  InjectNodeProps,
+  LeafNodeProps,
+  NodeProps,
+  OnNodeChange,
+  OnTextChange,
+  PlatePlugin,
+  PlatePluginConfiguration,
+  PlatePluginContext,
+  PlatePluginDefinitionInput,
+  PlatePluginExtendInput,
+  PlatePluginOn,
+  PlatePluginPortal,
+  PlateShortcutRecord,
+  RenderNodeWrapper,
+  RenderNodeWrapperFunction,
+  RenderNodeWrapperProps,
+  ResolvedPlatePlugin,
+  Shortcut,
+  Shortcuts,
+  TextNodeProps,
+  TransformInitialValue,
+  TransformOptions,
+  UseHooks,
+  ValidatedPlateShortcuts,
+} from './plugin/PlatePlugin';
+export { definePlatePlugin } from './plugin/definePlatePlugin';
+export { omitPluginContext } from './plugin/omitPluginContext';
+export { toPlatePlugin } from './plugin/toPlatePlugin';
 export * from './plugins/navigation-feedback/index';
 export * from './plugins/paragraph/index';
 export * from './stores/element/useElement';

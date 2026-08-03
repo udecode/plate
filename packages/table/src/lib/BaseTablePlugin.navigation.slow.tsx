@@ -1,8 +1,10 @@
 /** @jsx jsxt */
 
 import { BaseTablePlugin } from './BaseTablePlugin';
-import { getTestTablePlugins } from './__tests__/getTestTablePlugins';
-import { createPlateEditor } from '@platejs/core/react';
+import {
+  createTestTableEditor,
+  getTestTablePlugins,
+} from './__tests__/getTestTablePlugins';
 import type { Element } from '@platejs/plite';
 import { jsxt } from '@platejs/test-utils';
 import type { TestEditor } from '@platejs/test-utils';
@@ -11,7 +13,7 @@ describe('table navigation slow contracts', () => {
   jsxt;
 
   const createEditorInstance = (input: TestEditor) =>
-    createPlateEditor({
+    createTestTableEditor({
       nodeId: true,
       plugins: getTestTablePlugins(),
       selection: input.selection,

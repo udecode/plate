@@ -726,17 +726,23 @@ export const validateConceptMatrix = ({ ledger, manifest }) => {
 
 const parseArgs = (args) => {
   const parsed = {};
+  let pendingKey;
 
-  for (let index = 0; index < args.length; index++) {
-    const argument = args[index];
+  for (const argument of args) {
+    if (pendingKey) {
+      parsed[pendingKey] = argument;
+      pendingKey = undefined;
+      continue;
+    }
+
     if (argument === '--manifest' || argument === '--ledger') {
-      parsed[argument.slice(2)] = args[++index];
+      pendingKey = argument.slice(2);
       continue;
     }
     throw new Error(`unknown argument: ${argument}`);
   }
 
-  if (!parsed.manifest || !parsed.ledger) {
+  if (pendingKey || !parsed.manifest || !parsed.ledger) {
     throw new Error(
       'usage: validate-concept-matrix.mjs --manifest <manifest.json> --ledger <ledger.md>'
     );

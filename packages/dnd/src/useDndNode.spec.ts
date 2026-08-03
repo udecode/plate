@@ -86,9 +86,9 @@ describe('Dnd node behavior', () => {
       editor = createPlateEditor();
       editor.update.nodes.insert(
         [
-          { children: [{ text: 'drag' }], id: 'drag', type: 'p' },
-          { children: [{ text: 'hover' }], id: 'hover', type: 'p' },
-          { children: [{ text: 'other' }], id: 'other', type: 'p' },
+          { children: [{ text: 'drag' }], id: 'drag', type: 'paragraph' },
+          { children: [{ text: 'hover' }], id: 'hover', type: 'paragraph' },
+          { children: [{ text: 'other' }], id: 'other', type: 'paragraph' },
         ],
         { at: [0] }
       );
@@ -214,9 +214,9 @@ describe('Dnd node behavior', () => {
 
       sourceEditor.update.nodes.insert(
         [
-          { children: [{ text: 'one' }], id: 'drag-1', type: 'p' },
-          { children: [{ text: 'keep' }], id: 'keep', type: 'p' },
-          { children: [{ text: 'two' }], id: 'drag-2', type: 'p' },
+          { children: [{ text: 'one' }], id: 'drag-1', type: 'paragraph' },
+          { children: [{ text: 'keep' }], id: 'keep', type: 'paragraph' },
+          { children: [{ text: 'two' }], id: 'drag-2', type: 'paragraph' },
         ],
         { at: [0] }
       );
@@ -250,14 +250,14 @@ describe('Dnd node behavior', () => {
       });
 
       targetEditor.update.nodes.insert(
-        { children: [{ text: 'target' }], id: 'hover', type: 'p' },
+        { children: [{ text: 'target' }], id: 'hover', type: 'paragraph' },
         { at: [0] }
       );
 
       const sourceEditor = createPlateEditor();
 
       sourceEditor.update.nodes.insert(
-        { children: [{ text: 'source' }], id: 'hover', type: 'p' },
+        { children: [{ text: 'source' }], id: 'hover', type: 'paragraph' },
         { at: [0] }
       );
 
@@ -294,10 +294,14 @@ describe('Dnd node behavior', () => {
       editor = createPlateEditor({ plugins: [DndPlugin] });
       editor.update.nodes.insert(
         [
-          { children: [{ text: 'previous' }], id: 'previous', type: 'p' },
-          { children: [{ text: 'hover' }], id: 'hover', type: 'p' },
-          { children: [{ text: 'other' }], id: 'other', type: 'p' },
-          { children: [{ text: 'drag' }], id: 'drag', type: 'p' },
+          {
+            children: [{ text: 'previous' }],
+            id: 'previous',
+            type: 'paragraph',
+          },
+          { children: [{ text: 'hover' }], id: 'hover', type: 'paragraph' },
+          { children: [{ text: 'other' }], id: 'other', type: 'paragraph' },
+          { children: [{ text: 'drag' }], id: 'drag', type: 'paragraph' },
         ],
         { at: [0] }
       );
@@ -389,7 +393,7 @@ describe('Dnd node behavior', () => {
     const dragElement: Element = {
       children: [{ text: 'drag' }],
       id: 'drag',
-      type: 'p',
+      type: 'paragraph',
     };
     const dragItem: ElementDragItemNode = {
       id: 'drag',
@@ -399,7 +403,7 @@ describe('Dnd node behavior', () => {
     const hoverElement: Element = {
       children: [{ text: 'hover' }],
       id: 'hover',
-      type: 'p',
+      type: 'paragraph',
     };
 
     it('returns top above the vertical midpoint', () => {

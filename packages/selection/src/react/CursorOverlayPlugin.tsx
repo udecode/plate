@@ -1,7 +1,7 @@
 import type { DefinitionOf } from '@platejs/core';
 
 import type { CursorData, CursorState } from '@platejs/cursor';
-import { createPlatePlugin } from '@platejs/core/react';
+import { definePlatePlugin } from '@platejs/core/react';
 import { KEYS } from '@platejs/utils';
 
 import { useCursorOverlayPlugin } from './useCursorOverlay';
@@ -12,7 +12,7 @@ export type CursorOverlayPluginState = {
 
 const initialState: CursorOverlayPluginState = { cursors: {} };
 
-export const CursorOverlayPlugin = createPlatePlugin({
+export const CursorOverlayPlugin = definePlatePlugin(KEYS.cursorOverlay, {
   api: ({ store }) => ({
     addCursor: (id: string, cursor: CursorState<CursorData>) => {
       const newCursors = { ...store.get().cursors };
@@ -31,7 +31,6 @@ export const CursorOverlayPlugin = createPlatePlugin({
   editOnly: {
     render: false,
   },
-  name: KEYS.cursorOverlay,
   initialState,
   useHooks: useCursorOverlayPlugin,
 }).extend(({ api }) => ({

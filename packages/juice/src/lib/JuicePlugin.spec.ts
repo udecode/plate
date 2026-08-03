@@ -1,5 +1,8 @@
 import { createBaseEditor } from '@platejs/core';
-import { prepareHtmlPluginContext } from '@platejs/core/internal';
+import {
+  prepareHtmlPluginContext,
+  prepareHtmlRegistry,
+} from '@platejs/core/internal';
 
 import { JuicePlugin } from './JuicePlugin';
 
@@ -10,8 +13,9 @@ describe('JuicePlugin', () => {
     });
     const createContext = prepareHtmlPluginContext(editor, JuicePlugin);
     const context = editor.read((state) => createContext(state));
-    const transformData =
-      editor.plugin(JuicePlugin).plugin.parsers.html?.transformData;
+    const transformData = prepareHtmlRegistry(editor).plugins.find(
+      ({ name }) => name === JuicePlugin.name
+    )?.transformData;
 
     if (!transformData) {
       throw new Error('Missing HTML transformData');
@@ -39,8 +43,9 @@ describe('JuicePlugin', () => {
     });
     const createContext = prepareHtmlPluginContext(editor, JuicePlugin);
     const context = editor.read((state) => createContext(state));
-    const transformData =
-      editor.plugin(JuicePlugin).plugin.parsers.html?.transformData;
+    const transformData = prepareHtmlRegistry(editor).plugins.find(
+      ({ name }) => name === JuicePlugin.name
+    )?.transformData;
 
     if (!transformData) {
       throw new Error('Missing HTML transformData');

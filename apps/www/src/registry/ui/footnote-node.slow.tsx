@@ -95,12 +95,8 @@ const PliteElementMock = mock(
 mock.module('platejs/react', () => ({
   PlateElement: PlateElementMock,
   toPlatePlugin: (plugin: unknown) => plugin,
+  useEditor: () => lastPluginEditor ?? withPluginEditor({}),
   useEditorSelection: () => selection,
-  useEditorPlugin: () => {
-    const editor = lastPluginEditor ?? withPluginEditor({});
-
-    return { api: editor.api, editor };
-  },
   useEditorSelector: (selector: any) => {
     const activePluginEditor = lastPluginEditor;
     const currentEditor = editorSelectorEditor

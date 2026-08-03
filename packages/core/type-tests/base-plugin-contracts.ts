@@ -4,13 +4,14 @@ import {
   HistoryPlugin,
   type RenderStaticNodeWrapper,
   createBaseEditor,
-  createBasePlugin,
+  defineBasePlugin,
 } from '@platejs/core';
 import type { Paragraph as MdParagraph } from 'mdast';
 import { toPlatePlugin } from '../src/react/plugin/toPlatePlugin';
 import {
   ContentSlice,
-  defineEditorExtension,
+  createEditor,
+  defineExtension,
   editorReads,
   property,
   schema,
@@ -20,21 +21,16 @@ import { type History, history } from '@platejs/plite-history';
 
 type IsAny<T> = 0 extends 1 & T ? true : false;
 
-const baseFactoryExtension = defineEditorExtension({
-  name: 'factoryExtension',
-});
-const baseReadExtension = defineEditorExtension({
-  name: 'baseReadExtensionOwner',
+const baseFactoryExtension = defineExtension('factoryExtension', {});
+const baseReadExtension = defineExtension('baseReadExtensionOwner', {
   readMiddleware: ({ around }) => [
     around(editorReads.slice.export, ({ next }) => next()),
   ],
 });
 
-createBasePlugin({
-  name: 'baseReadExtensionOwner',
-}).extend(baseReadExtension);
+defineBasePlugin('baseReadExtensionOwner', {}).extend(baseReadExtension);
 
-const MinimalDefinitionPlugin = createBasePlugin({ name: 'minimalDefinition' });
+const MinimalDefinitionPlugin = defineBasePlugin('minimalDefinition', {});
 type MinimalDefinition = DefinitionOf<typeof MinimalDefinitionPlugin>;
 declare const minimalDefinition: MinimalDefinition;
 const minimalDefinitionName: 'minimalDefinition' = minimalDefinition.name;
@@ -45,16 +41,15 @@ const minimalDefinitionOmitsApi: 'api' extends keyof MinimalDefinition
 void minimalDefinitionName;
 void minimalDefinitionOmitsApi;
 
-const ConstructorDependencyPlugin = createBasePlugin({
+const ConstructorDependencyPlugin = defineBasePlugin('constructorDependency', {
   api: () => ({ value: () => 1 as const }),
-  name: 'constructorDependency',
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
     },
   },
 });
-const ConstructorInferencePlugin = createBasePlugin({
+const ConstructorInferencePlugin = defineBasePlugin('constructorInference', {
   api: ({ editor, store }) => ({
     value: () => {
       editor.extension(ConstructorDependencyPlugin).api.value() satisfies 1;
@@ -72,7 +67,6 @@ const ConstructorInferencePlugin = createBasePlugin({
       mode: 'idle' as 'busy' | 'idle',
     };
   },
-  name: 'constructorInference',
   schema: ({ initialState, plugins }) => ({
     element: {
       content: plugins.blockContent({
@@ -128,17 +122,15 @@ void constructorMode;
 void constructorShortcuts;
 void constructorUpdateResult;
 
-const AuthoredEmptyPlugin = createBasePlugin({
+const AuthoredEmptyPlugin = defineBasePlugin('authoredEmpty', {
   api: () => ({}),
   conflicts: [],
   dependencies: [],
   initialState: {},
-  name: 'authoredEmpty',
   read: () => ({}),
   selectors: {},
   shortcuts: {},
-  targetPluginNames: [],
-  type: 'authoredEmpty',
+  targetPlugins: [],
   update: () => ({}),
 });
 type AuthoredEmptyDefinition = DefinitionOf<typeof AuthoredEmptyPlugin>;
@@ -151,18 +143,16 @@ void (authoredEmptyDefinition.initialState satisfies {});
 void (authoredEmptyDefinition.read satisfies {});
 void (authoredEmptyDefinition.selectors satisfies {});
 void (authoredEmptyDefinition.shortcuts satisfies true);
-void (authoredEmptyDefinition.targetPluginNames satisfies readonly []);
-void (authoredEmptyDefinition.type satisfies 'authoredEmpty');
+void (authoredEmptyDefinition.targetPlugins satisfies readonly []);
 void (authoredEmptyDefinition.update satisfies {});
 
-const authoredBaseTargets = ['paragraph', 'heading'] as const;
-const configuredBaseTargets: readonly string[] = ['quote', 'toggle'];
-const AuthoredBaseTargetsPlugin = createBasePlugin({
-  name: 'authoredBaseTargets',
-  targetPluginNames: authoredBaseTargets,
+const authoredBaseTargets = [MinimalDefinitionPlugin, 'heading'] as const;
+const configuredBaseTargets = [ConstructorDependencyPlugin, 'toggle'] as const;
+const AuthoredBaseTargetsPlugin = defineBasePlugin('authoredBaseTargets', {
+  targetPlugins: authoredBaseTargets,
 });
 const ConfiguredBaseTargetsPlugin = AuthoredBaseTargetsPlugin.configure({
-  targetPluginNames: configuredBaseTargets,
+  targetPlugins: configuredBaseTargets,
 });
 type AuthoredBaseTargetsDefinition = DefinitionOf<
   typeof AuthoredBaseTargetsPlugin
@@ -172,20 +162,23 @@ type ConfiguredBaseTargetsDefinition = DefinitionOf<
 >;
 declare const authoredBaseTargetsDefinition: AuthoredBaseTargetsDefinition;
 declare const configuredBaseTargetsDefinition: ConfiguredBaseTargetsDefinition;
-const exactAuthoredBaseTargets: readonly ['paragraph', 'heading'] =
-  authoredBaseTargetsDefinition.targetPluginNames;
-const exactConfiguredBaseTargets: readonly ['paragraph', 'heading'] =
-  configuredBaseTargetsDefinition.targetPluginNames;
+const exactAuthoredBaseTargets: readonly [
+  typeof MinimalDefinitionPlugin,
+  'heading',
+] = authoredBaseTargetsDefinition.targetPlugins;
+const exactConfiguredBaseTargets: readonly [
+  typeof MinimalDefinitionPlugin,
+  'heading',
+] = configuredBaseTargetsDefinition.targetPlugins;
 // @ts-expect-error Configuration does not rewrite the authored definition witness.
-const invalidConfiguredBaseTarget: 'quote' =
-  configuredBaseTargetsDefinition.targetPluginNames[0];
+const invalidConfiguredBaseTarget: typeof ConstructorDependencyPlugin =
+  configuredBaseTargetsDefinition.targetPlugins[0];
 
 void exactAuthoredBaseTargets;
 void exactConfiguredBaseTargets;
 void invalidConfiguredBaseTarget;
 
-createBasePlugin({
-  name: 'candidateValidation',
+defineBasePlugin('candidateValidation', {
   validate: (context) => {
     const candidateName: string = context.name;
 
@@ -195,8 +188,7 @@ createBasePlugin({
   },
 });
 
-createBasePlugin({
-  name: 'readFactoryBoundary',
+defineBasePlugin('readFactoryBoundary', {
   read: (context) => {
     // @ts-expect-error Read middleware registration belongs in readMiddleware.
     void context.around;
@@ -205,19 +197,17 @@ createBasePlugin({
   },
 });
 
-const BoldPlugin = createBasePlugin({
+const BoldPlugin = defineBasePlugin('bold', {
   api: ({ store }) => ({
     toggleBold: () => store.get().hotkey,
   }),
-  name: 'bold',
   initialState: {
     enabled: true as const,
     hotkey: 'mod+b',
   },
 });
 
-const CodecContractPlugin = createBasePlugin({
-  name: 'codecContract',
+const CodecContractPlugin = defineBasePlugin('codecContract', {
   codecs: ({ defineCodecs, editor, plugin }) =>
     defineCodecs({
       'application/x-codec-contract': {
@@ -226,14 +216,14 @@ const CodecContractPlugin = createBasePlugin({
           const exactData: string = data;
           const exactEditorId: string = editor.id;
           const exactFormat: string = format;
-          const exactPluginName: 'codecContract' = plugin.name;
+          const exactName: 'codecContract' = plugin.name;
           const exactSchema: object = state.schema;
           const exactTypes: readonly string[] = source.types;
 
           void exactData;
           void exactEditorId;
           void exactFormat;
-          void exactPluginName;
+          void exactName;
           void exactSchema;
           void exactTypes;
 
@@ -254,8 +244,7 @@ const CodecContractPlugin = createBasePlugin({
     }),
 });
 
-const MarkdownCodecContractPlugin = createBasePlugin({
-  name: 'markdownCodecContract',
+const MarkdownCodecContractPlugin = defineBasePlugin('markdownCodecContract', {
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
@@ -264,8 +253,7 @@ const MarkdownCodecContractPlugin = createBasePlugin({
       },
     },
   },
-  type: 'markdown_contract',
-  codecs: ({ defineCodecs }) =>
+  codecs: ({ defineCodecs, type }) =>
     defineCodecs({
       'text/html': {
         decode: () => ({}),
@@ -273,7 +261,7 @@ const MarkdownCodecContractPlugin = createBasePlugin({
         match: [{ tag: 'p' }],
       },
       'text/markdown': {
-        decode: ({ node, type }) => {
+        decode: ({ node }) => {
           const exactSource: MdParagraph = node;
           const sourceIsAny: IsAny<typeof node> = false;
           const targetType: string = type;
@@ -315,134 +303,137 @@ const MarkdownCodecContractPlugin = createBasePlugin({
 
 void MarkdownCodecContractPlugin;
 
-const MarkdownSchemaFactoryParagraphPlugin = createBasePlugin({
-  name: 'markdownSchemaFactoryParagraph',
-  schema: {
-    element: {
-      content: schema.content.text({ default: 'text', min: 1 }),
-    },
-  },
-});
-
-const MarkdownSchemaFactoryCodecContractPlugin = createBasePlugin({
-  name: 'markdownSchemaFactoryCodecContract',
-  schema: ({ plugins }) => ({
-    element: {
-      content: plugins.blockContent({
-        default: {
-          type: plugins.elementType(MarkdownSchemaFactoryParagraphPlugin),
-        },
-        min: 1,
-      }),
-      properties: {
-        align: property.string(),
+const MarkdownSchemaFactoryParagraphPlugin = defineBasePlugin(
+  'markdownSchemaFactoryParagraph',
+  {
+    schema: {
+      element: {
+        content: schema.content.text({ default: 'text', min: 1 }),
       },
     },
-  }),
-  type: 'markdown_schema_factory_contract',
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      'text/html': {
-        decode: () => ({}),
-        encode: ({ content, node }) => {
-          const contentIsAny: IsAny<typeof content> = false;
-          const exactAlign: string | undefined = node.align;
-          const targetIsAny: IsAny<typeof node> = false;
+  }
+);
 
-          void contentIsAny;
-          void exactAlign;
-          void targetIsAny;
-
-          // @ts-expect-error Schema-owned align stays string-valued.
-          const numericAlign: number | undefined = node.align;
-          void numericAlign;
-
-          return { children: content, tag: 'p' };
+const MarkdownSchemaFactoryCodecContractPlugin = defineBasePlugin(
+  'markdownSchemaFactoryCodecContract',
+  {
+    schema: ({ plugins }) => ({
+      element: {
+        content: plugins.blockContent({
+          default: {
+            type: plugins.elementType(MarkdownSchemaFactoryParagraphPlugin),
+          },
+          min: 1,
+        }),
+        properties: {
+          align: property.string(),
         },
-        match: [{ tag: 'p' }],
-      },
-      'text/markdown': {
-        decode: ({ node, type }) => {
-          const exactSource: MdParagraph = node;
-          const sourceIsAny: IsAny<typeof node> = false;
-          const targetType: string = type;
-
-          void exactSource;
-          void sourceIsAny;
-          void targetType;
-
-          // @ts-expect-error Paragraph source discriminants stay exact.
-          const headingSourceType: 'heading' = node.type;
-          void headingSourceType;
-
-          return {
-            align: 'left',
-            children: [{ text: '' }],
-            type,
-          };
-        },
-        encode: ({ node }) => {
-          const exactAlign: string | undefined = node.align;
-          const exactType: string = node.type;
-          const targetIsAny: IsAny<typeof node> = false;
-
-          void exactAlign;
-          void exactType;
-          void targetIsAny;
-
-          // @ts-expect-error Schema-owned align stays string-valued.
-          const numericAlign: number | undefined = node.align;
-          void numericAlign;
-
-          return { children: [], type: 'paragraph' };
-        },
-        from: 'paragraph',
-        kind: 'node',
       },
     }),
-});
+    codecs: ({ defineCodecs, type }) =>
+      defineCodecs({
+        'text/html': {
+          decode: () => ({}),
+          encode: ({ content, node }) => {
+            const contentIsAny: IsAny<typeof content> = false;
+            const exactAlign: string | undefined = node.align;
+            const targetIsAny: IsAny<typeof node> = false;
+
+            void contentIsAny;
+            void exactAlign;
+            void targetIsAny;
+
+            // @ts-expect-error Schema-owned align stays string-valued.
+            const numericAlign: number | undefined = node.align;
+            void numericAlign;
+
+            return { children: content, tag: 'p' };
+          },
+          match: [{ tag: 'p' }],
+        },
+        'text/markdown': {
+          decode: ({ node }) => {
+            const exactSource: MdParagraph = node;
+            const sourceIsAny: IsAny<typeof node> = false;
+            const targetType: string = type;
+
+            void exactSource;
+            void sourceIsAny;
+            void targetType;
+
+            // @ts-expect-error Paragraph source discriminants stay exact.
+            const headingSourceType: 'heading' = node.type;
+            void headingSourceType;
+
+            return {
+              align: 'left',
+              children: [{ text: '' }],
+              type,
+            };
+          },
+          encode: ({ node }) => {
+            const exactAlign: string | undefined = node.align;
+            const exactType: string = node.type;
+            const targetIsAny: IsAny<typeof node> = false;
+
+            void exactAlign;
+            void exactType;
+            void targetIsAny;
+
+            // @ts-expect-error Schema-owned align stays string-valued.
+            const numericAlign: number | undefined = node.align;
+            void numericAlign;
+
+            return { children: [], type: 'paragraph' };
+          },
+          from: 'paragraph',
+          kind: 'node',
+        },
+      }),
+  }
+);
 
 void MarkdownSchemaFactoryCodecContractPlugin;
 
-const MarkdownMarkCodecContractPlugin = createBasePlugin({
-  name: 'markdownMarkCodecContract',
-  schema: { mark: property.string() },
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      'text/html': {
-        decode: ({ element }) => element.style.color || undefined,
-        encode: ({ value }) => ({
-          style: { color: value },
-          tag: 'span',
-        }),
-        match: [{ style: { color: '*' } }],
-      },
-      'text/markdown': {
-        decode: ({ decode, decoration, node, type }) =>
-          decode(node.children, { ...decoration, [type]: 'red' }),
-        encode: ({ node }) => ({
-          attributes: [],
-          children: [{ type: 'text', value: node.text }],
-          name: 'span',
-          type: 'mdxJsxTextElement',
-        }),
-        from: 'span',
-        kind: 'node',
-        mark: true,
-      },
-    }),
-});
+const MarkdownMarkCodecContractPlugin = defineBasePlugin(
+  'markdownMarkCodecContract',
+  {
+    schema: { mark: property.string() },
+    codecs: ({ defineCodecs, key }) =>
+      defineCodecs({
+        'text/html': {
+          decode: ({ element }) => element.style.color || undefined,
+          encode: ({ value }) => ({
+            style: { color: value },
+            tag: 'span',
+          }),
+          match: [{ style: { color: '*' } }],
+        },
+        'text/markdown': {
+          decode: ({ decode, decoration, node }) =>
+            decode(node.children, { ...decoration, [key]: 'red' }),
+          encode: ({ node }) => ({
+            attributes: [],
+            children: [{ type: 'text', value: node.text }],
+            name: 'span',
+            type: 'mdxJsxTextElement',
+          }),
+          from: 'span',
+          kind: 'node',
+          mark: true,
+        },
+      }),
+  }
+);
 
 void MarkdownMarkCodecContractPlugin;
 
-const HtmlParagraphContractPlugin = createBasePlugin({
-  name: 'htmlParagraphContract',
+const HtmlParagraphContractPlugin = defineBasePlugin('htmlParagraphContract', {
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
     },
   },
-  type: 'html-paragraph-contract',
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       'text/html': {
@@ -457,7 +448,7 @@ const HtmlParagraphContractPlugin = createBasePlugin({
           return {};
         },
         encode: ({ content, node }) => {
-          const exactType: 'html-paragraph-contract' = node.type;
+          const exactType: 'htmlParagraphContract' = node.type;
 
           void exactType;
 
@@ -475,15 +466,13 @@ type StaticWrapperPluginState = {
 const erasedStaticWrapper: RenderStaticNodeWrapper = ({ element }) =>
   element ? ({ children }) => children : null;
 
-const StaticWrapperPlugin = createBasePlugin({
-  name: 'staticWrapper',
+const StaticWrapperPlugin = defineBasePlugin('staticWrapper', {
   initialState: (): StaticWrapperPluginState => ({}),
   schema: () => ({
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
     },
   }),
-  type: 'static-wrapper',
 });
 
 StaticWrapperPlugin.configure({
@@ -504,7 +493,7 @@ HtmlParagraphContractPlugin.configure({
 });
 
 const assertSchemaCreationOwnership = () => {
-  const Base = createBasePlugin({ name: 'schemaCreationOnly' });
+  const Base = defineBasePlugin('schemaCreationOnly', {});
 
   // @ts-expect-error Descriptor schema is immutable after creation.
   Base.schema = null;
@@ -532,13 +521,11 @@ const assertSchemaCreationOwnership = () => {
 void assertSchemaCreationOwnership;
 
 const assertForeignHtmlTarget = () => {
-  const Target = createBasePlugin({
-    name: 'foreignTarget',
+  const Target = defineBasePlugin('foreignTarget', {
     schema: { mark: property.boolean() },
   });
 
-  const Owner = createBasePlugin({
-    name: 'foreignTargetOwner',
+  const Owner = defineBasePlugin('foreignTargetOwner', {
     codecs: ({ defineCodecs }) =>
       defineCodecs(Target, {
         'text/html': {
@@ -554,8 +541,7 @@ const assertForeignHtmlTarget = () => {
 
 void assertForeignHtmlTarget;
 
-const HtmlBoldContractPlugin = createBasePlugin({
-  name: 'htmlBoldContract',
+const HtmlBoldContractPlugin = defineBasePlugin('htmlBoldContract', {
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
@@ -580,8 +566,7 @@ const HtmlBoldContractPlugin = createBasePlugin({
 
 void HtmlBoldContractPlugin;
 
-createBasePlugin({
-  name: 'rawHtmlCodecContract',
+defineBasePlugin('rawHtmlCodecContract', {
   // @ts-expect-error Codec declarations must be branded by defineCodecs. @plate-schema-adoption-negative-codec
   codecs: () => ({
     'text/html': {
@@ -592,8 +577,7 @@ createBasePlugin({
   }),
 });
 
-createBasePlugin({
-  name: 'tupleHtmlCodecContract',
+defineBasePlugin('tupleHtmlCodecContract', {
   schema: { mark: property.boolean() },
   codecs: ({ defineCodecs }) =>
     defineCodecs({
@@ -612,8 +596,7 @@ createBasePlugin({
     }),
 });
 
-createBasePlugin({
-  name: 'invalidHtmlMarkOutput',
+defineBasePlugin('invalidHtmlMarkOutput', {
   schema: { mark: property.boolean() },
   codecs: ({ defineCodecs }) =>
     defineCodecs({
@@ -626,12 +609,11 @@ createBasePlugin({
     }),
 });
 
-const HtmlAlignContractPlugin = createBasePlugin({
-  name: 'htmlAlignContract',
+const HtmlAlignContractPlugin = defineBasePlugin('htmlAlignContract', {
   schema: {
     properties: [
       schema.elementProperty('align', property.string(), {
-        target: target.type('html-paragraph-contract'),
+        target: target.type('htmlParagraphContract'),
       }),
     ],
   },
@@ -655,12 +637,11 @@ const HtmlAlignContractPlugin = createBasePlugin({
 
 void HtmlAlignContractPlugin;
 
-createBasePlugin({
-  name: 'invalidHtmlPropertyOutput',
+defineBasePlugin('invalidHtmlPropertyOutput', {
   schema: {
     properties: [
       schema.elementProperty('align', property.string(), {
-        target: target.type('html-paragraph-contract'),
+        target: target.type('htmlParagraphContract'),
       }),
     ],
   },
@@ -675,19 +656,18 @@ createBasePlugin({
     }),
 });
 
-const HtmlListContractPlugin = createBasePlugin({
-  name: 'htmlListContract',
+const HtmlListContractPlugin = defineBasePlugin('htmlListContract', {
   schema: {
     properties: [
       schema.elementProperty('listStart', property.number(), {
-        target: target.type('html-paragraph-contract'),
+        target: target.type('htmlParagraphContract'),
       }),
       schema.elementProperty('listStyle', property.string(), {
-        target: target.type('html-paragraph-contract'),
+        target: target.type('htmlParagraphContract'),
       }),
     ],
   },
-  targetPluginNames: [HtmlParagraphContractPlugin.name],
+  targetPlugins: [HtmlParagraphContractPlugin],
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       'text/html': {
@@ -706,7 +686,7 @@ const HtmlListContractPlugin = createBasePlugin({
           void configuredType;
 
           // @ts-expect-error A target-name list can resolve more than one element type.
-          const stalePrimaryType: 'html-paragraph-contract' = node.type;
+          const stalePrimaryType: 'htmlParagraphContract' = node.type;
 
           void stalePrimaryType;
 
@@ -728,7 +708,48 @@ const HtmlListContractPlugin = createBasePlugin({
 
 void HtmlListContractPlugin;
 
-const PrefixHtmlContractPlugin = createBasePlugin({
+const HtmlMixedListContractPlugin = defineBasePlugin('htmlMixedListContract', {
+  schema: {
+    properties: [
+      schema.elementProperty('listStart', property.number(), {
+        target: target.type('htmlParagraphContract'),
+      }),
+      schema.elementProperty('listStyle', property.string(), {
+        target: target.type('htmlParagraphContract'),
+      }),
+    ],
+  },
+  targetPlugins: [HtmlParagraphContractPlugin],
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'text/html': [
+        {
+          createsElement: true,
+          decode: ({ element }) => ({
+            listStart: Number(element.getAttribute('start')) || undefined,
+            listStyle: element.tagName === 'OL' ? 'decimal' : 'disc',
+          }),
+          encode: ({ content, node }) => ({
+            children: content,
+            tag: node.listStyle === 'decimal' ? 'ol' : 'ul',
+          }),
+          match: [{ tag: ['ol', 'ul'] }],
+        },
+        {
+          decode: ({ element }) => ({
+            listStart: undefined,
+            listStyle: element.dataset.listStyle,
+          }),
+          decodeOnly: true,
+          match: [{ attributes: { 'data-list-style': true } }],
+        },
+      ],
+    }),
+});
+
+void HtmlMixedListContractPlugin;
+
+const PrefixHtmlContractPlugin = defineBasePlugin('prefixHtmlContract', {
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       // @ts-expect-error HTML codecs require exact owned schema-property keys.
@@ -738,11 +759,10 @@ const PrefixHtmlContractPlugin = createBasePlugin({
         match: [{ tag: 'p' }],
       },
     }),
-  name: 'prefixHtmlContract',
   schema: {
     properties: [
       schema.elementProperty(schema.key.prefix('data-'), property.string(), {
-        target: target.type('html-paragraph-contract'),
+        target: target.type('htmlParagraphContract'),
       }),
     ],
   },
@@ -750,25 +770,25 @@ const PrefixHtmlContractPlugin = createBasePlugin({
 
 void PrefixHtmlContractPlugin;
 
-const ConfiguredHtmlForeignTarget = createBasePlugin({
-  name: 'configuredHtmlForeignTarget',
-  schema: {
-    element: {
-      content: schema.content.text({ default: 'text', min: 1 }),
-      properties: { variant: property.string() },
+const ConfiguredHtmlForeignTarget = defineBasePlugin(
+  'configuredHtmlForeignTarget',
+  {
+    schema: {
+      element: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+        properties: { variant: property.string() },
+      },
     },
-  },
-  type: 'configured-html-foreign-target',
-}).configure({});
+  }
+).configure({});
 
-const HtmlForeignContractPlugin = createBasePlugin({
-  name: 'htmlForeignContract',
+const HtmlForeignContractPlugin = defineBasePlugin('htmlForeignContract', {
   codecs: ({ defineCodecs }) =>
     defineCodecs(ConfiguredHtmlForeignTarget, {
       'text/html': {
         decode: ({ element }) => ({ variant: element.dataset.variant }),
         encode: ({ content, node }) => {
-          const exactType: 'configured-html-foreign-target' = node.type;
+          const exactType: 'configuredHtmlForeignTarget' = node.type;
           const exactVariant: string | undefined = node.variant;
 
           void exactType;
@@ -783,8 +803,7 @@ const HtmlForeignContractPlugin = createBasePlugin({
 
 void HtmlForeignContractPlugin;
 
-createBasePlugin({
-  name: 'invalidForeignCreatesElement',
+defineBasePlugin('invalidForeignCreatesElement', {
   codecs: ({ defineCodecs }) =>
     defineCodecs(HtmlAlignContractPlugin, {
       // @ts-expect-error Foreign property codecs cannot create element identity.
@@ -797,8 +816,7 @@ createBasePlugin({
     }),
 });
 
-createBasePlugin({
-  name: 'arrayCodecContract',
+defineBasePlugin('arrayCodecContract', {
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       'application/x-array-contract': {
@@ -817,15 +835,13 @@ const manualIdentityCodec = {
   },
 } as const;
 
-createBasePlugin({
-  name: 'identityCodecContract',
+defineBasePlugin('identityCodecContract', {
   codecs: ({ defineCodecs }) =>
     // @ts-expect-error Codec owner identity is inferred from the plugin.
     defineCodecs(manualIdentityCodec),
 });
 
-createBasePlugin({
-  name: 'invalidGenericHtmlContract',
+defineBasePlugin('invalidGenericHtmlContract', {
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       // @ts-expect-error Generic product codecs cannot claim text/html.
@@ -836,8 +852,7 @@ createBasePlugin({
     }),
 });
 
-createBasePlugin({
-  name: 'documentMarkdownCodecContract',
+defineBasePlugin('documentMarkdownCodecContract', {
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       'text/markdown': {
@@ -847,8 +862,7 @@ createBasePlugin({
     }),
 });
 
-createBasePlugin({
-  name: 'invalidUnscopedMarkdownCodecContract',
+defineBasePlugin('invalidUnscopedMarkdownCodecContract', {
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       // @ts-expect-error Document Markdown codecs require document scope.
@@ -878,8 +892,7 @@ ConfiguredHtmlContractPlugin.extend(({ defineCodecs }) => ({
   }),
 }));
 
-const UnifiedListPlugin = createBasePlugin({
-  name: 'unifiedList',
+const UnifiedListPlugin = defineBasePlugin('unifiedList', {
   initialState: {
     prefix: 'list' as const,
   },
@@ -917,9 +930,8 @@ const UnifiedListPlugin = createBasePlugin({
   };
 });
 
-const UnifiedListDependentPlugin = createBasePlugin({
+const UnifiedListDependentPlugin = defineBasePlugin('unifiedListDependent', {
   dependencies: [UnifiedListPlugin],
-  name: 'unifiedListDependent',
 }).extend(({ editor }) => {
   const dependencyRead: string =
     editor.read.unifiedList.getPrevious('bulleted');
@@ -973,14 +985,13 @@ const calloutInitialState: CalloutPluginState = {
   variant: 'info',
 };
 
-const CalloutPlugin = createBasePlugin({
+const CalloutPlugin = defineBasePlugin('callout', {
   api: ({ store }) => ({
     getVariant: () => store.get().variant,
     setVariant: (variant: 'info' | 'warning') => {
       store.set({ variant });
     },
   }),
-  name: 'callout',
   initialState: calloutInitialState,
 });
 
@@ -1002,20 +1013,18 @@ CalloutPlugin.configure(({ store, plugin }) => {
   return { initialState: { variant: 'warning' } };
 });
 
-const ShortcutTargetPlugin = createBasePlugin({
+const ShortcutTargetPlugin = defineBasePlugin('shortcutTargetContracts', {
   api: () => ({
     api: () => true,
     both: () => true,
   }),
-  name: 'shortcutTargetContracts',
   update: () => ({
     both: () => true,
     update: () => true,
   }),
 });
 
-const DeclaredBaseTxPlugin = createBasePlugin({
-  name: 'declaredBaseTx',
+const DeclaredBaseTxPlugin = defineBasePlugin('declaredBaseTx', {
   update: () => ({
     run: (value: 'typed', initialState: { count?: number } = {}) => {
       const exactValue: 'typed' = value;
@@ -1037,8 +1046,7 @@ ShortcutTargetPlugin.extend({
   },
 });
 
-createBasePlugin({
-  name: 'explicitShortcutContracts',
+defineBasePlugin('explicitShortcutContracts', {
   update: () => ({ run: () => true }),
 }).extend({
   shortcuts: { run: { keys: 'mod+r' } },
@@ -1076,8 +1084,7 @@ ShortcutTargetPlugin.extend({
   },
 });
 
-const FactoryExtensionPlugin = createBasePlugin({
-  name: 'factoryExtension',
+const FactoryExtensionPlugin = defineBasePlugin('factoryExtension', {
   initialState: {
     enabled: true,
   },
@@ -1091,8 +1098,7 @@ const FactoryExtensionPlugin = createBasePlugin({
     return {};
   });
 
-const FactoryStatePlugin = createBasePlugin({
-  name: 'factoryState',
+const FactoryStatePlugin = defineBasePlugin('factoryState', {
   initialState: ({ editor }): { enabled: boolean } => ({
     enabled: editor.id.length > 0,
   }),
@@ -1105,14 +1111,13 @@ const factoryStateEditor = createBaseEditor({
 });
 const factoryStatePlugin = factoryStateEditor.plugin(FactoryStatePlugin);
 const factoryEnabled: boolean =
-  factoryStateEditor.plugin(FactoryStatePlugin).plugin.initialState.enabled;
+  factoryStateEditor.plugin(FactoryStatePlugin).initialState.enabled;
 const factoryHasContent: boolean = factoryStatePlugin.read.hasContent();
 
 void factoryEnabled;
 void factoryHasContent;
 
-createBasePlugin({
-  name: 'contextualInput',
+defineBasePlugin('contextualInput', {
   initialState: {
     tone: 'warm' as const,
   },
@@ -1138,9 +1143,7 @@ createBasePlugin({
   },
 });
 
-const InlineHistoryPlugin = createBasePlugin({
-  name: 'inlineHistory',
-})
+const InlineHistoryPlugin = defineBasePlugin('inlineHistory', {})
   .extend(history())
   .extend(({ read }) => {
     read.undos() satisfies readonly unknown[];
@@ -1166,10 +1169,8 @@ const basePlateEditor = createBaseEditor({
 const inlineHistoryEditor = createBaseEditor({
   plugins: [InlineHistoryPlugin],
 });
-const customHistoryEditor = createBaseEditor<
-  CustomHistoryValue,
-  readonly [typeof InlineHistoryPlugin]
->({
+const customHistoryEditor = createBaseEditor({
+  editor: createEditor<CustomHistoryValue>(),
   initialValue: [
     {
       children: [{ text: '' }],
@@ -1185,12 +1186,11 @@ const coreHistoryEditor = createBaseEditor({
   plugins: [HistoryPlugin],
 });
 
-const OriginalOverridePlugin = createBasePlugin({
+const OriginalOverridePlugin = defineBasePlugin('originalOverride', {
   api: () => ({
     overrideLabel: () => 'original' as const,
     scopedLabel: () => 'scoped' as const,
   }),
-  name: 'originalOverride',
 }).extend(({ api }) => {
   const rootLabel: 'original' = api.overrideLabel();
 
@@ -1206,9 +1206,10 @@ const OriginalOverridePlugin = createBasePlugin({
   };
 });
 
-const ResolvedOverrideContextPlugin = createBasePlugin({
-  name: 'resolvedOverrideContext',
-}).extend(({ plugin }) => {
+const ResolvedOverrideContextPlugin = defineBasePlugin(
+  'resolvedOverrideContext',
+  {}
+).extend(({ plugin }) => {
   const overrideIsAny: IsAny<typeof plugin.override> = false;
   const components: object | undefined = plugin.override.components;
   const pluginOverrides: Record<string, object> | undefined =
@@ -1221,13 +1222,12 @@ const ResolvedOverrideContextPlugin = createBasePlugin({
   return {};
 });
 
-const ReplacementOverridePlugin = createBasePlugin({
+const ReplacementOverridePlugin = defineBasePlugin('replacementOverride', {
   api: ({ editor }) => ({
     overrideLabel: () =>
       `overridden:${editor.api.originalOverride.scopedLabel()}`,
   }),
   dependencies: [OriginalOverridePlugin],
-  name: 'replacementOverride',
 });
 
 const overrideEditor = createBaseEditor({
@@ -1264,10 +1264,9 @@ OriginalOverridePlugin.api.pluginScopedLabel();
 // @ts-expect-error plugin-scoped API does not leak into editor.api
 overrideEditor.api.pluginScopedLabel();
 
-const ExtendedFullPlugin = createBasePlugin({
+const ExtendedFullPlugin = defineBasePlugin('extendFull', {
   api: () => ({ baseApi: () => 'base' as const }),
   initialState: { baseOption: true as const },
-  name: 'extendFull',
   read: () => ({ baseRead: () => 'base-read' as const }),
   selectors: { baseSelector: () => true },
   update: () => ({ baseUpdate: () => 'base-update' as const }),

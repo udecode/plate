@@ -24,8 +24,8 @@ import {
   writeDOMRangeData,
 } from '@platejs/plite-dom';
 import type { DefinitionOf } from '@platejs/core';
-import { createPlatePlugin } from '@platejs/core/react';
-import { KEYS } from '@platejs/utils';
+import { definePlatePlugin } from '@platejs/core/react';
+import { KEYS, NODES } from '@platejs/utils';
 import copyToClipboard from 'copy-to-clipboard';
 
 import type { PartialSelectionAreaOptions } from '../SelectionArea';
@@ -108,8 +108,7 @@ const initialState: BlockSelectionPluginState = {
 
 // Keep component rendering in the final capability stage so the component can
 // consume the finished API without creating a recursive inference cycle.
-export const BlockSelectionPlugin = createPlatePlugin({
-  name: KEYS.blockSelection,
+export const BlockSelectionPlugin = definePlatePlugin(KEYS.blockSelection, {
   initialState,
 
   editOnly: true,
@@ -160,7 +159,7 @@ export const BlockSelectionPlugin = createPlatePlugin({
         const collapsedNodes: [TIdElement, Path][] = [];
 
         nodes.forEach(([node, path]) => {
-          if (node.type !== KEYS.tr) {
+          if (node.type !== NODES.tr) {
             collapsedNodes.push([node, path]);
             return;
           }

@@ -13,7 +13,7 @@ docs:
 
 - 为段落、标题等块级元素设置文本对齐方式
 - 支持左对齐、右对齐、居中对齐和两端对齐
-- 向目标块元素注入 `align` 属性
+- 向目标块元素注入 `textAlign` 属性
 
 </PackageInfo>
 
@@ -27,7 +27,7 @@ docs:
 
 <ComponentSource name="align-kit" />
 
-- 配置 `Paragraph`、`Heading`、`Image` 和 `Media` 元素支持 `align` 属性
+- 配置 `Paragraph`、`Heading`、`Image` 和 `Media` 元素支持 `textAlign` 属性
 - 提供对齐选项：`start`、`left`、`center`、`right`、`end`、`justify`
 
 ### 添加套件
@@ -80,16 +80,15 @@ const editor = createPlateEditor({
 
 ```tsx
 import { TextAlignPlugin } from "@platejs/basic-styles/react";
-import { KEYS } from "platejs";
 import { createPlateEditor, ParagraphPlugin } from "platejs/react";
 
 const editor = createPlateEditor({
   plugins: [
     // ...其他插件
     TextAlignPlugin.configure({
-      targetPluginNames: [
-        ...KEYS.heading,
-        ParagraphPlugin.name,
+      targetPlugins: [
+        PLUGINS.h1, PLUGINS.h2, PLUGINS.h3, PLUGINS.h4, PLUGINS.h5, PLUGINS.h6,
+        ParagraphPlugin,
       ],
       inject: {
         nodeProps: {
@@ -110,13 +109,12 @@ const editor = createPlateEditor({
 });
 ```
 
-- `type`: schema 和渲染使用的同一个模型属性 key（默认：`align`）
 - `inject.nodeProps.defaultNodeValue`: 设置默认对齐方式（`start`）
 - `inject.nodeProps.styleKey`: 将注入属性映射到 CSS 的 `textAlign` 属性
 - `inject.nodeProps.validNodeValues`: 定义有效的对齐值用于 UI 控制
-- `targetPluginNames`: 指定哪些元素插件类型可以保存对齐属性
+- `targetPlugins`: 指定哪些元素插件类型可以保存对齐属性
 
-`targetPluginNames` 是 schema 的唯一目标配置。插件会从该列表派生渲染和 HTML 解析所需的注入目标。
+`targetPlugins` 是 schema 的唯一目标配置。插件会从该列表派生渲染和 HTML 解析所需的注入目标。
 
 ### 添加工具栏按钮
 
@@ -128,26 +126,23 @@ const editor = createPlateEditor({
 
 ### `TextAlignPlugin`
 
-用于设置块级元素内文本对齐的插件。它允许 `targetPluginNames` 指定的元素保存 `align` 属性。
+用于设置块级元素内文本对齐的插件。它允许 `targetPlugins` 指定的元素保存 `textAlign` 属性。
 
 <API name="TextAlignPlugin">
   <APIOptions type="object">
-    <APIItem name="type" type="string" optional>
-      Schema 和渲染使用的已解析模型属性 key - **默认值:** `'align'`
-    </APIItem>
     <APIItem name="inject.nodeProps.defaultNodeValue" type="string" optional>
       默认文本对齐值 - **默认值:** `'start'`
     </APIItem>
     <APIItem name="inject.nodeProps.styleKey" type="string" optional>
       样式使用的 CSS 属性名 - **默认值:** `'textAlign'`
     </APIItem>
-    <APIItem name="inject.nodeProps.validNodeValues" type="string[]" optional>
+    <APIItem name="inject.nodeProps.validNodeValues" type="readonly (PluginReference | string)[]" optional>
       有效对齐值数组 - **默认值:** `['start', 'left', 'center', 'right', 'end',
       'justify']`
     </APIItem>
-    <APIItem name="targetPluginNames" type="string[]" optional>
+    <APIItem name="targetPlugins" type="readonly (PluginReference | string)[]" optional>
       可以保存对齐属性的元素插件 name；注入目标由此派生 - **默认值:**
-      `[BaseParagraphPlugin.name]`
+      `[BaseParagraphPlugin]`
     </APIItem>
   </APIOptions>
 </API>

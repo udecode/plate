@@ -157,11 +157,10 @@ export const suggestionPlugin = SuggestionPlugin.configure({
 ### 添加插件
 
 ```tsx
-import { createPlateEditor, createPlatePlugin } from 'platejs/react';
+import { createPlateEditor, definePlatePlugin } from 'platejs/react';
 import { SuggestionLineBreak } from '@/components/ui/suggestion-node';
 
-const suggestionLineBreakPlugin = createPlatePlugin({
-  name: 'suggestionLineBreak',
+const suggestionLineBreakPlugin = definePlatePlugin('suggestionLineBreak', {
   render: { belowNodes: SuggestionLineBreak as any },
 });
 
@@ -325,38 +324,38 @@ editor.update(SuggestionUpdatePolicy.skip, (tx) => {
 
 ## 类型
 
-### `TSuggestionText`
+### `SuggestionText`
 
 可包含建议的文本节点。
 
-<API name="TSuggestionText">
+<API name="SuggestionText">
 <APIAttributes>
   <APIItem name="suggestion" type="boolean" optional>
     是否为建议。
   </APIItem>
-  <APIItem name="suggestion_<id>" type="TInlineSuggestionData" optional>
+  <APIItem name="suggestion_<id>" type="InlineSuggestionData" optional>
     建议数据。单个文本节点可包含多个建议。
   </APIItem>
 </APIAttributes>
 </API>
 
-### `TSuggestionElement`
+### `SuggestionElement`
 
 包含建议元数据的区块元素。
 
-<API name="TSuggestionElement">
+<API name="SuggestionElement">
 <APIAttributes>
-  <APIItem name="suggestion" type="TSuggestionData">
+  <APIItem name="suggestion" type="SuggestionData">
     区块级建议数据，包括类型、用户和时间信息。
   </APIItem>
 </APIAttributes>
 </API>
 
-### `TInlineSuggestionData`
+### `InlineSuggestionData`
 
 内联文本建议的数据结构。
 
-<API name="TInlineSuggestionData">
+<API name="InlineSuggestionData">
 <APIAttributes>
   <APIItem name="id" type="string">
     建议的唯一标识符。
@@ -379,11 +378,11 @@ editor.update(SuggestionUpdatePolicy.skip, (tx) => {
 </APIAttributes>
 </API>
 
-### `TSuggestionData`
+### `SuggestionData`
 
 区块级建议的数据结构。
 
-<API name="TSuggestionData">
+<API name="SuggestionData">
 <APIAttributes>
   <APIItem name="id" type="string">
     建议的唯一标识符。

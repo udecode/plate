@@ -79,7 +79,7 @@ mock.module('platejs', () => ({
     isElement: (node: unknown) =>
       !!node && typeof node === 'object' && 'children' in node,
   },
-  KEYS: {},
+  PLUGINS: {},
   NodeApi: {},
   TextApi: {
     isText: () => false,
@@ -162,7 +162,7 @@ describe('AIMenu slow contracts', () => {
       read: {
         nodes: {
           block: () => [
-            { id: 'block', children: [{ text: 'text' }], type: 'p' },
+            { id: 'block', children: [{ text: 'text' }], type: 'paragraph' },
             [0],
           ],
           isEmpty: () => false,
@@ -201,6 +201,7 @@ describe('AIMenu slow contracts', () => {
         submit: async () => {},
       },
       editor,
+      read: { node: () => null },
     });
   });
 

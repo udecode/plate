@@ -40,6 +40,12 @@ npm install @platejs/resizable
     最小宽度约束。
     - **默认值:** `92`
   </APIItem>
+  <APIItem name="onResizeEnd" type="(width: ResizeLength) => void" optional>
+    调整完成时提交宽度。媒体所有者在这里传入其作用域插件更新。
+  </APIItem>
+  <APIItem name="width" type="ResizeLength" optional>
+    当前文档宽度。默认值为 `100%`。
+  </APIItem>
 </APIOptions>
 
 <APIReturns type="object">
@@ -52,8 +58,8 @@ npm install @platejs/resizable
   <APIItem name="minWidth" type="ResizeLength">
     最小宽度约束。
   </APIItem>
-  <APIItem name="setNodeWidth" type="(width: number) => void">
-    更新编辑器状态中的节点宽度。
+  <APIItem name="onResizeEnd" type="((width: ResizeLength) => void) | undefined">
+    所属功能提供的提交回调。
   </APIItem>
   <APIItem name="setWidth" type="(width: number | string) => void">
     更新本地状态中的宽度。
@@ -81,6 +87,9 @@ npm install @platejs/resizable
       <APISubListItem parent="context" name="onResize" type="(event: ResizeEvent) => void">
         调整大小事件的处理程序。
       </APISubListItem>
+      <APISubListItem parent="context" name="nudgeWidth" type="(delta: number) => void">
+        限制并提交一次键盘调整步长。
+      </APISubListItem>
     </APISubList>
   </APIItem>
   <APIItem name="props" type="object">
@@ -99,6 +108,9 @@ npm install @platejs/resizable
   </APIItem>
 </APIReturns>
 </API>
+
+`@platejs/resizable` 不修改编辑器节点。媒体宽度由媒体插件持久化，例如
+`editor.plugin(ImagePlugin).update.setWidth(width, { at: element })`。
 
 ### `useResizeHandleState`
 

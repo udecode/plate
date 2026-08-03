@@ -47,7 +47,7 @@ describe('AIChatPlugin read.serializeChunk', () => {
           { text: '\n' },
           { text: 'chunk3' },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
     ];
 
@@ -85,7 +85,7 @@ describe('AIChatPlugin read.serializeChunk', () => {
     const input = [
       {
         children: [{ text: chunk }],
-        type: 'p',
+        type: 'paragraph',
       },
     ];
 

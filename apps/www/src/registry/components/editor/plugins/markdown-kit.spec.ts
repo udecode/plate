@@ -1,5 +1,6 @@
 import { getPlateRuntime } from '@platejs/core/internal';
-import { createBaseEditor, KEYS } from 'platejs';
+import { MarkdownPlugin } from '@platejs/markdown';
+import { PLUGINS, createBaseEditor, defineBasePlugin, property } from 'platejs';
 import { createPlateEditor } from 'platejs/react';
 
 import {
@@ -15,12 +16,13 @@ import { registryKits } from '@/registry/registry-kits';
 
 import { BaseFootnoteKit } from './footnote-base-kit';
 import { FootnoteKit } from './footnote-kit';
+import { BaseCodeDrawingKit } from './code-drawing-base-kit';
 import { MarkdownKit } from './markdown-kit';
 
-const footnotePluginNames = [
+const footnoteNames = [
   'footnote',
-  KEYS.footnoteDefinition,
-  KEYS.footnoteInput,
+  PLUGINS.footnoteDefinition,
+  PLUGINS.footnoteInput,
 ];
 
 describe('MarkdownKit', () => {
@@ -35,22 +37,66 @@ describe('MarkdownKit', () => {
     }
   });
 
+  it('resolves configured mark keys from the installed schema', () => {
+    const SuggestionMarkPlugin = defineBasePlugin(PLUGINS.suggestion, {
+      schema: {
+        mark: { key: 'suggestionMark', property: property.boolean() },
+      },
+    });
+    const CommentMarkPlugin = defineBasePlugin(PLUGINS.comment, {
+      schema: { mark: { key: 'commentMark', property: property.boolean() } },
+    });
+    const editor = createBaseEditor({
+      plugins: [SuggestionMarkPlugin, CommentMarkPlugin, ...MarkdownKit],
+    });
+
+    expect(editor.plugin(MarkdownPlugin).store.get('plainMarks')).toEqual([
+      'suggestionMark',
+      'commentMark',
+    ]);
+  });
+
+  it('round-trips code drawings through the generated editor Markdown surface', () => {
+    const value = [
+      {
+        children: [{ text: '' }],
+        data: {
+          code: 'graph TD; A-->B',
+          drawingMode: 'Both',
+          drawingType: 'Mermaid',
+        },
+        type: 'codeDrawing',
+      },
+    ];
+    const editor = createBaseEditor({
+      plugins: [...BaseCodeDrawingKit, ...MarkdownKit],
+      initialValue: value,
+    });
+
+    const markdown = editor.api.markdown.serialize();
+
+    expect(markdown).toContain('<codeDrawing');
+    expect(editor.api.markdown.deserialize(markdown).children).toMatchObject(
+      value
+    );
+  });
+
   it('composes once with live Footnote renderers', () => {
     const editor = createPlateEditor({
       plugins: [...FootnoteKit, ...MarkdownKit],
     });
-    const pluginNames = getPlateRuntime(editor).pluginList.map(
+    const names = getPlateRuntime(editor).pluginList.map(
       (plugin) => plugin.name
     );
 
-    for (const pluginName of footnotePluginNames) {
-      expect(pluginNames.filter((name) => name === pluginName)).toHaveLength(1);
+    for (const name of footnoteNames) {
+      expect(names.filter((candidate) => candidate === name)).toHaveLength(1);
     }
 
     expect(getPlateRuntime(editor).components.footnote).toBe(
       FootnoteReferenceElement
     );
-    expect(getPlateRuntime(editor).components[KEYS.footnoteDefinition]).toBe(
+    expect(getPlateRuntime(editor).components.footnoteDefinition).toBe(
       FootnoteDefinitionElement
     );
     expect(typeof editor.api.markdown.serialize).toBe('function');
@@ -60,18 +106,18 @@ describe('MarkdownKit', () => {
     const editor = createBaseEditor({
       plugins: [...BaseFootnoteKit, ...MarkdownKit],
     });
-    const pluginNames = getPlateRuntime(editor).pluginList.map(
+    const names = getPlateRuntime(editor).pluginList.map(
       (plugin) => plugin.name
     );
 
-    for (const pluginName of footnotePluginNames) {
-      expect(pluginNames.filter((name) => name === pluginName)).toHaveLength(1);
+    for (const name of footnoteNames) {
+      expect(names.filter((candidate) => candidate === name)).toHaveLength(1);
     }
 
     expect(getPlateRuntime(editor).components.footnote).toBe(
       FootnoteReferenceElementStatic
     );
-    expect(getPlateRuntime(editor).components[KEYS.footnoteDefinition]).toBe(
+    expect(getPlateRuntime(editor).components.footnoteDefinition).toBe(
       FootnoteDefinitionElementStatic
     );
     expect(typeof editor.api.markdown.serialize).toBe('function');

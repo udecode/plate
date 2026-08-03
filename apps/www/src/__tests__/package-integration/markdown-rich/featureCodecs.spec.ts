@@ -1,10 +1,5 @@
-import { BaseBoldPlugin, BaseH1Plugin } from '@platejs/basic-nodes';
 import { ElementApi, property, schema } from '@platejs/plite';
-import {
-  BaseParagraphPlugin,
-  createBaseEditor,
-  createBasePlugin,
-} from 'platejs';
+import { createBaseEditor, defineBasePlugin } from 'platejs';
 
 import { createTestEditor } from './createTestEditor';
 import { MarkdownPlugin } from '../../../../../../packages/markdown/src/lib/MarkdownPlugin';
@@ -14,13 +9,16 @@ const inlineContent = schema.content.any(
   { default: 'text', min: 1 }
 );
 
-const CustomH1Plugin = createBasePlugin({
+const CustomH1Plugin = defineBasePlugin('customH1', {
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       'text/markdown': {
-        decode: ({ decode, decoration, node, type }) =>
+        decode: ({ decode, decoration, element, node }) =>
           node.depth === 1
-            ? { children: decode(node.children, decoration), type }
+            ? {
+                children: decode(node.children, decoration),
+                type: element.type,
+              }
             : undefined,
         encode: ({ encodePhrasing, node }) => ({
           children: encodePhrasing(node.children),
@@ -31,41 +29,54 @@ const CustomH1Plugin = createBasePlugin({
         kind: 'node',
       },
     }),
-  name: BaseH1Plugin.name,
   schema: {
     element: {
       content: inlineContent,
     },
   },
-  type: 'custom-h1',
 });
 
-const CustomParagraphPlugin = createBasePlugin({
-  name: BaseParagraphPlugin.name,
-  schema: {
-    element: {
-      content: inlineContent,
-    },
-  },
-  type: 'custom-p',
-});
-
-const CustomBoldPlugin = createBasePlugin({
+const CustomParagraphPlugin = defineBasePlugin('customParagraph', {
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       'text/markdown': {
-        decode: ({ decode, decoration, node, type }) =>
-          decode(node.children, { ...decoration, [type]: true }),
+        decode: ({ decode, decoration, element, node }) => ({
+          children: decode(node.children, decoration),
+          type: element.type,
+        }),
+        encode: ({ encodePhrasing, node }) => ({
+          children: encodePhrasing(node.children),
+          type: 'paragraph',
+        }),
+        from: 'paragraph',
+        kind: 'node',
+      },
+    }),
+  schema: {
+    element: {
+      content: inlineContent,
+    },
+  },
+});
+
+const CustomBoldPlugin = defineBasePlugin('customBold', {
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'text/markdown': {
+        decode: ({ decode, decoration, node, properties }) =>
+          decode(node.children, {
+            ...decoration,
+            [properties.customBold.key]: true,
+          }),
+        encode: () => ({ children: [], type: 'strong' }),
         from: 'strong',
         kind: 'node',
         mark: true,
       },
     }),
-  name: BaseBoldPlugin.name,
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
-  type: 'custom-bold',
 });
 
 describe('feature-owned Markdown codecs', () => {
@@ -73,11 +84,11 @@ describe('feature-owned Markdown codecs', () => {
     const nodes = [
       {
         children: [{ text: 'Heading 1' }],
-        type: 'custom-h1',
+        type: 'customH1',
       },
       {
         children: [{ text: 'Paragraph' }],
-        type: 'custom-p',
+        type: 'customParagraph',
       },
     ];
 
@@ -94,11 +105,8 @@ describe('feature-owned Markdown codecs', () => {
   it('serialize custom mark', () => {
     const nodes = [
       {
-        children: [
-          { text: 'Paragraph' },
-          { 'custom-bold': true, text: 'text' },
-        ],
-        type: 'custom-p',
+        children: [{ text: 'Paragraph' }, { customBold: true, text: 'text' }],
+        type: 'customParagraph',
       },
     ];
 
@@ -121,11 +129,11 @@ describe('feature-owned Markdown codecs', () => {
     const nodes = [
       {
         children: [{ text: 'Heading 1' }],
-        type: 'custom-h1',
+        type: 'customH1',
       },
       {
         children: [{ text: 'Paragraph' }],
-        type: 'custom-p',
+        type: 'customParagraph',
       },
     ];
 
@@ -143,14 +151,11 @@ describe('feature-owned Markdown codecs', () => {
     const nodes = [
       {
         children: [{ text: 'Heading 1' }],
-        type: 'custom-h1',
+        type: 'customH1',
       },
       {
-        children: [
-          { text: 'Paragraph' },
-          { 'custom-bold': true, text: 'text' },
-        ],
-        type: 'custom-p',
+        children: [{ text: 'Paragraph' }, { customBold: true, text: 'text' }],
+        type: 'customParagraph',
       },
     ];
 
@@ -206,7 +211,7 @@ describe('feature-owned Markdown codecs', () => {
     expect(paragraph.children).toHaveLength(1);
 
     const inlineEquation = paragraph.children[0];
-    expect(inlineEquation.type).toBe('inline_equation');
+    expect(inlineEquation.type).toBe('inlineEquation');
     expect(inlineEquation.texExpression).toBe('a=b');
   });
 
@@ -220,11 +225,11 @@ describe('feature-owned Markdown codecs', () => {
       children: [
         {
           children: [{ text: 'First note' }],
-          type: 'p',
+          type: 'paragraph',
         },
         {
           children: [{ text: 'Second note' }],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
       identifier: '1',
@@ -242,7 +247,7 @@ describe('feature-owned Markdown codecs', () => {
       alt: 'caption alt',
       children: [{ text: '' }],
       title: 'Image title',
-      type: 'img',
+      type: 'image',
       url: '/from-attr.png',
       width: 320,
     });

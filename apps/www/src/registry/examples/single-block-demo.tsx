@@ -35,7 +35,7 @@ export default function SingleBlockDemo() {
               }`,
             },
           ],
-          type: 'p',
+          type: 'paragraph',
         },
       ],
     },

@@ -8,8 +8,9 @@
   owner
 - Remove unused React peer dependencies from the base DOCX package
 - Avoid repeated RTF image parsing during import
-- Normalize DOCX HTML through the flat `parsers.html.transformData` hook before
+- Normalize DOCX HTML through the `'text/html'` codec `transformData` hook before
   schema-owned HTML codecs decode nodes and properties
+- Normalize presentation fields through the single `tableCell` node type
 
 **Migration:** Remove direct imports of DOCX cleaner internals, including
 `cleanDocxBrComments`, `cleanDocxImageElements`, `getDocxIndent`,

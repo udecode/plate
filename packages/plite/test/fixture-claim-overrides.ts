@@ -1,4 +1,5 @@
 const EXPLICIT_CUT_FIXTURES = [
+  'normalization/block/remove-inline.tsx',
   'transforms/delete/selection/block-inline-over.tsx',
   'transforms/delete/selection/inline-over.tsx',
   'transforms/delete/voids-false/inline-after-reverse.tsx',
@@ -8,6 +9,7 @@ const EXPLICIT_CUT_FIXTURES = [
   'transforms/delete/voids-true/across-blocks.tsx',
   'transforms/general/invalid-insert_node.tsx',
   'transforms/insertFragment/of-blocks/block-end.tsx',
+  'transforms/insertFragment/of-blocks/block-empty.tsx',
   'transforms/insertFragment/of-blocks/block-middle-3.tsx',
   'transforms/insertFragment/of-blocks/block-nested.tsx',
   'transforms/insertFragment/of-blocks/block-start.tsx',
@@ -31,10 +33,12 @@ const EXPLICIT_CUT_FIXTURES = [
   'transforms/insertFragment/of-texts/block-start.tsx',
   'transforms/insertFragment/of-texts/inline-empty.tsx',
   'transforms/insertFragment/of-texts/with-multiple.tsx',
+  'transforms/insertFragment/of-tables/merge-cells-with-nested-blocks.tsx',
   'transforms/insertFragment/voids-true/block.tsx',
   'transforms/insertNodes/block/inline-void.tsx',
   'transforms/insertNodes/path/multiple-inline-not-end.tsx',
   'transforms/insertNodes/path/text.tsx',
+  'transforms/insertNodes/void/block-nested.tsx',
   'transforms/insertNodes/voids-true/block.tsx',
   'transforms/insertNodes/voids-true/inline.tsx',
   'transforms/mergeNodes/depth-block/block-nested-multi-child.tsx',
@@ -52,8 +56,10 @@ const EXPLICIT_CUT_FIXTURES = [
   'transforms/splitNodes/point/inline-void.tsx',
   'transforms/splitNodes/selection/inline-void-end.tsx',
   'transforms/splitNodes/selection/inline-void.tsx',
+  'transforms/splitNodes/voids-true/block.tsx',
   'transforms/wrapNodes/split-block/block-mark.tsx',
   'transforms/wrapNodes/split-inline/inline-mark.tsx',
+  'transforms/wrapNodes/voids-true/block.tsx',
 ] as const;
 
 const EXPLICIT_CUT_FIXTURE_SET = new Set<string>(EXPLICIT_CUT_FIXTURES);

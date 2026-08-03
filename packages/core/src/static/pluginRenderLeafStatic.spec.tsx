@@ -1,7 +1,7 @@
 import { property } from '@platejs/plite';
 import React from 'react';
 
-import { type RenderLeafProps, createBasePlugin } from '../lib';
+import { type RenderLeafProps, defineBasePlugin } from '../lib';
 import { createStaticEditor } from './editor/withStatic';
 import {
   pipeRenderLeafStatic,
@@ -9,9 +9,7 @@ import {
 } from './pluginRenderLeafStatic';
 
 describe('pluginRenderLeafStatic', () => {
-  const HighlightPlugin = createBasePlugin({
-    name: 'highlight',
-    type: 'highlight',
+  const HighlightPlugin = defineBasePlugin('highlight', {
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
       leafProps: {
@@ -29,7 +27,7 @@ describe('pluginRenderLeafStatic', () => {
     expect(
       pluginRenderLeafStatic(
         editor,
-        editor.plugin(HighlightPlugin).plugin
+        editor.plugin(HighlightPlugin)
       )({
         attributes: {},
         children: 'plain',
@@ -50,7 +48,7 @@ describe('pluginRenderLeafStatic', () => {
     });
     const result = pluginRenderLeafStatic(
       editor,
-      editor.plugin(CustomLeafPlugin).plugin
+      editor.plugin(CustomLeafPlugin)
     )({
       attributes: {},
       children: 'hi',
@@ -61,7 +59,44 @@ describe('pluginRenderLeafStatic', () => {
     expect(result).toEqual(
       expect.objectContaining({
         props: expect.objectContaining({ children: 'hi' }),
-        type: editor.plugin(CustomLeafPlugin).plugin.render.leaf,
+        type: editor.plugin(CustomLeafPlugin).render.leaf,
+      })
+    );
+  });
+
+  it('matches marks by persisted key rather than plugin name', () => {
+    const MarkPlugin = defineBasePlugin('markCapability', {
+      schema: {
+        mark: {
+          key: 'persistedMark',
+          property: property.boolean({ default: false, omitDefault: true }),
+        },
+      },
+      render: {
+        leaf: ({ children }) => (
+          <mark data-kind="persisted-mark">{children}</mark>
+        ),
+      },
+    });
+    const editor = createStaticEditor({ plugins: [MarkPlugin] });
+    const result = pluginRenderLeafStatic(
+      editor,
+      editor.plugin(MarkPlugin)
+    )({
+      attributes: {},
+      children: 'hi',
+      leaf: { persistedMark: true, text: 'hi' },
+      text: { persistedMark: true, text: 'hi' },
+    } satisfies RenderLeafProps);
+
+    expect(MarkPlugin.name).toBe('markCapability');
+    expect(editor.plugin(MarkPlugin).schema.properties.persistedMark.key).toBe(
+      'persistedMark'
+    );
+    expect(result).toEqual(
+      expect.objectContaining({
+        props: expect.objectContaining({ children: 'hi' }),
+        type: MarkPlugin.render.leaf,
       })
     );
   });

@@ -16,14 +16,13 @@
 Default to inferred plugin chains:
 
 ```ts
-export const BaseFooPlugin = createBasePlugin({
+export const BaseFooPlugin = defineBasePlugin(PLUGINS.foo, {
   api: ({ editor, store }) => ({
     // inferred
   }),
   initialState: {
     enabled: true,
   },
-  name: KEYS.foo,
   update: ({ tx }) => ({
     // inferred
   }),
@@ -39,9 +38,8 @@ Do not create:
 ```ts
 type FooConfig = PluginConfig<"foo">;
 
-export const BaseFooPlugin: BasePlugin<FooConfig> = createBasePlugin<FooConfig>(
-  { name: KEYS.foo }
-);
+export const BaseFooPlugin: BasePlugin<FooConfig> =
+  defineBasePlugin<FooConfig>(PLUGINS.foo, {});
 ```
 
 An empty config alias and an annotated plugin export both hide whether the
@@ -72,7 +70,7 @@ Plugin callbacks already expose the typed owner context:
 
 - `editor`
 - `plugin`
-- `type`
+- `name`
 - `installed`
 - `api`
 - `read`
@@ -83,19 +81,19 @@ Plugin callbacks already expose the typed owner context:
 
 Keep one-owner behavior inline and capture those values. Do not move a callback
 into another file by inventing context/descriptor ferry types or threading
-`BaseEditor`, resolved plugin type, store state, and `tx` through helper
+`BaseEditor`, resolved plugin name, store state, and `tx` through helper
 signatures.
 
 Use those current-owner values directly:
 
 ```ts
-BaseFooPlugin.extend(({ api, read, store, type, update }) => ({
+BaseFooPlugin.extend(({ api, name, read, store, update }) => ({
   on: {
     focus: () => {
       if (!read.isActive()) return;
 
       store.set({ focused: true });
-      api.notify(type);
+      api.notify(name);
       update.refresh();
     },
   },
@@ -104,7 +102,7 @@ BaseFooPlugin.extend(({ api, read, store, type, update }) => ({
 
 Do not rediscover the current owner through `editor.plugin(...)`, current-name
 root API/read/update groups, standalone plugin lookup helpers, or
-`editor.plugin(...).type`. Keep `editor` for editor-wide substrate, another plugin,
+`editor.plugin(...).name`. Keep `editor` for editor-wide substrate, another plugin,
 or transaction metadata unavailable on scoped `update`. Inside an active
 transaction, use `tx`.
 
@@ -117,7 +115,7 @@ an editor-wide extension such as `editor.api.dom` for the plugin-scoped `api`.
 `defineCodecs` is the one inline inference anchor for codec maps:
 
 ```ts
-export const BaseFooPlugin = createBasePlugin({
+export const BaseFooPlugin = defineBasePlugin(PLUGINS.foo, {
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       'text/html': {
@@ -125,9 +123,7 @@ export const BaseFooPlugin = createBasePlugin({
         decodeOnly: true,
         match: [{ tag: 'strong' }],
       },
-    }),
-  name: KEYS.foo,
-  schema: { mark: property.boolean() },
+    }),  schema: { mark: property.boolean() },
 });
 ```
 
@@ -142,19 +138,17 @@ Plate constructors and justified `.extend()` stages contextually type flat
 Plite-native fields:
 
 ```ts
-createBasePlugin({
+defineBasePlugin('foo', {
   commands: ({ handle, store }) => [
     // store and nested callbacks remain inferred
-  ],
-  name: 'foo',
-});
+  ],});
 ```
 
 Keep Plate-context capture inside the authoring callback and extract domain
 inputs. A public identity helper that only recovers this nested type is leaked
 compiler machinery: fix the owning generic instead of adding an annotation,
 cast, `any`, alias, or replacement helper. Independently reusable standalone
-descriptors use Plite's `defineEditorExtension`; their factories receive domain
+descriptors use Plite's `defineExtension`; their factories receive domain
 inputs, not Plate plugin context.
 
 ## Stage Capabilities, Not Plumbing
@@ -164,17 +158,16 @@ plugin-owned capability in an earlier builder stage, then consume the
 accumulated inferred surface from later stages:
 
 ```ts
-export const BaseFooPlugin = createBasePlugin({
+export const BaseFooPlugin = defineBasePlugin(PLUGINS.foo, {
   initialState: {
     labels: [{ id: 'alpha', value: 'Alpha' }],
   },
-  name: KEYS.foo,
   selectors: {
     getLabel: (state, id: string) =>
       state.labels.find((label) => label.id === id)?.value,
   },
 })
-  .extend(({ store }) => ({
+  .extend(({ store, type }) => ({
     update: ({ tx }) => ({
       insertFoo: (id: string) => {
         const label = store.get('getLabel', id);
@@ -183,7 +176,7 @@ export const BaseFooPlugin = createBasePlugin({
 
         tx.nodes.insert({
           children: [{ text: label }],
-          type: KEYS.foo,
+          type,
         });
       },
     }),
@@ -197,13 +190,11 @@ export const BaseFooPlugin = createBasePlugin({
     }),
   }));
 
-export const FooConsumerPlugin = createBasePlugin({
+export const FooConsumerPlugin = defineBasePlugin('fooConsumer', {
   api: ({ editor }) => ({
     hasLabel: (id: string) =>
       editor.plugin(BaseFooPlugin).store.get('getLabel', id) !== undefined,
-  }),
-  name: 'fooConsumer',
-  dependencies: [BaseFooPlugin],
+  }),  dependencies: [BaseFooPlugin],
 });
 ```
 
@@ -231,7 +222,7 @@ transaction.
 
 New methods should accept domain inputs such as `value`, `entry`, `at`, or
 operation options. Do not invent function parameters for `editor`, `api`,
-`read`, `tx`, `store`, resolved plugin state values, or resolved type
+`read`, `tx`, `store`, resolved plugin state values, or resolved name
 when the builder context can capture or stage them.
 
 Keep an explicit state/read-view parameter only at an honest composition
@@ -246,8 +237,8 @@ Do not add:
   update: ({ tx }) => ({ ... }),
 }))
 targetParserToInject: ({ editor }: { editor: BaseEditor }) => ...
-const plugin: BasePlugin<FooDefinition> = createBasePlugin(...)
-const plugin = createBasePlugin(...) as BasePlugin<FooDefinition>
+const plugin: BasePlugin<FooDefinition> = defineBasePlugin(...)
+const plugin = defineBasePlugin(...) as BasePlugin<FooDefinition>
 ```
 
 ## Repair The Type Owner
@@ -293,12 +284,10 @@ type FooTx = {
   insertFoo: (options: InsertFooOptions) => void;
 };
 
-export const BaseFooPlugin = createBasePlugin({
+export const BaseFooPlugin = defineBasePlugin(PLUGINS.foo, {
   read: ({ state }): FooRead => ({
     getChildCount: () => state.children().length,
-  }),
-  name: KEYS.foo,
-  update: ({ tx }): FooTx => ({
+  }),  update: ({ tx }): FooTx => ({
     insertFoo: (options) => {
       // `options` and `tx` are contextual
     },
@@ -314,8 +303,8 @@ be inferred.
 
 The exported plugin value must infer from:
 
-- `createBasePlugin(...)`;
-- `createPlatePlugin(...)`;
+- `defineBasePlugin(...)`;
+- `definePlatePlugin(...)`;
 - `toPlatePlugin(...)`;
 - chained `.extend()` calls.
 
@@ -346,23 +335,43 @@ The same law applies to tests and examples:
 - use source-owned test-utils types when an explicit boundary is unavoidable;
 - repair source typing when inline setup fails.
 
-## Names And Literal State
+## Capability And Schema Identity
 
-Use shared `KEYS` for shipped plugins and cross-plugin contracts:
+Use the shared flat `PLUGINS` catalog only for first-party capability identity.
+Resolve persisted identity from the schema-owning context or portal:
 
 ```ts
-name: KEYS.blockSelection;
-targetPluginNames: [KEYS.p];
-editor.plugin(KEYS.codeBlock).type;
+defineBasePlugin(PLUGINS.paragraph, {
+  schema: { element: schema.element.textBlock() },
+});
+targetPlugins: [PLUGINS.paragraph];
+const codeBlockType = editor.plugin(PLUGINS.codeBlock).type;
+const boldKey = editor.plugin(PLUGINS.bold).key;
+tx.nodes.insert({ type: codeBlockType, children: [{ text: '' }] });
+tx.nodes.set({ [boldKey]: true });
 ```
+
+There are no grouped heading aliases: spell out `PLUGINS.h1` through
+`PLUGINS.h6` where a group is actually needed, and list those items directly
+instead of spreading a literal array. Function and property names must
+keep roles honest: use `plugin` for an exact descriptor-or-string lookup input
+and `name` after runtime normalization for capability work. Element `type` and
+property `key` default to the plugin name when omitted, but they are independent
+immutable contracts. Exact portals expose only the schema identity they own;
+behavior plugins expose neither. Copied registry data and deliberate fixtures
+use explicit persisted literals, never `PLUGINS` as a storage catalog.
 
 Raw literals are for genuinely local/internal plugins and deliberate test
 fixtures.
 
-Use `editor.plugin(Plugin)` whenever a descriptor is available so the portal
-keeps exact capabilities. Use `editor.plugin(pluginName)` only for a genuine
-runtime string; it returns an erased portal whose `installed` field is the sole
-non-throwing absence check. Never pass `{ name }` as a public lookup input.
+Use `editor.plugin(plugin)` whenever a descriptor is available so the portal
+keeps exact capabilities. A genuine runtime string uses the same `plugin`
+parameter and returns an erased portal whose `installed` field is the sole
+non-throwing capability-availability check. When uninstalled, its `.type` and
+`.key` preserve an exact descriptor's authored/default identity or use a
+runtime string as the conventional identity; read them directly instead of
+adding an `installed` fallback. Other missing portal fields throw. Never pass `{ name }`
+as a public lookup input.
 
 Preserve meaningful literal state types at the state owner:
 

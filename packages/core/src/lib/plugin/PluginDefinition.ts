@@ -30,12 +30,22 @@ import type {
 } from '@platejs/plite/internal';
 import type { AnyObject, Nullable } from '@udecode/utils';
 import type { Draft } from 'mutative';
-import type { InternalDefinitionOf } from './pluginDefinitionCarrier.internal';
 import type {
-  InferPluginDocumentType,
+  InferPluginElementType,
+  InferPluginPropertyKey,
   InferPluginSchema,
   InferPluginSchemaContribution,
 } from './pluginSchemaModel.internal';
+
+declare const pluginDefinition: unique symbol;
+
+/** Exact normalized definition witness carried by every plugin descriptor. */
+export interface PluginDefinitionWitness<D> {
+  readonly [pluginDefinition]: (definition: D) => D;
+}
+
+type ExactPluginDefinitionOf<P> =
+  P extends PluginDefinitionWitness<infer D> ? D : never;
 
 /**
  * Compact inferred definition carried by every Base plugin descriptor.
@@ -60,10 +70,10 @@ export type BasePluginDefinition = Readonly<{
   initialState?: object;
   inject?: true;
   inputRules?: true;
+  key?: string;
   name: string;
   on?: true;
   override?: true;
-  parsers?: true;
   read?: object;
   readMiddleware?: true;
   render?: true;
@@ -73,7 +83,7 @@ export type BasePluginDefinition = Readonly<{
   selectors?: object;
   shortcuts?: true;
   stateFields?: true;
-  targetPluginNames?: readonly string[];
+  targetPlugins?: readonly (PluginReference | string)[];
   transformInitialValue?: true;
   type?: string;
   update?: object;
@@ -85,8 +95,8 @@ export type BasePluginDefinition = Readonly<{
 export type AnyBasePluginDefinition = BasePluginDefinition;
 
 type PublicDependencyReference<P> =
-  P extends PluginReference<infer TName, infer TDocumentType>
-    ? PluginReference<TName, TDocumentType>
+  P extends PluginReference<infer TName>
+    ? PluginReference<TName>
     : P extends Readonly<{
           enabled: infer TEnabled extends boolean;
           name: infer TName extends string;
@@ -113,16 +123,32 @@ type PublicPluginDefinition<D extends AnyBasePluginDefinition> = Readonly<{
 
 /** Extract the exact normalized public definition from a Base or Plate descriptor. */
 export type DefinitionOf<P> = P extends unknown
-  ? [InternalDefinitionOf<P>] extends [never]
+  ? [ExactPluginDefinitionOf<P>] extends [never]
     ? PliteDefinitionOf<P> extends infer D extends AnyBasePluginDefinition
       ? D
       : never
-    : InternalDefinitionOf<P> extends infer D extends AnyBasePluginDefinition
+    : ExactPluginDefinitionOf<P> extends infer D extends AnyBasePluginDefinition
       ? PublicPluginDefinition<D>
       : never
   : never;
 
 type IsAny<T> = 0 extends 1 & T ? true : false;
+
+/** Storage identity exposed only by plugins that own that schema concept. */
+export type PluginSchemaIdentity<
+  C extends AnyBasePluginDefinition = BasePluginDefinition,
+> = [C] extends [never]
+  ? Readonly<Record<never, never>>
+  : IsAny<C> extends true
+    ? Readonly<{ key: string; type: string }>
+    : string extends C['name']
+      ? Readonly<{ key: string; type: string }>
+      : ([InferPluginElementType<C>] extends [never]
+          ? Readonly<Record<never, never>>
+          : Readonly<{ type: InferPluginElementType<C> }>) &
+          ([InferPluginPropertyKey<C>] extends [never]
+            ? Readonly<Record<never, never>>
+            : Readonly<{ key: InferPluginPropertyKey<C> }>);
 
 export type BaseInjectProps = {
   /**
@@ -155,10 +181,10 @@ export type PluginBase<
   /** Plugins that must be installed before this plugin. */
   dependencies: InferDependencies<C>;
   inject: Nullable<{
-    /** Plugin names of elements to exclude the children from */
-    excludeBelowPlugins?: string[];
-    /** Plugin names of elements to exclude */
-    excludePlugins?: string[];
+    /** Plugins whose element children are excluded. */
+    excludeBelowPlugins?: readonly (PluginReference | string)[];
+    /** Plugins whose elements are excluded. */
+    excludePlugins?: readonly (PluginReference | string)[];
     /** Whether to filter blocks */
     isBlock?: boolean;
     /** Whether to filter elements */
@@ -171,8 +197,8 @@ export type PluginBase<
   /** Initial value used to create this plugin's editor-local store. */
   initialState: InferPluginStoreState<C>;
   override: {};
-  /** Plugin names targeted by this plugin's schema and render behavior. */
-  readonly targetPluginNames: InferTargetPluginNames<C>;
+  /** Plugins targeted by this plugin's schema and render behavior. */
+  readonly targetPlugins: InferTargetPlugins<C>;
   render: Nullable<{
     /**
      * Renders a component above the `Editable` component but within the `Plite`
@@ -242,8 +268,6 @@ export type PluginBase<
   };
   /** Pure declarative contribution to the editor schema. */
   readonly schema: InferPluginSchema<C>;
-  /** Document type/property identifier owned by this plugin. Defaults to `name`. */
-  type: InferPluginDocumentType<C>;
   /** Selectors for the plugin. */
   selectors: InferSelectors<C>;
   /**
@@ -274,15 +298,23 @@ export type PluginBase<
 
 declare const pluginReference: unique symbol;
 
-export interface PluginReference<
-  TName extends string = string,
-  TDocumentType extends string = string,
-> {
+export interface PluginReference<TName extends string = string> {
   /** @internal Nominal descriptor identity. */
   readonly [pluginReference]: true;
   readonly name: TName;
-  readonly type: TDocumentType;
 }
+
+declare const pluginDependency: unique symbol;
+
+/** Exact source carried by an inferred Plate dependency without expanding it. */
+export interface PluginDependency<in out TPlugin> {
+  /** @internal Nominal dependency source. */
+  readonly [pluginDependency]: (plugin: TPlugin) => TPlugin;
+}
+
+/** @internal Recover the exact source behind one compact Plate dependency. */
+export type PluginDependencySource<P> =
+  P extends PluginDependency<infer TPlugin> ? TPlugin : never;
 
 type NormalizePliteDefinition<TDefinition> =
   TDefinition extends EditorExtensionDefinition
@@ -308,16 +340,51 @@ type PliteDependencyInstalledDefinitionOf<P> = [
   ? DependencyInstalledDefinitionOf<EditorExtensionDependencyReferenceFor<P>>
   : DependencyInstalledDefinitionOf<P>;
 
-type PluginDependencyInstalledDefinitionOf<P> =
-  | InternalDefinitionOf<P>
-  | PliteDependencyInstalledDefinitionOf<P>;
+type SourcePluginDefinitionOf<TSource> = TSource extends AnyBasePluginDefinition
+  ? TSource
+  : ExactPluginDefinitionOf<TSource> extends infer D extends
+        AnyBasePluginDefinition
+    ? D
+    : never;
 
-export type PluginReferenceDocumentType<
-  TPlugin extends PluginReference = PluginReference,
-> = TPlugin['type'];
+type SourcePluginInstalledDefinitionOf<P> =
+  PluginDependencySource<P> extends infer TSource
+    ? [TSource] extends [never]
+      ? never
+      : SourcePluginDefinitionOf<TSource> extends infer D extends
+            AnyBasePluginDefinition
+        ?
+            | D
+            | (D extends {
+                dependencies: infer TDependencies extends readonly unknown[];
+              }
+                ? SourcePluginInstalledDefinitionOf<TDependencies[number]>
+                : never)
+        : never
+    : never;
 
-export type PluginSchemaOwn<TType extends string = string> = Readonly<{
-  /** Project this plugin's configured type as an element-owned root slot. */
+type PluginDependencyInstalledDefinitionOf<P> = [
+  SourcePluginInstalledDefinitionOf<P>,
+] extends [never]
+  ? ExactPluginDefinitionOf<P> | PliteDependencyInstalledDefinitionOf<P>
+  : SourcePluginInstalledDefinitionOf<P>;
+
+type PluginDocumentType<TPlugin extends PluginReference | string> =
+  TPlugin extends Readonly<{ type: infer TType extends string }>
+    ? TType
+    : TPlugin extends Readonly<{ name: infer TName extends string }>
+      ? TName
+      : string;
+
+export type PluginSchemaOwn<
+  TType extends string = string,
+  TKey extends string = string,
+> = Readonly<{
+  /** Persisted element identity owned by this plugin. */
+  type: TType;
+  /** Persisted property/root-slot identity owned by this plugin. */
+  key: TKey;
+  /** Project this plugin's configured key as an element-owned root slot. */
   contentRoot: <
     const TContent extends SchemaContent,
     const TOptions extends Readonly<{
@@ -328,7 +395,7 @@ export type PluginSchemaOwn<TType extends string = string> = Readonly<{
     content: TContent,
     options: TOptions
   ) => SchemaContentRootContribution<
-    TType,
+    TKey,
     SchemaContentRoot<TContent, TOptions['ownership']>,
     TOptions['target']
   >;
@@ -338,7 +405,7 @@ export type PluginSchemaOwn<TType extends string = string> = Readonly<{
   >(
     value: TDescriptor,
     options: TOptions
-  ) => SchemaElementProperty<TType, TDescriptor, TOptions['target']>;
+  ) => SchemaElementProperty<TKey, TDescriptor, TOptions['target']>;
   textProperty: <
     TDescriptor extends PropertyValueDescriptor,
     const TOptions extends
@@ -346,36 +413,43 @@ export type PluginSchemaOwn<TType extends string = string> = Readonly<{
   >(
     value: TDescriptor,
     options?: TOptions
-  ) => SchemaTextProperty<TType, TDescriptor, TOptions['target']>;
+  ) => SchemaTextProperty<TKey, TDescriptor, TOptions['target']>;
 }>;
 
 export type PluginSchemaReferences = Readonly<{
   /** Plate normal-flow block content, excluding nested structural elements. */
   blockContent: (options?: SchemaContentOptions) => SchemaContent;
-  elementType: <const TPlugin extends PluginReference>(
+  /** Resolve an installed element descriptor into a schema content rule. */
+  element: <const TPlugin extends PluginReference | string>(
     plugin: TPlugin
-  ) => PluginReferenceDocumentType<TPlugin>;
-  elementTypes: <const TPlugins extends readonly PluginReference[]>(
+  ) => Readonly<{
+    kind: 'type';
+    type: PluginDocumentType<TPlugin>;
+  }>;
+  elementType: <const TPlugin extends PluginReference | string>(
+    plugin: TPlugin
+  ) => PluginDocumentType<TPlugin>;
+  elementTypes: <const TPlugins extends readonly (PluginReference | string)[]>(
     plugins: TPlugins
   ) => {
-    readonly [TIndex in keyof TPlugins]: PluginReferenceDocumentType<
-      TPlugins[TIndex]
-    >;
+    readonly [TIndex in keyof TPlugins]: PluginDocumentType<TPlugins[TIndex]>;
   };
-  /** Resolve an optional plugin-name allowlist to installed element types. */
-  elementTypesByName: (pluginNames: readonly string[]) => readonly string[];
 }>;
 
 export type PluginSchemaContext<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
-  TType extends string = InferPluginDocumentType<C>,
+  TType extends string = [InferPluginElementType<C>] extends [never]
+    ? C['name']
+    : InferPluginElementType<C>,
+  TKey extends string = [InferPluginPropertyKey<C>] extends [never]
+    ? C['name']
+    : InferPluginPropertyKey<C>,
 > = Readonly<{
   initialState: Readonly<InferPluginStoreState<C>>;
   name: C['name'];
-  own: PluginSchemaOwn<TType>;
+  own: PluginSchemaOwn<TType, TKey>;
   plugins: PluginSchemaReferences;
-  targetPluginNames: InferTargetPluginNames<C>;
-  type: TType;
+  targetElementTypes: readonly string[];
 }>;
 
 export type PluginSchemaMark =
@@ -429,26 +503,33 @@ export type PluginSchemaDeclaration =
 /** A frozen schema contribution or a pure configured contribution factory. */
 export type PluginSchema<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
-  TType extends string = InferPluginDocumentType<C>,
+  TType extends string = [InferPluginElementType<C>] extends [never]
+    ? C['name']
+    : InferPluginElementType<C>,
+  TKey extends string = [InferPluginPropertyKey<C>] extends [never]
+    ? C['name']
+    : InferPluginPropertyKey<C>,
 > =
-  | ((context: PluginSchemaContext<C, TType>) => PluginSchemaDeclaration)
+  | ((context: PluginSchemaContext<C, TType, TKey>) => PluginSchemaDeclaration)
   | PluginSchemaDeclaration;
 
 export type PluginBaseContext<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
-> = {
+> = Readonly<{
   /** API owned by the current plugin, without the plugin-name namespace wrapper. */
   api: InferOwnApi<C>;
   /** Whether this plugin is installed and enabled in the target editor. */
-  readonly installed: boolean;
+  installed: boolean;
+  /** Capability identity and API/update namespace. */
+  name: C['name'];
   /** One-shot updates owned by the current plugin, without its name namespace. */
   update: InferOwnUpdate<C>;
   /** State-bound reads owned by the current plugin. */
   read: InferOwnRead<C>;
   /** Mutable editor-local state and pure named selectors owned by this plugin. */
   store: PluginStore<C>;
-  type: string;
-};
+}> &
+  PluginSchemaIdentity<C>;
 
 export type BaseTransformOptions = GetInjectNodePropsOptions & {
   nodeValue?: unknown;
@@ -539,7 +620,8 @@ export type MatchRules =
 
 export type EditOnlyConfig = {
   /**
-   * If true, `on` callbacks are only active when the editor is not read-only.
+   * If true, `on` DOM event handlers are only active when the editor is not
+   * read-only. Commit, transaction, node, and text observations always run.
    *
    * @default true (when `editOnly` is an object or `true` boolean)
    */
@@ -607,13 +689,16 @@ export type InferEnabled<P> = P extends { enabled?: infer E }
       : Extract<E, boolean>
   : boolean;
 
-export type InferTargetPluginNames<P extends AnyBasePluginDefinition> =
+export type InferTargetPlugins<P extends AnyBasePluginDefinition> =
   string extends P['name']
-    ? readonly string[]
+    ? readonly (PluginReference | string)[]
     : P extends {
-          targetPluginNames: infer TNames extends readonly string[];
+          targetPlugins: infer TPlugins extends readonly (
+            | PluginReference
+            | string
+          )[];
         }
-      ? TNames
+      ? TPlugins
       : readonly [];
 
 export type InferDependencies<P> = P extends {
@@ -650,24 +735,17 @@ export type NormalizePluginState<T> =
     ? T
     : T extends Editor
       ? T
-      : T extends PluginReference<infer TName, infer TDocumentType>
-        ? PluginReference<TName, TDocumentType>
-        : T extends Readonly<{
-              configure: (...args: never[]) => unknown;
-              extend: (...args: never[]) => unknown;
-              name: infer TName extends string;
-              type: infer TDocumentType extends string;
-            }>
-          ? PluginReference<TName, TDocumentType>
-          : T extends (...args: never[]) => unknown
-            ? T
-            : T extends readonly unknown[]
-              ? {
-                  readonly [TIndex in keyof T]: NormalizePluginState<T[TIndex]>;
-                }
-              : T extends Readonly<Record<string, unknown>>
-                ? { readonly [TKey in keyof T]: NormalizePluginState<T[TKey]> }
-                : T;
+      : T extends PluginReference<infer TName>
+        ? PluginReference<TName>
+        : T extends (...args: never[]) => unknown
+          ? T
+          : T extends readonly unknown[]
+            ? {
+                readonly [TIndex in keyof T]: NormalizePluginState<T[TIndex]>;
+              }
+            : T extends Readonly<Record<string, unknown>>
+              ? { readonly [TKey in keyof T]: NormalizePluginState<T[TKey]> }
+              : T;
 
 export type InferPluginStoreState<P> = P extends {
   initialState: infer StoreState;
@@ -827,10 +905,8 @@ export type HtmlParserOptions = Readonly<{
   source: CodecDataSource;
 }>;
 
-/** Immutable plugin-name/type mapping available during HTML parsing. */
+/** Installed-plugin membership available during HTML parsing. */
 export type HtmlPluginRegistry = Readonly<{
-  getName: (type: string) => string | undefined;
-  getType: (name: string) => string;
   has: (name: string) => boolean;
 }>;
 
@@ -841,7 +917,7 @@ export type HtmlPluginContext<
   pluginState: Readonly<InferPluginStoreState<C>>;
   registry: HtmlPluginRegistry;
   state: EditorCoreStateView;
-  type: string;
+  name: string;
 }>;
 
 export type WithAnyName<

@@ -29,14 +29,13 @@ docs:
 
 ### 安装
 
-最快捷的表格功能集成方式是使用 `TableKit`，它包含预配置的 `TablePlugin`、`TableRowPlugin`、`TableCellPlugin` 和 `TableCellHeaderPlugin` 及其 [Plate UI](/docs/installation/plate-ui) 组件。
+最快捷的表格功能集成方式是使用 `TableKit`，它包含预配置的 `TablePlugin`、`TableRowPlugin` 和 `TableCellPlugin` 及其 [Plate UI](/docs/installation/plate-ui) 组件。
 
 <ComponentSource name="table-kit" />
 
 - [`TableElement`](/docs/components/table-node): 渲染表格容器
 - [`TableRowElement`](/docs/components/table-node): 渲染表格行
-- [`TableCellElement`](/docs/components/table-node): 渲染表格单元格
-- [`TableCellHeaderElement`](/docs/components/table-node): 渲染表头单元格
+- [`TableCellElement`](/docs/components/table-node): 根据节点的 `header` 属性将 `tableCell` 渲染为 `<td>` 或 `<th>`
 
 ### 添加套件
 
@@ -70,7 +69,7 @@ npm install @platejs/table
 
 在创建编辑器时将 `TablePlugin` 加入插件数组：
 
-`TablePlugin` 会把 `TableRowPlugin`、`TableCellPlugin` 和 `TableCellHeaderPlugin` 作为必需的结构依赖安装。
+`TablePlugin` 会把 `TableRowPlugin` 和 `TableCellPlugin` 作为必需的结构依赖安装。
 
 ```tsx
 import { TablePlugin } from '@platejs/table/react';
@@ -90,7 +89,6 @@ const editor = createPlateEditor({
 
 ```tsx
 import {
-  TableCellHeaderPlugin,
   TableCellPlugin,
   TablePlugin,
   TableRowPlugin,
@@ -98,7 +96,6 @@ import {
 import { createPlateEditor } from 'platejs/react';
 import {
   TableCellElement,
-  TableCellHeaderElement,
   TableElement,
   TableRowElement,
 } from '@/components/ui/table-node';
@@ -116,13 +113,12 @@ const editor = createPlateEditor({
     }),
     TableRowPlugin.configure({ component: TableRowElement }),
     TableCellPlugin.configure({ component: TableCellElement }),
-    TableCellHeaderPlugin.configure({ component: TableCellHeaderElement }),
   ],
 });
 ```
 
 - `.configure({ component })`: 指定 [`TableElement`](/docs/components/table-node) 渲染表格容器
-- `component`: 为表格行、单元格和表头单元格分配组件
+- `component`: 为表格行和单元格分配组件。`TableCellElement` 读取 `element.header` 来渲染表头单元格
 - `initialState.initialTableWidth`: 设置新建表格的初始宽度
 - `initialState.disableMerge`: 禁用单元格合并功能
 - `initialState.minColumnWidth`: 设置表格列的最小宽度
@@ -144,7 +140,7 @@ const editor = createPlateEditor({
 {
   icon: <TableIcon />,
   label: '表格',
-  value: KEYS.table,
+  value: PLUGINS.table,
 }
 ```
 
@@ -158,7 +154,7 @@ const editor = createPlateEditor({
 
 ### TablePlugin
 
-负责表格结构和行为，并要求安装行、单元格和表头单元格插件。
+负责表格结构和行为，并要求安装行和单元格插件。
 
 <API name="TablePlugin">
 <APIOptions>
@@ -190,11 +186,7 @@ const editor = createPlateEditor({
 
 ### TableCellPlugin
 
-必需的表格单元格结构插件。仅在替换其默认配置或组件时直接加入。
-
-### TableCellHeaderPlugin
-
-必需的表头单元格结构插件。仅在替换其默认配置或组件时直接加入。
+所有表格单元格共用的必需结构插件。表头单元格使用同一个 `tableCell` 类型，并设置 `header: true`。仅在替换其默认配置或组件时直接加入。
 
 ## API 参考
 
@@ -236,12 +228,12 @@ const editor = createPlateEditor({
 <APIItem name="header" type="boolean" optional>
 设为 `true` 表示创建表头单元格
 </APIItem>
-<APIItem name="row" type="TTableRowElement" optional>
+<APIItem name="row" type="TableRowElement" optional>
 行元素。若未指定 `header`，将根据行的子元素判断是否为表头单元格
 </APIItem>
 <APIItem name="children" type="Descendant[]" optional>
 新单元格节点的子元素
-- **默认值:** `[{ children: [{ text: '' }], type: editor.plugin(KEYS.p).type }]`
+- **默认值:** `[{ children: [{ text: '' }], type: editor.plugin(PLUGINS.paragraph).schema.element!.type }]`
 </APIItem>
 </APIOptions>
 
@@ -280,10 +272,10 @@ const editor = createPlateEditor({
 
 <API name="getCellBorders">
 <APIOptions>
-<APIItem name="element" type="TTableCellElement">
+<APIItem name="element" type="TableCellElement">
 要获取边框样式的表格单元格元素
 </APIItem>
-<APIItem name="defaultBorder" type="Required<TTableCellElementBorder>" optional>
+<APIItem name="defaultBorder" type="Required<TableCellBorder>" optional>
 当单元格边框未定义时使用的默认边框样式
 <APISubList>
 <APISubListItem parent="defaultBorder" name="color" type="string">
@@ -306,16 +298,16 @@ const editor = createPlateEditor({
   <APIItem type="BorderStylesDefault">
     包含以下属性的对象:
     <APISubList>
-      <APISubListItem parent="return" name="bottom" type="Required<TTableCellElementBorder>">
+      <APISubListItem parent="return" name="bottom" type="Required<TableCellBorder>">
         底部边框样式
       </APISubListItem>
-      <APISubListItem parent="return" name="right" type="Required<TTableCellElementBorder>">
+      <APISubListItem parent="return" name="right" type="Required<TableCellBorder>">
         右侧边框样式
       </APISubListItem>
-      <APISubListItem parent="return" name="left" type="Required<TTableCellElementBorder>" optional>
+      <APISubListItem parent="return" name="left" type="Required<TableCellBorder>" optional>
         左侧边框样式（仅首列单元格存在）
       </APISubListItem>
-      <APISubListItem parent="return" name="top" type="Required<TTableCellElementBorder>" optional>
+      <APISubListItem parent="return" name="top" type="Required<TableCellBorder>" optional>
         顶部边框样式（仅首行单元格存在）
       </APISubListItem>
     </APISubList>
@@ -347,7 +339,7 @@ const editor = createPlateEditor({
 
 <API name="getCellSize">
 <APIOptions>
-<APIItem name="element" type="TTableCellElement">
+<APIItem name="element" type="TableCellElement">
 要获取尺寸的表格单元格元素
 </APIItem>
 <APIItem name="colSizes" type="number[]" optional>
@@ -377,7 +369,7 @@ const editor = createPlateEditor({
 
 <API name="getColSpan">
 <APIParameters>
-<APIItem name="element" type="TTableCellElement">
+<APIItem name="element" type="TableCellElement">
 要获取列跨度的表格单元格元素
 </APIItem>
 </APIParameters>
@@ -396,7 +388,7 @@ const editor = createPlateEditor({
 
 <API name="getRowSpan">
 <APIParameters>
-  <APIItem name="element" type="TTableCellElement">
+  <APIItem name="element" type="TableCellElement">
     要获取行跨度的表格单元格元素
   </APIItem>
 </APIParameters>
@@ -406,20 +398,6 @@ const editor = createPlateEditor({
     单元格跨越的行数
     - **默认值:** `1`
   </APIItem>
-</APIReturns>
-</API>
-
-### editor.api.table.getCellTypes
-
-获取插件单元格类型
-
-<API name="getCellTypes">
-<APIReturns>
-
-<APIItem type="string[]">
-  编辑器表格单元格元素类型数组（td 和 th）
-</APIItem>
-
 </APIReturns>
 </API>
 
@@ -1039,16 +1017,16 @@ const editor = createPlateEditor({
   <APIItem type="BorderStylesDefault">
     包含单元格边框样式的对象：
     <APISubList>
-      <APISubListItem parent="return" name="bottom" type="Required<TTableCellElementBorder>">
+      <APISubListItem parent="return" name="bottom" type="Required<TableCellBorder>">
         底部边框样式。
       </APISubListItem>
-      <APISubListItem parent="return" name="right" type="Required<TTableCellElementBorder>">
+      <APISubListItem parent="return" name="right" type="Required<TableCellBorder>">
         右侧边框样式。
       </APISubListItem>
-      <APISubListItem parent="return" name="left" type="Required<TTableCellElementBorder>" optional>
+      <APISubListItem parent="return" name="left" type="Required<TableCellBorder>" optional>
         左侧边框样式。仅在第一列的单元格中存在。
       </APISubListItem>
-      <APISubListItem parent="return" name="top" type="Required<TTableCellElementBorder>" optional>
+      <APISubListItem parent="return" name="top" type="Required<TableCellBorder>" optional>
         顶部边框样式。仅在第一行的单元格中存在。
       </APISubListItem>
     </APISubList>

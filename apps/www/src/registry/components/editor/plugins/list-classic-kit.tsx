@@ -35,21 +35,21 @@ export const ListKit = [
       toggleBulleted: {
         handler: ({ editor }) =>
           editor.plugin(ListPlugin).update.toggle({
-            type: editor.plugin(BulletedListPlugin.name).type,
+            type: editor.plugin(BulletedListPlugin).type,
           }),
         keys: 'mod+alt+5',
       },
       toggleNumbered: {
         handler: ({ editor }) =>
           editor.plugin(ListPlugin).update.toggle({
-            type: editor.plugin(NumberedListPlugin.name).type,
+            type: editor.plugin(NumberedListPlugin).type,
           }),
         keys: 'mod+alt+6',
       },
       toggleTask: {
         handler: ({ editor }) =>
           editor.plugin(ListPlugin).update.toggle({
-            type: editor.plugin(TaskListPlugin.name).type,
+            type: editor.plugin(TaskListPlugin).type,
           }),
         keys: 'mod+alt+7',
       },

@@ -1,5 +1,5 @@
 import type {
-  Editor,
+  AnyEditor as Editor,
   EditorCommand,
   EditorCommandDispatch,
   EditorCoreUpdateMethods,
@@ -499,7 +499,7 @@ export const createEditorUpdateApi = <
             let handled = false;
 
             invoke((tx) => {
-              handled = tx.command(command, input);
+              handled = Reflect.apply(tx.command, tx, [command, input]);
             });
 
             return handled;

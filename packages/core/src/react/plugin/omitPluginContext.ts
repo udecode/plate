@@ -11,10 +11,10 @@ export const omitPluginContext = <
     defineCodecs,
     editor,
     installed,
+    name,
     plugin,
     read,
     store,
-    type,
     update,
     ...rest
   } = ctx;

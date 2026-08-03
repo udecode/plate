@@ -1,6 +1,6 @@
 import {
   createEditor,
-  defineEditorExtension,
+  defineExtension,
   editorCommands,
   type Editor,
 } from '@platejs/plite';
@@ -27,8 +27,7 @@ const initialValue: CustomValue = [
   { type: 'paragraph', children: [{ text: 'paragraph' }] },
 ];
 
-const LinkExtension = defineEditorExtension({
-  name: 'link',
+const LinkExtension = defineExtension('link', {
   read: ({ state }) => ({
     nested: {
       canOpen: () => state.selection() != null,
@@ -48,8 +47,7 @@ const LinkExtension = defineEditorExtension({
   }),
 });
 
-const MediaExtension = defineEditorExtension({
-  name: 'media',
+const MediaExtension = defineExtension('media', {
   update: ({ tx }) => ({
     insertImage(src: string) {
       tx.nodes.insert({
@@ -61,8 +59,7 @@ const MediaExtension = defineEditorExtension({
   }),
 });
 
-const TableExtension = defineEditorExtension({
-  name: 'table',
+const TableExtension = defineExtension('table', {
   read: ({ state }) => ({
     isInTable: () => state.nodes.hasPath([0]),
     rowCount: () => state.children().length,
@@ -95,8 +92,9 @@ const getRuntimeMode = (editor: Editor) => {
   return mode;
 };
 
-const runtimeExtension = defineEditorExtension({
-  activate(editor, context) {
+const runtimeExtension = defineExtension('runtimeTable', {
+  activate(context) {
+    const { editor } = context;
     let currentMode: 'cell' | 'text' = 'text';
     const signal: AbortSignal = context.signal;
     const mode: RuntimeMode = {
@@ -112,7 +110,6 @@ const runtimeExtension = defineEditorExtension({
     });
     void signal;
   },
-  name: 'runtimeTable',
   read: ({ editor, state }) => {
     const mode = getRuntimeMode(editor);
 
@@ -137,16 +134,14 @@ const runtimeExtension = defineEditorExtension({
   },
 });
 
-defineEditorExtension({
-  name: 'bad-register-slot',
+defineExtension('bad-register-slot', {
   // @ts-expect-error extension registration is declarative
   register() {
     return {};
   },
 });
 
-defineEditorExtension({
-  name: 'bad-command-namespace',
+defineExtension('bad-command-namespace', {
   // @ts-expect-error command registrations require a full registration
   commands: () => [
     {
@@ -155,16 +150,14 @@ defineEditorExtension({
   ],
 });
 
-defineEditorExtension({
-  name: 'bad-engine-transform',
+defineExtension('bad-engine-transform', {
   // @ts-expect-error Plite extensions expose pure commands, not transforms
   transforms: {
     normalize() {},
   },
 });
 
-defineEditorExtension({
-  name: 'middleware-context-typing',
+defineExtension('middleware-context-typing', {
   commands: ({ around }) => [
     around(editorCommands.insertText, ({ next, ...context }) => {
       context.state.selection();
@@ -178,8 +171,7 @@ defineEditorExtension({
   ],
 });
 
-defineEditorExtension({
-  name: 'correction-typing',
+defineExtension('correction-typing', {
   corrections: [
     {
       event: 'content',
@@ -201,14 +193,12 @@ defineEditorExtension({
   ],
 });
 
-defineEditorExtension({
-  name: 'bad-legacy-normalizers-slot',
+defineExtension('bad-legacy-normalizers-slot', {
   // @ts-expect-error extensions use declarative corrections
   normalizers: {},
 });
 
-defineEditorExtension({
-  name: 'bad-correction-event',
+defineExtension('bad-correction-event', {
   corrections: [
     {
       // @ts-expect-error corrections only expose declared events

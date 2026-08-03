@@ -7,12 +7,11 @@ import {
   type Path,
   type Element,
 } from '@platejs/plite';
-import { getEditorDefaultBlockType } from '@platejs/plite/internal';
 
 import type { AnyBasePlugin } from '../../plugin/BasePlugin';
 import type { DefinitionOf, MatchRules } from '../../plugin/PluginDefinition';
 
-import { createBasePlugin } from '../../plugin/createBasePlugin';
+import { defineBasePlugin } from '../../plugin/defineBasePlugin';
 import { createPluginContext } from '../../plugin/createPluginContext.internal';
 import {
   getCompiledPlatePlugin,
@@ -37,11 +36,21 @@ export type OverridePluginUpdate = {
 };
 
 /** Override the editor based on resolved Plate plugin node behavior. */
-export const OverridePlugin = createBasePlugin({
-  name: 'override',
-  update: ({ editor, tx }): OverridePluginUpdate => {
+export const OverridePlugin = defineBasePlugin('override', {
+  update: ({ tx }): OverridePluginUpdate => {
+    const getDefaultBlock = () => {
+      const defaultBlock = tx.schema.createDefaultRootChild();
+
+      if (!ElementApi.isElement(defaultBlock)) {
+        throw new Error(
+          'Plate schema must declare a default primary-root element.'
+        );
+      }
+
+      return defaultBlock;
+    };
     const resetBlock = (at: Path) => {
-      tx.blocks.reset({ type: getEditorDefaultBlockType(editor) }, { at });
+      tx.blocks.reset(NodeApi.extractProps(getDefaultBlock()), { at });
     };
     const insertExitBreak = () => {
       const selection = tx.selection();
@@ -52,8 +61,7 @@ export const OverridePlugin = createBasePlugin({
 
       if (!block) return false;
 
-      const defaultBlockType = getEditorDefaultBlockType(editor);
-      const defaultBlock = tx.schema.create(defaultBlockType);
+      const defaultBlock = getDefaultBlock();
       const target = tx.nodes.above({
         at: block[1],
         match: (node, path) =>
@@ -65,16 +73,10 @@ export const OverridePlugin = createBasePlugin({
       });
       const ancestorPath = target?.[1] ?? block[1];
 
-      tx.nodes.insert(
-        {
-          children: [{ text: '' }],
-          type: defaultBlockType,
-        },
-        {
-          at: PathApi.next(ancestorPath),
-          select: true,
-        }
-      );
+      tx.nodes.insert(defaultBlock, {
+        at: PathApi.next(ancestorPath),
+        select: true,
+      });
 
       return true;
     };
@@ -164,8 +166,8 @@ export const OverridePlugin = createBasePlugin({
     path: Path,
     hasRules: (plugin: AnyBasePlugin) => boolean
   ) => {
-    for (const pluginName of getPlateRuntime(editor).pluginCache.rules.match) {
-      const plugin = getCompiledPlatePlugin(editor, pluginName)!;
+    for (const name of getPlateRuntime(editor).pluginCache.rules.match) {
+      const plugin = getCompiledPlatePlugin(editor, name)!;
       const match = plugin?.rules?.match;
 
       if (
@@ -226,8 +228,8 @@ export const OverridePlugin = createBasePlugin({
     if (!plugin) return true;
     if (!plugin.rules?.merge?.removeEmpty) return false;
 
-    for (const pluginName of getPlateRuntime(editor).pluginCache.rules.match) {
-      const overridePlugin = getCompiledPlatePlugin(editor, pluginName)!;
+    for (const name of getPlateRuntime(editor).pluginCache.rules.match) {
+      const overridePlugin = getCompiledPlatePlugin(editor, name)!;
       const match = overridePlugin?.rules?.match;
 
       if (

@@ -578,7 +578,7 @@ const PliteSingleEditor = <
         anchor: editor.anchor,
         editor,
         extension: editor.extension,
-        extend: editor.extend,
+        install: editor.install,
         read: editor.read,
         subscribe: editor.subscribe,
         subscribeCommit: editor.subscribeCommit,
@@ -587,7 +587,7 @@ const PliteSingleEditor = <
     [editor]
   );
   const getView = useCallback(
-    (options = {}) => createEditorView(runtime, options),
+    (options = {}) => createEditorView(runtime.editor, options),
     [runtime]
   );
   const registerViewEditor = useCallback(

@@ -5,11 +5,13 @@ import React from 'react';
 import { property, schema, target, type Element } from '@platejs/plite';
 import { render } from '@testing-library/react';
 
-import { createBasePlugin } from '../../lib';
+import { BaseParagraphPlugin, defineBasePlugin } from '../../lib';
+import { getCompiledPlatePlugin } from '../../internal/plugin/compilePlateModel';
 import { TestPlate as Plate } from '../__tests__/TestPlate';
 import { PlateRoot } from '../components/PlateRoot';
+import type { PlateEditor } from '../editor/PlateEditor';
 import { createPlateEditor } from '../editor/withPlate';
-import { createPlatePlugin } from '../plugin/createPlatePlugin';
+import { ParagraphPlugin } from '../plugins/paragraph/ParagraphPlugin';
 import { useElement } from '../stores/element/useElement';
 import { pluginRenderElement } from './pluginRenderElement';
 
@@ -18,24 +20,26 @@ const createValue = () =>
     {
       children: [{ text: 'Body' }],
       marker: 'yes',
-      type: 'p',
+      type: 'paragraph',
     },
   ] as any;
 
-const MarkerPlugin = createBasePlugin({
-  name: 'marker',
-  schema: {
-    properties: [
-      schema.elementProperty('marker', property.string(), {
-        target: target.type('p'),
+const MarkerPlugin = defineBasePlugin('marker', {
+  schema: () => ({
+    properties: {
+      marker: schema.elementProperty(property.string(), {
+        target: target.element(BaseParagraphPlugin),
       }),
-    ],
-  },
+    },
+  }),
 });
 
-const renderPlugin = (editor: ReturnType<typeof createPlateEditor>) => {
+const renderPlugin = (
+  editor: PlateEditor,
+  name: string = ParagraphPlugin.name
+) => {
   const element = editor.read.children()[0] as any;
-  const plugin = editor.plugin(element.type).plugin!;
+  const plugin = getCompiledPlatePlugin(editor, name)!;
   const renderElement = pluginRenderElement(editor, plugin as any);
 
   const RenderProbe = () =>
@@ -66,14 +70,14 @@ describe('pluginRenderElement', () => {
     const element = container.querySelector('[data-plite-node="element"]');
 
     expect(element).toBeInTheDocument();
-    expect(element).toHaveClass('plite-p');
+    expect(element).toHaveClass('plite-paragraph');
   });
 
   it('keeps element context available for custom node components', () => {
     const editor = createPlateEditor({
       plugins: [
         MarkerPlugin,
-        createPlatePlugin({
+        ParagraphPlugin.configure({
           component: ({ attributes, children }) => {
             const element = useElement<any>();
 
@@ -87,13 +91,6 @@ describe('pluginRenderElement', () => {
               </p>
             );
           },
-          name: 'p',
-          type: 'p',
-          schema: {
-            element: {
-              content: schema.content.open({ default: 'text', min: 1 }),
-            },
-          },
         }),
       ],
       initialValue: createValue(),
@@ -105,11 +102,10 @@ describe('pluginRenderElement', () => {
   });
 
   it('passes each wrapper its own plugin API', () => {
-    const WrapperPlugin = createBasePlugin({
+    const WrapperPlugin = defineBasePlugin('wrapper', {
       api: () => ({
         isMarked: (element: Element) => element.marker === 'yes',
       }),
-      name: 'wrapper',
     }).extend({
       render: {
         belowNodes: ({ api, element }) =>
@@ -131,26 +127,23 @@ describe('pluginRenderElement', () => {
   });
 
   it('preserves Plite children for void render.as tags', () => {
+    const HorizontalRulePlugin = defineBasePlugin('horizontalRule', {
+      schema: { element: { void: 'block' } },
+      render: {
+        as: 'hr',
+      },
+    });
     const editor = createPlateEditor({
-      plugins: [
-        createBasePlugin({
-          name: 'hr',
-          type: 'hr',
-          schema: { element: { void: 'block' } },
-          render: {
-            as: 'hr',
-          },
-        }),
-      ],
+      plugins: [HorizontalRulePlugin],
       initialValue: [
         {
           children: [{ text: '' }],
-          type: 'hr',
+          type: 'horizontalRule',
         },
       ] as any,
     });
 
-    const { container } = renderPlugin(editor);
+    const { container } = renderPlugin(editor, HorizontalRulePlugin.name);
     const element = container.querySelector('[data-plite-node="element"]');
 
     expect(element).toBeInTheDocument();

@@ -1,8 +1,8 @@
 import type {
-  TTableCellElement,
-  TTableElement,
-  TTableRowElement,
-} from '@platejs/utils';
+  TableCellElement,
+  TableElement,
+  TableRowElement,
+} from '../BaseTablePlugin';
 
 import { createDetachedTableContext } from './context';
 import { compileTableGrid, readTableGridCompilerMetrics } from './grid';
@@ -44,56 +44,56 @@ const TABLE_GRID_RETENTION_COHORTS = [
 const createCell: TableCellFactory = ({ col, row }) => ({
   children: [{ text: '' }],
   id: `created-${row}-${col}`,
-  type: 'td',
+  type: 'tableCell',
 });
 
-const createDenseTable = (size: number): TTableElement => ({
+const createDenseTable = (size: number): TableElement => ({
   children: Array.from(
     { length: size },
-    (_, row): TTableRowElement => ({
+    (_, row): TableRowElement => ({
       children: Array.from(
         { length: size },
-        (_, col): TTableCellElement => ({
+        (_, col): TableCellElement => ({
           children: [{ text: `${row}:${col}` }],
           id: `cell-${row}-${col}`,
-          type: 'td',
+          type: 'tableCell',
         })
       ),
       id: `row-${row}`,
-      type: 'tr',
+      type: 'tableRow',
     })
   ),
   id: 'table',
   type: 'table',
 });
 
-const createSparseTable = (size: number): TTableElement => ({
+const createSparseTable = (size: number): TableElement => ({
   children: Array.from(
     { length: size },
-    (_, row): TTableRowElement => ({
+    (_, row): TableRowElement => ({
       children: [
         {
           children: [{ text: `${row}` }],
           colSpan: size,
           id: `cell-${row}-0`,
-          type: 'td',
+          type: 'tableCell',
         },
       ],
       id: `row-${row}`,
-      type: 'tr',
+      type: 'tableRow',
     })
   ),
   id: 'table',
   type: 'table',
 });
 
-const createUncoveredTable = (size: number): TTableElement => {
+const createUncoveredTable = (size: number): TableElement => {
   const table = createDenseTable(size);
 
   return {
     ...table,
     children: table.children.map((node, rowIndex) => {
-      const row = node as TTableRowElement;
+      const row = node as TableRowElement;
 
       return {
         ...row,
@@ -296,7 +296,7 @@ describe('TableGrid compiler benchmark', () => {
     for (const { tables } of TABLE_GRID_RETENTION_COHORTS) {
       const references = (() =>
         Array.from({ length: tables }, (_, index) => {
-          const table: TTableElement = {
+          const table: TableElement = {
             ...createDenseTable(1),
             id: `retained-${tables}-${index}`,
           };

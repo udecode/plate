@@ -268,21 +268,21 @@
     ```tsx
     // Usage via Plate component
     <Plate
-      onNodeChange={({ editor, node, operation, prevNode }) => {
-        console.log("Node changed:", { node, operation, prevNode });
+      onNodeChange={({ editor, node, operation, previousNode }) => {
+        console.log("Node changed:", { node, operation, previousNode });
       }}
-      onTextChange={({ editor, node, operation, prevText, text }) => {
-        console.log("Text changed:", { text, prevText, operation });
+      onTextChange={({ editor, node, operation, previousText, text }) => {
+        console.log("Text changed:", { text, previousText, operation });
       }}
     />;
 
     // Usage via plugin
     MyPlugin.configure({
       handlers: {
-        onNodeChange: ({ node, operation, prevNode }) => {
+        onNodeChange: ({ node, operation, previousNode }) => {
           // Handle node changes
         },
-        onTextChange: ({ node, operation, prevText, text }) => {
+        onTextChange: ({ node, operation, previousText, text }) => {
           // Handle text changes
         },
       },

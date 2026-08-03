@@ -4,4 +4,4 @@
 
 - Move `JuicePlugin` to the Base plugin API
 - Remove React runtime requirements
-- Inline CSS through the flat `parsers.html.transformData` hook
+- Inline CSS through the `'text/html'` codec `transformData` hook

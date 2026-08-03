@@ -1,4 +1,4 @@
-import { createYjsExtension, type YjsAwarenessChange } from '@platejs/yjs';
+import { yjs, type YjsAwarenessChange } from '@platejs/yjs';
 import { useYjsRemoteCursors } from '@platejs/yjs/react';
 import type { KeyboardEvent, MouseEvent, PointerEvent } from 'react';
 import { useEffect, useMemo, useState } from 'react';
@@ -20,6 +20,7 @@ import {
   type TextIn,
   TextApi,
 } from '@platejs/plite';
+import { history } from '@platejs/plite-history';
 import {
   Editable,
   type RenderElementProps,
@@ -107,7 +108,7 @@ const ROOT_NAME = '@platejs/plite';
 const schemaSlot = defineExtensionSlot('yjs-collaboration-schema');
 
 const createCollaborationSchema = (version: number) =>
-  defineEditorSchema({
+  defineEditorSchema('schema:yjs-collaboration-example', {
     elements: {
       'block-quote': {
         content: schema.content.type('paragraph', {
@@ -139,9 +140,10 @@ type CollaborationValue = EditorValueFromExtensions<
 >;
 type CollaborationElement = ElementIn<CollaborationValue>;
 type CollaborationText = TextIn<CollaborationValue>;
+const HistoryExtension = history();
 type YjsEditor = ReactEditor<
   CollaborationValue,
-  readonly [ReturnType<typeof createYjsExtension>]
+  readonly [typeof HistoryExtension, ReturnType<typeof yjs>]
 >;
 
 const syncPeerHistoryDepths = (peer: ExamplePeer, editor: YjsEditor) => {
@@ -236,7 +238,7 @@ const createSeedSnapshot = () => {
   const seedEditor = createEditor({
     extensions: [
       schemaSlot.of(createCollaborationSchema(1)),
-      createYjsExtension({
+      yjs({
         clientId: 'seed',
         doc: seedDoc,
         rootName: ROOT_NAME,
@@ -1323,7 +1325,7 @@ const attemptIncompatibleJoin = (roomDoc: Y.Doc): IncompatibleJoinResult => {
     const candidate = createEditor({
       extensions: [
         schemaSlot.of(createCollaborationSchema(2)),
-        createYjsExtension({
+        yjs({
           clientId: 'incompatible-candidate',
           doc: candidateDoc,
           rootName: ROOT_NAME,
@@ -1356,8 +1358,9 @@ const PeerPanel = ({
 }) => {
   const editor = usePliteEditor({
     extensions: [
+      HistoryExtension,
       schemaSlot.of(createCollaborationSchema(1)),
-      createYjsExtension({
+      yjs({
         awareness: peer.awareness,
         clientId: peer.id,
         doc: peer.doc,

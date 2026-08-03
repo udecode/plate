@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {
   createEditor as createPliteEditor,
-  defineEditorExtension,
+  defineExtension,
   defineEditorSchema,
   type Descendant,
   ElementApi,
@@ -111,7 +111,7 @@ const blockContent = schema.content.types(
   { default: { type: 'paragraph' }, min: 1 }
 );
 
-const SnapshotContractSchema = defineEditorSchema({
+const SnapshotContractSchema = defineEditorSchema('schema:snapshot-contract', {
   elements: {
     article: { content: blockContent } as const,
     block: { content: inlineContent } as const,
@@ -153,20 +153,23 @@ const SnapshotContractSchema = defineEditorSchema({
   },
   id: 'snapshot-contract',
   properties: [schema.textProperty('segment', property.boolean())],
-  root: schema.content.types([
-    'article',
-    'block',
-    'bulleted-list',
-    'code-block',
-    'container',
-    'heading',
-    'list-item',
-    'numbered-list',
-    'paragraph',
-    'quote',
-    'section',
-    'thematic-break',
-  ]),
+  root: schema.content.types(
+    [
+      'article',
+      'block',
+      'bulleted-list',
+      'code-block',
+      'container',
+      'heading',
+      'list-item',
+      'numbered-list',
+      'paragraph',
+      'quote',
+      'section',
+      'thematic-break',
+    ],
+    { default: { type: 'paragraph' }, min: 1 }
+  ),
   unknown: 'preserve',
   version: 1,
 });
@@ -533,8 +536,8 @@ it('defers custom normalization until the outer update commits', () => {
   let runs = 0;
   let runsInsideCallback = 0;
 
-  editor.extend(
-    defineEditorExtension({
+  editor.install(
+    defineExtension('deferred-correction-observer', {
       corrections: [
         {
           correct() {
@@ -543,7 +546,6 @@ it('defers custom normalization until the outer update commits', () => {
           event: 'content',
         },
       ],
-      name: 'deferred-correction-observer',
     })
   );
 
@@ -568,8 +570,8 @@ it('normalizes split dirty paths instead of the full document', () => {
   const editor = createEditor();
   const normalizedTopLevelPaths: number[] = [];
 
-  editor.extend(
-    defineEditorExtension({
+  editor.install(
+    defineExtension('dirty-path-observer', {
       corrections: [
         {
           correct({ entry: [, path] }) {
@@ -580,7 +582,6 @@ it('normalizes split dirty paths instead of the full document', () => {
           event: 'content',
         },
       ],
-      name: 'dirty-path-observer',
     })
   );
 
@@ -705,8 +706,16 @@ it('shouldMergeNodesRemovePrevNode can remove an empty previous sibling during m
 it('fails intentionally when custom normalization revisits an earlier draft state', () => {
   const editor = createEditor();
 
-  editor.extend(
-    defineEditorExtension({
+  editorReplace(editor, {
+    children: [
+      { type: 'paragraph', children: [{ text: 'alpha' }] },
+      { type: 'paragraph', children: [{ text: 'beta' }] },
+    ],
+    selection: null,
+  });
+
+  editor.install(
+    defineExtension('cycling-root-correction', {
       corrections: [
         {
           correct({ tx }) {
@@ -727,7 +736,6 @@ it('fails intentionally when custom normalization revisits an earlier draft stat
           query: 'root',
         },
       ],
-      name: 'cycling-root-correction',
     })
   );
 
@@ -747,8 +755,8 @@ it('fails intentionally when custom normalization revisits an earlier draft stat
 it('treats semantic id prop changes as normalization progress', () => {
   const editor = createEditor();
 
-  editor.extend(
-    defineEditorExtension({
+  editor.install(
+    defineExtension('semantic-id-correction', {
       corrections: [
         {
           correct({ entry: [node, path], tx }) {
@@ -765,7 +773,6 @@ it('treats semantic id prop changes as normalization progress', () => {
           event: 'content',
         },
       ],
-      name: 'semantic-id-correction',
     })
   );
 
@@ -788,8 +795,8 @@ it('treats semantic id prop changes as normalization progress', () => {
 it('a registered correction can enforce a descendant-level node rewrite', () => {
   const editor = createEditor();
 
-  editor.extend(
-    defineEditorExtension({
+  editor.install(
+    defineExtension('heading-correction', {
       corrections: [
         {
           correct({ entry: [node, path], tx }) {
@@ -809,7 +816,6 @@ it('a registered correction can enforce a descendant-level node rewrite', () => 
           event: 'content',
         },
       ],
-      name: 'heading-correction',
     })
   );
 
@@ -836,8 +842,8 @@ it('a registered correction can enforce a descendant-level node rewrite', () => 
 it('a root correction can wrap a semantically matched top-level block', () => {
   const editor = createEditor();
 
-  editor.extend(
-    defineEditorExtension({
+  editor.install(
+    defineExtension('root-block-content', {
       corrections: [
         {
           correct: ({ entry, tx }) => {
@@ -862,7 +868,6 @@ it('a root correction can wrap a semantically matched top-level block', () => {
           query: 'root',
         },
       ],
-      name: 'root-block-content',
     })
   );
 
@@ -2528,8 +2533,8 @@ it('publishes an immutable cloned selection for a text change', () => {
 it('runs custom corrections after text changes', () => {
   const editor = createEditor();
 
-  editor.extend(
-    defineEditorExtension({
+  editor.install(
+    defineExtension('direct-text-correction', {
       corrections: [
         {
           correct({ entry: [node, path], tx }) {
@@ -2553,7 +2558,6 @@ it('runs custom corrections after text changes', () => {
           event: 'content',
         },
       ],
-      name: 'direct-text-correction',
     })
   );
 

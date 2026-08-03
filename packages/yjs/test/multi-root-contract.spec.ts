@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   createEditor,
-  createEditorRuntime,
   createEditorView,
   defineEditorSchema,
   property,
@@ -14,7 +13,7 @@ import { history } from '@platejs/plite-history';
 import * as Y from 'yjs';
 
 import { readPliteValueFromYjs } from '../src/core/document';
-import { createYjsExtension } from '../src/core/extension';
+import { yjs } from '../src/core/extension';
 import { undoEditorHistory } from './support/collaboration';
 
 const paragraph = (text: string): Descendant => ({
@@ -33,7 +32,7 @@ const media = (
   type: 'media',
 });
 
-const ContentRootSchema = defineEditorSchema({
+const ContentRootSchema = defineEditorSchema('schema:yjs-content-root', {
   elements: {
     media: {
       content: schema.content.text({ default: 'text', min: 1 }),
@@ -70,8 +69,8 @@ const createPeer = (
   editor: Editor;
 } => {
   const editor = createEditor({ initialValue: [media()] });
-  const cleanup = editor.extend(
-    createYjsExtension({
+  const cleanup = editor.install(
+    yjs({
       clientId,
       doc,
       rootName: '@platejs/plite',
@@ -93,8 +92,8 @@ const createContentRootPeer = (
     extensions: [history(), ContentRootSchema],
     initialValue: [paragraph('Body')],
   });
-  const cleanup = editor.extend(
-    createYjsExtension({
+  const cleanup = editor.install(
+    yjs({
       clientId,
       doc,
       rootName: '@platejs/plite',
@@ -114,7 +113,7 @@ const sync = (source: { doc: Y.Doc }, target: { doc: Y.Doc }): void => {
 describe('@platejs/yjs multi-root document contract', () => {
   it('owns the whole runtime when installed from a named-root view', () => {
     const doc = new Y.Doc();
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       initialValue: {
         children: [paragraph('Body')],
         roots: { header: [paragraph('Header')] },
@@ -122,8 +121,8 @@ describe('@platejs/yjs multi-root document contract', () => {
     });
     const main = createEditorView(runtime);
     const header = createEditorView(runtime, { root: 'header' });
-    const cleanup = header.extend(
-      createYjsExtension({
+    const cleanup = header.install(
+      yjs({
         doc,
         rootName: '@platejs/plite',
       })

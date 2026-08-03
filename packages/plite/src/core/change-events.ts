@@ -1,5 +1,5 @@
 import type {
-  Editor,
+  AnyEditor as Editor,
   EditorCommit,
   EditorDocumentValue,
   EditorNodeChangeContext,
@@ -419,7 +419,7 @@ export const forEachEditorNodeChange = <TEditor extends Editor>(
         node: afterNode,
         path: [...(afterPath ?? beforePath!)] as Path,
         previousPath: beforePath ? ([...beforePath] as Path) : null,
-        prevNode: beforeNode,
+        previousNode: beforeNode,
         root: publicRoot,
       } as EditorNodeChangeContext<TEditor>);
     }
@@ -481,7 +481,7 @@ export const forEachEditorTextChange = <TEditor extends Editor>(
           nodeAt(beforeChildren, beforePath.slice(0, -1)),
         path: [...afterPath],
         previousPath: [...beforePath],
-        prevText: beforeNode.text,
+        previousText: beforeNode.text,
         root: publicRoot,
         text: afterNode.text,
       } as EditorTextChangeContext<TEditor>);

@@ -1,4 +1,8 @@
-import type { AnyBasePluginDefinition } from './PluginDefinition';
+import type {
+  AnyBasePluginDefinition,
+  PluginReference,
+  PluginSchemaIdentity,
+} from './PluginDefinition';
 import type {
   InferExactPluginSchemaContribution,
   InferPluginDocumentType,
@@ -116,7 +120,7 @@ export type MarkdownPlateNode<D extends AnyBasePluginDefinition> = [
       : TextNode<D> | PropertyElementNode<D>
   : ElementNode<D>;
 
-type DefaultMdastNode<TType extends string> = TType extends 'a'
+type DefaultMdastNode<TType extends string> = TType extends 'link'
   ? Link
   : TType extends `h${1 | 2 | 3 | 4 | 5 | 6}`
     ? Heading
@@ -126,7 +130,7 @@ type DefaultMdastNode<TType extends string> = TType extends 'a'
         ? Strong
         : TType extends 'code'
           ? InlineCode
-          : TType extends 'code_block'
+          : TType extends 'codeBlock'
             ? Code
             : TType extends 'equation'
               ? MdMathNode
@@ -134,35 +138,35 @@ type DefaultMdastNode<TType extends string> = TType extends 'a'
                 ? FootnoteDefinition
                 : TType extends 'footnoteReference'
                   ? FootnoteReference
-                  : TType extends 'hr'
+                  : TType extends 'horizontalRule'
                     ? ThematicBreak
-                    : TType extends 'img'
+                    : TType extends 'image'
                       ? Image
-                      : TType extends 'inline_equation'
+                      : TType extends 'inlineEquation'
                         ? InlineMath
                         : TType extends 'italic'
                           ? Emphasis
                           : TType extends 'list'
                             ? List
-                            : TType extends 'li'
+                            : TType extends 'listItem'
                               ? ListItem
-                              : TType extends 'p'
+                              : TType extends 'paragraph'
                                 ? Paragraph
                                 : TType extends 'strikethrough'
                                   ? Delete
                                   : TType extends 'table'
                                     ? Table
-                                    : TType extends 'td' | 'th'
+                                    : TType extends 'tableCell'
                                       ? TableCell
-                                      : TType extends 'tr'
+                                      : TType extends 'tableRow'
                                         ? TableRow
                                         : TType extends
                                               | 'audio'
                                               | 'callout'
                                               | 'column'
-                                              | 'column_group'
+                                              | 'columnGroup'
                                               | 'file'
-                                              | 'media_embed'
+                                              | 'mediaEmbed'
                                               | 'toc'
                                               | 'toggle'
                                               | 'video'
@@ -244,9 +248,9 @@ export type MarkdownDecoration = Readonly<
 >;
 
 export type MarkdownPluginRegistry = Readonly<{
-  getName: (type: string) => string | undefined;
-  getType: (pluginName: string) => string;
-  has: (pluginName: string) => boolean;
+  has: (plugin: PluginReference | string) => boolean;
+  key: (plugin: PluginReference | string) => string | undefined;
+  type: (plugin: PluginReference | string) => string | undefined;
 }>;
 
 type MarkdownContext = Readonly<{
@@ -255,67 +259,71 @@ type MarkdownContext = Readonly<{
   registry: MarkdownPluginRegistry;
 }>;
 
-export type MarkdownDecodeContext<TNode extends UnistNode = UnistNode> =
-  MarkdownContext &
-    Readonly<{
-      build: (
-        node: RootContent | UnistNode,
-        decoration?: MarkdownDecoration
-      ) => Descendant[];
-      caption: (children: readonly Descendant[]) => readonly Descendant[];
-      decode: (
-        nodes: readonly RootContent[],
-        decoration?: MarkdownDecoration
-      ) => Descendant[];
-      decodeNodes: (
-        nodes: readonly RootContent[],
-        decoration?: MarkdownDecoration
-      ) => Descendant[];
-      decodeTexts: (
-        node: Delete | Emphasis | Strong,
-        decoration?: MarkdownDecoration
-      ) => Descendant[];
-      decoration: MarkdownDecoration;
-      node: TNode;
-      parseAttributes: (
-        attributes: readonly (MdxJsxAttribute | MdxJsxExpressionAttribute)[]
-      ) => Record<string, unknown>;
-      serializeUnknown: (node: MdxJsxFlowElement) => string;
-      splitLineBreaks?: boolean;
-      type: string;
-    }>;
+export type MarkdownDecodeContext<
+  TNode extends UnistNode = UnistNode,
+  D extends AnyBasePluginDefinition = never,
+> = MarkdownContext &
+  PluginSchemaIdentity<D> &
+  Readonly<{
+    build: (
+      node: RootContent | UnistNode,
+      decoration?: MarkdownDecoration
+    ) => Descendant[];
+    caption: (children: readonly Descendant[]) => readonly Descendant[];
+    decode: (
+      nodes: readonly RootContent[],
+      decoration?: MarkdownDecoration
+    ) => Descendant[];
+    decodeNodes: (
+      nodes: readonly RootContent[],
+      decoration?: MarkdownDecoration
+    ) => Descendant[];
+    decodeTexts: (
+      node: Delete | Emphasis | Strong,
+      decoration?: MarkdownDecoration
+    ) => Descendant[];
+    decoration: MarkdownDecoration;
+    node: TNode;
+    parseAttributes: (
+      attributes: readonly (MdxJsxAttribute | MdxJsxExpressionAttribute)[]
+    ) => Record<string, unknown>;
+    serializeUnknown: (node: MdxJsxFlowElement) => string;
+    splitLineBreaks?: boolean;
+  }>;
 
-export type MarkdownEncodeContext<TNode extends Descendant = Descendant> =
-  MarkdownContext &
-    Readonly<{
-      encode: (
-        nodes: readonly Descendant[],
-        options?: Readonly<{ isBlock?: boolean }>
-      ) => RootContent[];
-      encodeBlocks: (nodes: readonly Descendant[]) => BlockContent[];
-      encodeFlow: (
-        nodes: readonly Descendant[]
-      ) => (BlockContent | DefinitionContent)[];
-      encodePhrasing: (nodes: readonly Descendant[]) => PhrasingContent[];
-      isFlow: (node: RootContent) => node is BlockContent | DefinitionContent;
-      isPhrasing: (node: RootContent) => node is PhrasingContent;
-      node: TNode;
-      preserveEmptyParagraphs?: boolean;
-      propsToAttributes: (props: Record<string, unknown>) => MdxJsxAttribute[];
-      readPlainInline: (children: readonly Descendant[]) => string | null;
-      resourceLink: boolean;
-      type: string;
-    }>;
+export type MarkdownEncodeContext<
+  TNode extends Descendant = Descendant,
+  D extends AnyBasePluginDefinition = never,
+> = MarkdownContext &
+  PluginSchemaIdentity<D> &
+  Readonly<{
+    encode: (
+      nodes: readonly Descendant[],
+      options?: Readonly<{ isBlock?: boolean }>
+    ) => RootContent[];
+    encodeBlocks: (nodes: readonly Descendant[]) => BlockContent[];
+    encodeFlow: (
+      nodes: readonly Descendant[]
+    ) => (BlockContent | DefinitionContent)[];
+    encodePhrasing: (nodes: readonly Descendant[]) => PhrasingContent[];
+    isFlow: (node: RootContent) => node is BlockContent | DefinitionContent;
+    isPhrasing: (node: RootContent) => node is PhrasingContent;
+    node: TNode;
+    preserveEmptyParagraphs?: boolean;
+    propsToAttributes: (props: Record<string, unknown>) => MdxJsxAttribute[];
+    readPlainInline: (children: readonly Descendant[]) => string | null;
+    resourceLink: boolean;
+  }>;
 
 type MarkdownNodeCodecBase<
   D extends AnyBasePluginDefinition,
   TSource extends UnistNode,
 > = Readonly<{
   decode?: (
-    context: MarkdownDecodeContext<TSource>
+    context: MarkdownDecodeContext<TSource, D>
   ) => Descendant | Descendant[] | undefined;
   encode?: (
-    context: MarkdownEncodeContext<MarkdownPlateNode<D>>
+    context: MarkdownEncodeContext<MarkdownPlateNode<D>, D>
   ) => RootContent | undefined;
   kind: 'node';
   mark?: boolean;

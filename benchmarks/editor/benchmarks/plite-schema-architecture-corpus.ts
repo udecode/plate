@@ -77,7 +77,7 @@ export const createSchemaArchitectureCorpus = () => {
       )
   );
 
-  return defineEditorSchema({
+  return defineEditorSchema('schema:schema-architecture-benchmark', {
     elements,
     groups: Object.fromEntries(
       Array.from(
@@ -87,23 +87,19 @@ export const createSchemaArchitectureCorpus = () => {
     ),
     id: 'schema-architecture-benchmark',
     properties: [...exactTextProperties, ...elementPrefixes, ...textPrefixes],
-    root: {
-      content: schema.content.group('block', {
-        default: { type: schemaElementType(0) },
-        min: 1,
-      }),
-    },
+    root: schema.content.group('block', {
+      default: { type: schemaElementType(0) },
+      min: 1,
+    }),
     roots: Object.fromEntries(
       Array.from(
         { length: SCHEMA_ARCHITECTURE_CORPUS.namedRoots },
         (_value, index) => [
           `aux_${index + 1}`,
-          {
-            content: schema.content.group('block', {
-              default: { type: schemaElementType(index + 1) },
-              min: 1,
-            }),
-          },
+          schema.content.group('block', {
+            default: { type: schemaElementType(index + 1) },
+            min: 1,
+          }),
         ]
       )
     ),

@@ -1,12 +1,11 @@
-import { createBaseEditor, createBasePlugin } from '@platejs/core';
+import { createBaseEditor, defineBasePlugin } from '@platejs/core';
 import { createPluginContext } from '@platejs/core/internal';
 import { type Descendant, schema } from '@platejs/plite';
-import { NODES } from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 
 import { FindReplacePlugin } from './FindReplacePlugin';
 
-const InlinePlugin = createBasePlugin({
-  name: 'a',
+const InlinePlugin = defineBasePlugin(PLUGINS.link, {
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
@@ -25,13 +24,13 @@ const decorate = ({
   const editor = createBaseEditor({
     plugins: [FindReplacePlugin, InlinePlugin],
   });
-  const plugin = editor.plugin(FindReplacePlugin).plugin;
+  const plugin = editor.plugin(FindReplacePlugin);
 
   editor.plugin(FindReplacePlugin).store.set({ search });
 
   return plugin.decorate?.({
-    ...createPluginContext(editor, plugin),
-    entry: [{ children, type: 'p' }, [0]],
+    ...createPluginContext(editor, FindReplacePlugin),
+    entry: [{ children, type: 'paragraph' }, [0]],
   });
 };
 
@@ -41,9 +40,13 @@ describe('FindReplacePlugin', () => {
       plugins: [FindReplacePlugin],
     });
 
-    expect(editor.read.schema.property(FindReplacePlugin)?.value.kind).toBe(
-      'boolean'
-    );
+    expect(
+      editor.read.schema.property({
+        key: editor.plugin(FindReplacePlugin).schema.properties.searchHighlight
+          .key,
+        placement: 'text',
+      })?.value.kind
+    ).toBe('boolean');
   });
 
   it('returns no ranges when the search term is empty', () => {
@@ -53,7 +56,7 @@ describe('FindReplacePlugin', () => {
   it('matches text case-insensitively in a single text node', () => {
     const expected = [
       {
-        [NODES.searchHighlight]: true,
+        searchHighlight: true,
         anchor: {
           offset: 0,
           path: [0, 0],
@@ -74,7 +77,7 @@ describe('FindReplacePlugin', () => {
   it('splits one match across adjacent text nodes', () => {
     const expected = [
       {
-        [NODES.searchHighlight]: true,
+        searchHighlight: true,
         anchor: {
           offset: 0,
           path: [0, 0],
@@ -86,7 +89,7 @@ describe('FindReplacePlugin', () => {
         search: 'tes',
       },
       {
-        [NODES.searchHighlight]: true,
+        searchHighlight: true,
         anchor: {
           offset: 0,
           path: [0, 1],
@@ -110,19 +113,19 @@ describe('FindReplacePlugin', () => {
   it('matches across text and inline element descendants', () => {
     const expected = [
       {
-        [NODES.searchHighlight]: true,
+        searchHighlight: true,
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 6, path: [0, 0] },
         search: 'hello ',
       },
       {
-        [NODES.searchHighlight]: true,
+        searchHighlight: true,
         anchor: { offset: 0, path: [0, 1, 0] },
         focus: { offset: 5, path: [0, 1, 0] },
         search: 'world',
       },
       {
-        [NODES.searchHighlight]: true,
+        searchHighlight: true,
         anchor: { offset: 0, path: [0, 2] },
         focus: { offset: 6, path: [0, 2] },
         search: ' again',
@@ -133,7 +136,7 @@ describe('FindReplacePlugin', () => {
       decorate({
         children: [
           { text: 'hello ' },
-          { children: [{ text: 'world' }], type: 'a' },
+          { children: [{ text: 'world' }], type: 'link' },
           { text: ' again' },
         ],
         search: 'hello world again',
@@ -145,8 +148,8 @@ describe('FindReplacePlugin', () => {
     expect(
       decorate({
         children: [
-          { children: [{ text: 'end' }], type: 'p' },
-          { children: [{ text: 'start' }], type: 'p' },
+          { children: [{ text: 'end' }], type: 'paragraph' },
+          { children: [{ text: 'start' }], type: 'paragraph' },
         ],
         search: 'endstart',
       })
@@ -156,7 +159,7 @@ describe('FindReplacePlugin', () => {
   it('returns ranges for multiple matches across text nodes', () => {
     const expected = [
       {
-        [NODES.searchHighlight]: true,
+        searchHighlight: true,
         anchor: {
           offset: 0,
           path: [0, 0],
@@ -168,7 +171,7 @@ describe('FindReplacePlugin', () => {
         search: 'tes',
       },
       {
-        [NODES.searchHighlight]: true,
+        searchHighlight: true,
         anchor: {
           offset: 0,
           path: [0, 1],
@@ -180,7 +183,7 @@ describe('FindReplacePlugin', () => {
         search: 't',
       },
       {
-        [NODES.searchHighlight]: true,
+        searchHighlight: true,
         anchor: {
           offset: 7,
           path: [0, 1],
@@ -192,7 +195,7 @@ describe('FindReplacePlugin', () => {
         search: 'test',
       },
       {
-        [NODES.searchHighlight]: true,
+        searchHighlight: true,
         anchor: {
           offset: 17,
           path: [0, 1],
@@ -204,7 +207,7 @@ describe('FindReplacePlugin', () => {
         search: 't',
       },
       {
-        [NODES.searchHighlight]: true,
+        searchHighlight: true,
         anchor: {
           offset: 0,
           path: [0, 2],
@@ -234,16 +237,15 @@ describe('FindReplacePlugin', () => {
       plugins: [FindReplacePlugin],
     });
 
-    const plugin = editor.plugin(FindReplacePlugin).plugin;
+    const plugin = editor.plugin(FindReplacePlugin);
 
     expect(plugin.name).toBe('searchHighlight');
-    expect(plugin.type).toBe(NODES.searchHighlight);
 
     editor.plugin(FindReplacePlugin).store.set({ search: 'test' });
 
     const expected = [
       {
-        [NODES.searchHighlight]: true,
+        searchHighlight: true,
         anchor: {
           offset: 0,
           path: [0, 0],
@@ -258,8 +260,8 @@ describe('FindReplacePlugin', () => {
 
     expect(
       plugin.decorate?.({
-        ...createPluginContext(editor, plugin),
-        entry: [{ children: [{ text: 'test' }], type: 'p' }, [0]],
+        ...createPluginContext(editor, FindReplacePlugin),
+        entry: [{ children: [{ text: 'test' }], type: 'paragraph' }, [0]],
       })
     ).toEqual(expected);
   });

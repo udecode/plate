@@ -1,8 +1,8 @@
 import type {
-  TTableCellElement,
-  TTableElement,
-  TTableRowElement,
-} from '@platejs/utils';
+  TableCellElement,
+  TableElement,
+  TableRowElement,
+} from '../BaseTablePlugin';
 
 import type { TableContext } from './context';
 import { compileTableGrid } from './grid';
@@ -13,24 +13,25 @@ import {
   type TableMutationPlan,
 } from './mutation';
 
-const cell = (
+const cell = <TType extends string = 'tableCell'>(
   id: string,
-  options: Partial<TTableCellElement> = {}
-): TTableCellElement => ({
-  children: [{ text: id }],
-  id,
-  type: 'td',
-  ...options,
-});
+  options: Omit<Partial<TableCellElement>, 'type'> & { type?: TType } = {}
+): Omit<TableCellElement, 'type'> & { type: TType } =>
+  ({
+    children: [{ text: id }],
+    id,
+    type: 'tableCell',
+    ...options,
+  }) as Omit<TableCellElement, 'type'> & { type: TType };
 
 const table = (
-  rows: readonly (readonly TTableCellElement[])[]
-): TTableElement => ({
+  rows: readonly (readonly TableCellElement[])[]
+): TableElement => ({
   children: rows.map(
-    (children, index): TTableRowElement => ({
+    (children, index): TableRowElement => ({
       children: [...children],
       id: `row-${index}`,
-      type: 'tr',
+      type: 'tableRow',
     })
   ),
   id: 'table',
@@ -38,7 +39,7 @@ const table = (
 });
 
 const context = (
-  value: TTableElement,
+  value: TableElement,
   tablePath: readonly number[] = [0]
 ): TableContext => {
   const grid = compileTableGrid(value);
@@ -71,12 +72,12 @@ const createCell: TableCellFactory = ({ col, header, row }) =>
   });
 
 const apply = (
-  input: TTableElement,
+  input: TableElement,
   plan: TableMutationPlan,
   tablePath: readonly number[] = [0]
 ) => applyTableMutationPlanToTable(input, tablePath, plan);
 
-const textOf = (value: TTableCellElement) =>
+const textOf = (value: TableCellElement) =>
   value.children.map((child) => ('text' in child ? child.text : '')).join('');
 
 const seededFactory = (prefix: string): TableCellFactory => {
@@ -359,7 +360,7 @@ describe('planTableMutation', () => {
     ).toMatchObject({
       children: [{ text: 'c' }],
       id: 'c',
-      type: 'td',
+      type: 'tableCell',
     });
   });
 

@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { isHotkey } from '@platejs/core';
 import { useEditor, useElement } from '@platejs/core/react';
 import type { TMediaElement } from '@platejs/utils';
-import { KEYS } from '@platejs/utils';
+import { NODES } from '@platejs/utils';
 
 import { ImagePreviewStore, useImagePreviewValue } from './ImageStore';
 
@@ -57,7 +57,7 @@ export const useImage = () => {
           Array.from(
             editor.read.nodes.entries<TMediaElement>({
               at: [],
-              match: { type: KEYS.img },
+              match: { type: NODES.img },
             }),
             ([node]) => ({ id: node.id, url: node.url })
           )

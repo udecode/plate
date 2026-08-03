@@ -4,7 +4,10 @@ import {
   isVoid as editorIsVoid,
   path as editorPath,
 } from '../interfaces/editor';
-import type { Editor, EditorNodesOptions } from '../interfaces/editor';
+import type {
+  AnyEditor as Editor,
+  EditorNodesOptions,
+} from '../interfaces/editor';
 import { LocationApi } from '../interfaces/location';
 import { type Node, NodeApi, type NodeEntry } from '../interfaces/node';
 import { type Path, PathApi } from '../interfaces/path';

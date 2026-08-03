@@ -3,13 +3,15 @@
 import {
   BaseParagraphPlugin,
   createBaseEditor,
-  createBasePlugin,
+  defineBasePlugin,
 } from '@platejs/core';
 import {
+  createEditor as createPliteEditor,
   type Descendant,
   type NodeEntry,
   property,
   schema,
+  type Value,
 } from '@platejs/plite';
 import {
   BaseSuggestionPlugin,
@@ -29,7 +31,7 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: '' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
 
   describe('BaseAIPlugin AI batches', () => {
@@ -98,7 +100,7 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
   const findTextRangeInBlock =
     rangeEditor.plugin(BaseAIPlugin).api.findTextRangeInBlock;
   const block = (children: Descendant[]): NodeEntry => [
-    { children, type: 'p' },
+    { children, type: 'paragraph' },
     [0],
   ];
 
@@ -108,7 +110,7 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
         findTextRangeInBlock({
           block: block([
             { text: 'a' },
-            { children: [{ text: 'test' }], type: 'a' },
+            { children: [{ text: 'test' }], type: 'link' },
           ]),
           findText: 'test',
         })
@@ -176,6 +178,7 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
 
   const createEditor = (input: TestEditor) =>
     createBaseEditor({
+      editor: createPliteEditor<Value>(),
       plugins: [BaseParagraphPlugin, BaseAIPlugin],
       selection: input.selection,
       initialValue: input.children,
@@ -185,7 +188,7 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
     it('does nothing without a selection or explicit target', () => {
       const editor = createBaseEditor({
         plugins: [BaseParagraphPlugin, BaseAIPlugin],
-        initialValue: [{ type: 'p', children: [{ text: 'one' }] }],
+        initialValue: [{ type: 'paragraph', children: [{ text: 'one' }] }],
       });
       const before = structuredClone(editor.read.children());
 
@@ -211,7 +214,7 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
       expect(editor.read.children()).toEqual([
         {
           children: [{ text: 'one' }, { ai: true, text: ' AI' }],
-          type: 'p',
+          type: 'paragraph',
         },
       ]);
       expect(editor.read.selection()).toEqual({
@@ -240,11 +243,11 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
       expect(editor.read.children()).toEqual([
         {
           children: [{ text: 'first' }, { ai: true, text: ' AI' }],
-          type: 'p',
+          type: 'paragraph',
         },
         {
           children: [{ text: 'second' }],
-          type: 'p',
+          type: 'paragraph',
         },
       ]);
       expect(editor.read.selection()).toEqual({
@@ -278,11 +281,11 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
       expect(editor.read.children()).toEqual([
         {
           children: [{ text: 'first' }, { ai: true, text: ' AI' }],
-          type: 'p',
+          type: 'paragraph',
         },
         {
           children: [{ text: 'second' }],
-          type: 'p',
+          type: 'paragraph',
         },
       ]);
     });
@@ -302,7 +305,7 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
   ) => ({
     ...element,
     children: [{ text, ...textProps }],
-    type: 'p',
+    type: 'paragraph' as const,
   });
 
   const createEditor = () =>
@@ -320,8 +323,7 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
       initialValue: [createParagraph('start'), createParagraph('untouched')],
     });
 
-  const InlineFixturePlugin = createBasePlugin({
-    name: 'inlineFixture',
+  const InlineFixturePlugin = defineBasePlugin('inlineFixture', {
     schema: {
       element: {
         content: schema.content.text({ default: 'text', min: 1 }),
@@ -382,7 +384,11 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
         ],
       });
       expect(
-        editor.read.schema.property({ key: 'ai', placement: 'text', type: 'p' })
+        editor.read.schema.property({
+          key: 'ai',
+          placement: 'text',
+          type: 'paragraph',
+        })
       ).not.toBeNull();
       expect(
         editor.read.schema.property({
@@ -395,7 +401,7 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
         editor.read.schema.property({
           key: AI_PREVIEW_KEY,
           placement: 'element',
-          type: 'p',
+          type: 'paragraph',
         })?.value.kind
       ).toBe('boolean');
       expect(
@@ -409,11 +415,15 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
         editor.read.schema.property({
           key: AI_PREVIEW_KEY,
           placement: 'element',
-          type: 'p',
+          type: 'paragraph',
         })?.role
       ).toBe('content');
       expect(
-        editor.read.schema.property({ key: 'ai', placement: 'text', type: 'p' })
+        editor.read.schema.property({
+          key: 'ai',
+          placement: 'text',
+          type: 'paragraph',
+        })
       ).toMatchObject({
         lifecycle: {
           split: 'preserve',
@@ -531,8 +541,7 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
 }
 
 {
-  const BaseBoldPlugin = createBasePlugin({
-    name: 'bold',
+  const BaseBoldPlugin = defineBasePlugin('bold', {
     schema: {
       mark: property.boolean({ default: false, omitDefault: true }),
     },
@@ -544,7 +553,7 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
         plugins: [BaseParagraphPlugin, BaseBoldPlugin, BaseAIPlugin],
         initialValue: [
           {
-            type: 'p',
+            type: 'paragraph',
             children: [
               { ai: true, bold: true, text: 'one' },
               { bold: true, text: ' two' },
@@ -558,7 +567,7 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
       expect(editor.read.children()).toEqual([
         {
           children: [{ bold: true, text: 'one two' }],
-          type: 'p',
+          type: 'paragraph',
         },
       ]);
     });
@@ -567,16 +576,16 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
       const editor = createBaseEditor({
         plugins: [BaseParagraphPlugin, BaseAIPlugin],
         initialValue: [
-          { type: 'p', children: [{ ai: true, text: 'one' }] },
-          { type: 'p', children: [{ ai: true, text: 'two' }] },
+          { type: 'paragraph', children: [{ ai: true, text: 'one' }] },
+          { type: 'paragraph', children: [{ ai: true, text: 'two' }] },
         ],
       });
 
       editor.update((tx) => tx.ai.removeMarks({ at: [1] }));
 
       expect(editor.read.children()).toEqual([
-        { type: 'p', children: [{ ai: true, text: 'one' }] },
-        { type: 'p', children: [{ text: 'two' }] },
+        { type: 'paragraph', children: [{ ai: true, text: 'one' }] },
+        { type: 'paragraph', children: [{ text: 'two' }] },
       ]);
     });
   });
@@ -590,7 +599,7 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
         plugins: [BaseParagraphPlugin, BaseAIPlugin],
         initialValue: [
           {
-            type: 'p',
+            type: 'paragraph',
             children: [{ ai: true, text: 'one' }, { text: ' two' }],
           },
         ],
@@ -600,7 +609,7 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
 
       expect(editor.read.children()).toEqual([
         {
-          type: 'p',
+          type: 'paragraph',
           children: [{ text: ' two' }],
         },
       ]);
@@ -610,23 +619,23 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
       const editor = createBaseEditor({
         plugins: [BaseParagraphPlugin, BaseAIPlugin],
         initialValue: [
-          { type: 'p', children: [{ ai: true, text: 'one' }] },
-          { type: 'p', children: [{ ai: true, text: 'two' }] },
+          { type: 'paragraph', children: [{ ai: true, text: 'one' }] },
+          { type: 'paragraph', children: [{ ai: true, text: 'two' }] },
         ],
       });
 
       editor.update((tx) => tx.ai.removeNodes({ at: [1, 0] }));
 
       expect(editor.read.children()).toEqual([
-        { type: 'p', children: [{ ai: true, text: 'one' }] },
-        { type: 'p', children: [{ text: '' }] },
+        { type: 'paragraph', children: [{ ai: true, text: 'one' }] },
+        { type: 'paragraph', children: [{ text: '' }] },
       ]);
     });
 
     it('removes AI nodes inserted earlier in the active transaction', () => {
       const editor = createBaseEditor({
         plugins: [BaseParagraphPlugin, BaseAIPlugin],
-        initialValue: [{ type: 'p', children: [{ text: 'one' }] }],
+        initialValue: [{ type: 'paragraph', children: [{ text: 'one' }] }],
       });
 
       editor.update((tx) => {
@@ -635,7 +644,7 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
       });
 
       expect(editor.read.children()).toEqual([
-        { type: 'p', children: [{ text: 'one' }] },
+        { type: 'paragraph', children: [{ text: 'one' }] },
       ]);
     });
   });
@@ -650,7 +659,7 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: '' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
 
   const createSuggestionEditor = () =>
@@ -661,7 +670,7 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: '' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
 
   describe('undoAI', () => {
@@ -745,7 +754,7 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
             {
               [AI_PREVIEW_KEY]: true,
               children: [{ ai: true, text: 'preview' }],
-              type: 'p',
+              type: 'paragraph',
             },
             { children: [{ text: '' }], type: 'aiChat' },
           ],

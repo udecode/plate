@@ -1,4 +1,4 @@
-import type { Editor } from '../interfaces/editor';
+import type { AnyEditor as Editor } from '../interfaces/editor';
 
 export type WithEditorFirstArg<T extends (...args: any) => any> = (
   editor: Editor,

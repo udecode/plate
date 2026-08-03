@@ -58,7 +58,9 @@ for (const inline of [false, true]) {
           fixtureElements[type] = {
             ...(!isVoid
               ? {
-                  content: inline ? inlineContent : schema.content.open(),
+                  content: inline
+                    ? inlineContent
+                    : schema.content.open({ default: 'text', min: 1 }),
                 }
               : {}),
             groups: ['fixture'],
@@ -81,7 +83,7 @@ for (const inline of [false, true]) {
   }
 }
 
-export const fixtureSchema = defineEditorSchema({
+export const fixtureSchema = defineEditorSchema('fixture-schema', {
   elements: fixtureElements,
   groups: { fixture: {} },
   id: 'fixture-schema',

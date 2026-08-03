@@ -7,6 +7,8 @@ package-owned preset arrays. The package exports each Base and React capability
 plugin independently. Built-in marks use compiled schema properties.
 `ScriptPlugin` represents subscript and superscript through one
 `script: 'sub' | 'sup'` property.
+Paragraphs and horizontal rules persist under the canonical plugin identities
+`paragraph` and `horizontalRule`.
 
 **Migration:** List the package plugins your editor supports, or install the
 matching app-owned Plate registry kit.

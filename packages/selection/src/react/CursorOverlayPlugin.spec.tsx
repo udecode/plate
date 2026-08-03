@@ -27,7 +27,7 @@ const nextSelectionRange = {
 const createCursorOverlayEditor = () =>
   createPlateEditor({
     plugins: [CursorOverlayPlugin],
-    initialValue: [{ children: [{ text: 'Hello' }], type: 'p' }],
+    initialValue: [{ children: [{ text: 'Hello' }], type: 'paragraph' }],
   });
 
 const waitForDeferredCursorRefresh = () =>

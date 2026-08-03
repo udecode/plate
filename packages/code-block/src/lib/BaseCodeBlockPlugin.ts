@@ -1,7 +1,7 @@
 import type { createLowlight, LanguageFn } from 'lowlight';
 
 import {
-  createBasePlugin,
+  defineBasePlugin,
   DebugPlugin,
   type DefinitionOf,
 } from '@platejs/core';
@@ -61,8 +61,7 @@ type CodeHighlightRuntime = {
 };
 const codeHighlightRuntimes = new WeakMap<object, CodeHighlightRuntime>();
 
-export const BaseCodeLinePlugin = createBasePlugin({
-  name: KEYS.codeLine,
+export const BaseCodeLinePlugin = defineBasePlugin(KEYS.codeLine, {
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
@@ -86,8 +85,7 @@ export const BaseCodeLinePlugin = createBasePlugin({
     }),
 });
 
-export const BaseCodeBlockPlugin = createBasePlugin({
-  name: KEYS.codeBlock,
+export const BaseCodeBlockPlugin = defineBasePlugin(KEYS.codeBlock, {
   dependencies: [BaseCodeLinePlugin],
   read: ({ editor, state, type }) => {
     const entry = <N extends ElementOf<typeof editor> = Element>({
@@ -158,21 +156,6 @@ export const BaseCodeBlockPlugin = createBasePlugin({
   },
   type: NODES.codeBlock,
 
-  parsers: {
-    html: {
-      query: ({ registry, state }) => {
-        const selection = state.selection();
-
-        return (
-          !selection ||
-          !state.nodes.some({
-            at: selection,
-            match: { type: registry.getType(KEYS.codeLine) },
-          })
-        );
-      },
-    },
-  },
   render: { as: 'pre' },
   codecs: (context) => {
     const { defineCodecs } = context;
@@ -221,6 +204,17 @@ export const BaseCodeBlockPlugin = createBasePlugin({
           { style: { fontFamily: 'Consolas' }, tag: 'p' },
         ],
         priority: 10,
+        query: ({ registry, state }) => {
+          const selection = state.selection();
+
+          return (
+            !selection ||
+            !state.nodes.some({
+              at: selection,
+              match: { type: registry.getType(KEYS.codeLine) },
+            })
+          );
+        },
       },
       'text/markdown': {
         from: 'code',
@@ -502,7 +496,7 @@ export const BaseCodeBlockPlugin = createBasePlugin({
   return {
     contributions: [
       clipboardHandler({
-        insertData(data, { next, transaction: tx }) {
+        insertData(data, { next, tx }) {
           const text = data.getData('text/plain');
           const vscodeDataString = data.getData('vscode-editor-data');
           const codeLineType = context.editor.plugin(KEYS.codeLine).type;
@@ -740,8 +734,7 @@ export type CodeHighlightPluginState = {
   lowlight: Lowlight | null;
 };
 
-export const BaseCodeHighlightPlugin = createBasePlugin({
-  name: KEYS.codeSyntax,
+export const BaseCodeHighlightPlugin = defineBasePlugin(KEYS.codeSyntax, {
   dependencies: [BaseCodeBlockPlugin],
   initialState: (): CodeHighlightPluginState => ({
     defaultLanguage: null,

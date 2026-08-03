@@ -1,6 +1,5 @@
 import { createPlateEditor, Plate, PlateContent } from '@platejs/core/react';
-import type { Element } from '@platejs/plite';
-import { KEYS } from '@platejs/utils';
+import { createEditor, type Element, type Value } from '@platejs/plite';
 import { render } from '@testing-library/react';
 import React from 'react';
 
@@ -13,19 +12,20 @@ describe('ListPlugin rendering', () => {
         children: [{ text: 'Item' }],
         listStart: 4,
         listStyleType: 'decimal',
-        type: KEYS.p,
+        type: 'paragraph',
       },
       {
         children: [{ text: 'Bullet' }],
         listStyleType: 'disc',
-        type: KEYS.p,
+        type: 'paragraph',
       },
       {
         children: [{ text: 'Plain' }],
-        type: KEYS.p,
+        type: 'paragraph',
       },
     ];
     const editor = createPlateEditor({
+      editor: createEditor<Value>(),
       initialValue,
       plugins: [ListPlugin],
     });

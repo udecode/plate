@@ -9,7 +9,7 @@ import {
 import { writeHostFragmentData } from '@platejs/plite-dom';
 
 import { createBaseEditor } from '../../editor';
-import { createBasePlugin } from '../../plugin';
+import { defineBasePlugin } from '../../plugin';
 
 const MARK_COUNT = 8;
 const UNRELATED_MATCHER_COUNT = 128;
@@ -49,13 +49,14 @@ const measure = <T>(run: () => T) => {
 };
 
 const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
-  const ParagraphPlugin = createBasePlugin({
-    name: 'p',
+  const ParagraphPlugin = defineBasePlugin('benchmarkParagraph', {
     initialState: { variant: 'initial' },
     schema: {
-      element: schema.element.textBlock(),
+      element: {
+        ...schema.element.textBlock(),
+        type: 'benchmark-paragraph',
+      },
     },
-    type: 'benchmark-paragraph',
   }).extend(({ defineCodecs, store }) => {
     counters.codecFactories++;
 
@@ -77,21 +78,21 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
             };
           },
           match: [{ tag: 'p' }],
+          priority: 1,
         },
       }),
     };
   });
-  const LinkPlugin = createBasePlugin({
-    name: 'benchmarkLink',
+  const LinkPlugin = defineBasePlugin('benchmarkLink', {
     schema: {
       element: {
         content: schema.content.text({ default: 'text', min: 1 }),
         inline: true,
         properties: { url: property.string() },
         blockContent: false,
+        type: 'benchmark-link',
       },
     },
-    type: 'benchmark-link',
   }).extend(({ defineCodecs }) => {
     counters.codecFactories++;
 
@@ -117,8 +118,7 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
       }),
     };
   });
-  const ListItemPlugin = createBasePlugin({
-    name: 'benchmarkListItem',
+  const ListItemPlugin = defineBasePlugin('benchmarkListItem', {
     schema: {
       element: {
         content: schema.content.type('benchmark-paragraph', {
@@ -126,9 +126,9 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
           min: 1,
         }),
         blockContent: false,
+        type: 'benchmark-list-item',
       },
     },
-    type: 'benchmark-list-item',
   }).extend(({ defineCodecs }) => {
     counters.codecFactories++;
 
@@ -150,17 +150,16 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
       }),
     };
   });
-  const ListPlugin = createBasePlugin({
-    name: 'benchmarkList',
+  const ListPlugin = defineBasePlugin('benchmarkList', {
     schema: {
       element: {
         content: schema.content.type('benchmark-list-item', {
           default: { type: 'benchmark-list-item' },
           min: 1,
         }),
+        type: 'benchmark-list',
       },
     },
-    type: 'benchmark-list',
   }).extend(({ defineCodecs }) => {
     counters.codecFactories++;
 
@@ -182,8 +181,7 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
       }),
     };
   });
-  const TableCellPlugin = createBasePlugin({
-    name: 'benchmarkTableCell',
+  const TableCellPlugin = defineBasePlugin('benchmarkTableCell', {
     schema: {
       element: {
         content: schema.content.type('benchmark-paragraph', {
@@ -192,9 +190,9 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
         }),
         properties: { width: property.number() },
         blockContent: false,
+        type: 'benchmark-table-cell',
       },
     },
-    type: 'benchmark-table-cell',
   }).extend(({ defineCodecs }) => {
     counters.codecFactories++;
 
@@ -224,8 +222,7 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
       }),
     };
   });
-  const TableRowPlugin = createBasePlugin({
-    name: 'benchmarkTableRow',
+  const TableRowPlugin = defineBasePlugin('benchmarkTableRow', {
     schema: {
       element: {
         content: schema.content.type('benchmark-table-cell', {
@@ -233,9 +230,9 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
           min: 1,
         }),
         blockContent: false,
+        type: 'benchmark-table-row',
       },
     },
-    type: 'benchmark-table-row',
   }).extend(({ defineCodecs }) => {
     counters.codecFactories++;
 
@@ -257,17 +254,16 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
       }),
     };
   });
-  const TablePlugin = createBasePlugin({
-    name: 'benchmarkTable',
+  const TablePlugin = defineBasePlugin('benchmarkTable', {
     schema: {
       element: {
         content: schema.content.type('benchmark-table-row', {
           default: { type: 'benchmark-table-row' },
           min: 1,
         }),
+        type: 'benchmark-table',
       },
     },
-    type: 'benchmark-table',
   }).extend(({ defineCodecs }) => {
     counters.codecFactories++;
 
@@ -292,14 +288,15 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
       }),
     };
   });
-  const MediaPlugin = createBasePlugin({
-    name: 'benchmarkMedia',
+  const MediaPlugin = defineBasePlugin('benchmarkMedia', {
     schema: {
-      element: schema.element.textBlock({
-        properties: { url: property.string(), width: property.number() },
-      }),
+      element: {
+        ...schema.element.textBlock({
+          properties: { url: property.string(), width: property.number() },
+        }),
+        type: 'benchmark-media',
+      },
     },
-    type: 'benchmark-media',
   }).extend(({ defineCodecs }) => {
     counters.codecFactories++;
 
@@ -342,8 +339,7 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
     };
   });
   const markPlugins = Array.from({ length: MARK_COUNT }, (_, index) =>
-    createBasePlugin({
-      name: `benchmarkMark${index}`,
+    defineBasePlugin(`benchmarkMark${index}`, {
       schema: {
         mark: property.boolean({ default: false, omitDefault: true }),
       },
@@ -382,14 +378,12 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
   const unrelatedPlugins = Array.from(
     { length: UNRELATED_MATCHER_COUNT },
     (_, index) =>
-      createBasePlugin({
-        name: `benchmarkUnrelated${index}`,
+      defineBasePlugin(`benchmarkUnrelated${index}`, {
         schema: {
           element: {
             content: schema.content.text({ default: 'text', min: 1 }),
           },
         },
-        type: `benchmark-unrelated-${index}`,
       }).extend(({ defineCodecs }) => {
         counters.codecFactories++;
 

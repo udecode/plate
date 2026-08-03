@@ -1,13 +1,12 @@
 /** @jsx jsxt */
 
-import { type BaseEditor, DOMPluginBase, Hotkeys } from '@platejs/core';
-import { createPlateEditor } from '@platejs/core/react';
+import { DOMPlugin, Hotkeys } from '@platejs/core';
 import { pipeHandler } from '@platejs/core/react/internal';
-import type { Value } from '@platejs/plite';
 
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { BaseTablePlugin } from '../lib/BaseTablePlugin';
+import { createTestTableEditor } from '../lib/__tests__/getTestTablePlugins';
 import { TablePlugin } from './TablePlugin';
 
 jsxt;
@@ -78,7 +77,7 @@ const domRanges = new WeakMap<
   { index: number; ranges: ReturnType<typeof createDOMRangeMock>[] }
 >();
 
-const TestDOMRangePlugin = DOMPluginBase.extend(({ editor }) => ({
+const TestDOMRangePlugin = DOMPlugin.extend(({ editor }) => ({
   api: () => ({
     resolveDOMRange: () => {
       const state = domRanges.get(editor);
@@ -90,15 +89,15 @@ const TestDOMRangePlugin = DOMPluginBase.extend(({ editor }) => ({
   }),
 }));
 
-const mockToDOMRange = <V extends Value>(
-  editor: BaseEditor<V, any>,
+const mockToDOMRange = <E extends object>(
+  editor: E,
   ...ranges: ReturnType<typeof createDOMRangeMock>[]
 ) => {
   domRanges.set(editor, { index: 0, ranges });
 };
 
 const createTableEditor = (input: TestEditor) =>
-  createPlateEditor({
+  createTestTableEditor({
     nodeId: true,
     plugins: [
       TablePlugin.configure({

@@ -24,7 +24,7 @@ mock.module('react-dnd', () => ({
 const element: Element = {
   children: [{ text: 'Hello' }],
   id: 'block-1',
-  type: 'p',
+  type: 'paragraph',
 };
 
 describe('useDraggable', () => {

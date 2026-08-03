@@ -2,13 +2,13 @@ import * as React from 'react';
 
 import { render } from '@testing-library/react';
 import { afterAll, describe, expect, it, mock } from 'bun:test';
-import type { TCodeBlockElement } from 'platejs';
+import type { CodeBlockElement } from '@platejs/code-block';
 
 const element = {
   children: [{ text: '' }],
   lang: 'python',
-  type: 'code_block',
-} satisfies TCodeBlockElement;
+  type: 'codeBlock',
+} satisfies CodeBlockElement;
 
 mock.module('platejs/static', () => ({
   PliteElement: ({

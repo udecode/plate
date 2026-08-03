@@ -50,21 +50,18 @@ const SearchHighlightingExample = () => {
       },
     ],
   });
-  const searchSource = usePliteRangeDecorationSource<{ highlight: true }>(
-    editor,
-    {
-      data: { highlight: true },
-      id: 'search-highlighting',
-      dirtiness: 'text',
-      revision: search,
-      read: ({ snapshot }) =>
-        search
-          ? NodeApi.findTextRanges({ children: snapshot.children }, search, {
-              caseSensitive: false,
-            })
-          : [],
-    }
-  );
+  const searchSource = usePliteRangeDecorationSource(editor, {
+    data: { highlight: true as const },
+    id: 'search-highlighting',
+    dirtiness: 'text',
+    revision: search,
+    read: ({ snapshot }) =>
+      search
+        ? NodeApi.findTextRanges({ children: snapshot.children }, search, {
+            caseSensitive: false,
+          })
+        : [],
+  });
 
   return (
     <>

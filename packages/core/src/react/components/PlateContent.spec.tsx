@@ -8,35 +8,32 @@ import {
   property,
   schema,
   target,
-  type Value,
   valueCodecs,
 } from '@platejs/plite';
 import { useEditorViewState } from '@platejs/plite-react';
 
 import { act, render, waitFor } from '@testing-library/react';
 
-import { createBasePlugin } from '../../lib';
+import { defineBasePlugin } from '../../lib';
 import { createPlateEditor } from '../editor';
 import { useEditor } from '../stores';
 import { Plate } from './Plate';
 import { PlateContainer } from './PlateContainer';
 import { PlateContent } from './PlateContent';
 
-const value: Value = [{ children: [{ text: 'one' }], type: 'p' }];
+const value = [{ children: [{ text: 'one' }], type: 'paragraph' }] as const;
 
-const VariantPlugin = createBasePlugin({
-  name: 'variant',
+const VariantPlugin = defineBasePlugin('variant', {
   schema: {
-    properties: [
-      schema.elementProperty('variant', property.string(), {
-        target: target.type('p'),
+    properties: {
+      variant: schema.elementProperty(property.string(), {
+        target: target.type('paragraph'),
       }),
-    ],
+    },
   },
 });
 
-const AtomicParserBPlugin = createBasePlugin({
-  name: 'atomicParserB',
+const AtomicParserBPlugin = defineBasePlugin('atomicParserB', {
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
@@ -56,7 +53,7 @@ const AtomicParserBPlugin = createBasePlugin({
         ContentSlice.closed([
           {
             children: [{ atomicParserB: true, text: 'parsed-b' }],
-            type: 'p',
+            type: 'paragraph',
           },
         ]),
     },
@@ -87,7 +84,7 @@ const CommitFromLayoutEffect = ({ text }: { text?: string }) => {
 describe('PlateContent', () => {
   it('owns default placeholder presentation above Plite structure', async () => {
     const editor = createPlateEditor({
-      initialValue: [{ children: [{ text: '' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
     const { container, rerender } = render(
       <Plate editor={editor}>
@@ -247,7 +244,7 @@ describe('PlateContent', () => {
         }),
         editor,
         snapshot: expect.objectContaining({
-          children: [{ children: [{ text: 'one!' }], type: 'p' }],
+          children: [{ children: [{ text: 'one!' }], type: 'paragraph' }],
           selection: null,
         }),
       })
@@ -294,14 +291,13 @@ describe('PlateContent', () => {
     const editor = createPlateEditor({
       nodeId: false,
       plugins: [
-        createBasePlugin({
-          name: 'figure',
+        defineBasePlugin('figure', {
           schema: {
             element: {
               contentRoots: {
                 caption: {
-                  content: schema.content.type('p', {
-                    default: { type: 'p' },
+                  content: schema.content.type('paragraph', {
+                    default: { type: 'paragraph' },
                     min: 1,
                   }),
                   ownership: 'exclusive',
@@ -312,8 +308,7 @@ describe('PlateContent', () => {
             },
           },
         }),
-        createBasePlugin({
-          name: 'documentState',
+        defineBasePlugin('documentState', {
           stateFields: [revision, localState],
         }),
       ],
@@ -326,7 +321,9 @@ describe('PlateContent', () => {
           },
         ],
         roots: {
-          'caption:1': [{ children: [{ text: 'First caption' }], type: 'p' }],
+          'caption:1': [
+            { children: [{ text: 'First caption' }], type: 'paragraph' },
+          ],
         },
       },
     });
@@ -341,7 +338,7 @@ describe('PlateContent', () => {
     act(() => {
       editor.update((tx) => {
         tx.roots.replace('caption:1', [
-          { children: [{ text: 'Updated caption' }], type: 'p' },
+          { children: [{ text: 'Updated caption' }], type: 'paragraph' },
         ]);
       });
     });
@@ -350,7 +347,9 @@ describe('PlateContent', () => {
       expect.objectContaining({ value: editor.read.value() })
     );
     expect(onValueChange.mock.calls.at(-1)?.[0].value.roots).toEqual({
-      'caption:1': [{ children: [{ text: 'Updated caption' }], type: 'p' }],
+      'caption:1': [
+        { children: [{ text: 'Updated caption' }], type: 'paragraph' },
+      ],
     });
 
     onValueChange.mockClear();
@@ -492,7 +491,7 @@ describe('PlateContent', () => {
   it('publishes the selected parser, codecs, and mounted renderers together', async () => {
     const editor = createPlateEditor({
       plugins: [AtomicParserBPlugin],
-      initialValue: [{ children: [{ text: '' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
     const { container, getByTestId, queryByTestId } = render(
       <Plate editor={editor}>
@@ -524,7 +523,7 @@ describe('PlateContent', () => {
     expect(editor.read.children()).toEqual([
       {
         children: [{ atomicParserB: true, text: 'parsed-b' }],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
     await waitFor(() => {

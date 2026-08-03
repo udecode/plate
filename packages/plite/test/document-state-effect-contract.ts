@@ -4,7 +4,7 @@ import { describe, it } from 'node:test';
 import {
   createEditor,
   decodeEditorEffect,
-  defineEditorExtension,
+  defineExtension,
   defineEffect,
   defineStateField,
   defineValueCodec,
@@ -38,7 +38,9 @@ describe('document state effect contract', () => {
     });
     const children: Element[] = [paragraph('body')];
     const editor = createEditor({
-      extensions: [documentTitle] as const,
+      extensions: [
+        defineExtension('document-title', { stateFields: [documentTitle] }),
+      ] as const,
       initialValue: {
         children,
         meta: { [documentTitle.key]: documentTitle.serialize('Q2 Plan') },
@@ -128,13 +130,16 @@ describe('document state effect contract', () => {
           ? { ...value, count: value.count + effect.value }
           : value,
     });
-    const incrementExtension = defineEditorExtension({
-      effectTypes: [increment],
-      name: 'document-large-counter-increment-effect',
-    });
+    const incrementExtension = defineExtension(
+      'document-large-counter-increment-effect',
+      {
+        effectTypes: [increment],
+        stateFields: [largeCounter],
+      }
+    );
     const createCounterEditor = () =>
       createEditor({
-        extensions: [largeCounter, incrementExtension] as const,
+        extensions: [incrementExtension] as const,
         initialValue: [paragraph('body')],
       });
     const source = createCounterEditor();
@@ -170,7 +175,9 @@ describe('document state effect contract', () => {
       persist: valueCodecs.string,
     });
     const editor = createEditor({
-      extensions: [documentTitle] as const,
+      extensions: [
+        defineExtension('document-title', { stateFields: [documentTitle] }),
+      ] as const,
       initialValue: {
         children: [paragraph('body')],
         meta: { [documentTitle.key]: documentTitle.serialize('Q2 Plan') },
@@ -206,9 +213,8 @@ describe('document state effect contract', () => {
     });
     const editor = createEditor({
       extensions: [
-        defineEditorExtension({
+        defineExtension('nested-effect-values', {
           effectTypes: [effect],
-          name: 'nested-effect-values',
         }),
       ] as const,
     });

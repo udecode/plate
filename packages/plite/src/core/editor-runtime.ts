@@ -11,7 +11,7 @@ import type {
 } from '../interfaces';
 import type {
   BaseEditor,
-  Editor,
+  AnyEditor as Editor,
   EditorAboveOptions,
   EditorCommit,
   EditorCommitListener,
@@ -107,7 +107,7 @@ export type InternalEditorSnapshotRuntime<V extends Value = Value> = {
 
 export type InternalEditorTransactionRuntime<V extends Value = Value> = {
   read: <T>(fn: (state: EditorStateView<V>) => T) => T;
-  runCommand: EditorCommandDispatch;
+  runCommand: EditorCommandDispatch<Editor<V>>;
   subscribe: (listener: SnapshotListener<V>) => () => void;
   subscribeCommit: (listener: EditorCommitListener<V>) => () => void;
   subscribeSource: (
@@ -124,7 +124,7 @@ export type InternalEditorTransactionRuntime<V extends Value = Value> = {
 };
 
 export type InternalEditorExtensionRuntime<V extends Value = Value> = {
-  extend: (
+  install: (
     extension: EditorExtensionInput,
     options?: EditorExtensionReconfigureOptions
   ) => () => void;

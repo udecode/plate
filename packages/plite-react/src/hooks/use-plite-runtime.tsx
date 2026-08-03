@@ -158,7 +158,7 @@ export type PliteRuntimeValue<
   | 'anchor'
   | 'api'
   | 'extension'
-  | 'extend'
+  | 'install'
   | 'read'
   | 'subscribe'
   | 'subscribeCommit'
@@ -258,7 +258,7 @@ const createReactRuntime = <
     anchor: editor.anchor,
     editor,
     extension: editor.extension,
-    extend: editor.extend,
+    install: editor.install,
     read: editor.read,
     subscribe: editor.subscribe,
     subscribeCommit: editor.subscribeCommit,
@@ -324,12 +324,26 @@ export const createReactRuntimeViewEditor = <
         const portal = (
           view.extension as unknown as (extension: ExtensionLike) => {
             api: unknown;
+            read: unknown;
+            update: unknown;
           }
         )(extension);
         const rebound = Reflect.get(viewApi, extension.name);
 
-        return rebound === undefined ? portal : Object.freeze({ api: rebound });
-      }) as typeof view.extension,
+        return rebound === undefined
+          ? portal
+          : Object.freeze({
+              get api() {
+                return rebound;
+              },
+              get read() {
+                return portal.read;
+              },
+              get update() {
+                return portal.update;
+              },
+            });
+      }) as unknown as typeof view.extension,
     },
   });
 
@@ -430,7 +444,8 @@ function OwnedPliteRuntime<
     useRuntimeFocusState(reactEditor);
 
   const getView = useCallback(
-    (options: EditorViewOptions = {}) => createEditorView(runtime, options),
+    (options: EditorViewOptions = {}) =>
+      createEditorView(runtime.editor, options),
     [runtime]
   );
   const registerViewEditor = useCallback(

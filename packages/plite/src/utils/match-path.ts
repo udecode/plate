@@ -1,5 +1,5 @@
 import { node as getNode } from '../editor/node';
-import type { Editor } from '../interfaces/editor';
+import type { AnyEditor as Editor } from '../interfaces/editor';
 import type { Node } from '../interfaces/node';
 import type { Path } from '../interfaces/path';
 

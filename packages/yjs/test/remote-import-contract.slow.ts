@@ -2,13 +2,12 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   createEditor,
-  createEditorRuntime,
   createEditorView,
   type Descendant,
   DocumentChange,
   defineEffect,
   defineEditorSchema,
-  defineEditorExtension,
+  defineExtension,
   defineStateField,
   defineValueCodec,
   type EditorEffect,
@@ -32,7 +31,7 @@ import {
   readPliteValueFromYjs,
 } from '../src/core/document';
 import { YjsUpdatePolicy } from '../src/core/editor-adapter';
-import { createYjsExtension } from '../src/core/extension';
+import { yjs } from '../src/core/extension';
 
 import {
   clearYjsTrace,
@@ -69,9 +68,8 @@ const recordRemoteImportCommits = (
 ): RecordedRemoteImportCommit[] => {
   const commits: RecordedRemoteImportCommit[] = [];
 
-  editor.extend(
-    defineEditorExtension({
-      name: 'remote-import-commit-recorder',
+  editor.install(
+    defineExtension('remote-import-commit-recorder', {
       on: {
         commit({ commit }): void {
           if (!commit.tags.includes('remote-yjs-import')) {
@@ -99,13 +97,16 @@ describe('@platejs/yjs remote import contract', () => {
       initial: () => 'Q2 Plan',
       persist: valueCodecs.string,
     });
+    const documentState = defineExtension('shared-document-state', {
+      stateFields: [documentTitle],
+    });
     const createPeer = (clientId: string, doc = new Y.Doc()) => {
       const editor = createEditor({
-        extensions: [documentTitle] as const,
+        extensions: [documentState] as const,
         initialValue: [paragraph('body')],
       });
-      const cleanup = editor.extend(
-        createYjsExtension({ clientId, doc, rootName: 'shared-state' })
+      const cleanup = editor.install(
+        yjs({ clientId, doc, rootName: 'shared-state' })
       );
 
       return { cleanup, doc, editor };
@@ -142,17 +143,17 @@ describe('@platejs/yjs remote import contract', () => {
       reduce: (value, effect) =>
         effect.type === increment ? value + effect.value : value,
     });
-    const incrementExtension = defineEditorExtension({
-      name: 'counter-increment-effect',
+    const incrementExtension = defineExtension('counter-increment-effect', {
       effectTypes: [increment],
+      stateFields: [counter],
     });
     const createPeer = (clientId: string, doc = new Y.Doc()) => {
       const editor = createEditor({
-        extensions: [counter, incrementExtension] as const,
+        extensions: [incrementExtension] as const,
         initialValue: [paragraph('body')],
       });
-      const cleanup = editor.extend(
-        createYjsExtension({
+      const cleanup = editor.install(
+        yjs({
           clientId,
           doc,
           rootName: 'shared-domain-effect',
@@ -190,8 +191,7 @@ describe('@platejs/yjs remote import contract', () => {
       collab: 'shared',
       collabReplay: 'live',
     });
-    const effects = defineEditorExtension({
-      name: 'effect-only-announcement',
+    const effects = defineExtension('effect-only-announcement', {
       effectTypes: [announce],
     });
     const createPeer = (doc: Y.Doc, record = false) => {
@@ -201,9 +201,8 @@ describe('@platejs/yjs remote import contract', () => {
         initialValue: [paragraph('body')],
       });
       const cleanupRecorder = record
-        ? editor.extend(
-            defineEditorExtension({
-              name: 'effect-only-recorder',
+        ? editor.install(
+            defineExtension('effect-only-recorder', {
               on: {
                 commit({ commit }) {
                   if (!commit.tags.includes('remote-yjs-import')) return;
@@ -216,9 +215,7 @@ describe('@platejs/yjs remote import contract', () => {
             })
           )
         : () => {};
-      const cleanupYjs = editor.extend(
-        createYjsExtension({ doc, rootName: 'effect-only' })
-      );
+      const cleanupYjs = editor.install(yjs({ doc, rootName: 'effect-only' }));
 
       return {
         cleanup() {
@@ -261,17 +258,16 @@ describe('@platejs/yjs remote import contract', () => {
       collabReplay: 'live',
       key: 'effect-codec-identity.nested',
     });
-    const effects = defineEditorExtension({
+    const effects = defineExtension('effect-codec-identity', {
       effectTypes: [nested],
-      name: 'effect-codec-identity',
     });
     const sourceDoc = new Y.Doc();
     const source = createEditor({
       extensions: [effects] as const,
       initialValue: [paragraph('body')],
     });
-    const cleanupSource = source.extend(
-      createYjsExtension({ doc: sourceDoc, rootName: 'effect-codec-identity' })
+    const cleanupSource = source.install(
+      yjs({ doc: sourceDoc, rootName: 'effect-codec-identity' })
     );
     const targetDoc = new Y.Doc();
 
@@ -282,9 +278,8 @@ describe('@platejs/yjs remote import contract', () => {
       extensions: [effects] as const,
       initialValue: [paragraph('body')],
     });
-    const cleanupRecorder = target.extend(
-      defineEditorExtension({
-        name: 'effect-codec-identity-recorder',
+    const cleanupRecorder = target.install(
+      defineExtension('effect-codec-identity-recorder', {
         on: {
           commit({ commit }) {
             if (!commit.tags.includes('remote-yjs-import')) return;
@@ -298,8 +293,8 @@ describe('@platejs/yjs remote import contract', () => {
         },
       })
     );
-    const cleanupTarget = target.extend(
-      createYjsExtension({ doc: targetDoc, rootName: 'effect-codec-identity' })
+    const cleanupTarget = target.install(
+      yjs({ doc: targetDoc, rootName: 'effect-codec-identity' })
     );
     const input = { nested: { count: 1 } };
 
@@ -337,10 +332,13 @@ describe('@platejs/yjs remote import contract', () => {
       reduce: (value, effect) =>
         effect.type === increment ? value + effect.value : value,
     });
-    const incrementExtension = defineEditorExtension({
-      name: 'concurrent-counter-increment-effect',
-      effectTypes: [increment],
-    });
+    const incrementExtension = defineExtension(
+      'concurrent-counter-increment-effect',
+      {
+        effectTypes: [increment],
+        stateFields: [counter],
+      }
+    );
     const createPeer = (
       clientId: string,
       numericClientId: number,
@@ -354,11 +352,11 @@ describe('@platejs/yjs remote import contract', () => {
       }
 
       const editor = createEditor({
-        extensions: [counter, incrementExtension] as const,
+        extensions: [incrementExtension] as const,
         initialValue: [paragraph('body')],
       });
-      const cleanup = editor.extend(
-        createYjsExtension({
+      const cleanup = editor.install(
+        yjs({
           clientId,
           doc,
           rootName: 'concurrent-shared-domain-effect',
@@ -409,12 +407,10 @@ describe('@platejs/yjs remote import contract', () => {
       collab: 'shared',
       collabReplay: 'live',
     });
-    const extensionA = defineEditorExtension({
-      name: 'source-a-effects',
+    const extensionA = defineExtension('source-a-effects', {
       effectTypes: [effectA],
     });
-    const extensionB = defineEditorExtension({
-      name: 'source-b-effects',
+    const extensionB = defineExtension('source-b-effects', {
       effectTypes: [effectB],
     });
     const createSource = (
@@ -426,7 +422,7 @@ describe('@platejs/yjs remote import contract', () => {
         extensions: [extension] as const,
         initialValue: [paragraph('body')],
       });
-      const cleanup = editor.extend(createYjsExtension({ doc, rootName }));
+      const cleanup = editor.install(yjs({ doc, rootName }));
 
       return { cleanup, doc, editor };
     };
@@ -445,9 +441,8 @@ describe('@platejs/yjs remote import contract', () => {
       extensions: [extensionB] as const,
       initialValue: [paragraph('body')],
     });
-    const cleanupRecorder = targetEditor.extend(
-      defineEditorExtension({
-        name: 'per-source-effect-recorder',
+    const cleanupRecorder = targetEditor.install(
+      defineExtension('per-source-effect-recorder', {
         on: {
           commit({ commit }) {
             if (!commit.tags.includes('remote-yjs-import')) return;
@@ -459,8 +454,8 @@ describe('@platejs/yjs remote import contract', () => {
         },
       })
     );
-    const cleanupTarget = targetEditor.extend(
-      createYjsExtension({ doc: targetDoc, rootName })
+    const cleanupTarget = targetEditor.install(
+      yjs({ doc: targetDoc, rootName })
     );
 
     Y.applyUpdate(sourceA.doc, Y.encodeStateAsUpdate(targetDoc));
@@ -477,12 +472,12 @@ describe('@platejs/yjs remote import contract', () => {
 
     assert.deepEqual(received, ['b1']);
 
-    const cleanupA = targetEditor.extend(extensionA);
+    const cleanupA = targetEditor.install(extensionA);
 
     assert.deepEqual(received, ['b1', 'a1', 'a2']);
 
-    const cleanupNoop = targetEditor.extend(
-      defineEditorExtension({ name: 'per-source-retry-noop' })
+    const cleanupNoop = targetEditor.install(
+      defineExtension('per-source-retry-noop', {})
     );
 
     assert.deepEqual(received, ['b1', 'a1', 'a2']);
@@ -508,22 +503,24 @@ describe('@platejs/yjs remote import contract', () => {
       reduce: (value, effect) =>
         effect.type === increment ? value + effect.value : value,
     });
-    const incrementExtension = defineEditorExtension({
-      name: 'atomic-counter-increment-effect',
-      effectTypes: [increment],
-    });
+    const incrementExtension = defineExtension(
+      'atomic-counter-increment-effect',
+      {
+        effectTypes: [increment],
+        stateFields: [counter],
+      }
+    );
     const createPeer = (doc: Y.Doc) => {
       const editor = createEditor({
-        extensions: [counter, incrementExtension] as const,
+        extensions: [incrementExtension] as const,
         initialValue: [paragraph('body')],
       });
       const remoteCommits: Array<{
         documentChanged: boolean;
         effectKeys: string[];
       }> = [];
-      const cleanupRecorder = editor.extend(
-        defineEditorExtension({
-          name: 'atomic-shared-effect-recorder',
+      const cleanupRecorder = editor.install(
+        defineExtension('atomic-shared-effect-recorder', {
           on: {
             commit({ commit }): void {
               if (!commit.tags.includes('remote-yjs-import')) return;
@@ -536,8 +533,8 @@ describe('@platejs/yjs remote import contract', () => {
           },
         })
       );
-      const cleanupYjs = editor.extend(
-        createYjsExtension({
+      const cleanupYjs = editor.install(
+        yjs({
           doc,
           rootName: 'atomic-shared-domain-effect',
         })
@@ -612,8 +609,7 @@ describe('@platejs/yjs remote import contract', () => {
           effect.type === increment ? value + effect.value : value,
       });
     const sourceCounter = createCounter('source-counter', incrementV2);
-    const sourceEffectExtension = defineEditorExtension({
-      name: 'source-versioned-effect',
+    const sourceEffectExtension = defineExtension('source-versioned-effect', {
       effectTypes: [incrementV2],
     });
     const sourceDoc = new Y.Doc();
@@ -621,8 +617,8 @@ describe('@platejs/yjs remote import contract', () => {
       extensions: [sourceCounter, sourceEffectExtension] as const,
       initialValue: [paragraph('body')],
     });
-    const sourceCleanup = sourceEditor.extend(
-      createYjsExtension({
+    const sourceCleanup = sourceEditor.install(
+      yjs({
         doc: sourceDoc,
         rootName: 'versioned-shared-effects',
       })
@@ -632,16 +628,15 @@ describe('@platejs/yjs remote import contract', () => {
     Y.applyUpdate(targetDoc, Y.encodeStateAsUpdate(sourceDoc));
 
     const oldCounter = createCounter('old-counter', incrementV1);
-    const oldEffectExtension = defineEditorExtension({
-      name: 'old-versioned-effect',
+    const oldEffectExtension = defineExtension('old-versioned-effect', {
       effectTypes: [incrementV1],
     });
     const oldEditor = createEditor({
       extensions: [oldCounter, oldEffectExtension] as const,
       initialValue: [paragraph('body')],
     });
-    const oldCleanup = oldEditor.extend(
-      createYjsExtension({
+    const oldCleanup = oldEditor.install(
+      yjs({
         doc: targetDoc,
         rootName: 'versioned-shared-effects',
       })
@@ -658,16 +653,18 @@ describe('@platejs/yjs remote import contract', () => {
     oldCleanup();
 
     const upgradedCounter = createCounter('upgraded-counter', incrementV2);
-    const upgradedEffectExtension = defineEditorExtension({
-      name: 'upgraded-versioned-effect',
-      effectTypes: [incrementV2],
-    });
+    const upgradedEffectExtension = defineExtension(
+      'upgraded-versioned-effect',
+      {
+        effectTypes: [incrementV2],
+      }
+    );
     const upgradedEditor = createEditor({
       extensions: [upgradedCounter, upgradedEffectExtension] as const,
       initialValue: [paragraph('body')],
     });
-    const upgradedCleanup = upgradedEditor.extend(
-      createYjsExtension({
+    const upgradedCleanup = upgradedEditor.install(
+      yjs({
         doc: targetDoc,
         rootName: 'versioned-shared-effects',
       })
@@ -723,17 +720,17 @@ describe('@platejs/yjs remote import contract', () => {
       initial: null,
       reduce: (value, effect) => (effect.type === focus ? effect.value : value),
     });
-    const focusExtension = defineEditorExtension({
+    const focusExtension = defineExtension('collab-focus-point-effect', {
       effectTypes: [focus],
-      name: 'collab-focus-point-effect',
+      stateFields: [receivedFocus],
     });
     const createPeer = (doc: Y.Doc) => {
       const editor = createEditor({
-        extensions: [receivedFocus, focusExtension] as const,
+        extensions: [focusExtension] as const,
         initialValue: [paragraph('body')],
       });
-      const cleanup = editor.extend(
-        createYjsExtension({ doc, rootName: 'relative-effect-point' })
+      const cleanup = editor.install(
+        yjs({ doc, rootName: 'relative-effect-point' })
       );
 
       return { cleanup, doc, editor };
@@ -900,7 +897,7 @@ describe('@platejs/yjs remote import contract', () => {
 
   it('converges concurrent schema set properties as per-value Yjs changes', () => {
     const rootName = 'set-valued-property-convergence';
-    const SetValuedSchema = defineEditorSchema({
+    const SetValuedSchema = defineEditorSchema('schema:set-valued-yjs-schema', {
       elements: {
         paragraph: { content: schema.content.text({ min: 1 }) },
         section: { content: schema.content.type('paragraph') },
@@ -949,9 +946,8 @@ describe('@platejs/yjs remote import contract', () => {
           },
         ],
       });
-      const cleanupRecorder = editor.extend(
-        defineEditorExtension({
-          name: 'set-valued-yjs-commit-recorder',
+      const cleanupRecorder = editor.install(
+        defineExtension('set-valued-yjs-commit-recorder', {
           on: {
             commit({ commit }) {
               if (!commit.changed.has('document')) return;
@@ -964,7 +960,7 @@ describe('@platejs/yjs remote import contract', () => {
           },
         })
       );
-      const cleanupYjs = editor.extend(createYjsExtension({ doc, rootName }));
+      const cleanupYjs = editor.install(yjs({ doc, rootName }));
 
       localChanges.length = 0;
       remoteChanges.length = 0;
@@ -1104,7 +1100,7 @@ describe('@platejs/yjs remote import contract', () => {
 
   it('rejects undeclared remote element properties without publishing a partial editor commit', () => {
     const rootName = 'closed-schema-ingress';
-    const ClosedSchema = defineEditorSchema({
+    const ClosedSchema = defineEditorSchema('schema:closed-yjs-ingress', {
       elements: {
         cell: {
           content: schema.content.text({ min: 1 }),
@@ -1125,8 +1121,8 @@ describe('@platejs/yjs remote import contract', () => {
       initialValue: [{ children: [{ text: 'safe' }], type: 'cell' }],
     });
     const commits = recordRemoteImportCommits(editor);
-    const cleanup = editor.extend(
-      createYjsExtension({
+    const cleanup = editor.install(
+      yjs({
         clientId: 'closed-schema-target',
         doc: targetDoc,
         rootName,
@@ -1526,16 +1522,16 @@ describe('@platejs/yjs remote import contract', () => {
   it('installs its controller before canonicalizing a claimed document', () => {
     const sourceDoc = new Y.Doc();
     const source = createEditor({ initialValue: [paragraph('claimed')] });
-    const cleanupSource = source.extend(
-      createYjsExtension({ doc: sourceDoc, rootName: 'activation-cycle' })
+    const cleanupSource = source.install(
+      yjs({ doc: sourceDoc, rootName: 'activation-cycle' })
     );
     const targetDoc = new Y.Doc();
 
     Y.applyUpdate(targetDoc, Y.encodeStateAsUpdate(sourceDoc));
 
     const target = createEditor({ initialValue: [paragraph('local')] });
-    const cleanupTarget = target.extend(
-      createYjsExtension({ doc: targetDoc, rootName: 'activation-cycle' })
+    const cleanupTarget = target.install(
+      yjs({ doc: targetDoc, rootName: 'activation-cycle' })
     );
 
     assert.deepEqual(target.read.children(), [paragraph('claimed')]);
@@ -1552,12 +1548,10 @@ describe('@platejs/yjs remote import contract', () => {
     const createPeer = (doc: Y.Doc, seedUpdate?: Uint8Array) => {
       if (seedUpdate) Y.applyUpdate(doc, seedUpdate);
 
-      const runtime = createEditorRuntime({ initialValue });
+      const runtime = createEditor({ initialValue });
       const main = createEditorView(runtime);
       const header = createEditorView(runtime, { root: 'header' });
-      const cleanup = header.extend(
-        createYjsExtension({ doc, rootName: 'named-root' })
-      );
+      const cleanup = header.install(yjs({ doc, rootName: 'named-root' }));
 
       return { cleanup, doc, header, main };
     };
@@ -1577,6 +1571,7 @@ describe('@platejs/yjs remote import contract', () => {
       importKind: 'event-change',
       mode: 'remote-reconcile',
       readTopLevelNodes: 1,
+      root: 'header',
     });
     source.cleanup();
     target.cleanup();

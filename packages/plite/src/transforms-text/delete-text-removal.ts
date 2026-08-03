@@ -17,7 +17,7 @@ import {
   leaf as editorLeaf,
   point as editorPoint,
 } from '../interfaces/editor';
-import type { Editor } from '../interfaces/editor';
+import type { AnyEditor as Editor } from '../interfaces/editor';
 import {
   type DeletePathTarget,
   type DeleteRangePlan,

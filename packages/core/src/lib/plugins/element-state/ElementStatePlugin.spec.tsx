@@ -6,7 +6,7 @@ import { property, schema, target } from '@platejs/plite';
 jsxt;
 
 import { createBaseEditor } from '../../editor';
-import { createBasePlugin } from '../../plugin';
+import { defineBasePlugin } from '../../plugin';
 import { ElementStatePlugin } from './ElementStatePlugin';
 
 describe('ElementStatePlugin', () => {
@@ -19,21 +19,21 @@ describe('ElementStatePlugin', () => {
     expect(
       editor.plugin(ElementStatePlugin).api.isEmpty({
         children: [{ text: '' }],
-        type: 'p',
+        type: 'paragraph',
       })
     ).toBe(true);
     expect(
       editor.plugin(ElementStatePlugin).api.isEmpty({
         blockId: 'a',
         children: [{ text: '' }],
-        type: 'p',
+        type: 'paragraph',
       })
     ).toBe(true);
     expect(
       editor.plugin(ElementStatePlugin).api.isEmpty({
         children: [{ text: '' }],
         id: 'a',
-        type: 'p',
+        type: 'paragraph',
       })
     ).toBe(false);
   });
@@ -47,24 +47,23 @@ describe('ElementStatePlugin', () => {
       editor.plugin(ElementStatePlugin).api.isEmpty({
         children: [{ text: '' }],
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       })
     ).toBe(false);
   });
 
   it('uses compiled metadata roles for element state', () => {
-    const StatePropertiesPlugin = createBasePlugin({
-      name: 'stateProperties',
+    const StatePropertiesPlugin = defineBasePlugin('stateProperties', {
       schema: {
-        properties: [
-          schema.elementProperty('ephemeral', property.string(), {
+        properties: {
+          ephemeral: schema.elementProperty(property.string(), {
             role: 'metadata',
-            target: target.type('p'),
+            target: target.type('paragraph'),
           }),
-          schema.elementProperty('visible', property.string(), {
-            target: target.type('p'),
+          visible: schema.elementProperty(property.string(), {
+            target: target.type('paragraph'),
           }),
-        ],
+        },
       },
     });
     const editor = createBaseEditor({
@@ -75,13 +74,13 @@ describe('ElementStatePlugin', () => {
       editor.plugin(ElementStatePlugin).api.isEmpty({
         children: [{ text: '' }],
         ephemeral: 'runtime-only',
-        type: 'p',
+        type: 'paragraph',
       })
     ).toBe(true);
     expect(
       editor.plugin(ElementStatePlugin).api.isEmpty({
         children: [{ text: '' }],
-        type: 'p',
+        type: 'paragraph',
         visible: 'document-state',
       })
     ).toBe(false);

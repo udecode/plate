@@ -1,16 +1,18 @@
 /** @jsx jsxt */
 
 import { BaseTablePlugin } from './BaseTablePlugin';
-import { getTestTablePlugins } from './__tests__/getTestTablePlugins';
-import { createPlateEditor } from '@platejs/core/react';
+import {
+  createTestTableEditor,
+  getTestTablePlugins,
+} from './__tests__/getTestTablePlugins';
 import { NodeApi } from '@platejs/plite';
 import { jsxt } from '@platejs/test-utils';
 import type { TestEditor } from '@platejs/test-utils';
 import type {
-  TTableCellElement,
-  TTableElement,
-  TTableRowElement,
-} from '@platejs/utils';
+  TableCellElement,
+  TableElement,
+  TableRowElement,
+} from './BaseTablePlugin';
 import assert from 'node:assert/strict';
 
 describe('table merge slow contracts', () => {
@@ -21,7 +23,7 @@ describe('table merge slow contracts', () => {
       input: TestEditor,
       { disableMerge = false }: { disableMerge?: boolean } = {}
     ) =>
-      createPlateEditor({
+      createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
@@ -29,7 +31,7 @@ describe('table merge slow contracts', () => {
       });
 
     const getTable = (editor: ReturnType<typeof createTableEditor>) => {
-      const entry = editor.read.nodes.get<TTableElement>([0]);
+      const entry = editor.read.nodes.get<TableElement>([0]);
       assert(entry);
 
       return entry[0];
@@ -72,14 +74,14 @@ describe('table merge slow contracts', () => {
           editor.plugin(BaseTablePlugin).update.merge();
 
           const table = getTable(editor);
-          const firstRow = table.children[0] as TTableRowElement;
-          const mergedCell = firstRow.children[0] as TTableCellElement;
+          const firstRow = table.children[0] as TableRowElement;
+          const mergedCell = firstRow.children[0] as TableCellElement;
 
           expect(firstRow.children).toHaveLength(1);
           expect(mergedCell).toMatchObject({
             colSpan: 2,
             rowSpan: 2,
-            type: 'td',
+            type: 'tableCell',
           });
           expect(
             mergedCell.children.map((child) => NodeApi.string(child))
@@ -124,14 +126,14 @@ describe('table merge slow contracts', () => {
           editor.plugin(BaseTablePlugin).update.merge();
 
           const table = getTable(editor);
-          const firstRow = table.children[0] as TTableRowElement;
-          const mergedCell = firstRow.children[0] as TTableCellElement;
+          const firstRow = table.children[0] as TableRowElement;
+          const mergedCell = firstRow.children[0] as TableCellElement;
 
           expect(firstRow.children).toHaveLength(1);
           expect(mergedCell.children.map((child) => child.type)).toEqual([
-            'p',
+            'paragraph',
             'table',
-            'p',
+            'paragraph',
           ]);
           expect(NodeApi.string(mergedCell.children[1]!)).toBe('nested');
         });
@@ -223,7 +225,7 @@ describe('table merge slow contracts', () => {
           editor.plugin(BaseTablePlugin).update.split();
 
           const table = getTable(editor);
-          const rows = table.children as TTableRowElement[];
+          const rows = table.children as TableRowElement[];
 
           expect(rows[0].children).toHaveLength(3);
           expect(NodeApi.string(rows[0].children[2])).toBe('13');
@@ -435,7 +437,7 @@ describe('table merge slow contracts', () => {
     jsxt;
 
     const createTableEditor = (input: TestEditor) =>
-      createPlateEditor({
+      createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge: false }),
         selection: input.selection,
@@ -479,7 +481,7 @@ describe('table merge slow contracts', () => {
 
         expect(editor.read.text.string([0])).toBe('1222');
         expect(
-          editor.read.nodes.toArray({ at: [], match: { type: 'td' } })
+          editor.read.nodes.toArray({ at: [], match: { type: 'tableCell' } })
         ).toHaveLength(2);
       });
 
@@ -519,19 +521,19 @@ describe('table merge slow contracts', () => {
               {
                 children: [
                   {
-                    type: 'td',
+                    type: 'tableCell',
                   },
                 ],
-                type: 'tr',
+                type: 'tableRow',
               },
               {
                 children: [
                   {
                     children: [{ children: [{ text: '21' }] }],
-                    type: 'td',
+                    type: 'tableCell',
                   },
                 ],
-                type: 'tr',
+                type: 'tableRow',
               },
             ],
           },
@@ -575,7 +577,7 @@ describe('table merge slow contracts', () => {
         expect(editor.read.children()).toMatchObject([{ colSizes: [60] }]);
         expect(editor.read.text.string([0])).toBe('1323');
         expect(
-          editor.read.nodes.toArray({ at: [], match: { type: 'td' } })
+          editor.read.nodes.toArray({ at: [], match: { type: 'tableCell' } })
         ).toHaveLength(2);
       });
     });
@@ -585,7 +587,7 @@ describe('table merge slow contracts', () => {
     jsxt;
 
     const createTableEditor = (input: TestEditor) =>
-      createPlateEditor({
+      createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge: false }),
         selection: input.selection,
@@ -634,20 +636,29 @@ describe('table merge slow contracts', () => {
             children: [
               {
                 children: [
-                  { children: [{ children: [{ text: '21' }] }], type: 'td' },
+                  {
+                    children: [{ children: [{ text: '21' }] }],
+                    type: 'tableCell',
+                  },
                   {
                     children: [{ children: [{ text: '12' }] }],
-                    type: 'td',
+                    type: 'tableCell',
                   },
                 ],
-                type: 'tr',
+                type: 'tableRow',
               },
               {
                 children: [
-                  { children: [{ children: [{ text: '31' }] }], type: 'td' },
-                  { children: [{ children: [{ text: '32' }] }], type: 'td' },
+                  {
+                    children: [{ children: [{ text: '31' }] }],
+                    type: 'tableCell',
+                  },
+                  {
+                    children: [{ children: [{ text: '32' }] }],
+                    type: 'tableCell',
+                  },
                 ],
-                type: 'tr',
+                type: 'tableRow',
               },
             ],
             type: 'table',
@@ -698,18 +709,27 @@ describe('table merge slow contracts', () => {
                 children: [
                   {
                     children: [{ children: [{ text: '11' }] }],
-                    type: 'td',
+                    type: 'tableCell',
                   },
-                  { children: [{ children: [{ text: '12' }] }], type: 'td' },
+                  {
+                    children: [{ children: [{ text: '12' }] }],
+                    type: 'tableCell',
+                  },
                 ],
-                type: 'tr',
+                type: 'tableRow',
               },
               {
                 children: [
-                  { children: [{ children: [{ text: '31' }] }], type: 'td' },
-                  { children: [{ children: [{ text: '32' }] }], type: 'td' },
+                  {
+                    children: [{ children: [{ text: '31' }] }],
+                    type: 'tableCell',
+                  },
+                  {
+                    children: [{ children: [{ text: '32' }] }],
+                    type: 'tableCell',
+                  },
                 ],
-                type: 'tr',
+                type: 'tableRow',
               },
             ],
             type: 'table',
@@ -767,22 +787,37 @@ describe('table merge slow contracts', () => {
             children: [
               {
                 children: [
-                  { children: [{ children: [{ text: '00' }] }], type: 'td' },
-                  { children: [{ children: [{ text: '01' }] }], type: 'td' },
-                  { children: [{ children: [{ text: '02' }] }], type: 'td' },
+                  {
+                    children: [{ children: [{ text: '00' }] }],
+                    type: 'tableCell',
+                  },
+                  {
+                    children: [{ children: [{ text: '01' }] }],
+                    type: 'tableCell',
+                  },
+                  {
+                    children: [{ children: [{ text: '02' }] }],
+                    type: 'tableCell',
+                  },
                 ],
-                type: 'tr',
+                type: 'tableRow',
               },
               {
                 children: [
-                  { children: [{ children: [{ text: '20' }] }], type: 'td' },
+                  {
+                    children: [{ children: [{ text: '20' }] }],
+                    type: 'tableCell',
+                  },
                   {
                     children: [{ children: [{ text: '11' }] }],
-                    type: 'td',
+                    type: 'tableCell',
                   },
-                  { children: [{ children: [{ text: '22' }] }], type: 'td' },
+                  {
+                    children: [{ children: [{ text: '22' }] }],
+                    type: 'tableCell',
+                  },
                 ],
-                type: 'tr',
+                type: 'tableRow',
               },
             ],
             type: 'table',

@@ -2,8 +2,7 @@ import {
   createEditor,
   createEditorView,
   defineCommand,
-  defineEditorExtension,
-  type EditorRuntime,
+  defineExtension,
   type TransactionSpec,
 } from '@platejs/plite';
 import {
@@ -11,11 +10,14 @@ import {
   getInstalledEditorExtension,
 } from '@platejs/plite/internal';
 
-import { createBaseEditor, extendBaseEditor } from '../../lib/editor';
-import type { BaseEditor } from '../../lib/editor';
-import { createBasePlugin } from '../../lib/plugin';
+import { createBaseEditor } from '../../lib/editor';
+import type {
+  BaseEditor,
+  InternalBaseEditorWithInstalledPlugins,
+} from '../../lib/editor';
+import { defineBasePlugin } from '../../lib/plugin';
 import {
-  getCompiledPlateModelBinding,
+  getCompiledPlateModel,
   getCompiledPlatePlugin,
   getPlateModelPublication,
   getPlateRuntime,
@@ -30,20 +32,21 @@ describe('Plate model publication', () => {
   it('exposes the compiling plugin set to native API factories', () => {
     let observedRuntime: ReturnType<typeof getPlateRuntime> | undefined;
     let observedPlugin: unknown;
-    const ObserverExtension = defineEditorExtension({
+    const ObserverExtension = defineExtension('publishedBeforeExtensions', {
       api: ({ editor: runtimeEditor }) => {
         observedRuntime = getPlateRuntime(runtimeEditor);
         observedPlugin = getCompiledPlatePlugin(
-          runtimeEditor as unknown as BaseEditor<any, any>,
+          runtimeEditor as unknown as InternalBaseEditorWithInstalledPlugins<
+            any,
+            any
+          >,
           'publishedBeforeExtensions'
         );
 
         return {};
       },
-      name: 'publishedBeforeExtensions',
     });
-    const Plugin = createBasePlugin({
-      name: 'publishedBeforeExtensions',
+    const Plugin = defineBasePlugin('publishedBeforeExtensions', {
       shortcuts: {
         run: { handler: () => {}, keys: 'mod+k' },
       },
@@ -58,19 +61,18 @@ describe('Plate model publication', () => {
       getPlateRuntime(editor).pluginList.find(
         (plugin) => plugin.name === 'publishedBeforeExtensions'
       )
-    ).toBe(editor.plugin(Plugin).plugin);
+    ).toBe(getCompiledPlatePlugin(editor, Plugin));
   });
 
   it('clears private construction state when an extension throws', () => {
     const editor = createEditor();
-    const BrokenPlugin = createBasePlugin({
-      name: 'brokenExtension',
-    }).extend(() => {
+    const BrokenPlugin = defineBasePlugin('brokenExtension', {}).extend(() => {
       throw new Error('broken extension');
     });
 
     expect(() =>
-      extendBaseEditor(editor, {
+      createBaseEditor({
+        editor,
         plugins: [BrokenPlugin],
         skipInitialization: true,
       })
@@ -83,7 +85,7 @@ describe('Plate model publication', () => {
   it('rolls back failed initialization and retries on the same raw editor', () => {
     let correctionRuns = 0;
     let shouldThrow = true;
-    const Correction = defineEditorExtension({
+    const Correction = defineExtension('retryableBootstrap', {
       corrections: [
         {
           correct() {
@@ -93,11 +95,10 @@ describe('Plate model publication', () => {
           event: 'content',
         },
       ],
-      name: 'retryableBootstrap',
     });
-    const Plugin = createBasePlugin({
-      name: 'retryableBootstrap',
-    }).extend(Correction);
+    const Plugin = defineBasePlugin('retryableBootstrap', {}).extend(
+      Correction
+    );
     const initialSelection = {
       anchor: { offset: 2, path: [0, 0] },
       focus: { offset: 2, path: [0, 0] },
@@ -105,7 +106,7 @@ describe('Plate model publication', () => {
     };
     const raw = createEditor({
       initialSelection,
-      initialValue: [{ children: [{ text: 'before' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'before' }], type: 'paragraph' }],
     });
     const previousSchema = raw.read.schema;
     const previousIdentity = previousSchema.identity();
@@ -113,8 +114,9 @@ describe('Plate model publication', () => {
     const previousVersion = raw.read.runtime.snapshot().version;
 
     expect(() =>
-      extendBaseEditor(raw, {
-        initialValue: [{ children: [{ text: 'after' }], type: 'p' }],
+      createBaseEditor({
+        editor: raw,
+        initialValue: [{ children: [{ text: 'after' }], type: 'paragraph' }],
         plugins: [Plugin],
         shouldNormalizeEditor: true,
       })
@@ -134,15 +136,16 @@ describe('Plate model publication', () => {
     ).toBeUndefined();
 
     shouldThrow = false;
-    const editor = extendBaseEditor(raw, {
-      initialValue: [{ children: [{ text: 'after' }], type: 'p' }],
+    const editor = createBaseEditor({
+      editor: raw,
+      initialValue: [{ children: [{ text: 'after' }], type: 'paragraph' }],
       plugins: [Plugin],
       shouldNormalizeEditor: true,
     });
 
     expect(editor).toBe(raw);
     expect(editor.read.children()).toEqual([
-      { children: [{ text: 'after' }], type: 'p' },
+      { children: [{ text: 'after' }], type: 'paragraph' },
     ]);
     expect(editor.read.lastCommit()).toBeNull();
     expect(getPlateModelPublication(editor)).toBeDefined();
@@ -158,7 +161,7 @@ describe('Plate model publication', () => {
       { build: () => spec }
     );
     const raw = createEditor({
-      initialValue: [{ children: [{ text: 'a' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'a' }], type: 'paragraph' }],
     });
     const previousVersion = raw.read.runtime.snapshot().version;
 
@@ -176,22 +179,19 @@ describe('Plate model publication', () => {
       'Cannot apply a stale transaction spec.'
     );
     expect(editor.read.children()).toEqual([
-      { children: [{ text: 'a' }], type: 'p' },
+      { children: [{ text: 'a' }], type: 'paragraph' },
     ]);
   });
 
   it('publishes canonical dependency identities per editor', () => {
-    const Dependency = createBasePlugin({
-      name: 'canonicalDependency',
+    const Dependency = defineBasePlugin('canonicalDependency', {
       initialState: { n: 1 },
     });
-    const Child = createBasePlugin({
-      name: 'canonicalChild',
+    const Child = defineBasePlugin('canonicalChild', {
       initialState: { n: 1 },
     });
-    const Parent = createBasePlugin({
+    const Parent = defineBasePlugin('canonicalParent', {
       dependencies: [Dependency, Child],
-      name: 'canonicalParent',
     });
     const createConfiguredEditor = (dependencyN: number, childN: number) =>
       createBaseEditor({
@@ -203,12 +203,12 @@ describe('Plate model publication', () => {
       });
     const first = createConfiguredEditor(2, 3);
     const second = createConfiguredEditor(4, 5);
-    const firstParent = first.plugin(Parent).plugin;
-    const firstDependency = first.plugin(Dependency).plugin;
-    const firstChild = first.plugin(Child).plugin;
-    const secondParent = second.plugin(Parent).plugin;
-    const secondDependency = second.plugin(Dependency).plugin;
-    const secondChild = second.plugin(Child).plugin;
+    const firstParent = getCompiledPlatePlugin(first, Parent)!;
+    const firstDependency = getCompiledPlatePlugin(first, Dependency)!;
+    const firstChild = getCompiledPlatePlugin(first, Child)!;
+    const secondParent = getCompiledPlatePlugin(second, Parent)!;
+    const secondDependency = getCompiledPlatePlugin(second, Dependency)!;
+    const secondChild = getCompiledPlatePlugin(second, Child)!;
 
     expect(firstParent.dependencies[0]).toBe(firstDependency);
     expect(firstParent.dependencies[1]).toBe(firstChild);
@@ -223,22 +223,11 @@ describe('Plate model publication', () => {
   });
 
   it('shares one Plate publication and plugin store across root views', () => {
-    const Plugin = createBasePlugin({
-      name: 'rootViewOwner',
+    const Plugin = defineBasePlugin('rootViewOwner', {
       initialState: { enabled: true },
     });
     const editor = createBaseEditor({ plugins: [Plugin] });
-    const runtime = Object.freeze({
-      api: editor.api,
-      anchor: editor.anchor,
-      editor,
-      extend: editor.extend,
-      read: editor.read,
-      subscribe: editor.subscribe,
-      subscribeCommit: editor.subscribeCommit,
-      update: editor.update,
-    }) as unknown as EditorRuntime;
-    const view = createEditorView(runtime) as unknown as BaseEditor;
+    const view = createEditorView(editor) as unknown as BaseEditor;
     const other = createBaseEditor({ plugins: [Plugin] });
 
     expect(view).not.toBe(editor);
@@ -247,7 +236,7 @@ describe('Plate model publication', () => {
     );
     expect(getPlateRuntime(view)).toBe(getPlateRuntime(editor));
     expect(getCompiledPlatePlugin(view, Plugin.name)).toBe(
-      editor.plugin(Plugin).plugin
+      getCompiledPlatePlugin(editor, Plugin)
     );
     expect(getPluginStore(view, Plugin.name)).toBe(
       getPluginStore(editor, Plugin.name)
@@ -261,8 +250,7 @@ describe('Plate model publication', () => {
   });
 
   it('keeps private compiled registries safe for reserved property names', () => {
-    const Plugin = createBasePlugin({
-      name: 'toString',
+    const Plugin = defineBasePlugin('toString', {
       inputRules: ({ rule }) => [
         rule.insertText({
           apply: () => true,
@@ -273,10 +261,14 @@ describe('Plate model publication', () => {
     });
     const editor = createBaseEditor({ plugins: [Plugin] });
     const runtime = getPlateRuntime(editor);
-    const rawEditor = createEditor() as unknown as BaseEditor<any, any>;
+    const rawEditor =
+      createEditor() as unknown as InternalBaseEditorWithInstalledPlugins<
+        any,
+        any
+      >;
 
     expect(Reflect.get(runtime.plugins, 'toString')).toBe(
-      editor.plugin(Plugin).plugin
+      getCompiledPlatePlugin(editor, Plugin)
     );
     expect(Reflect.get(runtime.plugins, 'constructor')).toBeUndefined();
     expect(Reflect.get(runtime.components, 'toString')).toBeUndefined();
@@ -286,12 +278,7 @@ describe('Plate model publication', () => {
     expect(
       Reflect.get(runtime.inputRules.insertText.byTrigger, 'constructor')
     ).toHaveLength(1);
-    expect(
-      getCompiledPlateModelBinding(rawEditor, {
-        name: 'constructor',
-        type: 'constructor',
-      } as never)
-    ).toBeUndefined();
+    expect(getCompiledPlateModel(rawEditor).byName.constructor).toBeUndefined();
 
     withCompiledPlatePluginCandidate(rawEditor, [], () => {
       setCompiledPlatePluginCandidate(rawEditor, Plugin);
@@ -325,20 +312,18 @@ describe('Plate model publication', () => {
   });
 
   it('keeps root and keyed API projection scoped to its owning plugin', () => {
-    const FirstPlugin = createBasePlugin({
+    const FirstPlugin = defineBasePlugin('firstApi', {
       api: () => ({
         firstNested: { read: () => 'first-nested' },
         firstOwn: () => 'first-own',
         firstRoot: () => 'first-root',
       }),
-      name: 'firstApi',
     });
-    const SecondPlugin = createBasePlugin({
+    const SecondPlugin = defineBasePlugin('secondApi', {
       api: () => ({
         secondOwn: () => 'second-own',
         secondRoot: () => 'second-root',
       }),
-      name: 'secondApi',
     });
     const editor = createBaseEditor({
       plugins: [FirstPlugin, SecondPlugin],
@@ -372,9 +357,8 @@ describe('Plate model publication', () => {
 
   it('projects compiled plugin API into transaction extension factories', () => {
     const writes: string[] = [];
-    const Plugin = createBasePlugin({
+    const Plugin = defineBasePlugin('txCandidateApi', {
       api: () => ({ current: () => 'compiled' }),
-      name: 'txCandidateApi',
     }).extend(({ api }) => ({
       update: () => ({
         write: () => {
@@ -390,8 +374,7 @@ describe('Plate model publication', () => {
   });
 
   it('keeps runtime closures on the live plugin store', () => {
-    const Plugin = createBasePlugin({
-      name: 'liveRuntimeClosure',
+    const Plugin = defineBasePlugin('liveRuntimeClosure', {
       initialState: { enabled: false },
     }).extend(({ store }) => ({
       shortcuts: {
@@ -415,16 +398,13 @@ describe('Plate model publication', () => {
   });
 
   it('publishes configured initialState before contextual extensions', () => {
-    const Plugin = createBasePlugin({
-      name: 'contextualState',
+    const Plugin = defineBasePlugin('contextualState', {
       initialState: { label: 'one', projection: '' },
-      targetPluginNames: ['descriptorTarget'],
+      targetPlugins: ['descriptorTarget'],
     })
       .extend(({ store, plugin }) => ({
         initialState: {
-          projection: `${store.get().label}:${plugin.targetPluginNames.join(
-            ','
-          )}`,
+          projection: `${store.get().label}:${plugin.targetPlugins.join(',')}`,
         },
       }))
       .configure({
@@ -438,34 +418,32 @@ describe('Plate model publication', () => {
   });
 
   it('rejects mutation of the published plugin projection', () => {
-    const plugin = createBasePlugin({ name: 'publishedProjection' });
+    const plugin = defineBasePlugin('publishedProjection', {});
     const editor = createBaseEditor({ plugins: [plugin] });
-    const publishedPlugin = editor.plugin(plugin).plugin;
+    const publishedPlugin = getCompiledPlatePlugin(editor, plugin)!;
 
     expect(Object.isFrozen(publishedPlugin)).toBe(true);
     expect(() =>
-      Object.defineProperty(publishedPlugin, 'type', {
+      Object.defineProperty(publishedPlugin, 'name', {
         value: 'mutated',
       })
     ).toThrow();
-    expect(editor.plugin(plugin.name).type).toBe('publishedProjection');
+    expect(editor.plugin(plugin.name).name).toBe('publishedProjection');
   });
 
   it('deep-freezes published shortcut and input-rule indexes', () => {
-    const Plugin = createBasePlugin({ name: 'frozenRuntimeIndexes' }).configure(
-      {
-        inputRules: [
-          {
-            apply: () => true,
-            target: 'insertText',
-            trigger: '*',
-          },
-        ],
-        shortcuts: {
-          current: { handler: () => undefined, keys: 'mod+k' },
+    const Plugin = defineBasePlugin('frozenRuntimeIndexes', {}).configure({
+      inputRules: [
+        {
+          apply: () => true,
+          target: 'insertText',
+          trigger: '*',
         },
-      }
-    );
+      ],
+      shortcuts: {
+        current: { handler: () => undefined, keys: 'mod+k' },
+      },
+    });
     const editor = createBaseEditor({ plugins: [Plugin] });
     const { inputRules, shortcuts } = getPlateModelPublication(editor)!;
     const shortcut = shortcuts['frozenRuntimeIndexes.current'];
@@ -492,7 +470,7 @@ describe('Plate model publication', () => {
 
   it('deep-freezes published component and plugin-cache indexes', () => {
     const editor = createBaseEditor({
-      plugins: [createBasePlugin({ name: 'frozenModelIndexes' })],
+      plugins: [defineBasePlugin('frozenModelIndexes', {})],
     });
     const { components, pluginCache } = getPlateModelPublication(editor)!;
 
@@ -503,7 +481,6 @@ describe('Plate model publication', () => {
     expect(Object.isFrozen(pluginCache.inject)).toBe(true);
     expect(Object.isFrozen(pluginCache.inject.nodeProps)).toBe(true);
     expect(Object.isFrozen(pluginCache.node)).toBe(true);
-    expect(Object.isFrozen(pluginCache.node.types)).toBe(true);
     expect(Object.isFrozen(pluginCache.render)).toBe(true);
     expect(Object.isFrozen(pluginCache.render.aboveEditable)).toBe(true);
     expect(Object.isFrozen(pluginCache.rules)).toBe(true);
@@ -511,15 +488,12 @@ describe('Plate model publication', () => {
     expect(Object.isFrozen(pluginCache.transformInitialValue)).toBe(true);
     expect(Object.isFrozen(pluginCache.useHooks)).toBe(true);
     expect(() =>
-      Object.defineProperty(pluginCache.node.types, 'mutated', {
-        value: 'mutated',
-      })
+      Object.defineProperty(pluginCache.node, 'mutated', { value: 'mutated' })
     ).toThrow();
   });
 
   it('never falls through an active candidate to stale publication state', () => {
-    const plugin = createBasePlugin({
-      name: 'candidateLookup',
+    const plugin = defineBasePlugin('candidateLookup', {
       initialState: { label: 'one' },
     }).extend(({ store }) => ({
       api: () => ({ current: () => store.get().label }),
@@ -530,12 +504,12 @@ describe('Plate model publication', () => {
     const secondPublished = getCompiledPlatePlugin(secondEditor, plugin)!;
 
     withCompiledPlatePluginCandidate(secondEditor, [secondPublished], () => {
-      expect(secondEditor.plugin(firstPublished).plugin).toBe(secondPublished);
+      expect(secondEditor.plugin(firstPublished).initialState).toBe(
+        secondPublished.initialState
+      );
     });
     withCompiledPlatePluginCandidate(secondEditor, [], () => {
-      expect(() => secondEditor.plugin(plugin).plugin).toThrow(
-        /not installed/i
-      );
+      expect(() => secondEditor.plugin(plugin).name).toThrow(/not installed/i);
     });
     withCompiledPlatePluginApiCandidate(secondEditor, {}, () => {
       expect(

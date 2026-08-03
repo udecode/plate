@@ -1,9 +1,4 @@
-import {
-  createEditor,
-  createEditorRuntime,
-  createEditorView,
-  TextApi,
-} from '@platejs/plite';
+import { createEditor, createEditorView, TextApi } from '@platejs/plite';
 import {
   getSnapshot as editorGetSnapshot,
   replace as editorReplace,
@@ -25,7 +20,7 @@ import {
 
 describe('plite-react runtime live state facade', () => {
   test('resolves live nodes and text through root view editors', () => {
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       initialValue: {
         children: [{ type: 'block', children: [{ text: 'body' }] }],
         roots: { header: [{ type: 'block', children: [{ text: 'header' }] }] },

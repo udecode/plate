@@ -119,7 +119,7 @@ const editor = createPlateEditor({
 {
   icon: <TableOfContentsIcon />,
   label: '目录',
-  value: KEYS.toc,
+  value: PLUGINS.toc,
 }
 ```
 
@@ -175,11 +175,17 @@ function Layout() {
 
 ## 转换器
 
-### `editor.update.toc.insert`
+### `editor.plugin(BaseTocPlugin).update.insert`
 
 插入目录元素。
 
-<API name="editor.update.toc.insert">
+```ts
+import { BaseTocPlugin } from '@platejs/toc';
+
+editor.plugin(BaseTocPlugin).update.insert();
+```
+
+<API name="editor.plugin(BaseTocPlugin).update.insert">
 <APIOptions type="object<BaseEditor>">
     节点插入选项
 </APIOptions>

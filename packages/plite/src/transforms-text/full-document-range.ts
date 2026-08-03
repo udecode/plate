@@ -2,7 +2,7 @@ import {
   getChildren as editorGetChildren,
   point as editorPoint,
 } from '../interfaces/editor';
-import type { Editor } from '../interfaces/editor';
+import type { AnyEditor as Editor } from '../interfaces/editor';
 import { type Range, RangeApi } from '../interfaces/range';
 
 export const samePoint = (

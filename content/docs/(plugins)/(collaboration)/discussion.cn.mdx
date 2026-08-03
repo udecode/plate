@@ -60,7 +60,7 @@ npm install @platejs/comment @platejs/suggestion
 ### 创建插件
 
 ```tsx
-import { createPlatePlugin } from 'platejs/react';
+import { definePlatePlugin } from 'platejs/react';
 import { BlockDiscussion } from '@/components/ui/block-discussion';
 
 export interface TDiscussion {
@@ -97,10 +97,8 @@ const initialState: DiscussionPluginState = {
   users: usersData,
 };
 
-export const discussionPlugin = createPlatePlugin({
-  initialState,
-  name: 'discussion',
-  selectors: {
+export const discussionPlugin = definePlatePlugin('discussion', {
+  initialState,  selectors: {
     currentUser: (state) => state.users[state.currentUserId],
     user: (state, id: string) => state.users[id],
   },

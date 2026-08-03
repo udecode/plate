@@ -33,7 +33,7 @@ describe('AIChatPlugin read.commentRange', () => {
                 text: 'Plite',
               },
             ],
-            type: 'a',
+            type: 'link',
             url: 'https://platejs.org/docs/plite',
           },
           {
@@ -45,7 +45,7 @@ describe('AIChatPlugin read.commentRange', () => {
                 text: 'React',
               },
             ],
-            type: 'a',
+            type: 'link',
             url: 'https://reactjs.org',
           },
           {
@@ -57,14 +57,14 @@ describe('AIChatPlugin read.commentRange', () => {
                 text: 'Explore the documentation',
               },
             ],
-            type: 'a',
+            type: 'link',
             url: '/docs',
           },
           {
             text: ' to discover more.',
           },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
       {
         id: 'GznILN9jX7',
@@ -94,7 +94,7 @@ describe('AIChatPlugin read.commentRange', () => {
                 text: 'suggestions',
               },
             ],
-            type: 'a',
+            type: 'link',
             url: '/docs/suggestion',
           },
           {
@@ -131,7 +131,7 @@ describe('AIChatPlugin read.commentRange', () => {
                 text: 'comments',
               },
             ],
-            type: 'a',
+            type: 'link',
             url: '/docs/comment',
           },
           {
@@ -158,7 +158,7 @@ describe('AIChatPlugin read.commentRange', () => {
             text: ' annotations!',
           },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
       {
         id: 'll9QY8QwZe',
@@ -181,7 +181,7 @@ describe('AIChatPlugin read.commentRange', () => {
                 text: 'AI SDK',
               },
             ],
-            type: 'a',
+            type: 'link',
             url: '/docs/ai',
           },
           {
@@ -202,7 +202,7 @@ describe('AIChatPlugin read.commentRange', () => {
             text: ' in an empty line to:',
           },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
       {
         id: 'Hma3jpd732',
@@ -213,7 +213,7 @@ describe('AIChatPlugin read.commentRange', () => {
         ],
         indent: 1,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         id: 'Z0sWZJvJSK',
@@ -225,7 +225,7 @@ describe('AIChatPlugin read.commentRange', () => {
         indent: 1,
         listStart: 2,
         listStyleType: 'disc',
-        type: 'p',
+        type: 'paragraph',
       },
       {
         id: 'Iu6xPiuKMv',
@@ -248,7 +248,7 @@ describe('AIChatPlugin read.commentRange', () => {
                 text: 'headings',
               },
             ],
-            type: 'a',
+            type: 'link',
             url: '/docs/heading',
           },
           {
@@ -260,7 +260,7 @@ describe('AIChatPlugin read.commentRange', () => {
                 text: 'lists',
               },
             ],
-            type: 'a',
+            type: 'link',
             url: '/docs/list',
           },
           {
@@ -272,7 +272,7 @@ describe('AIChatPlugin read.commentRange', () => {
                 text: 'quotes',
               },
             ],
-            type: 'a',
+            type: 'link',
             url: '/docs/blockquote',
           },
           {
@@ -284,7 +284,7 @@ describe('AIChatPlugin read.commentRange', () => {
                 text: 'marks',
               },
             ],
-            type: 'a',
+            type: 'link',
             url: '/docs/basic-marks',
           },
           {
@@ -331,7 +331,7 @@ describe('AIChatPlugin read.commentRange', () => {
                 text: 'autoformatting',
               },
             ],
-            type: 'a',
+            type: 'link',
             url: '/docs/autoformat',
           },
           {
@@ -343,7 +343,7 @@ describe('AIChatPlugin read.commentRange', () => {
                 text: 'Markdown',
               },
             ],
-            type: 'a',
+            type: 'link',
             url: '/docs/markdown',
           },
           {
@@ -364,7 +364,7 @@ describe('AIChatPlugin read.commentRange', () => {
             text: ' for H1).',
           },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
       {
         id: 'rpGKu5RVVn',
@@ -382,7 +382,7 @@ describe('AIChatPlugin read.commentRange', () => {
             text: '',
           },
         ],
-        type: 'p',
+        type: 'paragraph',
       },
     ]);
 

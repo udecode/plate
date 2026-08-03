@@ -107,10 +107,9 @@ try {
 使用插件根级 `on.commit` 观察已发布的规范变更：
 
 ```ts
-import { createPlatePlugin } from 'platejs/react';
+import { definePlatePlugin } from 'platejs/react';
 
-const LoggingPlugin = createPlatePlugin({
-  name: 'logging',
+const LoggingPlugin = definePlatePlugin('logging', {
   on: {
     commit({ commit }) {
       console.debug('Document change:', commit.changes);
@@ -201,7 +200,7 @@ Plate 使用几个预定义的错误类型来帮助识别开发过程中的特�
 
 ### USE_CREATE_PLUGIN
 
-当插件不是使用 `createBasePlugin` 或 `createPlatePlugin` 函数创建时抛出。当插件被添加到编辑器中但未使用指定函数正确创建时，会发生此错误。
+当插件不是使用 `defineBasePlugin` 或 `definePlatePlugin` 函数创建时抛出。当插件被添加到编辑器中但未使用指定函数正确创建时，会发生此错误。
 
 ### USE_ELEMENT_CONTEXT
 

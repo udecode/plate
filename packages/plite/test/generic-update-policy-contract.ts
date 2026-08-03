@@ -1,12 +1,11 @@
 import {
   createEditor,
-  defineEditorExtension,
+  defineExtension,
   type EditorUpdatePolicyFor,
   txOnly,
 } from '@platejs/plite';
 
-const history = defineEditorExtension({
-  name: 'history',
+const history = defineExtension('history', {
   update: ({ tx }) => ({
     direct() {
       tx.text.insert('direct');

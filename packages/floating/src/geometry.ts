@@ -76,8 +76,11 @@ export const createVirtualElement = (): VirtualElement => ({
 });
 
 /** Get the bounding client rect for an editor range. */
-export const getRangeBoundingClientRect = <V extends Value>(
-  editor: DOMEditor<V>,
+export const getRangeBoundingClientRect = <
+  V extends Value,
+  TExtensions extends readonly unknown[],
+>(
+  editor: DOMEditor<V, TExtensions>,
   at: Range | null
 ): ClientRectObject => {
   if (!at) return getDefaultBoundingClientRect();
@@ -89,8 +92,11 @@ export const getRangeBoundingClientRect = <V extends Value>(
 };
 
 /** Get the bounding client rect for the expanded editor selection. */
-export const getSelectionBoundingClientRect = <V extends Value>(
-  editor: DOMEditor<V>
+export const getSelectionBoundingClientRect = <
+  V extends Value,
+  TExtensions extends readonly unknown[],
+>(
+  editor: DOMEditor<V, TExtensions>
 ): ClientRectObject => {
   const selection = editor.read.selection();
 
@@ -112,8 +118,11 @@ export const getDOMSelectionBoundingClientRect = (): ClientRectObject => {
   return domSelection.getRangeAt(0).getBoundingClientRect();
 };
 
-export const getBoundingClientRect = <V extends Value>(
-  editor: DOMEditor<V>,
+export const getBoundingClientRect = <
+  V extends Value,
+  TExtensions extends readonly unknown[],
+>(
+  editor: DOMEditor<V, TExtensions>,
   at?: Location | Location[]
 ): DOMRect | undefined => {
   const atRanges: Range[] = (() => {
@@ -142,8 +151,11 @@ export const getBoundingClientRect = <V extends Value>(
   return mergeClientRects(clientRects);
 };
 
-export const createVirtualRef = <V extends Value>(
-  editor: DOMEditor<V>,
+export const createVirtualRef = <
+  V extends Value,
+  TExtensions extends readonly unknown[],
+>(
+  editor: DOMEditor<V, TExtensions>,
   at?: Location | Location[],
   {
     fallbackRect,

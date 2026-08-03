@@ -14,7 +14,7 @@ import { editorCommands } from './editor-commands';
 import type { AnchorOptions } from './anchor';
 import type {
   CreateEditorOptions,
-  Editor,
+  AnyEditor as Editor,
   EditorCommit,
   EditorCommitContext,
   EditorCommitHandler,
@@ -343,13 +343,13 @@ type TransactionToken = {
 };
 
 type TransactionAfterCommitHandler = {
-  handler: EditorCommitHandler;
+  handler: EditorCommitHandler<Editor>;
   root: string;
 };
 
 type MaterializedAfterCommitHandler = {
-  context: EditorCommitContext;
-  handler: EditorCommitHandler;
+  context: EditorCommitContext<Editor>;
+  handler: EditorCommitHandler<Editor>;
 };
 
 const CHILDREN = new WeakMap<Editor, readonly Descendant[]>();
@@ -365,7 +365,6 @@ const EDITOR_COMPOSING = new WeakMap<AnyExtensionEditor, boolean>();
 const EDITOR_FOCUSED = new WeakMap<AnyExtensionEditor, boolean>();
 const EDITOR_MAX_LENGTH = new WeakMap<AnyExtensionEditor, number | undefined>();
 const EDITOR_READ_ONLY = new WeakMap<AnyExtensionEditor, boolean>();
-const EDITOR_DEFAULT_BLOCK_TYPE = new WeakMap<AnyExtensionEditor, string>();
 const EDITOR_VIEW_STATE_LISTENERS = new WeakMap<
   AnyExtensionEditor,
   Set<() => void>
@@ -1807,11 +1806,11 @@ export const getSelectionMarks = <V extends Value>(
         });
 
         if (prev && block) {
-          const [prevNode, prevPath] = prev;
+          const [previousNode, prevPath] = prev;
           const [, blockPath] = block;
 
           if (PathApi.isAncestor(blockPath, prevPath)) {
-            node = prevNode;
+            node = previousNode;
             propertyPath = prevPath;
             inheritedFromPrevious = true;
           }
@@ -2984,7 +2983,7 @@ const getUpdateContext = <
       }
 
       snapshot.afterCommitHandlers.push({
-        handler: handler as EditorCommitHandler,
+        handler: handler as EditorCommitHandler<Editor>,
         root: transactionRoot,
       });
     },
@@ -3147,7 +3146,6 @@ const getUpdateView = <
       type,
       {
         at = getCurrentSelection(editor) ?? undefined,
-        defaultType = getEditorDefaultBlockType(editor),
         someOptions,
         wrap,
         ...options
@@ -3168,6 +3166,22 @@ const getUpdateView = <
         at: targetAt,
         match: typeMatch,
       });
+      const root = getLocationMutationRoot(editor, targetAt) ?? MAIN_ROOT_KEY;
+      const defaultChild = isActive
+        ? state.schema.createDefaultRootChild(toPublicRoot(root))
+        : null;
+
+      let nextType = type;
+
+      if (isActive) {
+        if (!NodeApi.isElement(defaultChild)) {
+          throw new Error(
+            `Editor root "${root}" must declare a default element before an active block can be toggled off.`
+          );
+        }
+        if (type === defaultChild.type) return;
+        nextType = defaultChild.type;
+      }
 
       if (wrap) {
         if (isActive) {
@@ -3190,13 +3204,8 @@ const getUpdateView = <
         return;
       }
 
-      if (isActive && type === defaultType) return;
-
       runMutation({ at: targetAt }, () =>
-        txRecord.nodes.set(
-          { type: isActive ? defaultType : type },
-          { at: targetAt, ...options }
-        )
+        txRecord.nodes.set({ type: nextType }, { at: targetAt, ...options })
       );
     },
     (command, [blockType, options]) => {
@@ -3944,7 +3953,10 @@ const getUpdateView = <
       input?: unknown
     ) =>
       runActive(() =>
-        getEditorRuntime(editor).runCommand(command, input)
+        Reflect.apply(getEditorRuntime(editor).runCommand, undefined, [
+          command,
+          input,
+        ])
       )) as EditorCommandDispatch;
   }
 
@@ -5021,29 +5033,6 @@ const normalizeEditorMaxLength = (maxLength: number | undefined) => {
   }
 
   return maxLength;
-};
-
-const normalizeEditorDefaultBlockType = (defaultBlockType?: string) => {
-  if (defaultBlockType === undefined) return 'p';
-
-  if (defaultBlockType.length === 0) {
-    throw new Error('[Plite] defaultBlockType must be a non-empty string.');
-  }
-
-  return defaultBlockType;
-};
-
-export const getEditorDefaultBlockType = (editor: AnyExtensionEditor): string =>
-  EDITOR_DEFAULT_BLOCK_TYPE.get(editor) ?? 'p';
-
-export const setEditorDefaultBlockType = (
-  editor: AnyExtensionEditor,
-  defaultBlockType?: string
-) => {
-  EDITOR_DEFAULT_BLOCK_TYPE.set(
-    editor,
-    normalizeEditorDefaultBlockType(defaultBlockType)
-  );
 };
 
 export const getEditorMaxLength = (
@@ -7206,7 +7195,6 @@ export const initializePublicState = <
   DOCUMENT_STATE.set(editor, initialValue.meta);
   EDITOR_COMPOSING.set(editor, false);
   EDITOR_FOCUSED.set(editor, false);
-  setEditorDefaultBlockType(editor, options.defaultBlockType);
   setEditorMaxLength(editor, options.maxLength);
   EDITOR_READ_ONLY.set(editor, options.readOnly ?? false);
   seedRuntimeIds(initialChildren, editor);

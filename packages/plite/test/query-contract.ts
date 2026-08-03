@@ -79,7 +79,7 @@ const inlineContent = schema.content.any(
   { default: 'text', min: 1 }
 );
 
-const QueryContractSchema = defineEditorSchema({
+const QueryContractSchema = defineEditorSchema('schema:query-contract', {
   elements: {
     block: { content: schema.content.open() },
     'block-mention': { void: 'block' } as const,
@@ -150,11 +150,10 @@ const QueryContractSchema = defineEditorSchema({
   version: 1,
 });
 
-const createEditor = ((options = {}) =>
+const createEditor = () =>
   createPliteEditor({
-    ...options,
     extensions: [QueryContractSchema],
-  })) as typeof createPliteEditor;
+  }) as ReturnType<typeof createPliteEditor>;
 
 const getStart = (
   editor: ReturnType<typeof createEditor>,

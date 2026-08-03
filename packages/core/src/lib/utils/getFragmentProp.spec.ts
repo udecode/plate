@@ -16,7 +16,7 @@ describe('getFragmentProp', () => {
         [
           {
             children: [{ text: 'one' }],
-            type: 'p',
+            type: 'paragraph',
           },
         ],
         {
@@ -34,12 +34,12 @@ describe('getFragmentProp', () => {
           {
             children: [{ text: 'one' }],
             textAlign: 'center',
-            type: 'p',
+            type: 'paragraph',
           },
           {
             children: [{ text: 'two' }],
             textAlign: 'center',
-            type: 'p',
+            type: 'paragraph',
           },
         ],
         {
@@ -56,12 +56,12 @@ describe('getFragmentProp', () => {
           {
             children: [{ text: 'one' }],
             textAlign: 'left',
-            type: 'p',
+            type: 'paragraph',
           },
           {
             children: [{ text: 'two' }],
             textAlign: 'right',
-            type: 'p',
+            type: 'paragraph',
           },
         ],
         {
@@ -81,7 +81,7 @@ describe('getFragmentProp', () => {
               { bold: true, text: 'one' },
               { bold: true, text: 'two' },
             ],
-            type: 'p',
+            type: 'paragraph',
           },
         ],
         {
@@ -100,7 +100,7 @@ describe('getFragmentProp', () => {
         [
           {
             children: [{ bold: true, text: 'one' }, { text: 'two' }],
-            type: 'p',
+            type: 'paragraph',
           },
         ],
         {
@@ -120,12 +120,12 @@ describe('getFragmentProp', () => {
           {
             children: [{ color: 'red', text: 'one' }],
             color: 'red',
-            type: 'p',
+            type: 'paragraph',
           },
           {
             children: [{ color: 'blue', text: 'two' }],
             color: 'blue',
-            type: 'p',
+            type: 'paragraph',
           },
         ],
         {

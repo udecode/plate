@@ -40,7 +40,7 @@ const plugins = [
 {
   icon: <PenToolIcon />,
   label: 'Excalidraw',
-  value: KEYS.excalidraw,
+  value: PLUGINS.excalidraw,
 }
 ```
 
@@ -52,22 +52,25 @@ Excalidraw 空元素插件。
 
 ## API 接口
 
-### `editor.update.excalidraw.insert`
+### `editor.plugin(BaseExcalidrawPlugin).update.insert`
 
 向编辑器中插入 Excalidraw 元素。
 
 ```tsx
-editor.update.excalidraw.insert(
+import { BaseExcalidrawPlugin } from '@platejs/excalidraw';
+
+editor.plugin(BaseExcalidrawPlugin).update.insert(
   { data: { elements: [], state: {} } },
-  { after: referenceBlock, select: true }
+  { at: [1], select: true }
 );
 ```
 
-省略 `after` 时使用当前选区所在的块。没有可解析的块时不执行操作。
+传入 `at` 时使用该精确位置；否则插入到当前选区所在块之后。既没有选区也没有
+`at` 时不执行操作。
 
-<API name="editor.update.excalidraw.insert">
+<API name="editor.plugin(BaseExcalidrawPlugin).update.insert">
 <APIParameters>
-  <APIItem name="props" type="NodeProps<TExcalidrawElement>" optional>
+  <APIItem name="props" type="NodeProps<ExcalidrawElement>" optional>
     Excalidraw 元素的属性参数
   </APIItem>
   <APIItem name="options" type="object" optional>
@@ -84,7 +87,7 @@ Excalidraw 组件的行为钩子。
 
 <API name="useExcalidrawElement">
 <APIState>
-  <APIItem name="element" type="TExcalidrawElement">
+  <APIItem name="element" type="ExcalidrawElement">
     Excalidraw 元素
   </APIItem>
   <APIItem name="libraryItems" type="LibraryItems" optional>

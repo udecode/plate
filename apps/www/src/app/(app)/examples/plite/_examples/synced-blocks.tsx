@@ -1,5 +1,6 @@
 import type { PointerEvent } from 'react';
-import { defineEditorExtension, schema } from '@platejs/plite';
+import { defineExtension, schema } from '@platejs/plite';
+import { history } from '@platejs/plite-history';
 import {
   Editable,
   type EditableProps,
@@ -72,7 +73,7 @@ const SyncedBlocksExample = () => {
   const sharedBodyRoot = 'synced-block:shared:body';
   const separateBodyRoot = 'synced-block:separate:body';
   const editor = usePliteEditor({
-    extensions: [syncedBlocks()],
+    extensions: [history(), syncedBlocks()],
     initialValue: {
       children: [
         paragraph('p1'),
@@ -111,8 +112,7 @@ const SyncedBlocksExample = () => {
 };
 
 const syncedBlocks = () =>
-  defineEditorExtension({
-    name: 'synced-blocks',
+  defineExtension('synced-blocks', {
     schema: {
       elements: {
         'synced-block': {

@@ -1,6 +1,5 @@
 /// <reference types="@testing-library/jest-dom" />
 
-import type { Value } from '@platejs/plite';
 import { createReactEditor } from '@platejs/plite-react';
 
 import { act, render } from '@testing-library/react';
@@ -9,7 +8,7 @@ import React from 'react';
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { PlateTest } from './PlateTest';
 
-const value: Value = [{ children: [{ text: 'one' }], type: 'p' }];
+const value = [{ children: [{ text: 'one' }], type: 'paragraph' }] as const;
 
 describe('PlateTest', () => {
   it('extends a provided Plite editor before rendering', async () => {

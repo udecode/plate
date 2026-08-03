@@ -3,5 +3,6 @@
  */
 
 export * from './BaseEditor';
+export * from './defineEditor';
 export * from './pluginRuntimeTypes';
 export * from './withPlite';

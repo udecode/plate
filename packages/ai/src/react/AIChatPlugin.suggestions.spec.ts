@@ -6,8 +6,13 @@ import {
 import { SUGGESTION_TRANSIENT_KEY } from '@platejs/suggestion';
 import { SuggestionPlugin } from '@platejs/suggestion/react';
 import { BaseParagraphPlugin, NodeIdPlugin } from '@platejs/core';
-import { SelectionApi, type TextSelection, type Value } from '@platejs/plite';
-import { type TIdElement } from '@platejs/utils';
+import {
+  createEditor as createPliteEditor,
+  SelectionApi,
+  type TextSelection,
+  type Value,
+} from '@platejs/plite';
+import type { IdElement } from '@platejs/core';
 import { createPlateEditor } from '@platejs/core/react';
 
 import { BaseAIPlugin } from '../lib/BaseAIPlugin';
@@ -22,10 +27,11 @@ const SchemaOnlyNodeIdPlugin = NodeIdPlugin.configure({
 
 const createEditor = (
   value: Value,
-  chatNodes: TIdElement[],
+  chatNodes: Array<IdElement & { id: string }>,
   selection: TextSelection | null = null
 ) =>
   createPlateEditor({
+    editor: createPliteEditor<Value>(),
     plugins: [
       BaseParagraphPlugin,
       SchemaOnlyNodeIdPlugin,
@@ -43,8 +49,8 @@ const createEditor = (
 describe('AIChatPlugin suggestions', () => {
   it('replaces multi-block chat nodes and persists their selection ids', () => {
     const chatNodes = [
-      { children: [{ text: 'old-a' }], id: 'id-1', type: 'p' },
-      { children: [{ text: 'old-b' }], id: 'id-2', type: 'p' },
+      { children: [{ text: 'old-a' }], id: 'id-1', type: 'paragraph' },
+      { children: [{ text: 'old-b' }], id: 'id-2', type: 'paragraph' },
     ];
     const editor = createEditor(structuredClone(chatNodes), chatNodes);
 
@@ -63,13 +69,13 @@ describe('AIChatPlugin suggestions', () => {
 
   it('inserts expanded AI edits after the restored block selection', () => {
     const chatNodes = [
-      { children: [{ text: 'old-a' }], id: 'id-1', type: 'p' },
-      { children: [{ text: 'old-b' }], id: 'id-2', type: 'p' },
+      { children: [{ text: 'old-a' }], id: 'id-1', type: 'paragraph' },
+      { children: [{ text: 'old-b' }], id: 'id-2', type: 'paragraph' },
     ];
     const editor = createEditor(
       [
         ...structuredClone(chatNodes),
-        { children: [{ text: 'tail' }], id: 'tail', type: 'p' },
+        { children: [{ text: 'tail' }], id: 'tail', type: 'paragraph' },
       ],
       chatNodes
     );
@@ -95,7 +101,9 @@ describe('AIChatPlugin suggestions', () => {
   });
 
   it('replaces the selection from the owned preview value', () => {
-    const chatNodes = [{ children: [{ text: 'old' }], id: 'id-1', type: 'p' }];
+    const chatNodes = [
+      { children: [{ text: 'old' }], id: 'id-1', type: 'paragraph' },
+    ];
     const editor = createEditor(structuredClone(chatNodes), chatNodes, {
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 3, path: [0, 0] },
@@ -103,7 +111,7 @@ describe('AIChatPlugin suggestions', () => {
     });
 
     editor.plugin(AIChatPlugin).store.set({
-      previewValue: [{ children: [{ text: 'new' }], type: 'p' }],
+      previewValue: [{ children: [{ text: 'new' }], type: 'paragraph' }],
     });
     editor.plugin(AIChatPlugin).update.replaceSelection({ format: 'none' });
 
@@ -111,11 +119,13 @@ describe('AIChatPlugin suggestions', () => {
   });
 
   it('clears stale preview content before submitting another request', () => {
-    const chatNodes = [{ children: [{ text: 'old' }], id: 'id-1', type: 'p' }];
+    const chatNodes = [
+      { children: [{ text: 'old' }], id: 'id-1', type: 'paragraph' },
+    ];
     const editor = createEditor(structuredClone(chatNodes), chatNodes);
 
     editor.plugin(AIChatPlugin).store.set({
-      previewValue: [{ children: [{ text: 'stale' }], type: 'p' }],
+      previewValue: [{ children: [{ text: 'stale' }], type: 'paragraph' }],
     });
     editor.plugin(AIChatPlugin).api.submit('continue');
 
@@ -123,7 +133,9 @@ describe('AIChatPlugin suggestions', () => {
   });
 
   it('inserts fragment suggestions and selects transient text for one block', () => {
-    const chatNodes = [{ children: [{ text: 'old' }], id: 'id-1', type: 'p' }];
+    const chatNodes = [
+      { children: [{ text: 'old' }], id: 'id-1', type: 'paragraph' },
+    ];
     const editor = createEditor(structuredClone(chatNodes), chatNodes, {
       kind: 'text',
       anchor: { offset: 0, path: [0, 0] },

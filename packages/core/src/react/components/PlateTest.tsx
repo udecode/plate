@@ -7,42 +7,59 @@ import {
   type CreatePlateEditorOptions,
   type PlateCorePlugin,
   type PlateEditor,
+  type PlateEditorReference,
   createPlateEditor,
 } from '../editor';
 import { type PlateProps, Plate } from './Plate';
 import { type PlateContentProps, PlateContent } from './PlateContent';
 
 type PlateTestEditorOptions = CreatePlateEditorOptions<
-  Value,
   readonly PlateCorePlugin[]
 >;
 
-type PlateTestProps = Omit<PlateProps, 'children' | 'editor'> &
+type PlateTestBaseProps = Omit<PlateProps, 'children' | 'editor'> &
   Omit<PlateTestEditorOptions, 'editor' | 'schemaIdentity'> & {
     children?: React.ReactNode;
     editableProps?: PlateContentProps;
     variant?: 'comment' | 'wordProcessor';
-  } & (
-    | {
-        editor: PlateEditor;
-        schemaIdentity?: never;
-      }
-    | {
-        editor?: Editor<Value> | null;
-        schemaIdentity: PlateTestEditorOptions['schemaIdentity'];
-      }
-  );
+  };
+
+type PlateTestRawEditorProps<
+  V extends Value,
+  TExtensions extends readonly unknown[],
+> = PlateTestBaseProps & {
+  editor?: Editor<V, TExtensions> | null;
+  schemaIdentity: PlateTestEditorOptions['schemaIdentity'];
+};
+
+type PlateTestPlateEditorProps<E extends PlateEditorReference> =
+  PlateTestBaseProps & {
+    editor: E;
+    schemaIdentity?: never;
+  };
+
+type PlateTestImplementationProps = PlateTestBaseProps & {
+  editor?: Editor | PlateEditor | null;
+  schemaIdentity?: PlateTestEditorOptions['schemaIdentity'];
+};
 
 const isPlateEditor = (editor: Editor | PlateEditor): editor is PlateEditor =>
   hasPlateRuntime(editor);
 
+export function PlateTest<
+  V extends Value,
+  TExtensions extends readonly unknown[],
+>(props: PlateTestRawEditorProps<V, TExtensions>): React.ReactElement;
+export function PlateTest<E extends PlateEditorReference = PlateEditor>(
+  props: PlateTestPlateEditorProps<E>
+): React.ReactElement;
 export function PlateTest({
   children: _children,
   editableProps,
   shouldNormalizeEditor,
   variant = 'wordProcessor',
   ...props
-}: PlateTestProps) {
+}: PlateTestImplementationProps) {
   const { editor: providedEditor, schemaIdentity, ...editorOptions } = props;
   let editor: PlateEditor;
 

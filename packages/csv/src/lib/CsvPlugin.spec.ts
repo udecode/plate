@@ -1,61 +1,43 @@
 import {
   BaseParagraphPlugin,
   createBaseEditor,
-  createBasePlugin,
+  defineBasePlugin,
 } from '@platejs/core';
-import { ElementApi, schema } from '@platejs/plite';
-import { KEYS } from '@platejs/utils';
+import { ElementApi, property, schema } from '@platejs/plite';
+import { PLUGINS } from '@platejs/utils';
 
 import { CsvPlugin } from './CsvPlugin';
 
-const TestTableCellPlugin = createBasePlugin({
-  name: KEYS.td,
+const TestTableCellPlugin = defineBasePlugin(PLUGINS.tableCell, {
   schema: ({ plugins }) => ({
     element: {
       content: plugins.blockContent({
-        default: { type: plugins.elementType(BaseParagraphPlugin) },
+        default: BaseParagraphPlugin,
         min: 1,
       }),
+      properties: {
+        header: property.boolean({ default: false, omitDefault: true }),
+      },
       blockContent: false,
     },
   }),
 });
-const TestTableHeaderPlugin = createBasePlugin({
-  name: KEYS.th,
-  schema: ({ plugins }) => ({
+const TestTableRowPlugin = defineBasePlugin(PLUGINS.tableRow, {
+  dependencies: [TestTableCellPlugin],
+  schema: {
     element: {
-      content: plugins.blockContent({
-        default: { type: plugins.elementType(BaseParagraphPlugin) },
-        min: 1,
-      }),
+      content: schema.content.element(TestTableCellPlugin, { min: 1 }),
       blockContent: false,
     },
-  }),
+  },
 });
-const TestTableRowPlugin = createBasePlugin({
-  dependencies: [TestTableCellPlugin, TestTableHeaderPlugin],
-  name: KEYS.tr,
-  schema: ({ plugins }) => ({
-    element: {
-      content: schema.content.types(
-        plugins.elementTypes([TestTableCellPlugin, TestTableHeaderPlugin]),
-        { default: { type: plugins.elementType(TestTableCellPlugin) }, min: 1 }
-      ),
-      blockContent: false,
-    },
-  }),
-});
-const TestTablePlugin = createBasePlugin({
+const TestTablePlugin = defineBasePlugin(PLUGINS.table, {
   dependencies: [TestTableRowPlugin],
-  name: KEYS.table,
-  schema: ({ plugins }) => ({
+  schema: {
     element: {
-      content: schema.content.type(plugins.elementType(TestTableRowPlugin), {
-        default: { type: plugins.elementType(TestTableRowPlugin) },
-        min: 1,
-      }),
+      content: schema.content.element(TestTableRowPlugin, { min: 1 }),
     },
-  }),
+  },
 });
 
 const createCsvEditor = (state?: {
@@ -78,7 +60,7 @@ const createCsvEditor = (state?: {
     ],
   });
 
-const getCellTypes = (
+const getCellHeaders = (
   editor: ReturnType<typeof createCsvEditor>,
   data: string
 ) => {
@@ -89,7 +71,7 @@ const getCellTypes = (
   return table.children.flatMap((row) =>
     ElementApi.isElement(row)
       ? row.children.flatMap((cell) =>
-          ElementApi.isElement(cell) ? [cell.type] : []
+          ElementApi.isElement(cell) ? [cell.header === true] : []
         )
       : []
   );
@@ -122,14 +104,14 @@ describe('CsvPlugin', () => {
     const data = 'name,age\nAda,36';
     const identity = editor.read.schema.identity();
 
-    expect(getCellTypes(editor, data)).toEqual(['th', 'th', 'td', 'td']);
+    expect(getCellHeaders(editor, data)).toEqual([true, true, false, false]);
 
     editor.plugin(CsvPlugin).store.set({
       errorTolerance: 1,
       parseOptions: { header: false },
     });
 
-    expect(getCellTypes(editor, data)).toEqual(['td', 'td', 'td', 'td']);
+    expect(getCellHeaders(editor, data)).toEqual([false, false, false, false]);
     expect(editor.read.schema.identity()).toEqual(identity);
   });
 
@@ -141,50 +123,52 @@ describe('CsvPlugin', () => {
         data: 'name,age\nAda,36',
       })
     ).toEqual([
-      { children: [{ text: '' }], type: 'p' },
+      { children: [{ text: '' }], type: 'paragraph' },
       {
         children: [
           {
             children: [
               {
-                children: [{ children: [{ text: 'name' }], type: 'p' }],
-                type: 'th',
+                children: [{ children: [{ text: 'name' }], type: 'paragraph' }],
+                header: true,
+                type: 'tableCell',
               },
               {
-                children: [{ children: [{ text: 'age' }], type: 'p' }],
-                type: 'th',
+                children: [{ children: [{ text: 'age' }], type: 'paragraph' }],
+                header: true,
+                type: 'tableCell',
               },
             ],
-            type: 'tr',
+            type: 'tableRow',
           },
           {
             children: [
               {
-                children: [{ children: [{ text: 'Ada' }], type: 'p' }],
-                type: 'td',
+                children: [{ children: [{ text: 'Ada' }], type: 'paragraph' }],
+                type: 'tableCell',
               },
               {
-                children: [{ children: [{ text: '36' }], type: 'p' }],
-                type: 'td',
+                children: [{ children: [{ text: '36' }], type: 'paragraph' }],
+                type: 'tableCell',
               },
             ],
-            type: 'tr',
+            type: 'tableRow',
           },
         ],
         type: 'table',
       },
-      { children: [{ text: '' }], type: 'p' },
+      { children: [{ text: '' }], type: 'paragraph' },
     ]);
   });
 
   it('lets call-site parse options override the plugin header mode', () => {
     const editor = createCsvEditor();
 
-    expect(getCellTypes(editor, 'name,age\nAda,36')).toEqual([
-      'th',
-      'th',
-      'td',
-      'td',
+    expect(getCellHeaders(editor, 'name,age\nAda,36')).toEqual([
+      true,
+      true,
+      false,
+      false,
     ]);
     expect(
       editor.api.csv
@@ -192,8 +176,8 @@ describe('CsvPlugin', () => {
         ?.at(1)
     ).toMatchObject({
       children: [
-        { children: [{ type: 'td' }, { type: 'td' }] },
-        { children: [{ type: 'td' }, { type: 'td' }] },
+        { children: [{ type: 'tableCell' }, { type: 'tableCell' }] },
+        { children: [{ type: 'tableCell' }, { type: 'tableCell' }] },
       ],
     });
   });

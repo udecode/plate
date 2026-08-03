@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { performance } from 'node:perf_hooks';
 import {
   createBaseEditor,
-  createBasePlugin,
+  defineBasePlugin,
 } from '../../../../../packages/core/src/index.ts';
 import {
   ContentSlice,
@@ -146,7 +146,7 @@ const createDocument = (blockCount) =>
   );
 
 const createPlateParagraph = (text) => ({
-  type: 'p',
+  type: 'paragraph',
   children: [{ text }],
 });
 
@@ -232,7 +232,7 @@ const createPlateReconfigurationCodecExtension = (label, counters) => {
 };
 
 const createPlateBenchmarkCodecPlugin = (counters, format) =>
-  createBasePlugin({
+  defineBasePlugin('benchmarkPlateCodec', {
     codecs: ({ defineCodecs }) => {
       counters.compilation += 1;
 
@@ -267,7 +267,6 @@ const createPlateBenchmarkCodecPlugin = (counters, format) =>
         },
       });
     },
-    name: 'benchmarkPlateCodec',
   });
 
 const createBenchmarkEditor = (children, selection, extensions = []) => {

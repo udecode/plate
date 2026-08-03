@@ -10,7 +10,7 @@ import {
   target,
 } from '@platejs/plite';
 
-const NestedTargetSchema = defineEditorSchema({
+const NestedTargetSchema = defineEditorSchema('schema:nested-target-runtime', {
   elements: {
     paragraph: {
       content: schema.content.text({ default: 'text', min: 1 }),

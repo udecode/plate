@@ -3,15 +3,20 @@
 ---
 
 - Expose the Plite-backed Plate editor and plugin model, including
-  `editor.read`, `editor.update`, plugin `name`, top-level serialized `type`, compiled
+  `editor.read`, `editor.update`, sole plugin identity `name`, compiled
   `schema.element` and `schema.mark`, plugin `initialState`, an editor-local
-  plugin `store`, and
-  inferred plugin-owned `editor.api[pluginName]` and `editor.update` groups;
-  exact generic code uses `editor.plugin(Plugin)` as the sole imperative plugin
-  lookup, while dynamic names resolve through `editor.plugin(name).type`; declare Plite
+  plugin `store`, and inferred plugin-owned `editor.api[name]` and
+  `editor.update` groups; exact generic code uses `editor.plugin(Plugin)` as the
+  sole imperative plugin lookup, while dynamic names resolve through
+  `editor.plugin(name)`; declare Plite
   capabilities and every prefixless lifecycle/DOM event directly under root
   `on`, without a nested `extension` or separate `handlers` field
-- Infer one exact plugin definition from each object factory, use
+- Separate plugin capability `name` from persisted element `type` and property
+  `key`. Default omitted schema identities to `name`, expose only the identity
+  owned by each schema plugin, and keep `PLUGINS` capability-only.
+- Infer one exact plugin definition from each positional descriptor factory,
+  `defineBasePlugin(name, definition)` or
+  `definePlatePlugin(name, definition)`, use
   `DefinitionOf<typeof Plugin>` for descriptor contracts, and keep undeclared
   fields absent from the inferred plugin type
 - Keep object `initialState` beside store-dependent fields; stage factory
@@ -42,7 +47,7 @@
   mappings through a context-bound constructor
   `codecs: ({ defineCodecs }) => defineCodecs(...)` declaration; keep
   whole-input HTML `query`,
-  `transformData`, and `transformFragment` hooks directly under `parsers.html`
+  `transformData`, and `transformFragment` hooks on the `'text/html'` codec
 
 **Migration:** Replace `value` with synchronous `initialValue`, move async
 loading before editor construction, replace `useEditorRef` with `useEditor`,
@@ -55,10 +60,16 @@ the `PluginConfig` family (`AnyPluginConfig`, `SlatePluginConfig`, and
 `@platejs/caption` imports and caption
 plugin registration, then store and render captions as the media element's
 direct children. Configure imported plugin descriptors in the ordinary array.
-Use `override.plugins[pluginName]` only for package-owned adaptation of an
+Use `override.plugins[name]` only for package-owned adaptation of an
 already-installed foreign peer. Declare HTML node, mark, and property mappings
 through `codecs: ({ defineCodecs }) => defineCodecs({ 'text/html': ... })`, and
-put whole-input HTML hooks directly under `parsers.html`.
+put whole-input HTML hooks on the `'text/html'` codec.
+
+Replace `KEYS`, `NODES`, and `STYLE_KEYS` plugin references with `PLUGINS`.
+Resolve persisted identity through `.type` / `.key` or explicit document
+literals, and remove every public reverse name/type lookup. Run
+`migratePlateAstIdentities` before constructing editors that load legacy
+documents.
 
 For deferred loading:
 

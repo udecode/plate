@@ -5,10 +5,12 @@ import {
   ContentSlice,
   createEditor,
   defineEditorSchema,
+  defineExtension,
   defineStateField,
   type Descendant,
-  type Element,
+  type ElementIn,
   schema,
+  type ValueOf,
   valueCodecs,
 } from '@platejs/plite';
 
@@ -23,7 +25,7 @@ const portal = (type: 'exclusive-portal' | 'shared-portal', root: string) => ({
   type,
 });
 
-const ContentRootSchema = defineEditorSchema({
+const ContentRootSchema = defineEditorSchema('schema:content-root-lifecycle', {
   elements: {
     'exclusive-portal': {
       content: schema.content.text({ default: 'text', min: 1 }),
@@ -132,7 +134,7 @@ describe('element-owned root lifecycle', () => {
     assert.deepEqual(editor.read.root('exclusive:1'), [paragraph('caption')]);
 
     editor.update((tx) => {
-      const entry = tx.nodes.get<Element>([0]);
+      const entry = tx.nodes.get<ElementIn<ValueOf<typeof editor>>>([0]);
 
       assert(entry);
       tx.nodes.duplicate([entry]);
@@ -176,8 +178,8 @@ describe('element-owned root lifecycle', () => {
     );
 
     editor.update((tx) => {
-      const first = tx.nodes.get<Element>([0]);
-      const second = tx.nodes.get<Element>([1]);
+      const first = tx.nodes.get<ElementIn<ValueOf<typeof editor>>>([0]);
+      const second = tx.nodes.get<ElementIn<ValueOf<typeof editor>>>([1]);
 
       assert(first && second);
       tx.nodes.duplicate([first, second]);
@@ -395,7 +397,10 @@ describe('element-owned root lifecycle', () => {
       persist: valueCodecs.string,
     });
     const editor = createEditor({
-      extensions: [ContentRootSchema, title],
+      extensions: [
+        ContentRootSchema,
+        defineExtension('document-title', { stateFields: [title] }),
+      ],
       initialValue: {
         children: [portal('exclusive-portal', 'exclusive:old')],
         meta: { [title.key]: title.serialize('Old') },

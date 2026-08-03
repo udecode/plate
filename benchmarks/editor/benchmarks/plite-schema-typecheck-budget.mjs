@@ -12,8 +12,7 @@ export const createSchemaTypecheckFixture = (plugins) => {
   const declarations = Array.from(
     { length: plugins },
     (_value, index) => `
-const Plugin${index} = createBasePlugin({
-  name: 'schemaTypeBudget${index}',
+const Plugin${index} = defineBasePlugin('schemaTypeBudget${index}', {
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
@@ -34,7 +33,7 @@ const Plugin${index} = createBasePlugin({
 
   return `import {
   createBaseEditor,
-  createBasePlugin,
+  defineBasePlugin,
   type AnyBasePlugin,
 } from '@platejs/core';
 import { schema } from '@platejs/plite';

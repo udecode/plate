@@ -10,7 +10,7 @@ import { usePlateRootProps } from './usePlateRootProps';
 describe('usePlateRootProps', () => {
   it('returns the matching runtime editor identity', () => {
     const editor = createPlateEditor({
-      initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'one' }], type: 'paragraph' }],
     });
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <Plate editor={editor}>{children}</Plate>

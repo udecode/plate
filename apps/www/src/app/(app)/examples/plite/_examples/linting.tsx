@@ -300,7 +300,7 @@ const LintingExample = () => {
   const [lintMode, setLintMode] = useState<LintMode>('off');
   const [sourceLabel, setSourceLabel] = useState('idle');
 
-  const lintingSource = usePliteRangeDecorationSource<LintIssue>(editor, {
+  const lintingSource = usePliteRangeDecorationSource(editor, {
     id: 'linting',
     dirtiness: ['text', 'external'],
     revision: lintMode,

@@ -12,7 +12,6 @@ import {
 
 import {
   createEditor,
-  createEditorRuntime,
   createEditorView,
   DocumentChange,
   type Editor,
@@ -415,7 +414,7 @@ describe('plite public accessor + transaction boundary', () => {
   });
 
   it('keeps runtime indexes isolated by root', () => {
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       initialValue: {
         children: [paragraph('main')],
         roots: { header: [paragraph('header')] },
@@ -435,10 +434,8 @@ describe('plite public accessor + transaction boundary', () => {
     assert.equal(header.read.runtime.pathOf(mainRuntimeId), null);
 
     let canonicalRuntimeIdDuringHeaderCommit = null;
-    const unsubscribe = runtime.editor.subscribeCommit(() => {
-      canonicalRuntimeIdDuringHeaderCommit = runtime.editor.read.runtime.idAt([
-        0,
-      ]);
+    const unsubscribe = runtime.subscribeCommit(() => {
+      canonicalRuntimeIdDuringHeaderCommit = runtime.read.runtime.idAt([0]);
     });
 
     header.update((tx) => {
@@ -450,7 +447,7 @@ describe('plite public accessor + transaction boundary', () => {
   });
 
   it('scopes explicit selection writes to the editor view root', () => {
-    const runtime = createEditorRuntime({
+    const runtime = createEditor({
       initialValue: {
         children: [paragraph('main')],
         roots: { header: [paragraph('header')] },
@@ -463,13 +460,13 @@ describe('plite public accessor + transaction boundary', () => {
       tx.selection.set({ path: [0, 0], offset: 2 });
     });
 
-    const headerCommit = runtime.editor.read.lastCommit();
+    const headerCommit = runtime.read.lastCommit();
 
     assert.equal(headerCommit?.selectionBeforeRoot, undefined);
     assert.equal(headerCommit?.selectionAfterRoot, 'header');
     assert.equal(headerCommit?.changed.has('selection', 'header'), true);
     assert.equal(headerCommit?.changed.has('selection'), false);
-    assert.equal(getEditorSelectionRoot(runtime.editor), 'header');
+    assert.equal(getEditorSelectionRoot(runtime), 'header');
     assert.equal(main.read.selection(), null);
     assert.deepEqual(header.read.selection(), {
       anchor: { path: [0, 0], root: 'header', offset: 2 },
@@ -481,13 +478,13 @@ describe('plite public accessor + transaction boundary', () => {
       tx.selection.set({ path: [0, 0], offset: 1 });
     });
 
-    const mainCommit = runtime.editor.read.lastCommit();
+    const mainCommit = runtime.read.lastCommit();
 
     assert.equal(mainCommit?.selectionBeforeRoot, 'header');
     assert.equal(mainCommit?.selectionAfterRoot, undefined);
     assert.equal(mainCommit?.changed.has('selection', 'header'), true);
     assert.equal(mainCommit?.changed.has('selection'), true);
-    assert.equal(getEditorSelectionRoot(runtime.editor), 'main');
+    assert.equal(getEditorSelectionRoot(runtime), 'main');
     assert.deepEqual(main.read.selection(), {
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },

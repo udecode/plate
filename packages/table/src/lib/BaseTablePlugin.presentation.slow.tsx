@@ -1,12 +1,14 @@
 /** @jsx jsxt */
 
 import { BaseTablePlugin } from './BaseTablePlugin';
-import { getTestTablePlugins } from './__tests__/getTestTablePlugins';
-import { createPlateEditor } from '@platejs/core/react';
+import {
+  createTestTableEditor,
+  getTestTablePlugins,
+} from './__tests__/getTestTablePlugins';
 import type { Value } from '@platejs/plite';
 import { jsx, jsxt } from '@platejs/test-utils';
 import type { TestEditor } from '@platejs/test-utils';
-import type { TTableCellElement } from '@platejs/utils';
+import type { TableCellElement } from './BaseTablePlugin';
 import assert from 'node:assert/strict';
 
 describe('table presentation slow contracts', () => {
@@ -14,7 +16,7 @@ describe('table presentation slow contracts', () => {
 
   describe('setBorderSize', () => {
     const createEditorInstance = (input: TestEditor) =>
-      createPlateEditor({
+      createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins(),
         selection: input.selection,
@@ -516,7 +518,7 @@ describe('table presentation slow contracts', () => {
 
   describe('setCellBackground', () => {
     const createEditorInstance = (input: TestEditor) =>
-      createPlateEditor({
+      createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins(),
         selection: input.selection,
@@ -527,7 +529,7 @@ describe('table presentation slow contracts', () => {
       editor: ReturnType<typeof createEditorInstance>,
       path: number[]
     ) => {
-      const entry = editor.read.nodes.get<TTableCellElement>(path);
+      const entry = editor.read.nodes.get<TableCellElement>(path);
       assert(entry);
 
       return entry[0];
@@ -718,7 +720,7 @@ describe('table presentation slow contracts', () => {
     jsxt;
 
     const createTableEditor = (input: TestEditor) =>
-      createPlateEditor({
+      createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins(),
         selection: input.selection,
@@ -812,7 +814,7 @@ describe('table presentation slow contracts', () => {
     ) as TestEditor;
 
     const createEditor = () =>
-      createPlateEditor({
+      createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins(),
         selection: input.selection,
@@ -823,7 +825,7 @@ describe('table presentation slow contracts', () => {
       editor: ReturnType<typeof createEditor>,
       path: number[]
     ) => {
-      const entry = editor.read.nodes.get<TTableCellElement>(path);
+      const entry = editor.read.nodes.get<TableCellElement>(path);
       assert(entry);
 
       return entry[0];
@@ -832,8 +834,8 @@ describe('table presentation slow contracts', () => {
     const setBorders = (
       editor: ReturnType<typeof createEditor>,
       path: number[],
-      borders: TTableCellElement['borders']
-    ) => editor.update.nodes.set<TTableCellElement>({ borders }, { at: path });
+      borders: TableCellElement['borders']
+    ) => editor.update.nodes.set<TableCellElement>({ borders }, { at: path });
 
     const visible = { size: 1 };
     const hidden = { size: 0 };
@@ -841,9 +843,9 @@ describe('table presentation slow contracts', () => {
     describe('getSelectedCellsBorders', () => {
       it('returns defaults outside a table and reads the current cell', () => {
         const outsideValue: Value = [
-          { children: [{ text: 'outside' }], type: 'p' },
+          { children: [{ text: 'outside' }], type: 'paragraph' },
         ];
-        const outside = createPlateEditor({
+        const outside = createTestTableEditor({
           plugins: getTestTablePlugins(),
           initialValue: outsideValue,
         });

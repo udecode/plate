@@ -1,56 +1,120 @@
 import { createEditor, type Editor, type Value } from '@platejs/plite';
-import type { CorePluginDefinition } from '../../lib/plugins';
+import type { CorePluginDefinition, CorePlugins } from '../../lib/plugins';
 
 import {
   type BasePluginInput,
+  type BaseEditor,
   type CreateBaseEditorOptions,
-  type ExtendBaseEditorOptions,
+  type EditorValueInput,
   type InferPlugins,
+  type InferRuntimePlugins,
   type InternalBaseEditorWithInstalledPlugins,
   type MergeInstalledPluginDefinitions,
-  extendBaseEditor,
+  createBaseEditor,
 } from '../../lib/editor';
 import { getStaticPlugins } from '../plugins/getStaticPlugins';
 
-type CreateStaticEditorOptions<
-  V extends Value = Value,
-  P extends readonly BasePluginInput[] = readonly [],
-> = CreateBaseEditorOptions<V, P>;
+type StaticPluginTuple<P extends readonly unknown[]> = readonly [
+  ...ReturnType<typeof getStaticPlugins>,
+  ...P,
+];
 
-type StaticPluginInput<P extends readonly BasePluginInput[] = readonly []> =
-  | ReturnType<typeof getStaticPlugins>[number]
-  | P[number];
-
-type StaticEditorPlugins<P extends readonly BasePluginInput[] = readonly []> =
+type StaticEditorRuntimePlugins<P extends readonly unknown[] = readonly []> =
   MergeInstalledPluginDefinitions<
-    CorePluginDefinition,
-    InferPlugins<StaticPluginInput<P>[]>
+    InferRuntimePlugins<CorePlugins>,
+    InferRuntimePlugins<StaticPluginTuple<P>>
   >;
 
-const extendStaticEditor = <
-  V extends Value = Value,
-  const P extends readonly BasePluginInput[] = readonly [],
->(
-  editor: Editor,
-  options: CreateStaticEditorOptions<V, P>
-) => {
-  const { id: _id, plugins = [], ...extendOptions } = options;
+type StaticEditorSchemaPlugins<P extends readonly unknown[] = readonly []> =
+  MergeInstalledPluginDefinitions<
+    CorePluginDefinition,
+    InferPlugins<StaticPluginTuple<P>>
+  >;
 
-  return extendBaseEditor<V, StaticPluginInput<P>>(editor, {
-    ...extendOptions,
-    plugins: [...getStaticPlugins(), ...plugins],
-  } as unknown as ExtendBaseEditorOptions<V, StaticPluginInput<P>>);
+type CreateStaticEditorOptionsForValue<
+  V extends Value,
+  P extends readonly unknown[] = readonly [],
+> = Omit<
+  CreateBaseEditorOptions<StaticPluginTuple<P>>,
+  'editor' | 'initialValue' | 'plugins'
+> & {
+  editor?: Editor;
+  initialValue?:
+    | ((context: {
+        editor: InternalBaseEditorWithInstalledPlugins<
+          V,
+          StaticEditorRuntimePlugins<P>,
+          StaticEditorSchemaPlugins<P>
+        >;
+      }) => EditorValueInput<NoInfer<V>>)
+    | EditorValueInput<NoInfer<V>>;
+  plugins?: P;
 };
 
-export const createStaticEditor = <
+export type CreateStaticEditorOptions<
+  P extends readonly unknown[] = readonly [],
+> = CreateStaticEditorOptionsForValue<Value, P>;
+
+export type StaticEditor<P extends readonly unknown[] = readonly []> =
+  BaseEditor<StaticPluginTuple<P>>;
+
+type ProjectInjectedEditor<TEditor, TProjection> = Omit<
+  TEditor,
+  keyof TProjection
+> &
+  TProjection;
+
+export function createStaticEditor<
+  const TEditor,
+  const P extends readonly unknown[] = readonly [],
+>(
+  options: Omit<CreateStaticEditorOptions<P>, 'editor' | 'initialValue'> & {
+    editor: TEditor extends Editor<infer _V, infer _TExtensions>
+      ? TEditor
+      : never;
+    initialValue?: CreateStaticEditorOptionsForValue<
+      TEditor extends Editor<infer V, infer _TExtensions> ? V : never,
+      P
+    >['initialValue'];
+  }
+): ProjectInjectedEditor<
+  TEditor,
+  InternalBaseEditorWithInstalledPlugins<
+    TEditor extends Editor<infer V, infer _TExtensions> ? V : never,
+    StaticEditorRuntimePlugins<P>,
+    StaticEditorSchemaPlugins<P>
+  >
+>;
+export function createStaticEditor<
+  const P extends readonly unknown[] = readonly [],
+>(options?: CreateStaticEditorOptions<P>): StaticEditor<P>;
+export function createStaticEditor<
   V extends Value = Value,
   const P extends readonly BasePluginInput[] = readonly [],
 >({
   editor,
   id,
   ...options
-}: CreateStaticEditorOptions<
+}: CreateStaticEditorOptionsForValue<
   V,
   P
-> = {}): InternalBaseEditorWithInstalledPlugins<V, StaticEditorPlugins<P>> =>
-  extendStaticEditor<V, P>(editor ?? createEditor({ id }), options);
+> = {}): InternalBaseEditorWithInstalledPlugins<
+  V,
+  StaticEditorRuntimePlugins<P>,
+  StaticEditorSchemaPlugins<P>
+> {
+  const staticEditor = createBaseEditor({
+    editor: editor ?? createEditor({ id }),
+    ...options,
+    plugins: [...getStaticPlugins(), ...(options.plugins ?? [])],
+  } as unknown as CreateBaseEditorOptions<readonly BasePluginInput[]> & {
+    editor: ReturnType<typeof createEditor>;
+    plugins: readonly BasePluginInput[];
+  });
+
+  return staticEditor as unknown as InternalBaseEditorWithInstalledPlugins<
+    V,
+    StaticEditorRuntimePlugins<P>,
+    StaticEditorSchemaPlugins<P>
+  >;
+}

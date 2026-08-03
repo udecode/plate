@@ -1,11 +1,13 @@
 /** @jsx jsxt */
 
 import { BaseTablePlugin } from './BaseTablePlugin';
-import { getTestTablePlugins } from './__tests__/getTestTablePlugins';
-import { createPlateEditor } from '@platejs/core/react';
+import {
+  createTestTableEditor,
+  getTestTablePlugins,
+} from './__tests__/getTestTablePlugins';
 import { jsxt } from '@platejs/test-utils';
 import type { TestEditor } from '@platejs/test-utils';
-import type { TTableCellElement, TTableElement } from '@platejs/utils';
+import type { TableCellElement, TableElement } from './BaseTablePlugin';
 import assert from 'node:assert/strict';
 
 describe('table presentation', () => {
@@ -13,7 +15,7 @@ describe('table presentation', () => {
     jsxt;
 
     const createTableEditor = (input: TestEditor) =>
-      createPlateEditor({
+      createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins(),
         initialValue: input.children,
@@ -23,7 +25,7 @@ describe('table presentation', () => {
       editor: ReturnType<typeof createTableEditor>,
       path: number[]
     ) => {
-      const entry = editor.read.nodes.get<TTableCellElement>(path);
+      const entry = editor.read.nodes.get<TableCellElement>(path);
       assert(entry);
 
       return entry[0];
@@ -39,9 +41,9 @@ describe('table presentation', () => {
 
         const editor = createTableEditor(input);
         const element = {
-          children: [{ children: [{ text: 'detached' }], type: 'p' }],
-          type: 'td',
-        } as TTableCellElement;
+          children: [{ children: [{ text: 'detached' }], type: 'paragraph' }],
+          type: 'tableCell',
+        } as TableCellElement;
 
         expect(
           editor.plugin(BaseTablePlugin).read.getCellBorders({
@@ -145,7 +147,7 @@ describe('table presentation', () => {
     jsxt;
 
     const createTableEditor = (input: TestEditor) =>
-      createPlateEditor({
+      createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins(),
         initialValue: input.children,
@@ -155,7 +157,7 @@ describe('table presentation', () => {
       editor: ReturnType<typeof createTableEditor>,
       path: number[]
     ) => {
-      const entry = editor.read.nodes.get<TTableCellElement>(path);
+      const entry = editor.read.nodes.get<TableCellElement>(path);
       assert(entry);
 
       return entry[0];
@@ -171,9 +173,9 @@ describe('table presentation', () => {
 
         const editor = createTableEditor(input);
         const element = {
-          children: [{ children: [{ text: 'detached' }], type: 'p' }],
-          type: 'td',
-        } as TTableCellElement;
+          children: [{ children: [{ text: 'detached' }], type: 'paragraph' }],
+          type: 'tableCell',
+        } as TableCellElement;
 
         expect(
           editor.plugin(BaseTablePlugin).read.getCellSize({ element })
@@ -253,7 +255,7 @@ describe('table presentation', () => {
       children?: any;
       selection?: any;
     }) =>
-      createPlateEditor({
+      createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins(),
         selection,
@@ -352,22 +354,22 @@ describe('table presentation', () => {
   }
 
   {
-    const editor = createPlateEditor({
+    const editor = createTestTableEditor({
       plugins: getTestTablePlugins(),
     });
     const makeTableElement = (
       columnCount: number,
       colSizes?: number[]
-    ): TTableElement =>
+    ): TableElement =>
       ({
         children: [
           {
             children: Array.from({ length: columnCount }).fill({}),
-            type: 'tr',
+            type: 'tableRow',
           },
         ],
         colSizes,
-      }) as unknown as TTableElement;
+      }) as unknown as TableElement;
 
     describe('getTableOverriddenColSizes', () => {
       describe('when colSizes is not defined', () => {
@@ -426,7 +428,7 @@ describe('table presentation', () => {
     jsxt;
 
     const createTableEditor = (input: TestEditor) =>
-      createPlateEditor({
+      createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins(),
         selection: input.selection,

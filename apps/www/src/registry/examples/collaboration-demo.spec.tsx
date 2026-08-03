@@ -1,5 +1,6 @@
 import * as React from 'react';
 
+import * as actualCoreReact from '@platejs/core/react';
 import { render, waitFor } from '@testing-library/react';
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
@@ -11,6 +12,7 @@ let currentOverlayEditor: any;
 let currentPositions: any[] = [];
 
 mock.module('platejs/react', () => ({
+  ...actualCoreReact,
   createPlateEditor: (options: any) => {
     const yjsPlugin = options.plugins.find(
       (plugin: any) => plugin?.name === 'yjs'
@@ -28,6 +30,11 @@ mock.module('platejs/react', () => ({
         history: {
           redo: () => {},
           undo: () => {},
+        },
+        yjs: {
+          connect: () => {},
+          disconnect: () => {},
+          sendCursorData: () => {},
         },
       }
     );
@@ -51,6 +58,7 @@ mock.module('platejs/react', () => ({
     <EditorContext.Provider value={editor}>{children}</EditorContext.Provider>
   ),
   useEditor: () => React.useContext(EditorContext) ?? currentOverlayEditor,
+  useEditorScrollElement: (editor: any) => editor.api.dom.scroll(),
   useEditorSelector: (selector: (editor: unknown) => unknown) =>
     selector(React.useContext(EditorContext)),
 }));
@@ -90,14 +98,15 @@ describe('CollaborativeEditingDemo', () => {
     createPlateEditorMock.mockClear();
     overlayPositionsMock.mockClear();
     currentPositions = [];
+    const scrollElement = {
+      getBoundingClientRect: () => ({ left: 10, top: 20 }),
+      scrollLeft: 8,
+      scrollTop: 5,
+    };
     currentOverlayEditor = {
       api: {
         dom: {
-          scroll: () => ({
-            getBoundingClientRect: () => ({ left: 10, top: 20 }),
-            scrollLeft: 8,
-            scrollTop: 5,
-          }),
+          scroll: () => scrollElement,
         },
       },
     };

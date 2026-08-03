@@ -40,11 +40,11 @@ describe('AIChatPlugin api.deserializeChunk', () => {
     const output = [
       {
         children: [
-          { children: [{ text: 'const a = 1' }], type: 'code_line' },
-          { children: [{ text: '' }], type: 'code_line' },
+          { children: [{ text: 'const a = 1' }], type: 'codeLine' },
+          { children: [{ text: '' }], type: 'codeLine' },
         ],
         lang: 'typescript',
-        type: 'code_block',
+        type: 'codeBlock',
       },
     ];
 

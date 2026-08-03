@@ -2,9 +2,11 @@
 
 import { jsxt } from '@platejs/test-utils';
 import { type Value } from '@platejs/plite';
-import { createPlateEditor } from '@platejs/core/react';
 
-import { getTestTablePlugins } from './__tests__/getTestTablePlugins';
+import {
+  createTestTableEditor,
+  getTestTablePlugins,
+} from './__tests__/getTestTablePlugins';
 
 jsxt;
 
@@ -80,7 +82,7 @@ describe('BaseTablePlugin normalization', () => {
         </fragment>
       ) as Value;
 
-      const editor = createPlateEditor({
+      const editor = createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins({
           disableMerge,
@@ -165,7 +167,7 @@ describe('BaseTablePlugin normalization', () => {
         </fragment>
       ) as Value;
 
-      const editor = createPlateEditor({
+      const editor = createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins({
           disableMerge,
@@ -252,7 +254,7 @@ describe('BaseTablePlugin normalization', () => {
         </fragment>
       ) as Value;
 
-      const editor = createPlateEditor({
+      const editor = createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins({
           disableMerge,
@@ -273,7 +275,7 @@ describe('BaseTablePlugin normalization', () => {
     ])('unsets colSizes for single-column tables (disableMerge: $disableMerge)', ({
       disableMerge,
     }) => {
-      const editor = createPlateEditor({
+      const editor = createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins({
           disableMerge,
@@ -312,7 +314,7 @@ describe('BaseTablePlugin normalization', () => {
 
   describe('rectangular table repair', () => {
     it('fills missing logical cells', () => {
-      const editor = createPlateEditor({
+      const editor = createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge: false }),
         initialValue: (
@@ -367,7 +369,7 @@ describe('BaseTablePlugin normalization', () => {
     });
 
     it('clamps a row span to the table height', () => {
-      const editor = createPlateEditor({
+      const editor = createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge: false }),
         initialValue: (
@@ -417,7 +419,7 @@ describe('BaseTablePlugin normalization', () => {
     });
 
     it('splits a cell whose span collides with an earlier row span', () => {
-      const editor = createPlateEditor({
+      const editor = createTestTableEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge: false }),
         initialValue: (

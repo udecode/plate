@@ -4,90 +4,133 @@ import type { ReactEditor } from '@platejs/plite-react';
 import type {
   AnyBasePlugin,
   AnyBasePluginDefinition,
-  AnyResolvedBasePlugin,
-  BaseEditor,
-  InferName,
+  AnyPluginBase,
+  BasePluginPortal,
+  BasePluginInput,
+  CorePluginDefinition,
+  CorePlugins,
+  InferPlugins,
+  InferEditorRuntimePlugins,
+  InternalEditorMutationProvider,
   InternalBaseEditorWithInstalledPlugins,
+  MergeInstalledPluginDefinitions,
   PluginReference,
 } from '../../lib';
+import type {
+  GeneratedEditorMutations,
+  GeneratedEditorValue,
+} from '../../lib/editor/defineEditor';
 import type { InternalPluginDefinitionOf } from '../../lib/plugin/pluginDefinitionLookup.internal';
 import type {
-  AnyEditorPlatePlugin,
+  AnyResolvedPlatePlugin,
   AnyPlatePlugin,
-  AnyPlatePluginPortal,
+  DynamicPlatePluginPortal,
   PlatePluginPortal,
 } from '../plugin/PlatePlugin';
+import type { PlateCorePlugins } from './getPlateCorePlugins';
 
-type PlatePluginPortalLookup<
-  V extends Value,
-  P extends AnyBasePluginDefinition,
-> = {
-  <
-    TPlugin extends (
-      | AnyBasePlugin
-      | AnyEditorPlatePlugin
-      | AnyPlatePlugin
-      | AnyResolvedBasePlugin
-    ) &
-      PluginReference,
-  >(
+declare const plateEditorReference: unique symbol;
+
+/** Nominal identity shared by every Plate editor specialization. */
+export type PlateEditorReference = Readonly<{
+  [plateEditorReference]: true;
+}>;
+
+type InternalPlateEditorBase<V extends Value, D, S> = Omit<
+  InternalBaseEditorWithInstalledPlugins<V, D, S>,
+  'plugin'
+>;
+
+type InternalPlatePluginPortal = {
+  <TPlugin extends (AnyResolvedPlatePlugin | AnyPlatePlugin) & PluginReference>(
     plugin: TPlugin
   ): PlatePluginPortal<InternalPluginDefinitionOf<TPlugin>>;
-  (pluginName: string): AnyPlatePluginPortal;
-} & BaseEditor<V, P>['plugin'];
-
-type PlateEditorBase<
-  V extends Value,
-  P extends AnyBasePluginDefinition,
-> = BaseEditor<V, P>;
-
-export type PlateEditor<
-  V extends Value = any,
-  P extends AnyBasePluginDefinition = AnyBasePluginDefinition,
-> = Omit<
-  PlateEditorBase<V, P>,
-  'api' | 'extension' | 'plugin' | 'read' | 'update'
-> & {
-  readonly api: PlateEditorBase<V, P>['api'] & ReactEditor<V>['api'];
-  extension: PlateEditorBase<V, P>['extension'] & ReactEditor<V>['extension'];
-  plugin: PlatePluginPortalLookup<V, P>;
-  read: PlateEditorBase<V, P>['read'] & ReactEditor<V>['read'];
-  update: PlateEditorBase<V, P>['update'] & ReactEditor<V>['update'];
+  <TPlugin extends (AnyBasePlugin | AnyPluginBase) & PluginReference>(
+    plugin: TPlugin
+  ): BasePluginPortal<InternalPluginDefinitionOf<TPlugin>>;
+  (
+    plugin: AnyBasePlugin | AnyPluginBase | PluginReference | string
+  ): DynamicPlatePluginPortal;
 };
 
-type InternalPlateEditorBase<
-  V extends Value,
-  D,
-> = InternalBaseEditorWithInstalledPlugins<V, D>;
+type NormalizePlatePluginInput<TPlugins> =
+  TPlugins extends readonly BasePluginInput[]
+    ? TPlugins
+    : TPlugins extends BasePluginInput
+      ? readonly [TPlugins]
+      : readonly [];
 
-type InternalPlatePluginPortal<V extends Value, D> = {
-  <
-    TPlugin extends (
-      | AnyBasePlugin
-      | AnyEditorPlatePlugin
-      | AnyPlatePlugin
-      | AnyResolvedBasePlugin
-    ) &
-      PluginReference,
-  >(
-    plugin: TPlugin
-  ): PlatePluginPortal<InternalPluginDefinitionOf<TPlugin>>;
-  (pluginName: string): AnyPlatePluginPortal;
-} & InternalBaseEditorWithInstalledPlugins<V, D>['plugin'];
+type PlateInstalledRuntimeCorePlugin = MergeInstalledPluginDefinitions<
+  InferEditorRuntimePlugins<CorePlugins>,
+  InferEditorRuntimePlugins<PlateCorePlugins>
+>;
+
+type PlateInstalledSchemaCorePlugin = MergeInstalledPluginDefinitions<
+  CorePluginDefinition,
+  InferPlugins<PlateCorePlugins>
+>;
+
+type MergePlateEditorRuntimePlugins<D> = MergeInstalledPluginDefinitions<
+  PlateInstalledRuntimeCorePlugin,
+  D
+>;
+
+type MergePlateEditorSchemaPlugins<D> = MergeInstalledPluginDefinitions<
+  PlateInstalledSchemaCorePlugin,
+  D
+>;
+
+/** @internal Lower a configured plugin input into the installed Plate graph. */
+export type InferPlateEditorPlugins<TPlugins> =
+  NormalizePlatePluginInput<TPlugins>[number] extends never
+    ? PlateInstalledRuntimeCorePlugin
+    : MergePlateEditorRuntimePlugins<
+        InferEditorRuntimePlugins<NormalizePlatePluginInput<TPlugins>>
+      >;
+
+/** @internal Lower schema definitions separately from runtime capabilities. */
+export type InferPlateEditorSchemaPlugins<TPlugins> =
+  NormalizePlatePluginInput<TPlugins>[number] extends never
+    ? PlateInstalledSchemaCorePlugin
+    : MergePlateEditorSchemaPlugins<
+        InferPlugins<NormalizePlatePluginInput<TPlugins>>
+      >;
+
+export type InternalPlateEditorMutationProvider<TPlugins, TRuntime> = [
+  GeneratedEditorMutations<TPlugins>,
+] extends [never]
+  ? TRuntime
+  : InternalEditorMutationProvider<GeneratedEditorMutations<TPlugins>>;
 
 /** @internal React editor whose plugin definition union is already lowered. */
-export type InternalPlateEditorWithInstalledPlugins<V extends Value, D> = Omit<
-  InternalPlateEditorBase<V, D>,
-  'api' | 'extension' | 'plugin' | 'read' | 'update'
-> & {
-  readonly api: InternalPlateEditorBase<V, D>['api'] & ReactEditor<V>['api'];
-  extension: InternalPlateEditorBase<V, D>['extension'] &
-    ReactEditor<V>['extension'];
-  plugin: InternalPlatePluginPortal<V, D>;
-  read: InternalPlateEditorBase<V, D>['read'] & ReactEditor<V>['read'];
-  update: InternalPlateEditorBase<V, D>['update'] & ReactEditor<V>['update'];
-};
+export type InternalPlateEditorWithInstalledPlugins<
+  V extends Value,
+  D,
+  S = D,
+> = PlateEditorReference &
+  InternalPlateEditorBase<V, D, S> & {
+    readonly api: InternalBaseEditorWithInstalledPlugins<V, D, S>['api'] &
+      ReactEditor<V>['api'];
+    extension: InternalBaseEditorWithInstalledPlugins<V, D, S>['extension'] &
+      ReactEditor<V>['extension'];
+    plugin: InternalPlatePluginPortal;
+    read: InternalBaseEditorWithInstalledPlugins<V, D, S>['read'] &
+      ReactEditor<V>['read'];
+    update: InternalBaseEditorWithInstalledPlugins<V, D, S>['update'] &
+      ReactEditor<V>['update'];
+  };
 
-export type NameofPlugins<T extends AnyBasePluginDefinition> =
-  | (string & {})
-  | InferName<T>;
+/** Plate editor inferred directly from its public plugin tuple. */
+export type PlateEditor<TPlugins = never> = [TPlugins] extends [never]
+  ? InternalPlateEditorWithInstalledPlugins<
+      any,
+      AnyBasePluginDefinition,
+      AnyBasePluginDefinition
+    >
+  : InferPlateEditorPlugins<TPlugins> extends infer D
+    ? InternalPlateEditorWithInstalledPlugins<
+        GeneratedEditorValue<TPlugins>,
+        D,
+        InternalPlateEditorMutationProvider<TPlugins, D>
+      >
+    : never;

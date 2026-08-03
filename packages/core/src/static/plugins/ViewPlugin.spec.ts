@@ -17,13 +17,13 @@ describe('ViewPlugin', () => {
     it('is included in the static editor', () => {
       const editor = createStaticEditor();
 
-      expect(editor.plugin(ViewPlugin).plugin).toBeDefined();
+      expect(editor.plugin(ViewPlugin)).toBeDefined();
       expect(editor.api.dom.getSelectedFragment).toBeDefined();
     });
 
     it('proxies getSelectedFragment through getSelectedDomFragment', () => {
       const fragment = [
-        { children: [{ text: 'First paragraph' }], type: 'p' },
+        { children: [{ text: 'First paragraph' }], type: 'paragraph' },
       ] satisfies Descendant[];
       const editor = createStaticEditor();
 

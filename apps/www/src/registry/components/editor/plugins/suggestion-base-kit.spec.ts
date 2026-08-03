@@ -20,7 +20,7 @@ describe('BaseSuggestionKit', () => {
       plugins: BaseSuggestionKit,
     });
     const suggestion = createPluginContext(editor, BaseSuggestionPlugin);
-    const transformProps = suggestion.plugin.inject?.nodeProps?.transformProps;
+    const transformProps = suggestion.inject?.nodeProps?.transformProps;
 
     if (!transformProps) throw new Error('Missing transformProps');
 

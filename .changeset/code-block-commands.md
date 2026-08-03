@@ -16,9 +16,8 @@ Install code lines as a required `CodeBlockPlugin` dependency. Replace
 `CodeSyntaxPlugin` and `BaseCodeSyntaxPlugin` with `CodeHighlightPlugin` and
 `BaseCodeHighlightPlugin`. The highlighting plugin owns the syntax mark,
 Lowlight state, decorations, and refresh behavior and depends on
-`CodeBlockPlugin`. Plugin and command identities are `codeBlock`, `codeLine`,
-and `codeSyntax`; persisted document types remain `code_block`, `code_line`,
-and `code_syntax`.
+`CodeBlockPlugin`. Plugin, command, and persisted identities are `codeBlock`,
+`codeLine`, and `codeSyntax`.
 
 **Migration:** Replace standalone query, formatter, decoration, and transform
 imports with the installed plugin groups:

@@ -1,6 +1,6 @@
 import {
   createEditor,
-  defineEditorExtension,
+  defineExtension,
   type DocumentChange,
   type ValueOf,
 } from '@platejs/plite';
@@ -21,8 +21,7 @@ const initialValue: CustomValue = [
   { type: 'paragraph', children: [{ text: 'paragraph' }] },
 ];
 
-const extension = defineEditorExtension({
-  name: 'generic-extension',
+const extension = defineExtension('generic-extension', {
   on: {
     transactionChange(context) {
       const change: DocumentChange = context.change;
@@ -50,13 +49,12 @@ const extension = defineEditorExtension({
   },
 });
 
-defineEditorExtension({
-  name: 'bad-commit-listeners',
+defineExtension('bad-commit-listeners', {
   // @ts-expect-error extension authors use on.commit
   commitListeners: [() => {}],
 });
 
-defineEditorExtension({
+defineExtension('api-context-contract', {
   api(context) {
     void context.editor;
     void context.getContributions;
@@ -68,17 +66,14 @@ defineEditorExtension({
 
     return {};
   },
-  name: 'api-context-contract',
 });
 
-defineEditorExtension({
-  name: 'bad-register',
+defineExtension('bad-register', {
   // @ts-expect-error extension authors use declarative slots or activate
   register() {},
 });
 
-defineEditorExtension({
-  name: 'bad-read-middleware',
+defineExtension('bad-read-middleware', {
   // @ts-expect-error read builds an owner namespace; middleware belongs in readMiddleware
   read: ({ around }) => {
     void around;
@@ -87,8 +82,7 @@ defineEditorExtension({
   },
 });
 
-defineEditorExtension({
-  name: 'bad-validation-config',
+defineExtension('bad-validation-config', {
   // @ts-expect-error Plite extensions validate the candidate context, not Plate config
   validate: ({ config }) => {
     void config;

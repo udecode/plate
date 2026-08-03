@@ -4,16 +4,15 @@ import { act, renderHook } from '@testing-library/react';
 
 import { TestPlate as Plate } from '../../__tests__/TestPlate';
 import { createPlateEditor } from '../../editor';
-import { createPlatePlugin } from '../../plugin';
+import { definePlatePlugin } from '../../plugin';
 import { useEditorPluginStore, usePluginStore } from './usePluginStore';
 
 describe('usePluginStore', () => {
   it('subscribes to fields, named selectors, and selector callbacks', () => {
-    const CounterPlugin = createPlatePlugin({
+    const CounterPlugin = definePlatePlugin('counter', {
       initialState: {
         value: 1,
       },
-      name: 'counter',
       selectors: {
         doubleValue: (state, factor: number) => state.value * factor,
       },
@@ -73,9 +72,8 @@ describe('usePluginStore', () => {
 
   it('evaluates named selectors against the supplied subscription snapshot', () => {
     const snapshots: number[] = [];
-    const CounterPlugin = createPlatePlugin({
+    const CounterPlugin = definePlatePlugin('counter', {
       initialState: { value: 1 },
-      name: 'counter',
       selectors: {
         trackedValue: (state) => {
           snapshots.push(state.value);
@@ -109,9 +107,8 @@ describe('usePluginStore', () => {
     } = {
       isEven: (state) => state.value % 2 === 0,
     };
-    const OptionalSelectorPlugin = createPlatePlugin({
+    const OptionalSelectorPlugin = definePlatePlugin('optionalSelector', {
       initialState: { value: 2 },
-      name: 'optionalSelector',
       selectors,
     });
     const editor = createPlateEditor({
@@ -134,13 +131,11 @@ describe('usePluginStore', () => {
   });
 
   it('supports explicit editors and rejects missing plugins and keys', () => {
-    const CounterPlugin = createPlatePlugin({
+    const CounterPlugin = definePlatePlugin('counter', {
       initialState: { value: 1 },
-      name: 'counter',
     });
-    const ExternalPlugin = createPlatePlugin({
+    const ExternalPlugin = definePlatePlugin('external', {
       initialState: { value: 5 },
-      name: 'external',
     });
     const editor = createPlateEditor({ plugins: [CounterPlugin] });
 

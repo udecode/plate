@@ -21,7 +21,7 @@ import {
 const createSchemaEditor = () =>
   createEditor({
     extensions: [
-      defineEditorSchema({
+      defineEditorSchema('schema:generated-schema-laws', {
         elements: {
           caption: {
             content: schema.content.text({ default: 'text', min: 1 }),
@@ -157,7 +157,7 @@ describe('compiled schema and correction laws', () => {
       fc.property(fc.integer({ max: 8, min: 1 }), (minimum) => {
         const editor = createEditor({
           extensions: [
-            defineEditorSchema({
+            defineEditorSchema(`schema:minimum-${minimum}`, {
               elements: {
                 generated: {
                   content: schema.content.text({
@@ -222,7 +222,7 @@ describe('compiled schema and correction laws', () => {
         (rawChildren, replacement, seed) => {
           const editor = createEditor({
             extensions: [
-              defineEditorSchema({
+              defineEditorSchema('schema:generated-inline-construction', {
                 elements: {
                   mention: {
                     properties: { character: property.string() },
@@ -298,7 +298,7 @@ describe('compiled schema and correction laws', () => {
   it('keeps incremental open-content mode aligned with full canonicalization', () => {
     const editor = createEditor({
       extensions: [
-        defineEditorSchema({
+        defineEditorSchema('schema:open-content-construction', {
           elements: {
             block: { content: schema.content.open() },
           },

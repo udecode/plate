@@ -32,7 +32,7 @@ import {
   type ReactRuntimeEditor,
 } from '../src/plugin/react-editor';
 
-const blockImageSchema = defineEditorSchema({
+const blockImageSchema = defineEditorSchema('schema:dom-coverage-block-image', {
   elements: { image: { void: 'block' } },
   id: 'dom-coverage-block-image',
   root: schema.content.not(schema.content.text()),
@@ -40,7 +40,7 @@ const blockImageSchema = defineEditorSchema({
   version: 1,
 });
 
-const blockVideoSchema = defineEditorSchema({
+const blockVideoSchema = defineEditorSchema('schema:dom-coverage-block-video', {
   elements: { video: { void: 'block' } },
   id: 'dom-coverage-block-video',
   root: schema.content.not(schema.content.text()),
@@ -1030,7 +1030,7 @@ describe('DOM coverage native bridge', () => {
   test('cutting a selected block void writes model data, deletes once, and requests model-owned repair', () => {
     const editor = createReactEditor();
 
-    editor.extend(blockImageSchema);
+    editor.install(blockImageSchema);
     editorReplace(editor, {
       children: [
         {

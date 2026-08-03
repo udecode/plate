@@ -2,13 +2,13 @@ import type { Element, Text } from '@platejs/plite';
 import type { AnyObject } from '@udecode/utils';
 
 import type {
-  AnyBasePluginDefinition,
-  BasePluginDefinition,
-  RenderElementProps,
-  RenderLeafProps,
-  RenderTextProps,
+  AnyBasePluginContext,
   BasePluginContext,
-} from '..';
+} from '../lib/plugin/BasePlugin';
+import type { BasePluginDefinition } from '../lib/plugin/PluginDefinition';
+import type { RenderElementProps } from '../lib/types/RenderElementProps';
+import type { RenderLeafProps } from '../lib/types/RenderLeafProps';
+import type { RenderTextProps } from '../lib/types/RenderTextProps';
 
 export type BoxStaticProps = React.ComponentProps<'div'> & {
   as?: React.ElementType;
@@ -16,25 +16,18 @@ export type BoxStaticProps = React.ComponentProps<'div'> & {
 
 export type PliteRenderElementProps<
   N extends Element = Element,
-  C extends AnyBasePluginDefinition = BasePluginDefinition,
+  C extends BasePluginDefinition = BasePluginDefinition,
 > = PliteRenderNodeProps<C> & RenderElementProps<N>;
 
 export type PliteRenderLeafProps<
   N extends Text = Text,
-  C extends AnyBasePluginDefinition = BasePluginDefinition,
+  C extends BasePluginDefinition = BasePluginDefinition,
 > = PliteRenderNodeProps<C> & RenderLeafProps<N>;
 
-type ErasedBasePluginContext = {
-  api: object;
-  readonly installed: boolean;
-  read: object;
-  store: object;
-  type: string;
-  update: object;
-};
+type ErasedBasePluginContext = AnyBasePluginContext;
 
 export type PliteRenderNodeProps<
-  C extends AnyBasePluginDefinition = BasePluginDefinition,
+  C extends BasePluginDefinition = BasePluginDefinition,
 > = (0 extends 1 & C ? ErasedBasePluginContext : BasePluginContext<C>) & {
   attributes?: AnyObject;
   className?: string;
@@ -45,5 +38,5 @@ export type PliteRenderNodeProps<
 
 export type PliteRenderTextProps<
   N extends Text = Text,
-  C extends AnyBasePluginDefinition = BasePluginDefinition,
+  C extends BasePluginDefinition = BasePluginDefinition,
 > = PliteRenderNodeProps<C> & RenderTextProps<N>;

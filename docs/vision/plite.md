@@ -38,18 +38,33 @@ donor checkout as proof after the transplant.
   separate proven job.
 - `EditorExtension` carries one exact normalized definition. `name` is
   descriptor identity; `type` is serialized node identity. The public factory
-  is one object call with no caller generics. Its private typing may infer a
-  small dependency environment beside the author input when TypeScript needs
-  that split for contextual callbacks; do not expose it or pretend one
+  is `define*(name, definition)` with no caller generics. Its private typing may
+  infer a small dependency environment beside the author input when TypeScript
+  needs that split for contextual callbacks; do not expose it or pretend one
   self-referential generic can infer everything. Reject excess fields and
   preserve the definition through a private invariant witness without leaking
-  raw callbacks into declarations.
+  raw callbacks into declarations. The required positional name is lower camel
+  case and human-readable; a different serialized identity belongs in `type`.
+- Public roots expose author contracts, not `Any*`, `Internal*`, compiler and
+  normalization graphs, accumulators, or witnesses. An unparameterized editor
+  exposes only guaranteed Core capabilities; package consumers carry concrete
+  editor or extension generics. Plite's public runtime type is `Editor`;
+  `BaseEditor` and `PlateEditor` belong to Plate.
 - Root `EditorExtensionDependencyReference` is a shallow, non-generic identity
   value with `name` and optional `enabled`. `EditorExtensionTypeProvider` is the
   sole public value-sensitive capability bridge. Its higher-kinded encoding,
   normalized installed-capability carrier, and transitive dependency expansion
   are internal-only; they do not recursively materialize exact dependency
   ancestry.
+- Schema is the sole first-party AST-shape truth. Plite derives exact root,
+  child, text/property, default/requiredness, named-root, recursive, and
+  open-world value types; Plate lowers its installed plugin graph into that
+  compiler once. Normal Plate code uses `PlateEditor<typeof Kit>` and the
+  existing `ValueOf`/`ElementOf`/`TextOf` extractors, never a parallel value
+  generic or central node map. Raw schema-less Plite may still own an explicit
+  `createEditor<ExternalValue>` generic. Feature aliases may name an inferred
+  owner result but never restate schema fields, and property-only plugins do
+  not become element handles.
 - Static portals require a unique literal name and mutually assignable
   descriptor/installed capabilities. Runtime portals require exact installed
   descriptor identity, so a same-name object is not an interchangeable token.
@@ -72,6 +87,11 @@ donor checkout as proof after the transplant.
 - Plite uses `editor.read(fn)`, direct `editor.update.group.method(...)`,
   configured `editor.update(policy).group.method(...)`, and atomic
   `editor.update(policy?, fn)` as the public lifecycle.
+- Extensions install through `editor.install(...)`; DOM/React views use
+  `createEditorView(editor, options)`. Do not expose an editor runtime wrapper
+  or `editor.extend(...)`. Keep root standalone utilities to truly
+  editor-independent value operations such as `NodeApi`, `PathApi`, and
+  `isEditor`.
 - `state` is the normal read view; `tx` is the normal write view and can read
   transaction-local state.
 - Extension-owned factories are `read` and `update`; the compiler projects
@@ -103,6 +123,11 @@ donor checkout as proof after the transplant.
 - The primary document root is implicit in public API and docs. Do not expose a
   public `main` root key, config option, or example. Explicit roots are only for
   additional roots.
+- Inferred values preserve the primary/named root grammar and every element's
+  legal child variants without an arbitrary depth cliff. Canonical output
+  requiredness follows runtime defaults; construction input may omit defaulted
+  fields. Open or dynamic rules widen only their undecidable branch. Runtime
+  schema—not tuple-length types—owns child cardinality.
 - Structurally owned editable content stays in normal node `children`.
   Conditional mounting and selection use DOM coverage without changing the
   persisted model. Selection kinds distinguish owner selection from child-text

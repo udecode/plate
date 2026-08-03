@@ -5,7 +5,7 @@ import * as React from 'react';
 import type { PlateElementProps } from 'platejs/react';
 
 import {
-  createPlatePlugin,
+  definePlatePlugin,
   Plate,
   PlateElement,
   usePlateEditor,
@@ -18,8 +18,7 @@ import { EditorKit } from '@/registry/components/editor/editor-kit';
 import { editableVoidsValue } from '@/registry/examples/values/editable-voids-value';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
 
-export const EditableVoidPlugin = createPlatePlugin({
-  name: 'editable-void',
+export const EditableVoidPlugin = definePlatePlugin('editableVoid', {
   schema: { element: { void: 'editable-island' } },
 }).configure({ component: EditableVoidElement });
 

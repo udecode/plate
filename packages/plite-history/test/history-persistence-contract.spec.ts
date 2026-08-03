@@ -3,10 +3,9 @@ import { describe, it } from 'node:test';
 
 import {
   createEditor,
-  createEditorRuntime,
   createEditorView,
   defineEffect,
-  defineEditorExtension,
+  defineExtension,
   defineEditorSchema,
   defineExtensionSlot,
   defineStateField,
@@ -49,7 +48,7 @@ const editorSchema = ({
   isolating?: boolean;
   version?: number;
 } = {}) =>
-  defineEditorSchema({
+  defineEditorSchema('schema:derived', {
     elements: {
       paragraph: {
         content: schema.content.text(),
@@ -68,6 +67,9 @@ const title = defineStateField({
   history: 'push',
   initial: () => 'Untitled',
   persist: valueCodecs.string,
+});
+const titleExtension = defineExtension('document-title', {
+  stateFields: [title],
 });
 
 const range = (start: number, end = start): Range => ({
@@ -91,8 +93,7 @@ const cellSelectionCodec = defineValueCodec<CellSelection>({
   version: 1,
 });
 
-const cellSelectionExtension = defineEditorExtension({
-  name: 'cell-selection-persistence',
+const cellSelectionExtension = defineExtension('cell-selection-persistence', {
   selectionKinds: [
     {
       codec: cellSelectionCodec,
@@ -113,7 +114,7 @@ const createStateEditor = (
   initialValue: Parameters<typeof createEditor>[0]['initialValue']
 ) =>
   createEditor({
-    extensions: [history(), title, cellSelectionExtension] as const,
+    extensions: [history(), titleExtension, cellSelectionExtension] as const,
     initialValue,
   });
 
@@ -305,7 +306,7 @@ describe('versioned history persistence', () => {
   it('publishes migration once and atomically resets incompatible history', () => {
     const slot = defineExtensionSlot('history-schema');
     const schemaWithBlock = (version: number, type: string) =>
-      defineEditorSchema({
+      defineEditorSchema('schema:history-schema', {
         elements: {
           [type]: { content: schema.content.text() },
         },
@@ -448,7 +449,7 @@ describe('versioned history persistence', () => {
       kind: 'cell',
     };
     const source = createEditor({
-      extensions: [history(), title, cellSelectionExtension] as const,
+      extensions: [history(), titleExtension, cellSelectionExtension] as const,
       initialSelection: selection,
       initialValue: {
         children: [paragraph('body')],
@@ -535,7 +536,7 @@ describe('versioned history persistence', () => {
   });
 
   it('round-trips rootless selections owned by a named root', () => {
-    const source = createEditorRuntime({
+    const source = createEditor({
       extensions: [history()] as const,
       initialValue: {
         children: [paragraph('x')],
@@ -555,15 +556,12 @@ describe('versioned history persistence', () => {
       tx.text.insert('!');
     });
 
-    const restored = createEditorRuntime({
+    const restored = createEditor({
       extensions: [history()] as const,
       initialValue: source.read.value(),
     });
     const restoredHeader = createEditorView(restored, { root: 'header' });
-    const decoded = History.fromJSON(
-      restored.editor,
-      History.toJSON(source.editor)
-    );
+    const decoded = History.fromJSON(restored, History.toJSON(source));
 
     restored.update((tx) => tx.history.restore(decoded));
     restoredHeader.update((tx) => tx.history.undo());
@@ -643,20 +641,23 @@ describe('versioned history persistence', () => {
     source.update((tx) => tx.nodes.set({ undeclared: true }, { at: [0] }));
     source.update((tx) => tx.history.undo());
 
-    const closedParagraph = defineEditorSchema({
-      elements: {
-        paragraph: {
-          content: schema.content.text({ default: 'text', min: 1 }),
+    const closedParagraph = defineEditorSchema(
+      'schema:closed-history-paragraph',
+      {
+        elements: {
+          paragraph: {
+            content: schema.content.text({ default: 'text', min: 1 }),
+          },
         },
-      },
-      id: 'closed-history-paragraph',
-      root: schema.content.type('paragraph', {
-        default: { type: 'paragraph' },
-        min: 1,
-      }),
-      unknown: 'reject',
-      version: 1,
-    });
+        id: 'closed-history-paragraph',
+        root: schema.content.type('paragraph', {
+          default: { type: 'paragraph' },
+          min: 1,
+        }),
+        unknown: 'reject',
+        version: 1,
+      }
+    );
     const restored = createEditor({
       extensions: [history(), closedParagraph] as const,
       initialValue: source.read.value(),
@@ -687,15 +688,15 @@ describe('versioned history persistence', () => {
       reduce: (value, effect) =>
         effect.type === increment ? value + effect.value : value,
     });
-    const incrementExtension = defineEditorExtension({
+    const incrementExtension = defineExtension('counter-increment-effect', {
       effectTypes: [increment],
-      name: 'counter-increment-effect',
+      stateFields: [counter],
     });
     const createCounterEditor = (
       initialValue: Parameters<typeof createEditor>[0]['initialValue']
     ) =>
       createEditor({
-        extensions: [history(), counter, incrementExtension] as const,
+        extensions: [history(), incrementExtension] as const,
         initialValue,
       });
     const source = createCounterEditor([paragraph('body')]);
@@ -799,9 +800,8 @@ describe('versioned history persistence', () => {
     const source = createEditor({
       extensions: [
         history(),
-        defineEditorExtension({
+        defineExtension('counter-effect-v1', {
           effectTypes: [incrementV1],
-          name: 'counter-effect-v1',
         }),
       ],
     });
@@ -811,9 +811,8 @@ describe('versioned history persistence', () => {
     const restored = createEditor({
       extensions: [
         history(),
-        defineEditorExtension({
+        defineExtension('counter-effect-v2', {
           effectTypes: [incrementV2],
-          name: 'counter-effect-v2',
         }),
       ],
     });

@@ -2,6 +2,7 @@
 
 import { createPlateEditor } from '@platejs/core/react';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
+import { createEditor, type Value } from '@platejs/plite';
 
 import { SingleLinePlugin } from './SingleLinePlugin';
 
@@ -24,6 +25,7 @@ const output = (
 describe('SingleLinePlugin', () => {
   it('merge all blocks into the first block', () => {
     const editor = createPlateEditor({
+      editor: createEditor<Value>(),
       plugins: [SingleLinePlugin],
       initialValue: input.children,
     });
@@ -50,6 +52,7 @@ describe('SingleLinePlugin', () => {
     ) as TestEditor;
 
     const editor = createPlateEditor({
+      editor: createEditor<Value>(),
       plugins: [SingleLinePlugin],
       initialValue: inputWithLineBreaks.children,
     });
@@ -70,6 +73,7 @@ describe('SingleLinePlugin', () => {
     );
 
     const editor = createPlateEditor({
+      editor: createEditor<Value>(),
       plugins: [SingleLinePlugin],
       selection: singleLineInput.selection,
       initialValue: singleLineInput.children,
@@ -78,7 +82,7 @@ describe('SingleLinePlugin', () => {
     editor.update.break.insert();
 
     expect(editor.read.children()).toEqual([
-      { children: [{ text: 'test' }], type: 'p' },
+      { children: [{ text: 'test' }], type: 'paragraph' },
     ]);
   });
 
@@ -93,6 +97,7 @@ describe('SingleLinePlugin', () => {
     );
 
     const editor = createPlateEditor({
+      editor: createEditor<Value>(),
       plugins: [SingleLinePlugin],
       selection: singleLineInput.selection,
       initialValue: singleLineInput.children,
@@ -101,7 +106,7 @@ describe('SingleLinePlugin', () => {
     editor.update.break.insertSoft();
 
     expect(editor.read.children()).toEqual([
-      { children: [{ text: 'test' }], type: 'p' },
+      { children: [{ text: 'test' }], type: 'paragraph' },
     ]);
   });
 
@@ -121,6 +126,7 @@ describe('SingleLinePlugin', () => {
     ) as TestEditor;
 
     const editor = createPlateEditor({
+      editor: createEditor<Value>(),
       plugins: [SingleLinePlugin],
       initialValue: emptyBlocksInput.children,
     });

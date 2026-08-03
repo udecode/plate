@@ -34,7 +34,11 @@ describe('getSelectedDomFragment', () => {
     const editor = createBaseEditor({
       nodeId: true,
     });
-    const block = { children: [{ text: 'hello' }], id: 'block-1', type: 'p' };
+    const block = {
+      children: [{ text: 'hello' }],
+      id: 'block-1',
+      type: 'paragraph',
+    };
 
     editor.update.value.replace({ children: [block], selection: null });
 
@@ -63,9 +67,12 @@ describe('getSelectedDomFragment', () => {
     const editor = createBaseEditor({
       nodeId: true,
     });
-    const blockOne = { children: [{ text: 'hello world' }], type: 'p' };
-    const blockTwo = { children: [{ text: 'omega' }], type: 'p' };
-    const partialOne = { children: [{ text: 'ello world' }], type: 'p' };
+    const blockOne = { children: [{ text: 'hello world' }], type: 'paragraph' };
+    const blockTwo = { children: [{ text: 'omega' }], type: 'paragraph' };
+    const partialOne = {
+      children: [{ text: 'ello world' }],
+      type: 'paragraph',
+    };
 
     editor.update.value.replace({
       children: [

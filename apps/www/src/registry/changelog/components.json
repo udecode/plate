@@ -1,6 +1,25 @@
 {
   "schemaVersion": 1,
   "components": {
+    "table-node": [
+      "2026-08-03-unify-table-cells",
+      "2026-07-29-preserve-feature-example-wiring",
+      "2026-07-26-plugin-store-state",
+      "2026-07-24-configurable-color-controls",
+      "2026-07-22-plugin-portal-wiring",
+      "2026-03-22-table-improve-selection-bug-fixed-insert-issue",
+      "2026-01-20-add-docx-file-import-word-export-support",
+      "2025-11-20-biome-ultracite",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "table-base-kit": [
+      "2026-08-03-unify-table-cells",
+      "2026-07-25-static-base-plugin-components"
+    ],
+    "table-kit": [
+      "2026-08-03-unify-table-cells",
+      "2026-07-24-compose-markdown-footnotes"
+    ],
     "ai-menu": [
       "2026-07-31-simplify-ai-chat-source-commands",
       "2026-07-26-plugin-store-state",
@@ -36,16 +55,6 @@
       "2026-07-23-rich-media-caption-children",
       "2026-04-29-codex-fix-discussion-suggestion-regressions",
       "2026-03-28-render-url-videos-media-node",
-      "2025-11-20-biome-ultracite",
-      "2025-10-17-fix-react-decouple"
-    ],
-    "table-node": [
-      "2026-07-29-preserve-feature-example-wiring",
-      "2026-07-26-plugin-store-state",
-      "2026-07-24-configurable-color-controls",
-      "2026-07-22-plugin-portal-wiring",
-      "2026-03-22-table-improve-selection-bug-fixed-insert-issue",
-      "2026-01-20-add-docx-file-import-word-export-support",
       "2025-11-20-biome-ultracite",
       "2025-10-17-fix-react-decouple"
     ],
@@ -241,7 +250,6 @@
       "2026-07-25-static-base-plugin-components",
       "2026-04-29-codex-fix-discussion-suggestion-regressions"
     ],
-    "table-base-kit": ["2026-07-25-static-base-plugin-components"],
     "toc-base-kit": ["2026-07-25-static-base-plugin-components"],
     "toggle-base-kit": ["2026-07-25-static-base-plugin-components"],
     "remote-cursor-overlay": [
@@ -281,7 +289,6 @@
     "link-kit": ["2026-07-24-compose-markdown-footnotes"],
     "list-kit": ["2026-07-24-compose-markdown-footnotes"],
     "math-kit": ["2026-07-24-compose-markdown-footnotes"],
-    "table-kit": ["2026-07-24-compose-markdown-footnotes"],
     "toggle-kit": ["2026-07-24-compose-markdown-footnotes"],
     "font-color-toolbar-button": [
       "2026-07-24-configurable-color-controls",

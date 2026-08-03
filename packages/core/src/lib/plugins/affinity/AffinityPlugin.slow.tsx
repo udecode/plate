@@ -8,29 +8,24 @@ import { deleteBackward, insertText, move } from '@platejs/plite/internal';
 import { jsxt } from '@platejs/test-utils';
 
 import { createBaseEditor } from '../../editor';
-import { createBasePlugin } from '../../plugin';
+import { defineBasePlugin } from '../../plugin';
 import { AffinityPlugin } from './AffinityPlugin';
 
 jsxt;
 
-const BaseBoldPlugin = createBasePlugin({
-  name: 'bold',
+const BaseBoldPlugin = defineBasePlugin('bold', {
   schema: { mark: property.boolean({ default: false, omitDefault: true }) },
 });
 
-const BaseItalicPlugin = createBasePlugin({
-  name: 'italic',
+const BaseItalicPlugin = defineBasePlugin('italic', {
   schema: { mark: property.boolean({ default: false, omitDefault: true }) },
 });
 
-const BaseCodePlugin = createBasePlugin({
-  name: 'code',
+const BaseCodePlugin = defineBasePlugin('code', {
   schema: { mark: property.boolean({ default: false, omitDefault: true }) },
 });
 
-const BaseLinkPlugin = createBasePlugin({
-  name: 'a',
-  type: 'a',
+const BaseLinkPlugin = defineBasePlugin('a', {
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
@@ -39,6 +34,7 @@ const BaseLinkPlugin = createBasePlugin({
         target: property.string(),
         url: property.string(),
       },
+      type: 'link',
     },
   },
 });

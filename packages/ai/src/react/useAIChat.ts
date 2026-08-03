@@ -7,6 +7,7 @@ import type { NodeEntry, Text } from '@platejs/plite';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import {
   type PlateEditor,
+  useEditor,
   useEditorPlugin,
   useEditorRuntimeState,
   usePluginStore,
@@ -114,7 +115,7 @@ export const useEditorChat = ({
   onOpenCursor,
   onOpenSelection,
 }: UseEditorChatOptions) => {
-  const { editor } = useEditorPlugin(AIChatPlugin);
+  const editor = useEditor();
   const open = usePluginStore(AIChatPlugin, 'open');
   const callbacksRef = useRef({
     onOpenBlockSelection,

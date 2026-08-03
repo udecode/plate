@@ -8,6 +8,7 @@ import {
   PathApi,
 } from '@platejs/plite';
 import {
+  NODES,
   KEYS,
   type TMediaElement,
   type TPlaceholderElement,
@@ -57,10 +58,10 @@ type PowOf2 = 1 | 2 | 4 | 8 | 16 | 32 | 64 | 128 | 256 | 512 | 1024;
 export type FileSize = `${PowOf2}${SizeUnit}`;
 
 export type MediaKeys =
-  | typeof KEYS.audio
-  | typeof KEYS.file
-  | typeof KEYS.img
-  | typeof KEYS.video;
+  | typeof NODES.audio
+  | typeof NODES.file
+  | typeof NODES.img
+  | typeof NODES.video;
 
 export type MediaItemConfig = {
   /** Media node type inserted after upload. */
@@ -157,37 +158,37 @@ const initialState: PlaceholderPluginState = {
     audio: {
       maxFileCount: 1,
       maxFileSize: '8MB',
-      mediaType: KEYS.audio,
+      mediaType: NODES.audio,
       minFileCount: 1,
     },
     blob: {
       maxFileCount: 1,
       maxFileSize: '8MB',
-      mediaType: KEYS.file,
+      mediaType: NODES.file,
       minFileCount: 1,
     },
     image: {
       maxFileCount: 3,
       maxFileSize: '4MB',
-      mediaType: KEYS.img,
+      mediaType: NODES.img,
       minFileCount: 1,
     },
     pdf: {
       maxFileCount: 1,
       maxFileSize: '4MB',
-      mediaType: KEYS.file,
+      mediaType: NODES.file,
       minFileCount: 1,
     },
     text: {
       maxFileCount: 1,
       maxFileSize: '64KB',
-      mediaType: KEYS.file,
+      mediaType: NODES.file,
       minFileCount: 1,
     },
     video: {
       maxFileCount: 1,
       maxFileSize: '16MB',
-      mediaType: KEYS.video,
+      mediaType: NODES.video,
       minFileCount: 1,
     },
   },
@@ -439,7 +440,7 @@ export const PlaceholderPlugin = toPlatePlugin(BasePlaceholderPlugin, {
         } else if (mediaType === fileType) {
           tx.file.insert(input, { ...options, at });
         } else if (mediaType === imageType) {
-          tx.img.insert(input, { ...options, at });
+          tx.image.insert(input, { ...options, at });
         } else {
           tx.video.insert(input, { ...options, at });
         }

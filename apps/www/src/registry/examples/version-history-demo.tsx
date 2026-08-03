@@ -6,11 +6,11 @@ import {
   type DiffIntent,
   type DiffUpdate,
   computeDiff,
-  createExcludeDiffFragmentExtension,
+  excludeDiffFragment,
 } from '@platejs/diff';
 import { property, schema } from 'platejs';
 import { cloneDeep } from 'lodash';
-import { type Value, createBasePlugin, KEYS } from 'platejs';
+import { type Value, defineBasePlugin } from 'platejs';
 import {
   type PlateElementProps,
   type PlateLeafProps,
@@ -21,7 +21,7 @@ import {
   PlateContent,
   PlateElement,
   PlateLeaf,
-  createPlatePlugin,
+  definePlatePlugin,
   toPlatePlugin,
   useElementSelected,
   usePlateEditor,
@@ -31,8 +31,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { BasicMarksKit } from '@/registry/components/editor/plugins/basic-marks-kit';
 
-const InlinePlugin = createPlatePlugin({
-  name: 'inline',
+const InlinePlugin = definePlatePlugin('inline', {
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
@@ -41,8 +40,7 @@ const InlinePlugin = createPlatePlugin({
   },
 });
 
-const InlineVoidPlugin = createPlatePlugin({
-  name: 'inline-void',
+const InlineVoidPlugin = definePlatePlugin('inlineVoid', {
   schema: { element: { inline: true, void: 'inline' } },
 });
 
@@ -120,12 +118,11 @@ const InlineVoidElement = ({ children, ...props }: PlateElementProps) => {
 };
 
 const DiffPlugin = toPlatePlugin(
-  createBasePlugin({
-    name: 'diff',
+  defineBasePlugin('diff', {
     schema: {
       mark: property.boolean({ default: false, omitDefault: true }),
     },
-  }).extend(createExcludeDiffFragmentExtension()),
+  }).extend(excludeDiffFragment()),
   {
     component: DiffLeaf,
     render: {
@@ -188,7 +185,7 @@ function DiffLeaf({ children, ...props }: PlateLeafProps) {
 const initialValue: Value = [
   {
     children: [{ text: 'This is a version history demo.' }],
-    type: KEYS.p,
+    type: 'paragraph',
   },
   {
     children: [
@@ -196,23 +193,23 @@ const initialValue: Value = [
       { bold: true, text: 'text and see what' },
       { text: ' happens.' },
     ],
-    type: KEYS.p,
+    type: 'paragraph',
   },
   {
     children: [
       { text: 'This is an ' },
-      { children: [{ text: '' }], type: InlineVoidPlugin.name },
+      { children: [{ text: '' }], type: 'inlineVoid' },
       { text: '. Try removing it.' },
     ],
-    type: KEYS.p,
+    type: 'paragraph',
   },
   {
     children: [
       { text: 'This is an ' },
-      { children: [{ text: 'editable inline' }], type: InlinePlugin.name },
+      { children: [{ text: 'editable inline' }], type: 'inline' },
       { text: '. Try editing it.' },
     ],
-    type: KEYS.p,
+    type: 'paragraph',
   },
 ];
 
