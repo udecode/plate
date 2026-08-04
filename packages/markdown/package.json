@@ -1,6 +1,6 @@
 {
   "name": "@platejs/markdown",
-  "version": "53.2.2",
+  "version": "53.3.3",
   "description": "Markdown serializer plugin for Plate",
   "keywords": [
     "markdown",
@@ -67,7 +67,7 @@
     "remark-math": "6.0.0"
   },
   "peerDependencies": {
-    "platejs": ">=53.0.0",
+    "platejs": ">=53.3.3",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },
