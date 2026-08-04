@@ -1,6 +1,6 @@
 {
   "name": "@platejs/ai",
-  "version": "53.3.0",
+  "version": "53.3.3",
   "description": "Text AI plugin for Plate",
   "keywords": [
     "plate",
@@ -57,7 +57,7 @@
   "peerDependencies": {
     "@ai-sdk/react": "^4.0.0",
     "ai": "^7.0.0",
-    "platejs": ">=53.0.7",
+    "platejs": ">=53.3.3",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },
