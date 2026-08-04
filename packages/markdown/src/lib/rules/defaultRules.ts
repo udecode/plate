@@ -964,7 +964,11 @@ export const defaultRules: MdRules = {
 
               for (const child of cellChildren) {
                 // Text nodes or inline elements should be grouped into paragraphs
-                if (!child.type || child.type === KEYS.inlineEquation) {
+                if (
+                  !child.type ||
+                  child.type === KEYS.inlineEquation ||
+                  options.editor!.api.isInline(child)
+                ) {
                   currentParagraphChildren.push(child);
                 } else {
                   // Block-level elements should end the current paragraph and be added directly
