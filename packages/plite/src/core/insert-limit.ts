@@ -74,6 +74,8 @@ const limitNode = <TNode extends ElementOrTextIn<Value>>(
     .map((child) => limitNode(child, remaining))
     .filter((child): child is ElementOrTextIn<Value> => child !== null);
 
+  if (children.length === 0) return null;
+
   return { ...node, children } as TNode;
 };
 

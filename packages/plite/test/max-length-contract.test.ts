@@ -71,6 +71,20 @@ describe('maxLength editor option', () => {
     assert.equal(editor.read.text.string([]), 'Hello');
   });
 
+  it('does not crash when pasting multiple line-breaks exceeding maxLength', () => {
+    const editor = createLimitedEditor(5);
+
+    editor.update((tx) => {
+      tx.fragment.replace([
+        paragraph('Hel'),
+        paragraph('lo'),
+        paragraph('overflow text line 3'),
+      ]);
+    });
+
+    assert.equal(editor.read.text.string([]), 'Hello');
+  });
+
   it('truncates inserted nodes', () => {
     const editor = createLimitedEditor(5);
 
