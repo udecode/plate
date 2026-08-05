@@ -44,7 +44,7 @@
   "dependencies": {
     "@platejs/date": "workspace:*",
     "lodash": "^4.17.23",
-    "marked": "^15.0.12",
+    "marked": "^15.0.12 || ^16.0.0 || ^17.0.0 || ^18.0.0",
     "mdast-util-math": "3.0.0",
     "mdast-util-mdx": "3.0.0",
     "react-compiler-runtime": "^1.0.0",
