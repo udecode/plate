@@ -159,5 +159,6 @@ export const useEquationInput = ({
     if (!point) return;
 
     editor.update({ tags: 'focus' }).selection.set(point);
+    onClose?.();
   }
 };

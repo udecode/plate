@@ -118,6 +118,6 @@ describe('useEquationInput', () => {
     expect(after).toHaveBeenCalledWith(element);
     expect(select).toHaveBeenNthCalledWith(1, beforePoint);
     expect(select).toHaveBeenNthCalledWith(2, afterPoint);
-    expect(onClose).toHaveBeenCalled();
+    expect(onClose).toHaveBeenCalledTimes(3);
   });
 });
