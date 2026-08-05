@@ -4,9 +4,8 @@ import {
   useEditorPlugin,
   useEditorSelector,
   useElement,
-  useElementSelector,
 } from '@platejs/core/react';
-import { PathApi } from '@platejs/plite';
+
 import { useClaimEditableDOMCommit } from '@platejs/plite-react/internal';
 import { KEYS, type TTableElement } from '@platejs/utils';
 import React from 'react';
@@ -52,31 +51,30 @@ export const useTableColSizes = ({
 } = {}): number[] => {
   const { editor } = useEditorPlugin(TablePlugin);
   const colSizeOverrides = useTableValue('colSizeOverrides');
-  const tablePath = useElementSelector(([, path]) => path, {
-    name: KEYS.table,
-  });
 
-  const overriddenColSizes = useEditorSelector(
-    () => {
-      const tableNode = editor.read.nodes.get<TTableElement>(tablePath)?.[0];
+  // Read the table element from React context rather than re-reading from the
+  // editor via a path. During a transaction that inserts or splits a block
+  // before the table (e.g. pressing Enter in a heading), the path from
+  // useElementSelector can become stale and resolve to the wrong node, crashing
+  // compileTableGrid. useElement always returns the context-bound table node.
+  const tableElement = useElement<TTableElement>(KEYS.table);
 
-      if (!tableNode) return [];
+  const overriddenColSizes = React.useMemo(() => {
+    if (!tableElement) return [];
 
-      const colSizes = editor
-        .plugin(TablePlugin)
-        .api.getOverriddenColumnSizes(
-          tableNode,
-          disableOverrides ? undefined : colSizeOverrides
-        );
+    const colSizes = editor
+      .plugin(TablePlugin)
+      .api.getOverriddenColumnSizes(
+        tableElement,
+        disableOverrides ? undefined : colSizeOverrides
+      );
 
-      if (transformColSizes) {
-        return transformColSizes(colSizes);
-      }
+    if (transformColSizes) {
+      return transformColSizes(colSizes);
+    }
 
-      return colSizes;
-    },
-    { equalityFn: (a, b) => !!a && PathApi.equals(a, b) }
-  );
+    return colSizes;
+  }, [tableElement, colSizeOverrides, disableOverrides, editor, transformColSizes]);
 
   return overriddenColSizes;
 };
