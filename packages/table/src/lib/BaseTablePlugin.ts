@@ -564,6 +564,10 @@ export const BaseTablePlugin = createBasePlugin({
       ),
   }),
   name: KEYS.table,
+  shortcuts: {
+    tab: { keys: 'tab', priority: 100 },
+    untab: { keys: 'shift+tab', priority: 100 },
+  },
   dependencies: [
     BaseTableRowPlugin,
     BaseTableCellPlugin,
@@ -2497,14 +2501,47 @@ export const BaseTablePlugin = createBasePlugin({
                     reverse ? 'previous' : 'next'
                   )
                 : undefined;
-            const targetEntry =
-              target && tableView
-                ? tableView.context.entryAt(target.row, target.col)
-                : undefined;
+            if (targetEntry) {
+              tx.selection.set(targetEntry[1]);
+              return true;
+            }
 
-            if (targetEntry) tx.selection.set(targetEntry[1]);
+            if (!reverse && !store.get().disableExpandOnInsert) {
+              const tableEntry = tx.nodes.above<TTableElement>({
+                at: cellEntry[1],
+                match: { type },
+              });
+
+              if (tableEntry) {
+                tx.table.insertRow({ at: tableEntry[1] });
+
+                const nextTableView = tx.table.getSelection(cellEntry[1]);
+                const nextTarget =
+                  nextTableView && anchor
+                    ? getTableSelectionNeighbor(
+                        nextTableView.context,
+                        anchor,
+                        'next'
+                      )
+                    : undefined;
+                const nextTargetEntry =
+                  nextTarget && nextTableView
+                    ? nextTableView.context.entryAt(
+                        nextTarget.row,
+                        nextTarget.col
+                      )
+                    : undefined;
+
+                if (nextTargetEntry) {
+                  tx.selection.set(nextTargetEntry[1]);
+                }
+              }
+            }
 
             return true;
+          },
+          untab: () => {
+            return (tx[plugin.name] as any).tab({ reverse: true });
           },
         };
       },

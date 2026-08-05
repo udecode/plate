@@ -142,6 +142,13 @@ export const BaseIndentPlugin = createBasePlugin({
 
         if (!match(element, path)) return false;
 
+        const cellTypes = editor.plugin(KEYS.table).installed
+          ? editor.plugin(KEYS.table).api.getCellTypes()
+          : ['td', 'th'];
+        if (tx.nodes.above({ at: path, match: { type: cellTypes } })) {
+          return false;
+        }
+
         increase();
 
         return true;
@@ -155,6 +162,13 @@ export const BaseIndentPlugin = createBasePlugin({
         const [element, path] = entry;
 
         if (!match(element, path)) return false;
+
+        const cellTypes = editor.plugin(KEYS.table).installed
+          ? editor.plugin(KEYS.table).api.getCellTypes()
+          : ['td', 'th'];
+        if (tx.nodes.above({ at: path, match: { type: cellTypes } })) {
+          return false;
+        }
 
         if (!element[type]) {
           const blockquote = editor.plugin(KEYS.blockquote);
