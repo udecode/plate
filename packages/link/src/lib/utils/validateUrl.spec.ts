@@ -136,5 +136,11 @@ describe('validateUrl', () => {
       expect(validateUrl(editor, '#heading1')).toBe(true);
       expect(validateUrl(editor, '##heading2')).toBe(true);
     });
+
+    it('rejects shebang lines starting with #!', () => {
+      const editor = createTestEditor();
+      expect(validateUrl(editor, '#!/bin/sh')).toBe(false);
+      expect(validateUrl(editor, '#!/usr/bin/env node')).toBe(false);
+    });
   });
 });

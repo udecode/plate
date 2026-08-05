@@ -4,6 +4,7 @@ import { BaseLinkPlugin } from '../BaseLinkPlugin';
 
 // Markdown headings have a space after the # symbols
 const MARKDOWN_HEADING_PATTERN = /^#{1,6}\s+/;
+const SHEBANG_PATTERN = /^#!(\/.*)?$/;
 
 export const validateUrl = (editor: SlateEditor, url: string): boolean => {
   const { allowedSchemes, dangerouslySkipSanitization, isUrl } =
@@ -15,10 +16,10 @@ export const validateUrl = (editor: SlateEditor, url: string): boolean => {
     return customIsUrl ? customIsUrl(url) : true;
   }
 
-  // For strings starting with #, check if it's a markdown heading
+  // For strings starting with #, check if it's a markdown heading or shebang
   if (url.startsWith('#')) {
-    if (MARKDOWN_HEADING_PATTERN.test(url)) {
-      return false; // This is a markdown heading, not a valid link
+    if (MARKDOWN_HEADING_PATTERN.test(url) || SHEBANG_PATTERN.test(url)) {
+      return false; // This is a markdown heading or shebang, not a valid link
     }
     return customIsUrl ? customIsUrl(url) : true;
   }
