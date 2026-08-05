@@ -1,8 +1,9 @@
-import type { Descendant } from '@platejs/slate';
+import { type Descendant, ElementApi, TextApi } from '@platejs/slate';
 
 import type { SlateEditor } from '../../../editor';
 import type { WithRequiredKey } from '../../../plugin';
 
+import { BaseParagraphPlugin } from '../../../plugins';
 import { normalizeDescendantsToDocumentFragment } from '../../../utils/normalizeDescendantsToDocumentFragment';
 import { collapseWhiteSpace } from './collapse-white-space';
 import { deserializeHtmlElement } from './deserializeHtmlElement';
@@ -32,8 +33,22 @@ export const deserializeHtml = (
 
   const fragment = deserializeHtmlElement(editor, element) as Descendant[];
 
-  return normalizeDescendantsToDocumentFragment(editor, {
+  const normalized = normalizeDescendantsToDocumentFragment(editor, {
     defaultElementPlugin,
     descendants: fragment,
   });
+
+  const isInline = (node: Descendant) =>
+    TextApi.isText(node) ||
+    (ElementApi.isElement(node) && editor.api.isInline(node));
+
+  if (normalized.length > 0 && normalized.every(isInline)) {
+    const defaultType = editor.getType(
+      (defaultElementPlugin || BaseParagraphPlugin).key
+    );
+
+    return [{ children: normalized, type: defaultType } as Descendant];
+  }
+
+  return normalized;
 };

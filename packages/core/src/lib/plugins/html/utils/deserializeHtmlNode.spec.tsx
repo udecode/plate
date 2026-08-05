@@ -52,5 +52,17 @@ describe('deserializeHtmlNode standalone br handling', () => {
     ).querySelector('br')!;
 
     expect(deserializeHtmlNode(editor)(element as any)).toEqual('\n');
+  it('wraps root-level inline text into default block element', () => {
+    const { deserializeHtml } = require('./deserializeHtml');
+    const result = deserializeHtml(editor, {
+      element: '<span>hello world</span>',
+    });
+
+    expect(result).toEqual([
+      {
+        children: [{ text: 'hello world' }],
+        type: editor.getType('p'),
+      },
+    ]);
   });
 });
