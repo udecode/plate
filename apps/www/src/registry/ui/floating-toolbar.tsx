@@ -17,6 +17,7 @@ import {
   usePluginOption,
 } from 'platejs/react';
 
+import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 
 import { Toolbar } from './toolbar';
@@ -29,6 +30,7 @@ export function FloatingToolbar({
 }: React.ComponentProps<typeof Toolbar> & {
   state?: FloatingToolbarState;
 }) {
+  const isMobile = useIsMobile();
   const editorId = useEditorId();
   const focusedEditorId = useEventEditorValue('focus');
   const isFloatingLinkOpen = !!usePluginOption({ key: KEYS.link }, 'mode');
@@ -43,16 +45,23 @@ export function FloatingToolbar({
       middleware: [
         offset(12),
         flip({
-          fallbackPlacements: [
-            'top-start',
-            'top-end',
-            'bottom-start',
-            'bottom-end',
-          ],
+          fallbackPlacements: isMobile
+            ? [
+                'bottom-start',
+                'bottom-end',
+                'top-start',
+                'top-end',
+              ]
+            : [
+                'top-start',
+                'top-end',
+                'bottom-start',
+                'bottom-end',
+              ],
           padding: 12,
         }),
       ],
-      placement: 'top',
+      placement: isMobile ? 'bottom' : 'top',
       ...state?.floatingOptions,
     },
   });
