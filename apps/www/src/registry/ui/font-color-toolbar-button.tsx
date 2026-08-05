@@ -520,7 +520,7 @@ export function ColorDropdownMenuItems({
   return (
     <div
       className={cn(
-        'grid grid-cols-[repeat(10,1fr)] place-items-center gap-x-1',
+        'grid w-[276px] grid-cols-[repeat(10,1fr)] place-items-center gap-x-1',
         className
       )}
       {...props}
