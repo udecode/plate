@@ -106,8 +106,10 @@ function Draggable(props: PlateElementProps) {
 
   const resetPreview = () => {
     if (previewRef.current) {
-      previewRef.current.replaceChildren();
-      previewRef.current?.classList.add('hidden');
+      setTimeout(() => {
+        previewRef.current?.replaceChildren();
+        previewRef.current?.classList.add('hidden');
+      }, 0);
     }
   };
 

@@ -507,35 +507,39 @@ const useDomDropNode = (
             .toSorted(([, a], [, b]) => PathApi.compare(a, b));
           const insertAfter = direction === 'bottom' || direction === 'right';
 
-          editor.update((tx) => {
-            let target = element;
+          setTimeout(() => {
+            editor.update((tx) => {
+              let target = element;
 
-            for (const [node] of entries) {
-              const path = tx.nodes.path(node);
-              const targetPath = tx.nodes.path(target);
+              for (const [node] of entries) {
+                const path = tx.nodes.path(node);
+                const targetPath = tx.nodes.path(target);
 
-              if (!path || !targetPath) continue;
+                if (!path || !targetPath) continue;
 
-              const sameParentBefore =
-                PathApi.isBefore(path, targetPath) &&
-                PathApi.isSibling(path, targetPath);
-              const destination = insertAfter
-                ? sameParentBefore
-                  ? targetPath
-                  : PathApi.next(targetPath)
-                : sameParentBefore
-                  ? PathApi.previous(targetPath)
-                  : targetPath;
+                const sameParentBefore =
+                  PathApi.isBefore(path, targetPath) &&
+                  PathApi.isSibling(path, targetPath);
+                const destination = insertAfter
+                  ? sameParentBefore
+                    ? targetPath
+                    : PathApi.next(targetPath)
+                  : sameParentBefore
+                    ? PathApi.previous(targetPath)
+                    : targetPath;
 
-              tx.nodes.move({ at: path, to: destination });
+                tx.nodes.move({ at: path, to: destination });
 
-              if (insertAfter) target = node;
-            }
-          });
+                if (insertAfter) target = node;
+              }
+            });
+          }, 0);
         } else {
           if (!dragPath) return;
 
-          editor.update.nodes.move({ at: dragPath, to });
+          setTimeout(() => {
+            editor.update.nodes.move({ at: dragPath, to });
+          }, 0);
         }
 
         return;
@@ -544,7 +548,9 @@ const useDomDropNode = (
       const sourceEditor = dragItem.editor;
 
       if (!sourceEditor) {
-        editor.update.nodes.insert(dragItem.element, { at: to });
+        setTimeout(() => {
+          editor.update.nodes.insert(dragItem.element, { at: to });
+        }, 0);
 
         return;
       }
@@ -569,18 +575,20 @@ const useDomDropNode = (
         .map(([, path]) => path)
         .toSorted((a, b) => PathApi.compare(b, a));
 
-      editor.update.nodes.insert(
-        elements.length > 0 ? elements : dragItem.element,
-        { at: to }
-      );
+      setTimeout(() => {
+        editor.update.nodes.insert(
+          elements.length > 0 ? elements : dragItem.element,
+          { at: to }
+        );
 
-      if (paths.length > 0) {
-        sourceEditor.update((tx) => {
-          paths.forEach((path) => {
-            tx.nodes.remove({ at: path });
+        if (paths.length > 0) {
+          sourceEditor.update((tx) => {
+            paths.forEach((path) => {
+              tx.nodes.remove({ at: path });
+            });
           });
-        });
-      }
+        }
+      }, 0);
     },
     hover: (dragItem, monitor) => {
       const store = editor.plugin(DndStorePlugin).store;
