@@ -15,6 +15,13 @@ import { CopilotKit } from '@/registry/components/editor/plugins/copilot-kit';
 import { ExcalidrawKit } from '@/registry/components/editor/plugins/excalidraw-kit';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
 
+const basePlugins = [
+  ...CopilotKit,
+  ...EditorKit,
+  ...ExcalidrawKit,
+  PlaywrightPlugin,
+];
+
 export default function PlaygroundDemo({
   id,
   className,
@@ -28,32 +35,39 @@ export default function PlaygroundDemo({
     [locale]
   );
 
+  const plugins = React.useMemo(() => {
+    if (id !== 'forced-layout') return basePlugins;
+
+    return [
+      ...basePlugins,
+      NormalizeTypesPlugin.configure({
+        options: {
+          rules: [{ path: [0], strictType: 'h1' }],
+        },
+      }),
+    ];
+  }, [id]);
+
+  const overrideEnabled = React.useMemo(
+    () => ({
+      [KEYS.copilot]: id === 'copilot',
+      [KEYS.indent]: id !== 'listClassic',
+      [KEYS.list]: id !== 'listClassic',
+      [KEYS.listClassic]: id === 'listClassic',
+      [KEYS.playwright]: process.env.NODE_ENV !== 'production',
+    }),
+    [id]
+  );
+
   const editor = usePlateEditor(
     {
-      plugins: [
-        ...CopilotKit,
-        ...EditorKit,
-        ...ExcalidrawKit,
-        ...(id === 'copilot'
-          ? []
-          : [CopilotPlugin.configure({ enabled: false })]),
-        ...(id === 'listClassic'
-          ? [
-              IndentPlugin.configure({ enabled: false }),
-              ListPlugin.configure({ enabled: false }),
-            ]
-          : []),
-
-        NormalizeTypesPlugin.configure({
-          enabled: id === 'forced-layout',
-          initialState: {
-            rules: [{ path: [0], strictType: 'h1' }],
-          },
-        }),
-      ],
-      initialValue: value,
+      override: {
+        enabled: overrideEnabled,
+      },
+      plugins,
+      value,
     },
-    [id, locale]
+    [id, locale, overrideEnabled, plugins]
   );
 
   return (
