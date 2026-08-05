@@ -149,7 +149,7 @@ function Draggable(props: PlateElementProps) {
               <Button
                 ref={handleRef}
                 variant="ghost"
-                className="-left-0 absolute h-6 w-full p-0"
+                className="-left-0 absolute h-6 w-full p-0 cursor-grab active:cursor-grabbing select-none"
                 style={{ top: `${dragButtonTop + 3}px` }}
                 data-plate-prevent-deselect
               >
@@ -206,7 +206,7 @@ function Gutter({
       {...props}
       className={cn(
         'slate-gutterLeft',
-        '-translate-x-full absolute top-0 z-50 flex h-full cursor-text hover:opacity-100 sm:opacity-0',
+        '-translate-x-full absolute top-0 z-50 flex h-full cursor-pointer hover:opacity-100 sm:opacity-0',
         getPluginByType(editor, element.type)?.node.isContainer
           ? 'group-hover/container:opacity-100'
           : 'group-hover:opacity-100',
