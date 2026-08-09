@@ -1,25 +1,18 @@
 import { BlockSelectionPlugin } from '@platejs/selection/react';
-import { BaseParagraphPlugin, NodeIdPlugin } from '@platejs/core';
+import { BaseParagraphPlugin } from '@platejs/core';
 import { createPlateEditor } from '@platejs/core/react';
 
 import { AIChatPlugin } from './AIChatPlugin';
 
 const createEditor = () =>
   createPlateEditor({
-    plugins: [
-      BaseParagraphPlugin,
-      NodeIdPlugin,
-      BlockSelectionPlugin,
-      AIChatPlugin,
-    ],
+    plugins: [BaseParagraphPlugin, BlockSelectionPlugin, AIChatPlugin],
     selection: {
       kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 4, path: [0, 0] },
     },
-    initialValue: [
-      { children: [{ text: 'text' }], id: 'block', type: 'paragraph' },
-    ],
+    initialValue: [{ children: [{ text: 'text' }], type: 'paragraph' }],
   });
 
 describe('AIChatPlugin getPrompt', () => {
@@ -33,9 +26,10 @@ describe('AIChatPlugin getPrompt', () => {
 
   it('passes editor selection state into function prompts', () => {
     const editor = createEditor();
+    const nodeKey = editor.key([0])!;
     editor
       .plugin(BlockSelectionPlugin)
-      .store.set({ selectedIds: new Set(['block']) });
+      .store.set({ selectedKeys: new Set([nodeKey]) });
     let received: unknown;
     const prompt = ({
       isBlockSelecting,
@@ -61,9 +55,10 @@ describe('AIChatPlugin getPrompt', () => {
 
   it('prefers block selection over text selection', () => {
     const editor = createEditor();
+    const nodeKey = editor.key([0])!;
     editor
       .plugin(BlockSelectionPlugin)
-      .store.set({ selectedIds: new Set(['block']) });
+      .store.set({ selectedKeys: new Set([nodeKey]) });
 
     expect(
       editor.plugin(AIChatPlugin).read.prompt({

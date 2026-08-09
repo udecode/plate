@@ -4,7 +4,7 @@ description: Nest editable controls and a Plate editor inside a void element.
 ---
 
 This example renders form controls and a nested Plate editor inside a void
-element. It is app-local demo code built with `createPlatePlugin`, not a packaged
+element. It is app-local demo code built with `definePlatePlugin`, not a packaged
 feature plugin.
 
 ## Demo
@@ -27,7 +27,7 @@ an empty paragraph after it.
 
 | Piece | Owner | Notes |
 | --- | --- | --- |
-| `EditableVoidPlugin` | Registry example | Uses `createPlatePlugin` with `schema.element.void: 'editable-island'`. |
+| `EditableVoidPlugin` | Registry example | Uses `definePlatePlugin` with `schema.element.void: 'editable-island'`. |
 | `EditableVoidElement` | Registry example | Renders inputs, radio controls, and a nested `<Plate>` instance. |
 | Outer editor | Registry example | Loads `EditorKit` plus `EditableVoidPlugin` and the `editableVoidsValue`. |
 | Inner editor | Registry example | Creates a separate `usePlateEditor({ plugins: EditorKit })` inside the void element. |

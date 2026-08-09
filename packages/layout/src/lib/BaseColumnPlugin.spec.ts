@@ -1,4 +1,8 @@
-import { createBaseEditor } from '@platejs/core';
+import {
+  BaseParagraphPlugin,
+  createBaseEditor,
+  defineBasePlugin,
+} from '@platejs/core';
 import { PLUGINS } from '@platejs/utils';
 import {
   BaseColumnItemPlugin,
@@ -8,9 +12,17 @@ import {
 } from './BaseColumnPlugin';
 import { ColumnItemPlugin, ColumnPlugin } from '../react/ColumnPlugin';
 import assert from 'node:assert/strict';
-import { type Element, type Selection } from '@platejs/plite';
+import { type Element, schema, type Selection } from '@platejs/plite';
 
 const columnPlugins = [BaseColumnPlugin] as const;
+const TestColumnHostPlugin = defineBasePlugin('testColumnHost', {
+  dependencies: [BaseColumnItemPlugin],
+  schema: {
+    element: {
+      content: schema.content.element(BaseColumnItemPlugin, { min: 1 }),
+    },
+  },
+});
 
 type ColumnNode = Omit<ColumnElement, 'children'> & {
   children: readonly Element[];
@@ -22,6 +34,7 @@ type ColumnValue = readonly Element[];
 
 describe('BaseColumnPlugin schema', () => {
   it('declares the item as an exact required Base and React dependency', () => {
+    expect(BaseColumnItemPlugin.dependencies).toEqual([BaseParagraphPlugin]);
     expect(BaseColumnPlugin.dependencies).toEqual([BaseColumnItemPlugin]);
     expect(ColumnPlugin.dependencies).toEqual([ColumnItemPlugin]);
   });
@@ -35,6 +48,28 @@ describe('BaseColumnPlugin schema', () => {
         ],
       })
     ).toThrow(/columnGroup.*disabled.*column|column.*disabled.*columnGroup/i);
+  });
+
+  it('keeps the column item independently installable', () => {
+    expect(() =>
+      createBaseEditor({
+        plugins: [TestColumnHostPlugin],
+        initialValue: [
+          {
+            children: [
+              {
+                children: [
+                  { children: [{ text: 'Independent' }], type: 'paragraph' },
+                ],
+                type: 'column',
+                width: '50%',
+              },
+            ],
+            type: 'testColumnHost',
+          },
+        ],
+      })
+    ).not.toThrow();
   });
 
   it('constructs configured column-group content from plugin-name grammar', () => {
@@ -170,7 +205,7 @@ describe('BaseColumnPlugin schema', () => {
 
   describe('BaseColumnPlugin update', () => {
     describe('insert', () => {
-      it('inserts a column with the default width and an empty block', () => {
+      it('inserts a column with the schema width and normalizes the group', () => {
         const editor = createEditor({
           value: [
             {
@@ -195,14 +230,14 @@ describe('BaseColumnPlugin schema', () => {
           ],
         });
 
-        editor.update.column.insert({ at: [0, 2] });
+        editor.plugin(BaseColumnItemPlugin).update.insert({}, { at: [0, 2] });
 
         const columnGroup = getColumnGroup(editor);
 
         expect(columnGroup.children).toHaveLength(3);
         expect(columnGroup.children[2].type).toBe('column');
-        expect(columnGroup.children[2].width).toBe('33%');
-        expect(columnGroup.children[0].width).toBe('34%');
+        expect(columnGroup.children[2].width).toBe('44.333333333333336%');
+        expect(columnGroup.children[0].width).toBe('28.333333333333332%');
         expect(columnGroup.children[2].children[0]).toMatchObject({
           type: 'paragraph',
         });
@@ -233,7 +268,9 @@ describe('BaseColumnPlugin schema', () => {
           ],
         });
 
-        editor.update.column.insert({ at: [0, 0], width: '25%' });
+        editor
+          .plugin(BaseColumnItemPlugin)
+          .update.insert({ width: '25%' }, { at: [0, 0] });
 
         const columnGroup = getColumnGroup(editor);
 
@@ -252,17 +289,15 @@ describe('BaseColumnPlugin schema', () => {
         });
 
         editor
-          .plugin(BaseColumnItemPlugin)
-          .update.insertGroup({ at: [1], columns: 3 });
+          .plugin(BaseColumnPlugin)
+          .update.insert({ columns: 3 }, { at: [1] });
 
         const entry = editor.read.nodes.get<ColumnGroupNode>([1]);
 
         assert(entry);
         expect(BaseColumnPlugin.name).toBe('columnGroup');
         expect(BaseColumnPlugin.name).toBe(PLUGINS.columnGroup);
-        expect(entry[0].type).toBe(
-          editor.plugin(BaseColumnPlugin).schema.element.type
-        );
+        expect(entry[0].type).toBe(editor.plugin(BaseColumnPlugin).schema.type);
         expect(entry[0].children).toHaveLength(3);
         expect(entry[0].children[0].width).toContain('33.3333');
         expect(entry[0].children[1].width).toContain('33.3333');
@@ -277,11 +312,10 @@ describe('BaseColumnPlugin schema', () => {
           value: [{ children: [{ text: 'Before' }], type: 'paragraph' }],
         });
 
-        editor.update.column.insertGroup({
-          at: [1],
-          columns: 2,
-          select: true,
-        });
+        editor.update.columnGroup.insert(
+          { columns: 2 },
+          { at: [1], select: true }
+        );
 
         expect(editor.read.nodes.block()?.[1]).toEqual([1, 0, 0]);
       });
@@ -458,7 +492,10 @@ describe('BaseColumnPlugin schema', () => {
       it('updates widths without changing content', () => {
         const editor = createEditor();
 
-        editor.update.column.set({ at: [0], widths: ['30%', '70%'] });
+        editor.update.columnGroup.setColumns({
+          at: [0],
+          widths: ['30%', '70%'],
+        });
 
         expect(
           getColumnGroup(editor).children.map((column) => column.width)
@@ -470,7 +507,7 @@ describe('BaseColumnPlugin schema', () => {
       it('adds empty columns while preserving content', () => {
         const editor = createEditor();
 
-        editor.update.column.set({
+        editor.update.columnGroup.setColumns({
           at: [0],
           widths: ['33%', '33%', '34%'],
         });
@@ -514,7 +551,10 @@ describe('BaseColumnPlugin schema', () => {
           ],
         });
 
-        editor.update.column.set({ at: [0], widths: ['50%', '50%'] });
+        editor.update.columnGroup.setColumns({
+          at: [0],
+          widths: ['50%', '50%'],
+        });
 
         expect(getColumnGroup(editor).children).toHaveLength(2);
         expect(editor.read.text.string([0, 0])).toBe('A');
@@ -524,7 +564,7 @@ describe('BaseColumnPlugin schema', () => {
       it('preserves content across repeated count changes', () => {
         const editor = createEditor();
 
-        editor.update.column.set({
+        editor.update.columnGroup.setColumns({
           at: [0],
           widths: ['33%', '33%', '34%'],
         });
@@ -532,8 +572,11 @@ describe('BaseColumnPlugin schema', () => {
           { children: [{ text: 'Column 3 text' }], type: 'paragraph' },
           { at: [0, 2, 1] }
         );
-        editor.update.column.set({ at: [0], widths: ['50%', '50%'] });
-        editor.update.column.set({
+        editor.update.columnGroup.setColumns({
+          at: [0],
+          widths: ['50%', '50%'],
+        });
+        editor.update.columnGroup.setColumns({
           at: [0],
           widths: ['33%', '33%', '34%'],
         });
@@ -548,9 +591,12 @@ describe('BaseColumnPlugin schema', () => {
       it('does nothing without a valid target or widths', () => {
         const editor = createEditor();
 
-        editor.update.column.set({ widths: ['100%'] });
-        editor.update.column.set({ at: [999], widths: ['100%'] });
-        editor.update.column.set({ at: [0], widths: [] });
+        editor.update.columnGroup.setColumns({ widths: ['100%'] });
+        editor.update.columnGroup.setColumns({
+          at: [999],
+          widths: ['100%'],
+        });
+        editor.update.columnGroup.setColumns({ at: [0], widths: [] });
 
         expect(editor.read.children()).toEqual(twoColumns);
       });
@@ -558,7 +604,10 @@ describe('BaseColumnPlugin schema', () => {
       it('normalizes widths through the group correction', () => {
         const editor = createEditor();
 
-        editor.update.column.set({ at: [0], widths: ['40%', '40%'] });
+        editor.update.columnGroup.setColumns({
+          at: [0],
+          widths: ['40%', '40%'],
+        });
 
         expect(
           getColumnGroup(editor).children.map((column) => column.width)
@@ -579,7 +628,7 @@ describe('BaseColumnPlugin schema', () => {
           ],
         });
 
-        editor.update.column.toggle({ columns: 2 });
+        editor.update.columnGroup.toggle({ columns: 2 });
 
         expect(getColumnGroup(editor).children).toHaveLength(2);
         expect(editor.read.text.string([0, 0])).toBe('Some paragraph text');
@@ -595,7 +644,7 @@ describe('BaseColumnPlugin schema', () => {
           },
         });
 
-        editor.update.column.toggle({ columns: 3 });
+        editor.update.columnGroup.toggle({ columns: 3 });
 
         expect(getColumnGroup(editor).children).toHaveLength(3);
         expect(
@@ -637,7 +686,7 @@ describe('BaseColumnPlugin schema', () => {
           ],
         });
 
-        editor.update.column.toggle({ columns: 2 });
+        editor.update.columnGroup.toggle({ columns: 2 });
 
         expect(editor.read.text.string([0, 0])).toBe('A');
         expect(editor.read.text.string([0, 1])).toBe('BC');
@@ -649,7 +698,7 @@ describe('BaseColumnPlugin schema', () => {
         ];
         const editor = createEditor({ value });
 
-        editor.update.column.toggle({ columns: 2 });
+        editor.update.columnGroup.toggle({ columns: 2 });
 
         expect(editor.read.children()).toEqual(value);
       });

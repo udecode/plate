@@ -33,7 +33,7 @@ import { createBaseEditor } from 'platejs';
 export const editor = createBaseEditor({
   initialValue: [
     {
-      type: 'p',
+      type: 'paragraph',
       children: [{ text: 'Headless editor.' }],
     },
   ],
@@ -51,7 +51,7 @@ export function BasicEditor() {
   const editor = usePlateEditor({
     initialValue: [
       {
-        type: 'p',
+        type: 'paragraph',
         children: [{ text: 'React editor.' }],
       },
     ],
@@ -75,7 +75,7 @@ import { createStaticEditor } from 'platejs/static';
 export const staticEditor = createStaticEditor({
   initialValue: [
     {
-      type: 'p',
+      type: 'paragraph',
       children: [{ text: 'Static editor.' }],
     },
   ],

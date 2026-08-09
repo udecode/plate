@@ -1,7 +1,7 @@
 import type { Root } from 'mdast';
 
 import type { Descendant } from '@platejs/plite';
-import { KEYS } from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 
 import type { MdRoot } from '../mdast';
 import type { DeserializeMdContext } from '../types';
@@ -17,6 +17,8 @@ const buildSlateRoot = (
   root: MdRoot,
   options: DeserializeMdContext
 ): Descendant[] => {
+  const paragraphType = options.registry.type(PLUGINS.paragraph) ?? 'paragraph';
+
   if (!options.splitLineBreaks) {
     root.children = root.children.map((child) => {
       if (child.type === 'html' && child.value === '<br />') {
@@ -39,7 +41,7 @@ const buildSlateRoot = (
       results.push(
         ...Array.from({ length: count }).map(() => ({
           children: [{ text: '' }],
-          type: options.registry.getType(KEYS.p),
+          type: paragraphType,
         }))
       );
     }

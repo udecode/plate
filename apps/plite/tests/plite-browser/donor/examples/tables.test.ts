@@ -413,7 +413,7 @@ test.describe('table example', () => {
     expect(proof.domSelection?.anchorOffset).toBe(0);
     expect(proof.focusOwner.kind).toBe('editor');
     expect(proof.selectionShells?.anchor.node?.path).toBe('1,0,1,0');
-    expect(proof.selectionShells?.anchor.node?.runtimeId).toBeTruthy();
+    expect(proof.selectionShells?.anchor.node?.nodeKey).toBeTruthy();
     expect(proof.selectionShells?.anchor.element?.path).toBe('1,0,1');
     expect(proof.selectionShells?.anchor.element?.isVoid).toBe(false);
     expect(proof.renderCounts.byKind.editable ?? 0).toBeLessThanOrEqual(2);
@@ -447,7 +447,7 @@ test.describe('table example', () => {
     expect(proof.domSelection?.anchorOffset).toBe(0);
     expect(proof.focusOwner.kind).toBe('editor');
     expect(proof.selectionShells?.anchor.node?.path).toBe('1,0,0,0');
-    expect(proof.selectionShells?.anchor.node?.runtimeId).toBeTruthy();
+    expect(proof.selectionShells?.anchor.node?.nodeKey).toBeTruthy();
     expect(proof.selectionShells?.anchor.element?.path).toBe('1,0,0');
     expect(proof.selectionShells?.anchor.element?.isVoid).toBe(false);
     expect(proof.renderCounts.byKind.editable ?? 0).toBeLessThanOrEqual(2);

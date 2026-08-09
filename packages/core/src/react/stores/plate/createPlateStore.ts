@@ -195,14 +195,11 @@ export type UseEditorOptions = {
   id?: string;
 };
 
-const useInternalEditor = <E = PlateEditor>(
-  id?: string
-): PlateEditorWithStore<E> => {
+const useInternalEditor = (id?: string): PlateEditorWithStore => {
   const store = usePlateStore(id);
-  const editor = ((useAtomStoreValue(store, 'editor') as unknown as
-    | E
-    | undefined) ??
-    (getFallbackEditor() as unknown as E)) as PlateEditorWithStore<E>;
+  const editor = ((useAtomStoreValue(store, 'editor') as
+    | PlateEditor
+    | undefined) ?? getFallbackEditor()) as PlateEditorWithStore;
 
   editor.store = store;
 
@@ -210,20 +207,8 @@ const useInternalEditor = <E = PlateEditor>(
 };
 
 /** Get the mounted editor, throwing while no matching editor is active. */
-// biome-ignore lint/style/useUnifiedTypeSignatures: The broad overloads preserve no-argument and ReturnType boundaries while the middle overload accepts explicit editor refinements.
-export function useEditor(
-  options?: UseEditorOptions
-): PlateEditorWithStore<PlateEditor>;
-export function useEditor<E>(
-  options?: UseEditorOptions
-): PlateEditorWithStore<E>;
-export function useEditor(
-  options?: UseEditorOptions
-): PlateEditorWithStore<PlateEditor>;
-export function useEditor<E = PlateEditor>({
-  id,
-}: UseEditorOptions = {}): PlateEditorWithStore<E> {
-  const editor = useInternalEditor<E>(id);
+export function useEditor({ id }: UseEditorOptions = {}): PlateEditorWithStore {
+  const editor = useInternalEditor(id);
 
   if (fallbackEditors.has(editor)) {
     throw new Error('useEditor() requires an active Plate editor.');
@@ -233,10 +218,10 @@ export function useEditor<E = PlateEditor>({
 }
 
 /** Get the active editor, or `null` while its controller has no editor. */
-export const useActiveEditor = <E = PlateEditor>({
+export const useActiveEditor = ({
   id,
-}: UseEditorOptions = {}): PlateEditorWithStore<E> | null => {
-  const editor = useInternalEditor<E>(id);
+}: UseEditorOptions = {}): PlateEditorWithStore | null => {
+  const editor = useInternalEditor(id);
 
   return fallbackEditors.has(editor) ? null : editor;
 };
@@ -251,16 +236,19 @@ export const useEditorSelection = (id?: string) => {
   });
 };
 
-export type UseEditorStateOptions<
+export type UseEditorStateOptions<T> = EditorRuntimeStateSelectorOptions<
   T,
-  E extends PlateStoreEditor = PlateEditor,
-> = EditorRuntimeStateSelectorOptions<T, E> & UseEditorOptions;
+  PlateEditor
+> &
+  UseEditorOptions;
 
 /** Subscribe to a value derived from the immutable editor state. */
-export const useEditorState = <T, E extends PlateStoreEditor = PlateEditor>(
-  selector: (state: EditorStateView<ValueOf<E>, ExtensionsOf<E>>) => T,
-  { id, ...options }: UseEditorStateOptions<T, E> = {}
-): T => useEditorRuntimeState(useInternalEditor<E>(id), selector, options);
+export const useEditorState = <T>(
+  selector: (
+    state: EditorStateView<ValueOf<PlateEditor>, ExtensionsOf<PlateEditor>>
+  ) => T,
+  { id, ...options }: UseEditorStateOptions<T> = {}
+): T => useEditorRuntimeState(useInternalEditor(id), selector, options);
 
 /** Get the editor value (deeply memoized). */
 export const useEditorValue = (id?: string) => {

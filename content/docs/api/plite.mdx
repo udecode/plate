@@ -23,7 +23,7 @@ mount this runtime instead of replacing it.
 import { createEditor } from "@platejs/plite";
 
 const editor = createEditor({
-  initialValue: [{ children: [{ text: "Hello" }], type: "p" }],
+  initialValue: [{ children: [{ text: "Hello" }], type: "paragraph" }],
   maxLength: 1000,
 });
 
@@ -44,13 +44,13 @@ changes.
 | Surface | Export | Use |
 | --------------- | -------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
 | Editor factory | `createEditor` | Creates a framework-free Plite editor. |
-| Runtime views | `createEditorRuntime`, `createEditorView` | Create one committed runtime and optional root-scoped editor views. |
+| Runtime views | `createEditor`, `createEditorView` | Create one committed editor and optional root-scoped views. |
 | Editor types | `Editor`, `BaseEditor`, `Value`, `InitialValue`, `Selection`, `ValueOf` | Type editor instances, document values, and selection state. |
 | Read API | `EditorStateView`, `EditorStateValueApi`, `EditorStateSelectionApi`, `EditorStateTextApi` | Read committed state inside `editor.read(...)`. |
 | Transaction API | `EditorUpdateTransaction`, `EditorTransactionValueApi`, `EditorTransactionNodesApi`, `EditorTransactionSelectionApi` | Mutate editor state inside `editor.update(...)`. |
 | Interfaces | `ElementApi`, `NodeApi`, `TextApi`, `PathApi`, `PointApi`, `RangeApi` | Typed helpers for Plite data structures. |
 | Anchors | `Anchor`, `editor.anchor`, `tx.anchor` | Keep paths, points, and ranges mapped through document changes. |
-| Extensions | `defineEditorExtension`, `defineEditorSchema`, `defineStateField`, `property`, `schema` | Register schema facts, owner-local reads and updates, corrections, commands, read middleware, and lifecycle hooks. |
+| Extensions | `defineExtension`, `defineEditorSchema`, `defineStateField`, `property`, `schema` | Register schema facts, owner-local reads and updates, corrections, commands, read middleware, and lifecycle hooks. |
 | Dependency references | `EditorExtensionDependencyReference` | Describe one shallow extension identity with `name` and optional `enabled`; capability/provider compiler types stay under `@platejs/plite/internal`. |
 | Value codecs | `defineValueCodec`, `valueCodecs`, `encodeEditorEffect`, `decodeEditorEffect` | Version persisted fields and keyed shared effects. |
 
@@ -111,7 +111,7 @@ context. It receives one `{ editor, root, getContributions }` object. Use
 
 ```ts
 import {
-  defineEditorExtension,
+  defineExtension,
   defineEditorSchema,
   defineStateField,
   property,

@@ -80,7 +80,8 @@ const editor = createPlateEditor({
 
 ```tsx
 import { TextAlignPlugin } from "@platejs/basic-styles/react";
-import { createPlateEditor, ParagraphPlugin } from "platejs/react";
+import { PLUGINS } from "platejs";
+import { createPlateEditor } from "platejs/react";
 
 const editor = createPlateEditor({
   plugins: [
@@ -88,7 +89,7 @@ const editor = createPlateEditor({
     TextAlignPlugin.configure({
       targetPlugins: [
         PLUGINS.h1, PLUGINS.h2, PLUGINS.h3, PLUGINS.h4, PLUGINS.h5, PLUGINS.h6,
-        ParagraphPlugin,
+        PLUGINS.paragraph,
       ],
       inject: {
         nodeProps: {
@@ -136,12 +137,12 @@ const editor = createPlateEditor({
     <APIItem name="inject.nodeProps.styleKey" type="string" optional>
       样式使用的 CSS 属性名 - **默认值:** `'textAlign'`
     </APIItem>
-    <APIItem name="inject.nodeProps.validNodeValues" type="readonly (PluginReference | string)[]" optional>
+    <APIItem name="inject.nodeProps.validNodeValues" type="Alignment[]" optional>
       有效对齐值数组 - **默认值:** `['start', 'left', 'center', 'right', 'end',
       'justify']`
     </APIItem>
     <APIItem name="targetPlugins" type="readonly (PluginReference | string)[]" optional>
-      可以保存对齐属性的元素插件 name；注入目标由此派生 - **默认值:**
+      可以保存对齐属性的元素插件 descriptor 或动态 name；注入目标由此派生 - **默认值:**
       `[BaseParagraphPlugin]`
     </APIItem>
   </APIOptions>

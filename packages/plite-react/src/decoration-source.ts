@@ -69,7 +69,7 @@ export type PliteDecorationSource<T = unknown> = {
     runtimeId: RuntimeId
   ) => readonly PliteProjectionSlice<T>[];
   getSnapshot: () => Readonly<
-    Record<RuntimeId, readonly PliteProjectionSlice<T>[]>
+    Record<string, readonly PliteProjectionSlice<T>[]>
   >;
   id: string;
   refresh: (
@@ -92,7 +92,7 @@ export type PliteOverlayProjectionStore<T = unknown> = {
     runtimeId: RuntimeId
   ) => readonly PliteProjectionSlice<T>[];
   getSnapshot: () => Readonly<
-    Record<RuntimeId, readonly PliteProjectionSlice<T>[]>
+    Record<string, readonly PliteProjectionSlice<T>[]>
   >;
   refresh?: (
     options?: PliteProjectionStoreRefreshOptions
@@ -109,7 +109,7 @@ export type PliteOverlayProjectionStore<T = unknown> = {
 };
 
 const EMPTY_SNAPSHOT = Object.freeze(Object.create(null)) as Readonly<
-  Record<RuntimeId, readonly PliteProjectionSlice<unknown>[]>
+  Record<string, readonly PliteProjectionSlice<unknown>[]>
 >;
 
 const EMPTY_RUNTIME_SNAPSHOT = Object.freeze(
@@ -118,15 +118,14 @@ const EMPTY_RUNTIME_SNAPSHOT = Object.freeze(
 
 const mergeSnapshots = <T>(
   sources: readonly PliteOverlayProjectionStore<T>[]
-): Readonly<Record<RuntimeId, readonly PliteProjectionSlice<T>[]>> => {
+): Readonly<Record<string, readonly PliteProjectionSlice<T>[]>> => {
   if (sources.length === 0) {
     return EMPTY_SNAPSHOT as Readonly<
-      Record<RuntimeId, readonly PliteProjectionSlice<T>[]>
+      Record<string, readonly PliteProjectionSlice<T>[]>
     >;
   }
 
-  const merged: Record<RuntimeId, PliteProjectionSlice<T>[]> =
-    Object.create(null);
+  const merged: Record<string, PliteProjectionSlice<T>[]> = Object.create(null);
 
   for (const source of sources) {
     const snapshot = source.getSnapshot();
@@ -136,7 +135,7 @@ const mergeSnapshots = <T>(
     }
   }
 
-  const frozen: Record<RuntimeId, readonly PliteProjectionSlice<T>[]> =
+  const frozen: Record<string, readonly PliteProjectionSlice<T>[]> =
     Object.create(null);
 
   for (const runtimeId of Object.keys(merged)) {

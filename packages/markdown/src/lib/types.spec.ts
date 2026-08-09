@@ -1,6 +1,19 @@
-import type { MdRules } from './types';
+import type { MdNodeParser, MdRules } from './types';
 
 describe('MdRules typing', () => {
+  it('keeps typed media rule keys', () => {
+    for (const rule of [
+      {} satisfies MdNodeParser<'audio'>,
+      {} satisfies MdNodeParser<'break'>,
+      {} satisfies MdNodeParser<'codeDrawing'>,
+      {} satisfies MdNodeParser<'file'>,
+      {} satisfies MdNodeParser<'mediaEmbed'>,
+      {} satisfies MdNodeParser<'video'>,
+    ]) {
+      expect(rule).toEqual({});
+    }
+  });
+
   it('infers known rules and accepts custom rule keys', () => {
     const rules = {
       customWidget: {

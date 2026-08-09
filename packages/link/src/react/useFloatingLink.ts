@@ -7,12 +7,15 @@ import {
   useVirtualFloating,
 } from '@platejs/floating';
 import {
+  type PlateEditor,
+  useEditor,
   useEditorPlugin,
   useEditorReadOnly,
   useEditorSelection,
   usePluginStore,
 } from '@platejs/core/react';
-import type { TLinkElement } from '@platejs/utils';
+import type { Selection } from '@platejs/plite';
+import type { LinkElement } from '../lib/BaseLinkPlugin';
 import { useHotkeys } from '@udecode/react-hotkeys';
 import { useComposedRef, useOnClickOutside } from '@udecode/react-utils';
 
@@ -26,8 +29,24 @@ export type FloatingLinkTriggerOptions = {
   focused?: boolean;
 };
 
+export type FloatingLinkEditState = {
+  editor: PlateEditor;
+  floating: ReturnType<typeof useVirtualFloatingLink>;
+  isEditing: boolean;
+  isOpen: boolean;
+  readOnly: boolean;
+  triggerFloatingLinkHotkeys: readonly string[] | string;
+  versionEditor: Selection | null;
+};
+
 export const useFloatingLinkActions = () => {
-  const { api, editor, store, type, update } = useEditorPlugin(LinkPlugin);
+  const editor = useEditor();
+  const {
+    api,
+    store,
+    update,
+    schema: { type },
+  } = useEditorPlugin(LinkPlugin);
 
   const submit = React.useCallback(() => {
     if (!editor.read.selection()) return;
@@ -60,7 +79,7 @@ export const useFloatingLinkActions = () => {
 
     if (!selection) return;
 
-    const entry = editor.read.nodes.above<TLinkElement>({
+    const entry = editor.read.nodes.above<LinkElement>({
       at: selection,
       match: { type },
     });
@@ -217,7 +236,7 @@ export const useVirtualFloatingLink = ({
 };
 
 export const useFloatingLinkEnter = () => {
-  const { editor } = useEditorPlugin(LinkPlugin);
+  const editor = useEditor();
   const { submit } = useFloatingLinkActions();
   const open = usePluginStore(LinkPlugin, 'isOpen', editor.id);
 
@@ -238,7 +257,8 @@ export const useFloatingLinkEnter = () => {
 };
 
 export const useFloatingLinkEscape = () => {
-  const { api, editor, store } = useEditorPlugin(LinkPlugin);
+  const editor = useEditor();
+  const { api, store } = useEditorPlugin(LinkPlugin);
   const open = usePluginStore(LinkPlugin, 'isOpen', editor.id);
 
   useHotkeys(
@@ -273,8 +293,11 @@ export const useFloatingLinkEscape = () => {
 
 export const useFloatingLinkEditState = ({
   floatingOptions,
-}: LinkFloatingToolbarState = {}) => {
-  const { editor, type } = useEditorPlugin(LinkPlugin);
+}: LinkFloatingToolbarState = {}): FloatingLinkEditState => {
+  const editor = useEditor();
+  const {
+    schema: { type },
+  } = useEditorPlugin(LinkPlugin);
   const triggerFloatingLinkHotkeys = usePluginStore(
     LinkPlugin,
     'triggerFloatingLinkHotkeys'
@@ -341,7 +364,12 @@ export const useFloatingLinkEdit = ({
   triggerFloatingLinkHotkeys,
   versionEditor,
 }: ReturnType<typeof useFloatingLinkEditState>): FloatingLinkEditProps => {
-  const { api, store, type } = useEditorPlugin(LinkPlugin);
+  const {
+    api,
+    store,
+    update,
+    schema: { type },
+  } = useEditorPlugin(LinkPlugin);
   const { triggerEdit } = useFloatingLinkActions();
 
   React.useEffect(() => {
@@ -406,7 +434,7 @@ export const useFloatingLinkEdit = ({
     ),
     unlinkButtonProps: {
       onClick: () => {
-        editor.update.link.unwrap();
+        update.unwrap();
       },
       onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
@@ -418,7 +446,7 @@ export const useFloatingLinkEdit = ({
 export const useFloatingLinkInsertState = ({
   floatingOptions,
 }: LinkFloatingToolbarState = {}) => {
-  const { editor } = useEditorPlugin(LinkPlugin);
+  const editor = useEditor();
   const triggerFloatingLinkHotkeys = usePluginStore(
     LinkPlugin,
     'triggerFloatingLinkHotkeys'
@@ -460,7 +488,8 @@ export const useFloatingLinkInsert = ({
   readOnly,
   triggerFloatingLinkHotkeys,
 }: ReturnType<typeof useFloatingLinkInsertState>): FloatingLinkInsertProps => {
-  const { api, editor, store } = useEditorPlugin(LinkPlugin);
+  const editor = useEditor();
+  const { api, store } = useEditorPlugin(LinkPlugin);
   const { triggerInsert } = useFloatingLinkActions();
 
   const onChange: React.ChangeEventHandler<HTMLInputElement> =

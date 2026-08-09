@@ -285,10 +285,10 @@ export const BaseDatePlugin = defineBasePlugin('date',
 
 <API name="MarkdownPluginState">
   <APIOptions type="MarkdownPluginState">
-    <APIItem name="allowedNodes" type="PlateType[] | null">
+    <APIItem name="allowedNodes" type="MarkdownNodeName[] | null">
       白名单方式，指定允许哪些节点类型（包括 Plate 元素类型及 Markdown AST 类型，如 `strong`）。不能与 `disallowedNodes` 一起使用。如果设置，仅处理列表内的类型。默认值：`null`（全部允许）。
     </APIItem>
-    <APIItem name="disallowedNodes" type="PlateType[] | null">
+    <APIItem name="disallowedNodes" type="MarkdownNodeName[] | null">
       黑名单方式，指定过滤掉哪些节点类型。不能和 `allowedNodes` 一起使用。默认值：`null`。
     </APIItem>
     <APIItem name="allowNode" type="AllowNodeConfig">
@@ -301,7 +301,7 @@ export const BaseDatePlugin = defineBasePlugin('date',
     <APIItem name="remarkStringifyOptions" type="RemarkStringifyOptions | null">
       传给 `remark-stringify` 的选项。默认值：`null`。
     </APIItem>
-    <APIItem name="plainMarks" type="PlateType[] | null">
+    <APIItem name="plainMarks" type="MarkdownNodeName[] | null">
       按纯文本序列化、不应用 Markdown 格式的 mark。默认值：`null`。
     </APIItem>
   </APIOptions>
@@ -336,10 +336,10 @@ slice，并在需要时回退到这些外部格式。
     </APIItem>
   </APIParameters>
   <APIOptions type="DeserializeMdOptions">
-    <APIItem name="allowedNodes" type="PlateType[] | null" optional>
+    <APIItem name="allowedNodes" type="MarkdownNodeName[] | null" optional>
       覆盖插件的 `allowedNodes` 配置。
     </APIItem>
-    <APIItem name="disallowedNodes" type="PlateType[] | null" optional>
+    <APIItem name="disallowedNodes" type="MarkdownNodeName[] | null" optional>
       覆盖插件的 `disallowedNodes` 配置。
     </APIItem>
     <APIItem name="allowNode" type="AllowNodeConfig" optional>
@@ -404,10 +404,10 @@ slice，并在需要时回退到这些外部格式。
       需要序列化为 Markdown 的 Plate 文档，默认为 `editor.read.value()`。
       只表示 `value.children`，不会序列化命名 roots。
     </APIItem>
-    <APIItem name="allowedNodes" type="PlateType[] | null" optional>
+    <APIItem name="allowedNodes" type="MarkdownNodeName[] | null" optional>
       覆盖插件的 `allowedNodes` 配置。
     </APIItem>
-    <APIItem name="disallowedNodes" type="PlateType[] | null" optional>
+    <APIItem name="disallowedNodes" type="MarkdownNodeName[] | null" optional>
       覆盖插件的 `disallowedNodes` 配置。
     </APIItem>
     <APIItem name="allowNode" type="AllowNodeConfig" optional>
@@ -422,7 +422,7 @@ slice，并在需要时回退到这些外部格式。
     <APIItem name="remarkStringifyOptions" type="RemarkStringifyOptions | null" optional>
       传给 `remark-stringify` 的选项。默认使用共享 Markdown 配置，Plate 会将强调符设为 `_`，并关闭引用式链接。
     </APIItem>
-    <APIItem name="plainMarks" type="PlateType[] | null" optional>
+    <APIItem name="plainMarks" type="MarkdownNodeName[] | null" optional>
       按纯文本序列化、不应用 Markdown 格式的 mark。
     </APIItem>
     <APIItem name="spread" type="boolean" optional>
@@ -727,20 +727,20 @@ const editor = createPlateEditor({
 
 ```tsx
 const markdown = `
-<column_group>
+<columnGroup>
   <column width="50%">
     左侧内容，宽度 50%
   </column>
   <column width="50%">
     右侧内容，宽度 50%
   </column>
-</column_group>
+</columnGroup>
 
-<column_group>
+<columnGroup>
   <column width="33%">第一列</column>
   <column width="33%">第二列</column>
   <column width="34%">第三列</column>
-</column_group>
+</columnGroup>
 `;
 
 // 假设 `editor` 为已配置好的 Plate 编辑器
@@ -943,8 +943,8 @@ editor.api.markdown.deserialize(markdown, {
 | MDX（mdast）                         | Plate 类型                | 备注                               |
 | :----------------------------------- | :------------------------ | :---------------------------------- |
 | `<del>...</del>`                     | `strikethrough` (mark)    | 另一种写法 `~~strikethrough~~`      |
-| `<sub>...</sub>`                     | `subscript` (mark)        | H<sub>2</sub>O                      |
-| `<sup>...</sup>`                     | `superscript` (mark)      | E=mc<sup>2</sup>                    |
+| `<sub>...</sub>`                     | `script: 'sub'` (mark)    | H<sub>2</sub>O                      |
+| `<sup>...</sup>`                     | `script: 'sup'` (mark)    | E=mc<sup>2</sup>                    |
 | `<u>...</u>`                         | `underline` (mark)        | <u>下划线文本</u>                    |
 | `<mark>...</mark>`                   | `highlight` (mark)        | <mark>高亮文本</mark>                |
 | `<span style="font-family: ...">`    | `fontFamily` (mark)       |                                     |
@@ -959,7 +959,7 @@ editor.api.markdown.deserialize(markdown, {
 | `<video src="..." />`                | `video`                   | 自定义视频元素                      |
 | `<toc />`                            | `toc`                     | 目录                                |
 | `<callout>...</callout>`             | `callout`                 | 提示块                              |
-| `<column_group>...</column_group>`   | `columnGroup`             | 多列布局容器                        |
+| `<columnGroup>...</columnGroup>`     | `columnGroup`             | 多列布局容器                        |
 | `<column width="50%">...</column>`   | `column`                  | 单列，可指定宽度属性                 |
 
 ## 附录C：渲染 Plate 节点的组件配置

@@ -14,6 +14,7 @@ import {
   type Value,
 } from '@platejs/plite';
 import {
+  getCompiledEditorSchemaFromApi,
   getCompiledSchemaPropertyId,
   reportEditorLifecycleError,
   toEditorCoreStateView,
@@ -2491,7 +2492,10 @@ const propertyValue = (
 const hasContentValue = (
   node: PliteElement | Text,
   key: string,
-  property: NonNullable<ReturnType<EditorCoreStateView['schema']['property']>>
+  property: Pick<
+    NonNullable<ReturnType<EditorCoreStateView['schema']['property']>>,
+    'role' | 'value'
+  >
 ) => {
   const descriptor = property.value;
   const value =
@@ -2540,12 +2544,19 @@ const assertSupportedProperties = (
   const propertyIds = ElementApi.isElement(node)
     ? (state.schema.element(node.type)?.propertyIds ?? [])
     : state.schema.getVocabulary().propertyIds;
+  const compiledSchema = getCompiledEditorSchemaFromApi(state.schema);
 
   for (const id of propertyIds) {
-    const property = state.schema.property({
-      id,
-      kind: 'schema-property',
-    });
+    const compiledProperty = compiledSchema?.properties.byId.get(id);
+    const property = compiledProperty
+      ? {
+          id: compiledProperty.id,
+          key: compiledProperty.key,
+          placement: compiledProperty.placement,
+          role: compiledProperty.role,
+          value: compiledProperty.descriptor,
+        }
+      : null;
 
     if (
       !property ||

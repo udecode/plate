@@ -101,7 +101,7 @@ Prefer:
 
 - package/controller selectors that return stable booleans or small slices
 - `useEditorSelector` with the smallest honest output
-- resolving a node path lazily from its stable element/runtime identity inside
+- resolving a node path lazily from its stable element/node key inside
   the interaction that needs it
 - local derived booleans instead of raw state objects
 

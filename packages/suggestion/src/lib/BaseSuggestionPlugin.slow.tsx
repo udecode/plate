@@ -15,7 +15,10 @@ import {
 import { PLUGINS } from '@platejs/utils';
 import { jsxt } from '@platejs/test-utils';
 
-import { BaseSuggestionPlugin } from './BaseSuggestionPlugin';
+import {
+  BaseSuggestionPlugin,
+  SUGGESTION_TRANSIENT_KEY,
+} from './BaseSuggestionPlugin';
 
 jsxt;
 
@@ -86,6 +89,48 @@ const inlineData = (editor: BaseEditor, node: Descendant) =>
   editor.plugin(BaseSuggestionPlugin).api.inlineData(node);
 
 describe('BaseSuggestionPlugin behavior', () => {
+  it('clears transient suggestion state from elements and text', () => {
+    const editor = createBaseEditor({
+      plugins: [suggestionPlugin, MentionPlugin],
+      initialValue: [
+        {
+          children: [
+            { [SUGGESTION_TRANSIENT_KEY]: true, text: 'before' },
+            {
+              [SUGGESTION_TRANSIENT_KEY]: true,
+              children: [{ text: '' }],
+              type: 'mention',
+              value: 'Ada',
+            },
+            { text: 'after' },
+          ],
+          type: 'paragraph',
+        },
+      ],
+    });
+
+    editor.plugin(BaseSuggestionPlugin).update.clearTransient({
+      at: [],
+      mode: 'all',
+      match: (node) => Boolean(Reflect.get(node, SUGGESTION_TRANSIENT_KEY)),
+    });
+
+    expect(editor.read.children()).toEqual([
+      {
+        children: [
+          { text: 'before' },
+          {
+            children: [{ text: '' }],
+            type: 'mention',
+            value: 'Ada',
+          },
+          { text: 'after' },
+        ],
+        type: 'paragraph',
+      },
+    ]);
+  });
+
   it.each([
     ['collapsed', 1],
     ['expanded', 2],
@@ -198,8 +243,7 @@ describe('BaseSuggestionPlugin behavior', () => {
 
           expect(
             editor.read.children()[0].children[1][
-              editor.plugin(BaseSuggestionPlugin).schema.properties.suggestion
-                .key
+              editor.plugin(BaseSuggestionPlugin).schema.key
             ]
           ).toBeTruthy();
 
@@ -1194,7 +1238,7 @@ describe('insertNodes when editor.plugin(SuggestionPlugin).store.get().isSuggest
     });
   });
 
-  it('bypasses suggestion wrapping for slash_input nodes', () => {
+  it('bypasses suggestion wrapping for slashInput nodes', () => {
     const input = (
       <editor>
         <hp>
@@ -1260,7 +1304,7 @@ describe('removeNodes when editor.plugin(SuggestionPlugin).store.get().isSuggest
     expect(firstSuggestion.createdAt).toBe(secondSuggestion.createdAt);
   });
 
-  it('bypasses suggestions when removing slash_input nodes', () => {
+  it('bypasses suggestions when removing slashInput nodes', () => {
     const editor = createBaseEditor({
       plugins: [suggestionPlugin, SlashInputPlugin],
       initialValue: [

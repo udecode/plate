@@ -282,18 +282,18 @@ const plugins = [
 
 Before pressing `Backspace` in empty code block:
 ```tsx
-<code_block>
-  <code_line>
+<codeBlock>
+  <codeLine>
     |
-  </code_line>
-</code_block>
+  </codeLine>
+</codeBlock>
 ```
 
 After (reset):
 ```tsx
-<p>
+<paragraph>
   |
-</p>
+</paragraph>
 ```
 
 ## `rules.delete`
@@ -690,9 +690,9 @@ the command.
 
 ```tsx
 import { editorCommands } from 'platejs';
-import { createBasePlugin } from 'platejs';
+import { defineBasePlugin } from 'platejs';
 
-const SingleLinePlugin = createBasePlugin({
+const SingleLinePlugin = defineBasePlugin('singleLine', {
   commands: ({ handle }) => [
     handle(editorCommands.insertBreak, ({ state }) =>
       state.transaction(() => {})
@@ -700,9 +700,7 @@ const SingleLinePlugin = createBasePlugin({
     handle(editorCommands.insertSoftBreak, ({ state }) =>
       state.transaction(() => {})
     ),
-  ],
-  name: 'singleLine',
-});
+  ],});
 ```
 
 This handler consumes hard and soft breaks with an empty transaction. The same command behavior applies to keyboard, programmatic, and test callers.

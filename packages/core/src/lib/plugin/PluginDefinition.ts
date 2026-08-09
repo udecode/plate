@@ -11,15 +11,12 @@ import type {
   PropertyValueDescriptor,
   SchemaContent,
   SchemaContentOptions,
-  SchemaContentRoot,
   SchemaContentRootContribution,
-  SchemaContentRootOwnership,
-  SchemaElementTarget,
-  SchemaElementProperty,
-  SchemaElementPropertyOptions,
   SchemaElement,
   SchemaProperty,
-  SchemaTextProperty,
+  SchemaPropertyDefinition,
+  SchemaPropertyHandle,
+  SchemaPropertyKey,
   SchemaTextPropertyOptions,
   Text,
 } from '@platejs/plite';
@@ -31,8 +28,9 @@ import type {
 import type { AnyObject, Nullable } from '@udecode/utils';
 import type { Draft } from 'mutative';
 import type {
+  InferPluginAdditionalSchemaPropertyHandles,
   InferPluginElementType,
-  InferPluginPropertyKey,
+  InferPluginMarkKey,
   InferPluginSchema,
   InferPluginSchemaContribution,
 } from './pluginSchemaModel.internal';
@@ -70,7 +68,6 @@ export type BasePluginDefinition = Readonly<{
   initialState?: object;
   inject?: true;
   inputRules?: true;
-  key?: string;
   name: string;
   on?: true;
   override?: true;
@@ -85,7 +82,6 @@ export type BasePluginDefinition = Readonly<{
   stateFields?: true;
   targetPlugins?: readonly (PluginReference | string)[];
   transformInitialValue?: true;
-  type?: string;
   update?: object;
   useHooks?: true;
   validate?: true;
@@ -134,21 +130,65 @@ export type DefinitionOf<P> = P extends unknown
 
 type IsAny<T> = 0 extends 1 & T ? true : false;
 
-/** Storage identity exposed only by plugins that own that schema concept. */
-export type PluginSchemaIdentity<
+type HasSchemaProperties<C extends AnyBasePluginDefinition> = [
+  keyof InferPluginAdditionalSchemaPropertyHandles<C>,
+] extends [never]
+  ? false
+  : true;
+
+/** Primary persisted identity exposed by one exact consumer portal. */
+export type PluginConsumerSchemaView<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
-> = [C] extends [never]
+> = [InferPluginElementType<C>] extends [never]
+  ? [InferPluginMarkKey<C>] extends [never]
+    ? never
+    : Readonly<{ key: InferPluginMarkKey<C> }>
+  : Readonly<{ type: InferPluginElementType<C> }>;
+
+type DynamicPluginAuthorSchemaView = Readonly<{
+  key?: string;
+  properties?: Readonly<
+    Record<string, SchemaPropertyHandle<SchemaPropertyKey>>
+  >;
+  type?: string;
+}>;
+
+type ExactPluginAuthorSchemaView<C extends AnyBasePluginDefinition> = ([
+  InferPluginElementType<C>,
+] extends [never]
+  ? [InferPluginMarkKey<C>] extends [never]
+    ? Readonly<Record<never, never>>
+    : Readonly<{ key: InferPluginMarkKey<C> }>
+  : Readonly<{ type: InferPluginElementType<C> }>) &
+  (HasSchemaProperties<C> extends true
+    ? Readonly<{
+        properties: InferPluginAdditionalSchemaPropertyHandles<C>;
+      }>
+    : Readonly<Record<never, never>>);
+
+/** Resolved schema data available while authoring one plugin. */
+export type PluginAuthorSchemaView<
+  C extends AnyBasePluginDefinition = BasePluginDefinition,
+> =
+  IsAny<C> extends true
+    ? DynamicPluginAuthorSchemaView
+    : C extends Readonly<{ schema: PluginSchemaDeclaration }>
+      ? ExactPluginAuthorSchemaView<C>
+      : string extends C['name']
+        ? DynamicPluginAuthorSchemaView
+        : ExactPluginAuthorSchemaView<C>;
+
+type PluginConsumerSchemaField<C extends AnyBasePluginDefinition> = [
+  PluginConsumerSchemaView<C>,
+] extends [never]
   ? Readonly<Record<never, never>>
-  : IsAny<C> extends true
-    ? Readonly<{ key: string; type: string }>
-    : string extends C['name']
-      ? Readonly<{ key: string; type: string }>
-      : ([InferPluginElementType<C>] extends [never]
-          ? Readonly<Record<never, never>>
-          : Readonly<{ type: InferPluginElementType<C> }>) &
-          ([InferPluginPropertyKey<C>] extends [never]
-            ? Readonly<Record<never, never>>
-            : Readonly<{ key: InferPluginPropertyKey<C> }>);
+  : Readonly<{ schema: PluginConsumerSchemaView<C> }>;
+
+type PluginAuthorSchemaField<C extends AnyBasePluginDefinition> = [
+  keyof PluginAuthorSchemaView<C>,
+] extends [never]
+  ? Readonly<Record<never, never>>
+  : Readonly<{ schema: PluginAuthorSchemaView<C> }>;
 
 export type BaseInjectProps = {
   /**
@@ -369,85 +409,21 @@ type PluginDependencyInstalledDefinitionOf<P> = [
   ? ExactPluginDefinitionOf<P> | PliteDependencyInstalledDefinitionOf<P>
   : SourcePluginInstalledDefinitionOf<P>;
 
-type PluginDocumentType<TPlugin extends PluginReference | string> =
-  TPlugin extends Readonly<{ type: infer TType extends string }>
-    ? TType
-    : TPlugin extends Readonly<{ name: infer TName extends string }>
-      ? TName
-      : string;
-
-export type PluginSchemaOwn<
-  TType extends string = string,
-  TKey extends string = string,
-> = Readonly<{
-  /** Persisted element identity owned by this plugin. */
-  type: TType;
-  /** Persisted property/root-slot identity owned by this plugin. */
-  key: TKey;
-  /** Project this plugin's configured key as an element-owned root slot. */
-  contentRoot: <
-    const TContent extends SchemaContent,
-    const TOptions extends Readonly<{
-      ownership: SchemaContentRootOwnership;
-      target: SchemaElementTarget;
-    }>,
-  >(
-    content: TContent,
-    options: TOptions
-  ) => SchemaContentRootContribution<
-    TKey,
-    SchemaContentRoot<TContent, TOptions['ownership']>,
-    TOptions['target']
-  >;
-  elementProperty: <
-    TDescriptor extends PropertyValueDescriptor,
-    const TOptions extends SchemaElementPropertyOptions,
-  >(
-    value: TDescriptor,
-    options: TOptions
-  ) => SchemaElementProperty<TKey, TDescriptor, TOptions['target']>;
-  textProperty: <
-    TDescriptor extends PropertyValueDescriptor,
-    const TOptions extends
-      SchemaTextPropertyOptions = SchemaTextPropertyOptions,
-  >(
-    value: TDescriptor,
-    options?: TOptions
-  ) => SchemaTextProperty<TKey, TDescriptor, TOptions['target']>;
-}>;
+type PluginBlockContentOptions = Omit<SchemaContentOptions, 'default'> &
+  Readonly<{
+    default?: PluginReference | SchemaContentOptions['default'];
+  }>;
 
 export type PluginSchemaReferences = Readonly<{
   /** Plate normal-flow block content, excluding nested structural elements. */
-  blockContent: (options?: SchemaContentOptions) => SchemaContent;
-  /** Resolve an installed element descriptor into a schema content rule. */
-  element: <const TPlugin extends PluginReference | string>(
-    plugin: TPlugin
-  ) => Readonly<{
-    kind: 'type';
-    type: PluginDocumentType<TPlugin>;
-  }>;
-  elementType: <const TPlugin extends PluginReference | string>(
-    plugin: TPlugin
-  ) => PluginDocumentType<TPlugin>;
-  elementTypes: <const TPlugins extends readonly (PluginReference | string)[]>(
-    plugins: TPlugins
-  ) => {
-    readonly [TIndex in keyof TPlugins]: PluginDocumentType<TPlugins[TIndex]>;
-  };
+  blockContent: (options?: PluginBlockContentOptions) => SchemaContent;
 }>;
 
 export type PluginSchemaContext<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
-  TType extends string = [InferPluginElementType<C>] extends [never]
-    ? C['name']
-    : InferPluginElementType<C>,
-  TKey extends string = [InferPluginPropertyKey<C>] extends [never]
-    ? C['name']
-    : InferPluginPropertyKey<C>,
 > = Readonly<{
   initialState: Readonly<InferPluginStoreState<C>>;
   name: C['name'];
-  own: PluginSchemaOwn<TType, TKey>;
   plugins: PluginSchemaReferences;
   targetElementTypes: readonly string[];
 }>;
@@ -456,6 +432,7 @@ export type PluginSchemaMark =
   | PropertyValueDescriptor
   | Readonly<
       SchemaTextPropertyOptions & {
+        key?: string;
         property: PropertyValueDescriptor;
       }
     >;
@@ -464,34 +441,40 @@ export type PlateSchemaElement = SchemaElement &
   Readonly<{
     /** Whether this element is legal in Plate normal block content. */
     blockContent?: boolean;
+    /** Default persisted discriminator before closed-application overrides. */
+    type?: string;
   }>;
+
+export type PluginSchemaPropertyMap = Readonly<
+  Record<string, SchemaPropertyDefinition | SchemaProperty>
+>;
 
 type PluginSchemaElement = Readonly<{
   contentRoots?: readonly SchemaContentRootContribution[];
   element: PlateSchemaElement;
   mark?: never;
-  properties?: readonly SchemaProperty[];
+  properties?: PluginSchemaPropertyMap;
 }>;
 
 type PluginSchemaText = Readonly<{
   contentRoots?: readonly SchemaContentRootContribution[];
   element?: never;
   mark: PluginSchemaMark;
-  properties?: readonly SchemaProperty[];
+  properties?: PluginSchemaPropertyMap;
 }>;
 
 type PluginSchemaProperties = Readonly<{
   contentRoots?: readonly SchemaContentRootContribution[];
   element?: never;
   mark?: never;
-  properties: readonly SchemaProperty[];
+  properties: PluginSchemaPropertyMap;
 }>;
 
 type PluginSchemaContentRoots = Readonly<{
   contentRoots: readonly SchemaContentRootContribution[];
   element?: never;
   mark?: never;
-  properties?: readonly SchemaProperty[];
+  properties?: PluginSchemaPropertyMap;
 }>;
 
 export type PluginSchemaDeclaration =
@@ -503,17 +486,11 @@ export type PluginSchemaDeclaration =
 /** A frozen schema contribution or a pure configured contribution factory. */
 export type PluginSchema<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
-  TType extends string = [InferPluginElementType<C>] extends [never]
-    ? C['name']
-    : InferPluginElementType<C>,
-  TKey extends string = [InferPluginPropertyKey<C>] extends [never]
-    ? C['name']
-    : InferPluginPropertyKey<C>,
 > =
-  | ((context: PluginSchemaContext<C, TType, TKey>) => PluginSchemaDeclaration)
+  | ((context: PluginSchemaContext<C>) => PluginSchemaDeclaration)
   | PluginSchemaDeclaration;
 
-export type PluginBaseContext<
+type PluginRuntimeContext<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
 > = Readonly<{
   /** API owned by the current plugin, without the plugin-name namespace wrapper. */
@@ -528,8 +505,17 @@ export type PluginBaseContext<
   read: InferOwnRead<C>;
   /** Mutable editor-local state and pure named selectors owned by this plugin. */
   store: PluginStore<C>;
-}> &
-  PluginSchemaIdentity<C>;
+}>;
+
+/** Consumer capabilities projected by one exact plugin portal. */
+export type PluginPortalContext<
+  C extends AnyBasePluginDefinition = BasePluginDefinition,
+> = PluginRuntimeContext<C> & PluginConsumerSchemaField<C>;
+
+/** Capabilities and compiled schema handles available in author callbacks. */
+export type PluginBaseContext<
+  C extends AnyBasePluginDefinition = BasePluginDefinition,
+> = PluginRuntimeContext<C> & PluginAuthorSchemaField<C>;
 
 export type BaseTransformOptions = GetInjectNodePropsOptions & {
   nodeValue?: unknown;

@@ -9,7 +9,14 @@ import {
   string as editorString,
 } from '@platejs/plite/internal';
 
-import { createEditor, type Descendant, type Element } from '@platejs/plite';
+import {
+  createEditor,
+  createEditorView,
+  type Descendant,
+  type Element,
+  NodeApi,
+  type NodeKey,
+} from '@platejs/plite';
 import { defineTestSchema } from './support/schema';
 import { replaceEditorValue } from './support/snapshot';
 
@@ -498,15 +505,16 @@ describe('state/tx public API contract', () => {
 
   it('exposes complete read-only state groups for document, runtime, and commit metadata', () => {
     const editor = createSeededEditor();
-    const firstTextRuntimeId = editor.read((state) =>
-      state.runtime.idAt([0, 0])
-    );
+    const firstText = editor.read.nodes.get([0, 0])![0];
+    assert(NodeApi.isDescendant(firstText));
+    const firstTextNodeKey = editor.read((state) => state.key(firstText));
 
-    assert.equal(typeof firstTextRuntimeId, 'string');
+    assert.equal(typeof firstTextNodeKey, 'string');
+    assert.equal(editor.key([0, 0]), firstTextNodeKey);
 
     const state = editor.read((state) => ({
       lastCommit: state.lastCommit(),
-      path: state.runtime.pathOf(firstTextRuntimeId!),
+      path: state.nodes.path(firstTextNodeKey),
       snapshot: state.runtime.snapshot(),
       valueHasSnapshot: 'snapshot' in state.value,
     }));
@@ -524,16 +532,73 @@ describe('state/tx public API contract', () => {
     assert.equal(state.lastCommit?.changed.has('replace'), true);
     assert.equal(state.lastCommit?.changes.empty, false);
     assert.deepEqual(state.path, [0, 0]);
+    assert.throws(
+      () => editor.key(paragraph('detached')),
+      /requires a live node/i
+    );
+  });
+
+  it('targets a moved node by node key', () => {
+    const editor = createSeededEditor();
+    const firstBlock = editor.read.nodes.get([0])![0];
+    assert(NodeApi.isDescendant(firstBlock));
+    const nodeKey = editor.key(firstBlock);
+
+    editor.update.nodes.move({ at: nodeKey, to: [2] });
+
+    assert.deepEqual(editor.read.nodes.path(nodeKey), [1]);
+    assert.equal(editor.read.nodes.get(nodeKey)?.[0], firstBlock);
+
+    editor.update.nodes.remove({ at: nodeKey });
+
+    assert.equal(editor.read.nodes.path(nodeKey), undefined);
+  });
+
+  it('targets a named-root node by node key from the runtime editor', () => {
+    const editor = createEditor({
+      initialValue: {
+        children: [paragraph('body')],
+        roots: { header: [paragraph('header')] },
+      },
+    });
+    const header = editor.read.root('header')[0]!;
+    const headerEditor = createEditorView(editor, { root: 'header' });
+    const nodeKey = headerEditor.key(header);
+    const mainTextNodeKey = editor.key([0, 0]);
+    const headerTextNodeKey = editor.key({
+      offset: 0,
+      path: [0, 0],
+      root: 'header',
+    });
+
+    assert.equal(editor.read.nodes.get(nodeKey)?.[0], header);
+    assert.equal(editor.read.text.string(nodeKey), 'header');
+    assert.equal(editor.key(header), nodeKey);
+    assert.notEqual(headerTextNodeKey, mainTextNodeKey);
+    assert.equal(
+      editor.read.nodes.get(headerTextNodeKey!)?.[0],
+      header.children[0]
+    );
+
+    editor.update.nodes.set({ type: 'heading' }, { at: nodeKey });
+
+    assert.equal(editor.read.root('header')[0]?.type, 'heading');
+    assert.equal(editor.read.children()[0]?.type, 'paragraph');
+
+    editor.update.nodes.remove({ at: nodeKey });
+
+    assert.deepEqual(editor.read.root('header'), []);
+    assert.deepEqual(editor.read.children(), [paragraph('body')]);
   });
 
   it('invalidates runtime index caches when a failed transaction discards inserted nodes', () => {
     const editor = createSeededEditor();
-    let insertedRuntimeId: string | null = null;
+    let insertedNodeKey: NodeKey | null = null;
 
     assert.throws(() => {
       editor.update((tx) => {
         tx.nodes.insert(paragraph('draft'), { at: [1] });
-        insertedRuntimeId = tx.runtime.idAt([1]);
+        insertedNodeKey = tx.key([1]);
         throw new Error('discard');
       });
     }, /discard/);
@@ -543,20 +608,18 @@ describe('state/tx public API contract', () => {
       paragraph('two'),
     ]);
     assert.equal(
-      editor.read((state) => state.runtime.pathOf(insertedRuntimeId!)),
-      null
+      editor.read((state) => state.nodes.path(insertedNodeKey!)),
+      undefined
     );
   });
 
   it('invalidates runtime index caches when replacing the document snapshot', () => {
     const editor = createSeededEditor();
-    const oldSecondTextRuntimeId = editor.read((state) =>
-      state.runtime.idAt([1, 0])
-    );
+    const oldSecondTextNodeKey = editor.read((state) => state.key([1, 0]));
 
-    assert.equal(typeof oldSecondTextRuntimeId, 'string');
+    assert.equal(typeof oldSecondTextNodeKey, 'string');
     assert.deepEqual(
-      editor.read((state) => state.runtime.pathOf(oldSecondTextRuntimeId!)),
+      editor.read((state) => state.nodes.path(oldSecondTextNodeKey!)),
       [1, 0]
     );
 
@@ -568,29 +631,29 @@ describe('state/tx public API contract', () => {
     });
 
     const state = editor.read((state) => ({
-      oldSecondTextPath: state.runtime.pathOf(oldSecondTextRuntimeId!),
-      nextTextRuntimeId: state.runtime.idAt([0, 0]),
+      oldSecondTextPath: state.nodes.path(oldSecondTextNodeKey!),
+      nextTextNodeKey: state.key([0, 0]),
       value: state.value(),
     }));
 
     assert.deepEqual(state.value, { children: [paragraph('fresh')] });
-    assert.equal(state.oldSecondTextPath, null);
-    assert.equal(typeof state.nextTextRuntimeId, 'string');
+    assert.equal(state.oldSecondTextPath, undefined);
+    assert.equal(typeof state.nextTextNodeKey, 'string');
   });
 
-  it('keeps cached runtime ids path-stable across text-only transactions', () => {
+  it('keeps cached node keys path-stable across text-only transactions', () => {
     const editor = createSeededEditor();
-    const textRuntimeId = editor.read((state) => state.runtime.idAt([1, 0]));
+    const textNodeKey = editor.read((state) => state.key([1, 0]));
     const beforeIndex = editorGetSnapshot(editor).index;
 
-    assert.equal(typeof textRuntimeId, 'string');
+    assert.equal(typeof textNodeKey, 'string');
 
     editor.update((tx) => {
       tx.text.insert('!', { at: { path: [1, 0], offset: 3 } });
     });
 
     const state = editor.read((state) => ({
-      path: state.runtime.pathOf(textRuntimeId!),
+      path: state.nodes.path(textNodeKey!),
       value: state.value(),
     }));
 
@@ -601,27 +664,25 @@ describe('state/tx public API contract', () => {
     });
   });
 
-  it('resolves runtime ids through structural draft changes without serializing them', () => {
+  it('resolves node keys through structural draft changes without serializing them', () => {
     const editor = createSeededEditor();
-    const firstBlockRuntimeId = editor.read((state) => state.runtime.idAt([0]));
-    const secondTextRuntimeId = editor.read((state) =>
-      state.runtime.idAt([1, 0])
-    );
-    let fragmentRuntimeId: string | null = null;
+    const firstBlockNodeKey = editor.read((state) => state.key([0]));
+    const secondTextNodeKey = editor.read((state) => state.key([1, 0]));
+    let fragmentNodeKey: string | null = null;
 
-    assert.equal(typeof firstBlockRuntimeId, 'string');
-    assert.equal(typeof secondTextRuntimeId, 'string');
+    assert.equal(typeof firstBlockNodeKey, 'string');
+    assert.equal(typeof secondTextNodeKey, 'string');
 
     editor.update((tx) => {
       tx.nodes.insert(paragraph('zero'), { at: [0] });
 
-      assert.deepEqual(tx.runtime.pathOf(firstBlockRuntimeId!), [1]);
-      assert.deepEqual(tx.runtime.pathOf(secondTextRuntimeId!), [2, 0]);
+      assert.deepEqual(tx.nodes.path(firstBlockNodeKey!), [1]);
+      assert.deepEqual(tx.nodes.path(secondTextNodeKey!), [2, 0]);
 
       tx.nodes.move({ at: [2], to: [0] });
 
-      assert.deepEqual(tx.runtime.pathOf(secondTextRuntimeId!), [0, 0]);
-      assert.deepEqual(tx.runtime.pathOf(firstBlockRuntimeId!), [2]);
+      assert.deepEqual(tx.nodes.path(secondTextNodeKey!), [0, 0]);
+      assert.deepEqual(tx.nodes.path(firstBlockNodeKey!), [2]);
 
       tx.selection.set({
         kind: 'text',
@@ -630,17 +691,17 @@ describe('state/tx public API contract', () => {
       });
       tx.nodes.split();
 
-      assert.deepEqual(tx.runtime.pathOf(secondTextRuntimeId!), [0, 0]);
-      assert.deepEqual(tx.runtime.pathOf(firstBlockRuntimeId!), [2]);
+      assert.deepEqual(tx.nodes.path(secondTextNodeKey!), [0, 0]);
+      assert.deepEqual(tx.nodes.path(firstBlockNodeKey!), [2]);
 
       tx.fragment.replace([paragraph('fragment')], {
         at: [1],
       });
-      fragmentRuntimeId = tx.runtime.idAt([1]);
+      fragmentNodeKey = tx.key([1]);
 
-      assert.equal(typeof fragmentRuntimeId, 'string');
-      assert.deepEqual(tx.runtime.pathOf(secondTextRuntimeId!), [0, 0]);
-      assert.deepEqual(tx.runtime.pathOf(firstBlockRuntimeId!), [2]);
+      assert.equal(typeof fragmentNodeKey, 'string');
+      assert.deepEqual(tx.nodes.path(secondTextNodeKey!), [0, 0]);
+      assert.deepEqual(tx.nodes.path(firstBlockNodeKey!), [2]);
     });
 
     const exportedValue = editor.read((state) => state.value());
@@ -654,9 +715,9 @@ describe('state/tx public API contract', () => {
         paragraph('ne'),
       ],
     });
-    assert.equal(serialized.includes(firstBlockRuntimeId!), false);
-    assert.equal(serialized.includes(secondTextRuntimeId!), false);
-    assert.equal(serialized.includes(fragmentRuntimeId!), false);
+    assert.equal(serialized.includes(firstBlockNodeKey!), false);
+    assert.equal(serialized.includes(secondTextNodeKey!), false);
+    assert.equal(serialized.includes(fragmentNodeKey!), false);
   });
 
   it('exposes complete query groups through state instead of direct editor aliases', () => {

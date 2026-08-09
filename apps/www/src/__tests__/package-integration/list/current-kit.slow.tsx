@@ -11,7 +11,7 @@ import {
 import { BaseCodeBlockPlugin } from '@platejs/code-block';
 import { BaseImagePlugin } from '@platejs/media';
 import { BaseTogglePlugin } from '@platejs/toggle';
-import { BaseParagraphPlugin } from 'platejs';
+import { BaseParagraphPlugin, ElementIdPlugin } from 'platejs';
 import { createPlateEditor } from 'platejs/react';
 
 import { ListKit } from '@/registry/components/editor/plugins/list-kit';
@@ -19,8 +19,8 @@ import { ListKit } from '@/registry/components/editor/plugins/list-kit';
 describe('ListKit current contract', () => {
   it('promotes `- ` into a list item and moves selection into the empty item', () => {
     const editor = createPlateEditor({
-      nodeId: true,
       plugins: [
+        ElementIdPlugin,
         BaseParagraphPlugin,
         BaseBlockquotePlugin,
         BaseH1Plugin,

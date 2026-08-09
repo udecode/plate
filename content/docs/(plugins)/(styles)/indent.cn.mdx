@@ -81,9 +81,9 @@ const editor = createPlateEditor({
 你可以配置 `IndentPlugin` 以针对特定元素并自定义缩进行为。
 
 ```tsx
-import { BlockquotePlugin } from "@platejs/basic-nodes/react";
 import { IndentPlugin } from "@platejs/indent/react";
-import { createPlateEditor, ParagraphPlugin } from "platejs/react";
+import { PLUGINS } from "platejs";
+import { createPlateEditor } from "platejs/react";
 
 const editor = createPlateEditor({
   plugins: [
@@ -91,8 +91,8 @@ const editor = createPlateEditor({
     IndentPlugin.configure({
       targetPlugins: [
         PLUGINS.h1, PLUGINS.h2, PLUGINS.h3, PLUGINS.h4, PLUGINS.h5, PLUGINS.h6,
-        ParagraphPlugin,
-        BlockquotePlugin,
+        PLUGINS.paragraph,
+        PLUGINS.blockquote,
       ],
       inject: {
         nodeProps: {
@@ -110,7 +110,7 @@ const editor = createPlateEditor({
 ```
 
 - `inject.nodeProps.styleKey`：将注入的属性映射到 CSS `marginLeft` 属性。
-- `targetPlugins`：可存储缩进属性的元素插件 name。
+- `targetPlugins`：可存储缩进属性的元素插件 descriptor 或动态 name。
 - `initialState.offset`：缩进偏移量（像素）（默认：`24`）。
 - `initialState.unit`：缩进值的单位（默认：`'px'`）。
 - `initialState.indentMax`：允许的最大缩进次数。
@@ -129,14 +129,11 @@ const editor = createPlateEditor({
 
 <API name="IndentPlugin">
   <APIOptions type="object">
-    <APIItem name="type" type="string" optional>
-      Schema 和渲染使用的已解析模型属性 key。 - **默认值：** `'indent'`
-    </APIItem>
     <APIItem name="inject.nodeProps.styleKey" type="string" optional>
       用于样式的 CSS 属性名称。 - **默认值：** `'marginLeft'`
     </APIItem>
     <APIItem name="targetPlugins" type="readonly (PluginReference | string)[]" optional>
-      用于缩进存储和注入的元素插件 name。 - **默认值：**
+      用于缩进存储和注入的元素插件 descriptor 或动态 name。 - **默认值：**
       `[BaseParagraphPlugin]`
     </APIItem>
     <APIItem name="initialState.offset" type="number" optional>
@@ -155,67 +152,67 @@ const editor = createPlateEditor({
 
 ## API
 
-### `indent`
+### `editor.plugin(IndentPlugin).update.increase`
 
 缩进编辑器中的选定块。
 
-<API name="indent">
-  <APIOptions type="SetIndentOptions" optional>
+<API name="increase">
+  <APIOptions type="Omit<IndentChangeOptions, 'offset'>" optional>
     用于缩进块的选项。
   </APIOptions>
 </API>
 
-### `outdent`
+### `editor.plugin(IndentPlugin).update.decrease`
 
 减少选定块的缩进。
 
-<API name="outdent">
-  <APIOptions type="SetIndentOptions" optional>
+<API name="decrease">
+  <APIOptions type="Omit<IndentChangeOptions, 'offset'>" optional>
     用于取消缩进块的选项。
   </APIOptions>
 </API>
 
-### `setIndent`
+### `editor.plugin(IndentPlugin).update.change`
 
 为选定的块添加缩进偏移量。
 
-<API name="setIndent">
-  <APIOptions type="SetIndentOptions">
+<API name="change">
+  <APIOptions type="IndentChangeOptions">
     <APIItem name="offset" type="number" optional>
       在 `(offset * element.indent) + unit` 中使用的缩进偏移量。 - **默认值：**
       `1`
     </APIItem>
-    <APIItem name="getNodeOptions" type="object" optional>
-      获取要缩进的节点的选项。
+    <APIItem name="nodes" type="EditorNodesOptions<Element>" optional>
+      节点查询和更新选项；`match` 可以进一步限制目标块。
     </APIItem>
-    <APIItem name="setNodesProps" type="object" optional>
-      要设置到要缩进的节点上的其他属性。
+    <APIItem name="setNodeProps" type="({ indent }: { indent: number }) => Record<string, unknown>" optional>
+      根据下一个缩进值返回需要设置的其他属性。
     </APIItem>
-    <APIItem name="unsetNodesProps" type="readonly (PluginReference | string)[]" optional>
-      要从未缩进的节点上取消设置的其他属性。 - **默认值：** `[]`
+    <APIItem name="unsetNodeProps" type="string[]" optional>
+      缩进回到零时需要清除的其他持久化属性 key。 - **默认值：** `[]`
     </APIItem>
   </APIOptions>
 </API>
 
 ## 类型
 
-### `SetIndentOptions`
+### `IndentChangeOptions`
 
 用于提供设置文本块缩进的选项。
 
-<API name="SetIndentOptions">
+<API name="IndentChangeOptions">
   <APIOptions>
     <APIItem name="offset" type="number">
       缩进的变化（1 表示缩进，-1 表示取消缩进）。 - **默认值：** `1`
     </APIItem>
-    <APIItem name="getNodesOptions" type="object<V>">
-      额外的 `getNodes` 选项。
+    <APIItem name="nodes" type="EditorNodesOptions<Element>">
+      节点查询和更新选项。
     </APIItem>
-    <APIItem name="setNodesProps" type="object">
-      额外的 `setNodes` 选项。
+    <APIItem name="setNodeProps" type="({ indent }: { indent: number }) => Record<string, unknown>">
+      根据下一个缩进值构建需要设置的其他属性。
     </APIItem>
-    <APIItem name="unsetNodesProps" type="readonly (PluginReference | string)[]">
-      当缩进为 0 时要取消设置的属性。
+    <APIItem name="unsetNodeProps" type="string[]">
+      缩进为零时要清除的持久化属性 key。
     </APIItem>
   </APIOptions>
 </API>

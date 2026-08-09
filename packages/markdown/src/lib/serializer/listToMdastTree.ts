@@ -1,4 +1,4 @@
-import type { TListElement } from '@platejs/utils';
+import type { ListElement } from '@platejs/list';
 
 import type { MdList, MdListItem, MdRootContent } from '../mdast';
 import type { SerializeMdContext } from '../types';
@@ -13,22 +13,22 @@ export type MdListFragment = {
 };
 
 export function listToMdastTree(
-  nodes: readonly TListElement[],
+  nodes: readonly ListElement[],
   options: SerializeMdContext,
   isBlock?: false
 ): MdList;
 export function listToMdastTree(
-  nodes: readonly TListElement[],
+  nodes: readonly ListElement[],
   options: SerializeMdContext,
   isBlock: true
 ): MdList | MdListFragment;
 export function listToMdastTree(
-  nodes: readonly TListElement[],
+  nodes: readonly ListElement[],
   options: SerializeMdContext,
   isBlock?: boolean
 ): MdList | MdListFragment;
 export function listToMdastTree(
-  nodes: readonly TListElement[],
+  nodes: readonly ListElement[],
   options: SerializeMdContext,
   isBlock = false
 ): MdList | MdListFragment {
@@ -56,7 +56,7 @@ export function listToMdastTree(
     indent: number;
     list: MdList;
     parent: MdListItem | null;
-    styleType: TListElement['listStyleType'];
+    styleType: ListElement['listStyleType'];
   }[] = [
     {
       indent: nodes[0].indent,
@@ -167,7 +167,7 @@ export function listToMdastTree(
  * preserves list numbering while allowing individual block wrapping
  */
 function processListWithBlockIds(
-  nodes: readonly TListElement[],
+  nodes: readonly ListElement[],
   options: SerializeMdContext
 ): MdListFragment {
   const fragments: MdRootContent[] = [];

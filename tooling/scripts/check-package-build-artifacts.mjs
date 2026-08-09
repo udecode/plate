@@ -9,6 +9,8 @@ import { assertNoPrivatePlateDeclarationBrands } from './check-package-declarati
 const runtimeExtensionPattern = /\.(?:c|m)?js$/;
 const anyPluginDeclarationPattern =
   /\bdeclare\s+const\s+[A-Za-z_$][\w$]*Plugin\s*:\s*any\s*;/gu;
+const incompleteReadonlyAliasPattern =
+  /\btype\s+[A-Za-z_$][\w$]*(?:<[^;]+>)?\s*=\s*Readonly\s*;/gu;
 
 export function getPackageBuildArtifacts(packageJson) {
   const artifacts = new Set();
@@ -65,6 +67,24 @@ export function assertPackageBuildArtifacts(packageRoot = process.cwd()) {
   if (erasedPlugins.length > 0) {
     throw new Error(
       `Public plugin declarations collapsed to any:\n${erasedPlugins
+        .map((entry) => `- ${entry}`)
+        .join('\n')}`
+    );
+  }
+
+  const incompleteReadonlyAliases = artifacts
+    .filter((artifact) => artifact.endsWith('.d.ts'))
+    .flatMap((artifact) => {
+      const source = readFileSync(join(packageRoot, artifact), 'utf8');
+
+      return [...source.matchAll(incompleteReadonlyAliasPattern)].map(
+        (match) => `${artifact}: ${match[0]}`
+      );
+    });
+
+  if (incompleteReadonlyAliases.length > 0) {
+    throw new Error(
+      `Public declaration aliases lost their Readonly type arguments:\n${incompleteReadonlyAliases
         .map((entry) => `- ${entry}`)
         .join('\n')}`
     );

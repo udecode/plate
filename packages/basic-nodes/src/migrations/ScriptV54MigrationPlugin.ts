@@ -19,6 +19,8 @@ export const ScriptV54MigrationPlugin = defineBasePlugin('scriptV54Migration', {
 
     if (!script.installed) return value;
 
+    const scriptKey = script.schema.key;
+
     const migrateText = (text: Descendant, location: string): Descendant => {
       if (!TextApi.isText(text)) return text;
 
@@ -48,7 +50,7 @@ export const ScriptV54MigrationPlugin = defineBasePlugin('scriptV54Migration', {
 
       const migrated =
         subscript === true ? 'sub' : superscript === true ? 'sup' : undefined;
-      const current = Reflect.get(text, script.key);
+      const current = Reflect.get(text, scriptKey);
 
       if (
         migrated !== undefined &&
@@ -56,7 +58,7 @@ export const ScriptV54MigrationPlugin = defineBasePlugin('scriptV54Migration', {
         current !== migrated
       ) {
         throw new Error(
-          `Legacy script mark at ${location} conflicts with ${script.key} "${String(current)}".`
+          `Legacy script mark at ${location} conflicts with ${scriptKey} "${String(current)}".`
         );
       }
 
@@ -66,9 +68,7 @@ export const ScriptV54MigrationPlugin = defineBasePlugin('scriptV54Migration', {
         ...next
       } = text;
 
-      return migrated === undefined
-        ? next
-        : { ...next, [script.key]: migrated };
+      return migrated === undefined ? next : { ...next, [scriptKey]: migrated };
     };
     function migrateDescendant(
       descendant: Descendant,

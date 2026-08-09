@@ -1,10 +1,15 @@
 import type {
   EditorNodeTypeProvider,
+  EditorSchemaOverrideInput,
   EditorSchemaContract,
   EditorValueTypeProvider,
   Element,
   Text,
   Value,
+  SchemaProperty,
+  SchemaPropertyKey,
+  SchemaPropertyDefinition,
+  SchemaPropertyHandle,
 } from '@platejs/plite';
 
 import type { PlateSchemaIdentity } from './BaseEditor';
@@ -12,12 +17,29 @@ import type { BasePluginInput } from './pluginRuntimeTypes';
 
 declare const generatedEditorSchema: unique symbol;
 
+export type EditorApplicationSchema = Readonly<{
+  overrides?: readonly EditorSchemaOverrideInput[];
+  properties?: Readonly<
+    Record<string, SchemaProperty | SchemaPropertyDefinition>
+  >;
+}>;
+
+export type GeneratedEditorSchema = Readonly<{
+  plugins: Readonly<
+    Record<string, Readonly<{ key: string }> | Readonly<{ type: string }>>
+  >;
+  properties: Readonly<
+    Record<string, SchemaPropertyHandle<SchemaPropertyKey> | undefined>
+  >;
+}>;
+
 export type EditorDefinition<
   TName extends string = string,
   TPlugins extends readonly BasePluginInput[] = readonly BasePluginInput[],
 > = Readonly<{
   name: TName;
   plugins: TPlugins;
+  schema?: EditorApplicationSchema;
   schemaIdentity?: PlateSchemaIdentity;
 }>;
 
@@ -25,6 +47,7 @@ export type EditorDefinitionInput<
   TPlugins extends readonly BasePluginInput[] = readonly BasePluginInput[],
 > = Readonly<{
   plugins: TPlugins;
+  schema?: EditorApplicationSchema;
   schemaIdentity?: PlateSchemaIdentity;
 }>;
 
@@ -33,7 +56,7 @@ export type GeneratedEditorTypes<
   V extends Value = Value,
   TElement extends Element = Element,
   TText extends Text = Text,
-  TSchema = unknown,
+  TSchema extends GeneratedEditorSchema = GeneratedEditorSchema,
   TMutations extends Readonly<Record<string, unknown>> = never,
 > = Readonly<{
   element: TElement;
@@ -47,7 +70,7 @@ type AnyGeneratedEditorTypes = GeneratedEditorTypes<
   Value,
   Element,
   Text,
-  unknown,
+  GeneratedEditorSchema,
   Readonly<Record<string, unknown>>
 >;
 
@@ -55,6 +78,7 @@ type AnyGeneratedEditorTypes = GeneratedEditorTypes<
 export type GeneratedEditorContract<
   TTypes extends AnyGeneratedEditorTypes = GeneratedEditorTypes,
 > = Readonly<{
+  bindings: TTypes['schema'];
   fingerprint: string;
   schema: EditorSchemaContract;
   /** Type-only witness emitted by the generator. Never read at runtime. */
@@ -69,11 +93,20 @@ export type GeneratedEditorKit<
   EditorValueTypeProvider<() => TTypes['value']> &
   Readonly<{
     [generatedEditorSchema]: () => TTypes;
+    schema: TTypes['schema'];
   }>;
 
 export type RuntimeGeneratedEditorContract = Readonly<{
+  definitionName: string;
   fingerprint: string;
   schema: EditorSchemaContract;
+  schemaPolicy?: EditorApplicationSchema;
+  schemaIdentity?: PlateSchemaIdentity;
+}>;
+
+export type RuntimeEditorDefinition = Readonly<{
+  name: string;
+  schema?: EditorApplicationSchema;
   schemaIdentity?: PlateSchemaIdentity;
 }>;
 
@@ -84,6 +117,7 @@ const generatedEditorContracts = new WeakMap<
   object,
   RuntimeGeneratedEditorContract
 >();
+const editorDefinitions = new WeakMap<object, RuntimeEditorDefinition>();
 
 /** Define one closed application editor for deterministic schema generation. */
 export const defineEditor = <
@@ -97,11 +131,25 @@ export const defineEditor = <
     throw new Error('Editor definition name must not be empty.');
   }
 
-  return Object.freeze({
+  const plugins = Object.freeze([...definition.plugins]) as unknown as TPlugins;
+  const result = Object.freeze({
     ...definition,
     name,
-    plugins: Object.freeze([...definition.plugins]) as unknown as TPlugins,
+    plugins,
   });
+
+  editorDefinitions.set(
+    plugins,
+    Object.freeze({
+      name,
+      ...(definition.schema ? { schema: definition.schema } : {}),
+      ...(definition.schemaIdentity
+        ? { schemaIdentity: definition.schemaIdentity }
+        : {}),
+    })
+  );
+
+  return result;
 };
 
 /** Bind generated declarations and a runtime fingerprint to one definition. */
@@ -124,23 +172,39 @@ export const bindGeneratedEditor = <
     );
   }
 
-  const plugins = Object.freeze([...definition.plugins]);
+  const plugins = Object.assign([...definition.plugins], {
+    schema: contract.bindings,
+  }) as unknown as GeneratedEditorKit<
+    TDefinition['plugins'],
+    GeneratedEditorContractTypes<TContract>
+  >;
+
+  Object.freeze(plugins);
 
   generatedEditorContracts.set(
     plugins,
     Object.freeze({
+      definitionName: definition.name,
       fingerprint: contract.fingerprint,
       schema: contract.schema,
+      ...(definition.schema ? { schemaPolicy: definition.schema } : {}),
+      ...(definition.schemaIdentity
+        ? { schemaIdentity: definition.schemaIdentity }
+        : {}),
+    })
+  );
+  editorDefinitions.set(
+    plugins,
+    Object.freeze({
+      name: definition.name,
+      ...(definition.schema ? { schema: definition.schema } : {}),
       ...(definition.schemaIdentity
         ? { schemaIdentity: definition.schemaIdentity }
         : {}),
     })
   );
 
-  return plugins as GeneratedEditorKit<
-    TDefinition['plugins'],
-    GeneratedEditorContractTypes<TContract>
-  >;
+  return plugins;
 };
 
 /** @internal Runtime contract carried by a generated editor kit. */
@@ -151,14 +215,24 @@ export const getGeneratedEditorContract = (
     ? generatedEditorContracts.get(plugins)
     : undefined;
 
+/** @internal Closed editor metadata available before and after generation. */
+export const getRuntimeEditorDefinition = (
+  plugins: unknown
+): RuntimeEditorDefinition | undefined =>
+  typeof plugins === 'object' && plugins !== null
+    ? editorDefinitions.get(plugins)
+    : undefined;
+
 /** @internal Preserve generated metadata when Core prepends implicit plugins. */
 export const inheritGeneratedEditorContract = <TTarget extends object>(
   source: unknown,
   target: TTarget
 ): TTarget => {
   const contract = getGeneratedEditorContract(source);
+  const definition = getRuntimeEditorDefinition(source);
 
   if (contract) generatedEditorContracts.set(target, contract);
+  if (definition) editorDefinitions.set(target, definition);
 
   return target;
 };

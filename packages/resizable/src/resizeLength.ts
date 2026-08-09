@@ -7,7 +7,7 @@ export type ResizeEvent = {
   initialSize: ResizeLengthStatic;
 };
 
-export type ResizeLength = ResizeLengthRelative | ResizeLengthStatic;
+export type ResizeLength = ResizeLengthStatic | string;
 
 export type ResizeLengthRelative = `${number}%`;
 
@@ -22,14 +22,18 @@ export const resizeLengthToRelative = (
   length: ResizeLength,
   parentLength: number
 ): ResizeLengthRelative =>
-  typeof length === 'number' ? `${(length / parentLength) * 100}%` : length;
+  typeof length === 'string' && length.trim().endsWith('%')
+    ? (length as ResizeLengthRelative)
+    : `${(resizeLengthToStatic(length, parentLength) / parentLength) * 100}%`;
 
 export const resizeLengthToStatic = (
   length: ResizeLength,
   parentLength: number
 ): ResizeLengthStatic =>
   typeof length === 'string'
-    ? (parentLength * Number.parseFloat(length)) / 100
+    ? length.trim().endsWith('%')
+      ? (parentLength * Number.parseFloat(length)) / 100
+      : Number.parseFloat(length)
     : length;
 
 export const resizeLengthClampStatic = (
@@ -50,10 +54,10 @@ export function resizeLengthClamp(
   { max, min }: ResizeLengthClampOptions
 ): ResizeLengthStatic;
 export function resizeLengthClamp(
-  length: ResizeLengthRelative,
+  length: string,
   parentLength: number,
   { max, min }: ResizeLengthClampOptions
-): ResizeLengthRelative;
+): string;
 export function resizeLengthClamp(
   length: ResizeLength,
   parentLength: number,
@@ -69,7 +73,9 @@ export function resizeLengthClamp(
     }
   );
 
-  return typeof length === 'number'
-    ? clampedLength
-    : resizeLengthToRelative(clampedLength, parentLength);
+  if (typeof length === 'number') return clampedLength;
+
+  return length.trim().endsWith('%')
+    ? resizeLengthToRelative(clampedLength, parentLength)
+    : `${clampedLength}px`;
 }

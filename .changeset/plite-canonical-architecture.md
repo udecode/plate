@@ -16,11 +16,26 @@
   registry fact when activation fails
 - Define semantic commands with `defineCommand` and register pure `false | TransactionSpec` handlers through extension `commands: ({ handle, around }) => [...]` factories
 - Dispatch command-backed updates through immutable transaction specs, including extension-aware `state.transaction(...)` builders and `tx.command`
-- Expose frozen snapshot identities through `snapshot.index.entries()`, `idAt()`, and `pathOf()` with bounded lazy structural mapping
+- Expose frozen snapshot identities through `snapshot.index.entries()`, `keyAt()`, and `pathOf()` with bounded lazy structural mapping
+- Give every live descendant, including text, an editor-scoped `NodeKey`.
+  Read it with `editor.key(nodeOrLocation)`, resolve it with
+  `editor.read.nodes.path(nodeKey)`, and pass it to generic `NodeTarget`
+  reads and updates. Node keys are unique across one editor's roots, while
+  path lookup stays scoped to the current editor or view root. Node keys never
+  enter values, slices, history, or collaboration payloads.
+- Preserve exact `property.*` descriptor inference in packed declarations and
+  reject declaration artifacts whose generic `Readonly` arguments were erased.
 - Store pending insertion marks only on collapsed text selections and preserve earlier writes across composed commands
 - Delete the exact selected node when Backspace or Delete targets a serializable `NodeSelection`, then place a text selection at the nearest surviving sibling
 - Let extensions register serializable selection kinds with validation, mapping, range enumeration, replacement, and DOM projection hooks
 - Publish one-shot `editor.read.*` and `editor.update.*` APIs with callback forms for grouped work
+- Type one-property node mutations as `nodes.set(key, value, options)` and
+  `nodes.unset(key, options)`, and accept exact schema-property handles for
+  aliased or generic ownership. Keep object-form structural and atomic writes.
+  Prefix handles cannot address one property.
+- Add schema property copy policy and generated construction/canonical
+  presence. Plugin-authored property keys are invariant; closed applications
+  may retarget a property but cannot alias its storage key.
 - Name installed extension namespace projections
   `EditorInstalledReadGroups` and `EditorInstalledUpdateGroups`
 - Keep state-backed read methods available inside active and speculative transactions without exposing them as one-shot editor updates
@@ -32,6 +47,8 @@
 - Resolve extension dependencies and conflicts by descriptor, install required
   dependencies transitively with reference-counted cleanup, and expose typed
   dependency APIs through `editor.extension(descriptor).api`
+- Apply a root transaction policy to one descriptor-owned update through
+  `editor.extension(descriptor).update(policy).method()`
 - Keep root Plite dependency references shallow and non-generic as
   `{ name, enabled? }`. Plate plugin references carry the same sole `name`
   identity. Keep name-keyed capability/provider inference under
@@ -84,7 +101,20 @@
 - Name the model selection projection `primaryRange`
 - Initialize editors synchronously through `initialValue` or an editor-context callback and publish non-cancellable commit contexts with the resulting immutable snapshot
 - Derive complete raw-schema identity when `id` and `version` are omitted, and expose a non-null derived or named identity from `editor.read.schema.identity()`
-- Freeze pure descriptor namespaces and infer custom property values from inline `validate` predicates paired with a positive-integer `validationVersion`
+- Freeze pure descriptor namespaces and preserve exact custom property values
+  and defaults from inline `validate` predicates paired with a positive-integer
+  `validationVersion`
+- Address compiled element and property identity through nominal
+  `SchemaElementHandle` and `SchemaPropertyHandle` values. Property handles
+  retain persisted key, placement, compiled id, and inferred value type.
+- Compile deterministic closed-application overrides before relationships.
+  Element type, content, groups, and property targets may change; ambiguous
+  overrides reject instead of using source order.
+- Serialize deterministic schema contracts, classify structural diffs, and
+  restore validator-backed runtime schemas from committed contracts. Contract
+  readers recompute the structural fingerprint from authoritative content, and
+  restoration rejects any derived table that differs from the source
+  contributions.
 
 **Migration:** Replace `@platejs/slate` with `@platejs/plite` and migrate Slate
 transforms and operations to `editor.read`, `editor.update`, or active

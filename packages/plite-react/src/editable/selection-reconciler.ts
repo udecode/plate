@@ -51,6 +51,7 @@ import {
   executeEditableSelectionExport,
   isEditableOutsideFocusBoundarySettling,
   isInteractiveInternalTarget,
+  isNativeDraggableTarget,
   isSelectionInEditorView,
   type SelectionChangeOrigin,
   setEditableModelSelectionPreference,
@@ -503,6 +504,11 @@ export const applyEditableMouseDown = ({
     });
     onMouseDown?.(event);
     return null;
+  }
+
+  if (isNativeDraggableTarget(editor, event.target)) {
+    onMouseDown?.(event);
+    return false;
   }
 
   const modelTargetOwnsSelection =

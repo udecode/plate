@@ -1,5 +1,5 @@
 import { createEditor, type Range } from '@platejs/plite';
-import { getRuntimeId, replace } from '@platejs/plite/internal';
+import { getNodeKey, replace } from '@platejs/plite/internal';
 
 import { createPliteAnnotationStore } from '../src/annotation-store';
 import { createDecorationSource } from '../src/decoration-source';
@@ -28,7 +28,7 @@ test('optional view sources isolate failures and retry from the last good snapsh
   let decorationFails = true;
   let annotationFails = true;
   let widgetFails = true;
-  const runtimeId = getRuntimeId(editor, [0, 0])!;
+  const nodeKey = getNodeKey(editor, [0, 0])!;
   const healthy = createDecorationSource(editor, {
     id: 'healthy',
     read: () => [{ key: 'healthy', range }],
@@ -72,8 +72,8 @@ test('optional view sources isolate failures and retry from the last good snapsh
     }
   );
 
-  expect(healthy.getRuntimeSnapshot(runtimeId)).toHaveLength(1);
-  expect(decoration.getRuntimeSnapshot(runtimeId)).toHaveLength(0);
+  expect(healthy.getRuntimeSnapshot(nodeKey)).toHaveLength(1);
+  expect(decoration.getRuntimeSnapshot(nodeKey)).toHaveLength(0);
   expect(annotations.getSnapshot().allIds).toEqual([]);
   expect(widgets.getSnapshot().allIds).toEqual([]);
   expect(failures.map(({ phase, sourceId }) => ({ phase, sourceId }))).toEqual([
@@ -93,7 +93,7 @@ test('optional view sources isolate failures and retry from the last good snapsh
     active: true,
     failureCount: 1,
   });
-  expect(decoration.getRuntimeSnapshot(runtimeId)).toHaveLength(1);
+  expect(decoration.getRuntimeSnapshot(nodeKey)).toHaveLength(1);
   expect(annotations.getAnnotation('comment')?.range).toEqual(range);
   expect(widgets.getWidget('toolbar')?.visible).toBe(true);
 
@@ -120,13 +120,13 @@ test('destroying a failed view source does not poison a same-id remount', () => 
     id: 'remountable',
     read: () => [{ key: 'ready', range }],
   });
-  const runtimeId = getRuntimeId(editor, [0, 0])!;
+  const nodeKey = getNodeKey(editor, [0, 0])!;
 
   expect(remounted.getSourceStatus()).toEqual({
     active: true,
     failureCount: 0,
   });
-  expect(remounted.getRuntimeSnapshot(runtimeId)).toHaveLength(1);
+  expect(remounted.getRuntimeSnapshot(nodeKey)).toHaveLength(1);
 
   remounted.destroy();
 });

@@ -4,8 +4,8 @@ import { act, render } from '@testing-library/react';
 import React, { startTransition, Suspense, useLayoutEffect } from 'react';
 import { createEditor } from '@platejs/plite';
 import {
-  getPathByRuntimeId as editorGetPathByRuntimeId,
-  getRuntimeId as editorGetRuntimeId,
+  getPathByNodeKey as editorGetPathByNodeKey,
+  getNodeKey as editorGetNodeKey,
   replace as editorReplace,
 } from '@platejs/plite/internal';
 
@@ -709,7 +709,7 @@ describe('plite-react widget layer contract', () => {
     store.destroy();
   });
 
-  test('node widgets stay attached by runtime id through structural moves', async () => {
+  test('node widgets stay attached by node key through structural moves', async () => {
     const editor = createEditor();
     let notifications = 0;
 
@@ -718,16 +718,16 @@ describe('plite-react widget layer contract', () => {
       selection: null,
     });
 
-    const runtimeId = editorGetRuntimeId(editor, [1]);
+    const nodeKey = editorGetNodeKey(editor, [1]);
 
-    if (!runtimeId) {
-      throw new Error('Expected runtime id for node widget move proof');
+    if (!nodeKey) {
+      throw new Error('Expected node key for node widget move proof');
     }
 
     const widgets = [
       {
         anchor: {
-          runtimeId,
+          nodeKey,
           type: 'node' as const,
         },
         data: {
@@ -753,7 +753,7 @@ describe('plite-react widget layer contract', () => {
       });
     });
 
-    expect(editorGetPathByRuntimeId(editor, runtimeId)).toEqual([0]);
+    expect(editorGetPathByNodeKey(editor, nodeKey)).toEqual([0]);
     expect(store.getWidget('node-widget')).toMatchObject({
       id: 'node-widget',
       visible: true,

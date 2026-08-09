@@ -2,6 +2,7 @@ import type {
   ContentSlice as ContentSliceValue,
   Descendant,
   DescendantIn,
+  Element,
   Value,
 } from '../interfaces';
 import { ElementApi } from '../interfaces';
@@ -231,9 +232,25 @@ const fromJSON = <V extends Value = Value>(
   return snapshot<V>(value);
 };
 
-const closed = <V extends Value>(
+type SliceValueFromContent<TContent extends readonly Descendant[]> = [
+  Extract<TContent[number], Element>,
+] extends [never]
+  ? Value
+  : readonly Extract<TContent[number], Element>[];
+
+function closed<const TContent extends readonly Descendant[]>(
+  content: TContent
+): ContentSliceValue<SliceValueFromContent<TContent>>;
+function closed<V extends Value>(
   content: readonly DescendantIn<V>[]
-): ContentSliceValue<V> => snapshot<V>({ content, openEnd: 0, openStart: 0 });
+): ContentSliceValue<V>;
+function closed(content: readonly Descendant[]): ContentSliceValue<Value> {
+  return snapshot<Value>({
+    content,
+    openEnd: 0,
+    openStart: 0,
+  });
+}
 
 const empty = closed<never>([]);
 

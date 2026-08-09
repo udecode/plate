@@ -1,6 +1,7 @@
 import React from 'react';
 
 import type { EditableProps as PliteEditableProps } from '@platejs/plite-react';
+import { useHotkeysContext } from '@udecode/react-hotkeys';
 import clsx from 'clsx';
 import { useAtomStoreValue } from 'jotai-x';
 import omit from 'lodash/omit.js';
@@ -9,9 +10,11 @@ import { useDeepCompareMemo } from 'use-deep-compare';
 import type { PlateProps } from '../components';
 
 import type { EditableProps } from '../../lib';
+import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { pipeDecorate } from '../../static/utils/pipeDecorate';
 import { usePlateModelRevision } from '../internal/usePlateModelRevision';
 import { useEditor, usePlateStore } from '../stores';
+import { dispatchPlateShortcut } from '../utils/dispatchPlateShortcut';
 import { DOM_HANDLERS } from '../utils/dom-attributes';
 import { pipeHandler } from '../utils/pipeHandler';
 import { pipeRenderElement } from '../utils/pipeRenderElement';
@@ -27,7 +30,9 @@ export const useEditableProps = ({
   const { id } = editableProps;
 
   const editor = useEditor({ id });
+  const { activeScopes } = useHotkeysContext();
   const modelRevision = usePlateModelRevision(editor);
+  const shortcutTable = getPlateRuntime(editor).shortcutTable;
   const store = usePlateStore(id);
   const storeDecorate = useAtomStoreValue(store, 'decorate');
   const storeRenderElement = useAtomStoreValue(store, 'renderElement');
@@ -85,14 +90,57 @@ export const useEditableProps = ({
 
     DOM_HANDLERS.forEach((handlerKey) => {
       const handler = pipeHandler(editor, { editableProps, handlerKey }) as any;
+      const shortcutPhase =
+        handlerKey === 'onKeyDown'
+          ? 'keydown'
+          : handlerKey === 'onKeyUp'
+            ? 'keyup'
+            : null;
+      const hasShortcut =
+        shortcutPhase && shortcutTable.some((item) => item[shortcutPhase]);
 
-      if (handler) {
+      if (hasShortcut) {
+        _props[handlerKey] = ((event: React.KeyboardEvent<HTMLDivElement>) => {
+          const shortcutHandled = dispatchPlateShortcut(
+            activeScopes,
+            editor,
+            event.nativeEvent,
+            shortcutPhase,
+            shortcutTable
+          );
+
+          if (!shortcutHandled) return handler?.(event);
+
+          if (
+            event.nativeEvent.defaultPrevented &&
+            !event.isDefaultPrevented()
+          ) {
+            event.preventDefault();
+          }
+          if (event.nativeEvent.cancelBubble) {
+            event.stopPropagation();
+
+            return true;
+          }
+
+          return handler?.(event);
+        }) as any;
+      } else if (handler) {
         _props[handlerKey] = handler;
       }
     });
 
     return _props;
-  }, [decorateMemo, editableProps, renderElement, renderLeaf, renderText]);
+  }, [
+    activeScopes,
+    decorateMemo,
+    editableProps,
+    editor,
+    renderElement,
+    renderLeaf,
+    renderText,
+    shortcutTable,
+  ]);
 
   return useDeepCompareMemo(
     () => ({

@@ -4,11 +4,13 @@ export type { BaseEditor } from './lib/editor/BaseEditor';
 export {
   bindGeneratedEditor,
   defineEditor,
+  type EditorApplicationSchema,
   type EditorDefinition,
   type EditorDefinitionInput,
   type GeneratedEditorContract,
   type GeneratedEditorKit,
   type GeneratedEditorMutations,
+  type GeneratedEditorSchema,
   type GeneratedEditorTypes,
   type GeneratedEditorValue,
 } from './lib/editor/defineEditor';
@@ -20,6 +22,7 @@ export type {
   PlatePluginState,
   PlatePluginTransaction,
 } from './lib/editor/pluginRuntimeTypes';
+export type { ElementWith, TextWith } from './lib/plugin/pluginNodeTypes';
 export {
   createBaseEditor,
   type BaseEditorOptions,
@@ -104,7 +107,6 @@ export type {
   PluginSchemaContext,
   PluginSchemaDeclaration,
   PluginSchemaMark,
-  PluginSchemaOwn,
   PluginSchemaReferences,
   PluginSelector,
   PluginSelectorArgs,

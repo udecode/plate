@@ -134,42 +134,42 @@ When you trigger exit break:
 
 **Code Block:**
 ```tsx
-<codeblock>                              // ← Exit point (top-level block)
-  <codeline>code|</codeline>             // ← Starting position
-</codeblock>
-<p>|</p>                                 // ← New paragraph inserted here
+<codeBlock>                              // ← Exit point (top-level block)
+  <codeLine>code|</codeLine>             // ← Starting position
+</codeBlock>
+<paragraph>|</paragraph>                 // ← New paragraph inserted here
 ```
 
 **Table in Column (exits at table level):**
 ```tsx
 // First exit
-<column_group>                           
+<columnGroup>
   <column>                               
     <table>                              // ← Exit point (column allows blocks)
-      <tr>                               // table allows rows only
-        <td>                             // row allows cells only
-          <p>content|</p>                // ← Starting position
-        </td>
-      </tr>
+      <tableRow>                         // table allows rows only
+        <tableCell>                      // row allows cells only
+          <paragraph>content|</paragraph>// ← Starting position
+        </tableCell>
+      </tableRow>
     </table>
-    <p>|</p>                             // ← New paragraph inserted here
+    <paragraph>|</paragraph>             // ← New paragraph inserted here
   </column>
-</column_group>
+</columnGroup>
 
 // Second exit
-<column_group>                           // ← Exit point (root allows blocks)
+<columnGroup>                            // ← Exit point (root allows blocks)
   <column>                               // group allows columns only
     <table>                              
-      <tr>                               
-        <td>                             
-          <p>content</p>
-        </td>
-      </tr>
+      <tableRow>
+        <tableCell>
+          <paragraph>content</paragraph>
+        </tableCell>
+      </tableRow>
     </table>
-    <p>|</p>                             // ← Starting position
+    <paragraph>|</paragraph>             // ← Starting position
   </column>
-</column_group>
-<p>|</p>                                 // ← New paragraph inserted here
+</columnGroup>
+<paragraph>|</paragraph>                 // ← New paragraph inserted here
 ```
 
 ### Custom Plugin Configuration
@@ -180,8 +180,7 @@ Declare each custom element's allowed child content:
 import { schema } from 'platejs';
 
 // Table structure
-const CustomTablePlugin = createBasePlugin({
-  name: 'table',
+const CustomTablePlugin = defineBasePlugin('table', {
   schema: {
     element: {
       content: schema.content.type('tr', { min: 1 }),
@@ -189,8 +188,7 @@ const CustomTablePlugin = createBasePlugin({
   },
 });
 
-const CustomTableRowPlugin = createBasePlugin({
-  name: 'tr',
+const CustomTableRowPlugin = defineBasePlugin('tr', {
   schema: {
     element: {
       content: schema.content.types(['td', 'th'], { min: 1 }),
@@ -198,8 +196,7 @@ const CustomTableRowPlugin = createBasePlugin({
   },
 });
 
-const CustomTableCellPlugin = createBasePlugin({
-  name: 'td',
+const CustomTableCellPlugin = defineBasePlugin('td', {
   schema: {
     element: {
       content: schema.content.group('block', { min: 1 }),

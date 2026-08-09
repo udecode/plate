@@ -4,10 +4,10 @@ import type {
   MarkdownEncodeContext,
 } from '@platejs/core';
 import {
-  type AnyBasePluginDefinition,
   getPlateNodeCodecContributions,
+  type PlateNodeCodecContribution,
 } from '@platejs/core/internal';
-import type { Descendant, Value } from '@platejs/plite';
+import type { Descendant } from '@platejs/plite';
 import type { Node as UnistNode } from 'unist';
 
 import { buildSlateNode } from '../deserializer/convertNodesDeserialize';
@@ -59,8 +59,10 @@ type ErasedMarkdownNodeCodec = Readonly<{
 type CompiledMarkdownNodeCodec = Readonly<{
   codec: ErasedMarkdownNodeCodec;
   owner: string;
+  schema: PlateNodeCodecContribution['schema'];
+  targetKey: string | null;
   targetPlugin: string;
-  targetType: string;
+  targetType: string | null;
 }>;
 
 export type CompiledMarkdownCodecs = Readonly<{
@@ -166,9 +168,9 @@ const createDecodeContext = (
   decoration,
   node,
   parseAttributes: (attributes) => parseAttributes([...attributes]),
+  schema: compiled.schema,
   serializeUnknown: serializeUnknownMdxNode,
   splitLineBreaks: options.splitLineBreaks,
-  type: compiled.targetType,
 });
 
 const createEncodeContext = (
@@ -230,7 +232,7 @@ const createEncodeContext = (
   propsToAttributes,
   readPlainInline: readPlainMarkdownInlineContent,
   resourceLink: options.remarkStringifyOptions?.resourceLink === true,
-  type: compiled.targetType,
+  schema: compiled.schema,
 });
 
 const createRule = (compiled: CompiledMarkdownNodeCodec): MdNodeParser => ({
@@ -262,11 +264,8 @@ const createRule = (compiled: CompiledMarkdownNodeCodec): MdNodeParser => ({
     : {}),
 });
 
-export const compileMarkdownCodecs = <
-  V extends Value,
-  P extends AnyBasePluginDefinition,
->(
-  editor: BaseEditor<V, P>
+export const compileMarkdownCodecs = <E extends BaseEditor>(
+  editor: E
 ): CompiledMarkdownCodecs => {
   const cached = compiledMarkdownCodecsCache.get(editor);
 
@@ -278,6 +277,8 @@ export const compileMarkdownCodecs = <
         Object.freeze({
           codec: validateCodec(contribution.owner, contribution.declaration),
           owner: contribution.owner,
+          schema: contribution.schema,
+          targetKey: contribution.targetKey,
           targetPlugin: contribution.targetPlugin,
           targetType: contribution.targetType,
         })
@@ -306,12 +307,14 @@ export const compileMarkdownCodecs = <
       decodeBySource.set(source, sourceCodecs);
     }
     if (compiled.codec.encode || compiled.codec.mark) {
-      if (rules[compiled.targetPlugin]) {
+      const documentIdentity = compiled.targetType ?? compiled.targetKey!;
+
+      if (rules[documentIdentity]) {
         throw new Error(
           `Markdown node codecs must declare one encoder/mark owner for target "${compiled.targetPlugin}".`
         );
       }
-      rules[compiled.targetPlugin] = createRule(compiled);
+      rules[documentIdentity] = createRule(compiled);
     }
   });
 
@@ -335,7 +338,8 @@ export const runMarkdownDecodeCodecs = (
   source: string,
   node: UnistNode,
   decoration: MdDecoration,
-  options: DeserializeMdContext
+  options: DeserializeMdContext,
+  override?: (pluginName: string) => Descendant[] | undefined
 ) => {
   const codecs = compiled.decodeBySource.get(source) ?? [];
   const sourceChildren =
@@ -358,6 +362,10 @@ export const runMarkdownDecodeCodecs = (
           )
         : undefined;
     }
+
+    const overridden = override?.(codec.targetPlugin);
+
+    if (overridden !== undefined) return overridden;
 
     const decoded = codec.codec.decode!(
       createDecodeContext(

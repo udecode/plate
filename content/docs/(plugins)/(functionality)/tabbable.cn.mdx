@@ -67,27 +67,29 @@ const editor = createPlateEditor({
 
 ```tsx
 import { TabbablePlugin } from '@platejs/tabbable/react';
+import { PLUGINS } from 'platejs';
 import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
     // ...其他插件,
-    TabbablePlugin.configure({
-      initialState: {
-        query: (event) => {
-          // 在列表或代码块中禁用
-          const inList = editor.read.nodes.some({ match: { type: 'listItem' } });
-          const inCodeBlock = editor.read.nodes.some({
-            match: {
-              type: editor.plugin(PLUGINS.codeBlock).schema.element!.type,
-            },
-          });
-          return !inList && !inCodeBlock;
+    TabbablePlugin.configure(({ editor }) => {
+      const listItem = editor.plugin(PLUGINS.listItem);
+      const codeBlock = editor.plugin(PLUGINS.codeBlock);
+      const blockedTypes = [listItem, codeBlock].flatMap((plugin) =>
+        plugin.installed ? [plugin.schema.type] : []
+      );
+
+      return {
+        initialState: {
+          query: () =>
+            blockedTypes.length === 0 ||
+            !editor.read.nodes.some({ match: { type: blockedTypes } }),
+          globalEventListener: true,
+          isTabbable: (tabbableEntry) =>
+            editor.read.schema.isVoid(tabbableEntry.slateNode),
         },
-        globalEventListener: true,
-        isTabbable: (tabbableEntry) =>
-          editor.read.schema.isVoid(tabbableEntry.slateNode),
-      },
+      };
     }),
   ],
 });
@@ -112,13 +114,23 @@ Tabbable插件可能会与处理`Tab`键的其他插件产生冲突，例如：
 使用`query`选项在`Tab`键应由其他插件处理时禁用Tabbable插件：
 
 ```tsx
-query: (event) => {
-  const inList = editor.read.nodes.some({ match: { type: 'listItem' } });
-  const inCodeBlock = editor.read.nodes.some({
-    match: { type: editor.plugin(PLUGINS.codeBlock).schema.element!.type },
-  });
-  return !inList && !inCodeBlock;
-},
+TabbablePlugin.configure(({ editor }) => {
+  const listItem = editor.plugin(PLUGINS.listItem);
+  const codeBlock = editor.plugin(PLUGINS.codeBlock);
+  const blockedTypes = [listItem, codeBlock].flatMap((plugin) =>
+    plugin.installed ? [plugin.schema.type] : []
+  );
+
+  return {
+    initialState: {
+      query: () =>
+        blockedTypes.length === 0 ||
+        !editor.read.nodes.some({
+          match: { type: blockedTypes },
+        }),
+    },
+  };
+});
 ```
 
 如果使用缩进插件，可以仅在选中特定类型节点(如void节点)时启用Tabbable插件：
@@ -156,8 +168,12 @@ isTabbable: (tabbableEntry) => (
 ```tsx
 // 将.my-popover内的按钮添加到可聚焦列表
 globalEventListener: true,
-insertTabbableEntries: (event) => {
-  const [selectedNode, selectedNodePath] = editor.api.node(editor.selection);
+insertTabbableEntries: () => {
+  const selectedEntry = editor.read.nodes.above();
+
+  if (!selectedEntry) return [];
+
+  const [selectedNode, selectedNodePath] = selectedEntry;
 
   return [
     ...document.querySelectorAll('.my-popover > button'),

@@ -12,7 +12,10 @@ import {
   type RuntimeId,
 } from '@platejs/plite';
 import { type DOMRange, isDOMNode } from '@platejs/plite-dom';
-import { DOMCoverage } from '@platejs/plite-dom/internal';
+import {
+  createDOMGeometryKernel,
+  DOMCoverage,
+} from '@platejs/plite-dom/internal';
 import type { MountedTopLevelRange } from '../dom-strategy/dom-strategy-commands';
 import type {
   EditableRepairRequest,
@@ -241,7 +244,43 @@ const getEditableDropCursorRect = ({
       editorIsVoid(editor, pliteNode));
 
   if (!isVoidTarget) {
-    return null;
+    const geometry = createDOMGeometryKernel({
+      root: rootElement,
+      target: targetElement,
+    });
+    const point = geometry.pointAtCoordinates({
+      x: event.nativeEvent.clientX,
+      y: event.nativeEvent.clientY,
+    });
+    const caretRect = point
+      ? geometry.pointRect(point.point, {
+          association: point.association,
+        })
+      : null;
+
+    if (!caretRect || caretRect.height <= 0) {
+      return null;
+    }
+
+    const rootRect = rootElement.getBoundingClientRect();
+    const rawScaleX =
+      rootElement.offsetWidth > 0
+        ? rootRect.width / rootElement.offsetWidth
+        : 1;
+    const rawScaleY =
+      rootElement.offsetHeight > 0
+        ? rootRect.height / rootElement.offsetHeight
+        : 1;
+    const scaleX = Number.isFinite(rawScaleX) && rawScaleX > 0 ? rawScaleX : 1;
+    const scaleY = Number.isFinite(rawScaleY) && rawScaleY > 0 ? rawScaleY : 1;
+    const thickness = DROP_CURSOR_THICKNESS / scaleX;
+
+    return {
+      height: caretRect.height / scaleY,
+      left: (caretRect.left - rootRect.left) / scaleX - thickness / 2,
+      top: (caretRect.top - rootRect.top) / scaleY,
+      width: thickness,
+    };
   }
 
   const targetRect =
@@ -401,7 +440,7 @@ export const EditableDOMRoot = (props: EditableDOMRootProps) => {
     onMouseUpCapture: propsOnMouseUpCapture,
     ...attributes
   } = editableProps;
-  const editor = useEditor<ReactRuntimeEditor>();
+  const editor = useEditor();
   const editorRoot = toInternalRoot(editor.read((state) => state.view.root()));
   const hasViewSelection = usePliteViewSelectionPresence(editor);
   const { getLastSelectionForRoot, getMountedViewEditor, setActiveViewEditor } =
@@ -512,8 +551,12 @@ export const EditableDOMRoot = (props: EditableDOMRootProps) => {
         );
         const inlineVoidTarget =
           voidTarget?.getAttribute('data-plite-inline') === 'true';
+        const draggableInlineVoidTarget =
+          inlineVoidTarget && voidTarget?.getAttribute('draggable') === 'true';
 
-        if (inlineVoidTarget) {
+        if (draggableInlineVoidTarget) {
+          onRuntimeMouseDownCapture?.(event);
+        } else if (inlineVoidTarget) {
           onRootMouseDownCapture(event);
           onRuntimeMouseDownCapture?.(event);
         } else {

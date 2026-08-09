@@ -1,5 +1,9 @@
 import type { Emoji } from '@emoji-mart/data';
-import { createBaseEditor, defineBasePlugin } from '@platejs/core';
+import {
+  createBaseEditor,
+  defineBasePlugin,
+  defineEditor,
+} from '@platejs/core';
 import { property, schema } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
 
@@ -25,7 +29,7 @@ describe('BaseEmojiPlugin', () => {
     const input = { children: [{ text: '' }], type: 'emojiInput' };
     const inputHandle = schema.handle.element(
       BaseEmojiInputPlugin,
-      editor.plugin(BaseEmojiInputPlugin).schema.element.type
+      editor.plugin(BaseEmojiInputPlugin).schema.type
     );
     const value = schema.handle.property(inputHandle, 'value');
 
@@ -85,6 +89,24 @@ describe('BaseEmojiPlugin', () => {
     expect(createEmojiNode(fireEmoji)).toEqual({
       text: '🔥',
     });
+  });
+
+  it('creates transient inputs with the configured schema type', () => {
+    const definition = defineEditor('customEmojiInput', {
+      plugins: [BaseEmojiPlugin],
+      schema: {
+        overrides: [
+          schema.override(BaseEmojiInputPlugin, {
+            element: { type: 'customEmojiInput' },
+          }),
+        ],
+      },
+    });
+    const editor = createBaseEditor({ plugins: definition.plugins });
+
+    expect(
+      editor.plugin(BaseEmojiPlugin).store.get('createComboboxInput')(':')
+    ).toMatchObject({ type: 'customEmojiInput' });
   });
 
   it('installs the required emoji input plugin', () => {

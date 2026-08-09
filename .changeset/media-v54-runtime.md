@@ -9,8 +9,12 @@ embed, and React placeholder descriptors.
   `editor.plugin(BaseImagePlugin).update.insert({ url }, options)`
 - Insert embeds with
   `editor.plugin(BaseMediaEmbedPlugin).update.insert({ url }, options)`
-- Insert headless placeholders with `editor.plugin(BasePlaceholderPlugin).update.insert(mediaType, options)`
+- Insert headless placeholders with `editor.plugin(BasePlaceholderPlugin).update.insert({ mediaType }, options)`
 - Insert React upload placeholders with `editor.plugin(PlaceholderPlugin).update.insertMedia(files, options)`
+- Replace a React upload placeholder with
+  `editor.plugin(PlaceholderPlugin).update.replaceMedia({ plugin, ...input }, options)`;
+  the media descriptor or capability name selects the destination while its
+  persisted schema type remains application-configurable
 - Manage upload records through `editor.plugin(PlaceholderPlugin).api` and read
   one with `editor.plugin(PlaceholderPlugin).store.get('uploadingFile', id)`
 - Insert prompted image and embed URLs with `insertMediaUrl` from `@platejs/media/react`
@@ -29,19 +33,25 @@ embed, and React placeholder descriptors.
   arrays when inserting placeholder media
 - Publish pending upload state only after its placeholder transaction commits
 - Expose the `MediaPlugin` union for typed floating-media URL controls
+- Pass the exact media descriptor to `useMediaState(plugin, options)`
 - Rename `MediaPluginOptions` to `MediaPluginState`
 - Replace `MediaPlaceholderOptions` with the React
   `PlaceholderPluginState`; the headless `BasePlaceholderPlugin` is state-free
 - Register media properties and required direct inline caption children in
   compiled schemas.
 - Export `MediaV54MigrationPlugin` from `@platejs/media/migrations` to convert
-  the published `caption: Descendant[]` property, including its single-block
-  form, into direct inline children before schema fitting.
+  legacy `img` and `media_embed` element identities to the resolved image and
+  media-embed schema types, then convert the published
+  `caption: Descendant[]` property, including its single-block form, into
+  direct inline children before schema fitting. It also fills a missing legacy
+  media URL with an empty string and removes the retired `placeholderId`
+  property.
 - Accept caption strings or inline children as construction input and persist
   them as direct media children.
 - Use capability name `mediaEmbed` and persisted element type `mediaEmbed`,
-  persist media alignment as `textAlign`, preserve relative media widths, and
-  expose plugin-owned `update.setWidth`.
+  persist media alignment as `textAlign`, and preserve relative media widths.
+- Set media widths through the descriptor's standard update:
+  `editor.plugin(ImagePlugin).update.set({ width }, { at: element })`.
 - Preserve standalone media embeds through clipboard sanitization by carrying
   sanitized URL and normalized width metadata on the owning figure.
 
@@ -57,4 +67,5 @@ import { ImagePlugin } from '@platejs/media/react';
 const plugins = [MediaV54MigrationPlugin, ImagePlugin];
 ```
 
+The same migration handles legacy media identities and captions in one pass.
 Remove `MediaV54MigrationPlugin` after every persisted document is resaved.

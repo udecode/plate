@@ -32,7 +32,7 @@ const editor = createBaseEditor({
   plugins: BaseEditorKit,
   initialValue: [
     { type: 'h1', children: [{ text: 'Hello World' }] },
-    { type: 'p', children: [{ text: 'This content will be serialized to HTML.' }] },
+    { type: 'paragraph', children: [{ text: 'This content will be serialized to HTML.' }] },
   ],
 });
 
@@ -93,7 +93,7 @@ const editor = createBaseEditor({
   components,
   initialValue: [
     { type: 'h1', children: [{ text: 'My Title' }] },
-    { type: 'p', children: [{ text: 'My content.' }] },
+    { type: 'paragraph', children: [{ text: 'My content.' }] },
   ],
 });
 
@@ -234,26 +234,28 @@ handles decode and encode.
 | `<h1>` - `<h6>`                                            | [`H1Plugin`–`H6Plugin`](/docs/heading)    | Converts to corresponding heading elements (`h1` - `h6`).                |
 | `<ul>`, `<ol>`, `<li>`                                     | [`ListPlugin`](/docs/list)      | Converts list items to blocks with `indent` and `listStyleType` properties. |
 | `<blockquote>`                                             | [`BlockquotePlugin`](/docs/blockquote)      | Converts to blockquote element.                                          |
-| `<pre>` (often with `<code>` inside)                       | [`CodeBlockPlugin`](/docs/code-block)       | Converts to `code_block` element. Content split into `code_line`.        |
+| `<pre>` (often with `<code>` inside)                       | [`CodeBlockPlugin`](/docs/code-block)       | Converts to `codeBlock` element. Content split into `codeLine`.          |
 | `<hr>`                                                     | [`HorizontalRulePlugin`](/docs/horizontal-rule)  | Converts to horizontal rule element.                                     |
-| `<a>`                                                      | [`LinkPlugin`](/docs/link)            | Converts to link element (`a` type) with `url` property.                 |
-| `<img>`                                                    | [`ImagePlugin`](/docs/media)           | Converts to image element (`img` type) with `url` property.              |
+| `<a>`                                                      | [`LinkPlugin`](/docs/link)            | Converts to `link` with a `url` property.                                |
+| `<img>`                                                    | [`ImagePlugin`](/docs/media)           | Converts to `image` with a `url` property.                               |
 | `<iframe>`                                                 | [`MediaEmbedPlugin`](/docs/media)      | Converts to media embed element, attempting to parse URL.                |
 | `<table>`                                                  | [`TablePlugin`](/docs/table)           | Converts to `table` element.                                             |
-| `<tr>`                                                     | [`TablePlugin`](/docs/table)           | Converts to `tr` (table row) element.                                    |
-| `<td>`                                                     | [`TablePlugin`](/docs/table)           | Converts to `td` (table cell) element.                                   |
-| `<th>`                                                     | [`TablePlugin`](/docs/table)           | Converts to `th` (table header cell) element.                            |
+| `<tr>`                                                     | [`TablePlugin`](/docs/table)           | Converts to `tableRow`.                                                   |
+| `<td>`                                                     | [`TablePlugin`](/docs/table)           | Converts to `tableCell`.                                                  |
+| `<th>`                                                     | [`TablePlugin`](/docs/table)           | Converts to `tableCell` with `header: true`.                              |
 | `style="background-color: ..."`                          | [`FontBackgroundColorPlugin`](/docs/font)    | Converts to `backgroundColor` mark. |
 | `style="color: ..."`                                     | [`FontColorPlugin`](/docs/font)       | Converts to `color` mark.                                                |
 | `style="font-family: ..."`                               | [`FontFamilyPlugin`](/docs/font)      | Converts to `fontFamily` mark.                                           |
 | `style="font-size: ..."`                                 | [`FontSizePlugin`](/docs/font)        | Converts to `fontSize` mark.                                             |
 | `style="font-weight: ..."` (other than bold values)      | [`FontWeightPlugin`](/docs/font)      | Converts to `fontWeight` mark for non-standard bold values.              |
 | `<mark>`                                                   | [`HighlightPlugin`](/docs/highlight)       | Converts to `highlight: true` mark.                                      |
-| `style="text-align: ..."`                                | [`TextAlignPlugin`](/docs/text-align)           | Sets `align` property on block elements.                                 |
+| `style="text-align: ..."`                                | [`TextAlignPlugin`](/docs/text-align)           | Sets `textAlign` property on block elements.                                 |
 | `style="line-height: ..."`                               | [`LineHeightPlugin`](/docs/line-height)      | Sets `lineHeight` property on block elements.                            |
 
 <Callout type="note" title="Plugin Configuration">
-  The exact Plate type (e.g., `ParagraphPlugin.name` vs. `'p'`) depends on how plugins are configured. The table shows typical associations. Ensure the corresponding Plate plugins are included in your editor for these rules to apply.
+  Persisted element types come from the installed plugin schema handle (for
+  example, `editor.plugin(ParagraphPlugin).schema.type`). The table shows typical associations.
+  Include the corresponding Plate plugins for these rules to apply.
 </Callout>
 
 ### `defineCodecs`
@@ -280,9 +282,9 @@ storage type:
 
 ```tsx title="lib/callout-plugin.ts"
 import { property, schema } from 'platejs';
-import { createPlatePlugin } from 'platejs/react';
+import { definePlatePlugin } from 'platejs/react';
 
-const CalloutPlugin = createPlatePlugin({
+const CalloutPlugin = definePlatePlugin('callout', {
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       'text/html': {
@@ -296,9 +298,7 @@ const CalloutPlugin = createPlatePlugin({
         }),
         match: [{ tag: 'aside' }],
       },
-    }),
-  name: 'callout',
-  schema: {
+    }),  schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
       properties: {
@@ -306,14 +306,12 @@ const CalloutPlugin = createPlatePlugin({
       },
     },
   },
-  type: 'callout',
 });
-
-export const NotePlugin = CalloutPlugin.configure({ type: 'note' });
 ```
 
-`NotePlugin` decodes `<aside>` as a `note` element because the codec targets
-the installed descriptor, not a hard-coded type string.
+`CalloutPlugin` decodes `<aside>` as a `callout` element because the codec
+targets the installed descriptor. Define a separate named descriptor when a
+different persisted identity is required; `.configure()` does not rename one.
 
 Use `defineCodecs(map)` for self and product codecs. A plugin contributing HTML
 behavior to another descriptor uses `defineCodecs(TargetPlugin, map)`; the
@@ -323,20 +321,20 @@ ordered `'text/html'` tuple inside the same map.
 
 ### Whole-Input HTML Hooks
 
-Use flat `parsers.html.query`, `transformData`, and `transformFragment` hooks
-for work that needs the complete incoming payload. These hooks run before or
-after node decoding; they do not declare node matches.
+Use `query`, `transformData`, and `transformFragment` on the plugin's
+`'text/html'` codec for work that needs the complete incoming payload. These
+hooks run before or after node decoding; they do not declare node matches.
 
 ```ts title="lib/html-cleanup-plugin.ts"
-const HtmlCleanupPlugin = createPlatePlugin({
-  name: 'htmlCleanup',
-  parsers: {
-    html: {
+const HtmlCleanupPlugin = definePlatePlugin('htmlCleanup', {
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'text/html': {
       query: ({ source }) => source.types.includes('text/html'),
       transformData: ({ data }) =>
         data.replaceAll(/<!--(?:Start|End)Fragment-->/g, ''),
-    },
-  },
+      },
+    }),
 });
 ```
 

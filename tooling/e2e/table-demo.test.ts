@@ -555,6 +555,112 @@ test.describe('table registry demo', () => {
     }
   });
 
+  test('owns repeated plain vertical navigation before browser paint', async ({
+    page,
+  }) => {
+    const runtimeErrors = recordRuntimeErrors(page);
+    const editor = getEditor(page);
+    const table = getOriginalTable(page);
+
+    try {
+      await page.goto('/blocks/table-demo');
+      await expect(editor).toHaveCount(1);
+      await expect(table).toHaveCount(1);
+      await page.evaluate(() => {
+        const state = window as typeof window & {
+          __tableVerticalFrames?: {
+            cellId: string | null;
+            defaultPrevented: boolean;
+            key: string;
+          }[];
+        };
+
+        state.__tableVerticalFrames = [];
+        document.addEventListener(
+          'keydown',
+          (event) => {
+            if (!['ArrowDown', 'ArrowUp'].includes(event.key)) return;
+
+            requestAnimationFrame(() => {
+              const anchorNode = document.getSelection()?.anchorNode;
+              const anchorElement =
+                anchorNode instanceof Element
+                  ? anchorNode
+                  : anchorNode?.parentElement;
+
+              state.__tableVerticalFrames?.push({
+                cellId:
+                  anchorElement
+                    ?.closest('[data-table-cell-id]')
+                    ?.getAttribute('data-table-cell-id') ?? null,
+                defaultPrevented: event.defaultPrevented,
+                key: event.key,
+              });
+            });
+          },
+          { capture: true }
+        );
+      });
+
+      await placeCaretInCell(
+        getTableCell(table, 'table-demo-heading-name'),
+        editor
+      );
+      await page.keyboard.press('End');
+
+      for (const key of ['ArrowDown', 'ArrowDown', 'ArrowUp', 'ArrowUp']) {
+        await page.keyboard.press(key);
+        await page.evaluate(
+          () =>
+            new Promise<void>((resolve) => {
+              requestAnimationFrame(() => resolve());
+            })
+        );
+      }
+
+      await expect
+        .poll(() =>
+          page.evaluate(
+            () =>
+              (
+                window as typeof window & {
+                  __tableVerticalFrames?: {
+                    cellId: string | null;
+                    defaultPrevented: boolean;
+                    key: string;
+                  }[];
+                }
+              ).__tableVerticalFrames ?? []
+          )
+        )
+        .toEqual([
+          {
+            cellId: 'table-demo-image-name',
+            defaultPrevented: true,
+            key: 'ArrowDown',
+          },
+          {
+            cellId: 'table-demo-mention-name',
+            defaultPrevented: true,
+            key: 'ArrowDown',
+          },
+          {
+            cellId: 'table-demo-image-name',
+            defaultPrevented: true,
+            key: 'ArrowUp',
+          },
+          {
+            cellId: 'table-demo-heading-name',
+            defaultPrevented: true,
+            key: 'ArrowUp',
+          },
+        ]);
+      runtimeErrors.assertNone();
+    } finally {
+      runtimeErrors.stop();
+    }
+  });
+
   test('creates a sized body table from the keyboard picker', async ({
     page,
   }) => {

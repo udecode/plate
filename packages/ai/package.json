@@ -46,6 +46,7 @@
     "@platejs/selection": "workspace:^",
     "@platejs/plite": "workspace:^",
     "@platejs/suggestion": "workspace:^",
+    "@platejs/table": "workspace:^",
     "@platejs/utils": "workspace:^",
     "fastest-levenshtein": "1.0.16",
     "lodash": "^4.17.21",

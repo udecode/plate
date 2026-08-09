@@ -31,7 +31,7 @@ Forced Layout is the `NormalizeTypesPlugin` pattern for pinning document positio
 Add `NormalizeTypesPlugin` when specific paths must exist or hold a specific block type.
 
 ```tsx
-import { KEYS, NormalizeTypesPlugin } from 'platejs';
+import { NormalizeTypesPlugin } from 'platejs';
 import { createPlateEditor } from 'platejs/react';
 
 export const editor = createPlateEditor({
@@ -39,8 +39,8 @@ export const editor = createPlateEditor({
     NormalizeTypesPlugin.configure({
       initialState: {
         rules: [
-          { path: [0], strictType: KEYS.h1 },
-          { path: [1], type: KEYS.p },
+          { path: [0], strictType: PLUGINS.h1 },
+          { path: [1], type: 'paragraph' },
         ],
       },
     }),

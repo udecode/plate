@@ -1,5 +1,5 @@
 import { createPlateEditor } from '@platejs/core/react';
-import { BaseParagraphPlugin } from '@platejs/core';
+import { BaseParagraphPlugin, ElementIdPlugin } from '@platejs/core';
 import { BaseIndentPlugin } from '@platejs/indent';
 
 import { TogglePlugin } from './TogglePlugin';
@@ -9,6 +9,7 @@ describe('TogglePlugin', () => {
     BaseIndentPlugin.configure({
       targetPlugins: [BaseParagraphPlugin, TogglePlugin],
     }),
+    ElementIdPlugin,
     TogglePlugin,
   ] as const;
 
@@ -26,7 +27,7 @@ describe('TogglePlugin', () => {
       ],
     });
 
-    editor.plugin(TogglePlugin).api.toggleIds(['t1'], true);
+    editor.plugin(TogglePlugin).api.toggleKeys([editor.key([0])!], true);
     editor.update.break.insert();
 
     expect(editor.read.children()).toMatchObject([
@@ -67,10 +68,13 @@ describe('TogglePlugin', () => {
       ],
     });
 
+    const toggleKey = editor.key([0])!;
+    const childKey = editor.key([1])!;
+
     editor.plugin(TogglePlugin).store.set({
-      toggleIndex: new Map<string, string[]>([
-        ['t1', []],
-        ['p1', ['t1']],
+      toggleIndex: new Map([
+        [toggleKey, []],
+        [childKey, [toggleKey]],
       ]),
     });
     editor.update.break.insert();
@@ -112,10 +116,13 @@ describe('TogglePlugin', () => {
       ],
     });
 
+    const toggleKey = editor.key([0])!;
+    const childKey = editor.key([1])!;
+
     editor.plugin(TogglePlugin).store.set({
-      toggleIndex: new Map<string, string[]>([
-        ['t1', []],
-        ['p1', ['t1']],
+      toggleIndex: new Map([
+        [toggleKey, []],
+        [childKey, [toggleKey]],
       ]),
     });
 
@@ -130,7 +137,7 @@ describe('TogglePlugin', () => {
       false
     );
 
-    editor.plugin(TogglePlugin).api.toggleIds(['t1'], true);
+    editor.plugin(TogglePlugin).api.toggleKeys([toggleKey], true);
 
     expect(hiddenChild && editor.read.nodes.isSelectable(hiddenChild)).toBe(
       true
@@ -157,11 +164,15 @@ describe('TogglePlugin', () => {
       ],
     });
 
+    const toggleKey = editor.key([0])!;
+    const childKey = editor.key([1])!;
+    const afterKey = editor.key([2])!;
+
     editor.plugin(TogglePlugin).store.set({
-      toggleIndex: new Map<string, string[]>([
-        ['t1', []],
-        ['p1', ['t1']],
-        ['p2', []],
+      toggleIndex: new Map([
+        [toggleKey, []],
+        [childKey, [toggleKey]],
+        [afterKey, []],
       ]),
     });
     editor.update.text.deleteBackward({ unit: 'character' });
@@ -201,11 +212,15 @@ describe('TogglePlugin', () => {
       ],
     });
 
+    const toggleKey = editor.key([0])!;
+    const childKey = editor.key([1])!;
+    const afterKey = editor.key([2])!;
+
     editor.plugin(TogglePlugin).store.set({
-      toggleIndex: new Map<string, string[]>([
-        ['t1', []],
-        ['p1', ['t1']],
-        ['p2', []],
+      toggleIndex: new Map([
+        [toggleKey, []],
+        [childKey, [toggleKey]],
+        [afterKey, []],
       ]),
     });
     editor.update.text.deleteForward({ unit: 'character' });
@@ -249,13 +264,12 @@ describe('TogglePlugin', () => {
     ] as const;
     const editor = createPlateEditor({ plugins, initialValue: value });
 
-    expect(editor.plugin(TogglePlugin).read.lastEnclosedEntry('t1')).toEqual([
-      value[2],
-      [2],
-    ]);
+    expect(
+      editor.plugin(TogglePlugin).read.lastEnclosedEntry(editor.key([0])!)
+    ).toEqual([value[2], [2]]);
   });
 
-  it('reads hidden ids and closed state from the toggle index', () => {
+  it('reads hidden keys and closed state from the toggle index', () => {
     const value = [
       { children: [{ text: 'toggle' }], id: 't1', type: 'toggle' },
       {
@@ -279,21 +293,25 @@ describe('TogglePlugin', () => {
     ] as const;
     const editor = createPlateEditor({ plugins, initialValue: value });
     const toggle = editor.plugin(TogglePlugin);
+    const toggleKey = editor.key([0])!;
+    const firstKey = editor.key([1])!;
+    const secondKey = editor.key([2])!;
+    const lastKey = editor.key([3])!;
 
     toggle.store.set({
       toggleIndex: new Map([
-        ['t1', []],
-        ['p1', ['t1']],
-        ['p2', ['t1']],
-        ['p3', []],
+        [toggleKey, []],
+        [firstKey, [toggleKey]],
+        [secondKey, [toggleKey]],
+        [lastKey, []],
       ]),
     });
 
-    expect(toggle.store.get('enclosingIds', 'p1')).toEqual(['t1']);
-    expect(toggle.store.get('isClosed', 'p1')).toBe(true);
+    expect(toggle.store.get('enclosingKeys', firstKey)).toEqual([toggleKey]);
+    expect(toggle.store.get('isClosed', firstKey)).toBe(true);
 
-    toggle.api.toggleIds(['t1'], true);
+    toggle.api.toggleKeys([toggleKey], true);
 
-    expect(toggle.store.get('isClosed', 'p1')).toBe(false);
+    expect(toggle.store.get('isClosed', firstKey)).toBe(false);
   });
 });

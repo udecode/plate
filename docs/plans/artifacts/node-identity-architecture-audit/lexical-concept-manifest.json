@@ -1,0 +1,12 @@
+{
+  "concepts": [
+    { "id": "LEX-RUNTIME-001", "origin": "reference" },
+    { "id": "LEX-POSITION-001", "origin": "reference" },
+    { "id": "LEX-PERSISTENCE-001", "origin": "reference" },
+    { "id": "PLITE-RUNTIME-001", "origin": "Plite" },
+    { "id": "PLITE-ANCHOR-001", "origin": "Plite" },
+    { "id": "PLATE-PERSISTED-ID-001", "origin": "Plate" },
+    { "id": "SHARED-IDENTITY-POLICY-001", "origin": "shared" }
+  ],
+  "priorCandidates": []
+}

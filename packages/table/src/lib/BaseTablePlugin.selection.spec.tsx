@@ -56,7 +56,6 @@ describe('table selection', () => {
 
     const createEditor = () =>
       createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins(),
         initialValue: value.children,
       });
@@ -157,7 +156,6 @@ describe('table selection', () => {
           </editor>
         ) as TestEditor;
         const spanningEditor = createTestTableEditor({
-          nodeId: true,
           plugins: getTestTablePlugins(),
           initialValue: spanningInput.children,
         });
@@ -209,7 +207,6 @@ describe('table selection', () => {
           </editor>
         ) as TestEditor;
         const editor = createTestTableEditor({
-          nodeId: true,
           plugins: getTestTablePlugins(),
           selection: input.selection,
           initialValue: input.children,
@@ -370,7 +367,6 @@ describe('table selection', () => {
 
     const createTableEditor = (input: TestEditor) =>
       createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins(),
         selection: input.selection,
         initialValue: input.children,
@@ -462,7 +458,13 @@ describe('table selection', () => {
         table.update.moveSelection({ edge: 'left', fromOneCell: true });
         table.update.moveSelection({ edge: 'left' });
 
-        expect(table.read.getSelectedCellIds()).toEqual(['a', 'b', 'c']);
+        expect(table.read.getSelectedCellKeys()).toEqual(
+          [
+            [0, 0, 0],
+            [0, 0, 1],
+            [0, 0, 2],
+          ].map((path) => editor.key(path)!)
+        );
         expect(editor.read.selection()).toMatchObject({
           anchor: { path: [0, 0, 2, 0, 0] },
           focus: { path: [0, 0, 0, 0, 0] },
@@ -536,7 +538,13 @@ describe('table selection', () => {
         table.update.moveSelection({ edge: 'top', fromOneCell: true });
         table.update.moveSelection({ edge: 'top' });
 
-        expect(table.read.getSelectedCellIds()).toEqual(['a', 'b', 'c']);
+        expect(table.read.getSelectedCellKeys()).toEqual(
+          [
+            [0, 0, 0],
+            [0, 1, 0],
+            [0, 2, 0],
+          ].map((path) => editor.key(path)!)
+        );
         expect(editor.read.selection()).toMatchObject({
           anchor: { path: [0, 2, 0, 0, 0] },
           focus: { path: [0, 0, 0, 0, 0] },
@@ -614,7 +622,6 @@ describe('table selection', () => {
 
     const createTableEditor = (input: TestEditor) =>
       createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins(),
         selection: input.selection,
         initialValue: input.children,
@@ -778,8 +785,13 @@ describe('table selection', () => {
         editor.plugin(BaseTablePlugin).update.moveSelection({ edge: 'left' });
 
         expect(
-          editor.plugin(BaseTablePlugin).read.getSelectedCellIds()
-        ).toEqual(['a', 'b']);
+          editor.plugin(BaseTablePlugin).read.getSelectedCellKeys()
+        ).toEqual(
+          [
+            [0, 0, 0],
+            [0, 0, 1],
+          ].map((path) => editor.key(path)!)
+        );
         expect(editor.read.selection()).toMatchObject({
           anchor: { path: [0, 0, 0, 0, 0] },
           focus: { path: [0, 0, 1, 0, 0] },
@@ -814,8 +826,13 @@ describe('table selection', () => {
         editor.plugin(BaseTablePlugin).update.moveSelection({ edge: 'right' });
 
         expect(
-          editor.plugin(BaseTablePlugin).read.getSelectedCellIds()
-        ).toEqual(['b', 'c']);
+          editor.plugin(BaseTablePlugin).read.getSelectedCellKeys()
+        ).toEqual(
+          [
+            [0, 0, 1],
+            [0, 0, 2],
+          ].map((path) => editor.key(path)!)
+        );
         expect(editor.read.selection()).toMatchObject({
           anchor: { path: [0, 0, 2, 0, 0] },
           focus: { path: [0, 0, 1, 0, 0] },

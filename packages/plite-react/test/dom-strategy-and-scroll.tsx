@@ -3,7 +3,7 @@ import React from 'react';
 import type { Descendant } from '@platejs/plite';
 import { history } from '@platejs/plite-history';
 import {
-  getRuntimeId as editorGetRuntimeId,
+  getNodeKey as editorGetNodeKey,
   getSnapshot as editorGetSnapshot,
   point as editorPoint,
   range as editorRange,
@@ -56,17 +56,17 @@ const TestEditorSurface = ({ editor, ...props }: TestEditorSurfaceProps) => (
   </Plite>
 );
 
-const getRuntimeId = (
+const getNodeKey = (
   editor: ReturnType<typeof createReactEditor>,
   path: number[]
 ) => {
-  const runtimeId = editorGetRuntimeId(editor, path);
+  const nodeKey = editorGetNodeKey(editor, path);
 
-  if (!runtimeId) {
-    throw new Error(`Missing runtime id at ${path.join('.')}`);
+  if (!nodeKey) {
+    throw new Error(`Missing node key at ${path.join('.')}`);
   }
 
-  return runtimeId;
+  return nodeKey;
 };
 
 const fireEditorSelectAll = (root: HTMLElement) => {
@@ -184,13 +184,13 @@ test('Editable domStrategy partial-DOMs far segments without mounting editable d
     coveredPathRanges: [{ anchor: [2], focus: [3] }],
     coveredRuntimeRanges: [
       {
-        anchor: getRuntimeId(editor, [2]),
-        focus: getRuntimeId(editor, [3]),
+        anchor: getNodeKey(editor, [2]),
+        focus: getNodeKey(editor, [3]),
       },
     ],
     findPolicy: 'native',
     ownerPath: [],
-    ownerRuntimeId: null,
+    ownerNodeKey: null,
     reason: 'partial-dom-aggressive',
     selectionPolicy: 'model',
     state: 'virtualized',
@@ -278,7 +278,7 @@ test('Editable domStrategy partial-DOM updates coverage when the hidden tail run
     />
   );
 
-  const oldTailRuntimeId = getRuntimeId(editor, [7]);
+  const oldTailNodeKey = getNodeKey(editor, [7]);
 
   expect(
     DOMCoverage.getBoundary(editor, 'partial-dom-aggressive:1')
@@ -286,8 +286,8 @@ test('Editable domStrategy partial-DOM updates coverage when the hidden tail run
     coveredPathRanges: [{ anchor: [4], focus: [7] }],
     coveredRuntimeRanges: [
       {
-        anchor: getRuntimeId(editor, [4]),
-        focus: oldTailRuntimeId,
+        anchor: getNodeKey(editor, [4]),
+        focus: oldTailNodeKey,
       },
     ],
   });
@@ -304,9 +304,9 @@ test('Editable domStrategy partial-DOM updates coverage when the hidden tail run
     });
   });
 
-  const newTailRuntimeId = getRuntimeId(editor, [7]);
+  const newTailNodeKey = getNodeKey(editor, [7]);
 
-  expect(newTailRuntimeId).not.toBe(oldTailRuntimeId);
+  expect(newTailNodeKey).not.toBe(oldTailNodeKey);
   await waitFor(() =>
     expect(
       DOMCoverage.getBoundary(editor, 'partial-dom-aggressive:1')
@@ -314,8 +314,8 @@ test('Editable domStrategy partial-DOM updates coverage when the hidden tail run
       coveredPathRanges: [{ anchor: [4], focus: [7] }],
       coveredRuntimeRanges: [
         {
-          anchor: getRuntimeId(editor, [4]),
-          focus: newTailRuntimeId,
+          anchor: getNodeKey(editor, [4]),
+          focus: newTailNodeKey,
         },
       ],
     })
@@ -1939,7 +1939,7 @@ test('Editable staged full-document replacement resets staged coverage without s
     copyPolicy: 'materialize',
     findPolicy: 'native',
     ownerPath: [],
-    ownerRuntimeId: null,
+    ownerNodeKey: null,
     reason: 'rendering-staged',
     selectionPolicy: 'materialize',
     state: 'pending-mount',
@@ -2019,7 +2019,7 @@ test('Editable staged registers pending root groups as DOM coverage boundaries',
     copyPolicy: 'materialize',
     findPolicy: 'native',
     ownerPath: [],
-    ownerRuntimeId: null,
+    ownerNodeKey: null,
     reason: 'rendering-staged',
     selectionPolicy: 'materialize',
     state: 'pending-mount',
@@ -2080,19 +2080,19 @@ test('Editable staged selection export consults DOM coverage before raw DOM look
     domSelection?.addRange(rootRange);
 
     DOMCoverage.registerBoundary(editor, {
-      anchor: { type: 'placeholder', runtimeId: getRuntimeId(editor, [1]) },
+      anchor: { type: 'placeholder', nodeKey: getNodeKey(editor, [1]) },
       boundaryId: 'rendering-staged:pending',
       copyPolicy: 'materialize',
       coveredPathRanges: [{ anchor: [1], focus: [1] }],
       coveredRuntimeRanges: [
         {
-          anchor: getRuntimeId(editor, [1]),
-          focus: getRuntimeId(editor, [1]),
+          anchor: getNodeKey(editor, [1]),
+          focus: getNodeKey(editor, [1]),
         },
       ],
       findPolicy: 'native',
       ownerPath: [],
-      ownerRuntimeId: null,
+      ownerNodeKey: null,
       reason: 'rendering-staged',
       selectionPolicy: 'materialize',
       state: 'pending-mount',

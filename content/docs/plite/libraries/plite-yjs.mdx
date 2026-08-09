@@ -27,18 +27,18 @@ npm install @hocuspocus/provider
 ## Create The Extension
 
 Create or wrap a provider as a `YjsProviderLike`, then pass it to
-`createYjsExtension`. The provider owns the network. Plite owns the editor
+`yjs`. The provider owns the network. Plite owns the editor
 adapter.
 
 ```tsx
 import { createEditor } from "@platejs/plite";
-import { createYjsExtension } from "@platejs/yjs";
+import { yjs } from "@platejs/yjs";
 import { history } from "@platejs/plite-history";
 
 const editor = createEditor({
   extensions: [
     history(),
-    createYjsExtension({
+    yjs({
       clientId: "local-user",
       doc,
       provider,
@@ -87,7 +87,7 @@ mounted.
 const editor = createEditor({
   extensions: [
     history(),
-    createYjsExtension({
+    yjs({
       doc,
       provider,
       rootName: "article",
@@ -121,11 +121,11 @@ data.
 ```tsx
 import {
   createEditor,
-  defineEditorExtension,
+  defineExtension,
   defineEffect,
   valueCodecs,
 } from "@platejs/plite";
-import { createYjsExtension } from "@platejs/yjs";
+import { yjs } from "@platejs/yjs";
 
 const incrementCounter = defineEffect<number>({
   codec: valueCodecs.number,
@@ -134,13 +134,11 @@ const incrementCounter = defineEffect<number>({
   key: "counter.increment",
 });
 
-const counterEffects = defineEditorExtension({
-  effectTypes: [incrementCounter],
-  name: "counter-effects",
-});
+const counterEffects = defineExtension("counter-effects", {
+  effectTypes: [incrementCounter],});
 
 const editor = createEditor({
-  extensions: [counterEffects, createYjsExtension({ doc })],
+  extensions: [counterEffects, yjs({ doc })],
 });
 ```
 
@@ -156,7 +154,7 @@ Configure one peer as the effect-log compaction authority when the shared
 document retains a long-running session.
 
 ```tsx
-createYjsExtension({
+yjs({
   doc,
   sharedEffectCompaction: {
     authorityId: "collaboration-service",

@@ -7,11 +7,11 @@ import {
   Suspense,
   useLayoutEffect,
 } from 'react';
-import { type EditorCommit, type RuntimeId, TextApi } from '@platejs/plite';
+import { type EditorCommit, type NodeKey, TextApi } from '@platejs/plite';
 import {
   getLastCommit as editorGetLastCommit,
-  getPathByRuntimeId as editorGetPathByRuntimeId,
-  getRuntimeId as editorGetRuntimeId,
+  getPathByNodeKey as editorGetPathByNodeKey,
+  getNodeKey as editorGetNodeKey,
   getSnapshot as editorGetSnapshot,
   insertBreak as editorInsertBreak,
   isEditor as editorIsEditor,
@@ -30,10 +30,10 @@ import {
   usePliteEditor,
   useTextSelector,
 } from '../src';
-import { NodeRuntimeIdContext } from '../src/context';
+import { NodeKeyContext } from '../src/context';
 import {
   usePlaceholderValue,
-  useRootRuntimeIds,
+  useRootNodeKeys,
   useTopLevelSelectionIndex,
 } from '../src/editable/root-selector-sources';
 import {
@@ -174,7 +174,7 @@ describe('plite-react provider hooks contract', () => {
     );
 
     const ProbeAndCommit = () => {
-      const mountedEditor = useEditor<typeof editor>();
+      const mountedEditor = useEditor();
       const text = useEditorSelector(selector, {
         equalityFn: Object.is,
         shouldUpdate,
@@ -451,7 +451,7 @@ describe('plite-react provider hooks contract', () => {
     const nextOnValueChange = jest.fn();
 
     const CommitInLayout = ({ commit }: { commit: boolean }) => {
-      const mountedEditor = useEditor<typeof editor>();
+      const mountedEditor = useEditor();
 
       useLayoutEffect(() => {
         if (!commit) return;
@@ -722,10 +722,10 @@ describe('plite-react provider hooks contract', () => {
       ],
     });
 
-    const targetRuntimeId = editorGetSnapshot(editor).index.idAt([1, 0]);
+    const targetNodeKey = editorGetSnapshot(editor).index.keyAt([1, 0]);
     const selector = jest.fn(() => editorGetLastCommit(editor)?.version ?? 0);
     const shouldUpdate = jest.fn((change?: EditorCommit) =>
-      Boolean(change?.changed.hasRuntime(targetRuntimeId ?? '', 'selection'))
+      Boolean(change?.changed.hasNodeKey(targetNodeKey ?? '', 'selection'))
     );
     const initialVersion = editorGetLastCommit(editor)?.version ?? 0;
 
@@ -776,8 +776,8 @@ describe('plite-react provider hooks contract', () => {
     });
 
     const snapshot = editorGetSnapshot(editor);
-    const blockRuntimeId = snapshot.index.idAt([0]);
-    const textRuntimeId = snapshot.index.idAt([0, 0]);
+    const blockNodeKey = snapshot.index.keyAt([0]);
+    const textNodeKey = snapshot.index.keyAt([0, 0]);
     const selector = jest.fn((state) => state.selection());
     const seenChanges: EditorCommit[] = [];
     const shouldUpdate = jest.fn((change?: EditorCommit) => {
@@ -812,12 +812,10 @@ describe('plite-react provider hooks contract', () => {
     expect(shouldUpdate).toBeCalled();
     expect(selector).toBeCalledTimes(2);
     expect(result.current).toBe(null);
-    expect(seenChanges.at(-1)?.changed.runtimeIds('text')).toEqual([
-      textRuntimeId,
-    ]);
-    expect(seenChanges.at(-1)?.changed.runtimeIds('node')).toEqual([
-      blockRuntimeId,
-      textRuntimeId,
+    expect(seenChanges.at(-1)?.changed.nodeKeys('text')).toEqual([textNodeKey]);
+    expect(seenChanges.at(-1)?.changed.nodeKeys('node')).toEqual([
+      blockNodeKey,
+      textNodeKey,
     ]);
     expect(seenChanges.at(-1)?.changed.topLevelRanges()).toEqual([[0, 0]]);
     expect(seenChanges.at(-1)?.changed.has('root-order')).toBe(false);
@@ -837,7 +835,7 @@ describe('plite-react provider hooks contract', () => {
     });
   });
 
-  test('runtime selector hooks skip unrelated runtime id commits', async () => {
+  test('runtime selector hooks skip unrelated node key commits', async () => {
     const editor = createReactEditor();
 
     editorReplace(editor, {
@@ -849,11 +847,11 @@ describe('plite-react provider hooks contract', () => {
     });
 
     const snapshot = editorGetSnapshot(editor);
-    const blockRuntimeId = snapshot.index.idAt([0]);
-    const textRuntimeId = snapshot.index.idAt([0, 0]);
+    const blockNodeKey = snapshot.index.keyAt([0]);
+    const textNodeKey = snapshot.index.keyAt([0, 0]);
 
-    if (!blockRuntimeId || !textRuntimeId) {
-      throw new Error('Expected runtime ids for selector contract');
+    if (!blockNodeKey || !textNodeKey) {
+      throw new Error('Expected node keys for selector contract');
     }
 
     const nodeSelector = jest.fn(({ node }) =>
@@ -866,10 +864,10 @@ describe('plite-react provider hooks contract', () => {
     const { result } = renderHook(
       () => ({
         nodeText: useNodeSelector(nodeSelector, undefined, {
-          runtimeId: blockRuntimeId,
+          nodeKey: blockNodeKey,
         }),
         text: useTextSelector(textSelector, undefined, {
-          runtimeId: textRuntimeId,
+          nodeKey: textNodeKey,
         }),
       }),
       {
@@ -907,7 +905,7 @@ describe('plite-react provider hooks contract', () => {
     expect(textSelector).toBeCalledTimes(3);
   });
 
-  test('runtime selector listeners do not fan out to unrelated runtime ids', async () => {
+  test('runtime selector listeners do not fan out to unrelated node keys', async () => {
     const editor = createReactEditor();
 
     editorReplace(editor, {
@@ -919,11 +917,11 @@ describe('plite-react provider hooks contract', () => {
     });
 
     const snapshot = editorGetSnapshot(editor);
-    const firstBlockRuntimeId = snapshot.index.idAt([0]);
-    const secondTextRuntimeId = snapshot.index.idAt([1, 0]);
+    const firstBlockNodeKey = snapshot.index.keyAt([0]);
+    const secondTextNodeKey = snapshot.index.keyAt([1, 0]);
 
-    if (!firstBlockRuntimeId || !secondTextRuntimeId) {
-      throw new Error('Expected runtime ids for listener fanout contract');
+    if (!firstBlockNodeKey || !secondTextNodeKey) {
+      throw new Error('Expected node keys for listener fanout contract');
     }
 
     const selector = jest.fn(() => editorGetLastCommit(editor)?.version ?? 0);
@@ -936,7 +934,7 @@ describe('plite-react provider hooks contract', () => {
       const { result } = renderHook(
         () =>
           useEditorSelector(selector, {
-            runtimeId: firstBlockRuntimeId,
+            nodeKey: firstBlockNodeKey,
             shouldUpdate,
           }),
         {
@@ -966,7 +964,7 @@ describe('plite-react provider hooks contract', () => {
           .events.filter(
             (event) =>
               event.id === 'selector-runtime-check' &&
-              event.runtimeId === firstBlockRuntimeId
+              event.nodeKey === firstBlockNodeKey
           )
       ).toHaveLength(0);
 
@@ -980,7 +978,7 @@ describe('plite-react provider hooks contract', () => {
 
       const profile = counter.snapshot();
       const targetSelectorEvents = profile.events.filter(
-        (event) => event.runtimeId === firstBlockRuntimeId
+        (event) => event.nodeKey === firstBlockNodeKey
       );
 
       expect(shouldUpdate).toBeCalledTimes(1);
@@ -1009,10 +1007,10 @@ describe('plite-react provider hooks contract', () => {
         },
       ],
     });
-    const runtimeId = editorGetRuntimeId(editor, [0]);
+    const nodeKey = editorGetNodeKey(editor, [0]);
 
-    if (!runtimeId) {
-      throw new Error('Expected runtime id for top-level split contract');
+    if (!nodeKey) {
+      throw new Error('Expected node key for top-level split contract');
     }
 
     const selector = jest.fn(({ node }) =>
@@ -1026,7 +1024,7 @@ describe('plite-react provider hooks contract', () => {
     const { result } = renderHook(
       () =>
         useNodeSelector(selector, undefined, {
-          runtimeId,
+          nodeKey,
         }),
       {
         wrapper: ({ children }) => (
@@ -1061,10 +1059,10 @@ describe('plite-react provider hooks contract', () => {
         { type: 'block', children: [{ text: 'sibling' }] },
       ],
     });
-    const siblingRuntimeId = editorGetRuntimeId(editor, [1]);
+    const siblingNodeKey = editorGetNodeKey(editor, [1]);
 
-    if (!siblingRuntimeId) {
-      throw new Error('Expected runtime id for shifted split sibling contract');
+    if (!siblingNodeKey) {
+      throw new Error('Expected node key for shifted split sibling contract');
     }
 
     const selector = jest.fn(({ path }) => path?.join('.') ?? null);
@@ -1072,7 +1070,7 @@ describe('plite-react provider hooks contract', () => {
     const { result } = renderHook(
       () =>
         useNodeSelector(selector, undefined, {
-          runtimeId: siblingRuntimeId,
+          nodeKey: siblingNodeKey,
         }),
       {
         wrapper: ({ children }) => (
@@ -1104,10 +1102,10 @@ describe('plite-react provider hooks contract', () => {
         { type: 'block', children: [{ text: 'target' }] },
       ],
     });
-    const runtimeId = editorGetRuntimeId(editor, [1]);
+    const nodeKey = editorGetNodeKey(editor, [1]);
 
-    if (!runtimeId) {
-      throw new Error('Expected runtime id for top-level move contract');
+    if (!nodeKey) {
+      throw new Error('Expected node key for top-level move contract');
     }
 
     const selector = jest.fn(({ path }) => path?.join('.') ?? null);
@@ -1115,7 +1113,7 @@ describe('plite-react provider hooks contract', () => {
     const { result } = renderHook(
       () =>
         useNodeSelector(selector, undefined, {
-          runtimeId,
+          nodeKey,
         }),
       {
         wrapper: ({ children }) => (
@@ -1154,10 +1152,10 @@ describe('plite-react provider hooks contract', () => {
         { type: 'block', children: [{ text: 'sibling' }] },
       ],
     });
-    const runtimeId = editorGetRuntimeId(editor, [0, 0]);
+    const nodeKey = editorGetNodeKey(editor, [0, 0]);
 
-    if (!runtimeId) {
-      throw new Error('Expected runtime id for nested-to-top-level move');
+    if (!nodeKey) {
+      throw new Error('Expected node key for nested-to-top-level move');
     }
 
     const selector = jest.fn(({ path }) => path?.join('.') ?? null);
@@ -1165,7 +1163,7 @@ describe('plite-react provider hooks contract', () => {
     const { result } = renderHook(
       () =>
         useNodeSelector(selector, undefined, {
-          runtimeId,
+          nodeKey,
         }),
       {
         wrapper: ({ children }) => (
@@ -1208,10 +1206,10 @@ describe('plite-react provider hooks contract', () => {
         { type: 'block', children: [{ text: 'sibling' }] },
       ],
     });
-    const sourceParentRuntimeId = editorGetRuntimeId(editor, [0]);
+    const sourceParentNodeKey = editorGetNodeKey(editor, [0]);
 
-    if (!sourceParentRuntimeId) {
-      throw new Error('Expected source parent runtime id for nested move');
+    if (!sourceParentNodeKey) {
+      throw new Error('Expected source parent node key for nested move');
     }
 
     const selector = jest.fn(({ node }) =>
@@ -1221,7 +1219,7 @@ describe('plite-react provider hooks contract', () => {
     const { result } = renderHook(
       () =>
         useNodeSelector(selector, undefined, {
-          runtimeId: sourceParentRuntimeId,
+          nodeKey: sourceParentNodeKey,
         }),
       {
         wrapper: ({ children }) => (
@@ -1260,10 +1258,10 @@ describe('plite-react provider hooks contract', () => {
         },
       ],
     });
-    const runtimeId = editorGetRuntimeId(editor, [0]);
+    const nodeKey = editorGetNodeKey(editor, [0]);
 
-    if (!runtimeId) {
-      throw new Error('Expected runtime id for top-level-to-nested move');
+    if (!nodeKey) {
+      throw new Error('Expected node key for top-level-to-nested move');
     }
 
     const selector = jest.fn(({ path }) => path?.join('.') ?? null);
@@ -1271,7 +1269,7 @@ describe('plite-react provider hooks contract', () => {
     const { result } = renderHook(
       () =>
         useNodeSelector(selector, undefined, {
-          runtimeId,
+          nodeKey,
         }),
       {
         wrapper: ({ children }) => (
@@ -1311,10 +1309,10 @@ describe('plite-react provider hooks contract', () => {
         { type: 'block', children: [{ text: 'target' }] },
       ],
     });
-    const destinationParentRuntimeId = editorGetRuntimeId(editor, [0]);
+    const destinationParentNodeKey = editorGetNodeKey(editor, [0]);
 
-    if (!destinationParentRuntimeId) {
-      throw new Error('Expected destination parent runtime id for nested move');
+    if (!destinationParentNodeKey) {
+      throw new Error('Expected destination parent node key for nested move');
     }
 
     const selector = jest.fn(({ node }) =>
@@ -1324,7 +1322,7 @@ describe('plite-react provider hooks contract', () => {
     const { result } = renderHook(
       () =>
         useNodeSelector(selector, undefined, {
-          runtimeId: destinationParentRuntimeId,
+          nodeKey: destinationParentNodeKey,
         }),
       {
         wrapper: ({ children }) => (
@@ -1355,19 +1353,19 @@ describe('plite-react provider hooks contract', () => {
         { type: 'block', children: [{ text: 'two' }] },
       ],
     });
-    const runtimeId = editorGetRuntimeId(editor, [0]);
+    const nodeKey = editorGetNodeKey(editor, [0]);
 
-    if (!runtimeId) {
-      throw new Error('Expected runtime id for element path contract');
+    if (!nodeKey) {
+      throw new Error('Expected node key for element path contract');
     }
 
     const { result } = renderHook(() => useElementPath(), {
       wrapper: ({ children }) => (
         <Plite editor={editor}>
           <Editable />
-          <NodeRuntimeIdContext.Provider value={runtimeId}>
+          <NodeKeyContext.Provider value={nodeKey}>
             {children}
-          </NodeRuntimeIdContext.Provider>
+          </NodeKeyContext.Provider>
         </Plite>
       ),
     });
@@ -1378,7 +1376,7 @@ describe('plite-react provider hooks contract', () => {
       editorMoveNodes(editor, { at: [0], to: [2] });
     });
 
-    expect(editorGetPathByRuntimeId(editor, runtimeId)).toEqual([1]);
+    expect(editorGetPathByNodeKey(editor, nodeKey)).toEqual([1]);
     expect(result.current).toEqual([1]);
   });
 
@@ -1388,17 +1386,17 @@ describe('plite-react provider hooks contract', () => {
       children: [{ text: `line ${index}` }],
     }));
     const editor = createReactEditor({ initialValue: value });
-    const runtimeIds = value.map((_value, index) =>
-      editorGetRuntimeId(editor, [index])
-    ) as RuntimeId[];
+    const nodeKeys = value.map((_value, index) =>
+      editorGetNodeKey(editor, [index])
+    ) as NodeKey[];
     const counter = createPliteReactRenderCounter();
     const previousProfiler = globalThis.__PLITE_REACT_RENDER_PROFILER__;
 
-    const PathProbe = ({ runtimeId }: { runtimeId: RuntimeId }) => {
+    const PathProbe = ({ nodeKey }: { nodeKey: NodeKey }) => {
       const path = useElementPath();
 
       return (
-        <span data-testid={`path-${runtimeId}`}>{path?.join('.') ?? ''}</span>
+        <span data-testid={`path-${nodeKey}`}>{path?.join('.') ?? ''}</span>
       );
     };
 
@@ -1408,10 +1406,10 @@ describe('plite-react provider hooks contract', () => {
       render(
         <Plite editor={editor}>
           <Editable />
-          {runtimeIds.map((runtimeId) => (
-            <NodeRuntimeIdContext.Provider key={runtimeId} value={runtimeId}>
-              <PathProbe runtimeId={runtimeId} />
-            </NodeRuntimeIdContext.Provider>
+          {nodeKeys.map((nodeKey) => (
+            <NodeKeyContext.Provider key={nodeKey} value={nodeKey}>
+              <PathProbe nodeKey={nodeKey} />
+            </NodeKeyContext.Provider>
           ))}
         </Plite>
       );
@@ -1586,9 +1584,7 @@ describe('plite-react provider hooks contract', () => {
       expect(
         profile.byKey['selector:selector-runtime-node-notify'] ?? 0
       ).toBeLessThanOrEqual(1);
-      expect(profile.byKey['selector:selector-root-runtime-ids-notify']).toBe(
-        1
-      );
+      expect(profile.byKey['selector:selector-root-node-keys-notify']).toBe(1);
     } finally {
       rendered?.unmount();
       globalThis.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
@@ -1601,13 +1597,13 @@ describe('plite-react provider hooks contract', () => {
       children: [{ text: `line ${index}` }],
     }));
     const editor = createReactEditor({ initialValue: value });
-    const trackedRuntimeId = editorGetRuntimeId(editor, [10]);
+    const trackedNodeKey = editorGetNodeKey(editor, [10]);
     const counter = createPliteReactRenderCounter();
     const previousProfiler = globalThis.__PLITE_REACT_RENDER_PROFILER__;
     let rendered: ReturnType<typeof render> | null = null;
 
-    if (!trackedRuntimeId) {
-      throw new Error('Expected runtime id for shifted DOM path sync contract');
+    if (!trackedNodeKey) {
+      throw new Error('Expected node key for shifted DOM path sync contract');
     }
 
     globalThis.__PLITE_REACT_RENDER_PROFILER__ = counter.profiler;
@@ -1621,7 +1617,7 @@ describe('plite-react provider hooks contract', () => {
 
       const getTrackedElement = () =>
         rendered!.container.querySelector<HTMLElement>(
-          `[data-plite-node="element"][data-plite-runtime-id="${trackedRuntimeId}"]`
+          `[data-plite-node="element"][data-plite-node-key="${trackedNodeKey}"]`
         );
 
       expect(getTrackedElement()?.getAttribute('data-plite-path')).toBe('10');
@@ -1646,9 +1642,7 @@ describe('plite-react provider hooks contract', () => {
       expect(
         profile.byKey['selector:selector-runtime-node-notify'] ?? 0
       ).toBeLessThanOrEqual(1);
-      expect(profile.byKey['selector:selector-root-runtime-ids-notify']).toBe(
-        1
-      );
+      expect(profile.byKey['selector:selector-root-node-keys-notify']).toBe(1);
     } finally {
       rendered?.unmount();
       globalThis.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
@@ -1662,12 +1656,10 @@ describe('plite-react provider hooks contract', () => {
         { type: 'block', children: [{ text: 'tracked' }] },
       ],
     });
-    const trackedRuntimeId = editorGetRuntimeId(editor, [1]);
+    const trackedNodeKey = editorGetNodeKey(editor, [1]);
 
-    if (!trackedRuntimeId) {
-      throw new Error(
-        'Expected runtime id for shifted insert sibling contract'
-      );
+    if (!trackedNodeKey) {
+      throw new Error('Expected node key for shifted insert sibling contract');
     }
 
     const selector = jest.fn(({ path }) => path?.join('.') ?? null);
@@ -1675,7 +1667,7 @@ describe('plite-react provider hooks contract', () => {
     const { result } = renderHook(
       () =>
         useNodeSelector(selector, undefined, {
-          runtimeId: trackedRuntimeId,
+          nodeKey: trackedNodeKey,
         }),
       {
         wrapper: ({ children }) => (
@@ -1742,9 +1734,7 @@ describe('plite-react provider hooks contract', () => {
       expect(profile.byKey['selector:selector-runtime-node-notify'] ?? 0).toBe(
         1
       );
-      expect(profile.byKey['selector:selector-root-runtime-ids-notify']).toBe(
-        1
-      );
+      expect(profile.byKey['selector:selector-root-node-keys-notify']).toBe(1);
     } finally {
       rendered?.unmount();
       globalThis.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
@@ -1762,11 +1752,11 @@ describe('plite-react provider hooks contract', () => {
     });
 
     const snapshot = editorGetSnapshot(editor);
-    const blockRuntimeId = snapshot.index.idAt([0]);
-    const textRuntimeId = snapshot.index.idAt([0, 0]);
+    const blockNodeKey = snapshot.index.keyAt([0]);
+    const textNodeKey = snapshot.index.keyAt([0, 0]);
 
-    if (!blockRuntimeId || !textRuntimeId) {
-      throw new Error('Expected runtime ids for mounted selector contract');
+    if (!blockNodeKey || !textNodeKey) {
+      throw new Error('Expected node keys for mounted selector contract');
     }
 
     const nodeSelector = jest.fn(({ node }) => {
@@ -1786,10 +1776,10 @@ describe('plite-react provider hooks contract', () => {
       const { result } = renderHook(
         () => ({
           nodeText: useMountedNodeRenderSelector(nodeSelector, undefined, {
-            runtimeId: blockRuntimeId,
+            nodeKey: blockNodeKey,
           }),
           text: useMountedTextRenderSelector(textSelector, undefined, {
-            runtimeId: textRuntimeId,
+            nodeKey: textNodeKey,
           }),
         }),
         {
@@ -1879,10 +1869,10 @@ describe('plite-react provider hooks contract', () => {
       selection: null,
     });
 
-    const textRuntimeId = editorGetSnapshot(editor).index.idAt([0, 0]);
+    const textNodeKey = editorGetSnapshot(editor).index.keyAt([0, 0]);
 
-    if (!textRuntimeId) {
-      throw new Error('Expected text runtime id for mounted selector contract');
+    if (!textNodeKey) {
+      throw new Error('Expected text node key for mounted selector contract');
     }
 
     const textSelector = jest.fn(({ text }) => text?.text ?? null);
@@ -1890,7 +1880,7 @@ describe('plite-react provider hooks contract', () => {
     const { result } = renderHook(
       () =>
         useMountedTextRenderSelector(textSelector, undefined, {
-          runtimeId: textRuntimeId,
+          nodeKey: textNodeKey,
         }),
       {
         wrapper: ({ children }) => (
@@ -1936,7 +1926,7 @@ describe('plite-react provider hooks contract', () => {
     const { result } = renderHook(
       () => ({
         selectedTopLevelIndex: useTopLevelSelectionIndex(true),
-        topLevelRuntimeIds: useRootRuntimeIds(),
+        topLevelNodeKeys: useRootNodeKeys(),
       }),
       {
         wrapper: ({ children }) => (
@@ -1949,9 +1939,9 @@ describe('plite-react provider hooks contract', () => {
     );
 
     expect(result.current.selectedTopLevelIndex).toBe(null);
-    expect(result.current.topLevelRuntimeIds).toHaveLength(2);
+    expect(result.current.topLevelNodeKeys).toHaveLength(2);
 
-    const initialRootRuntimeIds = result.current.topLevelRuntimeIds;
+    const initialRootNodeKeys = result.current.topLevelNodeKeys;
 
     await act(async () => {
       editor.update((tx) => {
@@ -1960,7 +1950,7 @@ describe('plite-react provider hooks contract', () => {
     });
 
     expect(result.current.selectedTopLevelIndex).toBe(1);
-    expect(result.current.topLevelRuntimeIds).toBe(initialRootRuntimeIds);
+    expect(result.current.topLevelNodeKeys).toBe(initialRootNodeKeys);
 
     await act(async () => {
       editor.update((tx) => {
@@ -1968,7 +1958,7 @@ describe('plite-react provider hooks contract', () => {
       });
     });
 
-    expect(result.current.topLevelRuntimeIds).toBe(initialRootRuntimeIds);
+    expect(result.current.topLevelNodeKeys).toBe(initialRootNodeKeys);
 
     await act(async () => {
       editor.update((tx) => {
@@ -1979,8 +1969,8 @@ describe('plite-react provider hooks contract', () => {
       });
     });
 
-    expect(result.current.topLevelRuntimeIds).toHaveLength(3);
-    expect(result.current.topLevelRuntimeIds).not.toBe(initialRootRuntimeIds);
+    expect(result.current.topLevelNodeKeys).toHaveLength(3);
+    expect(result.current.topLevelNodeKeys).not.toBe(initialRootNodeKeys);
   });
 
   test('root selector sources track broad selection index changes', async () => {
@@ -2020,7 +2010,7 @@ describe('plite-react provider hooks contract', () => {
     });
 
     expect(
-      editorGetLastCommit(editor)?.changed.runtimeIds('selection').length
+      editorGetLastCommit(editor)?.changed.nodeKeys('selection').length
     ).toBe(302);
     expect(result.current).toBe(50);
   });

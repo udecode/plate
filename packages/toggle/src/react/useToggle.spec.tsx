@@ -3,6 +3,9 @@ import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
 import { renderHook } from '@testing-library/react';
 import * as actualCoreReact from '@platejs/core/react';
+import type { NodeKey } from '@platejs/plite';
+
+const toggleKey = 'toggle-runtime' as NodeKey;
 
 const useEditorPluginMock = mock();
 const useEditorMock = mock();
@@ -41,7 +44,7 @@ describe('toggle hooks', () => {
     const toggle = mock();
     const collapse = mock();
     const focus = mock();
-    const toggleIds = mock();
+    const toggleKeys = mock();
     const update = mock(
       (
         callback: (tx: {
@@ -53,16 +56,17 @@ describe('toggle hooks', () => {
     const editor = {
       api: { dom: { focus } },
       plugin: () => ({
-        api: { toggleIds },
+        api: { toggleKeys },
         name: 'toggle',
-        schema: { element: { type: 'toggle' } },
+        schema: { type: 'toggle' },
       }),
       read: {
         nodes: {
           isBlock: () => true,
-          toArray: () => [[{ id: 't1' }]],
+          toArray: () => [[{}, [0]]],
         },
       },
+      key: () => toggleKey,
       update,
     };
 
@@ -78,23 +82,23 @@ describe('toggle hooks', () => {
     result.current.props.onClick();
 
     expect(result.current.props.pressed).toBe(true);
-    expect(toggleIds).toHaveBeenCalledWith(['t1'], true);
+    expect(toggleKeys).toHaveBeenCalledWith([toggleKey], true);
     expect(toggle).toHaveBeenCalledWith('toggle');
     expect(collapse).toHaveBeenCalled();
     expect(focus).toHaveBeenCalled();
   });
 
-  it('builds toggle button state from open ids and toggles the clicked id', async () => {
+  it('builds toggle button state from open keys and toggles the clicked key', async () => {
     const { useToggleButton, useToggleButtonState } = await import(
       `./useToggle?button=${Math.random().toString(36).slice(2)}`
     );
-    const toggleIds = mock();
+    const toggleKeys = mock();
 
-    usePluginStoreMock.mockReturnValue(new Set(['t1']));
-    useEditorPluginMock.mockReturnValue({ api: { toggleIds } });
+    usePluginStoreMock.mockReturnValue(new Set([toggleKey]));
+    useEditorPluginMock.mockReturnValue({ api: { toggleKeys } });
 
     const { result } = renderHook(() => {
-      const state = useToggleButtonState('t1');
+      const state = useToggleButtonState(toggleKey);
 
       return useToggleButton(state);
     });
@@ -104,6 +108,6 @@ describe('toggle hooks', () => {
     } as unknown as React.MouseEvent);
 
     expect(result.current.open).toBe(true);
-    expect(toggleIds).toHaveBeenCalledWith(['t1']);
+    expect(toggleKeys).toHaveBeenCalledWith([toggleKey]);
   });
 });

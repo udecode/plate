@@ -1417,7 +1417,7 @@ describe('plite normalization contract', () => {
     };
     const previousProfiler = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;
 
-    void warm.editor.read.runtime.snapshot().index.idAt([0]);
+    void warm.editor.read.runtime.snapshot().index.keyAt([0]);
 
     try {
       profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
@@ -1433,7 +1433,7 @@ describe('plite normalization contract', () => {
         0
       );
       assert.equal(
-        profiledIds.filter((id) => id === 'transaction-runtime-ids').length,
+        profiledIds.filter((id) => id === 'transaction-node-keys').length,
         1
       );
       assert.deepEqual(cold.visits, ['50', '50.0']);
@@ -1446,16 +1446,16 @@ describe('plite normalization contract', () => {
         0
       );
       assert.equal(
-        profiledIds.filter((id) => id === 'transaction-runtime-ids').length,
+        profiledIds.filter((id) => id === 'transaction-node-keys').length,
         1
       );
       assert.deepEqual(warm.visits, ['50', '50.0']);
 
       profiledIds.length = 0;
-      const runtimeId = warm.editor.read.runtime.idAt([50]);
+      const nodeKey = warm.editor.key([50]);
 
-      assert.ok(runtimeId);
-      assert.deepEqual(warm.editor.read.runtime.pathOf(runtimeId), [50]);
+      assert.ok(nodeKey);
+      assert.deepEqual(warm.editor.read.nodes.path(nodeKey), [50]);
       assert.equal(
         profiledIds.filter((id) => id === 'runtime-index-full-build').length,
         0

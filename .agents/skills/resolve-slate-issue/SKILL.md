@@ -15,20 +15,20 @@ Handle $ARGUMENTS.
 This is the thin public coordinator for one Slate issue:
 
 ```txt
-issue intake/classification -> plite-patch evidence packet
+issue intake/classification -> patch evidence packet
 -> root check -> Plate PR to next -> issue update
 -> close only when the claimed integration state is true
 ```
 
 Bare issue numbers target `udecode/slate`; an issue URL keeps its explicit
-repository. Use `maintainer` for queue selection or batches. Use `plite-patch`
-for a local regression with no public mutation.
+repository. Use `maintainer` for queue selection or batches. Use `patch`
+for a local behavior bug or regression with no public mutation.
 
 ## Authority
 
 - Issue authority: the repository resolved from the argument; default
   `udecode/slate`.
-- Implementation authority: `plite-patch` in the current Plate checkout on
+- Implementation authority: `patch` in the current Plate checkout on
   `next`.
 - Shipping authority: a Plate PR targeting `next`.
 - Release authority: npm/GitHub release readback.
@@ -42,8 +42,8 @@ workflow. It does not authorize merge, publish, or a premature close.
 - Read `CONTRIBUTING.md`, the relevant issue template,
   `.github/PULL_REQUEST_TEMPLATE.md`, and `SECURITY.md` before public mutation.
 - Do not duplicate local reproduction, test design, implementation,
-  architecture pressure, focused proof, or autoreview here. Delegate that
-  complete local packet to `plite-patch`.
+  architecture pressure, focused proof, or P2 autoreview here. Delegate that
+  complete local packet to `patch`.
 - Do not use a sibling Slate checkout as implementation proof.
 - Current-green behavior is `already-accounted` only when Plate `next` contains
   and proves it, not when it exists only in unmerged local changes.
@@ -92,17 +92,17 @@ Extract:
 
 | State | Coordinator action |
 | --- | --- |
-| `red-current` | Delegate the full local repair to `plite-patch`, then ship its evidence-backed diff through a Plate PR. |
+| `red-current` | Delegate the full local repair to `patch`, then ship its evidence-backed diff through a Plate PR. |
 | `local-only-fix` | Treat as `red-current`; unmerged local state is not integrated. |
 | `already-accounted` | Verify exact current `next` behavior, comment with evidence, and close only within the proven claim. |
 | `needs-manual-proof` | Run honest supporting proof, request the exact human flow, comment, and leave open. |
-| `plate-owned` | Route to the Plate owner or `maintainer`; do not force a Plite patch. |
+| `plate-owned` | Delegate local repair to `patch`; keep Slate issue coordination here or use `maintainer` when the public target is Plate. |
 | `invalid-or-out-of-scope` | Comment only with decisive evidence; close only when ownership and confidence justify it. |
 | `blocked` | Report missing evidence/access/tooling; do not claim fixed or close. |
 
 ## Delegate Local Repair
 
-For `red-current` or `local-only-fix`, invoke `plite-patch` with the normalized
+For `red-current` or `local-only-fix`, invoke `patch` with the normalized
 behavior report and issue constraints. Require this evidence packet back:
 
 - classification and root cause;
@@ -111,7 +111,7 @@ behavior report and issue constraints. Require this evidence packet back:
 - Browser/device proof or explicit limitation;
 - architecture-pressure verdict;
 - changeset status;
-- autoreview result;
+- P2 autoreview result;
 - unresolved caveat.
 
 Reject an incomplete packet. Do not recreate the worker's patch methodology or

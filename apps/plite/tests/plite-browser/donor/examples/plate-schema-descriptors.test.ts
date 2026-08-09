@@ -44,7 +44,6 @@ test('compiles Plate element and mark descriptors into HTML parsing, rendering, 
               text: 'Descriptor proof',
             },
           ],
-          id: expect.any(String),
           type: 'paragraph',
         },
       ]);

@@ -1,5 +1,5 @@
 import { toPlatePlugin } from '@platejs/core/react';
-import { KEYS } from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 
 import { findCodeBlockLanguageChange } from '../lib/codeHighlight.internal';
 import {
@@ -24,7 +24,10 @@ export const CodeHighlightPlugin = toPlatePlugin(BaseCodeHighlightPlugin, {
       if (!store.get().lowlight) return;
 
       if (
-        findCodeBlockLanguageChange(context, editor.plugin(KEYS.codeBlock).type)
+        findCodeBlockLanguageChange(
+          context,
+          editor.plugin(PLUGINS.codeBlock).schema.type
+        )
       ) {
         editor.api.react.refreshDecorations();
       }

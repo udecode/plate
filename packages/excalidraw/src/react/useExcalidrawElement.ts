@@ -3,36 +3,36 @@ import React from 'react';
 import type { OrderedExcalidrawElement } from '@excalidraw/excalidraw/element/types';
 import type {
   AppState,
-  ExcalidrawProps,
+  ExcalidrawProps as ExcalidrawLibraryProps,
   LibraryItems,
 } from '@excalidraw/excalidraw/types';
 
-import { type PlateEditor, useEditor } from '@platejs/core/react';
+import { useEditor } from '@platejs/core/react';
 import { useEditorReadOnly } from '@platejs/plite-react';
 import { cloneDeep, isEqual } from 'lodash';
 
-import type { TExcalidrawElement } from '../lib';
+import type { ExcalidrawElement } from '../lib';
 
 type ExcalidrawComponent =
   typeof import('@excalidraw/excalidraw')['Excalidraw'];
 
-export type TExcalidrawProps = ExcalidrawProps;
+export type ExcalidrawProps = ExcalidrawLibraryProps;
 
 export const useExcalidrawElement = ({
   element,
   libraryItems = [],
   scrollToContent = true,
 }: {
-  element: TExcalidrawElement;
+  element: ExcalidrawElement;
   libraryItems?: LibraryItems;
   scrollToContent?: boolean;
 }) => {
   const [Excalidraw, setExcalidraw] =
     React.useState<ExcalidrawComponent | null>(null);
-  const editor = useEditor<PlateEditor<TExcalidrawElement[]>>();
+  const editor = useEditor();
   const readOnly = useEditorReadOnly();
 
-  const lastSavedDataRef = React.useRef<TExcalidrawElement['data']>(null);
+  const lastSavedDataRef = React.useRef<ExcalidrawElement['data']>(null);
 
   React.useEffect(() => {
     void import('@excalidraw/excalidraw').then((comp) =>
@@ -47,7 +47,7 @@ export const useExcalidrawElement = ({
     if (readOnly) return;
 
     try {
-      const newData: NonNullable<TExcalidrawElement['data']> = JSON.parse(
+      const newData: NonNullable<ExcalidrawElement['data']> = JSON.parse(
         JSON.stringify({ elements, state })
       );
 
@@ -83,7 +83,7 @@ export const useExcalidrawElement = ({
     autoFocus: false,
     initialData,
     onChange: readOnly ? undefined : handleChange,
-  } satisfies TExcalidrawProps;
+  } satisfies ExcalidrawProps;
 
   return {
     Excalidraw,

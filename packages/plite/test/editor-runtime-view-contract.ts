@@ -538,7 +538,7 @@ describe('editor runtime/view contract', () => {
         focus: { path: [0, 0], offset: 'header'.length },
       });
     });
-    const mainRuntimeId = runtime.read((state) => state.runtime.idAt([0]));
+    const mainNodeKey = runtime.read((state) => state.key([0]));
     const viewRead = headerEditor.read((state) => {
       const entry = state.nodes.get([0]);
       assert(entry);
@@ -546,7 +546,7 @@ describe('editor runtime/view contract', () => {
       return {
         children: state.nodes.children(),
         node: entry[0],
-        runtimeId: state.runtime.idAt([0]),
+        nodeKey: state.key([0]),
         slice: state.slice.export(),
         snapshot: state.runtime.snapshot(),
         text: state.text.string([]),
@@ -558,7 +558,7 @@ describe('editor runtime/view contract', () => {
     assert.deepEqual(viewRead.node, paragraph('header'));
     assert.deepEqual(viewRead.slice.content, [paragraph('header')]);
     assert.equal(viewRead.text, 'header');
-    assert.notEqual(viewRead.runtimeId, mainRuntimeId);
+    assert.notEqual(viewRead.nodeKey, mainNodeKey);
     assert.deepEqual(viewRead.snapshot.children, [paragraph('header')]);
     assert.deepEqual(viewRead.value, {
       children: [paragraph('main')],
@@ -1114,7 +1114,7 @@ describe('editor runtime/view contract', () => {
     );
   });
 
-  it('preserves sibling-root runtime ids after failed non-main root updates', () => {
+  it('preserves sibling-root node keys after failed non-main root updates', () => {
     const runtime = createEditor({
       initialValue: {
         children: [paragraph('body')],
@@ -1122,7 +1122,7 @@ describe('editor runtime/view contract', () => {
       },
     });
     const headerEditor = createEditorView(runtime, { root: 'header' });
-    const mainRuntimeId = runtime.read((state) => state.runtime.idAt([0]));
+    const mainNodeKey = runtime.read((state) => state.key([0]));
 
     assert.throws(() => {
       headerEditor.update((tx) => {
@@ -1134,8 +1134,8 @@ describe('editor runtime/view contract', () => {
     }, /boom/);
 
     assert.equal(
-      runtime.read((state) => state.runtime.idAt([0])),
-      mainRuntimeId
+      runtime.read((state) => state.key([0])),
+      mainNodeKey
     );
     assert.deepEqual(
       runtime.read((state) => state.value()),
@@ -1847,15 +1847,11 @@ describe('editor runtime/view contract', () => {
     });
     const footerEditor = createEditorView(runtime, { root: 'footer' });
     const headerEditor = createEditorView(runtime, { root: 'header' });
-    const footerTextId = footerEditor.read((state) =>
-      state.runtime.idAt([0, 0])
-    );
-    const headerTextId = headerEditor.read((state) =>
-      state.runtime.idAt([0, 0])
-    );
-    let nodeImpactRuntimeIds: readonly string[] | null | undefined;
+    const footerTextKey = footerEditor.read((state) => state.key([0, 0]));
+    const headerTextKey = headerEditor.read((state) => state.key([0, 0]));
+    let nodeImpactNodeKeys: readonly string[] | null | undefined;
     const unsubscribe = runtime.subscribe((_snapshot, change) => {
-      nodeImpactRuntimeIds = change?.changed.runtimeIdsAll('node');
+      nodeImpactNodeKeys = change?.changed.nodeKeysAll('node');
     });
 
     headerEditor.update((tx) => {
@@ -1865,13 +1861,13 @@ describe('editor runtime/view contract', () => {
     });
     unsubscribe();
 
-    assert.ok(footerTextId);
-    assert.ok(headerTextId);
-    assert.ok(nodeImpactRuntimeIds);
-    assert.equal(nodeImpactRuntimeIds.includes(footerTextId), true);
-    assert.equal(nodeImpactRuntimeIds.includes(headerTextId), false);
+    assert.ok(footerTextKey);
+    assert.ok(headerTextKey);
+    assert.ok(nodeImpactNodeKeys);
+    assert.equal(nodeImpactNodeKeys.includes(footerTextKey), true);
+    assert.equal(nodeImpactNodeKeys.includes(headerTextKey), false);
     assert.deepEqual(
-      editorGetLastCommit(runtime)?.changed.runtimeIds('node'),
+      editorGetLastCommit(runtime)?.changed.nodeKeys('node'),
       []
     );
   });
@@ -1885,15 +1881,11 @@ describe('editor runtime/view contract', () => {
     });
     const headerEditor = createEditorView(runtime, { root: 'header' });
     const footerEditor = createEditorView(runtime, { root: 'footer' });
-    const footerTextId = footerEditor.read((state) =>
-      state.runtime.idAt([0, 0])
-    );
-    const headerTextId = headerEditor.read((state) =>
-      state.runtime.idAt([0, 0])
-    );
-    let nodeImpactRuntimeIds: readonly string[] | null | undefined;
+    const footerTextKey = footerEditor.read((state) => state.key([0, 0]));
+    const headerTextKey = headerEditor.read((state) => state.key([0, 0]));
+    let nodeImpactNodeKeys: readonly string[] | null | undefined;
     const unsubscribe = runtime.subscribe((_snapshot, change) => {
-      nodeImpactRuntimeIds = change?.changed.runtimeIdsAll('node');
+      nodeImpactNodeKeys = change?.changed.nodeKeysAll('node');
     });
 
     headerEditor.update((tx) => {
@@ -1906,11 +1898,11 @@ describe('editor runtime/view contract', () => {
     });
     unsubscribe();
 
-    assert.ok(footerTextId);
-    assert.ok(headerTextId);
-    assert.ok(nodeImpactRuntimeIds);
-    assert.equal(nodeImpactRuntimeIds.includes(footerTextId), true);
-    assert.equal(nodeImpactRuntimeIds.includes(headerTextId), true);
+    assert.ok(footerTextKey);
+    assert.ok(headerTextKey);
+    assert.ok(nodeImpactNodeKeys);
+    assert.equal(nodeImpactNodeKeys.includes(footerTextKey), true);
+    assert.equal(nodeImpactNodeKeys.includes(headerTextKey), true);
   });
 
   it('reads selection changes made inside a root-bound view transaction', () => {

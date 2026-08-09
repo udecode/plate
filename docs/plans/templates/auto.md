@@ -179,7 +179,7 @@ Work Checklist:
 - [ ] Changed list is current and includes only this run.
 - [ ] Needs-your-attention list is ranked and capped at five items.
 - [ ] Stopping checkpoints are queued or marked none.
-- [ ] Autoreview/review gate is run for non-trivial implementation diffs or marked N/A with reason.
+- [ ] P2 autoreview/review gate is run for non-trivial implementation diffs or marked N/A with reason.
 - [ ] Agent-native review is run for `.agents/**`, commands, skills, hooks, or prompt/tooling changes, or marked N/A with reason.
 - [ ] Output budget discipline is followed: broad scans are capped or written to artifacts instead of streamed.
 
@@ -203,7 +203,7 @@ Completion Gates:
 | Final lint/check | pending | Run scoped lint/check or record why no code changed | pending |
 | Workflow slowdown review | pending | Log slow steps and repair avoidable recurring slowdown, otherwise N/A | pending |
 | Agent-native review for agent/tooling changes | pending | Load `agent-native-reviewer` and close accepted findings, or N/A | pending |
-| Autoreview for non-trivial implementation changes | pending | Load `autoreview` and close accepted/actionable findings, or N/A for no implementation diff | pending |
+| P2 autoreview for non-trivial implementation changes | pending | Load `autoreview`, pass `--max-priority P2`, and close accepted/actionable findings; use P3 only when explicitly requested, or N/A for no implementation diff | pending |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 
 Phase / pass table:

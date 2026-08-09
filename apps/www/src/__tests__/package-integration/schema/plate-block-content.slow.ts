@@ -44,7 +44,7 @@ describe('Plate block-content eligibility', () => {
       ],
     });
     const structuralTypes = structuralPlugins.map(
-      (plugin) => editor.plugin(plugin).schema.element.type
+      (plugin) => editor.plugin(plugin).schema.type
     );
 
     for (const plugin of structuralPlugins) {

@@ -132,6 +132,46 @@ describe('Plite DOM geometry kernel', () => {
     dom.window.close();
   });
 
+  test('scopes coordinate placement inside a void to its own spacer', () => {
+    const dom = new JSDOM('<!doctype html><html><body></body></html>');
+    const { document } = dom.window;
+    const root = document.createElement('div');
+    const firstVoid = document.createElement('div');
+    const secondVoid = document.createElement('div');
+    const secondVoidContent = document.createElement('img');
+    const firstSpacer = createTextHost(document, '');
+    const secondSpacer = createTextHost(document, '');
+
+    root.dataset.pliteEditor = 'true';
+    firstVoid.dataset.pliteNode = 'element';
+    firstVoid.dataset.pliteVoid = 'true';
+    secondVoid.dataset.pliteNode = 'element';
+    secondVoid.dataset.pliteVoid = 'true';
+    firstSpacer.string.dataset.pliteZeroWidth = 'n';
+    secondSpacer.string.dataset.pliteZeroWidth = 'n';
+    setBoundingRect(root, rect(dom.window, { bottom: 160, right: 300 }));
+    setClientRects(firstSpacer.string, [
+      rect(dom.window, { bottom: 80, left: 20, right: 20, top: 70 }),
+    ]);
+    setClientRects(secondSpacer.string, [
+      rect(dom.window, { bottom: 110, left: 20, right: 20, top: 100 }),
+    ]);
+    firstVoid.append(firstSpacer.host);
+    secondVoid.append(secondVoidContent, secondSpacer.host);
+    root.append(firstVoid, secondVoid);
+    document.body.append(root);
+
+    expect(
+      createDOMGeometryKernel({
+        root,
+        target: secondVoidContent,
+      }).coordinatePlacement({ includeInsideString: true, x: 20, y: 82 })
+        ?.string
+    ).toBe(secondSpacer.string);
+
+    dom.window.close();
+  });
+
   test('uses the browser caret before measured fallback', () => {
     const dom = new JSDOM('<!doctype html><html><body></body></html>');
     const { document } = dom.window;

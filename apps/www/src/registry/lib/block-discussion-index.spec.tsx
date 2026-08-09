@@ -1,5 +1,6 @@
 /** @jsx jsxt */
 
+import { BaseCommentPlugin } from '@platejs/comment';
 import { BaseSuggestionPlugin } from '@platejs/suggestion';
 import { jsxt, type TestEditorFixture } from '@platejs/test-utils';
 import { describe, expect, it } from 'bun:test';
@@ -14,11 +15,14 @@ import {
   defineBasePlugin,
   ElementApi,
   property,
+  schema,
 } from 'platejs';
+import type { PlateEditor } from 'platejs/react';
 
 import {
   BLOCK_SUGGESTION_TOKEN,
   buildBlockDiscussionIndex,
+  shouldRefreshBlockDiscussionIndex,
 } from './block-discussion-index';
 
 jsxt;
@@ -93,6 +97,10 @@ const InlineEquationPlugin = defineBasePlugin(PLUGINS.inlineEquation, {
   },
 });
 
+const ParagraphPlugin = defineBasePlugin('p', {
+  schema: { element: schema.element.textBlock() },
+});
+
 const getResolvedSuggestions = (editor: BaseEditor) => {
   const suggestionApi = editor.plugin(BaseSuggestionPlugin).api;
 
@@ -103,14 +111,46 @@ const getResolvedSuggestions = (editor: BaseEditor) => {
       getCommentId: () => {},
       getSuggestionData: (node) => suggestionApi.suggestionData(node),
       getSuggestionDataList: (node) => suggestionApi.dataList(node),
-      getSuggestionId: (node) => suggestionApi.nodeId(node),
+      getSuggestionId: (node) => suggestionApi.id(node),
       getSuggestionKey: (id) => suggestionApi.key(id),
       isBlockSuggestion: (node) => suggestionApi.isBlockSuggestion(node),
       isInlineEquation: (node) =>
-        node.type === editor.plugin(InlineEquationPlugin).schema.element.type,
+        node.type === editor.plugin(InlineEquationPlugin).schema.type,
     }).suggestionsByBlock.get('0') ?? []
   );
 };
+
+describe('shouldRefreshBlockDiscussionIndex', () => {
+  const createEditor = (text: Text) =>
+    createBaseEditor({
+      plugins: [BaseCommentPlugin, BaseSuggestionPlugin, ParagraphPlugin],
+      initialValue: [{ type: 'p', children: [text] }],
+    }) as unknown as PlateEditor;
+
+  it('ignores plain text typing', () => {
+    const editor = createEditor({ text: 'body' });
+
+    editor.update.text.insert('!', { at: { path: [0, 0], offset: 4 } });
+
+    expect(shouldRefreshBlockDiscussionIndex(editor.read.lastCommit()!)).toBe(
+      false
+    );
+  });
+
+  it('refreshes text typing inside a suggestion', () => {
+    const editor = createEditor({
+      suggestion: true,
+      suggestion_1: suggestionData,
+      text: 'body',
+    });
+
+    editor.update.text.insert('!', { at: { path: [0, 0], offset: 4 } });
+
+    expect(shouldRefreshBlockDiscussionIndex(editor.read.lastCommit()!)).toBe(
+      true
+    );
+  });
+});
 
 describe('buildBlockDiscussionIndex', () => {
   it('keeps inline void display text in remove summaries', () => {

@@ -38,18 +38,11 @@ describe('useEquationInput', () => {
     const { useEquationInput } = await import(
       `./useEquation?test=${Math.random().toString(36).slice(2)}`
     );
+    const focus = mock();
     const select = mock();
     const setNodes = mock();
-    const update = Object.assign(
-      mock(() => ({
-        nodes: { set: setNodes },
-        selection: { set: select },
-      })),
-      {
-        nodes: { set: setNodes },
-        selection: { set: select },
-      }
-    );
+    const pluginUpdate = Object.assign(mock(), { set: setNodes });
+    pluginUpdate.mockImplementation(() => pluginUpdate);
     const onClose = mock();
     const element = { texExpression: 'x+1', type: 'equation' };
     const beforePoint = { offset: 0, path: [0, 0] };
@@ -59,13 +52,20 @@ describe('useEquationInput', () => {
 
     useElementMock.mockReturnValue(element);
     useEditorMock.mockReturnValue({
+      api: {
+        dom: { focus },
+      },
       read: {
+        nodes: {
+          path: () => [0, 1],
+        },
         points: {
           after,
           before,
         },
       },
-      update,
+      plugin: () => ({ update: pluginUpdate }),
+      update: { selection: { set: select } },
     });
 
     const { result } = renderHook(() =>
@@ -104,20 +104,20 @@ describe('useEquationInput', () => {
 
     act(() => result.current.onDismiss());
 
-    expect(update).toHaveBeenCalledWith({ tags: 'history-merge' });
-    expect(update).toHaveBeenCalledWith({ tags: 'focus' });
+    expect(pluginUpdate).toHaveBeenCalledWith({ history: 'merge' });
     expect(setNodes).toHaveBeenCalledWith(
       { texExpression: 'x+2' },
-      { at: element }
+      { at: [0, 1] }
     );
     expect(setNodes).toHaveBeenCalledWith(
       { texExpression: 'x+1' },
-      { at: element }
+      { at: [0, 1] }
     );
     expect(before).toHaveBeenCalledWith(element);
     expect(after).toHaveBeenCalledWith(element);
     expect(select).toHaveBeenNthCalledWith(1, beforePoint);
     expect(select).toHaveBeenNthCalledWith(2, afterPoint);
+    expect(focus).toHaveBeenCalledTimes(2);
     expect(onClose).toHaveBeenCalled();
   });
 });

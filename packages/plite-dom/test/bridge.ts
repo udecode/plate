@@ -7,8 +7,8 @@ import {
   ElementApi as PliteElement,
 } from '@platejs/plite';
 import {
-  getPathByRuntimeId as editorGetPathByRuntimeId,
-  getRuntimeId as editorGetRuntimeId,
+  getPathByNodeKey as editorGetPathByNodeKey,
+  getNodeKey as editorGetNodeKey,
   replace as editorReplace,
 } from '@platejs/plite/internal';
 
@@ -170,8 +170,8 @@ describe('plite-dom bridge', () => {
       owner.setAttribute('data-plite-node', 'text');
       owner.setAttribute('data-plite-path', '0,0');
       owner.setAttribute(
-        'data-plite-runtime-id',
-        editorGetRuntimeId(editor, [0, 0])!
+        'data-plite-node-key',
+        editorGetNodeKey(editor, [0, 0])!
       );
       leaf.setAttribute('data-plite-leaf', 'true');
       string.setAttribute('data-plite-string', 'true');
@@ -206,7 +206,7 @@ describe('plite-dom bridge', () => {
     expect(editor.api.dom.assertPath(textNode)).toEqual([0, 0]);
   });
 
-  it('resolves Plite node paths by runtime id before stale weak-map indexes', () => {
+  it('resolves Plite node paths by node key before stale weak-map indexes', () => {
     const editor = createEditor({ extensions: [dom()] });
 
     editorReplace(editor, {
@@ -226,10 +226,10 @@ describe('plite-dom bridge', () => {
     );
 
     const [targetNode] = editor.read((state) => state.nodes.get([1]));
-    const runtimeId = editorGetRuntimeId(editor, [1]);
+    const nodeKey = editorGetNodeKey(editor, [1]);
 
-    expect(runtimeId).toBeTruthy();
-    NODE_TO_RUNTIME_ID.set(targetNode, runtimeId!);
+    expect(nodeKey).toBeTruthy();
+    NODE_TO_RUNTIME_ID.set(targetNode, nodeKey!);
 
     editor.update((tx) => {
       tx.nodes.insert(
@@ -238,7 +238,7 @@ describe('plite-dom bridge', () => {
       );
     });
 
-    expect(editorGetPathByRuntimeId(editor, runtimeId!)).toEqual([2]);
+    expect(editorGetPathByNodeKey(editor, nodeKey!)).toEqual([2]);
     expect(editor.api.dom.assertPath(targetNode)).toEqual([2]);
   });
 
@@ -255,8 +255,8 @@ describe('plite-dom bridge', () => {
       owner.setAttribute('data-plite-node', 'text');
       owner.setAttribute('data-plite-path', '0,0');
       owner.setAttribute(
-        'data-plite-runtime-id',
-        editorGetRuntimeId(editor, [0, 0])!
+        'data-plite-node-key',
+        editorGetNodeKey(editor, [0, 0])!
       );
       leaf.setAttribute('data-plite-leaf', 'true');
       string.setAttribute('data-plite-string', 'true');
@@ -274,7 +274,7 @@ describe('plite-dom bridge', () => {
     });
   });
 
-  it('resolves Plite points by runtime id before stale mounted DOM paths', () => {
+  it('resolves Plite points by node key before stale mounted DOM paths', () => {
     withDom(({ document }) => {
       const editor = createEditor({ extensions: [dom()] });
 
@@ -300,12 +300,12 @@ describe('plite-dom bridge', () => {
       const leaf = document.createElement('span');
       const string = document.createElement('span');
       const domText = document.createTextNode('target');
-      const targetRuntimeId = editorGetRuntimeId(editor, [1, 0]);
+      const targetNodeKey = editorGetNodeKey(editor, [1, 0]);
 
-      expect(targetRuntimeId).toBeTruthy();
+      expect(targetNodeKey).toBeTruthy();
       owner.setAttribute('data-plite-node', 'text');
       owner.setAttribute('data-plite-path', '0,0');
-      owner.setAttribute('data-plite-runtime-id', targetRuntimeId!);
+      owner.setAttribute('data-plite-node-key', targetNodeKey!);
       leaf.setAttribute('data-plite-leaf', 'true');
       string.setAttribute('data-plite-string', 'true');
 
@@ -321,9 +321,7 @@ describe('plite-dom bridge', () => {
         );
       });
 
-      expect(editorGetPathByRuntimeId(editor, targetRuntimeId!)).toEqual([
-        2, 0,
-      ]);
+      expect(editorGetPathByNodeKey(editor, targetNodeKey!)).toEqual([2, 0]);
       expect(
         editor.api.dom.assertPlitePoint([domText, 3], {
           exactMatch: false,
@@ -428,6 +426,22 @@ describe('plite-dom bridge', () => {
     expect(editor.api.dom.resolvePath({ text: 'detached' })).toBeNull();
   });
 
+  it('resolves a removed Plite node to null', () => {
+    const editor = createParagraphEditor();
+
+    editor.update((tx) => {
+      tx.nodes.insert(
+        { type: 'paragraph', children: [{ text: 'removed' }] },
+        { at: [1] }
+      );
+    });
+    const [removed] = editor.read((state) => state.nodes.get([1]));
+
+    editor.update((tx) => tx.nodes.remove({ at: [1] }));
+
+    expect(editor.api.dom.resolveDOMNode(removed)).toBeNull();
+  });
+
   it('keeps parent and nested editor DOM point ownership separate', () => {
     withDom(({ document }) => {
       const parent = createParagraphEditor('parent');
@@ -486,8 +500,8 @@ describe('plite-dom bridge', () => {
       owner.setAttribute('data-plite-node', 'text');
       owner.setAttribute('data-plite-path', '0,0');
       owner.setAttribute(
-        'data-plite-runtime-id',
-        editorGetRuntimeId(editor, [0, 0])!
+        'data-plite-node-key',
+        editorGetNodeKey(editor, [0, 0])!
       );
       leaf.setAttribute('data-plite-leaf', 'true');
       string.setAttribute('data-plite-string', 'true');

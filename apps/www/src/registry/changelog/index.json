@@ -2,6 +2,150 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-08-06-fix-block-selection-drag",
+      "href": "/registry/changelog/2026-08-06-fix-block-selection-drag.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Fix mouse-drag block selection",
+      "change": {
+        "type": "source",
+        "date": "2026-08-06",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["block-draggable", "block-selection"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-08-06-fix-inline-equation-arrow-navigation",
+      "href": "/registry/changelog/2026-08-06-fix-inline-equation-arrow-navigation.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Close the inline equation editor at an arrow-key boundary",
+      "change": {
+        "type": "source",
+        "date": "2026-08-06",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["equation-node"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-08-06-fix-mark-toolbar-selection",
+      "href": "/registry/changelog/2026-08-06-fix-mark-toolbar-selection.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Preserve text selection in mark toolbar actions",
+      "change": {
+        "type": "source",
+        "date": "2026-08-06",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["mark-toolbar-button"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-08-06-stabilize-block-drag-drop",
+      "href": "/registry/changelog/2026-08-06-stabilize-block-drag-drop.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep direct block drag and drop stable",
+      "change": {
+        "type": "source",
+        "date": "2026-08-06",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["block-draggable"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-08-05-keep-block-discussion-typing-responsive",
+      "href": "/registry/changelog/2026-08-05-keep-block-discussion-typing-responsive.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep block discussion typing responsive",
+      "change": {
+        "type": "source",
+        "date": "2026-08-05",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["block-discussion"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-08-04-infer-node-props-from-plugins",
+      "href": "/registry/changelog/2026-08-04-infer-node-props-from-plugins.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Infer node component props from plugin descriptors",
+      "change": {
+        "type": "source",
+        "date": "2026-08-04",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "callout-node",
+        "callout-node-static",
+        "code-block-node",
+        "code-block-node-static",
+        "code-drawing-node",
+        "code-drawing-node-static",
+        "column-node",
+        "column-node-static",
+        "date-node",
+        "date-node-static",
+        "equation-node",
+        "equation-node-static",
+        "excalidraw-node",
+        "footnote-node",
+        "footnote-node-static",
+        "link-node",
+        "link-node-static",
+        "media-audio-node",
+        "media-audio-node-static",
+        "media-embed-node",
+        "media-embed-node-static",
+        "media-file-node",
+        "media-file-node-static",
+        "media-image-node",
+        "media-image-node-static",
+        "media-placeholder-node",
+        "media-toolbar",
+        "media-video-node",
+        "media-video-node-static",
+        "mention-node",
+        "mention-node-static",
+        "slash-node",
+        "table-node",
+        "table-node-static",
+        "tag-node"
+      ],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-08-03-unify-table-cells",
       "href": "/registry/changelog/2026-08-03-unify-table-cells.json",
       "status": "draft",
@@ -16,6 +160,31 @@
         "status": "unresolved"
       },
       "targets": ["table-node", "table-base-kit", "table-kit"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-08-03-use-schema-handles",
+      "href": "/registry/changelog/2026-08-03-use-schema-handles.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Read persisted identities from schema handles",
+      "change": {
+        "type": "source",
+        "date": "2026-08-03",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "editor",
+        "ai-menu",
+        "comment-kit",
+        "font-color-toolbar-button",
+        "font-size-toolbar-button",
+        "mark-toolbar-button"
+      ],
       "entries": 1,
       "diagnostics": []
     },

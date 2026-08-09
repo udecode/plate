@@ -8,7 +8,7 @@ This matrix is generic editor law. It is not a content-root checklist.
 
 ## How To Use
 
-For each `plite-patch` bug, pick the smallest honest slice that covers the bug
+For each `patch` bug, pick the smallest honest slice that covers the bug
 class. Add one sibling topology when the same owner likely handles it. Record
 skipped rows when the final handoff could otherwise imply broader coverage.
 

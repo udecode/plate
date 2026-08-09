@@ -1,7 +1,13 @@
-import { createBaseEditor, defineBasePlugin } from '@platejs/core';
+import {
+  BaseParagraphPlugin,
+  createBaseEditor,
+  defineBasePlugin,
+  defineEditor,
+} from '@platejs/core';
 import { property, schema } from '@platejs/plite';
 
 import { MarkdownPlugin } from '../MarkdownPlugin';
+import { remarkMdx } from '../plugins';
 import { compileMarkdownCodecs } from './markdownCodecs';
 
 const elementPlugin = (name: string) =>
@@ -27,8 +33,8 @@ describe('Markdown node codec compiler', () => {
       codecs: ({ defineCodecs }) =>
         defineCodecs({
           'text/markdown': {
-            encode: ({ element }) => {
-              elementIdentity = element.type;
+            encode: ({ schema }) => {
+              elementIdentity = schema.type;
 
               return { type: 'text', value: 'element' };
             },
@@ -46,8 +52,8 @@ describe('Markdown node codec compiler', () => {
       codecs: ({ defineCodecs }) =>
         defineCodecs({
           'text/markdown': {
-            encode: ({ properties }) => {
-              markIdentity = properties.persistedMark.key;
+            encode: ({ schema }) => {
+              markIdentity = schema.key;
 
               return { type: 'text', value: 'mark' };
             },
@@ -82,15 +88,142 @@ describe('Markdown node codec compiler', () => {
     expect(markIdentity).toBe('persistedMark');
   });
 
+  it('round-trips custom MDX tags through the final application schema type', () => {
+    const CustomPlugin = defineBasePlugin('customCapability', {
+      codecs: ({ defineCodecs, schema: { type } }) =>
+        defineCodecs({
+          'text/markdown': {
+            from: type,
+            kind: 'node',
+            decode: ({ node, parseAttributes }) =>
+              node.attributes.some(
+                (attribute) =>
+                  attribute.type === 'mdxJsxAttribute' &&
+                  attribute.name === 'decline'
+              )
+                ? undefined
+                : {
+                    ...parseAttributes(node.attributes),
+                    children: [{ text: '' }],
+                    type,
+                  },
+            encode: ({ node, propsToAttributes }) => {
+              const { children: _, type: __, ...props } = node;
+
+              return {
+                attributes: propsToAttributes(props),
+                children: [],
+                name: type,
+                type: 'mdxJsxFlowElement',
+              };
+            },
+          },
+        }),
+      schema: {
+        element: {
+          properties: { label: property.string() },
+          type: 'callout',
+          void: 'block',
+        },
+      },
+    });
+    const definition = defineEditor('customMarkdownCodec', {
+      plugins: [
+        BaseParagraphPlugin,
+        CustomPlugin,
+        MarkdownPlugin.configure({
+          initialState: { remarkPlugins: [remarkMdx] },
+        }),
+      ],
+      schema: {
+        overrides: [
+          schema.override(BaseParagraphPlugin, {
+            element: { type: 'customParagraph' },
+          }),
+          schema.override(CustomPlugin, {
+            element: { type: 'customElement' },
+          }),
+        ],
+      },
+    });
+    const editor = createBaseEditor({ plugins: definition.plugins });
+    const markdown = '<customElement label="Round trip" />';
+    const document = editor.api.markdown.deserialize(markdown);
+
+    expect(document.children).toEqual([
+      {
+        children: [{ text: '' }],
+        label: 'Round trip',
+        type: 'customElement',
+      },
+    ]);
+    expect(editor.api.markdown.serialize({ value: document })).toBe(
+      `${markdown}\n`
+    );
+    expect(
+      editor.api.markdown.deserialize(markdown, {
+        rules: {
+          customCapability: {
+            deserialize: () => ({
+              children: [{ text: 'Overridden' }],
+              type: 'customElement',
+            }),
+          },
+        },
+      }).children
+    ).toEqual([
+      {
+        children: [{ text: 'Overridden' }],
+        type: 'customElement',
+      },
+    ]);
+    expect(editor.api.markdown.deserialize('Paragraph').children).toEqual([
+      {
+        children: [{ text: 'Paragraph' }],
+        type: 'customParagraph',
+      },
+    ]);
+    expect(editor.api.markdown.deserialize('<unknown />').children).toEqual([
+      {
+        children: [{ text: '<unknown />' }],
+        type: 'customParagraph',
+      },
+    ]);
+    expect(
+      editor.api.markdown
+        .deserialize('First\n\n\nSecond', { splitLineBreaks: true })
+        .children.every(
+          (node) => 'type' in node && node.type === 'customParagraph'
+        )
+    ).toBe(true);
+    expect(
+      editor.api.markdown.deserialize('<customElement decline />', {
+        rules: {
+          customElement: {
+            deserialize: () => ({
+              children: [{ text: 'Persisted alias ran' }],
+              type: 'customElement',
+            }),
+          },
+        },
+      }).children
+    ).toEqual([
+      {
+        children: [{ text: '<customElement decline />' }],
+        type: 'customParagraph',
+      },
+    ]);
+  });
+
   it('orders decode claims by priority and caches the compiled editor view', () => {
     const LowPlugin = elementPlugin('low').extend(({ defineCodecs }) => ({
       codecs: defineCodecs({
         'text/markdown': {
-          decode: ({ element }) => ({
+          decode: ({ schema }) => ({
             children: [{ text: '' }],
-            type: element!.type,
+            type: schema.type,
           }),
-          from: 'toc',
+          from: 'html',
           kind: 'node',
           priority: 10,
         },
@@ -99,11 +232,11 @@ describe('Markdown node codec compiler', () => {
     const HighPlugin = elementPlugin('high').extend(({ defineCodecs }) => ({
       codecs: defineCodecs({
         'text/markdown': {
-          decode: ({ element }) => ({
+          decode: ({ schema }) => ({
             children: [{ text: '' }],
-            type: element!.type,
+            type: schema.type,
           }),
-          from: 'toc',
+          from: 'html',
           kind: 'node',
           priority: 20,
         },
@@ -114,10 +247,9 @@ describe('Markdown node codec compiler', () => {
     });
     const first = compileMarkdownCodecs(editor);
 
-    expect(first.decodeBySource.get('toc')?.map(({ owner }) => owner)).toEqual([
-      'high',
-      'low',
-    ]);
+    expect(first.decodeBySource.get('html')?.map(({ owner }) => owner)).toEqual(
+      ['high', 'low']
+    );
     expect(compileMarkdownCodecs(editor)).toBe(first);
   });
 
@@ -126,11 +258,11 @@ describe('Markdown node codec compiler', () => {
       .extend(({ defineCodecs }) => ({
         codecs: defineCodecs({
           'text/markdown': {
-            decode: ({ element }) => ({
+            decode: ({ schema }) => ({
               children: [{ text: '' }],
-              type: element!.type,
+              type: schema.type,
             }),
-            from: 'toc',
+            from: 'html',
             kind: 'node',
           },
         }),
@@ -141,7 +273,7 @@ describe('Markdown node codec compiler', () => {
     });
     const compiled = compileMarkdownCodecs(editor);
 
-    expect(compiled.decodeBySource.has('toc')).toBe(false);
+    expect(compiled.decodeBySource.has('html')).toBe(false);
     expect(compiled.rules.disabled).toBeUndefined();
   });
 
@@ -151,19 +283,19 @@ describe('Markdown node codec compiler', () => {
         codecs: defineCodecs({
           'text/markdown': [
             {
-              decode: ({ element }) => ({
+              decode: ({ schema }) => ({
                 children: [{ text: '' }],
-                type: element!.type,
+                type: schema.type,
               }),
-              from: 'toc',
+              from: 'html',
               kind: 'node',
             },
             {
-              decode: ({ element }) => ({
+              decode: ({ schema }) => ({
                 children: [{ text: '' }],
-                type: element!.type,
+                type: schema.type,
               }),
-              from: 'toc',
+              from: 'html',
               kind: 'node',
             },
           ],
@@ -180,21 +312,31 @@ describe('Markdown node codec compiler', () => {
   });
 
   it('rejects unknown declaration fields at the runtime boundary', () => {
-    const declaration = {
-      decode: () => ({
-        children: [{ text: '' }],
-        type: 'invalid' as const,
-      }),
-      from: 'toc' as const,
-      kind: 'node' as const,
-      typo: true,
-    };
     const InvalidPlugin = elementPlugin('invalid').extend(
-      ({ defineCodecs }) => ({
-        codecs: defineCodecs({
+      ({ defineCodecs, schema: { type } }) => {
+        const declaration = {
+          decode: () => ({
+            children: [{ text: '' }],
+            type,
+          }),
+          from: 'html' as const,
+          kind: 'node' as const,
+        };
+        const codecs = defineCodecs({
           'text/markdown': declaration,
-        }),
-      })
+        });
+
+        return {
+          // @plate-schema-adoption-negative-codec
+          codecs: {
+            ...codecs,
+            'text/markdown': {
+              ...declaration,
+              typo: true,
+            },
+          } as typeof codecs,
+        };
+      }
     );
     const editor = createBaseEditor({
       plugins: [InvalidPlugin, MarkdownPlugin],

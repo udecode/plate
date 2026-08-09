@@ -28,7 +28,7 @@ duplicates.
 
 Promoted Lead:
 - `dom-diff-import:direct-dom-mutation-browser-oracle`
-- owner: `plite-browser` / `plite-patch`
+- owner: `plite-browser` / `patch`
 - proof kind: generated Playwright stress family
 - verification commands:
   `bun --filter plite-browser test:core`

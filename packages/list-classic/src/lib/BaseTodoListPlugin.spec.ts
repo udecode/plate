@@ -47,9 +47,6 @@ describe('BaseTodoListPlugin', () => {
     const typedEditor = createBaseEditor({
       plugins: [BaseTodoListPlugin],
     });
-    expect(typeof typedEditor.plugin(BaseTodoListPlugin).update.toggle).toBe(
-      'function'
-    );
     expect(typedEditor.read.schema.create(BaseTodoListPlugin)).toEqual({
       checked: false,
       children: [{ text: '' }],
@@ -143,10 +140,10 @@ describe('BaseTodoListPlugin', () => {
       initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
 
-    editor.plugin(BaseTodoListPlugin).update.toggle();
+    editor.update.nodes.toggle(editor.plugin(BaseTodoListPlugin).schema.type);
 
     expect(editor.read.children()[0].type).toBe(
-      editor.plugin(PLUGINS.todoList).schema.element!.type
+      editor.plugin(PLUGINS.todoList).schema.type
     );
   });
 });

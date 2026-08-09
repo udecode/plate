@@ -1,6 +1,5 @@
 import { createContext, useCallback, useContext, useMemo, useRef } from 'react';
 import type {
-  Editor,
   EditorCommit,
   EditorStateView,
   ExtensionsOf,
@@ -8,6 +7,7 @@ import type {
   ValueOf,
 } from '@platejs/plite';
 import { recordPliteReactRender } from '../render-profiler';
+import type { ReactEditorContextValue } from '../plugin/with-react';
 import { useEditor } from './use-editor';
 import { useGenericSelector } from './use-generic-selector';
 import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
@@ -18,6 +18,8 @@ type DeferredCallbackPayload = {
   change?: EditorCommit;
 };
 
+type ContextEditor = ReactEditorContextValue<any>;
+
 export type EditorSelectorContextValue = {
   addEventListener: (
     callback: Callback,
@@ -27,10 +29,7 @@ export type EditorSelectorContextValue = {
 };
 
 /** Commit-subscription options for selectors that read from the editor. */
-export interface EditorSelectorOptions<
-  T = unknown,
-  TEditor extends Editor<any, any> = Editor<any, any>,
-> {
+export interface EditorSelectorOptions<T = unknown> {
   deferred?: boolean;
   equalityFn?: (a: T | null, b: T) => boolean;
   includeRootOrderChanges?: boolean;
@@ -38,17 +37,14 @@ export interface EditorSelectorOptions<
   runtimeEventSource?: 'node' | 'path' | 'render';
   runtimeId?: RuntimeId | null;
   runtimeIds?: readonly RuntimeId[] | null;
-  shouldUpdate?: (change?: EditorCommit<ValueOf<TEditor>>) => boolean;
+  shouldUpdate?: (change?: EditorCommit<ValueOf<ContextEditor>>) => boolean;
 }
 
 /** Options for selectors that read from the immutable editor state view. */
-export interface EditorStateSelectorOptions<
-  T,
-  TEditor extends Editor<any, any> = Editor<any, any>,
-> {
+export interface EditorStateSelectorOptions<T> {
   deferred?: boolean;
   equalityFn?: (a: T | null, b: T) => boolean;
-  shouldUpdate?: (change?: EditorCommit<ValueOf<TEditor>>) => boolean;
+  shouldUpdate?: (change?: EditorCommit<ValueOf<ContextEditor>>) => boolean;
 }
 
 export const EditorSelectorContext =
@@ -98,11 +94,8 @@ export function useRequiredEditorSelectorContext() {
  * Scope updates with roots/runtime ids or `shouldUpdate`, and use
  * `useEditorState` when the selector only needs the immutable state view.
  */
-export function useEditorSelector<
-  T,
-  TEditor extends Editor<any, any> = Editor<any, any>,
->(
-  selector: (editor: TEditor) => T,
+export function useEditorSelector<T>(
+  selector: (editor: ContextEditor) => T,
   {
     deferred,
     equalityFn = refEquality,
@@ -112,11 +105,11 @@ export function useEditorSelector<
     runtimeId,
     runtimeIds,
     shouldUpdate,
-  }: EditorSelectorOptions<T, TEditor> = {}
+  }: EditorSelectorOptions<T> = {}
 ): T {
   const { addEventListener } = useRequiredEditorSelectorContext();
 
-  const editor = useEditor<TEditor>();
+  const editor = useEditor();
   const genericSelector = useCallback(
     () => selector(editor),
     [editor, selector]
@@ -137,10 +130,7 @@ export function useEditorSelector<
   }, [shouldUpdate, update]);
 
   const shouldUpdateWithEditor = useCallback(
-    (change?: EditorCommit) =>
-      shouldUpdateRef.current?.(
-        change as EditorCommit<ValueOf<TEditor>> | undefined
-      ) ?? true,
+    (change?: EditorCommit) => shouldUpdateRef.current?.(change) ?? true,
     []
   );
 
@@ -178,30 +168,22 @@ export function useEditorSelector<
  *
  * Inline selectors always observe the latest render values.
  */
-export function useEditorState<
-  T,
-  TEditor extends Editor<any, any> = Editor<any, any>,
->(
+export function useEditorState<T>(
   selector: (
-    state: EditorStateView<ValueOf<TEditor>, ExtensionsOf<TEditor>>
+    state: EditorStateView<ValueOf<ContextEditor>, ExtensionsOf<ContextEditor>>
   ) => T,
   {
     deferred,
     equalityFn = refEquality,
     shouldUpdate,
-  }: EditorStateSelectorOptions<T, TEditor> = {}
+  }: EditorStateSelectorOptions<T> = {}
 ): T {
   const stateSelector = useCallback(
-    (editor: TEditor) =>
-      editor.read((state) =>
-        selector(
-          state as EditorStateView<ValueOf<TEditor>, ExtensionsOf<TEditor>>
-        )
-      ),
+    (editor: ContextEditor) => editor.read((state) => selector(state)),
     [selector]
   );
 
-  return useEditorSelector<T, TEditor>(stateSelector, {
+  return useEditorSelector<T>(stateSelector, {
     deferred,
     equalityFn,
     shouldUpdate,

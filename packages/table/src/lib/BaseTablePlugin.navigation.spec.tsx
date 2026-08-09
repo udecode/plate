@@ -14,7 +14,6 @@ describe('table navigation', () => {
 
     const createTableEditor = (input: TestEditor) =>
       createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins(),
         initialValue: input.children,
       });
@@ -80,7 +79,6 @@ describe('table navigation', () => {
 
     const createTableEditor = (input: TestEditor) =>
       createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins(),
         initialValue: input.children,
       });
@@ -143,7 +141,6 @@ describe('table navigation', () => {
 
     const createTableEditor = (input: TestEditor) =>
       createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins(),
         initialValue: input.children,
       });
@@ -217,7 +214,6 @@ describe('table navigation', () => {
 
     const createTableEditor = (input: TestEditor) =>
       createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins(),
         initialValue: input.children,
       });

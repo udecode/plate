@@ -500,7 +500,6 @@ function createPlateSchemaConsumerSource({ typed }) {
         ]
       : []),
     'const releasePlateEditor = createReleaseBaseEditor({',
-    '  nodeId: false,',
     '  plugins: [ReleaseParentPlugin],',
     '  schema: {',
     "    id: 'release-consumer-plate-schema',",

@@ -64,7 +64,7 @@ describe('native transaction spec contract', () => {
     assert.equal(editor.read.text.string([]), 'a!b');
     assert.equal(commits, 1);
     assert.equal(
-      profiledIds.filter((id) => id === 'transaction-runtime-ids').length,
+      profiledIds.filter((id) => id === 'transaction-node-keys').length,
       1
     );
     assert.equal(
@@ -73,13 +73,13 @@ describe('native transaction spec contract', () => {
     );
   });
 
-  it('does not consume runtime ids while building a discarded structural spec', () => {
+  it('does not consume node keys while building a discarded structural spec', () => {
     const withDiscardedSpec = createTextEditor();
     const control = createTextEditor();
 
     for (const editor of [withDiscardedSpec, control]) {
-      assert(editor.read.runtime.idAt([0]));
-      assert(editor.read.runtime.idAt([0, 0]));
+      assert(editor.key([0]));
+      assert(editor.key([0, 0]));
     }
 
     withDiscardedSpec.read((state) =>
@@ -100,14 +100,8 @@ describe('native transaction spec contract', () => {
       });
     }
 
-    assert.equal(
-      withDiscardedSpec.read.runtime.idAt([1]),
-      control.read.runtime.idAt([1])
-    );
-    assert.equal(
-      withDiscardedSpec.read.runtime.idAt([1, 0]),
-      control.read.runtime.idAt([1, 0])
-    );
+    assert.equal(withDiscardedSpec.key([1]), control.key([1]));
+    assert.equal(withDiscardedSpec.key([1, 0]), control.key([1, 0]));
   });
 
   it('keeps a prepared spec reusable after its first application rolls back', () => {

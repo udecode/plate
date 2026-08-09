@@ -15,7 +15,6 @@ jsxt;
 
 const createCellSelectionEditor = (input: TestEditor, disableMerge: boolean) =>
   createTestTableEditor({
-    nodeId: true,
     plugins: getTestTablePlugins({ disableMerge }),
     selection: input.selection,
     initialValue: input.children,

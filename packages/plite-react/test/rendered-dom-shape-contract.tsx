@@ -123,8 +123,8 @@ describe('rendered DOM shape contract', () => {
       </Plite>
     );
     const initialDocument = editor.read.value();
-    const initialRuntimeId = getFirstElement(rendered.container).getAttribute(
-      'data-plite-runtime-id'
+    const initialNodeKey = getFirstElement(rendered.container).getAttribute(
+      'data-plite-node-key'
     );
 
     await act(async () => {
@@ -149,8 +149,8 @@ describe('rendered DOM shape contract', () => {
       expect(element).not.toHaveAttribute('data-plite-inline');
     });
     expect(getFirstElement(rendered.container)).toHaveAttribute(
-      'data-plite-runtime-id',
-      initialRuntimeId
+      'data-plite-node-key',
+      initialNodeKey
     );
     expect(editor.read.value()).toEqual(initialDocument);
     expect(editor.read.lastCommit()?.changes.empty).toBe(true);

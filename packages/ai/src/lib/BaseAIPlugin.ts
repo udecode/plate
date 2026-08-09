@@ -5,6 +5,7 @@ import {
   type Descendant,
   type Element,
   ElementApi,
+  type EditorNodeUnsetOptions,
   type Location,
   NodeApi,
   type NodeEntry,
@@ -198,18 +199,18 @@ export const BaseAIPlugin = defineBasePlugin(PLUGINS.ai, {
       target: target.group('element'),
       typeChange: 'preserve-if-allowed',
     },
-    properties: [
-      schema.elementProperty(AI_PREVIEW_KEY, property.boolean(), {
+    properties: {
+      preview: schema.elementProperty(AI_PREVIEW_KEY, property.boolean(), {
         split: 'preserve',
         target: target.group('block'),
         typeChange: 'preserve-if-allowed',
       }),
-    ],
+    },
   },
   read: ({ state }) => ({
     hasPreview: () => state.getField(aiPreviewField) !== null,
   }),
-  update: ({ context, editor, key, tx }) => {
+  update: ({ context, editor, schema: { key, properties }, tx }) => {
     const getPreviewRange = (
       children: readonly Descendant[]
     ):
@@ -266,7 +267,7 @@ export const BaseAIPlugin = defineBasePlugin(PLUGINS.ai, {
 
       tx.nodes.remove({
         at: [],
-        match: { type: aiChat.type },
+        match: { type: aiChat.schema.type },
       });
 
       tx.setField(aiPreviewField, null);
@@ -282,6 +283,8 @@ export const BaseAIPlugin = defineBasePlugin(PLUGINS.ai, {
     };
 
     return {
+      clearPreviewNodes: (options?: EditorNodeUnsetOptions<Descendant>) =>
+        tx.nodes.unset(properties.preview, options),
       acceptPreview: () => {
         const preview = tx.getField(aiPreviewField);
 
@@ -397,7 +400,7 @@ export const BaseAIPlugin = defineBasePlugin(PLUGINS.ai, {
         tx.effects.emit(aiBatchEffect, 1);
       },
       removeMarks: ({ at = [] }: { at?: Location } = {}) => {
-        tx.nodes.unset(key, {
+        tx.nodes.unset('ai', {
           at,
           match: (node) => Boolean(Reflect.get(node, key)),
         });

@@ -372,13 +372,13 @@ describe('plite view selection', () => {
     );
     const result = source.refresh({ reason: 'external' });
 
-    expect(result.changedRuntimeIds.length).toBeGreaterThan(0);
-    expect(result.changedRuntimeIds.length).toBeLessThanOrEqual(2);
+    expect(result.changedNodeKeys.length).toBeGreaterThan(0);
+    expect(result.changedNodeKeys.length).toBeLessThanOrEqual(2);
 
     source.destroy();
   });
 
-  it('clips view-selection decorations to scoped top-level runtime ids and endpoints', () => {
+  it('clips view-selection decorations to scoped top-level node keys and endpoints', () => {
     const editor = createReactEditor({
       initialValue: [
         { type: 'paragraph', children: [{ text: 'zero' }] },
@@ -399,43 +399,43 @@ describe('plite view selection', () => {
     );
 
     const snapshot = editorGetSnapshot(editor);
-    const anchorTextRuntimeId = snapshot.index.idAt([0, 0]);
-    const focusTextRuntimeId = snapshot.index.idAt([4, 0]);
-    const mountedBlockRuntimeId = snapshot.index.idAt([2]);
-    const mountedTextRuntimeId = snapshot.index.idAt([2, 0]);
-    const unmountedTextRuntimeId = snapshot.index.idAt([1, 0]);
+    const anchorTextNodeKey = snapshot.index.keyAt([0, 0]);
+    const focusTextNodeKey = snapshot.index.keyAt([4, 0]);
+    const mountedBlockNodeKey = snapshot.index.keyAt([2]);
+    const mountedTextNodeKey = snapshot.index.keyAt([2, 0]);
+    const unmountedTextNodeKey = snapshot.index.keyAt([1, 0]);
 
     if (
-      !anchorTextRuntimeId ||
-      !focusTextRuntimeId ||
-      !mountedBlockRuntimeId ||
-      !mountedTextRuntimeId ||
-      !unmountedTextRuntimeId
+      !anchorTextNodeKey ||
+      !focusTextNodeKey ||
+      !mountedBlockNodeKey ||
+      !mountedTextNodeKey ||
+      !unmountedTextNodeKey
     ) {
-      throw new Error('Expected runtime ids for scoped view-selection proof');
+      throw new Error('Expected node keys for scoped view-selection proof');
     }
 
     const source = createPliteViewSelectionDecorationSource(editor, {
-      runtimeScope: () => [mountedBlockRuntimeId],
+      runtimeScope: () => [mountedBlockNodeKey],
     });
 
     expect(Object.keys(source.getSnapshot()).sort()).toEqual(
-      [anchorTextRuntimeId, focusTextRuntimeId, mountedTextRuntimeId].sort()
+      [anchorTextNodeKey, focusTextNodeKey, mountedTextNodeKey].sort()
     );
-    expect(source.getRuntimeSnapshot(unmountedTextRuntimeId)).toEqual([]);
-    expect(source.getRuntimeSnapshot(anchorTextRuntimeId)).toEqual([
+    expect(source.getRuntimeSnapshot(unmountedTextNodeKey)).toEqual([]);
+    expect(source.getRuntimeSnapshot(anchorTextNodeKey)).toEqual([
       expect.objectContaining({
         end: 4,
         start: 1,
       }),
     ]);
-    expect(source.getRuntimeSnapshot(mountedTextRuntimeId)).toEqual([
+    expect(source.getRuntimeSnapshot(mountedTextNodeKey)).toEqual([
       expect.objectContaining({
         end: 3,
         start: 0,
       }),
     ]);
-    expect(source.getRuntimeSnapshot(focusTextRuntimeId)).toEqual([
+    expect(source.getRuntimeSnapshot(focusTextNodeKey)).toEqual([
       expect.objectContaining({
         end: 2,
         start: 0,

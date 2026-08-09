@@ -409,9 +409,9 @@
                 "createInlineVoidPlugin",
                 "createInsertDataPlugin",
                 "createPlateEditor",
-                "createBasePlugin",
+                "defineBasePlugin",
                 "createPrevSelectionPlugin",
-                "createPlatePlugin",
+                "definePlatePlugin",
                 "Hotkeys",
                 "toggleBlock",
                 "useActiveEditor",
@@ -519,7 +519,7 @@
                 {
                   "headings": [
                     "name",
-                    "targetPluginNames",
+                    "targetPlugins",
                     "api",
                     "read",
                     "selectors",

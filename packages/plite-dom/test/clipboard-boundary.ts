@@ -19,7 +19,7 @@ import {
   addMark as editorAddMark,
   getLastCommit as editorGetLastCommit,
   getInternalDocumentChangeRootKeys,
-  getRuntimeId as editorGetRuntimeId,
+  getNodeKey as editorGetNodeKey,
   getSnapshot as editorGetSnapshot,
   replace as editorReplace,
   string as editorString,
@@ -528,14 +528,14 @@ const encodeRawFragmentPayload = (document: Document, payload: string) =>
 const decodeFragmentPayload = (document: Document, payload: string) =>
   JSON.parse(decodeURIComponent(document.defaultView!.atob(payload)));
 
-const getRuntimeId = (editor: Editor, path: number[]) => {
-  const runtimeId = editorGetRuntimeId(editor, path);
+const getNodeKey = (editor: Editor, path: number[]) => {
+  const nodeKey = editorGetNodeKey(editor, path);
 
-  if (!runtimeId) {
-    throw new Error(`Missing runtime id at ${path.join('.')}`);
+  if (!nodeKey) {
+    throw new Error(`Missing node key at ${path.join('.')}`);
   }
 
-  return runtimeId;
+  return nodeKey;
 };
 
 describe('plite-dom clipboard boundary', () => {
@@ -1528,13 +1528,13 @@ describe('plite-dom clipboard boundary', () => {
       mountSimpleEditorDOM(source, document);
       DOMCoverage.registerBoundary(source, {
         boundaryId: 'summary-alpha',
-        anchor: { type: 'placeholder', runtimeId: getRuntimeId(source, [0]) },
+        anchor: { type: 'placeholder', nodeKey: getNodeKey(source, [0]) },
         copyPolicy: 'summary',
         coveredPathRanges: [{ kind: 'text', anchor: [0, 0], focus: [0, 0] }],
         coveredRuntimeRanges: [],
         findPolicy: 'native',
         ownerPath: [0],
-        ownerRuntimeId: getRuntimeId(source, [0]),
+        ownerNodeKey: getNodeKey(source, [0]),
         reason: 'app-collapse',
         selectionPolicy: 'skip',
         state: 'intentionally-hidden',

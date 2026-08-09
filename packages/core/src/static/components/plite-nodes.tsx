@@ -1,6 +1,7 @@
 import React from 'react';
 
-import type { Element, Path, Text } from '@platejs/plite';
+import type { Element, ElementOf, Path, Text } from '@platejs/plite';
+import type { EditorSchemaSource } from '@platejs/plite/internal';
 import type { UnknownObject } from '@udecode/utils';
 
 import { clsx } from 'clsx';
@@ -9,10 +10,12 @@ import type {
   AnyBasePluginDefinition,
   BasePluginContext,
   BasePluginDefinition,
+  PluginReference,
   RenderElementProps,
   RenderLeafProps,
   RenderTextProps,
 } from '../../lib';
+import type { InternalPluginDefinitionOf } from '../../lib/plugin/pluginDefinitionLookup.internal';
 
 type NodeAttributeProps = {
   attributes: UnknownObject & {
@@ -40,11 +43,25 @@ export const useNodeAttributes = <E extends HTMLElement>(
   style: { ...props.attributes.style, ...props.style },
 });
 
+type PliteElementPropsDescriptor = EditorSchemaSource & PluginReference;
+
+type PliteElementPropsNode<
+  TElementOrPlugin extends Element | PliteElementPropsDescriptor,
+> = TElementOrPlugin extends PliteElementPropsDescriptor
+  ? Extract<ElementOf<TElementOrPlugin>, Element>
+  : Extract<TElementOrPlugin, Element>;
+
+type PliteElementPropsConfig<
+  TElementOrPlugin extends Element | PliteElementPropsDescriptor,
+> = TElementOrPlugin extends PliteElementPropsDescriptor
+  ? InternalPluginDefinitionOf<TElementOrPlugin>
+  : BasePluginDefinition;
+
 export type PliteElementProps<
-  N extends Element = Element,
-  C extends AnyBasePluginDefinition = BasePluginDefinition,
+  TElementOrPlugin extends Element | PliteElementPropsDescriptor = Element,
+  C extends AnyBasePluginDefinition = PliteElementPropsConfig<TElementOrPlugin>,
 > = PliteNodeProps<C> &
-  RenderElementProps<N> & {
+  RenderElementProps<PliteElementPropsNode<TElementOrPlugin>> & {
     attributes: UnknownObject;
     path: Path;
   };
@@ -75,8 +92,8 @@ export type PliteHTMLProps<
 };
 
 export type StyledPliteElementProps<
-  N extends Element = Element,
-  C extends AnyBasePluginDefinition = BasePluginDefinition,
+  N extends Element | PliteElementPropsDescriptor = Element,
+  C extends AnyBasePluginDefinition = PliteElementPropsConfig<N>,
   T extends keyof HTMLElementTagNameMap = 'div',
 > = PliteElementProps<N, C> & PliteHTMLProps<C, T>;
 
@@ -110,8 +127,8 @@ export const PliteElement = React.forwardRef<
     </Tag>
   );
 }) as <
-  N extends Element = Element,
-  C extends AnyBasePluginDefinition = BasePluginDefinition,
+  N extends Element | PliteElementPropsDescriptor = Element,
+  C extends AnyBasePluginDefinition = PliteElementPropsConfig<N>,
   T extends keyof HTMLElementTagNameMap = 'div',
 >(
   props: StyledPliteElementProps<N, C, T>

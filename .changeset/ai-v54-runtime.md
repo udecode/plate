@@ -2,6 +2,10 @@
 "@platejs/ai": major
 ---
 
+Use editor-scoped `NodeKey` values for live AI selections, snapshots, and
+replacement targets. Persisted IDs remain limited to serialized prompts and
+cross-session references through `ElementIdPlugin`.
+
 Publish AI behavior through explicit services, snapshot reads, selectors, and
 transaction updates. Remove standalone preview, streaming, prompt, comment,
 suggestion, and Copilot command helpers.

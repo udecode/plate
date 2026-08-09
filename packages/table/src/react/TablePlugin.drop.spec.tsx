@@ -18,17 +18,8 @@ import { TablePlugin } from './TablePlugin';
 
 jsxt;
 
-const createTableEditor = (
-  input: TestEditor,
-  { nodeId = true }: { nodeId?: boolean } = {}
-) => {
+const createTableEditor = (input: TestEditor) => {
   const editor = createTestTableEditor({
-    nodeId: nodeId
-      ? true
-      : {
-          initialValueIds: false,
-          match: () => false,
-        },
     plugins: [TablePlugin],
     selection: input.selection,
     initialValue: input.children,
@@ -102,54 +93,6 @@ const createOverlappingTableEditor = () =>
     ) as TestEditor
   );
 
-const createMalformedTargetEditor = (
-  target: 'duplicate-cell-id' | 'missing-cell-id'
-) =>
-  createTableEditor(
-    (
-      <editor>
-        <htable id="source">
-          <htr>
-            <htd id="s1">
-              <hp>
-                <anchor />A
-              </hp>
-            </htd>
-            <htd id="s2">
-              <hp>
-                B<focus />
-              </hp>
-            </htd>
-          </htr>
-        </htable>
-        {target === 'duplicate-cell-id' ? (
-          <htable id="target">
-            <htr>
-              <htd id="duplicate">
-                <hp>X</hp>
-              </htd>
-              <htd id="duplicate">
-                <hp>Y</hp>
-              </htd>
-            </htr>
-          </htable>
-        ) : (
-          <htable id="target">
-            <htr>
-              <htd>
-                <hp>X</hp>
-              </htd>
-              <htd>
-                <hp>Y</hp>
-              </htd>
-            </htr>
-          </htable>
-        )}
-      </editor>
-    ) as TestEditor,
-    { nodeId: false }
-  );
-
 const rootTable = (
   id: string,
   prefix: string,
@@ -216,7 +159,6 @@ const createRootMoveEditor = (
     focus: rootPoint(sourceRoot, 1),
   };
   const editor = createTestTableEditor({
-    nodeId: true,
     plugins: [TablePlugin, RootHolderPlugin],
     initialValue: { children, roots },
   });
@@ -247,7 +189,7 @@ const createDragEvent = (
   modifiers: Partial<
     Pick<React.DragEvent, 'altKey' | 'ctrlKey' | 'metaKey'>
   > & {
-    dragCellId?: string;
+    dragCellKey?: string;
   } = {}
 ) =>
   ({
@@ -257,14 +199,14 @@ const createDragEvent = (
     metaKey: false,
     preventDefault: mock(),
     stopPropagation: mock(),
-    target: modifiers.dragCellId
+    target: modifiers.dragCellKey
       ? {
           closest: (selector: string) =>
             selector === '[data-table-cell-drag-handle="true"]'
               ? {
                   getAttribute: (attribute: string) =>
                     attribute === 'data-table-cell-drag-for'
-                      ? modifiers.dragCellId
+                      ? modifiers.dragCellKey
                       : null,
                 }
               : null,
@@ -385,10 +327,10 @@ const dragSelectedCells = <V extends Value, D extends BasePluginDefinition>(
     trackCommits?: boolean;
   }
 ) => {
-  const sourceCellId = editor.plugin(BaseTablePlugin).read.getSelection()
-    ?.cellIds[0];
+  const sourceCellKey = editor.plugin(BaseTablePlugin).read.getSelection()
+    ?.cellKeys[0];
 
-  if (!sourceCellId) throw new Error('Expected source cell id');
+  if (!sourceCellKey) throw new Error('Expected source cell id');
 
   const dataTransfer = {
     dropEffect: 'move',
@@ -396,7 +338,7 @@ const dragSelectedCells = <V extends Value, D extends BasePluginDefinition>(
     types: ['application/x-plate-table-cell-selection'],
   } as unknown as DataTransfer;
   const dragStart = createDragEvent(dataTransfer, {
-    dragCellId: sourceCellId,
+    dragCellKey: sourceCellKey,
   });
   const drop = createDragEvent(dataTransfer, copy ? { altKey: true } : {});
 
@@ -553,30 +495,6 @@ describe('TablePlugin table drag/drop', () => {
     });
   });
 
-  it.each([
-    'missing-cell-id',
-    'duplicate-cell-id',
-  ] as const)('rejects a target with %s without committing', (target) => {
-    const editor = createMalformedTargetEditor(target);
-
-    const { commits, warn } = dragSelectedCells(editor, {
-      target: [1, 0, 0],
-      trackCommits: true,
-    });
-
-    expect(readTable(editor, 0)).toEqual([['A', 'B']]);
-    expect(readTable(editor, 1)).toEqual([['X', 'Y']]);
-    expect(commits).toHaveLength(0);
-    expect(warn).toHaveBeenCalledWith(
-      'Table drag/drop rejected before mutation.',
-      'TABLE_MUTATION_DIAGNOSTIC',
-      {
-        kind: 'stale-drag',
-        reason: target === 'missing-cell-id' ? 'missing-id' : 'duplicate-id',
-      }
-    );
-  });
-
   it('does not apply a stale capture to an unmarked drop', () => {
     const editor = createCrossTableEditor();
     const internalTransfer = {
@@ -588,7 +506,9 @@ describe('TablePlugin table drag/drop', () => {
       dropEffect: 'move',
       types: ['text/plain'],
     } as unknown as DataTransfer;
-    const dragStart = createDragEvent(internalTransfer, { dragCellId: 's1' });
+    const dragStart = createDragEvent(internalTransfer, {
+      dragCellKey: editor.key([0, 0, 0])!,
+    });
     const drop = createDragEvent(externalTransfer);
 
     installEventRangeApi(editor, [[1, 0, 0]]);
@@ -607,7 +527,7 @@ describe('TablePlugin table drag/drop', () => {
       setData: mock(),
       types: ['application/x-plate-table-cell-selection'],
     } as unknown as DataTransfer;
-    const dragStart = createDragEvent(dataTransfer, { dragCellId: 's1' });
+    const dragStart = createDragEvent(dataTransfer, { dragCellKey: 's1' });
     const dragEnd = createDragEvent(dataTransfer);
     const drop = createDragEvent(dataTransfer);
 

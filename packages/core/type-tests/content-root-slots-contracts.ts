@@ -30,7 +30,6 @@ figureProps.slots.contentRoot('caption');
 figureProps.slots.contentRoot('notes');
 
 const editor = createPlateEditor({
-  nodeId: false,
   plugins: [FigurePlugin],
   initialValue: {
     children: [

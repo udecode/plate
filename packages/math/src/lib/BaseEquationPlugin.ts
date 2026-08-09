@@ -1,32 +1,35 @@
 import {
+  BaseParagraphPlugin,
+  type BaseEditor,
   type BlockFenceInputRuleMatch,
-  createBasePlugin,
+  defineBasePlugin,
   createRuleFactory,
   matchDelimitedInline,
 } from '@platejs/core';
-import { type NodeInsertNodesOptions, property } from '@platejs/plite';
-import { type TEquationElement, KEYS, NODES } from '@platejs/utils';
+import {
+  type ElementOf,
+  type NodeInsertNodesOptions,
+  property,
+} from '@platejs/plite';
+import { PLUGINS } from '@platejs/utils';
 import katex, { type KatexOptions } from 'katex';
-
-import 'katex/dist/katex.min.css';
 
 const INLINE_EQUATION_BOUNDARY_RE = /[\s([{'"`]/;
 const INLINE_EQUATION_FOLLOW_RE = /[\s)\]}:;,.!?'"`]/;
 
-export type InsertEquationOptions = NodeInsertNodesOptions<TEquationElement>;
+const getMathExcludedTypes = (editor: BaseEditor) =>
+  [PLUGINS.codeBlock, PLUGINS.equation, PLUGINS.inlineEquation]
+    .map((name) => editor.plugin(name))
+    .filter((plugin) => plugin.installed)
+    .map((plugin) => plugin.schema.type);
 
-export type InsertInlineEquationOptions =
-  NodeInsertNodesOptions<TEquationElement> & {
-    texExpression?: string;
-  };
-
-export const BaseEquationPlugin = createBasePlugin({
-  codecs: ({ defineCodecs }) =>
+export const BaseEquationPlugin = defineBasePlugin(PLUGINS.equation, {
+  codecs: ({ defineCodecs, schema: { type } }) =>
     defineCodecs({
       'text/markdown': {
         from: 'math',
         kind: 'node',
-        decode: ({ node, type }) => ({
+        decode: ({ node }) => ({
           children: [{ text: '' }],
           texExpression: node.value,
           type,
@@ -37,71 +40,77 @@ export const BaseEquationPlugin = createBasePlugin({
         }),
       },
     }),
-  name: KEYS.equation,
   schema: {
     element: {
-      properties: { texExpression: property.string() },
+      properties: {
+        texExpression: property.string({ default: '', omitDefault: false }),
+      },
       void: 'block',
     },
   },
-  update: ({ tx, type }) => ({
-    insert: (options?: InsertEquationOptions) => {
-      tx.nodes.insert<TEquationElement>(
-        {
-          children: [{ text: '' }],
-          texExpression: '',
-          type,
-        },
-        options
-      );
-    },
-  }),
 });
 
-export const BaseInlineEquationPlugin = createBasePlugin({
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      'text/markdown': {
-        from: 'inlineMath',
-        kind: 'node',
-        decode: ({ node, type }) => ({
-          children: [{ text: '' }],
-          texExpression: node.value,
-          type,
-        }),
-        encode: ({ node }) => ({
-          type: 'inlineMath',
-          value: node.texExpression ?? '',
-        }),
+export const BaseInlineEquationPlugin = defineBasePlugin(
+  PLUGINS.inlineEquation,
+  {
+    codecs: ({ defineCodecs, schema: { type } }) =>
+      defineCodecs({
+        'text/markdown': {
+          from: 'inlineMath',
+          kind: 'node',
+          decode: ({ node }) => ({
+            children: [{ text: '' }],
+            texExpression: node.value,
+            type,
+          }),
+          encode: ({ node }) => ({
+            type: 'inlineMath',
+            value: node.texExpression ?? '',
+          }),
+        },
+      }),
+    schema: {
+      element: {
+        properties: { texExpression: property.string({ required: true }) },
+        void: 'inline',
+      },
+    },
+  }
+).extend(({ plugin, schema: { type } }) => {
+  type InlineEquation = ElementOf<typeof plugin>;
+
+  return {
+    update: ({ tx }) => ({
+      insert: (
+        { texExpression }: { texExpression?: string } = {},
+        options: NodeInsertNodesOptions<InlineEquation> = {}
+      ) => {
+        tx.nodes.insert(
+          {
+            children: [{ text: '' }],
+            texExpression: texExpression ?? tx.text.string(),
+            type,
+          },
+          options
+        );
       },
     }),
-  name: KEYS.inlineEquation,
-  schema: {
-    element: {
-      properties: { texExpression: property.string() },
-      void: 'inline',
-    },
-  },
-  type: NODES.inlineEquation,
-  update: ({ tx, type }) => ({
-    insert: ({
-      texExpression,
-      ...options
-    }: InsertInlineEquationOptions = {}) => {
-      tx.nodes.insert<TEquationElement>(
-        {
-          children: [{ text: '' }],
-          texExpression: texExpression ?? tx.text.string(),
-          type,
-        },
-        options
-      );
-    },
-  }),
+  };
 });
 
+export type BlockEquationElement = ElementOf<typeof BaseEquationPlugin>;
+export type InlineEquationElement = ElementOf<typeof BaseInlineEquationPlugin>;
+export type EquationElement = BlockEquationElement | InlineEquationElement;
+
+type InlineMathMatch = {
+  deleteRange: NonNullable<
+    ReturnType<typeof matchDelimitedInline>
+  >['deleteRange'];
+  texExpression: string;
+};
+
 export const MathRules = (() => {
-  const block = createRuleFactory<
+  const block = createRuleFactory(BaseEquationPlugin)<
     { on: 'break' | 'match' },
     {},
     BlockFenceInputRuleMatch
@@ -109,11 +118,11 @@ export const MathRules = (() => {
     type: 'blockFence',
     apply: ({ editor, tx }, match) => {
       tx.nodes.remove({ at: match.path });
-      tx.nodes.insert<TEquationElement>(
+      tx.nodes.insert(
         {
           children: [{ text: '' }],
           texExpression: '',
-          type: editor.plugin(KEYS.equation).type,
+          type: editor.plugin(BaseEquationPlugin).schema.type,
         },
         {
           at: match.path,
@@ -123,20 +132,15 @@ export const MathRules = (() => {
 
       return true;
     },
-    block: KEYS.p,
+    block: BaseParagraphPlugin,
     fence: '$$',
     on: ({ on }) => on,
     priority: 100,
   });
-  const inline = createRuleFactory<
+  const inline = createRuleFactory(BaseInlineEquationPlugin)<
     {},
     {},
-    {
-      deleteRange: NonNullable<
-        ReturnType<typeof matchDelimitedInline>
-      >['deleteRange'];
-      texExpression: string;
-    }
+    InlineMathMatch
   >({
     type: 'insertText',
     apply: ({ editor, tx }, match) => {
@@ -144,10 +148,10 @@ export const MathRules = (() => {
         at: match.deleteRange,
       });
       tx.selection.set(match.deleteRange.anchor);
-      tx.nodes.insert<TEquationElement>({
+      tx.nodes.insert({
         children: [{ text: '' }],
         texExpression: match.texExpression,
-        type: editor.plugin(KEYS.inlineEquation).type,
+        type: editor.plugin(BaseInlineEquationPlugin).schema.type,
       });
 
       return true;
@@ -186,51 +190,21 @@ export const MathRules = (() => {
         if (rule.target === 'insertBreak') {
           const enabled = rule.enabled;
 
-          rule.enabled = (context) => {
-            const codeBlock = context.editor.plugin(KEYS.codeBlock);
-            const equation = context.editor.plugin(KEYS.equation);
-            const inlineEquation = context.editor.plugin(KEYS.inlineEquation);
-
-            return (
-              (enabled?.(context) ?? true) &&
-              !context.editor.read.nodes.some({
-                match: {
-                  type: [
-                    codeBlock.installed ? codeBlock.type : KEYS.codeBlock,
-                    equation.installed ? equation.type : KEYS.equation,
-                    inlineEquation.installed
-                      ? inlineEquation.type
-                      : KEYS.inlineEquation,
-                  ],
-                },
-              })
-            );
-          };
+          rule.enabled = (context) =>
+            (enabled?.(context) ?? true) &&
+            !context.editor.read.nodes.some({
+              match: { type: getMathExcludedTypes(context.editor) },
+            });
         }
 
         if (rule.target === 'insertText') {
           const enabled = rule.enabled;
 
-          rule.enabled = (context) => {
-            const codeBlock = context.editor.plugin(KEYS.codeBlock);
-            const equation = context.editor.plugin(KEYS.equation);
-            const inlineEquation = context.editor.plugin(KEYS.inlineEquation);
-
-            return (
-              (enabled?.(context) ?? true) &&
-              !context.editor.read.nodes.some({
-                match: {
-                  type: [
-                    codeBlock.installed ? codeBlock.type : KEYS.codeBlock,
-                    equation.installed ? equation.type : KEYS.equation,
-                    inlineEquation.installed
-                      ? inlineEquation.type
-                      : KEYS.inlineEquation,
-                  ],
-                },
-              })
-            );
-          };
+          rule.enabled = (context) =>
+            (enabled?.(context) ?? true) &&
+            !context.editor.read.nodes.some({
+              match: { type: getMathExcludedTypes(context.editor) },
+            });
         }
 
         return rule;
@@ -240,26 +214,11 @@ export const MathRules = (() => {
       const rule = inline(ruleOptions);
       const enabled = rule.enabled;
 
-      rule.enabled = (context) => {
-        const codeBlock = context.editor.plugin(KEYS.codeBlock);
-        const equation = context.editor.plugin(KEYS.equation);
-        const inlineEquation = context.editor.plugin(KEYS.inlineEquation);
-
-        return (
-          (enabled?.(context) ?? true) &&
-          !context.editor.read.nodes.some({
-            match: {
-              type: [
-                codeBlock.installed ? codeBlock.type : KEYS.codeBlock,
-                equation.installed ? equation.type : KEYS.equation,
-                inlineEquation.installed
-                  ? inlineEquation.type
-                  : KEYS.inlineEquation,
-              ],
-            },
-          })
-        );
-      };
+      rule.enabled = (context) =>
+        (enabled?.(context) ?? true) &&
+        !context.editor.read.nodes.some({
+          match: { type: getMathExcludedTypes(context.editor) },
+        });
 
       return rule;
     },
@@ -270,6 +229,6 @@ export const getEquationHtml = ({
   element,
   options,
 }: {
-  element: TEquationElement;
+  element: EquationElement;
   options?: KatexOptions;
 }) => katex.renderToString(element.texExpression, options);

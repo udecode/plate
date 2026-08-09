@@ -18,7 +18,7 @@ Underline applies the `underline` leaf mark to selected text. `UnderlinePlugin` 
 
 ## Features
 
-- `KEYS.underline` leaf mark.
+- `PLUGINS.underline` leaf mark.
 - Default `⌘U` / `Ctrl+U` shortcut.
 - HTML deserialization from `u` and underline text decoration.
 - `<u>` rendering by default.
@@ -33,7 +33,7 @@ Underline applies the `underline` leaf mark to selected text. `UnderlinePlugin` 
 
 ### Add Basic Marks
 
-`BasicMarksKit` includes `UnderlinePlugin`, the underscore input rule, and the standard toolbar buttons that use `KEYS.underline`.
+`BasicMarksKit` includes `UnderlinePlugin`, the underscore input rule, and the standard toolbar buttons that use `PLUGINS.underline`.
 
 <ComponentSource name="basic-marks-kit" />
 
@@ -49,17 +49,16 @@ export const editor = createPlateEditor({
 
 ### Add A Toolbar Button
 
-Use `MarkToolbarButton` with `KEYS.underline`.
+Use `MarkToolbarButton` with `PLUGINS.underline`.
 
 ```tsx
 import { UnderlineIcon } from 'lucide-react';
-import { KEYS } from 'platejs';
 
 import { MarkToolbarButton } from '@/components/ui/mark-toolbar-button';
 
 export function UnderlineToolbarButton() {
   return (
-    <MarkToolbarButton nodeType={KEYS.underline} tooltip="Underline (⌘+U)">
+    <MarkToolbarButton nodeType={PLUGINS.underline} tooltip="Underline (⌘+U)">
       <UnderlineIcon />
     </MarkToolbarButton>
   );
@@ -114,7 +113,7 @@ The package owns the mark. The registry owns toolbar placement and icon choice.
 
 | Behavior | Source |
 |----------|--------|
-| Mark key | `KEYS.underline` |
+| Mark key | `PLUGINS.underline` |
 | Mark declaration | `schema.mark: property.boolean({ default: false, omitDefault: true })` |
 | Toggle command | `tx.underline.toggle()` calls `tx.marks.toggle(type)`. |
 | Shortcut | `UnderlinePlugin` registers `mod+u`. |

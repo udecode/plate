@@ -78,9 +78,9 @@ React and DOM runtime state is read through Plite runtime APIs. Plate exposes on
 
 ## Plugin Access
 
-Use `editor.api.<pluginName>` for installed plugin queries and services on a
+Use `editor.api.<name>` for installed plugin queries and services on a
 concrete editor. Pass the descriptor to `editor.plugin(plugin)` when generic
-code needs the exact plugin API, update commands, type, or store. The
+code needs the exact plugin API, update commands, name, or store. The
 root and scoped API paths reference the same immutable object.
 
 ```ts title="Plugin API access"
@@ -104,7 +104,7 @@ In the table below, `P` is the exact plugin descriptor type and
 
 | Helper                                   | Type                                                                                           | Use it for                                                                                                  |
 | ---------------------------------------- | ---------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `api[pluginName]`                        | `InferOwnApi<DefinitionOf<P>>`                                                                 | Call an installed plugin's queries and services from a concrete inferred editor.                            |
+| `api[name]`                              | `InferOwnApi<DefinitionOf<P>>`                                                                 | Call an installed plugin's queries and services from a concrete inferred editor.                            |
 | `plugin(plugin)`                         | `<P extends AnyBasePlugin & PluginReference>(plugin: P) => BasePluginPortal<DefinitionOf<P>>`  | Open a typed consumer portal to the exact plugin descriptor.                                                |
 | `plugin(plugin).installed`               | `boolean`                                                                                      | Check installation before reading another portal field when the plugin is optional.                         |
 | `plugin(plugin).api`                     | `InferOwnApi<DefinitionOf<P>>`                                                                 | Call the same plugin API from generic or exact-descriptor code.                                             |
@@ -114,8 +114,8 @@ In the table below, `P` is the exact plugin descriptor type and
 | `plugin(plugin).store.get()`             | `() => InferPluginStoreState<DefinitionOf<P>>`                                                 | Read the complete current plugin state.                                                                     |
 | `plugin(plugin).store.set(partial)`      | `(partial) => void`                                                                            | Merge state fields.                                                                                         |
 | `plugin(plugin).store.set(recipe)`       | `(draft) => void`                                                                              | Update state through a draft recipe.                                                                        |
-| `plugin(plugin).plugin`                  | `ResolvedBasePlugin<DefinitionOf<P>>`                                                          | Read the compiled plugin descriptor after overrides and configuration.                                      |
-| `plugin(pluginName)`                     | `(pluginName: string) => AnyBasePluginPortal`                                                   | Open an erased portal for dynamic names or family-agnostic plugin slots.                                     |
+| `plugin(plugin).name`, `.inject`, `.render`, `.initialState` | Resolved descriptor fields | Read compiled descriptor fields directly after overrides and configuration. |
+| `plugin(plugin)`                         | `(plugin: PluginReference \| string) => AnyBasePluginPortal`                                    | Open an erased portal for a descriptor or dynamic name; concrete descriptors use the exact overload above. |
 
 In React, subscribe with `usePluginStore(plugin, key)` or
 `usePluginStore(plugin, selector)` instead of reading a portal during render.
@@ -139,7 +139,7 @@ export function useBasicEditor() {
     plugins: [BoldPlugin],
     initialValue: [
       {
-        type: "p",
+        type: "paragraph",
         children: [{ text: "Bold text is ready." }],
       },
     ],
@@ -152,7 +152,7 @@ export function useBasicEditor() {
 | Step                | Behavior                                                                                                                                             |
 | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Runtime state       | Preserves Plite `editor.id` and initializes `runtime.userId`.                                                                                        |
-| Plugin access       | Publishes installed APIs under `editor.api[pluginName]` and installs descriptor-or-name `plugin(...)` portals.                                        |
+| Plugin access       | Publishes installed APIs under `editor.api[name]` and installs descriptor-or-name `plugin(...)` portals.                                              |
 | Core plugins        | Resolves core plugins, replaces core plugins with custom plugins that share the same name, and resolves the root plugin.                             |
 | Components          | Merges `components` into root-plugin component overrides.                                                                                            |
 | Normalization guard | Wraps `normalizeNode` so `editor.api.shouldNormalizeNode(entry)` can skip a normalization pass.                                                      |
@@ -300,21 +300,25 @@ Some core behavior is exposed by routing browser/editor events into the Plite tr
 
 ## Type Helpers
 
-Use `PlateEditor` when you want an editor typed to a specific value and plugin union.
+Use `PlateEditor<typeof Kit>` when another module needs the exact editor type.
+The installed plugin schema supplies the value type.
 
 ```ts title="Typed editor helper"
 import type { PlateEditor } from "platejs/react";
-import type { Value } from "platejs";
+import type { ValueOf } from "platejs";
 import { BoldPlugin } from "@platejs/basic-nodes/react";
 
-type BasicEditor = PlateEditor<Value, typeof BoldPlugin>;
+const BasicKit = [BoldPlugin] as const;
+
+type BasicEditor = PlateEditor<typeof BasicKit>;
+type BasicValue = ValueOf<BasicEditor>;
 ```
 
-| Type                | Purpose                                                                             |
-| ------------------- | ----------------------------------------------------------------------------------- |
-| `PlateEditor`       | Runtime editor type with the default Plate core plugin surface.                     |
-| `PlateEditor<V, P>` | Typed editor for a specific `Value` and plugin union.                               |
-| `NameofPlugins<T>`  | String name union for Plate core plugins plus the supplied plugin definition union. |
+| Type                        | Purpose                                                         |
+| --------------------------- | --------------------------------------------------------------- |
+| `PlateEditor`               | Broad editor type for framework boundaries.                     |
+| `PlateEditor<typeof Kit>`   | Exact editor type derived from an installed plugin tuple.        |
+| `ValueOf<PlateEditorType>`  | Document value derived from that editor's compiled schema.       |
 
 ## Related APIs
 

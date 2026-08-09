@@ -64,14 +64,25 @@ describe('schema compiler', () => {
     const indent = schema.elementProperty('indent', property.number(), {
       target: target.type('quote'),
     });
+    const tone = schema.textProperty('tone', property.string(), {
+      target: target.type('paragraph'),
+    });
     const indentId = getCompiledSchemaPropertyId(indent);
+    const toneId = getCompiledSchemaPropertyId(tone);
+    const alignId = getCompiledSchemaPropertyId({
+      key: 'align',
+      placement: 'element',
+      target: target.type('paragraph'),
+    });
     const records = [
       record('paragraph', {
         elements: {
           paragraph: {
             content: schema.content.text({ default: 'text', min: 1 }),
+            properties: { align: property.string() },
           },
         },
+        properties: [tone],
       }),
       record('quote', {
         elements: {
@@ -104,23 +115,48 @@ describe('schema compiler', () => {
             source: 'quote',
             target: target.type('p'),
           },
+          {
+            id: alignId,
+            kind: 'property',
+            source: 'paragraph',
+            target: target.type('quote'),
+          },
+        ],
+      }),
+      record('content-policy', {
+        overrides: [
+          {
+            content: schema.content.text({ max: 2, min: 1 }),
+            element: 'paragraph',
+            kind: 'element',
+            source: 'paragraph',
+          },
         ],
       }),
     ] as const;
     const compiled = compileEditorSchemaContributions(records);
     const quote = compiled.elements.byType.get('quote')!;
-    const overriddenIndent = [...compiled.properties.byId.values()].find(
-      (candidate) => candidate.key === 'indent'
-    )!;
+    const overriddenIndent = compiled.properties.byId.get(indentId)!;
 
     assert.equal(compiled.elements.byType.has('paragraph'), false);
     assert.equal(compiled.elements.byType.has('p'), true);
+    assert.equal(compiled.elements.byType.get('p')?.content?.max, 2);
+    assert.equal(compiled.properties.byId.get(alignId)?.key, 'align');
+    assert.deepEqual(
+      compiled.properties.byId.get(toneId)?.target,
+      target.type('p')
+    );
+    assert.deepEqual(
+      compiled.properties.byId.get(alignId)?.target,
+      target.type('quote')
+    );
     assert.deepEqual([...quote.content!.allowedElementTypes], ['p']);
     assert.deepEqual(quote.content!.defaultPlan, {
       kind: 'element',
       type: 'p',
     });
     assert.deepEqual(overriddenIndent.target, target.type('p'));
+    assert.equal(overriddenIndent.id, indentId);
 
     const permuted = compileEditorSchemaContributions([...records].reverse());
     assert.equal(permuted.identity.fingerprint, compiled.identity.fingerprint);
@@ -159,6 +195,26 @@ describe('schema compiler', () => {
           }),
         ]),
       /targets unknown element/i
+    );
+    assert.throws(
+      () =>
+        compileEditorSchemaContributions([
+          paragraph,
+          record('application', {
+            overrides: [{ ...rename, type: '' }],
+          }),
+        ]),
+      /must be a non-empty string/i
+    );
+    assert.throws(
+      () =>
+        compileEditorSchemaContributions([
+          paragraph,
+          record('application', {
+            overrides: [{ ...rename, type: 1 } as never],
+          }),
+        ]),
+      /must be a non-empty string/i
     );
   });
 
@@ -703,6 +759,33 @@ describe('schema compiler', () => {
       () => (left.elements.groups.get('block') as Set<string>).add('bad'),
       /immutable/
     );
+  });
+
+  it('fingerprints generator presence without fingerprinting its closure', () => {
+    const create = (generate?: () => string) =>
+      defineEditorSchema('schema:generated-fingerprint', {
+        elements: {
+          paragraph: {
+            content: schema.content.text(),
+            properties: {
+              id: generate ? property.string({ generate }) : property.string(),
+            },
+          },
+        },
+        root: schema.content.type('paragraph'),
+      });
+    const first = compileEditorSchemaContributions([
+      record('generated', create(() => 'first').schema),
+    ]);
+    const second = compileEditorSchemaContributions([
+      record('generated', create(() => 'second').schema),
+    ]);
+    const plain = compileEditorSchemaContributions([
+      record('generated', create().schema),
+    ]);
+
+    assert.equal(first.identity.fingerprint, second.identity.fingerprint);
+    assert.notEqual(first.identity.fingerprint, plain.identity.fingerprint);
   });
 
   it('canonicalizes target type sets at compilation', () => {
@@ -1568,6 +1651,50 @@ describe('schema compiler', () => {
       () =>
         compileEditorSchemaContributions([record(Groups.name, Groups.schema)]),
       /a -> b -> a/
+    );
+  });
+
+  it('validates and normalizes property copy policy at the compiler boundary', () => {
+    const preserved = schema.textProperty('preserved', property.string());
+    const { copy: _copy, ...withoutCopy } = preserved;
+    const compiled = compileEditorSchemaContributions([
+      record('copy-default', {
+        properties: [withoutCopy as typeof preserved],
+      }),
+    ]);
+
+    assert.equal(
+      resolveCompiledSchemaProperty(compiled, 'text', 'preserved', {
+        root: null,
+        type: 'paragraph',
+      })?.lifecycle.copy,
+      'preserve'
+    );
+    assert.throws(
+      () =>
+        compileEditorSchemaContributions([
+          record('copy-invalid', {
+            properties: [{ ...preserved, copy: 'retain' } as never],
+          }),
+        ]),
+      /invalid copy policy/
+    );
+    assert.throws(
+      () =>
+        compileEditorSchemaContributions([
+          record('copy-required', {
+            properties: [
+              {
+                ...schema.textProperty(
+                  'required',
+                  property.string({ required: true })
+                ),
+                copy: 'drop',
+              } as never,
+            ],
+          }),
+        ]),
+      /required cannot use copy: drop/
     );
   });
 

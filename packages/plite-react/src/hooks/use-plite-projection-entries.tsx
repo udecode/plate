@@ -1,4 +1,5 @@
 import { useCallback, useContext, useSyncExternalStore } from 'react';
+import type { RuntimeId } from '@platejs/plite';
 import { ProjectionContext } from '../projection-context';
 import type { PliteProjectionRefreshResult } from '../projection-store';
 
@@ -16,13 +17,16 @@ export interface PliteProjectionStore<T = unknown> {
     Record<string, readonly PliteProjectionEntry<T>[]>
   >;
   getRuntimeSnapshot?: (
-    runtimeId: string
+    runtimeId: RuntimeId
   ) => readonly PliteProjectionEntry<T>[];
   subscribeProjectionRefresh?: (
     listener: (result: PliteProjectionRefreshResult) => void
   ) => () => void;
   subscribe: (listener: () => void) => () => void;
-  subscribeRuntimeId?: (runtimeId: string, listener: () => void) => () => void;
+  subscribeRuntimeId?: (
+    runtimeId: RuntimeId,
+    listener: () => void
+  ) => () => void;
   subscribeSourceId?: (sourceId: string, listener: () => void) => () => void;
 }
 
@@ -39,12 +43,12 @@ const getEmptyRuntimeSnapshot = () => EMPTY_PROJECTIONS;
  * available.
  */
 export function usePliteProjectionEntries<T = unknown>(
-  runtimeId: string
+  runtimeId: RuntimeId | null
 ): readonly PliteProjectionEntry<T>[] {
   const store = useContext(ProjectionContext);
   const subscribe = useCallback(
     (listener: () => void) => {
-      if (store?.subscribeRuntimeId) {
+      if (runtimeId && store?.subscribeRuntimeId) {
         return store.subscribeRuntimeId(runtimeId, listener);
       }
 
@@ -54,12 +58,14 @@ export function usePliteProjectionEntries<T = unknown>(
   );
   const getSnapshot = useCallback(
     () =>
-      (store?.getRuntimeSnapshot?.(runtimeId) as
-        | readonly PliteProjectionEntry<T>[]
-        | undefined) ??
-      ((store?.getSnapshot()[runtimeId] as
-        | readonly PliteProjectionEntry<T>[]
-        | undefined) ||
+      (runtimeId &&
+        (store?.getRuntimeSnapshot?.(runtimeId) as
+          | readonly PliteProjectionEntry<T>[]
+          | undefined)) ??
+      ((runtimeId &&
+        (store?.getSnapshot()[runtimeId] as
+          | readonly PliteProjectionEntry<T>[]
+          | undefined)) ||
         EMPTY_PROJECTIONS),
     [runtimeId, store]
   );

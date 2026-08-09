@@ -259,9 +259,7 @@ Paragraph 2 line 1`,
         output: (
           <fragment>
             <hp>Line 1</hp>
-            <element
-              type={editor.plugin(BaseHorizontalRulePlugin).schema.element.type}
-            >
+            <element type={editor.plugin(BaseHorizontalRulePlugin).schema.type}>
               <htext />
             </element>
             <hp>Line 2</hp>

@@ -22,6 +22,7 @@ const createMouseEvent = ({
 }) => {
   const event = new MouseEvent('mousedown', {
     button,
+    cancelable: true,
     clientX,
     clientY,
     metaKey,
@@ -97,6 +98,7 @@ describe('SelectionArea', () => {
     (selection as any)._delayedTapMove(moveEvent);
 
     expect(emitEvent).toHaveBeenCalledWith('beforestart', startEvent);
+    expect(startEvent.defaultPrevented).toBe(false);
     expect(emitEvent).toHaveBeenCalledWith('beforedrag', moveEvent);
     expect(emitEvent).toHaveBeenCalledWith('start', moveEvent);
     expect(setupSelectionArea).toHaveBeenCalledTimes(1);
@@ -104,6 +106,7 @@ describe('SelectionArea', () => {
     expect(selection.getSelectionArea().parentElement).toBe(container);
     expect(selection.getSelectionArea().style.display).toBe('block');
     expect((selection as any)._singleClick).toBe(false);
+    expect(moveEvent.defaultPrevented).toBe(true);
 
     selection.destroy();
   });
@@ -141,6 +144,51 @@ describe('SelectionArea', () => {
     expect((selection as any)._singleClick).toBe(true);
 
     selection.destroy();
+  });
+
+  it('clears native ranges while area selection is active', () => {
+    const { selectable, selection } = createSelectionHarness();
+    const nativeSelection = document.getSelection()!;
+    const range = document.createRange();
+
+    selectable.textContent = 'Selectable';
+    range.selectNodeContents(selectable);
+    nativeSelection.addRange(range);
+
+    (selection as any)._onNativeSelectionChange();
+
+    expect(nativeSelection.rangeCount).toBe(0);
+
+    selection.destroy();
+  });
+
+  it('positions but does not own a supplied selection area element', () => {
+    const area = document.createElement('div');
+
+    document.body.append(area);
+    const { container, selection } = createSelectionHarness({
+      selectionAreaElement: area,
+    });
+
+    (selection as any)._container = container;
+    (selection as any)._containerRect = container.getBoundingClientRect();
+    Object.assign((selection as any)._areaRect, {
+      height: 20,
+      width: 20,
+      x: 45,
+      y: 35,
+    });
+
+    (selection as any)._redrawSelectionArea();
+
+    expect(area.parentElement).toBe(document.body);
+    expect(area.style.position).toBe('fixed');
+    expect(area.style.left).toBe('30px');
+    expect(area.style.top).toBe('40px');
+
+    selection.destroy();
+
+    expect(area.parentElement).toBe(document.body);
   });
 
   it('updates area coordinates and schedules a frame during manual scroll', () => {
@@ -322,6 +370,25 @@ describe('SelectionArea', () => {
       selectable,
       other,
     ]);
+
+    selection.destroy();
+  });
+
+  it('resolves lazy selectable targets for every interaction', () => {
+    const { container, selectable, selection } = createSelectionHarness({
+      selectables: () =>
+        Array.from(container.querySelectorAll<HTMLElement>('.plate-item')),
+    });
+    const added = document.createElement('div');
+
+    selection.resolveSelectables();
+    expect((selection as any)._selectables).toEqual([selectable]);
+
+    added.className = 'plate-item';
+    container.append(added);
+    selection.resolveSelectables();
+
+    expect((selection as any)._selectables).toEqual([selectable, added]);
 
     selection.destroy();
   });

@@ -1,8 +1,12 @@
 import { ElementApi, property, schema } from '@platejs/plite';
 import { createBaseEditor, defineBasePlugin } from 'platejs';
+import { BaseCalloutPlugin } from '@platejs/callout';
+import { BaseImagePlugin, BaseMediaEmbedPlugin } from '@platejs/media';
+import type { Root } from 'mdast';
 
 import { createTestEditor } from './createTestEditor';
 import { MarkdownPlugin } from '../../../../../../packages/markdown/src/lib/MarkdownPlugin';
+import { remarkMdx } from '../../../../../../packages/markdown/src/lib/plugins';
 
 const inlineContent = schema.content.any(
   [schema.content.text(), schema.content.group('inline')],
@@ -13,11 +17,11 @@ const CustomH1Plugin = defineBasePlugin('customH1', {
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       'text/markdown': {
-        decode: ({ decode, decoration, element, node }) =>
+        decode: ({ decode, decoration, node, schema: { type } }) =>
           node.depth === 1
             ? {
                 children: decode(node.children, decoration),
-                type: element.type,
+                type,
               }
             : undefined,
         encode: ({ encodePhrasing, node }) => ({
@@ -40,9 +44,9 @@ const CustomParagraphPlugin = defineBasePlugin('customParagraph', {
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       'text/markdown': {
-        decode: ({ decode, decoration, element, node }) => ({
+        decode: ({ decode, decoration, node, schema: { type } }) => ({
           children: decode(node.children, decoration),
-          type: element.type,
+          type,
         }),
         encode: ({ encodePhrasing, node }) => ({
           children: encodePhrasing(node.children),
@@ -63,10 +67,10 @@ const CustomBoldPlugin = defineBasePlugin('customBold', {
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       'text/markdown': {
-        decode: ({ decode, decoration, node, properties }) =>
+        decode: ({ decode, decoration, node, schema: { key } }) =>
           decode(node.children, {
             ...decoration,
-            [properties.customBold.key]: true,
+            [key]: true,
           }),
         encode: () => ({ children: [], type: 'strong' }),
         from: 'strong',
@@ -80,6 +84,89 @@ const CustomBoldPlugin = defineBasePlugin('customBold', {
 });
 
 describe('feature-owned Markdown codecs', () => {
+  it('decodes the legacy media-embed tag and writes the canonical tag', () => {
+    const editor = createBaseEditor({
+      plugins: [
+        BaseMediaEmbedPlugin,
+        MarkdownPlugin.configure({
+          initialState: { remarkPlugins: [remarkMdx] },
+        }),
+      ],
+    });
+    const value = editor.api.markdown.deserialize(
+      '<media_embed src="https://platejs.org/embed" />'
+    );
+
+    expect(value.children).toEqual([
+      {
+        children: [{ text: '' }],
+        type: 'mediaEmbed',
+        url: 'https://platejs.org/embed',
+      },
+    ]);
+    expect(editor.api.markdown.serialize({ value })).toBe(
+      '<mediaEmbed src="https://platejs.org/embed" />\n'
+    );
+  });
+
+  it('decodes callouts without installing a Plate paragraph plugin', () => {
+    const editor = createBaseEditor({
+      plugins: [
+        BaseCalloutPlugin,
+        MarkdownPlugin.configure({
+          initialState: { remarkPlugins: [remarkMdx] },
+        }),
+      ],
+    });
+
+    expect(
+      editor.api.markdown.deserialize('<callout>\n  Text\n</callout>').children
+    ).toEqual([
+      {
+        children: [{ text: 'Text' }],
+        type: 'callout',
+      },
+    ]);
+  });
+
+  it('rejects callout paragraphs that decode to block elements', () => {
+    const remarkCalloutImage = () => (tree: Root) => {
+      tree.children = [
+        {
+          attributes: [],
+          children: [
+            {
+              children: [
+                {
+                  alt: 'Plate',
+                  title: null,
+                  type: 'image',
+                  url: '/plate.png',
+                },
+              ],
+              type: 'paragraph',
+            },
+          ],
+          name: 'callout',
+          type: 'mdxJsxFlowElement',
+        },
+      ];
+    };
+    const editor = createBaseEditor({
+      plugins: [
+        BaseImagePlugin,
+        BaseCalloutPlugin,
+        MarkdownPlugin.configure({
+          initialState: { remarkPlugins: [remarkMdx, remarkCalloutImage] },
+        }),
+      ],
+    });
+
+    expect(() => editor.api.markdown.deserialize('seed')).toThrow(
+      'Callout children must be inline Markdown content.'
+    );
+  });
+
   it('serialize custom keys', () => {
     const nodes = [
       {

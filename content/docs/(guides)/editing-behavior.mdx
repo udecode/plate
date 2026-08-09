@@ -135,10 +135,10 @@ Use `start: 'lift'` for nested blocks that should move out one ancestor level.
 
 ```tsx title="plugins.tsx" showLineNumbers
 import { schema } from 'platejs';
-import { createPlatePlugin } from 'platejs/react';
+import { definePlatePlugin } from 'platejs/react';
 
-export const QuoteItemPlugin = createPlatePlugin({
-  name: 'quote_item',
+export const QuoteItemPlugin = definePlatePlugin('quoteItem', {
+  type: 'quote_item',
   rules: {
     delete: {
       start: 'lift',

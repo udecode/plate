@@ -22,9 +22,7 @@ describe('BaseCodeDrawingPlugin', () => {
     expect(editor.plugin(PLUGINS.codeDrawing).name).toBe(PLUGINS.codeDrawing);
     expect(plugin.name).toBe(PLUGINS.codeDrawing);
 
-    editor.update((tx) => {
-      expect(typeof tx.codeDrawing.insert).toBe('function');
-    });
+    expect(typeof plugin.update.insert).toBe('function');
   });
 
   it('rejects unsupported drawing data', () => {
@@ -56,7 +54,7 @@ describe('BaseCodeDrawingPlugin', () => {
       initialValue: [{ children: [{ text: 'before' }], type: 'paragraph' }],
     });
 
-    editor.update.codeDrawing.insert();
+    editor.plugin(BaseCodeDrawingPlugin).update.insert();
 
     expect(editor.read.children()).toMatchObject([
       { children: [{ text: 'before' }], type: 'paragraph' },
@@ -78,14 +76,16 @@ describe('BaseCodeDrawingPlugin', () => {
       initialValue: [{ children: [{ text: 'x' }], type: 'paragraph' }],
     });
 
-    editor.update((tx) => {
-      tx.codeDrawing.insert({
+    editor.plugin(BaseCodeDrawingPlugin).update.insert(
+      {
         data: {
           code: 'graph TD; A-->B',
+          drawingMode: 'Both',
           drawingType: 'Graphviz',
         },
-      });
-    });
+      },
+      { at: [1] }
+    );
 
     expect(editor.read.children().at(-1)).toMatchObject({
       children: [{ text: '' }],

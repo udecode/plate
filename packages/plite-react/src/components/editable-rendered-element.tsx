@@ -61,7 +61,7 @@ export const EditableRenderedElement = <
   props: RenderElementProps<TElement>;
   renderElement: RenderElementRenderer<TElement>;
 }) => {
-  const editor = useEditor<ReactRuntimeEditor>();
+  const editor = useEditor();
   const currentPath = useElementPath() ?? path;
 
   useIsomorphicLayoutEffect(() => {

@@ -1,10 +1,12 @@
-import React, { useSyncExternalStore } from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom';
 
 import { isHotkey } from '@platejs/core';
 import {
   type EditableSiblingComponent,
+  useEditor,
   useEditorPlugin,
+  usePluginStore,
 } from '@platejs/core/react';
 import { ElementApi } from '@platejs/plite';
 
@@ -12,14 +14,16 @@ import { BlockSelectionPlugin } from './BlockSelectionPlugin';
 import { useSelectionArea } from './useBlockSelection';
 
 export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
-  const { api, editor, store, update } = useEditorPlugin(BlockSelectionPlugin);
-  const isSelectingSome = useSyncExternalStore(
-    store.subscribe,
-    () => store.get('isSelectingSome'),
-    () => false
+  const editor = useEditor();
+  const { api, store, update } = useEditorPlugin(BlockSelectionPlugin);
+  const [selectionAreaElement, setSelectionAreaElement] =
+    React.useState<HTMLDivElement | null>(null);
+  const isSelectingSome = usePluginStore(
+    BlockSelectionPlugin,
+    'isSelectingSome'
   );
 
-  useSelectionArea();
+  useSelectionArea(selectionAreaElement);
 
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [isMounted, setIsMounted] = React.useState(false);
@@ -179,24 +183,49 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
     [editor, update]
   );
 
-  if (!isMounted || typeof window === 'undefined') return null;
-
-  return ReactDOM.createPortal(
-    <input
-      ref={inputRef}
-      className="plite-shadow-input"
-      style={{
-        left: '-300px',
-        opacity: 0,
-        position: 'fixed',
-        top: '-300px',
-        zIndex: 999,
-      }}
-      onCopy={handleCopy}
-      onCut={handleCut}
-      onKeyDown={handleKeyDown}
-      onPaste={handlePaste}
-    />,
-    document.body
+  return (
+    <>
+      {isMounted &&
+        typeof window !== 'undefined' &&
+        ReactDOM.createPortal(
+          <div
+            ref={setSelectionAreaElement}
+            aria-hidden
+            className="plite-selection-area"
+            data-slot="block-selection-area"
+            style={{
+              backgroundColor:
+                'color-mix(in srgb, var(--brand, Highlight) 15%, transparent)',
+              border:
+                '1px solid color-mix(in srgb, var(--brand, Highlight) 25%, transparent)',
+              pointerEvents: 'none',
+              position: 'fixed',
+              willChange: 'top, left, bottom, right, width, height',
+              zIndex: 50,
+            }}
+          />,
+          document.body
+        )}
+      {isMounted &&
+        typeof window !== 'undefined' &&
+        ReactDOM.createPortal(
+          <input
+            ref={inputRef}
+            className="plite-shadow-input"
+            style={{
+              left: '-300px',
+              opacity: 0,
+              position: 'fixed',
+              top: '-300px',
+              zIndex: 999,
+            }}
+            onCopy={handleCopy}
+            onCut={handleCut}
+            onKeyDown={handleKeyDown}
+            onPaste={handlePaste}
+          />,
+          document.body
+        )}
+    </>
   );
 };

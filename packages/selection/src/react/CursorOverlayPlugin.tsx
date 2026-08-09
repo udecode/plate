@@ -2,7 +2,7 @@ import type { DefinitionOf } from '@platejs/core';
 
 import type { CursorData, CursorState } from '@platejs/cursor';
 import { definePlatePlugin } from '@platejs/core/react';
-import { KEYS } from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 
 import { useCursorOverlayPlugin } from './useCursorOverlay';
 
@@ -12,7 +12,7 @@ export type CursorOverlayPluginState = {
 
 const initialState: CursorOverlayPluginState = { cursors: {} };
 
-export const CursorOverlayPlugin = definePlatePlugin(KEYS.cursorOverlay, {
+export const CursorOverlayPlugin = definePlatePlugin(PLUGINS.cursorOverlay, {
   api: ({ store }) => ({
     addCursor: (id: string, cursor: CursorState<CursorData>) => {
       const newCursors = { ...store.get().cursors };
@@ -55,7 +55,7 @@ export const CursorOverlayPlugin = definePlatePlugin(KEYS.cursorOverlay, {
       api.removeCursor('drag');
     },
     dragOver: ({ editor, event }) => {
-      const dnd = editor.plugin(KEYS.dnd);
+      const dnd = editor.plugin(PLUGINS.dnd);
 
       if (!dnd.installed || document.body.classList.contains('dragging')) {
         return;

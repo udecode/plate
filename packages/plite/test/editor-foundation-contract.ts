@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   getLastCommit as editorGetLastCommit,
-  getPathByRuntimeId as editorGetPathByRuntimeId,
-  getRuntimeId as editorGetRuntimeId,
+  getPathByNodeKey as editorGetPathByNodeKey,
+  getNodeKey as editorGetNodeKey,
   getSnapshot as editorGetSnapshot,
   replace as editorReplace,
   string as editorString,
@@ -71,7 +71,7 @@ describe('editor foundation contract', () => {
         },
         read: ({ state }) => ({
           defaultColSpan() {
-            return state.schema.getElementProperty(
+            return state.schema.getProperty(
               { type: 'table-cell', children: [{ text: '' }] },
               'colSpan'
             );
@@ -223,9 +223,9 @@ describe('editor foundation contract', () => {
     );
 
     const targetEditor = createFoundationEditor();
-    const removedId = editorGetRuntimeId(targetEditor, [1]);
+    const removedKey = editorGetNodeKey(targetEditor, [1]);
 
-    assert(removedId);
+    assert(removedKey);
 
     const before = targetEditor.read.value();
     const removeChange = DocumentChange.between(before, {
@@ -234,7 +234,7 @@ describe('editor foundation contract', () => {
     });
 
     assert.equal(
-      JSON.stringify(removeChange.toJSON()).includes(removedId),
+      JSON.stringify(removeChange.toJSON()).includes(removedKey),
       false
     );
 
@@ -247,6 +247,6 @@ describe('editor foundation contract', () => {
 
     assert(removeCommit);
     assert.deepEqual(removeCommit.tags, ['remote-remove']);
-    assert.equal(editorGetPathByRuntimeId(targetEditor, removedId), null);
+    assert.equal(editorGetPathByNodeKey(targetEditor, removedKey), null);
   });
 });

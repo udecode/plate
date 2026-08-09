@@ -4,6 +4,11 @@ import assert from 'node:assert/strict';
 import { renderHook } from '@testing-library/react';
 import { Plate } from '@platejs/core/react';
 import { ElementProvider } from '@platejs/core/react/internal';
+import type {
+  EditorCommit,
+  EditorCommitChangeKind,
+  Element,
+} from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
 import {
   type TableCellElement,
@@ -19,15 +24,19 @@ import {
   createTestTableEditor,
   getTestTablePlugins,
 } from '../lib/__tests__/getTestTablePlugins';
+import type { TableCellElementWithId } from '../lib/__tests__/tableTestTypes';
 import { TablePlugin } from './TablePlugin';
+import { shouldUpdateCellIndices } from './internal/shouldUpdateCellIndices';
 import { roundCellSizeToStep, useTableCellSize } from './useTableCellElement';
 import { TableProvider } from './useTableStore';
 
 jsxt;
 
+const getFixtureId = (node: Element) =>
+  typeof node.id === 'string' ? node.id : undefined;
+
 const createTableEditor = (input: TestEditor) =>
   createTestTableEditor({
-    nodeId: true,
     plugins: getTestTablePlugins(),
     selection: input.selection,
     initialValue: input.children,
@@ -69,7 +78,7 @@ describe('TablePlugin.update.toggleBorders integration', () => {
       .plugin(BaseTablePlugin)
       .read.getSelectedCells() as TableCellElement[];
 
-    expect(cells.map((cell) => cell.id)).toEqual(['c11', 'c21']);
+    expect(cells.map(getFixtureId)).toEqual(['c11', 'c21']);
 
     editor
       .plugin(BaseTablePlugin)
@@ -142,12 +151,15 @@ describe('TablePlugin.update.toggleBorders integration', () => {
       .plugin(BaseTablePlugin)
       .read.getSelectedCells() as TableCellElement[];
 
-    expect(cells.map((cell) => cell.id)).toEqual(['c12', 'c22']);
+    expect(cells.map(getFixtureId)).toEqual(['c12', 'c22']);
     expect(editor.read.nodes.path(cells[1])).toEqual([0, 1, 1]);
     expect(
-      editor.plugin(BaseTablePlugin).read.getLeftCell({
-        at: editor.read.nodes.path(cells[1]),
-      })?.[0].id
+      getFixtureId(
+        editor.plugin(BaseTablePlugin).read.getAdjacentCell({
+          at: editor.read.nodes.path(cells[1]),
+          deltaCol: -1,
+        })![0]
+      )
     ).toBe('c21');
 
     editor
@@ -357,7 +369,7 @@ describe('TablePlugin.update.toggleBorders integration', () => {
     assert(entry);
     const [target] = entry;
 
-    expect(target.id).toBe('c22');
+    expect(getFixtureId(target)).toBe('c22');
 
     editor
       .plugin(BaseTablePlugin)
@@ -407,9 +419,33 @@ describe('roundCellSizeToStep', () => {
   });
 });
 
+describe('shouldUpdateCellIndices', () => {
+  const commitWith = (...kinds: EditorCommitChangeKind[]) =>
+    ({
+      changed: {
+        hasAny: (kind: EditorCommitChangeKind) => kinds.includes(kind),
+      },
+    }) as EditorCommit;
+
+  it('ignores text and selection-only commits', () => {
+    expect(shouldUpdateCellIndices(commitWith('text', 'selection'))).toBe(
+      false
+    );
+  });
+
+  it.each([
+    'properties',
+    'structure',
+    'replace',
+    'root-order',
+  ] as const)('refreshes for %s changes', (kind) => {
+    expect(shouldUpdateCellIndices(commitWith(kind))).toBe(true);
+  });
+});
+
 describe('useTableCellSize', () => {
   it('uses an explicit cell instead of an ancestor element provider', () => {
-    const element: TableCellElement = {
+    const element: TableCellElementWithId = {
       children: [{ text: '' }],
       id: 'cell-1',
       type: 'tableCell',
@@ -426,7 +462,6 @@ describe('useTableCellSize', () => {
     };
     const editor = createTestTableEditor({
       initialValue: [table],
-      nodeId: true,
       plugins: [TablePlugin],
     });
     const installedTable = editor.read.nodes.get<TableElement>([0])![0];

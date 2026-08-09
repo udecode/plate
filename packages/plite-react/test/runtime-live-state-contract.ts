@@ -5,9 +5,9 @@ import {
 } from '@platejs/plite/internal';
 import {
   readRuntimeNode,
-  readRuntimeNodeById,
+  readNodeByKey,
   readRuntimeText,
-  readRuntimeTextById,
+  readTextByKey,
 } from '../src/editable/runtime-live-state';
 import {
   writeRuntimeMarks,
@@ -35,7 +35,7 @@ describe('plite-react runtime live state facade', () => {
     expect(text?.text).toBe('header');
   });
 
-  test('resolves live nodes, texts, and runtime ids through one owner', () => {
+  test('resolves live nodes, texts, and node keys through one owner', () => {
     const editor = createEditor();
 
     editorReplace(editor, {
@@ -44,17 +44,17 @@ describe('plite-react runtime live state facade', () => {
     });
 
     const snapshot = editorGetSnapshot(editor);
-    const blockRuntimeId = snapshot.index.idAt([0]);
-    const textRuntimeId = snapshot.index.idAt([0, 0]);
+    const blockNodeKey = snapshot.index.keyAt([0]);
+    const textNodeKey = snapshot.index.keyAt([0, 0]);
 
-    if (!blockRuntimeId || !textRuntimeId) {
-      throw new Error('Expected runtime ids for runtime facade contract');
+    if (!blockNodeKey || !textNodeKey) {
+      throw new Error('Expected node keys for runtime facade contract');
     }
 
     const block = readRuntimeNode(editor, [0]);
     const text = readRuntimeText(editor, [0, 0]);
-    const blockBinding = readRuntimeNodeById(editor, blockRuntimeId);
-    const textBinding = readRuntimeTextById(editor, textRuntimeId);
+    const blockBinding = readNodeByKey(editor, blockNodeKey);
+    const textBinding = readTextByKey(editor, textNodeKey);
 
     expect(block && 'children' in block).toBe(true);
     expect(text?.text).toBe('alpha');

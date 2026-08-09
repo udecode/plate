@@ -4,21 +4,16 @@ import remarkStringify from 'remark-stringify';
 import { type Plugin, unified } from 'unified';
 
 import type { BaseEditor, MarkdownPluginRegistry } from '@platejs/core';
-import {
-  type AnyBasePluginDefinition,
-  getCompiledPlatePluginByType,
-  type NormalizePluginState,
-} from '@platejs/core/internal';
+import type { NormalizePluginState } from '@platejs/core/internal';
 import {
   type Descendant,
   type EditorCoreStateView,
   type EditorDocumentValue,
   type Element,
-  type Value,
   ElementApi,
   TextApi,
 } from '@platejs/plite';
-import { KEYS } from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 
 import type { MarkdownPluginState } from '../MarkdownPlugin';
 import { mdastToSlate } from '../deserializer/mdastToSlate';
@@ -31,8 +26,7 @@ import { convertNodesSerialize } from '../serializer/convertNodesSerialize';
 import type {
   DeserializeMdContext,
   MarkdownConversionContext,
-  MdRules,
-  PlateType,
+  MarkdownNodeName,
   SerializeMdContext,
 } from '../types';
 import {
@@ -58,10 +52,10 @@ type MarkdownRuntimeEditorState = Readonly<{
 }>;
 
 type MarkdownRuntimeOptions = Readonly<{
-  allowedNodes: readonly PlateType[] | null;
+  allowedNodes: readonly MarkdownNodeName[] | null;
   allowNode?: MarkdownRuntimeState['allowNode'];
-  disallowedNodes: readonly PlateType[] | null;
-  plainMarks: readonly PlateType[] | null;
+  disallowedNodes: readonly MarkdownNodeName[] | null;
+  plainMarks: readonly MarkdownNodeName[] | null;
   remarkPlugins: NonNullable<MarkdownRuntimeState['remarkPlugins']>;
   remarkStringifyOptions: NonNullable<
     MarkdownRuntimeState['remarkStringifyOptions']
@@ -75,11 +69,8 @@ export type MarkdownRuntime = Readonly<{
   state: MarkdownRuntimeEditorState;
 }>;
 
-export const createMarkdownRuntime = <
-  V extends Value,
-  P extends AnyBasePluginDefinition,
->(
-  editor: BaseEditor<V, P>,
+export const createMarkdownRuntime = <E extends BaseEditor>(
+  editor: E,
   options: MarkdownRuntimeState,
   state: MarkdownRuntimeEditorState
 ): MarkdownRuntime =>
@@ -87,41 +78,22 @@ export const createMarkdownRuntime = <
     codecs: compileMarkdownCodecs(editor),
     options: Object.freeze(options),
     registry: Object.freeze({
-      getName: (type) => getCompiledPlatePluginByType(editor, type)?.name,
-      getType: (plugin) => {
+      has: (plugin) => editor.plugin(plugin).installed,
+      type: (plugin) => {
         const portal = editor.plugin(plugin);
 
-        return portal.installed
-          ? portal.type
-          : typeof plugin === 'string'
-            ? plugin
-            : plugin.name;
+        return portal.installed ? portal.schema.type : undefined;
       },
-      has: (plugin) => editor.plugin(plugin).installed,
     } satisfies MarkdownPluginRegistry),
     state,
   });
 
-export const withMarkdownRuntime = <
-  T,
-  V extends Value,
-  P extends AnyBasePluginDefinition,
->(
-  editor: BaseEditor<V, P>,
+export const withMarkdownRuntime = <T, E extends BaseEditor>(
+  editor: E,
   options: MarkdownRuntimeState,
   run: (runtime: MarkdownRuntime) => T
 ): T =>
   editor.read((state) => run(createMarkdownRuntime(editor, options, state)));
-
-export const buildRulesWithRuntime = (runtime: MarkdownRuntime): MdRules => {
-  const rules: MdRules = {};
-
-  Object.entries(intrinsicRules).forEach(([key, rule]) => {
-    rules[runtime.registry.getName(key) ?? key] = rule;
-  });
-
-  return rules;
-};
 
 const createConversionContext = (
   runtime: MarkdownRuntime
@@ -151,7 +123,7 @@ export const getMergedOptionsDeserialize = (
       ? getRemarkPluginsWithoutMdx(options.remarkPlugins ?? remarkPlugins)
       : materializeRemarkPlugins(options?.remarkPlugins ?? remarkPlugins),
     rules: {
-      ...buildRulesWithRuntime(runtime),
+      ...intrinsicRules,
       ...runtime.codecs.rules,
       ...options?.rules,
     },
@@ -199,7 +171,7 @@ export const getMergedOptionsSerialize = (
         ? materializeMarkdownSettings(remarkStringifyOptions)
         : remarkStringifyOptions),
     rules: {
-      ...buildRulesWithRuntime(runtime),
+      ...intrinsicRules,
       ...runtime.codecs.rules,
       ...options?.rules,
     },
@@ -261,12 +233,14 @@ export const deserializeMdWithRuntime = (
 
   if (!output) return { children: [] };
 
+  const paragraphType = runtime.registry.type(PLUGINS.paragraph) ?? 'paragraph';
+
   return {
     children: output.map((item) =>
       TextApi.isText(item)
         ? ({
             children: [item],
-            type: runtime.registry.getType(KEYS.p),
+            type: paragraphType,
           } as Element)
         : item
     ),
@@ -342,7 +316,7 @@ const appendInlineNodesToLastTextContainer = (
     return null;
   }
 
-  const paragraphType = runtime.registry.getType(KEYS.p);
+  const paragraphType = runtime.registry.type(PLUGINS.paragraph) ?? 'paragraph';
 
   if (
     node.type === paragraphType ||
@@ -418,9 +392,10 @@ export const markdownToSlateNodesSafelyWithRuntime = (
     completeString,
     options
   );
+  const paragraphType = runtime.registry.type(PLUGINS.paragraph) ?? 'paragraph';
   const newBlock = {
     children: incompleteNodes,
-    type: runtime.registry.getType(KEYS.p),
+    type: paragraphType,
   };
 
   if (completeNodes.length === 0) return [newBlock];
@@ -434,7 +409,7 @@ export const markdownToSlateNodesSafelyWithRuntime = (
     return [...completeNodes, newBlock];
   }
 
-  const tableType = runtime.registry.getType(KEYS.table);
+  const tableType = runtime.registry.type(PLUGINS.table) ?? 'table';
 
   if (ElementApi.isElement(lastBlock) && lastBlock.type === tableType) {
     if (isSplitInsideTableRow(completeString)) {

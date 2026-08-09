@@ -11,8 +11,8 @@ import {
 } from '@platejs/plite';
 import {
   getLastCommit as editorGetLastCommit,
-  getPathByRuntimeId as editorGetPathByRuntimeId,
-  getRuntimeId as editorGetRuntimeId,
+  getPathByNodeKey as editorGetPathByNodeKey,
+  getNodeKey as editorGetNodeKey,
   getSnapshot as editorGetSnapshot,
   insertNodes as editorInsertNodes,
   isEditor as editorIsEditor,
@@ -194,7 +194,7 @@ describe('@platejs/plite', () => {
     }
   );
 
-  describe('runtime ids', () => {
+  describe('node keys', () => {
     it('keeps same-object nodes owner-scoped across editors', () => {
       const shared: Element = {
         type: 'paragraph',
@@ -208,22 +208,22 @@ describe('@platejs/plite', () => {
       const editor2 = createEditor();
 
       editorInsertNodes(editor1, shared, { at: [0] });
-      assert(editorGetRuntimeId(editor1, [0]));
+      assert(editorGetNodeKey(editor1, [0]));
 
       editorInsertNodes(editor2, shared, { at: [0] });
       editorInsertNodes(editor2, other, { at: [1] });
 
       const paths = [[0], [0, 0], [1], [1, 0]];
-      const runtimeIds = paths.map((path) => {
-        const runtimeId = editorGetRuntimeId(editor2, path);
+      const nodeKeys = paths.map((path) => {
+        const nodeKey = editorGetNodeKey(editor2, path);
 
-        assert(runtimeId);
-        assert.deepEqual(editorGetPathByRuntimeId(editor2, runtimeId), path);
+        assert(nodeKey);
+        assert.deepEqual(editorGetPathByNodeKey(editor2, nodeKey), path);
 
-        return runtimeId;
+        return nodeKey;
       });
 
-      assert.equal(new Set(runtimeIds).size, runtimeIds.length);
+      assert.equal(new Set(nodeKeys).size, nodeKeys.length);
     });
   });
 

@@ -86,13 +86,12 @@ should apply outside one React event.
 
 ```tsx
 import {
-  defineEditorExtension,
+  defineExtension,
   editorCommands,
   RangeApi,
 } from "@platejs/plite";
 
-const shortcuts = defineEditorExtension({
-  name: "shortcuts",
+const shortcuts = defineExtension("shortcuts", {
   commands: ({ handle }) => [
     handle(editorCommands.insertText, ({ input, state }) => {
       const selection = state.selection();

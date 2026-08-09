@@ -245,7 +245,7 @@ Context-bound `defineCodecs` 返回的同一个 `'text/html'` map 同时负责 d
 
 <Callout type="note" title="插件配置">
   持久化元素类型来自已安装插件的 schema handle（例如
-  `editor.plugin(ParagraphPlugin).schema.element.type`）。表格显示典型关联。请在编辑器中包含对应的
+  `editor.plugin(ParagraphPlugin).schema.type`）。表格显示典型关联。请在编辑器中包含对应的
   Plate 插件以使这些规则生效。
 </Callout>
 
@@ -286,7 +286,8 @@ const CalloutPlugin = definePlatePlugin('callout', {
         }),
         match: [{ tag: 'aside' }],
       },
-    }),  schema: {
+    }),
+  schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
       properties: {

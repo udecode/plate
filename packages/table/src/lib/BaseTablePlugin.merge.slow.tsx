@@ -24,7 +24,6 @@ describe('table merge slow contracts', () => {
       { disableMerge = false }: { disableMerge?: boolean } = {}
     ) =>
       createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
         initialValue: input.children,
@@ -438,7 +437,6 @@ describe('table merge slow contracts', () => {
 
     const createTableEditor = (input: TestEditor) =>
       createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins({ disableMerge: false }),
         selection: input.selection,
         initialValue: input.children,
@@ -588,7 +586,6 @@ describe('table merge slow contracts', () => {
 
     const createTableEditor = (input: TestEditor) =>
       createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins({ disableMerge: false }),
         selection: input.selection,
         initialValue: input.children,

@@ -2,17 +2,14 @@
 
 import assert from 'node:assert/strict';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
-import type {
-  TableCellElement,
-  TableElement,
-  TableRowElement,
-} from '../BaseTablePlugin';
+import type { TableElement, TableRowElement } from '../BaseTablePlugin';
 import { BaseTableCellPlugin, BaseTablePlugin } from '../BaseTablePlugin';
 
 import {
   createTestTableEditor,
   getTestTablePlugins,
 } from '../__tests__/getTestTablePlugins';
+import type { TableCellElementWithId } from '../__tests__/tableTestTypes';
 import { createDetachedTableContext } from './context';
 import {
   getTableSelectionExpansion,
@@ -26,7 +23,6 @@ jsxt;
 
 const createEditor = (input: TestEditor) =>
   createTestTableEditor({
-    nodeId: true,
     plugins: getTestTablePlugins(),
     selection: input.selection,
     initialValue: input.children,
@@ -65,18 +61,20 @@ const createThreeCellEditor = () =>
   } as TestEditor);
 
 const getSelectionTypes = (editor: ReturnType<typeof createEditor>) => ({
-  cellTypes: [editor.plugin(BaseTableCellPlugin).schema.element.type],
-  tableType: editor.plugin(BaseTablePlugin).schema.element.type,
+  cellTypes: [editor.plugin(BaseTableCellPlugin).schema.type],
+  tableType: editor.plugin(BaseTablePlugin).schema.type,
 });
 
 const readSelection = (
   editor: ReturnType<typeof createEditor>,
   expansion: 'endpoint-union' | 'span-closure' = 'span-closure'
 ) =>
-  readTableSelection(editor.read, {
-    expansion,
-    ...getSelectionTypes(editor),
-  });
+  editor.read((state) =>
+    readTableSelection(state, {
+      expansion,
+      ...getSelectionTypes(editor),
+    })
+  );
 
 const readExpandedSelection = (
   editor: ReturnType<typeof createEditor>,
@@ -100,10 +98,12 @@ const readExpandedSelection = (
   assert(anchor);
   assert(focus);
 
-  return readTableSelection(editor.read, {
-    at: { anchor, focus },
-    ...getSelectionTypes(editor),
-  });
+  return editor.read((state) =>
+    readTableSelection(state, {
+      at: { anchor, focus },
+      ...getSelectionTypes(editor),
+    })
+  );
 };
 
 const createGeneratedSpanTable = (seed: number): TableElement => {
@@ -118,7 +118,10 @@ const createGeneratedSpanTable = (seed: number): TableElement => {
   const occupied = Array.from({ length: height }, () =>
     Array.from({ length: width }, () => false)
   );
-  const rows: TableCellElement[][] = Array.from({ length: height }, () => []);
+  const rows: TableCellElementWithId[][] = Array.from(
+    { length: height },
+    () => []
+  );
   let id = 0;
 
   for (let row = 0; row < height; row++) {
@@ -141,17 +144,17 @@ const createGeneratedSpanTable = (seed: number): TableElement => {
       }
 
       const { colSpan, rowSpan } = candidates[next(candidates.length)];
-      const cellId = `s${seed}:${id++}`;
+      const cellKey = `s${seed}:${id++}`;
 
       rows[row].push({
         children: [
           {
-            children: [{ text: cellId }],
+            children: [{ text: cellKey }],
             type: 'paragraph',
           },
         ],
         ...(colSpan > 1 ? { colSpan } : {}),
-        id: cellId,
+        id: cellKey,
         ...(rowSpan > 1 ? { rowSpan } : {}),
         type: 'tableCell',
       });
@@ -221,7 +224,7 @@ describe('readTableSelection', () => {
       minCol: 1,
       minRow: 0,
     });
-    expect(endpointUnion.anchors.map(({ id }) => id)).toEqual([
+    expect(endpointUnion.anchors.map(({ key }) => key)).toEqual([
       'start',
       'a2',
       'wide',
@@ -233,7 +236,7 @@ describe('readTableSelection', () => {
       minCol: 0,
       minRow: 0,
     });
-    expect(spanClosure.anchors.map(({ id }) => id)).toEqual([
+    expect(spanClosure.anchors.map(({ key }) => key)).toEqual([
       'a0',
       'start',
       'a2',
@@ -281,7 +284,7 @@ describe('readTableSelection', () => {
     ) as TestEditor;
     const view = readSelection(createEditor(input));
 
-    expect(view?.anchors.map(({ id }) => id)).toEqual([
+    expect(view?.anchors.map(({ key }) => key)).toEqual([
       '1,1',
       '2,1',
       '3,1',
@@ -336,7 +339,7 @@ describe('readTableSelection', () => {
     ) as TestEditor;
     const view = readSelection(createEditor(input));
 
-    expect(view?.anchors.map(({ id }) => id)).toEqual(['1,1', '2,1', '1,2']);
+    expect(view?.anchors.map(({ key }) => key)).toEqual(['1,1', '2,1', '1,2']);
   });
 
   it('matches the donor rowspan closure oracle', () => {
@@ -381,7 +384,7 @@ describe('readTableSelection', () => {
     ) as TestEditor;
     const view = readSelection(createEditor(input));
 
-    expect(view?.anchors.map(({ id }) => id)).toEqual([
+    expect(view?.anchors.map(({ key }) => key)).toEqual([
       '1,1',
       '2,1',
       '1,2',
@@ -450,19 +453,21 @@ describe('readTableSelection', () => {
         </htable>
       </editor>
     ) as TestEditor;
-    const forwardView = readSelection(createEditor(forward));
-    const backwardView = readSelection(createEditor(backward));
+    const forwardEditor = createEditor(forward);
+    const backwardEditor = createEditor(backward);
+    const forwardView = readSelection(forwardEditor);
+    const backwardView = readSelection(backwardEditor);
 
     assert(forwardView);
     assert(backwardView);
 
     expect(backwardView.bounds).toEqual(forwardView.bounds);
-    expect(backwardView.anchors.map(({ id }) => id)).toEqual(
-      forwardView.anchors.map(({ id }) => id)
+    expect(backwardView.anchors.map(({ key }) => key)).toEqual(
+      forwardView.anchors.map(({ key }) => key)
     );
     expect(new Set(forwardView.anchors).size).toBe(forwardView.anchors.length);
-    expect(forwardView.anchor.id).toBe('wide');
-    expect(backwardView.anchor.id).toBe('e');
+    expect(forwardView.anchor.key).toBe(forwardEditor.key([0, 0, 0])!);
+    expect(backwardView.anchor.key).toBe(backwardEditor.key([0, 1, 2])!);
   });
 
   it('matches the donor rectangle-extension oracle', () => {
@@ -513,7 +518,7 @@ describe('readTableSelection', () => {
     ) as TestEditor;
     const view = readExpandedSelection(createEditor(input), 'bottom');
 
-    expect(view?.anchors.map(({ id }) => id)).toEqual([
+    expect(view?.anchors.map(({ key }) => key)).toEqual([
       '1,1',
       '2,1',
       '3,1',
@@ -563,7 +568,7 @@ describe('readTableSelection', () => {
     ) as TestEditor;
     const view = readExpandedSelection(createEditor(input), 'top');
 
-    expect(view?.anchors.map(({ id }) => id)).toEqual([
+    expect(view?.anchors.map(({ key }) => key)).toEqual([
       '1,1',
       '1,2',
       '2,2',
@@ -613,7 +618,7 @@ describe('readTableSelection', () => {
     ) as TestEditor;
     const view = readExpandedSelection(createEditor(input), 'right');
 
-    expect(view?.anchors.map(({ id }) => id)).toEqual([
+    expect(view?.anchors.map(({ key }) => key)).toEqual([
       '1,1',
       '2,1',
       '1,2',
@@ -651,23 +656,24 @@ describe('readTableSelection', () => {
         </htable>
       </editor>
     ) as TestEditor;
-    const view = readSelection(createEditor(input));
+    const editor = createEditor(input);
+    const view = readSelection(editor);
 
     assert(view);
 
     expect(
-      getTableSelectionNeighbor(view.context, view.anchor, 'below')?.id
-    ).toBe('d');
+      getTableSelectionNeighbor(view.context, view.anchor, 'below')?.key
+    ).toBe(editor.key([0, 1, 0])!);
     expect(
-      getTableSelectionNeighbor(view.context, view.anchor, 'right')?.id
-    ).toBe('b');
+      getTableSelectionNeighbor(view.context, view.anchor, 'right')?.key
+    ).toBe(editor.key([0, 0, 1])!);
     expect(
       getTableSelectionNeighbor(
         view.context,
-        view.context.grid.byId.get('e')!,
+        view.context.grid.byKey.get(editor.key([0, 1, 1])!)!,
         'above'
-      )?.id
-    ).toBe('c');
+      )?.key
+    ).toBe(editor.key([0, 0, 2])!);
   });
 
   it('matches generated span-grid navigation in every direction', () => {
@@ -752,8 +758,8 @@ describe('readTableSelection', () => {
             beforeProjection.projectionSlotCount
         ).toBe(selectedSlotCount * 4);
         expect(backward.bounds).toEqual(forward.bounds);
-        expect(backward.anchors.map(({ id }) => id)).toEqual(
-          forward.anchors.map(({ id }) => id)
+        expect(backward.anchors.map(({ key }) => key)).toEqual(
+          forward.anchors.map(({ key }) => key)
         );
         expect(new Set(forward.anchors).size).toBe(forward.anchors.length);
 
@@ -848,7 +854,7 @@ describe('readTableSelection', () => {
                 )
             ).flat();
 
-            expect(view.anchors.map(({ id }) => id)).toEqual(expectedIds);
+            expect(view.anchors.map(({ key }) => key)).toEqual(expectedIds);
             expect(view.bounds).toEqual({
               maxCol,
               maxRow,
@@ -877,6 +883,7 @@ describe('readTableSelection', () => {
       const first = readTableSelection(tx, selectionTypes);
 
       assert(first);
+      const firstKeys = [tx.key([0, 0, 0])!, tx.key([0, 0, 1])!];
       tx.selection.set({ anchor: b, focus: c });
 
       const second = readTableSelection(tx, selectionTypes);
@@ -884,8 +891,8 @@ describe('readTableSelection', () => {
       assert(second);
       expect(second).not.toBe(first);
       expect(second.version).toBe(first.version);
-      expect(first.cellIds).toEqual(['a', 'b']);
-      expect(second.cellIds).toEqual(['b', 'c']);
+      expect(first.cellKeys).toEqual(firstKeys);
+      expect(second.cellKeys).toEqual([tx.key([0, 0, 1])!, tx.key([0, 0, 2])!]);
     });
   });
 
@@ -903,6 +910,7 @@ describe('readTableSelection', () => {
       const first = readTableSelection(tx, selectionTypes);
 
       assert(first);
+      const firstKeys = [0, 1, 2].map((index) => tx.key([0, 0, index])!);
       tx.nodes.insert(
         {
           children: [
@@ -922,8 +930,10 @@ describe('readTableSelection', () => {
       assert(second);
       expect(second).not.toBe(first);
       expect(second.version).toBe(first.version);
-      expect(first.cellIds).toEqual(['a', 'b', 'c']);
-      expect(second.cellIds).toEqual(['a', 'inserted', 'b', 'c']);
+      expect(first.cellKeys).toEqual(firstKeys);
+      expect(second.cellKeys).toEqual(
+        [0, 1, 2, 3].map((index) => tx.key([0, 0, index])!)
+      );
     });
   });
 
@@ -976,7 +986,7 @@ describe('readTableSelection', () => {
     );
     expect(cold.anchors).toHaveLength(size * size);
     expect(Object.isFrozen(cold)).toBe(true);
-    expect(Object.isFrozen(cold.cellIds)).toBe(true);
+    expect(Object.isFrozen(cold.cellKeys)).toBe(true);
     expect(Object.isFrozen(cold.cellEntries)).toBe(true);
 
     const nextFocus = editor.read.points.end([0, 0, 1]);
@@ -989,7 +999,7 @@ describe('readTableSelection', () => {
     assert(next);
     expect(next).not.toBe(cold);
     expect(next.version).toBeGreaterThan(cold.version);
-    expect(next.anchors.map(({ id }) => id)).toEqual(['r0c0', 'r0c1']);
+    expect(next.anchors.map(({ key }) => key)).toEqual(['r0c0', 'r0c1']);
     expect(cold.anchors).toHaveLength(size * size);
   });
 });

@@ -18,7 +18,7 @@ Keyboard Input applies the `kbd` leaf mark to selected text. Use it for shortcut
 
 ## Features
 
-- `KEYS.kbd` leaf mark.
+- `PLUGINS.kbd` leaf mark.
 - Hard selection affinity.
 - HTML deserialization from `kbd`.
 - `<kbd>` rendering by default.
@@ -105,7 +105,7 @@ export const kbdPlugin = KbdPlugin.configure({ component: KbdLeaf });
 | `KbdLeaf` | Registry UI | Styled client `<kbd>` leaf using `PlateLeaf`. |
 | `KbdLeafStatic` | Registry UI | Static rendering version using `PliteLeaf`. |
 | `BasicMarksKit` | Registry | Adds `KbdPlugin.configure({ component: KbdLeaf })`. |
-| `MoreToolbarButton` | Registry UI | Calls `tx.marks.toggle(KEYS.kbd)` from the More menu. |
+| `MoreToolbarButton` | Registry UI | Calls `tx.marks.toggle(PLUGINS.kbd)` from the More menu. |
 
 The package owns the mark. The registry owns keycap styling and toolbar placement.
 
@@ -113,14 +113,14 @@ The package owns the mark. The registry owns keycap styling and toolbar placemen
 
 | Behavior | Source |
 |----------|--------|
-| Mark key | `KEYS.kbd` |
+| Mark key | `PLUGINS.kbd` |
 | Mark declaration | `schema.mark: property.boolean({ default: false, omitDefault: true })` |
 | Toggle command | `tx.kbd.toggle()` calls `tx.marks.toggle(type)`. |
 | Selection affinity | `hard` |
 | HTML tags | `kbd` |
 | Render output | `kbd` |
 | Kit component | `KbdLeaf` |
-| Registry toolbar | `MoreToolbarButton` toggles `KEYS.kbd`. |
+| Registry toolbar | `MoreToolbarButton` toggles `PLUGINS.kbd`. |
 
 ## API Reference
 

@@ -1,4 +1,5 @@
 import { defineBasePlugin } from '@platejs/core';
+import { type Descendant, ElementApi } from '@platejs/plite';
 import {
   removeHtmlNodesBetweenComments,
   traverseHtmlElements,
@@ -18,8 +19,13 @@ const UPPER_ROMAN_PATTERN = /^[CDILMVX]+\./;
 
 export const DocxPlugin = defineBasePlugin(PLUGINS.docx, {
   editOnly: true,
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
+  codecs: ({ defineCodecs, editor }) => {
+    const tableCell = editor.plugin(PLUGINS.tableCell);
+    const tableCellType = tableCell.installed
+      ? tableCell.schema.type
+      : undefined;
+
+    return defineCodecs({
       'text/html': {
         transformData: ({ data, source }) => {
           const document = new DOMParser().parseFromString(data, 'text/html');
@@ -60,7 +66,9 @@ export const DocxPlugin = defineBasePlugin(PLUGINS.docx, {
                 (element.querySelector('[style="mso-list:Ignore"]') ||
                   element.outerHTML.includes('<!--[if !supportLists]-->'))
               ) {
-                const listItem = document.createElement('li');
+                const listItem = document.createElement(
+                  element.tagName === 'P' ? 'li' : element.tagName.toLowerCase()
+                );
                 const clonedElement = element.cloneNode(true) as Element;
 
                 Array.from(element.attributes).forEach(({ name, value }) => {
@@ -128,6 +136,31 @@ export const DocxPlugin = defineBasePlugin(PLUGINS.docx, {
 
           return cleanedDocument.body.outerHTML;
         },
+        transformFragment: ({ fragment, source }) => {
+          const document = new DOMParser().parseFromString(
+            source.getData('text/html'),
+            'text/html'
+          );
+
+          if (!isDocxContent(document.body)) return fragment;
+
+          const cleanNode = (node: Descendant): Descendant => {
+            if (!ElementApi.isElement(node)) return node;
+
+            const children = node.children.map(cleanNode);
+
+            if (!tableCellType || node.type !== tableCellType) {
+              return { ...node, children };
+            }
+
+            const { borders: _borders, size: _size, ...cell } = node;
+
+            return { ...cell, children };
+          };
+
+          return fragment.map(cleanNode);
+        },
       },
-    }),
+    });
+  },
 });

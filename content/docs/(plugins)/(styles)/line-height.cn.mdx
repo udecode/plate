@@ -79,7 +79,8 @@ const editor = createPlateEditor({
 
 ```tsx
 import { LineHeightPlugin } from "@platejs/basic-styles/react";
-import { createPlateEditor, ParagraphPlugin } from "platejs/react";
+import { PLUGINS } from "platejs";
+import { createPlateEditor } from "platejs/react";
 
 const editor = createPlateEditor({
   plugins: [
@@ -87,7 +88,7 @@ const editor = createPlateEditor({
     LineHeightPlugin.configure({
       targetPlugins: [
         PLUGINS.h1, PLUGINS.h2, PLUGINS.h3, PLUGINS.h4, PLUGINS.h5, PLUGINS.h6,
-        ParagraphPlugin,
+        PLUGINS.paragraph,
       ],
       inject: {
         nodeProps: {
@@ -102,8 +103,7 @@ const editor = createPlateEditor({
 
 - `inject.nodeProps.defaultNodeValue`: 设置默认行高值（如 `1.5`）
 - `inject.nodeProps.validNodeValues`: 定义常用行高值列表，适用于工具栏下拉菜单
-- `targetPlugins`: 指定哪些元素插件类型可以保存 `lineHeight` 属性
-- `type`: schema 和渲染使用的同一个模型属性 key（默认：`lineHeight`）
+- `targetPlugins`: 指定哪些元素插件可以保存 `lineHeight` 属性
 
 `targetPlugins` 是 schema 的唯一目标配置。插件会从该列表派生渲染和 HTML 解析所需的注入目标。
 
@@ -121,9 +121,6 @@ const editor = createPlateEditor({
 
 <API name="LineHeightPlugin">
   <APIOptions type="object">
-    <APIItem name="type" type="string" optional>
-      Schema 和渲染使用的已解析模型属性 key - **默认值:** `'lineHeight'`
-    </APIItem>
     <APIItem name="inject.nodeProps.defaultNodeValue" type="number" optional>
       默认行高值
     </APIItem>
@@ -131,7 +128,7 @@ const editor = createPlateEditor({
       有效行高值数组
     </APIItem>
     <APIItem name="targetPlugins" type="readonly (PluginReference | string)[]" optional>
-      可保存行高的元素插件 name；注入目标由此派生 - **默认值:**
+      可保存行高的元素插件 descriptor 或动态 name；注入目标由此派生 - **默认值:**
       `[BaseParagraphPlugin]`
     </APIItem>
   </APIOptions>

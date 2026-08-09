@@ -571,8 +571,8 @@ test('rejects static plugin API references in current docs and release prose', (
 
 test('rejects invented schema identities and accepts absence guards', () => {
   for (const source of [
-    `const type = plugin.installed ? plugin.schema.element.type : 'paragraph';`,
-    `const key = plugin.installed ? plugin.schema.properties.bold.key : 'bold';`,
+    `const type = plugin.installed ? plugin.schema.type : 'paragraph';`,
+    `const key = plugin.installed ? plugin.schema.key : 'bold';`,
   ]) {
     assert.match(
       auditPlateSchemaSource(source)[0]?.reason ?? '',
@@ -582,15 +582,13 @@ test('rejects invented schema identities and accepts absence guards', () => {
 
   expectAccepted(`if (plugin.installed) plugin.api.run();`);
   expectAccepted(
-    `const type = plugin.installed ? plugin.schema.element.type : undefined;`
+    `const type = plugin.installed ? plugin.schema.type : undefined;`
   );
-  expectAccepted(
-    `const types = plugin.installed ? [plugin.schema.element.type] : [];`
-  );
+  expectAccepted(`const types = plugin.installed ? [plugin.schema.type] : [];`);
 
   assert.match(
     auditNamedSchemaLineageDocument(
-      '```tsx\nconst type = plugin.installed ? plugin.schema.element.type : "paragraph";\n```'
+      '```tsx\nconst type = plugin.installed ? plugin.schema.type : "paragraph";\n```'
     )[0]?.reason ?? '',
     /uninstalled plugins have no schema identity/
   );
@@ -1362,7 +1360,61 @@ test('rejects plugin capability names used as persisted schema identities', () =
   }
 
   expectAccepted(
-    `const type = editor.plugin(ParagraphPlugin).schema.element.type; const key = editor.plugin(BoldPlugin).schema.properties.bold.key`
+    `const type = editor.plugin(ParagraphPlugin).schema.type; const key = editor.plugin(BoldPlugin).schema.key`
+  );
+});
+
+test('rejects compiler schema maps on consumer plugin portals', () => {
+  for (const source of [
+    `const type = editor.plugin(ParagraphPlugin).schema.element.type`,
+    `const key = editor.plugin(BoldPlugin).schema.properties.bold.key`,
+    `const key = portal.schema.properties.bold.key`,
+    `const bold = editor.plugin(BoldPlugin); const key = bold.schema.properties.bold.key`,
+    `const bold = editor.plugin(BoldPlugin); const alias = bold; const key = alias.schema.properties.bold.key`,
+    `const { schema } = editor.plugin(BoldPlugin); const key = schema.properties.bold.key`,
+    `const bold = editor.plugin(BoldPlugin); const { schema: boldSchema } = bold; const key = boldSchema.properties.bold.key`,
+    `const bold = editor.plugin(BoldPlugin); const schema = bold.schema; const alias = schema; const key = alias.properties.bold.key`,
+  ]) {
+    assert.match(
+      auditPlateSchemaSource(source)[0]?.reason ?? '',
+      /consumer plugin portals expose only flat/
+    );
+  }
+
+  expectAccepted(
+    `defineBasePlugin('indent', {}).extend(({ schema }) => ({ api: () => ({ key: schema.properties.indent.key }) }))`
+  );
+  expectAccepted(
+    `function read(plugin) { const { schema } = plugin; return schema.type } defineBasePlugin('indent', {}).extend(({ schema }) => ({ api: () => ({ key: schema.properties.indent.key }) }))`
+  );
+  expectAccepted(
+    `const portal = editor.plugin(BoldPlugin); function read() { const portal = makeAuthorSchema(); return portal.schema.properties.bold.key }`
+  );
+});
+
+test('rejects capability identities as missing-plugin schema fallbacks', () => {
+  for (const source of [
+    `const type = plugin.installed ? plugin.schema.type : PLUGINS.paragraph`,
+    `const key = plugin.installed ? plugin.schema.key : plugin.name`,
+    `const type = plugin.installed ? plugin.name : plugin.schema.type`,
+    `const type = plugin.schema.type ?? 'paragraph'`,
+    `const type = plugin.schema.type || PLUGINS.paragraph`,
+    `const type = (plugin.installed && plugin.schema.type) || plugin.name`,
+  ]) {
+    assert.match(
+      auditPlateSchemaSource(source)[0]?.reason ?? '',
+      /uninstalled plugins have no schema identity/
+    );
+  }
+
+  expectAccepted(
+    `const type = plugin.installed ? plugin.schema.type : undefined`
+  );
+  expectAccepted(
+    `const same = node.type === editor.plugin(PLUGINS.paragraph).schema.type || node.type === editor.plugin(PLUGINS.table).schema.type`
+  );
+  expectAccepted(
+    `const type = selectedType ?? editor.plugin(PLUGINS.paragraph).schema.type`
   );
 });
 
@@ -1383,10 +1435,10 @@ test('rejects raw registry runtime and configuration identities', () => {
   }
 
   for (const source of [
-    `editor.read.nodes.some({ match: { type: editor.plugin(TablePlugin).schema.element.type } })`,
-    `const selected = node.type === editor.plugin(TablePlugin).schema.element.type`,
-    `const selected = props.element.type !== editor.plugin(TableRowPlugin).schema.element.type`,
-    `MarkdownPlugin.configure(({ editor }) => ({ initialState: { plainMarks: [editor.plugin(SuggestionPlugin).schema.properties.suggestion.key] } }))`,
+    `editor.read.nodes.some({ match: { type: editor.plugin(TablePlugin).schema.type } })`,
+    `const selected = node.type === editor.plugin(TablePlugin).schema.type`,
+    `const selected = props.element.type !== editor.plugin(TableRowPlugin).schema.type`,
+    `MarkdownPlugin.configure(({ editor }) => ({ initialState: { plainMarks: [editor.plugin(SuggestionPlugin).schema.key] } }))`,
     `DocxPlugin.configure({ override: { components: { [PLUGINS.table]: Table } } })`,
     `Plugin.configure({ override: { plugins: { [IndentPlugin.name]: {} } } })`,
   ]) {
@@ -1449,7 +1501,6 @@ test('allows only exact audited production extend stages at their owner path', (
   const exact = `
     const code = defineBasePlugin('code', { });
     code.extend({ update: () => ({}) });
-    code.extend({ shortcuts: {} });
     code.extend({
       commands: () => [],
       contributions: [],
@@ -1498,7 +1549,7 @@ test('allows only exact audited production extend stages at their owner path', (
   assert.match(
     auditPlateSchemaSource(`defineBasePlugin('code', { })`, owner).at(-1)
       ?.reason ?? '',
-    /expects exact 4 audited chains but found 0/
+    /expects exact 3 audited chains but found 0/
   );
 
   assert.match(
@@ -1587,11 +1638,6 @@ test('allows only exact audited production extend stages at their owner path', (
 
   for (const [file, source] of [
     [
-      'packages/basic-styles/src/lib/BaseStylePlugins.ts',
-      `defineBasePlugin('textIndent', { })
-        .extend(() => ({ update: () => ({}) }))`,
-    ],
-    [
       'packages/csv/src/lib/CsvPlugin.ts',
       `defineBasePlugin('csv', { })
         .extend(() => ({ api: () => ({}) }))
@@ -1620,9 +1666,7 @@ test('allows only exact audited production extend stages at their owner path', (
     ],
     [
       'packages/suggestion/src/lib/BaseSuggestionPlugin.ts',
-      `defineBasePlugin('suggestionState', { })
-        .extend(() => ({ initialState: {} }));
-      defineBasePlugin('suggestion', { })
+      `defineBasePlugin('suggestion', { })
         .extend(() => ({ api: () => ({}), rules: {} }))
         .extend(() => ({ read: () => ({}) }))
         .extend(() => ({ update: () => ({}) }))
@@ -1640,7 +1684,6 @@ test('allows only exact audited production extend stages at their owner path', (
         .extend(() => ({ api: () => ({}) }))
         .extend(() => ({ api: () => ({}) }))
         .extend(() => ({ api: () => ({}), read: () => ({}) }))
-        .extend(() => ({ read: () => ({}) }))
         .extend(() => ({ read: () => ({}) }))
         .extend(() => ({ api: () => ({}), read: () => ({}) }))
         .extend(() => ({ update: () => ({}) }))
@@ -1679,12 +1722,12 @@ test('allows only exact audited production extend stages at their owner path', (
   assert.deepEqual(
     auditPlateSchemaSource(
       `
-        const BlockPlaceholderPluginBase = definePlatePlugin('blockPlaceholder', {
-        }).extend({ selectors: {} });
-        type BlockPlaceholderHookDefinition =
-          DefinitionOf<typeof BlockPlaceholderPluginBase>;
-        export const BlockPlaceholderPlugin =
-          BlockPlaceholderPluginBase.extend({ inject: {}, useHooks });
+        export const BlockPlaceholderPlugin = definePlatePlugin(
+          'blockPlaceholder',
+          {}
+        )
+          .extend({ selectors: {} })
+          .extend({ inject: {}, useHooks });
       `,
       'packages/utils/src/react/plugins/BlockPlaceholderPlugin.tsx'
     ),
@@ -1777,6 +1820,222 @@ test('requires context-bound codec declarations', () => {
   }
 });
 
+test('binds custom Markdown element identity to the resolved schema type', () => {
+  const definition = (rule) => `defineBasePlugin('customCapability', {
+    schema: { element: schema.element.textBlock() },
+    codecs: ({ defineCodecs, schema: { type } }) => defineCodecs({
+      'text/markdown': ${rule},
+    }),
+  })`;
+
+  assert.deepEqual(
+    auditPlateSchemaSource(
+      definition(`{
+        from: type,
+        kind: 'node',
+        decode: () => ({ children: [{ text: '' }], type }),
+        encode: () => ({
+          attributes: [],
+          children: [],
+          name: type,
+          type: 'mdxJsxFlowElement',
+        }),
+      }`)
+    ),
+    []
+  );
+
+  assert.match(
+    auditPlateSchemaSource(`defineBasePlugin('imageCapability', {
+      schema: { element: schema.element.void() },
+      codecs: ({ defineCodecs }) => defineCodecs({
+        'text/markdown': {
+          from: 'image',
+          kind: 'node',
+          decode: () => ({ children: [{ text: '' }], type: 'image' }),
+        },
+      }),
+    })`)[0]?.reason ?? '',
+    /decode to the resolved schema type/
+  );
+  assert.deepEqual(
+    auditPlateSchemaSource(`defineBasePlugin('imageCapability', {
+      schema: { element: schema.element.void() },
+      codecs: ({ defineCodecs, schema: { type } }) => defineCodecs({
+        'text/markdown': {
+          from: 'image',
+          kind: 'node',
+          decode: () => ({ children: [{ text: '' }], type }),
+        },
+      }),
+    })`),
+    []
+  );
+  assert.match(
+    auditPlateSchemaSource(
+      definition(`{
+        from: type,
+        kind: 'node',
+        decode: ({ node, parseAttributes }) => ({
+          children: [{ text: '' }],
+          type,
+          ...parseAttributes(node.attributes),
+        }),
+        encode: () => ({ attributes: [], children: [], name: type, type: 'mdxJsxFlowElement' }),
+      }`)
+    ).find((issue) => /attributes cannot override/.test(issue.reason))
+      ?.reason ?? '',
+    /attributes cannot override/
+  );
+
+  for (const [rule, reason] of [
+    [
+      `{
+        from: 'legacy_custom',
+        kind: 'node',
+        decode: () => ({ children: [{ text: '' }], type }),
+        encode: () => ({ attributes: [], children: [], name: type, type: 'mdxJsxFlowElement' }),
+      }`,
+      /resolved schema type for from/,
+    ],
+    [
+      `{
+        from: type,
+        kind: 'node',
+        decode: () => ({ children: [{ text: '' }], type: 'customElement' }),
+        encode: () => ({ attributes: [], children: [], name: type, type: 'mdxJsxFlowElement' }),
+      }`,
+      /decode to the resolved schema type/,
+    ],
+    [
+      `{
+        from: type,
+        kind: 'node',
+        decode: () => ({ children: [{ text: '' }], type }),
+        encode: () => ({ attributes: [], children: [], name: 'customElement', type: 'mdxJsxFlowElement' }),
+      }`,
+      /encode the resolved schema type as the MDX name/,
+    ],
+  ]) {
+    assert.match(
+      auditPlateSchemaSource(definition(rule))[0]?.reason ?? '',
+      reason
+    );
+  }
+
+  assert.match(
+    auditPlateSchemaSource(`defineBasePlugin('customCapability', {
+      schema: { element: schema.element.textBlock() },
+    }).extend(({ defineCodecs }) => ({
+      codecs: defineCodecs({
+        'text/markdown': {
+          from: 'customElement',
+          kind: 'node',
+          decode: () => ({ children: [{ text: '' }], type: 'customElement' }),
+          encode: () => ({ attributes: [], children: [], name: 'customElement', type: 'mdxJsxFlowElement' }),
+        },
+      }),
+    }))`).find((issue) => /resolved schema type for from/.test(issue.reason))
+      ?.reason ?? '',
+    /resolved schema type for from/
+  );
+  assert.match(
+    auditPlateSchemaSource(`defineBasePlugin('customCapability', {
+      schema: { element: schema.element.textBlock() },
+    }).extend(({ defineCodecs }) => ({
+      codecs: defineCodecs({
+        'text/markdown': {
+          from: 'legacy_custom',
+          kind: 'node',
+          decode: () => ({ children: [{ text: '' }], type: 'customElement' }),
+        },
+      }),
+    }))`).find((issue) => /resolved schema type for from/.test(issue.reason))
+      ?.reason ?? '',
+    /resolved schema type for from/
+  );
+
+  assert.deepEqual(
+    auditPlateSchemaSource(`defineBasePlugin('customCapability', {
+      schema: { element: schema.element.textBlock() },
+    }).extend(({ defineCodecs, schema: { type } }) => ({
+      codecs: defineCodecs({
+        'text/markdown': {
+          from: type,
+          kind: 'node',
+          decode: () => ({ children: [{ text: '' }], type }),
+          encode: () => ({ attributes: [], children: [], name: type, type: 'mdxJsxFlowElement' }),
+        },
+      }),
+    }))`).filter((issue) => /custom Markdown element codec/.test(issue.reason)),
+    []
+  );
+
+  assert.match(
+    auditPlateSchemaSource(`defineBasePlugin('product', {
+      codecs: ({ defineCodecs }) => defineCodecs(TargetPlugin, {
+        'text/markdown': {
+          from: 'customElement',
+          kind: 'node',
+          decode: () => ({ children: [{ text: '' }], type: 'customElement' }),
+          encode: () => ({ attributes: [], children: [], name: 'customElement', type: 'mdxJsxFlowElement' }),
+        },
+      }),
+    })`)[0]?.reason ?? '',
+    /must be owned by their target plugin/
+  );
+  assert.deepEqual(
+    auditPlateSchemaSource(`defineBasePlugin('product', {
+      codecs: ({ defineCodecs }) => defineCodecs(TargetPlugin, {
+        'text/markdown': {
+          from: 'img',
+          kind: 'node',
+          decode: ({ schema }) => ({ children: [{ text: '' }], type: schema.type }),
+          encode: () => ({ attributes: [], children: [], name: 'img', type: 'mdxJsxFlowElement' }),
+        },
+      }),
+    })`),
+    []
+  );
+
+  assert.deepEqual(
+    auditPlateSchemaSource(
+      definition(`{
+        from: 'img',
+        kind: 'node',
+        decode: () => ({ children: [{ text: '' }], type }),
+        encode: () => ({ attributes: [], children: [], name: 'img', type: 'mdxJsxFlowElement' }),
+      }`)
+    ),
+    []
+  );
+  assert.match(
+    auditPlateSchemaSource(
+      definition(`{
+        from: 'img',
+        kind: 'node',
+        decode: () => ({ children: [{ text: '' }] }),
+      }`)
+    )[0]?.reason ?? '',
+    /decode to the resolved schema type/
+  );
+  assert.deepEqual(
+    auditPlateSchemaSource(`defineBasePlugin('comment', {
+      schema: { mark: { property: property.boolean() } },
+      codecs: ({ defineCodecs, schema: { key } }) => defineCodecs({
+        'text/markdown': {
+          from: 'comment',
+          kind: 'node',
+          mark: true,
+          decode: ({ decode, node }) => decode(node.children, { [key]: true }),
+          encode: ({ node }) => ({ attributes: [], children: [], name: 'comment', type: 'mdxJsxTextElement' }),
+        },
+      }),
+    })`),
+    []
+  );
+});
+
 test('keeps independent production codecs in the constructor', () => {
   for (const file of [
     'packages/example/src/lib/BaseExamplePlugin.ts',
@@ -1826,8 +2085,15 @@ test('allows only exact marked raw-codec negative contracts', () => {
   const productCodecOwner =
     'packages/core/src/lib/plugins/ProductCodecs.spec.ts';
   const typeOwner = 'packages/core/type-tests/base-plugin-contracts.ts';
+  const markdownOwner =
+    'packages/markdown/src/lib/internal/markdownCodecs.spec.ts';
 
-  for (const file of [runtimeOwner, productCodecOwner, typeOwner]) {
+  for (const file of [
+    runtimeOwner,
+    productCodecOwner,
+    typeOwner,
+    markdownOwner,
+  ]) {
     assert.deepEqual(auditPlateSchemaSource(markedRawCodec, file), []);
     assert.match(
       auditPlateSchemaSource(
@@ -2382,6 +2648,8 @@ test('accepts reviewed named lineage without banning schema declarations', () =>
 
 test('allows only the exact reviewed raw-query count in an owning file', () => {
   expectRejected(`editor.read.schema.property({ key, placement, type })`);
+  expectRejected(`editor.read.schema.getElementProperty(element, 'colSpan')`);
+  expectRejected(`editor.read.schema.getProperty(element, 'colSpan')`);
 
   const htmlOwner = 'packages/core/src/lib/plugins/html/HtmlPlugin.ts';
   const htmlQueries = new Array(4)

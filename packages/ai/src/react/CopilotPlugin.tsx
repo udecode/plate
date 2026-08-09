@@ -211,14 +211,7 @@ export const CopilotPlugin = definePlatePlugin(PLUGINS.copilot, {
       }) => {
         tx.tags.add('history-skip');
         const block = tx.nodes.block();
-        const blockId =
-          id ??
-          (block
-            ? tx.schema.getElementProperty(
-                block[0],
-                editor.plugin(NodeIdPlugin).store.get('idKey') ?? 'id'
-              )
-            : undefined);
+        const blockId = id ?? block?.[0].id;
 
         if (typeof blockId !== 'string') return;
 

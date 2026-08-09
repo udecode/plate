@@ -1,5 +1,4 @@
 import { useEditor, useEditorSelector } from '@platejs/core/react';
-import { KEYS } from '@platejs/utils';
 
 import { ListStyleType } from '../lib';
 import { ListPlugin } from './ListPlugin';
@@ -42,7 +41,7 @@ export const useListToolbarButton = ({
 
 export const useTodoListToolbarButtonState = () => {
   const pressed = useEditorSelector((editor) =>
-    editor.plugin(ListPlugin).read.isActive(KEYS.listTodo)
+    editor.plugin(ListPlugin).read.isActive('todo')
   );
 
   return { pressed };
@@ -58,7 +57,7 @@ export const useTodoListToolbarButton = ({
       pressed,
       onClick: () => {
         editor.plugin(ListPlugin).update.toggle({
-          listStyleType: KEYS.listTodo,
+          listStyleType: 'todo',
         });
       },
       onMouseDown: (event: React.MouseEvent<HTMLButtonElement>) => {

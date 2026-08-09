@@ -42,7 +42,6 @@ type EditableProps = {
   decorateRuntimeScope?: PliteProjectionRuntimeScope;
   disableDefaultStyles?: boolean;
   id?: string;
-  maxLength?: number;
   domStrategy?:
     | { type: "full" }
     | {
@@ -84,10 +83,6 @@ type EditableProps = {
 ```
 
 `Editable` also accepts safe `div` attributes such as `aria-*`, `data-*`, and event handlers that are not owned by Plite.
-
-`maxLength` overrides the editor-level limit while this editable is mounted. Use
-it when one surface needs a tighter character limit than the editor factory
-option.
 
 `DOMStrategyOptions` is either `'auto'`, `'staged'`, `'full'`, an object with
 `{ type: 'auto' | 'staged' | 'full', textSync? }`, or the experimental object
@@ -335,13 +330,12 @@ copy, drop, and fragment import ownership.
 
 ```tsx
 import {
-  defineEditorExtension,
+  defineExtension,
   editorCommands,
   RangeApi,
 } from "@platejs/plite";
 
-const markdown = defineEditorExtension({
-  name: "markdown",
+const markdown = defineExtension("markdown", {
   commands: ({ handle }) => [
     handle(editorCommands.insertText, ({ input, state }) => {
       const selection = state.selection();
@@ -389,7 +383,7 @@ Inline, void, selectable, and read-only behavior belongs to the editor schema.
 ```tsx
 import { defineEditorSchema, schema } from "@platejs/plite";
 
-const MentionSchema = defineEditorSchema({
+const MentionSchema = defineEditorSchema("schema:mentions", {
   elements: {
     mention: {
       void: "markable-inline",

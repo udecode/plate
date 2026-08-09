@@ -5,15 +5,80 @@ import React from 'react';
 
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { Plate } from '@platejs/core/react';
+import { ElementProvider } from '@platejs/core/react/internal';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
+import { PLUGINS } from '@platejs/utils';
 
+import type { TableElement } from '../lib/BaseTablePlugin';
 import { createTestTableEditor } from '../lib/__tests__/getTestTablePlugins';
 import { TablePlugin } from './TablePlugin';
-import { useTableSelectionDom } from './useTableElement';
+import { useTableColSizes, useTableSelectionDom } from './useTableElement';
+import { TableProvider } from './useTableStore';
 
 jsxt;
 
 describe('useTableElement family', () => {
+  it('keeps column sizes while a block insertion shifts the table path', () => {
+    const table: TableElement = {
+      children: [
+        {
+          children: [
+            {
+              children: [{ children: [{ text: '' }], type: 'paragraph' }],
+              type: 'tableCell',
+            },
+          ],
+          type: 'tableRow',
+        },
+      ],
+      colSizes: [120],
+      type: 'table',
+    };
+    const editor = createTestTableEditor({
+      initialValue: [
+        { children: [{ text: 'before' }], type: 'paragraph' },
+        table,
+      ],
+      plugins: [TablePlugin],
+    });
+    const installedTable = editor.read.nodes.get<TableElement>([1])![0];
+    const PlateWithChildren = Plate as React.ComponentType<
+      Omit<React.ComponentProps<typeof Plate>, 'children'>
+    >;
+    const wrapper = ({ children }: { children: React.ReactNode }) =>
+      React.createElement(
+        PlateWithChildren,
+        { editor, suppressInstanceWarning: true },
+        React.createElement(
+          TableProvider,
+          null,
+          React.createElement(
+            ElementProvider,
+            {
+              element: installedTable,
+              entry: [installedTable, [1]],
+              path: [1],
+              scope: PLUGINS.table,
+            },
+            children
+          )
+        )
+      );
+    const { result } = renderHook(() => useTableColSizes(), { wrapper });
+
+    expect(result.current).toEqual([120]);
+
+    expect(() => {
+      act(() => {
+        editor.update.nodes.insert(
+          { children: [{ text: 'inserted' }], type: 'paragraph' },
+          { at: [1] }
+        );
+      });
+    }).not.toThrow();
+    expect(result.current).toEqual([120]);
+  });
+
   it('updates only cells entering or leaving the selected set', async () => {
     const input = (
       <editor>
@@ -42,34 +107,39 @@ describe('useTableElement family', () => {
       </editor>
     ) as TestEditor;
     const editor = createTestTableEditor({
-      nodeId: true,
       plugins: [TablePlugin],
       selection: input.selection,
       initialValue: input.children,
     });
     const table = document.createElement('table');
+    const cellKeys = {
+      c1: editor.key([0, 0, 0])!,
+      c2: editor.key([0, 0, 1])!,
+      c3: editor.key([0, 0, 2])!,
+      c4: editor.key([0, 0, 3])!,
+    };
 
     table.innerHTML = `
       <tbody>
         <tr>
-          <td data-table-cell-id="c1"></td>
-          <td data-table-cell-id="c2"></td>
-          <td data-table-cell-id="c3"></td>
-          <td data-table-cell-id="c4"></td>
+          <td data-table-cell-key="${cellKeys.c1}"></td>
+          <td data-table-cell-key="${cellKeys.c2}"></td>
+          <td data-table-cell-key="${cellKeys.c3}"></td>
+          <td data-table-cell-key="${cellKeys.c4}"></td>
         </tr>
       </tbody>
     `;
     document.body.append(table);
 
     const cells = Object.fromEntries(
-      ['c1', 'c2', 'c3', 'c4'].map((id) => {
+      Object.entries(cellKeys).map(([name, id]) => {
         const cell = table.querySelector<HTMLElement>(
-          `[data-table-cell-id="${id}"]`
+          `[data-table-cell-key="${id}"]`
         );
 
         assert(cell);
 
-        return [id, cell];
+        return [name, cell];
       })
     ) as Record<'c1' | 'c2' | 'c3' | 'c4', HTMLElement>;
     const querySelectorAll = spyOn(table, 'querySelectorAll');

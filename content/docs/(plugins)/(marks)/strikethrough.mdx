@@ -18,7 +18,7 @@ Strikethrough applies the `strikethrough` leaf mark to selected text. The packag
 
 ## Features
 
-- `KEYS.strikethrough` leaf mark.
+- `PLUGINS.strikethrough` leaf mark.
 - Directional selection affinity.
 - HTML deserialization from `s`, `del`, `strike`, and line-through text decoration.
 - `<s>` rendering by default.
@@ -49,18 +49,17 @@ export const editor = createPlateEditor({
 
 ### Add A Toolbar Button
 
-Use `MarkToolbarButton` with `KEYS.strikethrough`.
+Use `MarkToolbarButton` with `PLUGINS.strikethrough`.
 
 ```tsx
 import { StrikethroughIcon } from 'lucide-react';
-import { KEYS } from 'platejs';
 
 import { MarkToolbarButton } from '@/components/ui/mark-toolbar-button';
 
 export function StrikethroughToolbarButton() {
   return (
     <MarkToolbarButton
-      nodeType={KEYS.strikethrough}
+      nodeType={PLUGINS.strikethrough}
       tooltip="Strikethrough"
     >
       <StrikethroughIcon />
@@ -118,7 +117,7 @@ The package owns the mark. The registry owns shortcut configuration and toolbar 
 
 | Behavior | Source |
 |----------|--------|
-| Mark key | `KEYS.strikethrough` |
+| Mark key | `PLUGINS.strikethrough` |
 | Mark declaration | `schema.mark: property.boolean({ default: false, omitDefault: true })` |
 | Toggle command | `tx.strikethrough.toggle()` calls `tx.marks.toggle(type)`. |
 | Selection affinity | `directional` |

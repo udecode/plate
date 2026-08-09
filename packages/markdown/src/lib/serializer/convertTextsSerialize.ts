@@ -14,7 +14,7 @@ export const convertTextsSerialize = (
   const customLeaf = options.rules
     ? Object.entries(options.rules)
         .filter(([, parser]) => parser?.mark)
-        .map(([name]) => name)
+        .map(([key]) => key)
     : [];
 
   const mdastTexts: MdMark[] = [];
@@ -39,28 +39,26 @@ export const convertTextsSerialize = (
         // exclude repeated marks
         ...customLeaf.filter((k) => !basicMarkdownMarks.includes(k)),
       ] as const
-    ).forEach((name) => {
-      const nodeType = options.registry.getType(name);
-
-      if (cur[nodeType]) {
+    ).forEach((key) => {
+      if (cur[key]) {
         // Skip marks that should be treated as plain text
-        if (options.plainMarks?.includes(name)) {
+        if (options.plainMarks?.includes(key)) {
           return;
         }
 
-        if (!prev?.[nodeType]) {
-          starts.push(name);
+        if (!prev?.[key]) {
+          starts.push(key);
         }
-        if (!next?.[nodeType]) {
-          ends.push(name);
+        if (!next?.[key]) {
+          ends.push(key);
         }
       }
     });
 
-    const endsToRemove = starts.reduce<{ index: number; name: string }[]>(
-      (acc, name, pluginIndex) => {
-        if (ends.includes(name)) {
-          acc.push({ index: pluginIndex, name });
+    const endsToRemove = starts.reduce<{ index: number; key: string }[]>(
+      (acc, key, markIndex) => {
+        if (ends.includes(key)) {
+          acc.push({ index: markIndex, key });
         }
         return acc;
       },
@@ -94,8 +92,8 @@ export const convertTextsSerialize = (
       starts
         .slice()
         .reverse()
-        .forEach((name) => {
-          const nodeParser = options.rules?.[name]?.serialize;
+        .forEach((key) => {
+          const nodeParser = options.rules?.[key]?.serialize;
 
           if (nodeParser) {
             const node = nodeParser(cur, options);
@@ -108,7 +106,7 @@ export const convertTextsSerialize = (
             }
           }
 
-          switch (name) {
+          switch (key) {
             case 'bold': {
               res = {
                 children: [res],

@@ -102,14 +102,15 @@ import type {
   EditorSchemaDelta,
   EditorSchemaElement,
   EditorSchemaIdentity,
+  EditorSchemaExtensionProvider,
   EditorSchemaProperty,
   EditorSchemaPropertyQuery,
+  SchemaElementConstructionPropertiesFor,
   SchemaElementFor,
   SchemaElementHandle,
-  SchemaElementPropertiesFor,
-  SchemaElementPropertyHandle,
-  SchemaElementPropertyValue,
   SchemaElementTypes,
+  SchemaPropertyHandle,
+  SchemaPropertyHandleValue,
   SchemaDescendantInValue,
   SchemaValueFromExtensions,
 } from './schema';
@@ -122,6 +123,84 @@ export type { Selection } from './selection';
  * state is read through editor methods and mutated through `editor.update`.
  */
 export type Value = readonly Element[];
+
+type NodePropertyEntryIn<V extends Value> =
+  NodeIn<V> extends infer TNode
+    ? TNode extends Descendant
+      ? {
+          [TKey in Extract<keyof NodeProps<TNode>, string>]: Readonly<{
+            key: TKey;
+            value: NodeProps<TNode>[TKey];
+          }>;
+        }[Extract<keyof NodeProps<TNode>, string>]
+      : never
+    : never;
+
+type NodePropertyKeyIn<V extends Value> = NodePropertyEntryIn<V>['key'];
+
+type NodePropertyValueIn<V extends Value, TKey extends NodePropertyKeyIn<V>> =
+  NodePropertyEntryIn<V> extends infer TEntry
+    ? TEntry extends Readonly<{ key: infer TEntryKey; value: infer TValue }>
+      ? TKey extends TEntryKey
+        ? TValue
+        : never
+      : never
+    : never;
+
+type WithRuntimeTarget<TOptions extends { at?: Location }> = Omit<
+  TOptions,
+  'at'
+> & {
+  at?: Location | RuntimeId;
+};
+
+type EditorNodeSetObject<V extends Value> = {
+  <T extends Descendant>(
+    props: Partial<NodeProps<NoInfer<T>>>,
+    options: Omit<NodeSetNodesOptions<T>, 'at'> & { at: T }
+  ): void;
+  (
+    props: Partial<Omit<Element, 'children'>>,
+    options?: WithRuntimeTarget<NodeSetNodesOptions<Element>>
+  ): void;
+  <T extends NodeIn<V>>(
+    props: Partial<NodeProps<T>>,
+    options?: WithRuntimeTarget<NodeSetNodesOptions<T>>
+  ): void;
+};
+
+type EditorNodeSetProperty<V extends Value> = {
+  bivarianceHack<const TKey extends NodePropertyKeyIn<V>>(
+    key: TKey,
+    value: NoInfer<NodePropertyValueIn<V, TKey>>,
+    options?: WithRuntimeTarget<NodeSetNodesOptions<NodeIn<V>>>
+  ): void;
+}['bivarianceHack'];
+
+type EditorNodeSetDynamicProperty = {
+  bivarianceHack<TKey extends string>(
+    key: string extends TKey ? TKey : never,
+    value: unknown,
+    options?: WithRuntimeTarget<NodeSetNodesOptions>
+  ): void;
+}['bivarianceHack'];
+
+type EditorNodeSetPropertyHandle<V extends Value> = {
+  bivarianceHack<const THandle extends SchemaPropertyHandle<string, unknown>>(
+    property: THandle,
+    value: NoInfer<SchemaPropertyHandleValue<THandle>>,
+    options?: WithRuntimeTarget<NodeSetNodesOptions<NodeIn<V>>>
+  ): void;
+}['bivarianceHack'];
+
+export type EditorNodeUnsetOptions<T extends Node> = {
+  at?: NodeTarget<TargetDescendant<T>>;
+  match?: NodeMatch<T>;
+  mode?: MaximizeMode;
+  hanging?: boolean;
+  split?: boolean;
+  voids?: boolean;
+};
 
 type ValueDescendant<V extends Value> = [SchemaDescendantInValue<V>] extends [
   never,
@@ -164,8 +243,11 @@ export type InitialValue<V extends Value = Value> =
       roots?: Readonly<Record<RootKey, V>>;
     }>;
 
-/** A document location or a live node whose current location should be used. */
-export type NodeTarget<N extends Descendant = Descendant> = Location | N;
+/** A document location, runtime identity, or live node to resolve. */
+export type NodeTarget<N extends Descendant = Descendant> =
+  | Location
+  | N
+  | RuntimeId;
 
 export type EditorReplaceChildrenOptions = Omit<
   NodeReplaceChildrenOptions,
@@ -197,8 +279,7 @@ type WithNodeTargetOrSpan<
 };
 
 export type EditorNodesReadOptions<T extends Node> = WithNodeTargetOrSpan<
-  EditorNodesOptions<T>,
-  TargetDescendant<T>
+  EditorNodesOptions<T>
 >;
 
 export type StateFieldCollabPolicy = 'local' | 'shared';
@@ -461,6 +542,8 @@ export type EditorStateSelectionApi = (() => Selection) & {
   primaryRange: () => Range | null;
   ranges: () => readonly Range[];
   replacementRange: () => Range | null;
+  /** Named root containing the current selection, or `undefined` for primary. */
+  root: () => NamedRootKey | undefined;
 };
 
 export type EditorStateViewApi = {
@@ -489,14 +572,14 @@ export type EditorStateSliceApi<V extends Value = Value> = {
   export: (options?: EditorSliceReadOptions) => ContentSlice<V>;
   /** Build an atomic replacement transaction without publishing it. */
   fit: (
-    slice: ContentSlice<V>,
+    slice: ContentSlice,
     options?: WithNodeTarget<TextInsertFragmentOptions, DescendantIn<V>>
   ) => false | TransactionSpec;
   /** Fit immutable slice content against one detached parent without publishing. */
   fitContent: <TRoot extends RootKey>(
-    slice: ContentSlice<V>,
+    slice: ContentSlice,
     options: Readonly<{
-      parent: ElementIn<V>;
+      parent: Element;
       /** Named secondary-root context. Omit for the primary root. */
       root?: NamedRootKey<TRoot>;
     }>
@@ -727,20 +810,10 @@ export type EditorTransactionNodesApi<V extends Value = Value> =
       children: readonly T[],
       options: EditorReplaceChildrenOptions
     ) => void;
-    set: {
-      <T extends Descendant>(
-        props: Partial<NodeProps<NoInfer<T>>>,
-        options: Omit<NodeSetNodesOptions<T>, 'at'> & { at: T }
-      ): void;
-      (
-        props: Partial<Omit<Element, 'children'>>,
-        options?: NodeSetNodesOptions<Element>
-      ): void;
-      <T extends NodeIn<V>>(
-        props: Partial<NodeProps<T>>,
-        options?: NodeSetNodesOptions<T>
-      ): void;
-    };
+    set: EditorNodeSetObject<V> &
+      EditorNodeSetProperty<V> &
+      EditorNodeSetDynamicProperty &
+      EditorNodeSetPropertyHandle<V>;
     split: <T extends NodeIn<V>>(options?: {
       at?: NodeTarget<TargetDescendant<T>>;
       match?: NodeMatch<T>;
@@ -754,17 +827,23 @@ export type EditorTransactionNodesApi<V extends Value = Value> =
       type: string,
       options?: EditorBlockToggleOptions<DescendantIn<V>>
     ) => void;
-    unset: <T extends NodeIn<V>>(
-      props: string | readonly string[],
-      options?: {
-        at?: NodeTarget<TargetDescendant<T>>;
-        match?: NodeMatch<T>;
-        mode?: MaximizeMode;
-        hanging?: boolean;
-        split?: boolean;
-        voids?: boolean;
-      }
-    ) => void;
+    unset: {
+      <const TKey extends NodePropertyKeyIn<V>, T extends NodeIn<V>>(
+        props: TKey | readonly TKey[],
+        options?: EditorNodeUnsetOptions<T>
+      ): void;
+      <
+        const THandle extends SchemaPropertyHandle<string, unknown>,
+        T extends NodeIn<V>,
+      >(
+        property: THandle,
+        options?: EditorNodeUnsetOptions<T>
+      ): void;
+      <TKey extends string, T extends NodeIn<V>>(
+        property: string extends TKey ? TKey | readonly TKey[] : never,
+        options?: EditorNodeUnsetOptions<T>
+      ): void;
+    };
     unwrap: <T extends NodeIn<V>>(options?: {
       at?: NodeTarget<TargetDescendant<T>>;
       match?: NodeMatch<T>;
@@ -858,7 +937,7 @@ export type EditorTransactionSliceApi<V extends Value = Value> = Pick<
    * Malformed slice shapes are programmer errors and throw.
    */
   replace: (
-    slice: ContentSlice<V>,
+    slice: ContentSlice,
     options?: WithNodeTarget<TextInsertFragmentOptions, DescendantIn<V>>
   ) => boolean;
 };
@@ -902,38 +981,40 @@ export type EditorSchemaCreate = {
     TType extends SchemaElementTypes<TSchema>,
   >(
     element: SchemaElementHandle<TSchema, TType>,
-    properties?: SchemaElementPropertiesFor<TSchema, TType>
+    ...properties: {} extends SchemaElementConstructionPropertiesFor<
+      TSchema,
+      TType
+    >
+      ? [properties?: SchemaElementConstructionPropertiesFor<TSchema, TType>]
+      : [properties: SchemaElementConstructionPropertiesFor<TSchema, TType>]
   ): SchemaElementFor<TSchema, TType>;
   (type: string, properties?: Readonly<Record<string, unknown>>): Element;
 };
 
-export type EditorSchemaGetElementProperty = {
-  <
-    TSchema extends EditorSchemaSource,
-    TType extends SchemaElementTypes<TSchema>,
-    TKey extends import('./schema').SchemaElementPropertyKeys<TSchema, TType>,
-  >(
-    element: Element,
-    property: SchemaElementPropertyHandle<TSchema, TType, TKey>
-  ): SchemaElementPropertyValue<TSchema, TType, TKey> | undefined;
-  <T = unknown>(element: Element, property: string): T | undefined;
-};
-
-/** Stable compiled property identity for descriptor and host integrations. */
-export type EditorSchemaPropertyHandle = Readonly<{
-  id: string;
-  kind: 'schema-property';
+export type EditorSchemaPropertyReadOptions = Readonly<{
+  /** Immediate parent first. Required to apply targeted text-property defaults. */
+  ancestors?: readonly Element[];
+  /** Parent element for a text-property target. */
+  parent?: Element;
+  /** Omission addresses the implicit primary root. */
+  root?: RootKey;
 }>;
 
+export type EditorSchemaReadProperty = {
+  <TKey extends string, TValue, TPlacement extends 'element' | 'text'>(
+    node: Element | Text,
+    property: SchemaPropertyHandle<TKey, TValue, TPlacement>,
+    options?: EditorSchemaPropertyReadOptions
+  ): TValue | undefined;
+  <T = unknown>(
+    node: Element | Text,
+    property: string,
+    options?: EditorSchemaPropertyReadOptions
+  ): T | undefined;
+};
+
 export type EditorSchemaGetProperty = {
-  (property: EditorSchemaPropertyHandle): EditorSchemaProperty | null;
-  <
-    TSchema extends EditorSchemaSource,
-    TType extends SchemaElementTypes<TSchema>,
-    TKey extends import('./schema').SchemaElementPropertyKeys<TSchema, TType>,
-  >(
-    property: SchemaElementPropertyHandle<TSchema, TType, TKey>
-  ): EditorSchemaProperty | null;
+  (property: SchemaPropertyHandle): EditorSchemaProperty | null;
   <const TQuery extends EditorSchemaPropertyQuery>(
     query: TQuery & WithoutInternalPrimaryRoot<TQuery>
   ): EditorSchemaProperty | null;
@@ -944,6 +1025,11 @@ export type EditorStateSchemaApi<V extends Value = Value> = {
   allowsElementType: (parentType: string, childType: string) => boolean;
   /** Create one valid canonical element with every required default child. */
   create: EditorSchemaCreate;
+  /** Copy one node through its compiled property lifecycle. */
+  copy: <TNode extends Descendant>(
+    node: TNode,
+    options: Readonly<{ at: Path; root?: NamedRootKey }>
+  ) => TNode;
   /** Create the declared default child for one document root. */
   createDefaultRootChild: <TRoot extends RootKey>(
     root?: NamedRootKey<TRoot>
@@ -965,7 +1051,8 @@ export type EditorStateSchemaApi<V extends Value = Value> = {
   getElementContentRoots: (
     element: Element
   ) => Readonly<Record<string, NamedRootKey>>;
-  getElementProperty: EditorSchemaGetElementProperty;
+  /** Read one stored or defaulted property through its schema identity. */
+  getProperty: EditorSchemaReadProperty;
   /** Compiled open-slice boundary behavior for one element. */
   getElementSlicePolicy: (element: Element) => EditorElementSlicePolicy;
   /** Return the immutable compiled schema vocabulary. */
@@ -1019,8 +1106,9 @@ export type ContentSlice<V extends Value = Value> = Readonly<{
 }>;
 
 export type EditorStateRuntimeApi<V extends Value = Value> = {
-  idAt: (path: Path) => RuntimeId | null;
-  pathOf: (runtimeId: RuntimeId) => Path | null;
+  id(node: Descendant): RuntimeId;
+  id(at: Location): RuntimeId | null;
+  path: (runtimeId: RuntimeId) => Path | null;
   snapshot: () => EditorSnapshot<V>;
 };
 
@@ -1193,12 +1281,11 @@ export type EditorCoreUpdateMethods<
       | 'replaceChildren'
       | 'split'
       | 'toggle'
-      | 'unset'
       | 'unwrap'
       | 'wrap'
     >
   > &
-    Pick<EditorTransactionNodesApi<V>, 'set'>;
+    Pick<EditorTransactionNodesApi<V>, 'set' | 'unset'>;
   roots: EditorBivariantMethods<EditorTransactionRootsApi<V>>;
   slice: EditorBivariantMethods<Pick<EditorTransactionSliceApi<V>, 'replace'>>;
   selection: EditorBivariantMethods<
@@ -1373,14 +1460,43 @@ export type EditorValueFromExtensions<TExtensions extends readonly unknown[]> =
 
 type IsAny<T> = 0 extends 1 & T ? true : false;
 
+declare const EDITOR_VALUE_TYPE: unique symbol;
+declare const EDITOR_NODE_TYPES: unique symbol;
+
+/** @internal Deferred exact-node witness for hosts with a broad runtime editor. */
+export interface EditorNodeTypeProvider<
+  TElementFactory extends () => Element = () => Element,
+  TTextFactory extends () => Text = () => Text,
+> {
+  readonly [EDITOR_NODE_TYPES]: Readonly<{
+    element: TElementFactory;
+    text: TTextFactory;
+  }>;
+}
+
+/** @internal Deferred exact-value witness for hosts with a broad runtime editor. */
+export interface EditorValueTypeProvider<
+  TValueFactory extends () => Value = () => Value,
+> {
+  readonly [EDITOR_VALUE_TYPE]: TValueFactory;
+}
+
 export type ValueOf<E> =
-  E extends BaseEditor<infer V>
-    ? IsAny<V> extends true
-      ? Value
-      : V extends Value
-        ? V
-        : Value
-    : Value;
+  E extends EditorValueTypeProvider<infer TValueFactory>
+    ? ReturnType<TValueFactory> extends infer TProvidedValue
+      ? IsAny<TProvidedValue> extends true
+        ? Value
+        : TProvidedValue extends Value
+          ? TProvidedValue
+          : Value
+      : Value
+    : E extends BaseEditor<infer V>
+      ? IsAny<V> extends true
+        ? Value
+        : V extends Value
+          ? V
+          : Value
+      : Value;
 
 export type ExtensionsOf<E> =
   E extends BaseEditor<any, infer TExtensions extends readonly unknown[]>
@@ -1395,7 +1511,12 @@ export type EditorMarksOf<E extends BaseEditor<any> = Editor> = EditorMarks<
   ValueOf<E>
 >;
 
-export type RuntimeId = string;
+declare const runtimeId: unique symbol;
+
+/** Opaque identity for one descendant inside one editor runtime. */
+export type RuntimeId = string & {
+  readonly [runtimeId]: true;
+};
 
 export type SnapshotIndex = Readonly<{
   /** Materialize the lazy index and return stable, frozen runtime-id/path pairs. */
@@ -1494,28 +1615,30 @@ export type EditorCommandResult = false | TransactionSpec;
 /** @internal */
 export declare const editorStateViewTypes: unique symbol;
 
-/** @internal Exact state-view carrier for editor layers with richer transactions. */
-export interface EditorStateViewProvider<TState> {
-  readonly [editorStateViewTypes]?: TState;
+/** @internal Deferred state-view carrier for editor layers with richer transactions. */
+export interface EditorStateViewProvider<TStateFactory extends () => unknown> {
+  readonly [editorStateViewTypes]: TStateFactory;
 }
 
-/** @internal Exact update-transaction carrier for layered editor types. */
+/** @internal Deferred update-transaction carrier for layered editor types. */
 /** @internal */
 export declare const editorUpdateTransactionTypes: unique symbol;
 
-export interface EditorUpdateTransactionProvider<TTransaction> {
-  readonly [editorUpdateTransactionTypes]?: TTransaction;
+export interface EditorUpdateTransactionProvider<
+  TTransactionFactory extends () => unknown,
+> {
+  readonly [editorUpdateTransactionTypes]: TTransactionFactory;
 }
 
 /** @internal Resolve a layered editor's exact live update transaction. */
 export type EditorUpdateTransactionOf<TEditor> =
-  TEditor extends EditorUpdateTransactionProvider<infer TTransaction>
-    ? TTransaction
+  TEditor extends EditorUpdateTransactionProvider<infer TTransactionFactory>
+    ? ReturnType<TTransactionFactory>
     : EditorUpdateTransaction<ValueOf<TEditor>, ExtensionsOf<TEditor>>;
 
 type EditorStateViewOf<TEditor> =
-  TEditor extends EditorStateViewProvider<infer TState>
-    ? TState
+  TEditor extends EditorStateViewProvider<infer TStateFactory>
+    ? ReturnType<TStateFactory>
     : EditorStateView<ValueOf<TEditor>, ExtensionsOf<TEditor>>;
 
 export type EditorCommandContext<Input, TEditor = Editor> = {
@@ -1616,15 +1739,25 @@ export type EditorReadCapabilities<TEditor> =
       }>
     : never;
 
+type IsDefaultEditor<TEditor> = [ExtensionsOf<TEditor>] extends [readonly []]
+  ? [Value] extends [ValueOf<TEditor>]
+    ? [ValueOf<TEditor>] extends [Value]
+      ? true
+      : false
+    : false
+  : false;
+
 export type CompatibleEditorRead<
   TEditor,
   TRead extends EditorReadDescriptor<any, any, any>,
 > =
-  EditorReadCapabilities<TEditor> extends EditorReadCapabilities<
-    EditorReadRequiredEditor<TRead>
-  >
+  IsDefaultEditor<EditorReadRequiredEditor<TRead>> extends true
     ? TRead
-    : never;
+    : EditorReadCapabilities<TEditor> extends EditorReadCapabilities<
+          EditorReadRequiredEditor<TRead>
+        >
+      ? TRead
+      : never;
 
 export type EditorReadContinuation<Input, Result> = (
   ...input: [] | [input: Input]
@@ -1738,11 +1871,13 @@ export type CompatibleEditorCommand<
   TEditor,
   TCommand extends EditorCommandDescriptor,
 > =
-  EditorCommandCapabilities<TEditor> extends EditorCommandCapabilities<
-    EditorCommandRequiredEditor<TCommand>
-  >
+  IsDefaultEditor<EditorCommandRequiredEditor<TCommand>> extends true
     ? TCommand
-    : never;
+    : EditorCommandCapabilities<TEditor> extends EditorCommandCapabilities<
+          EditorCommandRequiredEditor<TCommand>
+        >
+      ? TCommand
+      : never;
 
 export type EditorCommandDispatch<TEditor = Editor> = <
   TCommand extends EditorCommandDescriptor,
@@ -1884,7 +2019,10 @@ export type EditorExtensionPortal<
 > = Readonly<{
   api: EditorApiValueFromExtension<TExtension>;
   read: EditorReadValueFromExtension<V, TExtension>;
-  update: EditorUpdateValueFromExtension<V, TExtension>;
+  update: EditorUpdateValueFromExtension<V, TExtension> &
+    ((
+      policy: EditorUpdatePolicy
+    ) => EditorUpdateValueFromExtension<V, TExtension>);
 }>;
 
 export type EditorAnchorApi = <
@@ -2269,6 +2407,12 @@ type EditorExtensionTypeProviderOf<TExtension> = TExtension extends unknown
     : Readonly<Record<never, never>>
   : never;
 
+type EditorSchemaExtensionProviderOf<TExtension> = TExtension extends unknown
+  ? TExtension extends EditorSchemaExtensionProvider<infer TSchema>
+    ? EditorSchemaExtensionProvider<TSchema>
+    : Readonly<Record<never, never>>
+  : never;
+
 /** @internal Preserve only one extension's finite type-provider projection. */
 export type InternalEditorExtensionTypeProviderOf<TExtension> =
   EditorExtensionTypeProviderOf<TExtension>;
@@ -2276,7 +2420,9 @@ export type InternalEditorExtensionTypeProviderOf<TExtension> =
 type EditorExtensionDirectCapability<TExtension> = TExtension extends unknown
   ? EditorExtensionCapabilityOf<TExtension> extends infer TCapability extends
       EditorExtensionDefinition
-    ? TCapability & EditorExtensionTypeProviderOf<TExtension>
+    ? TCapability &
+        EditorExtensionTypeProviderOf<TExtension> &
+        EditorSchemaExtensionProviderOf<TExtension>
     : never
   : never;
 

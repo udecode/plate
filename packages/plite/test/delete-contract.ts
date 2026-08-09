@@ -172,11 +172,11 @@ describe('plite delete contract', () => {
       });
 
       const before = editorGetSnapshot(editor);
-      const leftRuntimeId = before.index.idAt([0, 0]);
-      const rightRuntimeId = before.index.idAt([0, 2]);
+      const leftNodeKey = before.index.keyAt([0, 0]);
+      const rightNodeKey = before.index.keyAt([0, 2]);
 
-      assert.ok(leftRuntimeId);
-      assert.ok(rightRuntimeId);
+      assert.ok(leftNodeKey);
+      assert.ok(rightNodeKey);
 
       editor.update((tx) => {
         if (reverse) tx.text.deleteBackward();
@@ -186,8 +186,8 @@ describe('plite delete contract', () => {
       const snapshot = editorGetSnapshot(editor);
 
       assert.deepEqual(snapshot.children, [paragraph('hi  after')]);
-      assert.equal(snapshot.index.idAt([0, 0]), leftRuntimeId);
-      assert.equal(snapshot.index.pathOf(rightRuntimeId), null);
+      assert.equal(snapshot.index.keyAt([0, 0]), leftNodeKey);
+      assert.equal(snapshot.index.pathOf(rightNodeKey), null);
       assert.deepEqual(snapshot.selection, {
         kind: 'text',
         anchor: { path: [0, 0], offset: 3 },

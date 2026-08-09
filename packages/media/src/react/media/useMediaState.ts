@@ -5,12 +5,6 @@ import {
   useEditorReadOnly,
   useElementSelected,
 } from '@platejs/plite-react';
-import {
-  type TMediaElement,
-  type TResizableElement,
-  KEYS,
-  NODES,
-} from '@platejs/utils';
 import { useEditor, useElement } from '@platejs/core/react';
 
 import {
@@ -18,30 +12,41 @@ import {
   parseMediaUrl,
   VIDEO_PROVIDERS,
 } from '../../lib/media/parseMediaUrl';
+import { BaseVideoPlugin } from '../../lib/BaseMediaPlugin';
+import { BaseMediaEmbedPlugin } from '../../lib/media-embed/BaseMediaEmbedPlugin';
+import type { MediaPlugin } from '../plugins';
 
-export const useMediaState = ({
-  urlParsers,
-}: {
-  urlParsers?: EmbedUrlParser[];
-} = {}) => {
+export const useMediaState = (
+  plugin: MediaPlugin,
+  { urlParsers }: { urlParsers?: EmbedUrlParser[] } = {}
+) => {
   const editor = useEditor();
-  const element = useElement<TMediaElement & TResizableElement>();
+  const element = useElement(plugin);
   const focused = useEditorFocused();
   const selected = useElementSelected({ mode: 'node' });
   const readOnly = useEditorReadOnly();
 
-  const { id, align, isUpload, name, type, url } = element;
+  const { isUpload, name, type, url } = element;
+  const id =
+    'id' in element && typeof element.id === 'string' ? element.id : undefined;
+  const elementTextAlign =
+    'textAlign' in element ? element.textAlign : undefined;
+  let textAlign: 'center' | 'left' | 'right' | undefined;
+
+  if (elementTextAlign === 'center') textAlign = 'center';
+  if (elementTextAlign === 'left') textAlign = 'left';
+  if (elementTextAlign === 'right') textAlign = 'right';
 
   const embed = React.useMemo(() => {
-    const video = editor.plugin(KEYS.video);
-    const mediaEmbed = editor.plugin(KEYS.mediaEmbed);
+    const video = editor.plugin(BaseVideoPlugin);
+    const mediaEmbed = editor.plugin(BaseMediaEmbedPlugin);
+    const supportedTypes = new Set<string>(
+      [video, mediaEmbed]
+        .filter((plugin) => plugin.installed)
+        .map((plugin) => plugin.schema.type)
+    );
 
-    if (
-      !urlParsers ||
-      (type !== (video.installed ? video.type : NODES.video) &&
-        type !== (mediaEmbed.installed ? mediaEmbed.type : NODES.mediaEmbed))
-    )
-      return;
+    if (!urlParsers || !supportedTypes.has(type)) return;
 
     return parseMediaUrl(url, { urlParsers });
   }, [editor, type, url, urlParsers]);
@@ -52,7 +57,6 @@ export const useMediaState = ({
 
   return {
     id,
-    align,
     embed,
     focused,
     isTweet,
@@ -62,6 +66,7 @@ export const useMediaState = ({
     name,
     readOnly,
     selected,
+    textAlign,
     unsafeUrl: url,
   };
 };

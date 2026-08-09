@@ -12,7 +12,7 @@ const isTextSubstitutionBlocked = (editor: BaseEditor) => {
   const codeBlock = editor.plugin(PLUGINS.codeBlock);
 
   return editor.read.nodes.some({
-    match: { type: codeBlock.type },
+    match: { type: codeBlock.schema.type },
   });
 };
 

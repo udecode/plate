@@ -52,7 +52,6 @@ describe('table grid slow contracts', () => {
         ) as Element;
 
         const editor = createTestTableEditor({
-          nodeId: true,
           plugins: getTestTablePlugins({ disableMerge }),
           selection: input.selection,
           initialValue: input.children,
@@ -116,7 +115,6 @@ describe('table grid slow contracts', () => {
         ) as Element;
 
         const editor = createTestTableEditor({
-          nodeId: true,
           plugins: getTestTablePlugins({ disableMerge }),
           selection: input.selection,
           initialValue: input.children,
@@ -178,7 +176,6 @@ describe('table grid slow contracts', () => {
         ) as Element;
 
         const editor = createTestTableEditor({
-          nodeId: true,
           plugins: getTestTablePlugins({ disableMerge }),
           selection: input.selection,
           initialValue: input.children,
@@ -245,7 +242,6 @@ describe('table grid slow contracts', () => {
         ) as Element;
 
         const editor = createTestTableEditor({
-          nodeId: true,
           plugins: getTestTablePlugins({ disableMerge }),
           selection: input.selection,
           initialValue: input.children,
@@ -315,7 +311,6 @@ describe('table grid slow contracts', () => {
         ) as Element;
 
         const editor = createTestTableEditor({
-          nodeId: true,
           plugins: getTestTablePlugins({ disableMerge }),
           selection: input.selection,
           initialValue: input.children,
@@ -385,7 +380,6 @@ describe('table grid slow contracts', () => {
         ) as Element;
 
         const editor = createTestTableEditor({
-          nodeId: true,
           plugins: getTestTablePlugins({ disableMerge }),
           selection: input.selection,
           initialValue: input.children,
@@ -455,7 +449,6 @@ describe('table grid slow contracts', () => {
         ) as Element;
 
         const editor = createTestTableEditor({
-          nodeId: true,
           plugins: getTestTablePlugins({ disableMerge }),
           selection: input.selection,
           initialValue: input.children,
@@ -525,7 +518,6 @@ describe('table grid slow contracts', () => {
         ) as Element;
 
         const editor = createTestTableEditor({
-          nodeId: true,
           plugins: getTestTablePlugins({ disableMerge }),
           selection: input.selection,
           initialValue: input.children,

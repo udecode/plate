@@ -357,14 +357,14 @@ createEditorView(runtime, { root: 'main' });
 
 commit.changed.has('document', 'header');
 commit.changed.paths('header');
-commit.changed.runtimeIds('node', 'header');
+commit.changed.nodeKeys('node', 'header');
 commit.changed.topLevelRanges('header');
 // @ts-expect-error the primary commit root is selected by omitting root
 commit.changed.has('document', 'main');
 // @ts-expect-error the primary commit root is selected by omitting root
 commit.changed.paths('main');
 // @ts-expect-error the primary commit root is selected by omitting root
-commit.changed.runtimeIds('node', 'main');
+commit.changed.nodeKeys('node', 'main');
 // @ts-expect-error the primary commit root is selected by omitting root
 commit.changed.topLevelRanges('main');
 

@@ -1,8 +1,9 @@
 import { type Range, RangeApi } from '..';
 import { isDeepEqual } from '../utils/deep-equal';
 import { isObject } from '../utils/is-object';
-import type { BaseEditor } from './editor';
+import type { BaseEditor, EditorNodeTypeProvider } from './editor';
 import type { Element } from './element';
+import type { SchemaTextInNode } from './schema';
 
 type Simplify<T> = { [K in keyof T]: T[K] } & {};
 
@@ -29,23 +30,29 @@ export type Text = BaseText;
 
 export type TextIn<V extends readonly unknown[]> = TextOf<V[number]>;
 
-export type TextOf<N> = N extends Text
+type TextOfVariant<N> = N extends Text
   ? N
   : Text extends N
     ? Text
-    : N extends BaseEditor<infer V>
-      ? TextIn<V>
-      : Element extends N
-        ? Text
-        : N extends { getChildren: () => infer V }
-          ? V extends readonly (infer Child)[]
-            ? TextOf<Child>
-            : never
-          : N extends Element
-            ?
-                | Extract<N['children'][number], Text>
-                | TextOf<N['children'][number]>
-            : never;
+    : N extends EditorNodeTypeProvider<any, infer TTextFactory>
+      ? Extract<ReturnType<TTextFactory>, Text>
+      : N extends BaseEditor<infer V>
+        ? TextIn<V>
+        : Element extends N
+          ? Text
+          : N extends { getChildren: () => infer V }
+            ? V extends readonly (infer Child)[]
+              ? TextOf<Child>
+              : never
+            : [SchemaTextInNode<N>] extends [never]
+              ? N extends Element
+                ?
+                    | Extract<N['children'][number], Text>
+                    | TextOf<N['children'][number]>
+                : never
+              : SchemaTextInNode<N>;
+
+export type TextOf<N> = N extends unknown ? TextOfVariant<N> : never;
 
 type TextProps<T> = T extends Text ? Omit<T, 'text'> : never;
 

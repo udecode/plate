@@ -40,7 +40,7 @@ mock.module('platejs/react', () => ({
     <div data-testid="plate-element">{children}</div>
   ),
   useEditor: () => ({
-    plugin: () => ({ update: { setWidth: () => {} } }),
+    plugin: () => ({ update: { set: () => {} } }),
     read: { selection: () => null },
   }),
   useEditorSelector: (selector: (editor: unknown) => unknown) =>

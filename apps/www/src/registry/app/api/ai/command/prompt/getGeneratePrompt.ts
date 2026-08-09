@@ -133,7 +133,7 @@ function buildGenerateContextPrompt(
     instruction: getLastUserInstruction(messages),
     rules: dedent`
       ${commonGenerateRules}
-      - DO NOT remove or alter custom MDX tags such as <u>, <callout>, <kbd>, <toc>, <sub>, <sup>, <mark>, <del>, <date>, <span>, <column>, <column_group>, <file>, <audio>, <video> unless explicitly requested.
+      - DO NOT remove or alter custom MDX tags such as <u>, <callout>, <kbd>, <toc>, <sub>, <sup>, <mark>, <del>, <date>, <span>, <column>, <columnGroup>, <file>, <audio>, <video> unless explicitly requested.
       - Preserve indentation and line breaks when editing within columns or structured layouts.
       - <Selection> tags are input-only markers. They must NOT appear in the output.
     `,

@@ -6,7 +6,7 @@ import {
   createBaseEditor,
   defineBasePlugin,
 } from '@platejs/core';
-import { ElementApi, property, schema, TextApi } from '@platejs/plite';
+import { ElementApi, property, schema, target, TextApi } from '@platejs/plite';
 import { jsxt } from '@platejs/test-utils';
 import { PLUGINS } from '@platejs/utils';
 
@@ -470,7 +470,7 @@ import {
       const result = editor.plugin(BaseSuggestionPlugin).api.getProps(
         {
           children: [{ text: '' }],
-          type: editor.plugin(InlineSuggestionTargetPlugin).schema.element.type,
+          type: editor.plugin(InlineSuggestionTargetPlugin).schema.type,
         },
         { createdAt: 456, id: 'def', suggestionDeletion: true }
       );
@@ -918,7 +918,7 @@ import {
       expect(editor.read.children()[0].children[0].bold).toBe(true);
       expect(
         editor.read.children()[0].children[0][
-          editor.plugin(BaseSuggestionPlugin).schema.properties.suggestion.key
+          editor.plugin(BaseSuggestionPlugin).schema.key
         ]
       ).toBe(true);
       expect(data).toBeDefined();
@@ -1149,6 +1149,44 @@ import {
       ]);
     });
 
+    it('tracks the anchor block tail before crossing into the next block', () => {
+      const editor = createBaseEditor({
+        plugins: [suggestionPlugin],
+        selection: {
+          kind: 'text',
+          anchor: { offset: 1, path: [0, 0] },
+          focus: { offset: 1, path: [0, 0] },
+        },
+        initialValue: [
+          {
+            children: [{ text: 'abc' }],
+            type: 'paragraph',
+          },
+          {
+            children: [{ text: 'def' }],
+            type: 'paragraph',
+          },
+        ],
+      });
+
+      editor.update.suggestion.delete({
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 1, path: [1, 0] },
+      });
+
+      const anchorTail = editor.read
+        .children()[0]
+        .children.find(
+          (node) =>
+            TextApi.isText(node) &&
+            node.text === 'bc' &&
+            editor.plugin(BaseSuggestionPlugin).api.inlineData(node)?.type ===
+              'remove'
+        );
+
+      expect(anchorTail).toBeDefined();
+    });
+
     it('stops cleanly when deletion would cross blocks without a previous block element', () => {
       const editor = createBaseEditor({
         plugins: [suggestionPlugin],
@@ -1296,7 +1334,7 @@ import {
       expect(editor.read.children()[0].children[0].bold).toBeUndefined();
       expect(
         editor.read.children()[0].children[0][
-          editor.plugin(BaseSuggestionPlugin).schema.properties.suggestion.key
+          editor.plugin(BaseSuggestionPlugin).schema.key
         ]
       ).toBe(true);
       expect(data).toBeDefined();
@@ -1635,6 +1673,23 @@ import {
   };
 
   describe('insertBreakSuggestion when isSuggesting is true', () => {
+    it('tracks inserted nodes without requiring the slash input plugin', () => {
+      const editor = createBaseEditor({
+        plugins: [suggestionPlugin],
+        initialValue: [{ children: [{ text: 'one' }], type: 'paragraph' }],
+      });
+
+      editor.plugin(BaseSuggestionPlugin).store.set({ isSuggesting: true });
+      editor.update.nodes.insert({
+        children: [{ text: 'two' }],
+        type: 'paragraph',
+      });
+
+      expect(editor.read.children().at(1)).toMatchObject({
+        suggestion: { type: 'insert', userId: 'testId' },
+      });
+    });
+
     it('add insertBreakData and split node', () => {
       const input = (
         <editor>
@@ -2758,14 +2813,14 @@ import {
         editor.read.schema.property({
           key: 'suggestion',
           placement: 'element',
-          type: editor.plugin(InlineSuggestionTargetPlugin).schema.element.type,
+          type: editor.plugin(InlineSuggestionTargetPlugin).schema.type,
         })
       ).toMatchObject({ value: { kind: 'boolean' } });
       expect(
         editor.read.schema.property({
           key: 'suggestion_any',
           placement: 'element',
-          type: editor.plugin(InlineSuggestionTargetPlugin).schema.element.type,
+          type: editor.plugin(InlineSuggestionTargetPlugin).schema.type,
         })
       ).toMatchObject({ value: { kind: 'json' } });
       expect(
@@ -2821,7 +2876,7 @@ import {
         editor.read.schema.property({
           key: 'suggestion_any',
           placement: 'element',
-          type: editor.plugin(InlineSuggestionTargetPlugin).schema.element.type,
+          type: editor.plugin(InlineSuggestionTargetPlugin).schema.type,
         })?.role
       ).toBe('content');
 
@@ -2878,10 +2933,10 @@ import {
       const editor = createEditor();
       const api = editor.plugin(BaseSuggestionPlugin).api;
 
-      expect(api.nodeId(editor.read.children()[0].children[0] as any)).toBe(
+      expect(api.id(editor.read.children()[0].children[0] as any)).toBe(
         'inline'
       );
-      expect(api.nodeId(editor.read.children()[1] as any)).toBe('block');
+      expect(api.id(editor.read.children()[1] as any)).toBe('block');
     });
 
     it('filters transient suggestion nodes when requested', () => {
@@ -2973,9 +3028,21 @@ import {
 }
 
 {
+  const DiffMetadataPlugin = defineBasePlugin('diffMetadata', {
+    schema: {
+      properties: {
+        identity: schema.elementProperty('blockId', property.string(), {
+          role: 'metadata',
+          target: target.group('element'),
+        }),
+      },
+    },
+  });
   const createSuggestionEditor = () =>
     createBaseEditor({
       plugins: [
+        BaseParagraphPlugin,
+        DiffMetadataPlugin,
         BaseSuggestionPlugin.configure({
           initialState: {
             currentUserId: 'user-1',
@@ -2985,6 +3052,34 @@ import {
     });
 
   describe('diffToSuggestions', () => {
+    it('ignores schema metadata through its physical property key', () => {
+      const editor = createSuggestionEditor();
+      const value = editor.plugin(BaseSuggestionPlugin).api.diff(
+        [
+          {
+            blockId: 'before',
+            children: [{ text: 'same' }],
+            type: 'paragraph',
+          },
+        ],
+        [
+          {
+            blockId: 'after',
+            children: [{ text: 'same' }],
+            type: 'paragraph',
+          },
+        ]
+      );
+
+      expect(value).toEqual([
+        {
+          blockId: 'after',
+          children: [{ text: 'same' }],
+          type: 'paragraph',
+        },
+      ]);
+    });
+
     it('marks inserted text and leaves untouched text alone', () => {
       const editor = createSuggestionEditor();
 

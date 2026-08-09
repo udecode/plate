@@ -5,6 +5,7 @@ import {
   createEditor,
   defineEditorSchema,
   defineExtension,
+  type NodeKey,
   schema,
   type SnapshotIndex,
 } from '@platejs/plite';
@@ -397,19 +398,19 @@ describe('extension change events', () => {
 
     assert.ok(commit);
 
-    const work = { entries: 0, idAt: 0, pathOf: 0 };
+    const work = { entries: 0, keyAt: 0, pathOf: 0 };
     const count = (index: SnapshotIndex): SnapshotIndex => ({
       entries() {
         work.entries += 1;
         throw new Error('sparse change events must not materialize entries');
       },
-      idAt(path) {
-        work.idAt += 1;
-        return index.idAt(path);
+      keyAt(path) {
+        work.keyAt += 1;
+        return index.keyAt(path);
       },
-      pathOf(runtimeId) {
+      pathOf(nodeKey) {
         work.pathOf += 1;
-        return index.pathOf(runtimeId);
+        return index.pathOf(nodeKey);
       },
     });
     const instrumentedCommit = {
@@ -435,8 +436,8 @@ describe('extension change events', () => {
     assert.equal(work.entries, 0);
     assert.equal(work.pathOf, 0);
     assert.ok(
-      work.idAt <= 16,
-      `expected bounded idAt work, received ${work.idAt}`
+      work.keyAt <= 16,
+      `expected bounded keyAt work, received ${work.keyAt}`
     );
   });
 
@@ -448,12 +449,15 @@ describe('extension change events', () => {
         entriesCalls += 1;
         throw new Error('ancestor lookup must not scan the snapshot index');
       },
-      idAt(path: readonly number[]) {
+      keyAt(path: readonly number[]) {
         idAtCalls += 1;
         return path.length === 1 ? 'changed-parent' : null;
       },
     } as unknown as SnapshotIndex;
-    const changed = new Set(['changed-parent']);
+    const changed = new Set<NodeKey>();
+
+    changed.add(index.keyAt([7])!);
+    idAtCalls = 0;
 
     assert.equal(hasChangedRuntimeAncestor(changed, index, []), false);
     assert.equal(hasChangedRuntimeAncestor(changed, index, [0]), false);

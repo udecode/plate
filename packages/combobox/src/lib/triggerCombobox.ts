@@ -1,12 +1,13 @@
 import type { BaseEditor } from '@platejs/core';
 import {
-  defineExtension,
+  type Editor as PliteEditor,
   editorCommands,
   type EditorCoreStateView,
+  type EditorExtensionDefinitionInput,
   type Element,
 } from '@platejs/plite';
 
-type TriggerComboboxEditor = Pick<BaseEditor, 'plugin'> & {
+export type TriggerComboboxEditor = Pick<BaseEditor, 'plugin'> & {
   read: Pick<EditorCoreStateView, 'nodes'>;
 };
 
@@ -17,72 +18,78 @@ export type TriggerComboboxPluginState = {
   triggerQuery?: (editor: TriggerComboboxEditor) => boolean;
 };
 
-export type TriggerComboboxOptions = {
-  editor: Pick<BaseEditor, 'runtime'> & TriggerComboboxEditor;
+export type TriggerComboboxOptions<
+  TEditor extends PliteEditor<any, any> & TriggerComboboxEditor = PliteEditor<
+    any,
+    any
+  > &
+    TriggerComboboxEditor,
+> = {
+  editor: TEditor & Pick<BaseEditor, 'runtime'>;
   getState: () => Readonly<TriggerComboboxPluginState>;
-  name: string;
   type: string;
 };
 
-export const triggerCombobox = ({
-  editor,
-  getState,
-  name,
-  type,
-}: TriggerComboboxOptions) =>
-  defineExtension(name, {
-    commands: ({ handle }) => [
-      handle(editorCommands.insertText, ({ input, state }) => {
-        const {
-          createComboboxInput,
-          trigger,
-          triggerPreviousCharPattern,
-          triggerQuery,
-        } = getState();
+export type TriggerComboboxCommands<
+  TEditor extends PliteEditor<any, any> = PliteEditor<any, any>,
+> = NonNullable<EditorExtensionDefinitionInput<TEditor>['commands']>;
 
-        if (
-          input.options?.at ||
-          !state.selection() ||
-          !(trigger instanceof RegExp
-            ? trigger.test(input.text)
-            : Array.isArray(trigger)
-              ? trigger.includes(input.text)
-              : input.text === trigger) ||
-          (triggerQuery && !triggerQuery(editor))
-        ) {
-          return false;
-        }
+export const triggerCombobox = <
+  const TEditor extends PliteEditor<any, any> & TriggerComboboxEditor,
+>(
+  { handle }: Parameters<TriggerComboboxCommands<TEditor>>[0],
+  { editor, getState, type }: TriggerComboboxOptions<TEditor>
+): ReturnType<TriggerComboboxCommands<TEditor>> => [
+  handle(editorCommands.insertText, ({ input, state }) => {
+    const {
+      createComboboxInput,
+      trigger,
+      triggerPreviousCharPattern,
+      triggerQuery,
+    } = getState();
 
-        // Make sure an input is created at the beginning of line or after a whitespace
-        const selection = state.selection();
-        const before = selection && state.points.before(selection);
-        const previousChar =
-          selection && before
-            ? state.text.string({
-                anchor: before,
-                focus: selection.anchor,
-              })
-            : '';
+    if (
+      input.options?.at ||
+      !state.selection() ||
+      !(trigger instanceof RegExp
+        ? trigger.test(input.text)
+        : Array.isArray(trigger)
+          ? trigger.includes(input.text)
+          : input.text === trigger) ||
+      (triggerQuery && !triggerQuery(editor))
+    ) {
+      return false;
+    }
 
-        const matchesPreviousCharPattern =
-          triggerPreviousCharPattern?.test(previousChar);
+    // Make sure an input is created at the beginning of line or after a whitespace
+    const selection = state.selection();
+    const before = selection && state.points.before(selection);
+    const previousChar =
+      selection && before
+        ? state.text.string({
+            anchor: before,
+            focus: selection.anchor,
+          })
+        : '';
 
-        if (matchesPreviousCharPattern) {
-          const inputNode: Element = createComboboxInput
-            ? createComboboxInput(input.text)
-            : { children: [{ text: '' }], type };
+    const matchesPreviousCharPattern =
+      triggerPreviousCharPattern?.test(previousChar);
 
-          // Only the creator sees the transient input in collaborative editors.
-          const node = editor.runtime.userId
-            ? { ...inputNode, userId: editor.runtime.userId }
-            : inputNode;
+    if (matchesPreviousCharPattern) {
+      const inputNode: Element = createComboboxInput
+        ? createComboboxInput(input.text)
+        : { children: [{ text: '' }], type };
 
-          return state.transaction((tx) => {
-            tx.nodes.insert(node, input.options);
-          });
-        }
+      // Only the creator sees the transient input in collaborative editors.
+      const node = editor.runtime.userId
+        ? { ...inputNode, userId: editor.runtime.userId }
+        : inputNode;
 
-        return false;
-      }),
-    ],
-  });
+      return state.transaction((tx) => {
+        tx.nodes.insert(node, input.options);
+      });
+    }
+
+    return false;
+  }),
+];

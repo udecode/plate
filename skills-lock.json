@@ -16,8 +16,7 @@
     "autoreview": {
       "source": "openclaw/agent-skills",
       "sourceType": "github",
-      "skillPath": "skills/autoreview/SKILL.md",
-      "computedHash": "d4504560d06faeb839c45dce60958d61fff9f18a7530e5e4b343775457799345"
+      "computedHash": "71038de9ed60dcfdad51e0e28188e033ed4b968b01045bf639fb322f3c2ddb9c"
     },
     "diagnosing-bugs": {
       "source": "mattpocock/skills",

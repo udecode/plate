@@ -42,6 +42,7 @@ import type {
 import type { BaseEditor, InternalBaseEditorWithPlatePlugins } from '../editor';
 import type {
   InternalPlateSchemaExtensionForPlugin,
+  PlatePluginRead,
   PlatePluginReadState,
   PlatePluginTransaction,
   PlatePluginUpdate,
@@ -56,6 +57,7 @@ import type {
   BaseInjectProps,
   PluginBase,
   PluginBaseContext,
+  PluginPortalContext,
   BaseTransformOptions,
   GetInjectNodePropsOptions,
   GetInjectNodePropsReturnType,
@@ -80,6 +82,7 @@ import type {
   NormalizeRules,
   PluginReference,
   PluginDefinitionWitness,
+  PluginAuthorSchemaView,
   PluginSchema,
   PluginSelectorMethods,
   PluginSelectors,
@@ -89,8 +92,7 @@ import type {
 import type {
   InferExactPluginSchemaContribution,
   InferPluginDocumentType,
-  InferPluginElementType,
-  InferPluginPropertyKey,
+  InferPluginNodeTypeProvider,
   InferPluginSchema,
   InferPluginSchemaContribution,
 } from './pluginSchemaModel.internal';
@@ -189,7 +191,6 @@ export type AnyBasePlugin = {
   inject: ErasedPluginInject;
   inputRules: InputRulesDefinition | InputRulesConfig;
   initialState: object;
-  key?: string;
   name: string;
   on: ErasedPluginOn;
   override: {
@@ -211,7 +212,6 @@ export type AnyBasePlugin = {
   transformInitialValue?: ErasedPluginCallable<
     EditorDocumentValue | Value
   > | null;
-  type?: string;
   update?: ErasedPluginCallable<object>;
   useHooks?: ErasedPluginCallable | null;
   validate?: ErasedPluginCallable;
@@ -221,27 +221,27 @@ export type AnyPluginBase = Omit<AnyBasePlugin, 'configure' | 'extend'>;
 /** Type-erased consumer portal for name-only and heterogeneous lookups. */
 export type AnyBasePluginPortal = Omit<
   AnyPluginBase,
-  'api' | 'read' | 'update'
+  'api' | 'read' | 'schema' | 'update'
 > & {
   readonly api: object;
   readonly installed: boolean;
   readonly read: object;
+  readonly schema?: Readonly<{ key: string }> | Readonly<{ type: string }>;
   readonly store: object;
   readonly update: object;
 };
 
 /** Runtime-checked portal returned for name-only plugin lookups. */
-export type DynamicBasePluginPortal = Omit<
-  AnyBasePluginPortal,
-  'key' | 'type'
-> &
-  Readonly<{ key: string; type: string }>;
+export type DynamicBasePluginPortal = Omit<AnyBasePluginPortal, 'schema'> & {
+  readonly schema: Readonly<{ key: string; type: string }>;
+};
 
 /** Type-erased authoring context used while compiling plugin callbacks. */
-export type AnyBasePluginContext = AnyBasePluginPortal & {
+export type AnyBasePluginContext = Omit<DynamicBasePluginPortal, 'schema'> & {
   readonly defineCodecs: object;
   readonly editor: object;
   readonly plugin: AnyPluginBase;
+  readonly schema: PluginAuthorSchemaView<AnyBasePluginDefinition>;
 };
 
 /**
@@ -1198,6 +1198,7 @@ type BasePluginDescriptorCarrier<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
 > = InternalEditorExtensionWitnessFor<LowerBasePlugin<C>> &
   BasePluginInstalledCapabilityWitness<C> &
+  InferPluginNodeTypeProvider<C> &
   EditorSchemaExtensionProvider<InternalPlateSchemaExtensionForPlugin<C>> &
   EditorSchemaSourceProvider<InferPluginSchemaContribution<C>> &
   PluginReference<C['name']> &
@@ -1258,6 +1259,7 @@ export interface BasePlugin<
     BasePluginMethods<C>,
     InternalEditorExtensionWitnessFor<LowerBasePlugin<C>>,
     BasePluginInstalledCapabilityWitness<C>,
+    InferPluginNodeTypeProvider<C>,
     EditorSchemaExtensionProvider<InternalPlateSchemaExtensionForPlugin<C>>,
     EditorSchemaSourceProvider<InferPluginSchemaContribution<C>>,
     PluginReference<C['name']>,
@@ -1266,9 +1268,6 @@ export interface BasePlugin<
   readonly conflicts: BasePluginDependencyDescriptors<InferConflicts<C>>;
   dependencies: BasePluginDependencyDescriptors<InferDependencies<C>>;
   readonly initialState: InferPluginStoreState<C>;
-  readonly key: [InferPluginPropertyKey<C>] extends [never]
-    ? undefined
-    : InferPluginPropertyKey<C>;
   readonly name: C['name'];
   read?: (
     context: BasePluginContext<C> & {
@@ -1285,9 +1284,6 @@ export interface BasePlugin<
   }
     ? TTargetPlugins
     : readonly [];
-  readonly type: [InferPluginElementType<C>] extends [never]
-    ? undefined
-    : InferPluginElementType<C>;
   update?: (
     context: BasePluginContext<C> & {
       context: EditorUpdateContext;
@@ -1577,19 +1573,22 @@ export type BasePluginConfiguration<C extends AnyBasePluginDefinition> = Omit<
 
 export type BasePluginPortal<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
-> = Omit<ResolvedPlatePlugin<C>, keyof PluginBaseContext<C>> &
-  Omit<PluginBaseContext<C>, 'update'> & {
+> = Omit<ResolvedPlatePlugin<C>, keyof PluginPortalContext<C> | 'schema'> &
+  Omit<PluginPortalContext<C>, 'read' | 'update'> & {
+    /** State-bound reads scoped directly to this plugin. */
+    read: PlatePluginRead<C>;
     /** One-shot updates scoped directly to this plugin. */
     update: PlatePluginUpdate<C>;
   };
 
 export type BasePluginContext<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
-> = BasePluginPortal<C> & {
-  defineCodecs: DefinePluginCodecs<C>;
-  editor: BasePluginContextEditor<C>;
-  plugin: ResolvedPlatePlugin<C>;
-};
+> = Omit<BasePluginPortal<C>, keyof PluginBaseContext<C>> &
+  PluginBaseContext<C> & {
+    defineCodecs: DefinePluginCodecs<C>;
+    editor: BasePluginContextEditor<C>;
+    plugin: ResolvedPlatePlugin<C>;
+  };
 
 interface BasePluginMethods<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
@@ -1779,7 +1778,7 @@ type ShortcutFunctionKey<T> = {
   string;
 
 type PluginShortcutUpdateKey<C extends AnyBasePluginDefinition> =
-  ShortcutFunctionKey<InferUpdate<C>>;
+  ShortcutFunctionKey<PlatePluginUpdate<C>>;
 
 type PluginShortcutApiKey<C extends AnyBasePluginDefinition> =
   ShortcutFunctionKey<InferApi<C>>;

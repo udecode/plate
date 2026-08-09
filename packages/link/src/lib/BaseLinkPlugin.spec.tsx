@@ -34,14 +34,12 @@ describe('BaseLinkPlugin', () => {
     const link = Array.from(
       NodeApi.elements({ children: fragment ?? [], type: 'root' }),
       ([node]) => node
-    ).find(
-      (node) => node.type === editor.plugin(BaseLinkPlugin).schema.element.type
-    );
+    ).find((node) => node.type === editor.plugin(BaseLinkPlugin).schema.type);
 
     expect(link).toMatchObject({
       children: [{ text: 'Link' }],
       target: '_blank',
-      type: editor.plugin(BaseLinkPlugin).schema.element.type,
+      type: editor.plugin(BaseLinkPlugin).schema.type,
       url: 'https://example.com',
     });
   });
@@ -54,9 +52,7 @@ describe('BaseLinkPlugin', () => {
     const hasLink = Array.from(
       NodeApi.elements({ children: fragment ?? [], type: 'root' }),
       ([node]) => node
-    ).some(
-      (node) => node.type === editor.plugin(BaseLinkPlugin).schema.element.type
-    );
+    ).some((node) => node.type === editor.plugin(BaseLinkPlugin).schema.type);
 
     expect(hasLink).toBe(false);
   });
@@ -366,10 +362,7 @@ describe('BaseLinkPlugin.api.validateUrl', () => {
       Array.from(
         NodeApi.elements({ children: fragment ?? [], type: 'root' }),
         ([node]) => node
-      ).some(
-        (node) =>
-          node.type === editor.plugin(BaseLinkPlugin).schema.element.type
-      )
+      ).some((node) => node.type === editor.plugin(BaseLinkPlugin).schema.type)
     ).toBe(false);
   });
 });

@@ -46,6 +46,7 @@ describe('useSelectionArea', () => {
   });
 
   it('blurs, deselects, and shows the selection area on start', async () => {
+    const editable = document.createElement('div');
     const blur = mock();
     const clearSelection = mock();
     const set = mock();
@@ -54,7 +55,7 @@ describe('useSelectionArea', () => {
     useEditorMock.mockReturnValue({
       id: 'editor',
       api: {
-        dom: { blur },
+        dom: { blur, editable: () => editable, scroll: () => editable },
       },
       read: {
         selection: () => ({
@@ -74,7 +75,7 @@ describe('useSelectionArea', () => {
         get: mock(() => ({
           areaOptions: {},
           isSelectionAreaVisible: false,
-          selectedIds: new Set(),
+          selectedKeys: new Set(),
         })),
         set,
       },
@@ -116,7 +117,10 @@ describe('useSelectionArea', () => {
       startAreas,
     });
 
-    useEditorMock.mockReturnValue({ id: 'editor' });
+    useEditorMock.mockReturnValue({
+      id: 'editor',
+      api: { dom: { editable: () => null, scroll: () => null } },
+    });
     useEditorPluginMock.mockReturnValue({
       api: { clear: mock() },
       store: {
@@ -143,5 +147,45 @@ describe('useSelectionArea', () => {
     expect(options.startAreas).not.toBe(startAreas);
     expect(options.behaviour.triggers).not.toBe(triggers);
     expect(options.behaviour.triggers[0]!.modifiers).not.toBe(modifiers);
+  });
+
+  it('binds defaults to an editable root without a DOM id', async () => {
+    const root = document.createElement('div');
+    const first = document.createElement('div');
+
+    first.className = 'plite-selectable';
+    root.append(first);
+    useEditorMock.mockReturnValue({
+      id: 'editor',
+      api: { dom: { editable: () => root } },
+    });
+    useEditorPluginMock.mockReturnValue({
+      api: { clear: mock() },
+      store: {
+        get: mock(() => ({ areaOptions: {} })),
+        set: mock(),
+      },
+    });
+
+    const { useSelectionArea } = await loadModule();
+    renderHook(() => useSelectionArea());
+
+    const options = lastSelectionArea!.options as {
+      boundaries: HTMLElement;
+      container: HTMLElement;
+      selectables: () => HTMLElement[];
+      startAreas: HTMLElement;
+    };
+
+    expect(options.boundaries).toBe(root);
+    expect(options.container).toBe(root);
+    expect(options.startAreas).toBe(root);
+    expect(options.selectables()).toEqual([first]);
+
+    const second = document.createElement('div');
+
+    second.className = 'plite-selectable';
+    root.append(second);
+    expect(options.selectables()).toEqual([first, second]);
   });
 });

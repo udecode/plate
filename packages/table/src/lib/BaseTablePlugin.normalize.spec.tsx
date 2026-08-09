@@ -83,7 +83,6 @@ describe('BaseTablePlugin normalization', () => {
       ) as Value;
 
       const editor = createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins({
           disableMerge,
           initialTableWidth: 90,
@@ -168,7 +167,6 @@ describe('BaseTablePlugin normalization', () => {
       ) as Value;
 
       const editor = createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins({
           disableMerge,
           initialTableWidth: 90,
@@ -255,7 +253,6 @@ describe('BaseTablePlugin normalization', () => {
       ) as Value;
 
       const editor = createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins({
           disableMerge,
           initialTableWidth: 90,
@@ -276,7 +273,6 @@ describe('BaseTablePlugin normalization', () => {
       disableMerge,
     }) => {
       const editor = createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins({
           disableMerge,
           enableUnsetSingleColSize: true,
@@ -315,7 +311,6 @@ describe('BaseTablePlugin normalization', () => {
   describe('rectangular table repair', () => {
     it('fills missing logical cells', () => {
       const editor = createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins({ disableMerge: false }),
         initialValue: (
           <fragment>
@@ -370,7 +365,6 @@ describe('BaseTablePlugin normalization', () => {
 
     it('clamps a row span to the table height', () => {
       const editor = createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins({ disableMerge: false }),
         initialValue: (
           <fragment>
@@ -420,7 +414,6 @@ describe('BaseTablePlugin normalization', () => {
 
     it('splits a cell whose span collides with an earlier row span', () => {
       const editor = createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins({ disableMerge: false }),
         initialValue: (
           <fragment>

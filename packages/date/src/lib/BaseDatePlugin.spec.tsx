@@ -17,7 +17,7 @@ describe('BaseDatePlugin', () => {
     const element = { children: [{ text: '' }], type: 'date' };
     const dateElement = schema.handle.element(
       BaseDatePlugin,
-      editor.plugin(BaseDatePlugin).schema.element.type
+      editor.plugin(BaseDatePlugin).schema.type
     );
     const date = schema.handle.property(dateElement, 'date');
 
@@ -246,10 +246,7 @@ describe('BaseDatePlugin', () => {
       ],
     });
 
-    editor.update.date.insert({
-      at: [0, 1],
-      date: 'Mon Mar 23 2026',
-    });
+    editor.update.date.insert({ date: 'Mon Mar 23 2026' }, { at: [0, 1] });
 
     expect(editor.read.children()).toMatchObject([
       {

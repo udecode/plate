@@ -319,7 +319,7 @@ test('root selector source ownership is fenced to named source modules', () => {
         next: 'node-source',
         owner: 'Mounted node render selector',
         rationale:
-          'This snapshot read resolves mounted child runtime ids inside the named descendant binding owner, not root render facts.',
+          'This snapshot read resolves mounted child node keys inside the named descendant binding owner, not root render facts.',
       },
     }
   );

@@ -336,6 +336,15 @@ least one useful inbound link from the owning neighborhood.
   `create`/`assertDocument`/`assertFragment`/`isMarkableVoid`. Plate callers
   pass plugin descriptors directly to schema APIs; only raw Plite schemas use
   `schema.handle.*`.
+- In Plate examples, use plugin `name` only for capability identity. Read final
+  persisted identity from an exact element portal's `plugin.schema.type` or an
+  exact primary-mark portal's `plugin.schema.key`. Behavior and
+  aggregate-property portals omit `schema`; normal consumers use semantic
+  plugin methods or typed nodes. Never teach universal plugin `.type` / `.key`,
+  consumer `schema.properties`, optional identity access, or name fallbacks.
+- Document application schema overrides only on closed `defineEditor()`
+  definitions. Property keys and value laws remain feature-owned; persisted
+  renames require a new field and an explicit migration.
 - `showLineNumbers` + `{n-m}` highlights on snippets longer than ~15 lines.
 - `title="filename.tsx"` when file context matters.
 

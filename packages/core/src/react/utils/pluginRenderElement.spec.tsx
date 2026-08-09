@@ -79,7 +79,7 @@ describe('pluginRenderElement', () => {
         MarkerPlugin,
         ParagraphPlugin.configure({
           component: ({ attributes, children }) => {
-            const element = useElement<any>();
+            const element = useElement();
 
             return (
               <p

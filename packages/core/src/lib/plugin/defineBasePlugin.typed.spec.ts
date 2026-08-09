@@ -56,9 +56,7 @@ const assertTypedSchemaContributions = () => {
   const editor = createBaseEditor({
     plugins: [ParagraphPlugin, ImagePlugin, CaptionPlugin],
   });
-  const image = editor.read.schema.create(
-    editor.plugin(ImagePlugin).schema.element
-  );
+  const image = editor.read.schema.create(ImagePlugin);
   void image;
 
   // @ts-expect-error structural content roots cannot depend on root context
@@ -91,6 +89,85 @@ const assertTypedSchemaContributions = () => {
 };
 
 void assertTypedSchemaContributions;
+
+const assertTypedPluginPropertyMutations = () => {
+  const Dependency = defineBasePlugin('typedMutationDependency', {
+    schema: {
+      properties: {
+        dependencyTone: schema.elementProperty(property.string(), {
+          target: target.group('block'),
+        }),
+      },
+    },
+  });
+
+  defineBasePlugin('typedMutationOwner', {
+    dependencies: [Dependency],
+    schema: {
+      element: {
+        content: schema.content.text(),
+        properties: {
+          count: property.number(),
+        },
+      },
+      properties: {
+        storedTone: schema.elementProperty(
+          'persisted_tone',
+          property.string(),
+          {
+            target: target.group('block'),
+          }
+        ),
+      },
+    },
+    update: ({ schema: authorSchema, tx }) => {
+      tx.nodes.set({ count: 1 });
+      tx.nodes.set({ dependencyTone: 'warning' });
+      tx.nodes.set({
+        [authorSchema.properties.storedTone.key]: 'warning',
+      });
+      tx.nodes.unset(authorSchema.properties.storedTone);
+
+      // @ts-expect-error local property values remain exact
+      tx.nodes.set({ count: '1' });
+      // @ts-expect-error aliased properties use their persisted schema key
+      tx.nodes.set({ storedTone: 'warning' });
+
+      return {};
+    },
+  });
+
+  const FirstShared = defineBasePlugin('typedMutationFirstShared', {
+    schema: {
+      properties: {
+        shared: schema.elementProperty(property.string(), {
+          target: target.group('block'),
+        }),
+      },
+    },
+  });
+  const SecondShared = defineBasePlugin('typedMutationSecondShared', {
+    schema: {
+      properties: {
+        shared: schema.elementProperty(property.number(), {
+          target: target.group('block'),
+        }),
+      },
+    },
+  });
+
+  defineBasePlugin('typedMutationAmbiguousOwner', {
+    dependencies: [FirstShared, SecondShared],
+    update: ({ tx }) => {
+      // @ts-expect-error duplicate dependency keys require an exact owner handle
+      tx.nodes.set({ shared: 'value' });
+
+      return {};
+    },
+  });
+};
+
+void assertTypedPluginPropertyMutations;
 
 const assertTypedContextualConfiguration = () => {
   const BasePlugin = defineBasePlugin('baseContextual', {
@@ -250,10 +327,10 @@ const assertTypedAuthoringContext = () => {
   });
   const ElementIdentityPlugin = defineBasePlugin('elementCapability', {
     api: ({ schema }) => ({
-      identity: () => schema.element.type,
+      identity: () => schema.type,
     }),
     read: ({ schema }) => ({
-      identity: () => schema.element.type,
+      identity: () => schema.type,
     }),
     schema: {
       element: {
@@ -262,7 +339,10 @@ const assertTypedAuthoringContext = () => {
       },
     },
     update: ({ schema }) => ({
-      create: () => ({ children: [{ text: '' }], type: schema.element.type }),
+      create: () => ({
+        children: [{ text: '' }],
+        type: schema.type,
+      }),
     }),
   });
   const DefaultElementIdentityPlugin = defineBasePlugin(
@@ -274,13 +354,13 @@ const assertTypedAuthoringContext = () => {
       update: ({ schema }) => ({
         create: () => ({
           children: [{ text: '' }],
-          type: schema.element.type,
+          type: schema.type,
         }),
       }),
     }
   ).extend(({ schema }) => ({
     api: () => ({
-      defaultElementType: () => schema.element.type,
+      defaultElementType: () => schema.type,
     }),
   }));
   const PropertyIdentityPlugin = defineBasePlugin('propertyCapability', {
@@ -291,13 +371,13 @@ const assertTypedAuthoringContext = () => {
       },
     },
     api: ({ schema }) => ({
-      identity: () => schema.properties.persistedProperty.key,
+      identity: () => schema.key,
     }),
     read: ({ schema }) => ({
-      identity: () => schema.properties.persistedProperty.key,
+      identity: () => schema.key,
     }),
     update: ({ schema }) => ({
-      create: () => ({ [schema.properties.persistedProperty.key]: true }),
+      create: () => ({ [schema.key]: true }),
     }),
   });
   const ExactRootApiPlugin = defineBasePlugin('exactRootApi', {
@@ -317,30 +397,30 @@ const assertTypedAuthoringContext = () => {
     ],
   });
 
-  exactEditor.plugin(ElementIdentityPlugin).schema.element
+  exactEditor.plugin(ElementIdentityPlugin).schema
     .type satisfies 'persistedElement';
   exactEditor
     .plugin(ElementIdentityPlugin)
     .api.identity() satisfies 'persistedElement';
   exactEditor.read.elementCapability.identity() satisfies 'persistedElement';
-  exactEditor.plugin(DefaultElementIdentityPlugin).schema.element
+  exactEditor.plugin(DefaultElementIdentityPlugin).schema
     .type satisfies 'defaultElementCapability';
   exactEditor
     .plugin(DefaultElementIdentityPlugin)
     .api.defaultElementType() satisfies 'defaultElementCapability';
-  exactEditor.plugin(PropertyIdentityPlugin).schema.properties.persistedProperty
+  exactEditor.plugin(PropertyIdentityPlugin).schema
     .key satisfies 'persistedProperty';
   exactEditor
     .plugin(PropertyIdentityPlugin)
     .api.identity() satisfies 'persistedProperty';
   exactEditor.read.propertyCapability.identity() satisfies 'persistedProperty';
   exactEditor.plugin(ExactRootApiPlugin).api.exactRoot.value() satisfies 1;
-  // @ts-expect-error behavior-only plugins do not own an element handle
-  exactEditor.plugin(BehaviorOnlyPlugin).schema.element;
-  // @ts-expect-error element plugins do not own an undeclared property handle
-  exactEditor.plugin(ElementIdentityPlugin).schema.properties.persistedProperty;
-  // @ts-expect-error mark plugins do not own an element handle
-  exactEditor.plugin(PropertyIdentityPlugin).schema.element;
+  // @ts-expect-error behavior-only plugins expose no consumer schema
+  exactEditor.plugin(BehaviorOnlyPlugin).schema;
+  // @ts-expect-error element plugins expose no consumer property handles
+  exactEditor.plugin(ElementIdentityPlugin).schema.properties;
+  // @ts-expect-error mark plugins expose no consumer element identity
+  exactEditor.plugin(PropertyIdentityPlugin).schema.type;
   // @ts-expect-error behavior-only plugins cannot widen root API
   exactEditor.api.missingRootApi;
 

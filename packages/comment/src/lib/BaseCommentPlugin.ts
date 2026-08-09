@@ -1,7 +1,12 @@
 import { type DefinitionOf, defineBasePlugin } from '@platejs/core';
-import type { EditorNodesOptions, NodeSetNodesOptions } from '@platejs/plite';
+import type {
+  EditorNodesOptions,
+  NodeSetNodesOptions,
+  Text,
+  TextOf,
+} from '@platejs/plite';
 import { property, schema, target, TextApi } from '@platejs/plite';
-import { KEYS, type TCommentText } from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 
 import {
   getCommentCount,
@@ -15,28 +20,16 @@ import {
   isCommentText,
 } from './commentMarks';
 
-export const BaseCommentPlugin = defineBasePlugin(KEYS.comment, {
-  api: () => ({
-    nodeId: (leaf: TCommentText) => {
-      const keys = Object.keys(leaf);
-
-      if (keys.includes(getDraftCommentKey())) return;
-
-      return keys
-        .filter((key) => isCommentKey(key) && key !== getDraftCommentKey())
-        .map(getCommentKeyId)
-        .at(-1);
-    },
-  }),
-  codecs: ({ defineCodecs }) =>
+export const BaseCommentPlugin = defineBasePlugin(PLUGINS.comment, {
+  codecs: ({ defineCodecs, schema: { key } }) =>
     defineCodecs({
       'text/markdown': {
         from: 'comment',
         kind: 'node',
         mark: true,
-        decode: ({ decode, decoration, node, type }) =>
+        decode: ({ decode, decoration, node }) =>
           decode(node.children, {
-            [type]: true,
+            [key]: true,
             ...decoration,
           }),
         encode: ({ node }) => {
@@ -51,57 +44,6 @@ export const BaseCommentPlugin = defineBasePlugin(KEYS.comment, {
         },
       },
     }),
-  read: ({ state, type }) => ({
-    has: ({ id }: { id: string }) =>
-      state.nodes.some<TCommentText>({
-        at: [],
-        match: (node) => isCommentText(node) && isCommentNodeById(node, id),
-      }),
-    node: (
-      options: EditorNodesOptions<TCommentText> & {
-        id?: string;
-        isDraft?: boolean;
-      } = {}
-    ) => {
-      const { id, isDraft, ...rest } = options;
-
-      return state.nodes.find<TCommentText>({
-        ...rest,
-        match: (node) => {
-          if (!isCommentText(node)) return false;
-          if (isDraft) {
-            return !!node[type] && !!node[getDraftCommentKey()];
-          }
-
-          return id ? isCommentNodeById(node, id) : !!node[type];
-        },
-      });
-    },
-    nodes: (
-      options: EditorNodesOptions<TCommentText> & {
-        id?: string;
-        isDraft?: boolean;
-        transient?: boolean;
-      } = {}
-    ) => {
-      const { id, isDraft, transient, ...rest } = options;
-
-      return state.nodes.toArray<TCommentText>({
-        ...rest,
-        match: (node) => {
-          if (!isCommentText(node)) return false;
-          if (isDraft) {
-            return !!node[type] && !!node[getDraftCommentKey()];
-          }
-          if (transient) {
-            return !!node[type] && !!node[getTransientCommentKey()];
-          }
-
-          return id ? isCommentNodeById(node, id) : !!node[type];
-        },
-      });
-    },
-  }),
   schema: {
     mark: {
       property: property.boolean({ default: false, omitDefault: true }),
@@ -109,9 +51,9 @@ export const BaseCommentPlugin = defineBasePlugin(KEYS.comment, {
       target: target.group('element'),
       typeChange: 'preserve-if-allowed',
     },
-    properties: [
-      schema.textProperty(
-        schema.key.prefix(`${KEYS.comment}_`),
+    properties: {
+      commentById: schema.textProperty(
+        schema.key.prefix('comment_'),
         property.boolean(),
         {
           split: 'preserve',
@@ -119,69 +61,167 @@ export const BaseCommentPlugin = defineBasePlugin(KEYS.comment, {
           typeChange: 'preserve-if-allowed',
         }
       ),
-      schema.textProperty(getTransientCommentKey(), property.boolean(), {
-        split: 'preserve',
-        target: target.group('element'),
-        typeChange: 'preserve-if-allowed',
-      }),
-    ],
-  },
-
-  corrections: [
-    {
-      event: 'properties',
-      correct({ entry: [node, path], tx }) {
-        if (
-          isCommentText(node) &&
-          !node[getDraftCommentKey()] &&
-          !node[getTransientCommentKey()] &&
-          getCommentCount(node) < 1
-        ) {
-          tx.nodes.unset(KEYS.comment, { at: path });
-        }
-      },
-    },
-  ],
-  rules: { selection: { affinity: 'outward' } },
-}).extend(({ api, plugin, type }) => ({
-  update: ({ tx }) => ({
-    removeMark: () => {
-      const nodeEntry = tx[plugin.name].node();
-
-      if (!nodeEntry) return;
-
-      for (const key of getCommentKeys(nodeEntry[0])) {
-        tx.marks.remove(key);
-      }
-
-      tx.marks.remove(KEYS.comment);
-    },
-    setDraft: (options: NodeSetNodesOptions<TCommentText> = {}) => {
-      tx.nodes.set(
+      transientComment: schema.textProperty(
+        getTransientCommentKey(),
+        property.boolean(),
         {
-          [getDraftCommentKey()]: true,
-          [type]: true,
-        },
-        { match: TextApi.isText, split: true, ...options }
-      );
-    },
-    unsetMark: ({ id, transient }: { id?: string; transient?: boolean }) => {
-      for (const [node] of tx[plugin.name].nodes({ id, at: [], transient })) {
-        const removedId = id ?? api.nodeId(node);
-        const unsetKeys = [
-          getDraftCommentKey(),
-          getTransientCommentKey(),
-          ...(removedId ? [getCommentKey(removedId)] : []),
-        ];
-
-        if (getCommentCount(node) <= 1) {
-          unsetKeys.push(KEYS.comment);
+          split: 'preserve',
+          target: target.group('element'),
+          typeChange: 'preserve-if-allowed',
         }
-
-        tx.nodes.unset(unsetKeys, { at: node });
-      }
+      ),
     },
-  }),
-}));
+  },
+})
+  .extend(({ plugin }) => {
+    type CommentText = TextOf<typeof plugin>;
+
+    return {
+      api: () => ({
+        nodeId: (leaf: Text) => {
+          const keys = Object.keys(leaf);
+
+          if (keys.includes(getDraftCommentKey())) return;
+
+          return keys
+            .filter((key) => isCommentKey(key) && key !== getDraftCommentKey())
+            .map(getCommentKeyId)
+            .at(-1);
+        },
+      }),
+      read: ({ schema: { key }, state }) => ({
+        has: ({ id }: { id: string }) =>
+          state.nodes.some<CommentText>({
+            at: [],
+            match: (node) => isCommentText(node) && isCommentNodeById(node, id),
+          }),
+        node: (
+          options: EditorNodesOptions<CommentText> & {
+            id?: string;
+            isDraft?: boolean;
+          } = {}
+        ) => {
+          const { id, isDraft, ...rest } = options;
+
+          return state.nodes.find<CommentText>({
+            ...rest,
+            match: (node) => {
+              if (!isCommentText(node)) return false;
+              if (isDraft) {
+                return !!node[key] && !!node[getDraftCommentKey()];
+              }
+
+              return id ? isCommentNodeById(node, id) : !!node[key];
+            },
+          });
+        },
+        nodes: (
+          options: EditorNodesOptions<CommentText> & {
+            id?: string;
+            isDraft?: boolean;
+            transient?: boolean;
+          } = {}
+        ) => {
+          const { id, isDraft, transient, ...rest } = options;
+
+          return state.nodes.toArray<CommentText>({
+            ...rest,
+            match: (node) => {
+              if (!isCommentText(node)) return false;
+              if (isDraft) {
+                return !!node[key] && !!node[getDraftCommentKey()];
+              }
+              if (transient) {
+                return !!node[key] && !!node[getTransientCommentKey()];
+              }
+
+              return id ? isCommentNodeById(node, id) : !!node[key];
+            },
+          });
+        },
+      }),
+      corrections: [
+        {
+          event: 'properties',
+          correct({ entry: [node, path], tx }) {
+            if (
+              isCommentText(node) &&
+              !node[getDraftCommentKey()] &&
+              !node[getTransientCommentKey()] &&
+              getCommentCount(node) < 1
+            ) {
+              tx.nodes.unset('comment', { at: path });
+            }
+          },
+        },
+      ],
+      rules: { selection: { affinity: 'outward' } },
+    };
+  })
+  .extend((context) => {
+    type CommentText = TextOf<typeof context.plugin>;
+    const {
+      api,
+      plugin,
+      schema: { key, properties },
+    } = context;
+
+    return {
+      update: ({ tx }) => ({
+        clearTransient: () => {
+          for (const [, path] of tx[plugin.name].nodes({ transient: true })) {
+            tx.nodes.unset(properties.transientComment, { at: path });
+          }
+        },
+        removeMark: () => {
+          const nodeEntry = tx[plugin.name].node();
+
+          if (!nodeEntry) return;
+
+          for (const key of getCommentKeys(nodeEntry[0])) {
+            tx.marks.remove(key);
+          }
+
+          tx.marks.remove(key);
+        },
+        setDraft: (options: NodeSetNodesOptions<CommentText> = {}) => {
+          tx.nodes.set(
+            {
+              [getDraftCommentKey()]: true,
+              [key]: true,
+            },
+            { match: TextApi.isText, split: true, ...options }
+          );
+        },
+        unsetMark: ({
+          id,
+          transient,
+        }: {
+          id?: string;
+          transient?: boolean;
+        }) => {
+          for (const [node, path] of tx[plugin.name].nodes({
+            id,
+            at: [],
+            transient,
+          })) {
+            const removedId = id ?? api.nodeId(node);
+            const unsetKeys: string[] = [
+              getDraftCommentKey(),
+              getTransientCommentKey(),
+              ...(removedId ? [getCommentKey(removedId)] : []),
+            ];
+
+            if (getCommentCount(node) <= 1) {
+              unsetKeys.push(key);
+            }
+
+            tx.nodes.unset(unsetKeys, { at: path });
+          }
+        },
+      }),
+    };
+  });
 
 export type BaseCommentDefinition = DefinitionOf<typeof BaseCommentPlugin>;
+export type CommentText = TextOf<typeof BaseCommentPlugin>;

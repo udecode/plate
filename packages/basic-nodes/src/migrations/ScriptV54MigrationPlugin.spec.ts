@@ -24,7 +24,6 @@ describe('ScriptV54MigrationPlugin', () => {
   it('migrates legacy marks during initialization', () => {
     const editor = createBaseEditor({
       editor: createEditor<Value>(),
-      nodeId: false,
       plugins: [ScriptV54MigrationPlugin, BaseScriptPlugin] as const,
       initialValue: [
         {
@@ -63,7 +62,6 @@ describe('ScriptV54MigrationPlugin', () => {
   it('migrates primary and named roots during deferred document loads', () => {
     const editor = createBaseEditor({
       editor: createEditor<Value>(),
-      nodeId: false,
       plugins: [
         ScriptV54MigrationPlugin,
         BaseScriptPlugin,
@@ -110,7 +108,6 @@ describe('ScriptV54MigrationPlugin', () => {
     expect(() =>
       createBaseEditor({
         editor: createEditor<Value>(),
-        nodeId: false,
         plugins: [ScriptV54MigrationPlugin, BaseScriptPlugin] as const,
         initialValue: [
           {
@@ -132,7 +129,6 @@ describe('ScriptV54MigrationPlugin', () => {
     expect(() =>
       createBaseEditor({
         editor: createEditor<Value>(),
-        nodeId: false,
         plugins: [ScriptV54MigrationPlugin, BaseScriptPlugin] as const,
         initialValue: [
           {

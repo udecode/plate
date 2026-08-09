@@ -52,7 +52,7 @@ const value: Value = [
       { bold: true, text: 'bold' },
       { text: ' text.' },
     ],
-    type: 'p',
+    type: 'paragraph',
   },
 ];
 
@@ -127,7 +127,7 @@ export function normalizeHeadings(value: Value) {
     );
 
     tx.nodes.insert(
-      [{ children: [{ text: 'Imported from the legacy CMS.' }], type: 'p' }],
+      [{ children: [{ text: 'Imported from the legacy CMS.' }], type: 'paragraph' }],
       { at: insertAt }
     );
   });

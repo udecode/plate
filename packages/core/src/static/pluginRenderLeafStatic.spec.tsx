@@ -90,9 +90,7 @@ describe('pluginRenderLeafStatic', () => {
     } satisfies RenderLeafProps);
 
     expect(MarkPlugin.name).toBe('markCapability');
-    expect(editor.plugin(MarkPlugin).schema.properties.persistedMark.key).toBe(
-      'persistedMark'
-    );
+    expect(editor.plugin(MarkPlugin).schema.key).toBe('persistedMark');
     expect(result).toEqual(
       expect.objectContaining({
         props: expect.objectContaining({ children: 'hi' }),

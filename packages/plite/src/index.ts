@@ -44,6 +44,20 @@ export type {
 } from './core/extension-slot';
 export { property, schema, target } from './core/schema-definition';
 export { EditorSchemaValidationError } from './core/schema-validation';
+export {
+  createEditorSchemaContract,
+  diffEditorSchemaContracts,
+  readEditorSchemaContract,
+  restoreEditorSchemaContract,
+  type EditorSchemaContract,
+  type EditorSchemaContractChange,
+  type EditorSchemaContractChangeKind,
+  type EditorSchemaContractContentProgram,
+  type EditorSchemaContractContentRoot,
+  type EditorSchemaContractDiff,
+  type EditorSchemaContractElement,
+  type EditorSchemaContractRoot,
+} from './core/schema-compiler';
 export { defineFacet } from './core/facet';
 export { setEditorReadOnly } from './core/public-state';
 export { defineStateField } from './core/state-field';
@@ -172,7 +186,8 @@ export type {
   EditorSelectionSpec,
   EditorSelectionTargetOptions,
   EditorSchemaGetProperty,
-  EditorSchemaPropertyHandle,
+  EditorSchemaPropertyReadOptions,
+  EditorSchemaReadProperty,
   EditorSchemaVocabulary,
   EditorSnapshot,
   EditorStateField,
@@ -227,7 +242,10 @@ export type {
   EditorUpdateTransaction,
   EditorUpdateTransactionOf,
   EditorUpdateTransactionProvider,
+  EditorNodeTypeProvider,
+  EditorNodeUnsetOptions,
   EditorValueFromExtensions,
+  EditorValueTypeProvider,
   EditorView,
   EditorViewOptions,
   ExtensionsOf,

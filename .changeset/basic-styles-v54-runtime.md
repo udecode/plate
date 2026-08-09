@@ -5,8 +5,10 @@
 Export `TextIndentPluginState` as the complete mutable state contract for
 `BaseTextIndentPlugin`.
 
-- Move style mutations to plugin-owned `editor.update.*.set` commands, with
-  typed `clear` updates for foreground and background colors
+- Move line-height and alignment mutations to plugin-owned
+  `editor.update.*.set` commands, use `editor.update.nodes.set` and `unset` for
+  text indentation, and expose typed `clear` updates for foreground and
+  background colors
 - Register validated font, alignment, indentation, and line-height properties
   with schema-owned persisted keys
 - Decode and encode style properties through schema-inferred

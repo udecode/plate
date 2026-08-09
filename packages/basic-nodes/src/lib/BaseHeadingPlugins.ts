@@ -1,12 +1,12 @@
 import {
   type BasePluginDefinitionInput,
-  createBasePlugin,
+  defineBasePlugin,
   createRuleFactory,
 } from '@platejs/core';
 import { schema } from '@platejs/plite';
-import { KEYS } from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 
-const headingKeyRe = /^h([1-6])$/;
+const headingTypeRe = /^h([1-6])$/;
 
 const headingSchema = {
   element: schema.element.textBlock(),
@@ -22,8 +22,8 @@ export const HeadingRules = {
   markdown: createRuleFactory({
     type: 'blockStart',
     trigger: ' ',
-    match: ({ pluginName }) => {
-      const match = headingKeyRe.exec(pluginName);
+    match: ({ plugin }) => {
+      const match = headingTypeRe.exec(plugin.name);
 
       if (!match) return;
 
@@ -32,10 +32,9 @@ export const HeadingRules = {
   }),
 };
 
-export const BaseH1Plugin = createBasePlugin({
-  name: KEYS.h1,
+export const BaseH1Plugin = defineBasePlugin(PLUGINS.h1, {
   schema: headingSchema,
-  codecs: ({ defineCodecs }) =>
+  codecs: ({ defineCodecs, schema: { type } }) =>
     defineCodecs({
       'text/html': {
         decode: () => ({}),
@@ -46,7 +45,7 @@ export const BaseH1Plugin = createBasePlugin({
       'text/markdown': {
         from: 'heading',
         kind: 'node',
-        decode: ({ decode, decoration, node, type }) =>
+        decode: ({ decode, decoration, node }) =>
           node.depth === 1
             ? { children: decode(node.children, decoration), type }
             : undefined,
@@ -60,17 +59,11 @@ export const BaseH1Plugin = createBasePlugin({
 
   render: { as: 'h1' },
   rules,
-  update: ({ tx, type }) => ({
-    toggle: () => {
-      tx.blocks.toggle(type);
-    },
-  }),
 });
 
-export const BaseH2Plugin = createBasePlugin({
-  name: KEYS.h2,
+export const BaseH2Plugin = defineBasePlugin(PLUGINS.h2, {
   schema: headingSchema,
-  codecs: ({ defineCodecs }) =>
+  codecs: ({ defineCodecs, schema: { type } }) =>
     defineCodecs({
       'text/html': {
         decode: () => ({}),
@@ -81,7 +74,7 @@ export const BaseH2Plugin = createBasePlugin({
       'text/markdown': {
         from: 'heading',
         kind: 'node',
-        decode: ({ decode, decoration, node, type }) =>
+        decode: ({ decode, decoration, node }) =>
           node.depth === 2
             ? { children: decode(node.children, decoration), type }
             : undefined,
@@ -95,17 +88,11 @@ export const BaseH2Plugin = createBasePlugin({
 
   render: { as: 'h2' },
   rules,
-  update: ({ tx, type }) => ({
-    toggle: () => {
-      tx.blocks.toggle(type);
-    },
-  }),
 });
 
-export const BaseH3Plugin = createBasePlugin({
-  name: KEYS.h3,
+export const BaseH3Plugin = defineBasePlugin(PLUGINS.h3, {
   schema: headingSchema,
-  codecs: ({ defineCodecs }) =>
+  codecs: ({ defineCodecs, schema: { type } }) =>
     defineCodecs({
       'text/html': {
         decode: () => ({}),
@@ -116,7 +103,7 @@ export const BaseH3Plugin = createBasePlugin({
       'text/markdown': {
         from: 'heading',
         kind: 'node',
-        decode: ({ decode, decoration, node, type }) =>
+        decode: ({ decode, decoration, node }) =>
           node.depth === 3
             ? { children: decode(node.children, decoration), type }
             : undefined,
@@ -130,17 +117,11 @@ export const BaseH3Plugin = createBasePlugin({
 
   render: { as: 'h3' },
   rules,
-  update: ({ tx, type }) => ({
-    toggle: () => {
-      tx.blocks.toggle(type);
-    },
-  }),
 });
 
-export const BaseH4Plugin = createBasePlugin({
-  name: KEYS.h4,
+export const BaseH4Plugin = defineBasePlugin(PLUGINS.h4, {
   schema: headingSchema,
-  codecs: ({ defineCodecs }) =>
+  codecs: ({ defineCodecs, schema: { type } }) =>
     defineCodecs({
       'text/html': {
         decode: () => ({}),
@@ -151,7 +132,7 @@ export const BaseH4Plugin = createBasePlugin({
       'text/markdown': {
         from: 'heading',
         kind: 'node',
-        decode: ({ decode, decoration, node, type }) =>
+        decode: ({ decode, decoration, node }) =>
           node.depth === 4
             ? { children: decode(node.children, decoration), type }
             : undefined,
@@ -165,17 +146,11 @@ export const BaseH4Plugin = createBasePlugin({
 
   render: { as: 'h4' },
   rules,
-  update: ({ tx, type }) => ({
-    toggle: () => {
-      tx.blocks.toggle(type);
-    },
-  }),
 });
 
-export const BaseH5Plugin = createBasePlugin({
-  name: KEYS.h5,
+export const BaseH5Plugin = defineBasePlugin(PLUGINS.h5, {
   schema: headingSchema,
-  codecs: ({ defineCodecs }) =>
+  codecs: ({ defineCodecs, schema: { type } }) =>
     defineCodecs({
       'text/html': {
         decode: () => ({}),
@@ -186,7 +161,7 @@ export const BaseH5Plugin = createBasePlugin({
       'text/markdown': {
         from: 'heading',
         kind: 'node',
-        decode: ({ decode, decoration, node, type }) =>
+        decode: ({ decode, decoration, node }) =>
           node.depth === 5
             ? { children: decode(node.children, decoration), type }
             : undefined,
@@ -200,17 +175,11 @@ export const BaseH5Plugin = createBasePlugin({
 
   render: { as: 'h5' },
   rules,
-  update: ({ tx, type }) => ({
-    toggle: () => {
-      tx.blocks.toggle(type);
-    },
-  }),
 });
 
-export const BaseH6Plugin = createBasePlugin({
-  name: KEYS.h6,
+export const BaseH6Plugin = defineBasePlugin(PLUGINS.h6, {
   schema: headingSchema,
-  codecs: ({ defineCodecs }) =>
+  codecs: ({ defineCodecs, schema: { type } }) =>
     defineCodecs({
       'text/html': {
         decode: () => ({}),
@@ -221,7 +190,7 @@ export const BaseH6Plugin = createBasePlugin({
       'text/markdown': {
         from: 'heading',
         kind: 'node',
-        decode: ({ decode, decoration, node, type }) =>
+        decode: ({ decode, decoration, node }) =>
           node.depth === 6
             ? { children: decode(node.children, decoration), type }
             : undefined,
@@ -235,9 +204,4 @@ export const BaseH6Plugin = createBasePlugin({
 
   render: { as: 'h6' },
   rules,
-  update: ({ tx, type }) => ({
-    toggle: () => {
-      tx.blocks.toggle(type);
-    },
-  }),
 });

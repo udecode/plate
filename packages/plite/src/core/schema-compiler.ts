@@ -313,7 +313,7 @@ export type CompiledSchemaElement = Readonly<{
   content: CompiledSchemaContentProgram | null;
   contentRoots: ReadonlyMap<string, CompiledSchemaContentRoot>;
   construction: Readonly<{
-    defaultPropertyIds: ReadonlySet<string>;
+    materializedPropertyIds: ReadonlySet<string>;
     propertyIds: ReadonlySet<string>;
   }>;
   groups: ReadonlySet<string>;
@@ -338,6 +338,7 @@ export type CompiledSchemaProperty = Readonly<{
   id: string;
   key: SchemaPropertyKey;
   lifecycle: Readonly<{
+    copy: 'drop' | 'preserve';
     inclusive: boolean | null;
     split: 'drop' | 'preserve';
     typeChange: 'drop' | 'preserve-if-allowed';
@@ -401,9 +402,11 @@ export type CompiledEditorSchema = Readonly<{
 
 export type StructuralPropertyValueDescriptor = Readonly<{
   default?: unknown;
+  generated?: true;
   item?: StructuralPropertyValueDescriptor;
   kind: PropertyValueKind;
   omitDefault: boolean;
+  required: boolean;
   validationVersion?: number;
   values?: readonly string[];
 }>;
@@ -567,6 +570,7 @@ const CANONICAL_VOID_CONTENT = Object.freeze({
 type MutableProperty = Omit<CompiledSchemaProperty, 'descriptor' | 'id'> &
   Readonly<{
     descriptor: PropertyValueDescriptor;
+    semanticId?: string;
     source: Source<SchemaProperty | PropertyValueDescriptor>;
   }>;
 
@@ -602,7 +606,7 @@ const freezeMap = <TKey, TValue>(source: ReadonlyMap<TKey, TValue>) => {
   return Object.freeze(immutable) as ReadonlyMap<TKey, TValue>;
 };
 
-const freezeSet = <TValue>(source: ReadonlySet<TValue>) => {
+const freezeSet = <TValue>(source: Iterable<TValue>) => {
   const set = new Set(source);
   let immutable!: Set<TValue>;
 
@@ -804,16 +808,18 @@ const collectSchemaKeyDiagnostics = (
       value,
       [
         'default',
+        'generate',
         'item',
         'kind',
         'omitDefault',
+        'required',
         'validate',
         'validationVersion',
         'values',
       ],
       owner,
       path,
-      { nonEnumerable: ['validate'] }
+      { nonEnumerable: ['generate', 'validate'] }
     );
 
     if (!descriptor) return;
@@ -1070,6 +1076,7 @@ const collectSchemaKeyDiagnostics = (
             property,
             placement === 'text'
               ? [
+                  'copy',
                   'exclusive',
                   'inclusive',
                   'key',
@@ -1081,6 +1088,7 @@ const collectSchemaKeyDiagnostics = (
                   'value',
                 ]
               : [
+                  'copy',
                   'key',
                   'placement',
                   'role',
@@ -1090,7 +1098,8 @@ const collectSchemaKeyDiagnostics = (
                   'value',
                 ],
             extensionName,
-            path
+            path,
+            { symbols: true }
           );
           if (property.exclusive !== undefined) {
             array(
@@ -1410,6 +1419,431 @@ const canonicalDeclaration = (
 
 const SCHEMA_CONTRIBUTION_DECLARATION_KEYS = new WeakMap<object, string>();
 
+const remapSchemaType = (type: string, renames: ReadonlyMap<string, string>) =>
+  renames.get(type) ?? type;
+
+const remapSchemaContentRule = (
+  rule: SchemaContentRule,
+  renames: ReadonlyMap<string, string>
+): SchemaContentRule => {
+  switch (rule.kind) {
+    case 'type':
+      return Object.freeze({
+        kind: 'type' as const,
+        type: remapSchemaType(rule.type, renames),
+      });
+    case 'types':
+      return Object.freeze({
+        kind: 'types' as const,
+        types: Object.freeze(
+          rule.types.map((type) => remapSchemaType(type, renames))
+        ),
+      });
+    case 'all':
+    case 'any':
+      return Object.freeze({
+        kind: rule.kind,
+        rules: Object.freeze(
+          rule.rules.map((child) => remapSchemaContentRule(child, renames))
+        ),
+      });
+    case 'not':
+      return Object.freeze({
+        kind: 'not' as const,
+        rule: remapSchemaContentRule(rule.rule, renames),
+      });
+    case 'group':
+    case 'open':
+    case 'text':
+      return rule;
+  }
+};
+
+const remapSchemaContent = (
+  content: SchemaContent,
+  renames: ReadonlyMap<string, string>
+): SchemaContent =>
+  Object.freeze({
+    ...content,
+    allowed: remapSchemaContentRule(content.allowed, renames),
+    ...(content.default && content.default !== 'text'
+      ? {
+          default: Object.freeze({
+            type: remapSchemaType(content.default.type, renames),
+          }),
+        }
+      : {}),
+  });
+
+const remapSchemaTarget = (
+  target: SchemaTarget,
+  renames: ReadonlyMap<string, string>
+): SchemaTarget => {
+  switch (target.kind) {
+    case 'type':
+      return Object.freeze({
+        kind: 'type' as const,
+        type: remapSchemaType(target.type, renames),
+      });
+    case 'types':
+      return Object.freeze({
+        kind: 'types' as const,
+        types: Object.freeze(
+          target.types.map((type) => remapSchemaType(type, renames))
+        ),
+      });
+    case 'and':
+    case 'or':
+      return Object.freeze({
+        kind: target.kind,
+        targets: Object.freeze(
+          target.targets.map((child) => remapSchemaTarget(child, renames))
+        ),
+      });
+    case 'not':
+    case 'parent':
+      return Object.freeze({
+        kind: target.kind,
+        target: remapSchemaTarget(target.target, renames),
+      });
+    case 'group':
+    case 'root':
+      return target;
+  }
+};
+
+const remapSchemaContentRootInput = (
+  input: SchemaContentRootInput,
+  renames: ReadonlyMap<string, string>
+): SchemaContentRootInput =>
+  'allowed' in input
+    ? remapSchemaContent(input, renames)
+    : Object.freeze({
+        ...input,
+        content: remapSchemaContent(input.content, renames),
+      });
+
+type ElementOverridePatch = Readonly<{
+  content?: SchemaContent;
+  groups?: readonly string[];
+  type?: string;
+}>;
+
+type PropertyOverridePatch = Readonly<{
+  key?: string;
+  target?: SchemaTarget | null;
+}>;
+
+const overriddenPropertyIds = new WeakMap<object, string>();
+
+const prepareEditorSchemaRecords = (
+  records: readonly EditorSchemaContributionRecord[]
+): readonly EditorSchemaContributionRecord[] => {
+  const completeRecords = records.some(({ contribution }) =>
+    isCompleteSchemaDeclaration(contribution)
+  )
+    ? records
+    : Object.freeze([...records, createDerivedBaseSchemaRecord(records)]);
+  const overrides = completeRecords.flatMap(({ contribution, extensionName }) =>
+    (contribution.overrides ?? []).map((override) => ({
+      extensionName,
+      override,
+    }))
+  );
+
+  if (overrides.length === 0) return completeRecords;
+
+  const elementOwners = new Map<string, string>();
+
+  for (const record of completeRecords) {
+    for (const type of Object.keys(record.contribution.elements ?? {})) {
+      elementOwners.set(`${record.extensionName}\u0000${type}`, type);
+    }
+  }
+
+  const elementPatches = new Map<string, ElementOverridePatch>();
+  const propertyPatches = new Map<string, PropertyOverridePatch>();
+  const claimedFacets = new Map<string, string>();
+  const claim = (key: string, extensionName: string) => {
+    const known = claimedFacets.get(key);
+
+    if (known) {
+      throw new Error(
+        `Schema override facet "${key}" is owned by both "${known}" and "${extensionName}".`
+      );
+    }
+    claimedFacets.set(key, extensionName);
+  };
+
+  for (const { extensionName, override } of overrides) {
+    if (override.kind === 'element') {
+      const key = `${override.source}\u0000${override.element}`;
+
+      if (!elementOwners.has(key)) {
+        throw new Error(
+          `Schema override from "${extensionName}" targets unknown element "${override.source}:${override.element}".`
+        );
+      }
+      if (
+        override.type !== undefined &&
+        (typeof override.type !== 'string' || override.type.length === 0)
+      ) {
+        throw new Error(
+          `Schema element type override from "${extensionName}" must be a non-empty string.`
+        );
+      }
+      for (const facet of ['content', 'groups', 'type'] as const) {
+        if (override[facet] !== undefined) {
+          claim(
+            `element:${override.source}:${override.element}:${facet}`,
+            extensionName
+          );
+        }
+      }
+      elementPatches.set(
+        key,
+        Object.freeze({
+          ...elementPatches.get(key),
+          ...(override.content ? { content: override.content } : {}),
+          ...(override.groups ? { groups: override.groups } : {}),
+          ...(override.type !== undefined ? { type: override.type } : {}),
+        })
+      );
+      continue;
+    }
+
+    const key = `${override.source}\u0000${override.id}`;
+
+    for (const facet of ['key', 'target'] as const) {
+      if (override[facet] !== undefined) {
+        claim(
+          `property:${override.source}:${override.id}:${facet}`,
+          extensionName
+        );
+      }
+    }
+    propertyPatches.set(
+      key,
+      Object.freeze({
+        ...propertyPatches.get(key),
+        ...(override.key !== undefined ? { key: override.key } : {}),
+        ...(override.target !== undefined ? { target: override.target } : {}),
+      })
+    );
+  }
+
+  const renames = new Map<string, string>();
+
+  for (const [ownerKey, patch] of elementPatches) {
+    if (patch.type === undefined) continue;
+    const original = elementOwners.get(ownerKey)!;
+    renames.set(original, patch.type);
+  }
+  const finalTypes = new Map<string, string>();
+
+  for (const [ownerKey, original] of elementOwners) {
+    const finalType = renames.get(original) ?? original;
+    const known = finalTypes.get(finalType);
+
+    if (known && known !== ownerKey) {
+      throw new Error(
+        `Schema element type override produces duplicate final type "${finalType}".`
+      );
+    }
+    finalTypes.set(finalType, ownerKey);
+  }
+
+  const usedPropertyPatches = new Set<string>();
+  const prepared = completeRecords.map(({ contribution, extensionName }) => {
+    const { overrides: _overrides, ...declaration } = contribution;
+    const promotedProperties: SchemaElementProperty[] = [];
+    const elements = Object.fromEntries(
+      Object.entries(declaration.elements ?? {}).map(([type, element]) => {
+        const patch = elementPatches.get(`${extensionName}\u0000${type}`);
+        const finalType = patch?.type ?? type;
+        const content = patch?.content ?? element.content;
+        const propertyEntries = Object.entries(
+          element.properties ?? {}
+        ).flatMap(([key, descriptor]) => {
+          const originalTarget = Object.freeze({
+            kind: 'type' as const,
+            type,
+          });
+          const id = getCompiledSchemaPropertyId({
+            key,
+            placement: 'element',
+            target: originalTarget,
+          });
+          const patchKey = `${extensionName}\u0000${id}`;
+          const propertyPatch = propertyPatches.get(patchKey);
+
+          if (propertyPatch) usedPropertyPatches.add(patchKey);
+          if (
+            propertyPatch &&
+            Object.hasOwn(propertyPatch, 'target') &&
+            propertyPatch.target === null
+          ) {
+            throw new Error(
+              `Schema property override "${extensionName}:${id}" cannot remove an element-property target.`
+            );
+          }
+          const finalKey = propertyPatch?.key ?? key;
+          const finalTarget = remapSchemaTarget(
+            propertyPatch && Object.hasOwn(propertyPatch, 'target')
+              ? propertyPatch.target!
+              : originalTarget,
+            renames
+          );
+          const preparedDescriptor = Object.freeze(
+            Object.create(
+              Object.getPrototypeOf(descriptor),
+              Object.getOwnPropertyDescriptors(descriptor)
+            ) as PropertyValueDescriptor
+          );
+
+          if (propertyPatch || finalType !== type) {
+            overriddenPropertyIds.set(preparedDescriptor, id);
+          }
+          if (finalTarget.kind === 'type' && finalTarget.type === finalType) {
+            return [[finalKey, preparedDescriptor] as const];
+          }
+          const promotedProperty = Object.freeze({
+            copy: 'preserve' as const,
+            key: finalKey,
+            placement: 'element' as const,
+            role: 'content' as const,
+            split: 'preserve' as const,
+            target: finalTarget,
+            typeChange: 'drop' as const,
+            value: preparedDescriptor,
+          });
+
+          overriddenPropertyIds.set(promotedProperty, id);
+          promotedProperties.push(promotedProperty);
+
+          return [];
+        });
+        const properties = element.properties
+          ? Object.freeze(Object.fromEntries(propertyEntries))
+          : undefined;
+
+        return [
+          finalType,
+          Object.freeze({
+            ...element,
+            ...(properties ? { properties } : {}),
+            ...(content
+              ? { content: remapSchemaContent(content, renames) }
+              : {}),
+            ...(patch?.groups
+              ? { groups: Object.freeze([...patch.groups]) }
+              : {}),
+            ...(element.contentRoots
+              ? {
+                  contentRoots: Object.freeze(
+                    Object.fromEntries(
+                      Object.entries(element.contentRoots).map(
+                        ([slot, root]) => [
+                          slot,
+                          remapSchemaContentRootInput(root, renames),
+                        ]
+                      )
+                    )
+                  ),
+                }
+              : {}),
+          }),
+        ];
+      })
+    );
+    const properties = [
+      ...(declaration.properties ?? []).map((property) => {
+        const id = getCompiledSchemaPropertyId(property);
+        const patchKey = `${extensionName}\u0000${id}`;
+        const patch = propertyPatches.get(patchKey);
+
+        if (patch) usedPropertyPatches.add(patchKey);
+        if (
+          patch &&
+          Object.hasOwn(patch, 'target') &&
+          patch.target === null &&
+          property.placement === 'element'
+        ) {
+          throw new Error(
+            `Schema property override "${extensionName}:${id}" cannot remove an element-property target.`
+          );
+        }
+        const target =
+          patch && Object.hasOwn(patch, 'target')
+            ? patch.target
+            : property.target;
+
+        const preparedProperty = {
+          ...property,
+          ...(patch?.key !== undefined ? { key: patch.key } : {}),
+          ...(target
+            ? { target: remapSchemaTarget(target, renames) }
+            : { target: undefined }),
+        } as SchemaProperty;
+
+        if (patch || getCompiledSchemaPropertyId(preparedProperty) !== id) {
+          overriddenPropertyIds.set(preparedProperty, id);
+        }
+
+        return Object.freeze(preparedProperty);
+      }),
+      ...promotedProperties,
+    ];
+
+    return Object.freeze({
+      contribution: Object.freeze({
+        ...declaration,
+        ...(declaration.elements ? { elements: Object.freeze(elements) } : {}),
+        ...(properties.length > 0
+          ? { properties: Object.freeze(properties) }
+          : {}),
+        ...(declaration.contentRoots
+          ? {
+              contentRoots: Object.freeze(
+                declaration.contentRoots.map((root) =>
+                  Object.freeze({
+                    ...root,
+                    content: remapSchemaContent(root.content, renames),
+                    target: remapSchemaTarget(root.target, renames),
+                  })
+                )
+              ),
+            }
+          : {}),
+        ...(declaration.root
+          ? { root: remapSchemaContent(declaration.root, renames) }
+          : {}),
+        ...(declaration.roots
+          ? {
+              roots: Object.freeze(
+                Object.fromEntries(
+                  Object.entries(declaration.roots).map(([name, root]) => [
+                    name,
+                    remapSchemaContent(root, renames),
+                  ])
+                )
+              ),
+            }
+          : {}),
+      }) as EditorSchemaDeclaration,
+      extensionName,
+    });
+  });
+
+  for (const key of propertyPatches.keys()) {
+    if (!usedPropertyPatches.has(key)) {
+      throw new Error(`Schema override targets unknown property "${key}".`);
+    }
+  }
+
+  return Object.freeze(prepared);
+};
+
 const getSchemaContributionDeclarationKey = (
   contribution: EditorSchemaDeclaration
 ) => {
@@ -1428,8 +1862,10 @@ const getSchemaContributionDeclarationKey = (
 export const getEditorSchemaDeclarationKey = (
   records: readonly EditorSchemaContributionRecord[]
 ) => {
-  assertSchemaDeclarationOwnership(records);
-  const declarations = records
+  const prepared = prepareEditorSchemaRecords(records);
+
+  assertSchemaDeclarationOwnership(prepared);
+  const declarations = prepared
     .map(({ contribution, extensionName }) => ({
       contribution: getSchemaContributionDeclarationKey(contribution),
       extensionName,
@@ -2280,7 +2716,9 @@ const clonePropertyDescriptor = (
     !['boolean', 'enum', 'json', 'number', 'set', 'string'].includes(
       descriptor.kind
     ) ||
-    typeof descriptor.omitDefault !== 'boolean'
+    typeof descriptor.omitDefault !== 'boolean' ||
+    (descriptor.required !== undefined &&
+      typeof descriptor.required !== 'boolean')
   ) {
     compileFailure(
       'invalid-property-descriptor',
@@ -2292,6 +2730,7 @@ const clonePropertyDescriptor = (
 
   const hasValidate = Object.hasOwn(descriptor, 'validate');
   const hasValidationVersion = Object.hasOwn(descriptor, 'validationVersion');
+  const hasGenerate = Object.hasOwn(descriptor, 'generate');
 
   if (hasValidate !== hasValidationVersion) {
     compileFailure(
@@ -2322,6 +2761,14 @@ const clonePropertyDescriptor = (
         source.path
       );
     }
+  }
+  if (hasGenerate && typeof descriptor.generate !== 'function') {
+    compileFailure(
+      'invalid-property-generator',
+      `Schema property generator at ${source.path} must be a function.`,
+      [source],
+      source.path
+    );
   }
 
   let item: PropertyValueDescriptor | undefined;
@@ -2390,12 +2837,32 @@ const clonePropertyDescriptor = (
       source.path
     );
   }
+  if (descriptor.required && (hasDefault || descriptor.omitDefault)) {
+    compileFailure(
+      'invalid-property-default',
+      `Schema property at ${source.path} cannot combine required with default or omitDefault.`,
+      [source],
+      source.path
+    );
+  }
+  if (
+    hasGenerate &&
+    (hasDefault || descriptor.omitDefault || descriptor.required)
+  ) {
+    compileFailure(
+      'invalid-property-generator',
+      `Schema property at ${source.path} cannot combine generate with default, omitDefault, or required.`,
+      [source],
+      source.path
+    );
+  }
 
   const cloned: Record<PropertyKey, unknown> = {
     ...(hasDefault ? { default: defaultValue } : {}),
     ...(item ? { item } : {}),
     kind: descriptor.kind,
     omitDefault: descriptor.omitDefault,
+    required: descriptor.required ?? false,
     ...(hasValidationVersion
       ? { validationVersion: descriptor.validationVersion }
       : {}),
@@ -2406,6 +2873,12 @@ const clonePropertyDescriptor = (
     Object.defineProperty(cloned, 'validate', {
       enumerable: false,
       value: descriptor.validate,
+    });
+  }
+  if (descriptor.generate) {
+    Object.defineProperty(cloned, 'generate', {
+      enumerable: false,
+      value: descriptor.generate,
     });
   }
 
@@ -2423,6 +2896,9 @@ export const getCompiledSchemaPropertyId = (
     target?: SchemaTarget | null;
   }>
 ) => {
+  const overridden = overriddenPropertyIds.get(declaration as object);
+
+  if (overridden) return overridden;
   const selector =
     typeof declaration.key === 'string'
       ? `exact:${declaration.key}`
@@ -2488,7 +2964,9 @@ const validatePropertyKey = (
   return Object.freeze({ kind: 'prefix' as const, prefix: key.prefix });
 };
 
-const canonicalDescriptor = (descriptor: PropertyValueDescriptor): unknown => ({
+const canonicalDescriptor = (
+  descriptor: PropertyValueDescriptor | StructuralPropertyValueDescriptor
+): unknown => ({
   ...(Object.hasOwn(descriptor, 'default')
     ? { default: canonicalJson(descriptor.default) }
     : {}),
@@ -2513,7 +2991,12 @@ const canonicalDescriptor = (descriptor: PropertyValueDescriptor): unknown => ({
       }
     : {}),
   kind: descriptor.kind,
+  ...(('generated' in descriptor && descriptor.generated) ||
+  ('generate' in descriptor && descriptor.generate)
+    ? { generated: true }
+    : {}),
   omitDefault: descriptor.omitDefault,
+  required: descriptor.required,
   ...(descriptor.validationVersion
     ? { validationVersion: descriptor.validationVersion }
     : {}),
@@ -3272,7 +3755,9 @@ const compileEditorSchemaInternal = (
     key: SchemaPropertyKey,
     placement: 'element' | 'text',
     target: SchemaTarget | null,
-    lifecycle: CompiledSchemaProperty['lifecycle'],
+    lifecycle: Omit<CompiledSchemaProperty['lifecycle'], 'copy'> & {
+      copy?: unknown;
+    },
     source: Source<SchemaProperty | PropertyValueDescriptor>,
     exclusiveGroupIds: readonly string[] = []
   ) => {
@@ -3285,6 +3770,26 @@ const compileEditorSchemaInternal = (
       source
     );
     const role = 'value' in raw ? raw.role : 'content';
+    const semanticId = overriddenPropertyIds.get(raw);
+    const rawCopy = lifecycle.copy;
+
+    if (rawCopy !== undefined && rawCopy !== 'drop' && rawCopy !== 'preserve') {
+      compileFailure(
+        'invalid-property-copy',
+        `Schema property at ${source.path} has invalid copy policy.`,
+        [source],
+        source.path
+      );
+    }
+    const copy = rawCopy === 'drop' ? 'drop' : 'preserve';
+    if (copy === 'drop' && descriptor.required) {
+      compileFailure(
+        'invalid-property-copy',
+        `Schema property at ${source.path} required cannot use copy: drop.`,
+        [source],
+        source.path
+      );
+    }
 
     if (role !== 'content' && role !== 'metadata') {
       compileFailure(
@@ -3303,11 +3808,12 @@ const compileEditorSchemaInternal = (
         )
       ),
       key: clonedKey,
-      lifecycle,
+      lifecycle: Object.freeze({ ...lifecycle, copy }),
       merge: descriptor.kind === 'set' ? 'set' : 'replace',
       owner: source.extensionName,
       placement,
       role,
+      ...(semanticId ? { semanticId } : {}),
       source,
       target: clonedTarget,
     });
@@ -3329,6 +3835,7 @@ const compileEditorSchemaInternal = (
         'element',
         Object.freeze({ kind: 'type', type: element.type }),
         Object.freeze({
+          copy: 'preserve',
           inclusive: null,
           split: 'preserve',
           typeChange: 'drop',
@@ -3365,6 +3872,7 @@ const compileEditorSchemaInternal = (
           'element',
           elementProperty.target,
           Object.freeze({
+            copy: property.copy,
             inclusive: null,
             split: property.split,
             typeChange: property.typeChange,
@@ -3380,6 +3888,7 @@ const compileEditorSchemaInternal = (
           'text',
           textProperty.target ?? null,
           Object.freeze({
+            copy: property.copy,
             inclusive: textProperty.inclusive,
             split: property.split,
             typeChange: property.typeChange,
@@ -3440,7 +3949,7 @@ const compileEditorSchemaInternal = (
 
   const compiledProperties = mutableProperties
     .map((property) => {
-      const id = getCompiledSchemaPropertyId(property);
+      const id = property.semanticId ?? getCompiledSchemaPropertyId(property);
 
       return Object.freeze({
         descriptor: property.descriptor,
@@ -3525,11 +4034,16 @@ const compileEditorSchemaInternal = (
     const propertyIds = freezeSet<string>(
       propertyIdsByElement.get(type) ?? new Set<string>()
     );
-    const defaultPropertyIds = freezeSet<string>(
+    const materializedPropertyIds = freezeSet<string>(
       new Set(
-        [...propertyIds].filter((id) =>
-          Object.hasOwn(byId.get(id)?.descriptor ?? {}, 'default')
-        )
+        [...propertyIds].filter((id) => {
+          const descriptor = byId.get(id)?.descriptor;
+
+          return (
+            !!descriptor &&
+            (Object.hasOwn(descriptor, 'default') || !!descriptor.generate)
+          );
+        })
       )
     );
     const contentRoots = freezeMap(
@@ -3570,7 +4084,7 @@ const compileEditorSchemaInternal = (
         behavior: element.behavior,
         content: frozenPrograms.get(`element:${type}`)!,
         contentRoots,
-        construction: Object.freeze({ defaultPropertyIds, propertyIds }),
+        construction: Object.freeze({ materializedPropertyIds, propertyIds }),
         groups: freezeSet(memberships.get(type) ?? new Set<string>()),
         propertyIds,
         slice: Object.freeze({
@@ -3661,8 +4175,8 @@ const compileEditorSchemaInternal = (
         slot,
       })),
       construction: {
-        defaultPropertyIds: sortedStrings(
-          element.construction.defaultPropertyIds
+        materializedPropertyIds: sortedStrings(
+          element.construction.materializedPropertyIds
         ),
         propertyIds: sortedStrings(element.construction.propertyIds),
       },
@@ -3670,9 +4184,12 @@ const compileEditorSchemaInternal = (
       slice: element.slice,
       type,
     })),
-    groups: [...groupParents]
+    groups: [...mutableGroups]
       .sort(([left], [right]) => left.localeCompare(right))
-      .map(([group, parents]) => ({ group, parents: sortedStrings(parents) })),
+      .map(([group, members]) => ({
+        group,
+        members: sortedStrings(members),
+      })),
     properties: compiledProperties.map((property) => ({
       descriptor: canonicalDescriptor(property.descriptor),
       exclusiveGroupIds: property.exclusiveGroupIds,
@@ -3684,10 +4201,12 @@ const compileEditorSchemaInternal = (
       lifecycle: property.lifecycle,
       merge: property.merge,
       placement: property.placement,
+      role: property.role,
       target: canonicalTarget(property.target),
     })),
     root: {
       allowedElementTypes: sortedStrings(primaryProgram.allowedElementTypes),
+      allowsText: primaryProgram.allowsText,
       allowsUnknownElements: primaryProgram.allowsUnknownElements,
       defaultPlan: primaryProgram.defaultPlan,
       max: primaryProgram.max,
@@ -3695,6 +4214,7 @@ const compileEditorSchemaInternal = (
     },
     roots: [...roots].map(([name, root]) => ({
       allowedElementTypes: sortedStrings(root.content.allowedElementTypes),
+      allowsText: root.content.allowsText,
       allowsUnknownElements: root.content.allowsUnknownElements,
       defaultPlan: root.content.defaultPlan,
       max: root.content.max,
@@ -3761,7 +4281,10 @@ export const compileEditorSchemaContributions = (
   options: Readonly<{ revision?: number }> = {}
 ): CompiledEditorSchema =>
   profileCoreDuration('schema-compile', () =>
-    compileEditorSchemaInternal(records, options.revision ?? 0)
+    compileEditorSchemaInternal(
+      prepareEditorSchemaRecords(records),
+      options.revision ?? 0
+    )
   );
 
 type RuntimePropertyDescriptor = Readonly<{
@@ -3782,11 +4305,12 @@ const collectRuntimePropertyDescriptors = (
         element.properties ?? {}
       )) {
         descriptors.set(
-          getCompiledSchemaPropertyId({
-            key,
-            placement: 'element',
-            target: Object.freeze({ kind: 'type', type }),
-          }),
+          overriddenPropertyIds.get(descriptor) ??
+            getCompiledSchemaPropertyId({
+              key,
+              placement: 'element',
+              target: Object.freeze({ kind: 'type', type }),
+            }),
           Object.freeze({
             descriptor,
             source: {
@@ -3834,12 +4358,21 @@ const getRuntimeValidationBinding = (
   return typeof validate === 'function' ? validate : null;
 };
 
+const getRuntimeGeneratorBinding = (
+  descriptor: RuntimeComparablePropertyDescriptor
+) => {
+  const generate = Reflect.get(descriptor, 'generate');
+
+  return typeof generate === 'function' ? generate : null;
+};
+
 const haveEquivalentRuntimeValidationBindings = (
   left: RuntimeComparablePropertyDescriptor,
   right: RuntimeComparablePropertyDescriptor
 ): boolean => {
   if (
-    getRuntimeValidationBinding(left) !== getRuntimeValidationBinding(right)
+    getRuntimeValidationBinding(left) !== getRuntimeValidationBinding(right) ||
+    getRuntimeGeneratorBinding(left) !== getRuntimeGeneratorBinding(right)
   ) {
     return false;
   }
@@ -3943,8 +4476,10 @@ const toStructuralPropertyDescriptor = (
       ? { default: descriptor.default }
       : {}),
     ...(item ? { item } : {}),
+    ...(descriptor.generate ? { generated: true as const } : {}),
     kind: descriptor.kind,
     omitDefault: descriptor.omitDefault,
+    required: descriptor.required,
     ...(descriptor.validationVersion
       ? { validationVersion: descriptor.validationVersion }
       : {}),
@@ -4020,6 +4555,1181 @@ export const rebindCompiledEditorSchemaRuntimeValidations = (
   return replaceCompiledPropertyDescriptors(schema, descriptors, revision);
 };
 
+const EDITOR_SCHEMA_CONTRACT_FORMAT = 1 as const;
+
+type EditorSchemaContractEntry<TValue> = readonly [string, TValue];
+
+export type EditorSchemaContractContentProgram = Readonly<{
+  allowedElementTypes: readonly string[];
+  allowsText: boolean;
+  allowsUnknownElements: boolean;
+  defaultPlan: CompiledSchemaConstructionPlan | null;
+  max: number | null;
+  min: number;
+}>;
+
+export type EditorSchemaContractContentRoot = Readonly<{
+  content: EditorSchemaContractContentProgram;
+  ownership: SchemaContentRootOwnership;
+}>;
+
+export type EditorSchemaContractElement = Readonly<{
+  behavior: CompiledSchemaElementBehavior;
+  content: EditorSchemaContractContentProgram | null;
+  contentRoots: readonly EditorSchemaContractEntry<EditorSchemaContractContentRoot>[];
+  construction: Readonly<{
+    materializedPropertyIds: readonly string[];
+    propertyIds: readonly string[];
+  }>;
+  groups: readonly string[];
+  propertyIds: readonly string[];
+  slice: CompiledSchemaElement['slice'];
+  type: string;
+}>;
+
+export type EditorSchemaContractRoot = Readonly<{
+  content: EditorSchemaContractContentProgram;
+  name: string | null;
+}>;
+
+export type EditorSchemaContract = Readonly<{
+  diagnostics: readonly EditorSchemaDiagnostic[];
+  elements: Readonly<{
+    allowedChildren: readonly EditorSchemaContractEntry<readonly string[]>[];
+    allowedParents: readonly EditorSchemaContractEntry<readonly string[]>[];
+    byType: readonly EditorSchemaContractElement[];
+    contentPrograms: readonly EditorSchemaContractEntry<EditorSchemaContractContentProgram>[];
+    defaultPlans: readonly EditorSchemaContractEntry<CompiledSchemaConstructionPlan>[];
+    groups: readonly EditorSchemaContractEntry<readonly string[]>[];
+    textGroups: readonly string[];
+    wrapperPlans: readonly EditorSchemaContractEntry<readonly string[]>[];
+  }>;
+  fingerprint: string;
+  formatVersion: typeof EDITOR_SCHEMA_CONTRACT_FORMAT;
+  identity: EditorSchemaIdentity;
+  primaryRoot: EditorSchemaContractRoot;
+  properties: Readonly<{
+    byId: readonly StructuralCompiledSchemaProperty[];
+    conflictsByPropertyId: readonly EditorSchemaContractEntry<
+      readonly string[]
+    >[];
+    elementAllowedByType: readonly EditorSchemaContractEntry<
+      readonly string[]
+    >[];
+    lifecycle: readonly EditorSchemaContractEntry<
+      CompiledSchemaProperty['lifecycle']
+    >[];
+    lookup: Readonly<{
+      element: Readonly<{
+        exact: readonly EditorSchemaContractEntry<readonly string[]>[];
+        prefixes: readonly CompiledSchemaPropertyKeyPrefix[];
+      }>;
+      text: Readonly<{
+        exact: readonly EditorSchemaContractEntry<readonly string[]>[];
+        prefixes: readonly CompiledSchemaPropertyKeyPrefix[];
+      }>;
+    }>;
+    mergeStrategies: readonly EditorSchemaContractEntry<CompiledSchemaPropertyMergeStrategy>[];
+    membersByExclusiveGroup: readonly EditorSchemaContractEntry<
+      readonly string[]
+    >[];
+    textAllowedByParentType: readonly EditorSchemaContractEntry<
+      readonly string[]
+    >[];
+  }>;
+  revision: number;
+  roots: readonly EditorSchemaContractRoot[];
+  unknown: EditorSchemaUnknownPolicy;
+  vocabulary: CompiledSchemaVocabulary;
+}>;
+
+export type EditorSchemaContractChangeKind =
+  | 'element-added'
+  | 'element-changed'
+  | 'element-content-expanded'
+  | 'element-content-restricted'
+  | 'element-removed'
+  | 'element-renamed'
+  | 'property-added'
+  | 'property-changed'
+  | 'property-removed'
+  | 'property-renamed'
+  | 'property-required'
+  | 'root-added'
+  | 'root-changed'
+  | 'root-content-expanded'
+  | 'root-content-restricted'
+  | 'root-removed'
+  | 'unknown-policy-expanded'
+  | 'unknown-policy-restricted';
+
+export type EditorSchemaContractChange = Readonly<{
+  from?: string;
+  impact: 'compatible' | 'migration-required';
+  kind: EditorSchemaContractChangeKind;
+  path: string;
+  to?: string;
+}>;
+
+export type EditorSchemaContractDiff = Readonly<{
+  changes: readonly EditorSchemaContractChange[];
+  fromFingerprint: string;
+  requiresMigration: boolean;
+  toFingerprint: string;
+}>;
+
+const freezeSortedStrings = (values: Iterable<string>) =>
+  Object.freeze(sortedStrings(values));
+
+const mapEntries = <TValue, TResult>(
+  source: ReadonlyMap<string, TValue>,
+  map: (value: TValue) => TResult
+) =>
+  Object.freeze(
+    [...source]
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(
+        ([key, value]) =>
+          Object.freeze([key, map(value)]) as readonly [string, TResult]
+      )
+  );
+
+const contractContentProgram = (
+  program: CompiledSchemaContentProgram
+): EditorSchemaContractContentProgram =>
+  Object.freeze({
+    allowedElementTypes: freezeSortedStrings(program.allowedElementTypes),
+    allowsText: program.allowsText,
+    allowsUnknownElements: program.allowsUnknownElements,
+    defaultPlan: program.defaultPlan,
+    max: program.max,
+    min: program.min,
+  });
+
+const contractContentRoot = (
+  root: CompiledSchemaContentRoot
+): EditorSchemaContractContentRoot =>
+  Object.freeze({
+    content: contractContentProgram(root.content),
+    ownership: root.ownership,
+  });
+
+const contractElement = (
+  element: CompiledSchemaElement
+): EditorSchemaContractElement =>
+  Object.freeze({
+    behavior: element.behavior,
+    content: element.content ? contractContentProgram(element.content) : null,
+    contentRoots: mapEntries(element.contentRoots, contractContentRoot),
+    construction: Object.freeze({
+      materializedPropertyIds: freezeSortedStrings(
+        element.construction.materializedPropertyIds
+      ),
+      propertyIds: freezeSortedStrings(element.construction.propertyIds),
+    }),
+    groups: freezeSortedStrings(element.groups),
+    propertyIds: freezeSortedStrings(element.propertyIds),
+    slice: element.slice,
+    type: element.type,
+  });
+
+const contractRoot = (root: CompiledSchemaRoot): EditorSchemaContractRoot =>
+  Object.freeze({
+    content: contractContentProgram(root.content),
+    name: root.name,
+  });
+
+const contractStringSets = (source: ReadonlyMap<string, ReadonlySet<string>>) =>
+  mapEntries(source, freezeSortedStrings);
+
+/** Serialize one compiled schema into deterministic validator-free JSON data. */
+export const createEditorSchemaContract = (
+  schema: CompiledEditorSchema
+): EditorSchemaContract => {
+  const structural = stripCompiledEditorSchemaRuntimeValidations(schema);
+
+  return Object.freeze({
+    diagnostics: structural.diagnostics,
+    elements: Object.freeze({
+      allowedChildren: contractStringSets(structural.elements.allowedChildren),
+      allowedParents: contractStringSets(structural.elements.allowedParents),
+      byType: Object.freeze(
+        [...structural.elements.byType.values()]
+          .sort((left, right) => left.type.localeCompare(right.type))
+          .map(contractElement)
+      ),
+      contentPrograms: mapEntries(
+        structural.elements.contentPrograms,
+        contractContentProgram
+      ),
+      defaultPlans: mapEntries(
+        structural.elements.defaultPlans,
+        (value) => value
+      ),
+      groups: contractStringSets(structural.elements.groups),
+      textGroups: freezeSortedStrings(structural.elements.textGroups),
+      wrapperPlans: mapEntries(structural.elements.wrapperPlans, (value) =>
+        Object.freeze([...value])
+      ),
+    }),
+    fingerprint: structural.identity.fingerprint,
+    formatVersion: EDITOR_SCHEMA_CONTRACT_FORMAT,
+    identity: structural.identity,
+    primaryRoot: contractRoot(structural.primaryRoot),
+    properties: Object.freeze({
+      byId: Object.freeze(
+        [...structural.properties.byId.values()].sort((left, right) =>
+          left.id.localeCompare(right.id)
+        )
+      ),
+      conflictsByPropertyId: contractStringSets(
+        structural.properties.conflictsByPropertyId
+      ),
+      elementAllowedByType: contractStringSets(
+        structural.properties.elementAllowedByType
+      ),
+      lifecycle: mapEntries(structural.properties.lifecycle, (value) => value),
+      lookup: Object.freeze({
+        element: Object.freeze({
+          exact: mapEntries(
+            structural.properties.lookup.element.exact,
+            (value) => Object.freeze([...value])
+          ),
+          prefixes: structural.properties.lookup.element.prefixes,
+        }),
+        text: Object.freeze({
+          exact: mapEntries(structural.properties.lookup.text.exact, (value) =>
+            Object.freeze([...value])
+          ),
+          prefixes: structural.properties.lookup.text.prefixes,
+        }),
+      }),
+      mergeStrategies: mapEntries(
+        structural.properties.mergeStrategies,
+        (value) => value
+      ),
+      membersByExclusiveGroup: contractStringSets(
+        structural.properties.membersByExclusiveGroup
+      ),
+      textAllowedByParentType: contractStringSets(
+        structural.properties.textAllowedByParentType
+      ),
+    }),
+    revision: structural.revision,
+    roots: Object.freeze(
+      [...structural.roots.values()]
+        .sort((left, right) =>
+          (left.name ?? '').localeCompare(right.name ?? '')
+        )
+        .map(contractRoot)
+    ),
+    unknown: structural.unknown,
+    vocabulary: structural.vocabulary,
+  });
+};
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+const isStringArray = (value: unknown): value is readonly string[] =>
+  Array.isArray(value) && value.every((item) => typeof item === 'string');
+
+const isContractEntryArray = (
+  value: unknown,
+  isValue: (value: unknown) => boolean
+) =>
+  Array.isArray(value) &&
+  value.every(
+    (entry) =>
+      Array.isArray(entry) &&
+      entry.length === 2 &&
+      typeof entry[0] === 'string' &&
+      isValue(entry[1])
+  );
+
+const isContractConstructionPlan = (value: unknown) =>
+  isRecord(value) &&
+  (value.kind === 'text' ||
+    (value.kind === 'element' && typeof value.type === 'string'));
+
+const isContractContentProgram = (value: unknown) =>
+  isRecord(value) &&
+  isStringArray(value.allowedElementTypes) &&
+  typeof value.allowsText === 'boolean' &&
+  typeof value.allowsUnknownElements === 'boolean' &&
+  (value.defaultPlan === null ||
+    isContractConstructionPlan(value.defaultPlan)) &&
+  Number.isSafeInteger(value.min) &&
+  (value.min as number) >= 0 &&
+  (value.max === null ||
+    (Number.isSafeInteger(value.max) &&
+      (value.max as number) >= (value.min as number)));
+
+const isContractContentRoot = (value: unknown) =>
+  isRecord(value) &&
+  isContractContentProgram(value.content) &&
+  (value.ownership === 'exclusive' || value.ownership === 'shared');
+
+const isContractElementBehavior = (value: unknown) =>
+  isRecord(value) &&
+  [
+    'atom',
+    'editableIsland',
+    'inline',
+    'isolating',
+    'keyboardSelectable',
+    'markableVoid',
+    'readOnly',
+    'selectable',
+    'void',
+  ].every((key) => typeof value[key] === 'boolean') &&
+  (value.voidKind === null ||
+    value.voidKind === 'block' ||
+    value.voidKind === 'inline');
+
+const isContractElement = (value: unknown) =>
+  isRecord(value) &&
+  typeof value.type === 'string' &&
+  isContractElementBehavior(value.behavior) &&
+  (value.content === null || isContractContentProgram(value.content)) &&
+  isContractEntryArray(value.contentRoots, isContractContentRoot) &&
+  isRecord(value.construction) &&
+  isStringArray(value.construction.materializedPropertyIds) &&
+  isStringArray(value.construction.propertyIds) &&
+  isStringArray(value.groups) &&
+  isStringArray(value.propertyIds) &&
+  isRecord(value.slice) &&
+  typeof value.slice.preserveContext === 'boolean' &&
+  typeof value.slice.replaceWhenCovered === 'boolean';
+
+const isContractRoot = (value: unknown) =>
+  isRecord(value) &&
+  (value.name === null || typeof value.name === 'string') &&
+  isContractContentProgram(value.content);
+
+const isContractJsonValue = (
+  value: unknown,
+  seen: WeakSet<object> = new WeakSet()
+): boolean => {
+  if (
+    value === null ||
+    typeof value === 'string' ||
+    typeof value === 'boolean'
+  ) {
+    return true;
+  }
+  if (typeof value === 'number') return Number.isFinite(value);
+  if (typeof value !== 'object' || seen.has(value)) return false;
+  seen.add(value);
+  const valid = Array.isArray(value)
+    ? value.every((item) => isContractJsonValue(item, seen))
+    : Object.values(value).every((item) => isContractJsonValue(item, seen));
+
+  seen.delete(value);
+
+  return valid;
+};
+
+const isContractTarget = (
+  value: unknown,
+  seen: WeakSet<object> = new WeakSet()
+): boolean => {
+  if (!isRecord(value) || seen.has(value)) return false;
+  seen.add(value);
+  let valid: boolean;
+
+  switch (value.kind) {
+    case 'and':
+    case 'or':
+      valid =
+        Array.isArray(value.targets) &&
+        value.targets.every((item) => isContractTarget(item, seen));
+      break;
+    case 'group':
+      valid = typeof value.group === 'string';
+      break;
+    case 'not':
+    case 'parent':
+      valid = isContractTarget(value.target, seen);
+      break;
+    case 'root':
+      valid = value.root === null || typeof value.root === 'string';
+      break;
+    case 'type':
+      valid = typeof value.type === 'string';
+      break;
+    case 'types':
+      valid = isStringArray(value.types);
+      break;
+    default:
+      return false;
+  }
+
+  seen.delete(value);
+
+  return valid;
+};
+
+const isContractDescriptor = (value: unknown): boolean => {
+  if (
+    !isRecord(value) ||
+    !['boolean', 'enum', 'json', 'number', 'set', 'string'].includes(
+      String(value.kind)
+    ) ||
+    typeof value.omitDefault !== 'boolean' ||
+    typeof value.required !== 'boolean'
+  ) {
+    return false;
+  }
+  if (Object.hasOwn(value, 'default') && !isContractJsonValue(value.default)) {
+    return false;
+  }
+  if (value.generated !== undefined && value.generated !== true) return false;
+  const hasDefault = Object.hasOwn(value, 'default');
+
+  if (value.required && (hasDefault || value.omitDefault)) return false;
+  if (value.generated && (hasDefault || value.omitDefault || value.required)) {
+    return false;
+  }
+  if (
+    value.validationVersion !== undefined &&
+    (!Number.isSafeInteger(value.validationVersion) ||
+      (value.validationVersion as number) < 1)
+  ) {
+    return false;
+  }
+  if (value.kind === 'enum' && !isStringArray(value.values)) return false;
+  if (value.kind === 'set' && !isContractDescriptor(value.item)) return false;
+
+  return true;
+};
+
+const isContractProperty = (value: unknown) =>
+  isRecord(value) &&
+  isContractDescriptor(value.descriptor) &&
+  isStringArray(value.exclusiveGroupIds) &&
+  typeof value.id === 'string' &&
+  (typeof value.key === 'string' ||
+    (isRecord(value.key) &&
+      value.key.kind === 'prefix' &&
+      typeof value.key.prefix === 'string')) &&
+  isRecord(value.lifecycle) &&
+  (value.lifecycle.copy === 'drop' || value.lifecycle.copy === 'preserve') &&
+  (value.lifecycle.inclusive === null ||
+    typeof value.lifecycle.inclusive === 'boolean') &&
+  (value.lifecycle.split === 'drop' || value.lifecycle.split === 'preserve') &&
+  (value.lifecycle.typeChange === 'drop' ||
+    value.lifecycle.typeChange === 'preserve-if-allowed') &&
+  (value.merge === 'replace' || value.merge === 'set') &&
+  typeof value.owner === 'string' &&
+  (value.placement === 'element' || value.placement === 'text') &&
+  (value.role === 'content' || value.role === 'metadata') &&
+  (value.target === null || isContractTarget(value.target));
+
+const isContractLookup = (value: unknown) =>
+  isRecord(value) &&
+  isContractEntryArray(value.exact, isStringArray) &&
+  Array.isArray(value.prefixes) &&
+  value.prefixes.every(
+    (prefix) =>
+      isRecord(prefix) &&
+      typeof prefix.prefix === 'string' &&
+      isStringArray(prefix.propertyIds)
+  );
+
+const isContractLifecycle = (value: unknown) =>
+  isRecord(value) &&
+  (value.copy === 'drop' || value.copy === 'preserve') &&
+  (value.inclusive === null || typeof value.inclusive === 'boolean') &&
+  (value.split === 'drop' || value.split === 'preserve') &&
+  (value.typeChange === 'drop' || value.typeChange === 'preserve-if-allowed');
+
+const isContractVocabulary = (value: unknown) =>
+  isRecord(value) &&
+  ['elementTypes', 'groupNames', 'propertyIds', 'rootNames'].every((key) =>
+    isStringArray(value[key])
+  );
+
+const isEditorSchemaContractShape = (value: Record<string, unknown>) => {
+  const elements = value.elements;
+  const properties = value.properties;
+
+  return (
+    Array.isArray(value.diagnostics) &&
+    value.diagnostics.every(
+      (diagnostic) =>
+        isRecord(diagnostic) &&
+        typeof diagnostic.code === 'string' &&
+        isStringArray(diagnostic.extensions) &&
+        typeof diagnostic.message === 'string' &&
+        typeof diagnostic.path === 'string'
+    ) &&
+    isRecord(elements) &&
+    isContractEntryArray(elements.allowedChildren, isStringArray) &&
+    isContractEntryArray(elements.allowedParents, isStringArray) &&
+    Array.isArray(elements.byType) &&
+    elements.byType.every(isContractElement) &&
+    isContractEntryArray(elements.contentPrograms, isContractContentProgram) &&
+    isContractEntryArray(elements.defaultPlans, isContractConstructionPlan) &&
+    isContractEntryArray(elements.groups, isStringArray) &&
+    isStringArray(elements.textGroups) &&
+    isContractEntryArray(elements.wrapperPlans, isStringArray) &&
+    isRecord(properties) &&
+    Array.isArray(properties.byId) &&
+    properties.byId.every(isContractProperty) &&
+    isContractEntryArray(properties.conflictsByPropertyId, isStringArray) &&
+    isContractEntryArray(properties.elementAllowedByType, isStringArray) &&
+    isContractEntryArray(properties.lifecycle, isContractLifecycle) &&
+    isRecord(properties.lookup) &&
+    isContractLookup(properties.lookup.element) &&
+    isContractLookup(properties.lookup.text) &&
+    isContractEntryArray(properties.mergeStrategies, (item) =>
+      ['replace', 'set'].includes(String(item))
+    ) &&
+    isContractEntryArray(properties.membersByExclusiveGroup, isStringArray) &&
+    isContractEntryArray(properties.textAllowedByParentType, isStringArray) &&
+    isContractRoot(value.primaryRoot) &&
+    Array.isArray(value.roots) &&
+    value.roots.every(isContractRoot) &&
+    isContractVocabulary(value.vocabulary)
+  );
+};
+
+const editorSchemaContractFingerprint = (contract: EditorSchemaContract) => {
+  const content = (program: EditorSchemaContractContentProgram) => ({
+    allowedElementTypes: sortedStrings(program.allowedElementTypes),
+    allowsText: program.allowsText,
+    allowsUnknownElements: program.allowsUnknownElements,
+    defaultPlan: program.defaultPlan,
+    max: program.max,
+    min: program.min,
+  });
+  const rootContent = (program: EditorSchemaContractContentProgram) => ({
+    allowedElementTypes: sortedStrings(program.allowedElementTypes),
+    allowsText: program.allowsText,
+    allowsUnknownElements: program.allowsUnknownElements,
+    defaultPlan: program.defaultPlan,
+    max: program.max,
+    min: program.min,
+  });
+  const canonicalModel = {
+    elements: [...contract.elements.byType]
+      .sort((left, right) => left.type.localeCompare(right.type))
+      .map((element) => ({
+        behavior: element.behavior,
+        content: element.content ? content(element.content) : null,
+        contentRoots: [...element.contentRoots]
+          .sort(([left], [right]) => left.localeCompare(right))
+          .map(([slot, root]) => ({
+            content: content(root.content),
+            ownership: root.ownership,
+            slot,
+          })),
+        construction: {
+          materializedPropertyIds: sortedStrings(
+            element.construction.materializedPropertyIds
+          ),
+          propertyIds: sortedStrings(element.construction.propertyIds),
+        },
+        groups: sortedStrings(element.groups),
+        slice: element.slice,
+        type: element.type,
+      })),
+    groups: [...contract.elements.groups]
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([group, members]) => ({
+        group,
+        members: sortedStrings(members),
+      })),
+    properties: [...contract.properties.byId]
+      .sort((left, right) => left.id.localeCompare(right.id))
+      .map((property) => ({
+        descriptor: canonicalDescriptor(property.descriptor),
+        exclusiveGroupIds: sortedStrings(property.exclusiveGroupIds),
+        id: property.id,
+        key:
+          typeof property.key === 'string'
+            ? { exact: property.key }
+            : { prefix: property.key.prefix },
+        lifecycle: property.lifecycle,
+        merge: property.merge,
+        placement: property.placement,
+        role: property.role,
+        target: canonicalTarget(property.target),
+      })),
+    root: rootContent(contract.primaryRoot.content),
+    roots: [...contract.roots]
+      .sort((left, right) => (left.name ?? '').localeCompare(right.name ?? ''))
+      .map((root) => ({
+        ...rootContent(root.content),
+        name: root.name,
+      })),
+    unknown: contract.unknown,
+  };
+
+  return `fnv1a64:${hashSchemaIdentityString(stableStringify(canonicalModel))}`;
+};
+
+/** Strictly recognize a generated schema contract before runtime use. */
+export const readEditorSchemaContract = (
+  value: unknown
+): EditorSchemaContract | undefined => {
+  if (!isRecord(value)) return;
+  if (value.formatVersion !== EDITOR_SCHEMA_CONTRACT_FORMAT) return;
+  if (typeof value.fingerprint !== 'string' || value.fingerprint.length === 0) {
+    return;
+  }
+  const identity = readEditorSchemaIdentity(value.identity);
+
+  if (!identity || identity.fingerprint !== value.fingerprint) return;
+  if (!isRecord(value.elements) || !isRecord(value.properties)) return;
+  if (!isRecord(value.primaryRoot) || !Array.isArray(value.roots)) return;
+  if (!isRecord(value.vocabulary) || !Array.isArray(value.diagnostics)) return;
+  if (!Number.isSafeInteger(value.revision) || (value.revision as number) < 0) {
+    return;
+  }
+  if (value.unknown !== 'preserve' && value.unknown !== 'reject') return;
+  if (!isEditorSchemaContractShape(value)) return;
+  const contract = value as EditorSchemaContract;
+
+  return editorSchemaContractFingerprint(contract) === contract.fingerprint
+    ? contract
+    : undefined;
+};
+
+const contractContentIncludes = (
+  previous: EditorSchemaContractContentProgram,
+  next: EditorSchemaContractContentProgram
+) => {
+  const nextTypes = new Set(next.allowedElementTypes);
+
+  return (
+    previous.allowedElementTypes.every((type) => nextTypes.has(type)) &&
+    (!previous.allowsText || next.allowsText) &&
+    (!previous.allowsUnknownElements || next.allowsUnknownElements) &&
+    next.min <= previous.min &&
+    (next.max === null || (previous.max !== null && next.max >= previous.max))
+  );
+};
+
+const contractElementRenameSignature = (
+  element: EditorSchemaContractElement
+) => {
+  const {
+    construction: _construction,
+    propertyIds: _propertyIds,
+    type: _type,
+    ...shape
+  } = element;
+
+  return stableStringify(shape);
+};
+
+const contractPropertyKey = (key: SchemaPropertyKey) =>
+  typeof key === 'string' ? key : `${key.prefix}*`;
+
+const contractPropertyRenameSignature = (
+  property: StructuralCompiledSchemaProperty
+) => {
+  const { id: _id, key: _key, owner: _owner, ...shape } = property;
+
+  return stableStringify(shape);
+};
+
+const contractPropertySemanticSignature = (
+  property: StructuralCompiledSchemaProperty
+) => {
+  const { key: _key, owner: _owner, ...shape } = property;
+
+  return stableStringify(shape);
+};
+
+const contractPropertyRequired = (property: StructuralCompiledSchemaProperty) =>
+  property.descriptor.required === true;
+
+const contractPropertyRequiresMaterialization = (
+  property: StructuralCompiledSchemaProperty
+) =>
+  contractPropertyRequired(property) ||
+  property.descriptor.generated === true ||
+  (Object.hasOwn(property.descriptor, 'default') &&
+    !property.descriptor.omitDefault);
+
+const pairContractRenames = <TValue>(
+  removed: readonly TValue[],
+  added: readonly TValue[],
+  signature: (value: TValue) => string
+) => {
+  const removedByShape = new Map<string, TValue[]>();
+  const addedByShape = new Map<string, TValue[]>();
+
+  for (const value of removed) {
+    const shape = signature(value);
+
+    removedByShape.set(shape, [...(removedByShape.get(shape) ?? []), value]);
+  }
+  for (const value of added) {
+    const shape = signature(value);
+
+    addedByShape.set(shape, [...(addedByShape.get(shape) ?? []), value]);
+  }
+
+  const pairs: [TValue, TValue][] = [];
+
+  for (const [shape, previous] of removedByShape) {
+    const next = addedByShape.get(shape);
+
+    if (previous.length === 1 && next?.length === 1) {
+      pairs.push([previous[0]!, next[0]!]);
+    }
+  }
+
+  return pairs;
+};
+
+const contractChange = (
+  kind: EditorSchemaContractChangeKind,
+  path: string,
+  impact: EditorSchemaContractChange['impact'],
+  identity: Readonly<{ from?: string; to?: string }> = {}
+): EditorSchemaContractChange =>
+  Object.freeze({ impact, kind, path, ...identity });
+
+/** Classify structural compatibility without inventing a semantic migration. */
+export const diffEditorSchemaContracts = (
+  previousInput: unknown,
+  nextInput: unknown
+): EditorSchemaContractDiff => {
+  const previous = readEditorSchemaContract(previousInput);
+  const next = readEditorSchemaContract(nextInput);
+
+  if (!previous || !next) {
+    throw new Error('Cannot diff an invalid generated editor schema contract.');
+  }
+
+  const changes: EditorSchemaContractChange[] = [];
+  const previousElements = new Map(
+    previous.elements.byType.map((element) => [element.type, element])
+  );
+  const nextElements = new Map(
+    next.elements.byType.map((element) => [element.type, element])
+  );
+  const removedElements = [...previousElements.values()].filter(
+    ({ type }) => !nextElements.has(type)
+  );
+  const addedElements = [...nextElements.values()].filter(
+    ({ type }) => !previousElements.has(type)
+  );
+  const elementRenames = pairContractRenames(
+    removedElements,
+    addedElements,
+    contractElementRenameSignature
+  );
+  const renamedElementFrom = new Set(elementRenames.map(([value]) => value));
+  const renamedElementTo = new Set(elementRenames.map(([, value]) => value));
+
+  for (const [from, to] of elementRenames) {
+    changes.push(
+      contractChange(
+        'element-renamed',
+        `elements.${from.type}`,
+        'migration-required',
+        { from: from.type, to: to.type }
+      )
+    );
+  }
+  for (const element of removedElements) {
+    if (renamedElementFrom.has(element)) continue;
+    changes.push(
+      contractChange(
+        'element-removed',
+        `elements.${element.type}`,
+        'migration-required',
+        { from: element.type }
+      )
+    );
+  }
+  for (const element of addedElements) {
+    if (renamedElementTo.has(element)) continue;
+    changes.push(
+      contractChange(
+        'element-added',
+        `elements.${element.type}`,
+        'compatible',
+        {
+          to: element.type,
+        }
+      )
+    );
+  }
+  for (const [type, before] of previousElements) {
+    const after = nextElements.get(type);
+
+    if (!after || stableStringify(before) === stableStringify(after)) continue;
+    const {
+      construction: _beforeConstruction,
+      content: beforeContent,
+      propertyIds: _beforePropertyIds,
+      ...beforeRest
+    } = before;
+    const {
+      construction: _afterConstruction,
+      content: afterContent,
+      propertyIds: _afterPropertyIds,
+      ...afterRest
+    } = after;
+
+    if (stableStringify(beforeRest) !== stableStringify(afterRest)) {
+      changes.push(
+        contractChange(
+          'element-changed',
+          `elements.${type}`,
+          'migration-required'
+        )
+      );
+    }
+    if (stableStringify(beforeContent) !== stableStringify(afterContent)) {
+      const expanded =
+        beforeContent !== null &&
+        afterContent !== null &&
+        contractContentIncludes(beforeContent, afterContent);
+
+      changes.push(
+        contractChange(
+          expanded ? 'element-content-expanded' : 'element-content-restricted',
+          `elements.${type}.content`,
+          expanded ? 'compatible' : 'migration-required'
+        )
+      );
+    }
+  }
+
+  const previousProperties = new Map(
+    previous.properties.byId.map((property) => [property.id, property])
+  );
+  const nextProperties = new Map(
+    next.properties.byId.map((property) => [property.id, property])
+  );
+  const removedProperties = [...previousProperties.values()].filter(
+    (property) => !nextProperties.has(property.id)
+  );
+  const addedProperties = [...nextProperties.values()].filter(
+    (property) => !previousProperties.has(property.id)
+  );
+  const propertyRenames = pairContractRenames(
+    removedProperties,
+    addedProperties,
+    contractPropertyRenameSignature
+  );
+  const renamedPropertyFrom = new Set(propertyRenames.map(([value]) => value));
+  const renamedPropertyTo = new Set(propertyRenames.map(([, value]) => value));
+
+  for (const [from, to] of propertyRenames) {
+    changes.push(
+      contractChange(
+        'property-renamed',
+        `properties.${from.id}`,
+        'migration-required',
+        { from: contractPropertyKey(from.key), to: contractPropertyKey(to.key) }
+      )
+    );
+  }
+  for (const property of removedProperties) {
+    if (renamedPropertyFrom.has(property)) continue;
+    changes.push(
+      contractChange(
+        'property-removed',
+        `properties.${property.id}`,
+        'migration-required',
+        { from: contractPropertyKey(property.key) }
+      )
+    );
+  }
+  for (const property of addedProperties) {
+    if (renamedPropertyTo.has(property)) continue;
+    const required = contractPropertyRequired(property);
+    const requiresMigration = contractPropertyRequiresMaterialization(property);
+
+    changes.push(
+      contractChange(
+        required ? 'property-required' : 'property-added',
+        `properties.${property.id}`,
+        requiresMigration ? 'migration-required' : 'compatible',
+        { to: contractPropertyKey(property.key) }
+      )
+    );
+  }
+  for (const [id, before] of previousProperties) {
+    const after = nextProperties.get(id);
+
+    if (!after) continue;
+    const beforeKey = contractPropertyKey(before.key);
+    const afterKey = contractPropertyKey(after.key);
+
+    if (beforeKey !== afterKey) {
+      changes.push(
+        contractChange(
+          'property-renamed',
+          `properties.${before.id}`,
+          'migration-required',
+          { from: beforeKey, to: afterKey }
+        )
+      );
+    }
+    if (
+      contractPropertySemanticSignature(before) ===
+      contractPropertySemanticSignature(after)
+    ) {
+      continue;
+    }
+    const becameRequired =
+      !contractPropertyRequired(before) && contractPropertyRequired(after);
+
+    changes.push(
+      contractChange(
+        becameRequired ? 'property-required' : 'property-changed',
+        `properties.${before.id}`,
+        'migration-required'
+      )
+    );
+  }
+
+  const compareRoot = (
+    path: string,
+    before: EditorSchemaContractRoot | undefined,
+    after: EditorSchemaContractRoot | undefined
+  ) => {
+    if (!before && after) {
+      changes.push(contractChange('root-added', path, 'compatible'));
+    } else if (before && !after) {
+      changes.push(contractChange('root-removed', path, 'migration-required'));
+    } else if (
+      before &&
+      after &&
+      stableStringify(before) !== stableStringify(after)
+    ) {
+      if (before.name !== after.name) {
+        changes.push(
+          contractChange('root-changed', path, 'migration-required')
+        );
+      }
+      if (stableStringify(before.content) !== stableStringify(after.content)) {
+        const expanded = contractContentIncludes(before.content, after.content);
+
+        changes.push(
+          contractChange(
+            expanded ? 'root-content-expanded' : 'root-content-restricted',
+            `${path}.content`,
+            expanded ? 'compatible' : 'migration-required'
+          )
+        );
+      }
+    }
+  };
+
+  compareRoot('roots.main', previous.primaryRoot, next.primaryRoot);
+  const previousRoots = new Map(
+    previous.roots.map((root) => [root.name ?? 'main', root])
+  );
+  const nextRoots = new Map(
+    next.roots.map((root) => [root.name ?? 'main', root])
+  );
+
+  for (const name of new Set([...previousRoots.keys(), ...nextRoots.keys()])) {
+    if (name === 'main') continue;
+    compareRoot(`roots.${name}`, previousRoots.get(name), nextRoots.get(name));
+  }
+
+  if (previous.unknown !== next.unknown) {
+    const expanded =
+      previous.unknown === 'reject' && next.unknown === 'preserve';
+
+    changes.push(
+      contractChange(
+        expanded ? 'unknown-policy-expanded' : 'unknown-policy-restricted',
+        'unknown',
+        expanded ? 'compatible' : 'migration-required',
+        { from: previous.unknown, to: next.unknown }
+      )
+    );
+  }
+
+  const sorted = Object.freeze(
+    changes.sort(
+      (left, right) =>
+        left.path.localeCompare(right.path) ||
+        left.kind.localeCompare(right.kind)
+    )
+  );
+
+  return Object.freeze({
+    changes: sorted,
+    fromFingerprint: previous.fingerprint,
+    requiresMigration: sorted.some(
+      ({ impact }) => impact === 'migration-required'
+    ),
+    toFingerprint: next.fingerprint,
+  });
+};
+
+const restoreContentProgram = (
+  program: EditorSchemaContractContentProgram
+): CompiledSchemaContentProgram =>
+  Object.freeze({
+    ...program,
+    allowedElementTypes: freezeSet(program.allowedElementTypes),
+  });
+
+const restoreContentRoot = (
+  root: EditorSchemaContractContentRoot
+): CompiledSchemaContentRoot =>
+  Object.freeze({
+    content: restoreContentProgram(root.content),
+    ownership: root.ownership,
+  });
+
+const restoreRoot = (root: EditorSchemaContractRoot): CompiledSchemaRoot =>
+  Object.freeze({
+    content: restoreContentProgram(root.content),
+    name: root.name,
+  });
+
+const restoreEntries = <TValue, TResult>(
+  entries: readonly EditorSchemaContractEntry<TValue>[],
+  map: (value: TValue) => TResult
+) => freezeMap(new Map(entries.map(([key, value]) => [key, map(value)])));
+
+const restoreStringSets = (
+  entries: readonly EditorSchemaContractEntry<readonly string[]>[]
+) => restoreEntries(entries, freezeSet);
+
+const restoreElement = (
+  element: EditorSchemaContractElement
+): CompiledSchemaElement =>
+  Object.freeze({
+    ...element,
+    content: element.content ? restoreContentProgram(element.content) : null,
+    contentRoots: restoreEntries(element.contentRoots, restoreContentRoot),
+    construction: Object.freeze({
+      materializedPropertyIds: freezeSet(
+        element.construction.materializedPropertyIds
+      ),
+      propertyIds: freezeSet(element.construction.propertyIds),
+    }),
+    groups: freezeSet(element.groups),
+    propertyIds: freezeSet(element.propertyIds),
+  });
+
+/** Restore a generated structural contract and bind current live validators. */
+export const restoreEditorSchemaContract = (
+  input: unknown,
+  records: readonly EditorSchemaContributionRecord[],
+  revision?: number
+): CompiledEditorSchema => {
+  const contract = readEditorSchemaContract(input);
+
+  if (!contract) {
+    throw new Error('Invalid generated editor schema contract.');
+  }
+  const expected = createEditorSchemaContract(
+    compileEditorSchemaContributions(records, {
+      revision: contract.revision,
+    })
+  );
+
+  if (stableStringify(expected) !== stableStringify(contract)) {
+    throw new Error(
+      'Generated editor schema contract does not match its source contributions.'
+    );
+  }
+
+  const byType = freezeMap(
+    new Map(
+      contract.elements.byType.map((element) => [
+        element.type,
+        restoreElement(element),
+      ])
+    )
+  );
+  const byId = freezeMap(
+    new Map(contract.properties.byId.map((property) => [property.id, property]))
+  );
+  const structural: StructuralCompiledEditorSchema = Object.freeze({
+    diagnostics: contract.diagnostics,
+    elements: Object.freeze({
+      allowedChildren: restoreStringSets(contract.elements.allowedChildren),
+      allowedParents: restoreStringSets(contract.elements.allowedParents),
+      byType,
+      contentPrograms: restoreEntries(
+        contract.elements.contentPrograms,
+        restoreContentProgram
+      ),
+      defaultPlans: restoreEntries(
+        contract.elements.defaultPlans,
+        (value) => value
+      ),
+      groups: restoreStringSets(contract.elements.groups),
+      textGroups: freezeSet(contract.elements.textGroups),
+      wrapperPlans: restoreEntries(contract.elements.wrapperPlans, (value) =>
+        Object.freeze([...value])
+      ),
+    }),
+    identity: contract.identity,
+    primaryRoot: restoreRoot(contract.primaryRoot),
+    properties: Object.freeze({
+      byId,
+      conflictsByPropertyId: restoreStringSets(
+        contract.properties.conflictsByPropertyId
+      ),
+      elementAllowedByType: restoreStringSets(
+        contract.properties.elementAllowedByType
+      ),
+      lifecycle: restoreEntries(
+        contract.properties.lifecycle,
+        (value) => value
+      ),
+      lookup: Object.freeze({
+        element: Object.freeze({
+          exact: restoreEntries(
+            contract.properties.lookup.element.exact,
+            (value) => Object.freeze([...value])
+          ),
+          prefixes: contract.properties.lookup.element.prefixes,
+        }),
+        text: Object.freeze({
+          exact: restoreEntries(
+            contract.properties.lookup.text.exact,
+            (value) => Object.freeze([...value])
+          ),
+          prefixes: contract.properties.lookup.text.prefixes,
+        }),
+      }),
+      mergeStrategies: restoreEntries(
+        contract.properties.mergeStrategies,
+        (value) => value
+      ),
+      membersByExclusiveGroup: restoreStringSets(
+        contract.properties.membersByExclusiveGroup
+      ),
+      textAllowedByParentType: restoreStringSets(
+        contract.properties.textAllowedByParentType
+      ),
+    }),
+    revision: contract.revision,
+    roots: freezeMap(
+      new Map(contract.roots.map((root) => [root.name!, restoreRoot(root)]))
+    ),
+    unknown: contract.unknown,
+    vocabulary: contract.vocabulary,
+  });
+
+  return rebindCompiledEditorSchemaRuntimeValidations(
+    structural,
+    records,
+    revision ?? contract.revision
+  );
+};
+
 const canonicalCompiledContent = (
   content: CompiledSchemaContentProgram | null
 ) =>
@@ -4061,8 +5771,8 @@ const canonicalCompiledConstruction = (
           ownership: root.ownership,
           slot,
         })),
-        defaultPropertyIds: sortedStrings(
-          element.construction.defaultPropertyIds
+        materializedPropertyIds: sortedStrings(
+          element.construction.materializedPropertyIds
         ),
         propertyIds: sortedStrings(element.construction.propertyIds),
       }
@@ -4090,6 +5800,7 @@ const canonicalCompiledPropertyConstruction = (
     ? {
         default: canonicalJson(property.descriptor.default),
         omitDefault: property.descriptor.omitDefault,
+        required: property.descriptor.required,
       }
     : null;
 

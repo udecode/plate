@@ -31,22 +31,22 @@ test('publishes schema-only behavior atomically across primary, named, and proje
     const status = page.getByTestId('schema-reconfiguration-status');
     const document = page.getByTestId('schema-reconfiguration-document');
     const initialDocument = await document.textContent();
-    const initialRuntimeIds = await Promise.all(
-      roots.map((root) => probe(root).getAttribute('data-plite-runtime-id'))
+    const initialNodeKeys = await Promise.all(
+      roots.map((root) => probe(root).getAttribute('data-plite-node-key'))
     );
-    const expectDocumentAndRuntimeIdsStable = async () => {
+    const expectDocumentAndNodeKeysStable = async () => {
       await expect
         .poll(async () => JSON.parse((await document.textContent()) ?? 'null'))
         .toEqual(JSON.parse(initialDocument ?? 'null'));
       expect(
         await Promise.all(
-          roots.map((root) => probe(root).getAttribute('data-plite-runtime-id'))
+          roots.map((root) => probe(root).getAttribute('data-plite-node-key'))
         )
-      ).toEqual(initialRuntimeIds);
+      ).toEqual(initialNodeKeys);
     };
     const expectSchemaOnlyPublication = async (expectedStatus: string) => {
       await expect(status).toHaveText(expectedStatus);
-      await expectDocumentAndRuntimeIdsStable();
+      await expectDocumentAndNodeKeysStable();
 
       const commit = (await primary.get.lastCommit()) as {
         changedRoots?: unknown[];
@@ -106,7 +106,7 @@ test('publishes schema-only behavior atomically across primary, named, and proje
       await island.fill(`nested target ${index}`);
       await expect(island).toHaveValue(`nested target ${index}`);
     }
-    await expectDocumentAndRuntimeIdsStable();
+    await expectDocumentAndNodeKeysStable();
 
     await page.getByRole('button', { name: 'Use read-only schema' }).click();
     await expectSchemaOnlyPublication(

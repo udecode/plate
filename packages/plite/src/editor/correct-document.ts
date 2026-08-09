@@ -11,9 +11,9 @@ import { getExtensionRegistry } from '../core/extension-registry';
 import { toPublicRoot } from '../core/public-root';
 import {
   getActiveTransactionDocumentChange,
-  getEditorRuntimeIdForNode,
   getEditorUpdateRoot,
   getPathByRuntimeId,
+  getRuntimeId,
   isInTransaction,
   runEditorTransaction,
   withTransactionDocumentChangeObserver,
@@ -192,11 +192,8 @@ export const correctDocument = (
       entry: NodeEntry,
       events: readonly EditorCorrectionEvent[]
     ) => {
-      const [targetNode, path] = entry;
-      const runtimeId =
-        path.length === 0
-          ? null
-          : getEditorRuntimeIdForNode(editor, targetNode);
+      const [, path] = entry;
+      const runtimeId = getRuntimeId(editor, path);
 
       for (const event of events) {
         for (const indexed of corrections.get(event)!) {
@@ -334,7 +331,7 @@ export const correctDocument = (
       if (
         runtimePath &&
         target.runtimeId !== null &&
-        getEditorRuntimeIdForNode(editor, entry[0]) !== target.runtimeId
+        getRuntimeId(editor, entry[1]) !== target.runtimeId
       ) {
         return null;
       }

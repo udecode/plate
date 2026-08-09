@@ -3,8 +3,11 @@ import React from 'react';
 import { act, render } from '@testing-library/react';
 import { Plate, PlateContent, createPlateEditor } from '@platejs/core/react';
 import { pipeHandler } from '@platejs/core/react/internal';
+import type { NodeKey } from '@platejs/plite';
 
 import { DndPlugin } from './DndPlugin';
+
+const blockNodeKey = 'runtime-block-1' as NodeKey;
 
 describe('DndPlugin', () => {
   it('updates drag state from the drag handlers', () => {
@@ -19,14 +22,14 @@ describe('DndPlugin', () => {
     } as DataTransfer;
     const event = { dataTransfer, target } as unknown as React.DragEvent;
 
-    target.dataset.blockId = 'block-1';
+    target.dataset.pliteNodeKey = blockNodeKey;
 
     pipeHandler(editor, { handlerKey: 'onDragStart' })?.(event);
     pipeHandler(editor, { handlerKey: 'onDragEnter' })?.(event);
 
     expect(dataTransfer.effectAllowed).toBe('move');
     expect(dataTransfer.dropEffect).toBe('move');
-    expect(context.store.get('draggingId')).toBe('block-1');
+    expect(context.store.get('draggingKey')).toBe(blockNodeKey);
     expect(context.store.get('isDragging')).toBe(true);
     expect(context.store.get('_isOver')).toBe(true);
     const dropResult: unknown = pipeHandler(editor, {
@@ -37,7 +40,7 @@ describe('DndPlugin', () => {
     pipeHandler(editor, { handlerKey: 'onDragEnd' })?.(event);
 
     expect(context.store.get('isDragging')).toBe(false);
-    expect(context.store.get('dropTarget')).toEqual({ id: null, line: '' });
+    expect(context.store.get('dropTarget')).toEqual({ key: null, line: '' });
   });
 
   it('ignores drag starts without a block id and clears preview content on focus', () => {
@@ -64,10 +67,10 @@ describe('DndPlugin', () => {
     pipeHandler(editor, { handlerKey: 'onDragStart' })?.(dragEvent);
     pipeHandler(editor, { handlerKey: 'onFocus' })?.(focusEvent);
 
-    expect(context.store.get('draggingId')).toBeNull();
+    expect(context.store.get('draggingKey')).toBeNull();
     expect(context.store.get('isDragging')).toBe(false);
     expect(context.store.get('_isOver')).toBe(false);
-    expect(context.store.get('dropTarget')).toEqual({ id: null, line: '' });
+    expect(context.store.get('dropTarget')).toEqual({ key: null, line: '' });
     expect(preview.childElementCount).toBe(0);
   });
 
@@ -88,7 +91,7 @@ describe('DndPlugin', () => {
     );
     const editorNode = view.getByTestId('editor');
 
-    block.dataset.blockId = 'block-1';
+    block.dataset.pliteNodeKey = blockNodeKey;
     block.append(blockText);
     editorNode.append(inside, block);
     document.body.append(outside);
@@ -101,17 +104,17 @@ describe('DndPlugin', () => {
     };
 
     act(() => {
-      context.store.set({ dropTarget: { id: 'block-1', line: 'top' } });
+      context.store.set({ dropTarget: { key: blockNodeKey, line: 'top' } });
       outside.dispatchEvent(new Event('dragleave', { bubbles: true }));
     });
     expect(context.store.get('dropTarget')).toBeUndefined();
 
     act(() => {
-      context.store.set({ dropTarget: { id: 'block-1', line: 'top' } });
+      context.store.set({ dropTarget: { key: blockNodeKey, line: 'top' } });
       inside.dispatchEvent(new Event('dragleave', { bubbles: true }));
     });
     expect(context.store.get('dropTarget')).toEqual({
-      id: 'block-1',
+      key: blockNodeKey,
       line: 'top',
     });
 
@@ -121,20 +124,20 @@ describe('DndPlugin', () => {
     expect(context.store.get('dropTarget')).toBeUndefined();
 
     act(() => {
-      context.store.set({ dropTarget: { id: 'block-1', line: 'top' } });
+      context.store.set({ dropTarget: { key: blockNodeKey, line: 'top' } });
       blockText.dispatchEvent(dragLeaveEvent(inside));
     });
     expect(context.store.get('dropTarget')).toBeUndefined();
 
     const nextBlock = document.createElement('div');
-    nextBlock.dataset.blockId = 'block-2';
+    nextBlock.dataset.pliteNodeKey = 'runtime-block-2';
     editorNode.append(nextBlock);
     act(() => {
-      context.store.set({ dropTarget: { id: 'block-1', line: 'top' } });
+      context.store.set({ dropTarget: { key: blockNodeKey, line: 'top' } });
       block.dispatchEvent(dragLeaveEvent(nextBlock));
     });
     expect(context.store.get('dropTarget')).toEqual({
-      id: 'block-1',
+      key: blockNodeKey,
       line: 'top',
     });
 

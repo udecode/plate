@@ -10,6 +10,7 @@ import {
   type EditorDocumentValue,
   type SchemaContentRootSlotsFor,
   type SchemaElementFor,
+  type SchemaElementConstructionPropertiesFor,
   type SchemaElementInput,
   type SchemaElementPropertiesFor,
   type SchemaElementPropertyKeys,
@@ -598,6 +599,25 @@ const headingProperties: SchemaElementPropertiesFor<
   typeof ArticleSchema,
   'heading'
 > = { headingOnly: 2, level: 1, shared: true };
+const GeneratedSchema = defineEditorSchema('schema:generated-inference', {
+  elements: {
+    paragraph: {
+      content: schema.content.text(),
+      properties: {
+        id: property.string({ generate: () => 'generated' }),
+      },
+    },
+  },
+  root: schema.content.type('paragraph'),
+});
+const generatedCanonical: SchemaElementPropertiesFor<
+  typeof GeneratedSchema,
+  'paragraph'
+> = { id: 'generated' };
+const generatedConstruction: SchemaElementConstructionPropertiesFor<
+  typeof GeneratedSchema,
+  'paragraph'
+> = {};
 const textKey: SchemaTextPropertyKeys<typeof ArticleSchema> = 'comment_note';
 const text: SchemaText<typeof ArticleSchema> = {
   bold: true,
@@ -685,12 +705,17 @@ const handledParagraph = editor.read.schema.create(paragraphHandle, {
   align: 'center',
   shared: true,
 });
-const handledAlign: string | undefined = editor.read.schema.getElementProperty(
+const handledAlign: string | undefined = editor.read.schema.getProperty(
   handledParagraph,
   alignHandle
 );
 const handledAlignProperty: EditorSchemaProperty | null =
   editor.read.schema.property(alignHandle);
+editor.update((tx) => {
+  tx.nodes.set({ [alignHandle.key]: 'end' });
+  // @ts-expect-error handle-owned mutations retain their value type
+  tx.nodes.set({ [alignHandle.key]: 1 });
+});
 const exactHandledParagraph: SchemaElementFor<
   typeof ArticleSchema,
   'paragraph'
@@ -764,8 +789,10 @@ const toneHandle = schema.handle.property(calloutHandle, 'tone');
 const handledCallout = composedEditor.read.schema.create(calloutHandle, {
   tone: 'notice',
 });
-const handledTone: string | undefined =
-  composedEditor.read.schema.getElementProperty(handledCallout, toneHandle);
+const handledTone: string | undefined = composedEditor.read.schema.getProperty(
+  handledCallout,
+  toneHandle
+);
 const composedCallout: ReturnType<typeof composedEditor.read.children>[number] =
   {
     children: [{ text: '' }],
@@ -956,6 +983,8 @@ void builtInGroupName;
 void contentRootSlot;
 void explicitValue;
 void groupName;
+void generatedCanonical;
+void generatedConstruction;
 void headingProperties;
 void handledAlign;
 void handledCallout;

@@ -24,7 +24,7 @@ export const FindReplacePlugin = defineBasePlugin(PLUGINS.searchHighlight, {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
   initialState,
-  decorate: ({ editor, entry: [node, path], key, store }) => {
+  decorate: ({ editor, entry: [node, path], schema, store }) => {
     const { search } = store.get();
 
     if (
@@ -107,7 +107,7 @@ export const FindReplacePlugin = defineBasePlugin(PLUGINS.searchHighlight, {
               path: textNodePath,
             },
             search: search.slice(searchOverlapStart, searchOverlapEnd),
-            [key]: true,
+            [schema.key]: true,
           });
         }
         if (matchEnd <= textEnd) {

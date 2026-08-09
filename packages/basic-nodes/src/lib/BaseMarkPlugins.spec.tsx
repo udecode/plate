@@ -40,22 +40,21 @@ const getMarkKey = (
 ) => {
   switch (plugin.name) {
     case BaseBoldPlugin.name:
-      return editor.plugin(BaseBoldPlugin).schema.properties.bold.key;
+      return editor.plugin(BaseBoldPlugin).schema.key;
     case BaseCodePlugin.name:
-      return editor.plugin(BaseCodePlugin).schema.properties.code.key;
+      return editor.plugin(BaseCodePlugin).schema.key;
     case BaseHighlightPlugin.name:
-      return editor.plugin(BaseHighlightPlugin).schema.properties.highlight.key;
+      return editor.plugin(BaseHighlightPlugin).schema.key;
     case BaseItalicPlugin.name:
-      return editor.plugin(BaseItalicPlugin).schema.properties.italic.key;
+      return editor.plugin(BaseItalicPlugin).schema.key;
     case BaseKbdPlugin.name:
-      return editor.plugin(BaseKbdPlugin).schema.properties.kbd.key;
+      return editor.plugin(BaseKbdPlugin).schema.key;
     case BaseScriptPlugin.name:
-      return editor.plugin(BaseScriptPlugin).schema.properties.script.key;
+      return editor.plugin(BaseScriptPlugin).schema.key;
     case BaseStrikethroughPlugin.name:
-      return editor.plugin(BaseStrikethroughPlugin).schema.properties
-        .strikethrough.key;
+      return editor.plugin(BaseStrikethroughPlugin).schema.key;
     case BaseUnderlinePlugin.name:
-      return editor.plugin(BaseUnderlinePlugin).schema.properties.underline.key;
+      return editor.plugin(BaseUnderlinePlugin).schema.key;
   }
 };
 

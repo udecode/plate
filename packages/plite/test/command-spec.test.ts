@@ -374,10 +374,7 @@ describe('pure command transaction specs', () => {
         () => editor.update.nodes.insert({ text: 'x' }),
       ],
       [editorCommands.removeNodes.id, () => editor.update.nodes.remove()],
-      [
-        editorCommands.setNodes.id,
-        () => editor.update.nodes.set({ bold: true }),
-      ],
+      [editorCommands.setNodes.id, () => editor.update.nodes.set({ bold: true })],
       [editorCommands.collapse.id, () => editor.update.selection.collapse()],
       [editorCommands.move.id, () => editor.update.selection.move()],
       [editorCommands.select.id, () => editor.update.selection.set(selection)],
@@ -497,7 +494,7 @@ describe('pure command transaction specs', () => {
       0
     );
     assert.equal(
-      profiledIds.filter((id) => id === 'transaction-runtime-ids').length,
+      profiledIds.filter((id) => id === 'transaction-node-keys').length,
       1
     );
     assert.equal(
@@ -552,7 +549,7 @@ describe('pure command transaction specs', () => {
     assert.equal(editor.read.text.string([]), 'axyb');
     assert.equal(commits, 1);
     assert.equal(
-      profiledIds.filter((id) => id === 'transaction-runtime-ids').length,
+      profiledIds.filter((id) => id === 'transaction-node-keys').length,
       2
     );
     assert.equal(
@@ -947,8 +944,8 @@ describe('pure command transaction specs', () => {
       };
     };
     const previousProfiler = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;
-    const mainRuntimeId = runtime.read.runtime.idAt([0]);
-    const headerRuntimeId = header.read.runtime.idAt([0]);
+    const mainNodeKey = runtime.key([0]);
+    const headerNodeKey = header.key([0]);
 
     runtime.subscribeCommit(() => commits++);
     try {
@@ -976,10 +973,10 @@ describe('pure command transaction specs', () => {
       }
     );
     assert.equal(commits, 2);
-    assert.equal(runtime.read.runtime.idAt([0]), mainRuntimeId);
-    assert.equal(header.read.runtime.idAt([0]), headerRuntimeId);
+    assert.equal(runtime.key([0]), mainNodeKey);
+    assert.equal(header.key([0]), headerNodeKey);
     assert.equal(
-      profiledIds.filter((id) => id === 'transaction-runtime-ids').length,
+      profiledIds.filter((id) => id === 'transaction-node-keys').length,
       2
     );
     assert.equal(
@@ -1389,9 +1386,9 @@ describe('pure command transaction specs', () => {
     );
   });
 
-  it('preserves runtime identity when a command spec splits a block', () => {
+  it('preserves node key when a command spec splits a block', () => {
     const editor = createTextEditor();
-    const blockRuntimeId = editor.read.runtime.idAt([0]);
+    const blockNodeKey = editor.key([0]);
 
     editor.update((tx) => tx.break.insert());
 
@@ -1404,12 +1401,12 @@ describe('pure command transaction specs', () => {
       anchor: { offset: 0, path: [1, 0] },
       focus: { offset: 0, path: [1, 0] },
     });
-    assert.equal(editor.read.runtime.idAt([0]), blockRuntimeId);
-    assert.deepEqual(editor.read.runtime.pathOf(blockRuntimeId!), [0]);
-    assert.notEqual(editor.read.runtime.idAt([1]), blockRuntimeId);
+    assert.equal(editor.key([0]), blockNodeKey);
+    assert.deepEqual(editor.read.nodes.path(blockNodeKey!), [0]);
+    assert.notEqual(editor.key([1]), blockNodeKey);
   });
 
-  it('keeps split runtime identities injective while extending a delegated spec', () => {
+  it('keeps split node keys injective while extending a delegated spec', () => {
     const editor = createEditor({
       extensions: [
         defineExtension('test.extend-split-command', {
@@ -1434,16 +1431,16 @@ describe('pure command transaction specs', () => {
         { type: 'paragraph', children: [{ text: 'ab' }] },
       ] as Value,
     });
-    const blockRuntimeId = editor.read.runtime.idAt([0]);
+    const blockNodeKey = editor.key([0]);
 
     assert.equal(dispatchCommand(editor, editorCommands.insertBreak), true);
     assert.deepEqual(editor.read.children(), [
       { type: 'quote', children: [{ text: '' }] },
       { type: 'paragraph', children: [{ text: 'ab' }] },
     ]);
-    assert.equal(editor.read.runtime.idAt([1]), blockRuntimeId);
-    assert.notEqual(editor.read.runtime.idAt([0]), blockRuntimeId);
-    assert.deepEqual(editor.read.runtime.pathOf(blockRuntimeId!), [1]);
+    assert.equal(editor.key([1]), blockNodeKey);
+    assert.notEqual(editor.key([0]), blockNodeKey);
+    assert.deepEqual(editor.read.nodes.path(blockNodeKey!), [1]);
   });
 
   it('publishes one canonical wrap after transient move steps', () => {
@@ -1460,8 +1457,8 @@ describe('pure command transaction specs', () => {
     });
 
     editor.read.runtime.snapshot();
-    const firstId = editor.read.runtime.idAt([0]);
-    const secondId = editor.read.runtime.idAt([1]);
+    const firstKey = editor.key([0]);
+    const secondKey = editor.key([1]);
 
     editor.update((tx) => {
       tx.nodes.wrap({ type: 'quote', children: [] }, { at: selection });
@@ -1481,17 +1478,17 @@ describe('pure command transaction specs', () => {
       anchor: { offset: 1, path: [0, 0, 0] },
       focus: { offset: 1, path: [0, 1, 0] },
     });
-    assert.deepEqual(editor.read.runtime.pathOf(firstId!), [0, 0]);
-    assert.deepEqual(editor.read.runtime.pathOf(secondId!), [0, 1]);
+    assert.deepEqual(editor.read.nodes.path(firstKey!), [0, 0]);
+    assert.deepEqual(editor.read.nodes.path(secondKey!), [0, 1]);
     assert.equal(editor.read.lastCommit()?.changes.empty, false);
   });
 
-  it('keeps retained runtime identities and cuts explicit replacement identity', () => {
+  it('keeps retained node keys and cuts explicit replacement identity', () => {
     const editor = createTextEditor();
 
     editor.read.runtime.snapshot();
-    const blockId = editor.read.runtime.idAt([0]);
-    const textId = editor.read.runtime.idAt([0, 0]);
+    const blockKey = editor.key([0]);
+    const textKey = editor.key([0, 0]);
 
     editor.update((tx) => {
       tx.nodes.replace(
@@ -1500,25 +1497,28 @@ describe('pure command transaction specs', () => {
       );
     });
 
-    const replacementId = editor.read.runtime.idAt([0]);
+    const replacementKey = editor.key([0]);
     const replacementCommit = editor.read.lastCommit();
 
-    assert.notEqual(replacementId, blockId);
-    assert.notEqual(editor.read.runtime.idAt([0, 0]), textId);
-    assert.equal(editor.read.runtime.pathOf(blockId!), null);
-    assert.equal(editor.read.runtime.pathOf(textId!), null);
-    assert.equal(editor.read.runtime.snapshot().index.idAt([0]), replacementId);
+    assert.notEqual(replacementKey, blockKey);
+    assert.notEqual(editor.key([0, 0]), textKey);
+    assert.equal(editor.read.nodes.path(blockKey!), undefined);
+    assert.equal(editor.read.nodes.path(textKey!), undefined);
+    assert.equal(
+      editor.read.runtime.snapshot().index.keyAt([0]),
+      replacementKey
+    );
     assert.equal(replacementCommit?.changed.has('root-order'), true);
     assert.equal(replacementCommit?.changed.has('structure'), true);
     assert.equal(
-      replacementCommit?.changed.runtimeIds('path').includes(replacementId!),
+      replacementCommit?.changed.nodeKeys('path').includes(replacementKey!),
       true
     );
     assert.deepEqual(replacementCommit?.changed.topLevelRanges(), [[0, 0]]);
 
     editor.update((tx) => tx.nodes.set({ role: 'note' }, { at: [0] }));
 
-    assert.equal(editor.read.runtime.idAt([0]), replacementId);
+    assert.equal(editor.key([0]), replacementKey);
   });
 
   it('publishes the canonical representation produced by a command spec', () => {

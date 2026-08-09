@@ -25,6 +25,9 @@ import {
 } from './internal/selection';
 
 describe('table selection slow contracts', () => {
+  const getFixtureId = (node: Element) =>
+    typeof node.id === 'string' ? node.id : undefined;
+
   {
     jsxt;
 
@@ -524,8 +527,15 @@ describe('table selection slow contracts', () => {
           const editor = createTableEditor(input);
 
           expect(
-            editor.plugin(BaseTablePlugin).read.getSelectedCellIds()
-          ).toStrictEqual(['c11', 'c12', 'c21', 'c22']);
+            editor.plugin(BaseTablePlugin).read.getSelectedCellKeys()
+          ).toStrictEqual(
+            [
+              [0, 0, 0],
+              [0, 0, 1],
+              [0, 1, 0],
+              [0, 1, 1],
+            ].map((path) => editor.key(path)!)
+          );
           expect(
             editor
               .plugin(BaseTablePlugin)
@@ -542,10 +552,16 @@ describe('table selection slow contracts', () => {
             true
           );
           expect(
-            editor.plugin(BaseTablePlugin).read.isCellSelected('c12')
+            editor
+              .plugin(BaseTablePlugin)
+              .read.isCellSelected(editor.key([0, 0, 1])!)
           ).toBe(true);
           expect(
-            editor.plugin(BaseTablePlugin).read.getSelectedCell('c21')?.id
+            getFixtureId(
+              editor
+                .plugin(BaseTablePlugin)
+                .read.getSelectedCell(editor.key([0, 1, 0])!)!
+            )
           ).toBe('c21');
         });
 
@@ -578,7 +594,7 @@ describe('table selection slow contracts', () => {
           const editor = createTableEditor(input);
 
           expect(
-            editor.plugin(BaseTablePlugin).read.getSelectedCellIds()
+            editor.plugin(BaseTablePlugin).read.getSelectedCellKeys()
           ).toBeNull();
           expect(
             editor.plugin(BaseTablePlugin).read.getSelectedCells()
@@ -590,10 +606,14 @@ describe('table selection slow contracts', () => {
             false
           );
           expect(
-            editor.plugin(BaseTablePlugin).read.isCellSelected('c11')
+            editor
+              .plugin(BaseTablePlugin)
+              .read.isCellSelected(editor.key([0, 0, 0])!)
           ).toBe(false);
           expect(
-            editor.plugin(BaseTablePlugin).read.getSelectedCell('c11')
+            editor
+              .plugin(BaseTablePlugin)
+              .read.getSelectedCell(editor.key([0, 0, 0])!)
           ).toBeNull();
         });
 
@@ -624,7 +644,9 @@ describe('table selection slow contracts', () => {
           editor.update.nodes.set({ background: 'red' }, { at: [0, 0, 0] });
 
           expect(
-            editor.plugin(BaseTablePlugin).read.getSelectedCell('c11')
+            editor
+              .plugin(BaseTablePlugin)
+              .read.getSelectedCell(editor.key([0, 0, 0])!)
           ).toMatchObject({
             background: 'red',
             id: 'c11',
@@ -665,13 +687,18 @@ describe('table selection slow contracts', () => {
           });
 
           expect(
-            editor.plugin(BaseTablePlugin).read.getSelectedCellIds()
-          ).toStrictEqual(['c11', 'c12']);
+            editor.plugin(BaseTablePlugin).read.getSelectedCellKeys()
+          ).toStrictEqual(
+            [
+              [0, 0, 0],
+              [0, 0, 1],
+            ].map((path) => editor.key(path)!)
+          );
 
           editor.update.selection.set(editor.read.points.start([0, 0, 0])!);
 
           expect(
-            editor.plugin(BaseTablePlugin).read.getSelectedCellIds()
+            editor.plugin(BaseTablePlugin).read.getSelectedCellKeys()
           ).toBeNull();
         });
 
@@ -711,8 +738,15 @@ describe('table selection slow contracts', () => {
           });
 
           expect(
-            editor.plugin(BaseTablePlugin).read.getSelectedCellIds()
-          ).toStrictEqual(['c11', 'c12', 'c21', 'c22']);
+            editor.plugin(BaseTablePlugin).read.getSelectedCellKeys()
+          ).toStrictEqual(
+            [
+              [0, 0, 0],
+              [0, 0, 1],
+              [0, 1, 0],
+              [0, 1, 1],
+            ].map((path) => editor.key(path)!)
+          );
         });
       });
     });
@@ -723,7 +757,6 @@ describe('table selection slow contracts', () => {
 
     const createTableEditor = (input: TestEditor) =>
       createTestTableEditor({
-        nodeId: true,
         plugins: [
           BaseTablePlugin.configure({
             initialState: { disableMerge: true },
@@ -776,20 +809,31 @@ describe('table selection slow contracts', () => {
             ?.map((cell) => cell.id)
         ).toEqual(['c11', 'c21']);
         expect(
-          editor.plugin(BaseTablePlugin).read.getSelectedCellIds()
-        ).toEqual(['c11', 'c21']);
+          editor.plugin(BaseTablePlugin).read.getSelectedCellKeys()
+        ).toEqual(
+          [
+            [0, 0, 0],
+            [0, 1, 0],
+          ].map((path) => editor.key(path)!)
+        );
         expect(
-          editor.plugin(BaseTablePlugin).read.getSelectedTableIds()
-        ).toEqual(['table-1']);
+          editor.plugin(BaseTablePlugin).read.getSelectedTableKeys()
+        ).toEqual([editor.key([0])!]);
         expect(
           editor.plugin(BaseTablePlugin).read.getSelectedTables()
         ).toHaveLength(1);
         expect(
-          editor.plugin(BaseTablePlugin).read.getSelectedCell('c21')?.id
+          getFixtureId(
+            editor
+              .plugin(BaseTablePlugin)
+              .read.getSelectedCell(editor.key([0, 1, 0])!)!
+          )
         ).toBe('c21');
-        expect(editor.plugin(BaseTablePlugin).read.isCellSelected('c11')).toBe(
-          true
-        );
+        expect(
+          editor
+            .plugin(BaseTablePlugin)
+            .read.isCellSelected(editor.key([0, 0, 0])!)
+        ).toBe(true);
         expect(editor.plugin(BaseTablePlugin).read.isSelectingCell()).toBe(
           true
         );
@@ -820,7 +864,7 @@ describe('table selection slow contracts', () => {
           editor.plugin(BaseTablePlugin).read.getSelectedCells()
         ).toBeNull();
         expect(
-          editor.plugin(BaseTablePlugin).read.getSelectedCellIds()
+          editor.plugin(BaseTablePlugin).read.getSelectedCellKeys()
         ).toBeNull();
         expect(
           editor.plugin(BaseTablePlugin).read.getSelectedTables()
@@ -865,10 +909,10 @@ describe('table selection slow contracts', () => {
           editor.plugin(BaseTablePlugin).read.getSelectedCells()
         ).toBeNull();
         expect(
-          editor.plugin(BaseTablePlugin).read.getSelectedCellIds()
+          editor.plugin(BaseTablePlugin).read.getSelectedCellKeys()
         ).toBeNull();
         expect(
-          editor.plugin(BaseTablePlugin).read.getSelectedTableIds()
+          editor.plugin(BaseTablePlugin).read.getSelectedTableKeys()
         ).toBeNull();
       });
     });
@@ -912,8 +956,8 @@ describe('table selection slow contracts', () => {
     const getSelectionTypes = (
       editor: ReturnType<typeof createTestTableEditor>
     ) => ({
-      cellTypes: [editor.plugin(BaseTableCellPlugin).schema.element.type],
-      tableType: editor.plugin(BaseTablePlugin).schema.element.type,
+      cellTypes: [editor.plugin(BaseTableCellPlugin).schema.type],
+      tableType: editor.plugin(BaseTablePlugin).schema.type,
     });
 
     it('resolves explicit cell geometry by identity across named roots', () => {
@@ -953,7 +997,6 @@ describe('table selection slow contracts', () => {
         type: 'table',
       };
       const editor = createTestTableEditor({
-        nodeId: true,
         plugins: [BaseTablePlugin, RootHolderPlugin],
         initialValue: {
           children: [
@@ -991,7 +1034,6 @@ describe('table selection slow contracts', () => {
 
       for (const removedIndex of ids.keys()) {
         const editor = createTestTableEditor({
-          nodeId: true,
           plugins: [BaseTablePlugin],
           initialValue: [
             {
@@ -1038,8 +1080,8 @@ describe('table selection slow contracts', () => {
           ).size
         ).toBe(expectedIds.length);
         expect(
-          editor.plugin(BaseTablePlugin).read.getSelectedCellIds()
-        ).toEqual(expectedIds);
+          editor.plugin(BaseTablePlugin).read.getSelectedCellKeys()
+        ).toEqual(expectedIds.map((_, index) => editor.key([0, 0, index])!));
         expect(selection.cells).toEqual(
           expectedIds.map((_, index) => {
             const range = editor.read.ranges.get([0, 0, index]);
@@ -1054,7 +1096,6 @@ describe('table selection slow contracts', () => {
 
     it('rejects duplicate and reversed persisted cell ranges', () => {
       const editor = createTestTableEditor({
-        nodeId: true,
         plugins: [BaseTablePlugin],
         initialValue: [createTable('codec')],
       });
@@ -1104,7 +1145,6 @@ describe('table selection slow contracts', () => {
     it('rebases every persisted cell range across generated named-root versions', () => {
       const root = 'table-selection-root';
       const editor = createTestTableEditor({
-        nodeId: true,
         plugins: [BaseTablePlugin, RootHolderPlugin],
         initialValue: {
           children: [
@@ -1130,14 +1170,18 @@ describe('table selection slow contracts', () => {
       assert(focus);
 
       const rootRange = Object.freeze({ anchor, focus });
-      const rootSelectionView = readTableSelection(rootEditor.read, {
-        at: rootRange,
-        ...getSelectionTypes(editor),
-      });
-      const baseSelectionView = readTableSelection(editor.read, {
-        at: rootRange,
-        ...getSelectionTypes(editor),
-      });
+      const rootSelectionView = rootEditor.read((state) =>
+        readTableSelection(state, {
+          at: rootRange,
+          ...getSelectionTypes(editor),
+        })
+      );
+      const baseSelectionView = editor.read((state) =>
+        readTableSelection(state, {
+          at: rootRange,
+          ...getSelectionTypes(editor),
+        })
+      );
 
       assert(rootSelectionView, 'root-scoped table selection view');
       assert(baseSelectionView, 'explicit-root base table selection view');
@@ -1158,10 +1202,14 @@ describe('table selection slow contracts', () => {
       assert(upperRightPoint);
       assert(lowerRightPoint);
       expect(
-        editor.plugin(BaseTablePlugin).read.getLeftCell({ at: lowerRightPoint })
+        editor
+          .plugin(BaseTablePlugin)
+          .read.getAdjacentCell({ at: lowerRightPoint, deltaCol: -1 })
       ).toEqual([expect.objectContaining({ id: 'root-10' }), [0, 1, 0]]);
       expect(
-        editor.plugin(BaseTablePlugin).read.getTopCell({ at: lowerRightPoint })
+        editor
+          .plugin(BaseTablePlugin)
+          .read.getAdjacentCell({ at: lowerRightPoint, deltaRow: -1 })
       ).toEqual([expect.objectContaining({ id: 'root-01' }), [0, 0, 1]]);
       expect(
         editor.plugin(BaseTablePlugin).read.getCellInNextRow(upperLeftPoint)
@@ -1209,13 +1257,17 @@ describe('table selection slow contracts', () => {
           'root-11'.length,
         ]);
 
-        const view = readTableSelection(rootEditor.read, {
-          ...getSelectionTypes(editor),
-        });
+        const view = rootEditor.read((state) =>
+          readTableSelection(state, {
+            ...getSelectionTypes(editor),
+          })
+        );
         const beforeHotRead = readTableSelectionViewMetrics();
-        const hotView = readTableSelection(rootEditor.read, {
-          ...getSelectionTypes(editor),
-        });
+        const hotView = rootEditor.read((state) =>
+          readTableSelection(state, {
+            ...getSelectionTypes(editor),
+          })
+        );
         const afterHotRead = readTableSelectionViewMetrics();
 
         expect(view?.root).toBe(root);
@@ -1223,7 +1275,7 @@ describe('table selection slow contracts', () => {
         expect(afterHotRead.cacheHitCount - beforeHotRead.cacheHitCount).toBe(
           1
         );
-        expect(view?.anchors.map(({ id }) => id)).toEqual([
+        expect(view?.anchors.map(({ key }) => key)).toEqual([
           'root-00',
           'root-01',
           'root-10',

@@ -105,10 +105,9 @@ content lives in `editor.read.root(rootKey)`. Keep ordinary structural content
 in the element's `children`.
 
 ```tsx
-import { defineEditorExtension, schema } from "@platejs/plite";
+import { defineExtension, schema } from "@platejs/plite";
 
-const syncedBlocks = defineEditorExtension({
-  name: "synced-blocks",
+const syncedBlocks = defineExtension("synced-blocks", {
   schema: {
     elements: {
       "synced-block": {

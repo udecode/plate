@@ -70,9 +70,7 @@ const ConstructorInferencePlugin = defineBasePlugin('constructorInference', {
   schema: ({ initialState, plugins }) => ({
     element: {
       content: plugins.blockContent({
-        default: {
-          type: plugins.elementType(ConstructorDependencyPlugin),
-        },
+        default: ConstructorDependencyPlugin,
         min: initialState.count,
       }),
     },
@@ -103,7 +101,7 @@ const constructorCount: number =
 const constructorMode: 'busy' | 'idle' =
   constructorInferenceDefinition.initialState.mode;
 const constructorSchemaContent =
-  constructorInferenceDefinition.schema.element.content;
+  constructorInferenceDefinition.schema.element!.content;
 const constructorShortcuts: true = constructorInferenceDefinition.shortcuts;
 const constructorInferenceEditor = createBaseEditor({
   plugins: [ConstructorInferencePlugin],
@@ -253,7 +251,7 @@ const MarkdownCodecContractPlugin = defineBasePlugin('markdownCodecContract', {
       },
     },
   },
-  codecs: ({ defineCodecs, type }) =>
+  codecs: ({ defineCodecs, schema }) =>
     defineCodecs({
       'text/html': {
         decode: () => ({}),
@@ -264,7 +262,7 @@ const MarkdownCodecContractPlugin = defineBasePlugin('markdownCodecContract', {
         decode: ({ node }) => {
           const exactSource: MdParagraph = node;
           const sourceIsAny: IsAny<typeof node> = false;
-          const targetType: string = type;
+          const targetType: string = schema.type;
 
           void exactSource;
           void sourceIsAny;
@@ -277,7 +275,7 @@ const MarkdownCodecContractPlugin = defineBasePlugin('markdownCodecContract', {
           return {
             align: 'left',
             children: [{ text: '' }],
-            type,
+            type: schema.type,
           };
         },
         encode: ({ node }) => {
@@ -320,9 +318,7 @@ const MarkdownSchemaFactoryCodecContractPlugin = defineBasePlugin(
     schema: ({ plugins }) => ({
       element: {
         content: plugins.blockContent({
-          default: {
-            type: plugins.elementType(MarkdownSchemaFactoryParagraphPlugin),
-          },
+          default: MarkdownSchemaFactoryParagraphPlugin,
           min: 1,
         }),
         properties: {
@@ -330,7 +326,7 @@ const MarkdownSchemaFactoryCodecContractPlugin = defineBasePlugin(
         },
       },
     }),
-    codecs: ({ defineCodecs, type }) =>
+    codecs: ({ defineCodecs, schema }) =>
       defineCodecs({
         'text/html': {
           decode: () => ({}),
@@ -355,7 +351,7 @@ const MarkdownSchemaFactoryCodecContractPlugin = defineBasePlugin(
           decode: ({ node }) => {
             const exactSource: MdParagraph = node;
             const sourceIsAny: IsAny<typeof node> = false;
-            const targetType: string = type;
+            const targetType: string = schema.type;
 
             void exactSource;
             void sourceIsAny;
@@ -368,7 +364,7 @@ const MarkdownSchemaFactoryCodecContractPlugin = defineBasePlugin(
             return {
               align: 'left',
               children: [{ text: '' }],
-              type,
+              type: schema.type,
             };
           },
           encode: ({ node }) => {
@@ -399,7 +395,7 @@ const MarkdownMarkCodecContractPlugin = defineBasePlugin(
   'markdownMarkCodecContract',
   {
     schema: { mark: property.string() },
-    codecs: ({ defineCodecs, key }) =>
+    codecs: ({ defineCodecs, schema }) =>
       defineCodecs({
         'text/html': {
           decode: ({ element }) => element.style.color || undefined,
@@ -411,7 +407,10 @@ const MarkdownMarkCodecContractPlugin = defineBasePlugin(
         },
         'text/markdown': {
           decode: ({ decode, decoration, node }) =>
-            decode(node.children, { ...decoration, [key]: 'red' }),
+            decode(node.children, {
+              ...decoration,
+              [schema.key]: 'red',
+            }),
           encode: ({ node }) => ({
             attributes: [],
             children: [{ type: 'text', value: node.text }],
@@ -611,11 +610,11 @@ defineBasePlugin('invalidHtmlMarkOutput', {
 
 const HtmlAlignContractPlugin = defineBasePlugin('htmlAlignContract', {
   schema: {
-    properties: [
-      schema.elementProperty('align', property.string(), {
+    properties: {
+      align: schema.elementProperty(property.string(), {
         target: target.type('htmlParagraphContract'),
       }),
-    ],
+    },
   },
   codecs: ({ defineCodecs }) =>
     defineCodecs({
@@ -639,11 +638,11 @@ void HtmlAlignContractPlugin;
 
 defineBasePlugin('invalidHtmlPropertyOutput', {
   schema: {
-    properties: [
-      schema.elementProperty('align', property.string(), {
+    properties: {
+      align: schema.elementProperty(property.string(), {
         target: target.type('htmlParagraphContract'),
       }),
-    ],
+    },
   },
   codecs: ({ defineCodecs }) =>
     defineCodecs({
@@ -658,14 +657,14 @@ defineBasePlugin('invalidHtmlPropertyOutput', {
 
 const HtmlListContractPlugin = defineBasePlugin('htmlListContract', {
   schema: {
-    properties: [
-      schema.elementProperty('listStart', property.number(), {
+    properties: {
+      listStart: schema.elementProperty(property.number(), {
         target: target.type('htmlParagraphContract'),
       }),
-      schema.elementProperty('listStyle', property.string(), {
+      listStyle: schema.elementProperty(property.string(), {
         target: target.type('htmlParagraphContract'),
       }),
-    ],
+    },
   },
   targetPlugins: [HtmlParagraphContractPlugin],
   codecs: ({ defineCodecs }) =>
@@ -710,14 +709,14 @@ void HtmlListContractPlugin;
 
 const HtmlMixedListContractPlugin = defineBasePlugin('htmlMixedListContract', {
   schema: {
-    properties: [
-      schema.elementProperty('listStart', property.number(), {
+    properties: {
+      listStart: schema.elementProperty(property.number(), {
         target: target.type('htmlParagraphContract'),
       }),
-      schema.elementProperty('listStyle', property.string(), {
+      listStyle: schema.elementProperty(property.string(), {
         target: target.type('htmlParagraphContract'),
       }),
-    ],
+    },
   },
   targetPlugins: [HtmlParagraphContractPlugin],
   codecs: ({ defineCodecs }) =>
@@ -760,11 +759,15 @@ const PrefixHtmlContractPlugin = defineBasePlugin('prefixHtmlContract', {
       },
     }),
   schema: {
-    properties: [
-      schema.elementProperty(schema.key.prefix('data-'), property.string(), {
-        target: target.type('htmlParagraphContract'),
-      }),
-    ],
+    properties: {
+      data: schema.elementProperty(
+        schema.key.prefix('data-'),
+        property.string(),
+        {
+          target: target.type('htmlParagraphContract'),
+        }
+      ),
+    },
   },
 });
 

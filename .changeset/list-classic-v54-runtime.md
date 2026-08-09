@@ -15,7 +15,7 @@ and the plugin-scoped commands:
 const list = editor.plugin(ListPlugin);
 
 list.update.toggle({
-  type: editor.plugin(PLUGINS.bulletedList).type,
+  type: editor.plugin(BulletedListPlugin).schema.type,
 });
 list.update.indent();
 list.update.outdent();

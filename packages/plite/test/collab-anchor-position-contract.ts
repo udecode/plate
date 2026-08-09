@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   getLastCommit as editorGetLastCommit,
-  getPathByRuntimeId as editorGetPathByRuntimeId,
-  getRuntimeId as editorGetRuntimeId,
+  getPathByNodeKey as editorGetPathByNodeKey,
+  getNodeKey as editorGetNodeKey,
   replace as editorReplace,
   string as editorString,
 } from '@platejs/plite/internal';
@@ -170,15 +170,15 @@ describe('collab anchor position contract', () => {
 
   it('rebases an anchored range when its containing block moves remotely', () => {
     const editor = createCollabEditor([paragraph('alpha'), paragraph('beta')]);
-    const movedBlockRuntimeId = editorGetRuntimeId(editor, [1]);
-    const movedTextRuntimeId = editorGetRuntimeId(editor, [1, 0]);
+    const movedBlockNodeKey = editorGetNodeKey(editor, [1]);
+    const movedTextNodeKey = editorGetNodeKey(editor, [1, 0]);
     const anchor = createRangeAnchor(
       editor,
       range({ path: [1, 0], offset: 1 }, { path: [1, 0], offset: 3 })
     );
 
-    assert(movedBlockRuntimeId);
-    assert(movedTextRuntimeId);
+    assert(movedBlockNodeKey);
+    assert(movedTextNodeKey);
 
     importRemote(editor, (tx) => {
       tx.nodes.move({ at: [1], to: [0] });
@@ -187,14 +187,8 @@ describe('collab anchor position contract', () => {
     const resolved = anchor.resolve();
 
     assertLastRemoteCommit(editor);
-    assert.deepEqual(
-      editorGetPathByRuntimeId(editor, movedBlockRuntimeId),
-      [0]
-    );
-    assert.deepEqual(
-      editorGetPathByRuntimeId(editor, movedTextRuntimeId),
-      [0, 0]
-    );
+    assert.deepEqual(editorGetPathByNodeKey(editor, movedBlockNodeKey), [0]);
+    assert.deepEqual(editorGetPathByNodeKey(editor, movedTextNodeKey), [0, 0]);
     assert.deepEqual(resolved, {
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 3 },

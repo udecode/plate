@@ -1,21 +1,29 @@
 import React from 'react';
 
 import { useEditor, useElement } from '@platejs/core/react';
-import type { TMediaElement } from '@platejs/utils';
 import { useHotkeys } from '@udecode/react-hotkeys';
 
 import type { MediaPlugin } from '../plugins';
 import { FloatingMediaStore } from './FloatingMediaStore';
 
-export const useFloatingMediaEditButton = () => {
-  const element = useElement<TMediaElement>();
+export const useFloatingMediaEditButton = ({
+  plugin,
+}: {
+  plugin: MediaPlugin;
+}) => {
+  const element = useElement(plugin);
 
   return {
     props: {
       onClick: React.useCallback(() => {
-        FloatingMediaStore.set('url', element.sourceUrl ?? element.url);
+        const sourceUrl =
+          'sourceUrl' in element && typeof element.sourceUrl === 'string'
+            ? element.sourceUrl
+            : undefined;
+
+        FloatingMediaStore.set('url', sourceUrl ?? element.url);
         FloatingMediaStore.set('isEditing', true);
-      }, [element.sourceUrl, element.url]),
+      }, [element]),
     },
   };
 };
@@ -26,26 +34,18 @@ export const useFloatingMediaUrlInputState = ({
   plugin: MediaPlugin;
 }) => {
   const editor = useEditor();
-  const element = useElement<TMediaElement>();
+  const element = useElement(plugin);
 
   useHotkeys(
     'enter',
     (event) => {
       const url = FloatingMediaStore.get('url');
-      const properties = editor.plugin(plugin).api.normalizeUrl(url);
 
-      if (url !== element.url) {
-        if (!properties) return;
-
-        editor.update.nodes.set<TMediaElement>(
-          {
-            provider: properties.provider,
-            sourceUrl: properties.sourceUrl,
-            url: properties.url,
-          },
-          { at: element }
-        );
-      }
+      if (
+        url !== element.url &&
+        !editor.plugin(plugin).update.setUrl({ element, url })
+      )
+        return;
 
       FloatingMediaStore.actions.reset();
       editor.api.dom.focus();

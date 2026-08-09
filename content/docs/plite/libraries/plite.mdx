@@ -22,10 +22,9 @@ const editor = createEditor({
 Use `isEditor` when library code needs to validate an unknown value before
 treating it as an editor.
 
-Use `createEditorRuntime` and `createEditorView` when framework/runtime packages
-need multiple root-scoped editor views over one committed editor runtime. App UI
-should normally use the framework package helpers, such as `usePliteEditor` in
-`@platejs/plite-react`.
+Use `createEditorView(editor, options)` when framework packages need a
+root-scoped view over a committed editor. App UI should normally use framework
+helpers such as `usePliteEditor` in `@platejs/plite-react`.
 
 Read committed state with direct read methods, or with `editor.read(...)` when
 several reads should share one state view.
@@ -58,8 +57,8 @@ editor.update((tx) => {
 Core document and editor shapes include `Editor`, `BaseEditor`, `Value`,
 `InitialValue`, `Selection`, `RootKey`, and `RuntimeId`.
 
-Runtime, view, snapshot, and commit types include `EditorRuntime`,
-`EditorView`, `EditorSnapshot`, `EditorCommit`, `EditorCommitChanged`,
+View, snapshot, and commit types include `EditorView`, `EditorSnapshot`,
+`EditorCommit`, `EditorCommitChanged`,
 `EditorCommitChangeKind`, `EditorCommitRuntimeChangeKind`,
 `SnapshotInput`, and `SnapshotListener`.
 
@@ -135,9 +134,9 @@ update the editor with `context.afterPublish`; it runs after commit observers.
 Activation, validation, API factories, and cleanup are synchronous.
 
 ```ts
-import { defineEditorExtension } from "@platejs/plite";
+import { defineExtension } from "@platejs/plite";
 
-const extension = defineEditorExtension({
+const extension = defineExtension("host-state", {
   activate(editor, context) {
     const unsubscribe = subscribeToHostState(refreshHostCache);
 
@@ -147,9 +146,7 @@ const extension = defineEditorExtension({
         tx.marks.set(null);
       });
     });
-  },
-  name: "host-state",
-});
+  },});
 ```
 
 ## Helper Namespaces

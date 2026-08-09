@@ -1361,10 +1361,10 @@ test.describe('images example', () => {
     });
     expect(proof.focusOwner.kind).toBe('editor');
     expect(proof.selectionShells?.anchor.node?.path).toBe('1,0');
-    expect(proof.selectionShells?.anchor.node?.runtimeId).toBeTruthy();
+    expect(proof.selectionShells?.anchor.node?.nodeKey).toBeTruthy();
     expect(proof.selectionShells?.anchor.element?.path).toBe('1');
     expect(proof.selectionShells?.anchor.element?.isVoid).toBe(true);
-    expect(proof.selectionShells?.runtimeIds.length).toBeGreaterThanOrEqual(2);
+    expect(proof.selectionShells?.nodeKeys.length).toBeGreaterThanOrEqual(2);
     expect(proof.renderCounts.byKind.editable ?? 0).toBeLessThanOrEqual(2);
     expect(proof.renderCounts.byKind.void ?? 0).toBeLessThanOrEqual(1);
     expect(proof.renderCounts.byKind.element ?? 0).toBeLessThanOrEqual(1);

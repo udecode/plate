@@ -178,7 +178,7 @@ property key 和 value law 保持固定；更改它们需要新字段和显式 m
 已安装代码从 schema handle 读取最终 identity：
 
 ```ts
-editor.plugin(H1Plugin).schema.element.type; // 'headingOne'
+editor.plugin(H1Plugin).schema.type; // 'headingOne'
 EditorKit.schema.properties.reviewState.key; // 'reviewState'
 ```
 
@@ -243,7 +243,8 @@ const editor = createPlateEditor({
 });
 ```
 
-如果定义了ID，在任何编辑器检索方法中都应该将其作为第一个参数传递。
+当 controller-aware hook 需要选择特定的已挂载 editor 时，传入同一个 ID，
+例如 `useEditor({ id: 'my-custom-editor-id' })`。
 
 ### 节点ID
 
@@ -274,20 +275,11 @@ const editor = usePlateEditor({
     // 控制初始值中的 ID 分配（默认：'if-needed'）
     // 使用 'always' 为初始值中的所有缺失 ID 补齐
     initialValueIds: 'always',
-    // 禁止覆盖插入节点的现有ID（默认：false）
-    disableInsertOverrides: false,
+    // 始终生成新 ID，而不是复用不冲突的来源 ID（默认：false）
+    disableInsertOverrides: true,
 
-    // 仅允许特定节点类型获取ID（默认：全部）
-    allow: ['p', 'h1'], 
-
-    // 排除特定节点类型获取ID（默认：[]）
-    exclude: ['codeBlock'],
-
-    // 自定义过滤函数决定节点是否获取ID
-    filter: ([node, path]) => {
-      // 示例：仅对顶层块分配ID
-      return path.length === 1;
-    },
+    // 进一步限制经过上述过滤器后的候选节点（默认：全部）
+    match: (_node, path) => path.length === 1,
   },
 });
 ```
@@ -348,8 +340,8 @@ const editor = createPlateEditor({
 const editor = createPlateEditor({
   plugins: [H1Plugin],
   components: {
-    [ParagraphPlugin.name]: CustomParagraphComponent,
-    [H1Plugin.name]: CustomHeadingComponent,
+    paragraph: CustomParagraphComponent,
+    h1: CustomHeadingComponent,
   },
 });
 ```
@@ -375,10 +367,13 @@ const editor = createPlateEditor({
 包插件可能需要适配另一个已安装的包，但不能导入它，也不能控制使用者的编辑器 kit：
 
 ```ts
+import { PLUGINS } from 'platejs';
+import { definePlatePlugin } from 'platejs/react';
+
 const SingleBlockPlugin = definePlatePlugin(PLUGINS.singleBlock, {
   override: {
     plugins: {
-      ['trailingBlock']: {
+      [PLUGINS.trailingBlock]: {
         enabled: false,
       },
     },
@@ -420,7 +415,7 @@ const editor = createPlateEditor({
 
 // 使用
 editor.update((tx) => {
-  tx.insert.tableRow();
+  tx.table.insertRow();
 });
 ```
 
@@ -441,7 +436,7 @@ export type MyValue = ValueOf<MyEditor>;
 export const useMyEditor = () => useEditor<MyEditor>();
 
 const value: MyValue = [{
-  type: ParagraphPlugin.type,
+  type: 'paragraph',
   children: [{ text: '你好，Plate!' }],
 }];
 

@@ -1,9 +1,9 @@
-import type { RuntimeId } from '@platejs/plite';
+import type { NodeKey } from '@platejs/plite';
 import { describe, expect, it } from 'vitest';
 
 import { createSegmentPlan } from '../src/dom-strategy/create-segment-plan';
 
-const runtimeIds = ['a' as RuntimeId];
+const nodeKeys = ['a' as NodeKey];
 
 describe('createSegmentPlan', () => {
   it('rejects invalid segment sizes before planning segments', () => {
@@ -14,7 +14,7 @@ describe('createSegmentPlan', () => {
           overscan: 0,
           promotedSegmentIndex: null,
           segmentSize,
-          topLevelRuntimeIds: runtimeIds,
+          topLevelNodeKeys: nodeKeys,
         })
       ).toThrow(RangeError);
     }

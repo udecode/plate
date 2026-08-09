@@ -11,8 +11,8 @@ import {
   TextApi,
 } from '@platejs/plite';
 import {
-  getPathByRuntimeId as editorGetPathByRuntimeId,
-  getRuntimeId as editorGetRuntimeId,
+  getPathByNodeKey as editorGetPathByNodeKey,
+  getNodeKey as editorGetNodeKey,
   getSnapshot as editorGetSnapshot,
   replace as editorReplace,
 } from '@platejs/plite/internal';
@@ -244,7 +244,7 @@ describe('plite-react projections and selection contract', () => {
 
     act(() => {
       refreshListener?.({
-        changedRuntimeIds: ['runtime:a'],
+        changedNodeKeys: ['runtime:a'],
         didChange: true,
         reason: 'external',
         requiresDOMSelectionExport: true,
@@ -899,11 +899,11 @@ describe('plite-react projections and selection contract', () => {
     });
 
     const snapshot = editorGetSnapshot(editor);
-    const firstRuntimeId = snapshot.index.idAt([0, 0]);
-    const secondRuntimeId = snapshot.index.idAt([1, 0]);
+    const firstNodeKey = snapshot.index.keyAt([0, 0]);
+    const secondNodeKey = snapshot.index.keyAt([1, 0]);
 
-    if (!firstRuntimeId || !secondRuntimeId) {
-      throw new Error('Expected runtime ids for mapped projection proof');
+    if (!firstNodeKey || !secondNodeKey) {
+      throw new Error('Expected node keys for mapped projection proof');
     }
 
     let sourceCalls = 0;
@@ -944,14 +944,14 @@ describe('plite-react projections and selection contract', () => {
       }
     );
 
-    store.subscribeRuntimeId(firstRuntimeId, () => {
+    store.subscribeNodeKey(firstNodeKey, () => {
       firstRuntimeNotifications += 1;
     });
-    store.subscribeRuntimeId(secondRuntimeId, () => {
+    store.subscribeNodeKey(secondNodeKey, () => {
       secondRuntimeNotifications += 1;
     });
 
-    expect(store.getRuntimeSnapshot(secondRuntimeId)).toEqual([
+    expect(store.getRuntimeSnapshot(secondNodeKey)).toEqual([
       {
         data: { blockIndex: 1 },
         end: 1,
@@ -966,8 +966,8 @@ describe('plite-react projections and selection contract', () => {
       });
     });
 
-    expect(editorGetPathByRuntimeId(editor, secondRuntimeId)).toEqual([0, 0]);
-    expect(store.getRuntimeSnapshot(secondRuntimeId)).toEqual([
+    expect(editorGetPathByNodeKey(editor, secondNodeKey)).toEqual([0, 0]);
+    expect(store.getRuntimeSnapshot(secondNodeKey)).toEqual([
       {
         data: { blockIndex: 0 },
         end: 1,
@@ -1006,12 +1006,12 @@ describe('plite-react projections and selection contract', () => {
     });
 
     const snapshot = editorGetSnapshot(editor);
-    const firstRuntimeId = snapshot.index.idAt([0, 0, 0]);
-    const movedRuntimeId = snapshot.index.idAt([0, 1, 0]);
-    const trailingRuntimeId = snapshot.index.idAt([1, 0]);
+    const firstNodeKey = snapshot.index.keyAt([0, 0, 0]);
+    const movedNodeKey = snapshot.index.keyAt([0, 1, 0]);
+    const trailingNodeKey = snapshot.index.keyAt([1, 0]);
 
-    if (!firstRuntimeId || !movedRuntimeId || !trailingRuntimeId) {
-      throw new Error('Expected runtime ids for nested move projection proof');
+    if (!firstNodeKey || !movedNodeKey || !trailingNodeKey) {
+      throw new Error('Expected node keys for nested move projection proof');
     }
 
     let movedRuntimeNotifications = 0;
@@ -1026,17 +1026,17 @@ describe('plite-react projections and selection contract', () => {
       }
     );
 
-    store.subscribeRuntimeId(movedRuntimeId, () => {
+    store.subscribeNodeKey(movedNodeKey, () => {
       movedRuntimeNotifications += 1;
     });
-    store.subscribeRuntimeId(firstRuntimeId, () => {
+    store.subscribeNodeKey(firstNodeKey, () => {
       firstRuntimeNotifications += 1;
     });
-    store.subscribeRuntimeId(trailingRuntimeId, () => {
+    store.subscribeNodeKey(trailingNodeKey, () => {
       trailingRuntimeNotifications += 1;
     });
 
-    expect(store.getRuntimeSnapshot(movedRuntimeId)).toEqual([
+    expect(store.getRuntimeSnapshot(movedNodeKey)).toEqual([
       {
         data: { bold: true },
         end: 1,
@@ -1051,8 +1051,8 @@ describe('plite-react projections and selection contract', () => {
       });
     });
 
-    expect(editorGetPathByRuntimeId(editor, movedRuntimeId)).toEqual([1, 0]);
-    expect(store.getRuntimeSnapshot(movedRuntimeId)).toEqual([
+    expect(editorGetPathByNodeKey(editor, movedNodeKey)).toEqual([1, 0]);
+    expect(store.getRuntimeSnapshot(movedNodeKey)).toEqual([
       {
         data: { bold: true },
         end: 1,
@@ -1073,7 +1073,7 @@ describe('plite-react projections and selection contract', () => {
     store.destroy();
   });
 
-  test('notifies only subscribers for runtime ids whose projection slices changed', async () => {
+  test('notifies only subscribers for node keys whose projection slices changed', async () => {
     const editor = createEditor();
 
     editorReplace(editor, {
@@ -1082,11 +1082,11 @@ describe('plite-react projections and selection contract', () => {
     });
 
     const snapshot = editorGetSnapshot(editor);
-    const firstRuntimeId = snapshot.index.idAt([0, 0]);
-    const secondRuntimeId = snapshot.index.idAt([1, 0]);
+    const firstNodeKey = snapshot.index.keyAt([0, 0]);
+    const secondNodeKey = snapshot.index.keyAt([1, 0]);
 
-    if (!firstRuntimeId || !secondRuntimeId) {
-      throw new Error('Expected runtime ids for projection subscription proof');
+    if (!firstNodeKey || !secondNodeKey) {
+      throw new Error('Expected node keys for projection subscription proof');
     }
 
     const store = createPliteProjectionStore(editor, (nextSnapshot) =>
@@ -1122,12 +1122,12 @@ describe('plite-react projections and selection contract', () => {
 
     const ProjectionProbe = ({
       label,
-      runtimeId,
+      nodeKey,
     }: {
       label: keyof typeof renders;
-      runtimeId: string;
+      nodeKey: string;
     }) => {
-      const projections = usePliteProjectionEntries(runtimeId);
+      const projections = usePliteProjectionEntries(nodeKey);
 
       renders[label] += 1;
 
@@ -1136,8 +1136,8 @@ describe('plite-react projections and selection contract', () => {
 
     const rendered = render(
       <ProjectionContext.Provider value={store}>
-        <ProjectionProbe label="first" runtimeId={firstRuntimeId} />
-        <ProjectionProbe label="second" runtimeId={secondRuntimeId} />
+        <ProjectionProbe label="first" nodeKey={firstNodeKey} />
+        <ProjectionProbe label="second" nodeKey={secondNodeKey} />
       </ProjectionContext.Provider>
     );
 
@@ -1164,7 +1164,7 @@ describe('plite-react projections and selection contract', () => {
     store.destroy();
   });
 
-  test('useDecorationSelector derives one runtime id without rerendering for sibling projections', async () => {
+  test('useDecorationSelector derives one node key without rerendering for sibling projections', async () => {
     const editor = createEditor();
 
     editorReplace(editor, {
@@ -1173,11 +1173,11 @@ describe('plite-react projections and selection contract', () => {
     });
 
     const snapshot = editorGetSnapshot(editor);
-    const firstRuntimeId = snapshot.index.idAt([0, 0]);
-    const secondRuntimeId = snapshot.index.idAt([1, 0]);
+    const firstNodeKey = snapshot.index.keyAt([0, 0]);
+    const secondNodeKey = snapshot.index.keyAt([1, 0]);
 
-    if (!firstRuntimeId || !secondRuntimeId) {
-      throw new Error('Expected runtime ids for decoration selector proof');
+    if (!firstNodeKey || !secondNodeKey) {
+      throw new Error('Expected node keys for decoration selector proof');
     }
 
     const store = createPliteProjectionStore(editor, (nextSnapshot) =>
@@ -1214,7 +1214,7 @@ describe('plite-react projections and selection contract', () => {
 
     const ProjectionProbe = () => {
       const label = useDecorationSelector(decorationSelector, undefined, {
-        runtimeId: firstRuntimeId,
+        nodeKey: firstNodeKey,
       });
 
       renders.first += 1;
@@ -1264,7 +1264,7 @@ describe('plite-react projections and selection contract', () => {
     expect(renders.first).toBe(2);
     expect(decorationSelector).toBeCalledTimes(3);
 
-    expect(store.getRuntimeSnapshot(secondRuntimeId)).toHaveLength(1);
+    expect(store.getRuntimeSnapshot(secondNodeKey)).toHaveLength(1);
 
     store.destroy();
   });
@@ -1278,10 +1278,10 @@ describe('plite-react projections and selection contract', () => {
     });
 
     const snapshot = editorGetSnapshot(editor);
-    const firstRuntimeId = snapshot.index.idAt([0, 0]);
+    const firstNodeKey = snapshot.index.keyAt([0, 0]);
 
-    if (!firstRuntimeId) {
-      throw new Error('Expected runtime id for source recompute proof');
+    if (!firstNodeKey) {
+      throw new Error('Expected node key for source recompute proof');
     }
 
     let sourceCalls = 0;
@@ -1308,7 +1308,7 @@ describe('plite-react projections and selection contract', () => {
       },
       {
         dirtiness: 'text',
-        runtimeScope: () => [firstRuntimeId],
+        runtimeScope: () => [firstNodeKey],
       }
     );
 
@@ -1357,29 +1357,29 @@ describe('plite-react projections and selection contract', () => {
     });
 
     const snapshot = editorGetSnapshot(editor);
-    const firstRuntimeId = snapshot.index.idAt([0, 0]);
-    const secondRuntimeId = snapshot.index.idAt([1, 0]);
+    const firstNodeKey = snapshot.index.keyAt([0, 0]);
+    const secondNodeKey = snapshot.index.keyAt([1, 0]);
 
-    if (!firstRuntimeId || !secondRuntimeId) {
-      throw new Error('Expected runtime ids for scoped projection read proof');
+    if (!firstNodeKey || !secondNodeKey) {
+      throw new Error('Expected node keys for scoped projection read proof');
     }
 
-    let runtimeScope = [firstRuntimeId] as readonly string[];
+    let runtimeScope = [firstNodeKey] as readonly string[];
     const sourceScopes: (readonly string[] | null)[] = [];
     const store = createDecorationSource(editor, {
       id: 'scoped-source',
       read: ({ runtimeScope: readRuntimeScope, snapshot: nextSnapshot }) => {
         sourceScopes.push(readRuntimeScope);
 
-        return (readRuntimeScope ?? []).map((runtimeId) => {
-          const path = nextSnapshot.index.pathOf(runtimeId);
+        return (readRuntimeScope ?? []).map((nodeKey) => {
+          const path = nextSnapshot.index.pathOf(nodeKey);
           const text = NodeApi.get(
             { children: nextSnapshot.children } as never,
             path
           ) as { text: string };
 
           return {
-            key: runtimeId,
+            key: nodeKey,
             range: {
               kind: 'text',
               anchor: { path, offset: 0 },
@@ -1391,16 +1391,16 @@ describe('plite-react projections and selection contract', () => {
       runtimeScope: () => runtimeScope,
     });
 
-    expect(sourceScopes).toEqual([[firstRuntimeId]]);
-    expect(store.getSnapshot()[firstRuntimeId]).toHaveLength(1);
-    expect(store.getSnapshot()[secondRuntimeId]).toBeUndefined();
+    expect(sourceScopes).toEqual([[firstNodeKey]]);
+    expect(store.getSnapshot()[firstNodeKey]).toHaveLength(1);
+    expect(store.getSnapshot()[secondNodeKey]).toBeUndefined();
 
-    runtimeScope = [secondRuntimeId];
+    runtimeScope = [secondNodeKey];
     store.refresh({ reason: 'external' });
 
-    expect(sourceScopes).toEqual([[firstRuntimeId], [secondRuntimeId]]);
-    expect(store.getSnapshot()[firstRuntimeId]).toBeUndefined();
-    expect(store.getSnapshot()[secondRuntimeId]).toHaveLength(1);
+    expect(sourceScopes).toEqual([[firstNodeKey], [secondNodeKey]]);
+    expect(store.getSnapshot()[firstNodeKey]).toBeUndefined();
+    expect(store.getSnapshot()[secondNodeKey]).toHaveLength(1);
 
     store.destroy();
   });
@@ -1413,10 +1413,10 @@ describe('plite-react projections and selection contract', () => {
       selection: null,
     });
 
-    const firstBlockRuntimeId = editorGetSnapshot(editor).index.idAt([0]);
+    const firstBlockNodeKey = editorGetSnapshot(editor).index.keyAt([0]);
 
-    if (!firstBlockRuntimeId) {
-      throw new Error('Expected block runtime id for scoped decorate proof');
+    if (!firstBlockNodeKey) {
+      throw new Error('Expected block node key for scoped decorate proof');
     }
 
     const decoratedPaths = new Set<string>();
@@ -1429,7 +1429,7 @@ describe('plite-react projections and selection contract', () => {
 
             return [];
           }}
-          decorateRuntimeScope={() => [firstBlockRuntimeId]}
+          decorateRuntimeScope={() => [firstBlockNodeKey]}
         />
       </Plite>
     );
@@ -1513,20 +1513,20 @@ describe('plite-react projections and selection contract', () => {
     });
 
     const snapshot = editorGetSnapshot(editor);
-    const anchorTextRuntimeId = snapshot.index.idAt([0, 0]);
-    const focusTextRuntimeId = snapshot.index.idAt([4, 0]);
-    const mountedBlockRuntimeId = snapshot.index.idAt([2]);
-    const mountedTextRuntimeId = snapshot.index.idAt([2, 0]);
-    const unmountedTextRuntimeId = snapshot.index.idAt([1, 0]);
+    const anchorTextNodeKey = snapshot.index.keyAt([0, 0]);
+    const focusTextNodeKey = snapshot.index.keyAt([4, 0]);
+    const mountedBlockNodeKey = snapshot.index.keyAt([2]);
+    const mountedTextNodeKey = snapshot.index.keyAt([2, 0]);
+    const unmountedTextNodeKey = snapshot.index.keyAt([1, 0]);
 
     if (
-      !anchorTextRuntimeId ||
-      !focusTextRuntimeId ||
-      !mountedBlockRuntimeId ||
-      !mountedTextRuntimeId ||
-      !unmountedTextRuntimeId
+      !anchorTextNodeKey ||
+      !focusTextNodeKey ||
+      !mountedBlockNodeKey ||
+      !mountedTextNodeKey ||
+      !unmountedTextNodeKey
     ) {
-      throw new Error('Expected runtime ids for scoped projection proof');
+      throw new Error('Expected node keys for scoped projection proof');
     }
 
     const store = createPliteProjectionStore(
@@ -1543,28 +1543,28 @@ describe('plite-react projections and selection contract', () => {
         },
       ],
       {
-        runtimeScope: () => [mountedBlockRuntimeId],
+        runtimeScope: () => [mountedBlockNodeKey],
         sourceId: 'wide-selection',
       }
     );
 
     expect(Object.keys(store.getSnapshot()).sort()).toEqual(
-      [anchorTextRuntimeId, focusTextRuntimeId, mountedTextRuntimeId].sort()
+      [anchorTextNodeKey, focusTextNodeKey, mountedTextNodeKey].sort()
     );
-    expect(store.getRuntimeSnapshot(unmountedTextRuntimeId)).toEqual([]);
-    expect(store.getRuntimeSnapshot(anchorTextRuntimeId)).toEqual([
+    expect(store.getRuntimeSnapshot(unmountedTextNodeKey)).toEqual([]);
+    expect(store.getRuntimeSnapshot(anchorTextNodeKey)).toEqual([
       expect.objectContaining({
         end: 'block-0'.length,
         start: 1,
       }),
     ]);
-    expect(store.getRuntimeSnapshot(mountedTextRuntimeId)).toEqual([
+    expect(store.getRuntimeSnapshot(mountedTextNodeKey)).toEqual([
       expect.objectContaining({
         end: 'block-2'.length,
         start: 0,
       }),
     ]);
-    expect(store.getRuntimeSnapshot(focusTextRuntimeId)).toEqual([
+    expect(store.getRuntimeSnapshot(focusTextNodeKey)).toEqual([
       expect.objectContaining({
         end: 2,
         start: 0,
@@ -1583,10 +1583,10 @@ describe('plite-react projections and selection contract', () => {
       },
     });
     const headerEditor = createEditorView(runtime, { root: 'header' });
-    const runtimeId = editorGetRuntimeId(headerEditor as never, [0, 0]);
+    const nodeKey = editorGetNodeKey(headerEditor as never, [0, 0]);
 
-    if (!runtimeId) {
-      throw new Error('Expected runtime id for header root projection proof');
+    if (!nodeKey) {
+      throw new Error('Expected node key for header root projection proof');
     }
 
     let sourceCalls = 0;
@@ -1617,12 +1617,12 @@ describe('plite-react projections and selection contract', () => {
       },
     });
 
-    store.subscribeRuntimeId(runtimeId, () => {
+    store.subscribeNodeKey(nodeKey, () => {
       runtimeNotifications += 1;
     });
 
     expect(sourceCalls).toBe(1);
-    expect(store.getRuntimeSnapshot(runtimeId)).toEqual([]);
+    expect(store.getRuntimeSnapshot(nodeKey)).toEqual([]);
 
     await act(async () => {
       headerEditor.update((tx) => {
@@ -1638,7 +1638,7 @@ describe('plite-react projections and selection contract', () => {
 
     expect(sourceCalls).toBe(2);
     expect(runtimeNotifications).toBe(1);
-    expect(store.getRuntimeSnapshot(runtimeId)).toEqual([
+    expect(store.getRuntimeSnapshot(nodeKey)).toEqual([
       {
         data: { header: true },
         end: 7,
@@ -1658,10 +1658,10 @@ describe('plite-react projections and selection contract', () => {
       selection: null,
     });
 
-    const runtimeId = editorGetRuntimeId(editor, [0, 0]);
+    const nodeKey = editorGetNodeKey(editor, [0, 0]);
 
-    if (!runtimeId) {
-      throw new Error('Expected runtime id for source subscription proof');
+    if (!nodeKey) {
+      throw new Error('Expected node key for source subscription proof');
     }
 
     let active = false;
@@ -1698,13 +1698,13 @@ describe('plite-react projections and selection contract', () => {
     store.subscribe(() => {
       globalNotifications += 1;
     });
-    store.subscribeRuntimeId(runtimeId, () => {
+    store.subscribeNodeKey(nodeKey, () => {
       runtimeNotifications += 1;
     });
     store.subscribeProjectionRefresh((result) => {
       refreshNotifications += 1;
       expect(result).toMatchObject({
-        changedRuntimeIds: [runtimeId],
+        changedNodeKeys: [nodeKey],
         changedSourceId: 'targeted-source',
         didChange: true,
         reason: 'external',
@@ -1719,7 +1719,7 @@ describe('plite-react projections and selection contract', () => {
     });
 
     expect(sourceCalls).toBe(1);
-    expect(store.getRuntimeSnapshot(runtimeId)).toEqual([]);
+    expect(store.getRuntimeSnapshot(nodeKey)).toEqual([]);
 
     active = true;
     store.refresh({ reason: 'external', sourceId: 'other-source' });
@@ -1729,7 +1729,7 @@ describe('plite-react projections and selection contract', () => {
     expect(runtimeNotifications).toBe(0);
     expect(refreshNotifications).toBe(0);
     expect(sourceNotifications).toBe(0);
-    expect(store.getRuntimeSnapshot(runtimeId)).toEqual([]);
+    expect(store.getRuntimeSnapshot(nodeKey)).toEqual([]);
 
     const refreshResult = store.refresh({
       reason: 'external',
@@ -1737,7 +1737,7 @@ describe('plite-react projections and selection contract', () => {
     });
 
     expect(refreshResult).toMatchObject({
-      changedRuntimeIds: [runtimeId],
+      changedNodeKeys: [nodeKey],
       changedSourceId: 'targeted-source',
       didChange: true,
       reason: 'external',
@@ -1757,7 +1757,7 @@ describe('plite-react projections and selection contract', () => {
       sourceReadCount: 2,
       sourceSubscriberWakeCount: 1,
     });
-    expect(store.getRuntimeSnapshot(runtimeId)).toEqual([
+    expect(store.getRuntimeSnapshot(nodeKey)).toEqual([
       {
         data: { scoped: true },
         end: 1,
@@ -1772,7 +1772,7 @@ describe('plite-react projections and selection contract', () => {
     });
 
     expect(unchangedRefreshResult).toMatchObject({
-      changedRuntimeIds: [],
+      changedNodeKeys: [],
       changedSourceId: 'targeted-source',
       didChange: false,
       reason: 'external',
@@ -1791,10 +1791,10 @@ describe('plite-react projections and selection contract', () => {
       selection: null,
     });
 
-    const runtimeId = editorGetRuntimeId(editor, [0, 0]);
+    const nodeKey = editorGetNodeKey(editor, [0, 0]);
 
-    if (!runtimeId) {
-      throw new Error('Expected runtime id for selection export proof');
+    if (!nodeKey) {
+      throw new Error('Expected node key for selection export proof');
     }
 
     let active = false;
@@ -1823,7 +1823,7 @@ describe('plite-react projections and selection contract', () => {
     });
 
     expect(refreshResult).toMatchObject({
-      changedRuntimeIds: [runtimeId],
+      changedNodeKeys: [nodeKey],
       didChange: true,
       reason: 'external',
       requiresDOMSelectionExport: true,
@@ -1835,7 +1835,7 @@ describe('plite-react projections and selection contract', () => {
     });
 
     expect(unchangedRefreshResult).toMatchObject({
-      changedRuntimeIds: [],
+      changedNodeKeys: [],
       didChange: false,
       reason: 'external',
       requiresDOMSelectionExport: false,
@@ -1852,10 +1852,10 @@ describe('plite-react projections and selection contract', () => {
       selection: null,
     });
 
-    const runtimeId = editorGetRuntimeId(editor, [0, 0]);
+    const nodeKey = editorGetNodeKey(editor, [0, 0]);
 
-    if (!runtimeId) {
-      throw new Error('Expected runtime id for projection metadata proof');
+    if (!nodeKey) {
+      throw new Error('Expected node key for projection metadata proof');
     }
 
     const circularData: Record<string, unknown> = {};
@@ -1875,7 +1875,7 @@ describe('plite-react projections and selection contract', () => {
       },
     ]);
 
-    store.subscribeRuntimeId(runtimeId, () => {
+    store.subscribeNodeKey(nodeKey, () => {
       notifications += 1;
     });
 
@@ -1905,12 +1905,10 @@ describe('plite-react projections and selection contract', () => {
       selection: null,
     });
 
-    const runtimeId = editorGetRuntimeId(editor, [0, 0]);
+    const nodeKey = editorGetNodeKey(editor, [0, 0]);
 
-    if (!runtimeId) {
-      throw new Error(
-        'Expected runtime id for forced projection refresh proof'
-      );
+    if (!nodeKey) {
+      throw new Error('Expected node key for forced projection refresh proof');
     }
 
     let notifications = 0;
@@ -1918,14 +1916,14 @@ describe('plite-react projections and selection contract', () => {
       dirtiness: 'external',
     });
 
-    store.subscribeRuntimeId(runtimeId, () => {
+    store.subscribeNodeKey(nodeKey, () => {
       notifications += 1;
     });
 
     store.refresh({ forceInvalidate: true, reason: 'external' });
 
     expect(notifications).toBe(1);
-    expect(store.getRuntimeSnapshot(runtimeId)).toEqual([]);
+    expect(store.getRuntimeSnapshot(nodeKey)).toEqual([]);
 
     store.destroy();
   });

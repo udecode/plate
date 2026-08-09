@@ -32,6 +32,7 @@ type MappingJournal<V extends Value> = Readonly<{
 }>;
 
 type HistoryBranch<V extends Value> = Readonly<{
+  base: EditorDocumentValue<V>;
   batch: Batch<V>;
   depth: number;
   group: HistoryBatchGroup | null;
@@ -175,11 +176,13 @@ const freezeBatch = freezeHistoryBatch;
 
 const branch = <V extends Value>(
   batch: Batch<V>,
+  base: EditorDocumentValue<V>,
   next: HistoryBranch<V> | null,
   mappings: MappingJournal<V> | null = null,
   group: HistoryBatchGroup | null = null
 ): HistoryBranch<V> =>
   Object.freeze({
+    base,
     batch: freezeBatch(batch),
     depth: (next?.depth ?? 0) + 1,
     group,
@@ -204,7 +207,7 @@ const clipBranch = <V extends Value>(
 
   let clipped: HistoryBranch<V> | null = null;
   for (const item of kept.toReversed()) {
-    clipped = branch(item.batch, clipped, item.mappings, item.group);
+    clipped = branch(item.batch, item.base, clipped, item.mappings, item.group);
   }
 
   return clipped;
@@ -213,9 +216,10 @@ const clipBranch = <V extends Value>(
 const pushBranch = <V extends Value>(
   value: HistoryBranch<V> | null,
   batchValue: Batch<V>,
+  base: EditorDocumentValue<V>,
   maxDepth: number,
   group: HistoryBatchGroup | null = null
-) => branch(batchValue, clipBranch(value, maxDepth - 1), null, group);
+) => branch(batchValue, base, clipBranch(value, maxDepth - 1), null, group);
 
 const addMapping = <V extends Value>(
   value: HistoryBranch<V> | null,
@@ -229,10 +233,7 @@ const addMapping = <V extends Value>(
       ? Object.freeze({
           entry: Object.freeze({
             before: previous.entry.before,
-            change: previous.entry.change.compose(
-              entry.change,
-              previous.entry.before
-            ),
+            change: previous.entry.change.compose(entry.change),
             textOnly: true,
           }),
           previous: previous.previous,
@@ -264,11 +265,11 @@ const resolveHead = <V extends Value>(
 ): HistoryBranch<V> | null => {
   if (!value.mappings) return value;
 
+  let batchBase = value.base;
   let batchValue = value.batch;
   let next = value.next;
 
   for (const mapping of journalEntries(value.mappings)) {
-    const batchBase = mapping.before;
     const nextBase = batchValue.change.apply(
       batchBase
     ) as EditorDocumentValue<V>;
@@ -313,16 +314,19 @@ const resolveHead = <V extends Value>(
         batchValue.selectionBeforeRoot ?? MAIN_ROOT_KEY
       ),
     });
-    next = addMapping<V>(next, {
-      before: nextBase,
-      change: transformed.b,
-      textOnly: false,
-    });
+    if (!transformed.b.empty) {
+      next = addMapping<V>(next, {
+        before: nextBase,
+        change: transformed.b,
+        textOnly: false,
+      });
+    }
+    batchBase = mappedBatchBase as EditorDocumentValue<V>;
   }
 
   if (batchValue.change.empty && batchValue.effects.length === 0) return next;
 
-  return branch<V>(batchValue, next);
+  return branch<V>(batchValue, batchBase, next);
 };
 
 const resolveTop = <V extends Value>(
@@ -341,6 +345,7 @@ const resolveAll = <V extends Value>(
   value: HistoryBranch<V> | null
 ) => {
   const newest: Readonly<{
+    base: EditorDocumentValue<V>;
     batch: Batch<V>;
     group: HistoryBatchGroup | null;
   }>[] = [];
@@ -349,7 +354,11 @@ const resolveAll = <V extends Value>(
   while (current) {
     current = resolveTop(editor, current);
     if (!current) break;
-    newest.push({ batch: current.batch, group: current.group });
+    newest.push({
+      base: current.base,
+      batch: current.batch,
+      group: current.group,
+    });
     current = current.next;
   }
 
@@ -357,7 +366,7 @@ const resolveAll = <V extends Value>(
   for (let index = newest.length - 1; index >= 0; index--) {
     const entry = newest[index]!;
 
-    resolved = branch(entry.batch, resolved, null, entry.group);
+    resolved = branch(entry.batch, entry.base, resolved, null, entry.group);
   }
 
   return {
@@ -368,12 +377,25 @@ const resolveAll = <V extends Value>(
 
 const fromBatches = <V extends Value>(
   batches: readonly Batch<V>[],
+  base: EditorDocumentValue<V>,
   maxDepth: number
 ) => {
-  let value: HistoryBranch<V> | null = null;
+  const entries: Array<{
+    base: EditorDocumentValue<V>;
+    batch: Batch<V>;
+  }> = [];
+  let currentBase = base;
 
-  for (const batchValue of batches.slice(-maxDepth)) {
-    value = pushBranch(value, batchValue, maxDepth);
+  for (const batchValue of batches.slice(-maxDepth).toReversed()) {
+    entries.push({ base: currentBase, batch: batchValue });
+    currentBase = batchValue.change.apply(
+      currentBase
+    ) as EditorDocumentValue<V>;
+  }
+
+  let value: HistoryBranch<V> | null = null;
+  for (const entry of entries.toReversed()) {
+    value = branch(entry.batch, entry.base, value);
   }
 
   return value;
@@ -474,6 +496,7 @@ export const writeHistory = <V extends Value>(
     [stack]: pushBranch(
       store[stack],
       batchValue,
+      editor.read.value(),
       store.maxDepth,
       options.group ?? null
     ),
@@ -496,7 +519,13 @@ export const replaceHistoryHead = <V extends Value>(
   if (!resolved) throw new Error(`Missing ${stack} history batch.`);
 
   publish(editor, store, {
-    [stack]: branch(batchValue, resolved.next, null, options.group ?? null),
+    [stack]: branch(
+      batchValue,
+      editor.read.value(),
+      resolved.next,
+      null,
+      options.group ?? null
+    ),
     ...(options.clearRedos ? { redos: null } : {}),
   });
 };
@@ -513,14 +542,30 @@ export const completeHistoryAction = <V extends Value>(
 
   if (!resolved) throw new Error(`Missing ${source} history batch.`);
 
+  const current = editor.read.value();
+  let nextSource = resolveTop(editor, resolved.next);
+
+  if (nextSource) {
+    const correction = DocumentChange.between(nextSource.base, current);
+
+    if (!correction.empty) {
+      nextSource = addMapping(nextSource, {
+        before: nextSource.base,
+        change: correction,
+        textOnly: isTextOnlyMapping(correction),
+      });
+    }
+  }
+
   publish(editor, store, {
     [destination]: pushBranch(
       store[destination],
       batchValue,
+      current,
       store.maxDepth,
       resolved.group
     ),
-    [source]: resolved.next,
+    [source]: nextSource,
     ...(discardRedos ? { redos: null } : {}),
   });
 };
@@ -583,13 +628,14 @@ export const replaceHistoryState = <V extends Value>(
   value: Pick<History<V>, 'redos' | 'schema' | 'undos'>
 ) => {
   const store = getStore(editor);
+  const base = editor.read.value();
   const next = Object.freeze({
     ...store,
-    redos: fromBatches(value.redos, store.maxDepth),
+    redos: fromBatches(value.redos, base, store.maxDepth),
     revision: store.revision + 1,
     schema: value.schema,
     snapshot: null,
-    undos: fromBatches(value.undos, store.maxDepth),
+    undos: fromBatches(value.undos, base, store.maxDepth),
   });
 
   setStore(editor, next);

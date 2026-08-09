@@ -50,7 +50,7 @@ const editor = useEditor();
 editor.update((tx) => {
   tx.nodes.insert({
     children: [{ text: 'Inserted paragraph' }],
-    type: 'p',
+    type: 'paragraph',
   });
 });
 ```
@@ -133,7 +133,7 @@ if (selectedText && !editor.api.hasMark('bold')) {
 editor.update((tx) => {
   tx.nodes.insert({
     children: [{ text: 'New paragraph' }],
-    type: 'p',
+    type: 'paragraph',
   });
 });
 ```
@@ -146,8 +146,8 @@ editor.update((tx) => {
 ## Plugin Methods
 
 Pass a plugin descriptor to `editor.plugin(plugin)` to open its typed portal.
-The portal owns that plugin's API, one-shot update commands, type, and live
-state.
+The portal exposes resolved descriptor fields and owns that plugin's scoped
+API, one-shot update commands, and live state.
 
 ```ts title="html-methods.ts" showLineNumbers
 import { BoldPlugin } from '@platejs/basic-nodes/react';
@@ -157,10 +157,11 @@ editor.plugin(BoldPlugin).update.toggle();
 
 | Method | Use for |
 | --- | --- |
-| `editor.plugin(plugin)` | Typed access to one plugin's API, updates, type, and store. |
-| `editor.plugin(plugin).plugin` | The resolved plugin instance for a descriptor. |
-| `editor.plugin(pluginName).type` | The node type registered for a plugin name. |
-| `editor.plugin(plugin).plugin.inject.nodeProps` | Compiled injected node props for a plugin. |
+| `editor.plugin(plugin)` | Typed descriptor fields plus scoped API, reads, updates, and store. |
+| `editor.plugin(plugin).name` | The installed capability identity. |
+| `editor.plugin(ElementPlugin).schema.type` | The resolved persisted element type. |
+| `editor.plugin(BoldPlugin).schema.key` | The resolved persisted property key. |
+| `editor.plugin(plugin).inject.nodeProps` | Compiled injected node props for a plugin. |
 
 Runtime-name portals are intentionally erased. Use them for dynamic names or
 family-agnostic slots that accept whichever installed descriptor owns the

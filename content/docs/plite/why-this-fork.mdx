@@ -150,10 +150,9 @@ Extensions add named read and update groups. They do not replace the canonical
 change builder or patch random methods onto the editor object.
 
 ```tsx
-import { defineEditorExtension } from "@platejs/plite";
+import { defineExtension } from "@platejs/plite";
 
-const TodoExtension = defineEditorExtension({
-  name: "todo",
+const TodoExtension = defineExtension("todo", {
   update: ({ tx }) => ({
     toggle() {
       tx.nodes.set({ checked: true, type: "todo" });
@@ -268,7 +267,7 @@ This table is intentionally exhaustive. It gives humans and agents one place to 
 | Core lifecycle     | `editor.read(...)`, `editor.update(...)`, state/transaction runtime namespaces, commits, and owner-local read/update groups                                                                                                                                                                    |
 | Core data model    | immutable JSON nodes, snapshots, root-aware `DocumentChange`, runtime ids, anchors, and extensible selections                                                                                                                                                                                 |
 | Public helper APIs | `ElementApi`, `LocationApi`, `NodeApi`, `PathApi`, `PointApi`, `RangeApi`, `SelectionApi`, `SpanApi`, `TextApi`, and `DocumentChange`                                                                                                                                                       |
-| Extensions         | `defineEditorExtension`, schema elements, state fields, facets, effects, corrections, prefixless `on` listeners, and name-scoped API/read/update groups                                                                                                                                         |
+| Extensions         | `defineExtension`, schema elements, state fields, facets, effects, corrections, prefixless `on` listeners, and name-scoped API/read/update groups                                                                                                                                         |
 | Document values    | primary `children`, optional extra `roots`, optional persistent `meta`                                                                                                                                                                                                                       |
 | Roots              | rootless primary document, named extra roots, content roots, root-aware React hooks and chrome                                                                                                                                                                                                |
 | State fields       | versioned persistent/shared fields, local fields, history policy, effects, React state-field hooks                                                                                                                                                                                             |

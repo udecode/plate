@@ -1,16 +1,23 @@
 import {
   type EditorSchemaContribution,
+  type EditorSchemaOverride,
+  type SchemaContent,
+  type SchemaContentRule,
   type SchemaContentRootContribution,
-  type SchemaElementPropertyOptions,
   type SchemaContentOptions,
   type SchemaElement,
   type SchemaProperty,
-  type SchemaTextPropertyOptions,
+  type SchemaPropertyHandle,
+  type SchemaTarget,
   schema,
 } from '@platejs/plite';
-import { getCompiledSchemaPropertyId } from '@platejs/plite/internal';
+import {
+  getCompiledSchemaPropertyId,
+  getSchemaElementSourceReference,
+} from '@platejs/plite/internal';
 
 import type { BaseEditor, PlateSchemaIdentity } from '../../lib/editor';
+import type { EditorApplicationSchema } from '../../lib/editor/defineEditor';
 import type {
   AnyBasePluginDefinition,
   AnyBasePlugin,
@@ -21,7 +28,6 @@ import type {
   PluginSchemaContext,
   PluginSchemaDeclaration,
   PluginSchemaMark,
-  PluginSchemaOwn,
   PluginSchemaReferences,
 } from '../../lib/plugin';
 import {
@@ -39,12 +45,19 @@ import {
 export type CompiledPlateModelBinding = Readonly<{
   elementPropertyKeys: readonly string[];
   elementType: string | null;
+  family: object | null;
   isDecoration: boolean;
   kind: 'element' | 'mark' | 'none';
   name: string;
   propertyKey: string | null;
+  propertyHandles: Readonly<Record<string, SchemaPropertyHandle | undefined>>;
   properties: readonly SchemaProperty[];
   propertyIds: readonly string[];
+  schema: Readonly<{
+    key?: string;
+    properties: Readonly<Record<string, SchemaPropertyHandle | undefined>>;
+    type?: string;
+  }>;
   referencedNames: readonly string[];
   textPropertyId: string | null;
 }>;
@@ -75,16 +88,65 @@ export type PlateModelPublication = Readonly<{
 }>;
 
 const PLATE_BLOCK_CONTENT_SCHEMA_GROUP = 'plate:block-content';
+const getPlateOwner = (editor: object) => getPlateRuntimeOwner(editor);
+const resolvingSchemaIdentities = new WeakMap<object, Set<object>>();
 
-/** @internal Apply the constructor default for one element identity. */
+const evaluatePluginSchemaIdentity = (
+  editor: BaseEditor,
+  plugin: AnyBasePlugin
+): PluginSchemaDeclaration | null => {
+  const owner = getPlateOwner(editor);
+  let resolving = resolvingSchemaIdentities.get(owner);
+
+  if (!resolving) {
+    resolving = new Set();
+    resolvingSchemaIdentities.set(owner, resolving);
+  }
+  if (resolving.has(plugin as object)) return null;
+
+  resolving.add(plugin as object);
+  try {
+    return evaluatePluginSchemaDeclaration(editor, plugin);
+  } finally {
+    resolving.delete(plugin as object);
+    if (resolving.size === 0) resolvingSchemaIdentities.delete(owner);
+  }
+};
+
+/** @internal Resolve the authored element default without fabricating identity. */
 export const resolvePluginElementType = (
-  plugin: Pick<AnyBasePlugin, 'name' | 'type'>
-) => plugin.type ?? plugin.name;
+  editor: BaseEditor,
+  plugin: AnyBasePlugin
+) => {
+  const declaration = evaluatePluginSchemaIdentity(editor, plugin);
 
-/** @internal Apply the constructor default for one property identity. */
+  return declaration &&
+    'element' in declaration &&
+    declaration.element &&
+    typeof declaration.element === 'object' &&
+    'type' in declaration.element &&
+    typeof declaration.element.type === 'string'
+    ? declaration.element.type
+    : plugin.name;
+};
+
+/** @internal Resolve the authored mark key without fabricating identity. */
 export const resolvePluginPropertyKey = (
-  plugin: Pick<AnyBasePlugin, 'key' | 'name'>
-) => plugin.key ?? plugin.name;
+  editor: BaseEditor,
+  plugin: AnyBasePlugin
+) => {
+  const declaration = evaluatePluginSchemaIdentity(editor, plugin);
+
+  return declaration &&
+    'mark' in declaration &&
+    declaration.mark &&
+    typeof declaration.mark === 'object' &&
+    'property' in declaration.mark &&
+    'key' in declaration.mark &&
+    typeof declaration.mark.key === 'string'
+    ? declaration.mark.key
+    : plugin.name;
+};
 
 export const createPlateBlockContent = (options?: SchemaContentOptions) =>
   schema.content.group(PLATE_BLOCK_CONTENT_SCHEMA_GROUP, options);
@@ -101,9 +163,11 @@ const EMPTY_MODEL: CompiledPlateModel = Object.freeze({
 
 const PLATE_MODEL_PUBLICATIONS = new WeakMap<object, PlateModelPublication>();
 
-const getPlateOwner = (editor: object) => getPlateRuntimeOwner(editor);
-
 const candidateModels = new WeakMap<object, CompiledPlateModel>();
+const candidateApplicationElementTypes = new WeakMap<
+  object,
+  Readonly<Record<string, string | undefined>>
+>();
 const candidatePluginApis = new WeakMap<
   object,
   Readonly<Record<string, Readonly<Record<string, unknown>> | undefined>>
@@ -125,6 +189,69 @@ type PendingReference = Readonly<{
   owner: string;
   target: string;
 }>;
+
+/** @internal Final element identity visible while schema-aware plugin stages resolve. */
+export const getCandidateApplicationElementType = (
+  editor: object,
+  plugin: PluginReference | string
+) =>
+  candidateApplicationElementTypes.get(getPlateOwner(editor))?.[
+    typeof plugin === 'string' ? plugin : plugin.name
+  ];
+
+/** @internal Publish closed-editor element remaps before plugin callbacks capture them. */
+export const withEditorApplicationSchemaCandidate = <T>(
+  editor: object,
+  policy: EditorApplicationSchema | undefined,
+  plugins: readonly AnyBasePlugin[],
+  run: () => T
+): T => {
+  const owner = getPlateOwner(editor);
+  const previous = candidateApplicationElementTypes.get(owner);
+  const types: Record<string, string> = Object.create(null);
+
+  for (const override of policy?.overrides ?? []) {
+    if (!override.element?.type) continue;
+    const name = override.source;
+    const authoredSource =
+      getSchemaElementSourceReference(override) ?? override.source;
+    const candidates = plugins.filter((plugin) => plugin.name === name);
+
+    if (candidates.length === 0) {
+      throw new Error(
+        `Editor schema override references missing plugin "${name}".`
+      );
+    }
+    if (
+      typeof authoredSource !== 'string' &&
+      (!isNominalPluginReference(authoredSource) ||
+        !candidates.some(
+          (plugin) =>
+            getPluginSchemaFamily(authoredSource) ===
+            getPluginSchemaFamily(plugin)
+        ))
+    ) {
+      throw new Error(
+        `Editor schema override descriptor "${name}" does not match the installed plugin family.`
+      );
+    }
+
+    if (types[name]) {
+      throw new Error(
+        `Editor schema overrides element type for plugin "${name}" more than once.`
+      );
+    }
+    types[name] = override.element.type;
+  }
+  candidateApplicationElementTypes.set(owner, Object.freeze(types));
+
+  try {
+    return run();
+  } finally {
+    if (previous) candidateApplicationElementTypes.set(owner, previous);
+    else candidateApplicationElementTypes.delete(owner);
+  }
+};
 
 type ResolvedPluginTargetBinding = Readonly<{
   missingNames: readonly string[];
@@ -192,7 +319,11 @@ const compileResolvedPluginTargetBinding = (
     missingNames: Object.freeze(missingNames),
     names: Object.freeze(plugins.map(({ name }) => name)),
     plugins: Object.freeze(plugins),
-    types: Object.freeze(plugins.map(({ name, type }) => type ?? name)),
+    types: Object.freeze(
+      plugins.map((targetPlugin) =>
+        resolvePluginElementType(editor, targetPlugin)
+      )
+    ),
   });
 
   editorBindings.set(plugin as object, binding);
@@ -223,7 +354,11 @@ const resolveReference = <const TPlugin extends PluginReference | string>(
   owner: Readonly<{ name: string }>,
   plugin: TPlugin,
   references: PendingReference[]
-): TPlugin extends Readonly<{ type: infer TType extends string }>
+): TPlugin extends Readonly<{
+  schema: Readonly<{
+    element: Readonly<{ type: infer TType extends string }>;
+  }>;
+}>
   ? TType
   : TPlugin extends Readonly<{ name: infer TName extends string }>
     ? TName
@@ -252,8 +387,11 @@ const resolveReference = <const TPlugin extends PluginReference | string>(
   }
   references.push(Object.freeze({ owner: owner.name, target: target.name }));
 
-  return resolvePluginElementType(target) as TPlugin extends Readonly<{
-    type: infer TType extends string;
+  return (getCandidateApplicationElementType(editor, target) ??
+    resolvePluginElementType(editor, target)) as TPlugin extends Readonly<{
+    schema: Readonly<{
+      element: Readonly<{ type: infer TType extends string }>;
+    }>;
   }>
     ? TType
     : TPlugin extends Readonly<{ name: infer TName extends string }>
@@ -261,56 +399,16 @@ const resolveReference = <const TPlugin extends PluginReference | string>(
       : string;
 };
 
-type PluginReferenceTypes<
-  TPlugins extends readonly (PluginReference | string)[],
-> = {
-  readonly [TIndex in keyof TPlugins]: TPlugins[TIndex] extends Readonly<{
-    type: infer TType extends string;
-  }>
-    ? TType
-    : TPlugins[TIndex] extends Readonly<{
-          name: infer TName extends string;
-        }>
-      ? TName
-      : string;
-};
-
-function resolveReferences<
-  const TPlugins extends readonly (PluginReference | string)[],
->(
-  editor: BaseEditor,
-  owner: Readonly<{ name: string }>,
-  items: TPlugins,
-  references: PendingReference[]
-): PluginReferenceTypes<TPlugins>;
-function resolveReferences(
-  editor: BaseEditor,
-  owner: Readonly<{ name: string }>,
-  items: readonly (PluginReference | string)[],
-  references: PendingReference[]
-): readonly string[];
-function resolveReferences(
-  editor: BaseEditor,
-  owner: Readonly<{ name: string }>,
-  items: readonly (PluginReference | string)[],
-  references: PendingReference[]
-): readonly string[] {
-  return Object.freeze(
-    items.map((reference) =>
-      resolveReference(editor, owner, reference, references)
-    )
-  );
-}
-
 const isPluginSchemaDeclaration = (
   value: unknown
 ): value is PluginSchemaDeclaration =>
   typeof value === 'object' && value !== null;
 
-const evaluateDeclaration = (
+/** @internal Evaluate one plugin schema against the current editor candidate. */
+export const evaluatePluginSchemaDeclaration = (
   editor: BaseEditor,
   plugin: AnyBasePlugin,
-  references: PendingReference[]
+  references: PendingReference[] = []
 ): PluginSchemaDeclaration | null => {
   const declaration = plugin.schema;
 
@@ -326,45 +424,32 @@ const evaluateDeclaration = (
   }
 
   const targetBinding = getResolvedPluginTargetBinding(editor, plugin);
-  const elementType = resolvePluginElementType(plugin);
-  const propertyKey = resolvePluginPropertyKey(plugin);
   const plugins: PluginSchemaReferences = Object.freeze({
-    blockContent: createPlateBlockContent,
-    element: <const TPlugin extends PluginReference | string>(
-      target: TPlugin
-    ) =>
-      Object.freeze({
-        kind: 'type' as const,
-        type: resolveReference(editor, plugin, target, references),
-      }),
-    elementType: <const TPlugin extends PluginReference | string>(
-      target: TPlugin
-    ) => resolveReference(editor, plugin, target, references),
-    elementTypes: <
-      const TPlugins extends readonly (PluginReference | string)[],
-    >(
-      items: TPlugins
-    ) => resolveReferences(editor, plugin, items, references),
-  });
-  const own: PluginSchemaOwn = Object.freeze({
-    key: propertyKey,
-    type: elementType,
-    contentRoot: (content, options) =>
-      Object.freeze({
-        content,
-        ownership: options.ownership,
-        slot: propertyKey,
-        target: options.target,
-      }),
-    elementProperty: (value, options: SchemaElementPropertyOptions) =>
-      schema.elementProperty(propertyKey, value, options),
-    textProperty: (value, options?: SchemaTextPropertyOptions) =>
-      schema.textProperty(propertyKey, value, options),
+    blockContent: (options) => {
+      const { default: defaultValue, ...contentOptions } = options ?? {};
+      const resolvedDefault =
+        defaultValue &&
+        typeof defaultValue === 'object' &&
+        'name' in defaultValue
+          ? {
+              type: resolveReference(
+                editor,
+                plugin,
+                defaultValue as PluginReference,
+                references
+              ),
+            }
+          : defaultValue;
+
+      return createPlateBlockContent({
+        ...contentOptions,
+        ...(resolvedDefault !== undefined ? { default: resolvedDefault } : {}),
+      });
+    },
   });
   const context: PluginSchemaContext<AnyBasePluginDefinition> = Object.freeze({
     initialState: plugin.initialState,
     name: plugin.name,
-    own,
     plugins,
     targetElementTypes: targetBinding.types,
   });
@@ -382,7 +467,7 @@ const evaluateDeclaration = (
 
 const compileMark = (key: string, mark: PluginSchemaMark): SchemaProperty => {
   if ('property' in mark) {
-    const { property: descriptor, ...options } = mark;
+    const { key: _key, property: descriptor, ...options } = mark;
 
     return schema.textProperty(key, descriptor, {
       typeChange: 'preserve-if-allowed',
@@ -393,6 +478,369 @@ const compileMark = (key: string, mark: PluginSchemaMark): SchemaProperty => {
   return schema.textProperty(key, mark, {
     typeChange: 'preserve-if-allowed',
   });
+};
+
+/** @internal Resolve one exact authored property before schema publication. */
+export const getAuthoredPluginPropertyHandle = (
+  editor: BaseEditor,
+  plugin: AnyBasePlugin,
+  localId: string
+): SchemaPropertyHandle | undefined => {
+  const declaration = evaluatePluginSchemaDeclaration(editor, plugin);
+
+  if (!declaration) return;
+
+  const elementProperty = declaration.element?.properties?.[localId];
+
+  if (elementProperty) {
+    return schema.handle.property(
+      schema.elementProperty(localId, elementProperty, {
+        target: Object.freeze({
+          kind: 'type' as const,
+          type: declaration.element?.type ?? plugin.name,
+        }),
+      })
+    );
+  }
+
+  const rawProperties = declaration.properties;
+  const property = Array.isArray(rawProperties)
+    ? rawProperties.find((candidate) => {
+        const key = candidate.key;
+
+        return (typeof key === 'string' ? key : `${key.prefix}*`) === localId;
+      })
+    : rawProperties?.[localId];
+
+  if (!property) return;
+
+  return schema.handle.property(
+    'key' in property ? property : Object.freeze({ ...property, key: localId })
+  );
+};
+
+type AuthoredElementSource = Readonly<{
+  family: object | null;
+  type: string | null;
+}>;
+
+const resolvePluginElementSource = (
+  source: string,
+  authoredSource: unknown,
+  owner: string,
+  elementTypes: ReadonlyMap<string, AuthoredElementSource>,
+  references: PendingReference[]
+) => {
+  const target = elementTypes.get(source);
+
+  if (!target) {
+    throw new Error(
+      `Plate plugin "${owner}" schema references missing or disabled plugin "${source}".`
+    );
+  }
+  if (
+    authoredSource !== undefined &&
+    typeof authoredSource !== 'string' &&
+    !isNominalPluginReference(authoredSource)
+  ) {
+    throw new Error(
+      `Plate plugin "${owner}" schema references an invalid plugin descriptor.`
+    );
+  }
+  if (
+    authoredSource &&
+    typeof authoredSource === 'object' &&
+    isNominalPluginReference(authoredSource) &&
+    getPluginSchemaFamily(authoredSource) !== target.family
+  ) {
+    throw new Error(
+      `Plate plugin "${owner}" schema descriptor "${source}" does not match the installed plugin family.`
+    );
+  }
+  if (!target.type) {
+    throw new Error(
+      `Plate plugin "${owner}" schema reference "${source}" does not own an element type.`
+    );
+  }
+  references.push({ owner, target: source });
+
+  return target.type;
+};
+
+const lowerPluginContentRule = (
+  rule: SchemaContentRule,
+  owner: string,
+  elementTypes: ReadonlyMap<string, AuthoredElementSource>,
+  references: PendingReference[]
+): SchemaContentRule => {
+  switch (rule.kind) {
+    case 'type':
+      return 'source' in rule && typeof rule.source === 'string'
+        ? Object.freeze({
+            kind: 'type' as const,
+            type: resolvePluginElementSource(
+              rule.source,
+              getSchemaElementSourceReference(rule),
+              owner,
+              elementTypes,
+              references
+            ),
+          })
+        : rule;
+    case 'all':
+    case 'any':
+      return Object.freeze({
+        ...rule,
+        rules: Object.freeze(
+          rule.rules.map((child) =>
+            lowerPluginContentRule(child, owner, elementTypes, references)
+          )
+        ),
+      });
+    case 'not':
+      return Object.freeze({
+        ...rule,
+        rule: lowerPluginContentRule(
+          rule.rule,
+          owner,
+          elementTypes,
+          references
+        ),
+      });
+    default:
+      return rule;
+  }
+};
+
+const lowerPluginContent = (
+  content: SchemaContent,
+  owner: string,
+  elementTypes: ReadonlyMap<string, AuthoredElementSource>,
+  references: PendingReference[]
+): SchemaContent => {
+  const allowed = lowerPluginContentRule(
+    content.allowed,
+    owner,
+    elementTypes,
+    references
+  );
+  const resolvedType =
+    content.allowed.kind === 'type' &&
+    'source' in content.allowed &&
+    typeof content.allowed.source === 'string' &&
+    allowed.kind === 'type'
+      ? allowed.type
+      : null;
+
+  return Object.freeze({
+    ...content,
+    allowed,
+    ...(resolvedType && content.default !== 'text'
+      ? { default: Object.freeze({ type: resolvedType }) }
+      : {}),
+  });
+};
+
+const lowerPluginTarget = (
+  target: SchemaTarget,
+  owner: string,
+  elementTypes: ReadonlyMap<string, AuthoredElementSource>,
+  references: PendingReference[]
+): SchemaTarget => {
+  switch (target.kind) {
+    case 'type':
+      return 'source' in target && typeof target.source === 'string'
+        ? Object.freeze({
+            kind: 'type' as const,
+            type: resolvePluginElementSource(
+              target.source,
+              getSchemaElementSourceReference(target),
+              owner,
+              elementTypes,
+              references
+            ),
+          })
+        : target;
+    case 'types':
+      if ('sources' in target && Array.isArray(target.sources)) {
+        const authoredSources = getSchemaElementSourceReference(target);
+
+        return Object.freeze({
+          kind: 'types' as const,
+          types: Object.freeze(
+            target.sources.map((source, index) => {
+              if (typeof source !== 'string') {
+                throw new Error(
+                  `Plate plugin "${owner}" schema relationship contains an invalid element source.`
+                );
+              }
+
+              return resolvePluginElementSource(
+                source,
+                Array.isArray(authoredSources)
+                  ? authoredSources[index]
+                  : undefined,
+                owner,
+                elementTypes,
+                references
+              );
+            })
+          ),
+        });
+      }
+
+      return target;
+    case 'and':
+    case 'or':
+      return Object.freeze({
+        ...target,
+        targets: Object.freeze(
+          target.targets.map((child) =>
+            lowerPluginTarget(child, owner, elementTypes, references)
+          )
+        ),
+      });
+    case 'not':
+    case 'parent':
+      return Object.freeze({
+        ...target,
+        target: lowerPluginTarget(
+          target.target,
+          owner,
+          elementTypes,
+          references
+        ),
+      });
+    default:
+      return target;
+  }
+};
+
+const lowerPluginProperty = (
+  property: SchemaProperty,
+  owner: string,
+  elementTypes: ReadonlyMap<string, AuthoredElementSource>,
+  references: PendingReference[]
+): SchemaProperty =>
+  property.target
+    ? Object.freeze({
+        ...property,
+        target: lowerPluginTarget(
+          property.target,
+          owner,
+          elementTypes,
+          references
+        ),
+      })
+    : property;
+
+const lowerPluginSchemaDeclaration = (
+  declaration: PluginSchemaDeclaration,
+  owner: string,
+  elementTypes: ReadonlyMap<string, AuthoredElementSource>,
+  references: PendingReference[]
+): PluginSchemaDeclaration => {
+  const element = 'element' in declaration ? declaration.element : undefined;
+  const mark = 'mark' in declaration ? declaration.mark : undefined;
+  const properties = declaration.properties;
+  const nextElement = element
+    ? Object.freeze({
+        ...element,
+        ...(element.content
+          ? {
+              content: lowerPluginContent(
+                element.content,
+                owner,
+                elementTypes,
+                references
+              ),
+            }
+          : {}),
+        ...(element.contentRoots
+          ? {
+              contentRoots: Object.freeze(
+                Object.fromEntries(
+                  Object.entries(element.contentRoots).map(([slot, root]) => [
+                    slot,
+                    'allowed' in root
+                      ? lowerPluginContent(
+                          root,
+                          owner,
+                          elementTypes,
+                          references
+                        )
+                      : Object.freeze({
+                          ...root,
+                          content: lowerPluginContent(
+                            root.content,
+                            owner,
+                            elementTypes,
+                            references
+                          ),
+                        }),
+                  ])
+                )
+              ),
+            }
+          : {}),
+      })
+    : undefined;
+  const nextMark =
+    mark && 'property' in mark && mark.target
+      ? Object.freeze({
+          ...mark,
+          target: lowerPluginTarget(
+            mark.target,
+            owner,
+            elementTypes,
+            references
+          ),
+        })
+      : mark;
+  const nextProperties = properties
+    ? Object.freeze(
+        Object.fromEntries(
+          Object.entries(properties).map(([localId, property]) => [
+            localId,
+            lowerPluginProperty(
+              property as SchemaProperty,
+              owner,
+              elementTypes,
+              references
+            ),
+          ])
+        )
+      )
+    : undefined;
+  const nextContentRoots = declaration.contentRoots
+    ? Object.freeze(
+        declaration.contentRoots.map((root) =>
+          Object.freeze({
+            ...root,
+            content: lowerPluginContent(
+              root.content,
+              owner,
+              elementTypes,
+              references
+            ),
+            target: lowerPluginTarget(
+              root.target,
+              owner,
+              elementTypes,
+              references
+            ),
+          })
+        )
+      )
+    : undefined;
+
+  return freezePluginDescriptorValue({
+    ...declaration,
+    ...(nextElement ? { element: nextElement } : {}),
+    ...(nextMark ? { mark: nextMark } : {}),
+    ...(nextProperties ? { properties: nextProperties } : {}),
+    ...(nextContentRoots ? { contentRoots: nextContentRoots } : {}),
+  }) as PluginSchemaDeclaration;
 };
 
 export const compilePlateModel = (editor: BaseEditor): CompiledPlateModel => {
@@ -406,7 +854,37 @@ export const compilePlateModel = (editor: BaseEditor): CompiledPlateModel => {
   pluginList.forEach((plugin) => {
     declarations.set(
       plugin.name,
-      evaluateDeclaration(editor, plugin, references)
+      evaluatePluginSchemaDeclaration(editor, plugin, references)
+    );
+  });
+  const pluginsByName = new Map(
+    pluginList.map((plugin) => [plugin.name, plugin])
+  );
+  const authoredElementTypes = new Map<string, AuthoredElementSource>();
+
+  declarations.forEach((declaration, name) => {
+    authoredElementTypes.set(
+      name,
+      Object.freeze({
+        family: getPluginSchemaFamily(pluginsByName.get(name)!),
+        type:
+          declaration && 'element' in declaration && declaration.element
+            ? (declaration.element.type ?? name)
+            : null,
+      })
+    );
+  });
+  declarations.forEach((declaration, name) => {
+    if (!declaration) return;
+
+    declarations.set(
+      name,
+      lowerPluginSchemaDeclaration(
+        declaration,
+        name,
+        authoredElementTypes,
+        references
+      )
     );
   });
   pluginList.forEach((plugin) => {
@@ -457,17 +935,35 @@ export const compilePlateModel = (editor: BaseEditor): CompiledPlateModel => {
         : null;
     const mark =
       declaration && 'mark' in declaration ? (declaration.mark ?? null) : null;
-    const elementType = resolvePluginElementType(plugin);
-    const propertyKey = resolvePluginPropertyKey(plugin);
-
-    if (!element && plugin.type !== undefined) {
-      throw new Error(
-        `Plate plugin "${plugin.name}" declares \`type\` without schema.element.`
-      );
-    }
-    const declaredProperties = Object.freeze([
-      ...(declaration?.properties ?? []),
-    ]);
+    const elementType = element?.type ?? plugin.name;
+    const propertyKey =
+      mark && 'property' in mark ? (mark.key ?? plugin.name) : plugin.name;
+    const rawDeclaredProperties = declaration?.properties ?? {};
+    const declaredPropertyEntries = Object.freeze(
+      (Array.isArray(rawDeclaredProperties)
+        ? rawDeclaredProperties.map(
+            (property) =>
+              [
+                typeof property.key === 'string'
+                  ? property.key
+                  : `${property.key.prefix}*`,
+                property,
+              ] as const
+          )
+        : Object.entries(rawDeclaredProperties)
+      ).map(([localId, property]) =>
+        Object.freeze({
+          localId,
+          property: Object.freeze({
+            ...property,
+            ...('key' in property ? {} : { key: localId }),
+          }) as SchemaProperty,
+        })
+      )
+    );
+    const declaredProperties = Object.freeze(
+      declaredPropertyEntries.map(({ property }) => property)
+    );
     const declaredContentRoots = Object.freeze([
       ...(declaration?.contentRoots ?? []),
     ]);
@@ -494,8 +990,13 @@ export const compilePlateModel = (editor: BaseEditor): CompiledPlateModel => {
           `Plate plugins "${firstOwner}" and "${plugin.name}" both declare element type "${elementType}".`
         );
       }
-      const { blockContent, ...schemaElement } = element as typeof element & {
+      const {
+        blockContent,
+        type: _type,
+        ...schemaElement
+      } = element as typeof element & {
         blockContent?: boolean;
+        type?: string;
       };
       const isInline =
         schemaElement.inline === true ||
@@ -520,11 +1021,38 @@ export const compilePlateModel = (editor: BaseEditor): CompiledPlateModel => {
       textProperty = compileMark(propertyKey, mark);
       properties.push(textProperty);
     }
-    const pluginProperties = Object.freeze([
-      ...elementProperties,
-      ...declaredProperties,
-      ...(textProperty ? [textProperty] : []),
+    const propertyEntries = Object.freeze([
+      ...elementProperties.map((property) =>
+        Object.freeze({ localId: property.key as string, property })
+      ),
+      ...declaredPropertyEntries,
+      ...(textProperty
+        ? [Object.freeze({ localId: propertyKey, property: textProperty })]
+        : []),
     ]);
+    const pluginProperties = Object.freeze(
+      propertyEntries.map(({ property }) => property)
+    );
+    const propertyHandles: Record<string, SchemaPropertyHandle> =
+      Object.create(null);
+
+    for (const { localId, property } of propertyEntries) {
+      if (propertyHandles[localId]) {
+        throw new Error(
+          `Plate plugin "${plugin.name}" owns more than one schema property named "${localId}".`
+        );
+      }
+      propertyHandles[localId] = schema.handle.property(property);
+    }
+    const additionalPropertyHandles = Object.freeze(
+      Object.fromEntries(
+        propertyEntries.flatMap(({ localId }) =>
+          textProperty && localId === propertyKey
+            ? []
+            : [[localId, propertyHandles[localId]!]]
+        )
+      )
+    );
     const schemaProperties = Object.freeze([
       ...declaredProperties,
       ...(textProperty ? [textProperty] : []),
@@ -532,12 +1060,6 @@ export const compilePlateModel = (editor: BaseEditor): CompiledPlateModel => {
     const ownsPropertyKey = pluginProperties.some(
       (property) => property.key === propertyKey
     );
-
-    if (!ownsPropertyKey && plugin.key !== undefined) {
-      throw new Error(
-        `Plate plugin "${plugin.name}" declares \`key\` without owning that schema property.`
-      );
-    }
 
     properties.push(...declaredProperties);
     contentRoots.push(...declaredContentRoots);
@@ -565,10 +1087,12 @@ export const compilePlateModel = (editor: BaseEditor): CompiledPlateModel => {
         ),
       ]),
       elementType: element ? elementType : null,
+      family: getPluginSchemaFamily(plugin),
       isDecoration: plugin.render.isDecoration ?? true,
       kind: element ? 'element' : mark ? 'mark' : 'none',
       name: plugin.name,
       propertyKey: ownsPropertyKey ? propertyKey : null,
+      propertyHandles: Object.freeze(propertyHandles),
       properties: pluginProperties,
       propertyIds: Object.freeze([
         ...elementPropertyIds,
@@ -581,6 +1105,11 @@ export const compilePlateModel = (editor: BaseEditor): CompiledPlateModel => {
           .filter((reference) => reference.owner === plugin.name)
           .map((reference) => reference.target)
       ),
+      schema: Object.freeze({
+        ...(element ? { type: elementType } : {}),
+        ...(mark ? { key: propertyKey } : {}),
+        properties: additionalPropertyHandles,
+      }),
       textPropertyId: textProperty
         ? getCompiledSchemaPropertyId(textProperty)
         : null,
@@ -640,6 +1169,332 @@ export const compilePlateModel = (editor: BaseEditor): CompiledPlateModel => {
     }),
     contributions: Object.freeze(contributions),
     revision: Object.freeze({}),
+  });
+};
+
+type SchemaElementSourceReference = Readonly<{
+  kind: 'type';
+  source: string;
+  type: string;
+}>;
+
+const assertApplicationDescriptorFamily = (
+  reference: unknown,
+  source: string,
+  family: object | null,
+  owner: 'override' | 'relationship'
+) => {
+  if (reference === undefined || typeof reference === 'string') return;
+  if (!isNominalPluginReference(reference)) {
+    throw new Error(
+      `Editor schema ${owner} references an invalid plugin descriptor.`
+    );
+  }
+  if (getPluginSchemaFamily(reference) !== family) {
+    throw new Error(
+      `Editor schema ${owner} descriptor "${source}" does not match the installed plugin family.`
+    );
+  }
+};
+
+const resolveApplicationElementSourceByName = (
+  model: CompiledPlateModel,
+  source: string,
+  reference: unknown
+) => {
+  const binding = model.byName[source];
+
+  if (!binding?.elementType) {
+    throw new Error(
+      `Editor schema relationship references missing element plugin "${source}".`
+    );
+  }
+  assertApplicationDescriptorFamily(
+    reference,
+    source,
+    binding.family,
+    'relationship'
+  );
+
+  return binding.elementType;
+};
+
+const resolveApplicationElementSource = (
+  model: CompiledPlateModel,
+  reference: SchemaElementSourceReference
+) =>
+  resolveApplicationElementSourceByName(
+    model,
+    reference.source,
+    getSchemaElementSourceReference(reference)
+  );
+
+const lowerApplicationContentRule = (
+  model: CompiledPlateModel,
+  rule: SchemaContentRule
+): SchemaContentRule => {
+  switch (rule.kind) {
+    case 'type':
+      return 'source' in rule
+        ? Object.freeze({
+            kind: 'type' as const,
+            type: resolveApplicationElementSource(
+              model,
+              rule as SchemaElementSourceReference
+            ),
+          })
+        : rule;
+    case 'all':
+    case 'any':
+      return Object.freeze({
+        ...rule,
+        rules: Object.freeze(
+          rule.rules.map((child) => lowerApplicationContentRule(model, child))
+        ),
+      });
+    case 'not':
+      return Object.freeze({
+        ...rule,
+        rule: lowerApplicationContentRule(model, rule.rule),
+      });
+    default:
+      return rule;
+  }
+};
+
+const lowerApplicationContent = (
+  model: CompiledPlateModel,
+  content: SchemaContent
+): SchemaContent => {
+  const directReference =
+    content.allowed.kind === 'type' && 'source' in content.allowed
+      ? (content.allowed as SchemaElementSourceReference)
+      : null;
+
+  return Object.freeze({
+    ...content,
+    allowed: lowerApplicationContentRule(model, content.allowed),
+    ...(directReference && content.default !== 'text'
+      ? {
+          default: {
+            type: resolveApplicationElementSource(model, directReference),
+          },
+        }
+      : {}),
+  });
+};
+
+const lowerApplicationTarget = (
+  model: CompiledPlateModel,
+  target: SchemaTarget
+): SchemaTarget => {
+  switch (target.kind) {
+    case 'type':
+      return 'source' in target
+        ? Object.freeze({
+            kind: 'type' as const,
+            type: resolveApplicationElementSource(
+              model,
+              target as SchemaElementSourceReference
+            ),
+          })
+        : target;
+    case 'types':
+      if ('sources' in target && Array.isArray(target.sources)) {
+        const authoredSources = getSchemaElementSourceReference(target);
+
+        return Object.freeze({
+          kind: 'types' as const,
+          types: Object.freeze(
+            target.sources.map((source, index) => {
+              if (typeof source !== 'string') {
+                throw new Error(
+                  'Editor schema relationship contains an invalid element source.'
+                );
+              }
+
+              return resolveApplicationElementSourceByName(
+                model,
+                source,
+                Array.isArray(authoredSources)
+                  ? authoredSources[index]
+                  : undefined
+              );
+            })
+          ),
+        });
+      }
+
+      return target;
+    case 'and':
+    case 'or':
+      return Object.freeze({
+        ...target,
+        targets: Object.freeze(
+          target.targets.map((child) => lowerApplicationTarget(model, child))
+        ),
+      });
+    case 'not':
+    case 'parent':
+      return Object.freeze({
+        ...target,
+        target: lowerApplicationTarget(model, target.target),
+      });
+    default:
+      return target;
+  }
+};
+
+/** @internal Lower one closed editor policy against the authored plugin model. */
+export const compileEditorApplicationSchema = (
+  model: CompiledPlateModel,
+  policy: EditorApplicationSchema | undefined
+): EditorSchemaContribution | undefined => {
+  if (!policy) return;
+
+  const overrides: EditorSchemaOverride[] = [];
+
+  for (const input of policy.overrides ?? []) {
+    const source = input.source;
+    const binding = model.byName[source];
+
+    if (!binding) {
+      throw new Error(
+        `Editor schema override references missing plugin "${source}".`
+      );
+    }
+    assertApplicationDescriptorFamily(
+      getSchemaElementSourceReference(input) ?? input.source,
+      source,
+      binding.family,
+      'override'
+    );
+    if (input.element) {
+      if (!binding.elementType) {
+        throw new Error(
+          `Editor schema override references non-element plugin "${source}".`
+        );
+      }
+      overrides.push(
+        Object.freeze({
+          ...input.element,
+          ...(input.element.content
+            ? {
+                content: lowerApplicationContent(model, input.element.content),
+              }
+            : {}),
+          element: binding.elementType,
+          kind: 'element' as const,
+          source,
+        })
+      );
+    }
+    for (const [localId, propertyOverride] of Object.entries(
+      input.properties ?? {}
+    )) {
+      const handle = binding.propertyHandles[localId];
+
+      if (!handle) {
+        throw new Error(
+          `Editor schema override references unknown property "${source}.${localId}".`
+        );
+      }
+      overrides.push(
+        Object.freeze({
+          id: handle.id,
+          kind: 'property' as const,
+          source,
+          target: propertyOverride.target
+            ? lowerApplicationTarget(model, propertyOverride.target)
+            : null,
+        })
+      );
+    }
+  }
+
+  const properties = Object.entries(policy.properties ?? {}).map(
+    ([localId, property]) =>
+      Object.freeze({
+        ...property,
+        ...('target' in property && property.target
+          ? { target: lowerApplicationTarget(model, property.target) }
+          : {}),
+        ...('key' in property ? {} : { key: localId }),
+      }) as SchemaProperty
+  );
+
+  return Object.freeze({
+    ...(overrides.length > 0 ? { overrides: Object.freeze(overrides) } : {}),
+    ...(properties.length > 0 ? { properties: Object.freeze(properties) } : {}),
+  });
+};
+
+/** @internal Materialize final element handles without rewriting authored contributions. */
+export const applyEditorApplicationSchema = (
+  model: CompiledPlateModel,
+  policy: EditorApplicationSchema | undefined
+): CompiledPlateModel => {
+  if (!policy?.overrides?.some((override) => override.element?.type)) {
+    return model;
+  }
+
+  const finalTypes = new Map<string, string>();
+
+  for (const override of policy.overrides) {
+    if (!override.element?.type) continue;
+    const source = override.source;
+
+    if (finalTypes.has(source)) {
+      throw new Error(
+        `Editor schema overrides element type for plugin "${source}" more than once.`
+      );
+    }
+    finalTypes.set(source, override.element.type);
+  }
+
+  const bindings = model.bindings.map((binding) => {
+    const type = finalTypes.get(binding.name);
+
+    if (!type) return binding;
+    if (!binding.elementType || !binding.schema.type) {
+      throw new Error(
+        `Editor schema override references non-element plugin "${binding.name}".`
+      );
+    }
+
+    return Object.freeze({
+      ...binding,
+      elementType: type,
+      schema: Object.freeze({
+        ...binding.schema,
+        type,
+      }),
+    });
+  });
+  const byName: Record<string, CompiledPlateModelBinding> = Object.create(null);
+  const byType: Record<string, CompiledPlateModelBinding> = Object.create(null);
+  const byKey: Record<string, CompiledPlateModelBinding> = Object.create(null);
+
+  for (const binding of bindings) {
+    byName[binding.name] = binding;
+    if (binding.propertyKey) byKey[binding.propertyKey] = binding;
+    if (!binding.elementType) continue;
+    const previous = byType[binding.elementType];
+
+    if (previous) {
+      throw new Error(
+        `Editor schema element type "${binding.elementType}" is owned by both "${previous.name}" and "${binding.name}" after overrides.`
+      );
+    }
+    byType[binding.elementType] = binding;
+  }
+
+  return Object.freeze({
+    ...model,
+    bindings: Object.freeze(bindings),
+    byKey: Object.freeze(byKey),
+    byName: Object.freeze(byName),
+    byType: Object.freeze(byType),
   });
 };
 

@@ -69,7 +69,7 @@ export const useAndroidInputManager = (
   options: UseAndroidInputManagerOptions,
   runtime: EditableDOMRuntime
 ) => {
-  const editor = useEditor<ReactRuntimeEditor>();
+  const editor = useEditor();
   const enabled = useSyncExternalStore(
     runtime.subscribeHostFacts,
     () => runtime.isAndroidHost,

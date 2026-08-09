@@ -1,24 +1,34 @@
 import {
+  type ElementOf,
   type EditorSchemaProperty,
   type PropertyJsonValue,
+  type Value,
   property,
   schema,
   target,
 } from '@platejs/plite';
 import {
+  type BasePluginContext,
+  type BasePluginDefinition,
   createBaseEditor,
   defineBasePlugin,
   type BaseEditor,
   type DefinitionOf,
-  NodeIdPlugin,
-  normalizeNodeId,
+  ElementIdPlugin,
+  type ElementWith,
+  migrateElementIds,
   type PluginReference,
+  type TextWith,
 } from '@platejs/core';
+import type { SchemaElement } from '@platejs/plite';
 import type { AnyBasePlugin } from '../src/lib/plugin/BasePlugin';
 import type { NormalizePluginState } from '../src/lib/plugin/PluginDefinition';
+import type { PliteElementProps } from '../src/static/components/plite-nodes';
 import {
   createPlateEditor,
   definePlatePlugin,
+  type PlateElementForDescriptor,
+  type PlateElementProps,
   type PlateEditor,
   toPlatePlugin,
 } from '@platejs/core/react';
@@ -30,6 +40,16 @@ const TargetPlugin = defineBasePlugin('schemaTarget', {
     },
   },
 });
+
+type GenericElementPluginDefinition = BasePluginDefinition &
+  Readonly<{ schema: Readonly<{ element: SchemaElement }> }>;
+
+declare const genericElementContext: BasePluginContext<GenericElementPluginDefinition>;
+
+const genericElementType: string = genericElementContext.schema.type;
+// @ts-expect-error A generic element schema does not expose a primary property key.
+void genericElementContext.schema.key;
+void genericElementType;
 
 const ExtendedTargetPlugin = TargetPlugin.extend({
   initialState: { enabled: true },
@@ -78,11 +98,15 @@ const NoSchemaPlugin = defineBasePlugin('noSchemaElement', {});
 const noSchemaEditor = createBaseEditor({
   plugins: [NoSchemaPlugin],
 });
+type NoSchemaElement = ElementOf<typeof NoSchemaPlugin>;
+declare const noSchemaElement: NoSchemaElement;
 
 // @ts-expect-error Plugins without schema.element are not element descriptors.
 noSchemaEditor.read.schema.element(NoSchemaPlugin);
 // @ts-expect-error Plugins without schema.element cannot construct elements.
 noSchemaEditor.read.schema.create(NoSchemaPlugin);
+// @ts-expect-error Schema-less plugins do not expose an inferred element.
+void noSchemaElement.type;
 
 type ConfiguredPropertyPluginState = {
   prefix: string;
@@ -94,21 +118,19 @@ const configuredPropertyInitialState: ConfiguredPropertyPluginState = {
 
 const ConfiguredPropertyPlugin = defineBasePlugin('configuredProperty', {
   initialState: configuredPropertyInitialState,
-  schema: ({ initialState, own, targetElementTypes }) => {
+  schema: ({ initialState, targetElementTypes }) => {
     const prefix: string = initialState.prefix;
     const targetElementType: string = targetElementTypes[0]!;
-    const ownedKey: 'configuredProperty' = own.key;
 
     void prefix;
     void targetElementType;
-    void ownedKey;
 
     return {
-      properties: [
-        own.elementProperty(property.string(), {
+      properties: {
+        configuredProperty: schema.elementProperty(property.string(), {
           target: target.types(targetElementTypes),
         }),
-      ],
+      },
     };
   },
   targetPlugins: [TargetPlugin],
@@ -116,14 +138,14 @@ const ConfiguredPropertyPlugin = defineBasePlugin('configuredProperty', {
 
 const AmbiguousPropertyPlugin = defineBasePlugin('ambiguousProperty', {
   schema: {
-    properties: [
-      schema.elementProperty('first-property', property.string(), {
+    properties: {
+      'first-property': schema.elementProperty(property.string(), {
         target: target.type('schemaTarget'),
       }),
-      schema.elementProperty('second-property', property.number(), {
+      'second-property': schema.elementProperty(property.number(), {
         target: target.type('schemaTarget'),
       }),
-    ],
+    },
   },
 });
 
@@ -145,6 +167,141 @@ const ElementPropertyPlugin = definePlatePlugin('schemaElementProperty', {
     },
   },
 });
+
+const JsonElementPropertyPlugin = defineBasePlugin('jsonElementProperty', {
+  schema: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      properties: {
+        sizes: property.json({
+          validate: (value): value is number[] =>
+            Array.isArray(value) &&
+            value.every((item) => typeof item === 'number'),
+          validationVersion: 1,
+        }),
+      },
+    },
+  },
+});
+type JsonPropertyElement = ElementOf<typeof JsonElementPropertyPlugin>;
+declare const jsonPropertyElement: JsonPropertyElement;
+const exactJsonSizes: readonly number[] | undefined = jsonPropertyElement.sizes;
+
+void exactJsonSizes;
+
+const SchemaPropertyContributorPlugin = defineBasePlugin(
+  'schemaPropertyContributor',
+  {
+    schema: {
+      properties: {
+        active: schema.textProperty(
+          'persistedActive',
+          property.boolean({ default: false, omitDefault: true })
+        ),
+        metadata: schema.textProperty(
+          schema.key.prefix('metadata_'),
+          property.string()
+        ),
+        priority: schema.elementProperty(property.number(), {
+          target: target.group('element'),
+        }),
+      },
+    },
+  }
+);
+
+type ContributedElement = ElementWith<
+  typeof SchemaPropertyContributorPlugin,
+  'priority'
+>;
+type ContributedText = TextWith<
+  typeof SchemaPropertyContributorPlugin,
+  'active'
+>;
+declare const contributedElement: ContributedElement;
+declare const contributedText: ContributedText;
+declare const metadataKey: `metadata_${string}`;
+const exactContributedPriority: number = contributedElement.priority;
+const exactContributedActive: true = contributedText.persistedActive;
+const exactContributedMetadata: string | undefined =
+  contributedText[metadataKey];
+
+const rawElementProperties = {
+  width: property.number(),
+} as const;
+declare const rawPropertyElement: ElementWith<typeof rawElementProperties>;
+const exactRawWidth: number | undefined = rawPropertyElement.width;
+
+type CombinedContributors = ElementWith<
+  typeof ConfiguredPropertyPlugin | typeof SchemaPropertyContributorPlugin,
+  'configuredProperty' | 'priority'
+>;
+declare const combinedContributors: CombinedContributors;
+const exactCombinedConfiguredProperty: string =
+  combinedContributors.configuredProperty;
+const exactCombinedPriority: number = combinedContributors.priority;
+
+const SharedStringPropertyPlugin = defineBasePlugin('sharedStringProperty', {
+  schema: {
+    properties: {
+      shared: schema.elementProperty('sharedString', property.string(), {
+        target: target.group('element'),
+      }),
+    },
+  },
+});
+const SharedNumberPropertyPlugin = defineBasePlugin('sharedNumberProperty', {
+  schema: {
+    properties: {
+      shared: schema.elementProperty('sharedNumber', property.number(), {
+        target: target.group('element'),
+      }),
+    },
+  },
+});
+type CorrelatedContributors = ElementWith<
+  typeof SharedStringPropertyPlugin | typeof SharedNumberPropertyPlugin
+>;
+type RequiredCorrelatedContributors = ElementWith<
+  typeof SharedStringPropertyPlugin | typeof SharedNumberPropertyPlugin,
+  'shared'
+>;
+declare const correlatedContributors: CorrelatedContributors;
+declare const requiredCorrelatedContributors: RequiredCorrelatedContributors;
+const exactCorrelatedString: string | undefined =
+  correlatedContributors.sharedString;
+const exactCorrelatedNumber: number | undefined =
+  correlatedContributors.sharedNumber;
+const exactRequiredCorrelatedString: string =
+  requiredCorrelatedContributors.sharedString;
+const exactRequiredCorrelatedNumber: number =
+  requiredCorrelatedContributors.sharedNumber;
+
+type InvalidContributedElement = ElementWith<
+  typeof SchemaPropertyContributorPlugin,
+  // @ts-expect-error Required property IDs must belong to the supplied owners.
+  'missing'
+>;
+type InvalidRequiredPrefix = TextWith<
+  typeof SchemaPropertyContributorPlugin,
+  // @ts-expect-error Prefix properties describe a key family, not one required key.
+  'metadata'
+>;
+declare const invalidContributedElement: InvalidContributedElement;
+declare const invalidRequiredPrefix: InvalidRequiredPrefix;
+
+void exactCombinedConfiguredProperty;
+void exactCombinedPriority;
+void exactCorrelatedNumber;
+void exactCorrelatedString;
+void exactContributedActive;
+void exactContributedMetadata;
+void exactContributedPriority;
+void exactRawWidth;
+void exactRequiredCorrelatedNumber;
+void exactRequiredCorrelatedString;
+void invalidContributedElement;
+void invalidRequiredPrefix;
 
 const RelationshipParagraphPlugin = defineBasePlugin('relationshipParagraph', {
   schema: { element: schema.element.textBlock() },
@@ -202,14 +359,14 @@ void relationshipTableVocabulary;
 
 const AggregatePropertiesPlugin = defineBasePlugin('aggregateProperties', {
   schema: {
-    properties: [
-      schema.elementProperty('firstProperty', property.string(), {
+    properties: {
+      firstProperty: schema.elementProperty(property.string(), {
         target: target.group('element'),
       }),
-      schema.elementProperty('secondProperty', property.number(), {
+      secondProperty: schema.elementProperty(property.number(), {
         target: target.group('element'),
       }),
-    ],
+    },
   },
 });
 const aggregatePropertiesEditor = createBaseEditor({
@@ -219,35 +376,115 @@ const aggregatePropertiesEditor = createBaseEditor({
 void aggregatePropertiesEditor.plugin(AggregatePropertiesPlugin).key;
 
 const ExplicitPlateElementPlugin = definePlatePlugin('plateElementOwner', {
-  schema: { element: schema.element.textBlock() },
-  type: 'plateElementDocumentType',
-  update: ({ type }) => {
-    const exactType: 'plateElementDocumentType' = type;
+  schema: {
+    element: {
+      ...schema.element.textBlock(),
+      type: 'plateElementDocumentType',
+    },
+  },
+  update: ({ schema }) => {
+    const exactType: 'plateElementDocumentType' = schema.type;
 
     return { identity: () => exactType };
   },
 });
 const explicitPlateElementType: 'plateElementDocumentType' =
-  ExplicitPlateElementPlugin.type;
-const noPlateElementKey: undefined = ExplicitPlateElementPlugin.key;
+  ExplicitPlateElementPlugin.schema.element.type;
+// @ts-expect-error author descriptors do not expose a universal property key
+void ExplicitPlateElementPlugin.key;
+
+const PlateDependencyElementPlugin = definePlatePlugin(
+  'plateDependencyElement',
+  {
+    schema: {
+      element: {
+        ...schema.element.textBlock(),
+        properties: { dependencyOnly: property.boolean() },
+      },
+    },
+  }
+);
+const PlateOwnerElementPlugin = definePlatePlugin('plateOwnerElement', {
+  dependencies: [PlateDependencyElementPlugin],
+  schema: {
+    element: {
+      ...schema.element.textBlock(),
+      properties: { ownerOnly: property.string() },
+    },
+  },
+});
+type PlateOwnerElement = ElementOf<typeof PlateOwnerElementPlugin>;
+type PlateOwnerHookElement = PlateElementForDescriptor<
+  typeof PlateOwnerElementPlugin
+>;
+declare const plateOwnerElement: PlateOwnerElement;
+declare const plateOwnerHookElement: PlateOwnerHookElement;
+declare const plateOwnerProps: PlateElementProps<
+  typeof PlateOwnerElementPlugin
+>;
+declare const plateOwnerStaticProps: PliteElementProps<
+  typeof PlateOwnerElementPlugin
+>;
+const exactPlateOwnerType: 'plateOwnerElement' = plateOwnerElement.type;
+const exactPlateOwnerProperty: string | undefined = plateOwnerElement.ownerOnly;
+const exactPlateOwnerHookType: 'plateOwnerElement' = plateOwnerHookElement.type;
+const exactPlateOwnerPropsType: 'plateOwnerElement' =
+  plateOwnerProps.element.type;
+const exactPlateOwnerStaticPropsType: 'plateOwnerElement' =
+  plateOwnerStaticProps.element.type;
+// @ts-expect-error Descriptor-local element inference excludes dependency nodes.
+void plateOwnerElement.dependencyOnly;
+// @ts-expect-error Hook element inference excludes dependency nodes.
+void plateOwnerHookElement.dependencyOnly;
+// @ts-expect-error PlateElementProps element inference excludes dependency nodes.
+void plateOwnerProps.element.dependencyOnly;
+// @ts-expect-error PliteElementProps element inference excludes dependency nodes.
+void plateOwnerStaticProps.element.dependencyOnly;
+
+const PlateFactoryElementPlugin = definePlatePlugin('plateFactoryElement', {
+  schema: () => ({
+    element: {
+      ...schema.element.textBlock(),
+      properties: { factoryOnly: property.number() },
+    },
+  }),
+});
+type PlateFactoryHookElement = PlateElementForDescriptor<
+  typeof PlateFactoryElementPlugin
+>;
+declare const plateFactoryHookElement: PlateFactoryHookElement;
+const exactPlateFactoryType: 'plateFactoryElement' =
+  plateFactoryHookElement.type;
+const exactPlateFactoryProperty: number | undefined =
+  plateFactoryHookElement.factoryOnly;
+void exactPlateFactoryProperty;
+void exactPlateFactoryType;
 
 const ExplicitPlateMarkPlugin = definePlatePlugin('plateMarkOwner', {
-  api: ({ key }) => {
-    const exactKey: 'plateMarkDocumentKey' = key;
+  api: ({ schema }) => {
+    const exactKey: 'plateMarkDocumentKey' = schema.key;
 
     return { identity: () => exactKey };
   },
-  key: 'plateMarkDocumentKey',
-  schema: { mark: property.boolean() },
+  schema: {
+    mark: {
+      key: 'plateMarkDocumentKey',
+      property: property.boolean(),
+    },
+  },
 });
 const explicitPlateMarkKey: 'plateMarkDocumentKey' =
-  ExplicitPlateMarkPlugin.key;
-const noPlateMarkType: undefined = ExplicitPlateMarkPlugin.type;
+  ExplicitPlateMarkPlugin.schema.mark.key;
+// @ts-expect-error author descriptors do not expose a universal element type
+void ExplicitPlateMarkPlugin.type;
 
 void explicitPlateElementType;
 void explicitPlateMarkKey;
-void noPlateElementKey;
-void noPlateMarkType;
+void exactPlateOwnerHookType;
+void exactPlateOwnerProperty;
+void exactPlateOwnerPropsType;
+void exactPlateOwnerStaticPropsType;
+void exactPlateOwnerType;
 
 const configuredPrefix: string = ConfiguredPropertyPlugin.initialState.prefix;
 const configuredTargetPlugin: typeof TargetPlugin =
@@ -350,6 +587,40 @@ for (const installedElementPlugin of installedElementPlugins) {
   void installedElementSchema;
 }
 
+const markPortal = editor.plugin(MarkPropertyPlugin);
+const exactMarkKey: 'schemaMarkProperty' = markPortal.schema.key;
+const markValue: string | undefined = markPortal.read.value();
+const markActive: boolean = markPortal.read.isActive();
+markPortal.read.isActive('accent');
+markPortal.update.set('accent');
+markPortal.update.toggle('accent');
+markPortal.update.clear();
+editor.read.schemaMarkProperty.value() satisfies string | undefined;
+editor.update.schemaMarkProperty.set('accent');
+editor.update.schemaMarkProperty.toggle('accent');
+// @ts-expect-error Non-boolean mark toggles require the exact mark value.
+markPortal.update.toggle();
+// @ts-expect-error String marks reject boolean values.
+markPortal.update.set(true);
+
+const booleanMarkEditor = createPlateEditor({
+  plugins: [ExplicitPlateMarkPlugin],
+});
+const booleanMarkPortal = booleanMarkEditor.plugin(ExplicitPlateMarkPlugin);
+booleanMarkPortal.update.toggle();
+booleanMarkPortal.update.set(true);
+// @ts-expect-error Boolean mark toggles do not accept a value.
+booleanMarkPortal.update.toggle(true);
+
+const dynamicElementType: string = editor.plugin('schemaTarget').schema.type;
+const dynamicMarkKey: string = editor.plugin('schemaMarkProperty').schema.key;
+
+void dynamicElementType;
+void dynamicMarkKey;
+void exactMarkKey;
+void markActive;
+void markValue;
+
 const requirePluginReference = <T extends PluginReference>(plugin: T) => plugin;
 const ReferenceChildPlugin = defineBasePlugin('schemaReferenceChild', {
   dependencies: [TargetPlugin, ElementPropertyPlugin],
@@ -432,7 +703,7 @@ nestedReferenceEditor.read.schema.property({
   key: 'tone',
   placement: 'element',
 });
-erasedCollectionEditor.read.schema.element(TargetPlugin.type);
+erasedCollectionEditor.read.schema.element(TargetPlugin);
 erasedCollectionEditor.read.schema.property({
   key: 'tone',
   placement: 'element',
@@ -555,8 +826,10 @@ const targetElement = editor.read.schema.create(TargetPlugin, {
   'first-property': 'center',
 });
 const targetType: 'schemaTarget' = targetElement.type;
-const configuredProperty: string | undefined =
-  editor.read.schema.getElementProperty(targetElement, 'configured-property');
+const configuredProperty: string | undefined = editor.read.schema.getProperty(
+  targetElement,
+  'configured-property'
+);
 const configuredSchemaProperty: EditorSchemaProperty | null =
   editor.read.schema.property({
     key: 'configured-property',
@@ -569,27 +842,25 @@ const markSchemaProperty: EditorSchemaProperty | null =
     key: 'schema-mark-property',
     placement: 'text',
   });
-const elementPropertyHandle = schema.handle.property(
-  schema.handle.element(
-    ElementPropertyPlugin,
-    editor.plugin(ElementPropertyPlugin).type
-  ),
-  'tone'
-);
 const handledElementSchemaProperty: EditorSchemaProperty | null =
-  editor.read.schema.property(elementPropertyHandle);
-const nodeIdEditor = createBaseEditor({
-  plugins: [TargetPlugin, NodeIdPlugin],
+  editor.read.schema.property({ key: 'tone', placement: 'element' });
+
+// @ts-expect-error Element consumer portals expose only their primary type.
+void editor.plugin(ElementPropertyPlugin).schema.properties;
+// @ts-expect-error Aggregate property contributors expose no consumer schema.
+void aggregatePropertiesEditor.plugin(AggregatePropertiesPlugin).schema;
+const elementIdEditor = createBaseEditor({
+  plugins: [TargetPlugin, ElementIdPlugin],
 });
-NodeIdPlugin.configure({
+ElementIdPlugin.configure({
   initialState: {
-    idCreator: () => 'node-id',
+    generateId: () => 'element-id',
   },
 });
-NodeIdPlugin.configure({
+ElementIdPlugin.configure({
   initialState: {
-    // @ts-expect-error Generated node ids are strings.
-    idCreator: () => 1,
+    // @ts-expect-error Generated element ids are strings.
+    generateId: () => 1,
   },
 });
 type ExactNodeIdValue = [
@@ -600,10 +871,16 @@ type ExactNodeIdValue = [
   },
 ];
 declare const exactNodeIdValue: ExactNodeIdValue;
-const exactNormalizedNodeIdValue: ExactNodeIdValue =
-  normalizeNodeId(exactNodeIdValue);
-const nodeIdProperty: PropertyJsonValue | undefined =
-  nodeIdEditor.read.schema.getElementProperty<PropertyJsonValue>(
+const migratedElementIdValue: Value = migrateElementIds(exactNodeIdValue, {
+  generateId: () => 'element-id',
+}).value;
+// @ts-expect-error Migration adds canonical IDs and cannot preserve the input's exact shape.
+const exactMigratedElementIdValue: ExactNodeIdValue = migrateElementIds(
+  exactNodeIdValue,
+  { generateId: () => 'element-id' }
+).value;
+const elementIdProperty: PropertyJsonValue | undefined =
+  elementIdEditor.read.schema.getProperty<PropertyJsonValue>(
     targetElement,
     'id'
   );
@@ -612,8 +889,9 @@ void configuredSchemaProperty;
 void elementSchemaProperty;
 void handledElementSchemaProperty;
 void markSchemaProperty;
-void nodeIdProperty;
-void exactNormalizedNodeIdValue;
+void elementIdProperty;
+void exactMigratedElementIdValue;
+void migratedElementIdValue;
 editor.read.schema.create(TargetPlugin, { 'first-property': 42 });
 // @ts-expect-error Property-only plugins cannot construct elements.
 editor.read.schema.create(AmbiguousPropertyPlugin);
@@ -671,12 +949,12 @@ defineBasePlugin('advancedMarkDescriptor', {
 });
 
 defineBasePlugin('requiredElementPropertyTarget', {
-  schema: ({ own }) => ({
-    properties: [
+  schema: {
+    properties: {
       // @ts-expect-error Element property placement requires an explicit target.
-      own.elementProperty(property.string()),
-    ],
-  }),
+      value: schema.elementProperty(property.string()),
+    },
+  },
 });
 
 void configuredPrefix;

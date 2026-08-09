@@ -3,8 +3,8 @@ title: Plate Utils
 description: API reference for @platejs/utils.
 ---
 
-`@platejs/utils` contains Plate's shared key constants, editor value types, and
-small utility plugins. `@platejs/utils/react` adds React hooks and the block
+`@platejs/utils` contains Plate's first-party plugin identity catalog and small
+utility plugins. `@platejs/utils/react` adds React hooks and the block
 placeholder plugin used by registry UI.
 
 ## Installation
@@ -19,87 +19,102 @@ umbrella `platejs` package.
 
 ## Import Paths
 
-| Import                 | Re-exports                                   | Use                                                                       |
-| ---------------------- | -------------------------------------------- | ------------------------------------------------------------------------- |
-| `@platejs/utils`       | `plate-keys`, `plate-types`, utility plugins | Shared node keys, Plate element/mark types, and headless utility plugins. |
-| `@platejs/utils/react` | React hooks, `BlockPlaceholderPlugin`        | Registry controls and React-only utility behavior.                        |
-| `platejs`              | `@platejs/utils`                             | App-level imports for headless constants, types, and utility plugins.     |
-| `platejs/react`        | `@platejs/utils/react`                       | App-level imports for React hooks and `BlockPlaceholderPlugin`.           |
+| Import                 | Re-exports                            | Use                                                               |
+| ---------------------- | ------------------------------------- | ----------------------------------------------------------------- |
+| `@platejs/utils`       | `PLUGINS`, migrations, utility plugins | First-party names and headless utility behavior.                   |
+| `@platejs/utils/react` | React hooks, `BlockPlaceholderPlugin` | Registry controls and React-only utility behavior.                 |
+| `platejs`              | `@platejs/utils`                      | App-level imports for identities, migrations, and utility plugins. |
+| `platejs/react`        | `@platejs/utils/react`                | App-level imports for React hooks and `BlockPlaceholderPlugin`.     |
 
-## Key Constants
+## Plugin Identities
 
-`KEYS` contains code-facing plugin identities. `NODES` contains serialized
-element and mark discriminators. Use `editor.plugin(KEYS.somePlugin).type` when a
-plugin can override its node type.
+`PLUGINS` is the first-party capability-name catalog used by copied registry
+code. An element plugin separately exposes its persisted `type`; a property
+plugin exposes its persisted `key`. Both default to the plugin `name`, but a
+plugin author can declare a different value at creation.
 
-| Export       | Contains                                                                                                                 | Notes                                                                    |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------ |
-| `NODES`      | Serialized element and mark types such as `p`, `blockquote`, `code_block`, `table`, `bold`, and `a`                      | Use in persisted values, fixtures, and static node builders.             |
-| `STYLE_KEYS` | Style property keys such as `color`, `fontSize`, `indent`, and `textAlign`                                               | Used by style plugins and registry controls.                             |
-| `KEYS`       | Plugin identities such as `codeBlock`, `inlineEquation`, `exitBreak`, and `trailingBlock`, plus shared style/action keys | Use for plugin lookup, configuration, injection, and command namespaces. |
-| `NodeKey`    | Union of values from `NODES`                                                                                             | Use for node-type values.                                                |
-| `StyleKey`   | Union of values from `STYLE_KEYS`                                                                                        | Use for style keys.                                                      |
-| `PlateKey`   | Union of values from `KEYS`                                                                                              | Includes string values and grouped key arrays.                           |
+| Export | Contains | Use |
+| --- | --- | --- |
+| `PLUGINS` | First-party capability names such as `paragraph`, `codeBlock`, `bold`, and `fixedToolbar` | Plugin lookup, dependencies, targets, and copied registry plugin references. Persisted element types and property keys come from `.type` / `.key` or explicit document literals. |
+| `PluginName` | Union of all values in `PLUGINS` | APIs that accept any first-party plugin identity. |
 
-Plugin identities and document types intentionally differ for these built-ins:
+```ts title="Use one identity"
+import { BaseBoldPlugin, BaseParagraphPlugin } from '@platejs/basic-nodes';
 
-| Plugin identity                            | Serialized type                              |
-| ------------------------------------------ | -------------------------------------------- |
-| `KEYS.codeBlock` (`codeBlock`)             | `NODES.codeBlock` (`code_block`)             |
-| `KEYS.codeDrawing` (`codeDrawing`)         | `NODES.codeDrawing` (`code_drawing`)         |
-| `KEYS.codeLine` (`codeLine`)               | `NODES.codeLine` (`code_line`)               |
-| `KEYS.codeSyntax` (`codeSyntax`)           | `NODES.codeSyntax` (`code_syntax`)           |
-| `KEYS.columnGroup` (`columnGroup`)         | `NODES.columnGroup` (`column_group`)         |
-| `KEYS.emojiInput` (`emojiInput`)           | `NODES.emojiInput` (`emoji_input`)           |
-| `KEYS.inlineEquation` (`inlineEquation`)   | `NODES.inlineEquation` (`inline_equation`)   |
-| `KEYS.listTodoClassic` (`listTodoClassic`) | `NODES.listTodoClassic` (`action_item`)      |
-| `KEYS.mediaEmbed` (`mediaEmbed`)           | `NODES.mediaEmbed` (`media_embed`)           |
-| `KEYS.mentionInput` (`mentionInput`)       | `NODES.mentionInput` (`mention_input`)       |
-| `KEYS.searchHighlight` (`searchHighlight`) | `NODES.searchHighlight` (`search_highlight`) |
-| `KEYS.slashInput` (`slashInput`)           | `NODES.slashInput` (`slash_input`)           |
-| `KEYS.slashCommand` (`slashCommand`)       | No node; behavior-only plugin                |
+const value = [
+  {
+    type: BaseParagraphPlugin.type,
+    children: [{ [BaseBoldPlugin.key]: true, text: 'Hello' }],
+  },
+];
+```
 
-```ts title="Use Plate keys"
-import { KEYS, NODES, TrailingBlockPlugin } from "platejs";
+Behavior-only plugins such as `PLUGINS.fixedToolbar` still have a name but do
+not create a document node or property.
 
-export const trailingBlock = TrailingBlockPlugin.configure({
-  initialState: {
-    type: NODES.p,
+Use `migratePlateAstIdentities` before editor creation when loading a document
+written with different identities. The migration rewrites only the element
+types and top-level properties you declare; unknown custom data stays intact.
+
+```ts title="Migrate persisted identities"
+import { PLUGINS } from 'platejs';
+import { migratePlateAstIdentities } from 'platejs/migrations';
+
+const initialValue = migratePlateAstIdentities(persistedValue, {
+  properties: { align: PLUGINS.textAlign },
+  types: {
+    code_block: PLUGINS.codeBlock,
+    p: PLUGINS.paragraph,
   },
 });
 ```
 
-## Shared Types
+```ts title="Configure a target identity"
+import { PLUGINS, TrailingBlockPlugin } from 'platejs';
 
-`plate-types` exports common element, prop, media, list, table, mark, and
-suggestion shapes used across feature packages.
+export const trailingBlock = TrailingBlockPlugin.configure({
+  initialState: {
+    type: 'paragraph',
+  },
+});
+```
 
-| Type group     | Examples                                                                                     | Use                                                                  |
-| -------------- | -------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| Block elements | `TCalloutElement`, `TCodeBlockElement`, `TColumnElement`, `TDateElement`, `TEquationElement` | Typed element props for feature packages and registry nodes.         |
-| Media elements | `TImageElement`, `TAudioElement`, `TFileElement`, `TVideoElement`, `TMediaEmbedElement`      | Media nodes with `url`, `id`, upload, provider, and source metadata. |
-| Table elements | `TTableElement`, `TTableRowElement`, `TTableCellElement`, `TTableCellBorder`                 | Table structure, spans, sizes, backgrounds, and borders.             |
-| Shared props   | `TIdProps`, `TIndentProps`, `TResizableProps`, `TListProps`                                  | Reusable node property contracts.                                    |
-| Marks          | `TBasicMarks`, `TFontMarks`, `TCommentText`, `TSuggestionText`                               | Text marks and collaboration text state.                             |
-| Suggestions    | `TSuggestionData`, `TInsertSuggestionData`, `TRemoveSuggestionData`, `TUpdateSuggestionData` | Suggestion metadata stored on elements or text.                      |
+## Schema-Derived Types
 
-```ts title="Type a media element"
-import type { TImageElement } from "platejs";
+Feature packages own their persisted types. Their readable aliases are derived
+from the same plugin schema used at runtime, so `@platejs/utils` does not carry
+a central AST map.
 
-export function getImageUrl(element: TImageElement) {
+```ts title="Use an owner-derived element type"
+import type { ImageElement } from '@platejs/media';
+
+export function getImageUrl(element: ImageElement) {
   return element.url;
 }
+```
+
+Use `ElementOf<typeof Plugin>` for one descriptor-owned element shape and
+`ValueOf<MyEditor>` for the complete installed document vocabulary.
+
+```ts title="Derive an editor value"
+import type { ValueOf } from 'platejs';
+import type { PlateEditor } from 'platejs/react';
+
+import { EditorKit } from '@/components/editor/editor-kit';
+
+type MyEditor = PlateEditor<typeof EditorKit>;
+type MyValue = ValueOf<MyEditor>;
 ```
 
 ## Utility Plugins And Kits
 
 | Export                 | Name                   | Behavior                                                                         |
 | ---------------------- | ---------------------- | -------------------------------------------------------------------------------- |
-| `ExitBreakPlugin`      | `KEYS.exitBreak`       | Adds transaction commands around `insertExitBreak`.                              |
-| `NormalizeTypesPlugin` | `KEYS.normalizeTypes`  | Normalizes configured root paths to a required `type` or `strictType`.           |
-| `SingleBlockPlugin`    | `KEYS.singleBlock`     | Forces the editor value into one block and turns hard breaks into soft breaks.   |
-| `SingleLinePlugin`     | `KEYS.singleLine`      | Forces one block and strips line-break characters from text nodes.               |
-| `TrailingBlockPlugin`  | `KEYS.trailingBlock`   | Ensures a trailing block exists at the configured level and type.                |
+| `ExitBreakPlugin`      | `PLUGINS.exitBreak`       | Adds transaction commands around `insertExitBreak`.                              |
+| `NormalizeTypesPlugin` | `PLUGINS.normalizeTypes`  | Normalizes configured root paths to a required `type` or `strictType`.           |
+| `SingleBlockPlugin`    | `PLUGINS.singleBlock`     | Forces the editor value into one block and turns hard breaks into soft breaks.   |
+| `SingleLinePlugin`     | `PLUGINS.singleLine`      | Forces one block and strips line-break characters from text nodes.               |
+| `TrailingBlockPlugin`  | `PLUGINS.trailingBlock`   | Ensures a trailing block exists at the configured level and type.                |
 | `withTrailingBlock`    | Override editor helper | Implements the trailing block normalization logic used by `TrailingBlockPlugin`. |
 
 Use the plugin guide pages for options and examples:
@@ -137,20 +152,19 @@ export function MarkToolbarButton({ nodeType }: { nodeType: string }) {
 
 | Plugin                   | Name                    | Behavior                                                                                                                |
 | ------------------------ | ----------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `BlockPlaceholderPlugin` | `KEYS.blockPlaceholder` | Tracks the current empty block and injects `placeholder` and optional `className` props into matching block components. |
+| `BlockPlaceholderPlugin` | `PLUGINS.blockPlaceholder` | Tracks the current empty block and injects `placeholder` and optional `className` props into matching block components. |
 
 `BlockPlaceholderPlugin` defaults to paragraph placeholders and only targets a
 focused, editable, collapsed selection. Configure `placeholders` by plugin name
 and `query` by node/path.
 
 ```tsx title="components/editor/plugins/block-placeholder-kit.tsx"
-import { KEYS } from "platejs";
 import { BlockPlaceholderPlugin } from "platejs/react";
 
 export const blockPlaceholderPlugin = BlockPlaceholderPlugin.configure({
   initialState: {
     placeholders: {
-      [KEYS.p]: "Type something...",
+      ['paragraph']: "Type something...",
     },
     query: ({ path }) => path.length === 1,
   },

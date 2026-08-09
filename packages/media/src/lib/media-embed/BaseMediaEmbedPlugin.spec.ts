@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 
-import { createBaseEditor } from '@platejs/core';
+import { createBaseEditor, ElementIdPlugin } from '@platejs/core';
 import { NodeApi, SelectionApi, createEditor } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
 
@@ -204,7 +204,7 @@ describe('BaseMediaEmbedPlugin', () => {
 
     if (
       !media ||
-      media.type !== editor.plugin(BaseMediaEmbedPlugin).schema.element.type
+      media.type !== editor.plugin(BaseMediaEmbedPlugin).schema.type
     ) {
       throw new Error('Expected the inserted media embed element.');
     }
@@ -386,17 +386,19 @@ describe('BaseMediaEmbedPlugin', () => {
     });
   });
 
-  it('coexists with the global node-id schema without claiming provider IDs', () => {
+  it('coexists with explicit persisted element IDs without claiming provider IDs', () => {
     const editor = createBaseEditor({
-      nodeId: {
-        idCreator: () => 'document-node-id',
-      },
-      plugins: [BaseMediaEmbedPlugin],
+      plugins: [
+        ElementIdPlugin.configure({
+          initialState: { generateId: () => 'document-node-id' },
+        }),
+        BaseMediaEmbedPlugin,
+      ],
       initialValue: ({ editor }) => [
         {
           children: [{ text: '' }],
           id: 'document-node-id',
-          type: editor.plugin(BaseMediaEmbedPlugin).schema.element.type,
+          type: editor.plugin(BaseMediaEmbedPlugin).schema.type,
           url: 'https://www.youtube.com/embed/M7lc1UVf-VE',
         },
       ],

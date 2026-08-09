@@ -40,16 +40,13 @@ type PlatePluginConstructorContextDefinition<
   S extends object,
   TSchema extends PluginSchemaDeclaration = never,
   TTargetPlugins extends readonly (PluginReference | string)[] = readonly [],
-  TType extends string = N,
-  TKey extends string = N,
 > = NormalizePlatePluginInput<
   Readonly<{
     initialState: S;
     name: N;
     schema: TSchema;
     targetPlugins: TTargetPlugins;
-  }> &
-    PlatePluginConstructorSchemaIdentity<TSchema, TType, TKey>
+  }>
 > &
   Readonly<{ dependencies: D }>;
 
@@ -72,16 +69,6 @@ type ConstructorFactoryResult<TValue> = TValue extends (
   : TValue;
 
 type IsAny<TValue> = 0 extends 1 & TValue ? true : false;
-
-type PlatePluginConstructorSchemaIdentity<
-  TSchema extends PluginSchemaDeclaration,
-  TType extends string,
-  TKey extends string,
-> = [TSchema] extends [never]
-  ? Readonly<Record<never, never>>
-  : TSchema extends Readonly<{ element: unknown }>
-    ? Readonly<{ type: TType }>
-    : Readonly<{ key: TKey }>;
 
 type PlatePluginConstructorState<
   TKeys extends PlatePluginConstructorKey,
@@ -121,8 +108,6 @@ type PlatePluginConstructorResultInput<
   TEnabled extends boolean,
   TSchema extends PluginSchemaDeclaration,
   TTargetPlugins extends readonly (PluginReference | string)[],
-  TType extends string,
-  TPropertyKey extends string,
 > = Readonly<{
   [TKey in Exclude<
     TKeys,
@@ -142,12 +127,6 @@ type PlatePluginConstructorResultInput<
   >]: true;
 }> &
   Readonly<{ name: N }> &
-  ('type' extends TKeys
-    ? Readonly<{ type: TType }>
-    : Readonly<Record<never, never>>) &
-  ('key' extends TKeys
-    ? Readonly<{ key: TPropertyKey }>
-    : Readonly<Record<never, never>>) &
   ('dependencies' extends TKeys
     ? Readonly<{ dependencies: D }>
     : Readonly<Record<never, never>>) &
@@ -191,23 +170,13 @@ type PlatePluginConstructorRestInput<
   S extends object,
   TSchema extends PluginSchemaDeclaration,
   TTargetPlugins extends readonly (PluginReference | string)[],
-  TType extends string,
-  TPropertyKey extends string,
 > = Readonly<{
   [TKey in Extract<
     TKeys,
     PlatePluginConstructorRestKey
   >]: PlatePluginConstructorRestFieldInput<
     NoInfer<
-      PlatePluginConstructorContextDefinition<
-        N,
-        D,
-        S,
-        TSchema,
-        TTargetPlugins,
-        TType,
-        TPropertyKey
-      >
+      PlatePluginConstructorContextDefinition<N, D, S, TSchema, TTargetPlugins>
     >,
     TKey
   >;
@@ -232,29 +201,16 @@ type PlatePluginConstructorSchemaInput<
   S extends object,
   TTargetPlugins extends readonly (PluginReference | string)[],
   TSchema extends PluginSchemaDeclaration,
-  TType extends string,
-  TKey extends string,
 > =
   | ((
       context: PluginSchemaContext<
-        PlatePluginConstructorContextDefinition<N, D, S, never, TTargetPlugins>,
-        TType,
-        TKey
+        PlatePluginConstructorContextDefinition<N, D, S, never, TTargetPlugins>
       >
     ) => TSchema)
   | (TSchema & Readonly<Record<string, unknown>>);
 
-type PlatePluginConstructorSchemaIdentityInput<
-  TSchema extends PluginSchemaDeclaration,
-  TType extends string,
-  TKey extends string,
-> =
-  TSchema extends Readonly<{ element: unknown }>
-    ? Readonly<{ key?: TKey; type?: TType }>
-    : Readonly<{ key?: TKey; type?: never }>;
-
 type PlatePluginConstructorKey = Exclude<
-  keyof PlatePluginDefinitionInput | 'key' | 'type',
+  keyof PlatePluginDefinitionInput,
   'name'
 >;
 
@@ -276,21 +232,11 @@ type PlatePluginConstructorUpdateFactory<
   S extends object,
   TSchema extends PluginSchemaDeclaration,
   TTargetPlugins extends readonly (PluginReference | string)[],
-  TType extends string,
-  TKey extends string,
   TUpdate extends object,
 > = (
   context: PlatePluginContext<
     NoInfer<
-      PlatePluginConstructorContextDefinition<
-        N,
-        D,
-        S,
-        TSchema,
-        TTargetPlugins,
-        TType,
-        TKey
-      >
+      PlatePluginConstructorContextDefinition<N, D, S, TSchema, TTargetPlugins>
     >
   > & {
     context: EditorUpdateContext;
@@ -301,9 +247,7 @@ type PlatePluginConstructorUpdateFactory<
           D,
           S,
           TSchema,
-          TTargetPlugins,
-          TType,
-          TKey
+          TTargetPlugins
         >
       >
     >;
@@ -320,8 +264,6 @@ type PlatePluginConstructorStateConsumerInput<
   TSelectors extends PluginSelectors<S>,
   TUpdate extends object,
   TTargetPlugins extends readonly (PluginReference | string)[],
-  TType extends string,
-  TKey extends string,
 > = Readonly<{
   api?: (
     context: PlatePluginContext<
@@ -331,9 +273,7 @@ type PlatePluginConstructorStateConsumerInput<
           D,
           S,
           TSchema,
-          TTargetPlugins,
-          TType,
-          TKey
+          TTargetPlugins
         >
       >
     >
@@ -346,9 +286,7 @@ type PlatePluginConstructorStateConsumerInput<
           D,
           S,
           TSchema,
-          TTargetPlugins,
-          TType,
-          TKey
+          TTargetPlugins
         >
       >
     > & {
@@ -359,9 +297,7 @@ type PlatePluginConstructorStateConsumerInput<
             D,
             S,
             TSchema,
-            TTargetPlugins,
-            TType,
-            TKey
+            TTargetPlugins
           >
         >
       >;
@@ -374,8 +310,6 @@ type PlatePluginConstructorStateConsumerInput<
     S,
     TSchema,
     TTargetPlugins,
-    TType,
-    TKey,
     TUpdate
   >;
 }>;
@@ -400,8 +334,6 @@ type PlatePluginConstructorStagedStateConsumerInput<
   TSelectors extends PluginSelectors<S>,
   TUpdate extends object,
   TTargetPlugins extends readonly (PluginReference | string)[],
-  TType extends string,
-  TKey extends string,
 > =
   Extract<TKeys, 'api' | 'read' | 'selectors' | 'update'> extends never
     ? Readonly<Record<never, never>>
@@ -418,9 +350,7 @@ type PlatePluginConstructorStagedStateConsumerInput<
               TRead,
               TSelectors,
               TUpdate,
-              TTargetPlugins,
-              TType,
-              TKey
+              TTargetPlugins
             >
           : PlatePluginConstructorDeferredStateConsumers
       : PlatePluginConstructorStateConsumerInput<
@@ -432,9 +362,7 @@ type PlatePluginConstructorStagedStateConsumerInput<
           TRead,
           TSelectors,
           TUpdate,
-          TTargetPlugins,
-          TType,
-          TKey
+          TTargetPlugins
         >;
 
 type CompactBasePluginDefinition<TDefinition> = Readonly<{
@@ -448,8 +376,6 @@ export function definePlatePlugin<
   const TApi extends object = {},
   const TUpdate extends object = {},
   const TSchema extends PluginSchemaDeclaration = never,
-  const TType extends string = N,
-  const TPropertyKey extends string = N,
   const D extends PlatePluginDependencies = readonly [],
   const TConflicts extends PlatePluginDependencies = readonly [],
   const TTargetPlugins extends readonly (
@@ -472,9 +398,7 @@ export function definePlatePlugin<
             PlatePluginConstructorDependencies<TKeys, D>,
             PlatePluginConstructorState<TKeys, TInitialStateInput>,
             TTargetPlugins,
-            TSchema,
-            TType,
-            TPropertyKey
+            TSchema
           >;
         }>
       : Readonly<{ schema?: never }>) &
@@ -484,17 +408,8 @@ export function definePlatePlugin<
       PlatePluginConstructorDependencies<TKeys, D>,
       PlatePluginConstructorState<TKeys, TInitialStateInput>,
       NoInfer<'schema' extends TKeys ? TSchema : never>,
-      TTargetPlugins,
-      TType,
-      TPropertyKey
+      TTargetPlugins
     > &
-    ('schema' extends TKeys
-      ? PlatePluginConstructorSchemaIdentityInput<
-          NoInfer<TSchema>,
-          TType,
-          TPropertyKey
-        >
-      : Readonly<{ key?: never; type?: never }>) &
     ('initialState' extends TKeys
       ? Readonly<{
           initialState: PlatePluginConstructorInitialStateInput<
@@ -516,9 +431,7 @@ export function definePlatePlugin<
       TRead,
       TSelectors,
       TUpdate,
-      TTargetPlugins,
-      TType,
-      TPropertyKey
+      TTargetPlugins
     > &
     ('shortcuts' extends TKeys
       ? Readonly<{
@@ -528,9 +441,7 @@ export function definePlatePlugin<
               PlatePluginConstructorDependencies<TKeys, D>,
               PlatePluginConstructorState<TKeys, TInitialStateInput>,
               TSchema,
-              TTargetPlugins,
-              TType,
-              TPropertyKey
+              TTargetPlugins
             >,
             TShortcuts
           >;
@@ -558,9 +469,7 @@ export function definePlatePlugin<
           TUpdate,
           TEnabled,
           'schema' extends TKeys ? TSchema : never,
-          TTargetPlugins,
-          TType,
-          TPropertyKey
+          TTargetPlugins
         >
       >,
       'dependencies'

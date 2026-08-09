@@ -17,7 +17,7 @@ npm install @platejs/resizable
 
 | Surface | Owner | Use |
 | --- | --- | --- |
-| `Resizable` | `@platejs/resizable` | Wraps a Plate element, tracks width, clamps resize values, and writes the final width to the node. |
+| `Resizable` | `@platejs/resizable` | Tracks preview width, clamps resize values, and calls the supplied commit callback when resizing finishes. |
 | `ResizeHandle` | `@platejs/resizable` | Primitive handle that starts mouse/touch resizing and emits `ResizeEvent` values. |
 | `ResizableProvider` | `@platejs/resizable` | Stores the active width for the current resizable subtree. |
 | `ResizeHandleProvider` | `@platejs/resizable` | Shares the wrapper `onResize` callback with nested handles. |
@@ -31,7 +31,7 @@ provider width for captions and use `Resizable` plus left/right handles around
 the media body.
 
 ```tsx title="Resizable media element"
-import type { TImageElement } from 'platejs';
+import type { ImageElement } from 'platejs';
 import type { PlateElementProps } from 'platejs/react';
 
 import {
@@ -44,7 +44,7 @@ import { PlateElement, withHOC } from 'platejs/react';
 
 export const ImageElement = withHOC(
   ResizableProvider,
-  function ImageElement(props: PlateElementProps<TImageElement>) {
+  function ImageElement(props: PlateElementProps<ImageElement>) {
     const width = useResizableValue('width');
 
     return (
@@ -55,6 +55,11 @@ export const ImageElement = withHOC(
               align: 'center',
               maxWidth: '100%',
               minWidth: 120,
+              onResizeEnd: (width) =>
+                editor.plugin(ImagePlugin).update.set({ width }, {
+                  at: props.element,
+                }),
+              width: props.element.width,
             }}
           >
             <ResizeHandle options={{ direction: 'left' }} />
@@ -102,6 +107,12 @@ callback to descendants through `ResizeHandleProvider`.
   <APIItem name="minWidth" type="ResizeLength" optional>
     Minimum width. Defaults to `92`.
   </APIItem>
+  <APIItem name="onResizeEnd" type="(width: ResizeLength) => void" optional>
+    Commits the finished width. The media owner supplies its scoped plugin update here.
+  </APIItem>
+  <APIItem name="width" type="ResizeLength" optional>
+    Current document width. Defaults to `100%`.
+  </APIItem>
 </APIOptions>
 <APIReturns type="ReturnType<typeof useResizableState>">
   <APIItem name="align" type="'center' | 'left' | 'right'">
@@ -113,8 +124,8 @@ callback to descendants through `ResizeHandleProvider`.
   <APIItem name="minWidth" type="ResizeLength">
     Minimum width passed to the wrapper style and clamp utility.
   </APIItem>
-  <APIItem name="setNodeWidth" type="(width: number) => void">
-    Writes the finished width to the current `TResizableElement`. If the width is unchanged, it selects the node.
+  <APIItem name="onResizeEnd" type="((width: ResizeLength) => void) | undefined">
+    Commit callback supplied by the owning feature.
   </APIItem>
   <APIItem name="setWidth" type="(width: number | string) => void">
     Updates the transient provider width while dragging.
@@ -133,7 +144,10 @@ callback to descendants through `ResizeHandleProvider`.
 </APIParameters>
 <APIReturns type="object">
   <APIItem name="context.onResize" type="(event: ResizeEvent) => void">
-    Converts a handle delta into a new width, clamps it, stores it while dragging, and writes it to the node when `finished` is true.
+    Converts a handle delta into a new width, clamps it, stores preview values while dragging, and calls `onResizeEnd` when `finished` is true.
+  </APIItem>
+  <APIItem name="context.nudgeWidth" type="(delta: number) => void">
+    Clamps and commits one keyboard resize step.
   </APIItem>
   <APIItem name="props" type="{ style: React.CSSProperties }">
     Inner wrapper props with `position: 'relative'`, `width`, `minWidth`, and `maxWidth`.
@@ -148,6 +162,10 @@ callback to descendants through `ResizeHandleProvider`.
 </API>
 
 For centered elements, left and right handles double the delta so the element grows from both sides. Left handles invert the delta before clamping.
+
+`@platejs/resizable` never mutates editor nodes. Media persistence belongs to
+the media plugin, for example
+`editor.plugin(ImagePlugin).update.set({ width }, { at: element })`.
 
 ## Resize Handles
 

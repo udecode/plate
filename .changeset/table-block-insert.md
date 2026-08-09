@@ -19,6 +19,10 @@ the intended rows and cells after earlier edits.
 Represent multi-cell pointer drags as structural table selections, preserve
 them when clearing cells, and leave same-cell text drags native.
 
+Name live selection identity `cellKeys` and `tableKey`. Read selected live
+targets with `getSelectedCellKeys`, `getSelectedTableKeys`, and
+`getCellIndicesByKey`; persisted table element IDs remain ordinary schema data.
+
 **Migration:** Replace direct table helper imports with the matching scoped
 capability:
 
@@ -57,6 +61,16 @@ const editor = createPlateEditor({
 ```
 
 Save the converted document, then remove the migration plugin.
+
+Replace `editor.api.table.getCellTypes()` with
+`editor.plugin(TableCellPlugin).schema.type`; tables have one cell
+element type.
+
+Use `getCellIndices(cell)` for row and column coordinates,
+`getAdjacentCell({ deltaCol, deltaRow })` for neighboring cells, and
+`getGridByRange(range)` for range grids. Border batch mutation is private to
+the table command owner; public callers use `setBorderSize` or
+`toggleBorders`.
 
 Use exact clipboard slices through `readSlice` and `writeSlice`, preserve
 projected row and cell children when exporting table selections through

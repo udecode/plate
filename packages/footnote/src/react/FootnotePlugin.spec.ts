@@ -36,7 +36,7 @@ describe('FootnotePlugin', () => {
             {
               children: [{ text: '' }],
               identifier: '1',
-              type: 'footnote',
+              type: 'footnoteReference',
             },
             { text: 'b' },
           ],

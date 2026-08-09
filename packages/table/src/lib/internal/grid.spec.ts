@@ -3,18 +3,25 @@ import type {
   TableElement,
   TableRowElement,
 } from '../BaseTablePlugin';
+import type { TableCellElementWithId } from '../__tests__/tableTestTypes';
 
-import { compileTableGrid, readTableGridCompilerMetrics } from './grid';
+import {
+  compileTableGrid,
+  readTableGridCompilerMetrics,
+  TABLE_CELL_OPERATION_KEY,
+} from './grid';
 
 const cell = (
   id: string,
   options: Pick<TableCellElement, 'colSpan' | 'rowSpan'> = {}
-): TableCellElement => ({
-  children: [{ text: id }],
-  id,
-  ...options,
-  type: 'tableCell',
-});
+): TableCellElementWithId =>
+  ({
+    [TABLE_CELL_OPERATION_KEY]: id,
+    children: [{ text: id }],
+    id,
+    ...options,
+    type: 'tableCell',
+  }) as TableCellElementWithId;
 
 const table = (
   rows: readonly (readonly TableCellElement[])[]
@@ -40,29 +47,29 @@ describe('compileTableGrid', () => {
     expect(grid.height).toBe(2);
     expect(grid.anchors).toHaveLength(3);
     expect(grid.anchors.map(({ order }) => order)).toEqual([0, 1, 2]);
-    expect(grid.slots[0].map((anchor) => anchor?.id)).toEqual(['a', 'a', 'b']);
-    expect(grid.slots[1].map((anchor) => anchor?.id)).toEqual(['a', 'a', 'c']);
-    expect(grid.byId.get('c')).toMatchObject({
+    expect(grid.slots[0].map((anchor) => anchor?.key)).toEqual(['a', 'a', 'b']);
+    expect(grid.slots[1].map((anchor) => anchor?.key)).toEqual(['a', 'a', 'c']);
+    expect(grid.byKey.get('c')).toMatchObject({
       col: 2,
       path: [1, 0],
       row: 1,
     });
-    expect(grid.byPath.get('1,0')).toBe(grid.byId.get('c'));
+    expect(grid.byPath.get('1,0')).toBe(grid.byKey.get('c'));
     expect(grid.problems).toEqual([]);
     expect(Object.isFrozen(grid)).toBe(true);
     expect(Object.isFrozen(grid.anchors)).toBe(true);
     expect(Object.isFrozen(grid.byCell)).toBe(true);
-    expect(Object.isFrozen(grid.byId)).toBe(true);
+    expect(Object.isFrozen(grid.byKey)).toBe(true);
     expect(Object.isFrozen(grid.byPath)).toBe(true);
     expect(Object.isFrozen(grid.slots)).toBe(true);
     expect(Object.isFrozen(grid.slots[0])).toBe(true);
     expect(() =>
-      (grid.byId as Map<string, unknown>).set('escape', {})
+      (grid.byKey as Map<string, unknown>).set('escape', {})
     ).toThrow();
-    expect(grid.byId.has('escape')).toBe(false);
+    expect(grid.byKey.has('escape')).toBe(false);
   });
 
-  it('reports invalid spans, overflow, duplicate ids, and collisions deterministically', () => {
+  it('reports invalid spans, overflow, and collisions deterministically', () => {
     const invalid = table([
       [
         cell('head'),
@@ -83,7 +90,6 @@ describe('compileTableGrid', () => {
 
     expect(first.problems.map((problem) => problem.kind)).toEqual([
       'row-span-overflow',
-      'duplicate-id',
       'collision',
       'invalid-col-span',
       'invalid-row-span',
@@ -159,7 +165,7 @@ describe('compileTableGrid', () => {
       expect(grid.width).toBe(width);
       expect(grid.height).toBe(height);
       expect(grid.problems).toEqual([]);
-      expect(grid.byId.size).toBe(grid.anchors.length);
+      expect(grid.byKey.size).toBe(grid.anchors.length);
 
       grid.anchors.forEach((anchor) => {
         for (let row = anchor.row; row < anchor.row + anchor.rowSpan; row++) {

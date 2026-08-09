@@ -84,22 +84,21 @@ export const CsvPlugin = defineBasePlugin(PLUGINS.csv, {
         }
 
         const paragraphPlugin = editor.plugin(PLUGINS.paragraph);
-        const paragraph = paragraphPlugin.type;
+        const paragraph = paragraphPlugin.schema.type;
         const tablePlugin = editor.plugin(PLUGINS.table);
-        const table = tablePlugin.type;
-        const thPlugin = editor.plugin(PLUGINS.tableCellHeader);
-        const th = thPlugin.type;
+        const table = tablePlugin.schema.type;
         const trPlugin = editor.plugin(PLUGINS.tableRow);
-        const tr = trPlugin.type;
+        const tr = trPlugin.schema.type;
         const tdPlugin = editor.plugin(PLUGINS.tableCell);
-        const td = tdPlugin.type;
+        const td = tdPlugin.schema.type;
         const fields = csv.meta.fields;
         const rows = fields
           ? [
               {
                 children: fields.map((field) => ({
                   children: [{ children: [{ text: field }], type: paragraph }],
-                  type: th,
+                  header: true,
+                  type: td,
                 })),
                 type: tr,
               },

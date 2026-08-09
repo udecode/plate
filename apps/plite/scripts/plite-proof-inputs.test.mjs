@@ -188,10 +188,8 @@ test('public Yjs build environment snapshot is complete and stable', () => {
   );
 });
 
-test('browser runtime identity detects executable replacement', () => {
-  const root = fs.mkdtempSync(
-    path.join(os.tmpdir(), 'plite-runtime-identity-')
-  );
+test('browser node key detects executable replacement', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'plite-node-keyentity-'));
   const executable = path.join(root, 'browser');
 
   try {

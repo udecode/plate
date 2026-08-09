@@ -75,7 +75,8 @@ const editor = createPlateEditor({
 
 ### 配置插件
 
-你可以使用特定渲染组件或自定义键盘快捷键等选项来配置 `BlockquotePlugin`。
+使用应用的渲染组件和快捷键配置 `BlockquotePlugin`。从插件 schema 解析块类型，
+而不是调用功能专用的 `toggle` 包装方法。
 
 ```tsx
 import { BlockquotePlugin } from '@platejs/basic-nodes/react';
@@ -85,16 +86,22 @@ import { BlockquoteElement } from '@/components/ui/blockquote-node';
 const editor = createPlateEditor({
   plugins: [
     // ...其他插件,
-    BlockquotePlugin.configure({
+    BlockquotePlugin.configure(({ editor, schema }) => ({
       component: BlockquoteElement,
-      shortcuts: { toggle: { keys: 'mod+shift+.' } },
-    }),
+      shortcuts: {
+        toggle: {
+          keys: 'mod+shift+period',
+          handler: () =>
+            editor.update.blocks.toggle(schema.type, { wrap: true }),
+        },
+      },
+    })),
   ],
 });
 ```
 
 - `.configure({ component })`: 分配 [`BlockquoteElement`](/docs/components/blockquote-node) 来渲染引用块元素。
-- `shortcuts.toggle`: 定义用于切换引用块格式的键盘[快捷键](/docs/plugin-shortcuts)。
+- `shortcuts.toggle`: 使用 `editor.update.blocks.toggle(schema.type, { wrap: true })`。
 
 ### 转换为工具栏按钮
 
@@ -130,6 +137,12 @@ const editor = createPlateEditor({
 
 ## 转换
 
-### `editor.update.blockquote.toggle`
+### `editor.update.blocks.toggle(type, { wrap: true })`
 
 将当前块或选区包裹进引用块中。如果选区已经位于引用块内，则取消该引用块包裹。
+
+```tsx
+editor.update.blocks.toggle(editor.plugin(BlockquotePlugin).schema.type, {
+  wrap: true,
+});
+```

@@ -48,9 +48,9 @@ describe('selection runtime', () => {
       changed: {
         has: (kind: string) => kinds.has(kind),
         hasAny: (kind: string) => kinds.has(kind),
-        hasRuntime: () => false,
-        runtimeIds: () => [],
-        runtimeIdsAll: () => [],
+        hasNodeKey: () => false,
+        nodeKeys: () => [],
+        nodeKeysAll: () => [],
         topLevelRanges: () => [],
       },
       selectionChanged,

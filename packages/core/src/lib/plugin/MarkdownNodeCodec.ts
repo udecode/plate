@@ -1,21 +1,21 @@
 import type {
   AnyBasePluginDefinition,
+  PluginAuthorSchemaView,
   PluginReference,
-  PluginSchemaIdentity,
 } from './PluginDefinition';
 import type {
   InferExactPluginSchemaContribution,
   InferPluginDocumentType,
+  InferPluginWritablePropertyEntries,
 } from './pluginSchemaModel.internal';
+import type { ElementWith, TextWith } from './pluginNodeTypes';
 import type {
   Descendant,
   Element,
-  PropertyValueOf,
-  SchemaElementProperty,
-  SchemaProperty,
-  SchemaTextProperty,
-  Text,
+  SchemaElementShapeFor,
+  SchemaElementTypes,
 } from '@platejs/plite';
+import type { EditorSchemaSourceProvider } from '@platejs/plite/internal';
 import type {
   BlockContent,
   Blockquote,
@@ -55,67 +55,44 @@ import type { Node as UnistNode } from 'unist';
 type Contribution<D extends AnyBasePluginDefinition> =
   InferExactPluginSchemaContribution<D>;
 
-type ContributionElements<D extends AnyBasePluginDefinition> =
-  Contribution<D> extends Readonly<{
-    elements: infer TElements extends Readonly<Record<string, object>>;
-  }>
-    ? TElements
-    : Readonly<Record<never, never>>;
+type ContributionSource<D extends AnyBasePluginDefinition> =
+  EditorSchemaSourceProvider<Contribution<D>>;
 
-type ContributionProperties<D extends AnyBasePluginDefinition> =
-  Contribution<D> extends Readonly<{
-    properties: readonly (infer TProperty extends SchemaProperty)[];
-  }>
-    ? TProperty
-    : never;
+type ContributionElementType<D extends AnyBasePluginDefinition> = Extract<
+  InferPluginDocumentType<D>,
+  SchemaElementTypes<ContributionSource<D>>
+>;
 
-type PropertyMap<TProperty> = Readonly<{
-  [TMember in TProperty as TMember extends SchemaProperty
-    ? TMember['key'] extends string
-      ? TMember['key']
-      : never
-    : never]?: TMember extends SchemaProperty
-    ? PropertyValueOf<TMember['value']>
-    : never;
-}>;
+type ElementNode<D extends AnyBasePluginDefinition> = [
+  ContributionElementType<D>,
+] extends [never]
+  ? never
+  : Extract<
+      SchemaElementShapeFor<ContributionSource<D>, ContributionElementType<D>>,
+      Element
+    >;
 
-type ElementOwnProperties<TElement> =
-  TElement extends Readonly<{
-    properties?: infer TProperties extends Readonly<Record<string, object>>;
-  }>
-    ? Readonly<{
-        [TKey in keyof TProperties]?: PropertyValueOf<TProperties[TKey]>;
-      }>
-    : Readonly<Record<never, never>>;
+type TextNode<D extends AnyBasePluginDefinition> = TextWith<D>;
 
-type ElementNode<D extends AnyBasePluginDefinition> =
-  InferPluginDocumentType<D> extends keyof ContributionElements<D>
-    ? Element &
-        ElementOwnProperties<
-          ContributionElements<D>[InferPluginDocumentType<D>]
-        > &
-        PropertyMap<Extract<ContributionProperties<D>, SchemaElementProperty>>
-    : never;
+type PropertyElementNode<D extends AnyBasePluginDefinition> = ElementWith<D>;
 
-type TextNode<D extends AnyBasePluginDefinition> = Text &
-  PropertyMap<Extract<ContributionProperties<D>, SchemaTextProperty>>;
-
-type PropertyElementNode<D extends AnyBasePluginDefinition> = Element &
-  PropertyMap<Extract<ContributionProperties<D>, SchemaElementProperty>>;
+type PropertyEntries<
+  D extends AnyBasePluginDefinition,
+  TPlacement extends 'element' | 'text',
+> = Extract<
+  InferPluginWritablePropertyEntries<D>,
+  Readonly<{ placement: TPlacement }>
+>;
 
 /** Plate node narrowed from the codec target's schema contribution. */
 export type MarkdownPlateNode<D extends AnyBasePluginDefinition> = [
   ElementNode<D>,
 ] extends [never]
-  ? [Extract<ContributionProperties<D>, SchemaTextProperty>] extends [never]
-    ? [Extract<ContributionProperties<D>, SchemaElementProperty>] extends [
-        never,
-      ]
+  ? [PropertyEntries<D, 'text'>] extends [never]
+    ? [PropertyEntries<D, 'element'>] extends [never]
       ? Descendant
       : PropertyElementNode<D>
-    : [Extract<ContributionProperties<D>, SchemaElementProperty>] extends [
-          never,
-        ]
+    : [PropertyEntries<D, 'element'>] extends [never]
       ? TextNode<D>
       : TextNode<D> | PropertyElementNode<D>
   : ElementNode<D>;
@@ -163,6 +140,7 @@ type DefaultMdastNode<TType extends string> = TType extends 'link'
                                         : TType extends
                                               | 'audio'
                                               | 'callout'
+                                              | 'codeDrawing'
                                               | 'column'
                                               | 'columnGroup'
                                               | 'file'
@@ -194,8 +172,9 @@ type SourceNodeMap = {
   break: Break;
   callout: MdxJsxFlowElement;
   code: Code;
+  codeDrawing: MdxJsxFlowElement;
   column: MdxJsxFlowElement;
-  column_group: MdxJsxFlowElement;
+  columnGroup: MdxJsxFlowElement;
   comment: MdxJsxTextElement;
   date: MdxJsxTextElement;
   del: MdxJsxTextElement;
@@ -217,7 +196,7 @@ type SourceNodeMap = {
   listItem: ListItem;
   mark: MdxJsxTextElement;
   math: MdMathNode;
-  media_embed: MdxJsxFlowElement;
+  mediaEmbed: MdxJsxFlowElement;
   mention: UnistNode & {
     displayText?: string;
     type: 'mention';
@@ -249,7 +228,6 @@ export type MarkdownDecoration = Readonly<
 
 export type MarkdownPluginRegistry = Readonly<{
   has: (plugin: PluginReference | string) => boolean;
-  key: (plugin: PluginReference | string) => string | undefined;
   type: (plugin: PluginReference | string) => string | undefined;
 }>;
 
@@ -259,11 +237,16 @@ type MarkdownContext = Readonly<{
   registry: MarkdownPluginRegistry;
 }>;
 
+type MarkdownPluginSchemaContext<D extends AnyBasePluginDefinition> = [
+  D,
+] extends [never]
+  ? Readonly<Record<never, never>>
+  : PluginAuthorSchemaView<D>;
+
 export type MarkdownDecodeContext<
   TNode extends UnistNode = UnistNode,
   D extends AnyBasePluginDefinition = never,
 > = MarkdownContext &
-  PluginSchemaIdentity<D> &
   Readonly<{
     build: (
       node: RootContent | UnistNode,
@@ -288,6 +271,7 @@ export type MarkdownDecodeContext<
       attributes: readonly (MdxJsxAttribute | MdxJsxExpressionAttribute)[]
     ) => Record<string, unknown>;
     serializeUnknown: (node: MdxJsxFlowElement) => string;
+    schema: MarkdownPluginSchemaContext<D>;
     splitLineBreaks?: boolean;
   }>;
 
@@ -295,7 +279,6 @@ export type MarkdownEncodeContext<
   TNode extends Descendant = Descendant,
   D extends AnyBasePluginDefinition = never,
 > = MarkdownContext &
-  PluginSchemaIdentity<D> &
   Readonly<{
     encode: (
       nodes: readonly Descendant[],
@@ -313,6 +296,7 @@ export type MarkdownEncodeContext<
     propsToAttributes: (props: Record<string, unknown>) => MdxJsxAttribute[];
     readPlainInline: (children: readonly Descendant[]) => string | null;
     resourceLink: boolean;
+    schema: MarkdownPluginSchemaContext<D>;
   }>;
 
 type MarkdownNodeCodecBase<

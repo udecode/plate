@@ -1,5 +1,5 @@
 import {
-  createBasePlugin,
+  defineBasePlugin,
   createRuleFactory,
   type DefinitionOf,
   type PluginReference,
@@ -21,6 +21,7 @@ import {
   type EditorNodesOptions,
   type EditorStateView,
   type Element,
+  type ElementOf,
   type ElementEntry,
   type Location,
   type Node,
@@ -29,7 +30,7 @@ import {
   type Point,
   type Range,
 } from '@platejs/plite';
-import { KEYS, NODES } from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 
 export type ListPluginState = {
   enableResetOnShiftTab?: boolean;
@@ -72,71 +73,48 @@ const todoListInitialState: TodoListPluginState = {
 
 const listInitialState: ListPluginState = {};
 
-export const BaseListItemContentPlugin = createBasePlugin({
-  name: KEYS.lic,
-  schema: {
-    element: {
-      content: schema.content.text({ default: 'text', min: 1 }),
-      slice: { preserveContext: true },
-      blockContent: false,
-    },
-  },
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      'text/markdown': {
-        encode: ({ encodePhrasing, node }) => ({
-          children: encodePhrasing(node.children),
-          type: 'paragraph',
-        }),
-        kind: 'node',
-      },
-    }),
-});
-
-export const BaseListItemPlugin = createBasePlugin({
-  name: KEYS.li,
-  initialState: listItemInitialState,
-  schema: ({ initialState, name, plugins }) => {
-    const resolveRequiredElementType = (pluginName: string) => {
-      const [type] = plugins.elementTypesByName([pluginName]);
-
-      if (!type) {
-        throw new Error(
-          `Plate plugin "${name}" schema references missing or disabled plugin "${pluginName}".`
-        );
-      }
-
-      return type;
-    };
-    const contentType = resolveRequiredElementType(KEYS.lic);
-    const bulletedType = resolveRequiredElementType(KEYS.ulClassic);
-    const numberedType = resolveRequiredElementType(KEYS.olClassic);
-    const taskType = resolveRequiredElementType(KEYS.taskList);
-    const validLiChildren = plugins.elementTypesByName(
-      (initialState.validLiChildren ?? []).map(({ name }) => name)
-    );
-
-    return {
+export const BaseListItemContentPlugin = defineBasePlugin(
+  PLUGINS.listItemContent,
+  {
+    schema: {
       element: {
-        content: schema.content.types(
-          [
-            contentType,
-            bulletedType,
-            numberedType,
-            taskType,
-            ...validLiChildren,
-          ],
-          {
-            default: { type: contentType },
-            min: 1,
-          }
-        ),
+        content: schema.content.text({ default: 'text', min: 1 }),
         slice: { preserveContext: true },
         blockContent: false,
       },
-    };
-  },
-  codecs: ({ defineCodecs }) =>
+    },
+    codecs: ({ defineCodecs }) =>
+      defineCodecs({
+        'text/markdown': {
+          encode: ({ encodePhrasing, node }) => ({
+            children: encodePhrasing(node.children),
+            type: 'paragraph',
+          }),
+          kind: 'node',
+        },
+      }),
+  }
+);
+
+export const BaseListItemPlugin = defineBasePlugin(PLUGINS.listItem, {
+  initialState: listItemInitialState,
+  schema: ({ initialState }) => ({
+    element: {
+      content: schema.content.elements(
+        [
+          BaseListItemContentPlugin,
+          PLUGINS.bulletedList,
+          PLUGINS.numberedList,
+          PLUGINS.taskList,
+          ...(initialState.validLiChildren ?? []),
+        ],
+        { min: 1 }
+      ),
+      slice: { preserveContext: true },
+      blockContent: false,
+    },
+  }),
+  codecs: ({ defineCodecs, editor, schema: { type } }) =>
     defineCodecs({
       'text/html': {
         decode: () => ({}),
@@ -147,8 +125,9 @@ export const BaseListItemPlugin = createBasePlugin({
       'text/markdown': {
         from: 'listItem',
         kind: 'node',
-        decode: ({ decode, decoration, node, registry, type }) => {
-          const contentType = registry.getType(KEYS.lic);
+        decode: ({ decode, decoration, node }) => {
+          const contentType = editor.plugin(BaseListItemContentPlugin).schema
+            .type;
           const children = node.children
             .flatMap((child) =>
               child.type === 'paragraph'
@@ -182,22 +161,14 @@ export const BaseListItemPlugin = createBasePlugin({
   render: { as: 'li' },
 });
 
-export const BaseBulletedListPlugin = createBasePlugin({
-  name: KEYS.ulClassic,
-  schema: ({ plugins }) => {
-    const listItemType = plugins.elementType(BaseListItemPlugin);
-
-    return {
-      element: {
-        content: schema.content.type(listItemType, {
-          default: { type: listItemType },
-          min: 1,
-        }),
-        slice: { preserveContext: true },
-      },
-    };
+export const BaseBulletedListPlugin = defineBasePlugin(PLUGINS.bulletedList, {
+  schema: {
+    element: {
+      content: schema.content.element(BaseListItemPlugin, { min: 1 }),
+      slice: { preserveContext: true },
+    },
   },
-  codecs: ({ defineCodecs }) =>
+  codecs: ({ defineCodecs, schema: { type } }) =>
     defineCodecs({
       'text/html': {
         decode: () => ({}),
@@ -208,7 +179,7 @@ export const BaseBulletedListPlugin = createBasePlugin({
       'text/markdown': {
         from: 'list',
         kind: 'node',
-        decode: ({ decode, decoration, node, type }) =>
+        decode: ({ decode, decoration, node }) =>
           node.ordered
             ? undefined
             : { children: decode(node.children, decoration), type },
@@ -226,22 +197,14 @@ export const BaseBulletedListPlugin = createBasePlugin({
   render: { as: 'ul' },
 });
 
-export const BaseNumberedListPlugin = createBasePlugin({
-  name: KEYS.olClassic,
-  schema: ({ plugins }) => {
-    const listItemType = plugins.elementType(BaseListItemPlugin);
-
-    return {
-      element: {
-        content: schema.content.type(listItemType, {
-          default: { type: listItemType },
-          min: 1,
-        }),
-        slice: { preserveContext: true },
-      },
-    };
+export const BaseNumberedListPlugin = defineBasePlugin(PLUGINS.numberedList, {
+  schema: {
+    element: {
+      content: schema.content.element(BaseListItemPlugin, { min: 1 }),
+      slice: { preserveContext: true },
+    },
   },
-  codecs: ({ defineCodecs }) =>
+  codecs: ({ defineCodecs, schema: { type } }) =>
     defineCodecs({
       'text/html': {
         decode: () => ({}),
@@ -252,7 +215,7 @@ export const BaseNumberedListPlugin = createBasePlugin({
       'text/markdown': {
         from: 'list',
         kind: 'node',
-        decode: ({ decode, decoration, node, type }) =>
+        decode: ({ decode, decoration, node }) =>
           node.ordered
             ? { children: decode(node.children, decoration), type }
             : undefined,
@@ -270,45 +233,26 @@ export const BaseNumberedListPlugin = createBasePlugin({
   render: { as: 'ol' },
 });
 
-export const BaseTaskListPlugin = createBasePlugin({
-  name: KEYS.taskList,
+export const BaseTaskListPlugin = defineBasePlugin(PLUGINS.taskList, {
   initialState: taskListInitialState,
-  schema: ({ plugins }) => {
-    const listItemType = plugins.elementType(BaseListItemPlugin);
-
-    return {
-      element: {
-        content: schema.content.type(listItemType, {
-          default: { type: listItemType },
-          min: 1,
-        }),
-        slice: { preserveContext: true },
-      },
-    };
+  schema: {
+    element: {
+      content: schema.content.element(BaseListItemPlugin, { min: 1 }),
+      slice: { preserveContext: true },
+    },
   },
   render: { as: 'ul' },
 });
 
-/** Enables support for bulleted, numbered and to-do lists. */
-
-export interface TTodoListItemElement extends Element {
-  checked?: boolean;
-}
-
-export const BaseTodoListPlugin = createBasePlugin({
-  name: KEYS.listTodoClassic,
+export const BaseTodoListPlugin = defineBasePlugin(PLUGINS.todoList, {
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
       properties: { checked: property.boolean({ default: false }) },
     },
   },
-  type: NODES.listTodoClassic,
   initialState: todoListInitialState,
-  update: ({ tx, type }) => ({
-    toggle: () => tx.nodes.toggle(type),
-  }),
-}).extend(({ store, type }) => ({
+}).extend(({ store, schema: { type } }) => ({
   commands: ({ around }) => [
     around(editorCommands.insertBreak, ({ state, next }) => {
       let handled = false;
@@ -370,12 +314,15 @@ export const BaseTodoListPlugin = createBasePlugin({
   ],
 }));
 
-export const BaseListPlugin = createBasePlugin({
+/** Enables support for bulleted, numbered and to-do lists. */
+export type TTodoListItemElement = ElementOf<typeof BaseTodoListPlugin>;
+
+export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
   api: ({ editor }) => {
     const getListTypes = () => [
-      editor.plugin(KEYS.olClassic).type,
-      editor.plugin(KEYS.ulClassic).type,
-      editor.plugin(KEYS.taskList).type,
+      editor.plugin(PLUGINS.numberedList).schema.type,
+      editor.plugin(PLUGINS.bulletedList).schema.type,
+      editor.plugin(PLUGINS.taskList).schema.type,
     ];
     const getPropsIfTaskListLiNode = ({
       inherit = false,
@@ -384,7 +331,8 @@ export const BaseListPlugin = createBasePlugin({
       liNode: Element;
       inherit?: boolean;
     }) =>
-      editor.plugin(KEYS.li).type === node.type && 'checked' in node
+      editor.plugin(PLUGINS.listItem).schema.type === node.type &&
+      'checked' in node
         ? { checked: inherit ? (node.checked as boolean) : false }
         : undefined;
     const hasListChild = (node: Element) =>
@@ -409,27 +357,17 @@ export const BaseListPlugin = createBasePlugin({
     BaseListItemPlugin,
     BaseListItemContentPlugin,
   ],
-  name: KEYS.listClassic,
   initialState: listInitialState,
-  schema: ({ plugins }) => {
-    const listItemType = plugins.elementType(BaseListItemPlugin);
-    const taskListType = plugins.elementType(BaseTaskListPlugin);
-
-    return {
-      properties: [
-        schema.elementProperty(
-          'checked',
-          property.boolean({ default: false }),
-          {
-            target: target.and(
-              target.type(listItemType),
-              target.parent(target.type(taskListType))
-            ),
-            typeChange: 'preserve-if-allowed',
-          }
+  schema: {
+    properties: {
+      checked: schema.elementProperty(property.boolean({ default: false }), {
+        target: target.and(
+          target.element(BaseListItemPlugin),
+          target.parent(target.element(BaseTaskListPlugin))
         ),
-      ],
-    };
+        typeChange: 'preserve-if-allowed',
+      }),
+    },
   },
 })
   .extend(({ api, editor }) => ({
@@ -443,7 +381,7 @@ export const BaseListPlugin = createBasePlugin({
       }: {
         at?: Location | null;
       } = {}): { list: ElementEntry; listItem: ElementEntry } | undefined => {
-        const liType = editor.plugin(KEYS.li).type;
+        const liType = editor.plugin(PLUGINS.listItem).schema.type;
         const location = at === undefined ? state.selection() : at;
 
         let _at: Path;
@@ -501,7 +439,9 @@ export const BaseListPlugin = createBasePlugin({
       const isListNested = (listPath: Path) => {
         const listParentNode = state.nodes.parent<Element>(listPath)?.[0];
 
-        return listParentNode?.type === editor.plugin(KEYS.li).type;
+        return (
+          listParentNode?.type === editor.plugin(PLUGINS.listItem).schema.type
+        );
       };
 
       return {
@@ -529,7 +469,9 @@ export const BaseListPlugin = createBasePlugin({
 
           const liParent = tx.nodes.above<Element>({
             at: listPath,
-            match: { type: editor.plugin(KEYS.li).type },
+            match: {
+              type: editor.plugin(PLUGINS.listItem).schema.type,
+            },
           });
 
           if (!liParent) {
@@ -867,14 +809,14 @@ export const BaseListPlugin = createBasePlugin({
               children: [
                 {
                   children: [{ text: '' }],
-                  type: editor.plugin(KEYS.lic).type,
+                  type: editor.plugin(PLUGINS.listItemContent).schema.type,
                 },
               ],
               ...api.getPropsIfTaskListLiNode({
                 inherit: true,
                 liNode: previousLi[0],
               }),
-              type: editor.plugin(KEYS.li).type,
+              type: editor.plugin(PLUGINS.listItem).schema.type,
             },
             { at: tempLiPath }
           );
@@ -937,7 +879,9 @@ export const BaseListPlugin = createBasePlugin({
           !at && selection && tx.selection.isCollapsed()
             ? tx.nodes.above<Element>({
                 at: selection.focus,
-                match: { type: editor.plugin(KEYS.li).type },
+                match: {
+                  type: editor.plugin(PLUGINS.listItem).schema.type,
+                },
                 mode: 'lowest',
               })
             : undefined;
@@ -950,7 +894,7 @@ export const BaseListPlugin = createBasePlugin({
           if (list && content && sublist && list[0].children.length > 1) {
             const paragraph = {
               ...content[0],
-              type: editor.plugin(KEYS.p).type,
+              type: editor.plugin(PLUGINS.paragraph).schema.type,
             };
             const nextList = {
               ...list[0],
@@ -1007,7 +951,9 @@ export const BaseListPlugin = createBasePlugin({
           const contentRefs = Array.from(
             tx.nodes.entries<Element>({
               at,
-              match: { type: editor.plugin(KEYS.lic).type },
+              match: {
+                type: editor.plugin(PLUGINS.listItemContent).schema.type,
+              },
               mode: 'all',
             }),
             ([, path]) =>
@@ -1020,7 +966,9 @@ export const BaseListPlugin = createBasePlugin({
           do {
             tx.nodes.unwrap({
               at,
-              match: { type: editor.plugin(KEYS.li).type },
+              match: {
+                type: editor.plugin(PLUGINS.listItem).schema.type,
+              },
               split: true,
             });
 
@@ -1042,10 +990,14 @@ export const BaseListPlugin = createBasePlugin({
             const parent = tx.nodes.parent<Element>(path);
 
             if (
-              entry?.[0].type === editor.plugin(KEYS.lic).type &&
-              parent?.[0].type !== editor.plugin(KEYS.li).type
+              entry?.[0].type ===
+                editor.plugin(PLUGINS.listItemContent).schema.type &&
+              parent?.[0].type !== editor.plugin(PLUGINS.listItem).schema.type
             ) {
-              tx.nodes.set({ type: editor.plugin(KEYS.p).type }, { at: path });
+              tx.nodes.set(
+                { type: editor.plugin(PLUGINS.paragraph).schema.type },
+                { at: path }
+              );
             }
           }
         };
@@ -1106,7 +1058,9 @@ export const BaseListPlugin = createBasePlugin({
         const lics = Array.from(
           tx.nodes.entries<Element>({
             at,
-            match: { type: editor.plugin(KEYS.lic).type },
+            match: {
+              type: editor.plugin(PLUGINS.listItemContent).schema.type,
+            },
           })
         );
 
@@ -1187,7 +1141,9 @@ export const BaseListPlugin = createBasePlugin({
         if (
           !tx.nodes.some({
             at,
-            match: { type: editor.plugin(KEYS.li).type },
+            match: {
+              type: editor.plugin(PLUGINS.listItem).schema.type,
+            },
           })
         ) {
           return false;
@@ -1212,15 +1168,15 @@ export const BaseListPlugin = createBasePlugin({
         outdent: () => move(false),
         toggle: ({ checked = false, type }: ListToggleOptions) => {
           const getPropsIfTaskList = (partial: { checked?: boolean } = {}) =>
-            editor.plugin(KEYS.taskList).type === type
+            editor.plugin(PLUGINS.taskList).schema.type === type
               ? { checked: false, ...partial }
               : undefined;
           const setListType = (
             [list, path]: ElementEntry,
             options: Required<ListToggleOptions>
           ) => {
-            const listItemType = editor.plugin(KEYS.li).type;
-            const taskListType = editor.plugin(KEYS.taskList).type;
+            const listItemType = editor.plugin(PLUGINS.listItem).schema.type;
+            const taskListType = editor.plugin(PLUGINS.taskList).schema.type;
             const listItemPaths = list.children.flatMap((child, index) =>
               ElementApi.isElement(child) && child.type === listItemType
                 ? [path.concat(index)]
@@ -1237,7 +1193,7 @@ export const BaseListPlugin = createBasePlugin({
 
             if (options.type === taskListType) {
               for (const itemPath of listItemPaths) {
-                tx.nodes.set({ checked: options.checked }, { at: itemPath });
+                tx.nodes.set('checked', options.checked, { at: itemPath });
               }
             }
           };
@@ -1245,8 +1201,8 @@ export const BaseListPlugin = createBasePlugin({
             at: Location,
             options: Required<ListToggleOptions>
           ) => {
-            const listItemType = editor.plugin(KEYS.li).type;
-            const taskListType = editor.plugin(KEYS.taskList).type;
+            const listItemType = editor.plugin(PLUGINS.listItem).schema.type;
+            const taskListType = editor.plugin(PLUGINS.taskList).schema.type;
             const isTaskListItem = (node: Node, path: Path) =>
               ElementApi.isElement(node) &&
               node.type === listItemType &&
@@ -1270,10 +1226,11 @@ export const BaseListPlugin = createBasePlugin({
             );
 
             if (options.type === taskListType) {
-              tx.nodes.set(
-                { checked: options.checked },
-                { at, match: isTaskListItem, mode: 'all' }
-              );
+              tx.nodes.set('checked', options.checked, {
+                at,
+                match: isTaskListItem,
+                mode: 'all',
+              });
             }
           };
           const selection = tx.selection();
@@ -1286,7 +1243,13 @@ export const BaseListPlugin = createBasePlugin({
           const validLiChildrenTypes = validLiChildren?.map((reference) => {
             const plugin = editor.plugin(reference.name);
 
-            return plugin.installed ? plugin.type : reference.type;
+            if (!plugin.installed) {
+              throw new Error(
+                `Plate plugin "${BaseListItemPlugin.name}" references missing plugin "${reference.name}".`
+              );
+            }
+
+            return plugin.schema.type;
           });
 
           if (tx.selection.isCollapsed() || !tx.selection.isAcrossBlocks()) {
@@ -1305,7 +1268,11 @@ export const BaseListPlugin = createBasePlugin({
             tx.nodes.wrap({ children: [], type });
 
             const nodes = Array.from(
-              tx.nodes.entries({ match: { type: editor.plugin(KEYS.p).type } })
+              tx.nodes.entries({
+                match: {
+                  type: editor.plugin(PLUGINS.paragraph).schema.type,
+                },
+              })
             );
             const blockAbove = tx.nodes.block({
               match: { type: validLiChildrenTypes },
@@ -1316,7 +1283,7 @@ export const BaseListPlugin = createBasePlugin({
                 {
                   children: [],
                   ...getPropsIfTaskList({ checked }),
-                  type: editor.plugin(KEYS.li).type,
+                  type: editor.plugin(PLUGINS.listItem).schema.type,
                 },
                 { at: blockAbove[1] }
               );
@@ -1324,14 +1291,16 @@ export const BaseListPlugin = createBasePlugin({
               return;
             }
 
-            tx.nodes.set({ type: editor.plugin(KEYS.lic).type });
+            tx.nodes.set({
+              type: editor.plugin(PLUGINS.listItemContent).schema.type,
+            });
 
             for (const [, path] of nodes) {
               tx.nodes.wrap(
                 {
                   children: [],
                   ...getPropsIfTaskList({ checked }),
-                  type: editor.plugin(KEYS.li).type,
+                  type: editor.plugin(PLUGINS.listItem).schema.type,
                 },
                 { at: path }
               );
@@ -1350,7 +1319,8 @@ export const BaseListPlugin = createBasePlugin({
           if (
             ElementApi.isElement(commonEntry[0]) &&
             (api.getListTypes().includes(commonEntry[0].type) ||
-              commonEntry[0].type === editor.plugin(KEYS.li).type)
+              commonEntry[0].type ===
+                editor.plugin(PLUGINS.listItem).schema.type)
           ) {
             const startList = tx.nodes.find({
               at: RangeApi.start(selection),
@@ -1393,7 +1363,9 @@ export const BaseListPlugin = createBasePlugin({
 
             if (!validLiChildrenTypes?.includes(node.type)) {
               tx.nodes.set(
-                { type: editor.plugin(KEYS.lic).type },
+                {
+                  type: editor.plugin(PLUGINS.listItemContent).schema.type,
+                },
                 { at: path }
               );
             }
@@ -1402,7 +1374,7 @@ export const BaseListPlugin = createBasePlugin({
               {
                 children: [],
                 ...getPropsIfTaskList({ checked }),
-                type: editor.plugin(KEYS.li).type,
+                type: editor.plugin(PLUGINS.listItem).schema.type,
               },
               { at: path }
             );
@@ -1440,14 +1412,16 @@ export const BaseListPlugin = createBasePlugin({
             }
 
             const listItem = tx.nodes.above({
-              match: { type: editor.plugin(KEYS.li).type },
+              match: {
+                type: editor.plugin(PLUGINS.listItem).schema.type,
+              },
             });
 
             if (listItem && tx.text.string(listItem[1]) === '') {
               tx.nodes.replace(
                 {
                   children: [{ text: '' }],
-                  type: editor.plugin(KEYS.p).type,
+                  type: editor.plugin(PLUGINS.paragraph).schema.type,
                 },
                 { at: listItem[1], select: true }
               );
@@ -1455,8 +1429,8 @@ export const BaseListPlugin = createBasePlugin({
               return;
             }
 
-            const liType = editor.plugin(KEYS.li).type;
-            const licType = editor.plugin(KEYS.lic).type;
+            const liType = editor.plugin(PLUGINS.listItem).schema.type;
+            const licType = editor.plugin(PLUGINS.listItemContent).schema.type;
             const licEntry = tx.nodes.above<Element>({
               match: { type: licType },
             });
@@ -1565,7 +1539,9 @@ export const BaseListPlugin = createBasePlugin({
             if (
               !res ||
               !tx.selection.isAtBlockStart({
-                match: { type: editor.plugin(KEYS.li).type },
+                match: {
+                  type: editor.plugin(PLUGINS.listItem).schema.type,
+                },
               })
             ) {
               return;
@@ -1884,7 +1860,7 @@ export const BaseListPlugin = createBasePlugin({
 
               // if it has no children
               if (!context.api.hasListChild(listItem[0])) {
-                const liType = editor.plugin(KEYS.li).type;
+                const liType = editor.plugin(PLUGINS.listItem).schema.type;
                 const _nodes = tx.nodes.entries({
                   at: listItem[1],
                   mode: 'lowest',
@@ -2036,7 +2012,9 @@ export const BaseListPlugin = createBasePlugin({
               if (listNode.children.length < 2) {
                 const liParent = state.nodes.above({
                   at: listPath,
-                  match: { type: editor.plugin(KEYS.li).type },
+                  match: {
+                    type: editor.plugin(PLUGINS.listItem).schema.type,
+                  },
                 });
 
                 if (liParent) {
@@ -2061,7 +2039,9 @@ export const BaseListPlugin = createBasePlugin({
             return start
               ? state.nodes.above({
                   at: start,
-                  match: { type: editor.plugin(KEYS.li).type },
+                  match: {
+                    type: editor.plugin(PLUGINS.listItem).schema.type,
+                  },
                 })
               : undefined;
           };
@@ -2079,7 +2059,9 @@ export const BaseListPlugin = createBasePlugin({
                 !state.selection.isAcrossBlocks({ at: selection }) ||
                 !state.nodes.some({
                   at: selection,
-                  match: { type: editor.plugin(KEYS.li).type },
+                  match: {
+                    type: editor.plugin(PLUGINS.listItem).schema.type,
+                  },
                 })
               ) {
                 return false;
@@ -2089,7 +2071,9 @@ export const BaseListPlugin = createBasePlugin({
               const liEnd = end
                 ? state.nodes.above<Element>({
                     at: end,
-                    match: { type: editor.plugin(KEYS.li).type },
+                    match: {
+                      type: editor.plugin(PLUGINS.listItem).schema.type,
+                    },
                   })
                 : undefined;
               const liStartBeforeDelete = getLiStart(selection, state);
@@ -2180,8 +2164,9 @@ export const BaseListPlugin = createBasePlugin({
           );
         })(),
         (() => {
-          const listItemType = editor.plugin(KEYS.li).type;
-          const listItemContentType = editor.plugin(KEYS.lic).type;
+          const listItemType = editor.plugin(PLUGINS.listItem).schema.type;
+          const listItemContentType = editor.plugin(PLUGINS.listItemContent)
+            .schema.type;
           const { validLiChildren } = editor
             .plugin(BaseListItemPlugin)
             .store.get();
@@ -2190,7 +2175,13 @@ export const BaseListPlugin = createBasePlugin({
             ...(validLiChildren ?? []).map((reference) => {
               const plugin = editor.plugin(reference.name);
 
-              return plugin.installed ? plugin.type : reference.type;
+              if (!plugin.installed) {
+                throw new Error(
+                  `Plate plugin "${BaseListItemPlugin.name}" references missing plugin "${reference.name}".`
+                );
+              }
+
+              return plugin.schema.type;
             }),
           ]);
 
@@ -2626,10 +2617,12 @@ export const BaseListPlugin = createBasePlugin({
               }
 
               if (PathApi.hasPrevious(path)) {
-                const prevNode = tx.nodes.get<Element>(PathApi.previous(path));
+                const previousNode = tx.nodes.get<Element>(
+                  PathApi.previous(path)
+                );
 
-                if (prevNode?.[0].type === node.type) {
-                  mergeAdjacentList([node, path], prevNode);
+                if (previousNode?.[0].type === node.type) {
+                  mergeAdjacentList([node, path], previousNode);
                   return;
                 }
               }
@@ -2651,11 +2644,13 @@ export const BulletedListRules = {
     type: 'blockStart',
     variant: '-',
     enabled: ({ editor, tx }) => {
-      const codeBlock = editor.plugin(KEYS.codeBlock);
+      const codeBlock = editor.plugin(PLUGINS.codeBlock);
+
+      if (!codeBlock.installed) return true;
 
       return !tx.nodes.some({
         match: {
-          type: [codeBlock.installed ? codeBlock.type : KEYS.codeBlock],
+          type: [codeBlock.schema.type],
         },
       });
     },
@@ -2664,7 +2659,7 @@ export const BulletedListRules = {
     apply: ({ editor, tx }, match) => {
       tx.text.delete({ at: match.range });
       tx.listClassic.toggle({
-        type: editor.plugin(KEYS.ulClassic).type,
+        type: editor.plugin(PLUGINS.bulletedList).schema.type,
       });
 
       return true;
@@ -2677,11 +2672,13 @@ export const OrderedListRules = {
     type: 'blockStart',
     variant: '.',
     enabled: ({ editor, tx }) => {
-      const codeBlock = editor.plugin(KEYS.codeBlock);
+      const codeBlock = editor.plugin(PLUGINS.codeBlock);
+
+      if (!codeBlock.installed) return true;
 
       return !tx.nodes.some({
         match: {
-          type: [codeBlock.installed ? codeBlock.type : KEYS.codeBlock],
+          type: [codeBlock.schema.type],
         },
       });
     },
@@ -2690,7 +2687,7 @@ export const OrderedListRules = {
     apply: ({ editor, tx }, match) => {
       tx.text.delete({ at: match.range });
       tx.listClassic.toggle({
-        type: editor.plugin(KEYS.olClassic).type,
+        type: editor.plugin(PLUGINS.numberedList).schema.type,
       });
 
       return true;
@@ -2703,11 +2700,13 @@ export const TaskListRules = {
     type: 'blockStart',
     checked: false,
     enabled: ({ editor, tx }) => {
-      const codeBlock = editor.plugin(KEYS.codeBlock);
+      const codeBlock = editor.plugin(PLUGINS.codeBlock);
+
+      if (!codeBlock.installed) return true;
 
       return !tx.nodes.some({
         match: {
-          type: [codeBlock.installed ? codeBlock.type : KEYS.codeBlock],
+          type: [codeBlock.schema.type],
         },
       });
     },
@@ -2717,7 +2716,7 @@ export const TaskListRules = {
       tx.text.delete({ at: match.range });
       tx.listClassic.toggle({
         checked,
-        type: editor.plugin(KEYS.taskList).type,
+        type: editor.plugin(PLUGINS.taskList).schema.type,
       });
 
       return true;

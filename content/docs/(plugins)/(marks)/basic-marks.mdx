@@ -122,14 +122,14 @@ editable and static mark presets.
 
 | Mark | Plugin | Key | Render | Notes |
 |------|--------|-----|--------|-------|
-| Bold | `BoldPlugin` | `KEYS.bold` | `strong` | Deserializes `strong`, `b`, and bold font weight. |
-| Italic | `ItalicPlugin` | `KEYS.italic` | `em` | Deserializes `em`, `i`, and italic font style. |
-| Underline | `UnderlinePlugin` | `KEYS.underline` | `u` | Deserializes `u` and underline text decoration. |
-| Strikethrough | `StrikethroughPlugin` | `KEYS.strikethrough` | `s` | Uses directional selection affinity. |
-| Code | `CodePlugin` | `KEYS.code` | `code` | Uses hard selection affinity and skips `pre` HTML parents. |
-| Script | `ScriptPlugin` | `KEYS.script` | `sub` or `sup` | Uses one `'sub' | 'sup'` property for both positions. |
-| Highlight | `HighlightPlugin` | `KEYS.highlight` | `mark` | Uses directional selection affinity. |
-| Kbd | `KbdPlugin` | `KEYS.kbd` | `kbd` | Uses hard selection affinity. |
+| Bold | `BoldPlugin` | `PLUGINS.bold` | `strong` | Deserializes `strong`, `b`, and bold font weight. |
+| Italic | `ItalicPlugin` | `PLUGINS.italic` | `em` | Deserializes `em`, `i`, and italic font style. |
+| Underline | `UnderlinePlugin` | `PLUGINS.underline` | `u` | Deserializes `u` and underline text decoration. |
+| Strikethrough | `StrikethroughPlugin` | `PLUGINS.strikethrough` | `s` | Uses directional selection affinity. |
+| Code | `CodePlugin` | `PLUGINS.code` | `code` | Uses hard selection affinity and skips `pre` HTML parents. |
+| Script | `ScriptPlugin` | `PLUGINS.script` | `sub` or `sup` | Uses one `'sub' | 'sup'` property for both positions. |
+| Highlight | `HighlightPlugin` | `PLUGINS.highlight` | `mark` | Uses directional selection affinity. |
+| Kbd | `KbdPlugin` | `PLUGINS.kbd` | `kbd` | Uses hard selection affinity. |
 
 Boolean mark plugins expose `editor.update.<mark>.toggle()`. `ScriptPlugin`
 exposes `editor.update.script.toggle('sub' | 'sup')`.

@@ -65,6 +65,10 @@ Allowed without asking:
 - classify invalid/support/noise/needs-repro/agent-ready state;
 - run duplicate/claim guards through live GitHub and optional `gitcrawl`;
 - route to a narrower owner skill;
+- after a user-selected non-security public issue reaches a proven fixed state,
+  post one concise issue comment even when the fix exists only locally; state
+  the exact local/commit/PR status and leave the issue open unless closure is
+  separately authorized;
 - patch local docs, templates, plans, rules, or tests when the execution owner
   allows it and no public mutation is required;
 - update local maintainer docs/rules/templates when a recurring workflow gap is
@@ -76,8 +80,8 @@ Allowed without asking:
 Approval gates:
 
 - commit, branch, push, PR creation, merge, release, publish;
-- GitHub comment, review submission, label, close, reopen, assignment, or
-  milestone mutation;
+- GitHub comment other than the verified-fix status exception above, review
+  submission, label, close, reopen, assignment, or milestone mutation;
 - external sends/posts;
 - security disclosure wording or public handling of an unpatched vulnerability;
 - credentials, payment, 2FA, captcha, account signup, secrets, or private user
@@ -107,13 +111,17 @@ Every heartbeat follows Execute-Verify-Report:
 
 Execution owners still do the work:
 
+- `patch`: one local Plate/Plite behavior-bug or regression repair packet with reproduction,
+  durable behavior proof, owning-package fix, architecture pressure, focused
+  verification, changeset status, and P2 autoreview; no public mutation.
 - `resolve-slate-issue`: one Slate GitHub issue resolved against Plite in the
   Plate `next` branch, with a Plate PR for code changes, verified issue comment,
   and close only after the claimed integration state is true.
 - `clawsweeper`: Slate issue-ledger provenance, duplicate/stale/invalid
   classification, issue harvest discipline, and fork-local issue accounting.
 - `issue-harvester`: exhaustive external issue-by-issue closure ledgers.
-- `autoreview` / `resolve-pr-feedback`: PR review and review-comment closure.
+- P2 `autoreview` / `resolve-pr-feedback`: PR review and review-comment closure;
+  pass `--max-priority P2`. P3 is opt-in only.
 - `autoclosure`: post-merge/current-tree until-clean closure for already
   applied work.
 - `auto`: internal Plate/Plite quality, behavior, perf, API, proof, and
@@ -156,8 +164,9 @@ explicitly requested.
   public queue item: use `auto`.
 - The task is one known Slate issue and the user wants it fixed/commented now:
   use `resolve-slate-issue` directly.
-- The task is a local code patch with no maintainer queue decision: use `task`,
-  `plite-patch`, `plate-plan`, or the package owner.
+- The task is a local Plate/Plite behavior bug or regression with no maintainer
+  queue decision: use `patch`. Use `task`, `plate-plan`, or the package owner
+  for tooling, build, feature, refactor, docs, review, or investigation work.
 - The task asks for broad external research, not queue triage: use
   `plite-research`.
 
@@ -246,17 +255,29 @@ Read the exact item first. Then classify route:
 | Item | Default owner |
 | --- | --- |
 | One public Slate substrate issue | `resolve-slate-issue` |
-| One local Plite regression with no public mutation | `plite-patch` |
+| One public Plate behavior bug or regression | `maintainer` coordinates and delegates the local repair packet to `patch` |
+| One local Plate or Plite behavior bug or regression with no public mutation | `patch` |
 | Plite public call-shape fork | `best-api`, then `plite-plan` if adoption/runtime planning is needed |
 | Already-applied PR/branch/current-tree closure | `autoclosure` |
 | Plate/Slate internal quality/perf/browser gap | `auto` |
 | Cross-package architecture/testability/refactor/deslop candidate | `architecture-cleanup`, then `major-task`, `plite-plan`, or `plate-plan` |
 | Plate framework/plugin/component/docs | `plate-plan`, `plate-plugin-creator`, `plate-ui`, `docs-creator`, or `task` |
 | Security/advisory | `maintainer security` |
-| PR review | `autoreview` |
+| PR review | P2 `autoreview` (`--max-priority P2`) |
 | PR review feedback | `resolve-pr-feedback` |
 | External corpus/issue ledger | `issue-harvester` or `clawsweeper` |
 | Unclear prior art | `plite-research` |
+
+When a public Plate behavior bug or regression routes to `patch`, keep live issue state,
+duplicate/claim checks, public authority, and shipping decisions in
+`maintainer`. Pass the normalized behavior report and issue constraints to
+`patch`, then require its compact evidence packet: classification and root
+cause, durable owner and files, red proof and passing commands, Browser/device
+proof or limitation, architecture-pressure verdict, changeset status, P2
+autoreview result, and unresolved caveat. After that packet proves the issue is
+fixed, re-read live GitHub and post the verified-fix status comment even when
+the patch is local only. Do not duplicate the worker's repair methodology in
+this coordinator.
 
 ## Read Order
 
@@ -354,13 +375,16 @@ When fit is unclear, produce a decision-ready brief instead of guessing.
 ## Authority Boundaries
 
 Default is read, classify, route, patch local files when execution owner allows,
-and hand off. Do not mutate GitHub or release state unless the user explicitly
-asks or the invoked owner skill explicitly requires it.
+and hand off. The standing verified-fix exception authorizes one transparent
+comment on a user-selected non-security public issue after all proof gates pass,
+including for a local-only patch. Do not mutate any other GitHub or release
+state unless the user explicitly asks or the invoked owner skill requires it.
 
 Hard stops:
 
 - commit, push, PR creation, branch creation, merge, close, label, reopen,
-  comment, review submission, release, publish;
+  comments outside the verified-fix exception, review submission, release,
+  publish;
 - external sends/posts;
 - credentials, payment, 2FA, captcha, account signup, or secret handling;
 - security disclosure wording that needs maintainer approval;

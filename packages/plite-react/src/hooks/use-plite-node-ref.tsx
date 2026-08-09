@@ -1,14 +1,14 @@
 import { useCallback, useContext, useRef } from 'react';
 import type {
+  Descendant,
   Editor as PliteEditor,
-  Node as PliteNode,
   Path,
   RuntimeId,
 } from '@platejs/plite';
 import {
-  DOMEditor,
   EDITOR_TO_KEY_TO_ELEMENT,
   ELEMENT_TO_NODE,
+  getOrCreateDOMNodeKey,
   IS_COMPOSING,
   markDOMSyncMutationTarget,
   NODE_TO_ELEMENT,
@@ -649,7 +649,7 @@ const bindPliteNodeElement = ({
   editor: Editor;
   node: Node;
   providedPathKey: string | null;
-  providedPliteNode: PliteNode | null;
+  providedPliteNode: Descendant | null;
   runtimeId: RuntimeId;
 }) => {
   const path =
@@ -661,13 +661,16 @@ const bindPliteNodeElement = ({
     return null;
   }
 
+  const livePliteNode = editor.read(
+    (state) => state.nodes.get<Descendant>(path)?.[0]
+  );
   const pliteNode =
-    providedPliteNode ?? editor.read((state) => state.nodes.get(path)?.[0]);
+    providedPliteNode === livePliteNode ? providedPliteNode : livePliteNode;
 
   if (!pliteNode) {
     return null;
   }
-  const key = DOMEditor.findKey(editor, pliteNode);
+  const key = getOrCreateDOMNodeKey(editor, runtimeId, pliteNode);
   const keyToElement = EDITOR_TO_KEY_TO_ELEMENT.get(editor) ?? new WeakMap();
 
   if (!EDITOR_TO_KEY_TO_ELEMENT.has(editor)) {
@@ -737,7 +740,7 @@ export const usePliteNodeRef = (
   runtimeId: RuntimeId | null,
   options: {
     path?: Path | null;
-    pliteNode?: PliteNode | null;
+    pliteNode?: Descendant | null;
   } = {}
 ) => {
   const editor = useContext(EditorContext);

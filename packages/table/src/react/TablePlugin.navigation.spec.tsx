@@ -98,7 +98,6 @@ const mockToDOMRange = <E extends object>(
 
 const createTableEditor = (input: TestEditor) =>
   createTestTableEditor({
-    nodeId: true,
     plugins: [
       TablePlugin.configure({
         initialState: { disableMerge: true },

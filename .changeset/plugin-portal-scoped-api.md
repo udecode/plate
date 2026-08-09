@@ -3,29 +3,47 @@
 ---
 
 Export named `*PluginState` contracts for state-owning Core descriptors,
-including debug, DOM, navigation feedback, and node ID plugins.
-Require node ID generators to return strings. Treat every raw element as an ID
-candidate in schema-free `normalizeNodeId`; use `match` to filter raw types.
+including debug, DOM, navigation feedback, and persisted element IDs.
+Replace the default `NodeIdPlugin` with opt-in `ElementIdPlugin`. It assigns
+string IDs to block and inline elements through one `generateId` state option,
+indexes them across every document root, and never assigns IDs to text nodes.
+Use `migrateElementIds` before editor creation to fill missing IDs, report
+duplicates, and canonicalize a legacy property through `sourceKey`. Use editor-scoped
+`NodeKey` for live node targeting, selection, drag and drop, and temporary UI
+state; node keys cover text nodes and never enter serialized data.
+
+Infer plugin-local keyed node mutations from the current plugin plus its
+required dependencies through a shallow capability graph. Use literal
+`nodes.set(key, value)` / `unset(key)` for one unique unaliased property, exact
+handles for aliases, semantic owner updates for prefix or cross-node behavior,
+and object mutations for structural, atomic, dynamic, or ambiguous writes.
 
 Rename Plate plugin identity from `key` to `name` across descriptor
 definitions, inferred contracts, installed descriptors, lookup parameters,
 transaction groups, targets, and overrides. Declare
 `definePlatePlugin('foo', definition)`, read `plugin.name`, and pass the plugin
 descriptor or a dynamic name string to descriptor-aware lookups.
-Use `name` solely for capability identity. Element plugins expose a persisted
-`type`; mark/property plugins expose a persisted `key`. Both default to `name`
-when omitted and may differ only at plugin creation. Behavior plugins expose
-neither. Remove public reverse identity lookup and name/type translation.
+Use `name` solely for capability identity. Element plugins expose persisted
+identity through `schema.type`; primary-mark plugins expose persisted identity
+through `schema.key`. Behavior and aggregate-property plugins expose no
+consumer `schema`. Additional property handles stay in author callbacks and
+compiler APIs. Remove public reverse identity lookup and name/type translation.
 Publish every installed non-empty plugin API under its inferred plugin name on
 `editor.api`, while retaining `editor.plugin(FooPlugin).api` as the exact
 generic portal. Both paths reference the same immutable API object. Reject
 plugin-name collisions with explicit editor API namespaces.
 Expose `editor.plugin(Plugin).installed` for optional package integrations.
+Call the scoped update portal with a transaction policy when an operation needs
+tagged history or another root update policy:
+`editor.plugin(Plugin).update(policy).method()`. The scoped call opens one root
+transaction and preserves its rollback and history behavior.
 
 Contextually infer callbacks for contract-declared explicit transaction groups
 and plugin extension command transactions.
-Keep each input-rule factory's exact editor contract while normalizing
-heterogeneous descriptor storage through an unknown-context rule reference.
+Keep each input-rule factory's exact editor and rule-family contracts, infer
+only explicitly declared consumer options, and publish portable declarations
+while normalizing heterogeneous descriptor storage through an unknown-context
+rule reference.
 Infer callback-created plugin state from its return type without erasing
 constructor `read`, `update`, or other inferred capabilities.
 
@@ -83,9 +101,10 @@ Remove parallel plugin lookup APIs: `getBasePlugin`, `getEditorPlugin`, React
 `editor.getInjectProps`. Use `editor.plugin(Plugin)` for an exact typed portal
 and `editor.plugin(plugin)` for an erased dynamic or family-agnostic
 runtime-name portal. Reject weak `{ name }` lookup objects. A missing runtime
-name reports `installed: false`; `.type` and `.key` preserve an exact schema
-descriptor's authored/default identity or use the supplied runtime string as
-conventional identity, while capability and descriptor fields throw. React
+name reports `installed: false`; name-only portals keep non-optional
+`schema.type` and `schema.key` getters for package-decoupled code, while missing
+or wrong-kind access throws. Exact portals publish only their primary element
+or mark identity. React
 `useEditorPlugin` accepts the same
 descriptor-or-name inputs. Read compiled injection data from
 `editor.plugin(Plugin).inject.nodeProps`. The consumer portal exposes every
@@ -111,8 +130,8 @@ Remove global plugin `priority`. Independent plugins keep application order;
 use `dependencies` for installation requirements and resource-local
 `priority` for competing shortcuts, input rules, or codecs.
 
-Declare document identity with top-level `type`, element behavior through
-`schema.element`, marks through descriptor-backed `schema.mark`, ordinary node
+Declare document identity and element behavior through `schema.element`, marks
+through descriptor-backed `schema.mark`, ordinary node
 components through root-level `component`, advanced rendering through `render`,
 and trusted DOM projection through `render.nodeProps`.
 
@@ -224,8 +243,15 @@ Initialize editors synchronously through `initialValue` or
 `onCommit({ editor, commit, snapshot })`.
 
 Make `useEditor()` strict and `useActiveEditor()` nullable. Resolve rendered
-elements and paths through descriptor-aware `useElement`, `useOptionalElement`,
-`usePath`, and `useOptionalPath` hooks.
+elements and paths through descriptor-aware `useElement(FooPlugin)`,
+`useOptionalElement(FooPlugin)`, `usePath`, and `useOptionalPath` hooks. Infer
+component elements with `PlateElementProps<typeof FooPlugin>` and static/RSC
+elements with `PliteElementProps<typeof BaseFooPlugin>`. Remove unchecked
+type-only `useElement<FooElement>()` and `useOptionalElement<FooElement>()`
+calls.
+Context editor hooks are non-generic. Resolve exact plugin capabilities through
+`editor.plugin(FooPlugin)` or `useEditorPlugin(FooPlugin)`, and let selector
+hooks infer only their selected result.
 
 Render static HTML through `renderStaticHtml` from `platejs/static`.
 
@@ -246,17 +272,21 @@ editor.plugin(FooPlugin).api.method();
 // Compiled descriptor
 const foo = editor.plugin(FooPlugin);
 foo.name;
+foo.schema.type; // element plugin
 foo.inject.nodeProps;
 foo.render;
+
+const bold = editor.plugin(BoldPlugin);
+bold.schema.key;
+bold.read.isActive();
+bold.update.toggle();
 
 // Dynamic runtime name
 const dynamicPlugin = editor.plugin(plugin);
 
-const elementType = dynamicPlugin.type;
-const propertyKey = dynamicPlugin.key;
-
 if (dynamicPlugin.installed) {
   dynamicPlugin.name;
+  dynamicPlugin.schema.type; // throws when the installed plugin is not an element
 }
 ```
 
@@ -323,6 +353,17 @@ const path = useNodePath(element);
 // After
 const editor = useEditor();
 const path = usePath();
+```
+
+Replace context-hook editor assertions with descriptor portals:
+
+```tsx
+// Before
+const editor = useEditor<PlateEditor<readonly [typeof FooPlugin]>>();
+
+// After
+const editor = useEditor();
+const foo = editor.plugin(FooPlugin);
 ```
 
 Rename static HTML rendering:
@@ -407,6 +448,7 @@ const BoldPlugin = definePlatePlugin('bold', {
 ```
 
 Use the flat `PLUGINS` catalog for built-in capability names. Resolve persisted
-element types and property keys through schema-owning plugin context or
-`editor.plugin(Plugin).type/.key`; use explicit persisted literals for copied
-registry data and document fixtures.
+element types and property keys through schema-owning plugin context or the
+installed plugin's flat `schema.type` / `schema.key`; use explicit persisted
+literals only for copied registry data and document fixtures. Use typed node
+fields or semantic plugin methods for additional properties.

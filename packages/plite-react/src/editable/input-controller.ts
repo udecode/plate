@@ -187,9 +187,22 @@ export const isInteractiveInternalTarget = (
   return (
     control instanceof HTMLElement &&
     control !== editorElement &&
-    ReactEditor.hasDOMNode(editor, control) &&
-    !ReactEditor.hasEditableTarget(editor, control)
+    ReactEditor.hasDOMNode(editor, control)
   );
+};
+
+export const isNativeDraggableTarget = (
+  editor: ReactRuntimeEditor,
+  target: EventTarget | null
+) => {
+  const element = isDOMElement(target)
+    ? target
+    : isDOMText(target)
+      ? target.parentElement
+      : null;
+  const draggable = element?.closest('[draggable="true"]');
+
+  return Boolean(draggable && ReactEditor.hasDOMNode(editor, draggable));
 };
 
 export const isNativeInternalControlTarget = (

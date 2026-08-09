@@ -684,18 +684,10 @@ export const editorCommands: EditorCommands = Object.freeze({
       state.transaction((tx) => tx.selection.set(input.target)),
   }),
   setNodes: defineCommand<SetNodesCommand>('node.set', {
-    build: ({ input, state }) => {
-      const at = input.options?.at;
-      const resolvedAt = NodeApi.isNode(at) ? state.nodes.path(at) : at;
-
-      if (NodeApi.isNode(at) && !resolvedAt) return false;
-
-      const options = input.options
-        ? { ...input.options, at: resolvedAt }
-        : undefined;
-
-      return state.transaction((tx) => tx.nodes.set(input.props, options));
-    },
+    build: ({ input, state }) =>
+      state.transaction((tx) =>
+        tx.nodes.set(input.props, input.options as NodeSetNodesOptions)
+      ),
   }),
   setSelection: defineCommand<SetSelectionCommand>('selection.update', {
     build: ({ input, state }) =>

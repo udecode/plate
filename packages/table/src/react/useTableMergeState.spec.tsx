@@ -3,7 +3,9 @@
 import React from 'react';
 
 import { renderHook } from '@testing-library/react';
+import { defineEditor } from '@platejs/core';
 import { Plate } from '@platejs/core/react';
+import { schema } from '@platejs/plite';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { createTestTableEditor } from '../lib/__tests__/getTestTablePlugins';
@@ -35,7 +37,6 @@ describe('useTableMergeState', () => {
       </editor>
     ) as TestEditor;
     const editor = createTestTableEditor({
-      nodeId: true,
       plugins: [
         TablePlugin.configure({
           initialState: { disableMerge: false },
@@ -63,6 +64,59 @@ describe('useTableMergeState', () => {
 
     editor.plugin(TablePlugin).store.set({ disableMerge: false });
     rerender();
+
+    expect(result.current).toEqual({ canMerge: true, canSplit: false });
+  });
+
+  it('detects tables through their configured persisted type', () => {
+    const input = (
+      <editor>
+        <htable>
+          <htr>
+            <htd>
+              <hp>
+                <anchor />
+                11
+              </hp>
+            </htd>
+            <htd>
+              <hp>
+                12
+                <focus />
+              </hp>
+            </htd>
+          </htr>
+        </htable>
+      </editor>
+    ) as TestEditor;
+    const definition = defineEditor('customTableMergeState', {
+      plugins: [
+        TablePlugin.configure({
+          initialState: { disableMerge: false },
+        }),
+      ],
+      schema: {
+        overrides: [
+          schema.override(TablePlugin, {
+            element: { type: 'customTable' },
+          }),
+        ],
+      },
+    });
+    const editor = createTestTableEditor({
+      plugins: definition.plugins,
+      selection: input.selection,
+      initialValue: input.children.map((node, index) =>
+        index === 0 ? { ...node, type: 'customTable' } : node
+      ),
+    });
+    const wrapper = ({ children }: { children: React.ReactNode }) =>
+      React.createElement(Plate, {
+        children,
+        editor,
+        suppressInstanceWarning: true,
+      });
+    const { result } = renderHook(() => useTableMergeState(), { wrapper });
 
     expect(result.current).toEqual({ canMerge: true, canSplit: false });
   });

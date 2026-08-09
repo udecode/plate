@@ -45,6 +45,77 @@ export const BaseFooPlugin: BasePlugin<FooConfig> =
 An empty config alias and an annotated plugin export both hide whether the
 builder inferred correctly.
 
+Keep every inference stage in the direct exported chain:
+
+```ts
+export const BaseFooPlugin = defineBasePlugin(PLUGINS.foo, {
+  api: () => ({ createText: () => 'Foo' }),
+}).extend(({ api }) => ({
+  update: ({ tx }) => ({
+    insert: () => tx.text.insert(api.createText()),
+  }),
+}));
+```
+
+Never create `fooSchemaPlugin` or `FooPluginBase` merely so the next line can
+extend it or so a type query can name it. Audit references rather than names.
+When a later capability needs the schema-derived shape, keep the chain direct
+and use an honest stage:
+
+```ts
+type InsertFooOptionsFor<T extends Element> = NodeInsertNodesOptions<T>;
+
+export const BaseFooPlugin = defineBasePlugin('foo', {
+  schema: { element: schema.element.textBlock() },
+}).extend(({ plugin, schema: { type } }) => {
+  type Foo = ElementOf<typeof plugin>;
+
+  return {
+    update: ({ tx }) => ({
+      insert: (options?: InsertFooOptionsFor<Foo>) => {
+        tx.nodes.insert({ children: [{ text: '' }], type }, options);
+      },
+    }),
+  };
+});
+
+export type FooElement = ElementOf<typeof BaseFooPlugin>;
+export type InsertFooOptions = InsertFooOptionsFor<FooElement>;
+```
+
+The helper generic stays private, the public aliases derive from the final
+descriptor, and the node option never widens to `Element`, `Node`, or an
+omitted generic. When final-plugin declaration emit still recurses, type only
+the smallest private domain or hook-stage boundary and keep the exported plugin
+inferred.
+
+Never give a recursive owner a package-private structural AST mirror. A known
+element owner uses `ElementOf<typeof FinalPlugin>`. A property capability uses
+`ElementWith<typeof Plugin, RequiredLocalIds>` or `TextWith`; aliases, prefixes,
+defaults, and value domains stay descriptor-derived. An algorithm that accepts
+malformed or open-world input uses broad `Element` / `Text` and narrows every
+consumed property at runtime. Fix remaining declaration recursion in Core or at
+the declaration boundary.
+
+A generic plugin factory constrained to a required element or mark schema must
+infer a required flat `schema.type` or `schema.key`. If that handle becomes
+optional merely because `name` is generic, fix `PluginAuthorSchemaView`; do not
+assert, guard, cast, or copy the identity in the package.
+
+A factory bound to a plugin may infer the exact installed-plugin editor inside
+its author callback. Its public factory and emitted value must still project to
+the smallest portable public type. If declaration emit names
+`InternalBaseEditorWithInstalledPlugins`, repair the Core return boundary.
+Never publish a package-local `BaseEditor<typeof Plugin>` alias, reconstructed
+factory options/rule interface, annotation, or cast to hide that leak.
+
+TS7056 permits one narrow private declaration bridge only after the direct
+inferred chain is proven to fail declaration emit. Retain the minimum exact
+source/final stage pair, mark both `@plate-plugin-declaration-stage`, annotate
+only the private final stage, and export one unannotated alias. Keep the stages
+and definition carrier out of barrels, record them as exceptions in the source
+audit, and delete them when direct emit succeeds.
+
 ## Capability Boundaries
 
 Use the canonical protocol from `plate-plugin-creator`:
@@ -133,6 +204,42 @@ injects `TargetPlugin`; do not add `target` to the rule. Keep the map
 MIME-keyed. Its `'text/html'` value is one schema-aware rule or a non-empty
 ordered tuple. Direct `codecs: { ... }`, casts, and callback annotations bypass
 the owner inference and are invalid.
+
+A custom Plate-owned MDX element codec binds its final schema identity once:
+
+```ts
+codecs: ({ defineCodecs, schema: { type } }) =>
+  defineCodecs({
+    'text/markdown': {
+      from: type,
+      kind: 'node',
+      decode: ({ node }) => ({ children: node.children, type }),
+      encode: ({ node }) => ({
+        attributes: [],
+        children: node.children,
+        name: type,
+        type: 'mdxJsxFlowElement',
+      }),
+    },
+  })
+```
+
+Use the resolved `type` for `from`, the decoded element, and the encoded MDX
+tag. Fixed external format names remain literal. Do not use the capability
+name, an authored default type, or a compatibility alias for persisted tags.
+Structural Plate wrappers and unknown-node fallbacks also resolve their
+installed schema type; only external format nodes keep literal identities.
+Operation decode overrides use the plugin capability name after codec-owner
+resolution; encode overrides use the persisted schema type or key.
+If a compiled owner claims the decode source and returns `undefined`, do not
+fall through to a persisted-type override alias. Foreign target codecs do not
+own configurable custom MDX identity.
+Decode-only codecs still prove `from` and decoded identity; encode-only codecs
+still prove the emitted tag. Phrasing-only wrappers decode source phrasing
+children directly because decoded wrapper elements are not identity witnesses.
+A fixed external source never licenses a literal decoded Plate type. Parsed
+attributes precede structural fields so they cannot replace `children` or the
+resolved schema type.
 
 Plate constructors and justified `.extend()` stages contextually type flat
 Plite-native fields:
@@ -345,21 +452,23 @@ defineBasePlugin(PLUGINS.paragraph, {
   schema: { element: schema.element.textBlock() },
 });
 targetPlugins: [PLUGINS.paragraph];
-const codeBlockType = editor.plugin(PLUGINS.codeBlock).type;
-const boldKey = editor.plugin(PLUGINS.bold).key;
+const codeBlockType = editor.plugin(CodeBlockPlugin).schema.type;
+const boldKey = editor.plugin(BoldPlugin).schema.key;
 tx.nodes.insert({ type: codeBlockType, children: [{ text: '' }] });
-tx.nodes.set({ [boldKey]: true });
+editor.plugin(BoldPlugin).update.set(true);
 ```
 
 There are no grouped heading aliases: spell out `PLUGINS.h1` through
 `PLUGINS.h6` where a group is actually needed, and list those items directly
 instead of spreading a literal array. Function and property names must
 keep roles honest: use `plugin` for an exact descriptor-or-string lookup input
-and `name` after runtime normalization for capability work. Element `type` and
-property `key` default to the plugin name when omitted, but they are independent
-immutable contracts. Exact portals expose only the schema identity they own;
-behavior plugins expose neither. Copied registry data and deliberate fixtures
-use explicit persisted literals, never `PLUGINS` as a storage catalog.
+and `name` after runtime normalization for capability work. Exact element and
+primary-mark portals expose `schema.type` and `schema.key`; behavior and
+aggregate-property portals omit `schema`. Additional property handles exist
+only in author callbacks and compiler internals. Never expose or index
+`schema.properties` from a consumer portal. Copied registry data and
+deliberate fixtures use explicit persisted literals, never `PLUGINS` as a
+storage catalog.
 
 Raw literals are for genuinely local/internal plugins and deliberate test
 fixtures.
@@ -367,11 +476,9 @@ fixtures.
 Use `editor.plugin(plugin)` whenever a descriptor is available so the portal
 keeps exact capabilities. A genuine runtime string uses the same `plugin`
 parameter and returns an erased portal whose `installed` field is the sole
-non-throwing capability-availability check. When uninstalled, its `.type` and
-`.key` preserve an exact descriptor's authored/default identity or use a
-runtime string as the conventional identity; read them directly instead of
-adding an `installed` fallback. Other missing portal fields throw. Never pass `{ name }`
-as a public lookup input.
+non-throwing capability-availability check. An uninstalled plugin has no final
+application schema handle; do not invent one from its name. Other missing
+portal fields throw. Never pass `{ name }` as a public lookup input.
 
 Preserve meaningful literal state types at the state owner:
 

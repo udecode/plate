@@ -356,7 +356,7 @@ describe('slate cross-package contracts', () => {
 
       const editor = createMarkEditor(input);
 
-      toggleMark(editor, editor.plugin(BoldPlugin).schema.properties.bold.key);
+      toggleMark(editor, editor.plugin(BoldPlugin).schema.key);
 
       expect(editor.read.children()).toEqual(output.children);
     });
@@ -385,13 +385,9 @@ describe('slate cross-package contracts', () => {
 
       const editor = createMarkEditor(input);
 
-      toggleMark(
-        editor,
-        editor.plugin(ItalicPlugin).schema.properties.italic.key,
-        {
-          remove: editor.plugin(BoldPlugin).schema.properties.bold.key,
-        }
-      );
+      toggleMark(editor, editor.plugin(ItalicPlugin).schema.key, {
+        remove: editor.plugin(BoldPlugin).schema.key,
+      });
 
       expect(editor.read.children()).toEqual(output.children);
     });
@@ -419,7 +415,7 @@ describe('slate cross-package contracts', () => {
 
       const editor = createMarkEditor(input);
 
-      toggleMark(editor, editor.plugin(BoldPlugin).schema.properties.bold.key);
+      toggleMark(editor, editor.plugin(BoldPlugin).schema.key);
 
       expect(editor.read.children()).toEqual(output.children);
     });

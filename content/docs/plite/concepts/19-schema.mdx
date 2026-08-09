@@ -43,7 +43,7 @@ import {
   target,
 } from "@platejs/plite";
 
-const ArticleSchema = defineEditorSchema({
+const ArticleSchema = defineEditorSchema("schema:article", {
   elements: {
     paragraph: schema.element.textBlock({
       properties: {
@@ -132,7 +132,7 @@ Declare `contentRoots` only when the content needs a separate root identity,
 mount lifecycle, or shared ownership.
 
 ```ts
-const SyncedBlocksSchema = defineEditorSchema({
+const SyncedBlocksSchema = defineEditorSchema('documentSchema', {
   elements: {
     "synced-block": {
       content: schema.content.text({ min: 1 }),
@@ -172,6 +172,25 @@ omitted canonically with `{ default, omitDefault: true }`.
 Element-owned fields live in the element declaration's `properties` map.
 Cross-cut element fields use `schema.elementProperty(...)` with an explicit
 target. Text marks use `schema.textProperty(...)`.
+
+Use a `SchemaPropertyHandle` when generic code needs both persisted identity
+and the property's inferred value type. Raw Plite schemas create handles from
+their schema descriptor. Plate publishes the corresponding compiled handles
+on each installed plugin.
+
+```ts
+const paragraph = schema.handle.element(ArticleSchema, "paragraph");
+const align = schema.handle.property(paragraph, "align");
+
+const node = editor.read.schema.create(paragraph, { align: "center" });
+const value = editor.read.schema.getProperty(node, align);
+// value: string | undefined
+```
+
+Direct domain code still reads `node.align`. Handles are for schema-aware
+construction, generic property reads, matching, codecs, and inspection. An
+element handle owns `type`; a property handle owns `key`, placement, value
+type, and compiled property id. Extension names never substitute for either.
 
 Properties participate in document content by default. Set `role: "metadata"`
 on an element or text property placement when the value supports runtime
@@ -213,7 +232,7 @@ positive-integer `validationVersion` must appear together. Increment the
 version whenever the validator's accepted value set changes.
 
 ```ts
-const MediaSchema = defineEditorSchema({
+const MediaSchema = defineEditorSchema('documentSchema', {
   elements: {
     image: {
       properties: {
@@ -254,7 +273,7 @@ application intentionally carries forward undeclared element types or
 properties.
 
 ```ts
-const ForwardCompatibleSchema = defineEditorSchema({
+const ForwardCompatibleSchema = defineEditorSchema("schema:forward-compatible", {
   id: "forward-compatible",
   root: schema.content.not(schema.content.text()),
   unknown: "preserve",
@@ -360,7 +379,7 @@ import {
 } from "@platejs/plite";
 
 const articleSchema = (version: number, type: string) =>
-  defineEditorSchema({
+  defineEditorSchema("schema:article", {
     elements: {
       [type]: {
         content: schema.content.text({ min: 1 }),

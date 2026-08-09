@@ -21,6 +21,10 @@
 - Provide schema-inferred Markdown node codec contracts directly from
   `@platejs/core`, with one `defineCodecs` object for every format owned by a
   plugin
+- Derive element and text property-capability types with `ElementWith` and
+  `TextWith`, including authored aliases, prefixes, defaults, and value domains
+- Treat Plate-owned custom MDX tag names as resolved schema identity while
+  keeping fixed MDAST, HTML, and MDX syntax literal
 - Allow product-specific node codec declarations to target the owning plugin
   while preserving schema inference
 - Author schema-inferred bidirectional HTML codecs through
@@ -43,3 +47,4 @@
   distinct extension identities
 - Compile merge, selectability, and slice-export policy into typed Plite read
   middleware, and selection projection into `selectionKinds`
+- Avoid reevaluating published plugin schema factories during plugin access

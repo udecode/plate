@@ -315,9 +315,16 @@ describe('PlateStatic Memoization', () => {
             <figcaption>{slots.contentRoot('caption')}</figcaption>
           </figure>
         ),
-        paragraph: ({ children }) => <p data-caption-block>{children}</p>,
+        paragraph: (props) => (
+          <PliteElement
+            {...props}
+            attributes={{
+              ...props.attributes,
+              'data-caption-block': true,
+            }}
+          />
+        ),
       },
-      nodeId: false,
       plugins: [
         defineBasePlugin('figure', {
           schema: {
@@ -353,11 +360,15 @@ describe('PlateStatic Memoization', () => {
       },
     });
     const view = render(<PlateStatic editor={editor} />);
+    const caption = view
+      .getByText('First caption')
+      .closest('[data-caption-block]');
 
     expect(view.getByText('First caption')).toBeInTheDocument();
-    expect(
-      view.getByText('First caption').closest('[data-caption-block]')
-    ).toBeInTheDocument();
+    expect(caption).toBeInTheDocument();
+    expect(caption?.getAttribute('data-plite-node-key')).toBeNull();
+    expect(caption?.getAttribute('data-plite-path')).toBe('0');
+    expect(caption?.getAttribute('data-plite-root')).toBe('caption:1');
 
     editor.update((tx) => {
       tx.roots.replace('caption:1', [

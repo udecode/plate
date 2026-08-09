@@ -37,15 +37,17 @@ The fastest way to add slash command functionality is with the `SlashKit`, which
 ### Add Kit
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import {
+  PLUGINS,
+  createPlateEditor } from 'platejs/react';
 import { SlashKit } from '@/components/editor/plugins/slash-kit';
 
 const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
-    ...SlashKit,
+  ...SlashKit,
   ],
-});
+  });
 ```
 
 </Steps>
@@ -71,9 +73,9 @@ import { createPlateEditor } from 'platejs/react';
 const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
-    SlashPlugin,
+  SlashPlugin,
   ],
-});
+  });
 ```
 
 ### Configure Plugins
@@ -81,10 +83,10 @@ const editor = createPlateEditor({
 Add a complete `SlashInputPlugin` descriptor beside the owner when you need to replace the dependency's component or configuration.
 
 ```tsx
-import { SlashPlugin, SlashInputPlugin } from '@platejs/slash-command/react';
+import { SlashPlugin,
+  SlashInputPlugin } from '@platejs/slash-command/react';
 import { createPlateEditor } from 'platejs/react';
 import { SlashInputElement } from '@/components/ui/slash-node';
-import { KEYS, NODES } from 'platejs';
 
 const editor = createPlateEditor({
   plugins: [
@@ -95,7 +97,9 @@ const editor = createPlateEditor({
         triggerPreviousCharPattern: /^\s?$/,
         triggerQuery: (editor) =>
           !editor.read.nodes.some({
-            match: { type: editor.plugin(KEYS.codeBlock).type },
+            match: {
+              type: editor.plugin(PLUGINS.codeBlock).schema.type,
+            },
           }),
       },
     }),
@@ -150,13 +154,13 @@ Plugin for slash command functionality. Extends [TriggerComboboxPluginState](/do
     RegExp to match character before trigger.
     - **Default:** `/^\s?$/`
   </APIItem>
-  <APIItem name="createComboboxInput" type="() => TComboboxInputElement" optional>
+  <APIItem name="createComboboxInput" type="() => Element" optional>
     Function to create combobox input element.
     - **Default:** 
     ```tsx
     () => ({
       children: [{ text: '' }],
-      type: NODES.slashInput,
+      type: 'slashInput',
     });
     ```
   </APIItem>

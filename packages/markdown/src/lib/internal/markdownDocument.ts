@@ -1,6 +1,6 @@
 import type { Descendant, Element, Text, Value } from '@platejs/plite';
 import { ElementApi, TextApi } from '@platejs/plite';
-import { KEYS } from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 import type {
   MdxJsxAttribute,
   MdxJsxExpressionAttribute,
@@ -97,13 +97,14 @@ export const toMarkdownBlockContent = (
   children: readonly Descendant[]
 ): Value => {
   const content: Element[] = [];
+  const paragraphType = context.registry.type(PLUGINS.paragraph) ?? 'paragraph';
   let inline: Descendant[] = [];
   const flush = () => {
     if (inline.length === 0) return;
 
     content.push({
       children: inline,
-      type: context.registry.getType(KEYS.p),
+      type: paragraphType,
     });
     inline = [];
   };
@@ -129,7 +130,7 @@ export const toMarkdownBlockContent = (
     : [
         {
           children: [{ text: '' }],
-          type: context.registry.getType(KEYS.p),
+          type: paragraphType,
         },
       ];
 };
@@ -139,11 +140,9 @@ export const toMarkdownCaptionContent = (
   children: readonly Descendant[]
 ): readonly Descendant[] => {
   const blocks = toMarkdownBlockContent(context, children);
+  const paragraphType = context.registry.type(PLUGINS.paragraph) ?? 'paragraph';
 
-  if (
-    blocks.length !== 1 ||
-    blocks[0].type !== context.registry.getType(KEYS.p)
-  ) {
+  if (blocks.length !== 1 || blocks[0].type !== paragraphType) {
     throw new Error('Media captions must contain one Markdown paragraph.');
   }
 

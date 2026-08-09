@@ -62,7 +62,7 @@ describe('pluginRenderElementStatic', () => {
     expect(markup).toContain('data-role="below"');
     expect(markup).toContain('data-role="root"');
     expect(markup).toContain('data-id="block-1"');
-    expect(markup).toContain('data-block-id="block-1"');
+    expect(markup).not.toContain('data-block-id');
     expect(markup).toContain('class="plite-paragraph"');
   });
 });

@@ -31,7 +31,8 @@ editor.update.codeBlock.toggle();
 editor.update.codeBlock.resetBlock();
 ```
 
-Use `insert(options)` for both empty and populated insertion paths. Configure
+Use `insert(input?, nodeOptions?)` for both empty and populated insertion
+paths. Configure
 `lowlight` and `defaultLanguage` on `CodeHighlightPlugin`; omit that plugin for
 unhighlighted code blocks:
 

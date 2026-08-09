@@ -3,7 +3,9 @@ title: 插件配置
 description: 如何配置和自定义Plate插件。
 ---
 
-Plate 插件具有高度可配置性，允许您根据需要定制其行为。本指南将介绍最常见的配置选项及使用方法。
+Plate 插件拥有一个 capability：schema、behavior、state、service、read、
+update、rendering，或这些字段的必要组合。独立字段直接在创建时声明，
+app-owned 值才使用 terminal configuration。
 
 - [入门指南：组件](/docs/installation#components) - 添加插件到编辑器的说明
 - [PlatePlugin API](/docs/api/core/plate-plugin) - 创建插件的完整 API 参考
@@ -43,12 +45,9 @@ Schema 插件在 `schema` 下声明持久化文档身份和结构。React compon
 ```ts
 import { schema } from "platejs";
 
-const ParagraphPlugin = definePlatePlugin("paragraphFeature", {
+const NoticePlugin = definePlatePlugin("noticeFeature", {
   schema: {
-    element: {
-      content: schema.content.text({ default: "text", min: 1 }),
-      type: "paragraph",
-    },
+    element: { ...schema.element.textBlock(), type: "notice" },
   },
 });
 ```
@@ -58,13 +57,10 @@ const ParagraphPlugin = definePlatePlugin("paragraphFeature", {
 ```ts
 import { schema } from "platejs";
 
-const ParagraphPlugin = definePlatePlugin("paragraphFeature", {
-  component: ParagraphElement,
+const NoticePlugin = definePlatePlugin("noticeFeature", {
+  component: NoticeElement,
   schema: {
-    element: {
-      content: schema.content.text({ default: "text", min: 1 }),
-      type: "paragraph",
-    },
+    element: { ...schema.element.textBlock(), type: "notice" },
   },
 });
 ```
@@ -76,7 +72,7 @@ const ParagraphPlugin = definePlatePlugin("paragraphFeature", {
 ```ts
 import { property, schema } from "platejs";
 
-const LinkPlugin = definePlatePlugin("link", {
+const CustomLinkPlugin = definePlatePlugin("customLink", {
   schema: {
     element: {
       content: schema.content.text({ default: "text", min: 1 }),
@@ -85,11 +81,11 @@ const LinkPlugin = definePlatePlugin("link", {
   },
 });
 
-const ImagePlugin = definePlatePlugin("image", {
+const CustomImagePlugin = definePlatePlugin("customImage", {
   schema: { element: { void: "block" } },
 });
 
-const BoldPlugin = definePlatePlugin("bold", {
+const CustomBoldPlugin = definePlatePlugin("customBold", {
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
@@ -107,7 +103,7 @@ const BoldPlugin = definePlatePlugin("bold", {
 例如，您可以定义当用户在空标题中按`Enter`或在块引用开头按`Backspace`时发生的情况。
 
 ```ts
-import { H1Plugin } from "@platejs/heading/react";
+import { H1Plugin } from "@platejs/basic-nodes/react";
 
 H1Plugin.configure({
   rules: {
@@ -135,7 +131,8 @@ const ExamplePlugin = definePlatePlugin("example", {
     keyDown: ({ editor, event }) => {
       console.info(`You pressed ${event.key}`);
     },
-  },});
+  },
+});
 ```
 
 ### 注入属性
@@ -143,8 +140,7 @@ const ExamplePlugin = definePlatePlugin("example", {
 您可能希望向具有特定属性的任何节点注入类名或 CSS 属性。例如，以下插件为具有 `textAlign` 属性的段落设置 `textAlign` CSS 属性。
 
 ```ts showLineNumbers
-import { ParagraphPlugin } from "@platejs/basic-nodes/react";
-import { property, schema, target } from "platejs";
+import { PLUGINS, property, schema, target } from "platejs";
 
 const TextAlignPlugin = definePlatePlugin("textAlign", {
   codecs: ({ defineCodecs }) =>
@@ -177,30 +173,37 @@ const TextAlignPlugin = definePlatePlugin("textAlign", {
       }),
     },
   }),
-  targetPlugins: [ParagraphPlugin],
+  targetPlugins: [PLUGINS.paragraph],
+  update: ({ tx }) => ({
+    set: (value: string) => tx.nodes.set('textAlign', value),
+  }),
 });
 ```
 
 `inject.nodeProps` 负责渲染，constructor 的 `codecs` callback 把双向 HTML
 声明绑定到插件 schema。`defineCodecs` 根据 property 声明推断 `value`。两条
-路径都使用编译后的 `schema.properties.textAlign.key`；`name` 只标识能力
-namespace。`.configure()` 和 `.extend()` 不更改 schema identity。闭合的
+路径都使用 author callback 的 `schema.properties.textAlign` 编译 handle；consumer
+通过类型化节点字段或插件语义能力访问数据，而不读取该 property 映射。`name`
+只标识能力 namespace。`.configure()` 和 `.extend()` 不更改 schema identity。闭合的
 `defineEditor()` 可以重映射 element type 或关系；插件拥有的 property key 保持固定。
+插件 update 使用 literal-key form 写入一个唯一 property，因此 key 和 value 都从插件的
+shallow schema contract 推断。Alias 使用精确的 author handle；结构性或原子写入保留
+object form。
 
 受该插件影响的段落节点如下：
 
 ```ts showLineNumbers {3}
-{
+const paragraph = {
   type: 'paragraph',
-  align: 'right',
+  textAlign: 'right',
   children: [{ text: '本段落右对齐！' }],
-}
+};
 ```
 
 ### 扩展 API 和事务命令
 
-插件读取和服务放在 `api`，文档变更放在 `update`。Constructor callback
-直接接收 plugin context。
+state-bound query 放在 `read`，immutable service 放在 `api`，文档变更放在
+`update`。Constructor callback 直接接收 plugin context。
 
 ```ts
 export type CustomPluginState = {
@@ -213,7 +216,8 @@ const CustomPlugin = definePlatePlugin("custom", {
   }),
   initialState: {
     prefix: "Note: ",
-  } satisfies CustomPluginState,  update: ({ store, tx }) => ({
+  } satisfies CustomPluginState,
+  update: ({ store, tx }) => ({
     insertPrefix: () => {
       tx.text.insert(store.get("prefix"));
     },
@@ -221,7 +225,7 @@ const CustomPlugin = definePlatePlugin("custom", {
 });
 ```
 
-插件解析后，具体 editor 会在 root API 推断其 read；一次性 write 使用
+插件解析后，具体 editor 会在 root API 推断其 service；一次性 write 使用
 name-scoped update helper：
 
 ```ts
@@ -240,7 +244,8 @@ Plate 插件直接在插件根级声明 Plite 能力。使用 `readMiddleware`�
 不再添加第二层 wrapper。
 
 ```ts showLineNumbers
-import { definePlatePlugin, defineStateField } from "platejs";
+import { defineStateField } from "platejs";
+import { definePlatePlugin } from "platejs/react";
 
 const enabledField = defineStateField({
   initial: false,
@@ -280,12 +285,11 @@ type MyPluginState = {
   count: number;
 };
 
-const initialState: MyPluginState = {
-  count: 0,
-};
-
 const MyPlugin = definePlatePlugin("myPlugin", {
-  initialState,  on: {
+  initialState: {
+    count: 0,
+  } satisfies MyPluginState,
+  on: {
     click: ({ store }) => {
       store.set({ count: 1 });
     },
@@ -375,8 +379,9 @@ const HtmlCleanupPlugin = definePlatePlugin("htmlCleanup", {
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       "text/html": {
-        query: ({ data, format }) =>
-          format === "text/html" && data.includes("<!--StartFragment-->"),
+        query: ({ data, source }) =>
+          source.types.includes("text/html") &&
+          data.includes("<!--StartFragment-->"),
         transformData: ({ data }) =>
           data.replaceAll(/<!--(?:Start|End)Fragment-->/g, ""),
       },
@@ -398,29 +403,34 @@ const HtmlCleanupPlugin = definePlatePlugin("htmlCleanup", {
 推断后的 definition 会携带插件 name、state、API、read 和 update：
 
 ```ts
-export type CodeBlockPluginState = {
+import { property, schema } from "platejs";
+import { definePlatePlugin } from "platejs/react";
+
+export type SnippetPluginState = {
   language: string;
   syntax: boolean;
   syntaxPopularFirst: boolean;
 };
 
-const initialState: CodeBlockPluginState = {
-  language: "typescript",
-  syntax: true,
-  syntaxPopularFirst: false,
-};
-
-export const CodeBlockPlugin = definePlatePlugin("codeBlock", {
+export const SnippetPlugin = definePlatePlugin("snippet", {
   api: ({ store }) => ({
     getLanguage: () => store.get("language"),
     getSyntaxState: () => store.get("syntax"),
   }),
-  initialState,
-  type: "codeBlock",
-  update: ({ store, tx }) => ({
-    insert: () => {
+  initialState: {
+    language: "typescript",
+    syntax: true,
+    syntaxPopularFirst: false,
+  } satisfies SnippetPluginState,
+  schema: {
+    element: schema.element.textBlock({
+      properties: { language: property.string() },
+    }),
+  },
+  update: ({ schema: { type }, store, tx }) => ({
+    insertCurrentLanguage: () => {
       tx.nodes.insert({
-        type: "codeBlock",
+        type,
         language: store.get("language"),
         children: [{ text: "" }],
       });
@@ -435,21 +445,21 @@ export const CodeBlockPlugin = definePlatePlugin("codeBlock", {
 
 ```ts
 const editor = createPlateEditor({
-  plugins: [CodeBlockPlugin],
+  plugins: [SnippetPlugin],
 });
 
 // 类型安全的 state 访问
-const state = editor.plugin(CodeBlockPlugin).store.get();
+const state = editor.plugin(SnippetPlugin).store.get();
 state.language;
 state.syntax;
 state.syntaxPopularFirst;
 
 // 类型安全的API
-editor.api.codeBlock.getSyntaxState();
-editor.api.codeBlock.getLanguage();
+editor.api.snippet.getSyntaxState();
+editor.api.snippet.getLanguage();
 
 // 类型安全的更新
-editor.update.codeBlock.insert();
+editor.update.snippet.insertCurrentLanguage();
 ```
 
 ## 另请参阅

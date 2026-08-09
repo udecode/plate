@@ -91,10 +91,8 @@ describe('writeStaticSelectionClipboardData', () => {
 
   it('writes Plite fragment from rendered static DOM', () => {
     const editor = createStaticEditor({
-      nodeId: true,
       initialValue: [
         {
-          id: 'block-1',
           children: [{ text: 'Alpha' }],
           type: 'paragraph',
         },
@@ -106,7 +104,9 @@ describe('writeStaticSelectionClipboardData', () => {
       React.createElement(PlateStatic, { editor })
     );
 
-    const block = document.querySelector('[data-block-id="block-1"]');
+    const block = document.querySelector(
+      '[data-plite-node="element"][data-plite-path="0"][data-plite-root="main"]'
+    );
 
     expect(block).toBeTruthy();
 

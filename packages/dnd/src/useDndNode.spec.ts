@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 import { renderHook } from '@testing-library/react';
-import type { Element } from '@platejs/plite';
+import { type Element, NodeApi, type NodeKey } from '@platejs/plite';
 import type { DropTargetHookSpec, DropTargetMonitor } from 'react-dnd';
 import * as actualReactDnd from 'react-dnd';
 
@@ -42,6 +42,19 @@ const getElement = (editor: PlateEditor, path: number[]) => {
   return entry[0];
 };
 
+const getNodeKey = (editor: PlateEditor, path: number[]) => {
+  const key = editor.key(path);
+
+  assert(key);
+
+  return key;
+};
+
+const getTexts = (editor: PlateEditor) =>
+  editor.read.children().map((child) => NodeApi.string(child));
+
+const nodeKey = (value: string) => value as NodeKey;
+
 const callDrop = (dragItem: DragItemNode, monitor: DropTargetMonitor) => {
   if (typeof dropSpec?.drop !== 'function') {
     throw new Error('Expected the DnD drop callback.');
@@ -78,24 +91,30 @@ describe('Dnd node behavior', () => {
 
   describe('drop', () => {
     let editor = createPlateEditor();
+    let dragKey: NodeKey;
     let dragElement: Element;
+    let hoverKey: NodeKey;
     let hoverElement: Element;
+    let otherKey: NodeKey;
     let dragItem: ElementDragItemNode;
 
     beforeEach(() => {
       editor = createPlateEditor();
-      editor.update.nodes.insert(
-        [
-          { children: [{ text: 'drag' }], id: 'drag', type: 'paragraph' },
-          { children: [{ text: 'hover' }], id: 'hover', type: 'paragraph' },
-          { children: [{ text: 'other' }], id: 'other', type: 'paragraph' },
+      editor.update.value.replace({
+        children: [
+          { children: [{ text: 'drag' }], type: 'paragraph' },
+          { children: [{ text: 'hover' }], type: 'paragraph' },
+          { children: [{ text: 'other' }], type: 'paragraph' },
         ],
-        { at: [0] }
-      );
+        selection: null,
+      });
       dragElement = getElement(editor, [0]);
+      dragKey = getNodeKey(editor, [0]);
       hoverElement = getElement(editor, [1]);
+      hoverKey = getNodeKey(editor, [1]);
+      otherKey = getNodeKey(editor, [2]);
       dragItem = {
-        id: 'drag',
+        key: dragKey,
         editorId: editor.id,
         element: dragElement,
       };
@@ -118,21 +137,13 @@ describe('Dnd node behavior', () => {
       );
       callDrop(dragItem, monitor);
 
-      expect(editor.read.children().map((child) => child.id)).toEqual([
-        'drag',
-        'hover',
-        'other',
-      ]);
+      expect(getTexts(editor)).toEqual(['drag', 'hover', 'other']);
     });
 
     it('moves a block below the hovered block', () => {
       callDrop(dragItem, monitor);
 
-      expect(editor.read.children().map((child) => child.id)).toEqual([
-        'hover',
-        'drag',
-        'other',
-      ]);
+      expect(getTexts(editor)).toEqual(['hover', 'drag', 'other']);
     });
 
     it('moves a block before the hovered block', () => {
@@ -140,18 +151,14 @@ describe('Dnd node behavior', () => {
 
       callDrop(
         {
-          id: 'other',
+          key: otherKey,
           editorId: editor.id,
           element: getElement(editor, [2]),
         },
         monitor
       );
 
-      expect(editor.read.children().map((child) => child.id)).toEqual([
-        'drag',
-        'other',
-        'hover',
-      ]);
+      expect(getTexts(editor)).toEqual(['drag', 'other', 'hover']);
     });
 
     it('keeps a block in place when it is already adjacent', () => {
@@ -166,7 +173,7 @@ describe('Dnd node behavior', () => {
       );
       callDrop(
         {
-          id: 'hover',
+          key: hoverKey,
           editorId: editor.id,
           element: hoverElement,
         },
@@ -200,66 +207,57 @@ describe('Dnd node behavior', () => {
           nodeRef,
         })
       );
-      callDrop({ ...dragItem, id: ['drag', 'hover'] }, monitor);
+      callDrop({ ...dragItem, key: [dragKey, hoverKey] }, monitor);
 
-      expect(editor.read.children().map((child) => child.id)).toEqual([
-        'other',
-        'drag',
-        'hover',
-      ]);
+      expect(getTexts(editor)).toEqual(['other', 'drag', 'hover']);
     });
 
     it('moves every selected block across editors without data loss', () => {
       const sourceEditor = createPlateEditor();
 
-      sourceEditor.update.nodes.insert(
-        [
-          { children: [{ text: 'one' }], id: 'drag-1', type: 'paragraph' },
-          { children: [{ text: 'keep' }], id: 'keep', type: 'paragraph' },
-          { children: [{ text: 'two' }], id: 'drag-2', type: 'paragraph' },
+      sourceEditor.update.value.replace({
+        children: [
+          { children: [{ text: 'one' }], type: 'paragraph' },
+          { children: [{ text: 'keep' }], type: 'paragraph' },
+          { children: [{ text: 'two' }], type: 'paragraph' },
         ],
-        { at: [0] }
-      );
+        selection: null,
+      });
 
       callDrop(
         {
           editor: sourceEditor,
           editorId: sourceEditor.id,
           element: getElement(sourceEditor, [0]),
-          id: ['drag-1', 'drag-2'],
+          key: [getNodeKey(sourceEditor, [0]), getNodeKey(sourceEditor, [2])],
         },
         monitor
       );
 
-      expect(editor.read.children().map((child) => child.id)).toEqual([
+      expect(getTexts(editor)).toEqual([
         'drag',
         'hover',
-        'drag-1',
-        'drag-2',
+        'one',
+        'two',
         'other',
       ]);
-      expect(sourceEditor.read.children().map((child) => child.id)).toEqual([
-        'keep',
-      ]);
+      expect(getTexts(sourceEditor)).toEqual(['keep']);
     });
 
-    it('lets the node-id owner rewrite cross-editor id collisions', () => {
-      let nextId = 0;
-      const targetEditor = createPlateEditor({
-        nodeId: { idCreator: () => `target-${++nextId}` },
-      });
+    it('assigns fresh node key to cross-editor copies', () => {
+      const targetEditor = createPlateEditor();
 
-      targetEditor.update.nodes.insert(
-        { children: [{ text: 'target' }], id: 'hover', type: 'paragraph' },
-        { at: [0] }
-      );
+      targetEditor.update.value.replace({
+        children: [{ children: [{ text: 'target' }], type: 'paragraph' }],
+        selection: null,
+      });
 
       const sourceEditor = createPlateEditor();
 
-      sourceEditor.update.nodes.insert(
-        { children: [{ text: 'source' }], id: 'hover', type: 'paragraph' },
-        { at: [0] }
-      );
+      sourceEditor.update.value.replace({
+        children: [{ children: [{ text: 'source' }], type: 'paragraph' }],
+        selection: null,
+      });
 
       renderHook(() =>
         useDropNode(targetEditor, {
@@ -273,14 +271,16 @@ describe('Dnd node behavior', () => {
           editor: sourceEditor,
           editorId: sourceEditor.id,
           element: getElement(sourceEditor, [0]),
-          id: 'hover',
+          key: getNodeKey(sourceEditor, [0]),
         },
         monitor
       );
 
-      const ids = targetEditor.read.children().map((child) => child.id);
+      const keys = targetEditor.read
+        .children()
+        .map((_, index) => getNodeKey(targetEditor, [index]));
 
-      expect(new Set(ids).size).toBe(ids.length);
+      expect(new Set(keys).size).toBe(keys.length);
       expect(targetEditor.read.text.string([])).toContain('source');
     });
   });
@@ -288,32 +288,34 @@ describe('Dnd node behavior', () => {
   describe('hover', () => {
     let editor = createPlateEditor({ plugins: [DndPlugin] });
     let dragItem: ElementDragItemNode;
+    let hoverKey: NodeKey;
     let hoverElement: Element;
+    let otherKey: NodeKey;
+    let previousKey: NodeKey;
 
     beforeEach(() => {
       editor = createPlateEditor({ plugins: [DndPlugin] });
-      editor.update.nodes.insert(
-        [
-          {
-            children: [{ text: 'previous' }],
-            id: 'previous',
-            type: 'paragraph',
-          },
-          { children: [{ text: 'hover' }], id: 'hover', type: 'paragraph' },
-          { children: [{ text: 'other' }], id: 'other', type: 'paragraph' },
-          { children: [{ text: 'drag' }], id: 'drag', type: 'paragraph' },
+      editor.update.value.replace({
+        children: [
+          { children: [{ text: 'previous' }], type: 'paragraph' },
+          { children: [{ text: 'hover' }], type: 'paragraph' },
+          { children: [{ text: 'other' }], type: 'paragraph' },
+          { children: [{ text: 'drag' }], type: 'paragraph' },
         ],
-        { at: [0] }
-      );
+        selection: null,
+      });
       hoverElement = getElement(editor, [1]);
+      previousKey = getNodeKey(editor, [0]);
+      hoverKey = getNodeKey(editor, [1]);
+      otherKey = getNodeKey(editor, [2]);
       dragItem = {
-        id: 'drag',
+        key: getNodeKey(editor, [3]),
         editorId: editor.id,
         element: getElement(editor, [3]),
       };
       editor.plugin(DndPlugin).store.set({
         _isOver: true,
-        dropTarget: { id: null, line: '' },
+        dropTarget: { key: null, line: '' },
       });
       renderHook(() =>
         useDropNode(editor, {
@@ -328,7 +330,7 @@ describe('Dnd node behavior', () => {
       callHover(dragItem, monitor);
 
       expect(editor.plugin(DndPlugin).store.get('dropTarget')).toEqual({
-        id: 'hover',
+        key: hoverKey,
         line: 'bottom',
       });
     });
@@ -348,12 +350,12 @@ describe('Dnd node behavior', () => {
 
     it('clears a stale drop target when no move is available', () => {
       editor.plugin(DndPlugin).store.set({
-        dropTarget: { id: 'hover', line: 'bottom' },
+        dropTarget: { key: hoverKey, line: 'bottom' },
       });
 
       callHover(
         {
-          id: 'other',
+          key: otherKey,
           editorId: editor.id,
           element: getElement(editor, [2]),
         },
@@ -361,7 +363,7 @@ describe('Dnd node behavior', () => {
       );
 
       expect(editor.plugin(DndPlugin).store.get('dropTarget')).toEqual({
-        id: null,
+        key: null,
         line: '',
       });
     });
@@ -372,7 +374,7 @@ describe('Dnd node behavior', () => {
       callHover(dragItem, monitor);
 
       expect(editor.plugin(DndPlugin).store.get('dropTarget')).toEqual({
-        id: 'previous',
+        key: previousKey,
         line: 'bottom',
       });
     });
@@ -383,7 +385,7 @@ describe('Dnd node behavior', () => {
       callHover(dragItem, monitor);
 
       expect(editor.plugin(DndPlugin).store.get('dropTarget')).toEqual({
-        id: null,
+        key: null,
         line: '',
       });
     });
@@ -392,17 +394,15 @@ describe('Dnd node behavior', () => {
   describe('hover direction', () => {
     const dragElement: Element = {
       children: [{ text: 'drag' }],
-      id: 'drag',
       type: 'paragraph',
     };
     const dragItem: ElementDragItemNode = {
-      id: 'drag',
+      key: nodeKey('drag'),
       editorId: 'editor',
       element: dragElement,
     };
     const hoverElement: Element = {
       children: [{ text: 'hover' }],
-      id: 'hover',
       type: 'paragraph',
     };
 
@@ -465,14 +465,15 @@ describe('Dnd node behavior', () => {
       ).toBeUndefined();
     });
 
-    it('allows matching block ids across different editors', () => {
+    it('allows matching node keys across different editors', () => {
       expect(
         getHoverDirection({
           dragItem,
           editorId: 'target-editor',
-          element: { ...hoverElement, id: 'drag' },
+          element: hoverElement,
           monitor,
           nodeRef,
+          nodeKey: nodeKey('drag'),
         })
       ).toBe('bottom');
     });

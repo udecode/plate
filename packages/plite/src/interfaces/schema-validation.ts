@@ -9,6 +9,7 @@ export type EditorSchemaValidationCode =
   | 'invalid-node'
   | 'invalid-property-value'
   | 'invalid-root'
+  | 'missing-property'
   | 'property-target-mismatch'
   | 'unknown-element'
   | 'unknown-property';

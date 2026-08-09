@@ -4,7 +4,7 @@ import type { Range } from '@platejs/plite';
 
 import { act, renderHook, waitFor } from '@testing-library/react';
 
-import { createPlateEditor, type PlateEditor } from '../../editor';
+import { createPlateEditor } from '../../editor';
 import {
   PlateStoreProvider,
   useEditor,
@@ -139,7 +139,7 @@ describe('createPlateStore', () => {
 
     const { result } = renderHook(
       () => ({
-        editor: useEditor<PlateEditor>({ id: 'runtime' }),
+        editor: useEditor({ id: 'runtime' }),
         value: useEditorState((state) => state.children(), { id: 'runtime' }),
       }),
       { wrapper }

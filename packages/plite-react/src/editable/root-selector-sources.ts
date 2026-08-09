@@ -191,13 +191,13 @@ const selectRootRuntimeIds = (editor: ReactRuntimeEditor) =>
         .map((_node: unknown, index: number) => {
           const path = [index] as Path;
 
-          return state.runtime.idAt(path);
+          return state.runtime.id(path);
         })
         .filter(Boolean) as RuntimeId[]
   );
 
 export const useRootRuntimeIds = () => {
-  const editor = useEditor<ReactRuntimeEditor>();
+  const editor = useEditor();
   const root = toInternalRoot(editor.read((state) => state.view.root()));
   const selector = useCallback(
     (editor: ReactRuntimeEditor) => selectRootRuntimeIds(editor),
@@ -217,7 +217,7 @@ export const useRootRuntimeIds = () => {
 };
 
 export const useRootDocumentEpoch = () => {
-  const editor = useEditor<ReactRuntimeEditor>();
+  const editor = useEditor();
   const root = toInternalRoot(editor.read((state) => state.view.root()));
   const lastEpochRef = useRef({ root, value: 0 });
 
@@ -250,7 +250,7 @@ export const useRootDocumentEpoch = () => {
 };
 
 export const useTopLevelSelectionIndex = (enabled: boolean) => {
-  const editor = useEditor<ReactRuntimeEditor>();
+  const editor = useEditor();
   const root = toInternalRoot(editor.read((state) => state.view.root()));
   const selector = useCallback(
     (editor: ReactRuntimeEditor) => {
@@ -300,7 +300,7 @@ const sameSelectionPaths = (
     ));
 
 export const useSelectionPaths = (enabled: boolean) => {
-  const editor = useEditor<ReactRuntimeEditor>();
+  const editor = useEditor();
   const root = toInternalRoot(editor.read((state) => state.view.root()));
   const selector = useCallback(
     (editor: ReactRuntimeEditor) => {
@@ -332,7 +332,7 @@ export const useSelectionPaths = (enabled: boolean) => {
 };
 
 export const usePlaceholderValue = (placeholder?: ReactNode) => {
-  const editor = useEditor<ReactRuntimeEditor>();
+  const editor = useEditor();
   const root = toInternalRoot(editor.read((state) => state.view.root()));
   const selector = useCallback(
     (editor: ReactRuntimeEditor) =>
@@ -361,7 +361,7 @@ export const usePlaceholderValue = (placeholder?: ReactNode) => {
 };
 
 export const useEditableRootCommitWakeup = () => {
-  const editor = useEditor<ReactRuntimeEditor>();
+  const editor = useEditor();
   const root = toInternalRoot(editor.read((state) => state.view.root()));
   const shouldUpdate = useCallback(
     (change?: EditorCommit) => shouldUpdateEditableRootCommit(root, change),
@@ -369,8 +369,7 @@ export const useEditableRootCommitWakeup = () => {
   );
 
   useEditorSelector(
-    (editor: ReactRuntimeEditor) =>
-      editor.read((state) => state.lastCommit()?.version ?? 0),
+    (editor) => editor.read((state) => state.lastCommit()?.version ?? 0),
     {
       equalityFn: Object.is,
       profileId: 'editable-root-commit',

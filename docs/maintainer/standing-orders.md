@@ -20,7 +20,8 @@ repo-maintenance prompts, or a future local scheduled Codex activation.
 **Primary owner:** `$maintainer`.
 
 **Execution owners:** `$task`, `$resolve-slate-issue`, `$slate-auto`,
-`$security-triage`, `$autoreview`, `$resolve-pr-feedback`, `$docs-creator`,
+`$security-triage`, `$autoreview` (pass `--max-priority P2`; P3 is opt-in only),
+`$resolve-pr-feedback`, `$docs-creator`,
 `$plate-plan`, `$slate-plan`, `$issue-harvester`, and other narrower owners.
 
 ## Allowed Without Asking

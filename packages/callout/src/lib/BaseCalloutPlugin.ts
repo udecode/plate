@@ -1,42 +1,28 @@
 import { defineBasePlugin } from '@platejs/core';
-import {
-  ElementApi,
-  type NodeInsertNodesOptions,
-  property,
-  schema,
-} from '@platejs/plite';
-import { KEYS, type TCalloutElement } from '@platejs/utils';
+import { ElementApi, type ElementOf, property, schema } from '@platejs/plite';
+import { PLUGINS } from '@platejs/utils';
 
-export type InsertCalloutOptions = NodeInsertNodesOptions<TCalloutElement> & {
-  icon?: string;
-  variant?: TCalloutElement['variant'];
-};
-
-export const BaseCalloutPlugin = defineBasePlugin(KEYS.callout, {
-  codecs: ({ defineCodecs }) =>
+export const BaseCalloutPlugin = defineBasePlugin(PLUGINS.callout, {
+  codecs: ({ defineCodecs, schema: { type } }) =>
     defineCodecs({
       'text/markdown': {
-        from: 'callout',
+        from: type,
         kind: 'node',
-        decode: ({
-          decode,
-          decoration,
-          registry,
-          isInline,
-          node,
-          parseAttributes,
-          type,
-        }) => {
+        decode: ({ decode, decoration, isInline, node, parseAttributes }) => {
           const props = parseAttributes(node.attributes);
-          const children = decode(node.children, decoration);
-          const paragraph = children.length === 1 ? children[0] : undefined;
+          const paragraph =
+            node.children.length === 1 && node.children[0]?.type === 'paragraph'
+              ? node.children[0]
+              : undefined;
+          const content = decode(
+            paragraph ? paragraph.children : node.children,
+            decoration
+          );
 
           if (
-            children.some(
+            content.some(
               (child) => ElementApi.isElement(child) && !isInline(child)
-            ) &&
-            (!ElementApi.isElement(paragraph) ||
-              paragraph.type !== registry.getType(KEYS.p))
+            )
           ) {
             throw new Error(
               'Callout children must be inline Markdown content.'
@@ -44,13 +30,9 @@ export const BaseCalloutPlugin = defineBasePlugin(KEYS.callout, {
           }
 
           return {
-            children:
-              ElementApi.isElement(paragraph) &&
-              paragraph.type === registry.getType(KEYS.p)
-                ? paragraph.children
-                : children,
-            type,
             ...props,
+            children: content,
+            type,
           };
         },
         encode: ({ encodePhrasing, node, propsToAttributes }) => {
@@ -64,7 +46,7 @@ export const BaseCalloutPlugin = defineBasePlugin(KEYS.callout, {
                 type: 'paragraph',
               },
             ],
-            name: 'callout',
+            name: type,
             type: 'mdxJsxFlowElement',
           };
         },
@@ -74,7 +56,7 @@ export const BaseCalloutPlugin = defineBasePlugin(KEYS.callout, {
     element: schema.element.textBlock({
       properties: {
         backgroundColor: property.string(),
-        icon: property.string(),
+        icon: property.string({ default: '💡', omitDefault: false }),
         variant: property.string(),
       },
     }),
@@ -90,17 +72,6 @@ export const BaseCalloutPlugin = defineBasePlugin(KEYS.callout, {
       start: 'reset',
     },
   },
-  update: ({ tx, type }) => ({
-    insert: ({ icon, variant, ...options }: InsertCalloutOptions = {}) => {
-      tx.nodes.insert<TCalloutElement>(
-        {
-          children: [{ text: '' }],
-          icon: icon ?? '💡',
-          type,
-          ...(variant === undefined ? {} : { variant }),
-        },
-        options
-      );
-    },
-  }),
 });
+
+export type CalloutElement = ElementOf<typeof BaseCalloutPlugin>;

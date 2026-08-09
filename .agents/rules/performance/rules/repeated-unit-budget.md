@@ -15,7 +15,7 @@ Track:
 | React components per unit | How many instances in the common case? |
 | event handlers per unit | Are handlers delegated or attached per unit? |
 | effects per unit | Are effects banned from wrappers and repeated rows? |
-| subscriptions per unit | Does each unit subscribe narrowly by runtime id/range? |
+| subscriptions per unit | Does each unit subscribe narrowly by node key/range? |
 | selectors per unit | Are selectors O(1), stable, and dirtiness-aware? |
 | allocations per interaction | Does typing/select/copy allocate proportional to document size? |
 | style/layout cost | Any forced reflow, layout read, or heavy selector? |

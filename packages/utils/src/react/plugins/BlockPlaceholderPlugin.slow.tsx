@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { defineBasePlugin } from '@platejs/core';
+import { defineBasePlugin, ElementIdPlugin } from '@platejs/core';
 import { createPlateEditor, ParagraphPlugin } from '@platejs/core/react';
 import type { InternalPlateEditorWithInstalledPlugins } from '@platejs/core/react/internal';
 import { PlateTest } from '@platejs/core/react/test';
@@ -60,7 +60,7 @@ const renderPlaceholderEditor = <V extends Value, D>(
 
 const createEditor = (options?: {
   className?: string;
-  nodeId?: boolean;
+  elementIds?: boolean;
   placeholders?: Record<string, string>;
   query?: BlockPlaceholderDefinition['initialState']['query'];
   readOnly?: boolean;
@@ -70,6 +70,7 @@ const createEditor = (options?: {
   createPlateEditor({
     editor: createPliteEditor<Value>(),
     plugins: [
+      ...(options?.elementIds ? [ElementIdPlugin] : []),
       BlockPlaceholderFixtureSchemaPlugin,
       ParagraphWithComponentPlugin,
       BlockPlaceholderPlugin.configure({
@@ -84,7 +85,6 @@ const createEditor = (options?: {
         },
       }),
     ],
-    nodeId: options?.nodeId,
     selection: options?.selection ?? {
       kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
@@ -156,7 +156,7 @@ describe('BlockPlaceholderPlugin', () => {
 
   it('clears the target when the only empty block has id metadata', async () => {
     const editor = createEditor({
-      nodeId: true,
+      elementIds: true,
       value: [{ children: [{ text: '' }], id: 'block-1', type: 'paragraph' }],
     });
     const { container } = renderPlaceholderEditor(editor);

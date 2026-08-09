@@ -52,31 +52,18 @@ type ConstructorFactoryResult<TValue> = TValue extends (
   ? TResult
   : TValue;
 
-type BasePluginConstructorSchemaIdentity<
-  TSchema extends PluginSchemaDeclaration,
-  TType extends string,
-  TKey extends string,
-> = [TSchema] extends [never]
-  ? Readonly<Record<never, never>>
-  : TSchema extends Readonly<{ element: unknown }>
-    ? Readonly<{ type: TType }>
-    : Readonly<{ key: TKey }>;
-
 type BasePluginConstructorContextDefinition<
   N extends string,
   D extends BasePluginDependencies,
   S extends object,
   TSchema extends PluginSchemaDeclaration = never,
   TTargetPlugins extends readonly (PluginReference | string)[] = readonly [],
-  TType extends string = N,
-  TKey extends string = N,
 > = Readonly<{
   dependencies: BasePluginDependencyReferences<D>;
   initialState: S;
   name: N;
   targetPlugins: TTargetPlugins;
 }> &
-  BasePluginConstructorSchemaIdentity<TSchema, TType, TKey> &
   ([TSchema] extends [never]
     ? Readonly<Record<never, never>>
     : Readonly<{ schema: TSchema }>);
@@ -87,15 +74,11 @@ type BasePluginConstructorSchemaFactory<
   S extends object,
   TTargetPlugins extends readonly (PluginReference | string)[],
   TSchema extends PluginSchemaDeclaration,
-  TType extends string,
-  TKey extends string,
 > = (
   context: PluginSchemaContext<
     NoInfer<
       BasePluginConstructorContextDefinition<N, D, S, never, TTargetPlugins>
-    >,
-    TType,
-    TKey
+    >
   >
 ) => TSchema;
 
@@ -117,27 +100,17 @@ type BasePluginConstructorUpdateFactory<
   S extends object,
   TSchema extends PluginSchemaDeclaration,
   TTargetPlugins extends readonly (PluginReference | string)[],
-  TType extends string,
-  TKey extends string,
   TUpdate extends object,
 > = (
   context: BasePluginContext<
     NoInfer<
-      BasePluginConstructorContextDefinition<
-        N,
-        D,
-        S,
-        TSchema,
-        TTargetPlugins,
-        TType,
-        TKey
-      >
+      BasePluginConstructorContextDefinition<N, D, S, TSchema, TTargetPlugins>
     >
   > & {
     context: EditorUpdateContext;
     tx: PlatePluginTransaction<
       NoInfer<
-        BasePluginConstructorContextDefinition<N, D, S, never, TTargetPlugins>
+        BasePluginConstructorContextDefinition<N, D, S, TSchema, TTargetPlugins>
       >
     >;
   }
@@ -206,20 +179,10 @@ const assertBaseDefinition: (value: unknown) => asserts value is PluginRecord =
     if (typeof value.name !== 'string' || value.name.length === 0) {
       throw new Error('Plate plugins require a non-empty `name`.');
     }
-    for (const field of ['key', 'type'] as const) {
-      if (
-        Object.hasOwn(value, field) &&
-        (typeof value[field] !== 'string' || value[field].length === 0)
-      ) {
-        throw new Error(
-          `Plate plugin \`${field}\` must be a non-empty string.`
-        );
-      }
-      if (Object.hasOwn(value, field) && !Object.hasOwn(value, 'schema')) {
-        throw new Error(
-          `Plate plugin \`${field}\` requires a creation-owned schema.`
-        );
-      }
+    if (Object.hasOwn(value, 'key') || Object.hasOwn(value, 'type')) {
+      throw new Error(
+        'Plate plugins do not support top-level `key` or `type`; declare persisted identity inside `schema`.'
+      );
     }
 
     assertNoPublicRenderNode(value);
@@ -553,20 +516,10 @@ type BasePluginConstructorRestInput<
   S extends object,
   TSchema extends PluginSchemaDeclaration,
   TTargetPlugins extends readonly (PluginReference | string)[],
-  TType extends string,
-  TKey extends string,
 > = Omit<
   BasePluginDefinitionInput<
     NoInfer<
-      BasePluginConstructorContextDefinition<
-        N,
-        D,
-        S,
-        TSchema,
-        TTargetPlugins,
-        TType,
-        TKey
-      >
+      BasePluginConstructorContextDefinition<N, D, S, TSchema, TTargetPlugins>
     >
   >,
   | 'api'
@@ -591,49 +544,31 @@ type BasePluginConstructorSchemaInput<
   S extends object,
   TTargetPlugins extends readonly (PluginReference | string)[],
   TSchema extends PluginSchemaDeclaration,
-  TType extends string,
-  TKey extends string,
 > =
-  | BasePluginConstructorSchemaFactory<
-      N,
-      D,
-      S,
-      TTargetPlugins,
-      TSchema,
-      TType,
-      TKey
-    >
+  | BasePluginConstructorSchemaFactory<N, D, S, TTargetPlugins, TSchema>
   | (TSchema & Readonly<Record<string, unknown>>);
 
-type BasePluginConstructorSchemaIdentityInput<
-  TSchema extends PluginSchemaDeclaration,
-  TType extends string,
-  TKey extends string,
-> =
-  TSchema extends Readonly<{ element: unknown }>
-    ? Readonly<{ key?: TKey; type?: TType }>
-    : Readonly<{ key?: TKey; type?: never }>;
-
 type BasePluginConstructorKey = Exclude<
-  keyof BasePluginDefinitionInput | 'key' | 'type',
+  keyof BasePluginDefinitionInput,
   'name'
 >;
-
-type BasePluginConstructorDeclaredIdentity<
-  TKeys extends PropertyKey,
-  TType extends string,
-  TKey extends string,
-> = ('type' extends TKeys
-  ? Readonly<{ type: TType }>
-  : Readonly<Record<never, never>>) &
-  ('key' extends TKeys
-    ? Readonly<{ key: TKey }>
-    : Readonly<Record<never, never>>);
 
 type BasePluginConstructorDependencies<
   TKeys extends BasePluginConstructorKey,
   D extends BasePluginDependencies,
 > = 'dependencies' extends TKeys ? D : readonly [];
+
+type BasePluginConstructorCapabilityDefinition<
+  N extends string,
+  TKeys extends BasePluginConstructorKey,
+  D extends BasePluginDependencies,
+  S extends object,
+  TSchema extends PluginSchemaDeclaration,
+  TTargetPlugins extends readonly (PluginReference | string)[],
+> = BasePluginConstructorContextDefinition<N, D, S, never, TTargetPlugins> &
+  ('schema' extends TKeys
+    ? Readonly<{ schema: TSchema }>
+    : Readonly<Record<never, never>>);
 
 export function defineBasePlugin<
   const N extends string,
@@ -650,8 +585,6 @@ export function defineBasePlugin<
   S extends object = 'initialState' extends TKeys
     ? Extract<ConstructorFactoryResult<TInitialStateInput>, object>
     : {},
-  const TType extends string = N,
-  const TPropertyKey extends string = N,
   const TConflicts extends BasePluginDependencies = readonly [],
   const TTargetPlugins extends readonly (
     | PluginReference
@@ -671,9 +604,7 @@ export function defineBasePlugin<
             BasePluginConstructorDependencies<TKeys, D>,
             S,
             TTargetPlugins,
-            TSchema,
-            TType,
-            TPropertyKey
+            TSchema
           >;
         }>
       : Readonly<{ schema?: never }>) &
@@ -682,17 +613,8 @@ export function defineBasePlugin<
       BasePluginConstructorDependencies<TKeys, D>,
       S,
       NoInfer<'schema' extends TKeys ? TSchema : never>,
-      TTargetPlugins,
-      TType,
-      TPropertyKey
+      TTargetPlugins
     > &
-    ('schema' extends TKeys
-      ? BasePluginConstructorSchemaIdentityInput<
-          NoInfer<TSchema>,
-          TType,
-          TPropertyKey
-        >
-      : Readonly<{ key?: never; type?: never }>) &
     ('initialState' extends TKeys
       ? Readonly<{ initialState: TInitialStateInput }>
       : Readonly<{ initialState?: never }>) &
@@ -700,15 +622,15 @@ export function defineBasePlugin<
       api?: (
         context: BasePluginContext<
           NoInfer<
-            BasePluginConstructorContextDefinition<
+            BasePluginConstructorCapabilityDefinition<
               N,
+              TKeys,
               BasePluginConstructorDependencies<TKeys, D>,
               S,
-              never,
+              'schema' extends TKeys ? TSchema : never,
               TTargetPlugins
             >
-          > &
-            BasePluginConstructorDeclaredIdentity<TKeys, TType, TPropertyKey>
+          >
         >
       ) => TApi;
       conflicts?: TConflicts;
@@ -717,27 +639,27 @@ export function defineBasePlugin<
       read?: (
         context: BasePluginContext<
           NoInfer<
-            BasePluginConstructorContextDefinition<
+            BasePluginConstructorCapabilityDefinition<
               N,
+              TKeys,
               BasePluginConstructorDependencies<TKeys, D>,
               S,
-              never,
+              'schema' extends TKeys ? TSchema : never,
               TTargetPlugins
             >
-          > &
-            BasePluginConstructorDeclaredIdentity<TKeys, TType, TPropertyKey>
+          >
         > & {
           state: PlatePluginReadState<
             NoInfer<
-              BasePluginConstructorContextDefinition<
+              BasePluginConstructorCapabilityDefinition<
                 N,
+                TKeys,
                 BasePluginConstructorDependencies<TKeys, D>,
                 S,
-                never,
+                'schema' extends TKeys ? TSchema : never,
                 TTargetPlugins
               >
-            > &
-              BasePluginConstructorDeclaredIdentity<TKeys, TType, TPropertyKey>
+            >
           >;
         }
       ) => TRead;
@@ -750,8 +672,6 @@ export function defineBasePlugin<
         S,
         NoInfer<'schema' extends TKeys ? TSchema : never>,
         TTargetPlugins,
-        TType,
-        TPropertyKey,
         TUpdate
       >;
     }>
@@ -763,12 +683,6 @@ export function defineBasePlugin<
     >]: true;
   }> &
     Readonly<{ name: N }> &
-    ('type' extends TKeys
-      ? Readonly<{ type: TType }>
-      : Readonly<Record<never, never>>) &
-    ('key' extends TKeys
-      ? Readonly<{ key: TPropertyKey }>
-      : Readonly<Record<never, never>>) &
     ('dependencies' extends TKeys
       ? Readonly<{
           dependencies: BasePluginDependencyReferences<

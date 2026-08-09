@@ -160,7 +160,7 @@ export const aiChatPlugin = AIChatPlugin.extend({
             tx.nodes.insert(
               {
                 children: [{ text: '' }],
-                type: editor.plugin(PLUGINS.aiChat).schema.element!.type,
+                type: editor.plugin(PLUGINS.aiChat).schema.type,
               },
               {
                 at: PathApi.next(selection.focus.path.slice(0, 1)),
@@ -176,7 +176,7 @@ export const aiChatPlugin = AIChatPlugin.extend({
           update.insertChunk(chunk, {
             autoScroll: true,
             textProps: {
-              [editor.plugin(PLUGINS.ai).schema.properties.ai.key]: true,
+              [editor.plugin(PLUGINS.ai).schema.key]: true,
             },
           });
         }
@@ -448,7 +448,7 @@ aiChat.update.insertChunk(chunk, { autoScroll: true });
 | `aiChat.api` | `deserializeChunk`, `deserializeInlineChunk`, `hide`, `reload`, `reset`, `show`, `stop`, `submit` |
 | `aiChat.read` | `commentRange`, `insertStart`, `markdown`, `node`, `prompt`, `resolvePlaceholders`, `serializeChunk` |
 | `aiChat.store.get` | `lastAssistantMessage` |
-| `aiChat.update` | `accept`, `acceptSuggestions`, `applySuggestions`, `applyTableCellSuggestion`, `insertBelow`, `insertChunk`, `rejectSuggestions`, `removeAnchor`, `replaceSelection` |
+| `aiChat.update` | `accept`, `acceptSuggestions`, `applySuggestions`, `applyTableCellSuggestion`, `insert`, `insertBelow`, `insertChunk`, `rejectSuggestions`, `remove`, `replaceSelection`, `set` |
 
 ### `ai.api.findTextRangeInBlock`
 
@@ -486,7 +486,7 @@ const range = editor.plugin(AIPlugin).api.findTextRangeInBlock({
     <APIItem name="triggerPreviousCharPattern" type="RegExp" optional>触发器前字符必须匹配的模式。默认为 `/^\s?$/`。</APIItem>
     <APIItem name="triggerQuery" type="(editor: BaseEditor) => boolean" optional>返回 `false` 以在特定上下文中取消打开。</APIItem>
     <APIItem name="chat" type="AIChatAdapter" optional>存储 `createAIChatAdapter(useChat(...))` 返回的适配器，以便 API 调用可以访问聊天状态和控制器。</APIItem>
-    <APIItem name="chatNodes" type="IdElement[]" optional>用于差异编辑建议的节点快照（内部管理）。</APIItem>
+    <APIItem name="chatNodes" type="Array<IdElement & { id: string }>" optional>用于差异编辑建议的节点快照（内部管理）。</APIItem>
     <APIItem name="chatSelection" type="Range | null" optional>提交提示前捕获的选择（内部管理）。</APIItem>
     <APIItem name="mode" type="'chat' | 'insert'">控制响应是直接流式传输到文档还是打开审查面板。默认为 `'insert'`。</APIItem>
     <APIItem name="open" type="boolean" optional>AI 菜单是否可见。默认为 `false`。</APIItem>
@@ -584,15 +584,16 @@ const range = editor.plugin(AIPlugin).api.findTextRangeInBlock({
 </APIParameters>
 </API>
 
-### `editor.update.aiChat.removeAnchor(options?)`
+### `editor.plugin(AIChatPlugin).update.remove({ at: [] })`
 
-移除用于定位 AI 菜单的临时锚点节点。
+移除所有用于定位 AI 菜单的临时锚点，无需额外的功能包装方法。
 
-<API name="removeAnchor">
-<APIParameters>
-  <APIItem name="options" type="object" optional>过滤要移除的节点。</APIItem>
-</APIParameters>
-</API>
+```tsx
+editor
+  .plugin(AIChatPlugin)
+  .update({ history: 'skip' })
+  .remove({ at: [] });
+```
 
 ### `editor.update.ai.insertNodes(nodes, options?)`
 
@@ -664,44 +665,64 @@ const range = editor.plugin(AIPlugin).api.findTextRangeInBlock({
 #### 简单自定义命令
 
 ```tsx
-summarizeInBullets: {
-  icon: <ListIcon />,
-  label: 'Summarize in bullets',
-  value: 'summarizeInBullets',
-  onSelect: ({ editor }) => {
-    void editor.plugin(AIChatPlugin).api.submit('', {
-      prompt: 'Summarize the current selection using bullet points',
-      toolName: 'generate',
-    });
+import { AIChatPlugin } from '@platejs/ai/react';
+import { ListIcon } from 'lucide-react';
+
+export const aiChatItems = {
+  summarizeInBullets: {
+    icon: <ListIcon />,
+    label: 'Summarize in bullets',
+    value: 'summarizeInBullets',
+    onSelect: ({ editor }) => {
+      void editor.plugin(AIChatPlugin).api.submit('', {
+        prompt: 'Summarize the current selection using bullet points',
+        toolName: 'generate',
+      });
+    },
   },
-},
+};
 ```
 
 #### 带复杂逻辑的命令
 
 ```tsx
-generateTOC: {
-  icon: <BookIcon />,
-  label: 'Generate table of contents',
-  value: 'generateTOC',
-  onSelect: ({ editor }) => {
-    const headings = editor.api.nodes({
-      match: (n) => ['h1', 'h2', 'h3'].includes(n.type as string),
-    });
+import { AIChatPlugin } from '@platejs/ai/react';
+import { PLUGINS } from 'platejs';
+import { BookIcon } from 'lucide-react';
 
-    const prompt =
-      headings.length === 0
-        ? 'Create a realistic table of contents for this document'
-        : 'Generate a table of contents that reflects the existing headings';
+export const aiChatItems = {
+  generateTOC: {
+    icon: <BookIcon />,
+    label: 'Generate table of contents',
+    value: 'generateTOC',
+    onSelect: ({ editor }) => {
+      const headingTypes = [PLUGINS.h1, PLUGINS.h2, PLUGINS.h3]
+        .map((name) => editor.plugin(name))
+        .flatMap((plugin) =>
+          plugin.installed ? [plugin.schema.type] : []
+        );
+      const headings = editor.read.nodes.toArray({
+        at: [],
+        match: { type: headingTypes },
+      });
 
-    void editor.plugin(AIChatPlugin).api.submit('', {
-      mode: 'insert',
-      prompt,
-      toolName: 'generate',
-    });
+      const prompt =
+        headings.length === 0
+          ? 'Create a realistic table of contents for this document'
+          : 'Generate a table of contents that reflects the existing headings';
+
+      void editor.plugin(AIChatPlugin).api.submit('', {
+        mode: 'insert',
+        prompt,
+        toolName: 'generate',
+      });
+    },
   },
-},
+};
 ```
+
+该命令读取已安装的 H1-H3 capability。若编辑器未安装这三个 capability，
+它会使用 fallback prompt，而不会假定持久化类型字符串。
 
 菜单自动在命令和建议状态之间切换：
 

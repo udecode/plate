@@ -13,11 +13,13 @@ import {
 import {
   createEditor,
   createEditorView,
+  type Descendant,
   DocumentChange,
   type Editor,
   type Element,
   NodeApi,
   SelectionApi,
+  type SchemaPropertyHandle,
   type SnapshotInput,
   type Value,
 } from '@platejs/plite';
@@ -63,6 +65,51 @@ const getVisibleState = (editor: ReturnType<typeof createEditor>) => {
 };
 
 describe('plite public accessor + transaction boundary', () => {
+  it('sets one exact property by object and unsets it by schema handle', () => {
+    const editor = createEditor<
+      readonly {
+        children: readonly { text: string }[];
+        id?: string;
+        type: 'paragraph';
+      }[]
+    >({
+      initialValue: [{ type: 'paragraph', children: [{ text: 'one' }] }],
+    });
+    const id = Object.freeze({
+      id: 'element:id@type:paragraph',
+      key: 'id',
+      kind: 'schema-property' as const,
+      placement: 'element' as const,
+    }) satisfies SchemaPropertyHandle<'id', string, 'element'>;
+
+    editor.update.nodes.set({ id: 'p1' }, { at: [0] });
+    assert.equal(editor.read.children()[0]?.id, 'p1');
+
+    editor.update.nodes.set({ [id.key]: 'p2' }, { at: [0] });
+    assert.equal(editor.read.children()[0]?.id, 'p2');
+
+    editor.update.nodes.unset(id, { at: [0] });
+    assert.equal(editor.read.children()[0]?.id, undefined);
+  });
+
+  it('rejects prefix property handles for exact node unsets', () => {
+    const editor = createEditor({ initialValue: [paragraph('one')] });
+    const prefix = Object.freeze({
+      id: 'text:suggestion_*@all',
+      key: { kind: 'prefix' as const, prefix: 'suggestion_' },
+      kind: 'schema-property' as const,
+      placement: 'text' as const,
+    });
+
+    assert.throws(
+      () =>
+        (editor.update.nodes.unset as (...args: unknown[]) => void)(prefix, {
+          at: [0, 0],
+        }),
+      /Prefix schema-property handles/
+    );
+  });
+
   it('exposes direct read methods for schema, point, and runtime state', () => {
     const editor = createEditor({
       extensions: [
@@ -82,15 +129,15 @@ describe('plite public accessor + transaction boundary', () => {
     const mention = { type: 'mention', children: [{ text: '' }] };
     const caption = value[1];
     const start = editor.read.points.start([]);
-    const runtimeId = editor.read.runtime.idAt([0]);
+    const nodeKey = editor.key([0]);
 
     assert.ok(start);
-    assert.ok(runtimeId);
+    assert.ok(nodeKey);
     assert.equal(editor.read.schema.isInline(mention), true);
     assert.equal(editor.read.schema.isVoid(caption), true);
     assert.equal(editor.read.schema.isSelectable(caption), false);
     assert.equal(editor.read.points.isEnd(start, []), false);
-    assert.deepEqual(editor.read.runtime.pathOf(runtimeId), [0]);
+    assert.deepEqual(editor.read.nodes.path(nodeKey), [0]);
   });
 
   it('read and replace are the public snapshot state path', () => {
@@ -320,8 +367,8 @@ describe('plite public accessor + transaction boundary', () => {
   it('classifies mixed text and property changes after canonical serialization', () => {
     const editor = createEditor({ initialValue: [paragraph('one')] });
     const before = { children: editor.read.children() };
-    const elementRuntimeId = editor.read.runtime.idAt([0]);
-    const textRuntimeId = editor.read.runtime.idAt([0, 0]);
+    const elementNodeKey = editor.key([0]);
+    const textNodeKey = editor.key([0, 0]);
     const after = {
       children: [paragraph('one!', { align: 'center' })],
     };
@@ -339,8 +386,8 @@ describe('plite public accessor + transaction boundary', () => {
     assert.equal(commit.changed.has('text'), true);
     assert.equal(commit.changed.has('properties'), true);
     assert.equal(commit.changed.has('structure'), false);
-    assert.equal(editor.read.runtime.idAt([0]), elementRuntimeId);
-    assert.equal(editor.read.runtime.idAt([0, 0]), textRuntimeId);
+    assert.equal(editor.key([0]), elementNodeKey);
+    assert.equal(editor.key([0, 0]), textNodeKey);
   });
 
   it('rejects a noncanonical direct document change atomically', () => {
@@ -422,20 +469,24 @@ describe('plite public accessor + transaction boundary', () => {
     });
     const main = createEditorView(runtime);
     const header = createEditorView(runtime, { root: 'header' });
-    const mainRuntimeId = main.read.runtime.idAt([0]);
-    const headerRuntimeId = header.read.runtime.idAt([0]);
+    const mainNodeKey = main.key([0]);
+    const headerNode = header.read.nodes.get<Descendant>([0])![0];
+    const canonicalHeaderNodeKey = runtime.key(headerNode);
+    const headerNodeKey = header.key([0]);
 
-    assert.ok(mainRuntimeId);
-    assert.ok(headerRuntimeId);
-    assert.notEqual(mainRuntimeId, headerRuntimeId);
-    assert.deepEqual(main.read.runtime.pathOf(mainRuntimeId), [0]);
-    assert.deepEqual(header.read.runtime.pathOf(headerRuntimeId), [0]);
-    assert.equal(main.read.runtime.pathOf(headerRuntimeId), null);
-    assert.equal(header.read.runtime.pathOf(mainRuntimeId), null);
+    assert.ok(mainNodeKey);
+    assert.ok(headerNodeKey);
+    assert.equal(canonicalHeaderNodeKey, headerNodeKey);
+    assert.notEqual(mainNodeKey, headerNodeKey);
+    assert.deepEqual(main.read.nodes.path(mainNodeKey), [0]);
+    assert.deepEqual(header.read.nodes.path(headerNodeKey), [0]);
+    assert.equal(main.read.nodes.path(headerNodeKey), undefined);
+    assert.equal(header.read.nodes.path(mainNodeKey), undefined);
+    assert.equal(runtime.key(headerNode), headerNodeKey);
 
-    let canonicalRuntimeIdDuringHeaderCommit = null;
+    let canonicalNodeKeyDuringHeaderCommit = null;
     const unsubscribe = runtime.subscribeCommit(() => {
-      canonicalRuntimeIdDuringHeaderCommit = runtime.read.runtime.idAt([0]);
+      canonicalNodeKeyDuringHeaderCommit = runtime.key([0]);
     });
 
     header.update((tx) => {
@@ -443,7 +494,7 @@ describe('plite public accessor + transaction boundary', () => {
     });
     unsubscribe();
 
-    assert.equal(canonicalRuntimeIdDuringHeaderCommit, mainRuntimeId);
+    assert.equal(canonicalNodeKeyDuringHeaderCommit, mainNodeKey);
   });
 
   it('scopes explicit selection writes to the editor view root', () => {
@@ -467,6 +518,9 @@ describe('plite public accessor + transaction boundary', () => {
     assert.equal(headerCommit?.changed.has('selection', 'header'), true);
     assert.equal(headerCommit?.changed.has('selection'), false);
     assert.equal(getEditorSelectionRoot(runtime), 'header');
+    assert.equal(runtime.read.selection.root(), 'header');
+    assert.equal(main.read.selection.root(), undefined);
+    assert.equal(header.read.selection.root(), 'header');
     assert.equal(main.read.selection(), null);
     assert.deepEqual(header.read.selection(), {
       anchor: { path: [0, 0], root: 'header', offset: 2 },
@@ -485,6 +539,9 @@ describe('plite public accessor + transaction boundary', () => {
     assert.equal(mainCommit?.changed.has('selection', 'header'), true);
     assert.equal(mainCommit?.changed.has('selection'), true);
     assert.equal(getEditorSelectionRoot(runtime), 'main');
+    assert.equal(runtime.read.selection.root(), undefined);
+    assert.equal(main.read.selection.root(), undefined);
+    assert.equal(header.read.selection.root(), undefined);
     assert.deepEqual(main.read.selection(), {
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },

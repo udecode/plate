@@ -14,7 +14,7 @@ registries finish a descriptor with one terminal `.configure()` call, including
 | `.extend()` | Adapt an imported/prebuilt descriptor, use a constructor-inaccessible shared factory, or consume an earlier-stage type. | Widens the plugin type. |
 | `.configure()` | Override existing fields for one consumer. | Terminal and non-widening. |
 
-`createBasePlugin()` and `createPlatePlugin()` own every independent author
+`defineBasePlugin()` and `definePlatePlugin()` own every independent author
 contribution:
 
 | Field | Owns |
@@ -38,21 +38,19 @@ Put independent fields and their context callbacks in the constructor. Use
 earlier stage.
 
 ```tsx title="counter-plugin.tsx" showLineNumbers
-import { createPlatePlugin, usePluginStore } from 'platejs/react';
+import { definePlatePlugin, usePluginStore } from 'platejs/react';
 
 export type CounterPluginState = {
   value: number;
 };
 
-export const CounterPlugin = createPlatePlugin({
+export const CounterPlugin = definePlatePlugin('counter', {
   api: ({ store }) => ({
     isEmpty: () => store.get('value') === 0,
   }),
   initialState: {
     value: 0,
-  } satisfies CounterPluginState,
-  name: 'counter',
-  selectors: {
+  } satisfies CounterPluginState,  selectors: {
     doubled: (state, factor: number) => state.value * factor,
     isEven: (state) => state.value % 2 === 0,
   },
@@ -110,16 +108,14 @@ corrections, read middleware, state/effect/facet/selection descriptors,
 contributions, lifecycle, activation, and validation.
 
 ```ts title="single-line-plugin.ts" showLineNumbers
-import { createBasePlugin, editorCommands } from 'platejs';
+import { defineBasePlugin, editorCommands } from 'platejs';
 
-export const SingleLinePlugin = createBasePlugin({
+export const SingleLinePlugin = defineBasePlugin('singleLine', {
   commands: ({ handle }) => [
     handle(editorCommands.insertBreak, ({ state }) =>
       state.transaction(() => {})
     ),
-  ],
-  name: 'singleLine',
-});
+  ],});
 ```
 
 Native callbacks receive only their Plite capability context. When one needs
@@ -128,12 +124,10 @@ an earlier plugin-owned store, read, API, or update group, add one staged
 new helper parameter:
 
 ```ts title="trigger-plugin.ts" showLineNumbers
-import { createBasePlugin, editorCommands } from 'platejs';
+import { defineBasePlugin, editorCommands } from 'platejs';
 
-export const TriggerPlugin = createBasePlugin({
-  initialState: { enabled: true },
-  name: 'trigger',
-}).extend(({ store }) => ({
+export const TriggerPlugin = defineBasePlugin('trigger', {
+  initialState: { enabled: true },}).extend(({ store }) => ({
   commands: ({ handle }) => [
     handle(editorCommands.insertBreak, ({ state }) => {
       if (!store.get('enabled')) return false;
@@ -145,7 +139,7 @@ export const TriggerPlugin = createBasePlugin({
 ```
 
 For an independently reusable Plite descriptor, import
-`defineEditorExtension` from `@platejs/plite` and list the descriptor in
+`defineExtension` from `@platejs/plite` and list the descriptor in
 `dependencies`.
 
 Plugin-specific and editor-wide host services share the root `api` channel;
@@ -159,9 +153,9 @@ inline inference anchor for codec callbacks.
 
 ```ts title="records-plugin.ts" showLineNumbers
 import { ContentSlice } from '@platejs/plite';
-import { createBasePlugin } from 'platejs';
+import { defineBasePlugin } from 'platejs';
 
-export const RecordsPlugin = createBasePlugin({
+export const RecordsPlugin = defineBasePlugin('records', {
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       'application/json': {
@@ -169,9 +163,7 @@ export const RecordsPlugin = createBasePlugin({
         decode: ({ data }) => ContentSlice.fromJSON(JSON.parse(data)),
         encode: ({ slice }) => JSON.stringify(slice),
       },
-    }),
-  name: 'records',
-});
+    }),});
 ```
 
 Use document scope only when the format represents the complete document.
@@ -239,13 +231,10 @@ const initialState: CellPluginState = {
   padding: 12,
 };
 
-const CellPlugin = createPlatePlugin({
-  initialState,
-  name: 'cell',
-});
+const CellPlugin = definePlatePlugin('cell', {
+  initialState,});
 
-const GridPlugin = createPlatePlugin({
-  name: 'grid',
+const GridPlugin = definePlatePlugin('grid', {
   dependencies: [CellPlugin],
 });
 
@@ -268,14 +257,13 @@ conversion merely to set a component.
 
 ```tsx title="script-plugin.tsx" showLineNumbers
 import { BaseScriptPlugin } from '@platejs/basic-nodes';
-import { KEYS } from 'platejs';
 import { PlateLeaf, toPlatePlugin } from 'platejs/react';
 
 export const ScriptPlugin = toPlatePlugin(BaseScriptPlugin, {
   component: (props) => (
     <PlateLeaf
       {...props}
-      as={props.leaf[KEYS.script] === 'sub' ? 'sub' : 'sup'}
+      as={props.leaf.script === 'sub' ? 'sub' : 'sup'}
     >
       {props.children}
     </PlateLeaf>

@@ -1,12 +1,6 @@
 import React from 'react';
 
-import type {
-  Element,
-  Path,
-  SchemaElementFor,
-  SchemaElementTypes,
-  Text,
-} from '@platejs/plite';
+import type { Element, ElementOf, Path, Text } from '@platejs/plite';
 import type { EditorSchemaSource } from '@platejs/plite/internal';
 import type { UnknownObject } from '@udecode/utils';
 
@@ -15,13 +9,11 @@ import { clsx } from 'clsx';
 
 import type {
   AnyBasePluginDefinition,
-  PlateSchemaSource,
   PluginReference,
   RenderElementProps,
   RenderLeafProps,
   RenderTextProps,
 } from '../../lib';
-import type { InferPluginDocumentType } from '../../lib/plugin/pluginSchemaModel.internal';
 import type { InternalPluginDefinitionOf } from '../../lib/plugin/pluginDefinitionLookup.internal';
 import type { AnyPlatePluginContext, PlatePluginContext } from '../plugin';
 
@@ -77,15 +69,7 @@ type PlateElementPropsDescriptor = EditorSchemaSource & PluginReference;
 type PlateElementPropsNode<
   TElementOrPlugin extends Element | PlateElementPropsDescriptor,
 > = TElementOrPlugin extends PlateElementPropsDescriptor
-  ? SchemaElementFor<
-      PlateSchemaSource<InternalPluginDefinitionOf<TElementOrPlugin>>,
-      Extract<
-        SchemaElementTypes<
-          PlateSchemaSource<InternalPluginDefinitionOf<TElementOrPlugin>>
-        >,
-        InferPluginDocumentType<InternalPluginDefinitionOf<TElementOrPlugin>>
-      >
-    >
+  ? Extract<ElementOf<TElementOrPlugin>, Element>
   : Extract<TElementOrPlugin, Element>;
 
 type PlateElementPropsConfig<

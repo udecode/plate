@@ -233,7 +233,7 @@ const editor = createPlateEditor({
 </APIItem>
 <APIItem name="children" type="Descendant[]" optional>
 新单元格节点的子元素
-- **默认值:** `[{ children: [{ text: '' }], type: editor.plugin(PLUGINS.paragraph).schema.element!.type }]`
+- **默认值:** `[{ children: [{ text: '' }], type: editor.plugin(PLUGINS.paragraph).schema.type }]`
 </APIItem>
 </APIOptions>
 
@@ -466,21 +466,19 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### editor.read.table.getColumnIndex
+### editor.read.table.getCellIndices
 
-获取单元格在表格中的列索引
+获取单元格的行列索引
 
-<API name="getColumnIndex">
+<API name="getCellIndices">
 <APIParameters>
-  <APIItem name="cellNode" type="Element">
-    要获取列索引的单元格节点
+  <APIItem name="cell" type="Element">
+    表格单元格
   </APIItem>
 </APIParameters>
 
 <APIReturns>
-<APIItem type="number">
-单元格的列索引
-</APIItem>
+  <APIItem type="{ col: number; row: number }">单元格坐标</APIItem>
 </APIReturns>
 </API>
 
@@ -492,7 +490,7 @@ const editor = createPlateEditor({
 <APIOptions>
 <APIItem name="at" type="Location | null" optional>
 表格单元格所在位置
-- **默认值:** `editor.selection`
+- **默认值:** `editor.read.selection()`
 </APIItem>
 </APIOptions>
 
@@ -546,39 +544,25 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### editor.read.table.getRowIndex
+### editor.read.table.getAdjacentCell
 
-获取单元格在表格中的行索引
+获取当前单元格附近的单元格
 
-<API name="getRowIndex">
-<APIParameters>
-  <APIItem name="cellNode" type="Element">
-    要获取行索引的单元格节点
-  </APIItem>
-</APIParameters>
-
-<APIReturns>
-<APIItem type="number">
-单元格的行索引
-</APIItem>
-</APIReturns>
-</API>
-
-### editor.read.table.getTopCell
-
-获取表格中当前单元格上方的单元格
-
-<API name="getTopCell">
-<APIParameters>
+<API name="getAdjacentCell">
+<APIOptions>
   <APIItem name="at" type="Path" optional>
-    当前单元格路径。若未提供，函数将在编辑器中搜索当前单元格
+    当前单元格路径。默认使用当前选区
   </APIItem>
-</APIParameters>
+  <APIItem name="deltaCol" type="number" optional>
+    列偏移量
+  </APIItem>
+  <APIItem name="deltaRow" type="number" optional>
+    行偏移量
+  </APIItem>
+</APIOptions>
 
 <APIReturns>
-<APIItem type="ElementEntry | undefined">
-单元格节点 entry
-</APIItem>
+  <APIItem type="ElementEntry | undefined">相邻单元格 entry</APIItem>
 </APIReturns>
 </API>
 
@@ -778,17 +762,17 @@ const editor = createPlateEditor({
 </APIParameters>
 </API>
 
-### `editor.plugin(TablePlugin).update.setMarginLeft`
+### `editor.plugin(TablePlugin).update.set`
 
-设置表格的左边距。
+通过描述符绑定的元素更新设置 `marginLeft` 等表格属性。
 
-<API name="setMarginLeft">
+<API name="set">
 <APIParameters>
-<APIItem name="value" type="{ marginLeft: number }">
-要应用的左边距。
+<APIItem name="properties" type="Partial&lt;TableElement&gt;">
+要应用的表格属性，例如 `{ marginLeft: 24 }`。
 </APIItem>
-<APIItem name="options" type="TableFindOptions" optional>
-定位表格的选项。
+<APIItem name="options" type="Omit&lt;NodeSetNodesOptions&lt;Element&gt;, 'match'&gt;" optional>
+通用节点选项。表格类型匹配由 `TablePlugin` 提供。
 </APIItem>
 </APIParameters>
 </API>

@@ -4,10 +4,18 @@ import { BaseIndentPlugin } from '@platejs/indent';
 import { BaseTogglePlugin } from './BaseTogglePlugin';
 
 describe('BaseTogglePlugin', () => {
-  it('tracks open ids and respects explicit force overrides', () => {
+  it('tracks open keys and respects explicit force overrides', () => {
     const editor = createBaseEditor({
-      plugins: [BaseTogglePlugin],
+      plugins: [BaseParagraphPlugin, BaseTogglePlugin],
+      initialValue: [
+        { children: [{ text: 'a' }], type: 'paragraph' },
+        { children: [{ text: 'b' }], type: 'paragraph' },
+        { children: [{ text: 'c' }], type: 'paragraph' },
+      ],
     });
+    const a = editor.key([0])!;
+    const b = editor.key([1])!;
+    const c = editor.key([2])!;
 
     expect(editor.read.schema.create(BaseTogglePlugin)).toEqual({
       children: [{ text: '' }],
@@ -16,78 +24,38 @@ describe('BaseTogglePlugin', () => {
     expect(editor.read.schema.element(BaseTogglePlugin)?.groups).toContain(
       'block'
     );
-    expect(editor.plugin(BaseTogglePlugin).store.get().openIds).toEqual(
+    expect(editor.plugin(BaseTogglePlugin).store.get().openKeys).toEqual(
       new Set()
     );
 
-    editor.plugin(BaseTogglePlugin).api.toggleIds(['a', 'b']);
+    editor.plugin(BaseTogglePlugin).api.toggleKeys([a, b]);
 
-    expect(
-      [
-        ...(editor.plugin(BaseTogglePlugin).store.get().openIds ?? new Set()),
-      ].sort()
-    ).toEqual(['a', 'b']);
+    expect(editor.plugin(BaseTogglePlugin).store.get().openKeys).toEqual(
+      new Set([a, b])
+    );
 
-    editor.plugin(BaseTogglePlugin).api.toggleIds(['b'], false);
+    editor.plugin(BaseTogglePlugin).api.toggleKeys([b], false);
 
     expect([
-      ...(editor.plugin(BaseTogglePlugin).store.get().openIds ?? new Set()),
-    ]).toEqual(['a']);
+      ...(editor.plugin(BaseTogglePlugin).store.get().openKeys ?? new Set()),
+    ]).toEqual([a]);
 
-    editor.plugin(BaseTogglePlugin).api.toggleIds(['a', 'c'], true);
+    editor.plugin(BaseTogglePlugin).api.toggleKeys([a, c], true);
 
-    expect(
-      [
-        ...(editor.plugin(BaseTogglePlugin).store.get().openIds ?? new Set()),
-      ].sort()
-    ).toEqual(['a', 'c']);
-  });
-
-  it('reports whether the selection is inside a toggle', () => {
-    const editor = createBaseEditor({
-      plugins: [BaseTogglePlugin],
-      selection: {
-        kind: 'text',
-        anchor: { offset: 1, path: [0, 0] },
-        focus: { offset: 1, path: [0, 0] },
-      },
-      initialValue: [
-        { children: [{ text: 'one' }], type: 'toggle' },
-        { children: [{ text: 'two' }], type: 'paragraph' },
-      ],
-    });
-
-    expect(editor.plugin(BaseTogglePlugin).read.isActive()).toBe(true);
-
-    editor.update.selection.set({
-      kind: 'text',
-      anchor: { offset: 1, path: [1, 0] },
-      focus: { offset: 1, path: [1, 0] },
-    });
-
-    expect(editor.plugin(BaseTogglePlugin).read.isActive()).toBe(false);
-  });
-
-  it('reports no selected toggle without a selection', () => {
-    const editor = createBaseEditor({
-      plugins: [BaseTogglePlugin],
-      initialValue: [{ children: [{ text: 'one' }], type: 'paragraph' }],
-    });
-
-    expect(editor.plugin(BaseTogglePlugin).read.isActive()).toBe(false);
+    expect(editor.plugin(BaseTogglePlugin).store.get().openKeys).toEqual(
+      new Set([a, c])
+    );
   });
 
   it('finds indented descendants of toggles', () => {
     const value = [
       {
         children: [{ text: 'toggle' }],
-        id: 't1',
         indent: 0,
         type: 'toggle',
       },
       {
         children: [{ text: 'child' }],
-        id: 'p1',
         indent: 1,
         type: 'paragraph',
       },
@@ -103,11 +71,11 @@ describe('BaseTogglePlugin', () => {
     });
 
     expect(
-      editor.plugin(BaseTogglePlugin).read.lastEnclosedEntry('t1')
+      editor.plugin(BaseTogglePlugin).read.lastEnclosedEntry(editor.key([0])!)
     ).toEqual([value[1], [1]]);
   });
 
-  it('closes enclosing toggles at idless boundaries', () => {
+  it('closes enclosing toggles at indentation boundaries', () => {
     const editor = createBaseEditor({
       plugins: [
         BaseIndentPlugin.configure({
@@ -118,19 +86,16 @@ describe('BaseTogglePlugin', () => {
       initialValue: [
         {
           children: [{ text: 'toggle' }],
-          id: 't1',
           type: 'toggle',
         },
         {
           children: [{ text: 'child' }],
-          id: 'p1',
           indent: 1,
           type: 'paragraph',
         },
         { children: [{ text: 'boundary' }], type: 'paragraph' },
         {
           children: [{ text: 'outside' }],
-          id: 'p2',
           indent: 1,
           type: 'paragraph',
         },
@@ -138,7 +103,7 @@ describe('BaseTogglePlugin', () => {
     });
 
     expect(
-      editor.plugin(BaseTogglePlugin).read.lastEnclosedEntry('t1')
-    ).toMatchObject([{ id: 'p1' }, [1]]);
+      editor.plugin(BaseTogglePlugin).read.lastEnclosedEntry(editor.key([0])!)
+    ).toMatchObject([{ children: [{ text: 'child' }] }, [1]]);
   });
 });

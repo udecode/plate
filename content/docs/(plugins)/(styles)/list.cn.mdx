@@ -65,18 +65,16 @@ import {
   OrderedListRules,
   TaskListRules,
 } from '@platejs/list';
-import { BlockquotePlugin } from '@platejs/basic-nodes/react';
-import { CodeBlockPlugin } from '@platejs/code-block/react';
 import { ListPlugin } from '@platejs/list/react';
-import { ParagraphPlugin } from 'platejs/react';
+import { PLUGINS } from 'platejs';
 import { BlockList } from '@/components/ui/block-list';
 
 const CustomListPlugin = ListPlugin.configure({
   targetPlugins: [
     PLUGINS.h1, PLUGINS.h2, PLUGINS.h3, PLUGINS.h4, PLUGINS.h5, PLUGINS.h6,
-    ParagraphPlugin,
-    BlockquotePlugin,
-    CodeBlockPlugin,
+    PLUGINS.paragraph,
+    PLUGINS.blockquote,
+    PLUGINS.codeBlock,
   ],
   inputRules: [
     BulletedListRules.markdown({ variant: '-' }),

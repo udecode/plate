@@ -10,6 +10,7 @@ import {
   bindGeneratedEditor,
   defineEditor,
   type GeneratedEditorContract,
+  type GeneratedEditorSchema,
   type GeneratedEditorTypes,
 } from '@platejs/core';
 import {
@@ -40,13 +41,12 @@ const LayoutPlugin = definePlatePlugin('layout', {
     isDense: (state) => state.density === 2,
   },
   schema: {
-    properties: [
-      schema.elementProperty(
-        'align',
+    properties: {
+      align: schema.elementProperty(
         property.enum(['left', 'right'], { required: true }),
         { target: target.type('paragraph') }
       ),
-    ],
+    },
   },
   update: ({ tx }) => ({
     setDensity: (density: 1 | 2) => {
@@ -87,13 +87,13 @@ const QuotePlugin = definePlatePlugin('quote', {
 });
 
 const CalloutPlugin = definePlatePlugin('calloutCapability', {
-  type: 'callout_node',
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
       properties: {
         tone: property.enum(['info', 'warning'] as const, { required: true }),
       },
+      type: 'callout_node',
     },
   },
 });
@@ -127,6 +127,7 @@ const editorDefinition = defineEditor('contractEditor', {
   plugins: EditorPlugins,
 });
 const GeneratedEditorPlugins = bindGeneratedEditor(editorDefinition, {
+  bindings: { plugins: {}, properties: {} },
   fingerprint: 'fnv1a64:contract',
   schema: {},
   types: undefined,
@@ -135,15 +136,17 @@ const GeneratedEditorPlugins = bindGeneratedEditor(editorDefinition, {
     GeneratedBodyValue,
     BodyElement,
     BodyText,
-    unknown,
+    GeneratedEditorSchema,
     {
       paragraph: {
         construction: { align: 'left' | 'right' };
         properties: { align: 'left' | 'right' };
+        type: 'paragraph';
       };
       quote: {
         construction: {};
         properties: {};
+        type: 'quote';
       };
     }
   >

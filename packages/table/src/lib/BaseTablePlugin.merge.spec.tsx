@@ -15,7 +15,6 @@ describe('table merge', () => {
   describe('removeRow with expanded selections', () => {
     it('removes every row covered by a selected rowspan cell', () => {
       const editor = createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins({ disableMerge: true }),
         selection: {
           anchor: { offset: 0, path: [0, 0, 0, 0, 0] },
@@ -92,7 +91,6 @@ describe('table merge', () => {
 
     const createTableEditor = (input: TestEditor) =>
       createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins({ disableMerge: false }),
         selection: input.selection,
         initialValue: input.children,
@@ -130,7 +128,7 @@ describe('table merge', () => {
         ) as TestEditor;
 
         const editor = createTableEditor(input);
-        const result = editor.plugin(BaseTablePlugin).read.getMergeGridByRange({
+        const result = editor.plugin(BaseTablePlugin).read.getGridByRange({
           at: editor.read.selection()!,
           format: 'all',
         });
@@ -179,7 +177,7 @@ describe('table merge', () => {
         ) as TestEditor;
 
         const editor = createTableEditor(input);
-        const result = editor.plugin(BaseTablePlugin).read.getMergeGridByRange({
+        const result = editor.plugin(BaseTablePlugin).read.getGridByRange({
           at: editor.read.selection()!,
           format: 'cell',
         });
@@ -198,7 +196,6 @@ describe('table merge', () => {
 
     const createTableEditor = (input: TestEditor) =>
       createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins({ disableMerge: false }),
         selection: input.selection,
         initialValue: input.children,
@@ -306,7 +303,6 @@ describe('table merge', () => {
 
     const createTableEditor = (input: TestEditor) =>
       createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins({ disableMerge: false }),
         selection: input.selection,
         initialValue: input.children,

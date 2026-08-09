@@ -11,13 +11,13 @@ import type {
   EditorDocumentValue,
 } from '@platejs/plite';
 import { ContentSlice } from '@platejs/plite';
-import { KEYS } from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 import { isUrl } from '@udecode/utils';
 
 import type {
   AllowNodeConfig,
   DeserializeMdOptions,
-  PlateType,
+  MarkdownNodeName,
   SerializeMdOptions,
 } from './types';
 
@@ -31,13 +31,13 @@ import {
 
 export type MarkdownPluginState = {
   /** Allowed node types. Cannot be combined with `disallowedNodes`. */
-  allowedNodes: readonly PlateType[] | null;
+  allowedNodes: readonly MarkdownNodeName[] | null;
   /** Custom node filters for deserialization and serialization. */
   allowNode?: AllowNodeConfig;
   /** Disallowed node types. Cannot be combined with `allowedNodes`. */
-  disallowedNodes: readonly PlateType[] | null;
+  disallowedNodes: readonly MarkdownNodeName[] | null;
   /** Marks serialized as plain text. */
-  plainMarks: readonly PlateType[] | null;
+  plainMarks: readonly MarkdownNodeName[] | null;
   /** Remark plugins used for parsing and serialization. */
   remarkPlugins: readonly Pluggable[];
   /** Options passed to `remark-stringify`. */
@@ -66,7 +66,7 @@ const shouldParseMarkdown = (
   return true;
 };
 
-export const MarkdownPlugin = defineBasePlugin(KEYS.markdown, {
+export const MarkdownPlugin = defineBasePlugin(PLUGINS.markdown, {
   codecs: ({ defineCodecs, editor, store }) => {
     const decode = (data: string, state: EditorCoreStateView) => {
       const document = deserializeMdWithRuntime(
@@ -123,6 +123,6 @@ export const MarkdownPlugin = defineBasePlugin(KEYS.markdown, {
 
 export type MarkdownDefinition = DefinitionOf<typeof MarkdownPlugin>;
 
-export type MarkdownEditor<E extends BaseEditor = BaseEditor> = E & {
-  readonly api: E['api'] & { markdown: MarkdownApi };
+export type MarkdownEditor<E = BaseEditor> = E & {
+  readonly api: { markdown: MarkdownApi };
 };

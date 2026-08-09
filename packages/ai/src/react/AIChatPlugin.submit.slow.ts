@@ -40,7 +40,6 @@ describe('AIChatPlugin submit', () => {
   it('returns early when both prompt and input are empty', () => {
     const sendMessage = mock();
     const editor = createEditor(sendMessage);
-
     editor.plugin(AIChatPlugin).api.submit('');
 
     expect(sendMessage).not.toHaveBeenCalled();
@@ -49,11 +48,10 @@ describe('AIChatPlugin submit', () => {
   it('undoes insert mode, stores selected blocks, and sends their context', () => {
     const sendMessage = mock();
     const editor = createEditor(sendMessage);
+    const selectedKeys = new Set([editor.key([0])!, editor.key([1])!]);
     editor.plugin(AIChatPlugin).store.set({ toolName: 'edit' });
     editor.plugin(AIChatPlugin).store.set({ open: true });
-    editor
-      .plugin(BlockSelectionPlugin)
-      .store.set({ selectedIds: new Set(['b1', 'b2']) });
+    editor.plugin(BlockSelectionPlugin).store.set({ selectedKeys });
     editor.update({ history: 'merge' }, (tx) => {
       tx.ai.markBatch();
       tx.nodes.insert({ ai: true, text: ' ai' }, { at: [0, 1] });
@@ -68,8 +66,8 @@ describe('AIChatPlugin submit', () => {
       editor
         .plugin(AIChatPlugin)
         .store.get('chatNodes')
-        .map((node) => node.id)
-    ).toEqual(['b1', 'b2']);
+        .map(({ nodeKey }) => nodeKey)
+    ).toEqual([...selectedKeys]);
     expect(editor.plugin(AIChatPlugin).store.get('chatSelection')).toBeNull();
     expect(sendMessage).toHaveBeenCalledWith(
       'draft',

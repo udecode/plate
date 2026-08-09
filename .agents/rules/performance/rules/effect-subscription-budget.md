@@ -15,7 +15,7 @@ external store.
 - no derived state in effects
 - no interaction logic in effects watching state
 - no reactive path/context dependency when the value is needed only by an
-  event handler; resolve it lazily from stable node/runtime identity
+  event handler; resolve it lazily from stable node/node key
 - no hand-rolled repeated subscriptions when `useSyncExternalStore` or a local
   selector hook exists
 - `useEffectEvent` only for event-like callbacks fired from an effect/observer

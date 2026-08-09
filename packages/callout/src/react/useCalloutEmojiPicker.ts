@@ -1,5 +1,6 @@
 import { useEditorReadOnly, useEditor, useElement } from '@platejs/core/react';
-import type { TCalloutElement } from '@platejs/utils';
+
+import { CalloutPlugin } from './CalloutPlugin';
 
 const CALLOUT_STORAGE_KEY = 'plate-storage-callout';
 
@@ -14,7 +15,7 @@ export const useCalloutEmojiPicker = ({
 }: UseCalloutEmojiPickerOptions) => {
   const editor = useEditor();
   const readOnly = useEditorReadOnly();
-  const element = useElement<TCalloutElement>();
+  const element = useElement(CalloutPlugin);
 
   return {
     emojiToolbarDropdownProps: {

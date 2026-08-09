@@ -7,13 +7,13 @@ jsxt;
 
 import { createBaseEditor } from '../../editor';
 import { defineBasePlugin } from '../../plugin';
+import { ElementIdPlugin } from '../element-id';
 import { ElementStatePlugin } from './ElementStatePlugin';
 
 describe('ElementStatePlugin', () => {
-  it('treats type and the configured node id key as empty element state', () => {
+  it('treats type and the canonical node id as empty element state', () => {
     const editor = createBaseEditor({
-      nodeId: { idKey: 'blockId' },
-      plugins: [ElementStatePlugin],
+      plugins: [ElementIdPlugin, ElementStatePlugin],
     });
 
     expect(
@@ -24,7 +24,7 @@ describe('ElementStatePlugin', () => {
     ).toBe(true);
     expect(
       editor.plugin(ElementStatePlugin).api.isEmpty({
-        blockId: 'a',
+        id: 'a',
         children: [{ text: '' }],
         type: 'paragraph',
       })
@@ -32,7 +32,7 @@ describe('ElementStatePlugin', () => {
     expect(
       editor.plugin(ElementStatePlugin).api.isEmpty({
         children: [{ text: '' }],
-        id: 'a',
+        blockId: 'a',
         type: 'paragraph',
       })
     ).toBe(false);

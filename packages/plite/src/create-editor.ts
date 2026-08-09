@@ -1,6 +1,7 @@
 import { extendEditor, getFragment } from './core';
 import {
   getCandidateEditorApiValue,
+  createEditorExtensionUpdatePortal,
   getInstalledEditorExtensionApi,
   getCandidateEditorExtensionApi,
   prepareInitialEditorExtensionPublication,
@@ -475,8 +476,16 @@ const createEditorImplementation = <
 
       return capability;
     };
-    const createPortal = (name: string, installedApi: EditorExtensionApiMap) =>
-      Object.freeze({
+    const createPortal = (
+      name: string,
+      installedApi: EditorExtensionApiMap
+    ) => {
+      const update = createEditorExtensionUpdatePortal(
+        editor as AnyEditor,
+        name
+      );
+
+      return Object.freeze({
         get api() {
           return resolveValue(installedApi);
         },
@@ -492,17 +501,10 @@ const createEditorImplementation = <
           return capability;
         },
         get update() {
-          const capability = Reflect.get(update, name);
-
-          if (capability === undefined) {
-            throw new Error(
-              `Editor extension "${name}" does not expose update methods.`
-            );
-          }
-
-          return capability;
+          return update;
         },
       });
+    };
     const candidateApi = getCandidateEditorExtensionApi(
       editor as AnyEditor,
       extension

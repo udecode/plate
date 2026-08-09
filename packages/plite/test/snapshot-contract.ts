@@ -1923,7 +1923,7 @@ it('keeps text snapshots stable across later path-stable text commits', () => {
   assert.equal(first.children[1], second.children[1]);
 });
 
-it('keeps runtime ids unique when replacing a complete marked text leaf', () => {
+it('keeps node keys unique when replacing a complete marked text leaf', () => {
   const editor = createEditor();
 
   editorReplace(editor, {
@@ -1946,15 +1946,15 @@ it('keeps runtime ids unique when replacing a complete marked text leaf', () => 
   });
 
   const before = editorGetSnapshot(editor);
-  const replacedId = before.index.idAt([0, 1]);
-  const trailingId = before.index.idAt([0, 2]);
+  const replacedId = before.index.keyAt([0, 1]);
+  const trailingId = before.index.keyAt([0, 2]);
 
   editor.update((tx) => {
     tx.text.insert('p');
   });
 
   const after = editorGetSnapshot(editor);
-  const ids = after.index.entries().map(([runtimeId]) => runtimeId);
+  const ids = after.index.entries().map(([nodeKey]) => nodeKey);
 
   assert.deepEqual(after.children[0].children, [
     { text: 'prefix ' },
@@ -1963,8 +1963,8 @@ it('keeps runtime ids unique when replacing a complete marked text leaf', () => 
     { italic: true, text: 'italic' },
   ]);
   assert.equal(new Set(ids).size, ids.length);
-  assert.equal(after.index.idAt([0, 1]), replacedId);
-  assert.equal(after.index.idAt([0, 2]), trailingId);
+  assert.equal(after.index.keyAt([0, 1]), replacedId);
+  assert.equal(after.index.keyAt([0, 2]), trailingId);
 });
 
 it('publishes one path-stable snapshot for batched text commits', () => {
@@ -2041,7 +2041,7 @@ it('reuses snapshot indexes for selection-only listener snapshots', () => {
   assert.equal(after.version, before.version + 1);
 });
 
-it('publishes touched runtime ids for collapsed text changes', () => {
+it('publishes touched node keys for collapsed text changes', () => {
   const editor = createEditor();
   const changes: EditorCommit[] = [];
 
@@ -2055,11 +2055,11 @@ it('publishes touched runtime ids for collapsed text changes', () => {
   });
 
   const snapshot = editorGetSnapshot(editor);
-  const blockRuntimeId = snapshot.index.idAt([0]);
-  const runtimeId = snapshot.index.idAt([0, 0]);
+  const blockNodeKey = snapshot.index.keyAt([0]);
+  const nodeKey = snapshot.index.keyAt([0, 0]);
 
-  assert.ok(blockRuntimeId);
-  assert.ok(runtimeId);
+  assert.ok(blockNodeKey);
+  assert.ok(nodeKey);
 
   editorSubscribe(editor, (_snapshot, change) => {
     if (change) {
@@ -2076,13 +2076,13 @@ it('publishes touched runtime ids for collapsed text changes', () => {
   assert.deepEqual(changes[0]?.changed.topLevelRanges(), [[0, 0]]);
   assert.equal(changes[0]?.changed.has('document'), true);
   assert.equal(changes[0]?.selectionChanged, false);
-  assert.deepEqual(changes[0]?.changed.runtimeIds('node'), [
-    blockRuntimeId,
-    runtimeId,
+  assert.deepEqual(changes[0]?.changed.nodeKeys('node'), [
+    blockNodeKey,
+    nodeKey,
   ]);
-  assert.deepEqual(changes[0]?.changed.runtimeIds('decoration'), [
-    blockRuntimeId,
-    runtimeId,
+  assert.deepEqual(changes[0]?.changed.nodeKeys('decoration'), [
+    blockNodeKey,
+    nodeKey,
   ]);
 });
 
@@ -2120,7 +2120,7 @@ it('notifies snapshot subscribers with canonical commit metadata', () => {
   );
 });
 
-it('publishes selection-only dirtiness without touched runtime ids', () => {
+it('publishes selection-only dirtiness without touched node keys', () => {
   const editor = createEditor();
   const changes: EditorCommit[] = [];
 
@@ -2134,8 +2134,8 @@ it('publishes selection-only dirtiness without touched runtime ids', () => {
   });
 
   const initialSnapshot = editorGetSnapshot(editor);
-  const initialBlockRuntimeId = initialSnapshot.index.idAt([0]);
-  const initialTextRuntimeId = initialSnapshot.index.idAt([0, 0]);
+  const initialBlockNodeKey = initialSnapshot.index.keyAt([0]);
+  const initialTextNodeKey = initialSnapshot.index.keyAt([0, 0]);
 
   editorSubscribe(editor, (_snapshot, change) => {
     if (change) {
@@ -2151,23 +2151,23 @@ it('publishes selection-only dirtiness without touched runtime ids', () => {
   });
 
   const snapshot = editorGetSnapshot(editor);
-  const selectedBlockRuntimeId = snapshot.index.idAt([1]);
-  const selectedTextRuntimeId = snapshot.index.idAt([1, 0]);
+  const selectedBlockNodeKey = snapshot.index.keyAt([1]);
+  const selectedTextNodeKey = snapshot.index.keyAt([1, 0]);
 
   assert.equal(changes.length, 1);
   assert.equal(changes[0]?.changed.has('selection'), true);
   assert.equal(changes[0]?.changed.has('document'), false);
   assert.equal(changes[0]?.selectionChanged, true);
-  assert.deepEqual(changes[0]?.changed.runtimeIds('node'), []);
-  assert.deepEqual(changes[0]?.changed.runtimeIds('selection'), [
-    initialTextRuntimeId,
-    initialBlockRuntimeId,
-    selectedTextRuntimeId,
-    selectedBlockRuntimeId,
+  assert.deepEqual(changes[0]?.changed.nodeKeys('node'), []);
+  assert.deepEqual(changes[0]?.changed.nodeKeys('selection'), [
+    initialTextNodeKey,
+    initialBlockNodeKey,
+    selectedTextNodeKey,
+    selectedBlockNodeKey,
   ]);
   assert.deepEqual(
-    changes[0]?.changed.runtimeIds('decoration'),
-    changes[0]?.changed.runtimeIds('selection')
+    changes[0]?.changed.nodeKeys('decoration'),
+    changes[0]?.changed.nodeKeys('selection')
   );
 });
 
@@ -2188,8 +2188,8 @@ it('keeps small top-level expanded selection impact precise', () => {
   });
 
   const initialSnapshot = editorGetSnapshot(editor);
-  const runtimeId = (path: string) =>
-    initialSnapshot.index.idAt(path.split('.').map(Number));
+  const nodeKey = (path: string) =>
+    initialSnapshot.index.keyAt(path.split('.').map(Number));
 
   editorSubscribe(editor, (_snapshot, change) => {
     if (change) {
@@ -2206,27 +2206,27 @@ it('keeps small top-level expanded selection impact precise', () => {
 
   assert.equal(changes.length, 1);
   assert.equal(changes[0]?.changed.has('selection'), true);
-  assert.deepEqual(changes[0]?.changed.runtimeIds('selection'), [
-    runtimeId('0.0'),
-    runtimeId('0'),
-    runtimeId('2.0'),
-    runtimeId('2'),
-    runtimeId('6.0'),
-    runtimeId('6'),
-    runtimeId('3'),
-    runtimeId('3.0'),
-    runtimeId('4'),
-    runtimeId('4.0'),
-    runtimeId('5'),
-    runtimeId('5.0'),
+  assert.deepEqual(changes[0]?.changed.nodeKeys('selection'), [
+    nodeKey('0.0'),
+    nodeKey('0'),
+    nodeKey('2.0'),
+    nodeKey('2'),
+    nodeKey('6.0'),
+    nodeKey('6'),
+    nodeKey('3'),
+    nodeKey('3.0'),
+    nodeKey('4'),
+    nodeKey('4.0'),
+    nodeKey('5'),
+    nodeKey('5.0'),
   ]);
   assert.deepEqual(
-    changes[0]?.changed.runtimeIds('selection'),
-    changes[0]?.changed.runtimeIds('selection')
+    changes[0]?.changed.nodeKeys('selection'),
+    changes[0]?.changed.nodeKeys('selection')
   );
   assert.deepEqual(
-    changes[0]?.changed.runtimeIds('decoration'),
-    changes[0]?.changed.runtimeIds('selection')
+    changes[0]?.changed.nodeKeys('decoration'),
+    changes[0]?.changed.nodeKeys('selection')
   );
 });
 
@@ -2425,8 +2425,8 @@ it('uses broad selection impact for large cross-document selections', () => {
 
   assert.equal(changes.length, 1);
   assert.equal(changes[0]?.changed.has('selection'), true);
-  assert.equal(changes[0]?.changed.runtimeIds('selection').length, 400);
-  assert.equal(changes[0]?.changed.runtimeIds('decoration').length, 400);
+  assert.equal(changes[0]?.changed.nodeKeys('selection').length, 400);
+  assert.equal(changes[0]?.changed.nodeKeys('decoration').length, 400);
 });
 
 it('publishes replace-level broad invalidation for editorReplace', () => {
@@ -2458,8 +2458,8 @@ it('publishes replace-level broad invalidation for editorReplace', () => {
   assert.equal(changes[0]?.changed.has('replace'), true);
   assert.equal(changes[0]?.changed.has('document'), true);
   assert.equal(changes[0]?.selectionChanged, false);
-  assert(changes[0]?.changed.runtimeIds('node').length > 0);
-  assert(changes[0]?.changed.runtimeIds('decoration').length > 0);
+  assert(changes[0]?.changed.nodeKeys('node').length > 0);
+  assert(changes[0]?.changed.nodeKeys('decoration').length > 0);
 });
 
 it('publishes marks-only dirtiness without pretending the document paths changed', () => {
@@ -2487,7 +2487,7 @@ it('publishes marks-only dirtiness without pretending the document paths changed
   assert.equal(changes[0]?.changed.has('marks'), true);
   assert.equal(changes[0]?.changed.has('document'), false);
   assert.equal(changes[0]?.selectionChanged, false);
-  assert.deepEqual(changes[0]?.changed.runtimeIds('node'), []);
+  assert.deepEqual(changes[0]?.changed.nodeKeys('node'), []);
 });
 
 it('publishes an immutable cloned selection for a text change', () => {
@@ -2904,7 +2904,7 @@ it('preserves custom node properties across replacement snapshots', () => {
   assert.equal(firstBlock.children[0]?.bold, true);
 });
 
-it('preserves runtime ids when moving a node inside the proof subset', () => {
+it('preserves node keys when moving a node inside the proof subset', () => {
   const editor = createEditor();
 
   editorReplace(editor, {
@@ -2912,7 +2912,7 @@ it('preserves runtime ids when moving a node inside the proof subset', () => {
   });
 
   const before = editorGetSnapshot(editor);
-  const firstId = before.index.idAt([0]);
+  const firstId = before.index.keyAt([0]);
 
   assert.ok(firstId);
 
@@ -2925,11 +2925,11 @@ it('preserves runtime ids when moving a node inside the proof subset', () => {
 
   const after = editorGetSnapshot(editor);
 
-  assert.equal(after.index.idAt([1]), firstId);
+  assert.equal(after.index.keyAt([1]), firstId);
   assert.equal(after.children[1].children[0].text, 'alpha');
 });
 
-it('keeps runtime ids injective when prepending sibling moves across parents', () => {
+it('keeps node keys injective when prepending sibling moves across parents', () => {
   const editor = createPliteEditor({
     initialValue: [
       {
@@ -2967,9 +2967,9 @@ it('keeps runtime ids injective when prepending sibling moves across parents', (
   });
 
   const before = editorGetSnapshot(editor);
-  const destinationId = before.index.idAt([0, 0]);
-  const firstMovedId = before.index.idAt([0, 1, 1, 0]);
-  const secondMovedId = before.index.idAt([0, 1, 1, 1]);
+  const destinationId = before.index.keyAt([0, 0]);
+  const firstMovedId = before.index.keyAt([0, 1, 1, 0]);
+  const secondMovedId = before.index.keyAt([0, 1, 1, 1]);
 
   assert.ok(destinationId);
   assert.ok(firstMovedId);
@@ -3000,15 +3000,15 @@ it('keeps runtime ids injective when prepending sibling moves across parents', (
   const entries = snapshot.index.entries();
 
   assert.equal(
-    new Set(entries.map(([runtimeId]) => runtimeId)).size,
+    new Set(entries.map(([nodeKey]) => nodeKey)).size,
     entries.length
   );
   assert.deepEqual(snapshot.index.pathOf(destinationId), [0, 0]);
   assert.deepEqual(snapshot.index.pathOf(firstMovedId), [0, 0, 1, 0]);
   assert.deepEqual(snapshot.index.pathOf(secondMovedId), [0, 0, 1, 1]);
-  for (const [runtimeId, path] of entries) {
-    assert.equal(snapshot.index.idAt([...path]), runtimeId);
-    assert.deepEqual(snapshot.index.pathOf(runtimeId), path);
+  for (const [nodeKey, path] of entries) {
+    assert.equal(snapshot.index.keyAt([...path]), nodeKey);
+    assert.deepEqual(snapshot.index.pathOf(nodeKey), path);
   }
 });
 
@@ -3052,8 +3052,8 @@ it('supports path-based insertNodes/removeNodes transforms in one outer transact
   });
 
   const before = editorGetSnapshot(editor);
-  const alphaId = before.index.idAt([0]);
-  const betaId = before.index.idAt([1]);
+  const alphaId = before.index.keyAt([0]);
+  const betaId = before.index.keyAt([1]);
 
   editor.update((tx) => {
     editorInsertNodes(
@@ -3076,14 +3076,14 @@ it('supports path-based insertNodes/removeNodes transforms in one outer transact
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(getBlockTexts(after.children), ['zero', 'one', 'alpha']);
-  assert.equal(after.index.idAt([2]), alphaId);
+  assert.equal(after.index.keyAt([2]), alphaId);
   assert.equal(after.selection, null);
-  assert.equal(after.index.idAt([3]), null);
-  assert.notEqual(after.index.idAt([0]), alphaId);
-  assert.notEqual(after.index.idAt([1]), betaId);
+  assert.equal(after.index.keyAt([3]), null);
+  assert.notEqual(after.index.keyAt([0]), alphaId);
+  assert.notEqual(after.index.keyAt([1]), betaId);
 });
 
-it('supports path-based node property updates while keeping runtime ids stable', () => {
+it('supports path-based node property updates while keeping node keys stable', () => {
   const editor = createEditor();
 
   editorReplace(editor, {
@@ -3092,8 +3092,8 @@ it('supports path-based node property updates while keeping runtime ids stable',
   });
 
   const before = editorGetSnapshot(editor);
-  const blockId = before.index.idAt([0]);
-  const textId = before.index.idAt([0, 0]);
+  const blockId = before.index.keyAt([0]);
+  const textId = before.index.keyAt([0, 0]);
 
   editor.update((tx) => {
     tx.nodes.set({ type: 'heading', align: 'center' }, { at: [0] });
@@ -3117,11 +3117,11 @@ it('supports path-based node property updates while keeping runtime ids stable',
   assert.equal(firstBlock.align, 'center');
   assert.equal(firstBlock.children[0]?.bold, true);
   assert.equal(firstBlock.children[0]?.italic, true);
-  assert.equal(after.index.idAt([0]), blockId);
-  assert.equal(after.index.idAt([0, 0]), textId);
+  assert.equal(after.index.keyAt([0]), blockId);
+  assert.equal(after.index.keyAt([0, 0]), textId);
 });
 
-it('supports path-based property removal while keeping runtime ids stable', () => {
+it('supports path-based property removal while keeping node keys stable', () => {
   const editor = createEditor();
 
   editorReplace(editor, {
@@ -3130,8 +3130,8 @@ it('supports path-based property removal while keeping runtime ids stable', () =
   });
 
   const before = editorGetSnapshot(editor);
-  const blockId = before.index.idAt([0]);
-  const textId = before.index.idAt([0, 0]);
+  const blockId = before.index.keyAt([0]);
+  const textId = before.index.keyAt([0, 0]);
 
   editor.update((tx) => {
     editorUnsetNodes(editor, 'align', { at: [0] });
@@ -3146,8 +3146,8 @@ it('supports path-based property removal while keeping runtime ids stable', () =
 
   assert.equal(firstBlock.align, undefined);
   assert.equal(firstBlock.children[0]?.bold, undefined);
-  assert.equal(after.index.idAt([0]), blockId);
-  assert.equal(after.index.idAt([0, 0]), textId);
+  assert.equal(after.index.keyAt([0]), blockId);
+  assert.equal(after.index.keyAt([0, 0]), textId);
 });
 
 it('rebases selection inward when deleting text', () => {
@@ -3163,7 +3163,7 @@ it('rebases selection inward when deleting text', () => {
   });
 
   const before = editorGetSnapshot(editor);
-  const textId = before.index.idAt([0, 0]);
+  const textId = before.index.keyAt([0, 0]);
 
   editor.update((tx) => {
     tx.text.delete({
@@ -3183,10 +3183,10 @@ it('rebases selection inward when deleting text', () => {
     anchor: { path: [0, 0], offset: 2 },
     focus: { path: [0, 0], offset: 2 },
   });
-  assert.equal(after.index.idAt([0, 0]), textId);
+  assert.equal(after.index.keyAt([0, 0]), textId);
 });
 
-it('keeps runtime ids stable through an exact text deletion', () => {
+it('keeps node keys stable through an exact text deletion', () => {
   const editor = createEditor();
 
   editorReplace(editor, {
@@ -3195,7 +3195,7 @@ it('keeps runtime ids stable through an exact text deletion', () => {
   });
 
   const before = editorGetSnapshot(editor);
-  const textId = before.index.idAt([1, 0]);
+  const textId = before.index.keyAt([1, 0]);
 
   editor.update((tx) => {
     tx.text.delete({
@@ -3211,7 +3211,7 @@ it('keeps runtime ids stable through an exact text deletion', () => {
 
   assert.equal(after.children[1].children[0].text, 'ba');
   assert.equal(after.selection, null);
-  assert.equal(after.index.idAt([1, 0]), textId);
+  assert.equal(after.index.keyAt([1, 0]), textId);
 });
 
 it('supports point-based splitNodes helper calls on text nodes, splits the containing block, and keeps left-branch ids stable', () => {
@@ -3223,7 +3223,7 @@ it('supports point-based splitNodes helper calls on text nodes, splits the conta
   });
 
   const before = editorGetSnapshot(editor);
-  const leftId = before.index.idAt([1, 0]);
+  const leftId = before.index.keyAt([1, 0]);
 
   editorSplitNodes(editor, {
     at: { path: [1, 0], offset: 2 },
@@ -3233,8 +3233,8 @@ it('supports point-based splitNodes helper calls on text nodes, splits the conta
 
   assert.equal(after.children[1].children[0].text, 'be');
   assert.equal(after.children[2].children[0].text, 'ta');
-  assert.equal(after.index.idAt([1, 0]), leftId);
-  assert.notEqual(after.index.idAt([2, 0]), leftId);
+  assert.equal(after.index.keyAt([1, 0]), leftId);
+  assert.notEqual(after.index.keyAt([2, 0]), leftId);
   assert.equal(after.selection, null);
 });
 
@@ -3251,8 +3251,8 @@ it('supports path-based splitNodes helper calls on element nodes with the legacy
   });
 
   const before = editorGetSnapshot(editor);
-  const leftId = before.index.idAt([0]);
-  const linkId = before.index.idAt([0, 1]);
+  const leftId = before.index.keyAt([0]);
+  const linkId = before.index.keyAt([0, 1]);
 
   editorSplitNodes(editor, {
     at: [0],
@@ -3268,8 +3268,8 @@ it('supports path-based splitNodes helper calls on element nodes with the legacy
   assert.equal(leftBlock.children.length, 1);
   assert.equal(rightBlock.children.length, 3);
   assert.deepEqual(rightBlock.children[0], { text: '' });
-  assert.equal(after.index.idAt([0]), leftId);
-  assert.equal(after.index.idAt([1, 1]), linkId);
+  assert.equal(after.index.keyAt([0]), leftId);
+  assert.equal(after.index.keyAt([1, 1]), linkId);
   assert.deepEqual(after.selection, {
     kind: 'text',
     anchor: { path: [1, 2], offset: 2 },
@@ -3290,10 +3290,10 @@ it('supports path-based mergeNodes helper calls on element nodes', () => {
   });
 
   const before = editorGetSnapshot(editor);
-  const leftId = before.index.idAt([0]);
-  const mergedBlockId = before.index.idAt([1]);
-  const movedSpacerId = before.index.idAt([1, 0]);
-  const movedLinkId = before.index.idAt([1, 1]);
+  const leftId = before.index.keyAt([0]);
+  const mergedBlockId = before.index.keyAt([1]);
+  const movedSpacerId = before.index.keyAt([1, 0]);
+  const movedLinkId = before.index.keyAt([1, 1]);
 
   assert.ok(mergedBlockId);
 
@@ -3305,10 +3305,10 @@ it('supports path-based mergeNodes helper calls on element nodes', () => {
   assert.equal(after.children.length, 1);
   assert.equal(block.data, true);
   assert.equal(block.children.length, 3);
-  assert.equal(after.index.idAt([0]), leftId);
+  assert.equal(after.index.keyAt([0]), leftId);
   assert.equal(after.index.pathOf(mergedBlockId), null);
-  assert.equal(after.index.idAt([0, 1]), movedLinkId);
-  assert.notEqual(after.index.idAt([0, 1]), movedSpacerId);
+  assert.equal(after.index.keyAt([0, 1]), movedLinkId);
+  assert.notEqual(after.index.keyAt([0, 1]), movedSpacerId);
   assert.deepEqual(after.selection, {
     kind: 'text',
     anchor: { path: [0, 2], offset: 1 },
@@ -4774,7 +4774,7 @@ it('supports path-based wrapNodes helper calls and preserves the moved node id',
   });
 
   const before = editorGetSnapshot(editor);
-  const paragraphId = before.index.idAt([0]);
+  const paragraphId = before.index.keyAt([0]);
 
   editorWrapNodes(
     editor,
@@ -4790,7 +4790,7 @@ it('supports path-based wrapNodes helper calls and preserves the moved node id',
 
   assert.equal(wrapper.type, 'quote');
   assert.equal(wrapper.children.length, 1);
-  assert.equal(after.index.idAt([0, 0]), paragraphId);
+  assert.equal(after.index.keyAt([0, 0]), paragraphId);
 });
 
 it('supports range-based wrapNodes helper calls across top-level block spans and preserves moved block ids', () => {
@@ -4806,8 +4806,8 @@ it('supports range-based wrapNodes helper calls across top-level block spans and
   });
 
   const before = editorGetSnapshot(editor);
-  const firstId = before.index.idAt([0]);
-  const secondId = before.index.idAt([1]);
+  const firstId = before.index.keyAt([0]);
+  const secondId = before.index.keyAt([1]);
 
   editorWrapNodes(
     editor,
@@ -4829,8 +4829,8 @@ it('supports range-based wrapNodes helper calls across top-level block spans and
   assert.equal(after.children.length, 1);
   assert.equal(wrapper.type, 'quote');
   assert.equal(wrapper.children.length, 2);
-  assert.equal(after.index.idAt([0, 0]), firstId);
-  assert.equal(after.index.idAt([0, 1]), secondId);
+  assert.equal(after.index.keyAt([0, 0]), firstId);
+  assert.equal(after.index.keyAt([0, 1]), secondId);
   assert.deepEqual(after.selection, {
     kind: 'text',
     anchor: { path: [0, 0, 0], offset: 2 },
@@ -5133,16 +5133,16 @@ it('supports path-based unwrapNodes helper calls and preserves moved child ids',
   });
 
   const before = editorGetSnapshot(editor);
-  const firstChildId = before.index.idAt([0, 0]);
-  const secondChildId = before.index.idAt([0, 1]);
+  const firstChildId = before.index.keyAt([0, 0]);
+  const secondChildId = before.index.keyAt([0, 1]);
 
   editorUnwrapNodes(editor, { at: [0] });
 
   const after = editorGetSnapshot(editor);
 
   assert.equal(after.children.length, 2);
-  assert.equal(after.index.idAt([0]), firstChildId);
-  assert.equal(after.index.idAt([1]), secondChildId);
+  assert.equal(after.index.keyAt([0]), firstChildId);
+  assert.equal(after.index.keyAt([1]), secondChildId);
 });
 
 it('supports range-based unwrapNodes helper calls across top-level wrapper spans and preserves moved child ids', () => {
@@ -5158,9 +5158,9 @@ it('supports range-based unwrapNodes helper calls across top-level wrapper spans
   });
 
   const before = editorGetSnapshot(editor);
-  const alphaId = before.index.idAt([0, 0]);
-  const betaId = before.index.idAt([0, 1]);
-  const gammaId = before.index.idAt([1, 0]);
+  const alphaId = before.index.keyAt([0, 0]);
+  const betaId = before.index.keyAt([0, 1]);
+  const gammaId = before.index.keyAt([1, 0]);
 
   editorUnwrapNodes(editor, {
     at: {
@@ -5172,9 +5172,9 @@ it('supports range-based unwrapNodes helper calls across top-level wrapper spans
   const after = editorGetSnapshot(editor);
 
   assert.deepEqual(getBlockTexts(after.children), ['alpha', 'beta', 'gamma']);
-  assert.equal(after.index.idAt([0]), alphaId);
-  assert.equal(after.index.idAt([1]), betaId);
-  assert.equal(after.index.idAt([2]), gammaId);
+  assert.equal(after.index.keyAt([0]), alphaId);
+  assert.equal(after.index.keyAt([1]), betaId);
+  assert.equal(after.index.keyAt([2]), gammaId);
   assert.deepEqual(after.selection, {
     kind: 'text',
     anchor: { path: [0, 0], offset: 2 },
@@ -5436,7 +5436,7 @@ it('supports path-based liftNodes helper calls for an only child and preserves t
   });
 
   const before = editorGetSnapshot(editor);
-  const paragraphId = before.index.idAt([0, 0]);
+  const paragraphId = before.index.keyAt([0, 0]);
 
   editorLiftNodes(editor, { at: [0, 0] });
 
@@ -5444,7 +5444,7 @@ it('supports path-based liftNodes helper calls for an only child and preserves t
 
   assert.equal(after.children.length, 1);
   assert.equal(after.children[0].children[0].text, 'alpha');
-  assert.equal(after.index.idAt([0]), paragraphId);
+  assert.equal(after.index.keyAt([0]), paragraphId);
 });
 
 it('supports path-based liftNodes helper calls for a first child', () => {
@@ -5456,7 +5456,7 @@ it('supports path-based liftNodes helper calls for a first child', () => {
   });
 
   const before = editorGetSnapshot(editor);
-  const firstChildId = before.index.idAt([0, 0]);
+  const firstChildId = before.index.keyAt([0, 0]);
 
   editorLiftNodes(editor, { at: [0, 0] });
 
@@ -5465,7 +5465,7 @@ it('supports path-based liftNodes helper calls for a first child', () => {
 
   assert.equal(after.children.length, 2);
   assert.equal(after.children[0].children[0].text, 'one');
-  assert.equal(after.index.idAt([0]), firstChildId);
+  assert.equal(after.index.keyAt([0]), firstChildId);
   assert.equal(trailingWrapper.type, 'quote');
   assert.deepEqual(
     trailingWrapper.children.map((child) => child.children[0].text),
@@ -5592,7 +5592,7 @@ it('supports path-based liftNodes helper calls for a middle child', () => {
   });
 
   const before = editorGetSnapshot(editor);
-  const middleChildId = before.index.idAt([0, 1]);
+  const middleChildId = before.index.keyAt([0, 1]);
 
   editorLiftNodes(editor, { at: [0, 1] });
 
@@ -5607,7 +5607,7 @@ it('supports path-based liftNodes helper calls for a middle child', () => {
     ['one']
   );
   assert.equal(after.children[1].children[0].text, 'two');
-  assert.equal(after.index.idAt([1]), middleChildId);
+  assert.equal(after.index.keyAt([1]), middleChildId);
   assert.equal(trailingWrapper.type, 'quote');
   assert.deepEqual(
     trailingWrapper.children.map((child) => child.children[0].text),
@@ -5624,7 +5624,7 @@ it('supports path-based liftNodes helper calls for a last child', () => {
   });
 
   const before = editorGetSnapshot(editor);
-  const lastChildId = before.index.idAt([0, 2]);
+  const lastChildId = before.index.keyAt([0, 2]);
 
   editorLiftNodes(editor, { at: [0, 2] });
 
@@ -5638,7 +5638,7 @@ it('supports path-based liftNodes helper calls for a last child', () => {
     ['one', 'two']
   );
   assert.equal(after.children[1].children[0].text, 'three');
-  assert.equal(after.index.idAt([1]), lastChildId);
+  assert.equal(after.index.keyAt([1]), lastChildId);
 });
 
 it('supports range-based liftNodes helper calls across top-level wrapper-child spans and preserves moved ids', () => {
@@ -5654,8 +5654,8 @@ it('supports range-based liftNodes helper calls across top-level wrapper-child s
   });
 
   const before = editorGetSnapshot(editor);
-  const firstId = before.index.idAt([0, 0]);
-  const secondId = before.index.idAt([0, 1]);
+  const firstId = before.index.keyAt([0, 0]);
+  const secondId = before.index.keyAt([0, 1]);
 
   editorLiftNodes(editor, {
     at: {
@@ -5668,8 +5668,8 @@ it('supports range-based liftNodes helper calls across top-level wrapper-child s
   const trailingWrapper = after.children[2] as Element & { type: string };
 
   assert.deepEqual(getBlockTexts(after.children), ['one', 'two', '']);
-  assert.equal(after.index.idAt([0]), firstId);
-  assert.equal(after.index.idAt([1]), secondId);
+  assert.equal(after.index.keyAt([0]), firstId);
+  assert.equal(after.index.keyAt([1]), secondId);
   assert.equal(trailingWrapper.type, 'quote');
   assert.deepEqual(getBlockTexts(trailingWrapper.children), ['three']);
   assert.deepEqual(after.selection, {
@@ -5786,7 +5786,7 @@ it('supports delete helper calls with an exact block path and preserves survivin
   });
 
   const before = editorGetSnapshot(editor);
-  const firstId = before.index.idAt([0]);
+  const firstId = before.index.keyAt([0]);
 
   editorDelete(editor, { at: [1] });
 
@@ -5794,7 +5794,7 @@ it('supports delete helper calls with an exact block path and preserves survivin
 
   assert.equal(after.children.length, 1);
   assert.equal(after.children[0].children[0].text, 'alpha');
-  assert.equal(after.index.idAt([0]), firstId);
+  assert.equal(after.index.keyAt([0]), firstId);
   assert.equal(after.selection, null);
 });
 
@@ -5849,7 +5849,7 @@ it('supports delete helper calls with an exact point and removes one forward cha
   });
 
   const before = editorGetSnapshot(editor);
-  const textId = before.index.idAt([0, 0]);
+  const textId = before.index.keyAt([0, 0]);
 
   editorDelete(editor, {
     at: { path: [0, 0], offset: 2 },
@@ -5858,7 +5858,7 @@ it('supports delete helper calls with an exact point and removes one forward cha
   const after = editorGetSnapshot(editor);
 
   assert.equal(after.children[0].children[0].text, 'alha');
-  assert.equal(after.index.idAt([0, 0]), textId);
+  assert.equal(after.index.keyAt([0, 0]), textId);
 });
 
 it('supports delete helper calls with an exact point, reverse, and distance inside the current text node', () => {
@@ -5870,7 +5870,7 @@ it('supports delete helper calls with an exact point, reverse, and distance insi
   });
 
   const before = editorGetSnapshot(editor);
-  const textId = before.index.idAt([0, 0]);
+  const textId = before.index.keyAt([0, 0]);
 
   editorDelete(editor, {
     at: { path: [0, 0], offset: 3 },
@@ -5881,7 +5881,7 @@ it('supports delete helper calls with an exact point, reverse, and distance insi
   const after = editorGetSnapshot(editor);
 
   assert.equal(after.children[0].children[0].text, 'aha');
-  assert.equal(after.index.idAt([0, 0]), textId);
+  assert.equal(after.index.keyAt([0, 0]), textId);
 });
 
 it('supports delete helper calls with an exact point across mixed-inline sibling leaves in one block', () => {
@@ -5919,7 +5919,7 @@ it('supports delete helper calls with an exact point across an adjacent top-leve
   });
 
   const before = editorGetSnapshot(editor);
-  const firstBlockId = before.index.idAt([0]);
+  const firstBlockId = before.index.keyAt([0]);
 
   editorDelete(editor, {
     at: { path: [0, 0], offset: 5 },
@@ -5930,7 +5930,7 @@ it('supports delete helper calls with an exact point across an adjacent top-leve
 
   assert.equal(after.children.length, 1);
   assert.deepEqual(getBlockTexts(after.children), ['alphabeta']);
-  assert.equal(after.index.idAt([0]), firstBlockId);
+  assert.equal(after.index.keyAt([0]), firstBlockId);
   assert.deepEqual(after.selection, {
     kind: 'text',
     anchor: { path: [0, 0], offset: 5 },
@@ -5961,8 +5961,8 @@ it('supports delete helper calls across adjacent nested block boundaries without
   });
 
   const before = editorGetSnapshot(editor);
-  const codeBlockId = before.index.idAt([0]);
-  const firstLineId = before.index.idAt([0, 0]);
+  const codeBlockId = before.index.keyAt([0]);
+  const firstLineId = before.index.keyAt([0, 0]);
 
   editor.update((tx) => {
     editorDelete(editor, {
@@ -5982,8 +5982,8 @@ it('supports delete helper calls across adjacent nested block boundaries without
   assert.equal(codeBlock.children.length, 1);
   assert.equal(codeBlock.children[0].type, 'code-line');
   assert.deepEqual(codeBlock.children[0].children, [{ text: 'alphabeta' }]);
-  assert.equal(after.index.idAt([0]), codeBlockId);
-  assert.equal(after.index.idAt([0, 0]), firstLineId);
+  assert.equal(after.index.keyAt([0]), codeBlockId);
+  assert.equal(after.index.keyAt([0, 0]), firstLineId);
   assert.deepEqual(after.selection, {
     kind: 'text',
     anchor: { path: [0, 0, 0], offset: 5 },
@@ -6035,14 +6035,14 @@ it('supports delete helper calls with the current same-text selection and collap
   });
 
   const before = editorGetSnapshot(editor);
-  const textId = before.index.idAt([0, 0]);
+  const textId = before.index.keyAt([0, 0]);
 
   editorDelete(editor);
 
   const after = editorGetSnapshot(editor);
 
   assert.equal(after.children[0].children[0].text, 'aha');
-  assert.equal(after.index.idAt([0, 0]), textId);
+  assert.equal(after.index.keyAt([0, 0]), textId);
   assert.deepEqual(after.selection, {
     kind: 'text',
     anchor: { path: [0, 0], offset: 1 },
@@ -6612,7 +6612,7 @@ it('supports delete helper calls with an explicit non-empty range across an adja
   });
 
   const before = editorGetSnapshot(editor);
-  const firstBlockId = before.index.idAt([0]);
+  const firstBlockId = before.index.keyAt([0]);
 
   editorDelete(editor, {
     at: {
@@ -6625,7 +6625,7 @@ it('supports delete helper calls with an explicit non-empty range across an adja
 
   assert.equal(after.children.length, 1);
   assert.deepEqual(getBlockTexts(after.children), ['alphta']);
-  assert.equal(after.index.idAt([0]), firstBlockId);
+  assert.equal(after.index.keyAt([0]), firstBlockId);
   assert.deepEqual(after.selection, {
     kind: 'text',
     anchor: { path: [0, 0], offset: 4 },
@@ -6890,7 +6890,7 @@ it('publishes immutable snapshots detached from public editor fields', () => {
   });
 
   assert.throws(() => {
-    Object.assign(snapshot.index, { idAt: () => 'broken' });
+    Object.assign(snapshot.index, { keyAt: () => 'broken' });
   });
   editorReplace(editor, {
     children: [
@@ -7077,8 +7077,8 @@ it('uses select as the selection write path', () => {
 
 it('keeps ids stable across repeated replace calls in one outer transaction', () => {
   const editor = createEditor();
-  let firstRuntimeId: string | null = null;
-  let secondRuntimeId: string | null = null;
+  let firstNodeKey: string | null = null;
+  let secondNodeKey: string | null = null;
 
   editorReplace(editor, {
     children: createChildren(),
@@ -7088,19 +7088,19 @@ it('keeps ids stable across repeated replace calls in one outer transaction', ()
     editorReplace(editor, {
       children: createExpandedChildren(),
     });
-    firstRuntimeId = editorGetSnapshot(editor).index.idAt([2, 0]);
+    firstNodeKey = editorGetSnapshot(editor).index.keyAt([2, 0]);
     editorReplace(editor, {
       children: createExpandedChildren(),
     });
-    secondRuntimeId = editorGetSnapshot(editor).index.idAt([2, 0]);
+    secondNodeKey = editorGetSnapshot(editor).index.keyAt([2, 0]);
   });
 
-  assert.ok(firstRuntimeId);
-  assert.equal(secondRuntimeId, firstRuntimeId);
-  assert.equal(editorGetSnapshot(editor).index.idAt([2, 0]), firstRuntimeId);
+  assert.ok(firstNodeKey);
+  assert.equal(secondNodeKey, firstNodeKey);
+  assert.equal(editorGetSnapshot(editor).index.keyAt([2, 0]), firstNodeKey);
 });
 
-it('projects a cross-block range into local text segments keyed by runtime id', () => {
+it('projects a cross-block range into local text segments keyed by node key', () => {
   const editor = createEditor();
 
   editorReplace(editor, {
@@ -7109,11 +7109,11 @@ it('projects a cross-block range into local text segments keyed by runtime id', 
   });
 
   const snapshot = editorGetSnapshot(editor);
-  const leftId = snapshot.index.idAt([0, 0]);
-  const rightId = snapshot.index.idAt([1, 0]);
+  const leftKey = snapshot.index.keyAt([0, 0]);
+  const rightKey = snapshot.index.keyAt([1, 0]);
 
-  assert.ok(leftId);
-  assert.ok(rightId);
+  assert.ok(leftKey);
+  assert.ok(rightKey);
 
   assert.deepEqual(
     editorProjectRange(editor, {
@@ -7122,13 +7122,13 @@ it('projects a cross-block range into local text segments keyed by runtime id', 
     }),
     [
       {
-        runtimeId: leftId,
+        key: leftKey,
         path: [0, 0],
         start: 2,
         end: 5,
       },
       {
-        runtimeId: rightId,
+        key: rightKey,
         path: [1, 0],
         start: 0,
         end: 2,
@@ -7146,11 +7146,11 @@ it('projects ranges against an explicit snapshot for internal projection stores'
   });
 
   const snapshot = editorGetSnapshot(editor);
-  const leftId = snapshot.index.idAt([0, 0]);
-  const rightId = snapshot.index.idAt([1, 0]);
+  const leftKey = snapshot.index.keyAt([0, 0]);
+  const rightKey = snapshot.index.keyAt([1, 0]);
 
-  assert.ok(leftId);
-  assert.ok(rightId);
+  assert.ok(leftKey);
+  assert.ok(rightKey);
 
   editorReplace(editor, {
     children: [{ type: 'paragraph', children: [{ text: 'replaced' }] }],
@@ -7164,13 +7164,13 @@ it('projects ranges against an explicit snapshot for internal projection stores'
     }),
     [
       {
-        runtimeId: leftId,
+        key: leftKey,
         path: [0, 0],
         start: 2,
         end: 5,
       },
       {
-        runtimeId: rightId,
+        key: rightKey,
         path: [1, 0],
         start: 0,
         end: 2,
@@ -7188,9 +7188,9 @@ it('projects a collapsed range into a zero-width local segment', () => {
   });
 
   const snapshot = editorGetSnapshot(editor);
-  const leftId = snapshot.index.idAt([0, 0]);
+  const leftKey = snapshot.index.keyAt([0, 0]);
 
-  assert.ok(leftId);
+  assert.ok(leftKey);
   assert.deepEqual(
     editorProjectRange(editor, {
       anchor: { path: [0, 0], offset: 3 },
@@ -7198,7 +7198,7 @@ it('projects a collapsed range into a zero-width local segment', () => {
     }),
     [
       {
-        runtimeId: leftId,
+        key: leftKey,
         path: [0, 0],
         start: 3,
         end: 3,
@@ -7207,7 +7207,7 @@ it('projects a collapsed range into a zero-width local segment', () => {
   );
 });
 
-it('keeps runtime ids unique across replace commits that allocate new nodes', () => {
+it('keeps node keys unique across replace commits that allocate new nodes', () => {
   const editor = createEditor();
 
   editorReplace(editor, {
@@ -7230,7 +7230,7 @@ it('keeps runtime ids unique across replace commits that allocate new nodes', ()
 
   const ids = editorGetSnapshot(editor)
     .index.entries()
-    .map(([runtimeId]) => runtimeId);
+    .map(([nodeKey]) => nodeKey);
 
   assert.equal(new Set(ids).size, ids.length);
 });
@@ -7252,8 +7252,8 @@ it('keeps prepared transaction-spec runtime paths total through reconstruction',
   });
 
   const before = editorGetSnapshot(editor);
-  const survivingTextRuntimeId = before.index.idAt([0, 0]);
-  const mergedTextRuntimeId = before.index.idAt([2, 0]);
+  const survivingTextNodeKey = before.index.keyAt([0, 0]);
+  const mergedTextNodeKey = before.index.keyAt([2, 0]);
 
   const spec = editor.read((state) =>
     state.transaction((tx) => {
@@ -7269,16 +7269,16 @@ it('keeps prepared transaction-spec runtime paths total through reconstruction',
   assert.deepEqual(snapshot.children, [
     { type: 'paragraph', children: [{ text: 'almma' }] },
   ]);
-  assert.ok(survivingTextRuntimeId);
-  assert.ok(mergedTextRuntimeId);
-  assert.equal(snapshot.index.idAt([0, 0]), survivingTextRuntimeId);
-  assert.equal(snapshot.index.pathOf(mergedTextRuntimeId), null);
+  assert.ok(survivingTextNodeKey);
+  assert.ok(mergedTextNodeKey);
+  assert.equal(snapshot.index.keyAt([0, 0]), survivingTextNodeKey);
+  assert.equal(snapshot.index.pathOf(mergedTextNodeKey), null);
 
   const entries = snapshot.index.entries();
 
   assert.equal(entries.length, 2);
-  for (const [runtimeId, path] of entries) {
-    assert.equal(snapshot.index.idAt([...path]), runtimeId);
-    assert.deepEqual(snapshot.index.pathOf(runtimeId), path);
+  for (const [nodeKey, path] of entries) {
+    assert.equal(snapshot.index.keyAt([...path]), nodeKey);
+    assert.deepEqual(snapshot.index.pathOf(nodeKey), path);
   }
 });

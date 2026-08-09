@@ -138,27 +138,27 @@ const editor = createPlateEditor({
 
 ## 能力
 
-`ColumnItemPlugin` 负责所有分栏修改。使用它的 scoped update API：
+分栏组插件负责组操作，分栏项插件负责项操作：
 
 ```tsx
+const columnGroup = editor.plugin(ColumnPlugin);
 const column = editor.plugin(ColumnItemPlugin);
 
-column.update.insert({ width: '33%' });
-column.update.insertGroup({ columns: 3, select: true });
+columnGroup.update.insert({ columns: 3 }, { select: true });
+columnGroup.update.setColumns({ at: columnGroupPath, widths: ['33%', '67%'] });
+columnGroup.update.toggle({ columns: 2 });
 column.update.moveMiddle(columnGroupEntry, { direction: 'left' });
 column.update.selectAll();
-column.update.set({ at: columnGroupPath, widths: ['33%', '67%'] });
-column.update.toggle({ columns: 2 });
 ```
 
-同一组命令也可通过 `editor.update.column` 使用。
+组命令也可通过 `editor.update.columnGroup` 使用；项命令通过
+`editor.update.column` 使用。
 
-- `insert` 插入一个分栏项。
-- `insertGroup` 插入一组等宽分栏项。
+- `insert` 插入一组等宽分栏项。
+- `setColumns` 修改现有分栏组的数量和宽度。
+- `toggle` 将当前区块转换为分栏组，或更新其布局。
 - `moveMiddle` 将中间栏内容移动到第一栏。
 - `selectAll` 将栏内选区扩展到整个分栏组。
-- `set` 修改现有分栏组的数量和宽度。
-- `toggle` 将当前区块转换为分栏组，或更新其布局。
 
 ## 钩子函数
 

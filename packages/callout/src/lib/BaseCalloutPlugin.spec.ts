@@ -12,7 +12,7 @@ describe('BaseCalloutPlugin', () => {
     const plugin = editor.plugin(BaseCalloutPlugin);
     const callout = schema.handle.element(
       BaseCalloutPlugin,
-      editor.plugin(BaseCalloutPlugin).schema.element.type
+      editor.plugin(BaseCalloutPlugin).schema.type
     );
     const variant = schema.handle.property(callout, 'variant');
 
@@ -31,12 +31,12 @@ describe('BaseCalloutPlugin', () => {
       true
     );
 
-    editor.update.callout.insert({ variant: 'info' });
+    editor.update.callout.insert({ variant: 'info' }, { at: [1] });
 
     expect(editor.read.children().at(-1)).toMatchObject({
       children: [{ text: '' }],
       icon: '💡',
-      type: editor.plugin('callout').schema.element!.type,
+      type: editor.plugin('callout').schema.type,
       variant: 'info',
     });
   });
@@ -48,11 +48,7 @@ describe('BaseCalloutPlugin', () => {
     });
 
     editor.update((tx) => {
-      tx.callout.insert({
-        at: [1],
-        icon: '🔥',
-        variant: 'warning',
-      });
+      tx.callout.insert({ icon: '🔥', variant: 'warning' }, { at: [1] });
     });
 
     expect(editor.read.children().at(-1)).toMatchObject({
@@ -69,8 +65,8 @@ describe('BaseCalloutPlugin', () => {
       initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
 
-    editor.update.callout.insert();
-    editor.update.callout.insert({ icon: undefined });
+    editor.update.callout.insert({}, { at: [1] });
+    editor.update.callout.insert({ variant: 'info' }, { at: [2] });
 
     expect(
       editor.read.children().filter((node) => node.type === 'callout')

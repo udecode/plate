@@ -511,7 +511,7 @@ test.describe('plaintext example', () => {
       });
       const initialText =
         'This is editable plain text, just like a <textarea>!';
-      const movedText = 'editableThis is  plain text, just like a <textarea>!';
+      const movedText = 'This is  plain editabletext, just like a <textarea>!';
       const selectionStart = 'This is '.length;
       const selectionEnd = selectionStart + 'editable'.length;
 

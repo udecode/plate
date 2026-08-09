@@ -8,8 +8,8 @@ import type {
   Path,
   Text,
 } from '@platejs/plite';
-import type { BaseEditor } from '@platejs/core';
-import type { TIdElement } from '@platejs/utils';
+import type { BaseEditor, IdElement } from '@platejs/core';
+import { PLUGINS } from '@platejs/utils';
 
 import {
   ContentSlice,
@@ -25,7 +25,7 @@ import {
 } from '@platejs/plite-dom';
 import type { DefinitionOf } from '@platejs/core';
 import { definePlatePlugin } from '@platejs/core/react';
-import { KEYS, NODES } from '@platejs/utils';
+
 import copyToClipboard from 'copy-to-clipboard';
 
 import type { PartialSelectionAreaOptions } from '../SelectionArea';
@@ -108,7 +108,7 @@ const initialState: BlockSelectionPluginState = {
 
 // Keep component rendering in the final capability stage so the component can
 // consume the finished API without creating a recursive inference cycle.
-export const BlockSelectionPlugin = definePlatePlugin(KEYS.blockSelection, {
+export const BlockSelectionPlugin = definePlatePlugin(PLUGINS.blockSelection, {
   initialState,
 
   editOnly: true,
@@ -136,12 +136,12 @@ export const BlockSelectionPlugin = definePlatePlugin(KEYS.blockSelection, {
     isSelected: (state, id?: string) => !!id && state.selectedIds!.has(id),
     isSelectingSome: (state) => state.selectedIds!.size > 0,
   },
-  read: ({ store, state }) => {
+  read: ({ editor, store, state }) => {
     const getNodes = (options?: GetBlockSelectionNodesOptions) => {
       const selectedIds = store.get('selectedIds');
       const nodes = selectedIds?.size
         ? [
-            ...state.nodes.toArray<TIdElement>({
+            ...state.nodes.toArray<IdElement>({
               at: [],
               match: (node) =>
                 ElementApi.isElement(node) &&
@@ -156,15 +156,16 @@ export const BlockSelectionPlugin = definePlatePlugin(KEYS.blockSelection, {
       }
 
       if (options?.collapseTableRows) {
-        const collapsedNodes: [TIdElement, Path][] = [];
+        const collapsedNodes: [IdElement, Path][] = [];
+        const tableRow = editor.plugin(PLUGINS.tableRow);
 
         nodes.forEach(([node, path]) => {
-          if (node.type !== NODES.tr) {
+          if (!tableRow.installed || node.type !== tableRow.schema.type) {
             collapsedNodes.push([node, path]);
             return;
           }
 
-          const tableEntry = state.nodes.get<TIdElement>(PathApi.parent(path));
+          const tableEntry = state.nodes.get<IdElement>(PathApi.parent(path));
 
           if (!tableEntry) return;
 
@@ -193,7 +194,7 @@ export const BlockSelectionPlugin = definePlatePlugin(KEYS.blockSelection, {
       }
 
       if (nodes.length === 0 && options?.selectionFallback) {
-        return state.nodes.toArray<TIdElement>({ mode: 'highest' });
+        return state.nodes.toArray<IdElement>({ mode: 'highest' });
       }
 
       return nodes;
@@ -324,7 +325,7 @@ export const BlockSelectionPlugin = definePlatePlugin(KEYS.blockSelection, {
 
         if (direction === 'up') {
           const [, topPath] = blocks[0]!;
-          const previous = editor.read.nodes.previous<TIdElement>({
+          const previous = editor.read.nodes.previous<IdElement>({
             at: topPath,
             from: 'parent',
             match: (node, path) =>
@@ -339,7 +340,7 @@ export const BlockSelectionPlugin = definePlatePlugin(KEYS.blockSelection, {
         }
 
         const [, bottomPath] = blocks.at(-1)!;
-        const next = editor.read.nodes.next<TIdElement>({
+        const next = editor.read.nodes.next<IdElement>({
           at: bottomPath,
           from: 'child',
           match: (node, path) =>
@@ -424,7 +425,7 @@ export const BlockSelectionPlugin = definePlatePlugin(KEYS.blockSelection, {
             selectedIds.delete(topNode.id);
           }
         } else if (anchorIsBottom) {
-          const above = editor.read.nodes.previous<TIdElement>({
+          const above = editor.read.nodes.previous<IdElement>({
             at: topPath,
             from: 'parent',
             match: (node, path) =>
@@ -432,6 +433,7 @@ export const BlockSelectionPlugin = definePlatePlugin(KEYS.blockSelection, {
           });
 
           if (!above || typeof above[0].id !== 'string') return;
+          const aboveId = above[0].id;
 
           if (PathApi.isAncestor(above[1], topPath)) {
             selectedIds.forEach((id) => {
@@ -444,14 +446,14 @@ export const BlockSelectionPlugin = definePlatePlugin(KEYS.blockSelection, {
                 selectedIds.delete(id);
 
                 if (id === anchorId) {
-                  anchorId = above[0].id;
+                  anchorId = aboveId;
                   store.set({ anchorId });
                 }
               }
             });
           }
 
-          selectedIds.add(above[0].id);
+          selectedIds.add(aboveId);
         } else if (
           typeof bottomNode.id === 'string' &&
           bottomNode.id !== anchorId
@@ -711,6 +713,7 @@ export const BlockSelectionPlugin = definePlatePlugin(KEYS.blockSelection, {
               (commit.selectionChanged &&
                 !commit.tags.includes(BLOCK_SELECTION_PRESERVE_TAG))) &&
             store.get().selectedIds!.size > 0 &&
+            !store.get().isSelectionAreaVisible &&
             !isBlockMenuOpen()
           ) {
             store.set({ isSelecting: false, selectedIds: new Set() });
@@ -818,7 +821,7 @@ export const BlockSelectionPlugin = definePlatePlugin(KEYS.blockSelection, {
             tx.nodes.insert(
               {
                 children: [{ text: '' }],
-                type: editor.plugin(KEYS.p).type,
+                type: editor.plugin(PLUGINS.paragraph).schema.type,
               },
               { at: PathApi.next(path), select: true }
             );
@@ -842,7 +845,7 @@ export const BlockSelectionPlugin = definePlatePlugin(KEYS.blockSelection, {
             tx.nodes.insert(
               {
                 children: [{ text: options.insertText }],
-                type: editor.plugin(KEYS.p).type,
+                type: editor.plugin(PLUGINS.paragraph).schema.type,
               },
               { at: firstPath, select: true }
             );

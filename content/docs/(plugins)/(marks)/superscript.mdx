@@ -20,7 +20,7 @@ Superscript is the `'sup'` value of Plate's `script` mark. `ScriptPlugin` owns b
 
 ## Features
 
-- One `KEYS.script` mark with `'sub' | 'sup'` values.
+- One `PLUGINS.script` mark with `'sub' | 'sup'` values.
 - Directional selection affinity.
 - HTML deserialization from `sup` and `vertical-align: super`.
 - `<sup>` rendering for the `'sup'` value.
@@ -117,7 +117,7 @@ editor.update.script.toggle('sup');
 
 | API | Use |
 |-----|-----|
-| `KEYS.script` | The `script` text property. |
+| `PLUGINS.script` | The `script` text property. |
 | `ScriptPlugin` | Shared React plugin for subscript and superscript. |
 | `ScriptRules.markdown({ value: 'sup' })` | Creates the superscript input rule. |
 | `editor.update.script.toggle('sup')` | Applies superscript or removes it when already active. |

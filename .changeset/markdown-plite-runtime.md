@@ -2,6 +2,10 @@
 "@platejs/markdown": major
 ---
 
+Resolve `withBlockId` through `ElementIdPlugin` and its compiled physical
+property key. Serialization rejects the option when persisted element identity
+is not installed.
+
 Export `MarkdownPluginState` as the complete mutable state contract for
 `MarkdownPlugin`.
 
@@ -17,6 +21,19 @@ Export `MarkdownPluginState` as the complete mutable state contract for
   `MarkdownPlugin.initialState`
 - Resolve feature codecs directly by their owning plugin name, without reverse
   name/type translation
+- Name custom MDX element tags with each plugin's resolved application schema
+  type; fixed MDAST, HTML, and MDX syntax remains literal
+- Resolve every generated Plate paragraph through the installed application
+  schema type; use the default `paragraph` identity only when no paragraph
+  plugin is installed
+- Key one-operation decode overrides by installed plugin capability name even
+  when the application schema uses a different persisted element type
+- Keep typed `audio`, `file`, and `video` rule keys in the canonical Markdown
+  node-name union, and reject persisted-tag aliases after a codec claims a
+  decode source
+- Rename the public `PlateType` and `StrictPlateType` format-node unions to
+  `MarkdownNodeName` and `StrictMarkdownNodeName`; remove the exported
+  `mdastToPlate` and `plateToMdast` lookup helpers
 - Use one `tableCell` Plate type for GFM table cells; header semantics stay on
   the cell's `header` property
 - Round-trip `<sub>` and `<sup>` through one `script: 'sub' | 'sup'` text
@@ -45,3 +62,6 @@ const document = editor.api.markdown.deserialize(markdown);
 editor.update.value.replace(document);
 editor.api.markdown.serialize({ value: document });
 ```
+
+Use `MarkdownNodeName` for custom rule filters. Persisted custom MDX tags must
+match the configured application schema type before conversion.

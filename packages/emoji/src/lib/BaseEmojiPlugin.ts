@@ -1,14 +1,20 @@
 import type { Emoji, EmojiMartData } from '@emoji-mart/data';
 
 import {
-  createTriggerComboboxExtension,
+  triggerCombobox,
   type TriggerComboboxPluginState,
 } from '@platejs/combobox';
-import { createBasePlugin } from '@platejs/core';
-import { type EditorUpdateTransaction, property } from '@platejs/plite';
-import { KEYS, NODES } from '@platejs/utils';
+import { defineBasePlugin } from '@platejs/core';
+import {
+  type EditorUpdateTransaction,
+  type ElementOf,
+  property,
+} from '@platejs/plite';
+import { PLUGINS } from '@platejs/utils';
 
 import { DEFAULT_EMOJI_LIBRARY } from './EmojiLibrary';
+
+const TRIGGER_PREVIOUS_CHAR_PATTERN = /^\s?$/;
 
 export type EmojiPluginState = {
   /**
@@ -33,8 +39,7 @@ export type EmojiPluginState = {
   >;
 } & TriggerComboboxPluginState;
 
-export const BaseEmojiInputPlugin = createBasePlugin({
-  name: KEYS.emojiInput,
+export const BaseEmojiInputPlugin = defineBasePlugin(PLUGINS.emojiInput, {
   schema: {
     element: {
       properties: {
@@ -45,25 +50,23 @@ export const BaseEmojiInputPlugin = createBasePlugin({
       void: 'inline',
     },
   },
-  type: NODES.emojiInput,
   editOnly: true,
 });
 
-const emojiInitialState: EmojiPluginState = {
-  data: DEFAULT_EMOJI_LIBRARY,
-  trigger: ':',
-  triggerPreviousCharPattern: /^\s?$/,
-  createComboboxInput: () => ({
-    children: [{ text: '' }],
-    type: NODES.emojiInput,
-  }),
-  createEmojiNode: ({ skins }) => ({ text: skins[0].native }),
-};
+export type EmojiInputElement = ElementOf<typeof BaseEmojiInputPlugin>;
 
-export const BaseEmojiPlugin = createBasePlugin({
-  name: KEYS.emoji,
+export const BaseEmojiPlugin = defineBasePlugin(PLUGINS.emoji, {
   dependencies: [BaseEmojiInputPlugin],
-  initialState: emojiInitialState,
+  initialState: ({ editor }): EmojiPluginState => ({
+    createComboboxInput: () => ({
+      children: [{ text: '' }],
+      type: editor.plugin(BaseEmojiInputPlugin).schema.type,
+    }),
+    data: DEFAULT_EMOJI_LIBRARY,
+    trigger: ':',
+    triggerPreviousCharPattern: TRIGGER_PREVIOUS_CHAR_PATTERN,
+    createEmojiNode: ({ skins }) => ({ text: skins[0].native }),
+  }),
 
   editOnly: true,
   update: ({ store, tx }) => ({
@@ -71,11 +74,11 @@ export const BaseEmojiPlugin = createBasePlugin({
       tx.nodes.insert(store.get('createEmojiNode')(emoji));
     },
   }),
-}).extend(({ editor, plugin, store, type }) =>
-  createTriggerComboboxExtension({
-    editor,
-    getState: () => store.get(),
-    name: plugin.name,
-    type,
-  })
-);
+}).extend(({ editor, store }) => ({
+  commands: (context) =>
+    triggerCombobox(context, {
+      editor,
+      getState: () => store.get(),
+      type: editor.plugin(BaseEmojiInputPlugin).schema.type,
+    }),
+}));

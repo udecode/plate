@@ -65,7 +65,7 @@ export const getInjectMatch = <E extends BaseEditor>(
 
           if (!portal.installed) return [];
 
-          return [portal.type];
+          return [portal.schema.type];
         });
         const isBelow =
           excludeTypes.length > 0 &&

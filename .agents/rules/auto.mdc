@@ -1,5 +1,5 @@
 ---
-description: Plate/Plite ergonomic automation router and internal supervisor. Routes public GitHub queue prompts to maintainer, post-merge/current-tree closure to autoclosure, narrow local Plite regressions to plite-patch, and runs autogoal-backed Plate/Plite quality loops.
+description: Plate/Plite ergonomic automation router and internal supervisor. Routes public GitHub queue prompts to maintainer, post-merge/current-tree closure to autoclosure, narrow local Plate/Plite behavior bugs or regressions to patch, and runs autogoal-backed Plate/Plite quality loops.
 argument-hint: '[PR|issue|queue|plite|slate|plate|current tree|post-merge|lane/surface/objective] [full-loop | timed 1h|2h|overnight | batch-loop]'
 disable-model-invocation: true
 ---
@@ -11,14 +11,14 @@ Handle $ARGUMENTS.
 Use this as the ergonomic Plate/Plite front door. If the prompt names public
 GitHub queue work, route immediately to `maintainer`. If it names already
 applied/current-tree closure, route immediately to `autoclosure`. Otherwise,
-if it names one narrow local Plite regression, route immediately to
-`plite-patch`. Otherwise, run internal Plate/Plite automation until the surface
+if it names one narrow local Plate or Plite behavior bug or regression, route
+immediately to `patch`. Otherwise, run internal Plate/Plite automation until the surface
 is actually good:
 correct, fast, visually stable, well-tested, architecturally clean,
 docs-aligned, and ready for review.
 
 This is a router and supervisor skill. It does not replace `maintainer`,
-`autoclosure`, `plite-patch`, `plite-plan`, `plate-plan`, `slate-ar`,
+`autoclosure`, `patch`, `plite-plan`, `plate-plan`, `slate-ar`,
 `slate-migration`, `architecture-cleanup`, or package owners unless evidence
 proves the skill topology itself is wrong. It routes them, repairs missing
 proof/metrics/skills, reshapes the Plate/Slate skill stack when needed, and
@@ -59,7 +59,7 @@ explicitly deferred, decisions are consolidated, and ship readiness is clean.
   missing tests, API cleanup, and workflow repair.
 - The user wants "absolute best" implementation quality without picking every
   sub-skill.
-- Repeated manual calls to Plite AR modes or `plite-patch` are producing
+- Repeated manual calls to Plite AR modes or `patch` are producing
   reactive thrash.
 - The user wants external editor issue/test corpora, such as Lexical open and
   closed issues, mined for Plite robustness gaps without hand-routing every
@@ -69,9 +69,10 @@ explicitly deferred, decisions are consolidated, and ship readiness is clean.
 
 ## Do Not Use When
 
-- The user asks one narrow local Plite bug fix: use `plite-patch`.
+- The user asks one narrow local Plate or Plite bug fix: use `patch`.
 - The user asks one public Slate issue: use `resolve-slate-issue`.
-- The user asks one ordinary local patch outside Plite automation: use `task`.
+- The user asks one ordinary local tooling, build, feature, refactor, docs,
+  review, or investigation task outside Plate/Plite automation: use `task`.
 - The user asks one architecture/API plan for review: use `plite-plan` or
   `plate-plan` according to lane.
 - The user asks one Slate benchmark target: use `slate-ar perf <target>`.
@@ -101,7 +102,7 @@ Route these immediately:
 | `auto security`, `auto GHSA...`, `auto CVE...` | `maintainer security` | security authority boundary |
 | `auto current tree`, `auto post-merge`, `auto ready to commit`, `auto teammate branch` | `autoclosure <target>` | already-applied/current-tree closure |
 | `auto plite`, `auto slate`, `auto slate-v2`, `auto huge-document`, `auto editor behavior` | `auto` Plite lane | broad internal Plite quality loop |
-| `auto <one local Plite regression>` | `plite-patch <regression>` | one local reproduce-test-fix-proof pass |
+| `auto <one local Plate or Plite behavior bug or regression>` | `patch <bug>` | one local reproduce-test-fix-proof pass |
 | `auto plate`, `auto plate packages`, `auto docs`, `auto registry` | `auto` Plate lane | internal Plate quality loop |
 
 When routing away, preserve the user's arguments and newest constraints. Do
@@ -328,7 +329,7 @@ Split long work into checkpoints that fit one high-quality prompt:
   copied helpers, hard-to-prove behavior, package-boundary confusion, deslop,
   over-splits, or perf work expose broader source-layout friction, invoke
   `architecture-cleanup` before choosing `plite-plan`, `plate-plan`,
-  `plite-patch`, `slate-ar`, or a package owner.
+  `patch`, `slate-ar`, or a package owner.
 - **Skill-repair checkpoint:** patch the owning skill/rule when the workflow
   missed a recurring expectation.
 - **Research-discovery checkpoint:** when local evidence is thin, the problem
@@ -580,7 +581,7 @@ Log a workflow-slowdown row when:
 - a specialist skill spends time on avoidable setup, broad scans, repeated
   finalization, redundant gates, or noisy output;
 - a command has no narrow mode and blocks timed/batch progress;
-- `slate-ar ship`, finalization, `autoreview`, browser proof, docs proof, or
+- `slate-ar ship`, finalization, P2 `autoreview`, browser proof, docs proof, or
   benchmark setup dominates the loop without producing proportional evidence;
 - compaction/output budget pressure is caused by command shape rather than the
   real task.
@@ -1025,7 +1026,7 @@ Allowed skill repair:
 4. verify source and generated mirror with `rg`;
 5. record the repair in the goal plan.
 
-Use `plite-patch repair <expectation>` for patch-lane misses.
+Use `patch repair <expectation>` for patch-lane misses.
 Use `autogoal repair <expectation>` for universal goal lifecycle misses.
 Patch `auto` itself when the supervisor cadence, proof, or routing
 missed the expectation.
@@ -1071,8 +1072,8 @@ Every failed attempt is classified before the next checkpoint:
 
 Then repair the owning layer:
 
-- runtime bug -> `plite-patch`;
-- missing oracle -> `plite-patch` or `tdd`;
+- runtime bug -> `patch`;
+- missing oracle -> `patch` or `tdd`;
 - missing/lying metric -> benchmark target/script repair;
 - visual proof gap -> Browser/screenshot/Playwright geometry proof;
 - stale docs -> decision consolidation;
@@ -1100,7 +1101,7 @@ Each loop cycle has one primary owner and one packet-ledger decision.
    route Plate quality gaps to the package/docs/test owner.
 4. **Behavior:** run `slate-ar stabilize` / `slate-ar gate` before Slate perf;
    run focused Plate behavior/browser/docs proof for Plate lanes.
-5. **Oracle repair:** if proof is missing, use `plite-patch`, `tdd`, or the
+5. **Oracle repair:** if proof is missing, use `patch`, `tdd`, or the
    package test owner.
 6. **Vision proof:** use Browser, screenshot, and/or Playwright geometry checks
    for visual/editor parity.
@@ -1299,8 +1300,8 @@ show a missed human journey. Promote repeated rows into reusable Playwright or
 
 The supervisor repairs whatever layer is missing:
 
-- **Bug:** reproduce and fix with `plite-patch`.
-- **Missing oracle:** add Playwright/unit/Browser proof with `plite-patch` or
+- **Bug:** reproduce and fix with `patch`.
+- **Missing oracle:** add Playwright/unit/Browser proof with `patch` or
   `tdd`.
 - **Runtime-boundary oracle gap:** when repeated proof needs a host, browser,
   peer, transport, or editor-service boundary, build the smallest fake runtime
@@ -1425,7 +1426,7 @@ Stop when:
   keep/revert/quarantine decision.
 
 Do not stop just because one benchmark improved or one focused test passed.
-Do not stop just because a behavior lane needs `plite-patch`; switch owner
+Do not stop just because a behavior lane needs `patch`; switch owner
 inside the same automation loop and keep the packet ledger honest.
 Do not stop a timed or batch run before its minimum runtime because no obvious
 owner remains; enter supervision mode and create the next checkpoint.

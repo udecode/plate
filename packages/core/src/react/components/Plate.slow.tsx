@@ -542,7 +542,7 @@ describe('Plate', () => {
         'pliteNode',
         'testid',
         'plitePath',
-        'pliteRuntimeId',
+        'pliteNodeKey',
       ]);
 
       const boldEl = getByTestId('bold');
@@ -558,7 +558,7 @@ describe('Plate', () => {
         'myParagraphAttribute',
         'testid',
         'plitePath',
-        'pliteRuntimeId',
+        'pliteNodeKey',
       ]);
 
       const boldEl = getByTestId('bold');

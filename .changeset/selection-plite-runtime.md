@@ -3,8 +3,14 @@
 ---
 
 - Move block-selection mutations to explicit Plite transactions
+- Track block and menu selections with editor-scoped `NodeKey` values rather
+  than persisted element properties.
+- Store them as `selectedKeys` and `anchorKey`; block-menu state uses
+  `openKey`.
 - Publish block-selection services, snapshot reads, selectors, and updates on
   the installed plugin
+- Remove the redundant `read.first` alias; read the first selected node from
+  `read.nodes()`.
 - Derive inserted block selections from the last canonical commit
 - Compose `BlockMenuPlugin` explicitly beside `BlockSelectionPlugin`
 - Preserve plugin API inference and render non-element block-selection

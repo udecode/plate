@@ -919,7 +919,7 @@ describe('contextual schema slice fitting', () => {
     );
   });
 
-  it('preserves both split sides and runtime identity without decoding the slice', () => {
+  it('preserves both split sides and node key without decoding the slice', () => {
     const slice = ContentSlice.fromJSON({
       content: [paragraph('one'), paragraph('two')],
       openEnd: 1,
@@ -927,8 +927,8 @@ describe('contextual schema slice fitting', () => {
     });
     const fullInsert = encodeContentSliceContent(slice);
     const editor = createSchemaEditor([paragraph('leftright')]);
-    const blockId = editor.read.runtime.idAt([0]);
-    const textId = editor.read.runtime.idAt([0, 0]);
+    const blockKey = editor.key([0]);
+    const textKey = editor.key([0, 0]);
     const prefix = editor.anchor(
       {
         kind: 'text',
@@ -978,10 +978,10 @@ describe('contextual schema slice fitting', () => {
       focus: { offset: 3, path: [1, 0] },
       kind: 'text',
     });
-    assert.equal(editor.read.runtime.idAt([0]), blockId);
-    assert.equal(editor.read.runtime.idAt([0, 0]), textId);
-    assert.notEqual(editor.read.runtime.idAt([1]), blockId);
-    assert.notEqual(editor.read.runtime.idAt([1, 0]), textId);
+    assert.equal(editor.key([0]), blockKey);
+    assert.equal(editor.key([0, 0]), textKey);
+    assert.notEqual(editor.key([1]), blockKey);
+    assert.notEqual(editor.key([1, 0]), textKey);
   });
 
   it('classifies a prepared open block fit only when commit queries need it', () => {
@@ -1071,8 +1071,8 @@ describe('contextual schema slice fitting', () => {
       initialValue: [paragraph('one'), paragraph('two'), paragraph('')],
     });
     const before = editor.read.children();
-    const firstRuntimeId = editor.read.runtime.idAt([0]);
-    const secondRuntimeId = editor.read.runtime.idAt([1]);
+    const firstNodeKey = editor.key([0]);
+    const secondNodeKey = editor.key([1]);
     const slice = editor.read.slice.get({
       at: {
         anchor: { offset: 0, path: [0, 0] },
@@ -1102,16 +1102,10 @@ describe('contextual schema slice fitting', () => {
     assert.notEqual(after[1], after[3]);
     assert.notEqual(after[2]!.children[0], after[0]!.children[0]);
     assert.notEqual(after[3]!.children[0], after[1]!.children[0]);
-    assert.equal(editor.read.runtime.idAt([0]), firstRuntimeId);
-    assert.equal(editor.read.runtime.idAt([1]), secondRuntimeId);
-    assert.notEqual(
-      editor.read.runtime.idAt([0]),
-      editor.read.runtime.idAt([2])
-    );
-    assert.notEqual(
-      editor.read.runtime.idAt([1]),
-      editor.read.runtime.idAt([3])
-    );
+    assert.equal(editor.key([0]), firstNodeKey);
+    assert.equal(editor.key([1]), secondNodeKey);
+    assert.notEqual(editor.key([0]), editor.key([2]));
+    assert.notEqual(editor.key([1]), editor.key([3]));
   });
 
   it('falls back when an open block slice is not canonically prepared', () => {
@@ -1747,9 +1741,9 @@ describe('contextual schema slice fitting', () => {
 
   it('applies one canonical replacement with mapped selection and stable ids', () => {
     const editor = createSchemaEditor([paragraph('abc'), paragraph('tail')]);
-    const firstBlockId = editor.read.runtime.idAt([0]);
-    const firstTextId = editor.read.runtime.idAt([0, 0]);
-    const tailId = editor.read.runtime.idAt([1]);
+    const firstBlockKey = editor.key([0]);
+    const firstTextKey = editor.key([0, 0]);
+    const tailKey = editor.key([1]);
     const tail = editor.read.children()[1];
 
     editor.update((tx) => {
@@ -1770,9 +1764,9 @@ describe('contextual schema slice fitting', () => {
       anchor: { offset: 2, path: [0, 0] },
       focus: { offset: 2, path: [0, 0] },
     });
-    assert.equal(editor.read.runtime.idAt([0]), firstBlockId);
-    assert.equal(editor.read.runtime.idAt([0, 0]), firstTextId);
-    assert.equal(editor.read.runtime.idAt([1]), tailId);
+    assert.equal(editor.key([0]), firstBlockKey);
+    assert.equal(editor.key([0, 0]), firstTextKey);
+    assert.equal(editor.key([1]), tailKey);
     assert.equal(editor.read.children()[1], tail);
   });
 

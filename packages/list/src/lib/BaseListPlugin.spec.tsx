@@ -491,7 +491,7 @@ describe('BaseListPlugin', () => {
         children: [{ text: 'Parsed' }],
         indent: 2,
         listStyleType: 'circle',
-        type: editor.plugin(PLUGINS.paragraph).schema.element!.type,
+        type: editor.plugin(PLUGINS.paragraph).schema.type,
       },
     ]);
   });
@@ -1294,11 +1294,11 @@ describe('BaseListPlugin expansion', () => {
     it('returns the same blocks unchanged', () => {
       const input = (
         <fragment>
-          <hp id="1">
+          <hp>
             paragraph 1<cursor />
           </hp>
-          <hp id="2">paragraph 2</hp>
-          <hh1 id="3">heading</hh1>
+          <hp>paragraph 2</hp>
+          <hh1>heading</hh1>
         </fragment>
       ) as Element[];
 
@@ -1324,13 +1324,13 @@ describe('BaseListPlugin expansion', () => {
     it('returns the same list items', () => {
       const input = (
         <fragment>
-          <hp id="1" indent={1} listStyleType="disc">
+          <hp indent={1} listStyleType="disc">
             item 1
           </hp>
-          <hp id="2" indent={1} listStyleType="disc">
+          <hp indent={1} listStyleType="disc">
             item 2<cursor />
           </hp>
-          <hp id="3" indent={1} listStyleType="disc">
+          <hp indent={1} listStyleType="disc">
             item 3
           </hp>
         </fragment>
@@ -1358,17 +1358,17 @@ describe('BaseListPlugin expansion', () => {
     it('expand single list item to include its children', () => {
       const input = (
         <fragment>
-          <hp id="1" indent={1} listStyleType="disc">
+          <hp indent={1} listStyleType="disc">
             parent
             <cursor />
           </hp>
-          <hp id="2" indent={2} listStyleType="disc">
+          <hp indent={2} listStyleType="disc">
             child 1
           </hp>
-          <hp id="3" indent={2} listStyleType="disc">
+          <hp indent={2} listStyleType="disc">
             child 2
           </hp>
-          <hp id="4" indent={1} listStyleType="disc">
+          <hp indent={1} listStyleType="disc">
             sibling
           </hp>
         </fragment>
@@ -1395,19 +1395,19 @@ describe('BaseListPlugin expansion', () => {
     it('handle multiple list items with children', () => {
       const input = (
         <fragment>
-          <hp id="1" indent={1} listStyleType="disc">
+          <hp indent={1} listStyleType="disc">
             parent 1
           </hp>
-          <hp id="2" indent={2} listStyleType="disc">
+          <hp indent={2} listStyleType="disc">
             child 1.1
           </hp>
-          <hp id="3" indent={1} listStyleType="disc">
+          <hp indent={1} listStyleType="disc">
             parent 2<cursor />
           </hp>
-          <hp id="4" indent={2} listStyleType="disc">
+          <hp indent={2} listStyleType="disc">
             child 2.1
           </hp>
-          <hp id="5" indent={3} listStyleType="disc">
+          <hp indent={3} listStyleType="disc">
             grandchild 2.1.1
           </hp>
         </fragment>
@@ -1439,13 +1439,13 @@ describe('BaseListPlugin expansion', () => {
     it('avoid duplicates when children are already in input', () => {
       const input = (
         <fragment>
-          <hp id="1" indent={1} listStyleType="disc">
+          <hp indent={1} listStyleType="disc">
             parent
           </hp>
-          <hp id="2" indent={2} listStyleType="disc">
+          <hp indent={2} listStyleType="disc">
             child 1<cursor />
           </hp>
-          <hp id="3" indent={2} listStyleType="disc">
+          <hp indent={2} listStyleType="disc">
             child 2
           </hp>
         </fragment>
@@ -1478,15 +1478,15 @@ describe('BaseListPlugin expansion', () => {
     it('expand only list items and keep other blocks as-is', () => {
       const input = (
         <fragment>
-          <hp id="1">paragraph before</hp>
-          <hp id="2" indent={1} listStyleType="disc">
+          <hp>paragraph before</hp>
+          <hp indent={1} listStyleType="disc">
             list parent
             <cursor />
           </hp>
-          <hp id="3" indent={2} listStyleType="disc">
+          <hp indent={2} listStyleType="disc">
             list child
           </hp>
-          <hh1 id="4">heading after</hh1>
+          <hh1>heading after</hh1>
         </fragment>
       ) as Element[];
 
@@ -1527,11 +1527,11 @@ describe('BaseListPlugin expansion', () => {
     it('handle list items at end of document', () => {
       const input = (
         <fragment>
-          <hp id="1" indent={1} listStyleType="disc">
+          <hp indent={1} listStyleType="disc">
             parent at end
             <cursor />
           </hp>
-          <hp id="2" indent={2} listStyleType="disc">
+          <hp indent={2} listStyleType="disc">
             child at end
           </hp>
         </fragment>
@@ -1556,19 +1556,19 @@ describe('BaseListPlugin expansion', () => {
     it('handle deeply nested lists', () => {
       const input = (
         <fragment>
-          <hp id="1" indent={1} listStyleType="disc">
+          <hp indent={1} listStyleType="disc">
             level 1<cursor />
           </hp>
-          <hp id="2" indent={2} listStyleType="disc">
+          <hp indent={2} listStyleType="disc">
             level 2
           </hp>
-          <hp id="3" indent={3} listStyleType="disc">
+          <hp indent={3} listStyleType="disc">
             level 3
           </hp>
-          <hp id="4" indent={4} listStyleType="disc">
+          <hp indent={4} listStyleType="disc">
             level 4
           </hp>
-          <hp id="5" indent={5} listStyleType="disc">
+          <hp indent={5} listStyleType="disc">
             level 5
           </hp>
         </fragment>

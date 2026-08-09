@@ -3,8 +3,8 @@ import { faker } from '@faker-js/faker';
 import { getHugeDocumentBlocks } from '@/registry/examples/values/huge-document-value';
 
 import {
-  getDefaultNodeIdFragmentBlockCount,
-  getNodeIdFragmentBenchmarkData,
+  getDefaultElementIdFragmentBlockCount,
+  getElementIdFragmentBenchmarkData,
 } from './workloads';
 
 describe('getHugeDocumentBlocks', () => {
@@ -23,22 +23,24 @@ describe('getHugeDocumentBlocks', () => {
   });
 });
 
-describe('getNodeIdFragmentBenchmarkData', () => {
-  it('builds a raw import fragment without node ids', () => {
+describe('getElementIdFragmentBenchmarkData', () => {
+  it('builds a raw import fragment without persisted element ids', () => {
     const blocks = 100;
-    const { fragment, value } = getNodeIdFragmentBenchmarkData({
+    const { fragment, value } = getElementIdFragmentBenchmarkData({
       blocks,
       kind: 'raw-import',
     });
 
     expect(value).toHaveLength(blocks);
-    expect(fragment).toHaveLength(getDefaultNodeIdFragmentBlockCount(blocks));
+    expect(fragment).toHaveLength(
+      getDefaultElementIdFragmentBlockCount(blocks)
+    );
     expect(value[0]?.id).toBeUndefined();
     expect(fragment[0]?.id).toBeUndefined();
   });
 
   it('builds a seeded duplicate-paste fragment that reuses existing ids', () => {
-    const { fragment, value } = getNodeIdFragmentBenchmarkData({
+    const { fragment, value } = getElementIdFragmentBenchmarkData({
       blocks: 100,
       kind: 'seeded-duplicate-paste',
     });

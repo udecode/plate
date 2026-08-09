@@ -55,7 +55,7 @@ verification pass.
 
 - Do not create or update a plan unless the user explicitly asks for an
   autogoal artifact.
-- Do not run autoreview.
+- Do not run autoreview at any priority, including P2.
 - Do not create a `main -> next` PR.
 - Do not touch promotion; this shortcut is not `next -> main`.
 - Do not re-run broad release status commands once the pushed SHA is known.

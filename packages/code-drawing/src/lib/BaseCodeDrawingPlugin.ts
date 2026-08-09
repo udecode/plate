@@ -1,11 +1,6 @@
 import { defineBasePlugin } from '@platejs/core';
-import {
-  type Element,
-  type NodeInsertNodesOptions,
-  type NodeProps,
-  property,
-} from '@platejs/plite';
-import { KEYS, NODES } from '@platejs/utils';
+import { type ElementOf, property } from '@platejs/plite';
+import { PLUGINS } from '@platejs/utils';
 
 export const CODE_DRAWING_TYPE = {
   PlantUml: 'PlantUml',
@@ -69,16 +64,40 @@ export type CodeDrawingData = {
   drawingType?: CodeDrawingType;
 };
 
-export interface TCodeDrawingElement extends Element {
-  data?: CodeDrawingData;
-}
-
 /** Enables support for PlantUML, Graphviz, Flowchart, and Mermaid drawings. */
-export const BaseCodeDrawingPlugin = defineBasePlugin(KEYS.codeDrawing, {
+export const BaseCodeDrawingPlugin = defineBasePlugin(PLUGINS.codeDrawing, {
+  codecs: ({ defineCodecs, schema: { type } }) =>
+    defineCodecs({
+      'text/markdown': {
+        from: type,
+        kind: 'node',
+        decode: ({ node, parseAttributes }) => ({
+          ...parseAttributes(node.attributes),
+          children: [{ text: '' }],
+          type,
+        }),
+        encode: ({ node, propsToAttributes }) => {
+          const { children: _, type: __, ...props } = node;
+
+          return {
+            attributes: propsToAttributes(props),
+            children: [],
+            name: type,
+            type: 'mdxJsxFlowElement',
+          };
+        },
+      },
+    }),
   schema: {
     element: {
       properties: {
         data: property.json({
+          default: {
+            code: '',
+            drawingMode: VIEW_MODE.Both,
+            drawingType: CODE_DRAWING_TYPE.Mermaid,
+          },
+          omitDefault: false,
           validate: (value): value is CodeDrawingData => {
             if (
               typeof value !== 'object' ||
@@ -106,28 +125,6 @@ export const BaseCodeDrawingPlugin = defineBasePlugin(KEYS.codeDrawing, {
       void: 'block',
     },
   },
-  type: NODES.codeDrawing,
-  update: ({ tx, type }) => ({
-    insert: (
-      props: NodeProps<TCodeDrawingElement> = {},
-      options: NodeInsertNodesOptions<TCodeDrawingElement> = {}
-    ) => {
-      const { data, ...restProps } = props;
-
-      tx.blocks.insertAfter<TCodeDrawingElement>(
-        {
-          children: [{ text: '' }],
-          type,
-          data: {
-            code: '',
-            drawingMode: 'Both',
-            drawingType: 'Mermaid',
-            ...(data ?? {}),
-          },
-          ...restProps,
-        },
-        options
-      );
-    },
-  }),
 });
+
+export type CodeDrawingElement = ElementOf<typeof BaseCodeDrawingPlugin>;

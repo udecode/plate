@@ -1,9 +1,9 @@
-import { ContentSlice, NodeApi } from '@platejs/plite';
+import { ContentSlice, type Element, NodeApi } from '@platejs/plite';
+import type { TableCellElement, TableRowElement } from '../BaseTablePlugin';
 import type {
-  TableCellElement,
-  TableElement,
-  TableRowElement,
-} from '../BaseTablePlugin';
+  TableCellElementWithId,
+  TableRowElementWithId,
+} from '../__tests__/tableTestTypes';
 
 import { createDetachedTableContext } from './context';
 import { compileTableGrid } from './grid';
@@ -24,8 +24,8 @@ let generatedId = 0;
 
 const cell = (
   text: string,
-  options: Partial<TableCellElement> = {}
-): TableCellElement => ({
+  options: Partial<TableCellElementWithId> = {}
+): TableCellElementWithId => ({
   children: [{ text }],
   id: options.id ?? `cell-${generatedId++}`,
   type: 'tableCell',
@@ -34,8 +34,8 @@ const cell = (
 
 const row = (
   children: readonly TableCellElement[],
-  options: Partial<TableRowElement> = {}
-): TableRowElement => ({
+  options: Partial<TableRowElementWithId> = {}
+): TableRowElementWithId => ({
   children: [...children],
   id: options.id ?? `row-${generatedId++}`,
   type: 'tableRow',
@@ -44,8 +44,8 @@ const row = (
 
 const table = (
   rows: readonly TableRowElement[],
-  options: Partial<TableElement> = {}
-): TableElement => ({
+  options: Partial<Element> = {}
+): Element => ({
   children: [...rows],
   id: options.id ?? `table-${generatedId++}`,
   type: 'table',
@@ -57,7 +57,7 @@ const createCell: TableCellFactory = ({ header }) =>
 
 const createRow = () => row([]);
 
-const prepare = (source: TableElement) =>
+const prepare = (source: Element) =>
   prepareTablePaste(source, {
     createCell,
     createRow,
@@ -65,8 +65,8 @@ const prepare = (source: TableElement) =>
   });
 
 const paste = (
-  target: TableElement,
-  source: TableElement,
+  target: Element,
+  source: Element,
   options: Partial<Parameters<typeof planPreparedTablePaste>[2]> = {}
 ) => {
   const prepared = prepare(source);
@@ -100,7 +100,7 @@ const paste = (
   return { output: output!, plan: result, prepared };
 };
 
-const logicalText = (value: TableElement) => {
+const logicalText = (value: Element) => {
   const grid = compileTableGrid(value);
 
   return grid.slots.map((slots) =>
@@ -444,7 +444,7 @@ describe('PreparedTablePaste planning contracts', () => {
     expect(result).toEqual({
       kind: 'invalid-source',
       reason: 'content-rejected',
-      sourceCellId: prepared.grid.anchors[0].id,
+      sourceCellKey: prepared.grid.anchors[0].key,
     });
     expect(Object.isFrozen(result)).toBe(true);
   });

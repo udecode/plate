@@ -570,7 +570,7 @@ const executableIdentity = (project) => {
   return snapshotFileIdentity(browserType.executablePath());
 };
 
-const runtimeIdentity = (project) => ({
+const nodeKey = (project) => ({
   arch: process.arch,
   executable: executableIdentity(project),
   node: process.version,
@@ -842,7 +842,7 @@ const runManagedProject = async (
   const selectedUnits = selectUnitsForJob(units, job);
   projectRun?.throwIfCancelled();
   const target = targetIdentity(proofSession);
-  const runtime = runtimeIdentity(project);
+  const runtime = nodeKey(project);
   const environment = runEnvironment();
   const fingerprintSalts = [
     'plite-browser-run-v6',

@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   getLastCommit as editorGetLastCommit,
-  getPathByRuntimeId as editorGetPathByRuntimeId,
-  getRuntimeId as editorGetRuntimeId,
+  getPathByNodeKey as editorGetPathByNodeKey,
+  getNodeKey as editorGetNodeKey,
   getSnapshot as editorGetSnapshot,
   replace as editorReplace,
   string as editorString,
@@ -134,9 +134,9 @@ describe('collab and history runtime contract', () => {
     });
     extensionCommits.length = 0;
 
-    const runtimeId = editorGetRuntimeId(editor, [0, 0]);
+    const nodeKey = editorGetNodeKey(editor, [0, 0]);
 
-    assert(runtimeId);
+    assert(nodeKey);
 
     const subscribedCommits: NonNullable<
       ReturnType<typeof editorGetLastCommit>
@@ -178,7 +178,7 @@ describe('collab and history runtime contract', () => {
     assert.equal(commit.selectionChanged, true);
     assert.equal(commit.changed.has('text'), true);
     assert.equal(commit.changed.has('snapshot'), true);
-    assert(commit.changed.runtimeIds('node').includes(runtimeId));
+    assert(commit.changed.nodeKeys('node').includes(nodeKey));
     assert.deepEqual(commit.changed.topLevelRanges(), [[0, 0]]);
     assert.equal(
       commit.inverseChanges,
@@ -585,17 +585,17 @@ describe('collab and history runtime contract', () => {
 
   it('keeps runtime targets local while remote remove and move changes rebase or null them', () => {
     const removeEditor = createCollabEditor();
-    const removedBlockId = editorGetRuntimeId(removeEditor, [1]);
-    const removedTextId = editorGetRuntimeId(removeEditor, [1, 0]);
-    assert(removedBlockId);
-    assert(removedTextId);
+    const removedBlockKey = editorGetNodeKey(removeEditor, [1]);
+    const removedTextKey = editorGetNodeKey(removeEditor, [1, 0]);
+    assert(removedBlockKey);
+    assert(removedTextKey);
 
     const removeChange = buildChange(removeEditor, (tx) => {
       tx.nodes.remove({ at: [1] });
     });
 
     assert.equal(
-      JSON.stringify(removeChange.toJSON()).includes(removedBlockId),
+      JSON.stringify(removeChange.toJSON()).includes(removedBlockKey),
       false
     );
 
@@ -608,20 +608,20 @@ describe('collab and history runtime contract', () => {
 
     assert(removeCommit);
     assert.deepEqual(removeCommit.tags, ['remote-remove']);
-    assert.equal(editorGetPathByRuntimeId(removeEditor, removedBlockId), null);
-    assert.equal(editorGetPathByRuntimeId(removeEditor, removedTextId), null);
+    assert.equal(editorGetPathByNodeKey(removeEditor, removedBlockKey), null);
+    assert.equal(editorGetPathByNodeKey(removeEditor, removedTextKey), null);
 
     const moveEditor = createCollabEditor();
-    const movedBlockId = editorGetRuntimeId(moveEditor, [2]);
-    const movedTextId = editorGetRuntimeId(moveEditor, [2, 0]);
-    assert(movedBlockId);
-    assert(movedTextId);
+    const movedBlockKey = editorGetNodeKey(moveEditor, [2]);
+    const movedTextKey = editorGetNodeKey(moveEditor, [2, 0]);
+    assert(movedBlockKey);
+    assert(movedTextKey);
     const moveChange = buildChange(moveEditor, (tx) => {
       tx.nodes.move({ at: [2], to: [0] });
     });
 
     assert.equal(
-      JSON.stringify(moveChange.toJSON()).includes(movedBlockId),
+      JSON.stringify(moveChange.toJSON()).includes(movedBlockKey),
       false
     );
 
@@ -634,8 +634,8 @@ describe('collab and history runtime contract', () => {
 
     assert(moveCommit);
     assert.deepEqual(moveCommit.tags, ['remote-move']);
-    assert.deepEqual(editorGetPathByRuntimeId(moveEditor, movedBlockId), [0]);
-    assert.deepEqual(editorGetPathByRuntimeId(moveEditor, movedTextId), [0, 0]);
+    assert.deepEqual(editorGetPathByNodeKey(moveEditor, movedBlockKey), [0]);
+    assert.deepEqual(editorGetPathByNodeKey(moveEditor, movedTextKey), [0, 0]);
     assert.equal(editorString(moveEditor, [0]), 'three');
   });
 });

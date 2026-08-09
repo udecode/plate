@@ -1,8 +1,9 @@
+import type { TableRowElement } from '../BaseTablePlugin';
 import type {
-  TableCellElement,
-  TableElement,
-  TableRowElement,
-} from '../BaseTablePlugin';
+  TableCellElementWithId,
+  TableElementWithId,
+  TableRowElementWithId,
+} from '../__tests__/tableTestTypes';
 
 import { createDetachedTableContext } from './context';
 import { compileTableGrid, readTableGridCompilerMetrics } from './grid';
@@ -47,13 +48,13 @@ const createCell: TableCellFactory = ({ col, row }) => ({
   type: 'tableCell',
 });
 
-const createDenseTable = (size: number): TableElement => ({
+const createDenseTable = (size: number): TableElementWithId => ({
   children: Array.from(
     { length: size },
-    (_, row): TableRowElement => ({
+    (_, row): TableRowElementWithId => ({
       children: Array.from(
         { length: size },
-        (_, col): TableCellElement => ({
+        (_, col): TableCellElementWithId => ({
           children: [{ text: `${row}:${col}` }],
           id: `cell-${row}-${col}`,
           type: 'tableCell',
@@ -67,10 +68,10 @@ const createDenseTable = (size: number): TableElement => ({
   type: 'table',
 });
 
-const createSparseTable = (size: number): TableElement => ({
+const createSparseTable = (size: number): TableElementWithId => ({
   children: Array.from(
     { length: size },
-    (_, row): TableRowElement => ({
+    (_, row): TableRowElementWithId => ({
       children: [
         {
           children: [{ text: `${row}` }],
@@ -87,7 +88,7 @@ const createSparseTable = (size: number): TableElement => ({
   type: 'table',
 });
 
-const createUncoveredTable = (size: number): TableElement => {
+const createUncoveredTable = (size: number): TableElementWithId => {
   const table = createDenseTable(size);
 
   return {
@@ -143,7 +144,7 @@ describe('TableMutationPlan benchmark', () => {
     );
     const insert = () =>
       planTableMutation(context, {
-        anchorId: 'cell-0-31',
+        anchorKey: 'cell-0-31',
         createCell,
         kind: 'insert-column',
       });
@@ -265,10 +266,10 @@ describe('TableGrid compiler benchmark', () => {
       const samples = measureSamples(
         Array.from({ length: sampleCount }, () => () => {
           for (let index = 0; index < lookupIterations; index++) {
-            const byId = grid.byId.get(ids[index]);
+            const byKey = grid.byKey.get(ids[index]);
             const byPath = grid.byPath.get(paths[index]);
 
-            if (byId !== byPath) lookupMismatch = true;
+            if (byKey !== byPath) lookupMismatch = true;
           }
         })
       );
@@ -296,7 +297,7 @@ describe('TableGrid compiler benchmark', () => {
     for (const { tables } of TABLE_GRID_RETENTION_COHORTS) {
       const references = (() =>
         Array.from({ length: tables }, (_, index) => {
-          const table: TableElement = {
+          const table: TableElementWithId = {
             ...createDenseTable(1),
             id: `retained-${tables}-${index}`,
           };

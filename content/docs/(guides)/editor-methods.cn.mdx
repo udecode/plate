@@ -22,7 +22,7 @@ import { useEditor, useEditorSelector, useEditorState } from 'platejs/react';
 
 const MyComponent = () => {
   const editor = useEditor();
-  const hasSelection = useEditorSelector((editor) => !!editor.selection);
+  const hasSelection = useEditorSelector((editor) => !!editor.read.selection());
   const selection = useEditorState((state) => state.selection());
   
   // ...
@@ -37,7 +37,7 @@ const MyComponent = () => {
 #### useEditorSelector
 
 - 订阅基于编辑器的特定选择器。这是订阅状态变化最高效的方式。
-- 示例用法：`const hasSelection = useEditorSelector((editor) => !!editor.selection);`
+- 示例用法：`const hasSelection = useEditorSelector((editor) => !!editor.read.selection());`
 - 当您希望组件响应特定变化重新渲染时，可以使用`useEditorSelector`访问相关属性。
 - 选择器函数在每次编辑器变化时被调用（如每次按键或选择变化），但组件仅在返回值变化时重新渲染。
 - 为确保正常工作，返回值应能使用`===`进行比较。通常这意味着返回原始值（数字、字符串或布尔值）。
@@ -92,17 +92,20 @@ const Toolbar = () => {
 
 ## 编辑器 API 和命令
 
-`editor.api` 用于读取、DOM service 和 host helper。`editor.update` 用于会改变文档、选择、历史或插件状态的命令。
+`editor.read` 用于 snapshot-bound query，`editor.api` 用于 DOM、host 和
+plugin service。`editor.update` 用于会改变文档、选择、历史或插件状态的命令。
 
 ```ts title="editor-methods.ts" showLineNumbers
-const selectedText = editor.selection
-  ? editor.api.string(editor.selection)
-  : '';
+import { BoldPlugin } from '@platejs/basic-nodes/react';
 
-const currentBlock = editor.api.block();
+const selection = editor.read.selection();
+const selectedText = selection ? editor.read.text.string(selection) : '';
 
-if (selectedText && !editor.api.hasMark('bold')) {
-  editor.update((tx) => tx.marks.toggle('bold'));
+const currentBlock = editor.read.nodes.block();
+const bold = editor.plugin(BoldPlugin);
+
+if (selectedText && !bold.read.isActive()) {
+  bold.update.toggle();
 }
 
 editor.update((tx) => {
@@ -115,7 +118,8 @@ editor.update((tx) => {
 
 | 表面 | 示例 | 用途 |
 | --- | --- | --- |
-| `editor.api` | `string`, `block`, `hasMark`, `isExpanded`, `dom.focus` | 读取编辑器状态、检查 selection、DOM/runtime services。 |
+| `editor.read` | `text.string`, `nodes.block`, `marks`, `selection.isExpanded` | 读取当前不可变编辑器状态。 |
+| `editor.api` | `dom.focus` 和插件 service groups | DOM/runtime services 和非变更型插件 API。 |
 | `editor.update` | `tx.nodes.insert`, `tx.nodes.set`, `tx.marks.toggle`, `tx.selection.set` | 修改文档或编辑器状态。 |
 
 ## 插件方法
@@ -132,8 +136,8 @@ editor.plugin(BoldPlugin).update.toggle();
 | --- | --- |
 | `editor.plugin(plugin)` | 类型安全地读取 descriptor 字段以及 scoped API、reads、updates 和 store。 |
 | `editor.plugin(plugin).name` | 读取已安装插件的能力身份。 |
-| `editor.plugin(ElementPlugin).schema.element.type` | 读取解析后的持久化元素类型。 |
-| `editor.plugin(BoldPlugin).schema.properties.bold.key` | 读取解析后的持久化属性键。 |
+| `editor.plugin(ElementPlugin).schema.type` | 读取解析后的持久化元素类型。 |
+| `editor.plugin(BoldPlugin).schema.key` | 读取解析后的持久化属性键。 |
 | `editor.plugin(plugin).inject.nodeProps` | 读取 compiled injected node props。 |
 
 运行时 name portal 会擦除具体类型，适用于动态 name 或接受任意同名已安装 descriptor 的 family-agnostic 插件槽。如果对应插件可选，先检查 `.installed`；插件不存在时，其他字段会抛出错误。
@@ -152,7 +156,7 @@ const component = codeBlockPlugin.render.node;
 获取插件身份：
 
 ```ts
-const paragraphType = editor.plugin(PLUGINS.paragraph).schema.element!.type;
+const paragraphType = editor.plugin(PLUGINS.paragraph).schema.type;
 ```
 
 ## 插件 Store

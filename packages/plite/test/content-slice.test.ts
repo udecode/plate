@@ -218,19 +218,19 @@ describe('ContentSlice', () => {
     assert.equal(editor.update.slice.replace(slice, { at: [0] }), true);
 
     const first = editor.read.children()[0] as Element;
-    const firstRuntimeId = editor.read.runtime.idAt([0]);
+    const firstNodeKey = editor.key([0]);
 
-    assert(firstRuntimeId);
+    assert(firstNodeKey);
     assert.equal(editor.update.slice.replace(slice, { at: [1] }), true);
 
     const second = editor.read.children()[1] as Element;
-    const secondRuntimeId = editor.read.runtime.idAt([1]);
+    const secondNodeKey = editor.key([1]);
 
     assert.equal(commits, 2);
     assert.notEqual(second, first);
     assert.notEqual(second.children[0], first.children[0]);
-    assert(secondRuntimeId);
-    assert.notEqual(secondRuntimeId, firstRuntimeId);
+    assert(secondNodeKey);
+    assert.notEqual(secondNodeKey, firstNodeKey);
   });
 
   it('shares one frozen content snapshot and full encoding across open variants', () => {

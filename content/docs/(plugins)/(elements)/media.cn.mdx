@@ -364,16 +364,15 @@ export function useUploadFile({
 然后将你的自定义上传钩子与媒体组件集成:
 
 ```tsx
-import {
-  type PlaceholderElement,
-} from 'platejs';
 import { type PlateElementProps, useEditor } from 'platejs/react';
+import { PlaceholderPlugin } from '@platejs/media/react';
+import { PLUGINS } from 'platejs';
 
 import { useUploadFile } from '@/hooks/use-upload-file'; // 你的自定义钩子
 
 export function PlaceholderElement({
   element,
-}: PlateElementProps<PlaceholderElement>) {
+}: PlateElementProps<typeof PlaceholderPlugin>) {
   const editor = useEditor();
   const { uploadFile, isUploading, progress } = useUploadFile({
     onUploadComplete: (uploadedFile) => {
@@ -381,13 +380,18 @@ export function PlaceholderElement({
 
       if (!path) return;
 
+      const file = editor.plugin(PLUGINS.file);
+
       editor.update({ history: 'skip' }, (tx) => {
         tx.nodes.remove({ at: path });
         tx.nodes.insert(
           {
             children: [{ text: '' }],
             isUpload: true,
-            name: element.mediaType === PLUGINS.file ? uploadedFile.name : '',
+            name:
+              file.installed && element.mediaType === file.schema.type
+                ? uploadedFile.name
+                : '',
             placeholderId: element.id as string,
             type: element.mediaType,
             url: uploadedFile.url,
@@ -734,7 +738,8 @@ enum UploadErrorCode {
     不显示浏览器提示框，直接解析 URL。
   </APIItem>
   <APIItem name="type" type="string" optional>
-    `PLUGINS.image` 或 `PLUGINS.mediaEmbed`。默认值为 `PLUGINS.image`。
+    已解析的 image 或 media-embed schema type。省略时优先使用已安装的
+    image type，其次使用已安装的 media-embed type。
   </APIItem>
 </APIOptions>
 </API>
@@ -787,7 +792,7 @@ enum UploadErrorCode {
 </API>
 
 可调整大小包负责指针和键盘计算，不负责文档写入。图片 UI 通过
-`editor.plugin(ImagePlugin).update.setWidth(width, { at: element })` 提交。
+`editor.plugin(ImagePlugin).update.set({ width }, { at: element })` 提交。
 
 ### `useMediaState`
 
@@ -795,6 +800,9 @@ enum UploadErrorCode {
 
 <API name="useMediaState">
 <APIParameters>
+  <APIItem name="plugin" type="MediaPlugin" required>
+    当前渲染元素对应的图片、视频、音频、文件或嵌入插件。
+  </APIItem>
   <APIItem name="options.urlParsers" type="EmbedUrlParser[]" optional>
     用于解析媒体元素 URL 的 URL 解析器数组。
     - **`EmbedUrlParser`:** `(url: string) => EmbedUrlData | undefined`
@@ -805,7 +813,7 @@ enum UploadErrorCode {
   <APIItem name="id" type="string | undefined">
     媒体元素 ID。
   </APIItem>
-  <APIItem name="align" type="string | undefined">
+  <APIItem name="textAlign" type="'center' | 'left' | 'right' | undefined">
     媒体元素的对齐方式。
   </APIItem>
   <APIItem name="embed" type="EmbedUrlData | undefined">
@@ -864,6 +872,11 @@ enum UploadErrorCode {
 处理浮动媒体编辑按钮。
 
 <API name="useFloatingMediaEditButton">
+<APIParameters>
+  <APIItem name="options.plugin" type="MediaPlugin" required>
+    当前渲染元素对应的媒体插件。
+  </APIItem>
+</APIParameters>
 <APIReturns type="object">
   <APIItem name="props.onClick" type="() => void">
     处理按钮点击的回调函数。

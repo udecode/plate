@@ -1,15 +1,15 @@
 import React from 'react';
 
-import { useEditor, useElement } from '@platejs/core/react';
 import { createAtomStore } from '@platejs/core/react/internal';
 import { useEditorReadOnly } from '@platejs/plite-react';
-import type { TResizableElement } from '@platejs/utils';
 
 import {
   type ResizeDirection,
   type ResizeEvent,
   type ResizeLength,
   resizeLengthClamp,
+  resizeLengthToRelative,
+  resizeLengthToStatic,
 } from './resizeLength';
 
 export type ResizableOptions = {
@@ -17,10 +17,12 @@ export type ResizableOptions = {
   align?: 'center' | 'left' | 'right';
   maxWidth?: ResizeLength;
   minWidth?: ResizeLength;
+  onResizeEnd?: (width: ResizeLength) => void;
+  width?: ResizeLength;
 };
 
 type ResizableStoreState = {
-  width: number | string;
+  width: ResizeLength;
 };
 
 const resizableInitialState: ResizableStoreState = {
@@ -36,11 +38,19 @@ export const {
 } = createAtomStore(resizableInitialState, { name: 'resizable' as const });
 
 export type ResizeHandleStoreState = {
+  maxWidth: ResizeLength;
+  minWidth: ResizeLength;
+  nudgeWidth: (delta: number) => void;
   onResize: (event: ResizeEvent) => void;
+  width: ResizeLength;
 };
 
 const resizeHandleInitialState: ResizeHandleStoreState = {
+  maxWidth: '100%',
+  minWidth: 92,
+  nudgeWidth: () => {},
   onResize: () => {},
+  width: '100%',
 };
 
 export const {
@@ -57,29 +67,11 @@ export const useResizableState = ({
   align = 'center',
   maxWidth = '100%',
   minWidth = 92,
+  onResizeEnd,
+  width: nodeWidth = '100%',
 }: ResizableOptions = {}) => {
-  const editor = useEditor();
-  const element = useElement<TResizableElement>();
-  const nodeWidth = element?.width ?? '100%';
   const width = useResizableValue('width');
   const setWidth = useResizableSet('width');
-
-  const setNodeWidth = React.useCallback(
-    (nextWidth: number) => {
-      if (nextWidth === nodeWidth) {
-        const path = editor.read.nodes.path(element);
-
-        if (!path) return;
-
-        editor.update.selection.set(path);
-
-        return;
-      }
-
-      editor.update.nodes.set({ width: nextWidth }, { at: element });
-    },
-    [editor, element, nodeWidth]
-  );
 
   React.useEffect(() => {
     setWidth(nodeWidth);
@@ -89,7 +81,7 @@ export const useResizableState = ({
     align,
     maxWidth,
     minWidth,
-    setNodeWidth,
+    onResizeEnd,
     setWidth,
     width,
   };
@@ -99,14 +91,46 @@ export const useResizable = ({
   align,
   maxWidth,
   minWidth,
-  setNodeWidth,
+  onResizeEnd,
   setWidth,
   width,
 }: ReturnType<typeof useResizableState>) => {
   const wrapperRef = React.useRef<HTMLDivElement>(null);
+  const commitWidth = React.useCallback(
+    (nextWidth: ResizeLength) => {
+      setWidth(nextWidth);
+      onResizeEnd?.(nextWidth);
+    },
+    [onResizeEnd, setWidth]
+  );
+  const nudgeWidth = React.useCallback(
+    (delta: number) => {
+      const parentWidth = wrapperRef.current?.offsetWidth;
+
+      if (!parentWidth) return;
+
+      const nextWidth = resizeLengthClamp(
+        resizeLengthToStatic(width, parentWidth) + delta,
+        parentWidth,
+        { max: maxWidth, min: minWidth }
+      );
+
+      commitWidth(
+        typeof width === 'string' && width.trim().endsWith('%')
+          ? resizeLengthToRelative(nextWidth, parentWidth)
+          : typeof width === 'string'
+            ? `${nextWidth}px`
+            : nextWidth
+      );
+    },
+    [commitWidth, maxWidth, minWidth, width]
+  );
 
   return {
     context: {
+      maxWidth,
+      minWidth,
+      nudgeWidth,
       onResize: React.useCallback(
         ({ delta, direction, finished, initialSize }: ResizeEvent) => {
           const wrapperStaticWidth = wrapperRef.current!.offsetWidth;
@@ -122,13 +146,14 @@ export const useResizable = ({
           );
 
           if (finished) {
-            setNodeWidth(newWidth);
+            commitWidth(newWidth);
           } else {
             setWidth(newWidth);
           }
         },
-        [align, maxWidth, minWidth, setNodeWidth, setWidth]
+        [align, commitWidth, maxWidth, minWidth, setWidth]
       ),
+      width,
     },
     props: {
       style: {

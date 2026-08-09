@@ -1,33 +1,30 @@
 import {
+  type BasePlugin,
   type BasePluginContext,
   type BasePluginDefinition,
   defineBasePlugin,
+  type ElementWith,
   type PlatePluginTransaction,
 } from '@platejs/core';
 import {
+  type Descendant,
+  type Element,
+  type ElementOf,
   type EditorUpdateContext,
   type NodeInsertNodesOptions,
   property,
   schema,
+  type SchemaElement,
   type SchemaElementProperties,
 } from '@platejs/plite';
-import { KEYS } from '@platejs/utils';
-import type {
-  TAudioElement,
-  TFileElement,
-  TImageElement,
-  TMediaElement,
-  TMediaEmbedElement,
-  TResizableProps,
-  TVideoElement,
-} from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 import { isUrl as defaultIsUrl } from '@udecode/utils';
 
 export const mediaElementProperties = {
   isUpload: property.boolean(),
   name: property.string(),
   placeholderId: property.string(),
-  url: property.string(),
+  url: property.string({ required: true }),
   width: property.json({
     validate: (value): value is number | string =>
       (typeof value === 'number' && Number.isFinite(value)) ||
@@ -43,10 +40,11 @@ export type MediaPluginState = {
   transformUrl?: (url: string) => string;
 };
 
-export type MediaUrlProperties = Pick<
-  TMediaElement,
-  'provider' | 'sourceUrl' | 'url'
->;
+export type MediaUrlProperties = {
+  url: string;
+  provider?: string;
+  sourceUrl?: string;
+};
 
 /** Construction input shared by scoped media insert commands. */
 export type MediaInsertInput = {
@@ -55,7 +53,7 @@ export type MediaInsertInput = {
    * Initial caption content compiled into the media element's direct children.
    * This construction-only field is never persisted.
    */
-  caption?: string | TMediaElement['children'];
+  caption?: string | readonly Descendant[];
   id?: string;
   isUpload?: boolean;
   name?: string;
@@ -64,7 +62,7 @@ export type MediaInsertInput = {
 };
 
 export type AlignedMediaInsertInput = MediaInsertInput & {
-  align?: NonNullable<TResizableProps['align']>;
+  textAlign?: 'center' | 'left' | 'right';
 };
 
 export type ImageInsertInput = AlignedMediaInsertInput & {
@@ -78,70 +76,78 @@ export type ProviderMediaInsertInput = AlignedMediaInsertInput & {
   sourceUrl?: string;
 };
 
-type MediaElementForPlugin<K extends string> = K extends typeof KEYS.img
-  ? TImageElement
-  : K extends typeof KEYS.audio
-    ? TAudioElement
-    : K extends typeof KEYS.file
-      ? TFileElement
-      : K extends typeof KEYS.video
-        ? TVideoElement
-        : K extends typeof KEYS.mediaEmbed
-          ? TMediaEmbedElement
-          : TMediaElement;
+type MediaInsertInputForPlugin<K extends string> =
+  K extends typeof PLUGINS.image
+    ? ImageInsertInput
+    : K extends typeof PLUGINS.mediaEmbed | typeof PLUGINS.video
+      ? ProviderMediaInsertInput
+      : K extends typeof PLUGINS.audio
+        ? AlignedMediaInsertInput
+        : MediaInsertInput;
 
-type MediaInsertInputForPlugin<K extends string> = K extends typeof KEYS.img
-  ? ImageInsertInput
-  : K extends typeof KEYS.mediaEmbed | typeof KEYS.video
-    ? ProviderMediaInsertInput
-    : K extends typeof KEYS.audio
-      ? AlignedMediaInsertInput
-      : MediaInsertInput;
+type MediaElementPluginDefinition = BasePluginDefinition &
+  Readonly<{ schema: Readonly<{ element: SchemaElement }> }>;
 
-type MediaPluginUpdate<K extends string> = {
+type MediaPluginDescriptor<C extends MediaElementPluginDefinition> =
+  BasePlugin<C>;
+
+type MediaPluginUpdate<C extends MediaElementPluginDefinition> = {
   insert: (
-    input: MediaInsertInputForPlugin<K>,
-    options?: NodeInsertNodesOptions<TMediaElement>
+    input: MediaInsertInputForPlugin<C['name']>,
+    options?: NodeInsertNodesOptions<ElementOf<MediaPluginDescriptor<C>>>
   ) => boolean;
-  setUrl: (input: {
-    element: MediaElementForPlugin<K>;
-    url: string;
-  }) => boolean;
+  setUrl: (input: { element: Element; url: string }) => boolean;
 };
 
 type MediaPluginApi = {
   normalizeUrl: (url: string) => MediaUrlProperties | undefined;
 };
 
-type MediaPluginBaseDefinition<K extends string = string> =
-  BasePluginDefinition &
-    Readonly<{
-      initialState: MediaPluginState;
-      name: K;
-    }>;
+type MediaPluginExtension = {
+  api: (
+    context: BasePluginContext<MediaElementPluginDefinition>
+  ) => MediaPluginApi;
+  update: (
+    context: BasePluginContext<MediaElementPluginDefinition> & {
+      context: EditorUpdateContext;
+      tx: PlatePluginTransaction<MediaElementPluginDefinition>;
+    }
+  ) => {
+    insert: (
+      input: MediaInsertInput,
+      options?: NodeInsertNodesOptions<Element>
+    ) => boolean;
+    setUrl: (input: { element: Element; url: string }) => boolean;
+  };
+};
 
 /** Installs direct-child caption normalization and media construction. */
-export const defineMediaPlugin =
-  (
-    normalizeUrlInput?: (
-      state: Readonly<MediaPluginState>,
-      url: string
-    ) => MediaUrlProperties
-  ) =>
-  <C extends MediaPluginBaseDefinition>({
-    store,
-    type,
-  }: BasePluginContext<C>): {
-    api: (context: BasePluginContext<C>) => MediaPluginApi;
-    update: (
-      context: BasePluginContext<C> & {
-        context: EditorUpdateContext;
-        tx: PlatePluginTransaction<C>;
-      }
-    ) => MediaPluginUpdate<C['name']>;
-  } => {
+export function defineMediaPlugin<const C extends MediaElementPluginDefinition>(
+  normalizeUrlInput?: (
+    state: Readonly<MediaPluginState>,
+    url: string
+  ) => MediaUrlProperties
+): (context: BasePluginContext<C>) => {
+  api: (context: BasePluginContext<C>) => MediaPluginApi;
+  update: (
+    context: BasePluginContext<C> & {
+      context: EditorUpdateContext;
+      tx: PlatePluginTransaction<C>;
+    }
+  ) => MediaPluginUpdate<C>;
+};
+export function defineMediaPlugin(
+  normalizeUrlInput?: (
+    state: Readonly<MediaPluginState>,
+    url: string
+  ) => MediaUrlProperties
+): unknown {
+  const extension: (
+    context: BasePluginContext<MediaElementPluginDefinition>
+  ) => MediaPluginExtension = ({ schema, store }) => {
+    const type = schema.type;
     const normalizeUrl = (url: string): MediaUrlProperties | undefined => {
-      const state = store.get();
+      const state = store.get() as Readonly<MediaPluginState>;
       const normalized = normalizeUrlInput?.(state, url) ?? {
         url: state.transformUrl?.(url) ?? url,
       };
@@ -171,7 +177,7 @@ export const defineMediaPlugin =
               : caption && caption.length > 0
                 ? caption
                 : [{ text: '' }];
-          const element: TMediaElement = {
+          const element = {
             ...properties,
             children,
             type,
@@ -191,7 +197,7 @@ export const defineMediaPlugin =
 
           if (!properties || !at) return false;
 
-          tx.nodes.set<TMediaElement>(
+          tx.nodes.set(
             {
               provider: properties.provider,
               sourceUrl: properties.sourceUrl,
@@ -206,11 +212,14 @@ export const defineMediaPlugin =
     };
   };
 
+  return extension;
+}
+
 export type AudioPluginState = MediaPluginState;
 export type FilePluginState = MediaPluginState;
 export type VideoPluginState = MediaPluginState;
 
-export const BaseAudioPlugin = defineBasePlugin(KEYS.audio, {
+export const BaseAudioPlugin = defineBasePlugin(PLUGINS.audio, {
   initialState: (): AudioPluginState => ({}),
   schema: {
     element: schema.element.textBlock({
@@ -219,12 +228,12 @@ export const BaseAudioPlugin = defineBasePlugin(KEYS.audio, {
       properties: mediaElementProperties,
     }),
   },
-  codecs: ({ defineCodecs }) =>
+  codecs: ({ defineCodecs, schema: { type } }) =>
     defineCodecs({
       'text/markdown': {
-        from: 'audio',
+        from: type,
         kind: 'node',
-        decode: ({ caption, decode, node, parseAttributes, type }) => {
+        decode: ({ caption, decode, node, parseAttributes }) => {
           const { src, ...props } = parseAttributes(node.attributes);
 
           return {
@@ -239,7 +248,6 @@ export const BaseAudioPlugin = defineBasePlugin(KEYS.audio, {
           node,
           propsToAttributes,
           readPlainInline,
-          type,
         }) => {
           const { children, type: _, url, ...rest } = node;
 
@@ -262,7 +270,9 @@ export const BaseAudioPlugin = defineBasePlugin(KEYS.audio, {
     }),
 }).extend(defineMediaPlugin());
 
-export const BaseFilePlugin = defineBasePlugin(KEYS.file, {
+export type AudioElement = ElementOf<typeof BaseAudioPlugin>;
+
+export const BaseFilePlugin = defineBasePlugin(PLUGINS.file, {
   initialState: (): FilePluginState => ({}),
   schema: {
     element: schema.element.textBlock({
@@ -271,12 +281,12 @@ export const BaseFilePlugin = defineBasePlugin(KEYS.file, {
       properties: mediaElementProperties,
     }),
   },
-  codecs: ({ defineCodecs }) =>
+  codecs: ({ defineCodecs, schema: { type } }) =>
     defineCodecs({
       'text/markdown': {
-        from: 'file',
+        from: type,
         kind: 'node',
-        decode: ({ caption, decode, node, parseAttributes, type }) => {
+        decode: ({ caption, decode, node, parseAttributes }) => {
           const { src, ...props } = parseAttributes(node.attributes);
 
           return {
@@ -291,7 +301,6 @@ export const BaseFilePlugin = defineBasePlugin(KEYS.file, {
           node,
           propsToAttributes,
           readPlainInline,
-          type,
         }) => {
           const { children, type: _, url, ...rest } = node;
 
@@ -314,7 +323,9 @@ export const BaseFilePlugin = defineBasePlugin(KEYS.file, {
     }),
 }).extend(defineMediaPlugin());
 
-export const BaseVideoPlugin = defineBasePlugin(KEYS.video, {
+export type FileElement = ElementOf<typeof BaseFilePlugin>;
+
+export const BaseVideoPlugin = defineBasePlugin(PLUGINS.video, {
   initialState: (): VideoPluginState => ({}),
   schema: {
     element: schema.element.textBlock({
@@ -327,12 +338,12 @@ export const BaseVideoPlugin = defineBasePlugin(KEYS.video, {
       },
     }),
   },
-  codecs: ({ defineCodecs }) =>
+  codecs: ({ defineCodecs, schema: { type } }) =>
     defineCodecs({
       'text/markdown': {
-        from: 'video',
+        from: type,
         kind: 'node',
-        decode: ({ caption, decode, node, parseAttributes, type }) => {
+        decode: ({ caption, decode, node, parseAttributes }) => {
           const { src, ...props } = parseAttributes(node.attributes);
 
           return {
@@ -347,7 +358,6 @@ export const BaseVideoPlugin = defineBasePlugin(KEYS.video, {
           node,
           propsToAttributes,
           readPlainInline,
-          type,
         }) => {
           const { children, type: _, url, ...rest } = node;
 
@@ -369,3 +379,10 @@ export const BaseVideoPlugin = defineBasePlugin(KEYS.video, {
       },
     }),
 }).extend(defineMediaPlugin());
+
+export type VideoElement = ElementOf<typeof BaseVideoPlugin>;
+
+/** Any element that carries the media width capability. */
+export type ResizableElement = ElementWith<
+  Pick<typeof mediaElementProperties, 'width'>
+>;

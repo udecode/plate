@@ -1,17 +1,23 @@
 /** @jsx jsxt */
 
+import { Plate, PlateContent, definePlatePlugin } from '@platejs/core/react';
 import { pipeHandler } from '@platejs/core/react/internal';
 
 import { jsxt, type TestEditor } from '@platejs/test-utils';
+import { fireEvent, render, waitFor } from '@testing-library/react';
+import React from 'react';
 
 import { createTestTableEditor } from '../lib/__tests__/getTestTablePlugins';
 import { TablePlugin } from './TablePlugin';
 
 jsxt;
 
+const TestPlate = Plate as React.ComponentType<
+  Omit<React.ComponentProps<typeof Plate>, 'children'>
+>;
+
 const createTableEditor = (input: TestEditor) =>
   createTestTableEditor({
-    nodeId: true,
     plugins: [
       TablePlugin.configure({
         initialState: { disableMerge: true },
@@ -57,6 +63,191 @@ const runKeyDown = (
 };
 
 describe('TablePlugin onKeyDown', () => {
+  it('prioritizes table Tab navigation over generic shortcuts', async () => {
+    const input = (
+      <editor>
+        <hp>
+          before
+          <cursor />
+        </hp>
+        <htable>
+          <htr>
+            <htd>
+              <hp>Suggestions</hp>
+            </htd>
+            <htd>
+              <hp>✅</hp>
+            </htd>
+          </htr>
+        </htable>
+      </editor>
+    ) as TestEditor;
+    const competingHandler = mock();
+    const CompetingTabPlugin = definePlatePlugin('competingTab', {
+      shortcuts: {
+        tab: { handler: competingHandler, keys: 'tab' },
+      },
+    });
+    const editor = createTestTableEditor({
+      plugins: [
+        CompetingTabPlugin,
+        TablePlugin.configure({
+          initialState: { disableMerge: true },
+        }),
+      ],
+      selection: input.selection,
+      initialValue: input.children,
+    });
+    const { container, getByText } = render(
+      React.createElement(
+        TestPlate,
+        { editor, suppressInstanceWarning: true },
+        React.createElement(PlateContent)
+      )
+    );
+    const editable = container.querySelector('[contenteditable="true"]');
+    const suggestions = getByText('Suggestions');
+    const text = suggestions.firstChild;
+
+    if (!editable) throw new Error('Expected editable root');
+    if (!text) throw new Error('Expected Suggestions text node');
+
+    const range = document.createRange();
+
+    range.setStart(text, 5);
+    range.collapse(true);
+    window.getSelection()?.removeAllRanges();
+    window.getSelection()?.addRange(range);
+
+    fireEvent.keyDown(editable, {
+      code: 'Tab',
+      key: 'Tab',
+      keyCode: 9,
+      which: 9,
+    });
+
+    expect(editor.read.selection()).toEqual({
+      anchor: { offset: 0, path: [1, 0, 1, 0, 0] },
+      focus: { offset: 1, path: [1, 0, 1, 0, 0] },
+      kind: 'text',
+    });
+    expect(competingHandler).not.toHaveBeenCalled();
+    await waitFor(() => {
+      expect(window.getSelection()?.anchorNode?.textContent).toBe('✅');
+    });
+  });
+
+  it('prioritizes table Shift+Tab navigation over generic shortcuts', async () => {
+    const input = (
+      <editor>
+        <hp>
+          before
+          <cursor />
+        </hp>
+        <htable>
+          <htr>
+            <htd>
+              <hp>Suggestions</hp>
+            </htd>
+            <htd>
+              <hp>✅</hp>
+            </htd>
+          </htr>
+        </htable>
+      </editor>
+    ) as TestEditor;
+    const competingHandler = mock();
+    const CompetingTabPlugin = definePlatePlugin('competingTab', {
+      shortcuts: {
+        untab: { handler: competingHandler, keys: 'shift+tab' },
+      },
+    });
+    const editor = createTestTableEditor({
+      plugins: [
+        CompetingTabPlugin,
+        TablePlugin.configure({
+          initialState: { disableMerge: true },
+        }),
+      ],
+      selection: input.selection,
+      initialValue: input.children,
+    });
+    const { container, getByText } = render(
+      React.createElement(
+        TestPlate,
+        { editor, suppressInstanceWarning: true },
+        React.createElement(PlateContent)
+      )
+    );
+    const editable = container.querySelector('[contenteditable="true"]');
+    const checkmark = getByText('✅');
+    const text = checkmark.firstChild;
+
+    if (!editable) throw new Error('Expected editable root');
+    if (!text) throw new Error('Expected checkmark text node');
+
+    const range = document.createRange();
+
+    range.setStart(text, 0);
+    range.collapse(true);
+    window.getSelection()?.removeAllRanges();
+    window.getSelection()?.addRange(range);
+
+    fireEvent.keyDown(editable, {
+      code: 'Tab',
+      key: 'Tab',
+      keyCode: 9,
+      shiftKey: true,
+      which: 9,
+    });
+
+    expect(editor.read.selection()).toEqual({
+      anchor: { offset: 0, path: [1, 0, 0, 0, 0] },
+      focus: { offset: 11, path: [1, 0, 0, 0, 0] },
+      kind: 'text',
+    });
+    expect(competingHandler).not.toHaveBeenCalled();
+    await waitFor(() => {
+      expect(window.getSelection()?.anchorNode?.textContent).toBe(
+        'Suggestions'
+      );
+    });
+  });
+
+  it('owns plain ArrowDown before browser default movement', () => {
+    const input = (
+      <editor>
+        <htable>
+          <htr>
+            <htd>
+              <hp>
+                Suggestions
+                <cursor />
+              </hp>
+            </htd>
+          </htr>
+          <htr>
+            <htd>
+              <hp>Emoji Picker</hp>
+            </htd>
+          </htr>
+        </htable>
+      </editor>
+    ) as TestEditor;
+    const editor = createTableEditor(input);
+    const event = createKeyboardEvent('ArrowDown', 40, { shiftKey: false });
+
+    runKeyDown(editor, event);
+
+    expect(event.preventDefault).toHaveBeenCalledTimes(1);
+    expect(event.stopPropagation).toHaveBeenCalledTimes(1);
+    expect(editor.read.selection()).toEqual({
+      anchor: { offset: 0, path: [0, 1, 0, 0, 0] },
+      focus: { offset: 0, path: [0, 1, 0, 0, 0] },
+      kind: 'text',
+    });
+  });
+
   it('eagerly expands Shift+Down from one cell into the next cell', () => {
     const input = (
       <editor>

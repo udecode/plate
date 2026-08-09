@@ -26,13 +26,11 @@ setDebugValueScrubber(null);
 
 ## API
 
-#### `setDebugValueScrubber(scrubber?: DebugValueScrubber | null): void`
+<APIReference package="@platejs/plite" symbol="setDebugValueScrubber" />
 
 Set the function used before Plite formats debug values.
 
-```typescript
-type DebugValueScrubber = (key: string, value: unknown) => unknown;
-```
+<APIReference package="@platejs/plite" symbol="DebugValueScrubber" />
 
 The custom scrubber runs before Plite's default text redaction. Return the
 original value to let the default scrubber handle it.

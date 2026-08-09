@@ -1,5 +1,6 @@
 import {
   createBaseEditor,
+  ElementIdPlugin,
   type BaseEditor,
   type BasePluginInput,
   type InferUpdate,
@@ -30,6 +31,15 @@ type BaseTableTestEditorOptions = {
   selection?: Selection;
 };
 
+const hasPersistedElementId = (value: unknown): boolean => {
+  if (!value || typeof value !== 'object') return false;
+  if (!Array.isArray(value) && typeof Reflect.get(value, 'id') === 'string') {
+    return true;
+  }
+
+  return Object.values(value).some(hasPersistedElementId);
+};
+
 /** Runtime-fixture boundary for tests that intentionally use broad/custom ASTs. */
 export const createTestBaseTableEditor = (
   options: BaseTableTestEditorOptions
@@ -43,6 +53,9 @@ export const createTestBaseTableEditor = (
   )({
     ...options,
     editor: createEditor<Value>(),
+    plugins: hasPersistedElementId(options.initialValue)
+      ? [ElementIdPlugin, ...options.plugins]
+      : options.plugins,
   });
 
 export const createTestTableEditor = (
@@ -61,7 +74,10 @@ export const createTestTableEditor = (
     initialValue: initialValue ?? [
       { children: [{ text: '' }], type: 'paragraph' },
     ],
-  }) as TableTestEditor;
+    plugins: hasPersistedElementId(initialValue)
+      ? [ElementIdPlugin, ...(rest.plugins ?? [])]
+      : rest.plugins,
+  }) as unknown as TableTestEditor;
 };
 
 export const getTestTablePlugins = (

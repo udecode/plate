@@ -822,10 +822,14 @@ const getOwnedPliteStrings = ({
   const targetTextHost = target?.closest<HTMLElement>(
     '[data-plite-node="text"]'
   );
-  const targetOwner = targetTextHost?.closest<HTMLElement>(
+  const targetVoidHost = target?.closest<HTMLElement>(
+    '[data-plite-node="element"][data-plite-void="true"]'
+  );
+  const targetHost = targetTextHost ?? targetVoidHost;
+  const targetOwner = targetHost?.closest<HTMLElement>(
     '[data-plite-editor="true"]'
   );
-  const scope = targetTextHost && targetOwner === root ? targetTextHost : root;
+  const scope = targetHost && targetOwner === root ? targetHost : root;
   const candidates = [
     ...(scope.matches('[data-plite-string], [data-plite-zero-width]')
       ? [scope]

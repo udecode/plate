@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-06-fix-inline-equation-arrow-navigation",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-06-fix-inline-equation-arrow-navigation.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-06",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Close the inline equation editor at an arrow-key boundary",
+  "targets": [
+    {
+      "name": "equation-node",
+      "files": ["apps/www/src/registry/ui/equation-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-06-equation-close-inline-editor-at-519984ec",
+      "kind": "fix",
+      "summary": "Close the inline equation editor at an arrow-key boundary.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["equation-node"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-06",
+          "entry": "2026-08-06-fix-inline-equation-arrow-navigation",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

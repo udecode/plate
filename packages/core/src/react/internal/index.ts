@@ -1,4 +1,3 @@
-export * from '../components/EditorShortcutDispatcher';
 export type { InternalPlateEditorWithInstalledPlugins } from '../editor/PlateEditor';
 export { createPluginContext } from '../plugin/createPluginContext.internal';
 export type { InternalPlateDependencyAdapterDefinition } from '../plugin/toPlatePlugin';

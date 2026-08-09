@@ -14,7 +14,7 @@ Handle $ARGUMENTS.
 
 ## Doctrine Version
 
-Current doctrine version: `47`.
+Current doctrine version: `67`.
 
 The machine-readable source is
 `.agents/rules/plate-next/versions.json`. It owns immutable doctrine history and
@@ -133,7 +133,7 @@ are reported but never queued.
    source, run every `migrationChecks` row after its applied version plus the
    normal focused proof. Any source-fingerprint mismatch forces a full current
    package review.
-5. After package proof and package-local autoreview close, run
+5. After package proof and package-local P2 autoreview close, run
    `fingerprint <package>`. Patch that package entry with the latest version,
    exact digest, local verification date, and evidence plan. Never pre-attest a
    package or copy another package's digest.
@@ -236,7 +236,7 @@ Plite`, `keep in Plate`, `private bridge with deletion gate`, or `blocker`.
   `Parameters<typeof fn>` plumbing just to silence TypeScript. Fix the owning
   API/source typing so the call site stays inferred.
 - Never annotate local variables whose initializer should infer the type. A
-  line like `const selectedEntries: NodeEntry<TIdElement>[] =
+  line like `const selectedEntries: NodeEntry<Element>[] =
 editor.plugin(...).api.blockSelection.getNodes(...)` is a regression: it
   hides whether the owner API infers correctly. Remove the annotation and fix
   the source API if inference is weak. Keep annotations only for genuinely
@@ -258,8 +258,48 @@ editor.plugin(...).api.blockSelection.getNodes(...)` is a regression: it
   chain directly, preserving every capability stage that has a real typed
   dependency. Type references and chain staging do not justify another
   constant. Keep a private descriptor only when it is itself installed or
-  returned as a durable runtime identity, reused by multiple production
+  returned as a durable plugin handle, reused by multiple production
   owners, or required at a real external boundary.
+- Audit this by declaration references, never by suffix. Inspect every
+  production top-level descriptor created by `defineBasePlugin`,
+  `definePlatePlugin`, or `toPlatePlugin`, plus every private result of
+  `.extend()` or `.configure()`, regardless of whether it is named `base`,
+  `schema`, `definition`, or something arbitrary. A descriptor used only by
+  one exported chain and by `typeof`, `ElementOf`, or `DefinitionOf` queries is
+  still one-use. Keep the chain direct and derive public types afterward. If
+  a later capability needs the node shape inferred by an earlier schema stage,
+  keep an honest `.extend(({ plugin }) => ...)` stage and derive its local node
+  type with `ElementOf<typeof plugin>` or `TextOf<typeof plugin>`. Keep any
+  generic operation-options helper private, preserve its exact node argument,
+  and export the public node/options aliases only after the final descriptor.
+  Never widen `NodeInsertNodesOptions<SpecificNode>` to `Element`, `Node`, or an
+  omitted generic to make the chain compile. If package algorithms need only
+  schema-contributed properties, derive them with `ElementWith` / `TextWith`.
+  If they intentionally accept malformed or open-world input, keep `Element` /
+  `Text` and narrow each consumed property at runtime. Never introduce a private
+  structural AST mirror to break recursion; repair the generic or declaration
+  boundary instead. Derive every public AST alias from the final descriptor.
+  A reusable plugin factory constrained to
+  a required element or mark schema must receive a required flat `schema.type`
+  or `schema.key`; if Core makes that handle optional, repair
+  `PluginAuthorSchemaView` instead of asserting, guarding, or duplicating the
+  identity locally.
+- Context-bound factories may use the exact installed-plugin editor only while
+  authoring their callback. Their public factory and emitted value types must
+  project to the smallest portable public contract. If declaration emit leaks
+  `InternalBaseEditorWithInstalledPlugins`, repair the Core factory return
+  boundary; do not annotate package exports with `BaseEditor<typeof Plugin>`,
+  rebuild callback option types, cast the result, or export an internal editor
+  carrier.
+- Treat TS7056 as the sole one-use descriptor exception. First prove that the
+  fully direct inferred export passes source typecheck but fails declaration
+  emit with TS7056 after smaller structural/editor/compiler carriers are
+  removed. Then keep only the exact private source and final declaration
+  stages required to name the type, mark every such constant
+  `@plate-plugin-declaration-stage`, annotate only the private final stage, and
+  export one unannotated alias. Neither the stages nor their definition types
+  may be barrel-exported. Record the exception count in the topology audit and
+  delete the pair when a future compiler can emit the direct chain.
 - Do not create `PluginConfig` aliases or pass a parallel config generic to a
   factory. Let `defineBasePlugin` infer its exact definition from the author
   object. Keep explicit state, API, update, or domain types only for real
@@ -328,6 +368,11 @@ editor.plugin(...).api.blockSelection.getNodes(...)` is a regression: it
   `type` means the structural field on a persisted element and the resolved
   identity exposed by an element owner; `key` is the resolved property
   identity. Never use `plugin.name` as either.
+- State that selects a capability stores the descriptor or normalized `name`,
+  never its persisted `type` or `key`. Resolve schema identity only at the AST
+  read/write boundary. Transient-node factories resolve the installed schema
+  identity when invoked so application overrides cannot leave stale literals
+  captured in plugin state.
 - Plate exposes native Plite fields directly at the plugin root: dependencies,
   conflicts, `readMiddleware`, commands, corrections, declarations,
   contributions, `on`, activation, and config-free `validate`. Reject a nested
@@ -356,6 +401,14 @@ editor.plugin(...).api.blockSelection.getNodes(...)` is a regression: it
 - Descriptor-aware schema queries are identity operations only. Read document
   properties through typed property handles or semantic plugin APIs; reject
   the arbitrary one-property-descriptor shortcut.
+- Audit plugin updates toward one mutation law: a unique unaliased property
+  uses `tx.nodes.set('property', value, options)` / `unset`; an alias or local
+  ambiguity uses the exact authored property handle; a prefix family or
+  cross-node behavior uses its semantic owner operation; structural, atomic,
+  genuinely dynamic, or unavoidable dependency-ambiguous writes keep the
+  object form. Inference comes from the shallow plugin plus required-dependency
+  graph, never the full EditorKit schema. Reject `tx.plugin`, `tx.properties`,
+  and any second mutation namespace.
 - Use `plate-plugin-creator`'s Capability Boundary Protocol as the sole
   plugin-authoring owner. Plate Next audits each contribution into exactly one
   row:
@@ -385,9 +438,9 @@ editor.plugin(...).api.blockSelection.getNodes(...)` is a regression: it
   `options`.
 - Audit current-owner context access before accepting plugin code. In any
   callback whose supplied context includes them, use `store`, `api`, `read`,
-  `update`, `type`, `plugin`, and `installed` directly. Reject
+  `update`, `schema`, `plugin`, and `installed` directly. Reject
   `editor.plugin(currentPlugin).*`, current-name root API/read/update calls,
-  standalone plugin lookup helpers, and `editor.plugin(currentName).type` in that
+  standalone plugin lookup helpers, and current-plugin schema lookups in that
   callback. Keep `editor` for editor-wide substrate, cross-plugin access, or
   one-shot transaction metadata unavailable on scoped `update`; active
   transactions use `tx`. Specialized shortcut, input-rule, state-value, and
@@ -478,6 +531,43 @@ editor.plugin(...).api.blockSelection.getNodes(...)` is a regression: it
   constructor, keep private implementation fragments lexical, read staged API
   lazily from runtime callback context, and reuse earlier mutations through the
   active `tx[plugin.name]` group.
+- For a Plate-owned custom MDX element codec, bind `schema: { type }` in the
+  codec factory and use that resolved type for `from`, the decoded element
+  `type`, and the encoded MDX `name`. Fixed MDAST, HTML, and MDX syntax remains
+  literal because it belongs to the external format. Migrate old persisted
+  tags before normal codec handling; never keep dual codec aliases. Enforce
+  this law for constructor-owned and staged codec contributions.
+- One-operation Markdown decode overrides are keyed by invariant plugin
+  capability name; encode overrides are keyed by persisted schema identity.
+  Codec dispatch resolves the decode owner before consulting the override. A
+  claimed source that returns `undefined` never falls through to a persisted-tag
+  override alias.
+- Keep custom MDX codecs on their schema-owning plugin. A foreign
+  `defineCodecs(TargetPlugin, ...)` contribution cannot author configurable MDX
+  identity; move it to the target. Staged enforcement reads schema bindings
+  from the owning callback, not only the returned `codecs` property.
+- Enforce every identity leg a codec actually declares. Decode-only custom MDX
+  codecs still bind `from` and decoded `type`; encode-only codecs still bind
+  the emitted MDX `name`.
+- A fixed external `from` or encoded `name` exempts only that external-format
+  leg. Every decoder that constructs a Plate element still uses the resolved
+  target schema type.
+- Spread parsed or conditional properties before `children` and resolved
+  `type`. Format attributes never override Plate structural fields.
+- A codec that accepts only phrasing content decodes the external paragraph's
+  phrasing children directly. Never decode a Plate wrapper and unwrap an
+  arbitrary resulting element: another codec may legitimately promote that
+  source paragraph to a block.
+- Public Markdown rule-name unions include every supported canonical rule key,
+  including `audio`, `file`, and `video`; hard cuts rename keys without dropping
+  their typed parser surface.
+- Any Plate element synthesized during format conversion, including structural
+  wrappers and unknown-node fallbacks, uses the installed application schema
+  type. Literal node types belong only to the external MDAST/HTML tree or to a
+  genuinely absent Plate plugin's authored default.
+- Every portal read from a plugin factory must be installed by that plugin's
+  declared dependency graph. Declare a required dependency at the lowest owner
+  that needs it; optional peers require an `installed` guard.
 - `component` is ordinary render publication data. Declare it in
   `defineBasePlugin()` or `definePlatePlugin()` so the descriptor renders in
   static/RSC and live Plate consumers; replace it through one terminal
@@ -741,11 +831,17 @@ Concrete correction:
   Keep callback-only `editor` and `defineCodecs` off consumer portals. Cut standalone/editor alternatives (`getBasePlugin`,
   `getEditorPlugin`, `getPlugin`, name/type/container reverse lookups, and
   `getInjectProps`). Use portal `.name` after lookup when the normalized runtime
-  identity is needed. Missing runtime names expose `installed: false`; `.type`
-  and `.key` preserve exact descriptor identity or expose the runtime string
-  as conventional identity, while
-  capability and descriptor fields throw. Never guard schema identity with an
-  `installed` fallback. Keep reverse/container/render caches private,
+  identity is needed. Missing runtime names expose `installed: false`; they do
+  not invent persisted schema identity. Installed element and property
+  identity lives only at `portal.schema.type` for exact element owners and
+  `portal.schema.key` for exact primary-mark owners. Behavior and
+  aggregate-property portals omit `schema`; consumer portals never expose
+  `schema.properties`. Name-only portals keep both identity getters
+  non-optional for `PLUGINS` consumers, with `installed` as the availability
+  guard and a runtime error for missing or wrong-kind access. Never restore
+  universal portal `.type` / `.key`, derive identity from `portal.name`, or add
+  optional chaining, non-null assertions, or raw-string fallbacks. Keep
+  reverse/container/render caches private,
   answer public node questions through schema, read injection from
   `portal.inject.nodeProps`, and group codec mapping under `registry`.
 - Existing public plugin concepts still need an API decision before renaming.
@@ -857,6 +953,22 @@ Plate Next means:
 - Plate creation calls the lineage option `schemaIdentity`; Plate element
   membership is `blockContent`. Plate schema queries accept plugin descriptors
   directly and do not expose `schema.handle(Plugin)`.
+- Plugin `name` is capability identity only. Persisted identity is published
+  through compiled element and property handles. Only a closed
+  `defineEditor(name, definition)` may override final element type, content,
+  groups, or property targets and add app-owned properties; `.extend()` and
+  `.configure()` cannot, and plugin-owned property keys/value laws stay fixed.
+- Descriptor-aware schema builders publish normalized plugin names in their
+  structural output, retain nominal descriptors only as private metadata, and
+  validate descriptor family against the installed owner before applying the
+  policy. Same-name structural objects are not interchangeable descriptors.
+- Raw plugin runtime capabilities stay shallow. Exact recursive `Value`, final
+  handles, mutation maps, and schema fingerprints live in generated EditorKit
+  artifacts so ordinary editor API access remains finite.
+- Generated schema contracts are content-addressed data, not trusted caches.
+  Fingerprints hash compiled semantic output rather than authoring syntax;
+  readers recompute authoritative structure, and restoration compares every
+  derived table with current source contributions before publication.
 - Normalized schema/compiler/provider witnesses are private implementation
   machinery. If removing a public carrier breaks inference, fix the private
   descriptor compiler rather than restoring the carrier.
@@ -945,6 +1057,11 @@ tx.*(); })` wrappers when the direct one-shot method exists. These cap the
   instead of domain inputs. Operation options are not plumbing. Review the full
   owner chain for an earlier honest staged API/tx capability before accepting
   the helper.
+- live node state, arguments, DOM attributes, or protocol fields named `id` or
+  `ids`. Plite live identity is `NodeKey`; resolve it through `editor.key`,
+  contextual `state.key`, or active `tx.key`, reverse through `nodes.path`, and
+  name feature values `key` or `keys`. Keep persisted `element.id` distinct and
+  optional through `ElementIdPlugin`; never serialize a `NodeKey`.
 - later tx stages that call an earlier method through a portal one-shot,
   `context.update`, or `editor.update.*` instead of the active
   `tx[plugin.name]` group.
@@ -979,7 +1096,7 @@ reach 100 only when its behavior lives in the right owner.
   `check:core` passes.
 - An owner file whose real runtime behavior was moved into the bridge is capped:
   `InputRulesPlugin` with input-rule execution in the bridge is `<=5`;
-  `NodeIdPlugin` with insert-id normalization in the bridge is `<=45`;
+  `ElementIdPlugin` with persisted-ID lifecycle work in the bridge is `<=45`;
   `AffinityPlugin` with edge insertion/selection behavior in the bridge is
   `<=55`; `PliteExtensionPlugin` with change dispatch in the bridge is `<=45`.
 - Private tx/plugin adapters that only connect Plate plugin tx groups into

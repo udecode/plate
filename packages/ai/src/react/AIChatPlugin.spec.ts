@@ -53,7 +53,7 @@ describe('AIChatPlugin', () => {
       initialValue,
     });
 
-    editor.update({ history: 'skip' }).aiChat.removeAnchor();
+    editor.plugin(AIChatPlugin).update({ history: 'skip' }).remove({ at: [] });
 
     expect(editor.read.children()).toHaveLength(1);
     expect(editor.read.children()[0]?.type).toBe('paragraph');

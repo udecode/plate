@@ -1,4 +1,8 @@
-import { createBaseEditor, defineBasePlugin } from '@platejs/core';
+import {
+  createBaseEditor,
+  defineBasePlugin,
+  defineEditor,
+} from '@platejs/core';
 import {
   BaseFootnoteDefinitionPlugin,
   BaseFootnoteInputPlugin,
@@ -62,7 +66,7 @@ describe('BaseFootnotePlugins', () => {
     expect(
       editor.read.schema.getElementBehavior({
         children: [{ text: '' }],
-        type: 'footnote',
+        type: 'footnoteReference',
       })
     ).toMatchObject({ atom: true, inline: true, void: true });
     expect(() =>
@@ -70,11 +74,29 @@ describe('BaseFootnotePlugins', () => {
         children: [
           {
             children: [{ text: '' }],
-            type: 'footnote',
+            type: 'footnoteReference',
           },
         ],
       })
     ).toThrow(/root.*cannot contain|cannot contain.*root/i);
+  });
+
+  it('creates transient inputs with the configured schema type', () => {
+    const definition = defineEditor('customFootnoteInput', {
+      plugins: [BaseFootnotePlugin],
+      schema: {
+        overrides: [
+          schema.override(BaseFootnoteInputPlugin, {
+            element: { type: 'customFootnoteInput' },
+          }),
+        ],
+      },
+    });
+    const editor = createBaseEditor({ plugins: definition.plugins });
+
+    expect(
+      editor.plugin(BaseFootnotePlugin).store.get('createComboboxInput')('^')
+    ).toMatchObject({ type: 'customFootnoteInput' });
   });
 
   it('configures footnote definition as a block element', () => {
@@ -151,7 +173,7 @@ describe('BaseFootnotePlugins', () => {
             {
               children: [{ text: '' }],
               identifier: '1',
-              type: 'footnote',
+              type: 'footnoteReference',
             },
             { text: ' after' },
           ],
@@ -190,7 +212,7 @@ describe('BaseFootnotePlugins', () => {
             {
               children: [{ text: '' }],
               identifier: '1',
-              type: 'footnote',
+              type: 'footnoteReference',
             },
             { text: ' after' },
           ],
@@ -264,7 +286,7 @@ describe('BaseFootnotePlugin read', () => {
             {
               children: [{ text: '1' }],
               identifier: '1',
-              type: 'footnote',
+              type: 'footnoteReference',
             },
             { text: '' },
           ],
@@ -346,7 +368,7 @@ describe('BaseFootnotePlugin read', () => {
           {
             children: [{ text: '' }],
             identifier: '1',
-            type: 'footnote',
+            type: 'footnoteReference',
           },
         ],
         type: 'paragraph',
@@ -532,7 +554,7 @@ describe('BaseFootnotePlugin updates', () => {
           {
             children: [{ text: '' }],
             identifier: '1',
-            type: 'footnote',
+            type: 'footnoteReference',
           },
           { text: '' },
         ],
@@ -557,10 +579,7 @@ describe('BaseFootnotePlugin updates', () => {
       initialValue: [{ children: [{ text: 'hello' }], type: 'paragraph' }],
     });
 
-    editor.update.footnote.insert({
-      at: [0, 0],
-      focusDefinition: false,
-    });
+    editor.update.footnote.insert({ focusDefinition: false }, { at: [0, 0] });
 
     expect(editor.read.value().children).toMatchObject([
       {
@@ -569,7 +588,7 @@ describe('BaseFootnotePlugin updates', () => {
           {
             children: [{ text: '' }],
             identifier: '1',
-            type: 'footnote',
+            type: 'footnoteReference',
           },
           { text: 'hello' },
         ],
@@ -581,6 +600,29 @@ describe('BaseFootnotePlugin updates', () => {
         type: 'footnoteDefinition',
       },
     ]);
+  });
+
+  it('removes a matching trigger in the insertion transaction', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseFootnotePlugin, BaseFootnoteDefinitionPlugin] as const,
+      selection: {
+        kind: 'text',
+        anchor: { offset: 4, path: [0, 0] },
+        focus: { offset: 4, path: [0, 0] },
+      },
+      initialValue: [{ children: [{ text: 'abc[' }], type: 'paragraph' }],
+    });
+
+    editor.update.footnote.insert({
+      focusDefinition: false,
+      trigger: '[',
+    });
+
+    expect(editor.read.text.string([0])).toBe('abc');
+    expect(editor.read.nodes.get([0, 1])?.[0]).toMatchObject({
+      identifier: '1',
+      type: 'footnoteReference',
+    });
   });
 
   it('skips used numeric identifiers when inserting', () => {
@@ -610,7 +652,7 @@ describe('BaseFootnotePlugin updates', () => {
 
     expect(editor.read.nodes.get([0, 1])?.[0]).toMatchObject({
       identifier: '2',
-      type: 'footnote',
+      type: 'footnoteReference',
     });
     expect(editor.read.nodes.get([3])?.[0]).toMatchObject({
       identifier: '2',
@@ -671,7 +713,7 @@ describe('BaseFootnotePlugin updates', () => {
               {
                 children: [{ text: '' }],
                 identifier: '1',
-                type: 'footnote',
+                type: 'footnoteReference',
               },
             ],
             type: 'paragraph',
@@ -803,7 +845,7 @@ describe('BaseFootnotePlugin updates', () => {
             {
               children: [{ text: '' }],
               identifier: '1',
-              type: 'footnote',
+              type: 'footnoteReference',
             },
             { text: '' },
           ],
@@ -831,7 +873,7 @@ describe('BaseFootnotePlugin updates', () => {
               {
                 children: [{ text: '' }],
                 identifier: '1',
-                type: 'footnote',
+                type: 'footnoteReference',
               },
               { text: 'b' },
             ],

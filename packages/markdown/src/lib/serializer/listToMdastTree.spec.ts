@@ -651,7 +651,12 @@ describe('listToMdastTree', () => {
 
     const result = listToMdastTree(
       nodes,
-      { ...runtimeOptions, spread: true, withBlockId: true },
+      {
+        ...runtimeOptions,
+        blockId: (node) => (typeof node.id === 'string' ? node.id : undefined),
+        spread: true,
+        withBlockId: true,
+      },
       true
     );
 

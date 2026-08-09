@@ -109,6 +109,24 @@ foreign targets; a codec map does not earn another file, builder stage, or
 global helper. Keep it in `.extend()` only when it consumes a real capability
 introduced by an earlier stage.
 
+For a custom Plate-owned MDX element tag, destructure `schema: { type }` from
+the codec context and use it for `from`, the decoded element `type`, and the
+encoded MDX `name`. Keep external MDAST, HTML, and MDX syntax literal. Migrate
+old persisted tags before codec dispatch instead of accepting two identities.
+Resolve every other synthesized Plate wrapper or fallback through the installed
+application schema; use literals only for external format nodes or when the
+corresponding Plate plugin is genuinely absent.
+Key one-operation decode overrides by the invariant plugin capability name and
+encode overrides by persisted schema identity. Apply the same codec identity
+checks to constructor and justified staged contributions.
+Keep configurable custom MDX codecs on their schema-owning plugin; a foreign
+target codec cannot bind the target's final application identity.
+Enforce the available identity legs on decode-only and encode-only codecs. For
+phrasing-only wrappers, decode external paragraph children directly instead of
+unwrapping a decoded Plate element.
+Keep fixed external source/name literals without weakening decoded Plate
+identity. Spread parsed attributes before structural `children` and `type`.
+
 ### Capability contribution
 
 Use the canonical boundary from the parent skill before choosing a field:
@@ -122,6 +140,27 @@ Put every independent contribution in the constructor. Use `.extend()` only
 for imported/prebuilt adaptation, a shared factory unavailable to the
 constructor, or a real earlier-capability type dependency. Keep `.configure()`
 terminal and non-widening.
+
+Write the complete chain at its public export. Before keeping any private
+plugin constant, inspect its production references. `typeof`, `ElementOf`,
+`DefinitionOf`, and one downstream `.extend()` / `.configure()` chain are one
+owner, not reuse. Derive public types after the final export. If the final type
+is needed by a later capability, use a direct `.extend(({ plugin }) => ...)`
+stage, derive the local node shape from that stage, and keep exact option
+generics private. Export the schema-derived public node/options aliases only
+after the final descriptor. Schema-contributed property capabilities use
+`ElementWith` / `TextWith`; malformed or open-world algorithms keep broad nodes
+and narrow consumed properties at runtime. If declaration emit still recurses
+through package helpers or hooks, repair the generic or declaration boundary
+instead of creating a structural AST mirror, shadow plugin descriptor, or
+widened public type. A generic factory constrained to a required schema
+must receive required flat `schema.type` / `schema.key`; optional handles are a
+Core `PluginAuthorSchemaView` bug, not permission for an assertion or guard.
+For a context-bound reusable factory, keep the installed-plugin editor in the
+authoring callback only and project its public factory/result to a portable
+contract. Fix an internal-editor declaration leak at the Core return boundary,
+not with package-level editor aliases, reconstructed rule types, annotations,
+or casts.
 
 ## File Owners
 

@@ -30,6 +30,7 @@ export type { DOMEditorInterface } from '../plugin/dom-editor';
 export {
   createDOMEditorCapability,
   DOMEditor,
+  getOrCreateDOMNodeKey,
   setEditorDOMEditableElement,
   setEditorDOMRootElement,
   setEditorDOMScrollElement,

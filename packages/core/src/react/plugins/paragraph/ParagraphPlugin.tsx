@@ -4,7 +4,7 @@ import { BaseParagraphPlugin } from '../../../lib';
 import { toPlatePlugin } from '../../plugin/toPlatePlugin';
 
 export const ParagraphPlugin = toPlatePlugin(BaseParagraphPlugin).extend(
-  ({ editor, type }) => ({
+  ({ editor, schema }) => ({
     shortcuts: {
       toggleParagraph: {
         keys: [
@@ -13,7 +13,7 @@ export const ParagraphPlugin = toPlatePlugin(BaseParagraphPlugin).extend(
         ],
         preventDefault: true,
         handler: () => {
-          editor.update.blocks.toggle(type);
+          editor.update.blocks.toggle(schema.type);
         },
       },
     },

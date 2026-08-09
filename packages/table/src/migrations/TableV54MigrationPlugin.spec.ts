@@ -37,7 +37,6 @@ describe('TableV54MigrationPlugin', () => {
   it('migrates legacy header cells before schema fitting', () => {
     const editor = createBaseEditor({
       editor: createEditor<Value>(),
-      nodeId: false,
       plugins: [TableV54MigrationPlugin, BaseTablePlugin],
       initialValue: [legacyTable('Header')],
     });
@@ -62,7 +61,6 @@ describe('TableV54MigrationPlugin', () => {
   it('migrates primary and named roots during deferred loads', () => {
     const editor = createBaseEditor({
       editor: createEditor<Value>(),
-      nodeId: false,
       plugins: [TableV54MigrationPlugin, BaseTablePlugin, TestRootPlugin],
       skipInitialization: true,
     });
@@ -106,7 +104,6 @@ describe('TableV54MigrationPlugin', () => {
     } as const;
     const editor = createBaseEditor({
       editor: createEditor<Value>(),
-      nodeId: false,
       plugins: [TableV54MigrationPlugin, BaseTablePlugin],
       initialValue: [canonical],
     });

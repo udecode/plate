@@ -1,10 +1,10 @@
-import type { Point } from '@platejs/plite';
-
 import type { BaseEditor } from '../../editor';
 import type { AnyBasePlugin } from '../../plugin/BasePlugin';
 import type { PluginReference } from '../../plugin/PluginDefinition';
 import type {
   InputRule,
+  InputRuleEditor,
+  InputRuleFactory,
   BlockFenceInputRuleConfig,
   BlockFenceInputRuleMatch,
   BlockStartInputRuleConfig,
@@ -16,6 +16,7 @@ import type {
   InsertTextInputRule,
   InsertTextInputRuleContext,
   MarkInputRuleConfig,
+  MarkInputRuleMatch,
   SelectionInputRuleContext,
   TextSubstitutionMatch,
   TextSubstitutionInputRuleConfig,
@@ -38,11 +39,6 @@ type BivariantCallback<T extends (...args: never[]) => unknown> = {
   bivarianceHack: T;
 }['bivarianceHack'];
 
-type RuntimeOptions<TContext> = {
-  enabled?: (context: TContext) => boolean;
-  priority?: number;
-};
-
 type FactoryInput<
   TContext,
   TDefaults extends object,
@@ -54,32 +50,22 @@ type FactoryOptions<
   TRequired extends object,
 > = TDefaults & TRequired;
 
-type PublicOptions<
-  TContext,
-  TDefaults extends object,
-  TRequired extends object,
-> = Simplify<Partial<TDefaults> & TRequired & RuntimeOptions<TContext>>;
-
 type CreateRuleFactoryReturn<
   TConfig,
-  TEditor,
   TDefaults extends object,
   TRequired extends object,
-> = keyof TRequired extends never
-  ? (
-      options?: PublicOptions<
-        ContextFromFactoryConfig<TConfig, TEditor>,
-        TDefaults,
-        TRequired
-      >
-    ) => RuleFromFactoryConfig<TConfig, TEditor>
-  : (
-      options: PublicOptions<
-        ContextFromFactoryConfig<TConfig, TEditor>,
-        TDefaults,
-        TRequired
-      >
-    ) => RuleFromFactoryConfig<TConfig, TEditor>;
+> = InputRuleFactory<
+  Simplify<Partial<TDefaults> & TRequired>,
+  keyof TRequired extends never ? false : true,
+  RuleFromFactoryConfig<TConfig, InputRuleEditor> extends InputRule<
+    infer TMatch,
+    InputRuleEditor
+  >
+    ? TMatch
+    : never,
+  InputRuleEditor,
+  RuleFromFactoryConfig<TConfig, InputRuleEditor>
+>;
 
 type MarkRuleFactoryConfig<
   TDefaults extends object,
@@ -356,23 +342,6 @@ type AnyRuleFactoryConfigLoose<
   | InsertDataRuleFactoryConfig<TDefaults, TRequired, unknown, TEditor>
   | TextSubstitutionRuleFactoryConfig<TDefaults, TRequired, TEditor>;
 
-type ContextFromFactoryConfig<TConfig, TEditor> = TConfig extends {
-  type: 'blockStart' | 'insertText' | 'mark' | 'textSubstitution';
-}
-  ? InsertTextInputRuleContext<TEditor>
-  : TConfig extends { type: 'blockFence' }
-    ? SelectionInputRuleContext<TEditor> & TransformInputRuleContext<TEditor>
-    : TConfig extends { type: 'insertBreak' }
-      ? InsertBreakInputRuleContext<TEditor>
-      : InsertDataInputRuleContext<TEditor>;
-
-type MarkInputRuleMatch = {
-  afterStartMatchPoint: Point;
-  beforeEndMatchPoint: Point;
-  beforeStartMatchPoint: Point;
-  end: string | undefined;
-};
-
 type RuleFromFactoryConfig<TConfig, TEditor> =
   TConfig extends MarkRuleFactoryConfig<
     infer _TDefaults,
@@ -421,10 +390,10 @@ type RuleFactoryOwner = AnyBasePlugin & PluginReference;
 
 type BoundRuleFactory<TEditor> = {
   <TRequired extends object = {}, TDefaults extends object = {}>(
-    config: MarkRuleFactoryConfig<TDefaults, TRequired, TEditor> & TDefaults
+    config: MarkRuleFactoryConfig<NoInfer<TDefaults>, TRequired, TEditor> &
+      NoInfer<TDefaults>
   ): CreateRuleFactoryReturn<
     MarkRuleFactoryConfig<TDefaults, TRequired, TEditor>,
-    TEditor,
     TDefaults,
     TRequired
   >;
@@ -433,11 +402,15 @@ type BoundRuleFactory<TEditor> = {
     TDefaults extends object = {},
     TMatch extends object = {},
   >(
-    config: BlockStartRuleFactoryConfig<TDefaults, TRequired, TMatch, TEditor> &
-      TDefaults
+    config: BlockStartRuleFactoryConfig<
+      NoInfer<TDefaults>,
+      TRequired,
+      TMatch,
+      TEditor
+    > &
+      NoInfer<TDefaults>
   ): CreateRuleFactoryReturn<
     BlockStartRuleFactoryConfig<TDefaults, TRequired, TMatch, TEditor>,
-    TEditor,
     TDefaults,
     TRequired
   >;
@@ -446,52 +419,66 @@ type BoundRuleFactory<TEditor> = {
     TDefaults extends object = {},
     TMatch = BlockFenceInputRuleMatch,
   >(
-    config: BlockFenceRuleFactoryConfig<TDefaults, TRequired, TMatch, TEditor> &
-      TDefaults
+    config: BlockFenceRuleFactoryConfig<
+      NoInfer<TDefaults>,
+      TRequired,
+      TMatch,
+      TEditor
+    > &
+      NoInfer<TDefaults>
   ): CreateRuleFactoryReturn<
     BlockFenceRuleFactoryConfig<TDefaults, TRequired, TMatch, TEditor>,
-    TEditor,
     TDefaults,
     TRequired
   >;
   <TRequired extends object = {}, TDefaults extends object = {}, TMatch = true>(
-    config: InsertTextRuleFactoryConfig<TDefaults, TRequired, TMatch, TEditor> &
-      TDefaults
+    config: InsertTextRuleFactoryConfig<
+      NoInfer<TDefaults>,
+      TRequired,
+      TMatch,
+      TEditor
+    > &
+      NoInfer<TDefaults>
   ): CreateRuleFactoryReturn<
     InsertTextRuleFactoryConfig<TDefaults, TRequired, TMatch, TEditor>,
-    TEditor,
     TDefaults,
     TRequired
   >;
   <TRequired extends object = {}, TDefaults extends object = {}, TMatch = true>(
     config: InsertBreakRuleFactoryConfig<
-      TDefaults,
+      NoInfer<TDefaults>,
       TRequired,
       TMatch,
       TEditor
     > &
-      TDefaults
+      NoInfer<TDefaults>
   ): CreateRuleFactoryReturn<
     InsertBreakRuleFactoryConfig<TDefaults, TRequired, TMatch, TEditor>,
-    TEditor,
     TDefaults,
     TRequired
   >;
   <TRequired extends object = {}, TDefaults extends object = {}, TMatch = true>(
-    config: InsertDataRuleFactoryConfig<TDefaults, TRequired, TMatch, TEditor> &
-      TDefaults
+    config: InsertDataRuleFactoryConfig<
+      NoInfer<TDefaults>,
+      TRequired,
+      TMatch,
+      TEditor
+    > &
+      NoInfer<TDefaults>
   ): CreateRuleFactoryReturn<
     InsertDataRuleFactoryConfig<TDefaults, TRequired, TMatch, TEditor>,
-    TEditor,
     TDefaults,
     TRequired
   >;
   <TRequired extends object = {}, TDefaults extends object = {}>(
-    config: TextSubstitutionRuleFactoryConfig<TDefaults, TRequired, TEditor> &
-      TDefaults
+    config: TextSubstitutionRuleFactoryConfig<
+      NoInfer<TDefaults>,
+      TRequired,
+      TEditor
+    > &
+      NoInfer<TDefaults>
   ): CreateRuleFactoryReturn<
     TextSubstitutionRuleFactoryConfig<TDefaults, TRequired, TEditor>,
-    TEditor,
     TDefaults,
     TRequired
   >;
@@ -552,83 +539,97 @@ export function createRuleFactory<
   TRequired extends object = {},
   TDefaults extends object = {},
 >(
-  config: MarkRuleFactoryConfig<TDefaults, TRequired> & TDefaults
-): CreateRuleFactoryReturn<
-  MarkRuleFactoryConfig<TDefaults, TRequired>,
-  BaseEditor,
-  TDefaults,
-  TRequired
+  config: MarkRuleFactoryConfig<NoInfer<TDefaults>, TRequired> &
+    NoInfer<TDefaults>
+): InputRuleFactory<
+  Partial<TDefaults> & TRequired,
+  keyof TRequired extends never ? false : true,
+  MarkInputRuleMatch,
+  InputRuleEditor,
+  InsertTextInputRule<MarkInputRuleMatch, InputRuleEditor>
 >;
 export function createRuleFactory<
   TRequired extends object = {},
   TDefaults extends object = {},
   TMatch extends object = {},
 >(
-  config: BlockStartRuleFactoryConfig<TDefaults, TRequired, TMatch> & TDefaults
-): CreateRuleFactoryReturn<
-  BlockStartRuleFactoryConfig<TDefaults, TRequired, TMatch>,
-  BaseEditor,
-  TDefaults,
-  TRequired
+  config: BlockStartRuleFactoryConfig<NoInfer<TDefaults>, TRequired, TMatch> &
+    NoInfer<TDefaults>
+): InputRuleFactory<
+  Partial<TDefaults> & TRequired,
+  keyof TRequired extends never ? false : true,
+  BlockStartInputRuleMatch & TMatch,
+  InputRuleEditor,
+  InsertTextInputRule<BlockStartInputRuleMatch & TMatch, InputRuleEditor>
 >;
 export function createRuleFactory<
   TRequired extends object = {},
   TDefaults extends object = {},
   TMatch = BlockFenceInputRuleMatch,
 >(
-  config: BlockFenceRuleFactoryConfig<TDefaults, TRequired, TMatch> & TDefaults
-): CreateRuleFactoryReturn<
-  BlockFenceRuleFactoryConfig<TDefaults, TRequired, TMatch>,
-  BaseEditor,
-  TDefaults,
-  TRequired
+  config: BlockFenceRuleFactoryConfig<NoInfer<TDefaults>, TRequired, TMatch> &
+    NoInfer<TDefaults>
+): InputRuleFactory<
+  Partial<TDefaults> & TRequired,
+  keyof TRequired extends never ? false : true,
+  TMatch,
+  InputRuleEditor,
+  InputRule<TMatch, InputRuleEditor>
 >;
 export function createRuleFactory<
   TRequired extends object = {},
   TDefaults extends object = {},
   TMatch = true,
 >(
-  config: InsertTextRuleFactoryConfig<TDefaults, TRequired, TMatch> & TDefaults
-): CreateRuleFactoryReturn<
-  InsertTextRuleFactoryConfig<TDefaults, TRequired, TMatch>,
-  BaseEditor,
-  TDefaults,
-  TRequired
+  config: InsertTextRuleFactoryConfig<NoInfer<TDefaults>, TRequired, TMatch> &
+    NoInfer<TDefaults>
+): InputRuleFactory<
+  Partial<TDefaults> & TRequired,
+  keyof TRequired extends never ? false : true,
+  TMatch,
+  InputRuleEditor,
+  InsertTextInputRule<TMatch, InputRuleEditor>
 >;
 export function createRuleFactory<
   TRequired extends object = {},
   TDefaults extends object = {},
   TMatch = true,
 >(
-  config: InsertBreakRuleFactoryConfig<TDefaults, TRequired, TMatch> & TDefaults
-): CreateRuleFactoryReturn<
-  InsertBreakRuleFactoryConfig<TDefaults, TRequired, TMatch>,
-  BaseEditor,
-  TDefaults,
-  TRequired
+  config: InsertBreakRuleFactoryConfig<NoInfer<TDefaults>, TRequired, TMatch> &
+    NoInfer<TDefaults>
+): InputRuleFactory<
+  Partial<TDefaults> & TRequired,
+  keyof TRequired extends never ? false : true,
+  TMatch,
+  InputRuleEditor,
+  InsertBreakInputRule<TMatch, InputRuleEditor>
 >;
 export function createRuleFactory<
   TRequired extends object = {},
   TDefaults extends object = {},
   TMatch = true,
 >(
-  config: InsertDataRuleFactoryConfig<TDefaults, TRequired, TMatch> & TDefaults
-): CreateRuleFactoryReturn<
-  InsertDataRuleFactoryConfig<TDefaults, TRequired, TMatch>,
-  BaseEditor,
-  TDefaults,
-  TRequired
+  config: InsertDataRuleFactoryConfig<NoInfer<TDefaults>, TRequired, TMatch> &
+    NoInfer<TDefaults>
+): InputRuleFactory<
+  Partial<TDefaults> & TRequired,
+  keyof TRequired extends never ? false : true,
+  TMatch,
+  InputRuleEditor,
+  InsertDataInputRule<TMatch, InputRuleEditor>
 >;
 export function createRuleFactory<
   TRequired extends object = {},
   TDefaults extends object = {},
 >(
-  config: TextSubstitutionRuleFactoryConfig<TDefaults, TRequired> & TDefaults
-): CreateRuleFactoryReturn<
-  TextSubstitutionRuleFactoryConfig<TDefaults, TRequired>,
-  BaseEditor,
-  TDefaults,
-  TRequired
+  config: TextSubstitutionRuleFactoryConfig<NoInfer<TDefaults>, TRequired> &
+    NoInfer<TDefaults>
+): InputRuleFactory<
+  Partial<TDefaults> & TRequired,
+  keyof TRequired extends never ? false : true,
+  TextSubstitutionMatch,
+  InputRuleEditor,
+  InsertTextInputRule<TextSubstitutionMatch, InputRuleEditor>
 >;
 export function createRuleFactory(configOrBuilder: unknown): unknown {
   if (

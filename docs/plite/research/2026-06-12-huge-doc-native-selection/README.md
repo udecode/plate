@@ -76,7 +76,7 @@ Exit rule:
   phase, keep current runtime and tighten claim wording;
 - if one projection phase dominates, run one reversible cache/geometry packet
   with keep/revert/quarantine metrics;
-- if behavior parity or screenshots fail, route to `plite-patch` before perf.
+- if behavior parity or screenshots fail, route to `patch` before perf.
 
 Packet result:
 - Before patch, strict 50-step held repeated ShiftDown failed on

@@ -28,6 +28,8 @@ import type {
   EditorTextChangeContext,
   EditorTransactionChangeContext,
   EditorUpdateContext,
+  EditorUpdatePolicy,
+  EditorUpdateTransaction,
   EditorValueFromExtensions,
   RegisteredEditorExtension,
   ValueOf,
@@ -83,6 +85,57 @@ import {
 import { areEditorSchemaIdentitiesEqual } from './schema-compiler';
 
 const EDITOR_EXTENSION_CONTRIBUTION_VALUES = new WeakMap<object, unknown>();
+
+export const createEditorExtensionUpdatePortal = (
+  editor: Editor,
+  extensionName: string
+): unknown => {
+  const resolveCapability = () => {
+    const capability = Reflect.get(editor.update, extensionName);
+
+    if (capability === undefined) {
+      throw new Error(
+        `Editor extension "${extensionName}" does not expose update methods.`
+      );
+    }
+
+    return capability;
+  };
+  const createScopedUpdate = (policy?: EditorUpdatePolicy): unknown =>
+    new Proxy(
+      (nextPolicy: EditorUpdatePolicy) => createScopedUpdate(nextPolicy),
+      {
+        get(_target, key) {
+          if (key === 'then' || key === 'toJSON' || typeof key === 'symbol') {
+            return;
+          }
+
+          const capability = resolveCapability();
+          const method = Reflect.get(capability, key);
+
+          if (policy === undefined || typeof method !== 'function') {
+            return method;
+          }
+
+          return (...args: unknown[]) => {
+            const update = editor.update as unknown as (
+              policy: EditorUpdatePolicy,
+              fn: (tx: EditorUpdateTransaction<any, any>) => void
+            ) => void;
+
+            update(policy, (tx) => {
+              const txCapability = Reflect.get(tx, extensionName);
+              const txMethod = Reflect.get(txCapability, key);
+
+              Reflect.apply(txMethod, txCapability, args);
+            });
+          };
+        },
+      }
+    );
+
+  return createScopedUpdate();
+};
 
 /** Define a typed extension point for ordered cross-extension contributions. */
 export const defineExtensionPoint = <TValue>(
@@ -660,7 +713,11 @@ const canonicalizeEditorExtension = <
     const value = canonical[key];
 
     if (Array.isArray(value)) {
-      canonical[key] = Object.freeze(Array.from(value));
+      canonical[key] = Object.freeze(
+        key === 'stateFields'
+          ? value.map((field) => (field === extension ? canonical : field))
+          : Array.from(value)
+      );
     }
   }
   if (extension.on) {
@@ -1425,8 +1482,10 @@ export const createEditorViewExtensionApis = <TEditor extends Editor<any, any>>(
   const createPortal = (
     installedName: string,
     installedApi: EditorExtensionApiMap
-  ) =>
-    Object.freeze({
+  ) => {
+    const update = createEditorExtensionUpdatePortal(editor, installedName);
+
+    return Object.freeze({
       get api() {
         return resolveValue(installedName, installedApi);
       },
@@ -1442,17 +1501,10 @@ export const createEditorViewExtensionApis = <TEditor extends Editor<any, any>>(
         return capability;
       },
       get update() {
-        const capability = Reflect.get(editor.update, installedName);
-
-        if (capability === undefined) {
-          throw new Error(
-            `Editor extension "${installedName}" does not expose update methods.`
-          );
-        }
-
-        return capability;
+        return update;
       },
     });
+  };
   const api = new Proxy(Object.create(null) as Record<string, unknown>, {
     get(_target, property) {
       if (typeof property !== 'string') return;

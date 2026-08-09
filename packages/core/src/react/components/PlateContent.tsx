@@ -16,7 +16,6 @@ import { useEditableProps } from '../hooks';
 import type { PlateEditor } from '../editor/PlateEditor';
 import { usePlateModelRevision } from '../internal/usePlateModelRevision';
 import { type PlateStoreState, useEditor } from '../stores';
-import { EditorShortcutDispatcher } from './EditorShortcutDispatcher';
 import { EditorRefEffect } from './EditorRefEffect';
 import { PlateControllerEffect } from './PlateControllerEffect';
 import { PlateRoot } from './PlateRoot';
@@ -183,7 +182,6 @@ const PlateContentBranch = React.forwardRef<
       <>
         {renderEditable ? renderEditable(editable) : editable}
 
-        <EditorShortcutDispatcher id={id} editableRef={editableRef} />
         <EditorRefEffect id={id} />
         <PlateControllerEffect id={id} />
       </>

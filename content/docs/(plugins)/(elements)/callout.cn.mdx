@@ -112,15 +112,23 @@ const editor = createPlateEditor({
 
 向编辑器中插入提示框元素。
 
-<API name="callout">
-<APIOptions type="object">
+<API name="editor.plugin(BaseCalloutPlugin).update.insert">
+<APIParameters>
+<APIItem name="props" type="NodeProps<CalloutElement>" optional>
   <APIItem name="variant" type="string" optional>
     要插入的提示框变体类型
   </APIItem>
-  <APIItem name="...options" type="object<V>">
-    其他插入选项
+  <APIItem name="icon" type="string" optional>
+    提示框图标。默认值为 `💡`
   </APIItem>
-</APIOptions>
+  <APIItem name="backgroundColor" type="string" optional>
+    提示框背景颜色
+  </APIItem>
+</APIItem>
+<APIItem name="options" type="NodeInsertNodesOptions" optional>
+  标准节点插入选项，例如 `at` 和 `select`
+</APIItem>
+</APIParameters>
 </API>
 
 ## 钩子

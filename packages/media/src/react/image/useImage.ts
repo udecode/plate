@@ -2,9 +2,12 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { isHotkey } from '@platejs/core';
 import { useEditor, useElement } from '@platejs/core/react';
-import type { TMediaElement } from '@platejs/utils';
-import { NODES } from '@platejs/utils';
 
+import {
+  BaseImagePlugin,
+  type ImageElement,
+} from '../../lib/image/BaseImagePlugin';
+import { ImagePlugin } from '../plugins';
 import { ImagePreviewStore, useImagePreviewValue } from './ImageStore';
 
 const zoomLevels = [0, 0.5, 1, 1.5, 2];
@@ -39,8 +42,10 @@ export const useZoom = () => {
 };
 
 export const useImage = () => {
-  const element = useElement<TMediaElement>();
+  const element = useElement(ImagePlugin);
   const editor = useEditor();
+  const id =
+    'id' in element && typeof element.id === 'string' ? element.id : undefined;
 
   return {
     props: {
@@ -49,17 +54,25 @@ export const useImage = () => {
       onDoubleClickCapture: () => {
         ImagePreviewStore.set('openEditorId', editor.id);
         ImagePreviewStore.set('currentPreview', {
-          id: element.id,
+          id,
           url: element.url,
         });
         ImagePreviewStore.set(
           'previewList',
           Array.from(
-            editor.read.nodes.entries<TMediaElement>({
+            editor.read.nodes.entries<ImageElement>({
               at: [],
-              match: { type: NODES.img },
+              match: {
+                type: editor.plugin(BaseImagePlugin).schema.type,
+              },
             }),
-            ([node]) => ({ id: node.id, url: node.url })
+            ([node]) => ({
+              id:
+                'id' in node && typeof node.id === 'string'
+                  ? node.id
+                  : undefined,
+              url: node.url,
+            })
           )
         );
       },

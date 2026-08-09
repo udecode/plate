@@ -102,7 +102,7 @@ Mode matrix:
 | perfect | pending | slate-ar | Status, research/gap, behavior, oracle, perf, and final no-regression rows closed. |
 | perf | pending | slate-ar perf | Routed to `slate-ar` perf mode with target/correctness contract. |
 | finalize preview | pending | slate-ar | Preview-only finalization/current-tree readiness recorded; no branches. |
-| ship readiness | pending | slate-ar + autoreview | Review unit, gates, timing rows, autoreview, and approval boundary recorded. |
+| ship readiness | pending | slate-ar + P2 autoreview | Review unit, gates, timing rows, P2 autoreview, and approval boundary recorded. |
 
 Start Gates:
 | Gate | Applies | Evidence |
@@ -142,7 +142,7 @@ Work Checklist:
       keep call.
 - [ ] Finalization is preview-only unless review branches are explicitly
       requested in the current turn.
-- [ ] Ship readiness records review unit, slow steps, gates, autoreview, and
+- [ ] Ship readiness records review unit, slow steps, gates, P2 autoreview, and
       mutation approval boundary.
 - [ ] Every packet has a keep/revert/quarantine/checks-failed decision with
       evidence.
@@ -159,12 +159,12 @@ Completion Gates:
 | Quality-gap proof | pending | Run quality-gap commands for accepted checklist or N/A | pending |
 | Recipe/setup proof | pending | Record read-only recipe/setup-plan result or N/A | pending |
 | Perf routing proof | pending | Route to `slate-ar` perf mode with target/correctness contract or N/A | pending |
-| Finalization/readiness proof | pending | Run preview/readiness/autoreview proof or N/A | pending |
+| Finalization/readiness proof | pending | Run preview/readiness/P2 autoreview proof or N/A | pending |
 | Packet decision ledger | pending | Record keep/revert/quarantine/checks-failed rows | pending |
 | Workspace authority proof | pending | Record cwd/tool for each command | pending |
 | Skill/rule sync | pending | Run `pnpm install` when `.agents/rules/**` changed, otherwise N/A | pending |
 | Agent-native review for agent/tooling changes | pending | Load `agent-native-reviewer` and close accepted findings, or N/A | pending |
-| Autoreview for non-trivial implementation changes | pending | Load `autoreview` and close accepted findings, or N/A | pending |
+| P2 autoreview for non-trivial implementation changes | pending | Load `autoreview`, pass `--max-priority P2`, and close accepted findings; use P3 only when explicitly requested, or N/A | pending |
 | Timed checkpoint | pending | If duration was requested, keep improving until elapsed, then finish current loop cleanly; otherwise N/A | pending |
 | Final handoff contract | pending | Fill final handoff rows from current evidence | pending |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |

@@ -534,11 +534,12 @@ judgment before implementation. Use `none` for stale/unclear reports, support
 noise, ecosystem work, already-covered duplicates, or anything paired with an
 open fix PR.
 
-For automatic-looking bug fixes, hand off to `resolve-slate-issue`,
-`plite-patch`, `auto`, or `maintainer` instead of patching from
-ClawSweeper. Keep the bar stricter: exact current repro, high confidence, no new
-feature/config option, no product decision, narrow code owner, and focused
-regression proof.
+For automatic-looking bug fixes, hand off one public Slate issue to
+`resolve-slate-issue` and any other public issue to `maintainer` instead of
+patching from ClawSweeper. Only that coordinator may delegate a normalized
+local repair packet to `patch`. Keep the bar stricter: exact current repro,
+high confidence, no new feature/config option, no product decision, narrow
+code owner, and focused regression proof.
 
 External issue harvest routing:
 

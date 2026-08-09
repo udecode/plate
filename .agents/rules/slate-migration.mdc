@@ -54,7 +54,7 @@ Every discovered migration gap updates the durable owner:
 
 ## Do Not Use When
 
-- The user asks one local Plite bug fix: use `plite-patch`.
+- The user asks one local Plite bug fix: use `patch`.
 - The user asks one public API decision before migration: use `best-api`; use
   `plite-plan` when the decision is substrate runtime/adoption.
 - The user asks broad behavior/perf automation unrelated to migration closure:

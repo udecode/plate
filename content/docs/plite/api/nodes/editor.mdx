@@ -357,7 +357,7 @@ import {
   schema,
 } from "@platejs/plite";
 
-const TableSchema = defineEditorSchema({
+const TableSchema = defineEditorSchema("schema:table-document", {
   elements: {
     tableCell: schema.element.textBlock({
       isolating: true,
@@ -493,7 +493,7 @@ their inferred `read`, `update`, and `api` groups.
 const editor = createEditor({ extensions: [myExtension] as const });
 ```
 
-#### `editor.extend(extension, options?) => () => void`
+#### `editor.install(extension, options?) => () => void`
 
 Install a host-selected extension after creation. Plite compiles and validates
 a detached extension candidate, publishes and activates it atomically, then
@@ -502,7 +502,7 @@ provides one. Calling the returned cleanup function publishes the corresponding
 removal through the same lifecycle.
 
 ```javascript
-const removeExtension = editor.extend(myExtension);
+const removeExtension = editor.install(myExtension);
 
 removeExtension();
 ```

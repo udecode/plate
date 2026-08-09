@@ -53,6 +53,66 @@ describe('insertMediaUrl', () => {
     });
   });
 
+  it('inserts an embed without requiring the image plugin', async () => {
+    const editor = createBaseEditor({
+      plugins: [BaseMediaEmbedPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
+    });
+
+    await insertMediaUrl(editor, {
+      getUrl: async () => 'https://www.youtube.com/watch?v=M7lc1UVf-VE',
+      type: editor.plugin(BaseMediaEmbedPlugin).schema.type,
+    });
+
+    expect(editor.read.children().at(1)).toMatchObject({
+      provider: 'youtube',
+      type: 'mediaEmbed',
+    });
+  });
+
+  it('does nothing when no media plugin is installed', async () => {
+    const editor = createBaseEditor({
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
+    });
+    let requestedUrl = false;
+
+    await insertMediaUrl(editor, {
+      getUrl: async () => {
+        requestedUrl = true;
+
+        return 'https://platejs.org/image.png';
+      },
+    });
+
+    expect(requestedUrl).toBe(false);
+    expect(editor.read.children()).toHaveLength(1);
+  });
+
+  it('does not route an unavailable image target through the embed plugin', async () => {
+    const editor = createBaseEditor({
+      plugins: [BaseMediaEmbedPlugin],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
+    });
+    let requestedUrl = false;
+
+    await insertMediaUrl(editor, {
+      getUrl: async () => {
+        requestedUrl = true;
+
+        return 'https://platejs.org/image.png';
+      },
+      type: 'image',
+    });
+
+    expect(requestedUrl).toBe(false);
+    expect(editor.read.children()).toHaveLength(1);
+  });
+
   it('keeps the selected block target while an asynchronous URL resolves', async () => {
     const editor = createEditor();
     let resolveUrl = (_url: string) => {};

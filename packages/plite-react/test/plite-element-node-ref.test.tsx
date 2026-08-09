@@ -2,8 +2,8 @@ import { act, render } from '@testing-library/react';
 import React from 'react';
 import type { Element as PliteElementNode } from '@platejs/plite';
 import {
-  getPathByRuntimeId as editorGetPathByRuntimeId,
-  getRuntimeId as editorGetRuntimeId,
+  getPathByNodeKey as editorGetPathByNodeKey,
+  getNodeKey as editorGetNodeKey,
   moveNodes as editorMoveNodes,
 } from '@platejs/plite/internal';
 import { createReactEditor, PliteElement } from '../src';
@@ -11,7 +11,7 @@ import {
   EditorContext,
   ElementContext,
   ElementPathContext,
-  NodeRuntimeIdContext,
+  NodeKeyContext,
 } from '../src/context';
 import {
   getPliteNodeElementByPath,
@@ -28,21 +28,21 @@ describe('PliteElement node ref binding', () => {
     const editor = createReactEditor({
       initialValue: [{ type: 'block', children: [{ text: 'one' }] }],
     });
-    const runtimeId = editorGetRuntimeId(editor, [0]);
+    const nodeKey = editorGetNodeKey(editor, [0]);
 
-    if (!runtimeId) {
-      throw new Error('Missing runtime id at 0');
+    if (!nodeKey) {
+      throw new Error('Missing node key at 0');
     }
 
     const renderElement = (testId: string) => (
       <EditorContext.Provider value={editor}>
-        <NodeRuntimeIdContext.Provider value={runtimeId}>
+        <NodeKeyContext.Provider value={nodeKey}>
           <ElementPathContext.Provider value={[0]}>
             <ElementContext.Provider value={readElement(editor, [0])}>
               <PliteElement data-testid={testId}>content</PliteElement>
             </ElementContext.Provider>
           </ElementPathContext.Provider>
-        </NodeRuntimeIdContext.Provider>
+        </NodeKeyContext.Provider>
       </EditorContext.Provider>
     );
 
@@ -60,28 +60,28 @@ describe('PliteElement node ref binding', () => {
     );
   });
 
-  test('rebinds DOM maps when a stable runtime id moves to another path', () => {
+  test('rebinds DOM maps when a stable node key moves to another path', () => {
     const editor = createReactEditor({
       initialValue: [
         { type: 'block', children: [{ text: 'one' }] },
         { type: 'block', children: [{ text: 'two' }] },
       ],
     });
-    const runtimeId = editorGetRuntimeId(editor, [0]);
+    const nodeKey = editorGetNodeKey(editor, [0]);
 
-    if (!runtimeId) {
-      throw new Error('Missing runtime id at 0');
+    if (!nodeKey) {
+      throw new Error('Missing node key at 0');
     }
 
     const renderElement = (path: number[]) => (
       <EditorContext.Provider value={editor}>
-        <NodeRuntimeIdContext.Provider value={runtimeId}>
+        <NodeKeyContext.Provider value={nodeKey}>
           <ElementPathContext.Provider value={path}>
             <ElementContext.Provider value={readElement(editor, path)}>
               <PliteElement data-testid="bound-element">content</PliteElement>
             </ElementContext.Provider>
           </ElementPathContext.Provider>
-        </NodeRuntimeIdContext.Provider>
+        </NodeKeyContext.Provider>
       </EditorContext.Provider>
     );
 
@@ -95,7 +95,7 @@ describe('PliteElement node ref binding', () => {
       editorMoveNodes(editor, { at: [0], to: [2] });
     });
 
-    expect(editorGetPathByRuntimeId(editor, runtimeId)).toEqual([1]);
+    expect(editorGetPathByNodeKey(editor, nodeKey)).toEqual([1]);
 
     rendered.rerender(renderElement([1]));
 
@@ -110,21 +110,21 @@ describe('PliteElement node ref binding', () => {
     const editor = createReactEditor({
       initialValue: [{ type: 'block', children: [{ text: 'one' }] }],
     });
-    const runtimeId = editorGetRuntimeId(editor, [0]);
+    const nodeKey = editorGetNodeKey(editor, [0]);
 
-    if (!runtimeId) {
-      throw new Error('Missing runtime id at 0');
+    if (!nodeKey) {
+      throw new Error('Missing node key at 0');
     }
 
     render(
       <EditorContext.Provider value={editor}>
-        <NodeRuntimeIdContext.Provider value={runtimeId}>
+        <NodeKeyContext.Provider value={nodeKey}>
           <ElementPathContext.Provider value={[0]}>
             <ElementContext.Provider value={readElement(editor, [0])}>
               <PliteElement data-testid="bound-element">content</PliteElement>
             </ElementContext.Provider>
           </ElementPathContext.Provider>
-        </NodeRuntimeIdContext.Provider>
+        </NodeKeyContext.Provider>
       </EditorContext.Provider>
     );
 

@@ -154,6 +154,7 @@ export {
   type EditorSchemaContributionRecord,
   type EditorSchemaDiagnostic,
 } from '../core/schema-compiler';
+export { getSchemaElementSourceReference } from '../core/schema-definition';
 export {
   compileEditorExtension,
   defineExtension,

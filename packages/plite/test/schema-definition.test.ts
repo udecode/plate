@@ -10,6 +10,7 @@ import {
   type EditorExtensionReference,
   type EditorExtensionInput,
   type PropertyJsonValue,
+  type PropertyValueDescriptor,
   type PropertyValueOf,
   property,
   schema,
@@ -22,6 +23,21 @@ import {
 const typeOnly = (_callback: () => void) => {};
 
 describe('schema declaration builders', () => {
+  it('stores schema override sources as stable names', () => {
+    const Plugin = Object.freeze({ name: 'card' as const });
+    const override = schema.override(Plugin, {
+      element: { type: 'customCard' },
+    });
+
+    assert.deepEqual(override, {
+      element: { type: 'customCard' },
+      kind: 'schema-override',
+      source: 'card',
+    });
+    assert.equal(Object.isFrozen(override), true);
+    assert.equal(JSON.stringify(override).includes('customCard'), true);
+  });
+
   it('defines frozen structural value laws and versioned inline validation', () => {
     const input = {
       validate: (value: unknown): value is number =>
@@ -97,6 +113,28 @@ describe('schema declaration builders', () => {
     assert.throws(
       () => property.json({ default: new Date(0) as never }),
       /plain JSON objects/
+    );
+    assert.deepEqual(property.json({ required: true }), {
+      kind: 'json',
+      omitDefault: false,
+      required: true,
+    });
+  });
+
+  it('keeps runtime generators out of structural declarations', () => {
+    const generated = property.string({ generate: () => 'element-1' });
+
+    assert.equal(Object.isFrozen(generated), true);
+    assert.equal(generated.generate?.(), 'element-1');
+    assert.equal(Object.keys(generated).includes('generate'), false);
+    assert.equal(JSON.stringify(generated).includes('generate'), false);
+    assert.throws(
+      () => property.string({ generate: 'invalid' } as never),
+      /generate must be a function/
+    );
+    assert.throws(
+      () => property.string({ default: 'fixed', generate: () => 'new' }),
+      /generate cannot be combined with default/
     );
   });
 
@@ -239,6 +277,7 @@ describe('schema declaration builders', () => {
     );
 
     assert.deepEqual(Bold, {
+      copy: 'preserve',
       inclusive: true,
       key: 'bold',
       placement: 'text',
@@ -253,6 +292,7 @@ describe('schema declaration builders', () => {
       },
     });
     assert.equal(Indent.placement, 'element');
+    assert.equal(Indent.copy, 'preserve');
     assert.equal(Indent.role, 'content');
     assert.equal(Indent.target.kind, 'group');
     assert.deepEqual(Suggestions.key, {
@@ -260,6 +300,33 @@ describe('schema declaration builders', () => {
       prefix: 'suggestion_',
     });
     assert.equal(Object.isFrozen(Suggestions.key), true);
+    assert.equal(
+      schema.elementProperty('ephemeral', property.string(), {
+        copy: 'drop',
+        target: target.type('paragraph'),
+      }).copy,
+      'drop'
+    );
+    assert.throws(
+      () =>
+        schema.textProperty(
+          'requiredMark',
+          property.string({ required: true }),
+          // @ts-expect-error required properties must survive copies
+          { copy: 'drop' }
+        ),
+      /required cannot use copy: drop/
+    );
+    assert.throws(
+      () =>
+        schema.elementProperty(
+          'requiredMetadata',
+          property.string({ required: true }),
+          // @ts-expect-error required properties must survive copies
+          { copy: 'drop', target: target.type('paragraph') }
+        ),
+      /required cannot use copy: drop/
+    );
   });
 
   it('builds one canonical text-block element without structural escape hatches', () => {
@@ -323,7 +390,9 @@ describe('schema declaration builders', () => {
   it('freezes raw element shape, content roots, owned properties, and slice policy during normalization', () => {
     const groups = ['inline'];
     const slice = { preserveContext: true };
-    const properties = { alt: property.string({ default: '' }) };
+    const properties: Record<string, PropertyValueDescriptor> = {
+      alt: property.string({ default: '' }),
+    };
     const image: SchemaElement = {
       content: schema.content.text({ max: 1, min: 1 }),
       contentRoots: { body: schema.content.group('block') },
@@ -731,6 +800,7 @@ describe('schema declaration builders', () => {
     const validPayload: PropertyValueOf<typeof payload> = { id: 'ok' };
     const validPayloadWithDefault: PropertyValueOf<typeof payloadWithDefault> =
       { id: 'ok' };
+    const exactPayloadId: string = validPayload.id;
     // @ts-expect-error property.json infers its value from the policy
     const invalidPayload: PropertyValueOf<typeof payload> = 'wrong';
     // @ts-expect-error unconstrained property.json still accepts JSON only
@@ -750,6 +820,7 @@ describe('schema declaration builders', () => {
     void contribution;
     void broadlyInferredJsonValue;
     void explicitJson;
+    void exactPayloadId;
     void inferredJsonValue;
     void invalidContribution;
     void invalidJson;

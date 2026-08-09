@@ -186,8 +186,8 @@ describe('BaseCommentPlugin', () => {
       throw new TypeError('Expected normal and draft comment leaves');
     }
 
-    expect(comment.api.nodeId(normal[0])).toBe('two');
-    expect(comment.api.nodeId(draft[0])).toBeUndefined();
+    expect(comment.api.id(normal[0])).toBe('two');
+    expect(comment.api.id(draft[0])).toBeUndefined();
   });
 
   it('marks the selected text as a draft comment', () => {

@@ -1,4 +1,5 @@
 import {
+  type Descendant,
   type Node,
   NodeApi,
   type Path,
@@ -22,6 +23,7 @@ import {
   getSelection as editorGetSelection,
   getActiveEditorTransaction,
   getEditorRuntimeIdForNode,
+  getRuntimeId as editorGetRuntimeId,
   getSelectionPrimaryRange,
   hasPath as editorHasPath,
   isVoid as editorIsVoid,
@@ -73,6 +75,7 @@ import {
   IS_READ_ONLY,
   NODE_TO_ELEMENT,
   NODE_TO_KEY,
+  NODE_TO_RUNTIME_ID,
 } from '../utils/weak-maps';
 import {
   type ClipboardSliceRead,
@@ -94,7 +97,6 @@ import {
 } from './dom-event-range-targets';
 import {
   findMountedDOMNodeByPath,
-  isSamePath,
   parsePliteDOMPath,
   resolveMountedDOMPath,
   resolvePliteNodePath,
@@ -128,7 +130,7 @@ export interface DOMApi {
   editable: (root?: RootKey) => HTMLElement | null;
   findDocumentOrShadowRoot: () => Document | ShadowRoot;
   assertEventRange: (event: any) => Range;
-  findKey: (node: Node) => Key;
+  findKey: (node: Descendant) => Key;
   assertPath: (node: Node) => Path;
   focus: (options?: { retries?: number }) => void;
   getWindow: () => Window;
@@ -375,7 +377,7 @@ export interface DOMEditorInterface {
    */
   findKey: <V extends Value, TExtensions extends readonly unknown[]>(
     editor: DOMEditor<V, TExtensions>,
-    node: Node
+    node: Descendant
   ) => Key;
 
   /**
@@ -665,10 +667,13 @@ export interface DOMEditorInterface {
 
 const cachePliteDOMNode = (
   editor: DOMEditor<any>,
-  node: Node,
-  domNode: HTMLElement
+  node: Descendant,
+  domNode: HTMLElement,
+  runtimeId?: RuntimeId | null
 ) => {
-  const key = DOMEditor.findKey(editor, node);
+  const key = runtimeId
+    ? getOrCreateDOMNodeKey(editor, runtimeId, node)
+    : DOMEditor.findKey(editor, node);
   const keyToElement = EDITOR_TO_KEY_TO_ELEMENT.get(editor) ?? new WeakMap();
 
   if (!EDITOR_TO_KEY_TO_ELEMENT.has(editor)) {
@@ -678,6 +683,9 @@ const cachePliteDOMNode = (
   keyToElement.set(key, domNode);
   ELEMENT_TO_NODE.set(domNode, node);
   NODE_TO_ELEMENT.set(node, domNode);
+  if (runtimeId) {
+    NODE_TO_RUNTIME_ID.set(node, runtimeId);
+  }
 
   return domNode;
 };
@@ -888,6 +896,27 @@ export const subscribeEditorDOMScope = (
   };
 };
 
+/** @internal Reuse one DOM key for a node's editor-scoped runtime identity. */
+export const getOrCreateDOMNodeKey = (
+  editor: DOMEditor<any>,
+  runtimeId: RuntimeId,
+  node: Descendant
+) => {
+  const runtimeKeys =
+    EDITOR_TO_RUNTIME_ID_TO_KEY.get(editor) ?? new Map<RuntimeId, Key>();
+  let key = runtimeKeys.get(runtimeId);
+
+  if (!key) {
+    key = new Key();
+    runtimeKeys.set(runtimeId, key);
+    EDITOR_TO_RUNTIME_ID_TO_KEY.set(editor, runtimeKeys);
+  }
+
+  NODE_TO_KEY.set(node, key);
+
+  return key;
+};
+
 // eslint-disable-next-line no-redeclare
 export const DOMEditor: DOMEditorInterface = {
   androidPendingDiffs: (editor) => EDITOR_TO_PENDING_DIFFS.get(editor),
@@ -1038,19 +1067,8 @@ export const DOMEditor: DOMEditorInterface = {
 
   findKey: (editor, node) => {
     const runtimeId = getEditorRuntimeIdForNode(editor, node);
-    const runtimeKeys =
-      EDITOR_TO_RUNTIME_ID_TO_KEY.get(editor) ?? new Map<RuntimeId, Key>();
-    let key = runtimeKeys.get(runtimeId);
 
-    if (!key) {
-      key = new Key();
-      runtimeKeys.set(runtimeId, key);
-      EDITOR_TO_RUNTIME_ID_TO_KEY.set(editor, runtimeKeys);
-    }
-
-    NODE_TO_KEY.set(node, key);
-
-    return key;
+    return getOrCreateDOMNodeKey(editor, runtimeId, node);
   },
 
   assertPath: (editor, node) => {
@@ -1436,12 +1454,16 @@ export const DOMEditor: DOMEditorInterface = {
   },
 
   resolveDOMNode: (editor, node) => {
-    const domNode =
-      node === editor
-        ? DOMEditor.editable(editor)
-        : EDITOR_TO_KEY_TO_ELEMENT.get(editor)?.get(
-            DOMEditor.findKey(editor, node)
-          );
+    if (node === editor) return DOMEditor.editable(editor);
+    if (NodeApi.isEditor(node)) return null;
+    let key: Key;
+
+    try {
+      key = DOMEditor.findKey(editor, node);
+    } catch {
+      return null;
+    }
+    const domNode = EDITOR_TO_KEY_TO_ELEMENT.get(editor)?.get(key);
 
     if (domNode) {
       return domNode;
@@ -1470,7 +1492,9 @@ export const DOMEditor: DOMEditorInterface = {
   },
 
   resolveDOMPoint: (editor, point) => {
-    const entry = editor.read((state) => state.nodes.get(point.path));
+    const entry = editor.read((state) =>
+      state.nodes.get<Descendant>(point.path)
+    );
 
     if (!entry) return null;
 
@@ -1763,35 +1787,25 @@ export const DOMEditor: DOMEditorInterface = {
         ? resolveMountedDOMPath(editor, domEl as HTMLElement)
         : null;
 
-    if (node) {
-      const nodePath = resolvePliteNodePath(editor, node);
-
-      if (!mountedPath || (nodePath && isSamePath(nodePath, mountedPath))) {
-        return node;
-      }
-
+    if (mountedPath) {
       const mountedNode = editor.read(
-        (state) => state.nodes.get(mountedPath)?.[0]
+        (state) => state.nodes.get<Descendant>(mountedPath)?.[0]
       );
 
       if (!mountedNode) return null;
+      if (mountedNode === node) return node;
 
-      cachePliteDOMNode(editor, mountedNode, domEl as HTMLElement);
+      cachePliteDOMNode(
+        editor,
+        mountedNode,
+        domEl as HTMLElement,
+        editorGetRuntimeId(editor, mountedPath)
+      );
 
       return mountedNode;
     }
 
-    if (mountedPath) {
-      const fallbackNode = editor.read(
-        (state) => state.nodes.get(mountedPath)?.[0]
-      );
-
-      if (!fallbackNode) return null;
-
-      cachePliteDOMNode(editor, fallbackNode, domEl as HTMLElement);
-
-      return fallbackNode;
-    }
+    if (node && resolvePliteNodePath(editor, node)) return node;
 
     return null;
   },

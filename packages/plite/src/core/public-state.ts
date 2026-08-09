@@ -84,6 +84,7 @@ import {
   type Descendant,
   type DescendantIn,
   NodeApi,
+  type NodeIn,
   type NodeMatch,
   type NodeEntry,
   type Node as PliteNode,
@@ -96,7 +97,13 @@ import { stripLocationRoots } from '../internal/root-location';
 import { isTxOnlyMethod } from './tx-only';
 import type { InternalEditorSchemaApi } from './editor-schema';
 import { defineSemanticUpdateMethod } from './semantic-update-method';
+import {
+  normalizeNodeSetInput,
+  normalizeNodeUnsetInput,
+} from './node-property-mutation';
 import type { Text } from '../interfaces/text';
+import type { SchemaPropertyHandle } from '../interfaces/schema';
+import type { NodeUnsetNodesOptions } from '../interfaces/transforms/node';
 import {
   insertNodes,
   liftNodes,
@@ -941,6 +948,10 @@ const resolveNodeTargetLocation = (
   editor: Editor,
   target: NodeTarget
 ): Location | undefined => {
+  if (typeof target === 'string') {
+    return getPathByRuntimeId(editor, target) ?? undefined;
+  }
+
   if (
     typeof target === 'object' &&
     target !== null &&
@@ -970,22 +981,54 @@ const resolveReadableNodeTarget = (
 
 type NodeTargetOptions = { at?: NodeTarget };
 
-const getNodeTargetRoot = (target: NodeTarget | undefined) => {
-  if (
-    typeof target === 'object' &&
-    target !== null &&
-    !Array.isArray(target) &&
-    'path' in target &&
-    !('offset' in target) &&
-    'root' in target &&
-    typeof target.root === 'string'
-  ) {
-    return target.root;
-  }
+const getOptionsNodeTarget = (options: object | undefined) =>
+  options && 'at' in options ? (options as NodeTargetOptions).at : undefined;
 
-  return NodeApi.isDescendant(target)
-    ? undefined
-    : getPublicExplicitLocationRoot(target as Location | undefined);
+const getRuntimeTargetRoot = (
+  editor: Editor,
+  runtimeId: RuntimeId
+): string | undefined => {
+  for (const root of new Set([
+    getCurrentChildrenRoot(editor),
+    MAIN_ROOT_KEY,
+    ...getEditorRuntimeRootKeys(editor),
+  ])) {
+    const path = withEditorRootChildren(editor, root, () =>
+      getPathByRuntimeId(editor, runtimeId)
+    );
+
+    if (path) return root;
+  }
+};
+
+const getNodeTargetRoot = (editor: Editor, target: NodeTarget | undefined) => {
+  if (typeof target === 'string') {
+    return getRuntimeTargetRoot(editor, target);
+  }
+};
+
+const withNodeTargetRootRead = <T>(
+  editor: Editor,
+  target: NodeTarget | undefined,
+  fn: () => T
+): T => {
+  const root = getNodeTargetRoot(editor, target);
+
+  return root ? withEditorRootChildren(editor, root, fn) : fn();
+};
+
+const withNodeTargetRootGenerator = <T>(
+  editor: Editor,
+  target: NodeTarget | undefined,
+  create: () => Iterable<T>
+) => {
+  const root = getNodeTargetRoot(editor, target);
+
+  return root
+    ? withEditorRootChildrenGenerator(editor, root, create)
+    : (function* unscopedNodeTargetGenerator() {
+        yield* create();
+      })();
 };
 
 const localizeLocation = (location: Location): Location =>
@@ -1712,8 +1755,37 @@ export const getEditorRuntimeRootKeys = (editor: Editor): readonly RootKey[] =>
 
 export const getEditorRuntimeIdForNode = (
   editor: Editor,
-  node: PliteNode
-): RuntimeId => getOrCreateRuntimeId(node, getEditorRuntimeOwner(editor));
+  node: Descendant
+): RuntimeId => {
+  const owner = getEditorRuntimeOwner(editor);
+  let runtimeId = getRuntimeIdForNode(node, owner);
+  const index = getCurrentRuntimeIndex(editor);
+  const resolvesIn = (candidate: SnapshotIndex) => {
+    if (runtimeId && candidate.pathOf(runtimeId)) return true;
+
+    candidate.entries();
+    runtimeId = getRuntimeIdForNode(node, owner);
+
+    return Boolean(runtimeId && candidate.pathOf(runtimeId));
+  };
+
+  if (resolvesIn(index)) return runtimeId!;
+  const currentRoot = getCurrentChildrenRoot(editor);
+  const transactionSnapshot = getTransactionSnapshot(owner);
+
+  for (const root of getEditorRuntimeRootKeys(owner)) {
+    if (root === currentRoot) continue;
+    const rootIndex = transactionSnapshot
+      ? getTransactionSnapshotIndex(owner, transactionSnapshot, root)
+      : getCurrentRootSnapshot(owner, root).index;
+
+    if (resolvesIn(rootIndex)) return runtimeId!;
+  }
+
+  throw new Error(
+    `Runtime identity requires a live node in this editor; received ${'text' in node ? 'text' : `"${node.type}" element`}.`
+  );
+};
 
 export const getPathByRuntimeId = (
   editor: Editor,
@@ -2173,24 +2245,30 @@ const materializeContentSliceRoots = (
 
 const fitSliceIntoActiveDraft = <V extends Value>(
   editor: Editor<V>,
-  slice: import('../interfaces/editor').ContentSlice<V>,
+  slice: import('../interfaces/editor').ContentSlice,
   options?: Parameters<EditorTransactionSliceApi<V>['replace']>[1]
 ) => {
-  const resolvedOptions = resolveNodeTargetOptions(editor, options);
+  const runtimeRoot = getNodeTargetRoot(editor, options?.at);
+  const preResolvedOptions = runtimeRoot
+    ? undefined
+    : resolveNodeTargetOptions(editor, options);
 
-  if (resolvedOptions === null) return false;
-
-  const root =
-    getNodeTargetRoot(options?.at) ?? getMutationRoot(editor, resolvedOptions);
-  const localOptions =
-    resolvedOptions?.at === undefined
-      ? resolvedOptions
-      : {
-          ...resolvedOptions,
-          at: localizeLocation(resolvedOptions.at),
-        };
+  if (preResolvedOptions === null) return false;
+  const root = runtimeRoot ?? getMutationRoot(editor, preResolvedOptions);
 
   return runWithMutationRoot(editor, root, () => {
+    const resolvedOptions = runtimeRoot
+      ? resolveNodeTargetOptions(editor, options)
+      : preResolvedOptions;
+
+    if (resolvedOptions === null) return false;
+    const localOptions =
+      resolvedOptions?.at === undefined
+        ? resolvedOptions
+        : {
+            ...resolvedOptions,
+            at: localizeLocation(resolvedOptions.at),
+          };
     const state = getStateView(editor);
     const sourceSlice = ContentSlice.fromJSON<V>(slice);
     const inputSlice = remapContentSliceRoots(editor, sourceSlice);
@@ -2325,7 +2403,7 @@ const fitSliceIntoActiveDraft = <V extends Value>(
 
 const createSliceFitTransactionSpec = <V extends Value>(
   editor: Editor<V>,
-  slice: import('../interfaces/editor').ContentSlice<V>,
+  slice: import('../interfaces/editor').ContentSlice,
   options?: Parameters<EditorTransactionSliceApi<V>['replace']>[1]
 ): false | TransactionSpec => {
   let applicable = false;
@@ -2402,11 +2480,11 @@ const getStateView = <
     export: (options = {}) =>
       projectEditorExportSlice(editor, getSlice(options)),
     fit: (
-      slice: import('../interfaces/editor').ContentSlice<V>,
+      slice: import('../interfaces/editor').ContentSlice,
       options?: Parameters<EditorStateSliceApi<V>['fit']>[1]
     ) => createSliceFitTransactionSpec(editor, slice, options),
     fitContent: (
-      slice: import('../interfaces/editor').ContentSlice<V>,
+      slice: import('../interfaces/editor').ContentSlice,
       options: Parameters<EditorStateSliceApi<V>['fitContent']>[1]
     ) => {
       if (options.root === MAIN_ROOT_KEY) {
@@ -2460,26 +2538,42 @@ const getStateView = <
       ranges: () => getSelectionRanges(editor, getCurrentSelection(editor)),
       replacementRange: () =>
         getSelectionReplacementRange(editor, getCurrentSelection(editor)),
+      root: () => toPublicRoot(getCurrentSelectionRoot(editor)),
     }) satisfies EditorStateSelectionApi
   );
-  const readBlock: EditorStateNodesApi<V>['block'] = (options = {}) => {
-    const resolvedOptions = resolveNodeTargetOptions(editor, options);
+  const readBlock: EditorStateNodesApi<V>['block'] = (options = {}) =>
+    withNodeTargetRootRead(editor, options.at, () => {
+      const resolvedOptions = resolveNodeTargetOptions(editor, options);
 
-    if (resolvedOptions === null) return;
-    const nextOptions = resolvedOptions ?? {};
-    const match = normalizeNodeMatch(nextOptions.match);
-    const entry = getEditorRuntime(editor).above({
-      ...nextOptions,
-      match: (node, path) =>
-        NodeApi.isElement(node) &&
-        getEditorSchema(editor).isBlock(node) &&
-        (match?.(node, path) ?? true),
+      if (resolvedOptions === null) return;
+      const nextOptions = resolvedOptions ?? {};
+      const match = normalizeNodeMatch(nextOptions.match);
+      const entry = getEditorRuntime(editor).above({
+        ...nextOptions,
+        match: (node, path) =>
+          NodeApi.isElement(node) &&
+          getEditorSchema(editor).isBlock(node) &&
+          (match?.(node, path) ?? true),
+      });
+
+      return entry && NodeApi.isElement(entry[0])
+        ? (entry as NodeEntry<any>)
+        : undefined;
     });
+  function getStateRuntimeId(node: Descendant): RuntimeId;
+  function getStateRuntimeId(at: Location): RuntimeId | null;
+  function getStateRuntimeId(target: Descendant | Location): RuntimeId | null {
+    if (NodeApi.isDescendant(target)) {
+      return getEditorRuntimeIdForNode(editor, target);
+    }
 
-    return entry && NodeApi.isElement(entry[0])
-      ? (entry as NodeEntry<any>)
-      : undefined;
-  };
+    return withLocationRootRead(editor, target, () => {
+      const path = readNodePath(editor, target);
+
+      return path ? getRuntimeId(editor, path) : null;
+    });
+  }
+
   const coreState = {
     children: () =>
       (getEditorDocumentRoots(editor)[MAIN_ROOT_KEY] ??
@@ -2502,59 +2596,67 @@ const getStateView = <
     marks: marksApi,
     meta: () => getEditorDocumentValue(editor).meta,
     nodes: Object.freeze<EditorStateNodesApi<V>>({
-      above: <T extends Ancestor>(options = {}) => {
-        const resolvedOptions = resolveNodeTargetOptions(editor, options);
+      above: <T extends Ancestor>(options = {}) =>
+        withNodeTargetRootRead(editor, getOptionsNodeTarget(options), () => {
+          const resolvedOptions = resolveNodeTargetOptions(editor, options);
 
-        if (resolvedOptions === null) return;
+          if (resolvedOptions === null) return;
 
-        return (({ options }) =>
-          getEditorRuntime(editor).above(options) as
-            | NodeEntry<Ancestor>
-            | undefined)({ options: resolvedOptions }) as [T, Path] | undefined;
-      },
+          return (({ options }) =>
+            getEditorRuntime(editor).above(options) as
+              | NodeEntry<Ancestor>
+              | undefined)({ options: resolvedOptions }) as
+            | [T, Path]
+            | undefined;
+        }),
       block: readBlock,
       children(
         target: NodeTarget = []
       ): ReturnType<EditorStateNodesApi<V>['children']> {
-        const at = resolveReadableNodeTarget(editor, target);
+        return withNodeTargetRootRead(editor, target, () => {
+          const at = resolveReadableNodeTarget(editor, target);
 
-        if (!at) return [];
+          if (!at) return [];
 
-        return (({ at = [] }) =>
-          withLocationRootRead(editor, at, () => readNodeChildren(editor, at)))(
-          { at }
-        ) as ReturnType<EditorStateNodesApi<V>['children']>;
-      },
-      elementReadOnly: (options = {}) => {
-        const resolvedOptions = resolveNodeTargetOptions(editor, options);
-
-        if (resolvedOptions === null) return;
-
-        return (({ options }) =>
-          getEditorRuntime(editor).elementReadOnly(options))({
-          options: resolvedOptions,
+          return (({ at = [] }) =>
+            withLocationRootRead(editor, at, () =>
+              readNodeChildren(editor, at)
+            ))({ at }) as ReturnType<EditorStateNodesApi<V>['children']>;
         });
       },
-      first: (target: NodeTarget) => {
-        const at = resolveReadableNodeTarget(editor, target);
+      elementReadOnly: (options = {}) =>
+        withNodeTargetRootRead(editor, options.at, () => {
+          const resolvedOptions = resolveNodeTargetOptions(editor, options);
 
-        if (!at) return;
+          if (resolvedOptions === null) return;
 
-        return (({ at }) =>
-          withLocationRootRead(editor, at, () => readNodeFirst(editor, at)))({
-          at,
-        });
-      },
-      get: <T extends PliteNode>(target: NodeTarget) => {
-        const at = resolveReadableNodeTarget(editor, target);
+          return (({ options }) =>
+            getEditorRuntime(editor).elementReadOnly(options))({
+            options: resolvedOptions,
+          });
+        }),
+      first: (target: NodeTarget) =>
+        withNodeTargetRootRead(editor, target, () => {
+          const at = resolveReadableNodeTarget(editor, target);
 
-        if (!at) return;
+          if (!at) return;
 
-        return (({ at }) =>
-          withLocationRootRead(editor, at, () => readNodeEntry<T>(editor, at)))(
-          { at }
-        ) as NodeEntry<T> | undefined;
-      },
+          return (({ at }) =>
+            withLocationRootRead(editor, at, () => readNodeFirst(editor, at)))({
+            at,
+          });
+        }),
+      get: <T extends PliteNode>(target: NodeTarget) =>
+        withNodeTargetRootRead(editor, target, () => {
+          const at = resolveReadableNodeTarget(editor, target);
+
+          if (!at) return;
+
+          return (({ at }) =>
+            withLocationRootRead(editor, at, () =>
+              readNodeEntry<T>(editor, at)
+            ))({ at }) as NodeEntry<T> | undefined;
+        }),
       hasBlocks: (element: import('../interfaces/element').Element) =>
         (({ element }) => getEditorRuntime(editor).hasBlocks(element))({
           element,
@@ -2579,158 +2681,170 @@ const getStateView = <
         (({ element }) => getEditorRuntime(editor).isEmpty(element))({
           element,
         }),
-      last: (target: NodeTarget, options = {}) => {
-        const at = resolveReadableNodeTarget(editor, target);
+      last: (target: NodeTarget, options = {}) =>
+        withNodeTargetRootRead(editor, target, () => {
+          const at = resolveReadableNodeTarget(editor, target);
 
-        if (!at) return;
+          if (!at) return;
 
-        return (({ at, options }) =>
-          getEditorRuntime(editor).last(at, options))({ at, options });
-      },
-      leaf: (target: NodeTarget, options: EditorLeafOptions = {}) => {
-        const at = resolveReadableNodeTarget(editor, target);
+          return (({ at, options }) =>
+            getEditorRuntime(editor).last(at, options))({ at, options });
+        }),
+      leaf: (target: NodeTarget, options: EditorLeafOptions = {}) =>
+        withNodeTargetRootRead(editor, target, () => {
+          const at = resolveReadableNodeTarget(editor, target);
 
-        if (!at) return;
+          if (!at) return;
 
-        return (({ at, options }) =>
-          withLocationRootRead(editor, at, () =>
-            readNodeLeaf(editor, at, options)
-          ))({ at, options }) as ReturnType<EditorStateNodesApi<V>['leaf']>;
-      },
-      levels: <T extends PliteNode>(options = {}) => {
-        const resolvedOptions = resolveNodeTargetOptions(editor, options);
+          return (({ at, options }) =>
+            withLocationRootRead(editor, at, () =>
+              readNodeLeaf(editor, at, options)
+            ))({ at, options }) as ReturnType<EditorStateNodesApi<V>['leaf']>;
+        }),
+      levels: <T extends PliteNode>(options = {}) =>
+        withNodeTargetRootGenerator(
+          editor,
+          getOptionsNodeTarget(options),
+          () => {
+            const resolvedOptions = resolveNodeTargetOptions(editor, options);
 
-        if (resolvedOptions === null) {
-          return (function* emptyLevels() {})() as Generator<
-            [T, Path],
-            void,
-            undefined
-          >;
-        }
+            if (resolvedOptions === null) return [];
 
-        return (({ options }) =>
-          hasReadableNodeCollection(editor, options)
-            ? (getEditorRuntime(editor).levels(options) as Generator<
-                NodeEntry<PliteNode>,
-                void,
-                undefined
-              >)
-            : (function* emptyLevels() {})())({
-          options: resolvedOptions,
-        }) as Generator<[T, Path], void, undefined>;
-      },
-      path: (target: NodeTarget, options: EditorPathOptions = {}) => {
-        const at = resolveReadableNodeTarget(editor, target);
+            return hasReadableNodeCollection(editor, resolvedOptions)
+              ? (getEditorRuntime(editor).levels(resolvedOptions) as Generator<
+                  NodeEntry<PliteNode>,
+                  void,
+                  undefined
+                >)
+              : [];
+          }
+        ) as Generator<[T, Path], void, undefined>,
+      path: (target: NodeTarget, options: EditorPathOptions = {}) =>
+        withNodeTargetRootRead(editor, target, () => {
+          const at = resolveReadableNodeTarget(editor, target);
 
-        if (!at) return;
+          if (!at) return;
 
-        return (({ at, options }) =>
-          withLocationRootRead(editor, at, () =>
-            readNodePath(editor, at, options)
-          ))({ at, options });
-      },
-      entries: <T extends PliteNode>(options = {}) => {
-        const resolvedOptions = resolveNodeTargetOrSpanOptions(editor, options);
+          return (({ at, options }) =>
+            withLocationRootRead(editor, at, () =>
+              readNodePath(editor, at, options)
+            ))({ at, options });
+        }),
+      entries: <T extends PliteNode>(options = {}) =>
+        withNodeTargetRootGenerator(
+          editor,
+          getOptionsNodeTarget(options),
+          () => {
+            const resolvedOptions = resolveNodeTargetOrSpanOptions(
+              editor,
+              options
+            );
 
-        if (resolvedOptions === null) {
-          return (function* emptyEntries() {})() as Generator<
-            [T, Path],
-            void,
-            undefined
-          >;
-        }
+            if (resolvedOptions === null) return [];
 
-        return (({ options }) =>
-          withOptionsRootGenerator(
-            editor,
-            options,
-            () => {
-              if (!hasReadableNodeCollection(editor, options)) {
-                return [];
+            return withOptionsRootGenerator(
+              editor,
+              resolvedOptions,
+              () =>
+                hasReadableNodeCollection(editor, resolvedOptions)
+                  ? (getNodes(editor, resolvedOptions) as Generator<
+                      NodeEntry<PliteNode>,
+                      void,
+                      undefined
+                    >)
+                  : [],
+              {
+                selectionFallback:
+                  usesImplicitSelectionLocation(resolvedOptions),
               }
-
-              return getNodes(editor, options) as Generator<
-                NodeEntry<PliteNode>,
-                void,
-                undefined
-              >;
-            },
-            { selectionFallback: usesImplicitSelectionLocation(options) }
-          ))({ options: resolvedOptions }) as Generator<
-          [T, Path],
-          void,
-          undefined
-        >;
-      },
-      find: <T extends PliteNode>(options = {}) => {
-        const resolvedOptions = resolveNodeTargetOrSpanOptions(editor, options);
-
-        if (resolvedOptions === null) return;
-
-        return (({ options }) =>
-          withOptionsRootRead(
+            );
+          }
+        ) as Generator<[T, Path], void, undefined>,
+      find: <T extends PliteNode>(options = {}) =>
+        withNodeTargetRootRead(editor, getOptionsNodeTarget(options), () => {
+          const resolvedOptions = resolveNodeTargetOrSpanOptions(
             editor,
-            options,
+            options
+          );
+
+          if (resolvedOptions === null) {
+            return;
+          }
+
+          return withOptionsRootRead(
+            editor,
+            resolvedOptions,
             () => {
-              if (!hasReadableNodeCollection(editor, options)) {
+              if (!hasReadableNodeCollection(editor, resolvedOptions)) {
                 return;
               }
-
-              for (const entry of getNodes(editor, options)) {
+              for (const entry of getNodes(editor, resolvedOptions)) {
                 return entry;
               }
             },
-            { selectionFallback: usesImplicitSelectionLocation(options) }
-          ))({ options: resolvedOptions }) as [T, Path] | undefined;
-      },
-      some: (options = {}) => {
-        const resolvedOptions = resolveNodeTargetOrSpanOptions(editor, options);
-
-        if (resolvedOptions === null) return false;
-
-        return (({ options }) =>
-          withOptionsRootRead(
+            {
+              selectionFallback: usesImplicitSelectionLocation(resolvedOptions),
+            }
+          );
+        }) as [T, Path] | undefined,
+      some: (options = {}) =>
+        withNodeTargetRootRead(editor, getOptionsNodeTarget(options), () => {
+          const resolvedOptions = resolveNodeTargetOrSpanOptions(
             editor,
-            options,
+            options
+          );
+
+          if (resolvedOptions === null) {
+            return false;
+          }
+
+          return withOptionsRootRead(
+            editor,
+            resolvedOptions,
             () => {
-              if (!hasReadableNodeCollection(editor, options)) {
+              if (!hasReadableNodeCollection(editor, resolvedOptions)) {
                 return false;
               }
-
-              for (const _entry of getNodes(editor, options)) {
+              for (const _entry of getNodes(editor, resolvedOptions)) {
                 return true;
               }
 
               return false;
             },
-            { selectionFallback: usesImplicitSelectionLocation(options) }
-          ))({ options: resolvedOptions });
-      },
+            {
+              selectionFallback: usesImplicitSelectionLocation(resolvedOptions),
+            }
+          );
+        }),
       toArray: createNodesToArray(editor),
-      next: <T extends PliteNode>(options = {}) => {
-        const resolvedOptions = resolveNodeTargetOptions(editor, options);
+      next: <T extends PliteNode>(options = {}) =>
+        withNodeTargetRootRead(editor, getOptionsNodeTarget(options), () => {
+          const resolvedOptions = resolveNodeTargetOptions(editor, options);
 
-        if (resolvedOptions === null) return;
+          if (resolvedOptions === null) return;
 
-        return (({ options }) =>
-          hasReadableNodeCollection(editor, options)
-            ? (getEditorRuntime(editor).next(options) as
-                | NodeEntry<Descendant>
-                | undefined)
-            : undefined)({ options: resolvedOptions }) as [T, Path] | undefined;
-      },
-      previous: <T extends PliteNode>(options = {}) => {
-        const resolvedOptions = resolveNodeTargetOptions(editor, options);
+          return (
+            hasReadableNodeCollection(editor, resolvedOptions)
+              ? (getEditorRuntime(editor).next(resolvedOptions) as
+                  | NodeEntry<Descendant>
+                  | undefined)
+              : undefined
+          ) as [T, Path] | undefined;
+        }),
+      previous: <T extends PliteNode>(options = {}) =>
+        withNodeTargetRootRead(editor, getOptionsNodeTarget(options), () => {
+          const resolvedOptions = resolveNodeTargetOptions(editor, options);
 
-        if (resolvedOptions === null) return;
+          if (resolvedOptions === null) return;
 
-        return (({ options }) =>
-          hasReadableNodeCollection(editor, options)
-            ? (getEditorRuntime(editor).previous(options) as
-                | NodeEntry<PliteNode>
-                | undefined)
-            : undefined)({ options: resolvedOptions }) as [T, Path] | undefined;
-      },
+          return (
+            hasReadableNodeCollection(editor, resolvedOptions)
+              ? (getEditorRuntime(editor).previous(resolvedOptions) as
+                  | NodeEntry<PliteNode>
+                  | undefined)
+              : undefined
+          ) as [T, Path] | undefined;
+        }),
       shouldMergeNodesRemovePrevNode: (
         previous: NodeEntry,
         current: NodeEntry
@@ -2743,87 +2857,85 @@ const getStateView = <
       parent: <T extends Ancestor = Ancestor>(
         target: NodeTarget,
         options: EditorParentOptions = {}
-      ) => {
-        const at = resolveReadableNodeTarget(editor, target);
+      ) =>
+        withNodeTargetRootRead(editor, target, () => {
+          const at = resolveReadableNodeTarget(editor, target);
 
-        if (!at) return;
+          if (!at) return;
 
-        return (({ at, options }) =>
-          withLocationRootRead(editor, at, () =>
-            readNodeParent(editor, at, options)
-          ))({ at, options }) as NodeEntry<T> | undefined;
-      },
-      void: (options = {}) => {
-        const resolvedOptions = resolveNodeTargetOptions(editor, options);
+          return (({ at, options }) =>
+            withLocationRootRead(editor, at, () =>
+              readNodeParent(editor, at, options)
+            ))({ at, options }) as NodeEntry<T> | undefined;
+        }),
+      void: (options = {}) =>
+        withNodeTargetRootRead(editor, options.at, () => {
+          const resolvedOptions = resolveNodeTargetOptions(editor, options);
 
-        if (resolvedOptions === null) return;
+          if (resolvedOptions === null) return;
 
-        return (({ options }) => getEditorRuntime(editor).void(options))({
-          options: resolvedOptions,
-        });
-      },
+          return getEditorRuntime(editor).void(resolvedOptions);
+        }),
     }),
     points: Object.freeze({
-      after: (target: NodeTarget, options = {}) => {
-        const at = resolveReadableNodeTarget(editor, target);
+      after: (target: NodeTarget, options = {}) =>
+        withNodeTargetRootRead(editor, target, () => {
+          const at = resolveReadableNodeTarget(editor, target);
 
-        if (!at) return;
+          if (!at) return;
 
-        return (({ at, options }) =>
-          readAdjacentPoint(editor, at, 'after', options))({ at, options });
-      },
-      before: (target: NodeTarget, options = {}) => {
-        const at = resolveReadableNodeTarget(editor, target);
+          return readAdjacentPoint(editor, at, 'after', options);
+        }),
+      before: (target: NodeTarget, options = {}) =>
+        withNodeTargetRootRead(editor, target, () => {
+          const at = resolveReadableNodeTarget(editor, target);
 
-        if (!at) return;
+          if (!at) return;
 
-        return (({ at, options }) =>
-          readAdjacentPoint(editor, at, 'before', options))({ at, options });
-      },
-      end: (target: NodeTarget) => {
-        const at = resolveReadableNodeTarget(editor, target);
+          return readAdjacentPoint(editor, at, 'before', options);
+        }),
+      end: (target: NodeTarget) =>
+        withNodeTargetRootRead(editor, target, () => {
+          const at = resolveReadableNodeTarget(editor, target);
 
-        if (!at) return;
+          return at ? readPointEdge(editor, at, 'end') : undefined;
+        }),
+      get: (target: NodeTarget, options: EditorPointOptions = {}) =>
+        withNodeTargetRootRead(editor, target, () => {
+          const at = resolveReadableNodeTarget(editor, target);
 
-        return (({ at }) => readPointEdge(editor, at, 'end'))({ at });
-      },
-      get: (target: NodeTarget, options: EditorPointOptions = {}) => {
-        const at = resolveReadableNodeTarget(editor, target);
+          return at ? readPoint(editor, at, options) : undefined;
+        }),
+      isEdge: (point, target) =>
+        withNodeTargetRootRead(editor, target, () => {
+          const at = resolveReadableNodeTarget(editor, target);
 
-        if (!at) return;
+          return (
+            !!at &&
+            hasLocationPath(editor, at) &&
+            getEditorRuntime(editor).isEdge(point, at)
+          );
+        }),
+      isEnd: (point, target) =>
+        withNodeTargetRootRead(editor, target, () => {
+          const at = resolveReadableNodeTarget(editor, target);
 
-        return (({ at, options }) => readPoint(editor, at, options))({
-          at,
-          options,
-        });
-      },
-      isEdge: (point, target) => {
-        const at = resolveReadableNodeTarget(editor, target);
+          return (
+            !!at &&
+            hasLocationPath(editor, at) &&
+            getEditorRuntime(editor).isEnd(point, at)
+          );
+        }),
+      isStart: (point, target) =>
+        withNodeTargetRootRead(editor, target, () => {
+          const at = resolveReadableNodeTarget(editor, target);
 
-        if (!at) return false;
-
-        return (({ at, point }) =>
-          hasLocationPath(editor, at) &&
-          getEditorRuntime(editor).isEdge(point, at))({ at, point });
-      },
-      isEnd: (point, target) => {
-        const at = resolveReadableNodeTarget(editor, target);
-
-        if (!at) return false;
-
-        return (({ at, point }) =>
-          hasLocationPath(editor, at) &&
-          getEditorRuntime(editor).isEnd(point, at))({ at, point });
-      },
-      isStart: (point, target) => {
-        const at = resolveReadableNodeTarget(editor, target);
-
-        if (!at) return false;
-
-        return (({ at, point }) =>
-          hasLocationPath(editor, at) &&
-          getEditorRuntime(editor).isStart(point, at))({ at, point });
-      },
+          return (
+            !!at &&
+            hasLocationPath(editor, at) &&
+            getEditorRuntime(editor).isStart(point, at)
+          );
+        }),
       isWordEnd: (point) => {
         const after = state.points.after(point);
 
@@ -2835,43 +2947,37 @@ const getStateView = <
           !!range && WHITESPACE_OR_END_REGEX.test(state.text.string(range))
         );
       },
-      positions: (options = {}) => {
-        const resolvedOptions = resolveNodeTargetOptions(editor, options);
+      positions: (options = {}) =>
+        withNodeTargetRootGenerator(editor, options.at, () => {
+          const resolvedOptions = resolveNodeTargetOptions(editor, options);
 
-        if (resolvedOptions === null) {
-          return (function* emptyPositions() {})();
-        }
+          return resolvedOptions !== null &&
+            hasReadableNodeCollection(editor, resolvedOptions)
+            ? getEditorRuntime(editor).positions(resolvedOptions)
+            : [];
+        }),
+      start: (target: NodeTarget) =>
+        withNodeTargetRootRead(editor, target, () => {
+          const at = resolveReadableNodeTarget(editor, target);
 
-        return (({ options }) =>
-          hasReadableNodeCollection(editor, options)
-            ? getEditorRuntime(editor).positions(options)
-            : (function* emptyPositions() {})())({ options: resolvedOptions });
-      },
-      start: (target: NodeTarget) => {
-        const at = resolveReadableNodeTarget(editor, target);
-
-        if (!at) return;
-
-        return (({ at }) => readPointEdge(editor, at, 'start'))({ at });
-      },
+          return at ? readPointEdge(editor, at, 'start') : undefined;
+        }),
     }),
     ranges: Object.freeze({
-      edges: (target: NodeTarget) => {
-        const at = resolveReadableNodeTarget(editor, target);
+      edges: (target: NodeTarget) =>
+        withNodeTargetRootRead(editor, target, () => {
+          const at = resolveReadableNodeTarget(editor, target);
 
-        if (!at) return;
-
-        return (({ at }) => readRangeEdges(editor, at))({ at });
-      },
+          return at ? readRangeEdges(editor, at) : undefined;
+        }),
       fromEntries: (entries) =>
         (({ entries }) => readRangeFromEntries(editor, entries))({ entries }),
-      get: (target: NodeTarget, to?: Location) => {
-        const at = resolveReadableNodeTarget(editor, target);
+      get: (target: NodeTarget, to?: Location) =>
+        withNodeTargetRootRead(editor, target, () => {
+          const at = resolveReadableNodeTarget(editor, target);
 
-        if (!at) return;
-
-        return (({ at, to }) => readRange(editor, at, to))({ at, to });
-      },
+          return at ? readRange(editor, at, to) : undefined;
+        }),
       project: (range) =>
         (({ range }) => getEditorRuntime(editor).projectRange(range))({
           range,
@@ -2894,8 +3000,8 @@ const getStateView = <
         []) as readonly V[number][];
     },
     runtime: Object.freeze({
-      idAt: (path: Path) => getRuntimeId(editor, path),
-      pathOf: (runtimeId) => getPathByRuntimeId(editor, runtimeId),
+      id: getStateRuntimeId,
+      path: (runtimeId) => getPathByRuntimeId(editor, runtimeId),
       snapshot: () => getSnapshot(editor) as EditorSnapshot<V>,
     }),
     schema: getEditorSchema(editor),
@@ -2906,17 +3012,16 @@ const getStateView = <
         const resolvedTarget = target ?? getCurrentSelection(editor);
 
         if (!resolvedTarget) return '';
+        return withNodeTargetRootRead(editor, resolvedTarget, () => {
+          const at = resolveReadableNodeTarget(editor, resolvedTarget);
 
-        const at = resolveReadableNodeTarget(editor, resolvedTarget);
+          if (!at) return '';
 
-        if (!at) return '';
-
-        return withLocationRootRead(editor, at, () => {
-          if (!hasLocationPath(editor, at)) {
-            return '';
-          }
-
-          return getEditorRuntime(editor).string(at, options);
+          return withLocationRootRead(editor, at, () =>
+            hasLocationPath(editor, at)
+              ? getEditorRuntime(editor).string(at, options)
+              : ''
+          );
         });
       },
     }),
@@ -3098,23 +3203,30 @@ const getUpdateView = <
     fn: (options: ResolvedNodeTargetOptions<TOptions> | undefined) => TResult
   ): TResult | undefined => {
     assertActive();
+    const runtimeRoot = getNodeTargetRoot(editor, options?.at);
+    const preResolvedOptions = runtimeRoot
+      ? undefined
+      : resolveNodeTargetOptions(editor, options);
 
-    const resolvedOptions = resolveNodeTargetOptions(editor, options);
+    if (preResolvedOptions === null) return;
+    const root = runtimeRoot ?? getMutationRoot(editor, preResolvedOptions);
 
-    if (resolvedOptions === null) return;
+    return runWithMutationRoot(editor, root, () => {
+      const resolvedOptions = runtimeRoot
+        ? resolveNodeTargetOptions(editor, options)
+        : preResolvedOptions;
 
-    const root =
-      getNodeTargetRoot(options?.at) ??
-      getMutationRoot(editor, resolvedOptions);
-    const localOptions =
-      resolvedOptions?.at === undefined
-        ? resolvedOptions
-        : ({
-            ...resolvedOptions,
-            at: localizeLocation(resolvedOptions.at),
-          } as ResolvedNodeTargetOptions<TOptions>);
+      if (resolvedOptions === null) return;
+      const localOptions =
+        resolvedOptions?.at === undefined
+          ? resolvedOptions
+          : ({
+              ...resolvedOptions,
+              at: localizeLocation(resolvedOptions.at),
+            } as ResolvedNodeTargetOptions<TOptions>);
 
-    return runWithMutationRoot(editor, root, () => fn(localOptions));
+      return fn(localOptions);
+    });
   };
   const runSelectionMutation = <T>(fn: () => T) => {
     assertActive();
@@ -3282,9 +3394,16 @@ const getUpdateView = <
         collect(node.children);
       }
     };
-    const source = entries.map(([node]) => node as Descendant);
+    const root = getActiveUpdateRoot(editor) ?? MAIN_ROOT_KEY;
+    const schema = getEditorSchema(editor);
+    const source = entries.map(([node, path]) =>
+      schema.copyNodeAt(node as Descendant, path, root)
+    );
 
     collect(source);
+    for (const [name, children] of Object.entries(roots)) {
+      roots[name] = schema.copyChildren(children, name as RootKey);
+    }
     const slice = remapContentSliceRoots(
       editor,
       ContentSlice.fromJSON({
@@ -3379,15 +3498,38 @@ const getUpdateView = <
     EditorTransactionNodesApi<V>['set']
   >(
     (...args) => {
-      const [props, options] = args;
+      const { options, props } = normalizeNodeSetInput<V>(
+        args,
+        (property) => state.schema.property(property)?.key
+      );
+
       return runTargetMutation(options, (resolvedOptions) =>
         setNodes(editor, props, resolvedOptions)
       );
     },
-    (command, [props, options]) => {
+    (command, args) => {
+      const { options, props } = normalizeNodeSetInput<V>(
+        args,
+        (property) => state.schema.property(property)?.key
+      );
+
       command(editorCommands.setNodes, { options, props });
     }
   );
+  const unsetTransactionNodes = ((
+    props: string | readonly string[] | SchemaPropertyHandle,
+    options?: NodeUnsetNodesOptions<NodeIn<V>>
+  ) =>
+    runTargetMutation(options, (resolvedOptions) =>
+      unsetNodes(
+        editor,
+        normalizeNodeUnsetInput(
+          props,
+          (property) => state.schema.property(property)?.key
+        ),
+        resolvedOptions
+      )
+    )) as EditorTransactionNodesApi<V>['unset'];
   const discardReplacedRuntimeIdentities = (root: string, path: Path) => {
     const snapshot = getTransactionSnapshot(editor);
 
@@ -3669,10 +3811,7 @@ const getUpdateView = <
           splitNodes(editor, resolvedOptions)
         ),
       toggle: toggleBlock,
-      unset: (props, options) =>
-        runTargetMutation(options, (resolvedOptions) =>
-          unsetNodes(editor, props, resolvedOptions)
-        ),
+      unset: unsetTransactionNodes,
       unwrap: (options) =>
         runTargetMutation(options, (resolvedOptions) =>
           unwrapNodes(editor, resolvedOptions)
@@ -3818,6 +3957,7 @@ const getUpdateView = <
           state.selection.isWithinText(options),
         ranges: () => state.selection.ranges(),
         replacementRange: () => state.selection.replacementRange(),
+        root: () => state.selection.root(),
         clear: () => runSelectionWrite(() => deselect(editor)),
         collapse: defineSemanticUpdateMethod<
           EditorTransactionSelectionApi['collapse']
@@ -7222,6 +7362,9 @@ export const initializeEditorSchemaDocument = (
   value: EditorDocumentValue
 ) => {
   const document = cloneFrozenEditorJsonValue(value);
+
+  getEditorSchema(editor).adoptDocumentBaseline(document);
+
   const roots = {
     [MAIN_ROOT_KEY]: document.children,
     ...(document.roots ?? {}),

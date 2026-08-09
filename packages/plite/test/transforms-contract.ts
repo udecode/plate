@@ -124,7 +124,7 @@ describe('plite transforms contract', () => {
     assert.deepEqual(editor.read.selection(), collapsedSelection([1, 0], 0));
   });
 
-  it('preserves descendant runtime identity after replacing then moving across levels', () => {
+  it('preserves descendant node key after replacing then moving across levels', () => {
     const editor = createEditor();
 
     editorReplace(editor, {
@@ -137,9 +137,9 @@ describe('plite transforms contract', () => {
       ],
       selection: null,
     });
-    const movedTextRuntimeId = editorGetSnapshot(editor).index.idAt([0, 1, 0]);
+    const movedTextNodeKey = editorGetSnapshot(editor).index.keyAt([0, 1, 0]);
 
-    assert.ok(movedTextRuntimeId);
+    assert.ok(movedTextNodeKey);
 
     editor.update((tx) => {
       tx.nodes.move({ at: [0, 1], to: [1] });
@@ -147,8 +147,8 @@ describe('plite transforms contract', () => {
 
     const movedSnapshot = editorGetSnapshot(editor);
 
-    assert.equal(movedSnapshot.index.idAt([1, 0]), movedTextRuntimeId);
-    assert.deepEqual(movedSnapshot.index.pathOf(movedTextRuntimeId), [1, 0]);
+    assert.equal(movedSnapshot.index.keyAt([1, 0]), movedTextNodeKey);
+    assert.deepEqual(movedSnapshot.index.pathOf(movedTextNodeKey), [1, 0]);
   });
 
   it('rebases an implicit selection target through multiple structural moves', () => {
@@ -719,6 +719,7 @@ describe('plite transforms contract', () => {
     const header = createEditorView(runtime, { root: 'header' });
     const [bodyNode] = getNodeEntry<Element>(runtime, [0]);
     const [headerNode] = getNodeEntry<Element>(header, [0]);
+    const headerKey = header.key(headerNode);
 
     header.update.nodes.replaceChildren([{ text: 'next' }], {
       at: headerNode,
@@ -730,6 +731,39 @@ describe('plite transforms contract', () => {
 
     assert.deepEqual(runtime.read.children(), [paragraph('body')]);
     assert.deepEqual(header.read.children(), [paragraph('next')]);
+
+    runtime.update.nodes.replaceChildren([{ text: 'keyed' }], {
+      at: headerKey,
+    });
+
+    assert.deepEqual(runtime.read.children(), [paragraph('body')]);
+    assert.deepEqual(header.read.children(), [paragraph('keyed')]);
+  });
+
+  it('preserves positionally corresponding node keys when requested', () => {
+    const editor = createEditor({
+      initialValue: [paragraph('one'), paragraph('two')],
+    });
+    const firstKey = editor.key([0])!;
+    const firstTextKey = editor.key([0, 0])!;
+    const secondKey = editor.key([1])!;
+
+    editor.update.nodes.replaceChildren(
+      [paragraph('next'), paragraph('again'), paragraph('extra')],
+      { at: [], preserveKeys: true }
+    );
+
+    assert.deepEqual(editor.read.nodes.get(firstKey), [paragraph('next'), [0]]);
+    assert.deepEqual(editor.read.nodes.get(firstTextKey), [
+      { text: 'next' },
+      [0, 0],
+    ]);
+    assert.deepEqual(editor.read.nodes.get(secondKey), [
+      paragraph('again'),
+      [1],
+    ]);
+    assert.notEqual(editor.key([2]), firstKey);
+    assert.notEqual(editor.key([2]), secondKey);
   });
 
   it('keeps node targets live across immutable writes and moves', () => {

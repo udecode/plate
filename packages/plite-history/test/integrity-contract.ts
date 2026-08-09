@@ -16,7 +16,7 @@ import {
 import {
   addMark as editorAddMark,
   getLastCommit as editorGetLastCommit,
-  getRuntimeId as editorGetRuntimeId,
+  getNodeKey as editorGetNodeKey,
   getSnapshot as editorGetSnapshot,
   move as editorMove,
   replace as editorReplace,
@@ -368,7 +368,7 @@ describe('plite-history integrity contract', () => {
       focus: { path: [0, 0], offset: 3 },
     });
 
-    const textRuntimeId = editorGetRuntimeId(editor, [0, 0]);
+    const textNodeKey = editorGetNodeKey(editor, [0, 0]);
     const selectionBefore = structuredClone(
       editorGetSnapshot(editor).selection
     );
@@ -399,7 +399,7 @@ describe('plite-history integrity contract', () => {
       commit.selectionAfter,
       editorGetSnapshot(editor).selection
     );
-    assert.deepEqual(commit.changed.runtimeIds('text'), [textRuntimeId]);
+    assert.deepEqual(commit.changed.nodeKeys('text'), [textNodeKey]);
     assert.deepEqual(commit.changed.topLevelRanges(), [[0, 0]]);
     assert.deepEqual(
       getHistory(editor).undos[0]?.selectionBefore,

@@ -10,7 +10,7 @@ Most application code touches the editor in three ways:
 - read committed state with `editor.read(...)` or `editor.read.<group>.<method>()`
 - write through `editor.update(...)` or `editor.update.<group>.<method>()`
 - install reusable behavior through `createEditor({ extensions })`
-- publish host-selected runtime behavior through `editor.extend(...)`
+- publish host-selected runtime behavior through `editor.install(...)`
 
 ## Reading State
 
@@ -172,10 +172,9 @@ and optional runtime services.
 Here's a small extension that adds a table namespace:
 
 ```javascript
-import { createEditor, defineEditorExtension } from "@platejs/plite";
+import { createEditor, defineExtension } from "@platejs/plite";
 
-const TablesExtension = defineEditorExtension({
-  name: "tables",
+const TablesExtension = defineExtension("tables", {
   read: ({ state }) => ({
     rowCount() {
       return state.nodes.children().length;

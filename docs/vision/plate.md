@@ -76,14 +76,41 @@ Current priorities:
   different serialized identity belongs in `type`.
 - Public roots expose author contracts, not `Any*`, `Internal*`, compiler and
   normalization graphs, accumulators, or witnesses. Unparameterized editors
-  expose only guaranteed Core capabilities; package consumers carry concrete
-  editor or descriptor generics. Plite's runtime type is `Editor`; Plate owns
+  expose only guaranteed Core capabilities. React context retrieval is
+  non-generic: `useEditor()` and `useActiveEditor()` return the mounted Plate
+  contract, while selector hooks infer only their selected result. Exact
+  feature capabilities come from descriptor portals. Keep an editor generic
+  only when typed constructor/options input or an explicit editor argument
+  correlates it with the result. Plite's runtime type is `Editor`; Plate owns
   `BaseEditor` and `PlateEditor`.
 - Raw `PluginReference` carries nominal identity only; it has no definition
   generic or private witness. Concrete Base and Plate descriptors own the
   single invariant definition witness. Plite's root
   `EditorExtensionDependencyReference` is shallow and non-generic, exposing
   only `name` and optional `enabled`.
+- Descriptor-aware schema builders serialize the normalized plugin name while
+  retaining the nominal descriptor in private metadata. Plate validates that
+  private family against the installed owner before applying editor policy;
+  equal names never make different descriptor families interchangeable.
+- Export each plugin as one inferred constructor/extension chain. A later stage
+  may derive its private node shape from the prior `plugin` context, but public
+  AST and operation-option aliases derive only from the final descriptor.
+  Never widen exact node-operation generics or publish compiler-ferry types to
+  make declaration emit succeed.
+- A proven TS7056 ceiling may retain the minimum exact private source/final
+  declaration-stage pair. Mark both stages, annotate only the private final
+  stage, expose an unannotated public alias, keep every carrier out of barrels,
+  and delete the exception when direct declaration emit succeeds.
+- Property-only plugins remain separate from element identity. Derive their
+  element/text capabilities with `ElementWith` / `TextWith`, including authored
+  aliases, prefixes, defaults, and exact value domains. Recursive algorithms
+  never duplicate those fields in a private AST mirror: known owners use
+  descriptor-derived shapes, while malformed or open-world input stays broad
+  and narrows consumed properties at runtime.
+- Context-bound factories keep exact installed-plugin editor capabilities in
+  their author callbacks and project public factories/results to portable
+  contracts. Internal editor graphs never leak through package declarations;
+  Core owns that return-boundary repair.
 - `EditorExtensionTypeProvider` is the sole public value-sensitive capability
   bridge. Its higher-kinded encoding, normalized installed-capability carrier,
   and transitive dependency expansion stay under `@platejs/plite/internal`.
@@ -103,6 +130,13 @@ Current priorities:
   `editor.api`, `editor.read`, or `editor.update` access recursively evaluate
   the complete application grammar, and do not introduce size heuristics or
   depth-limited precision.
+- Plugin-bound React and static component APIs infer the owner's exact local
+  schema node from its descriptor: `useElement(FooPlugin)`,
+  `PlateElementProps<typeof FooPlugin>`, and
+  `PliteElementProps<typeof BaseFooPlugin>`. They never infer from the owner's
+  dependency graph. Do not import `FooElement` only to pass it back as a
+  generic; reserve bare hooks and direct `Element` generics for intentionally
+  erased or schema-agnostic code.
 - Low-level React composition is `react({ dom })`: one required object with the
   exact DOM descriptor. Keep one explicit erased implementation boundary only
   for the TypeScript 7 invariant-union reduction limit.
@@ -120,6 +154,13 @@ Current priorities:
 - Descriptor-aware schema calls identify schema elements and groups. Document
   property reads use typed property handles or semantic plugin APIs, never a
   one-property descriptor shortcut.
+- Plugin-local property writes stay on `tx.nodes`: unique unaliased properties
+  use typed literal key/value overloads; aliases and local ambiguity use exact
+  property handles; prefix families and cross-node behavior use semantic owner
+  operations; structural, atomic, dynamic, and unavoidable dependency-ambiguous
+  writes keep the object form. The inference graph is shallow and never drags
+  the complete application grammar into routine capabilities. Plate adds no
+  second property-mutation portal.
 - All lifecycle and host/DOM events use one root `on` family with prefixless
   names such as `commit`, `keyDown`, `paste`, `nodeChange`, `textChange`, and
   capture variants. Do not expose a second `handlers` bucket. Private runtime
@@ -169,6 +210,33 @@ Current priorities:
   type path. Installed feature plugins own their shipped format codecs. Compile
   those declarations once from the installed plugin graph; do not centralize
   feature rules in the format package or mutable plugin state.
+- A Plate-owned custom MDX element tag is persisted schema identity. Its codec
+  uses the resolved schema type symmetrically for source matching, decoded
+  element identity, and encoded tag name. External MDAST, HTML, and MDX syntax
+  remains literal. Legacy tags migrate before codec dispatch; codecs never
+  accept both identities.
+- Structural Plate nodes synthesized by a format runtime, including wrappers
+  and unknown-node fallbacks, resolve the installed application schema type.
+  Literal types remain only on the external format tree or when the Plate
+  plugin is genuinely absent.
+- Operation decode overrides dispatch by invariant plugin capability name after
+  codec-owner resolution. Encode overrides dispatch by persisted schema
+  identity because their input is already a Plate node.
+- A compiled codec claim never falls through to a persisted-tag decode override
+  alias. Configurable custom MDX identity stays on its schema-owning plugin,
+  not a foreign codec contributor.
+- State that selects a plugin capability stores its descriptor or normalized
+  name. It never stores a configurable persisted type or key. Resolve schema
+  identity at the AST read/write boundary, including transient-node factories.
+- Generated schema contracts are content-addressed semantic output. Readers
+  recompute their authoritative fingerprint, and restoration rejects derived
+  tables that differ from current source contributions.
+- Decode-only and encode-only codecs still prove every identity leg they own.
+  Phrasing-only wrappers decode external phrasing children directly instead of
+  unwrapping an arbitrary decoded Plate element.
+- Fixed external source/name literals exempt only the external leg. Decoded
+  Plate identity still resolves from the target schema, and parsed properties
+  precede structural children/type.
 - Plugin schema is creation-owned. Declare it in the plugin constructor, using
   a schema factory over typed `initialState` for authored variability; neither
   `.extend()` nor terminal `.configure()` replaces it. Schema-derived callbacks
@@ -211,6 +279,15 @@ Current priorities:
   same-name method replaces the synthesized default only when it adds real
   semantics. Delete noun aliases such as `insertTable`; keep distinct verbs
   such as `insertColumn` and `merge`.
+- Custom element insertion is `insert(input?, nodeOptions?)`: domain data
+  first, generic placement and selection second. Do not merge `at`, `select`,
+  or other node options into feature input, and do not export compiler-ferry
+  `Insert*Options` types. Schema-default CRUD uses the synthesized insert.
+- The scoped portal accepts root transaction policy without changing its
+  inferred methods: `editor.plugin(Plugin).update(policy).method()`. It opens
+  exactly one root transaction and preserves rollback and history tags. Code
+  already inside a plugin transaction composes through `tx[plugin.name]`
+  instead of opening a nested portal update.
 - Classify behavior before exposing composition: invariants stay in their
   owner, runtime parameters stay in `initialState` and the scoped store,
   substitutable capabilities may become ordinary plugins, and product policy
@@ -283,10 +360,12 @@ Current priorities:
   API-name aliases, or move mutations outside `editor.update`.
 - Generic code that accepts an optional descriptor checks
   `editor.plugin(Plugin).installed` before using its capabilities or resolved
-  descriptor fields. Disabled plugins count as absent. Schema identity is the
-  exception: uninstalled `.type`/`.key` preserve an exact descriptor identity
-  or use the runtime string conventionally, so read them directly and never
-  add an installed fallback. Do not infer plugin
+  descriptor fields. Disabled plugins count as absent. Exact element and
+  primary-mark portals expose `schema.type` and `schema.key`; behavior and
+  aggregate-property portals omit `schema`. Name-only portals keep both schema
+  getters non-optional for package-decoupled callers, but missing or wrong-kind
+  access throws. Never add optional chaining, non-null assertions, or a raw
+  identity fallback. Do not infer plugin
   availability from root `editor.api`, node types, schema properties, caches,
   or caught access errors.
 - `editor.plugin(plugin)` is the sole public imperative lookup, where `plugin`
@@ -394,6 +473,7 @@ Owner map:
 | Concern                                              | Owner                                   |
 | ---------------------------------------------------- | --------------------------------------- |
 | public GitHub issue/PR/security queue control plane  | `maintainer`                            |
+| local Plate/Plite behavior-bug or regression repair | `patch`                                 |
 | internal Plate/Plite long quality loops              | `auto`                                  |
 | post-merge/current-tree until-clean closure          | `autoclosure`                           |
 | reusable architecture doctrine                       | root `VISION.md` and `docs/vision/*.md` |

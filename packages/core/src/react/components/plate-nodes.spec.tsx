@@ -5,6 +5,7 @@ import React from 'react';
 import { render } from '@testing-library/react';
 import { renderToString } from 'react-dom/server';
 
+import { ElementIdPlugin } from '../../lib';
 import {
   type PlateEditor,
   type PlateEditorReference,
@@ -62,10 +63,10 @@ describe('PlateElement', () => {
     expect(element).not.toHaveAttribute('data-block-id');
   });
 
-  it('does not render data-block-id in server output', () => {
+  it('never renders persisted element ids in server output', () => {
     const editor = createPlateEditor({
-      nodeId: true,
       initialValue: [createElement('block-1')],
+      plugins: [ElementIdPlugin],
     });
     const html = renderToString(
       <PlateElement {...createProps(editor, 'block-1')} />
@@ -74,16 +75,16 @@ describe('PlateElement', () => {
     expect(html).not.toContain('data-block-id');
   });
 
-  it('renders data-block-id after the editor is mounted', () => {
+  it('never renders persisted element ids after the editor is mounted', () => {
     const editor = createPlateEditor({
-      nodeId: true,
       initialValue: [createElement('block-1')],
+      plugins: [ElementIdPlugin],
     });
     const { container } = renderWithStore({ editor, isMounted: true });
     const element = container.querySelector('[data-plite-node="element"]');
 
     expect(element).toBeInTheDocument();
-    expect(element).toHaveAttribute('data-block-id', 'block-1');
+    expect(element).not.toHaveAttribute('data-block-id');
   });
 
   it('keeps the Plite attributes ref on the fast path', () => {

@@ -41,29 +41,29 @@ const createEditor = ({
   removeEmpty,
   selection,
   value,
+  withCodeBlock = true,
 }: {
   selection: Selection;
   value: Value;
   inputRules?: ReturnType<typeof createAutolinkRules>;
   options?: Partial<BaseLinkDefinition['initialState']>;
   removeEmpty?: boolean;
-}) =>
-  createBaseEditor({
+  withCodeBlock?: boolean;
+}) => {
+  const linkPlugin = BaseLinkPlugin.configure({
+    inputRules: inputRules ?? createAutolinkRules(),
+    initialState: options,
+    rules:
+      removeEmpty === undefined ? undefined : { normalize: { removeEmpty } },
+  });
+
+  return createBaseEditor({
     editor: createPliteEditor<Value>(),
-    plugins: [
-      BaseCodeBlockPlugin,
-      BaseLinkPlugin.configure({
-        inputRules: inputRules ?? createAutolinkRules(),
-        initialState: options,
-        rules:
-          removeEmpty === undefined
-            ? undefined
-            : { normalize: { removeEmpty } },
-      }),
-    ],
+    plugins: withCodeBlock ? [BaseCodeBlockPlugin, linkPlugin] : [linkPlugin],
     selection,
     initialValue: value,
   });
+};
 
 const paste = (editor: ReturnType<typeof createEditor>, text: string) => {
   const data = createDataTransfer();
@@ -87,6 +87,25 @@ describe('LinkRules', () => {
         focus: { offset: 4, path: [0, 0] },
       },
       value: [{ children: [{ text: 'test' }], type: 'paragraph' }],
+    });
+
+    paste(editor, 'https://example.com');
+
+    expect(findLink(editor)).toMatchObject({
+      children: [{ text: 'https://example.com' }],
+      url: 'https://example.com',
+    });
+  });
+
+  it('autolinks when the optional code block plugin is absent', () => {
+    const editor = createEditor({
+      selection: {
+        kind: 'text',
+        anchor: { offset: 4, path: [0, 0] },
+        focus: { offset: 4, path: [0, 0] },
+      },
+      value: [{ children: [{ text: 'test' }], type: 'paragraph' }],
+      withCodeBlock: false,
     });
 
     paste(editor, 'https://example.com');

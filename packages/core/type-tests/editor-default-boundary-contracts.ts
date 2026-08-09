@@ -81,9 +81,7 @@ const broadInternalPlateEditor: PlateEditor = exactInternalPlateEditor;
 const exactDOMEditor: DOMEditor = exactInternalPlateEditor;
 const exactReactEditor: ReactEditor = exactInternalPlateEditor;
 type ExactPlateProps = PlateProps<ExactInternalPlateEditor>;
-type ExactUseEditor = typeof useEditor<ExactInternalPlateEditor>;
 declare const exactPlateProps: ExactPlateProps;
-declare const exactUseEditor: ExactUseEditor;
 declare const plateEditorWithStore: PlateEditorWithStore;
 declare const defaultUseEditorReturn: ReturnType<typeof useEditor>;
 const broadDOMEditor: DOMEditor = plateEditorWithStore;
@@ -97,7 +95,7 @@ defaultPlateBoundary.read.runtimePlugin.read();
 // @ts-expect-error Default Plate editors expose Core update groups only.
 defaultPlateBoundary.update.runtimePlugin.write();
 const broadPlateElement = defaultPlateBoundary.read.schema.create(
-  DefaultBoundaryPlatePlugin.type
+  DefaultBoundaryPlatePlugin
 );
 const broadPlateElementType: string = broadPlateElement.type;
 
@@ -118,4 +116,3 @@ void exactBaseValue;
 void exactPlateProps;
 void exactPlateValue;
 void exactReactEditor;
-void exactUseEditor;

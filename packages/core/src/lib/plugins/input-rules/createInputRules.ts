@@ -18,6 +18,10 @@ import type {
 } from './types';
 
 import { defineInputRule } from './defineInputRule';
+import {
+  getCompiledPlateModelBinding,
+  getCompiledPlatePlugin,
+} from '../../../internal/plugin/compilePlateModel';
 
 const NON_WHITESPACE = /\S+/;
 
@@ -101,8 +105,13 @@ export const createMarkInputRule = (
         const portal = editor.plugin(mark);
 
         if (!portal.installed) return;
+        const resolved = getCompiledPlatePlugin(editor, portal.name);
+        const binding = resolved
+          ? getCompiledPlateModelBinding(editor, resolved)
+          : undefined;
 
-        markKeys.push(portal.key);
+        if (binding?.kind !== 'mark' || !binding.propertyKey) return;
+        markKeys.push(binding.propertyKey);
       }
 
       const selection = tx.selection();
@@ -226,25 +235,26 @@ export const createBlockStartInputRule = <TMatch extends object = {}>(
       const portal = editor.plugin(target);
 
       if (!portal.installed) return;
+      const type = portal.schema.type;
 
       if (config.removeMatchedText !== false) {
         tx.text.delete({ at: defaultMatch.range });
       }
 
       if (config.mode === 'wrap') {
-        tx.blocks.toggle(portal.type, {
+        tx.blocks.toggle(type, {
           wrap: true,
         });
         return true;
       }
 
       if (config.mode === 'toggle') {
-        tx.blocks.toggle(portal.type);
+        tx.blocks.toggle(type);
         return true;
       }
 
       tx.nodes.set(
-        { type: portal.type },
+        { type },
         {
           match: (entryNode) =>
             ElementApi.isElement(entryNode) && tx.schema.isBlock(entryNode),
@@ -279,7 +289,7 @@ const matchBlockFence = <
 
     if (!plugin.installed) return;
 
-    const blockType = plugin.type;
+    const blockType = plugin.schema.type;
 
     if (blockNode.type !== blockType) return;
   }

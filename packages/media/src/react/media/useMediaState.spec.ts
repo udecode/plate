@@ -7,6 +7,7 @@ import {
   type EmbedUrlParser,
   parseVideoUrl,
 } from '../../lib/media/parseMediaUrl';
+import { MediaEmbedPlugin } from '../plugins';
 
 const useEditorMock = mock();
 const useElementMock = mock();
@@ -42,12 +43,8 @@ describe('useMediaState', () => {
         return {
           installed: true,
           schema: {
-            element: {
-              type:
-                name === actualUtils.PLUGINS.mediaEmbed
-                  ? 'mediaEmbed'
-                  : 'video',
-            },
+            type:
+              name === actualUtils.PLUGINS.mediaEmbed ? 'mediaEmbed' : 'video',
           },
         };
       },
@@ -57,7 +54,9 @@ describe('useMediaState', () => {
     useEditorReadOnlyMock.mockReturnValue(false);
     useElementSelectedMock.mockReturnValue(false);
 
-    const { result } = renderHook(() => useMediaState({ urlParsers }));
+    const { result } = renderHook(() =>
+      useMediaState(MediaEmbedPlugin, { urlParsers })
+    );
 
     return result.current;
   };

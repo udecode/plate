@@ -54,15 +54,17 @@ The fastest way to add Markdown functionality is with `MarkdownKit`. It combines
 ### Add Kit
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import {
+  PLUGINS,
+  createPlateEditor } from 'platejs/react';
 import { MarkdownKit } from '@/components/editor/plugins/markdown-kit';
 
 const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
-    ...MarkdownKit,
+  ...MarkdownKit,
   ],
-});
+  });
 ```
 
 </Steps>
@@ -86,15 +88,16 @@ import { createPlateEditor } from 'platejs/react';
 const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
-    MarkdownPlugin,
+  MarkdownPlugin,
   ],
-});
+  });
 ```
 
 ### Configure Plugin
 
-Configure `MarkdownPlugin.initialState` for shared syntax plugins, filtering,
-and stringification. Installed feature plugins contribute their Markdown node
+Configure `MarkdownPlugin.initialState` for shared syntax plugins,
+  filtering,
+  and stringification. Installed feature plugins contribute their Markdown node
 codecs automatically. The same state drives the Markdown API and the plugin's
 `text/markdown` and `text/plain` document codecs.
 
@@ -114,8 +117,13 @@ const editor = createPlateEditor({
     // ...other Plate plugins
     MarkdownPlugin.configure({
       initialState: {
-        // Add remark plugins for syntax extensions (GFM, emoji shortcodes, Math, MDX)
-        remarkPlugins: [remarkMath, remarkGfm, remarkEmoji, remarkMdx, remarkMention],
+        remarkPlugins: [
+          remarkMath,
+          remarkGfm,
+          remarkEmoji,
+          remarkMdx,
+          remarkMention,
+        ],
       },
     }),
   ],
@@ -131,7 +139,9 @@ const editor = createPlateEditor({
 <Callout type="warning" title="Primary content only">
   Markdown is a projection of `document.children`. It does not preserve named
   roots or open slice edges. Clipboard transport uses
-  `application/x-plite-fragment` when exact roots, `openStart`, and `openEnd`
+  `application/x-plite-fragment` when exact roots,
+  `openStart`,
+  and `openEnd`
   must survive.
 </Callout>
 
@@ -165,7 +175,8 @@ const editor = createPlateEditor({
 
 <Callout type="warning" title="Plugin Requirements">
   Ensure all Plate plugins required to render the deserialized Markdown (e.g.,
-  `H1Plugin` for `#`, `TablePlugin` for tables) are included in your
+  `H1Plugin` for `#`,
+  `TablePlugin` for tables) are included in your
   editor's `plugins` array.
 </Callout>
 
@@ -188,14 +199,16 @@ console.info(markdownOutput);
 
 ```tsx
 const specificNodes = [
-  { type: 'p', children: [{ text: 'Serialize just this paragraph.' }] },
-  { type: 'h1', children: [{ text: 'And this heading.' }] },
-];
+  { type: 'paragraph',
+  children: [{ text: 'Serialize just this paragraph.' }] },
+  { type: 'h1',
+  children: [{ text: 'And this heading.' }] },
+  ];
 
 // Assuming `editor` is your Plate editor instance
 const partialMarkdownOutput = editor.api.markdown.serialize({
   value: { children: specificNodes },
-});
+  });
 console.info(partialMarkdownOutput);
 ```
 
@@ -204,7 +217,9 @@ media children map directly to the media element's block children.
 
 ### Round-Trip Serialization with Custom Elements (MDX)
 
-A key feature is handling custom Plate elements that lack standard Markdown representation (e.g., underline, mentions). `@platejs/markdown` converts these to [MDX][github-mdx] elements during serialization and parses them back during deserialization.
+A key feature is handling custom Plate elements that lack standard Markdown representation (e.g.,
+  underline,
+  mentions). `@platejs/markdown` converts these to [MDX][github-mdx] elements during serialization and parses them back during deserialization.
 
 **Example:** Handling a custom `date` element.
 
@@ -212,60 +227,67 @@ A key feature is handling custom Plate elements that lack standard Markdown repr
 
 ```ts
 {
-  type: 'p',
+  type: 'paragraph',
   children: [
     { text: 'Today is ' },
-    { type: 'date', date: '2025-03-31', children: [{ text: '' }] } // Leaf elements need a text child
+  { type: 'date',
+  date: '2025-03-31',
+  children: [{ text: '' }] } // Leaf elements need a text child
   ],
-}
+  }
 ```
 
 **Feature plugin codec:**
 
 `@platejs/core` includes the Markdown codec authoring types. Feature plugins
 declare their codecs without importing the optional Markdown runtime.
-When one plugin owns both HTML and Markdown codecs, declare both format keys in
+When one plugin owns both HTML and Markdown codecs,
+  declare both format keys in
 one `defineCodecs` object. Each format keeps its schema-specific inference.
 
 ```tsx title="lib/plate-editor.ts"
-import { createBasePlugin } from '@platejs/core';
+import { defineBasePlugin } from '@platejs/core';
 import { property } from '@platejs/plite';
 
-export const BaseDatePlugin = createBasePlugin({
+export const BaseDatePlugin = defineBasePlugin('date',
+  {
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       'text/html': {
         decode: ({ element }) => ({ date: element.dataset.date }),
-        encode: ({ node }) => ({
+  encode: ({ node }) => ({
           attributes: { 'data-date': node.date },
-          tag: 'span',
-        }),
-        match: [{ attributes: { 'data-date': true }, tag: 'span' }],
-      },
-      'text/markdown': {
-        decode: ({ node, parseAttributes, type }) => ({
+  tag: 'span',
+  }),
+  match: [{ attributes: { 'data-date': true },
+  tag: 'span' }],
+  },
+  'text/markdown': {
+        decode: ({ node,
+  name,
+  parseAttributes }) => ({
           children: [{ text: '' }],
-          date: String(parseAttributes(node.attributes).value ?? ''),
-          type,
-        }),
-        encode: ({ node, propsToAttributes }) => ({
+  date: String(parseAttributes(node.attributes).value ?? ''),
+  type,
+  }),
+  encode: ({ node,
+  propsToAttributes }) => ({
           attributes: propsToAttributes({ value: node.date }),
-          children: [],
-          name: 'date',
-          type: 'mdxJsxTextElement',
-        }),
-        from: 'date',
-        kind: 'node',
-      },
-    }),
+  children: [],
   name: 'date',
+  type: 'mdxJsxTextElement',
+  }),
+  from: 'date',
+  kind: 'node',
+  },
+  }),
   schema: {
     element: {
       properties: { date: property.string() },
-      void: 'inline',
-    },
+  void: 'inline',
   },
-});
+  },
+  });
 ```
 
 **Conversion Process:**
@@ -285,7 +307,8 @@ Pass Markdown conversion behavior through `MarkdownPlugin.configure({ initialSta
   <APIOptions type="MarkdownPluginState">
     <APIItem name="allowedNodes" type="PlateType[] | null">
       Whitelist specific node types (Plate types and Markdown AST types like
-      `strong`). Cannot be used with `disallowedNodes`. If set, only listed
+      `strong`). Cannot be used with `disallowedNodes`. If set,
+  only listed
       types are processed. Default: `null` (all allowed).
     </APIItem>
     <APIItem name="disallowedNodes" type="PlateType[] | null">
@@ -293,7 +316,8 @@ Pass Markdown conversion behavior through `MarkdownPlugin.configure({ initialSta
       types are filtered out. Default: `null`.
     </APIItem>
     <APIItem name="allowNode" type="AllowNodeConfig">
-      Fine-grained node filtering with custom functions, applied *after*
+      Fine-grained node filtering with custom functions,
+  applied *after*
       `allowedNodes`/`disallowedNodes`. - `deserialize?: (mdastNode: any) =>
       boolean`: Filter for Markdown → Plate. Return `true` to keep. -
       `serialize?: (slateNode: any) => boolean`: Filter for Plate → Markdown.
@@ -302,7 +326,10 @@ Pass Markdown conversion behavior through `MarkdownPlugin.configure({ initialSta
     <APIItem name="remarkPlugins" type="Pluggable[]">
       Array of [remark
       plugins](https://github.com/remarkjs/remark/blob/main/doc/plugins.md#list-of-plugins)
-      (e.g., `remark-gfm`, `remark-math`, `remark-mdx`). Operates on Markdown
+      (e.g.,
+  `remark-gfm`,
+  `remark-math`,
+  `remark-mdx`). Operates on Markdown
       AST (`mdast`). Default: `[]`.
     </APIItem>
     <APIItem name="remarkStringifyOptions" type="RemarkStringifyOptions | null">
@@ -340,7 +367,8 @@ Converts a Markdown string into an `EditorDocumentValue`.
       The Markdown string to deserialize.
     </APIItem>
     <APIItem name="options" type="DeserializeMdOptions" optional>
-      Options for this call, overriding the shared Markdown configuration.
+      Options for this call,
+  overriding the shared Markdown configuration.
     </APIItem>
   </APIParameters>
   <APIOptions type="DeserializeMdOptions">
@@ -360,11 +388,13 @@ Converts a Markdown string into an `EditorDocumentValue`.
       Override plugin `remarkPlugins`.
     </APIItem>
     <APIItem name="splitLineBreaks" type="boolean" optional>
-      If `true`, single line breaks (`\\n`) in paragraphs become paragraph
+      If `true`,
+  single line breaks (`\\n`) in paragraphs become paragraph
       breaks. Default: `false`.
     </APIItem>
     <APIItem name="withoutMdx" type="boolean" optional>
-      If `true`, skips the MDX preprocessing pass and filters `remarkMdx` out
+      If `true`,
+  skips the MDX preprocessing pass and filters `remarkMdx` out
       of the plugin list. Default: `false`.
     </APIItem>
     <APIItem name="preserveEmptyParagraphs" type="boolean" optional>
@@ -392,7 +422,8 @@ Converts inline Markdown text into Plite children.
       Inline Markdown text to deserialize.
     </APIItem>
     <APIItem name="options" type="DeserializeMdOptions" optional>
-      Options for this call, overriding the shared Markdown configuration.
+      Options for this call,
+  overriding the shared Markdown configuration.
     </APIItem>
   </APIParameters>
   <APIReturns type="Descendant[]">Plite children for inline content.</APIReturns>
@@ -407,7 +438,8 @@ Converts an `EditorDocumentValue` into a Markdown string.
 <API name="serialize">
   <APIParameters>
     <APIItem name="options" type="SerializeMdOptions" optional>
-      Options for this call, overriding the shared Markdown configuration.
+      Options for this call,
+  overriding the shared Markdown configuration.
     </APIItem>
   </APIParameters>
   <APIOptions type="SerializeMdOptions">
@@ -432,7 +464,8 @@ Converts an `EditorDocumentValue` into a Markdown string.
     </APIItem>
     <APIItem name="remarkStringifyOptions" type="RemarkStringifyOptions | null" optional>
       Options passed to `remark-stringify`. Defaults to the shared Markdown
-      configuration, with
+      configuration,
+  with
       Plate setting emphasis to `_` and resource links to `false`.
     </APIItem>
     <APIItem name="plainMarks" type="PlateType[] | null" optional>
@@ -445,7 +478,8 @@ Converts an `EditorDocumentValue` into a Markdown string.
       Preserves empty paragraph nodes during serialization.
     </APIItem>
     <APIItem name="withBlockId" type="boolean" optional>
-      When true, preserves block IDs in markdown serialization to enable AI
+      When true,
+  preserves block IDs in markdown serialization to enable AI
       comment tracking. Wraps blocks with `<block id="...">content</block>`
       syntax. - **Default:** `false`
     </APIItem>
@@ -470,7 +504,8 @@ Utility to parse a Markdown string into block-level tokens.
   </APIParameters>
   <APIOptions type="ParseMarkdownBlocksOptions">
     <APIItem name="exclude" type="string[]" optional>
-      Marked token types (e.g., `'space'`) to exclude. Default: `['space']`.
+      Marked token types (e.g.,
+  `'space'`) to exclude. Default: `['space']`.
     </APIItem>
     <APIItem name="trim" type="boolean" optional>
       Trim trailing whitespace from input. Default: `true`.
@@ -487,7 +522,10 @@ Utility to parse a Markdown string into block-level tokens.
 
 ### Using a Remark Plugin (GFM)
 
-Add support for GitHub Flavored Markdown (tables, strikethrough, task lists, autolinks).
+Add support for GitHub Flavored Markdown (tables,
+  strikethrough,
+  task lists,
+  autolinks).
 
 **Plugin Configuration:**
 
@@ -505,16 +543,17 @@ const editor = createPlateEditor({
   plugins: [
     // ...other plugins
     TablePlugin,
-    TodoListPlugin, // Or your specific task list plugin
+  TodoListPlugin,
+  // Or your specific task list plugin
     StrikethroughPlugin,
-    LinkPlugin,
-    MarkdownPlugin.configure({
+  LinkPlugin,
+  MarkdownPlugin.configure({
       initialState: {
         remarkPlugins: [remarkGfm],
-      },
-    }),
+  },
+  }),
   ],
-});
+  });
 ```
 
 **Usage:**
@@ -545,17 +584,20 @@ const markdownOutput = editor.api.markdown.serialize();
 
 ### Customizing Rendering (Syntax Highlighting)
 
-This example shows two approaches: customizing the rendering component (common for UI changes) and customizing the conversion rule (advanced, for changing Plate structure).
+This example shows two approaches: customizing the rendering component (common for UI changes) and customizing the conversion rule (advanced,
+  for changing Plate structure).
 
 **Background:**
 
-- `@platejs/markdown` converts Markdown fenced code blocks (e.g., \`\`\`js ... \`\`\`) to Plate `code_block` elements with `code_line` children.
+- `@platejs/markdown` converts Markdown fenced code blocks (e.g.,
+  \`\`\`js ... \`\`\`) to Plate `codeBlock` elements with `codeLine` children.
 - The Plate `CodeBlockElement` (often from `@platejs/code-block/react`) renders this structure.
 - Syntax highlighting comes from `CodeHighlightPlugin` and a library like `lowlight`. See [Code Block Plugin](/docs/code-block) for details.
 
 **Approach 1: Customizing Rendering Component (Recommended for UI)**
 
-To change how code blocks appear, customize the component for the `code_block` plugin name.
+To change how code blocks appear, customize the component for the `codeBlock`
+plugin name.
 
 ```tsx title="components/my-editor.tsx"
 import { createPlateEditor } from 'platejs/react';
@@ -569,10 +611,10 @@ import { MyCustomCodeBlockElement } from './my-custom-code-block'; // Your custo
 
 const editor = createPlateEditor({
   plugins: [
-    CodeBlockPlugin.configure({ component: MyCustomCodeBlockElement }), // Base plugin for structure/logic
+    CodeBlockPlugin.configure({ component: MyCustomCodeBlockElement }),
     CodeLinePlugin.configure({ component: MyCustomCodeLineElement }),
     CodeHighlightPlugin.configure({ component: MyCustomCodeSyntaxElement }),
-    MarkdownPlugin, // For Markdown conversion
+    MarkdownPlugin,
     // ... other plugins
   ],
 });
@@ -585,21 +627,21 @@ Refer to the [Code Block Plugin documentation](/docs/code-block) for complete ex
 
 **Approach 2: One-operation conversion override (Advanced)**
 
-To alter the Plate JSON for one import, pass a `rules` override to that
+To alter the Plate JSON for one import,
+  pass a `rules` override to that
 operation. Reusable code-block behavior belongs in the code-block feature
 plugin's `text/markdown` codec.
 
 ```tsx title="lib/plate-editor.ts"
-import { NODES } from 'platejs';
 
 const value = editor.api.markdown.deserialize(markdown, {
   rules: {
-    [NODES.codeBlock]: {
+    ['codeBlock']: {
       deserialize: (mdastNode) => ({
         children: [{ text: '' }],
         lang: mdastNode.lang ?? undefined,
         rawCode: mdastNode.value || '',
-        type: NODES.codeBlock,
+        type: 'codeBlock',
       }),
     },
   },
@@ -608,7 +650,7 @@ const value = editor.api.markdown.deserialize(markdown, {
 const output = editor.api.markdown.serialize({
   value,
   rules: {
-    [NODES.codeBlock]: {
+    ['codeBlock']: {
       serialize: (node) => ({
         lang: node.lang,
         type: 'code',
@@ -662,7 +704,7 @@ $$
 
 // Assuming `editor` is your configured Plate editor instance
 const document = editor.api.markdown.deserialize(markdown);
-// document.children contains 'inline_equation' and 'equation' nodes.
+// document.children contains 'inlineEquation' and 'equation' nodes.
 
 const markdownOutput = editor.api.markdown.serialize({ value: document });
 // markdownOutput will contain $...$ and $$...$$ syntax.
@@ -766,7 +808,7 @@ const markdown = `
 
 // Assuming `editor` is your configured Plate editor instance
 const slateValue = editor.api.markdown.deserialize(markdown);
-// Creates column_group with nested column elements
+// Creates a columnGroup node with nested column elements
 
 const markdownOutput = editor.api.markdown.serialize({ value: slateValue });
 // Preserves column structure with width attributes
@@ -884,7 +926,7 @@ The option examples use `import { MarkdownPlugin } from '@platejs/markdown'`.
 | `remarkPlugins`                 | `MarkdownPlugin.configure({ initialState: { remarkPlugins: [...] } })`                                                | Operates on mdast.                                                                     |
 | `rehypePlugins`                 | Not part of `MarkdownPlugin`'s conversion pipeline.                                                              | Run any HTML pipeline before passing Markdown or Plate nodes to Plate.                 |
 | `components={{ h1: MyH1 }}`     | `createPlateEditor({ components: { h1: MyH1 } })`                                                                | Configures the component for the installed `H1Plugin` name.                            |
-| `components={{ code: MyCode }}` | Feature plugin `text/markdown` codec plus `components: { [KEYS.codeBlock]: MyCode }` | The codec owns mdast ↔ Plate conversion; the component owns rendering. |
+| `components={{ code: MyCode }}` | Feature plugin `text/markdown` codec plus `components: { ['codeBlock']: MyCode }` | The codec owns mdast ↔ Plate conversion; the component owns rendering. |
 | `allowedElements`               | `MarkdownPlugin.configure({ initialState: { allowedNodes: [...] } })`                                                 | Filters nodes during conversion (mdast/Plate types).                                   |
 | `disallowedElements`            | `MarkdownPlugin.configure({ initialState: { disallowedNodes: [...] } })`                                              | Filters nodes during conversion.                                                       |
 | `unwrapDisallowed`              | No direct equivalent. Filtering removes nodes.                                                                   | A one-operation `rules` override can implement unwrapping.                             |
@@ -924,7 +966,7 @@ plugins, so removing a feature also removes its conversion. Use `rules` on
 
 - **Plugin decode:** `from` names the mdast node type or MDX tag. `decode`
   receives a typed node plus helpers for children, attributes, captions, and
-  resolved plugin types.
+  the owning plugin name.
 - **Plugin encode:** `encode` receives the schema-inferred Plate node plus
   helpers that guarantee phrasing, block, or flow content.
 - **Operation override:** `rules` keys match the Plate plugin name for encoding
@@ -937,7 +979,7 @@ import { convertChildrenDeserialize } from '@platejs/markdown';
 
 editor.api.markdown.deserialize(markdown, {
   rules: {
-    a: {
+    link: {
       deserialize: (node, decoration, options) => ({
         children: convertChildrenDeserialize(
           node.children,
@@ -946,7 +988,7 @@ editor.api.markdown.deserialize(markdown, {
         ),
         customProp: 'this import only',
         title: node.title,
-        type: options.registry.getType('a'),
+        type: 'link',
         url: node.url,
       }),
     },
@@ -994,7 +1036,7 @@ editor.api.markdown.deserialize(markdown, {
 | `<video src="..." />`                  | `video`                  | Custom Video element                        |
 | `<toc />`                              | `toc`                    | Table of Contents                           |
 | `<callout>...</callout>`               | `callout`                | Callout block                               |
-| `<column_group>...</column_group>`     | `column_group`           | Multi-column layout container               |
+| `<column_group>...</column_group>`     | `columnGroup`            | Multi-column layout container               |
 | `<column width="50%">...</column>`     | `column`                 | Single column with optional width attribute |
 
 ## Appendix C: Components for Rendering

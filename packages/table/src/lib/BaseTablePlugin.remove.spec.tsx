@@ -15,7 +15,6 @@ describe('table removal', () => {
 
     const createTableEditor = (input: TestEditor) =>
       createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins(),
         selection: input.selection,
         initialValue: input.children,
@@ -119,7 +118,6 @@ describe('table removal', () => {
       ) as TestEditor;
 
       const editor = createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
         initialValue: input.children,
@@ -177,7 +175,6 @@ describe('table removal', () => {
       ) as TestEditor;
 
       const editor = createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
         initialValue: input.children,
@@ -235,7 +232,6 @@ describe('table removal', () => {
       ) as TestEditor;
 
       const editor = createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
         initialValue: input.children,
@@ -301,7 +297,6 @@ describe('table removal', () => {
       ) as TestEditor;
 
       const editor = createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
         initialValue: input.children,
@@ -341,7 +336,6 @@ describe('table removal', () => {
     ) as TestEditor;
 
     const editor = createTestTableEditor({
-      nodeId: true,
       plugins: getTestTablePlugins({ disableMerge: true }),
       selection: input.selection,
       initialValue: input.children,
@@ -388,7 +382,6 @@ describe('table removal', () => {
     ) as TestEditor;
 
     const editor = createTestTableEditor({
-      nodeId: true,
       plugins: getTestTablePlugins({ disableMerge: true }),
       selection: input.selection,
       initialValue: input.children,
@@ -409,7 +402,6 @@ describe('table removal', () => {
       { disableMerge = true }: { disableMerge?: boolean } = {}
     ) =>
       createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
         initialValue: input.children,

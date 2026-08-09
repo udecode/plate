@@ -9,7 +9,7 @@ import {
   BaseH6Plugin,
   HeadingRules,
 } from './BaseHeadingPlugins';
-import { createBaseEditor, defineBasePlugin } from '@platejs/core';
+import { createBaseEditor, defineEditor } from '@platejs/core';
 import { getPlateRuntime } from '@platejs/core/internal';
 import { schema, SelectionApi } from '@platejs/plite';
 import { jsxt } from '@platejs/test-utils';
@@ -44,7 +44,7 @@ describe('base heading plugins', () => {
     headingPlugins.forEach((plugin, index) => {
       const level = headingKeys[index]!;
       const resolvedPlugin = editor.plugin(plugin);
-      const headingType = resolvedPlugin.schema.element!.type;
+      const headingType = resolvedPlugin.schema.type;
 
       expect(resolvedPlugin.name).toBe(headingNames[index]);
       expect(editor.read.schema.element(headingType)).toBeDefined();
@@ -98,7 +98,7 @@ describe('base heading plugins', () => {
     [BaseH1Plugin, BaseH3Plugin, BaseH5Plugin].forEach((plugin) => {
       expect(editor.plugin(plugin).name).toBe(plugin.name);
       expect(
-        editor.read.schema.element(editor.plugin(plugin).schema.element!.type)
+        editor.read.schema.element(editor.plugin(plugin).schema.type)
       ).toBeDefined();
     });
 
@@ -164,12 +164,12 @@ describe('base heading plugins', () => {
       initialValue: [{ children: [{ text: 'text' }], type: 'paragraph' }],
     });
 
-    h1.update.h1.toggle();
-    h2.update.h2.toggle();
-    h3.update.h3.toggle();
-    h4.update.h4.toggle();
-    h5.update.h5.toggle();
-    h6.update.h6.toggle();
+    h1.update.blocks.toggle(h1.plugin(BaseH1Plugin).schema.type);
+    h2.update.blocks.toggle(h2.plugin(BaseH2Plugin).schema.type);
+    h3.update.blocks.toggle(h3.plugin(BaseH3Plugin).schema.type);
+    h4.update.blocks.toggle(h4.plugin(BaseH4Plugin).schema.type);
+    h5.update.blocks.toggle(h5.plugin(BaseH5Plugin).schema.type);
+    h6.update.blocks.toggle(h6.plugin(BaseH6Plugin).schema.type);
 
     expect(h1.read.children()[0]).toMatchObject({ type: 'h1' });
     expect(h2.read.children()[0]).toMatchObject({ type: 'h2' });
@@ -181,12 +181,19 @@ describe('base heading plugins', () => {
 });
 
 describe('heading input rules', () => {
-  it('derives markdown depth from the persisted type, not the capability name', () => {
-    const SectionHeadingPlugin = defineBasePlugin('sectionHeading', {
+  it('keeps markdown depth bound to the heading capability when its persisted type changes', () => {
+    const definition = defineEditor('customHeadingType', {
+      plugins: [
+        BaseH2Plugin.configure({ inputRules: [HeadingRules.markdown()] }),
+      ],
       schema: {
-        element: { ...schema.element.textBlock(), type: 'h2' },
+        overrides: [
+          schema.override(BaseH2Plugin, {
+            element: { type: 'sectionHeading' },
+          }),
+        ],
       },
-    }).configure({ inputRules: [HeadingRules.markdown()] });
+    });
     const input = (
       <editor>
         <hp>
@@ -197,7 +204,7 @@ describe('heading input rules', () => {
       </editor>
     );
     const editor = createBaseEditor({
-      plugins: [SectionHeadingPlugin],
+      plugins: definition.plugins,
       selection: input.selection,
       initialValue: input.children,
     });
@@ -205,7 +212,7 @@ describe('heading input rules', () => {
     editor.update.text.insert(' ');
 
     expect(editor.read.children()).toEqual([
-      { children: [{ text: 'hello' }], type: 'h2' },
+      { children: [{ text: 'hello' }], type: 'sectionHeading' },
     ]);
   });
 

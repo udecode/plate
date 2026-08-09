@@ -4,7 +4,8 @@ import {
   type Text,
   TextApi,
 } from '@platejs/plite';
-import { KEYS, type TListElement } from '@platejs/utils';
+import type { ListElement } from '@platejs/list';
+import { PLUGINS } from '@platejs/utils';
 
 import type { MdRootContent } from '../mdast';
 import type { SerializeMdContext } from '../types';
@@ -21,7 +22,7 @@ export const convertNodesSerialize = (
   const mdastNodes: MdRootContent[] = [];
   let textQueue: Text[] = [];
 
-  const listBlock: TListElement[] = [];
+  const listBlock: ListElement[] = [];
 
   for (let i = 0; i <= nodes.length; i++) {
     const node = nodes[i];
@@ -43,13 +44,14 @@ export const convertNodesSerialize = (
         continue;
       }
 
-      const pType = options.registry.getType(KEYS.p);
+      const paragraphType =
+        options.registry.type(PLUGINS.paragraph) ?? 'paragraph';
 
-      if (isListElement(node, pType)) {
+      if (isListElement(node, paragraphType)) {
         listBlock.push(node);
 
         const next = nodes[i + 1];
-        const isNextIndent = isListElement(next, pType);
+        const isNextIndent = isListElement(next, paragraphType);
         const firstList = listBlock.at(0);
         const hasDifferentListStyle =
           isNextIndent &&
@@ -89,20 +91,27 @@ export const buildMdastNode = (
   options: SerializeMdContext,
   isBlock = false
 ) => {
-  const name = options.registry.getName(node.type) ?? node.type;
-  let fallbackName = name;
+  const type = node.type;
+  let fallbackType = type;
 
-  if (KEYS.heading.some((headingName) => headingName === name)) {
-    fallbackName = 'heading';
+  if (
+    [PLUGINS.h1, PLUGINS.h2, PLUGINS.h3, PLUGINS.h4, PLUGINS.h5, PLUGINS.h6]
+      .map((name) => options.registry.type(name))
+      .some((headingType) => headingType === type)
+  ) {
+    fallbackType = 'heading';
   }
 
-  if (name === KEYS.olClassic || name === KEYS.ulClassic) {
-    fallbackName = 'list';
+  if (
+    type === (options.registry.type(PLUGINS.numberedList) ?? 'numberedList') ||
+    type === (options.registry.type(PLUGINS.bulletedList) ?? 'bulletedList')
+  ) {
+    fallbackType = 'list';
   }
 
   const nodeParser =
-    options.rules?.[name]?.serialize ??
-    options.rules?.[fallbackName]?.serialize;
+    options.rules?.[type]?.serialize ??
+    options.rules?.[fallbackType]?.serialize;
 
   if (nodeParser) {
     const mdastNode = nodeParser(node, options);
@@ -122,7 +131,7 @@ export const buildMdastNode = (
 const isListElement = (
   node: Descendant | undefined,
   paragraphType: string
-): node is TListElement =>
+): node is ListElement =>
   !!node &&
   !TextApi.isText(node) &&
   node.type === paragraphType &&

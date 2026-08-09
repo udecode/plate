@@ -32,7 +32,7 @@ characters.
 | --- | --- | --- |
 | `decoratePreview` | Registry example | Reads text nodes, tokenizes `node.text`, and returns Plite ranges with token-type flags. |
 | `PreviewLeaf` | Registry example | Applies CSS classes when a decorated leaf has `bold`, `italic`, `title`, `list`, `hr`, `blockquote`, or `code`. |
-| `preview-markdown` plugin | Registry example | Local `createBasePlugin({ decorate })` plugin. |
+| `preview-markdown` plugin | Registry example | Local `defineBasePlugin(name, { decorate })` plugin. |
 | `BasicNodesKit` | Registry kit | Supplies the editor's normal paragraph and heading plugins. |
 | `prismjs` | Dependency | Supplies the Markdown tokenizer used by the decoration function. |
 

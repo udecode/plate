@@ -3,7 +3,7 @@ import { getEditorExtensionRegistry } from '@platejs/plite/internal';
 
 import type { PluginReference } from '../../lib/plugin';
 
-import { createBaseEditor } from '../../lib/editor';
+import { createBaseEditor, defineEditor } from '../../lib/editor';
 import { defineBasePlugin } from '../../lib/plugin';
 import { BaseParagraphPlugin } from '../../lib/plugins';
 import { definePlatePlugin } from '../../react/plugin';
@@ -62,18 +62,16 @@ describe('compilePlateModel', () => {
 
     expect(editor.plugin(ElementPlugin)).toMatchObject({
       name: 'elementCapability',
-      schema: { element: { type: 'persistedElement' } },
+      schema: { type: 'persistedElement' },
     });
     expect(editor.plugin(MarkPlugin)).toMatchObject({
       name: 'markCapability',
-      schema: { properties: { persistedMark: { key: 'persistedMark' } } },
+      schema: { key: 'persistedMark' },
     });
-    expect(editor.plugin(DefaultElementPlugin).schema.element.type).toBe(
+    expect(editor.plugin(DefaultElementPlugin).schema.type).toBe(
       'defaultElement'
     );
-    expect(
-      editor.plugin(DefaultMarkPlugin).schema.properties.defaultMark.key
-    ).toBe('defaultMark');
+    expect(editor.plugin(DefaultMarkPlugin).schema.key).toBe('defaultMark');
     expect(model.byName.elementCapability?.elementType).toBe(
       'persistedElement'
     );
@@ -83,13 +81,24 @@ describe('compilePlateModel', () => {
     expect(editor.read.schema.element(ElementPlugin)?.type).toBe(
       'persistedElement'
     );
-    expect(
-      editor.read.schema.create(editor.plugin(ElementPlugin).schema.element)
-    ).toEqual({
+    expect(editor.read.schema.create(ElementPlugin)).toEqual({
       children: [{ text: '' }],
       type: 'persistedElement',
     });
-    expect(editor.plugin(BehaviorPlugin).schema).toEqual({ properties: {} });
+    expect('schema' in editor.plugin(BehaviorPlugin)).toBe(false);
+    expect(editor.plugin('elementCapability').schema.type).toBe(
+      'persistedElement'
+    );
+    expect(editor.plugin('markCapability').schema.key).toBe('persistedMark');
+    expect(() => editor.plugin('elementCapability').schema.key).toThrow(
+      'does not own a primary mark schema identity'
+    );
+    expect(() => editor.plugin('markCapability').schema.type).toThrow(
+      'does not own a primary element schema identity'
+    );
+    expect(() => editor.plugin('behaviorCapability').schema.type).toThrow(
+      'does not own a primary element schema identity'
+    );
   });
 
   it('binds generic element updates to the plugin persisted type', () => {
@@ -163,6 +172,67 @@ describe('compilePlateModel', () => {
     });
   });
 
+  it('applies history policy to descriptor-scoped generic updates', () => {
+    const ElementPlugin = defineBasePlugin('policyElement', {
+      schema: {
+        element: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          properties: {
+            tone: property.enum(['info', 'warning'] as const, {
+              default: 'info',
+            }),
+          },
+        },
+      },
+    });
+    const editor = createBaseEditor({
+      initialValue: [
+        { children: [{ text: '' }], tone: 'info', type: 'policyElement' },
+      ],
+      plugins: [ElementPlugin],
+    });
+    const element = editor.plugin(ElementPlugin);
+
+    element.update.set({ tone: 'warning' }, { at: [0] });
+    element.update({ history: 'merge' }).set({ tone: 'info' }, { at: [0] });
+
+    expect(editor.read.history().undos).toHaveLength(1);
+    editor.update((tx) => tx.history.undo());
+    expect(editor.read.children()[0]).toMatchObject({ tone: 'info' });
+  });
+
+  it('rolls back a failing descriptor-scoped policy update', () => {
+    const ElementPlugin = defineBasePlugin('rollbackElement', {
+      schema: {
+        element: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          properties: {
+            tone: property.enum(['info', 'warning'] as const, {
+              default: 'info',
+            }),
+          },
+        },
+      },
+      update: ({ tx }) => ({
+        fail: () => {
+          tx.nodes.set({ tone: 'warning' }, { at: [0] });
+          throw new Error('rollback');
+        },
+      }),
+    });
+    const editor = createBaseEditor({
+      initialValue: [
+        { children: [{ text: '' }], tone: 'info', type: 'rollbackElement' },
+      ],
+      plugins: [ElementPlugin],
+    });
+
+    expect(() =>
+      editor.plugin(ElementPlugin).update({ tags: 'rollback-test' }).fail()
+    ).toThrow('rollback');
+    expect(editor.read.children()[0]).toMatchObject({ tone: 'info' });
+  });
+
   it('does not invent a primary key for aggregate property contributors', () => {
     const AggregatePropertiesPlugin = defineBasePlugin(
       'aggregatePropertiesRuntime',
@@ -181,7 +251,50 @@ describe('compilePlateModel', () => {
     );
     const editor = createBaseEditor({ plugins: [AggregatePropertiesPlugin] });
 
-    expect('key' in editor.plugin(AggregatePropertiesPlugin)).toBe(false);
+    expect('schema' in editor.plugin(AggregatePropertiesPlugin)).toBe(false);
+    expect(
+      () => editor.plugin('aggregatePropertiesRuntime').schema.type
+    ).toThrow('does not own a primary element schema identity');
+  });
+
+  it('synthesizes semantic primary-mark reads and updates', () => {
+    const BoldPlugin = defineBasePlugin('boldRuntime', {
+      schema: {
+        mark: property.boolean({ default: false, omitDefault: true }),
+      },
+    });
+    const TonePlugin = defineBasePlugin('toneRuntime', {
+      schema: { mark: property.enum(['warm', 'cool'] as const) },
+    });
+    const point = { offset: 0, path: [0, 0] };
+    const editor = createBaseEditor({
+      initialValue: [{ children: [{ text: 'text' }], type: 'paragraph' }],
+      plugins: [BaseParagraphPlugin, BoldPlugin, TonePlugin],
+    });
+    editor.update.selection.set(point);
+    const bold = editor.plugin(BoldPlugin);
+    const tone = editor.plugin(TonePlugin);
+
+    expect(bold.read.value()).toBeUndefined();
+    expect(bold.read.isActive()).toBe(false);
+    bold.update.toggle();
+    expect(bold.read.value()).toBe(true);
+    expect(bold.read.isActive()).toBe(true);
+    bold.update.clear();
+    expect(bold.read.value()).toBeUndefined();
+    editor.update.boldRuntime.set(true);
+    expect(editor.read.boldRuntime.value()).toBe(true);
+    editor.update.boldRuntime.clear();
+
+    tone.update.set('warm');
+    expect(tone.read.value()).toBe('warm');
+    expect(tone.read.isActive()).toBe(true);
+    expect(tone.read.isActive('cool')).toBe(false);
+    expect(() => Reflect.apply(tone.update.toggle, tone.update, [])).toThrow(
+      'requires a value to toggle'
+    );
+    tone.update.toggle('warm');
+    expect(tone.read.value()).toBeUndefined();
   });
 
   it('projects one plugin-owned content-root slot onto targeted element plugins', () => {
@@ -382,12 +495,9 @@ describe('compilePlateModel', () => {
         PropertyPlugin,
       ],
     });
-    const element = editor.read.schema.create(
-      editor.plugin(BlockPlugin).schema.element,
-      {
-        descriptorTone: 'warm',
-      }
-    );
+    const element = editor.read.schema.create(BlockPlugin, {
+      descriptorTone: 'warm',
+    });
 
     expect(element).toEqual({
       children: [{ text: '' }],
@@ -737,6 +847,72 @@ describe('compilePlateModel', () => {
     expect(targetBinding.missingNames).toEqual(['missingOptionalHeading']);
     expect(targetBinding.types).toEqual(['configuredHeading']);
     expect(editor.read.history().schema).toEqual(editor.read.schema.identity());
+  });
+
+  it('resolves persisted target types from function schema declarations', () => {
+    const HeadingPlugin = defineBasePlugin('functionHeading', {
+      schema: () => ({
+        element: {
+          content: schema.content.open(),
+          type: 'persistedHeading',
+        },
+      }),
+    });
+    let resolvedTargetTypes: readonly string[] = [];
+    const PropertyPlugin = defineBasePlugin('functionTargetProperty', {
+      schema: ({ targetElementTypes }) => {
+        resolvedTargetTypes = targetElementTypes;
+
+        return {
+          properties: {
+            tone: schema.elementProperty(property.string(), {
+              target: target.types(targetElementTypes),
+            }),
+          },
+        };
+      },
+      targetPlugins: [HeadingPlugin],
+    });
+
+    createBaseEditor({ plugins: [HeadingPlugin, PropertyPlugin] });
+
+    expect(resolvedTargetTypes).toEqual(['persistedHeading']);
+  });
+
+  it('resolves target types from the closed application schema', () => {
+    const HeadingPlugin = createElementPlugin('applicationHeading');
+    let resolvedTargetTypes: readonly string[] = [];
+    const PropertyPlugin = defineBasePlugin('applicationTargetProperty', {
+      schema: ({ targetElementTypes }) => {
+        resolvedTargetTypes = targetElementTypes;
+
+        return {
+          properties: {
+            tone: schema.elementProperty(property.string(), {
+              target: target.types(targetElementTypes),
+            }),
+          },
+        };
+      },
+      targetPlugins: [HeadingPlugin],
+    });
+    const definition = defineEditor('applicationTargetEditor', {
+      plugins: [HeadingPlugin, PropertyPlugin],
+      schema: {
+        overrides: [
+          schema.override(HeadingPlugin, {
+            element: { type: 'persistedApplicationHeading' },
+          }),
+        ],
+      },
+    });
+    const editor = createBaseEditor({ plugins: definition.plugins });
+
+    expect(resolvedTargetTypes).toEqual(['persistedApplicationHeading']);
+    expect(
+      getResolvedPluginTargetBinding(editor, editor.plugin(PropertyPlugin))
+        .types
+    ).toEqual(['persistedApplicationHeading']);
   });
 
   it('rejects an exact target descriptor from a different same-name family', () => {

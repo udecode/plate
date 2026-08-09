@@ -1,5 +1,4 @@
 import { createContext, useContext } from 'react';
-import type { Editor } from '@platejs/plite';
 import type { ReactEditorContextValue } from '../plugin/with-react';
 
 /**
@@ -14,9 +13,7 @@ export const EditorContext = createContext<ReactEditorContextValue<any> | null>(
  * Get the current editor object from the React context.
  */
 
-export const useEditor = <
-  TEditor extends Editor<any> = ReactEditorContextValue<any>,
->(): TEditor => {
+export const useEditor = (): ReactEditorContextValue<any> => {
   const editor = useContext(EditorContext);
 
   if (!editor) {
@@ -25,5 +22,5 @@ export const useEditor = <
     );
   }
 
-  return editor as unknown as TEditor;
+  return editor;
 };

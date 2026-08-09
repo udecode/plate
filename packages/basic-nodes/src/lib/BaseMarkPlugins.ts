@@ -1,11 +1,15 @@
 import {
-  createBasePlugin,
+  defineBasePlugin,
   createRuleFactory,
   someHtmlElement,
 } from '@platejs/core';
 import { property } from '@platejs/plite';
-import { KEYS, type TScriptValue } from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 import { findHtmlParentElement } from '@udecode/utils';
+
+const scriptValues = ['sub', 'sup'] as const;
+
+export type ScriptValue = (typeof scriptValues)[number];
 
 export const BoldRules = {
   markdown: createRuleFactory<{}, { variant: '*' | '_' }>({
@@ -45,7 +49,7 @@ export const ItalicRules = {
 };
 
 export const ScriptRules = {
-  markdown: createRuleFactory<{ value: TScriptValue }>({
+  markdown: createRuleFactory<{ value: ScriptValue }>({
     type: 'mark',
     start: ({ value }) => (value === 'sub' ? '~' : '^'),
     trigger: ({ value }) => (value === 'sub' ? '~' : '^'),
@@ -90,10 +94,10 @@ export const MarkComboRules = {
       })[variant],
     marks: ({ variant }) =>
       ({
-        boldItalic: [KEYS.bold, KEYS.italic],
-        boldItalicUnderline: [KEYS.underline, KEYS.bold, KEYS.italic],
-        boldUnderline: [KEYS.underline, KEYS.bold],
-        italicUnderline: [KEYS.underline, KEYS.italic],
+        boldItalic: ['bold', 'italic'],
+        boldItalicUnderline: ['underline', 'bold', 'italic'],
+        boldUnderline: ['underline', 'bold'],
+        italicUnderline: ['underline', 'italic'],
       })[variant],
     start: ({ variant }) =>
       ({
@@ -107,12 +111,11 @@ export const MarkComboRules = {
 };
 
 /** Enables support for bold formatting. */
-export const BaseBoldPlugin = createBasePlugin({
-  name: KEYS.bold,
+export const BaseBoldPlugin = defineBasePlugin(PLUGINS.bold, {
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
-  codecs: ({ defineCodecs }) =>
+  codecs: ({ defineCodecs, schema: { key } }) =>
     defineCodecs({
       'text/html': {
         decode: ({ element }) =>
@@ -130,25 +133,19 @@ export const BaseBoldPlugin = createBasePlugin({
         from: 'strong',
         kind: 'node',
         mark: true,
-        decode: ({ decode, decoration, node, type }) =>
-          decode(node.children, { ...decoration, [type]: true }),
+        decode: ({ decode, decoration, node }) =>
+          decode(node.children, { ...decoration, [key]: true }),
       },
     }),
   render: { as: 'strong' },
-  update: ({ tx, type }) => ({
-    toggle: () => {
-      tx.marks.toggle(type);
-    },
-  }),
 });
 
 /** Enables support for code formatting. */
-export const BaseCodePlugin = createBasePlugin({
-  name: KEYS.code,
+export const BaseCodePlugin = defineBasePlugin(PLUGINS.code, {
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
-  codecs: ({ defineCodecs }) =>
+  codecs: ({ defineCodecs, schema: { key } }) =>
     defineCodecs({
       'text/html': {
         decode: ({ element }) => {
@@ -167,32 +164,26 @@ export const BaseCodePlugin = createBasePlugin({
         from: 'inlineCode',
         kind: 'node',
         mark: true,
-        decode: ({ decoration, node, type }) => ({
+        decode: ({ decoration, node }) => ({
           ...decoration,
-          [type]: true,
+          [key]: true,
           text: node.value,
         }),
       },
     }),
   render: { as: 'code' },
   rules: { selection: { affinity: 'hard' } },
-  update: ({ tx, type }) => ({
-    toggle: () => {
-      tx.marks.toggle(type);
-    },
-  }),
 });
 
 /**
  * Enables support for highlights, useful when reviewing content or highlighting
  * it for future reference.
  */
-export const BaseHighlightPlugin = createBasePlugin({
-  name: KEYS.highlight,
+export const BaseHighlightPlugin = defineBasePlugin(PLUGINS.highlight, {
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
-  codecs: ({ defineCodecs }) =>
+  codecs: ({ defineCodecs, schema: { key } }) =>
     defineCodecs({
       'text/html': {
         decode: () => true,
@@ -204,8 +195,8 @@ export const BaseHighlightPlugin = createBasePlugin({
         from: 'mark',
         kind: 'node',
         mark: true,
-        decode: ({ decode, decoration, node, type }) =>
-          decode(node.children, { ...decoration, [type]: true }),
+        decode: ({ decode, decoration, node }) =>
+          decode(node.children, { ...decoration, [key]: true }),
         encode: ({ node }) => ({
           attributes: [],
           children: [{ type: 'text', value: node.text }],
@@ -216,20 +207,14 @@ export const BaseHighlightPlugin = createBasePlugin({
     }),
   render: { as: 'mark' },
   rules: { selection: { affinity: 'directional' } },
-  update: ({ tx, type }) => ({
-    toggle: () => {
-      tx.marks.toggle(type);
-    },
-  }),
 });
 
 /** Enables support for italic formatting. */
-export const BaseItalicPlugin = createBasePlugin({
-  name: KEYS.italic,
+export const BaseItalicPlugin = defineBasePlugin(PLUGINS.italic, {
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
-  codecs: ({ defineCodecs }) =>
+  codecs: ({ defineCodecs, schema: { key } }) =>
     defineCodecs({
       'text/html': {
         decode: ({ element }) =>
@@ -244,25 +229,19 @@ export const BaseItalicPlugin = createBasePlugin({
         from: 'emphasis',
         kind: 'node',
         mark: true,
-        decode: ({ decode, decoration, node, type }) =>
-          decode(node.children, { ...decoration, [type]: true }),
+        decode: ({ decode, decoration, node }) =>
+          decode(node.children, { ...decoration, [key]: true }),
       },
     }),
   render: { as: 'em' },
-  update: ({ tx, type }) => ({
-    toggle: () => {
-      tx.marks.toggle(type);
-    },
-  }),
 });
 
 /** Enables support for keyboard-input formatting. */
-export const BaseKbdPlugin = createBasePlugin({
-  name: KEYS.kbd,
+export const BaseKbdPlugin = defineBasePlugin(PLUGINS.kbd, {
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
-  codecs: ({ defineCodecs }) =>
+  codecs: ({ defineCodecs, schema: { key } }) =>
     defineCodecs({
       'text/html': {
         decode: () => true,
@@ -274,8 +253,8 @@ export const BaseKbdPlugin = createBasePlugin({
         from: 'kbd',
         kind: 'node',
         mark: true,
-        decode: ({ decode, decoration, node, type }) =>
-          decode(node.children, { ...decoration, [type]: true }),
+        decode: ({ decode, decoration, node }) =>
+          decode(node.children, { ...decoration, [key]: true }),
         encode: ({ node }) => ({
           attributes: [],
           children: [{ type: 'text', value: node.text }],
@@ -286,20 +265,14 @@ export const BaseKbdPlugin = createBasePlugin({
     }),
   render: { as: 'kbd' },
   rules: { selection: { affinity: 'hard' } },
-  update: ({ tx, type }) => ({
-    toggle: () => {
-      tx.marks.toggle(type);
-    },
-  }),
 });
 
 /** Enables subscript and superscript through one enum-valued mark. */
-export const BaseScriptPlugin = createBasePlugin({
-  name: KEYS.script,
+export const BaseScriptPlugin = defineBasePlugin(PLUGINS.script, {
   schema: {
-    mark: property.enum(['sub', 'sup']),
+    mark: property.enum(scriptValues),
   },
-  codecs: ({ defineCodecs }) =>
+  codecs: ({ defineCodecs, schema: { key } }) =>
     defineCodecs({
       'text/html': {
         decode: ({ element }) =>
@@ -325,38 +298,32 @@ export const BaseScriptPlugin = createBasePlugin({
           from: 'sub',
           kind: 'node',
           mark: true,
-          decode: ({ decode, decoration, node, type }) =>
-            decode(node.children, { ...decoration, [type]: 'sub' }),
-          encode: ({ node, type }) => ({
+          decode: ({ decode, decoration, node }) =>
+            decode(node.children, { ...decoration, [key]: 'sub' }),
+          encode: ({ node }) => ({
             attributes: [],
             children: [{ type: 'text', value: node.text }],
-            name: node[type] === 'sub' ? 'sub' : 'sup',
+            name: node[key] === 'sub' ? 'sub' : 'sup',
             type: 'mdxJsxTextElement',
           }),
         },
         {
           from: 'sup',
           kind: 'node',
-          decode: ({ decode, decoration, node, type }) =>
-            decode(node.children, { ...decoration, [type]: 'sup' }),
+          decode: ({ decode, decoration, node }) =>
+            decode(node.children, { ...decoration, [key]: 'sup' }),
         },
       ],
     }),
   rules: { selection: { affinity: 'directional' } },
-  update: ({ tx, type }) => ({
-    toggle: (value: TScriptValue) => {
-      tx.marks.toggle(type, value);
-    },
-  }),
 });
 
 /** Enables support for strikethrough formatting. */
-export const BaseStrikethroughPlugin = createBasePlugin({
-  name: KEYS.strikethrough,
+export const BaseStrikethroughPlugin = defineBasePlugin(PLUGINS.strikethrough, {
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
-  codecs: ({ defineCodecs }) =>
+  codecs: ({ defineCodecs, schema: { key } }) =>
     defineCodecs({
       'text/html': {
         decode: ({ element }) =>
@@ -378,33 +345,27 @@ export const BaseStrikethroughPlugin = createBasePlugin({
           from: 'delete',
           kind: 'node',
           mark: true,
-          decode: ({ decode, decoration, node, type }) =>
-            decode(node.children, { ...decoration, [type]: true }),
+          decode: ({ decode, decoration, node }) =>
+            decode(node.children, { ...decoration, [key]: true }),
         },
         {
           from: 'del',
           kind: 'node',
-          decode: ({ decode, decoration, node, type }) =>
-            decode(node.children, { ...decoration, [type]: true }),
+          decode: ({ decode, decoration, node }) =>
+            decode(node.children, { ...decoration, [key]: true }),
         },
       ],
     }),
   render: { as: 's' },
   rules: { selection: { affinity: 'directional' } },
-  update: ({ tx, type }) => ({
-    toggle: () => {
-      tx.marks.toggle(type);
-    },
-  }),
 });
 
 /** Enables support for underline formatting. */
-export const BaseUnderlinePlugin = createBasePlugin({
-  name: KEYS.underline,
+export const BaseUnderlinePlugin = defineBasePlugin(PLUGINS.underline, {
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
-  codecs: ({ defineCodecs }) =>
+  codecs: ({ defineCodecs, schema: { key } }) =>
     defineCodecs({
       'text/html': {
         decode: ({ element }) =>
@@ -422,8 +383,8 @@ export const BaseUnderlinePlugin = createBasePlugin({
         from: 'u',
         kind: 'node',
         mark: true,
-        decode: ({ decode, decoration, node, type }) =>
-          decode(node.children, { ...decoration, [type]: true }),
+        decode: ({ decode, decoration, node }) =>
+          decode(node.children, { ...decoration, [key]: true }),
         encode: ({ node }) => ({
           attributes: [],
           children: [{ type: 'text', value: node.text }],
@@ -433,9 +394,4 @@ export const BaseUnderlinePlugin = createBasePlugin({
       },
     }),
   render: { as: 'u' },
-  update: ({ tx, type }) => ({
-    toggle: () => {
-      tx.marks.toggle(type);
-    },
-  }),
 });

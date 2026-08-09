@@ -1,13 +1,12 @@
 import type { ChatMessage } from '@/registry/components/editor/use-chat';
 import type { MarkdownEditor } from '@platejs/markdown';
 
-import { BaseTablePlugin } from '@platejs/table';
 import {
-  PLUGINS,
-  type TTableCellElement,
-  type TTableElement,
-  ElementApi,
-} from 'platejs';
+  BaseTablePlugin,
+  type TableCellElement,
+  type TableElement,
+} from '@platejs/table';
+import { ElementApi } from 'platejs';
 import dedent from 'dedent';
 
 import {
@@ -26,13 +25,13 @@ export function buildEditTableMultiCellPrompt(
   const selectedIds = new Set(
     cells.flatMap(([cell]) => (typeof cell.id === 'string' ? [cell.id] : []))
   );
-  const table = editor.read.nodes.block<TTableElement>({
-    match: { type: editor.plugin(PLUGINS.table).type },
+  const table = editor.read.nodes.block<TableElement>({
+    match: { type: editor.plugin(BaseTablePlugin).schema.type },
   })?.[0];
-  const selectedCells: Array<{ cell: TTableCellElement; id: string }> = [];
+  const selectedCells: Array<{ cell: TableCellElement; id: string }> = [];
   const rows =
     table?.children.map((row, rowIndex) => {
-      const values = (row.children as TTableCellElement[]).map((cell) => {
+      const values = (row.children as TableCellElement[]).map((cell) => {
         if (typeof cell.id === 'string' && selectedIds.has(cell.id)) {
           selectedCells.push({ cell, id: cell.id });
 

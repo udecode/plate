@@ -79,7 +79,6 @@ describe('table insertion', () => {
       ) as TestEditor;
 
       const editor = createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
         initialValue: input.children,
@@ -161,7 +160,6 @@ describe('table insertion', () => {
       ) as TestEditor;
 
       const editor = createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
         initialValue: input.children,
@@ -243,7 +241,6 @@ describe('table insertion', () => {
       ) as TestEditor;
 
       const editor = createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
         initialValue: input.children,

@@ -29,6 +29,17 @@ describe('definePlatePlugin', () => {
     expect(resolved.render.node).toBe(Replacement);
   });
 
+  it('keeps React configuration after an inferred extension stage', () => {
+    const Component: NodeComponent = () => null;
+    const resolved = resolvePluginTest(
+      definePlatePlugin('configuredAfterExtension', {})
+        .extend(() => ({ initialState: { enabled: true } }))
+        .configure({ component: Component })
+    );
+
+    expect(resolved.render.node).toBe(Component);
+  });
+
   it('publishes flat plugin API and update capabilities', () => {
     const plugin = definePlatePlugin('native', {
       api: () => ({

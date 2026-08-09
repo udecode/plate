@@ -118,7 +118,7 @@ export type PliteProjectionRefreshListener = (
 ) => void;
 
 export type PliteProjectionStoreSnapshot<T = unknown> = Readonly<
-  Record<RuntimeId, readonly PliteProjectionSlice<T>[]>
+  Record<string, readonly PliteProjectionSlice<T>[]>
 >;
 
 export type PliteProjectionStoreMetrics = Readonly<{
@@ -712,7 +712,7 @@ export const createPliteProjectionStore = <T>(
     });
 
     const currentSnapshot = store.getSnapshot();
-    const changedRuntimeIds = context.forceInvalidate
+    const changedRuntimeIds: readonly RuntimeId[] = context.forceInvalidate
       ? Array.from(
           new Set([
             ...Object.keys(currentSnapshot),
@@ -722,7 +722,7 @@ export const createPliteProjectionStore = <T>(
               .filter((key) => key.startsWith('runtime:'))
               .map((key) => key.slice('runtime:'.length)),
           ])
-        )
+        ).map((runtimeId) => runtimeId as RuntimeId)
       : (refreshResult.value.changedOutputKeys as readonly RuntimeId[]);
 
     if (changedRuntimeIds.length === 0) {

@@ -43,6 +43,7 @@
   },
   "dependencies": {
     "@platejs/core": "workspace:^",
+    "@platejs/list": "workspace:^",
     "@platejs/plite": "workspace:^",
     "@platejs/plite-dom": "workspace:^",
     "@platejs/utils": "workspace:^",
@@ -68,7 +69,6 @@
     "@platejs/footnote": "workspace:^",
     "@platejs/layout": "workspace:^",
     "@platejs/link": "workspace:^",
-    "@platejs/list": "workspace:^",
     "@platejs/list-classic": "workspace:^",
     "@platejs/math": "workspace:^",
     "@platejs/media": "workspace:^",

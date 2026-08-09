@@ -5,7 +5,11 @@ import React from 'react';
 import { property, schema, target } from '@platejs/plite';
 import { render } from '@testing-library/react';
 
-import { BaseParagraphPlugin, defineBasePlugin } from '../../lib';
+import {
+  BaseParagraphPlugin,
+  defineBasePlugin,
+  ElementIdPlugin,
+} from '../../lib';
 import {
   attachPlateModelPublication,
   getPlateModelPublication,
@@ -128,26 +132,24 @@ describe('pipeRenderElement', () => {
     expect(() => renderPipeBare(editor)).not.toThrow();
   });
 
-  it('resolves the node path on the block-id fast path', () => {
+  it('resolves the node path when elements carry application metadata', () => {
     const editor = createPlateEditor({
       navigationFeedback: false,
-      nodeId: true,
-      plugins: [],
+      plugins: [ElementIdPlugin],
       initialValue: createValue('block-1'),
     } as any);
 
     expect(() => renderPipeBare(editor)).not.toThrow();
   });
 
-  it('preserves non-string block ids on the block-id fast path', () => {
+  it('does not publish application metadata as DOM identity', () => {
     const editor = createPlateEditor({
       navigationFeedback: false,
-      nodeId: true,
-      plugins: [],
+      plugins: [ElementIdPlugin],
       initialValue: [
         {
           children: [{ text: 'Body' }],
-          id: 123,
+          id: 'block-1',
           type: 'paragraph',
         },
       ] as any,
@@ -156,7 +158,7 @@ describe('pipeRenderElement', () => {
     const { container } = renderPipe(editor);
     const element = container.querySelector('[data-plite-node="element"]');
 
-    expect(element).toHaveAttribute('data-block-id', '123');
+    expect(element).not.toHaveAttribute('data-block-id');
   });
 
   it('keeps plugin render.as behavior', () => {

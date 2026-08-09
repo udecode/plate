@@ -1,4 +1,5 @@
-import { createBaseEditor } from '@platejs/core';
+import { createBaseEditor, defineEditor } from '@platejs/core';
+import { schema } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
 
 import { BaseSlashInputPlugin, BaseSlashPlugin } from './BaseSlashPlugin';
@@ -57,5 +58,23 @@ describe('BaseSlashPlugin', () => {
       void: true,
       voidKind: 'inline',
     });
+  });
+
+  it('creates transient inputs with the configured schema type', () => {
+    const definition = defineEditor('customSlashInput', {
+      plugins: [BaseSlashPlugin],
+      schema: {
+        overrides: [
+          schema.override(BaseSlashInputPlugin, {
+            element: { type: 'customSlashInput' },
+          }),
+        ],
+      },
+    });
+    const editor = createBaseEditor({ plugins: definition.plugins });
+
+    expect(
+      editor.plugin(BaseSlashPlugin).store.get('createComboboxInput')('/')
+    ).toMatchObject({ type: 'customSlashInput' });
   });
 });

@@ -17,6 +17,7 @@ import { BaseMediaEmbedPlugin } from '../lib/media-embed/BaseMediaEmbedPlugin';
 
 type MediaV54MigrationOptions = {
   isInline: (node: Descendant) => boolean;
+  typeMigrations: ReadonlyMap<string, string>;
   types: ReadonlySet<string>;
 };
 
@@ -30,9 +31,14 @@ const migrateMediaDescendant = (
     throw new Error(`Invalid media caption node at ${location}.`);
   }
 
-  if (!options.types.has(input.type)) {
-    let changed = false;
-    const children = input.children.map((child, index) => {
+  const migratedType = options.types.has(input.type)
+    ? undefined
+    : options.typeMigrations.get(input.type);
+  const element = migratedType ? { ...input, type: migratedType } : input;
+
+  if (!options.types.has(element.type)) {
+    let changed = element !== input;
+    const children = element.children.map((child, index) => {
       const migrated = migrateMediaDescendant(
         child,
         `${location}.${index}`,
@@ -44,12 +50,12 @@ const migrateMediaDescendant = (
       return migrated;
     });
 
-    return changed ? { ...input, children } : input;
+    return changed ? { ...element, children } : input;
   }
 
-  if (!Object.hasOwn(input, 'caption')) return input;
+  if (!Object.hasOwn(element, 'caption')) return element;
 
-  const legacyCaption = Reflect.get(input, 'caption');
+  const legacyCaption = Reflect.get(element, 'caption');
   const migrateCaptionChildren = (
     children: readonly unknown[],
     childLocation: string
@@ -80,7 +86,10 @@ const migrateMediaDescendant = (
       TextApi.isText(children[0]) &&
       children[0].text === '' &&
       Object.keys(children[0]).every((key) => key === 'text'));
-  const direct = migrateInlineChildren(input.children, `${location}.children`);
+  const direct = migrateInlineChildren(
+    element.children,
+    `${location}.children`
+  );
   let legacy: Descendant[] = [];
 
   if (!Array.isArray(legacyCaption)) {
@@ -116,11 +125,11 @@ const migrateMediaDescendant = (
     );
   }
 
-  const { caption: _caption, ...element } = input;
+  const { caption: _caption, ...migratedElement } = element;
   const children = nonEmptySources[0] ?? [{ text: '' }];
 
   return {
-    ...element,
+    ...migratedElement,
     children,
   };
 };
@@ -184,26 +193,34 @@ const migrateMediaV54Document = (
 };
 
 /**
- * Converts pre-v54 media `caption` properties into direct child content before
- * schema fitting.
+ * Migrates pre-v54 media identities and `caption` properties before schema
+ * fitting.
  */
 export const MediaV54MigrationPlugin = defineBasePlugin('mediaV54Migration', {
   transformInitialValue: ({ editor, value }) => {
-    const types = new Set<string>();
     const audio = editor.plugin(BaseAudioPlugin);
     const file = editor.plugin(BaseFilePlugin);
     const image = editor.plugin(BaseImagePlugin);
     const mediaEmbed = editor.plugin(BaseMediaEmbedPlugin);
     const video = editor.plugin(BaseVideoPlugin);
+    const typeMigrations = new Map<string, string>();
 
-    if (audio.installed) types.add(audio.type);
-    if (file.installed) types.add(file.type);
-    if (image.installed) types.add(image.type);
-    if (mediaEmbed.installed) types.add(mediaEmbed.type);
-    if (video.installed) types.add(video.type);
+    if (image.installed && !editor.read.schema.element('img')) {
+      typeMigrations.set('img', image.schema.type);
+    }
+    if (mediaEmbed.installed && !editor.read.schema.element('media_embed')) {
+      typeMigrations.set('media_embed', mediaEmbed.schema.type);
+    }
+
+    const types = new Set(
+      [audio, file, image, mediaEmbed, video]
+        .filter((plugin) => plugin.installed)
+        .map((plugin) => plugin.schema.type)
+    );
 
     return migrateMediaV54Document(value, {
       isInline: editor.read.schema.isInline,
+      typeMigrations,
       types,
     });
   },

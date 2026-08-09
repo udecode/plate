@@ -2,6 +2,9 @@
 "@platejs/suggestion": major
 ---
 
+Ignore schema-declared metadata properties when computing suggestion diffs,
+including configured persisted element-ID keys.
+
 Export `BaseSuggestionPluginState` and `SuggestionPluginState` as the complete
 mutable state contracts for the headless and React suggestion descriptors.
 

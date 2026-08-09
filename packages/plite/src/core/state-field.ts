@@ -4,6 +4,7 @@ import type {
   StateFieldTransition,
 } from '../interfaces/editor';
 import { cloneFrozen } from './clone';
+import { compileEditorExtension } from './editor-extension';
 import { defineEffect } from './transaction-values';
 import {
   decodeVersionedValue,
@@ -143,6 +144,9 @@ export const defineStateField = <TValue>(
 
   field = definition;
   definition.stateFields = Object.freeze([field]);
+  field = compileEditorExtension(
+    definition
+  ) as unknown as EditorStateField<TValue>;
 
-  return Object.freeze(field);
+  return field;
 };

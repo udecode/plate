@@ -111,7 +111,7 @@ describe('Base media plugin contracts', () => {
     ]) {
       const editor = createBaseEditor({ plugins: [plugin] });
       const element = editor.read.schema.element(
-        editor.plugin(plugin).schema.element!.type
+        editor.plugin(plugin).schema.type
       );
 
       expect(element?.behavior).toMatchObject({
@@ -249,7 +249,7 @@ describe('Base media plugin contracts', () => {
     ).toThrow(/element property "width" fails custom property validation/);
   });
 
-  it('owns media width updates in the media descriptor', () => {
+  it('updates media width through descriptor-bound element mutation', () => {
     const image = {
       children: [{ text: '' }],
       type: 'image',
@@ -260,17 +260,9 @@ describe('Base media plugin contracts', () => {
       plugins: [BaseImagePlugin],
       initialValue: [image],
     });
-    const insertedImage = editor.read.children()[0] as ImageElement;
-
-    expect(
-      editor.plugin(BaseImagePlugin).update.setWidth(420, { at: insertedImage })
-    ).toBe(true);
+    editor.plugin(BaseImagePlugin).update.set({ width: 420 }, { at: [0] });
     expect(editor.read.children()[0]).toMatchObject({ width: 420 });
-    expect(
-      editor.plugin(BaseImagePlugin).update.setWidth('64%', {
-        at: editor.read.children()[0] as ImageElement,
-      })
-    ).toBe(true);
+    editor.plugin(BaseImagePlugin).update.set({ width: '64%' }, { at: [0] });
     expect(editor.read.children()[0]).toMatchObject({ width: '64%' });
   });
 

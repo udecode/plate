@@ -87,7 +87,19 @@ export const registerCommandInRegistry = <TEditor extends BaseEditor<any, any>>(
     run: run as (context: unknown) => EditorCommandResult,
   });
 
-  entries.push(compiled);
+  if (kind === 'around') {
+    const firstHandlerIndex = entries.findIndex(
+      (entry) => entry.kind === 'handle'
+    );
+
+    entries.splice(
+      firstHandlerIndex === -1 ? entries.length : firstHandlerIndex,
+      0,
+      compiled
+    );
+  } else {
+    entries.push(compiled);
+  }
   byDescriptor.set(command, {
     descriptor: command,
     entries,

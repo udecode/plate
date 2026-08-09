@@ -1,5 +1,6 @@
 import type { AnyBasePlugin } from '../../lib/plugin';
 import {
+  type CompiledPlateModelBinding,
   getCompiledPlateModelBinding,
   getCompiledPlatePlugin,
   getPlateRuntime,
@@ -9,6 +10,7 @@ export type PlateNodeCodecContribution = Readonly<{
   declaration: Readonly<Record<string, unknown>>;
   format: string;
   owner: string;
+  schema: CompiledPlateModelBinding['schema'];
   targetKey: string | null;
   targetPlugin: string;
   targetType: string | null;
@@ -83,6 +85,7 @@ const collect = (editor: object) => {
             declaration: Object.freeze(publicDeclaration),
             format,
             owner: owner.name,
+            schema: binding.schema,
             targetKey: binding.propertyKey,
             targetPlugin: target.name,
             targetType: binding.elementType,

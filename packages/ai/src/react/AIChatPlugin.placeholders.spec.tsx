@@ -3,89 +3,17 @@
 import { describe, expect, it } from 'bun:test';
 
 import { jsxt, type TestEditor } from '@platejs/test-utils';
-import {
-  BaseParagraphPlugin,
-  defineBasePlugin,
-  type DefinitionOf,
-  NodeIdPlugin,
-  type PlatePluginReadState,
-} from '@platejs/core';
+import { BaseParagraphPlugin, ElementIdPlugin } from '@platejs/core';
 import { MarkdownPlugin } from '@platejs/markdown';
 import {
-  createEditor,
-  type Element,
-  type ElementEntry,
-  property,
-  schema,
-  type Value,
-} from '@platejs/plite';
-import { PLUGINS } from '@platejs/utils';
+  BaseTableCellPlugin,
+  BaseTablePlugin,
+  BaseTableRowPlugin,
+} from '@platejs/table';
+import { createEditor, type Value } from '@platejs/plite';
 import { createPlateEditor } from '@platejs/core/react';
 
 jsxt;
-
-const getTableGridAbove = (
-  state: PlatePluginReadState<DefinitionOf<typeof BaseParagraphPlugin>>
-): ElementEntry[] => {
-  const selection = state.selection();
-  if (!selection) return [];
-
-  const start = state.nodes.above<Element>({
-    at: selection.anchor,
-    match: { type: 'tableCell' },
-  });
-  const end = state.nodes.above<Element>({
-    at: selection.focus,
-    match: { type: 'tableCell' },
-  });
-  if (!start || !end) return [];
-
-  const tablePath = start[1].slice(0, -2);
-  const startRow = Math.min(start[1].at(-2)!, end[1].at(-2)!);
-  const endRow = Math.max(start[1].at(-2)!, end[1].at(-2)!);
-  const startColumn = Math.min(start[1].at(-1)!, end[1].at(-1)!);
-  const endColumn = Math.max(start[1].at(-1)!, end[1].at(-1)!);
-  const entries: ElementEntry[] = [];
-
-  for (let row = startRow; row <= endRow; row++) {
-    for (let column = startColumn; column <= endColumn; column++) {
-      const entry = state.nodes.get<Element>([...tablePath, row, column]);
-      if (entry) entries.push(entry);
-    }
-  }
-
-  return entries;
-};
-
-const TableFixturePlugin = defineBasePlugin(PLUGINS.table, {
-  read: ({ state }) => ({
-    getGridAbove: () => getTableGridAbove(state),
-  }),
-  schema: () => ({
-    element: {
-      content: schema.content.element(TableRowFixturePlugin),
-    },
-  }),
-});
-
-const TableRowFixturePlugin = defineBasePlugin(PLUGINS.tableRow, {
-  schema: () => ({
-    element: {
-      content: schema.content.element(TableCellFixturePlugin),
-    },
-  }),
-});
-
-const TableCellFixturePlugin = defineBasePlugin(PLUGINS.tableCell, {
-  schema: ({ plugins }) => ({
-    element: {
-      content: plugins.blockContent(),
-      properties: {
-        header: property.boolean({ default: false, omitDefault: true }),
-      },
-    },
-  }),
-});
 
 const createTestEditor = async (input: TestEditor) => {
   const { AIChatPlugin } = await import('./AIChatPlugin');
@@ -93,10 +21,10 @@ const createTestEditor = async (input: TestEditor) => {
     editor: createEditor<Value>(),
     plugins: [
       BaseParagraphPlugin,
-      NodeIdPlugin,
-      TableFixturePlugin,
-      TableRowFixturePlugin,
-      TableCellFixturePlugin,
+      ElementIdPlugin,
+      BaseTablePlugin,
+      BaseTableRowPlugin,
+      BaseTableCellPlugin,
       MarkdownPlugin,
       AIChatPlugin,
     ],
@@ -173,10 +101,11 @@ describe('AIChatPlugin read.resolvePlaceholders', () => {
     });
 
     const result = aiChat.read.resolvePlaceholders('Table:\n{tableCellWithId}');
+    const nodeKey = /<CellRef id="([^"]+)" \/>/.exec(result)?.[1];
 
     expect(result).toBe(`Table:\n${expectedTable}`);
-    expect(result).toContain('<CellRef id="t1_r1_c1" />');
-    expect(result).toContain('<Cell id="t1_r1_c1">\nContent\n</Cell>');
+    expect(nodeKey).toBeDefined();
+    expect(result).toContain(`<Cell id="${nodeKey}">\nContent\n</Cell>`);
   });
 
   it('leaves strings without placeholders unchanged', async () => {

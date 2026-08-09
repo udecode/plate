@@ -16,7 +16,6 @@ describe('table presentation', () => {
 
     const createTableEditor = (input: TestEditor) =>
       createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins(),
         initialValue: input.children,
       });
@@ -148,7 +147,6 @@ describe('table presentation', () => {
 
     const createTableEditor = (input: TestEditor) =>
       createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins(),
         initialValue: input.children,
       });
@@ -256,7 +254,6 @@ describe('table presentation', () => {
       selection?: any;
     }) =>
       createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins(),
         selection,
         initialValue: children,
@@ -429,7 +426,6 @@ describe('table presentation', () => {
 
     const createTableEditor = (input: TestEditor) =>
       createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins(),
         selection: input.selection,
         initialValue: input.children,

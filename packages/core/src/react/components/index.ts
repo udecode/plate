@@ -3,7 +3,6 @@
  */
 
 export * from './EditorRefEffect';
-export * from './EditorShortcutDispatcher';
 export * from './Plate';
 export * from './PlateContainer';
 export * from './PlateContent';

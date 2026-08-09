@@ -19,7 +19,7 @@ Emoji adds two insertion paths: a `:` trigger that opens an inline combobox, and
 ## Features
 
 - `:` trigger powered by `@platejs/combobox`.
-- Edit-only inline void `emoji_input` node.
+- Edit-only inline void `emojiInput` node.
 - Emoji search from `@emoji-mart/data`.
 - Default insertion as Unicode text.
 - Custom inserted node support through `createEmojiNode`.
@@ -76,7 +76,7 @@ export const editor = createPlateEditor({
 | `inline-combobox` | Registry UI | Renders the inline trigger input and popover primitives. |
 | `@platejs/markdown` | Package | Deserializes emoji shortcodes such as `:fire:` to Unicode text. |
 
-The emoji plugin is edit-only. It inserts text or your custom node, then the transient `emoji_input` disappears.
+The emoji plugin is edit-only. It inserts text or your custom node, then the transient `emojiInput` disappears.
 
 ## Manual Setup
 
@@ -133,7 +133,7 @@ The inline path is a combobox flow.
 |------|--------|
 | Type `:` | `BaseEmojiPlugin` trigger. |
 | Previous character must match `/^\s?$/` | Start of block or whitespace by default. |
-| Insert transient input | `createComboboxInput` creates `{ type: NODES.emojiInput, children: [{ text: '' }] }`. |
+| Insert transient input | `createComboboxInput` creates `{ type: 'emojiInput', children: [{ text: '' }] }`. |
 | Search emoji data | `EmojiInputElement` calls `EmojiInlineIndexSearch.getInstance(data).search(query).get()`. |
 | Select a result | `InlineComboboxItem` removes the input and calls `editor.plugin(EmojiPlugin).update.insert(emoji)`. |
 | Insert final content | `update.insert` calls `createEmojiNode(emoji)` and inserts that node. |
@@ -197,7 +197,7 @@ Launch 🔥 soon
 | API | Package | Use |
 |-----|---------|-----|
 | `BaseEmojiPlugin` | `@platejs/emoji` | Edit-only trigger plugin with default `:`, emoji data, text insertion, and a required `BaseEmojiInputPlugin` dependency. |
-| `BaseEmojiInputPlugin` | `@platejs/emoji` | Required edit-only inline void `emoji_input` plugin. |
+| `BaseEmojiInputPlugin` | `@platejs/emoji` | Required edit-only inline void `emojiInput` plugin. |
 | `EmojiPlugin` | `@platejs/emoji/react` | React emoji plugin with a required `EmojiInputPlugin` dependency. |
 | `EmojiInputPlugin` | `@platejs/emoji/react` | React input dependency for `EmojiInputElement`; add it directly to replace its component or configuration. |
 | `editor.plugin(EmojiPlugin).update.insert(emoji)` | `@platejs/emoji` | Inserts `createEmojiNode(emoji)`. |

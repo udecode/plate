@@ -129,7 +129,7 @@ function useRuntimeNodeSelector<T>(
     updatePolicy = 'model-truth',
   }: InternalEditorRuntimeSelectorOptions = {}
 ): T {
-  const editor = useEditor<ReactRuntimeEditor>();
+  const editor = useEditor();
   const contextRuntimeId = useContext(NodeRuntimeIdContext);
   const runtimeId = runtimeIdProp ?? contextRuntimeId;
   const nodeSelector = useCallback(

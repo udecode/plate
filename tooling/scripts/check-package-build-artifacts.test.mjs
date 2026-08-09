@@ -100,6 +100,28 @@ test('rejects plugin descriptors erased to any in public declarations', (t) => {
   );
 });
 
+test('rejects declaration aliases with erased Readonly arguments', (t) => {
+  const packageRoot = mkdtempSync(path.join(os.tmpdir(), 'package-build-'));
+
+  t.after(() => rmSync(packageRoot, { force: true, recursive: true }));
+
+  mkdirSync(path.join(packageRoot, 'dist'));
+  writeFileSync(
+    path.join(packageRoot, 'package.json'),
+    `${JSON.stringify({ exports: { '.': './dist/index.js' } })}\n`
+  );
+  writeFileSync(path.join(packageRoot, 'dist/index.js'), 'export {};\n');
+  writeFileSync(
+    path.join(packageRoot, 'dist/index.d.ts'),
+    'type BrokenDescriptor = Readonly;\nexport { BrokenDescriptor };\n'
+  );
+
+  assert.throws(
+    () => assertPackageBuildArtifacts(packageRoot),
+    /lost their Readonly type arguments/u
+  );
+});
+
 test('shared package config builds from the invoking package root', async () => {
   const packageRoot = path.resolve(import.meta.dirname, '../../packages/media');
   const repositoryRoot = path.resolve(import.meta.dirname, '../..');

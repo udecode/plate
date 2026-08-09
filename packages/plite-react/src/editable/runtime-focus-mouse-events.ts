@@ -7,6 +7,7 @@ import { prepareEditableFocusMouseKernel } from './editing-kernel';
 import {
   getNestedEditableDOMSelectionRoot,
   isInteractiveInternalTarget,
+  isNativeDraggableTarget,
   isNativeInternalControlTarget,
   setEditableModelSelectionPreference,
 } from './input-controller';
@@ -282,7 +283,7 @@ export const useRuntimeFocusMouseEvents = ({
       clearVerticalGoal();
       markNativePointerFocus(event);
 
-      if (readOnly) {
+      if (readOnly || isNativeDraggableTarget(editor, event.target)) {
         return;
       }
 

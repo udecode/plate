@@ -93,7 +93,6 @@ describe('table clipboard slow contracts', () => {
       ) as TestEditor;
 
       const editor = createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
         initialValue: input.children,
@@ -178,7 +177,6 @@ describe('table clipboard slow contracts', () => {
       ) as TestEditor;
 
       const editor = createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
         initialValue: input.children,
@@ -266,7 +264,6 @@ describe('table clipboard slow contracts', () => {
       ) as TestEditor;
 
       const editor = createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
         initialValue: input.children,
@@ -353,7 +350,6 @@ describe('table clipboard slow contracts', () => {
       ) as TestEditor;
 
       const editor = createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins(),
         selection: input.selection,
         initialValue: input.children,
@@ -486,7 +482,6 @@ describe('table clipboard slow contracts', () => {
         ) as TestEditor;
 
         const editor = createTestTableEditor({
-          nodeId: true,
           plugins: [
             BaseTablePlugin.extend(() => ({
               api: () => ({
@@ -599,7 +594,6 @@ describe('table clipboard slow contracts', () => {
       ) as TestEditor;
 
       const editor = createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins({
           disableExpandOnInsert: true,
         }),
@@ -670,7 +664,6 @@ describe('table clipboard slow contracts', () => {
       ) as TestEditor;
 
       const editor = createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins(),
         selection: input.selection,
         initialValue: input.children,
@@ -773,7 +766,6 @@ describe('table clipboard slow contracts', () => {
         </editor>
       ) as TestEditor;
       const editor = createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins({ disableMerge: false }),
         selection: input.selection,
         initialValue: input.children,
@@ -855,7 +847,6 @@ describe('table clipboard slow contracts', () => {
         </editor>
       ) as TestEditor;
       const editor = createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins({ disableMerge: false }),
         selection: input.selection,
         initialValue: input.children,
@@ -921,7 +912,6 @@ describe('table clipboard slow contracts', () => {
       ) as TestEditor;
 
       const editor = createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
         initialValue: input.children,
@@ -937,7 +927,6 @@ describe('table clipboard slow contracts', () => {
     for (const openDepth of [0, 1]) {
       it(`delegates a ${openDepth === 0 ? 'closed' : 'open'} table slice outside tables to one core fit and commit`, () => {
         const editor = createTestTableEditor({
-          nodeId: true,
           plugins: [BaseTablePlugin],
           selection: {
             anchor: { offset: 3, path: [0, 0] },
@@ -1017,7 +1006,6 @@ describe('table clipboard slow contracts', () => {
 
     it('delegates a single-cell inline paste to canonical slice replacement', () => {
       const editor = createTestTableEditor({
-        nodeId: true,
         plugins: [BaseTablePlugin],
         selection: {
           anchor: { offset: 1, path: [0, 0, 0, 0, 0] },
@@ -1051,7 +1039,6 @@ describe('table clipboard slow contracts', () => {
 
     it('recognizes an open table slice from its retained content context', () => {
       const source = createTestTableEditor({
-        nodeId: true,
         plugins: [BaseTablePlugin],
         selection: {
           anchor: { offset: 0, path: [0, 1, 0, 0, 0] },
@@ -1112,7 +1099,6 @@ describe('table clipboard slow contracts', () => {
       });
       const slice = source.read.slice.get();
       const target = createTestTableEditor({
-        nodeId: true,
         plugins: [BaseTablePlugin],
         selection: {
           anchor: { offset: 0, path: [0, 0, 0, 0, 0] },
@@ -1165,7 +1151,6 @@ describe('table clipboard slow contracts', () => {
 
     it('fits closed text against every selected cell grammar', () => {
       const editor = createTestTableEditor({
-        nodeId: true,
         plugins: [BaseTablePlugin],
         selection: {
           anchor: { offset: 0, path: [0, 0, 0, 0, 0] },

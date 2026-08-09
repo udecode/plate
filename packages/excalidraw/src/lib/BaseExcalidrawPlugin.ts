@@ -1,25 +1,15 @@
 import type { ImportedDataState } from '@excalidraw/excalidraw/data/types';
 
 import { defineBasePlugin } from '@platejs/core';
-import {
-  type Element,
-  type NodeInsertNodesOptions,
-  type NodeProps,
-  property,
-} from '@platejs/plite';
+import { type ElementOf, property } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
 
 export type ExcalidrawDataState = ImportedDataState;
 
-export interface TExcalidrawElement extends Element {
-  data?: {
-    elements: ExcalidrawDataState['elements'];
-    state: ExcalidrawDataState['appState'];
-  } | null;
-  width?: string;
-}
-
-type ExcalidrawElementData = Exclude<TExcalidrawElement['data'], undefined>;
+type ExcalidrawElementData = {
+  elements: ExcalidrawDataState['elements'];
+  state: ExcalidrawDataState['appState'];
+} | null;
 
 /** Enables support for Excalidraw drawing tool within a Slate document */
 export const BaseExcalidrawPlugin = defineBasePlugin(PLUGINS.excalidraw, {
@@ -45,21 +35,6 @@ export const BaseExcalidrawPlugin = defineBasePlugin(PLUGINS.excalidraw, {
       void: 'block',
     },
   },
-  update: ({ tx, type }) => ({
-    insert: (
-      props: NodeProps<TExcalidrawElement> = {},
-      options: NodeInsertNodesOptions<TExcalidrawElement> = {}
-    ) => {
-      if (!tx.selection() && options.at === undefined) return;
-
-      tx.blocks.insertAfter<TExcalidrawElement>(
-        {
-          children: [{ text: '' }],
-          type,
-          ...props,
-        },
-        options
-      );
-    },
-  }),
 });
+
+export type ExcalidrawElement = ElementOf<typeof BaseExcalidrawPlugin>;

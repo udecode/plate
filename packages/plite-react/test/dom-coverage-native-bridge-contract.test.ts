@@ -6,7 +6,7 @@ import {
   schema,
 } from '@platejs/plite';
 import {
-  getRuntimeId as editorGetRuntimeId,
+  getNodeKey as editorGetNodeKey,
   getSnapshot as editorGetSnapshot,
   replace as editorReplace,
   string as editorString,
@@ -87,14 +87,14 @@ const createChildren = (): Descendant[] => [
   },
 ];
 
-const getRuntimeId = (editor: ReactRuntimeEditor, path: number[]) => {
-  const runtimeId = editorGetRuntimeId(editor, path);
+const getNodeKey = (editor: ReactRuntimeEditor, path: number[]) => {
+  const nodeKey = editorGetNodeKey(editor, path);
 
-  if (!runtimeId) {
-    throw new Error(`Missing runtime id at ${path.join('.')}`);
+  if (!nodeKey) {
+    throw new Error(`Missing node key at ${path.join('.')}`);
   }
 
-  return runtimeId;
+  return nodeKey;
 };
 
 const mountEditorRoot = (editor: ReactRuntimeEditor) => {
@@ -156,20 +156,20 @@ const createHiddenSelectionEditor = () => {
   });
 
   DOMCoverage.registerBoundary(editor, {
-    anchor: { runtimeId: getRuntimeId(editor, [0, 0]), type: 'summary-slot' },
+    anchor: { nodeKey: getNodeKey(editor, [0, 0]), type: 'summary-slot' },
     boundaryId: 'section-body',
     copyPolicy: 'model',
     coveredPathRanges: [{ kind: 'text', anchor: [0, 1], focus: [0, 1] }],
     coveredRuntimeRanges: [
       {
         kind: 'text',
-        anchor: getRuntimeId(editor, [0, 1]),
-        focus: getRuntimeId(editor, [0, 1]),
+        anchor: getNodeKey(editor, [0, 1]),
+        focus: getNodeKey(editor, [0, 1]),
       },
     ],
     findPolicy: 'native',
     ownerPath: [0],
-    ownerRuntimeId: getRuntimeId(editor, [0]),
+    ownerNodeKey: getNodeKey(editor, [0]),
     reason: 'app-collapse',
     selectionPolicy: 'skip',
     state: 'intentionally-hidden',
@@ -201,20 +201,20 @@ const createStagedSelectionEditor = () => {
   });
 
   DOMCoverage.registerBoundary(editor, {
-    anchor: { runtimeId: getRuntimeId(editor, [1]), type: 'placeholder' },
+    anchor: { nodeKey: getNodeKey(editor, [1]), type: 'placeholder' },
     boundaryId: 'rendering-staged:pending',
     copyPolicy: 'materialize',
     coveredPathRanges: [{ kind: 'text', anchor: [1], focus: [1] }],
     coveredRuntimeRanges: [
       {
         kind: 'text',
-        anchor: getRuntimeId(editor, [1]),
-        focus: getRuntimeId(editor, [1]),
+        anchor: getNodeKey(editor, [1]),
+        focus: getNodeKey(editor, [1]),
       },
     ],
     findPolicy: 'native',
     ownerPath: [],
-    ownerRuntimeId: null,
+    ownerNodeKey: null,
     reason: 'rendering-staged',
     selectionPolicy: 'materialize',
     state: 'pending-mount',

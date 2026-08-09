@@ -173,7 +173,7 @@ Apply this section only when the task source is a tracker item.
 - `grill-with-docs`
   Use for explicit plan/RFC/spec pressure when a decision artifact needs
   adversarial questions grounded in current docs.
-- `autoreview`
+- P2 `autoreview`; pass `--max-priority P2` (P3 only when explicitly requested)
   Use when major work turns into risky code-changing execution or
   architecture-sensitive diffs.
 - `tdd`

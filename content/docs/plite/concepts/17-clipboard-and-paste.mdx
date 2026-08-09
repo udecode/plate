@@ -50,11 +50,10 @@ browser event, DOM clipboard payload, native selection, or follow-up typing.
 Use `clipboardHandler(...)` when a feature owns a reusable DOM import rule.
 
 ```ts
-import { defineEditorExtension } from "@platejs/plite";
+import { defineExtension } from "@platejs/plite";
 import { clipboardHandler } from "@platejs/plite-dom";
 
-const pasteTodoPrefix = defineEditorExtension({
-  name: "paste-todo-prefix",
+const pasteTodoPrefix = defineExtension("paste-todo-prefix", {
   contributions: [
     clipboardHandler({
       insertData(data, { next, transaction }) {

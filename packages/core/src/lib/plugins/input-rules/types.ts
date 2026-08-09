@@ -11,7 +11,17 @@ import type {
 import type { BaseEditor } from '../../editor';
 import type { AnyBasePlugin, PluginReference } from '../../plugin';
 
+/** Portable default editor context for unbound input-rule factories. */
+export interface InputRuleEditor extends BaseEditor {}
+
 export type InputRuleTarget = 'insertBreak' | 'insertData' | 'insertText';
+
+export type MarkInputRuleMatch = {
+  afterStartMatchPoint: Point;
+  beforeEndMatchPoint: Point;
+  beforeStartMatchPoint: Point;
+  end: string | undefined;
+};
 
 type InputRuleTransaction<TEditor> = TEditor extends BaseEditor
   ? EditorUpdateTransactionOf<TEditor>
@@ -247,8 +257,10 @@ export type InputRule<TMatch = unknown, TEditor = BaseEditor> =
   | InsertDataInputRule<TMatch, TEditor>
   | InsertTextInputRule<TMatch, TEditor>;
 
-type InputRuleFactoryOptions<TOptions extends object, TEditor> = TOptions & {
-  enabled?: (context: SelectionInputRuleContext<TEditor>) => boolean;
+type InputRuleFactoryOptions<TOptions extends object, TRule> = TOptions & {
+  enabled?: TRule extends Readonly<{ enabled?: infer TEnabled }>
+    ? TEnabled
+    : never;
   priority?: number;
 };
 
@@ -258,13 +270,10 @@ export type InputRuleFactory<
   TRequired extends boolean = false,
   TMatch = never,
   TEditor = BaseEditor,
+  TRule extends InputRule<any, TEditor> = InputRule<TMatch, TEditor>,
 > = TRequired extends true
-  ? (
-      options: InputRuleFactoryOptions<TOptions, TEditor>
-    ) => InputRule<TMatch, TEditor>
-  : (
-      options?: InputRuleFactoryOptions<TOptions, TEditor>
-    ) => InputRule<TMatch, TEditor>;
+  ? (options: InputRuleFactoryOptions<TOptions, TRule>) => TRule
+  : (options?: InputRuleFactoryOptions<TOptions, TRule>) => TRule;
 
 type StoredInsertBreakInputRule<
   TContext = unknown,

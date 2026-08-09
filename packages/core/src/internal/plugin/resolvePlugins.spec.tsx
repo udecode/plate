@@ -1,5 +1,5 @@
 import React from 'react';
-import { property } from '@platejs/plite';
+import { property, schema } from '@platejs/plite';
 import { createBaseEditor } from '../../lib/editor';
 import type { AnyBasePlugin } from '../../lib/plugin/BasePlugin';
 
@@ -56,6 +56,29 @@ describe('resolvePlugins', () => {
     expect(names).toContain('parent');
     expect(names).toContain('dependency1');
     expect(names).toContain('dependency2');
+  });
+
+  it('exposes required dependency schema identity while author callbacks resolve', () => {
+    const Dependency = defineBasePlugin('schemaDependency', {
+      schema: () => ({
+        element: {
+          ...schema.element.textBlock(),
+          type: 'persistedSchemaDependency',
+        },
+      }),
+    });
+    const Plugin = defineBasePlugin('schemaConsumer', {
+      dependencies: [Dependency],
+    }).extend(({ editor }) => {
+      const dependencyType = editor.plugin(Dependency).schema.type;
+
+      return { api: () => ({ dependencyType: () => dependencyType }) };
+    });
+    const editor = createBaseEditor({ plugins: [Plugin] });
+
+    expect(editor.plugin(Plugin).api.dependencyType()).toBe(
+      'persistedSchemaDependency'
+    );
   });
 
   it('does not include disabled plugins', () => {

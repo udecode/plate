@@ -1,11 +1,11 @@
 import {
   BaseParagraphPlugin,
-  createBasePlugin,
+  defineBasePlugin,
   createRuleFactory,
   type MarkdownDecodeContext,
 } from '@platejs/core';
 import { type Element, ElementApi, PathApi } from '@platejs/plite';
-import { KEYS } from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 
 const thematicBreakDashRe = /^(--|—)$/;
 
@@ -15,10 +15,14 @@ export const BlockquoteRules = {
     marker: '>',
     trigger: ' ',
     enabled: ({ editor }) => {
-      const codeBlock = editor.plugin(KEYS.codeBlock);
+      const codeBlock = editor.plugin(PLUGINS.codeBlock);
+
+      if (!codeBlock.installed) return true;
 
       return !editor.read.nodes.some({
-        match: { type: codeBlock.installed ? codeBlock.type : KEYS.codeBlock },
+        match: {
+          type: codeBlock.schema.type,
+        },
       });
     },
     match: ({ marker }) => marker,
@@ -31,7 +35,7 @@ export const BlockquoteRules = {
       tx.nodes.wrap(
         {
           children: [],
-          type: editor.plugin(KEYS.blockquote).type,
+          type: editor.plugin(PLUGINS.blockquote).schema.type,
         },
         {
           at: blockEntry[1],
@@ -54,10 +58,12 @@ export const HorizontalRuleRules = {
         tx.text.deleteBackward({ unit: 'character' });
       }
 
-      tx.nodes.set({ type: editor.plugin(KEYS.hr).type });
+      tx.nodes.set({
+        type: editor.plugin(PLUGINS.horizontalRule).schema.type,
+      });
       tx.nodes.insert({
         children: [{ text: '' }],
-        type: editor.plugin(KEYS.p).type,
+        type: editor.plugin(PLUGINS.paragraph).schema.type,
       });
 
       return true;
@@ -66,17 +72,16 @@ export const HorizontalRuleRules = {
 };
 
 /** Enables support for block quotes, useful for quotations and passages. */
-export const BaseBlockquotePlugin = createBasePlugin({
-  name: KEYS.blockquote,
+export const BaseBlockquotePlugin = defineBasePlugin(PLUGINS.blockquote, {
   schema: ({ plugins }) => ({
     element: {
       content: plugins.blockContent({
-        default: { type: plugins.elementType(BaseParagraphPlugin) },
+        default: BaseParagraphPlugin,
         min: 1,
       }),
     },
   }),
-  codecs: ({ defineCodecs }) =>
+  codecs: ({ defineCodecs, schema: { type } }) =>
     defineCodecs({
       'text/html': {
         decode: () => ({}),
@@ -94,7 +99,6 @@ export const BaseBlockquotePlugin = createBasePlugin({
           isBlock,
           isInline,
           node,
-          type,
         }) => ({
           children: groupInlineChildrenIntoParagraphs(
             decodeNodes(node.children, decoration),
@@ -122,14 +126,14 @@ export const BaseBlockquotePlugin = createBasePlugin({
     delete: {
       start: 'lift',
     },
-    match: ({ editor, node, path, rule, type }) => {
+    match: ({ editor, node, path, rule, schema: { type } }) => {
       if (!['break.empty', 'delete.start'].includes(rule)) return false;
       if (!path) return false;
       if (!ElementApi.isElement(node)) return false;
 
       const isLiftable =
-        node.type === editor.plugin(KEYS.p).type &&
-        !node[KEYS.listType] &&
+        node.type === editor.plugin(PLUGINS.paragraph).schema.type &&
+        !node.listStyleType &&
         !!editor.read.nodes.above({
           at: path,
           match: { type },
@@ -160,12 +164,9 @@ export const BaseBlockquotePlugin = createBasePlugin({
   shortcuts: {
     untab: { keys: 'shift+tab' },
   },
-  update: ({ editor, tx, type }) => ({
-    toggle: () => {
-      tx.blocks.toggle(type, { wrap: true });
-    },
+  update: ({ editor, tx, schema: { type } }) => ({
     untab: () => {
-      const paragraphType = editor.plugin(KEYS.p).type;
+      const paragraphType = editor.plugin(PLUGINS.paragraph).schema.type;
       const blocks = [
         ...tx.nodes.toArray<Element>({
           at: tx.selection() ?? undefined,
@@ -173,7 +174,7 @@ export const BaseBlockquotePlugin = createBasePlugin({
             ElementApi.isElement(node) &&
             !node.indent &&
             node.type === paragraphType &&
-            !node[KEYS.listType] &&
+            !node.listStyleType &&
             !!tx.nodes.above({
               at: path,
               match: { type },
@@ -199,39 +200,41 @@ export const BaseBlockquotePlugin = createBasePlugin({
   }),
 });
 
-export const BaseHorizontalRulePlugin = createBasePlugin({
-  name: KEYS.hr,
-  schema: {
-    element: {
-      void: 'block',
+export const BaseHorizontalRulePlugin = defineBasePlugin(
+  PLUGINS.horizontalRule,
+  {
+    schema: {
+      element: {
+        void: 'block',
+      },
     },
-  },
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      'text/html': {
-        decode: () => ({}),
-        encode: () => ({ tag: 'hr' }),
-        match: [{ tag: 'hr' }],
-      },
+    codecs: ({ defineCodecs, schema: { type } }) =>
+      defineCodecs({
+        'text/html': {
+          decode: () => ({}),
+          encode: () => ({ tag: 'hr' }),
+          match: [{ tag: 'hr' }],
+        },
 
-      'text/markdown': {
-        from: 'thematicBreak',
-        kind: 'node',
-        decode: ({ type }) => ({
-          children: [{ text: '' }],
-          type,
-        }),
-        encode: () => ({ type: 'thematicBreak' as const }),
-      },
-    }),
-  render: { as: 'hr' },
-});
+        'text/markdown': {
+          from: 'thematicBreak',
+          kind: 'node',
+          decode: () => ({
+            children: [{ text: '' }],
+            type,
+          }),
+          encode: () => ({ type: 'thematicBreak' as const }),
+        },
+      }),
+    render: { as: 'hr' },
+  }
+);
 
 const groupInlineChildrenIntoParagraphs = (
   children: readonly import('@platejs/plite').Descendant[],
   context: Pick<MarkdownDecodeContext, 'isBlock' | 'isInline' | 'registry'>
 ) => {
-  const paragraphType = context.registry.getType(KEYS.p);
+  const paragraphType = context.registry.type(PLUGINS.paragraph) ?? 'paragraph';
   const elements: import('@platejs/plite').Descendant[] = [];
   let inlineNodes: import('@platejs/plite').Descendant[] = [];
 

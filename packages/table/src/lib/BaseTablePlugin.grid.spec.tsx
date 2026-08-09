@@ -5,8 +5,9 @@ import {
   createTestTableEditor,
   getTestTablePlugins,
 } from './__tests__/getTestTablePlugins';
+import type { TableCellElementWithId } from './__tests__/tableTestTypes';
 import { definePlatePlugin } from '@platejs/core/react';
-import { schema, type Value } from '@platejs/plite';
+import { createEditorView, schema, type Value } from '@platejs/plite';
 import { jsxt } from '@platejs/test-utils';
 import type { TestEditor } from '@platejs/test-utils';
 import type {
@@ -15,6 +16,7 @@ import type {
   TableRowElement,
 } from './BaseTablePlugin';
 import assert from 'node:assert/strict';
+import { createTableContext } from './internal/context';
 
 describe('table grid queries', () => {
   const value: Value = [
@@ -45,16 +47,17 @@ describe('table grid queries', () => {
       const initialValue = structuredClone(value);
       const inputSnapshot = structuredClone(initialValue);
       const editor = createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins(),
         initialValue,
       });
+      const c11 = editor.key([0, 0, 0])!;
+      const c12 = editor.key([0, 0, 1])!;
 
       expect(
-        editor.plugin(BaseTablePlugin).read.getCellIndicesById('c11')
+        editor.plugin(BaseTablePlugin).read.getCellIndicesByKey(c11)
       ).toEqual({ col: 0, row: 0 });
       expect(
-        editor.plugin(BaseTablePlugin).read.getCellIndicesById('c12')
+        editor.plugin(BaseTablePlugin).read.getCellIndicesByKey(c12)
       ).toEqual({ col: 1, row: 0 });
       expect(initialValue).toEqual(inputSnapshot);
     });
@@ -78,7 +81,6 @@ describe('table grid queries', () => {
         },
       });
       const editor = createTestTableEditor({
-        nodeId: true,
         plugins: [...getTestTablePlugins(), RootHolderPlugin],
         initialValue: {
           children: [
@@ -91,31 +93,37 @@ describe('table grid queries', () => {
           roots: { 'table-root:1': structuredClone(value) },
         },
       });
+      const rootEditor = createEditorView(editor, {
+        root: 'table-root:1',
+      }) as unknown as typeof editor;
+      const c11 = rootEditor.key([0, 0, 0])!;
+      const c12 = rootEditor.key([0, 0, 1])!;
+      const context = rootEditor.read((state) =>
+        createTableContext(state, [0])
+      );
 
-      expect(
-        editor.plugin(BaseTablePlugin).read.getCellIndicesById('c11')
-      ).toEqual({ col: 0, row: 0 });
-      expect(
-        editor.plugin(BaseTablePlugin).read.getCellIndicesById('c12')
-      ).toEqual({ col: 1, row: 0 });
+      assert(context);
+
+      expect(context.grid.byKey.get(c11)).toMatchObject({ col: 0, row: 0 });
+      expect(context.grid.byKey.get(c12)).toMatchObject({ col: 1, row: 0 });
     });
 
     it('derives stable indices through the canonical compiler', () => {
       const editor = createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins(),
         initialValue: value,
       });
       const entry = editor.read.nodes.get<TableCellElement>([0, 0, 1]);
       assert(entry);
       const [cell] = entry;
+      const id = editor.key(cell);
 
       expect(editor.plugin(BaseTablePlugin).read.getCellIndices(cell)).toEqual({
         col: 1,
         row: 0,
       });
       expect(
-        editor.plugin(BaseTablePlugin).read.getCellIndicesById('c12')
+        editor.plugin(BaseTablePlugin).read.getCellIndicesByKey(id)
       ).toEqual({ col: 1, row: 0 });
       expect(editor.plugin(BaseTablePlugin).read.getCellIndices(cell)).toEqual({
         col: 1,
@@ -131,7 +139,7 @@ describe('table grid queries', () => {
         plugins: getTestTablePlugins(),
         initialValue: orphanValue,
       });
-      const cell: TableCellElement = {
+      const cell: TableCellElementWithId = {
         children: [{ text: '' }],
         id: 'orphan',
         type: 'tableCell',
@@ -149,7 +157,6 @@ describe('table grid queries', () => {
 
     const createTableEditor = (input: TestEditor) =>
       createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins(),
         initialValue: input.children,
       });
@@ -185,11 +192,11 @@ describe('table grid queries', () => {
         const cellNode = getCell(editor);
 
         expect(
-          editor.plugin(BaseTablePlugin).read.getColumnIndex(cellNode)
+          editor.plugin(BaseTablePlugin).read.getCellIndices(cellNode).col
         ).toBe(1);
       });
 
-      it('returns -1 for a detached or cloned cell object', () => {
+      it('does not confuse cloned persisted IDs with live cell identity', () => {
         const input = (
           <editor>
             <htable>
@@ -209,14 +216,14 @@ describe('table grid queries', () => {
         const clonedCell = structuredClone(getCell(editor));
 
         expect(
-          editor.plugin(BaseTablePlugin).read.getColumnIndex(clonedCell)
-        ).toBe(-1);
+          editor.plugin(BaseTablePlugin).read.getCellIndices(clonedCell).col
+        ).toBe(0);
         expect(
-          editor.plugin(BaseTablePlugin).read.getColumnIndex({
+          editor.plugin(BaseTablePlugin).read.getCellIndices({
             children: [{ text: 'ghost' }],
             type: 'tableCell',
-          })
-        ).toBe(-1);
+          }).col
+        ).toBe(0);
       });
     });
   }
@@ -226,7 +233,6 @@ describe('table grid queries', () => {
 
     const createTableEditor = (input: TestEditor) =>
       createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins(),
         selection: input.selection,
         initialValue: input.children,
@@ -325,7 +331,6 @@ describe('table grid queries', () => {
 
     const createTableEditor = (input: TestEditor) =>
       createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins(),
         initialValue: input.children,
       });
@@ -354,9 +359,9 @@ describe('table grid queries', () => {
         assert(entry);
         const [cellNode] = entry;
 
-        expect(editor.plugin(BaseTablePlugin).read.getRowIndex(cellNode)).toBe(
-          1
-        );
+        expect(
+          editor.plugin(BaseTablePlugin).read.getCellIndices(cellNode).row
+        ).toBe(1);
       });
 
       it('falls back to zero for detached cells', () => {
@@ -369,10 +374,10 @@ describe('table grid queries', () => {
         );
 
         expect(
-          editor.plugin(BaseTablePlugin).read.getRowIndex({
+          editor.plugin(BaseTablePlugin).read.getCellIndices({
             children: [{ text: 'ghost' }],
             type: 'tableCell',
-          })
+          }).row
         ).toBe(0);
       });
     });

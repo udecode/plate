@@ -5,7 +5,7 @@ describe('column package surfaces', () => {
 
   it('round-trips a column group through the markdown package surfaces', () => {
     const editor = createColumnEditor();
-    const input = `<column_group layout="[50,50]">
+    const input = `<columnGroup layout="[50,50]">
   <column width="50%">
     Left column
   </column>
@@ -13,7 +13,7 @@ describe('column package surfaces', () => {
   <column width="50%">
     Right column
   </column>
-</column_group>
+</columnGroup>
 `;
 
     const value = editor.api.markdown.deserialize(input);

@@ -100,12 +100,12 @@ test.describe('embeds example', () => {
     });
     expect(embedProof.focusOwner.kind).toBe('editor');
     expect(embedProof.selectionShells?.anchor.node?.path).toBe('1,0');
-    expect(embedProof.selectionShells?.anchor.node?.runtimeId).toBeTruthy();
+    expect(embedProof.selectionShells?.anchor.node?.nodeKey).toBeTruthy();
     expect(embedProof.selectionShells?.anchor.element?.path).toBe('1');
     expect(embedProof.selectionShells?.anchor.element?.isVoid).toBe(true);
-    expect(
-      embedProof.selectionShells?.runtimeIds.length
-    ).toBeGreaterThanOrEqual(2);
+    expect(embedProof.selectionShells?.nodeKeys.length).toBeGreaterThanOrEqual(
+      2
+    );
     expect(embedProof.renderCounts.byKind.editable ?? 0).toBeLessThanOrEqual(2);
     expect(embedProof.renderCounts.byKind.element ?? 0).toBeLessThanOrEqual(1);
     expect(embedProof.renderCounts.byKind.spacer ?? 0).toBeLessThanOrEqual(1);

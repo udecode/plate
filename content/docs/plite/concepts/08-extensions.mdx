@@ -24,19 +24,19 @@ this smaller runtime primitive.
 
 ## Smallest Extension
 
-`defineEditorExtension(...)` preserves the literal extension name and lets
+`defineExtension(...)` preserves the literal extension name and lets
 `createEditor(...)` infer every installed capability. A complete schema is also
 an extension, created with `defineEditorSchema(...)`.
 
 ```ts
 import {
   createEditor,
-  defineEditorExtension,
+  defineExtension,
   defineEditorSchema,
   schema,
 } from "@platejs/plite";
 
-const ArticleSchema = defineEditorSchema({
+const ArticleSchema = defineEditorSchema("schema:article", {
   elements: {
     paragraph: {
       content: schema.content.text({ default: "text", min: 1 }),
@@ -51,9 +51,7 @@ const ArticleSchema = defineEditorSchema({
   version: 1,
 });
 
-const ArticleExtension = defineEditorExtension({
-  name: "article",
-});
+const ArticleExtension = defineExtension("article", {});
 
 const editor = createEditor({
   extensions: [ArticleSchema, ArticleExtension] as const,
@@ -71,10 +69,9 @@ Use `read` for owner-local queries and `update` for owner-local model writes.
 The extension name becomes the namespace on `editor.read` and `editor.update`.
 
 ```ts
-import { createEditor, defineEditorExtension } from "@platejs/plite";
+import { createEditor, defineExtension } from "@platejs/plite";
 
-const LinksExtension = defineEditorExtension({
-  name: "links",
+const LinksExtension = defineExtension("links", {
   read: ({ state }) => ({
     hasSelection() {
       return state.selection() !== null;
@@ -116,8 +113,7 @@ needs no context. Its single context object exposes `editor`, `root`, and
 name and through the exact descriptor portal.
 
 ```ts
-const LinksExtension = defineEditorExtension({
-  name: "links",
+const LinksExtension = defineExtension("links", {
   api: () => ({
     normalizeHref(href: string) {
       return new URL(href).toString();
@@ -147,8 +143,7 @@ Use descriptor-valued `dependencies` when one extension requires another.
 Use `conflicts` when two descriptors cannot be installed together.
 
 ```ts
-const LinksExtension = defineEditorExtension({
-  name: "links",
+const LinksExtension = defineExtension("links", {
   api: () => ({
     normalizeHref(href: string) {
       return new URL(href).toString();
@@ -156,8 +151,7 @@ const LinksExtension = defineEditorExtension({
   }),
 });
 
-const MentionsExtension = defineEditorExtension({
-  name: "mentions",
+const MentionsExtension = defineExtension("mentions", {
   dependencies: [LinksExtension],
   update: ({ tx }) => ({
     insert(character: string) {
@@ -190,7 +184,7 @@ contribution channel outside the headless model.
 
 ```ts
 import {
-  defineEditorExtension,
+  defineExtension,
   defineExtensionPoint,
 } from "@platejs/plite";
 
@@ -201,8 +195,7 @@ type MeasurementSource = {
 const measurements =
   defineExtensionPoint<MeasurementSource>("app:measurement-source");
 
-const MeasuredExtension = defineEditorExtension({
-  name: "measured",
+const MeasuredExtension = defineExtension("measured", {
   contributions: [
     measurements.of({
       measure: () => performance.now(),
@@ -223,8 +216,7 @@ Register cleanup before activation returns, and defer external work that must
 observe the published candidate to `context.afterPublish(...)`.
 
 ```ts
-const TableNavigationExtension = defineEditorExtension({
-  name: "tableNavigation",
+const TableNavigationExtension = defineExtension("tableNavigation", {
   update: ({ tx }) => ({
     insertRow() {
       tx.nodes.insert({
@@ -276,7 +268,7 @@ callback. Compilation, migration, and validation finish before one
 document-plus-extension commit; failure publishes nothing. See
 [Atomic Reconfiguration](19-schema#atomic-reconfiguration).
 
-`editor.extend(...)` is the host-level dynamic form. Prefer a named slot when
+`editor.install(...)` is the host-level dynamic form. Prefer a named slot when
 the replacement must commit atomically with other model writes.
 
 ## Schema Contributions
@@ -286,7 +278,7 @@ properties live with the element; cross-cut properties use a top-level
 property declaration with an explicit target.
 
 ```ts
-import { defineEditorExtension, property, schema } from "@platejs/plite";
+import { defineExtension, property, schema } from "@platejs/plite";
 
 const tableModel = {
   schema: {
@@ -310,10 +302,8 @@ const tableModel = {
 const tableCell = schema.handle.element(tableModel, "tableCell");
 const colSpan = schema.handle.property(tableCell, "colSpan");
 
-const TablesExtension = defineEditorExtension({
-  ...tableModel,
-  name: "tables",
-  read: ({ state }) => ({
+const TablesExtension = defineExtension("tables", {
+  ...tableModel,  read: ({ state }) => ({
     selectedCellColSpan(element) {
       return state.schema.getElementProperty(element, colSpan);
     },
@@ -326,8 +316,7 @@ inputs in the factory that creates the descriptor.
 
 ```ts
 const createCommentsExtension = (prefix: string) =>
-  defineEditorExtension({
-    name: "comments",
+  defineExtension("comments", {
     schema: ({ name }) => ({
       properties: [
         schema.textProperty(
@@ -357,12 +346,11 @@ and state types.
 
 ```ts
 import {
-  defineEditorExtension,
+  defineExtension,
   editorReads,
 } from "@platejs/plite";
 
-const ClosedSectionsExtension = defineEditorExtension({
-  name: "closedSections",
+const ClosedSectionsExtension = defineExtension("closedSections", {
   readMiddleware: ({ around }) => [
     around(
       editorReads.nodes.isSelectable,
@@ -380,8 +368,7 @@ active transaction draft.
 Use `editorReads.slice.export` for ordered export projection:
 
 ```ts
-const CleanExportExtension = defineEditorExtension({
-  name: "cleanExport",
+const CleanExportExtension = defineExtension("cleanExport", {
   readMiddleware: ({ around }) => [
     around(editorReads.slice.export, ({ next }) => {
       const slice = next();
@@ -452,18 +439,17 @@ feature APIs on Plite's smaller extension substrate.
 
 ## Type Inference
 
-Let `defineEditorExtension(...)` infer its one definition type from the author
+Let `defineExtension(...)` infer its one definition type from the author
 object. `DefinitionOf<typeof Extension>` recovers the compact public contract
 when generic library code needs it.
 
 ```ts
 import {
   type DefinitionOf,
-  defineEditorExtension,
+  defineExtension,
 } from "@platejs/plite";
 
-const ImagesExtension = defineEditorExtension({
-  name: "images",
+const ImagesExtension = defineExtension("images", {
   schema: {
     elements: {
       image: {

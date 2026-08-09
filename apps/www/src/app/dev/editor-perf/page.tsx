@@ -3742,10 +3742,11 @@ function BenchmarkEditableMount({
     };
   }, [editor, elementBenchmarkMode, pathMap, renderElement]);
   const precomputedElementRender = React.useMemo(() => {
+    const paragraphType = paragraphPlugin.schema.type;
+
     if (
       !precomputedElementPluginPath ||
-      !paragraphPlugin ||
-      editor.read.schema.element(paragraphPlugin.type) === undefined
+      editor.read.schema.element(paragraphType) === undefined
     ) {
       return;
     }
@@ -3758,7 +3759,7 @@ function BenchmarkEditableMount({
     return (props: RenderElementProps) => {
       const element = props.element as PliteElement;
 
-      if (element.type !== paragraphPlugin.type) {
+      if (element.type !== paragraphType) {
         return renderElement(props);
       }
 

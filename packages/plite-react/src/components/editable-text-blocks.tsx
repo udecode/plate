@@ -377,7 +377,7 @@ function EditableContentRootSlot({
   renderers: EditableContentRootSlotRenderers;
   slot: string;
 }) {
-  const ownerEditor = useEditor<ReactRuntimeEditor>();
+  const ownerEditor = useEditor();
   const ownerRoot = toInternalRoot(
     ownerEditor.read((state) => state.view.root())
   );
@@ -433,7 +433,7 @@ function EditableContentRootView({
     renderText,
     renderVoid,
   } = renderers;
-  const editor = useEditor<ReactRuntimeEditor>();
+  const editor = useEditor();
   const inheritedReadOnly = useEditorReadOnly();
   const readOnly = Boolean(options.readOnly || inheritedReadOnly);
   const contentRootOwner = React.useMemo(

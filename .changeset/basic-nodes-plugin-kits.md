@@ -4,7 +4,7 @@
 
 Remove the Heading, Basic Blocks, and Basic Marks grouping descriptors and
 package-owned preset arrays. The package exports each Base and React capability
-plugin independently. Built-in marks use compiled schema properties.
+plugin independently. Built-in marks expose semantic read and update methods.
 `ScriptPlugin` represents subscript and superscript through one
 `script: 'sub' | 'sup'` property.
 Paragraphs and horizontal rules persist under the canonical plugin identities

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "latestVersion": 47,
+  "latestVersion": 67,
   "versions": [
     {
       "version": 0,
@@ -566,6 +566,241 @@
         "List literal array items directly instead of spreading a literal array into another literal array.",
         "Prove portal runtime behavior, package adoption, checker negative contracts, generated skills, doctrine fingerprint, typechecks, tests, Browser behavior, and final review before attesting any package at v47."
       ]
+    },
+    {
+      "version": 48,
+      "date": "2026-08-03",
+      "doctrineFingerprint": "sha256:f8f6b937bef9c42146b567268b4841eed6d974dda88502c7a1885166624a64ea",
+      "summary": "Capability names and persisted schema identity are separate; compiled element and keyed property handles own final application identity.",
+      "migrationChecks": [
+        "Remove universal plugin and portal type/key fields; read persisted identity only from schema.element.type or an explicit schema.properties.<localId>.key handle.",
+        "Replace schema.properties[plugin.name] and one-property shortcuts with explicit local property ids, preserving plugins that own several fields.",
+        "Keep feature schema immutable through extend/configure; apply allowed element and relationship overrides only in a closed defineEditor definition, with property key/value-law changes routed to explicit migrations.",
+        "Keep raw plugin capabilities shallow and prove exact recursive Value, final schema bindings, mutations, and fingerprints through generated EditorKit artifacts.",
+        "Prove package/app adoption, schema checker contracts, docs and release guidance, generated skills, doctrine fingerprint, focused type/tests, Browser behavior, and final review before attesting any package at v48."
+      ]
+    },
+    {
+      "version": 49,
+      "date": "2026-08-03",
+      "doctrineFingerprint": "sha256:d0c3150ebbb63ce550c5cd7c23c50d72efcd2d96728c44eb400c3825bfa14aa8",
+      "summary": "Optional integrations guard installation before accessing compiled schema identity; absent plugins never fabricate document identity.",
+      "migrationChecks": [
+        "Guard optional plugin integration with portal.installed before reading schema, API, state, or behavior.",
+        "Read persisted element types and property keys only from installed compiled portal schema handles; never fall back to a capability name or raw runtime string.",
+        "Keep mandatory plugin relationships source-bound in schema declarations so the compiler rejects missing, forged, and wrong-family descriptors.",
+        "Prove missing, disabled, forged, wrong-family, and ordinary subset composition behavior before attesting any package at v49."
+      ]
+    },
+    {
+      "version": 50,
+      "date": "2026-08-03",
+      "doctrineFingerprint": "sha256:8d27e7a796bc4d5095d7a65d141f9a10c46f5003c445d04a5cec20534726ee05",
+      "summary": "Schema adoption gates distinguish an absent optional identity from an invented raw-string fallback.",
+      "migrationChecks": [
+        "Accept optional installed guards that return undefined or an empty collection when the plugin is absent.",
+        "Reject raw-string element type or property key fallbacks when an optional plugin is absent.",
+        "Prove source and documentation checker contracts plus all-current package attestation before closing v50."
+      ]
+    },
+    {
+      "version": 51,
+      "date": "2026-08-04",
+      "doctrineFingerprint": "sha256:2fce18aadc30252099fb61ca576e04a4b607e72299c6621e3ad7c01b7d1700ed",
+      "summary": "Plugin declarations export one direct inference chain; private descriptor aliases require an independent production identity.",
+      "migrationChecks": [
+        "Audit production declarations by references, not variable suffixes: inspect every private defineBasePlugin, definePlatePlugin, toPlatePlugin, extend, and configure result.",
+        "Inline any descriptor whose only production uses feed one exported chain or type queries, while preserving justified fluent capability stages.",
+        "Replace recursive final-plugin type dependencies with the smallest independent domain or hook-stage contract instead of a shadow plugin descriptor.",
+        "Reject shared stage factories that accept the current descriptor solely for inference; bind their owner context through the direct extend call.",
+        "Prove the zero-drift source audit, affected package typechecks and behavior tests, generated skill parity, doctrine fingerprint, and final review before attesting a package at v51."
+      ]
+    },
+    {
+      "version": 52,
+      "date": "2026-08-04",
+      "doctrineFingerprint": "sha256:6f6fa474ab1177418a462879ad907fcda40d03445066c0a4e2aa7ffb6bf25d19",
+      "summary": "Direct plugin chains derive exact public AST and operation types from the final inferred descriptor while compiler bridges remain private.",
+      "migrationChecks": [
+        "Keep schema-dependent capabilities in an honest direct extend stage and derive local element or text shapes from that stage's plugin context.",
+        "Derive public AST and operation-option aliases only after the final exported descriptor; keep generic option templates private.",
+        "Reject exported plugin annotations, public compiler/context ferry types, and widened NodeInsertNodesOptions generics used as inference workarounds.",
+        "Prove declaration emit, focused package typechecks and tests, zero unjustified one-use descriptor staging, generated skill parity, doctrine fingerprint, and final review before attesting a package at v52."
+      ]
+    },
+    {
+      "version": 53,
+      "date": "2026-08-04",
+      "doctrineFingerprint": "sha256:2eb21b726714cad31c5cb4561109a1f92aba9cb8267d0019d35acd79c42d6256",
+      "summary": "Recursive plugin algorithms use private structural contracts while public AST aliases and required generic schema handles remain exact.",
+      "migrationChecks": [
+        "Keep recursive algorithm contracts package-private, preserve configurable schema identity inside them, and derive public AST aliases from the final plugin descriptor.",
+        "Reject private structural contracts used as exported consumer AST types or barrel exports.",
+        "Require generic plugin factories constrained to element or mark schemas to receive non-optional flat schema identity handles from PluginAuthorSchemaView.",
+        "Prove Core declaration contracts plus affected package typechecks and tests, direct-chain topology, generated skill parity, doctrine fingerprint, and final review before attesting a package at v53."
+      ]
+    },
+    {
+      "version": 54,
+      "date": "2026-08-04",
+      "doctrineFingerprint": "sha256:09fcd23915d78b7205e0629450a8779a4741964c1c69877b0a2796deb1a5203d",
+      "summary": "Context-bound factories infer rich authoring editors but expose portable public factory and result types.",
+      "migrationChecks": [
+        "Keep exact installed-plugin editor capabilities inside context-bound factory author callbacks only.",
+        "Project public factory options and emitted values to the smallest portable public contract at the Core return boundary.",
+        "Delete package-level BaseEditor<typeof Plugin> aliases, reconstructed factory option/result interfaces, export annotations, and casts used only to make declaration emit nameable.",
+        "Prove Core type contracts, affected package declaration builds, inferred factory exports, generated skill parity, doctrine fingerprint, focused tests, and final review before attesting a package at v54."
+      ]
+    },
+    {
+      "version": 55,
+      "date": "2026-08-04",
+      "doctrineFingerprint": "sha256:62696579b7107007b22d3f3398887b701506d0075c5fb5f60f44ac0230b5c7fd",
+      "summary": "Consumer plugin portals expose only one flat primary schema identity while additional property handles remain author and compiler data.",
+      "migrationChecks": [
+        "Replace exact element portal schema.element.type with schema.type and exact primary-mark schema.properties access with schema.key.",
+        "Remove schema from behavior and aggregate-property consumer portals; keep schema.properties only in author callbacks for additional declared properties and in compiler internals.",
+        "Keep runtime-name schema.type and schema.key getters non-optional for package-decoupled callers, guard availability with installed, and reject missing or wrong-kind access without raw-string fallbacks.",
+        "Replace ordinary primary-mark key plumbing with inferred read and update capabilities, and flatten generated EditorKit plugin bindings to one type or key field.",
+        "Prove Core runtime and type contracts, generated artifacts, package and registry adoption, checker and docs parity, Browser behavior, doctrine fingerprint, and final review before attesting a package at v55."
+      ]
+    },
+    {
+      "version": 56,
+      "date": "2026-08-04",
+      "doctrineFingerprint": "sha256:5a658e04380afe1316e4d3e4cfe8854e95f911e5c30060d3c371c81e953eb925",
+      "summary": "A proven TS7056 ceiling permits only an exact private source/final declaration-stage pair behind an inferred public alias.",
+      "migrationChecks": [
+        "First prove the complete direct inferred plugin chain passes source typecheck but fails declaration emit specifically with TS7056 after smaller structural and Core carrier repairs are exhausted.",
+        "Mark every retained source and final declaration stage @plate-plugin-declaration-stage, annotate only the exact private final stage, and expose one unannotated public plugin alias.",
+        "Keep declaration stages and internal definition carriers out of barrels, count every exception in the topology audit, and retain a deletion gate tied to successful direct declaration emit.",
+        "Prove public AST derivation, source typecheck, declaration build, focused behavior tests, generated skill parity, doctrine fingerprint, topology audit, and final review before attesting a package at v56."
+      ]
+    },
+    {
+      "version": 57,
+      "date": "2026-08-04",
+      "doctrineFingerprint": "sha256:18c6825e63ff53403e8f5beca4ec8e240128644fd23abf19c390d874c0ddc14b",
+      "summary": "Custom Plate-owned MDX element codecs use the final resolved schema type symmetrically while external format syntax remains literal.",
+      "migrationChecks": [
+        "Audit every custom element text/markdown codec so from, decoded element type, and encoded MDX name all use the resolved schema type.",
+        "Keep fixed MDAST, HTML, and MDX names literal, and exclude mark and property codecs from element identity rules.",
+        "Migrate legacy persisted aliases before current codec and schema handling; never keep dual decode paths.",
+        "Prove checker fixtures, configured-type round trips, focused packages and docs, Browser behavior, generated skill parity, doctrine fingerprint, and final review before attesting a package at v57."
+      ]
+    },
+    {
+      "version": 58,
+      "date": "2026-08-04",
+      "doctrineFingerprint": "sha256:d6770255a127648bde41d14c034255b72b5d8ffdf280f2002cce22f267d232e8",
+      "summary": "Plugin updates use one inferred mutation law, with property handles reserved for aliases and ambiguity and semantic operations for cross-node behavior.",
+      "migrationChecks": [
+        "Use direct tx.nodes.set and unset for one uniquely owned unaliased property; keep object mutation for structural or atomic multi-property writes.",
+        "Use the exact schema property handle for aliases or local ambiguity, and a semantic owner operation for prefix families or cross-node behavior.",
+        "Reject tx.plugin, tx.properties, and other duplicate mutation namespaces; preserve shallow plugin plus required-dependency inference.",
+        "Route one local behavior regression through patch while applying Plate Plugin Creator only as the implementation law."
+      ]
+    },
+    {
+      "version": 59,
+      "date": "2026-08-04",
+      "doctrineFingerprint": "sha256:f5f577699a70e4c7522897ace6e43b9db426a2fe6cf8e0451e29359a24399d0a",
+      "summary": "Format runtimes resolve every synthesized Plate wrapper and fallback through the installed application schema while keeping external syntax literal.",
+      "migrationChecks": [
+        "Audit every format-runtime Plate element constructor, including structural wrappers and unknown-node fallbacks, for a resolved installed schema type.",
+        "Keep literal node identities only on emitted or matched external MDAST, HTML, and MDX syntax.",
+        "Use an authored default Plate type only when the corresponding plugin is genuinely absent, and prove configured-type behavior plus optional-plugin composition."
+      ]
+    },
+    {
+      "version": 60,
+      "date": "2026-08-04",
+      "doctrineFingerprint": "sha256:add27c39e8c8da351b7cd90f10105192711af7669c812723ea2264a7680ecb4b",
+      "summary": "Format overrides dispatch through the correct identity, staged codecs receive the same enforcement, and plugin factories declare every required portal dependency.",
+      "migrationChecks": [
+        "Resolve a Markdown decode codec owner before consulting a one-operation override keyed by invariant plugin capability name; keep encode overrides keyed by persisted schema identity.",
+        "Apply custom MDX identity enforcement to constructor-owned and justified staged codec contributions.",
+        "Declare every required plugin portal at the lowest descriptor that reads it; guard genuinely optional peers through installed."
+      ]
+    },
+    {
+      "version": 61,
+      "date": "2026-08-04",
+      "doctrineFingerprint": "sha256:e465b5a607c7566a12b067035f7343d1fc1809bf948e0b234ccbc5e02de82454",
+      "summary": "Claimed Markdown sources have one override identity, custom MDX stays with its schema owner, and canonical rule unions retain every supported key.",
+      "migrationChecks": [
+        "After a compiled codec claims a decode source, never fall through to an override keyed by persisted syntax when that codec returns undefined.",
+        "Keep configurable custom MDX codecs on their schema-owning plugin; reject foreign target contributions and audit staged schema bindings from the owning callback.",
+        "Preserve every supported canonical typed rule key, including audio, file, and video, during public identity renames."
+      ]
+    },
+    {
+      "version": 62,
+      "date": "2026-08-04",
+      "doctrineFingerprint": "sha256:b7d6feafdaec53568151bf8f5f95b606f902f33bfbdf3262502762cbdc0976a6",
+      "summary": "Partial codecs prove every declared identity leg, and phrasing-only wrappers decode source phrasing instead of unwrapping arbitrary Plate blocks.",
+      "migrationChecks": [
+        "Audit decode-only custom MDX codecs for resolved from and decoded type, and encode-only codecs for resolved emitted name.",
+        "Decode an external paragraph's children directly when the target schema requires phrasing content; never treat a decoded Plate element as proof that it is the wrapper.",
+        "Prove promoted-block rejection, partial-codec negative checker fixtures, full source audit, package typechecks, focused tests, generated skill parity, doctrine fingerprint, and P2 review."
+      ]
+    },
+    {
+      "version": 63,
+      "date": "2026-08-04",
+      "doctrineFingerprint": "sha256:47d4655f1634de22dbd62fd35fa94c1b7d3fd187fa96bb8bca4a97e6e060c74f",
+      "summary": "External syntax literals never weaken decoded Plate identity, and format properties cannot overwrite structural children or schema type.",
+      "migrationChecks": [
+        "Keep external from and encoded name literals while resolving every decoded Plate element type from the target schema.",
+        "Spread parsed and conditional properties before children and resolved type so input attributes cannot replace structural fields.",
+        "Preserve the complete typed canonical rule-name surface, including break, and prove source-wide enforcement plus focused codec regressions."
+      ]
+    },
+    {
+      "version": 64,
+      "date": "2026-08-04",
+      "doctrineFingerprint": "sha256:2c24b68f01f6b7b3f65d1c36a1e70da54a20b793838bfe752b5970dbd8bbdd7a",
+      "summary": "Descriptor-aware schema policy serializes stable names while retaining and validating nominal plugin families privately.",
+      "migrationChecks": [
+        "Normalize schema builder descriptor inputs to plugin names in public structural output.",
+        "Retain the authored nominal descriptor only in private metadata and reject a different installed same-name family before policy application.",
+        "Lower single- and multi-element application relationships to persisted schema types and prove configured-type behavior."
+      ]
+    },
+    {
+      "version": 65,
+      "date": "2026-08-04",
+      "doctrineFingerprint": "sha256:03a64774ea76c21efa7a3233f61ad3b0856b642f64d6b883ea1f0c3772ca8635",
+      "summary": "Capability-valued state stays separate from persisted identity, and generated schema contracts verify semantic content before publication.",
+      "migrationChecks": [
+        "Store a selected plugin descriptor or normalized capability name in state; resolve persisted type or key only at the AST boundary.",
+        "Resolve transient-node schema identity when the factory runs so closed-application overrides cannot leave captured legacy literals.",
+        "Hash compiled semantic output, recompute authoritative contract fingerprints, compare derived tables with source contributions, and prove tamper rejection."
+      ]
+    },
+    {
+      "version": 66,
+      "date": "2026-08-06",
+      "doctrineFingerprint": "sha256:0f2152031380b70e770ca699a755676137cb0033669a582fb186fab5014c9f56",
+      "summary": "Schema property capabilities derive from descriptors, and recursive algorithms no longer duplicate private AST shapes.",
+      "migrationChecks": [
+        "Replace handwritten element or text property mirrors with ElementWith or TextWith over the final descriptor or reusable authored property map.",
+        "Keep ElementOf and TextOf for exact element or text identity; property-only plugins do not become identity handles.",
+        "Replace private recursive AST mirrors with descriptor-derived capabilities or broad nodes plus runtime narrowing for malformed input.",
+        "Prove exact aliases, prefixes, default-present values, validated JSON domains, zero unjustified production mirrors, affected package declaration builds, and generated skill parity."
+      ]
+    },
+    {
+      "version": 67,
+      "date": "2026-08-08",
+      "doctrineFingerprint": "sha256:eb8c476373d9235be1eadd749424e653d9ed59ad182d88ea0914e8e9bf6fa702",
+      "summary": "Live descendant identity is NodeKey, feature state uses key vocabulary, and optional persisted element IDs stay a separate schema capability.",
+      "migrationChecks": [
+        "Replace runtime-ID aliases and live node id or ids fields with NodeKey and key or keys vocabulary.",
+        "Resolve live identity through editor.key, coherent state.key, or active tx.key, and reverse through nodes.path without another public identity namespace.",
+        "Keep NodeKey out of serialized formats and retain optional persisted element.id ownership under ElementIdPlugin.",
+        "Prove source sweeps, affected package types and behavior, DOM and React bindings, docs, generated skills, strict Plite checks, and P2 review."
+      ]
     }
   ],
   "retiredPackages": {
@@ -577,256 +812,256 @@
   },
   "packages": {
     "ai": {
-      "appliedVersion": 17,
-      "fingerprint": "sha256:5fdf26155aaf2d1217e972ad8eb855add06791a1cdcbd036653eb21c708e4c2e",
-      "verifiedAt": "2026-07-28",
-      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
+      "appliedVersion": 50,
+      "fingerprint": "sha256:91401d3950cb43ed57d3791f5ca6dc2dfea9e21dba22ca199f22b8b7c590f17d",
+      "verifiedAt": "2026-08-03",
+      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
     },
     "basic-nodes": {
-      "appliedVersion": 17,
-      "fingerprint": "sha256:8c31d76e003f7b6eafc1d7b8dc39ed53f7db7a9dc538383d2a4f9946be69cfb6",
-      "verifiedAt": "2026-07-28",
-      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
+      "appliedVersion": 50,
+      "fingerprint": "sha256:6c55c75636a679e110bf91262dd3f4328b9589a7cde273b4e1d4ed7df29c3b92",
+      "verifiedAt": "2026-08-03",
+      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
     },
     "basic-styles": {
-      "appliedVersion": 17,
-      "fingerprint": "sha256:c72fdd1a89d036a76096ab2b3814b91e48d4ac7c040477d81316a12a93d88260",
-      "verifiedAt": "2026-07-28",
-      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
+      "appliedVersion": 50,
+      "fingerprint": "sha256:dfdd06c1018f09ab434d52995161ced8f738f4af51486c60e8d68bf99eab182d",
+      "verifiedAt": "2026-08-03",
+      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
     },
     "callout": {
-      "appliedVersion": 17,
-      "fingerprint": "sha256:2c8ef015f1186bd0335b2d3c36fbb18bfff30818b9956d9b941aae161471964a",
-      "verifiedAt": "2026-07-28",
-      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
+      "appliedVersion": 50,
+      "fingerprint": "sha256:6042fd7b43975a8c5f1d4a0ca13ed57d5b29b7db00287ba884cb3b3cc7efed8e",
+      "verifiedAt": "2026-08-03",
+      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
     },
     "code-block": {
-      "appliedVersion": 17,
-      "fingerprint": "sha256:f91fab069efa16a4c3c03dbe3a79a20e45afa6f1c2f9ac20559efa457355e4e7",
-      "verifiedAt": "2026-07-28",
-      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
+      "appliedVersion": 50,
+      "fingerprint": "sha256:98ffda519b5cf574aa594df4996ae829cbae56e197417be1e6af12c5056a06d3",
+      "verifiedAt": "2026-08-03",
+      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
     },
     "code-drawing": {
-      "appliedVersion": 17,
-      "fingerprint": "sha256:8a35bc231e4666aa8da66c911df02c4ee0d3a86509c4da09dcbae8ec00a70ecf",
-      "verifiedAt": "2026-07-28",
-      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
+      "appliedVersion": 50,
+      "fingerprint": "sha256:353ebb496b811c7bf896f3250e825f3eeaa4b446b954646b86597b5cc1a0d212",
+      "verifiedAt": "2026-08-03",
+      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
     },
     "combobox": {
-      "appliedVersion": 17,
-      "fingerprint": "sha256:0462f8d72a0828377dfa0fde9858041d49e2d282f8a37b902332af096408ac82",
-      "verifiedAt": "2026-07-28",
-      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
+      "appliedVersion": 50,
+      "fingerprint": "sha256:b102ba5036e3412d32eba609bc3725e344334f0142e15cecabf8472e5d5d7f16",
+      "verifiedAt": "2026-08-03",
+      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
     },
     "comment": {
-      "appliedVersion": 17,
-      "fingerprint": "sha256:805268dd7388a547ed3481ab7a2bbf6d4a9970949d2657bd3893c307d36d84d6",
-      "verifiedAt": "2026-07-28",
-      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
+      "appliedVersion": 50,
+      "fingerprint": "sha256:c6d452401a8e23a262095e80556d040432b0d701a1bc65e8b098fbcbfe4a325e",
+      "verifiedAt": "2026-08-03",
+      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
     },
     "csv": {
-      "appliedVersion": 17,
-      "fingerprint": "sha256:26f52ed1687eb4c734921b9027b1481665efbcfc6238b4abf5d81dc64c5f009e",
-      "verifiedAt": "2026-07-28",
-      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
+      "appliedVersion": 50,
+      "fingerprint": "sha256:90380e85798d44afd7d02a2ae4684e245e506151052bfdad494168999542c1db",
+      "verifiedAt": "2026-08-03",
+      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
     },
     "cursor": {
-      "appliedVersion": 17,
-      "fingerprint": "sha256:da28b1074db027d956d2b69971f8ab79d357e4a5e00e705f419de91125f3d2cd",
-      "verifiedAt": "2026-07-28",
-      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
+      "appliedVersion": 50,
+      "fingerprint": "sha256:fed711f58e1dbeb5ac017ec637813aab2cd9e4b82bd074f50576173737660600",
+      "verifiedAt": "2026-08-03",
+      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
     },
     "date": {
-      "appliedVersion": 17,
-      "fingerprint": "sha256:51a842375b52d74cebf213bd78c11d8b7e8c00b3cbfe7f29fbc26e3ebdfe7a13",
-      "verifiedAt": "2026-07-28",
-      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
+      "appliedVersion": 50,
+      "fingerprint": "sha256:c3024b5f72b5d248fadc4618689a7a99597c7b8b122b30d9c32f43ac0ad90c76",
+      "verifiedAt": "2026-08-03",
+      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
     },
     "diff": {
-      "appliedVersion": 17,
-      "fingerprint": "sha256:5366f3ebeab88dc1503707ac337244518dc3ef388b451f8a39957f04af9aa099",
-      "verifiedAt": "2026-07-28",
-      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
+      "appliedVersion": 50,
+      "fingerprint": "sha256:5ee56c3625b3b5c6aba7805e0935aff49e1e9999ec93c51693551c570290fef0",
+      "verifiedAt": "2026-08-03",
+      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
     },
     "dnd": {
-      "appliedVersion": 17,
-      "fingerprint": "sha256:39ce75639b68fd47a7da9ad8cb32cfac59c819b3735c8c83c74f08399559b162",
-      "verifiedAt": "2026-07-27",
-      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
+      "appliedVersion": 50,
+      "fingerprint": "sha256:d31754f0ffad1afbfb5f1a9e9f196a329e2dce922ec0410e21efb5e94bc17b2b",
+      "verifiedAt": "2026-08-03",
+      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
     },
     "docx": {
-      "appliedVersion": 17,
-      "fingerprint": "sha256:16b0960105668dd20294685083a39ca599abd58c3f0cfadb5d94667c4238e5a5",
-      "verifiedAt": "2026-07-27",
-      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
+      "appliedVersion": 50,
+      "fingerprint": "sha256:8a3024a3a2ae8f25fef7158d96b9b0fa4ad7cdc64c1a2280d0d1a5f2d2a6055b",
+      "verifiedAt": "2026-08-03",
+      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
     },
     "docx-io": {
-      "appliedVersion": 17,
-      "fingerprint": "sha256:f8997ddc886a60fc6559445669d19423079703b9ecf26dbb77c0e94b50354cdf",
-      "verifiedAt": "2026-07-27",
-      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
+      "appliedVersion": 50,
+      "fingerprint": "sha256:1ea5629b16d20b6371c60c0553b4a68a94e813f66133dc804a169ae0519a4c2e",
+      "verifiedAt": "2026-08-03",
+      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
     },
     "emoji": {
-      "appliedVersion": 17,
-      "fingerprint": "sha256:671bdb87a7988131c2350e6b3bc474bd57cd4de83df5b3095dfb5fcbb28b9543",
-      "verifiedAt": "2026-07-27",
-      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
+      "appliedVersion": 50,
+      "fingerprint": "sha256:558220e2007bbff2e55bf5b2d51ae2e485a348f0052a584593ad6ee34a2e1dc8",
+      "verifiedAt": "2026-08-03",
+      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
     },
     "excalidraw": {
-      "appliedVersion": 17,
-      "fingerprint": "sha256:a9cd2e7fa449539a92dcb627649a2854cb3f73a42435416b41c4dfef788bf163",
-      "verifiedAt": "2026-07-27",
-      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
+      "appliedVersion": 50,
+      "fingerprint": "sha256:b23923fe601251639fafe29c496baddb903a3b5101619201aa5d4a0d40d58942",
+      "verifiedAt": "2026-08-03",
+      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
     },
     "find-replace": {
-      "appliedVersion": 17,
-      "fingerprint": "sha256:8a77d766272d13eff49bb64ae5f3aa487439090dc4948eaf2155e1bf9dc9f9f2",
-      "verifiedAt": "2026-07-28",
-      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
+      "appliedVersion": 50,
+      "fingerprint": "sha256:7f5db8ddd75ee0ecb9a23fe2b8d210c6caaba1cceabc2a2e9fa8f97430b07488",
+      "verifiedAt": "2026-08-03",
+      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
     },
     "floating": {
-      "appliedVersion": 17,
-      "fingerprint": "sha256:384424236b7163d4afd05b1b0c7bf0b5150403eab4553ea38c4f4fd3c4b7d5d4",
-      "verifiedAt": "2026-07-27",
-      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
+      "appliedVersion": 50,
+      "fingerprint": "sha256:60ec940111e56c840200a8aba43034fcd00c2b74c91b491f10dd50ec62771a76",
+      "verifiedAt": "2026-08-03",
+      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
     },
     "footnote": {
-      "appliedVersion": 17,
-      "fingerprint": "sha256:84b53c29f87ea63a9c2e3e20fc5e9f846c2cd79abc184c65e73c23149e4f28b1",
-      "verifiedAt": "2026-07-28",
-      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
+      "appliedVersion": 50,
+      "fingerprint": "sha256:4a656f50c2bba222601aed3005eec3bc67109b015424158e78d79c213e028d05",
+      "verifiedAt": "2026-08-03",
+      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
     },
     "indent": {
-      "appliedVersion": 17,
-      "fingerprint": "sha256:c877d05662a458b5d4ec82bc4d74204841bfdeec9eeebc511dd3349e8a5a3a4a",
-      "verifiedAt": "2026-07-27",
-      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
+      "appliedVersion": 50,
+      "fingerprint": "sha256:154ed7510b05a4f67b7a8d1318d734422e93438186bda2acbaa1352604c8fb88",
+      "verifiedAt": "2026-08-03",
+      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
     },
     "juice": {
-      "appliedVersion": 17,
-      "fingerprint": "sha256:3d5de788ff4fb5df8cec6a7f87139691322e2888b8dbb879c92ce0332b4c8904",
-      "verifiedAt": "2026-07-27",
-      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
+      "appliedVersion": 50,
+      "fingerprint": "sha256:bf21f39893ca844b630c5661fba39c09cc71a4155e22fd2b92cafffd9d72dcd3",
+      "verifiedAt": "2026-08-03",
+      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
     },
     "layout": {
-      "appliedVersion": 17,
-      "fingerprint": "sha256:081be6e4c33fc031412cffa661c814a4316cfbe60f931f069601037f693094d3",
-      "verifiedAt": "2026-07-28",
-      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
+      "appliedVersion": 50,
+      "fingerprint": "sha256:6c7c0afdc4ecb533b665defd18125ffb6aa2a8e65ec7b14d44e1cce2bc3c14ad",
+      "verifiedAt": "2026-08-03",
+      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
     },
     "link": {
-      "appliedVersion": 17,
-      "fingerprint": "sha256:28386ced98814317741ea69e02fd0cb48acb446a0cafa738532688fe0992afcd",
-      "verifiedAt": "2026-07-28",
-      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
+      "appliedVersion": 50,
+      "fingerprint": "sha256:5befaf652ceae7538a095bc4157820b326e72e188539e8f33e0f80bd1c17ee55",
+      "verifiedAt": "2026-08-03",
+      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
     },
     "list": {
-      "appliedVersion": 17,
-      "fingerprint": "sha256:bafa0444d493179e3e00efd96b14212275185e871052e02d0eaf40191fd1a7c5",
-      "verifiedAt": "2026-07-28",
-      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
+      "appliedVersion": 50,
+      "fingerprint": "sha256:dd2fa47496eb6c12dccbe3247297be70e154dd6f54ce0578eaf23257916be965",
+      "verifiedAt": "2026-08-03",
+      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
     },
     "list-classic": {
-      "appliedVersion": 17,
-      "fingerprint": "sha256:34d8d9bb337dfe416e31a95158fdb6f109e7ae3d829ac3afd655d1ad0bfa2439",
-      "verifiedAt": "2026-07-28",
-      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
+      "appliedVersion": 50,
+      "fingerprint": "sha256:50f984404669689124afa026b2c562d8f5832a510a0c6d2707dd8392cd1d05f6",
+      "verifiedAt": "2026-08-03",
+      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
     },
     "markdown": {
-      "appliedVersion": 17,
-      "fingerprint": "sha256:17bc1e41b0d3394a8b4619f6b86bfa84ac2aa7d3d5bf8760411e2c65046f3203",
-      "verifiedAt": "2026-07-28",
-      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
+      "appliedVersion": 50,
+      "fingerprint": "sha256:1e5fe604a016c1a281b17e947b7acb8f08ed440bde6da7946d7e2135220d4029",
+      "verifiedAt": "2026-08-03",
+      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
     },
     "math": {
-      "appliedVersion": 17,
-      "fingerprint": "sha256:938d92d9c495ad614d569f12c6a93260ed7c107fb3a9ab34476bac94ad44d9df",
-      "verifiedAt": "2026-07-27",
-      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
+      "appliedVersion": 50,
+      "fingerprint": "sha256:4bced6fe18625f4568f0132549156b555ff01bca34fca489c5bf41044d0c7a7d",
+      "verifiedAt": "2026-08-03",
+      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
     },
     "media": {
-      "appliedVersion": 17,
-      "fingerprint": "sha256:cb5fbc23db4e28d04c1de5a59742e2bc279615d73fa66014f0c2d481d95c0564",
-      "verifiedAt": "2026-07-28",
-      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
+      "appliedVersion": 50,
+      "fingerprint": "sha256:3ea271d8be68f947b8c62c642410315ccd376d6df9a1ef58c0b0924e6a5bbadd",
+      "verifiedAt": "2026-08-03",
+      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
     },
     "mention": {
-      "appliedVersion": 17,
-      "fingerprint": "sha256:90ee0df32bb14f92afa57cd75d798ac271ac71b3cfb5726531cf2a1069bdd8b9",
-      "verifiedAt": "2026-07-27",
-      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
+      "appliedVersion": 50,
+      "fingerprint": "sha256:eaa75cdc3b99809ad9c47c3157c02cdbc4cb6625fcdb77f1970c88190a523e53",
+      "verifiedAt": "2026-08-03",
+      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
     },
     "plate": {
-      "appliedVersion": 17,
-      "fingerprint": "sha256:737c67959a4197b1e2dc1a89ea2d6d0941a0e6009a4c63e3a1fbda514adf49d9",
-      "verifiedAt": "2026-07-27",
-      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
+      "appliedVersion": 50,
+      "fingerprint": "sha256:243f6d714388ec6f55ebf4fe325292024d4c95b7994bf384adca20ad3a920baf",
+      "verifiedAt": "2026-08-03",
+      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
     },
     "resizable": {
-      "appliedVersion": 17,
-      "fingerprint": "sha256:dbe763dd988cbc9fdcb249f0c384402bb993c76a1a06acfe6a2dec94cfd18615",
-      "verifiedAt": "2026-07-27",
-      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
+      "appliedVersion": 50,
+      "fingerprint": "sha256:c87b8624a4a9884cc4fda394e13402e224f96302b7af0524e2328f78d9499d59",
+      "verifiedAt": "2026-08-03",
+      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
     },
     "selection": {
-      "appliedVersion": 17,
-      "fingerprint": "sha256:403839df8202d5d61e9b89309b240180d31947737a805bcd10c1f8a1a2c8ff0c",
-      "verifiedAt": "2026-07-28",
-      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
+      "appliedVersion": 50,
+      "fingerprint": "sha256:efbea8ffbc45f5cf740289ff386a0bdc8e5a4e2f68552982212b96c464f75168",
+      "verifiedAt": "2026-08-03",
+      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
     },
     "slash-command": {
-      "appliedVersion": 17,
-      "fingerprint": "sha256:d54532f3e718a2e5fee206ad900992355117cb7f5d471532e3709d88e6276ea1",
-      "verifiedAt": "2026-07-28",
-      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
+      "appliedVersion": 50,
+      "fingerprint": "sha256:27f4fb30c9847d57b78227fc44c01b873ae42cc1948428f272d24289b15767f5",
+      "verifiedAt": "2026-08-03",
+      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
     },
     "suggestion": {
-      "appliedVersion": 17,
-      "fingerprint": "sha256:496a102eecc437c5be89ff83beddc3c11cdbf2a6381bc73bdf933813e330e447",
-      "verifiedAt": "2026-07-28",
-      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
+      "appliedVersion": 50,
+      "fingerprint": "sha256:591170c5e3fcc94c9103b56f0d70c665a027cb2fd65b32f41deb4a6eb1d281b7",
+      "verifiedAt": "2026-08-03",
+      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
     },
     "tabbable": {
-      "appliedVersion": 17,
-      "fingerprint": "sha256:e2f389c1c5c093f7b255796b188c76ae6f3f031482a2a9c9f4df61275a453086",
-      "verifiedAt": "2026-07-28",
-      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
+      "appliedVersion": 50,
+      "fingerprint": "sha256:59b704c349112e93fee84fca59d41c6b633fc75d3f6064a4f044a87cdf85aab3",
+      "verifiedAt": "2026-08-03",
+      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
     },
     "table": {
-      "appliedVersion": 17,
-      "fingerprint": "sha256:cd0063d1b0bcada4c549ebca6722644e62754e73487cef0dfe370142a913a6e8",
-      "verifiedAt": "2026-07-28",
-      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
+      "appliedVersion": 50,
+      "fingerprint": "sha256:7cea3d00f56c3e6d8505a3399c602042bf9c1954015f59515b98d04085534f34",
+      "verifiedAt": "2026-08-03",
+      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
     },
     "tag": {
-      "appliedVersion": 17,
-      "fingerprint": "sha256:b36cb76d2fb7aa34c3dd92e1fa3e3befb9d5dae73910e5372a19c3f25d90725f",
-      "verifiedAt": "2026-07-28",
-      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
+      "appliedVersion": 50,
+      "fingerprint": "sha256:63b96a64fe709687d58c31c7b9cc7d7f190da3e20e804167e3142abee86d4ec1",
+      "verifiedAt": "2026-08-03",
+      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
     },
     "test-utils": {
-      "appliedVersion": 17,
-      "fingerprint": "sha256:4ab82a50f1e70245a4c6a8a99c8c2c942e291628544b8eb42584f1ba0753907a",
-      "verifiedAt": "2026-07-28",
-      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
+      "appliedVersion": 50,
+      "fingerprint": "sha256:bf147962d397aeefcb41c3fe4057b7426a5cead0142f954640f893eefcb41c87",
+      "verifiedAt": "2026-08-03",
+      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
     },
     "toc": {
-      "appliedVersion": 17,
-      "fingerprint": "sha256:33008bee7ff64e7748c1415ad42729c79f899d1bf5ac4ec341bffb20c9cff639",
-      "verifiedAt": "2026-07-28",
-      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
+      "appliedVersion": 50,
+      "fingerprint": "sha256:b4393be2d6fa0a3a2402eb1f14d300573573716f60b29ce5f1a41d77826a1ff8",
+      "verifiedAt": "2026-08-03",
+      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
     },
     "toggle": {
-      "appliedVersion": 17,
-      "fingerprint": "sha256:9dd05b9630746e0c420d02b0880255df14a2f2102608c5713ccf5cdbda5913f9",
-      "verifiedAt": "2026-07-28",
-      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
+      "appliedVersion": 50,
+      "fingerprint": "sha256:824a317316fd2197d54e750f48a7acac0f5d7a886d05cf8079e3a990e6f6c854",
+      "verifiedAt": "2026-08-03",
+      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
     },
     "yjs": {
-      "appliedVersion": 17,
-      "fingerprint": "sha256:52133cd9c9ddfc2c2ca129357974d6b369872f304d53048f1bf22bfc5d5c9ad8",
-      "verifiedAt": "2026-07-28",
-      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
+      "appliedVersion": 50,
+      "fingerprint": "sha256:0cd1209d3165eead5d0907af953187db183d95a8e93688fb6defabfca04c77e8",
+      "verifiedAt": "2026-08-03",
+      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
     }
   }
 }

@@ -55,28 +55,30 @@ There is no dedicated trailing-block UI. The plugin is a normalizer.
 Use `type` when the trailing block should be something other than the default paragraph.
 
 ```tsx
-import { KEYS, TrailingBlockPlugin } from 'platejs';
+import {
+  TrailingBlockPlugin,
+} from 'platejs';
 
 export const trailingBlockPlugin = TrailingBlockPlugin.configure({
   initialState: {
-    type: KEYS.p,
+    type: 'paragraph',
   },
 });
 ```
 
-The default is already `editor.plugin(KEYS.p).type`, so most editors can use the plugin directly.
+The default is already `editor.plugin(PLUGINS.paragraph).schema.type`, so most editors can use the plugin directly.
 
 ## Match The Previous Block
 
 Use `match` to limit insertion based on the current last block.
 
 ```tsx
-import { KEYS, TrailingBlockPlugin } from 'platejs';
+import { TrailingBlockPlugin } from 'platejs';
 
 export const trailingBlockPlugin = TrailingBlockPlugin.configure({
   initialState: {
-    match: { type: KEYS.h1 },
-    type: KEYS.p,
+    match: { type: 'h1' },
+    type: 'paragraph',
   },
 });
 ```
@@ -98,7 +100,7 @@ type can trigger insertion.
 TrailingBlockPlugin.configure({
   initialState: {
     level: 1,
-    type: 'p',
+    type: 'paragraph',
   },
 });
 ```

@@ -62,14 +62,14 @@ describe('BaseBlockquotePlugin', () => {
 
     expect(
       editor.read.schema.isElementTypeInGroup(
-        editor.plugin(BaseBlockquotePlugin).schema.element.type,
+        editor.plugin(BaseBlockquotePlugin).schema.type,
         'block'
       )
     ).toBe(true);
     expect(
       editor.read.schema.allowsElementType(
-        editor.plugin(BaseBlockquotePlugin).schema.element.type,
-        editor.plugin(BaseParagraphPlugin).schema.element.type
+        editor.plugin(BaseBlockquotePlugin).schema.type,
+        editor.plugin(BaseParagraphPlugin).schema.type
       )
     ).toBe(true);
     expect(editor.read.schema.create(BaseBlockquotePlugin)).toEqual({
@@ -77,7 +77,10 @@ describe('BaseBlockquotePlugin', () => {
       type: 'blockquote',
     });
 
-    editor.update.blockquote.toggle();
+    editor.update.blocks.toggle(
+      editor.plugin(BaseBlockquotePlugin).schema.type,
+      { wrap: true }
+    );
 
     expect(editor.read.children()).toMatchObject([
       {

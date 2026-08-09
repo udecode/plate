@@ -118,8 +118,11 @@ Copy:
 - generic package code can use `editor.plugin(Plugin).api`, `.read`, `.update`,
   and `.store`;
 - optional generic integrations check `.installed` before capability or
-  descriptor access; uninstalled `.type`/`.key` resolve their conventional
-  identity directly;
+  descriptor access; exact element and primary-mark portals expose
+  `schema.type` or `schema.key`, while missing and wrong-kind access throws;
+- behavior and aggregate-property portals omit `schema`, consumer portals do
+  not expose `schema.properties`, and name-only portals keep non-optional
+  identity getters for package-decoupled callers;
 - copied registry UI stays generic and never imports a host editor type;
 - scoped portal methods use direct verbs instead of repeating the plugin noun.
 
@@ -138,6 +141,9 @@ Do not copy a current or historical file merely because it compiles.
 
 Reject:
 
+- private plugin factory results and intermediate `.extend()` / `.configure()`
+  constants whose production references only feed one exported chain or type
+  queries, regardless of the constant name;
 - private code defaulted into `internal/`;
 - one file per helper, query, transform, subcomponent, hook, or API method;
 - explicit plugin export types or casts;

@@ -83,7 +83,7 @@ Work Checklist:
 - [ ] Work phases/pass rows below are updated with evidence.
 - [ ] Workspace authority recorded: verification runs in the repo/package/app/
       route/tool that owns the changed behavior.
-- [ ] Review/autoreview target selected for non-trivial implementation work, or
+- [ ] Review/P2 autoreview target selected for non-trivial implementation work, or
       marked N/A with reason.
 - [ ] High-risk note recorded for public API, runtime, package-boundary,
       browser behavior, agent-action, or command-contract changes, or marked
@@ -107,7 +107,7 @@ Completion Gates:
 | CI-controlled template output changed | pending | Restore generated template output or record why it is intentionally kept | pending |
 | Package behavior or public API changed | pending | Add a changeset or record why no changeset applies | pending |
 | High-risk mini gate | pending | For public API/runtime/package-boundary/browser/agent-action/command-contract changes, record realistic failure mode, proof plan, and why the chosen boundary is right; otherwise N/A | pending |
-| Autoreview for non-trivial implementation changes | pending | Load `.agents/skills/autoreview/SKILL.md`; use dirty local `--mode local`, branch/PR `--mode branch --base <base>`, or committed slice `--mode commit --commit <ref>` until no accepted/actionable findings, or record N/A for docs-only/planning-only/trivial/no local patch | pending |
+| P2 autoreview for non-trivial implementation changes | pending | Load `.agents/skills/autoreview/SKILL.md`; pass `--max-priority P2` with dirty local `--mode local`, branch/PR `--mode branch --base <base>`, or committed slice `--mode commit --commit <ref>` until no accepted/actionable findings; use P3 only when explicitly requested, or record N/A for docs-only/planning-only/trivial/no local patch | pending |
 | PR create or update | pending | Run `check` before PR work | pending |
 | Final lint | pending | Run `pnpm lint:fix` or scoped equivalent | pending |
 | Output budget discipline | pending | Verify no unbounded high-volume command output was streamed, or record the accidental output and recovery | pending |

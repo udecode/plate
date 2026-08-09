@@ -27,7 +27,7 @@ import {
   updateNodePropertiesChange,
 } from '../src/core/change/root-change';
 import {
-  getPreparedDocumentRuntimeId,
+  getPreparedDocumentNodeKey,
   getPreparedDocumentSlice,
   hasMaterializedDocumentSliceTokens,
   type JsonEditorValue,
@@ -40,7 +40,7 @@ import {
   getSnapshotIndexMappingStats,
   mapSnapshotIndexThroughChange,
 } from '../src/core/snapshot-index';
-import { getRuntimeIdForNode, seedRuntimeIds } from '../src/utils/runtime-ids';
+import { getNodeKeyForNode, seedNodeKeys } from '../src/utils/node-keys';
 import {
   createTestDocumentChange,
   getTestDocumentRootChange,
@@ -848,7 +848,7 @@ describe('JSON document change algebra', () => {
     });
   });
 
-  it('maps structural runtime identities lazily without changing snapshot queries', () => {
+  it('maps structural node keys lazily without changing snapshot queries', () => {
     const owner = {} as Editor;
     const before = DocumentIndex.fromValue(
       asJsonNodes([
@@ -878,14 +878,14 @@ describe('JSON document change algebra', () => {
       sourceIndex,
       owner
     );
-    const firstRuntimeId = sourceIndex.idAt([0]);
-    const lastRuntimeId = sourceIndex.idAt([4]);
-    const removedRuntimeId = sourceIndex.idAt([1]);
+    const firstNodeKey = sourceIndex.keyAt([0]);
+    const lastNodeKey = sourceIndex.keyAt([4]);
+    const removedNodeKey = sourceIndex.keyAt([1]);
 
-    assert.equal(mapped.idAt([0]), firstRuntimeId);
-    assert.equal(mapped.idAt([3]), lastRuntimeId);
-    assert.deepEqual(mapped.pathOf(lastRuntimeId!), [3]);
-    assert.equal(mapped.pathOf(removedRuntimeId!), null);
+    assert.equal(mapped.keyAt([0]), firstNodeKey);
+    assert.equal(mapped.keyAt([3]), lastNodeKey);
+    assert.deepEqual(mapped.pathOf(lastNodeKey!), [3]);
+    assert.equal(mapped.pathOf(removedNodeKey!), null);
     assert.equal(mapped.entries().length, 8);
   });
 
@@ -905,7 +905,7 @@ describe('JSON document change algebra', () => {
     };
     const previousProfiler = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;
 
-    seedRuntimeIds(children, owner);
+    seedNodeKeys(children, owner);
 
     try {
       profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
@@ -915,10 +915,10 @@ describe('JSON document change algebra', () => {
       };
 
       const index = buildSnapshotIndex(owner, children);
-      const runtimeId = index.idAt([5000, 0]);
+      const nodeKey = index.keyAt([5000, 0]);
 
-      assert(runtimeId);
-      assert.deepEqual(index.pathOf(runtimeId), [5000, 0]);
+      assert(nodeKey);
+      assert.deepEqual(index.pathOf(nodeKey), [5000, 0]);
       assert.equal(
         profiledIds.filter((id) => id === 'runtime-index-full-build').length,
         0
@@ -950,7 +950,7 @@ describe('JSON document change algebra', () => {
         document.value as unknown as readonly Descendant[]
       );
 
-      assert(index.idAt([...firstPath]));
+      assert(index.keyAt([...firstPath]));
 
       return index.entries();
     };
@@ -967,13 +967,13 @@ describe('JSON document change algebra', () => {
       insert: slice,
     });
     const after = change.apply(before);
-    const blockRuntimeId = getPreparedDocumentRuntimeId(slice, [0])!;
-    const textRuntimeId = getPreparedDocumentRuntimeId(slice, [0, 0])!;
-    const inspect = (query: 'idAt' | 'pathOf') => {
+    const blockNodeKey = getPreparedDocumentNodeKey(slice, [0])!;
+    const textNodeKey = getPreparedDocumentNodeKey(slice, [0, 0])!;
+    const inspect = (query: 'keyAt' | 'pathOf') => {
       const owner = {} as Editor;
       const sourceChildren = before.value as unknown as readonly Descendant[];
 
-      seedRuntimeIds(sourceChildren, owner);
+      seedNodeKeys(sourceChildren, owner);
       const sourceIndex = buildSnapshotIndex(owner, sourceChildren);
 
       assert.equal(hasMaterializedDocumentSliceTokens(slice), false);
@@ -990,37 +990,34 @@ describe('JSON document change algebra', () => {
       );
 
       assert.equal(hasMaterializedDocumentSliceTokens(slice), false);
-      assert.equal(getRuntimeIdForNode(after.node([1]), owner), null);
-      assert.equal(getRuntimeIdForNode(after.node([1, 0]), owner), null);
-      assert.match(blockRuntimeId, /^p\d+$/);
-      assert.match(textRuntimeId, /^p\d+$/);
-      if (query === 'idAt') {
-        assert.equal(mapped.idAt([1]), blockRuntimeId);
-        assert.equal(mapped.idAt([1, 0]), textRuntimeId);
-        assert.deepEqual(mapped.pathOf(blockRuntimeId), [1]);
-        assert.deepEqual(mapped.pathOf(textRuntimeId), [1, 0]);
+      assert.equal(getNodeKeyForNode(after.node([1]), owner), null);
+      assert.equal(getNodeKeyForNode(after.node([1, 0]), owner), null);
+      assert.match(blockNodeKey, /^p\d+$/);
+      assert.match(textNodeKey, /^p\d+$/);
+      if (query === 'keyAt') {
+        assert.equal(mapped.keyAt([1]), blockNodeKey);
+        assert.equal(mapped.keyAt([1, 0]), textNodeKey);
+        assert.deepEqual(mapped.pathOf(blockNodeKey), [1]);
+        assert.deepEqual(mapped.pathOf(textNodeKey), [1, 0]);
       } else {
-        assert.deepEqual(mapped.pathOf(textRuntimeId), [1, 0]);
-        assert.deepEqual(mapped.pathOf(blockRuntimeId), [1]);
-        assert.equal(mapped.idAt([1, 0]), textRuntimeId);
-        assert.equal(mapped.idAt([1]), blockRuntimeId);
+        assert.deepEqual(mapped.pathOf(textNodeKey), [1, 0]);
+        assert.deepEqual(mapped.pathOf(blockNodeKey), [1]);
+        assert.equal(mapped.keyAt([1, 0]), textNodeKey);
+        assert.equal(mapped.keyAt([1]), blockNodeKey);
       }
-      assert.equal(getRuntimeIdForNode(after.node([1]), owner), blockRuntimeId);
-      assert.equal(
-        getRuntimeIdForNode(after.node([1, 0]), owner),
-        textRuntimeId
-      );
+      assert.equal(getNodeKeyForNode(after.node([1]), owner), blockNodeKey);
+      assert.equal(getNodeKeyForNode(after.node([1, 0]), owner), textNodeKey);
       assert.equal(hasMaterializedDocumentSliceTokens(slice), false);
 
-      return [blockRuntimeId, textRuntimeId];
+      return [blockNodeKey, textNodeKey];
     };
 
-    assert.deepEqual(inspect('idAt'), inspect('pathOf'));
+    assert.deepEqual(inspect('keyAt'), inspect('pathOf'));
 
     const draftOwner = {} as Editor;
     const sourceChildren = before.value as unknown as readonly Descendant[];
 
-    seedRuntimeIds(sourceChildren, draftOwner);
+    seedNodeKeys(sourceChildren, draftOwner);
     const draftIndex = mapSnapshotIndexThroughChange(
       before,
       after,
@@ -1032,10 +1029,10 @@ describe('JSON document change algebra', () => {
       false
     );
 
-    assert.equal(draftIndex.idAt([1]), blockRuntimeId);
-    assert.deepEqual(draftIndex.pathOf(textRuntimeId), [1, 0]);
-    assert.equal(getRuntimeIdForNode(after.node([1]), draftOwner), null);
-    assert.equal(getRuntimeIdForNode(after.node([1, 0]), draftOwner), null);
+    assert.equal(draftIndex.keyAt([1]), blockNodeKey);
+    assert.deepEqual(draftIndex.pathOf(textNodeKey), [1, 0]);
+    assert.equal(getNodeKeyForNode(after.node([1]), draftOwner), null);
+    assert.equal(getNodeKeyForNode(after.node([1, 0]), draftOwner), null);
   });
 
   it('maps unqueried prepared identities through later moves and retained paths', () => {
@@ -1043,7 +1040,7 @@ describe('JSON document change algebra', () => {
     const before = DocumentIndex.fromValue(asJsonNodes([paragraph('base')]));
     const sourceChildren = before.value as unknown as readonly Descendant[];
 
-    seedRuntimeIds(sourceChildren, owner);
+    seedNodeKeys(sourceChildren, owner);
     const sourceIndex = buildSnapshotIndex(owner, sourceChildren);
     const inserted = asJsonNodes([paragraph('left'), paragraph('right')]);
     const slice = PreparedTokenSlice.fromPreparedNodes(inserted);
@@ -1070,19 +1067,19 @@ describe('JSON document change algebra', () => {
       insertedIndex,
       owner
     );
-    const leftId = getPreparedDocumentRuntimeId(slice, [0])!;
-    const leftTextId = getPreparedDocumentRuntimeId(slice, [0, 0])!;
-    const rightId = getPreparedDocumentRuntimeId(slice, [1])!;
-    const rightTextId = getPreparedDocumentRuntimeId(slice, [1, 0])!;
+    const leftKey = getPreparedDocumentNodeKey(slice, [0])!;
+    const leftTextKey = getPreparedDocumentNodeKey(slice, [0, 0])!;
+    const rightKey = getPreparedDocumentNodeKey(slice, [1])!;
+    const rightTextKey = getPreparedDocumentNodeKey(slice, [1, 0])!;
 
-    assert.equal(movedIndex.idAt([0]), rightId);
-    assert.equal(movedIndex.idAt([0, 0]), rightTextId);
-    assert.deepEqual(movedIndex.pathOf(leftId), [2]);
-    assert.deepEqual(movedIndex.pathOf(leftTextId), [2, 0]);
-    assert.equal(getRuntimeIdForNode(movedDocument.node([0]), owner), rightId);
+    assert.equal(movedIndex.keyAt([0]), rightKey);
+    assert.equal(movedIndex.keyAt([0, 0]), rightTextKey);
+    assert.deepEqual(movedIndex.pathOf(leftKey), [2]);
+    assert.deepEqual(movedIndex.pathOf(leftTextKey), [2, 0]);
+    assert.equal(getNodeKeyForNode(movedDocument.node([0]), owner), rightKey);
     assert.equal(
-      getRuntimeIdForNode(movedDocument.node([0, 0]), owner),
-      rightTextId
+      getNodeKeyForNode(movedDocument.node([0, 0]), owner),
+      rightTextKey
     );
   });
 
@@ -1110,48 +1107,48 @@ describe('JSON document change algebra', () => {
         owner
       );
       const changedPaths = [[1], [1, 0], [2], [2, 0]] as const;
-      const changedRuntimeIds = changedPaths.map((path) =>
-        getRuntimeIdForNode(after.node(path), owner)
+      const changedNodeKeys = changedPaths.map((path) =>
+        getNodeKeyForNode(after.node(path), owner)
       );
 
       assert.equal(
-        changedRuntimeIds.every((runtimeId) => runtimeId !== null),
+        changedNodeKeys.every((nodeKey) => nodeKey !== null),
         true
       );
 
       if (order === 'entries') {
         mapped.entries();
-        for (const runtimeId of changedRuntimeIds) {
-          mapped.pathOf(runtimeId!);
+        for (const nodeKey of changedNodeKeys) {
+          mapped.pathOf(nodeKey!);
         }
       } else if (order === 'forward') {
-        for (const path of changedPaths) mapped.idAt([...path]);
-        for (const runtimeId of changedRuntimeIds.toReversed()) {
-          mapped.pathOf(runtimeId!);
+        for (const path of changedPaths) mapped.keyAt([...path]);
+        for (const nodeKey of changedNodeKeys.toReversed()) {
+          mapped.pathOf(nodeKey!);
         }
       } else if (order === 'reverse') {
-        for (const runtimeId of changedRuntimeIds.toReversed()) {
-          mapped.pathOf(runtimeId!);
+        for (const nodeKey of changedNodeKeys.toReversed()) {
+          mapped.pathOf(nodeKey!);
         }
         for (const path of changedPaths.toReversed()) {
-          mapped.idAt([...path]);
+          mapped.keyAt([...path]);
         }
       } else {
         for (let index = 0; index < changedPaths.length; index += 1) {
-          mapped.idAt([...changedPaths[index]!]);
-          mapped.pathOf(changedRuntimeIds.at(-index - 1)!);
+          mapped.keyAt([...changedPaths[index]!]);
+          mapped.pathOf(changedNodeKeys.at(-index - 1)!);
         }
       }
 
       const entries = mapped.entries();
-      const runtimeIds = entries.map(([runtimeId]) => runtimeId);
+      const nodeKeys = entries.map(([nodeKey]) => nodeKey);
       const paths = entries.map(([, path]) => path.join('.'));
 
-      assert.equal(new Set(runtimeIds).size, entries.length);
+      assert.equal(new Set(nodeKeys).size, entries.length);
       assert.equal(new Set(paths).size, entries.length);
-      entries.forEach(([runtimeId, path]) => {
-        assert.equal(mapped.idAt([...path]), runtimeId);
-        assert.deepEqual(mapped.pathOf(runtimeId), path);
+      entries.forEach(([nodeKey, path]) => {
+        assert.equal(mapped.keyAt([...path]), nodeKey);
+        assert.deepEqual(mapped.pathOf(nodeKey), path);
       });
 
       return entries;
@@ -1164,7 +1161,7 @@ describe('JSON document change algebra', () => {
     assert.deepEqual(inspect('mixed'), canonical);
   });
 
-  it('assigns changed-window runtime ids before mapped snapshot reads', () => {
+  it('assigns changed-window node keys before mapped snapshot reads', () => {
     const owner = {} as Editor;
     const before = DocumentIndex.fromValue(asJsonNodes([paragraph('a')]));
     const sourceIndex = buildSnapshotIndex(
@@ -1193,20 +1190,20 @@ describe('JSON document change algebra', () => {
       after.node([2, 0]),
     ];
     const beforeReads = changedNodes.map((node) =>
-      getRuntimeIdForNode(node, owner)
+      getNodeKeyForNode(node, owner)
     );
 
     assert.equal(
-      beforeReads.every((runtimeId) => runtimeId !== null),
+      beforeReads.every((nodeKey) => nodeKey !== null),
       true
     );
 
-    mapped.idAt([2, 0]);
-    mapped.pathOf(sourceIndex.idAt([0])!);
+    mapped.keyAt([2, 0]);
+    mapped.pathOf(sourceIndex.keyAt([0])!);
     mapped.entries();
 
     assert.deepEqual(
-      changedNodes.map((node) => getRuntimeIdForNode(node, owner)),
+      changedNodes.map((node) => getNodeKeyForNode(node, owner)),
       beforeReads
     );
   });
@@ -1227,9 +1224,9 @@ describe('JSON document change algebra', () => {
       owner,
       before.value as unknown as readonly Element[]
     );
-    const targetParentId = sourceIndex.idAt([0]);
-    const sourceParentId = sourceIndex.idAt([1]);
-    const movedId = sourceIndex.idAt([1, 0]);
+    const targetParentId = sourceIndex.keyAt([0]);
+    const sourceParentId = sourceIndex.keyAt([1]);
+    const movedId = sourceIndex.keyAt([1, 0]);
     const change = moveNodeChange(before, [1, 0], [0, 1]);
     const after = change.apply(before);
     const mapped = mapSnapshotIndexThroughChange(
@@ -1240,9 +1237,9 @@ describe('JSON document change algebra', () => {
       owner
     );
 
-    assert.equal(mapped.idAt([0]), targetParentId);
-    assert.equal(mapped.idAt([1]), sourceParentId);
-    assert.equal(mapped.idAt([0, 1]), movedId);
+    assert.equal(mapped.keyAt([0]), targetParentId);
+    assert.equal(mapped.keyAt([1]), sourceParentId);
+    assert.equal(mapped.keyAt([0, 1]), movedId);
     assert.deepEqual(mapped.pathOf(targetParentId!), [0]);
     assert.deepEqual(mapped.pathOf(sourceParentId!), [1]);
     assert.deepEqual(mapped.pathOf(movedId!), [0, 1]);
@@ -1275,8 +1272,8 @@ describe('JSON document change algebra', () => {
       (after.value[1] as { children: readonly unknown[] }).children[0],
       (before.value[0] as { children: readonly unknown[] }).children[0]
     );
-    assert.notEqual(mapped.idAt([0]), mapped.idAt([1]));
-    assert.notEqual(mapped.idAt([0, 0]), mapped.idAt([1, 0]));
+    assert.notEqual(mapped.keyAt([0]), mapped.keyAt([1]));
+    assert.notEqual(mapped.keyAt([0, 0]), mapped.keyAt([1, 0]));
   });
 
   it('keeps lazy index provenance sequential across text and structural changes', () => {
@@ -1286,8 +1283,8 @@ describe('JSON document change algebra', () => {
       owner,
       before.value as unknown as readonly Element[]
     );
-    const blockId = sourceIndex.idAt([0]);
-    const textId = sourceIndex.idAt([0, 0]);
+    const blockId = sourceIndex.keyAt([0]);
+    const textId = sourceIndex.keyAt([0, 0]);
     const textChange = insertTextChange(before, [0, 0], 1, '!');
     const afterText = textChange.apply(before);
     const textIndex = mapSnapshotIndexThroughChange(
@@ -1311,10 +1308,10 @@ describe('JSON document change algebra', () => {
       owner
     );
 
-    assert.equal(structuralIndex.idAt([0]), blockId);
-    assert.equal(structuralIndex.idAt([0, 0]), textId);
-    assert(structuralIndex.idAt([1]));
-    assert(structuralIndex.idAt([1, 0]));
+    assert.equal(structuralIndex.keyAt([0]), blockId);
+    assert.equal(structuralIndex.keyAt([0, 0]), textId);
+    assert(structuralIndex.keyAt([1]));
+    assert(structuralIndex.keyAt([1, 0]));
   });
 
   it('coalesces path-stable provenance without composing token changes', () => {
@@ -1328,7 +1325,7 @@ describe('JSON document change algebra', () => {
       owner,
       document.value as unknown as readonly Element[]
     );
-    const retainedRuntimeId = sourceIndex.idAt([64]);
+    const retainedNodeKey = sourceIndex.keyAt([64]);
     const removal = replaceChildrenChange(document, [], 0, 1, []);
     let next = removal.apply(document);
     let index = mapSnapshotIndexThroughChange(
@@ -1360,7 +1357,7 @@ describe('JSON document change algebra', () => {
     assert.equal(stats.mappedChanges, 64);
     assert.equal(stats.segments, 2);
     assert.equal(stats.retainedDocuments, 3);
-    assert.deepEqual(index.pathOf(retainedRuntimeId!), [63]);
+    assert.deepEqual(index.pathOf(retainedNodeKey!), [63]);
 
     const insertion = insertNodeChange(
       document,
@@ -1376,7 +1373,7 @@ describe('JSON document change algebra', () => {
       owner
     );
 
-    assert.deepEqual(index.pathOf(retainedRuntimeId!), [64]);
+    assert.deepEqual(index.pathOf(retainedNodeKey!), [64]);
   });
 
   it('bounds 1,000 lazy structural mappings and releases documents on materialization', () => {
@@ -1390,15 +1387,15 @@ describe('JSON document change algebra', () => {
       owner,
       document.value as unknown as readonly Element[]
     );
-    const retainedRuntimeId = sourceIndex.idAt([1000]);
+    const retainedNodeKey = sourceIndex.keyAt([1000]);
     let basePathQueries = 0;
     let index: SnapshotIndex = Object.freeze({
       entries: sourceIndex.entries,
-      idAt: sourceIndex.idAt,
-      pathOf: (runtimeId) => {
+      keyAt: sourceIndex.keyAt,
+      pathOf: (nodeKey) => {
         basePathQueries += 1;
 
-        return sourceIndex.pathOf(runtimeId);
+        return sourceIndex.pathOf(nodeKey);
       },
     });
     const startedAt = performance.now();
@@ -1424,7 +1421,7 @@ describe('JSON document change algebra', () => {
     assert.equal(lazyStats.mappedChanges, 1000);
     assert.ok(lazyStats.segments <= 10);
     assert.ok(lazyStats.retainedDocuments <= 20);
-    assert.deepEqual(index.pathOf(retainedRuntimeId!), [0]);
+    assert.deepEqual(index.pathOf(retainedNodeKey!), [0]);
     assert.equal(basePathQueries, 0);
     assert.equal(index.entries().length, 2);
     assert.deepEqual(getSnapshotIndexMappingStats(index), {
@@ -1434,8 +1431,8 @@ describe('JSON document change algebra', () => {
       retainedTopLevelReferenceBytes: 0,
       segments: 0,
     });
-    assert.equal(index.idAt([0]), retainedRuntimeId);
-    assert.deepEqual(index.pathOf(retainedRuntimeId!), [0]);
+    assert.equal(index.keyAt([0]), retainedNodeKey);
+    assert.deepEqual(index.pathOf(retainedNodeKey!), [0]);
   });
 
   it('bounds retained wide-document mapping storage by binary segment count', {
@@ -1510,7 +1507,7 @@ describe('JSON document change algebra', () => {
     );
   });
 
-  it('cuts every removed runtime identity across an unrelated child replacement', () => {
+  it('cuts every removed node key across an unrelated child replacement', () => {
     const owner = {} as Editor;
     const before = DocumentIndex.fromValue(
       asJsonNodes([paragraph('b'), paragraph('c'), paragraph('d')])
@@ -1519,7 +1516,7 @@ describe('JSON document change algebra', () => {
       owner,
       before.value as unknown as readonly Element[]
     );
-    const removedIds = sourceIndex.entries().map(([runtimeId]) => runtimeId);
+    const removedIds = sourceIndex.entries().map(([nodeKey]) => nodeKey);
     const change = replaceChildrenChange(
       before,
       [],
@@ -1536,8 +1533,8 @@ describe('JSON document change algebra', () => {
       owner
     );
 
-    for (const runtimeId of removedIds) {
-      assert.equal(mapped.pathOf(runtimeId), null);
+    for (const nodeKey of removedIds) {
+      assert.equal(mapped.pathOf(nodeKey), null);
     }
   });
 

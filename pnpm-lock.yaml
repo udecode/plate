@@ -766,6 +766,9 @@ importers:
       '@tailwindcss/cli':
         specifier: 4.1.8
         version: 4.1.8
+      '@types/mdast':
+        specifier: ^4.0.4
+        version: 4.0.4
       '@types/react-syntax-highlighter':
         specifier: 15.5.13
         version: 15.5.13
@@ -877,6 +880,9 @@ importers:
       '@platejs/suggestion':
         specifier: workspace:^
         version: link:../suggestion
+      '@platejs/table':
+        specifier: workspace:^
+        version: link:../table
       '@platejs/utils':
         specifier: workspace:^
         version: link:../utils

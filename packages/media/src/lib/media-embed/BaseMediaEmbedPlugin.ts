@@ -1,6 +1,6 @@
 import { type DefinitionOf, defineBasePlugin } from '@platejs/core';
-import { property, schema } from '@platejs/plite';
-import { KEYS, NODES } from '@platejs/utils';
+import { type ElementOf, property, schema } from '@platejs/plite';
+import { PLUGINS } from '@platejs/utils';
 import { sanitizeUrl } from '@udecode/utils';
 
 import {
@@ -49,7 +49,7 @@ const initialState: MediaEmbedPluginState = {
  * Enables support for embeddable media such as YouTube or Vimeo videos,
  * Instagram posts and tweets or Google Maps.
  */
-export const BaseMediaEmbedPlugin = defineBasePlugin(KEYS.mediaEmbed, {
+export const BaseMediaEmbedPlugin = defineBasePlugin(PLUGINS.mediaEmbed, {
   schema: {
     element: schema.element.textBlock({
       isolating: true,
@@ -61,10 +61,9 @@ export const BaseMediaEmbedPlugin = defineBasePlugin(KEYS.mediaEmbed, {
       },
     }),
   },
-  type: NODES.mediaEmbed,
   initialState,
 
-  codecs: ({ defineCodecs }) =>
+  codecs: ({ defineCodecs, schema: { type } }) =>
     defineCodecs({
       'text/html': [
         {
@@ -156,9 +155,9 @@ export const BaseMediaEmbedPlugin = defineBasePlugin(KEYS.mediaEmbed, {
         },
       ],
       'text/markdown': {
-        from: 'media_embed',
+        from: type,
         kind: 'node',
-        decode: ({ caption, decode, node, parseAttributes, type }) => {
+        decode: ({ caption, decode, node, parseAttributes }) => {
           const { src, ...props } = parseAttributes(node.attributes);
 
           return {
@@ -173,7 +172,6 @@ export const BaseMediaEmbedPlugin = defineBasePlugin(KEYS.mediaEmbed, {
           node,
           propsToAttributes,
           readPlainInline,
-          type,
         }) => {
           const { children, type: _, url, ...rest } = node;
 
@@ -214,3 +212,4 @@ export const BaseMediaEmbedPlugin = defineBasePlugin(KEYS.mediaEmbed, {
 );
 
 export type MediaEmbedDefinition = DefinitionOf<typeof BaseMediaEmbedPlugin>;
+export type MediaEmbedElement = ElementOf<typeof BaseMediaEmbedPlugin>;

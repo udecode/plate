@@ -1,7 +1,7 @@
 import { JSDOM } from 'jsdom';
 import { createEditor, type Descendant, type Range } from '@platejs/plite';
 import {
-  getRuntimeId as editorGetRuntimeId,
+  getNodeKey as editorGetNodeKey,
   getSnapshot as editorGetSnapshot,
   hasPath as editorHasPath,
   replace as editorReplace,
@@ -187,14 +187,14 @@ const createTextDOM = (document: Document, text: string) => {
   return owner;
 };
 
-const getRuntimeId = (editor: DOMTestEditor, path: number[]) => {
-  const runtimeId = editorGetRuntimeId(editor, path);
+const getNodeKey = (editor: DOMTestEditor, path: number[]) => {
+  const nodeKey = editorGetNodeKey(editor, path);
 
-  if (!runtimeId) {
-    throw new Error(`Missing runtime id at ${path.join('.')}`);
+  if (!nodeKey) {
+    throw new Error(`Missing node key at ${path.join('.')}`);
   }
 
-  return runtimeId;
+  return nodeKey;
 };
 
 class FakeDataTransfer {
@@ -212,19 +212,19 @@ class FakeDataTransfer {
 const registerSectionBodyBoundary = (editor: DOMTestEditor) =>
   DOMCoverage.registerBoundary(editor, {
     boundaryId: 'section-body',
-    anchor: { type: 'summary-slot', runtimeId: getRuntimeId(editor, [0, 0]) },
+    anchor: { type: 'summary-slot', nodeKey: getNodeKey(editor, [0, 0]) },
     copyPolicy: 'model',
     coveredPathRanges: [{ kind: 'text', anchor: [0, 1], focus: [0, 1] }],
     coveredRuntimeRanges: [
       {
         kind: 'text',
-        anchor: getRuntimeId(editor, [0, 1]),
-        focus: getRuntimeId(editor, [0, 1]),
+        anchor: getNodeKey(editor, [0, 1]),
+        focus: getNodeKey(editor, [0, 1]),
       },
     ],
     findPolicy: 'native',
     ownerPath: [0],
-    ownerRuntimeId: getRuntimeId(editor, [0]),
+    ownerNodeKey: getNodeKey(editor, [0]),
     reason: 'app-collapse',
     selectionPolicy: 'skip',
     state: 'intentionally-hidden',
@@ -234,13 +234,13 @@ const registerSectionBodyBoundary = (editor: DOMTestEditor) =>
 const registerNestedParagraphBoundary = (editor: DOMTestEditor) =>
   DOMCoverage.registerBoundary(editor, {
     boundaryId: 'nested-paragraph',
-    anchor: { type: 'placeholder', runtimeId: getRuntimeId(editor, [0, 1]) },
+    anchor: { type: 'placeholder', nodeKey: getNodeKey(editor, [0, 1]) },
     copyPolicy: 'summary',
     coveredPathRanges: [{ kind: 'text', anchor: [0, 1, 0], focus: [0, 1, 0] }],
     coveredRuntimeRanges: [],
     findPolicy: 'native',
     ownerPath: [0, 1],
-    ownerRuntimeId: getRuntimeId(editor, [0, 1]),
+    ownerNodeKey: getNodeKey(editor, [0, 1]),
     reason: 'app-collapse',
     selectionPolicy: 'materialize',
     state: 'intentionally-hidden',
@@ -295,13 +295,13 @@ describe('DOM coverage boundaries', () => {
 
     DOMCoverage.registerBoundary(editor, {
       boundaryId: 'hidden-header',
-      anchor: { type: 'placeholder', runtimeId: getRuntimeId(editor, [0]) },
+      anchor: { type: 'placeholder', nodeKey: getNodeKey(editor, [0]) },
       copyPolicy: 'exclude',
       coveredPathRanges: [{ kind: 'text', anchor: [0], focus: [0] }],
       coveredRuntimeRanges: [],
       findPolicy: 'native',
       ownerPath: [0],
-      ownerRuntimeId: getRuntimeId(editor, [0]),
+      ownerNodeKey: getNodeKey(editor, [0]),
       reason: 'app-hidden',
       selectionPolicy: 'skip',
       state: 'intentionally-hidden',
@@ -309,13 +309,13 @@ describe('DOM coverage boundaries', () => {
     });
     DOMCoverage.registerBoundary(editor, {
       boundaryId: 'hidden-footer',
-      anchor: { type: 'placeholder', runtimeId: getRuntimeId(editor, [2]) },
+      anchor: { type: 'placeholder', nodeKey: getNodeKey(editor, [2]) },
       copyPolicy: 'exclude',
       coveredPathRanges: [{ kind: 'text', anchor: [2], focus: [2] }],
       coveredRuntimeRanges: [],
       findPolicy: 'native',
       ownerPath: [2],
-      ownerRuntimeId: getRuntimeId(editor, [2]),
+      ownerNodeKey: getNodeKey(editor, [2]),
       reason: 'app-hidden',
       selectionPolicy: 'skip',
       state: 'intentionally-hidden',
@@ -1024,19 +1024,19 @@ describe('DOM coverage boundaries', () => {
 
     DOMCoverage.registerBoundary(editor, {
       boundaryId: 'merged-section-body',
-      anchor: { type: 'placeholder', runtimeId: getRuntimeId(editor, [1, 1]) },
+      anchor: { type: 'placeholder', nodeKey: getNodeKey(editor, [1, 1]) },
       copyPolicy: 'model',
       coveredPathRanges: [{ kind: 'text', anchor: [1, 1], focus: [1, 1] }],
       coveredRuntimeRanges: [
         {
           kind: 'text',
-          anchor: getRuntimeId(editor, [1, 1]),
-          focus: getRuntimeId(editor, [1, 1]),
+          anchor: getNodeKey(editor, [1, 1]),
+          focus: getNodeKey(editor, [1, 1]),
         },
       ],
       findPolicy: 'native',
       ownerPath: [1],
-      ownerRuntimeId: getRuntimeId(editor, [1]),
+      ownerNodeKey: getNodeKey(editor, [1]),
       reason: 'app-collapse',
       selectionPolicy: 'skip',
       state: 'intentionally-hidden',
@@ -1067,13 +1067,13 @@ describe('DOM coverage boundaries', () => {
 
       DOMCoverage.registerBoundary(editor, {
         boundaryId: `hidden-${index}`,
-        anchor: { type: 'placeholder', runtimeId: getRuntimeId(editor, path) },
+        anchor: { type: 'placeholder', nodeKey: getNodeKey(editor, path) },
         copyPolicy: 'model',
         coveredPathRanges: [{ kind: 'text', anchor: path, focus: path }],
         coveredRuntimeRanges: [],
         findPolicy: 'native',
         ownerPath: path,
-        ownerRuntimeId: getRuntimeId(editor, path),
+        ownerNodeKey: getNodeKey(editor, path),
         reason: 'app-collapse',
         selectionPolicy: 'skip',
         state: 'intentionally-hidden',
@@ -1097,13 +1097,13 @@ describe('DOM coverage boundaries', () => {
 
     DOMCoverage.registerBoundary(editor, {
       boundaryId: 'hidden-200',
-      anchor: { type: 'placeholder', runtimeId: getRuntimeId(editor, [200]) },
+      anchor: { type: 'placeholder', nodeKey: getNodeKey(editor, [200]) },
       copyPolicy: 'model',
       coveredPathRanges: [{ kind: 'text', anchor: [200, 0], focus: [200, 0] }],
       coveredRuntimeRanges: [],
       findPolicy: 'native',
       ownerPath: [200],
-      ownerRuntimeId: getRuntimeId(editor, [200]),
+      ownerNodeKey: getNodeKey(editor, [200]),
       reason: 'viewport-virtualization',
       selectionPolicy: 'skip',
       state: 'virtualized',
@@ -1132,7 +1132,7 @@ describe('DOM coverage boundaries', () => {
       mountEditorRoot(editor, document);
       DOMCoverage.registerBoundary(editor, {
         boundaryId: 'virtualized-200',
-        anchor: { type: 'placeholder', runtimeId: getRuntimeId(editor, [200]) },
+        anchor: { type: 'placeholder', nodeKey: getNodeKey(editor, [200]) },
         copyPolicy: 'model',
         coveredPathRanges: [
           { kind: 'text', anchor: [200, 0], focus: [200, 0] },
@@ -1140,7 +1140,7 @@ describe('DOM coverage boundaries', () => {
         coveredRuntimeRanges: [],
         findPolicy: 'native',
         ownerPath: [200],
-        ownerRuntimeId: getRuntimeId(editor, [200]),
+        ownerNodeKey: getNodeKey(editor, [200]),
         reason: 'viewport-virtualization',
         selectionPolicy: 'materialize',
         state: 'virtualized',

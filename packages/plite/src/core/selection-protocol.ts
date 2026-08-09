@@ -665,7 +665,7 @@ export const assertSelectionSupported = (
       document.positionAt(range.focus);
     } catch {
       throw new Error(
-        `Editor selection "${selection.kind}" points outside document root "${rangeRoot}".`
+        `Editor selection "${selection.kind}" range ${JSON.stringify(range)} points outside document root "${rangeRoot}".`
       );
     }
   }

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   getLastCommit as editorGetLastCommit,
-  getRuntimeId as editorGetRuntimeId,
+  getNodeKey as editorGetNodeKey,
   getSnapshot as editorGetSnapshot,
   insertBreak as editorInsertBreak,
   replace as editorReplace,
@@ -54,11 +54,11 @@ describe('commit metadata contract', () => {
     });
 
     const before = editorGetSnapshot(editor);
-    const blockRuntimeId = before.index.idAt([0]);
-    const textRuntimeId = before.index.idAt([0, 0]);
+    const blockNodeKey = before.index.keyAt([0]);
+    const textNodeKey = before.index.keyAt([0, 0]);
 
-    assert(blockRuntimeId);
-    assert(textRuntimeId);
+    assert(blockNodeKey);
+    assert(textNodeKey);
 
     editor.update({ tags: ['history-push', 'paste'] }, (tx) => {
       tx.text.insert('!');
@@ -104,19 +104,19 @@ describe('commit metadata contract', () => {
     assert.equal(commit.changed.has('properties'), false);
     assert.equal(commit.changed.has('root-order'), false);
     assert.equal(commit.changed.has('replace'), false);
-    assert.deepEqual(commit.changed.runtimeIds('text'), [textRuntimeId]);
+    assert.deepEqual(commit.changed.nodeKeys('text'), [textNodeKey]);
     assert.deepEqual(commit.changed.topLevelRanges(), [[0, 0]]);
-    assert.deepEqual(commit.changed.runtimeIds('node'), [
-      blockRuntimeId,
-      textRuntimeId,
+    assert.deepEqual(commit.changed.nodeKeys('node'), [
+      blockNodeKey,
+      textNodeKey,
     ]);
-    assert.deepEqual(commit.changed.runtimeIds('projection'), [
-      blockRuntimeId,
-      textRuntimeId,
+    assert.deepEqual(commit.changed.nodeKeys('projection'), [
+      blockNodeKey,
+      textNodeKey,
     ]);
-    assert.deepEqual(commit.changed.runtimeIds('selection'), [
-      textRuntimeId,
-      blockRuntimeId,
+    assert.deepEqual(commit.changed.nodeKeys('selection'), [
+      textNodeKey,
+      blockNodeKey,
     ]);
   });
 
@@ -148,7 +148,7 @@ describe('commit metadata contract', () => {
 
   it('keeps local provenance state available without serializing it', () => {
     const localProvenance = defineStateField<{
-      runtimeIds: string[];
+      nodeKeys: string[];
       source: string;
     } | null>({
       key: 'local.provenance.last-change',
@@ -173,13 +173,13 @@ describe('commit metadata contract', () => {
       },
     });
 
-    const blockRuntimeId = editorGetRuntimeId(editor, [0]);
+    const blockNodeKey = editorGetNodeKey(editor, [0]);
 
-    assert(blockRuntimeId);
+    assert(blockNodeKey);
 
     editor.update({ tags: ['paste', 'provenance-local'] }, (tx) => {
       tx.setField(localProvenance, {
-        runtimeIds: [blockRuntimeId],
+        nodeKeys: [blockNodeKey],
         source: 'paste-html',
       });
       tx.text.insert('!');
@@ -192,7 +192,7 @@ describe('commit metadata contract', () => {
     assert.deepEqual(
       editor.read((state) => state.getField(localProvenance)),
       {
-        runtimeIds: [blockRuntimeId],
+        nodeKeys: [blockNodeKey],
         source: 'paste-html',
       }
     );
@@ -202,7 +202,7 @@ describe('commit metadata contract', () => {
     );
     assert.equal(
       JSON.stringify(editor.read((state) => state.value())).includes(
-        blockRuntimeId
+        blockNodeKey
       ),
       false
     );
@@ -253,7 +253,7 @@ describe('commit metadata contract', () => {
     assert.equal(commit.selectionChanged, true);
     assert.equal(commit.changed.has('text'), true);
     assert.deepEqual(commit.changed.topLevelRanges(), [[0, 0]]);
-    assert.equal(commit.changed.runtimeIds('text').length, 1);
+    assert.equal(commit.changed.nodeKeys('text').length, 1);
     assert.equal(commit.changed.has('root-order'), false);
     assert.equal(commit.changed.has('replace'), false);
   });
@@ -302,9 +302,9 @@ describe('commit metadata contract', () => {
 
     const commit = editorGetLastCommit(editor);
     const snapshot = editorGetSnapshot(editor);
-    const nextRuntimeIds = [
-      snapshot.index.idAt([0]),
-      snapshot.index.idAt([0, 0]),
+    const nextNodeKeys = [
+      snapshot.index.keyAt([0]),
+      snapshot.index.keyAt([0, 0]),
     ];
 
     assert(commit);
@@ -312,10 +312,10 @@ describe('commit metadata contract', () => {
     assert.equal(commit.changed.has('replace'), true);
     assert.equal(commit.changed.has('structure'), true);
     assert.equal(commit.changed.has('root-order'), true);
-    assert.deepEqual(commit.changed.runtimeIds('text'), [nextRuntimeIds[1]]);
-    assert.deepEqual(commit.changed.runtimeIds('node'), nextRuntimeIds);
-    assert.deepEqual(commit.changed.runtimeIds('projection'), nextRuntimeIds);
-    assert.deepEqual(commit.changed.runtimeIds('selection'), []);
+    assert.deepEqual(commit.changed.nodeKeys('text'), [nextNodeKeys[1]]);
+    assert.deepEqual(commit.changed.nodeKeys('node'), nextNodeKeys);
+    assert.deepEqual(commit.changed.nodeKeys('projection'), nextNodeKeys);
+    assert.deepEqual(commit.changed.nodeKeys('selection'), []);
     assert.deepEqual(commit.changed.topLevelRanges(), [[0, 0]]);
   });
 
@@ -350,11 +350,11 @@ describe('commit metadata contract', () => {
       entries: () => {
         throw new Error('top-level range query materialized runtime entries');
       },
-      idAt: () => {
+      keyAt: () => {
         throw new Error('top-level range query resolved a runtime path');
       },
       pathOf: () => {
-        throw new Error('top-level range query resolved a runtime id');
+        throw new Error('top-level range query resolved a node key');
       },
     } satisfies SnapshotIndex;
     const commit = createEditorCommit(
@@ -391,7 +391,7 @@ describe('commit metadata contract', () => {
     assert.deepEqual(commit.changed.topLevelRanges(), [[1, 1]]);
   });
 
-  it('keeps top-level split path impact scoped to shifted top-level runtime ids', () => {
+  it('keeps top-level split path impact scoped to shifted top-level node keys', () => {
     const editor = createEditor();
 
     replaceSnapshot(editor, {
@@ -413,12 +413,12 @@ describe('commit metadata contract', () => {
     });
 
     const before = editorGetSnapshot(editor);
-    const tableRuntimeId = before.index.idAt([1]);
-    const tableRowRuntimeId = before.index.idAt([1, 0]);
+    const tableNodeKey = before.index.keyAt([1]);
+    const tableRowNodeKey = before.index.keyAt([1, 0]);
     const unsubscribe = editorSubscribe(editor, () => {});
 
-    assert(tableRuntimeId);
-    assert(tableRowRuntimeId);
+    assert(tableNodeKey);
+    assert(tableRowNodeKey);
 
     editorInsertBreak(editor);
     unsubscribe();
@@ -427,8 +427,8 @@ describe('commit metadata contract', () => {
 
     assert(commit);
     assert.equal(commit.changed.has('root-order'), true);
-    assert(!commit.changed.runtimeIds('node').includes(tableRuntimeId));
-    assert(commit.changed.runtimeIds('path').includes(tableRuntimeId));
-    assert(!commit.changed.runtimeIds('node').includes(tableRowRuntimeId));
+    assert(!commit.changed.nodeKeys('node').includes(tableNodeKey));
+    assert(commit.changed.nodeKeys('path').includes(tableNodeKey));
+    assert(!commit.changed.nodeKeys('node').includes(tableRowNodeKey));
   });
 });

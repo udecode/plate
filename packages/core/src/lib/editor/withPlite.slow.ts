@@ -31,10 +31,10 @@ import {
   createBaseEditor,
   DebugPlugin,
   DOMPlugin,
+  ElementIdPlugin,
   ElementStatePlugin,
   HistoryPlugin,
   HtmlPlugin,
-  NodeIdPlugin,
   OverridePlugin,
 } from '../index';
 
@@ -47,7 +47,6 @@ const coreNames = [
   InputRulesPlugin.name,
   OverridePlugin.name,
   HtmlPlugin.name,
-  NodeIdPlugin.name,
   AffinityPlugin.name,
   ParagraphPlugin.name,
   'react',
@@ -152,26 +151,110 @@ describe('createPlateEditor', () => {
         plugins: definition.plugins,
         skipInitialization: true,
       });
-      const card = editor.read.schema.create(
-        editor.plugin(CardPlugin).schema.element
-      );
+      const card = editor.read.schema.create(CardPlugin);
 
-      expect(editor.plugin(CardPlugin).schema.element.type).toBe('card');
+      expect(editor.plugin(CardPlugin).schema.type).toBe('card');
       expect(card.type).toBe('card');
       expect(editor.read.schema.element('application_card')).toBeNull();
       expect(editor.read.schema.element('card')?.type).toBe('card');
-      expect(
-        editor.read.schema.getProperty(
-          card,
-          editor.plugin(MetadataPlugin).schema.properties.tone
-        )
-      ).toBe('neutral');
+      expect(editor.read.schema.getProperty(card, 'tone')).toBe('neutral');
       expect(
         editor.read.schema.property({
           key: 'reviewState',
           placement: 'element',
         })
       ).not.toBeNull();
+    });
+
+    it('lowers multi-element application targets to persisted schema types', () => {
+      const CardPlugin = defineBasePlugin('applicationTargetCard', {
+        schema: {
+          element: { ...TextBlockElement, type: 'application_target_card' },
+        },
+      });
+      const PanelPlugin = defineBasePlugin('applicationTargetPanel', {
+        schema: {
+          element: { ...TextBlockElement, type: 'application_target_panel' },
+        },
+      });
+      const reviewState = schema.elementProperty(
+        'reviewState',
+        property.enum(['draft', 'approved'] as const, {
+          default: 'draft',
+        }),
+        { target: target.elements([CardPlugin, PanelPlugin]) }
+      );
+      const reviewStateHandle = schema.handle.property(reviewState);
+      const definition = defineEditor('applicationMultiTarget', {
+        plugins: [CardPlugin, PanelPlugin],
+        schema: {
+          properties: {
+            reviewState,
+          },
+        },
+      });
+      const editor = createBaseEditor({
+        plugins: definition.plugins,
+        skipInitialization: true,
+      });
+      const card = editor.read.schema.create(CardPlugin);
+      const panel = editor.read.schema.create(PanelPlugin);
+
+      expect(editor.read.schema.getProperty(card, reviewStateHandle)).toBe(
+        'draft'
+      );
+      expect(editor.read.schema.getProperty(panel, reviewStateHandle)).toBe(
+        'draft'
+      );
+    });
+
+    it('rejects different same-name descriptor families in application schema', () => {
+      const InstalledPlugin = defineBasePlugin('applicationFamily', {
+        schema: { element: TextBlockElement },
+      });
+      const ForeignPlugin = defineBasePlugin('applicationFamily', {
+        schema: { element: TextBlockElement },
+      });
+      const overrideDefinition = defineEditor('applicationOverrideFamily', {
+        plugins: [InstalledPlugin],
+        schema: {
+          overrides: [
+            schema.override(ForeignPlugin, {
+              element: { type: 'application_family' },
+            }),
+          ],
+        },
+      });
+      const relationshipDefinition = defineEditor(
+        'applicationRelationshipFamily',
+        {
+          plugins: [InstalledPlugin],
+          schema: {
+            properties: {
+              reviewState: schema.elementProperty(property.string(), {
+                target: target.elements([ForeignPlugin]),
+              }),
+            },
+          },
+        }
+      );
+
+      expect(() =>
+        createBaseEditor({
+          plugins: overrideDefinition.plugins,
+          skipInitialization: true,
+        })
+      ).toThrow(
+        'Editor schema override descriptor "applicationFamily" does not match the installed plugin family.'
+      );
+      expect(() =>
+        createBaseEditor({
+          plugins: relationshipDefinition.plugins,
+          skipInitialization: true,
+        })
+      ).toThrow(
+        'Editor schema relationship descriptor "applicationFamily" does not match the installed plugin family.'
+      );
     });
 
     it('rejects a stale generated fingerprint before initialization or publication', () => {
@@ -280,18 +363,22 @@ describe('createPlateEditor', () => {
       ).toThrow(/unknown editor element type "not-a-plate-element"/i);
     });
 
-    it('registers the node id schema without generating ids in tests', () => {
+    it('installs persisted element identity only when requested', () => {
+      let nextId = 0;
       const editor = createBaseEditor({
         initialValue: [
           { children: [{ text: 'known' }], id: 'known', type: 'paragraph' },
           { children: [{ text: 'missing' }], type: 'paragraph' },
         ],
+        plugins: [
+          ElementIdPlugin.configure({
+            initialState: { generateId: () => `generated-${++nextId}` },
+          }),
+        ],
       });
 
-      expect(editor.read.children()).toEqual([
-        { children: [{ text: 'known' }], id: 'known', type: 'paragraph' },
-        { children: [{ text: 'missing' }], type: 'paragraph' },
-      ]);
+      expect(editor.read.children()[0]?.id).toBe('known');
+      expect(editor.read.children()[1]?.id).toMatch(/^generated-/);
       expect(() =>
         editor.read.schema.assertDocument(editor.read.value())
       ).not.toThrow();
@@ -301,19 +388,17 @@ describe('createPlateEditor', () => {
         { at: [2] }
       );
 
-      expect(editor.read.children()[2]?.id).toBeUndefined();
+      expect(editor.read.children()[2]?.id).toMatch(/^generated-/);
 
-      const disabledEditor = createBaseEditor({
-        nodeId: false,
-      });
+      const editorWithoutPersistedIds = createBaseEditor();
 
       expect(
-        getPlateRuntime(disabledEditor).pluginList.some(
-          (plugin) => plugin.name === NodeIdPlugin.name
+        getPlateRuntime(editorWithoutPersistedIds).pluginList.some(
+          (plugin) => plugin.name === ElementIdPlugin.name
         )
       ).toBe(false);
       expect(() =>
-        disabledEditor.update.nodes.insert(
+        editorWithoutPersistedIds.update.nodes.insert(
           { children: [{ text: 'unknown' }], id: 'unknown', type: 'paragraph' },
           { at: [0] }
         )
@@ -430,22 +515,16 @@ describe('createPlateEditor', () => {
             void: 'inline',
           },
         },
-      }).extend(
-        ({
-          schema: {
-            element: { type },
+      }).extend(({ schema: { type } }) => ({
+        update: ({ tx }) => ({
+          insert: () => {
+            tx.nodes.insert([
+              { children: [{ text: '' }], type },
+              { text: ' ' },
+            ]);
           },
-        }) => ({
-          update: ({ tx }) => ({
-            insert: () => {
-              tx.nodes.insert([
-                { children: [{ text: '' }], type },
-                { text: ' ' },
-              ]);
-            },
-          }),
-        })
-      );
+        }),
+      }));
       const editor = createPlateEditor({
         editor: createEditor(),
         plugins: [InlineTxPlugin],
@@ -661,7 +740,6 @@ describe('createPlateEditor', () => {
         }),
       });
       const editor = createBaseEditor({
-        nodeId: false,
         plugins: [FigurePlugin, TransformDocumentPlugin],
         initialValue: () => ({
           children: [

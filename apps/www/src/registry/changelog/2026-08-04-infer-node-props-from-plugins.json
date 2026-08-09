@@ -1,0 +1,287 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-04-infer-node-props-from-plugins",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-04-infer-node-props-from-plugins.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-04",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Infer node component props from plugin descriptors",
+  "targets": [
+    {
+      "name": "callout-node",
+      "files": ["apps/www/src/registry/ui/callout-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "callout-node-static",
+      "files": ["apps/www/src/registry/ui/callout-node-static.tsx"],
+      "definitionFiles": [],
+      "diagnostics": []
+    },
+    {
+      "name": "code-block-node",
+      "files": ["apps/www/src/registry/ui/code-block-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-block-node-static",
+      "files": ["apps/www/src/registry/ui/code-block-node-static.tsx"],
+      "definitionFiles": [],
+      "diagnostics": []
+    },
+    {
+      "name": "code-drawing-node",
+      "files": ["apps/www/src/registry/ui/code-drawing-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-drawing-node-static",
+      "files": ["apps/www/src/registry/ui/code-drawing-node-static.tsx"],
+      "definitionFiles": [],
+      "diagnostics": []
+    },
+    {
+      "name": "column-node",
+      "files": ["apps/www/src/registry/ui/column-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "column-node-static",
+      "files": ["apps/www/src/registry/ui/column-node-static.tsx"],
+      "definitionFiles": [],
+      "diagnostics": []
+    },
+    {
+      "name": "date-node",
+      "files": ["apps/www/src/registry/ui/date-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "date-node-static",
+      "files": ["apps/www/src/registry/ui/date-node-static.tsx"],
+      "definitionFiles": [],
+      "diagnostics": []
+    },
+    {
+      "name": "equation-node",
+      "files": ["apps/www/src/registry/ui/equation-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "equation-node-static",
+      "files": ["apps/www/src/registry/ui/equation-node-static.tsx"],
+      "definitionFiles": [],
+      "diagnostics": []
+    },
+    {
+      "name": "excalidraw-node",
+      "files": ["apps/www/src/registry/ui/excalidraw-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "footnote-node",
+      "files": ["apps/www/src/registry/ui/footnote-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "footnote-node-static",
+      "files": ["apps/www/src/registry/ui/footnote-node-static.tsx"],
+      "definitionFiles": [],
+      "diagnostics": []
+    },
+    {
+      "name": "link-node",
+      "files": ["apps/www/src/registry/ui/link-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "link-node-static",
+      "files": ["apps/www/src/registry/ui/link-node-static.tsx"],
+      "definitionFiles": [],
+      "diagnostics": []
+    },
+    {
+      "name": "media-audio-node",
+      "files": ["apps/www/src/registry/ui/media-audio-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-audio-node-static",
+      "files": ["apps/www/src/registry/ui/media-audio-node-static.tsx"],
+      "definitionFiles": [],
+      "diagnostics": []
+    },
+    {
+      "name": "media-embed-node",
+      "files": ["apps/www/src/registry/ui/media-embed-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-embed-node-static",
+      "files": ["apps/www/src/registry/ui/media-embed-node-static.tsx"],
+      "definitionFiles": [],
+      "diagnostics": []
+    },
+    {
+      "name": "media-file-node",
+      "files": ["apps/www/src/registry/ui/media-file-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-file-node-static",
+      "files": ["apps/www/src/registry/ui/media-file-node-static.tsx"],
+      "definitionFiles": [],
+      "diagnostics": []
+    },
+    {
+      "name": "media-image-node",
+      "files": ["apps/www/src/registry/ui/media-image-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-image-node-static",
+      "files": ["apps/www/src/registry/ui/media-image-node-static.tsx"],
+      "definitionFiles": [],
+      "diagnostics": []
+    },
+    {
+      "name": "media-placeholder-node",
+      "files": ["apps/www/src/registry/ui/media-placeholder-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-toolbar",
+      "files": ["apps/www/src/registry/ui/media-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-video-node",
+      "files": ["apps/www/src/registry/ui/media-video-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-video-node-static",
+      "files": ["apps/www/src/registry/ui/media-video-node-static.tsx"],
+      "definitionFiles": [],
+      "diagnostics": []
+    },
+    {
+      "name": "mention-node",
+      "files": ["apps/www/src/registry/ui/mention-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "mention-node-static",
+      "files": ["apps/www/src/registry/ui/mention-node-static.tsx"],
+      "definitionFiles": [],
+      "diagnostics": []
+    },
+    {
+      "name": "slash-node",
+      "files": ["apps/www/src/registry/ui/slash-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "table-node",
+      "files": ["apps/www/src/registry/ui/table-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "table-node-static",
+      "files": ["apps/www/src/registry/ui/table-node-static.tsx"],
+      "definitionFiles": [],
+      "diagnostics": []
+    },
+    {
+      "name": "tag-node",
+      "files": ["apps/www/src/registry/ui/tag-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-04-callout-infer-node-props-from-a664398d",
+      "kind": "wiring",
+      "summary": "Infer node component props from plugin descriptors",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "callout-node",
+        "callout-node-static",
+        "code-block-node",
+        "code-block-node-static",
+        "code-drawing-node",
+        "code-drawing-node-static",
+        "column-node",
+        "column-node-static",
+        "date-node",
+        "date-node-static",
+        "equation-node",
+        "equation-node-static",
+        "excalidraw-node",
+        "footnote-node",
+        "footnote-node-static",
+        "link-node",
+        "link-node-static",
+        "media-audio-node",
+        "media-audio-node-static",
+        "media-embed-node",
+        "media-embed-node-static",
+        "media-file-node",
+        "media-file-node-static",
+        "media-image-node",
+        "media-image-node-static",
+        "media-placeholder-node",
+        "media-toolbar",
+        "media-video-node",
+        "media-video-node-static",
+        "mention-node",
+        "mention-node-static",
+        "slash-node",
+        "table-node",
+        "table-node-static",
+        "tag-node"
+      ],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-04",
+          "entry": "2026-08-04-infer-node-props-from-plugins",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

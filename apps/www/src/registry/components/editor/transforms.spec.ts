@@ -1,8 +1,15 @@
 import { PLUGINS } from '@platejs/utils';
 import { CodeBlockPlugin } from '@platejs/code-block/react';
+import { BaseColumnPlugin } from '@platejs/layout';
 import { LinkPlugin } from '@platejs/link/react';
-import { BasePlaceholderPlugin } from '@platejs/media';
+import {
+  BaseAudioPlugin,
+  BaseFilePlugin,
+  BasePlaceholderPlugin,
+  BaseVideoPlugin,
+} from '@platejs/media';
 import { SuggestionPlugin } from '@platejs/suggestion/react';
+import { BaseTocPlugin } from '@platejs/toc';
 import { type Selection, type Value, schema } from 'platejs';
 import { createPlateEditor, definePlatePlugin } from 'platejs/react';
 
@@ -46,7 +53,12 @@ const createEditor = ({
       ...BaseToggleKit,
       CodeBlockPlugin,
       LinkPlugin,
+      BaseAudioPlugin,
+      BaseFilePlugin,
       BasePlaceholderPlugin,
+      BaseVideoPlugin,
+      BaseColumnPlugin,
+      BaseTocPlugin,
       SuggestionPlugin,
       CustomBlockPlugin,
     ],
@@ -144,6 +156,54 @@ describe('editor block transforms', () => {
         type: 'paragraph',
       },
     ]);
+  });
+
+  it('upserts a list action by its list identity', () => {
+    const editor = createEditor({
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [1, 0] },
+        focus: { offset: 0, path: [1, 0] },
+      },
+      initialValue: [
+        { children: [{ text: 'one' }], type: 'paragraph' },
+        { children: [{ text: '' }], type: 'paragraph' },
+      ],
+    });
+
+    insertBlock(editor, 'disc', { upsert: true });
+
+    expect(editor.read.children()).toMatchObject([
+      { children: [{ text: 'one' }], type: 'paragraph' },
+      {
+        children: [{ text: '' }],
+        indent: 1,
+        listStyleType: 'disc',
+        type: 'paragraph',
+      },
+    ]);
+  });
+
+  it('keeps TOC placement options out of the element properties', () => {
+    const editor = createEditor();
+
+    insertBlock(editor, PLUGINS.toc);
+
+    expect(editor.read.children()[2]).toEqual({
+      children: [{ text: '' }],
+      type: 'toc',
+    });
+  });
+
+  it('resolves the three-column action through the column plugin', () => {
+    const editor = createEditor();
+
+    insertBlock(editor, 'action_three_columns');
+
+    expect(editor.read.children()[2]).toMatchObject({
+      children: [{ type: 'column' }, { type: 'column' }, { type: 'column' }],
+      type: 'columnGroup',
+    });
   });
 
   it('selects the inserted blockquote paragraph instead of the previous block', () => {
@@ -273,6 +333,17 @@ describe('editor block transforms', () => {
 });
 
 describe('classic editor block transforms', () => {
+  it('resolves the three-column action through the column plugin', () => {
+    const editor = createEditor();
+
+    insertClassicBlock(editor, 'action_three_columns');
+
+    expect(editor.read.children()[2]).toMatchObject({
+      children: [{ type: 'column' }, { type: 'column' }, { type: 'column' }],
+      type: 'columnGroup',
+    });
+  });
+
   it('resolves a block action through the owning plugin capability', () => {
     const editor = createEditor();
 

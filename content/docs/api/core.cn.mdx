@@ -54,10 +54,6 @@ description: \@platejs/core 的 API 参考文档。
         生成唯一 ID 的函数。
         - **默认值:** `() => nanoid(10)`
       </APISubListItem>
-      <APISubListItem parent="nodeId" name="idKey" type="string" optional>
-        用于存储节点 ID 的属性键。
-        - **默认值:** `'id'`
-      </APISubListItem>
       <APISubListItem parent="nodeId" name="initialValueIds" type="false | 'always' | 'if-needed'" optional>
         控制如何为初始值中的缺失 ID 赋值。
         - 当 `'if-needed'`: 仅检查首尾顶层节点
@@ -143,8 +139,11 @@ description: \@platejs/core 的 API 参考文档。
 
 <API name="definePlatePlugin">
 <APIParameters>
-  <APIItem name="definition" type="BasePluginDefinition">
-    插件 definition。factory 从该对象推断 name、initial state、API、read 和
+  <APIItem name="name" type="string">
+    用于插件查询和 API namespace 的稳定 capability name。
+  </APIItem>
+  <APIItem name="definition" type="PlatePluginDefinitionInput">
+    插件 definition。factory 从 name 和该对象推断 initial state、API、read 和
     update method、schema、dependencies、原生 Plite 能力和 React 字段。
   </APIItem>
 </APIParameters>
@@ -515,7 +514,7 @@ const state = useEditorPluginStore(editor, plugin, (state) => state);
 
 ### `useElement`
 
-获取当前 element。传 plugin descriptor 可推断配置后的 schema element type；可复用组件也可以传 generic element type。缺少匹配 provider 时抛出错误。
+获取当前 element。传 plugin descriptor 可推断配置后的 schema element type；仅在需要擦除后的 `Element` 类型时不传 descriptor。缺少匹配 provider 时抛出错误。
 
 <API name="useElement">
 <APIParameters>
@@ -524,19 +523,19 @@ const state = useEditorPluginStore(editor, plugin, (state) => state);
   </APIItem>
 </APIParameters>
 
-<APIReturns type="PlateElementForDescriptor<TPlugin> | TElement">
+<APIReturns type="PlateElementForDescriptor<TPlugin> | Element">
   当前 element。
 </APIReturns>
 </API>
 
 ```tsx
 const quote = useElement(BlockquotePlugin);
-const generic = useElement<MyElement>();
+const generic = useElement();
 ```
 
 ### `useOptionalElement`
 
-provider 可以缺失时使用 `useOptionalElement(Plugin)` 或 `useOptionalElement<TElement>()`。它返回 `null`，不返回 placeholder element。
+指定 provider 可以缺失时使用 `useOptionalElement(Plugin)`；需要擦除后的最近 provider 时使用 `useOptionalElement()`。它返回 `null`，不返回 placeholder element。
 
 ## 核心插件
 
@@ -572,13 +571,12 @@ elementState.api.isEmpty({
 
 const CustomMetadataPlugin = defineBasePlugin("customMetadata", {
   schema: {
-    properties: [
-      schema.elementProperty(
-        "customId",
-        property.string(),
-        { role: "metadata", target: target.group("block") }
-      ),
-    ],
+    properties: {
+      customId: schema.elementProperty(property.string(), {
+        role: "metadata",
+        target: target.group("block"),
+      }),
+    },
   },
 });
 ```

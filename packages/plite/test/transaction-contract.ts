@@ -8,8 +8,8 @@ import {
   getChildren as editorGetChildren,
   getExtensionRegistry as editorGetExtensionRegistry,
   getLastCommit as editorGetLastCommit,
-  getPathByRuntimeId as editorGetPathByRuntimeId,
-  getRuntimeId as editorGetRuntimeId,
+  getPathByNodeKey as editorGetPathByNodeKey,
+  getNodeKey as editorGetNodeKey,
   getSnapshot as editorGetSnapshot,
   dispatchCommand,
   insertBreak as editorInsertBreak,
@@ -179,7 +179,7 @@ describe('plite transaction contract', () => {
     ]);
   });
 
-  it('keeps runtime-id multi-node replacement atomic until commit and discardable', () => {
+  it('keeps node-key multi-node replacement atomic until commit and discardable', () => {
     const editor = createEditor();
     const publishedStates: ReturnType<typeof getVisibleState>[] = [];
     const normalizedPaths: string[] = [];
@@ -190,8 +190,8 @@ describe('plite transaction contract', () => {
       paragraph('after'),
     ]);
 
-    const targetRuntimeId = editorGetRuntimeId(editor, [1]);
-    assert(targetRuntimeId);
+    const targetNodeKey = editorGetNodeKey(editor, [1]);
+    assert(targetNodeKey);
 
     const unextend = editor.install(
       defineExtension('atomic-replace-correction-spy', {
@@ -213,7 +213,7 @@ describe('plite transaction contract', () => {
     normalizedPaths.length = 0;
 
     editor.update((transaction) => {
-      const targetPath = editorGetPathByRuntimeId(editor, targetRuntimeId);
+      const targetPath = editorGetPathByNodeKey(editor, targetNodeKey);
 
       assert.deepEqual(targetPath, [1]);
       assert(targetPath);
@@ -222,7 +222,7 @@ describe('plite transaction contract', () => {
 
       assert.equal(publishedStates.length, 0);
       assert.deepEqual(normalizedPaths, []);
-      assert.equal(editorGetPathByRuntimeId(editor, targetRuntimeId), null);
+      assert.equal(editorGetPathByNodeKey(editor, targetNodeKey), null);
 
       transaction.nodes.insert(
         [paragraph('replacement-a'), paragraph('replacement-b')],
@@ -261,8 +261,8 @@ describe('plite transaction contract', () => {
       paragraph('after'),
     ]);
 
-    const discardTargetRuntimeId = editorGetRuntimeId(discardEditor, [1]);
-    assert(discardTargetRuntimeId);
+    const discardTargetNodeKey = editorGetNodeKey(discardEditor, [1]);
+    assert(discardTargetNodeKey);
 
     const discardBefore = getVisibleState(discardEditor);
     const unsubscribeDiscard = editorSubscribe(discardEditor, () => {
@@ -273,9 +273,9 @@ describe('plite transaction contract', () => {
 
     assert.throws(() => {
       discardEditor.update((transaction) => {
-        const targetPath = editorGetPathByRuntimeId(
+        const targetPath = editorGetPathByNodeKey(
           discardEditor,
-          discardTargetRuntimeId
+          discardTargetNodeKey
         );
 
         assert.deepEqual(targetPath, [1]);
@@ -295,7 +295,7 @@ describe('plite transaction contract', () => {
     assert.equal(discardPublishedStates.length, 0);
     assert.deepEqual(getVisibleState(discardEditor), discardBefore);
     assert.deepEqual(
-      editorGetPathByRuntimeId(discardEditor, discardTargetRuntimeId),
+      editorGetPathByNodeKey(discardEditor, discardTargetNodeKey),
       [1]
     );
   });
@@ -1009,7 +1009,7 @@ describe('plite transaction contract', () => {
     assert.equal(commit.changed.has('document'), false);
     assert.equal(commit.selectionChanged, true);
     assert.equal(commit.changes.empty, true);
-    assert.deepEqual(commit.changed.runtimeIds('node'), []);
+    assert.deepEqual(commit.changed.nodeKeys('node'), []);
   });
 
   it('keeps rootless selection caller-shaped while committing the view root', () => {
@@ -1082,7 +1082,7 @@ describe('plite transaction contract', () => {
     assert.equal(commit.tags.includes('semantic-command'), true);
     assert.equal(commit.changed.has('selection'), true);
     assert.equal(commit.changes.empty, true);
-    assert.deepEqual(commit.changed.runtimeIds('node'), []);
+    assert.deepEqual(commit.changed.nodeKeys('node'), []);
   });
 
   it('moves word selection across initial sibling text leaves', () => {

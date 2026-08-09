@@ -30,7 +30,7 @@ type FormData = {
 
 export function RHFEditorForm() {
   const initialValue = [
-    { type: "p", children: [{ text: "Hello from react-hook-form!" }] },
+    { type: "paragraph", children: [{ text: "Hello from react-hook-form!" }] },
   ];
 
   // Setup react-hook-form
@@ -108,7 +108,7 @@ export function EditorForm() {
     defaultValues: {
       content: {
         children: [
-          { type: "p", children: [{ text: "Hello from shadcn/ui Form!" }] },
+          { type: "paragraph", children: [{ text: "Hello from shadcn/ui Form!" }] },
         ],
       },
     },
@@ -208,7 +208,7 @@ function MyForm() {
   const form = useForm({
     defaultValues: {
       content: {
-        children: [{ type: "p", children: [{ text: "Initial content..." }] }],
+        children: [{ type: "paragraph", children: [{ text: "Initial content..." }] }],
       },
     },
   });
@@ -341,7 +341,7 @@ export const EditorField = React.forwardRef<HTMLDivElement, EditorFieldProps>(
     ref
   ) {
     const editor = usePlateEditor({
-      initialValue: initialValue ?? [{ type: "p", children: [{ text: "" }] }],
+      initialValue: initialValue ?? [{ type: "paragraph", children: [{ text: "" }] }],
     });
 
     return (
@@ -395,7 +395,7 @@ export function EditorForm() {
     resolver: zodResolver(FormSchema),
     defaultValues: {
       bio: {
-        children: [{ type: "p", children: [{ text: "" }] }],
+        children: [{ type: "paragraph", children: [{ text: "" }] }],
       },
     },
   });

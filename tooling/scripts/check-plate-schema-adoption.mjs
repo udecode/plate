@@ -77,9 +77,11 @@ const deletedPlatePluginDefinitionKeys = new Set([
   'config',
   'extension',
   'handlers',
+  'key',
   'pluginApi',
   'targetPluginKeys',
   'tx',
+  'type',
   'validateConfiguration',
 ]);
 const deletedPliteExtensionDefinitionKeys = new Set([
@@ -195,6 +197,7 @@ const intentionalRawCodecNegativeContractCounts = new Map([
   ['packages/core/src/lib/plugins/ProductCodecs.spec.ts', 1],
   ['packages/core/src/lib/plugins/html/HtmlPlugin.codec.spec.ts', 1],
   ['packages/core/type-tests/base-plugin-contracts.ts', 1],
+  ['packages/markdown/src/lib/internal/markdownCodecs.spec.ts', 1],
 ]);
 const intentionalPliteConfigNegativeContractCounts = new Map([
   ['packages/plite/test/generic-extension-contract.ts', 1],
@@ -286,21 +289,14 @@ const intentionalProductionExtendStageChains = new Map([
   ],
   [
     'packages/code-block/src/lib/BaseCodeBlockPlugin.ts',
-    [
-      [['update']],
-      [['shortcuts']],
-      [['commands', 'contributions']],
-      [['corrections', 'on']],
-    ],
+    [[['update']], [['commands', 'contributions']], [['corrections', 'on']]],
   ],
-  ['packages/basic-styles/src/lib/BaseStylePlugins.ts', [[['update']]]],
-  ['packages/callout/src/lib/BaseCalloutPlugin.ts', [[['update']]]],
-  ['packages/code-drawing/src/lib/BaseCodeDrawingPlugin.ts', [[['update']]]],
   [
     'packages/comment/src/lib/BaseCommentPlugin.ts',
     [[['api', 'corrections', 'read', 'rules'], ['update']]],
   ],
   ['packages/date/src/lib/BaseDatePlugin.ts', [[['update']]]],
+  ['packages/indent/src/lib/BaseIndentPlugin.ts', [[['corrections']]]],
   [
     'packages/list/src/lib/BaseListPlugin.ts',
     [
@@ -340,7 +336,7 @@ const intentionalProductionExtendStageChains = new Map([
   ['packages/tag/src/lib/BaseTagPlugin.ts', [[['read', 'update'], ['read']]]],
   [
     'packages/utils/src/react/plugins/BlockPlaceholderPlugin.tsx',
-    [[['selectors']], [['inject', 'useHooks']]],
+    [[['selectors'], ['inject', 'useHooks']]],
   ],
   [
     'packages/table/src/lib/BaseTablePlugin.ts',
@@ -349,7 +345,6 @@ const intentionalProductionExtendStageChains = new Map([
         ['api'],
         ['api'],
         ['api', 'read'],
-        ['read'],
         ['read'],
         ['api', 'read'],
         ['update'],
@@ -375,10 +370,7 @@ const intentionalProductionExtendStageChains = new Map([
   ],
   [
     'packages/suggestion/src/lib/BaseSuggestionPlugin.ts',
-    [
-      [['initialState']],
-      [['api', 'rules'], ['read'], ['update'], ['commands', 'corrections']],
-    ],
+    [[['api', 'rules'], ['read'], ['update'], ['commands', 'corrections']]],
   ],
   [
     'packages/footnote/src/lib/BaseFootnotePlugin.ts',
@@ -389,9 +381,9 @@ const intentionalProductionExtendStageChains = new Map([
   ['packages/slash-command/src/lib/BaseSlashPlugin.ts', [[['commands']]]],
   [
     'packages/layout/src/lib/BaseColumnPlugin.ts',
-    [[['corrections'], ['update'], ['shortcuts']]],
+    [[['update'], ['shortcuts']], [['corrections', 'update']]],
   ],
-  ['packages/math/src/lib/BaseEquationPlugin.ts', [[['update']], [['update']]]],
+  ['packages/math/src/lib/BaseEquationPlugin.ts', [[['update']]]],
   [
     'packages/media/src/lib/BaseMediaPlugin.ts',
     [
@@ -413,10 +405,8 @@ const intentionalProductionExtendStageChains = new Map([
 const allowedSchemaFactoryBindings = new Set([
   'initialState',
   'name',
-  'own',
   'plugins',
   'targetElementTypes',
-  'type',
 ]);
 // Raw queries are reserved for runtime discovery and contextual contract laws.
 // Every owning file has an exact reviewed count so tests cannot hide new drift.
@@ -431,10 +421,11 @@ const intentionalRawSchemaQueryCounts = new Map([
   ['packages/code-drawing/src/lib/BaseCodeDrawingPlugin.spec.ts', 1],
   ['packages/comment/src/lib/BaseCommentPlugin.spec.ts', 5],
   ['packages/core/src/internal/plugin/compilePlateModel.spec.ts', 4],
+  ['packages/core/src/lib/editor/withPlite.slow.ts', 2],
   ['packages/core/src/lib/plugins/element-state/ElementStatePlugin.ts', 1],
-  ['packages/core/src/lib/plugins/html/HtmlPlugin.ts', 5],
-  ['packages/core/src/lib/plugins/node-id/NodeIdPlugin.spec.tsx', 1],
-  ['packages/core/type-tests/plugin-schema-contracts.ts', 7],
+  ['packages/core/src/lib/plugins/html/HtmlPlugin.ts', 4],
+  ['packages/core/src/lib/plugins/element-id/ElementIdPlugin.spec.tsx', 1],
+  ['packages/core/type-tests/plugin-schema-contracts.ts', 8],
   ['packages/find-replace/src/lib/FindReplacePlugin.spec.ts', 1],
   ['packages/math/src/lib/BaseEquationPlugin.spec.tsx', 2],
   ['packages/plite/test/editor-foundation-contract.ts', 2],
@@ -480,9 +471,9 @@ if (
   [...intentionalRawSchemaQueryCounts.values()].reduce(
     (total, count) => total + count,
     0
-  ) !== 75
+  ) !== 77
 ) {
-  throw new Error('Plate raw schema query allowlist must contain 75 calls.');
+  throw new Error('Plate raw schema query allowlist must contain 77 calls.');
 }
 
 const toPosixPath = (path) => path.split(sep).join('/');
@@ -1434,11 +1425,304 @@ const containsMemberNamed = (node, names) => {
   return found;
 };
 
-const isInstalledSchemaIdentityConditional = (node) =>
-  node?.type === 'ConditionalExpression' &&
-  containsMemberNamed(node.test, new Set(['installed'])) &&
-  (containsMemberNamed(node.consequent, new Set(['key', 'type'])) ||
-    containsMemberNamed(node.alternate, new Set(['key', 'type'])));
+const containsStringLiteral = (node) => {
+  let found = false;
+
+  walkAst(node, (current) => {
+    if (current.type === 'StringLiteral') found = true;
+  });
+
+  return found;
+};
+
+const containsCapabilityIdentityFallback = (node) => {
+  const current = unwrapTypedExpression(node);
+
+  if (
+    current?.type === 'LogicalExpression' ||
+    current?.type === 'ConditionalExpression'
+  ) {
+    return Object.values(current).some(
+      (value) =>
+        value &&
+        typeof value === 'object' &&
+        containsCapabilityIdentityFallback(value)
+    );
+  }
+  if (
+    current?.type !== 'MemberExpression' &&
+    current?.type !== 'OptionalMemberExpression'
+  ) {
+    return false;
+  }
+  const owner = unwrapTypedExpression(current.object);
+
+  if (owner?.type === 'Identifier' && owner.name === 'PLUGINS') return true;
+  if (getStaticMemberName(current) !== 'name') return false;
+
+  return (
+    (owner?.type === 'Identifier' &&
+      (pluginOwnerNamePattern.test(owner.name) ||
+        pluginPortalOwnerNamePattern.test(owner.name))) ||
+    (isCallExpressionNode(owner) && readMemberCallName(owner) === 'plugin')
+  );
+};
+
+const containsInvalidSchemaIdentityFallback = (node) =>
+  containsStringLiteral(node) || containsCapabilityIdentityFallback(node);
+
+const isConsumerPortalSchemaIdentity = (
+  node,
+  portalBindings = new Set(),
+  schemaBindings = new Set(),
+  getBinding = (name) => name
+) => {
+  const current = unwrapTypedExpression(node);
+
+  if (
+    (current?.type !== 'MemberExpression' &&
+      current?.type !== 'OptionalMemberExpression') ||
+    !['key', 'type'].includes(getStaticMemberName(current))
+  ) {
+    return false;
+  }
+  const schemaMember = unwrapTypedExpression(current.object);
+
+  if (
+    schemaMember?.type === 'Identifier' &&
+    schemaBindings.has(getBinding(schemaMember.name, schemaMember))
+  ) {
+    return true;
+  }
+  if (
+    (schemaMember?.type !== 'MemberExpression' &&
+      schemaMember?.type !== 'OptionalMemberExpression') ||
+    getStaticMemberName(schemaMember) !== 'schema'
+  ) {
+    return false;
+  }
+  const portal = unwrapTypedExpression(schemaMember.object);
+  const portalBinding =
+    portal?.type === 'Identifier' ? getBinding(portal.name, portal) : undefined;
+
+  return (
+    (isCallExpressionNode(portal) && readMemberCallName(portal) === 'plugin') ||
+    (portal?.type === 'Identifier' &&
+      (portalBindings.has(portalBinding) ||
+        (!portalBinding && pluginPortalOwnerNamePattern.test(portal.name))))
+  );
+};
+
+const containsConsumerPortalSchemaIdentity = (
+  node,
+  portalBindings,
+  schemaBindings,
+  getBinding
+) => {
+  let found = false;
+
+  walkAst(node, (current) => {
+    if (
+      isConsumerPortalSchemaIdentity(
+        current,
+        portalBindings,
+        schemaBindings,
+        getBinding
+      )
+    ) {
+      found = true;
+    }
+  });
+
+  return found;
+};
+
+const isInstalledSchemaIdentityFallback = (
+  node,
+  portalBindings = new Set(),
+  schemaBindings = new Set(),
+  getBinding = (name) => name
+) => {
+  if (
+    node?.type === 'LogicalExpression' &&
+    ['??', '||'].includes(node.operator)
+  ) {
+    return (
+      (containsConsumerPortalSchemaIdentity(
+        node.left,
+        portalBindings,
+        schemaBindings,
+        getBinding
+      ) &&
+        containsInvalidSchemaIdentityFallback(node.right)) ||
+      (containsConsumerPortalSchemaIdentity(
+        node.right,
+        portalBindings,
+        schemaBindings,
+        getBinding
+      ) &&
+        containsInvalidSchemaIdentityFallback(node.left))
+    );
+  }
+  if (node?.type !== 'ConditionalExpression') return false;
+  if (!containsMemberNamed(node.test, new Set(['installed']))) return false;
+
+  return (
+    (containsConsumerPortalSchemaIdentity(
+      node.consequent,
+      portalBindings,
+      schemaBindings,
+      getBinding
+    ) &&
+      containsInvalidSchemaIdentityFallback(node.alternate)) ||
+    (containsConsumerPortalSchemaIdentity(
+      node.alternate,
+      portalBindings,
+      schemaBindings,
+      getBinding
+    ) &&
+      containsInvalidSchemaIdentityFallback(node.consequent))
+  );
+};
+
+const collectConsumerPluginPortalBindings = (ast, staticStringBindings) => {
+  const portalBindings = new Set();
+  const schemaBindings = new Set();
+  const { findBinding, rootScope, scopeByNode } =
+    staticStringBindings.bindingContext;
+  const getBinding = (name, node) =>
+    findBinding(scopeByNode.get(node) ?? rootScope, name);
+  let changed = true;
+
+  while (changed) {
+    changed = false;
+    walkAst(ast, (node) => {
+      if (node.type !== 'VariableDeclarator') return;
+      const value = unwrapTypedExpression(node.init);
+      const sourceBinding =
+        value?.type === 'Identifier'
+          ? getBinding(value.name, value)
+          : undefined;
+      const isPluginPortal =
+        (isCallExpressionNode(value) &&
+          readMemberCallName(value) === 'plugin') ||
+        (value?.type === 'Identifier' &&
+          (portalBindings.has(sourceBinding) ||
+            (!sourceBinding && pluginPortalOwnerNamePattern.test(value.name))));
+      const declaredBinding =
+        node.id?.type === 'Identifier'
+          ? getBinding(node.id.name, node.id)
+          : undefined;
+
+      if (
+        declaredBinding &&
+        isPluginPortal &&
+        !portalBindings.has(declaredBinding)
+      ) {
+        portalBindings.add(declaredBinding);
+        changed = true;
+      }
+      if (node.id?.type === 'ObjectPattern' && isPluginPortal) {
+        for (const property of node.id.properties) {
+          if (
+            property.type !== 'ObjectProperty' ||
+            getPropertyName(property.key) !== 'schema'
+          ) {
+            continue;
+          }
+          const binding =
+            property.value.type === 'Identifier'
+              ? property.value
+              : property.value.type === 'AssignmentPattern' &&
+                  property.value.left.type === 'Identifier'
+                ? property.value.left
+                : undefined;
+
+          const resolvedBinding = binding
+            ? getBinding(binding.name, binding)
+            : undefined;
+
+          if (resolvedBinding && !schemaBindings.has(resolvedBinding)) {
+            schemaBindings.add(resolvedBinding);
+            changed = true;
+          }
+        }
+      }
+      if (node.id?.type !== 'Identifier') return;
+
+      const schemaOwner =
+        (value?.type === 'MemberExpression' ||
+          value?.type === 'OptionalMemberExpression') &&
+        getStaticMemberName(value) === 'schema'
+          ? unwrapTypedExpression(value.object)
+          : undefined;
+      const isPortalSchema =
+        (isCallExpressionNode(schemaOwner) &&
+          readMemberCallName(schemaOwner) === 'plugin') ||
+        (schemaOwner?.type === 'Identifier' &&
+          portalBindings.has(getBinding(schemaOwner.name, schemaOwner)));
+      const isSchemaAlias =
+        value?.type === 'Identifier' &&
+        schemaBindings.has(getBinding(value.name, value));
+
+      if (
+        declaredBinding &&
+        (isPortalSchema || isSchemaAlias) &&
+        !schemaBindings.has(declaredBinding)
+      ) {
+        schemaBindings.add(declaredBinding);
+        changed = true;
+      }
+    });
+  }
+
+  return { getBinding, portalBindings, schemaBindings };
+};
+
+const isConsumerPortalSchemaMap = (
+  node,
+  portalBindings = new Set(),
+  schemaBindings = new Set(),
+  getBinding = (name) => name
+) => {
+  const current = unwrapTypedExpression(node);
+
+  if (
+    current?.type !== 'MemberExpression' &&
+    current?.type !== 'OptionalMemberExpression'
+  ) {
+    return false;
+  }
+  if (!['element', 'properties'].includes(getStaticMemberName(current))) {
+    return false;
+  }
+  const schemaMember = unwrapTypedExpression(current.object);
+
+  if (
+    schemaMember?.type === 'Identifier' &&
+    schemaBindings.has(getBinding(schemaMember.name, schemaMember))
+  ) {
+    return true;
+  }
+
+  if (
+    (schemaMember?.type !== 'MemberExpression' &&
+      schemaMember?.type !== 'OptionalMemberExpression') ||
+    getStaticMemberName(schemaMember) !== 'schema'
+  ) {
+    return false;
+  }
+  const portal = unwrapTypedExpression(schemaMember.object);
+  const portalBinding =
+    portal?.type === 'Identifier' ? getBinding(portal.name, portal) : undefined;
+
+  return (
+    (isCallExpressionNode(portal) && readMemberCallName(portal) === 'plugin') ||
+    (portal?.type === 'Identifier' &&
+      (portalBindings.has(portalBinding) ||
+        (!portalBinding && pluginPortalOwnerNamePattern.test(portal.name))))
+  );
+};
 
 const isLiteralArraySpread = (node) =>
   node?.type === 'SpreadElement' &&
@@ -3535,8 +3819,8 @@ const isPluginDescriptorBuilderChain = (node) => {
   return false;
 };
 
-const isDefineCodecsCall = (property) => {
-  if (property?.type !== 'ObjectProperty') return false;
+const getDefineCodecsCall = (property) => {
+  if (property?.type !== 'ObjectProperty') return;
 
   let value = unwrapTypedExpression(property.value);
 
@@ -3557,12 +3841,16 @@ const isDefineCodecsCall = (property) => {
     }
   }
 
-  return (
+  if (
     value?.type === 'CallExpression' &&
     value.callee.type === 'Identifier' &&
     value.callee.name === 'defineCodecs'
-  );
+  ) {
+    return value;
+  }
 };
+
+const isDefineCodecsCall = (property) => !!getDefineCodecsCall(property);
 
 const getOpaqueExtensionStageIdentity = (
   contribution,
@@ -4080,6 +4368,9 @@ const getStaticPliteElementMap = (node, staticStringBindings) => {
 
 export function auditPlateSchemaSource(source, file = 'fixture.ts') {
   const ast = parsePlateSource(source, file);
+  const staticStringBindings = collectStaticStringBindings(ast);
+  const { getBinding, portalBindings, schemaBindings } =
+    collectConsumerPluginPortalBindings(ast, staticStringBindings);
   const localPluginCreatorNames = collectLocalPluginCreatorNames(ast);
   const localPliteExtensionCreatorNames =
     collectLocalPliteExtensionCreatorNames(ast);
@@ -4087,7 +4378,6 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
     exportedName: 'react',
     modulePattern: pliteReactModulePattern,
   });
-  const staticStringBindings = collectStaticStringBindings(ast);
   const localPlateEditorConstructorNames =
     collectLocalPlateEditorConstructorNames(ast, staticStringBindings);
   const staticValueBindings = collectStaticValueBindings(
@@ -4132,6 +4422,351 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       owner?.start ?? value?.start,
       owner
     );
+  const externalMarkdownElementNodeNames = new Set([
+    'figure',
+    'figcaption',
+    'image',
+    'img',
+    'span',
+  ]);
+  const externalMarkdownNodeSources = new Set([
+    'blockquote',
+    'br',
+    'break',
+    'code',
+    'definition',
+    'del',
+    'delete',
+    'emphasis',
+    'figure',
+    'footnoteDefinition',
+    'footnoteReference',
+    'heading',
+    'html',
+    'image',
+    'imageReference',
+    'img',
+    'inlineCode',
+    'inlineMath',
+    'link',
+    'linkReference',
+    'list',
+    'listItem',
+    'mark',
+    'math',
+    'mdxFlowExpression',
+    'mdxJsxFlowElement',
+    'mdxJsxTextElement',
+    'mdxTextExpression',
+    'mdxjsEsm',
+    'mention',
+    'paragraph',
+    'span',
+    'strong',
+    'sub',
+    'sup',
+    'table',
+    'tableCell',
+    'tableRow',
+    'text',
+    'thematicBreak',
+    'u',
+    'yaml',
+  ]);
+  const getProperty = (properties, name) =>
+    properties.find(
+      (property) =>
+        getResolvedObjectPropertyName(property, staticStringBindings) === name
+    );
+  const getSchemaTypeBindings = (value) => {
+    const callback = unwrapTypedExpression(value);
+    const parameter = unwrapTypedExpression(callback?.params?.[0]);
+
+    if (!isFunction(callback) || parameter?.type !== 'ObjectPattern') {
+      return new Set();
+    }
+
+    const schemaProperty = getProperty(parameter.properties, 'schema');
+    const schemaPattern = unwrapTypedExpression(schemaProperty?.value);
+
+    if (schemaPattern?.type !== 'ObjectPattern') return new Set();
+
+    const typeProperty = getProperty(schemaPattern.properties, 'type');
+    const localType = unwrapTypedExpression(typeProperty?.value);
+
+    return new Set(localType?.type === 'Identifier' ? [localType.name] : []);
+  };
+  const getSchemaObjectBindings = (value) => {
+    const callback = unwrapTypedExpression(value);
+    const parameter = unwrapTypedExpression(callback?.params?.[0]);
+
+    if (!isFunction(callback) || parameter?.type !== 'ObjectPattern') {
+      return new Set();
+    }
+
+    const schemaProperty = getProperty(parameter.properties, 'schema');
+    const localSchema = unwrapTypedExpression(schemaProperty?.value);
+
+    return new Set(
+      localSchema?.type === 'Identifier' ? [localSchema.name] : []
+    );
+  };
+  const getCodecContextSchemaBindings = (property, ownerCallback) => ({
+    objects: new Set([
+      ...getSchemaObjectBindings(property?.value),
+      ...getSchemaObjectBindings(ownerCallback),
+    ]),
+    types: new Set([
+      ...getSchemaTypeBindings(property?.value),
+      ...getSchemaTypeBindings(ownerCallback),
+    ]),
+  });
+  const isSchemaTypeBinding = (node, typeBindings, schemaBindings) => {
+    const value = unwrapTypedExpression(node);
+
+    if (value?.type === 'Identifier' && typeBindings.has(value.name)) {
+      return true;
+    }
+
+    if (
+      (value?.type === 'MemberExpression' ||
+        value?.type === 'OptionalMemberExpression') &&
+      getStaticMemberName(value) === 'type'
+    ) {
+      const owner = unwrapTypedExpression(value.object);
+
+      return owner?.type === 'Identifier' && schemaBindings.has(owner.name);
+    }
+
+    return false;
+  };
+  const getReturnedObjectPropertySets = (callback) => {
+    if (!isFunction(unwrapTypedExpression(callback))) return [];
+
+    const collect = (value) => {
+      const result = unwrapTypedExpression(value);
+
+      if (result?.type === 'ConditionalExpression') {
+        return [...collect(result.consequent), ...collect(result.alternate)];
+      }
+      if (result?.type !== 'ObjectExpression') return [];
+
+      return [getAuthorProperties(result, callback)];
+    };
+
+    return getStaticFunctionResults(unwrapTypedExpression(callback)).flatMap(
+      collect
+    );
+  };
+  const getReturnedRawObjectPropertySets = (callback) => {
+    if (!isFunction(unwrapTypedExpression(callback))) return [];
+
+    const collect = (value) => {
+      const result = unwrapTypedExpression(value);
+
+      if (result?.type === 'ConditionalExpression') {
+        return [...collect(result.consequent), ...collect(result.alternate)];
+      }
+      if (result?.type !== 'ObjectExpression') return [];
+
+      return [result.properties];
+    };
+
+    return getStaticFunctionResults(unwrapTypedExpression(callback)).flatMap(
+      collect
+    );
+  };
+  const getCodecRulePropertySets = (value, owner) => {
+    const rules = unwrapTypedExpression(value);
+
+    if (rules?.type === 'ArrayExpression') {
+      return rules.elements
+        .filter((element) => !!element && element.type !== 'SpreadElement')
+        .map((element) => getAuthorProperties(element, owner))
+        .filter((properties) => properties.length > 0);
+    }
+
+    const properties = getAuthorProperties(rules, owner);
+
+    return properties.length > 0 ? [properties] : [];
+  };
+  const reportCustomMarkdownCodecIdentity = (
+    authorProperties,
+    ownerCallback
+  ) => {
+    const codecsProperty = getProperty(authorProperties, 'codecs');
+    const defineCodecsCall = getDefineCodecsCall(codecsProperty);
+
+    if (
+      !defineCodecsCall ||
+      ![1, 2].includes(defineCodecsCall.arguments.length)
+    ) {
+      return;
+    }
+
+    const codecProperties = getAuthorProperties(
+      defineCodecsCall.arguments.at(-1),
+      codecsProperty
+    );
+    const markdownProperty = getProperty(codecProperties, 'text/markdown');
+
+    if (!markdownProperty || markdownProperty.type !== 'ObjectProperty') {
+      return;
+    }
+
+    const schemaBindings = getCodecContextSchemaBindings(
+      codecsProperty,
+      ownerCallback
+    );
+    const targetsForeignPlugin = defineCodecsCall.arguments.length === 2;
+
+    for (const ruleProperties of getCodecRulePropertySets(
+      markdownProperty.value,
+      markdownProperty
+    )) {
+      const kindProperty = getProperty(ruleProperties, 'kind');
+      const markProperty = getProperty(ruleProperties, 'mark');
+      const fromProperty = getProperty(ruleProperties, 'from');
+      const from = unwrapTypedExpression(fromProperty?.value);
+      const decodeProperty = getProperty(ruleProperties, 'decode');
+
+      if (
+        getStaticString(unwrapTypedExpression(kindProperty?.value)) !==
+          'node' ||
+        unwrapTypedExpression(markProperty?.value)?.value === true
+      ) {
+        continue;
+      }
+
+      const encodeProperty = getProperty(ruleProperties, 'encode');
+      const encodedMdxObjects = getReturnedObjectPropertySets(
+        encodeProperty?.value
+      ).filter((properties) => {
+        const typeProperty = getProperty(properties, 'type');
+        const type = getStaticString(
+          unwrapTypedExpression(typeProperty?.value)
+        );
+
+        return type === 'mdxJsxFlowElement' || type === 'mdxJsxTextElement';
+      });
+      const encodedNameProperties = encodedMdxObjects
+        .map((properties) => getProperty(properties, 'name'))
+        .filter(Boolean);
+      const fromName = getStaticString(from);
+      const hasCustomDecodeSource =
+        !!decodeProperty &&
+        !!fromProperty &&
+        (!fromName || !externalMarkdownNodeSources.has(fromName));
+      const hasCustomEncodedName = encodedNameProperties.some((property) => {
+        const name = getStaticString(unwrapTypedExpression(property.value));
+
+        return !name || !externalMarkdownElementNodeNames.has(name);
+      });
+
+      if (
+        targetsForeignPlugin &&
+        (hasCustomDecodeSource || hasCustomEncodedName)
+      ) {
+        report(
+          codecsProperty,
+          'custom Markdown element codecs must be owned by their target plugin so from, decode, and encode share its resolved schema type; foreign defineCodecs(TargetPlugin, ...) contributions cannot author configurable MDX identity'
+        );
+        continue;
+      }
+
+      if (
+        hasCustomDecodeSource &&
+        !isSchemaTypeBinding(from, schemaBindings.types, schemaBindings.objects)
+      ) {
+        report(
+          fromProperty ?? decodeProperty,
+          'custom Markdown element codecs use the resolved schema type for from; bind schema: { type } in the codec factory and use from: type'
+        );
+      }
+
+      const decodedObjects = getReturnedObjectPropertySets(
+        decodeProperty?.value
+      );
+      const decodedTypeProperties = decodedObjects
+        .map((properties) => getProperty(properties, 'type'))
+        .filter(Boolean);
+      const decodedSchemaBindings = {
+        objects: new Set([
+          ...schemaBindings.objects,
+          ...getSchemaObjectBindings(decodeProperty?.value),
+        ]),
+        types: new Set([
+          ...schemaBindings.types,
+          ...getSchemaTypeBindings(decodeProperty?.value),
+        ]),
+      };
+      const hasInvalidDecodedType = decodedTypeProperties.some(
+        (property) =>
+          !isSchemaTypeBinding(
+            property.value,
+            decodedSchemaBindings.types,
+            decodedSchemaBindings.objects
+          )
+      );
+
+      if (
+        decodeProperty &&
+        ((decodedObjects.length > 0 && decodedTypeProperties.length === 0) ||
+          hasInvalidDecodedType)
+      ) {
+        report(
+          decodeProperty ?? fromProperty,
+          'custom Markdown element codecs decode to the resolved schema type; return type from the codec schema context'
+        );
+      }
+
+      if (
+        getReturnedRawObjectPropertySets(decodeProperty?.value).some(
+          (properties) => {
+            const spreadIndex = properties.findLastIndex(
+              (property) => property.type === 'SpreadElement'
+            );
+
+            if (spreadIndex < 0) return false;
+
+            return ['children', 'type'].some((name) => {
+              const index = properties.findIndex(
+                (property) =>
+                  getResolvedObjectPropertyName(
+                    property,
+                    staticStringBindings
+                  ) === name
+              );
+
+              return index >= 0 && index < spreadIndex;
+            });
+          }
+        )
+      ) {
+        report(
+          decodeProperty,
+          'Markdown codec attributes cannot override Plate children or schema type; spread parsed properties before structural fields'
+        );
+      }
+
+      if (
+        hasCustomEncodedName &&
+        encodedNameProperties.some(
+          (property) =>
+            !isSchemaTypeBinding(
+              property.value,
+              schemaBindings.types,
+              schemaBindings.objects
+            )
+        )
+      ) {
+        report(
+          encodeProperty ?? fromProperty,
+          'custom Markdown element codecs encode the resolved schema type as the MDX name; use name: type from the codec schema context'
+        );
+      }
+    }
+  };
   const isIntentionalRuntimeNegativeDefinitionField = (
     property,
     properties,
@@ -4330,10 +4965,31 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
   const visit = (node, ancestors = []) => {
     if (!node || typeof node !== 'object') return;
 
-    if (isInstalledSchemaIdentityConditional(node)) {
+    if (
+      isInstalledSchemaIdentityFallback(
+        node,
+        portalBindings,
+        schemaBindings,
+        getBinding
+      )
+    ) {
       report(
         node,
-        'schema identity portals already expose the conventional type or key when uninstalled; do not add an installed fallback'
+        'uninstalled plugins have no schema identity; do not replace a missing type or key with a raw string fallback'
+      );
+    }
+    if (
+      isConsumerPortalSchemaMap(
+        node,
+        portalBindings,
+        schemaBindings,
+        getBinding
+      ) &&
+      !hasExpectError(source, node)
+    ) {
+      report(
+        node,
+        'consumer plugin portals expose only flat schema.type or schema.key; schema.element and schema.properties are author/compiler-only'
       );
     }
     if (isLiteralArraySpread(node)) {
@@ -4824,8 +5480,41 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
     if (
       (node.type === 'MemberExpression' ||
         node.type === 'OptionalMemberExpression') &&
+      node.computed &&
+      getStaticMemberName(unwrapTypedExpression(node.object)) ===
+        'properties' &&
+      getStaticMemberName(
+        unwrapTypedExpression(unwrapTypedExpression(node.object)?.object)
+      ) === 'schema' &&
+      getStaticExpressionPath(node.property)?.endsWith('.name')
+    ) {
+      report(
+        node,
+        'schema property local ids must be explicit; plugin capability names are not property keys'
+      );
+    }
+
+    if (
+      (node.type === 'MemberExpression' ||
+        node.type === 'OptionalMemberExpression') &&
       !node.computed
     ) {
+      const memberName = getStaticMemberName(node);
+      const memberOwner = unwrapTypedExpression(node.object);
+      const isUniversalPluginIdentity =
+        (memberName === 'key' || memberName === 'type') &&
+        ((memberOwner?.type === 'Identifier' &&
+          platePluginFactoryNamePattern.test(memberOwner.name)) ||
+          (isCallExpressionNode(memberOwner) &&
+            readMemberCallName(memberOwner) === 'plugin'));
+
+      if (isUniversalPluginIdentity && !hasExpectError(source, node)) {
+        report(
+          node,
+          `plugins do not expose universal ${memberName}; use the installed schema handle`
+        );
+      }
+
       if (
         packageTestSourcePattern.test(file) &&
         getStaticExpressionPath(node) === 'editor.tx'
@@ -4866,8 +5555,15 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
 
     if (node.type === 'ObjectProperty') {
       const key = getResolvedObjectPropertyName(node, staticStringBindings);
+      const parentObject = ancestors.at(-1);
+      const isElementSourceMarker =
+        file === 'packages/plite/src/core/schema-definition.ts' &&
+        key === 'type' &&
+        parentObject?.type === 'ObjectExpression' &&
+        getObjectProperty(parentObject, 'source');
 
       if (
+        !isElementSourceMarker &&
         (key === 'type' ||
           (key === 'key' &&
             !ancestors
@@ -5193,7 +5889,11 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       }
 
       if (memberCallName === 'extend' && isCallExpressionNode(node)) {
-        for (const property of getAuthorProperties(node.arguments[0], node)) {
+        const authorProperties = getAuthorProperties(node.arguments[0], node);
+
+        reportCustomMarkdownCodecIdentity(authorProperties, node.arguments[0]);
+
+        for (const property of authorProperties) {
           const key = getResolvedObjectPropertyName(
             property,
             staticStringBindings
@@ -5202,7 +5902,11 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
           reportPrefixedOnHandlers(property);
           reportStaleCapabilityFactoryContext(property);
 
-          if (key && deletedPlatePluginDefinitionKeys.has(key)) {
+          if (
+            key &&
+            deletedPlatePluginDefinitionKeys.has(key) &&
+            !hasExpectError(source, property)
+          ) {
             report(property, `deleted Plate plugin definition field ${key}`);
           }
 
@@ -5333,7 +6037,11 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
           reportPrefixedOnHandlers(property);
           reportStaleCapabilityFactoryContext(property);
 
-          if (key && deletedPlatePluginDefinitionKeys.has(key)) {
+          if (
+            key &&
+            deletedPlatePluginDefinitionKeys.has(key) &&
+            !hasExpectError(source, property)
+          ) {
             report(property, `deleted Plate plugin definition field ${key}`);
           }
 
@@ -5351,6 +6059,8 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
           report(node, `${pluginCreatorKind} requires (name, definition)`);
         }
         const authorProperties = getAuthorProperties(node.arguments[1], node);
+
+        reportCustomMarkdownCodecIdentity(authorProperties, node.arguments[1]);
 
         if (
           (node.typeParameters?.params.length > 0 ||
@@ -5373,7 +6083,11 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
           reportPrefixedOnHandlers(property);
           reportStaleCapabilityFactoryContext(property);
 
-          if (key && deletedPlatePluginDefinitionKeys.has(key)) {
+          if (
+            key &&
+            deletedPlatePluginDefinitionKeys.has(key) &&
+            !hasExpectError(source, property)
+          ) {
             report(property, `deleted Plate plugin definition field ${key}`);
           }
 
@@ -5512,7 +6226,8 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       }
 
       const rawSchemaQuery =
-        (isSchemaApiCall(node, 'getElementProperty') &&
+        ((isSchemaApiCall(node, 'getProperty') ||
+          isSchemaApiCall(node, 'getElementProperty')) &&
           node.arguments[1]?.type === 'StringLiteral') ||
         (isSchemaApiCall(node, 'property') &&
           node.arguments[0]?.type === 'ObjectExpression');
@@ -5900,6 +6615,8 @@ export function auditNamedSchemaLineageDocument(
     }
 
     const staticStringBindings = collectStaticStringBindings(ast);
+    const { getBinding, portalBindings, schemaBindings } =
+      collectConsumerPluginPortalBindings(ast, staticStringBindings);
     const staticValueBindings = collectStaticValueBindings(
       ast,
       staticStringBindings
@@ -5914,12 +6631,19 @@ export function auditNamedSchemaLineageDocument(
     );
 
     walkAst(ast, (node) => {
-      if (isInstalledSchemaIdentityConditional(node)) {
+      if (
+        isInstalledSchemaIdentityFallback(
+          node,
+          portalBindings,
+          schemaBindings,
+          getBinding
+        )
+      ) {
         issues.push({
           ...createIssue(
             file,
             node,
-            'schema identity portals already expose the conventional type or key when uninstalled; do not add an installed fallback'
+            'uninstalled plugins have no schema identity; do not replace a missing type or key with a raw string fallback'
           ),
           line: fence.line + (node.loc?.start.line ?? 1) - 1,
         });

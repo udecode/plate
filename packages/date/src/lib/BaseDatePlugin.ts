@@ -1,19 +1,15 @@
 import { defineBasePlugin } from '@platejs/core';
-import type { NodeInsertNodesOptions, Text } from '@platejs/plite';
+import type { ElementOf, NodeInsertNodesOptions, Text } from '@platejs/plite';
 import { property } from '@platejs/plite';
-import { PLUGINS, type TDateElement } from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 
 import { normalizeDateValue } from './dateValue';
 
-export type InsertDateOptions = NodeInsertNodesOptions<TDateElement | Text> & {
-  date?: string;
-};
-
 export const BaseDatePlugin = defineBasePlugin(PLUGINS.date, {
-  codecs: ({ defineCodecs, type }) =>
+  codecs: ({ defineCodecs, schema: { type } }) =>
     defineCodecs({
       'text/markdown': {
-        from: 'date',
+        from: type,
         kind: 'node',
         decode: ({ node, parseAttributes }) => {
           const props = parseAttributes(node.attributes);
@@ -26,8 +22,8 @@ export const BaseDatePlugin = defineBasePlugin(PLUGINS.date, {
                 : '';
 
           return {
-            children: [{ text: '' }],
             ...normalizeDateValue(dateValue),
+            children: [{ text: '' }],
             type,
           };
         },
@@ -36,7 +32,7 @@ export const BaseDatePlugin = defineBasePlugin(PLUGINS.date, {
             return {
               attributes: propsToAttributes({ value: node.date }),
               children: [],
-              name: 'date',
+              name: type,
               type: 'mdxJsxTextElement',
             };
           }
@@ -46,7 +42,7 @@ export const BaseDatePlugin = defineBasePlugin(PLUGINS.date, {
             children: [
               { type: 'text', value: node.rawDate ?? node.date ?? '' },
             ],
-            name: 'date',
+            name: type,
             type: 'mdxJsxTextElement',
           };
         },
@@ -61,19 +57,29 @@ export const BaseDatePlugin = defineBasePlugin(PLUGINS.date, {
       void: 'inline',
     },
   },
-  update: ({ tx, type }) => ({
-    insert: ({ date, ...options }: InsertDateOptions = {}) => {
-      tx.nodes.insert(
-        [
-          {
-            children: [{ text: '' }],
-            ...normalizeDateValue(date ?? new Date()),
-            type,
-          },
-          { text: ' ' },
-        ],
-        options
-      );
-    },
-  }),
+}).extend(({ plugin, schema: { type } }) => {
+  type DateNode = ElementOf<typeof plugin>;
+
+  return {
+    update: ({ tx }) => ({
+      insert: (
+        { date }: { date?: string } = {},
+        options: NodeInsertNodesOptions<DateNode | Text> = {}
+      ) => {
+        tx.nodes.insert(
+          [
+            {
+              children: [{ text: '' }],
+              ...normalizeDateValue(date ?? new Date()),
+              type,
+            },
+            { text: ' ' },
+          ],
+          options
+        );
+      },
+    }),
+  };
 });
+
+export type DateElement = ElementOf<typeof BaseDatePlugin>;

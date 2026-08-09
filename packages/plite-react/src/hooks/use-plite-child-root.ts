@@ -6,11 +6,6 @@ import { useOptionalElement } from './use-element';
 
 const DEFAULT_CHILD_ROOT_SLOT = 'default';
 
-type ChildRootElement = Element & {
-  childRoot?: RootKey;
-  childRoots?: Record<string, RootKey>;
-};
-
 const isChildRootMap = (value: unknown): value is Record<string, RootKey> =>
   typeof value === 'object' &&
   value !== null &&
@@ -20,15 +15,16 @@ const getExplicitChildRoot = (
   element: Element,
   slot: string
 ): RootKey | null => {
-  const childRootElement = element as ChildRootElement;
-  const childRoots = isChildRootMap(childRootElement.childRoots)
-    ? childRootElement.childRoots
+  const childRoots = isChildRootMap(element.childRoots)
+    ? element.childRoots
     : null;
+  const defaultChildRoot =
+    typeof element.childRoot === 'string' ? element.childRoot : undefined;
 
   return (
     childRoots?.[slot] ??
     (slot === DEFAULT_CHILD_ROOT_SLOT
-      ? (childRoots?.[DEFAULT_CHILD_ROOT_SLOT] ?? childRootElement.childRoot)
+      ? (childRoots?.[DEFAULT_CHILD_ROOT_SLOT] ?? defaultChildRoot)
       : null) ??
     null
   );

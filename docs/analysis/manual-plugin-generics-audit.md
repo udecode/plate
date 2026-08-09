@@ -247,8 +247,9 @@ hand-edited.
 
 - Ordinary domain/result narrowing such as `state.nodes.get<TElement>()`,
   `Map<K, V>`, React component generics, and generic Plite runtime owners.
-- App-owned editor model boundaries such as `useEditor<MyEditor>()` and
-  `usePlateEditor<MyEditor>()`.
+- Constructor hooks such as `usePlateEditor<MyEditor>()`, where typed inputs
+  create the returned editor. Context retrieval through `useEditor()` is not a
+  type boundary and accepts no editor refinement.
 - Generated registry JSON, templates, completed historical plans, and proof
   snapshots.
 - Generic factory parameters that correlate real input and output, including

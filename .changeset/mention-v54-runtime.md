@@ -14,7 +14,8 @@ capability name and persisted element type are both `mentionInput`.
 
 Remove `getMentionOnSelectItem`; selection handlers call the installed plugin
 update directly. The update accepts only persisted mention data (`key` and
-`value`); combobox search text stays UI-local.
+`value`) in its first argument and generic node options in its second;
+combobox search text stays UI-local.
 
 Use `TMentionItemBase<TKey = unknown>` to type arbitrary item-key domains
 without an unsafe `any`.

@@ -20,7 +20,7 @@ Code applies the `code` leaf mark to inline text. Use [Code Block](/docs/code-bl
 
 ## Features
 
-- `KEYS.code` leaf mark.
+- `PLUGINS.code` leaf mark.
 - Hard selection affinity.
 - HTML deserialization from `code` tags and Consolas font styles.
 - `<code>` rendering by default.
@@ -51,17 +51,16 @@ export const editor = createPlateEditor({
 
 ### Add A Toolbar Button
 
-Use `MarkToolbarButton` with `KEYS.code`.
+Use `MarkToolbarButton` with `PLUGINS.code`.
 
 ```tsx
 import { Code2Icon } from 'lucide-react';
-import { KEYS } from 'platejs';
 
 import { MarkToolbarButton } from '@/components/ui/mark-toolbar-button';
 
 export function CodeToolbarButton() {
   return (
-    <MarkToolbarButton nodeType={KEYS.code} tooltip="Code (⌘+E)">
+    <MarkToolbarButton nodeType={PLUGINS.code} tooltip="Code (⌘+E)">
       <Code2Icon />
     </MarkToolbarButton>
   );
@@ -122,7 +121,7 @@ The package owns inline code semantics. The registry owns visual styling and too
 
 | Behavior | Source |
 |----------|--------|
-| Mark key | `KEYS.code` |
+| Mark key | `PLUGINS.code` |
 | Mark declaration | `schema.mark: property.boolean({ default: false, omitDefault: true })` |
 | Toggle command | `tx.code.toggle()` calls `tx.marks.toggle(type)`. |
 | Selection affinity | `hard` |

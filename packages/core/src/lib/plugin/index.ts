@@ -8,3 +8,4 @@ export * from './MarkdownNodeCodec';
 export * from './PluginDefinition';
 export * from './defineBasePlugin';
 export * from './pluginAuthoringContext';
+export * from './pluginNodeTypes';

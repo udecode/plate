@@ -6,23 +6,21 @@ import {
 } from '@platejs/plite-react';
 
 import { useEditor } from './createPlateStore';
-import type { PlateStoreEditor } from './PlateStore';
+import type { PlateEditor } from '../../editor';
+import type { PlateEditorWithStore } from './createPlateStore';
 
-export type UseEditorSelectorOptions<
+export type UseEditorSelectorOptions<T> = EditorRuntimeStateSelectorOptions<
   T,
-  E extends PlateStoreEditor = PlateStoreEditor,
-> = EditorRuntimeStateSelectorOptions<T, E> & {
+  PlateEditor
+> & {
   id?: string;
 };
 
-export const useEditorSelector = <
-  T,
-  E extends PlateStoreEditor = PlateStoreEditor,
->(
-  selector: (editor: E, prev?: T) => T,
-  { id, ...options }: UseEditorSelectorOptions<T, E> = {}
+export const useEditorSelector = <T>(
+  selector: (editor: PlateEditorWithStore, prev?: T) => T,
+  { id, ...options }: UseEditorSelectorOptions<T> = {}
 ): T => {
-  const editor = useEditor<E>({ id });
+  const editor = useEditor({ id });
   const previousValueRef = React.useRef<T | undefined>(undefined);
 
   return useEditorRuntimeState(

@@ -5,6 +5,8 @@ import {
   type EditorMarksOf,
   type EditorReplaceChildrenOptions,
   type ElementOf,
+  type NodeTarget,
+  type NodeKey,
   type TextOf,
 } from '@platejs/plite';
 
@@ -37,6 +39,18 @@ const initialValue: CustomValue = [
 ];
 
 const editor = createEditor<CustomValue>({ initialValue });
+declare const nodeKey: NodeKey;
+
+const runtimeTarget: NodeTarget<ParagraphElement> = nodeKey;
+
+editor.read.nodes.get(runtimeTarget);
+editor.update.nodes.remove({ at: runtimeTarget });
+
+// @ts-expect-error node key is opaque and cannot be constructed from an arbitrary string
+const invalidNodeKey: NodeKey = 'n0';
+
+// @ts-expect-error arbitrary persisted strings are not runtime node targets
+editor.update.nodes.remove({ at: 'block-1' });
 
 editor.update((tx) => {
   tx.nodes.set<ElementOf<typeof editor>>({ type: 'quote' });
@@ -98,3 +112,5 @@ void leaf;
 void marks;
 void changes;
 void commit;
+void invalidNodeKey;
+void runtimeTarget;

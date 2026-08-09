@@ -1,4 +1,4 @@
-import { type DefinitionOf, nanoid } from '@platejs/core';
+import { type DefinitionOf, nanoid, type PluginReference } from '@platejs/core';
 import { toPlatePlugin } from '@platejs/core/react';
 import { createAtomStore } from '@platejs/core/react/internal';
 import {
@@ -7,22 +7,30 @@ import {
   type Path,
   PathApi,
 } from '@platejs/plite';
-import {
-  NODES,
-  KEYS,
-  type TMediaElement,
-  type TPlaceholderElement,
-} from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 
 import type {
   AlignedMediaInsertInput,
+  AudioElement,
+  FileElement,
   ImageInsertInput,
   MediaInsertInput,
   ProviderMediaInsertInput,
+  VideoElement,
 } from '../../lib/BaseMediaPlugin';
-import { BasePlaceholderPlugin } from '../../lib/placeholder/BasePlaceholderPlugin';
+import type { ImageElement } from '../../lib/image/BaseImagePlugin';
+import {
+  BasePlaceholderPlugin,
+  type PlaceholderElement,
+} from '../../lib/placeholder/BasePlaceholderPlugin';
 import { AudioPlugin, FilePlugin, ImagePlugin, VideoPlugin } from '../plugins';
 import { lookup } from './internal/mimeTypes';
+
+type PlaceholderMediaElement =
+  | AudioElement
+  | FileElement
+  | ImageElement
+  | VideoElement;
 
 const fileSizePattern = /^(\d+)(\.\d+)?\s*(B|KB|MB|GB)$/i;
 
@@ -57,11 +65,8 @@ type PowOf2 = 1 | 2 | 4 | 8 | 16 | 32 | 64 | 128 | 256 | 512 | 1024;
 
 export type FileSize = `${PowOf2}${SizeUnit}`;
 
-export type MediaKeys =
-  | typeof NODES.audio
-  | typeof NODES.file
-  | typeof NODES.img
-  | typeof NODES.video;
+export type MediaKeys = 'audio' | 'file' | 'image' | 'video';
+type PlaceholderMediaPlugin = MediaKeys | PluginReference<MediaKeys>;
 
 export type MediaItemConfig = {
   /** Media node type inserted after upload. */
@@ -113,7 +118,7 @@ export type UploadError =
 export type UploadConfig = Partial<Record<AllowedFileType, MediaItemConfig>>;
 
 export type InsertMediaOptions = Omit<
-  NodeInsertNodesOptions<TPlaceholderElement>,
+  NodeInsertNodesOptions<PlaceholderElement>,
   'at'
 > & { at?: Path };
 
@@ -158,37 +163,37 @@ const initialState: PlaceholderPluginState = {
     audio: {
       maxFileCount: 1,
       maxFileSize: '8MB',
-      mediaType: NODES.audio,
+      mediaType: 'audio',
       minFileCount: 1,
     },
     blob: {
       maxFileCount: 1,
       maxFileSize: '8MB',
-      mediaType: NODES.file,
+      mediaType: 'file',
       minFileCount: 1,
     },
     image: {
       maxFileCount: 3,
       maxFileSize: '4MB',
-      mediaType: NODES.img,
+      mediaType: 'image',
       minFileCount: 1,
     },
     pdf: {
       maxFileCount: 1,
       maxFileSize: '4MB',
-      mediaType: NODES.file,
+      mediaType: 'file',
       minFileCount: 1,
     },
     text: {
       maxFileCount: 1,
       maxFileSize: '64KB',
-      mediaType: NODES.file,
+      mediaType: 'file',
       minFileCount: 1,
     },
     video: {
       maxFileCount: 1,
       maxFileSize: '16MB',
-      mediaType: NODES.video,
+      mediaType: 'video',
       minFileCount: 1,
     },
   },
@@ -223,7 +228,7 @@ export const PlaceholderPlugin = toPlatePlugin(BasePlaceholderPlugin, {
       ): File | undefined => state.uploadingFiles[id],
     },
   }))
-  .extend(({ api, editor, store, type }) => ({
+  .extend(({ api, editor, store, schema: { type } }) => ({
     update: ({ context: { afterCommit }, tx }) => ({
       insertMedia: (files: File[] | FileList, options?: InsertMediaOptions) => {
         const uploadConfig = store.get('uploadConfig');
@@ -395,51 +400,52 @@ export const PlaceholderPlugin = toPlatePlugin(BasePlaceholderPlugin, {
           const id = nanoid();
 
           afterCommit(() => api.addUploadingFile(id, file));
-          tx.nodes.insert<TPlaceholderElement>(
-            {
-              id,
-              children: [{ text: '' }],
-              mediaType,
-              type,
-            },
-            { ...restOptions, at: currentAt }
-          );
+          tx.nodes.insert(tx.schema.create(type, { id, mediaType }), {
+            ...restOptions,
+            at: currentAt,
+          });
         }
       },
       replaceMedia: (
         {
-          type: mediaType,
+          plugin: mediaPlugin,
           ...input
         }:
-          | (AlignedMediaInsertInput & { type: string })
-          | (ImageInsertInput & { type: string })
-          | (MediaInsertInput & { type: string })
-          | (ProviderMediaInsertInput & { type: string }),
+          | (AlignedMediaInsertInput & { plugin: PlaceholderMediaPlugin })
+          | (ImageInsertInput & { plugin: PlaceholderMediaPlugin })
+          | (MediaInsertInput & { plugin: PlaceholderMediaPlugin })
+          | (ProviderMediaInsertInput & { plugin: PlaceholderMediaPlugin }),
         {
           at,
           ...options
-        }: Omit<NodeInsertNodesOptions<TMediaElement>, 'at'> & { at: Path }
+        }: Omit<
+          NodeInsertNodesOptions<PlaceholderMediaElement>,
+          'at' | 'match'
+        > & {
+          at: Path;
+        }
       ) => {
-        const audioType = editor.plugin(KEYS.audio).type;
-        const fileType = editor.plugin(KEYS.file).type;
-        const imageType = editor.plugin(KEYS.img).type;
-        const videoType = editor.plugin(KEYS.video).type;
+        const media = editor.plugin(mediaPlugin);
+        const mediaName = media.name;
 
         if (
-          mediaType !== audioType &&
-          mediaType !== fileType &&
-          mediaType !== imageType &&
-          mediaType !== videoType
+          !media.installed ||
+          (mediaName !== PLUGINS.audio &&
+            mediaName !== PLUGINS.file &&
+            mediaName !== PLUGINS.image &&
+            mediaName !== PLUGINS.video)
         ) {
-          throw new Error(`Unsupported placeholder media type "${mediaType}".`);
+          throw new Error(
+            `Unsupported placeholder media plugin "${mediaName}".`
+          );
         }
 
         tx.nodes.remove({ at });
-        if (mediaType === audioType) {
+        if (mediaName === PLUGINS.audio) {
           tx.audio.insert(input, { ...options, at });
-        } else if (mediaType === fileType) {
+        } else if (mediaName === PLUGINS.file) {
           tx.file.insert(input, { ...options, at });
-        } else if (mediaType === imageType) {
+        } else if (mediaName === PLUGINS.image) {
           tx.image.insert(input, { ...options, at });
         } else {
           tx.video.insert(input, { ...options, at });
@@ -447,15 +453,7 @@ export const PlaceholderPlugin = toPlatePlugin(BasePlaceholderPlugin, {
       },
     }),
   }))
-  .extend(({ plugin }) => ({
-    update: ({ tx }) => ({
-      insertMediaReplacingBlock: (files: File[] | FileList, at: Path) => {
-        tx.nodes.remove({ at });
-        tx[plugin.name].insertMedia(files, { at });
-      },
-    }),
-  }))
-  .extend(({ editor, store, update }) => ({
+  .extend(({ editor, plugin, store, update }) => ({
     on: {
       drop: ({ event }) => {
         // The DnD plugin owns file drops unless explicitly disabled.
@@ -487,7 +485,10 @@ export const PlaceholderPlugin = toPlatePlugin(BasePlaceholderPlugin, {
         const ancestor = editor.read.nodes.block();
 
         if (ancestor && NodeApi.string(ancestor[0]).length === 0) {
-          update.insertMediaReplacingBlock(files, ancestor[1]);
+          editor.update((tx) => {
+            tx.nodes.remove({ at: ancestor[1] });
+            tx[plugin.name].insertMedia(files, { at: ancestor[1] });
+          });
 
           return true;
         }

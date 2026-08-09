@@ -37,9 +37,7 @@ docs:
 ### 添加套件
 
 ```tsx
-import {
-  PLUGINS,
-  createPlateEditor } from 'platejs/react';
+import { createPlateEditor } from 'platejs/react';
 import { SlashKit } from '@/components/editor/plugins/slash-kit';
 
 const editor = createPlateEditor({
@@ -47,7 +45,7 @@ const editor = createPlateEditor({
     // ...其他插件
     ...SlashKit,
   ],
-  });
+});
 ```
 
 </Steps>
@@ -83,8 +81,11 @@ const editor = createPlateEditor({
 需要替换依赖的组件或配置时，把完整的 `SlashInputPlugin` 描述符加入同一数组。
 
 ```tsx
-import { SlashPlugin,
-  SlashInputPlugin } from '@platejs/slash-command/react';
+import {
+  SlashInputPlugin,
+  SlashPlugin,
+} from '@platejs/slash-command/react';
+import { PLUGINS } from 'platejs';
 import { createPlateEditor } from 'platejs/react';
 import { SlashInputElement } from '@/components/ui/slash-node';
 
@@ -95,12 +96,14 @@ const editor = createPlateEditor({
       initialState: {
         trigger: '/',
         triggerPreviousCharPattern: /^\s?$/,
-        triggerQuery: (editor) =>
-          !editor.read.nodes.some({
-            match: {
-              type: editor.plugin(PLUGINS.codeBlock).schema.element!.type,
-            },
-          }),
+        triggerQuery: (editor) => {
+          const codeBlock = editor.plugin(PLUGINS.codeBlock);
+
+          return (
+            !codeBlock.installed ||
+            !editor.read.nodes.some({ match: { type: codeBlock.schema.type } })
+          );
+        },
       },
     }),
     SlashInputPlugin.configure({ component: SlashInputElement }),

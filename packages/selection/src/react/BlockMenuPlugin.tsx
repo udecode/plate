@@ -1,7 +1,7 @@
 import type { DefinitionOf } from '@platejs/core';
 
 import { definePlatePlugin } from '@platejs/core/react';
-import { KEYS } from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 
 import { BlockSelectionPlugin } from './BlockSelectionPlugin';
 
@@ -27,7 +27,7 @@ const initialState: BlockMenuPluginState = {
   },
 };
 
-export const BlockMenuPlugin = definePlatePlugin(KEYS.blockMenu, {
+export const BlockMenuPlugin = definePlatePlugin(PLUGINS.blockMenu, {
   initialState,
 
   editOnly: true,

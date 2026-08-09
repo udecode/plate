@@ -2,17 +2,20 @@ import React from 'react';
 
 import { renderHook } from '@testing-library/react';
 import * as actualCoreReact from '@platejs/core/react';
+import type { Element, Path, NodeKey } from '@platejs/plite';
 
 const useEditorMock = mock();
 const useEditorPluginMock = mock();
 const useEditorSelectorMock = mock();
 const useElementContextMock = mock();
+const usePluginStoreMock = mock();
 
 mock.module('@platejs/core/react', () => ({
   ...actualCoreReact,
   useEditor: useEditorMock,
   useEditorPlugin: useEditorPluginMock,
   useEditorSelector: useEditorSelectorMock,
+  usePluginStore: usePluginStoreMock,
 }));
 mock.module('@platejs/core/react/internal', () => ({
   useElementContext: useElementContextMock,
@@ -21,11 +24,6 @@ mock.module('@platejs/core/react/internal', () => ({
 const loadHooks = () =>
   import(`./useBlockSelection?test=${Math.random().toString(36).slice(2)}`);
 
-const createStore = (values: Record<string, unknown>) => ({
-  get: (key: string) => values[key],
-  subscribe: () => () => {},
-});
-
 describe('block selection hooks', () => {
   afterEach(() => {
     mock.restore();
@@ -33,6 +31,7 @@ describe('block selection hooks', () => {
     useEditorPluginMock.mockReset();
     useEditorSelectorMock.mockReset();
     useElementContextMock.mockReset();
+    usePluginStoreMock.mockReset();
   });
 
   it('returns selectable element props from the plugin API', async () => {
@@ -76,35 +75,46 @@ describe('block selection hooks', () => {
   });
 
   it('reads selected state from the typed plugin portal', async () => {
-    const element = { id: 'a', children: [{ text: '' }], type: 'paragraph' };
+    const element = { children: [{ text: '' }], type: 'paragraph' };
+    const nodeKey = 'runtime:a' as NodeKey;
 
     useElementContextMock.mockReturnValue({ element, path: [0] });
-    useEditorPluginMock.mockReturnValue({
-      store: createStore({ selectedIds: new Set(['a']) }),
+    useEditorMock.mockReturnValue({
+      key: () => nodeKey,
     });
+    usePluginStoreMock.mockImplementation(
+      (_plugin, key, id) => key === 'isSelected' && id === nodeKey
+    );
 
     const { useBlockSelected } = await loadHooks();
 
     expect(renderHook(() => useBlockSelected()).result.current).toBe(true);
-    expect(renderHook(() => useBlockSelected('b')).result.current).toBe(false);
+    expect(
+      renderHook(() => useBlockSelected('runtime:b' as NodeKey)).result.current
+    ).toBe(false);
   });
 
   it('returns selected nodes, fragments, and fragment props', async () => {
-    const blocks = [
-      [{ dir: 'rtl', id: 'a', type: 'paragraph' }, [0]],
-      [{ dir: 'rtl', id: 'b', type: 'paragraph' }, [1]],
+    const firstNodeKey = 'runtime:a' as NodeKey;
+    const secondNodeKey = 'runtime:b' as NodeKey;
+    const blocks: [Element, Path][] = [
+      [{ children: [{ text: '' }], dir: 'rtl', type: 'paragraph' }, [0]],
+      [{ children: [{ text: '' }], dir: 'rtl', type: 'paragraph' }, [1]],
     ];
+    const nodeKeys = new Map<Element, NodeKey>([
+      [blocks[0]![0], firstNodeKey],
+      [blocks[1]![0], secondNodeKey],
+    ]);
 
     useEditorMock.mockReturnValue({
+      key: (node: Element) => nodeKeys.get(node),
       read: {
         nodes: {
           toArray: () => blocks,
         },
       },
     });
-    useEditorPluginMock.mockReturnValue({
-      store: createStore({ selectedIds: new Set(['a', 'b']) }),
-    });
+    usePluginStoreMock.mockReturnValue(new Set([firstNodeKey, secondNodeKey]));
 
     const {
       useBlockSelectionFragment,
@@ -127,9 +137,7 @@ describe('block selection hooks', () => {
   it('combines expanded text and block selection state', async () => {
     const { useIsSelecting } = await loadHooks();
 
-    useEditorPluginMock.mockReturnValue({
-      store: createStore({ isSelecting: false, isSelectingSome: false }),
-    });
+    usePluginStoreMock.mockReturnValue(false);
     useEditorSelectorMock.mockReturnValue(false);
     expect(renderHook(() => useIsSelecting()).result.current).toBe(false);
 
@@ -138,9 +146,7 @@ describe('block selection hooks', () => {
   });
 
   it('reports active block selection from the derived selector', async () => {
-    useEditorPluginMock.mockReturnValue({
-      store: createStore({ isSelecting: false, isSelectingSome: true }),
-    });
+    usePluginStoreMock.mockReturnValue(true);
     useEditorSelectorMock.mockReturnValue(false);
 
     const { useIsSelecting } = await loadHooks();

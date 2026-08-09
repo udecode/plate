@@ -1,4 +1,3 @@
-import { NodeIdPlugin } from '@platejs/core';
 import { createPlateEditor } from '@platejs/core/react';
 import { TextApi } from '@platejs/plite';
 import type { TagElement } from '../lib';
@@ -8,7 +7,7 @@ import { MultiSelectPlugin } from './MultiSelectPlugin';
 describe('MultiSelectPlugin', () => {
   it('inserts a tag while search text is present', () => {
     const editor = createPlateEditor({
-      plugins: [NodeIdPlugin, MultiSelectPlugin],
+      plugins: [MultiSelectPlugin],
       selection: {
         kind: 'text',
         anchor: { offset: 3, path: [0, 1] },
@@ -28,7 +27,7 @@ describe('MultiSelectPlugin', () => {
         },
       ],
     });
-    const { type } = editor.plugin(MultiSelectPlugin).schema.element;
+    const { type } = editor.plugin(MultiSelectPlugin).schema;
 
     editor.plugin(MultiSelectPlugin).update.insert({ value: 'Select Editor' });
     expect(
@@ -69,7 +68,7 @@ describe('MultiSelectPlugin', () => {
         },
       ],
     });
-    const { type } = editor.plugin(MultiSelectPlugin).schema.element;
+    const { type } = editor.plugin(MultiSelectPlugin).schema;
 
     editor.update.text.deleteBackward({ unit: 'character' });
     expect(
@@ -103,7 +102,7 @@ describe('MultiSelectPlugin', () => {
         },
       ],
     });
-    const { type } = editor.plugin(MultiSelectPlugin).schema.element;
+    const { type } = editor.plugin(MultiSelectPlugin).schema;
 
     editor.update.value.repair();
 

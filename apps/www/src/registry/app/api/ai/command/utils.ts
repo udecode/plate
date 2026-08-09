@@ -310,7 +310,7 @@ export const isSelectionInTable = (editor: BaseEditor): boolean => {
 
   const tableEntry = editor.read.nodes.block({
     at: selection,
-    match: { type: editor.plugin(PLUGINS.table).type },
+    match: { type: editor.plugin(PLUGINS.table).schema.type },
   });
 
   return !!tableEntry;
@@ -325,7 +325,7 @@ export const isSingleCellSelection = (editor: BaseEditor): boolean => {
   // Get all td blocks in selection
   const cells = editor.read.nodes.toArray({
     at: selection,
-    match: { type: editor.plugin(PLUGINS.tableCell).type },
+    match: { type: editor.plugin(PLUGINS.tableCell).schema.type },
   });
 
   return cells.length === 1;

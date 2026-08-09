@@ -20,7 +20,7 @@ Highlight applies the `highlight` leaf mark to selected text. It is the authorin
 
 ## Features
 
-- `KEYS.highlight` leaf mark.
+- `PLUGINS.highlight` leaf mark.
 - Directional selection affinity.
 - HTML deserialization from `mark`.
 - `<mark>` rendering by default.
@@ -51,17 +51,16 @@ export const editor = createPlateEditor({
 
 ### Add A Toolbar Button
 
-Use `MarkToolbarButton` with `KEYS.highlight`.
+Use `MarkToolbarButton` with `PLUGINS.highlight`.
 
 ```tsx
 import { HighlighterIcon } from 'lucide-react';
-import { KEYS } from 'platejs';
 
 import { MarkToolbarButton } from '@/components/ui/mark-toolbar-button';
 
 export function HighlightToolbarButton() {
   return (
-    <MarkToolbarButton nodeType={KEYS.highlight} tooltip="Highlight">
+    <MarkToolbarButton nodeType={PLUGINS.highlight} tooltip="Highlight">
       <HighlighterIcon />
     </MarkToolbarButton>
   );
@@ -125,7 +124,7 @@ The package owns the mark. The registry owns highlight color and toolbar placeme
 
 | Behavior | Source |
 |----------|--------|
-| Mark key | `KEYS.highlight` |
+| Mark key | `PLUGINS.highlight` |
 | Mark declaration | `schema.mark: property.boolean({ default: false, omitDefault: true })` |
 | Toggle command | `tx.highlight.toggle()` calls `tx.marks.toggle(type)`. |
 | Selection affinity | `directional` |

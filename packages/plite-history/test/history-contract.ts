@@ -27,6 +27,7 @@ import {
   replace as editorReplace,
   string as editorString,
 } from '@platejs/plite/internal';
+import { inheritNodeKeys } from '../../plite/src/utils/node-keys';
 
 import { type Batch, History, history } from '../src';
 
@@ -199,6 +200,146 @@ describe('plite-history contract', () => {
 
     redo(editor);
     assert.equal(History.isHistory(getHistory(editor)), true);
+  });
+
+  it('revives runtime node keys across in-memory undo and redo without serializing them', () => {
+    const editor = createEditor({
+      extensions: [history()],
+      initialValue: [paragraph('one'), paragraph('two')],
+    });
+    const blockKeys = [editor.key([0]), editor.key([1])];
+    const textKeys = [editor.key([0, 0]), editor.key([1, 0])];
+
+    assert(blockKeys.every(Boolean));
+    assert(textKeys.every(Boolean));
+
+    editor.update.nodes.replaceChildren(
+      [paragraph('next'), paragraph('again')],
+      { at: [], preserveKeys: true }
+    );
+
+    assert.deepEqual([editor.key([0]), editor.key([1])], blockKeys);
+    assert.deepEqual([editor.key([0, 0]), editor.key([1, 0])], textKeys);
+
+    const encodedHistory = JSON.stringify(History.toJSON(editor));
+
+    for (const nodeKey of [...blockKeys, ...textKeys]) {
+      assert(nodeKey);
+      assert.equal(encodedHistory.includes(nodeKey), false);
+    }
+
+    undo(editor);
+
+    assert.deepEqual(editor.read.children(), [
+      paragraph('one'),
+      paragraph('two'),
+    ]);
+    assert.deepEqual([editor.key([0]), editor.key([1])], blockKeys);
+    assert.deepEqual([editor.key([0, 0]), editor.key([1, 0])], textKeys);
+
+    redo(editor);
+
+    assert.deepEqual(editor.read.children(), [
+      paragraph('next'),
+      paragraph('again'),
+    ]);
+    assert.deepEqual([editor.key([0]), editor.key([1])], blockKeys);
+    assert.deepEqual([editor.key([0, 0]), editor.key([1, 0])], textKeys);
+  });
+
+  it('rebases restored node keys across skipped edits and named roots', () => {
+    const editor = createEditor({
+      extensions: [history()],
+      initialValue: {
+        children: [paragraph('body')],
+        roots: {
+          header: [paragraph('one'), paragraph('two'), paragraph('tail')],
+        },
+      },
+    });
+    const header = createEditorView(editor, { root: 'header' });
+    const originalKeys = [
+      header.key([0]),
+      header.key([0, 0]),
+      header.key([1]),
+      header.key([1, 0]),
+      header.key([2]),
+      header.key([2, 0]),
+    ];
+
+    assert(originalKeys.every(Boolean));
+
+    header.update.nodes.replaceChildren(
+      [paragraph('next'), paragraph('again')],
+      { at: [], count: 2, preserveKeys: true }
+    );
+    header.update({ history: 'skip' }, (tx) => {
+      tx.nodes.remove({ at: [1] });
+    });
+
+    undo(header);
+
+    assert.deepEqual(header.read.children(), [
+      paragraph('one'),
+      paragraph('two'),
+      paragraph('tail'),
+    ]);
+    assert.deepEqual(
+      [
+        header.key([0]),
+        header.key([0, 0]),
+        header.key([1]),
+        header.key([1, 0]),
+        header.key([2]),
+        header.key([2, 0]),
+      ],
+      originalKeys
+    );
+
+    redo(header);
+
+    assert.deepEqual(header.read.children(), [
+      paragraph('next'),
+      paragraph('tail'),
+    ]);
+    assert.deepEqual(
+      [
+        header.key([0]),
+        header.key([0, 0]),
+        header.key([1]),
+        header.key([1, 0]),
+      ],
+      [originalKeys[0], originalKeys[1], originalKeys[4], originalKeys[5]]
+    );
+  });
+
+  it('preserves a key revived by a skipped edit when undo restores the same content', () => {
+    const editor = createEditor({
+      extensions: [history()],
+      initialValue: [paragraph('one'), paragraph('two')],
+    });
+    const revived = editor.read.children()[0]!;
+    const revivedKey = editor.key(revived);
+    const revivedClone = structuredClone(revived);
+
+    inheritNodeKeys(revivedClone, revived, editor);
+
+    editor.update.nodes.remove({ at: revived });
+    editor.update({ history: 'skip' }, (tx) => {
+      tx.nodes.insert(revivedClone, { at: [1] });
+    });
+
+    assert.equal(editor.key([1]), revivedKey);
+
+    undo(editor);
+
+    assert.deepEqual(editor.read.children(), [
+      paragraph('one'),
+      paragraph('one'),
+    ]);
+    assert.notEqual(editor.key([0]), revivedKey);
+    assert.equal(editor.key([1]), revivedKey);
+    assert.equal(new Set([editor.key([0]), editor.key([1])]).size, 2);
   });
 
   it('accepts empty structural history and change values', () => {

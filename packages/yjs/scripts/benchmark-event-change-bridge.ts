@@ -64,7 +64,7 @@ const corePhaseIds = new Set([
   'transaction-publish-anchors',
   'transaction-publish-draft',
   'transaction-record-facets',
-  'transaction-runtime-ids',
+  'transaction-node-keys',
   'transaction-runtime-map-index',
   'transaction-runtime-source-index',
   'runtime-index-full-build',
@@ -188,10 +188,10 @@ const rows = positions.map((index) => {
       rawSamples.map((sample) => sample.localCorePhaseDurationsMs)
     ),
     localEditMs: summarize(rawSamples.map((sample) => sample.localEditMs)),
-    localRuntimeIdsMs: summarize(
+    localNodeKeysMs: summarize(
       rawSamples.map(
         (sample) =>
-          sample.localCorePhaseDurationsMs['transaction-runtime-ids'] ?? 0
+          sample.localCorePhaseDurationsMs['transaction-node-keys'] ?? 0
       )
     ),
     sampleCount,
@@ -199,10 +199,10 @@ const rows = positions.map((index) => {
       rawSamples.map((sample) => sample.syncCorePhaseDurationsMs)
     ),
     syncMs: summarize(rawSamples.map((sample) => sample.syncMs)),
-    syncRuntimeIdsMs: summarize(
+    syncNodeKeysMs: summarize(
       rawSamples.map(
         (sample) =>
-          sample.syncCorePhaseDurationsMs['transaction-runtime-ids'] ?? 0
+          sample.syncCorePhaseDurationsMs['transaction-node-keys'] ?? 0
       )
     ),
   };
@@ -218,15 +218,12 @@ const localEditMedianDistanceRatio = ratio(
   rows.map((row) => row.localEditMs.p50)
 );
 const syncMedianDistanceRatio = ratio(rows.map((row) => row.syncMs.p50));
-const runtimeIdsP95MaxMs = Math.max(
-  ...rows.flatMap((row) => [
-    row.localRuntimeIdsMs.p95,
-    row.syncRuntimeIdsMs.p95,
-  ])
+const nodeKeysP95MaxMs = Math.max(
+  ...rows.flatMap((row) => [row.localNodeKeysMs.p95, row.syncNodeKeysMs.p95])
 );
 const thresholdPolicy = {
   localEditMedianDistanceRatioMax: 2,
-  runtimeIdsP95MaxMs: 1,
+  nodeKeysP95MaxMs: 1,
   syncMedianDistanceRatioMax: 2,
   traceInvariantRequired: true,
 };
@@ -240,9 +237,9 @@ const result = {
   phaseTimingNote:
     'Core phases are nested instrumentation totals; compare each phase across samples rather than summing them.',
   rows,
-  runtimeIdentityInvariant:
-    'Classified non-structural changes reuse the committed runtime index and seed only changed paths and ancestors; transaction-runtime-ids stays below the explicit p95 budget.',
-  runtimeIdsP95MaxMs,
+  nodeKeyInvariant:
+    'Classified non-structural changes reuse the committed runtime index and seed only changed paths and ancestors; transaction-node-keys stays below the explicit p95 budget.',
+  nodeKeysP95MaxMs,
   sampleCount,
   seedMs,
   syncMedianDistanceRatio,
@@ -258,7 +255,7 @@ process.stdout.write(
   `METRIC plite_yjs_event_change_sync_distance_ratio=${syncMedianDistanceRatio}\n`
 );
 process.stdout.write(
-  `METRIC plite_yjs_event_change_runtime_ids_p95_ms=${runtimeIdsP95MaxMs}\n`
+  `METRIC plite_yjs_event_change_runtime_ids_p95_ms=${nodeKeysP95MaxMs}\n`
 );
 
 if (outputArgument) {
@@ -272,10 +269,10 @@ if (
   (localEditMedianDistanceRatio >
     thresholdPolicy.localEditMedianDistanceRatioMax ||
     syncMedianDistanceRatio > thresholdPolicy.syncMedianDistanceRatioMax ||
-    runtimeIdsP95MaxMs > thresholdPolicy.runtimeIdsP95MaxMs)
+    nodeKeysP95MaxMs > thresholdPolicy.nodeKeysP95MaxMs)
 ) {
   throw new Error(
-    `Sparse Yjs bridge missed its gate: local=${localEditMedianDistanceRatio.toFixed(2)}x sync=${syncMedianDistanceRatio.toFixed(2)}x runtimeIdsP95=${runtimeIdsP95MaxMs.toFixed(3)}ms.`
+    `Sparse Yjs bridge missed its gate: local=${localEditMedianDistanceRatio.toFixed(2)}x sync=${syncMedianDistanceRatio.toFixed(2)}x nodeKeysP95=${nodeKeysP95MaxMs.toFixed(3)}ms.`
   );
 }
 

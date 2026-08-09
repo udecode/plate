@@ -90,7 +90,7 @@ const RegexComboboxPlugin = defineBasePlugin('regexCombobox', {
     triggerCombobox(context, {
       editor,
       getState: () => store.get(),
-      type: editor.plugin(ExampleComboboxInputPlugin).schema.element.type,
+      type: editor.plugin(ExampleComboboxInputPlugin).schema.type,
     }),
 }));
 

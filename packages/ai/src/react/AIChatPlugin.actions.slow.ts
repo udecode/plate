@@ -87,7 +87,6 @@ describe('ai chat action utils', () => {
                   children: [
                     { children: [{ text: 'old' }], type: 'paragraph' },
                   ],
-                  id: 'cell-1',
                   type: 'tableCell',
                 },
               ],
@@ -98,10 +97,14 @@ describe('ai chat action utils', () => {
         },
       ],
     });
+    const cellNodeKey = editor.key([0, 0, 0])!;
+    editor.plugin(AIChatPlugin).store.set({
+      _tableCellRefs: { c1: { key: cellNodeKey } },
+    });
 
     editor
       .plugin(AIChatPlugin)
-      .update.applyTableCellSuggestion({ content: 'ai', id: 'cell-1' });
+      .update.applyTableCellSuggestion({ content: 'ai', id: 'c1' });
 
     expect(
       editor.read.nodes.some({
@@ -153,10 +156,16 @@ describe('ai chat action utils', () => {
       clear,
       stop,
     } as unknown as NonNullable<AIChatDefinition['initialState']['chat']>;
+    const nodeKey = editor.key([0])!;
     editor.plugin(AIChatPlugin).store.set({
-      _replaceIds: ['block'],
+      _replaceNodeKeys: [nodeKey],
       chat,
-      chatNodes: [{ children: [{ text: '' }], id: 'block', type: 'paragraph' }],
+      chatNodes: [
+        {
+          node: editor.read.children()[0]!,
+          nodeKey,
+        },
+      ],
       mode: 'chat',
       toolName: 'edit',
       open: true,
@@ -171,7 +180,9 @@ describe('ai chat action utils', () => {
     expect(stop).toHaveBeenCalled();
     expect(clear).toHaveBeenCalled();
     expect(editor.read.text.string([])).toBe('');
-    expect(editor.plugin(AIChatPlugin).store.get('_replaceIds')).toEqual([]);
+    expect(editor.plugin(AIChatPlugin).store.get('_replaceNodeKeys')).toEqual(
+      []
+    );
     expect(editor.plugin(AIChatPlugin).store.get('chatNodes')).toEqual([]);
     expect(editor.plugin(AIChatPlugin).store.get('mode')).toBe('insert');
     expect(editor.plugin(AIChatPlugin).store.get('toolName')).toBeNull();

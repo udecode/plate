@@ -25,11 +25,14 @@ import type { NoInfer } from '../../internal/types';
 import { compilePlateCodecs } from '../../internal/plugin/compilePlateCodecs';
 import {
   attachPlateModelPublication,
+  applyEditorApplicationSchema,
   clearPlateModelPublication,
+  compileEditorApplicationSchema,
   compilePlateModel,
   createPlateBlockContent,
   getPlateModelPublication,
   getPlateRuntime,
+  withEditorApplicationSchemaCandidate,
   withCompiledPlateModelCandidate,
   withCompiledPlatePluginCandidate,
 } from '../../internal/plugin/compilePlateModel';
@@ -66,6 +69,7 @@ import type {
 } from './BaseEditor';
 
 import {
+  collectPlatePluginSourceCandidates,
   createPlateModelPublication,
   createPlateRuntimeExtensions,
   getPlateRuntimeExtensionBindings,
@@ -77,6 +81,8 @@ import {
 import { transformInitialValue } from '../../internal/plugin/pipeTransformInitialValue';
 import {
   getGeneratedEditorContract,
+  getRuntimeEditorDefinition,
+  type RuntimeEditorDefinition,
   type RuntimeGeneratedEditorContract,
 } from './defineEditor';
 
@@ -211,7 +217,9 @@ const createPlateSchemaExtensions = (
   identityOptions: PlateSchemaIdentity | undefined,
   model: ReturnType<typeof compilePlateModel>,
   pluginList: readonly AnyBasePlugin[],
-  generatedContract?: RuntimeGeneratedEditorContract
+  generatedContract?: RuntimeGeneratedEditorContract,
+  applicationSchema?: ReturnType<typeof compileEditorApplicationSchema>,
+  applicationName?: string
 ) => {
   const definition = {
     groups: model.contribution.groups ?? {},
@@ -239,6 +247,12 @@ const createPlateSchemaExtensions = (
       };
     }
   );
+  const applicationSchemaExtension = applicationSchema
+    ? defineExtension(
+        `schema:application:${generatedContract?.definitionName ?? applicationName ?? 'editor'}`,
+        { schema: applicationSchema }
+      )
+    : undefined;
   let publication: ReturnType<typeof createPlateModelPublication> | undefined;
 
   const modelExtension = defineExtension('plate:model', {
@@ -278,6 +292,7 @@ const createPlateSchemaExtensions = (
   return Object.freeze([
     identity,
     ...runtime.extensions,
+    ...(applicationSchemaExtension ? [applicationSchemaExtension] : []),
     modelExtension,
     ...(codecExtension ? [codecExtension] : []),
   ]);
@@ -287,21 +302,33 @@ const createPlateConfiguration = (
   editor: BaseEditor,
   identity: PlateSchemaIdentity | undefined,
   pluginList: readonly AnyBasePlugin[],
-  generatedContract?: RuntimeGeneratedEditorContract
+  generatedContract?: RuntimeGeneratedEditorContract,
+  editorDefinition?: RuntimeEditorDefinition
 ) =>
   withCompiledPlatePluginCandidate(editor, pluginList, () => {
-    const model = compilePlateModel(editor);
+    const authoredModel = compilePlateModel(editor);
+    const policy = generatedContract?.schemaPolicy ?? editorDefinition?.schema;
+    const applicationSchema = compileEditorApplicationSchema(
+      authoredModel,
+      policy
+    );
+    const model = applyEditorApplicationSchema(authoredModel, policy);
     const modelExtensions = createPlateSchemaExtensions(
       editor,
       identity,
       model,
       pluginList,
-      generatedContract
+      generatedContract,
+      applicationSchema,
+      editorDefinition?.name
     );
-    return Object.freeze([
-      ...modelExtensions,
-      createPlateChangeHandlersExtension(editor),
-    ]);
+    return Object.freeze({
+      extensions: Object.freeze([
+        ...modelExtensions,
+        createPlateChangeHandlersExtension(editor),
+      ]),
+      model,
+    });
   });
 
 const installPlateModelAccessors = (editor: BaseEditor) => {
@@ -451,7 +478,8 @@ const installPlateEditorExtensions = (
   editor: BaseEditor,
   identity: PlateSchemaIdentity | undefined,
   initialize?: (tx: EditorTransactionSpecBuilder) => void,
-  generatedContract?: RuntimeGeneratedEditorContract
+  generatedContract?: RuntimeGeneratedEditorContract,
+  editorDefinition?: RuntimeEditorDefinition
 ) => {
   const previousBindings = getPlateRuntimeExtensionBindings(editor);
   const restoreExtensionPortal = installPlateExtensionPortal(editor);
@@ -462,17 +490,20 @@ const installPlateEditorExtensions = (
       editor,
       identity,
       getPlateRuntime(editor).pluginList,
-      generatedContract
+      generatedContract,
+      editorDefinition
     );
 
-    initializeEditorExtensions<Editor>(editor, configuration, {
-      initialize: initialize
-        ? (tx) => {
-            restoreModelAccessors = installPlateModelAccessors(editor);
-            initialize(tx);
-          }
-        : undefined,
-    });
+    withCompiledPlateModelCandidate(editor, configuration.model, () =>
+      initializeEditorExtensions<Editor>(editor, configuration.extensions, {
+        initialize: initialize
+          ? (tx) => {
+              restoreModelAccessors = installPlateModelAccessors(editor);
+              initialize(tx);
+            }
+          : undefined,
+      })
+    );
   } catch (error) {
     restoreModelAccessors?.();
     restorePlateRuntimeExtensionBindings(editor, previousBindings);
@@ -532,7 +563,7 @@ export type BaseEditorOptions<
    * - Generates fresh clipboard-paste IDs unless `reuseId` is true
    * - Handles ID conflicts and duplicates
    *
-   * @default { idKey: 'id', filterInline: true, filterText: true, idCreator: () => nanoid(10) }
+   * @default { filterInline: true, filterText: true, idCreator: () => nanoid(10) }
    */
   nodeId?: Partial<NodeIdPluginState> | boolean;
   /**
@@ -646,8 +677,11 @@ const applyBaseEditor = <
     ...pluginConfig
   } = options;
   const generatedContract = getGeneratedEditorContract(plugins);
+  const editorDefinition = getRuntimeEditorDefinition(plugins);
   const effectiveSchemaIdentity =
-    schemaIdentity ?? generatedContract?.schemaIdentity;
+    schemaIdentity ??
+    generatedContract?.schemaIdentity ??
+    editorDefinition?.schemaIdentity;
   const editor = e as unknown as BaseEditor;
 
   editor.runtime = editor.runtime ?? ({} as BaseEditor['runtime']);
@@ -702,10 +736,17 @@ const applyBaseEditor = <
     user: plugins,
   });
   const publicationBeforeExtension = getPlateModelPublication(editor);
+  const applicationPolicy =
+    generatedContract?.schemaPolicy ?? editorDefinition?.schema;
   let restoreSnapshotInputTransform: (() => void) | undefined;
 
   try {
-    resolvePlugins(editor, sourcePlugins);
+    withEditorApplicationSchemaCandidate(
+      editor,
+      applicationPolicy,
+      collectPlatePluginSourceCandidates(sourcePlugins),
+      () => resolvePlugins(editor, sourcePlugins)
+    );
     restoreSnapshotInputTransform = setEditorSnapshotInputTransform(
       editor,
       (input: SnapshotInput) => {
@@ -760,7 +801,8 @@ const applyBaseEditor = <
               selection,
               shouldNormalizeEditor,
             }),
-      generatedContract
+      generatedContract,
+      editorDefinition
     );
 
     return editor as unknown as InternalBaseEditorWithInstalledPlugins<

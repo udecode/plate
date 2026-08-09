@@ -2,6 +2,7 @@
 
 import assert from 'node:assert/strict';
 
+import { ElementIdPlugin } from '@platejs/core';
 import { type PlateEditorReference } from '@platejs/core/react';
 import { NodeApi } from '@platejs/plite';
 import type { Element, Value } from '@platejs/plite';
@@ -58,7 +59,6 @@ const createTarget = () => {
   ) as TestEditor;
 
   return createTestTableEditor({
-    nodeId: true,
     plugins: getTestTablePlugins(),
     selection: input.selection,
     initialValue: input.children,
@@ -125,7 +125,6 @@ describe('BaseTablePlugin prepared paste', () => {
       </editor>
     ) as TestEditor;
     const source = createTestTableEditor({
-      nodeId: true,
       plugins: getTestTablePlugins(),
       selection: sourceInput.selection,
       initialValue: sourceInput.children,
@@ -208,7 +207,6 @@ describe('BaseTablePlugin prepared paste', () => {
       </editor>
     ) as TestEditor;
     const editor = createTestTableEditor({
-      nodeId: true,
       plugins: getTestTablePlugins(),
       selection: input.selection,
       initialValue: input.children,
@@ -277,8 +275,8 @@ describe('BaseTablePlugin prepared paste', () => {
       kind: 'text' as const,
     };
     const source = createTestTableEditor({
-      nodeId: true,
       plugins: [
+        ElementIdPlugin,
         BaseTablePlugin,
         BaseYjsPlugin.configure({ initialState: { clientId: 'source' } }),
       ],
@@ -287,8 +285,8 @@ describe('BaseTablePlugin prepared paste', () => {
     });
     const doc = source.extension(BaseYjsPlugin).read.doc();
     const replay = createTestTableEditor({
-      nodeId: true,
       plugins: [
+        ElementIdPlugin,
         BaseTablePlugin,
         BaseYjsPlugin.configure({
           initialState: { clientId: 'replay', doc },

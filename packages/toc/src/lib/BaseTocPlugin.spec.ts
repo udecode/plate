@@ -180,7 +180,7 @@ describe('BaseTocPlugin', () => {
 
     editor.update.break.insert();
 
-    expect(editor.read.children()).toEqual([
+    expect(editor.read.children()).toMatchObject([
       {
         children: [{ text: '' }],
         type: 'toc',
@@ -284,6 +284,29 @@ describe('BaseTocPlugin.read.headings', () => {
     expect(queryHeading).toHaveBeenCalledWith(
       expect.objectContaining({ nodes: expect.any(Object) })
     );
+  });
+
+  it('reads canonical heading ids', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseTocPlugin, ...TestHeadingPlugins],
+      initialValue: [
+        {
+          children: [{ text: 'Title' }],
+          id: 'heading-1',
+          type: 'h1',
+        },
+      ],
+    });
+
+    expect(editor.plugin(BaseTocPlugin).read.headings()).toEqual([
+      {
+        depth: 1,
+        id: 'heading-1',
+        path: [0],
+        title: 'Title',
+        type: 'h1',
+      },
+    ]);
   });
 });
 

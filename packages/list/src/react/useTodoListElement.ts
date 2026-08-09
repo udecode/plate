@@ -1,10 +1,9 @@
 import { useEditor } from '@platejs/core/react';
 import type { Element } from '@platejs/plite';
 import { useEditorReadOnly } from '@platejs/plite-react';
-import { KEYS } from '@platejs/utils';
 
 export const useTodoListElementState = ({ element }: { element: Element }) => {
-  const checked = element[KEYS.listChecked] as boolean | undefined;
+  const checked = element.checked as boolean | undefined;
   const readOnly = useEditorReadOnly();
 
   return {

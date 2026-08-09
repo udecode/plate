@@ -1,6 +1,5 @@
 export type * as unistLib from 'unist';
 
-import type { StrictExtract } from 'ts-essentials';
 import type { Node as UnistNode } from 'unist';
 
 import type {
@@ -9,7 +8,7 @@ import type {
   Element,
   Text,
 } from '@platejs/plite';
-import type { NodeKey, NodeMap, TListElement } from '@platejs/utils';
+import type { ListElement } from '@platejs/list';
 import type { Nullable } from '@udecode/utils';
 import type { Options as RemarkStringifyOptions } from 'remark-stringify';
 import type { Pluggable } from 'unified';
@@ -52,15 +51,15 @@ import 'mdast-util-mdx';
 
 export type AllowNodeConfig = {
   /** Custom filter function for nodes during deserialization. */
-  deserialize?: (node: UnistNode & { type: PlateType }) => boolean;
+  deserialize?: (node: UnistNode & { type: MarkdownNodeName }) => boolean;
   /** Custom filter function for nodes during serialization. */
   serialize?: (node: Descendant) => boolean;
 };
 
 export type DeserializeMdOptions = {
-  allowedNodes?: PlateType[] | null;
+  allowedNodes?: MarkdownNodeName[] | null;
   allowNode?: AllowNodeConfig;
-  disallowedNodes?: PlateType[] | null;
+  disallowedNodes?: MarkdownNodeName[] | null;
   preserveEmptyParagraphs?: boolean;
   remarkPlugins?: Pluggable[];
   rules?: MdRules | null;
@@ -70,11 +69,11 @@ export type DeserializeMdOptions = {
 };
 
 export type SerializeMdOptions = {
-  allowedNodes?: PlateType[] | null;
+  allowedNodes?: MarkdownNodeName[] | null;
   allowNode?: AllowNodeConfig;
-  disallowedNodes?: PlateType[] | null;
+  disallowedNodes?: MarkdownNodeName[] | null;
   /** Marks to treat as plain text without applying markdown formatting. */
-  plainMarks?: PlateType[] | null;
+  plainMarks?: MarkdownNodeName[] | null;
   preserveEmptyParagraphs?: boolean;
   remarkPlugins?: Pluggable[];
   remarkStringifyOptions?: Readonly<RemarkStringifyOptions> | null;
@@ -106,11 +105,14 @@ export type SerializeMdContext = Readonly<
   MarkdownConversionContext;
 
 export type MdRules = Partial<{
-  [K in keyof PlateNodeMap]: Nullable<MdNodeParser<K>>;
+  [K in keyof PlateNodeMap & keyof MdNodeMap]: Nullable<MdNodeParser<K>>;
 }> &
   Record<string, Nullable<AnyNodeParser>>;
 
-export type MdNodeParser<K extends keyof PlateNodeMap = keyof PlateNodeMap> = {
+export type MdNodeParser<
+  K extends keyof PlateNodeMap & keyof MdNodeMap = keyof PlateNodeMap &
+    keyof MdNodeMap,
+> = {
   mark?: boolean;
   deserialize?(
     mdastNode: MdNodeMap[K],
@@ -172,85 +174,69 @@ export type MdDecoration = Readonly<
   >
 >;
 
-export type StrictPlateType =
-  | StrictExtract<
-      NodeKey,
-      | 'a'
-      | 'blockquote'
-      | 'bold'
-      | 'callout'
-      | 'code'
-      | 'code_block'
-      | 'code_line'
-      | 'column'
-      | 'column_group'
-      | 'comment'
-      | 'date'
-      | 'equation'
-      | 'hr'
-      | 'img'
-      | 'inline_equation'
-      | 'italic'
-      | 'li'
-      | 'mention'
-      | 'p'
-      | 'script'
-      | 'strikethrough'
-      | 'suggestion'
-      | 'table'
-      | 'td'
-      | 'th'
-      | 'toc'
-      | 'toggle'
-      | 'tr'
-      | 'underline'
-    >
-  | 'heading'
-  | 'list'
-  | 'text';
-
-export type PlateType = (string & {}) | StrictPlateType;
-
-type PlateNodeMap = Pick<
-  NodeMap,
-  | 'a'
+export type StrictMarkdownNodeName =
   | 'audio'
   | 'blockquote'
   | 'bold'
+  | 'break'
   | 'callout'
   | 'code'
-  | 'code_block'
+  | 'codeBlock'
+  | 'codeDrawing'
+  | 'codeLine'
   | 'column'
-  | 'column_group'
+  | 'columnGroup'
   | 'comment'
   | 'date'
   | 'equation'
   | 'file'
-  | 'hr'
-  | 'img'
-  | 'inline_equation'
+  | 'heading'
+  | 'horizontalRule'
+  | 'image'
+  | 'inlineEquation'
   | 'italic'
+  | 'link'
+  | 'list'
+  | 'listItem'
+  | 'mediaEmbed'
   | 'mention'
-  | 'p'
+  | 'paragraph'
   | 'script'
   | 'strikethrough'
   | 'suggestion'
   | 'table'
-  | 'td'
-  | 'th'
+  | 'tableCell'
+  | 'tableRow'
+  | 'text'
   | 'toc'
   | 'toggle'
-  | 'tr'
   | 'underline'
-  | 'video'
-> & {
+  | 'video';
+
+export type MarkdownNodeName = (string & {}) | StrictMarkdownNodeName;
+
+type PlateNodeMap = {
+  [K in StrictMarkdownNodeName]: K extends
+    | 'bold'
+    | 'break'
+    | 'code'
+    | 'comment'
+    | 'italic'
+    | 'script'
+    | 'strikethrough'
+    | 'suggestion'
+    | 'text'
+    | 'underline'
+    ? Text
+    : Element;
+} & {
   /** Markdown only */
   text: Text;
-  list: Element | TListElement;
+  list: Element | ListElement;
   heading: Element;
-  footnoteReference: Element & { identifier?: string };
+  footnoteReference: Element;
   definition: Descendant;
-  footnoteDefinition: Element & { identifier: string };
+  footnoteDefinition: Element;
   break: Text;
   yaml: Descendant;
   imageReference: Descendant;
@@ -258,27 +244,27 @@ type PlateNodeMap = Pick<
   html: Descendant;
   br: Text;
   del: Text;
-  highlight: NodeMap['highlight'];
-  kbd: NodeMap['kbd'];
+  highlight: Text;
+  kbd: Text;
   listItem: Element;
   span: Text;
 };
 
 type MdNodeMap = {
   /** Common Elements */
-  a: MdLink;
+  link: MdLink;
   blockquote: MdBlockquote;
-  code_block: MdCode;
+  codeBlock: MdCode;
   equation: MdMath;
   heading: MdHeading;
-  hr: MdThematicBreak;
-  img: MdImage & Pick<Partial<MdMdxJsxFlowElement>, 'attributes' | 'children'>;
-  inline_equation: MdInlineMath;
-  p: MdParagraph;
+  horizontalRule: MdThematicBreak;
+  image: MdImage &
+    Pick<Partial<MdMdxJsxFlowElement>, 'attributes' | 'children'>;
+  inlineEquation: MdInlineMath;
+  paragraph: MdParagraph;
   table: MdTable;
-  td: MdTableCell;
-  th: MdTableCell;
-  tr: MdTableRow;
+  tableCell: MdTableCell;
+  tableRow: MdTableRow;
   list: MdList;
 
   /** Common Marks */
@@ -305,7 +291,8 @@ type MdNodeMap = {
   span: MdMdxJsxTextElement;
 
   /** Plate only */
-  column_group: MdMdxJsxFlowElement;
+  codeDrawing: MdMdxJsxFlowElement;
+  columnGroup: MdMdxJsxFlowElement;
   column: MdMdxJsxFlowElement;
   toc: MdMdxJsxFlowElement;
   callout: MdMdxJsxFlowElement;
@@ -317,50 +304,16 @@ type MdNodeMap = {
   script: MdMdxJsxTextElement;
   suggestion: MdMdxJsxTextElement;
   file: MdMdxJsxFlowElement;
+  mediaEmbed: MdMdxJsxFlowElement;
   video: MdMdxJsxFlowElement;
   audio: MdMdxJsxFlowElement;
 };
 
-const PLATE_TO_MDAST = {
-  a: 'link',
-  blockquote: 'blockquote',
-  bold: 'strong',
-  callout: 'callout',
-  code: 'inlineCode',
-  code_block: 'code',
-  code_line: 'code_line',
-  column: 'column',
-  column_group: 'column_group',
-  comment: 'comment',
-  date: 'date',
-  equation: 'math',
-  heading: 'heading',
-  hr: 'thematicBreak',
-  img: 'image',
-  inline_equation: 'inlineMath',
-  italic: 'emphasis',
-  li: 'listItem',
-  list: 'list',
-  mention: 'mention',
-  p: 'paragraph',
-  script: 'script',
-  strikethrough: 'delete',
-  suggestion: 'suggestion',
-  table: 'table',
-  td: 'tableCell',
-  text: 'text',
-  th: 'tableCell',
-  toc: 'toc',
-  toggle: 'toggle',
-  tr: 'tableRow',
-  underline: 'u',
-} as const satisfies Record<StrictPlateType, MdType>;
-
-const MDAST_TO_PLATE = {
+const MDAST_TO_RULE = {
   backgroundColor: 'backgroundColor',
   blockquote: 'blockquote',
   break: 'break',
-  code: 'code_block',
+  code: 'codeBlock',
   color: 'color',
   definition: 'definition',
   del: 'strikethrough',
@@ -373,14 +326,14 @@ const MDAST_TO_PLATE = {
   footnoteReference: 'footnoteReference',
   heading: 'heading',
   html: 'html',
-  image: 'img',
+  image: 'image',
   imageReference: 'imageReference',
   inlineCode: 'code',
-  inlineMath: 'inline_equation',
-  link: 'a',
+  inlineMath: 'inlineEquation',
+  link: 'link',
   linkReference: 'linkReference',
   list: 'list',
-  listItem: 'li',
+  listItem: 'listItem',
   mark: 'highlight',
   math: 'equation',
   mention: 'mention',
@@ -389,29 +342,22 @@ const MDAST_TO_PLATE = {
   mdxJsxFlowElement: 'mdxJsxFlowElement',
   mdxJsxTextElement: 'mdxJsxTextElement',
   mdxTextExpression: 'mdxTextExpression',
-  paragraph: 'p',
+  paragraph: 'paragraph',
   strong: 'bold',
   sub: 'script',
   sup: 'script',
   table: 'table',
-  tableCell: 'td',
-  tableRow: 'tr',
+  tableCell: 'tableCell',
+  tableRow: 'tableRow',
   text: 'text',
-  thematicBreak: 'hr',
+  thematicBreak: 'horizontalRule',
   u: 'underline',
   yaml: 'yaml',
-} as const satisfies Record<StrictMdType, PlateType>;
-const MDAST_TO_PLATE_MAP = new Map<string, PlateType>(
-  Object.entries(MDAST_TO_PLATE)
+} as const satisfies Record<StrictMdType, MarkdownNodeName>;
+const MDAST_TO_RULE_MAP = new Map<string, MarkdownNodeName>(
+  Object.entries(MDAST_TO_RULE)
 );
 
 /** Map an mdast node type to its canonical Markdown rule key. */
-export const mdastToPlate = (mdastType: string) =>
-  MDAST_TO_PLATE_MAP.get(mdastType) ?? mdastType;
-
-/**
- * Get mdast node type from plate element type if the plateType is plate only
- * return the plateType itself.
- */
-export const plateToMdast = <T extends StrictPlateType>(plateType: T) =>
-  PLATE_TO_MDAST[plateType] ?? plateType;
+export const mdastToRule = (mdastType: string) =>
+  MDAST_TO_RULE_MAP.get(mdastType) ?? mdastType;

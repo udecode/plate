@@ -139,10 +139,9 @@ other inline elements.
 Declare behavior and child grammar in the schema.
 
 ```ts
-import { defineEditorExtension, property, schema } from "@platejs/plite";
+import { defineExtension, property, schema } from "@platejs/plite";
 
-const Links = defineEditorExtension({
-  name: "links",
+const Links = defineExtension("links", {
   schema: {
     elements: {
       link: {
@@ -170,10 +169,9 @@ objects that behave as a single editor unit.
 Declare void behavior in an extension schema.
 
 ```ts
-import { defineEditorExtension, property } from "@platejs/plite";
+import { defineExtension, property } from "@platejs/plite";
 
-const Images = defineEditorExtension({
-  name: "images",
+const Images = defineExtension("images", {
   schema: {
     elements: {
       image: {

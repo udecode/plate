@@ -90,15 +90,14 @@ programmatic calls, and tests.
 
 ```tsx
 import {
-  defineEditorExtension,
+  defineExtension,
   editorCommands,
   ElementApi,
   PointApi,
   RangeApi,
 } from "@platejs/plite";
 
-const markdownBlocks = defineEditorExtension({
-  name: "markdown-blocks",
+const markdownBlocks = defineExtension("markdown-blocks", {
   commands: ({ around, handle }) => [
     handle(editorCommands.delete, ({ input, state }) => {
       const selection = state.selection();

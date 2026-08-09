@@ -1,5 +1,5 @@
 ---
-description: Work a task end-to-end with lean context gathering, implementation, and verification
+description: Work an ordinary repo task end-to-end with lean context gathering, implementation, and verification. Route one local Plate/Plite behavior bug or regression to patch.
 argument-hint: '[task description | issue id/link]'
 disable-model-invocation: true
 name: task
@@ -57,10 +57,20 @@ they earn their keep, and verify before calling the task done.
    implementation. If the helper cannot produce it after a real attempt, stop
    and report the blocker.
 5. Classify task shape:
+   - One public Slate issue: route to `resolve-slate-issue`.
+   - A direct user prompt or harvested row naming any other public GitHub issue
+     or PR, or requesting issue/PR mutation: route to `maintainer`; let it
+     delegate local implementation back to the narrow worker without public
+     authority.
+   - A normalized local packet delegated by `maintainer` may retain issue or PR
+     provenance. Accept it without reading or mutating public state, and return
+     shipping or tracker work to the coordinator after local handoff.
    - Testing or coverage work.
    - Program or batch work.
-   - Ordinary one-shot work: bug, feature, refactor, docs, review, or
-     investigation.
+   - One local Plate/Plite behavior bug or regression with no public mutation:
+     load `patch` and let it own reproduction, repair, proof, and review.
+   - Ordinary one-shot work: tooling/build bugs, features, refactors, docs,
+     reviews, or investigations.
 6. Classify heavyweight work:
    - Heavyweight: architecture or public API redesign, breaking changes, major
      cross-package refactors, benchmarking, profiling strategy, scalability
@@ -133,11 +143,11 @@ Apply this before implementation when a public tracker item reports a bug, makes
 a user-visible behavior claim, includes a technical diagnosis, or proposes an
 implementation fix.
 
-- Load `.agents/skills/autoreview/SKILL.md` for its review contract and use that
+- Load `.agents/skills/autoreview/SKILL.md` for its P2 review contract and use that
   stance before code: adversarial, source-backed, and willing to reject weak
   claims. This is a pre-solution issue/design review, not a dirty-diff helper
-  invocation. The structured autoreview helper remains the closeout gate after a
-  real diff exists.
+  invocation. The structured autoreview helper remains the P2 closeout gate
+  after a real diff exists.
 - For bug reports and behavior claims, reproduce the user-visible behavior or
   the smallest honest failing surface before treating the issue as valid.
   Reproduce the bug, not the suggested fix.
@@ -301,7 +311,7 @@ the active task would otherwise miss.
 
 Do not keep repo-local skills for generic lifestyle, app-template, local git
 ops, stale command stubs, or broad CE ceremony when `task`, `major-task`,
-`autogoal`, `autoreview`, or a Plate-specific skill owns the workflow better.
+`autogoal`, P2 `autoreview`, or a Plate-specific skill owns the workflow better.
 
 If a generated skill is gone but `skills-lock.json` still references it, remove
 it through `npx skills remove <skill> -y` first. If the CLI removes the agent
@@ -363,12 +373,13 @@ issue ledger, or pass calendar, but it still needs real closeout pressure when
 the patch is risky.
 
 - For public tracker implementation work, the pre-solution issue challenge gate
-  is mandatory before writing code. It is separate from final autoreview: first
+  is mandatory before writing code. It is separate from final P2 autoreview: first
   decide whether the issue deserves a fix and what the long-term boundary is,
-  then implement, then run structured autoreview on the actual diff.
-- Autoreview is a hard closeout gate for non-trivial implementation changes.
-  Load `.agents/skills/autoreview/SKILL.md`, pick the target from the actual
-  diff state, and keep going until there are no accepted/actionable findings.
+  then implement, then run structured P2 autoreview on the actual diff.
+- P2 autoreview is a hard closeout gate for non-trivial implementation changes.
+  Load `.agents/skills/autoreview/SKILL.md` for P2, pick the target from the actual
+  diff state, pass `--max-priority P2`, and keep going until there are no
+  accepted/actionable findings. Use P3 only when explicitly requested.
   Use dirty local `--mode local`, branch/PR `--mode branch --base <base>`, and
   committed-slice `--mode commit --commit <ref>`.
 - `agent-native-reviewer` is required when the task changes `.agents/**`,
@@ -466,8 +477,9 @@ Keep verification mandatory and proportional.
 - Close the high-risk note before final handoff when the task changes public
   API, runtime, package boundaries, browser behavior, agent actions, or command
   contracts.
-- For non-trivial implementation changes, run the autoreview gate selected from
-  the actual diff state and close all accepted/actionable findings before final.
+- For non-trivial implementation changes, run the P2 autoreview gate selected
+  from the actual diff state with `--max-priority P2` and close all
+  accepted/actionable findings before final.
 - For agent/tooling changes, run the agent-native review gate or record why it
   does not apply.
 - If `pnpm test`, `bun test`, or `pnpm check` fails with local-corruption

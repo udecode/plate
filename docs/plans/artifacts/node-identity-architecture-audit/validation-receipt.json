@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "validatedAt": "2026-08-07T11:36:41Z",
+  "artifacts": {
+    "docs/editor-audits/index.json": "f4ad5554412f029ef67c59ada414f851e39dda2aefebc2f3accfc53e10c12755",
+    "docs/plans/2026-08-07-node-identity-architecture-audit.md": "aab4674f3496c1048a852b89b247db6b189a8fe1b8c158545bafa073007f7f83",
+    "docs/plans/artifacts/node-identity-architecture-audit/source-inventory.md": "24820a11fda7711d481ea219a6d3d4a280133d55a99488b76c8d314591a05222",
+    "docs/plans/artifacts/node-identity-architecture-audit/final-recommendation.md": "24856866d6792b9adb539b38da3eb0dc0c3de7ef74c93a0948963cac94a44f41",
+    "docs/plans/artifacts/node-identity-architecture-audit/lexical-concept-manifest.json": "702e168dc318bd75c4b2afec1b79727cdefe953391c0b06aaabc22c44ae4d25d",
+    "docs/plans/artifacts/node-identity-architecture-audit/lexical-concept-matrix.md": "035f4ce1a37ea51162e7042824612f9f489cbd6eed08ad3eb57cc926b76f4daf",
+    "docs/plans/artifacts/node-identity-architecture-audit/prosemirror-concept-manifest.json": "3d5f0b560e0ac7cfbad0489c77c5057fa1a1b75ba0a4d9af6444c866bc20b9b0",
+    "docs/plans/artifacts/node-identity-architecture-audit/prosemirror-concept-matrix.md": "cf82d3d173300c01201fda5a259ff2ef48edd97c7ba6af5c8574df8acb71d528",
+    "docs/plans/artifacts/node-identity-architecture-audit/wordgard-concept-manifest.json": "6af67c0bf4b8e5e55278b9086736e7c19fe27062bd05f152b16e825cca1b376d",
+    "docs/plans/artifacts/node-identity-architecture-audit/wordgard-concept-matrix.md": "4781d85662e89335cafbcde75088bd40b0bf07e198bf83af563cd7cbabce287c"
+  },
+  "authority": {
+    "plateHead": "a146a3e7bbc8976da01437eb7636ab84814ce0cd",
+    "lexical": {
+      "branch": "main",
+      "clean": true,
+      "head": "dd5c41b13193efa9ab1574234d8593d2c9e4f988",
+      "upstream": "origin/main"
+    },
+    "prosemirror": {
+      "branch": "master",
+      "clean": true,
+      "head": "c7f2f1d7bde70728dfedaa68ca8f5fc3dffa17cc",
+      "modules": {
+        "model": "bc912ea0ff8ac935c7f1dc3cf029cd0b6ecdda97",
+        "state": "57d4a96286ca972125a18a56ecd6d2b00927de30",
+        "transform": "8fecfa62dc8c816ef3ddd54427e6585418720f63",
+        "view": "c752c6ef7225199f73cb433dd3179e7d69b840d8"
+      },
+      "upstream": "origin/master"
+    },
+    "wordgard": {
+      "branch": "main",
+      "clean": true,
+      "head": "c715d4ded8fc780f52c13206e589ea31e4148dd4",
+      "upstream": "origin/main"
+    }
+  },
+  "sourceSnapshot": {
+    "packages/core/src/lib/plugins/getCorePlugins.ts": "721e0b8186235d7698b9e08f6f6ed56ff30a0f86b7511222fde496740fe6e350",
+    "packages/core/src/lib/plugins/node-id/NodeIdPlugin.ts": "330affa36644557a437464de912b2094cd7cdfb5bd090990291fe0e9e126fcd4",
+    "packages/plite/src/core/anchor.ts": "ee2971a245d1d37e1c9d2c920bc9790660304c7bd6414c01ef6bd9f4520bd984",
+    "packages/plite/src/core/snapshot-index.ts": "d415af7db628b31233783bb7d74b9b2bd5c82a2015d0100f1b633ea597b9892f",
+    "packages/plite/src/interfaces/editor.ts": "81ebb5ca6d5d9ec14836c51e8141292835bcbbf42c5429398048dd579dd304ca",
+    "packages/plite/src/interfaces/schema.ts": "365cb86e4294bbcfbecfcccbe29952a5f3b952372dfd62b8f6d5437a9dea0fb4",
+    "packages/plite/src/utils/runtime-ids.ts": "f74f5bc8200c4c30040b879ef6b3c00e67b7a8f8e8f7b071c193cf42be2f407c"
+  },
+  "counts": {
+    "conceptsPerReference": 7,
+    "references": 3,
+    "strictMatrixRows": 21,
+    "unresolvedCells": 0,
+    "priorCandidatesReaffirmed": 3,
+    "productSourceFilesChanged": 0
+  },
+  "checks": {
+    "autogoal": "passed",
+    "artifactLinks": "passed",
+    "json": "passed",
+    "lexicalMatrix": "passed",
+    "prettier": "passed",
+    "prosemirrorMatrix": "passed",
+    "referenceProvenance": "passed",
+    "sourceCitations": "passed",
+    "wordgardMatrix": "passed"
+  }
+}

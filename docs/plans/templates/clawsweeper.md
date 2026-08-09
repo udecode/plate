@@ -143,7 +143,7 @@ Completion Gates:
 | Dossier/matrix sync | pending | Update or mark N/A for fork dossier, issue coverage matrix, sync ledger, and PR text | pending |
 | Owner handoff | pending | Route execution/security/queue work to owner or record N/A | pending |
 | Public mutation boundary | pending | Confirm none, or record explicit user authority and result | pending |
-| Autoreview | pending | Run for non-trivial ledger/provenance edits, else N/A with reason | pending |
+| P2 autoreview | pending | Run with `--max-priority P2` for non-trivial ledger/provenance edits; P3 is opt-in only, else N/A with reason | pending |
 | Final handoff contract | pending | Report decisions, changed list, proof, routed owners, needs-user-attention, and open risks | pending |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 

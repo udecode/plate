@@ -140,7 +140,7 @@ describe('BaseEquationPlugin', () => {
       ],
     });
 
-    editor.plugin(EquationPlugin).update.insert({ at: [1] });
+    editor.plugin(EquationPlugin).update.insert({}, { at: [1] });
 
     expect(editor.read.value().children).toMatchObject([
       {
@@ -296,10 +296,12 @@ describe('BaseInlineEquationPlugin', () => {
       ],
     });
 
-    editor.plugin(InlineEquationPlugin).update.insert({
-      at: { offset: 1, path: [0, 0] },
-      texExpression: 'x^2',
-    });
+    editor
+      .plugin(InlineEquationPlugin)
+      .update.insert(
+        { texExpression: 'x^2' },
+        { at: { offset: 1, path: [0, 0] } }
+      );
 
     expect(editor.read.value().children).toMatchObject([
       {

@@ -1,15 +1,23 @@
 import type { BaseEditor } from '@platejs/core';
 import { useEditor } from '@platejs/core/react';
 import { type NodeInsertNodesOptions, PathApi } from '@platejs/plite';
-import type { TImageElement, TMediaEmbedElement } from '@platejs/utils';
-import { KEYS, NODES } from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 
-import { BaseImagePlugin } from '../../lib/image/BaseImagePlugin';
-import { BaseMediaEmbedPlugin } from '../../lib/media-embed/BaseMediaEmbedPlugin';
+import {
+  BaseImagePlugin,
+  type ImageElement,
+} from '../../lib/image/BaseImagePlugin';
+import {
+  BaseMediaEmbedPlugin,
+  type MediaEmbedElement,
+} from '../../lib/media-embed/BaseMediaEmbedPlugin';
 import type { MediaInsertInput } from '../../lib/BaseMediaPlugin';
 
 export interface InsertMediaUrlOptions
-  extends NodeInsertNodesOptions<TImageElement | TMediaEmbedElement> {
+  extends Omit<
+    NodeInsertNodesOptions<ImageElement | MediaEmbedElement>,
+    'match'
+  > {
   /** Resolve a URL without showing the default browser prompt. */
   getUrl?: () => Promise<string>;
   /** Initial caption content compiled into the media element's children. */
@@ -27,9 +35,23 @@ export const insertMediaUrl = async (
     ...options
   }: InsertMediaUrlOptions = {}
 ) => {
-  const image = editor.plugin(KEYS.img);
-  const imageType = image.installed ? image.type : NODES.img;
-  const type = requestedType ?? imageType;
+  const image = editor.plugin(BaseImagePlugin);
+  const mediaEmbed = editor.plugin(BaseMediaEmbedPlugin);
+  const type =
+    requestedType ??
+    (image.installed
+      ? image.schema.type
+      : mediaEmbed.installed
+        ? mediaEmbed.schema.type
+        : undefined);
+
+  if (!type) return;
+
+  const isImage = image.installed && type === image.schema.type;
+  const isMediaEmbed = mediaEmbed.installed && type === mediaEmbed.schema.type;
+
+  if (!isImage && !isMediaEmbed) return;
+
   const atAnchor =
     at === undefined
       ? undefined
@@ -44,7 +66,7 @@ export const insertMediaUrl = async (
       ? await getUrl()
       : // biome-ignore lint/suspicious/noAlert: intentional user input for media URL
         window.prompt(
-          `Enter the URL of the ${type === imageType ? NODES.img : NODES.mediaEmbed}`
+          `Enter the URL of the ${isImage ? PLUGINS.image : PLUGINS.mediaEmbed}`
         );
 
     if (!url) return;
@@ -59,14 +81,10 @@ export const insertMediaUrl = async (
       at: resolvedAt ?? (blockPath ? PathApi.next(blockPath) : undefined),
     };
 
-    if (type === imageType) {
-      editor
-        .plugin(BaseImagePlugin)
-        .update.insert({ caption, url }, insertOptions);
-    } else {
-      editor
-        .plugin(BaseMediaEmbedPlugin)
-        .update.insert({ caption, url }, insertOptions);
+    if (isImage) {
+      image.update.insert({ caption, url }, insertOptions);
+    } else if (isMediaEmbed) {
+      mediaEmbed.update.insert({ caption, url }, insertOptions);
     }
   } finally {
     atAnchor?.release();

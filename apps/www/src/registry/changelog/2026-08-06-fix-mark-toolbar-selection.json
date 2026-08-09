@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-06-fix-mark-toolbar-selection",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-06-fix-mark-toolbar-selection.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-06",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Preserve text selection in mark toolbar actions",
+  "targets": [
+    {
+      "name": "mark-toolbar-button",
+      "files": ["apps/www/src/registry/ui/mark-toolbar-button.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-06-mark-toolbar-fix-selection-b3a4c92e",
+      "kind": "fix",
+      "summary": "Apply formatting without losing the active text selection.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["mark-toolbar-button"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-06",
+          "entry": "2026-08-06-fix-mark-toolbar-selection",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

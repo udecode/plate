@@ -85,7 +85,7 @@ Completion Gates:
 | Conditional risk and adoption | pending | Complete triggered risk/browser/benchmark/provenance work or give one scoped N/A reason | pending |
 | Verification recorded | pending | Record fresh planning proof and exact execution gates | pending |
 | Handoff prepared | pending | Prepare concise ownership, breaks, proof, risks, and execution order | pending |
-| Autoreview | pending | Run for implementation changes or record planning-only N/A | pending |
+| P2 autoreview | pending | Run with `--max-priority P2` for implementation changes; P3 is opt-in only, or record planning-only N/A | pending |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 
 Phase / pass table:

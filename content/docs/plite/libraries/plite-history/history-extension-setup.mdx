@@ -12,10 +12,15 @@ import { createEditor } from "@platejs/plite";
 import { history } from "@platejs/plite-history";
 
 const editor = createEditor({
-  extensions: [history()],
+  extensions: [history({ newBatchDelay: 500 })],
   initialValue: [{ type: "paragraph", children: [{ text: "" }] }],
 });
 ```
+
+`newBatchDelay` defaults to 500 milliseconds. It starts a new undo batch when
+an otherwise-compatible automatic native edit arrives after that idle window.
+Explicit `tx.history.merge()` and `tx.history.newBatch()` decisions remain
+authoritative, and no timing metadata is serialized with history.
 
 `usePliteEditor` installs history by default. Disable it explicitly when a
 React-owned editor should not expose history state or transaction helpers.
@@ -45,6 +50,11 @@ editor.update((tx) => {
 });
 
 editor.update({ history: "skip" }).text.insert("draft");
+
+editor.update((tx) => {
+  tx.history.newBatch();
+  tx.text.insert("separate undo step");
+});
 ```
 
 See [History Editor API](./history-editor) for the full API surface.

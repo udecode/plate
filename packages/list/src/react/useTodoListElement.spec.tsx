@@ -15,7 +15,6 @@ describe('useTodoListElement', () => {
       {
         checked: false,
         children: [{ text: '' }],
-        id: 'todo-1',
         indent: 1,
         listStyleType: 'todo',
         type: 'paragraph',

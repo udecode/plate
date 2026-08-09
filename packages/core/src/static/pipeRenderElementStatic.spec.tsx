@@ -73,9 +73,7 @@ describe('pipeRenderElementStatic', () => {
     );
 
     expect(ElementPlugin.name).toBe('elementCapability');
-    expect(editor.plugin(ElementPlugin).schema.element.type).toBe(
-      'persistedElement'
-    );
+    expect(editor.plugin(ElementPlugin).schema.type).toBe('persistedElement');
     expect(markup).toContain('<article');
   });
 

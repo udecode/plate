@@ -56,7 +56,7 @@ For reads, teach `editor.read((state) => ...)`. For writes, teach
 2. Read `master-roadmap.md` only for current tranche and blocker state.
 3. Read `absolute-architecture-release-claim.md` only for accepted public claim.
 4. Read live Plate repo source/tests before making any current-state claim.
-5. For bugs, use `plite-patch`.
+5. For bugs, use `patch`.
 6. For architecture, use `plite-plan --quick` first unless the user asks for a
    durable plan or release-grade review.
 

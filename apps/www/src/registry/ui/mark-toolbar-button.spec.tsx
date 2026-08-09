@@ -275,8 +275,8 @@ describe('feature toolbar plugin portals', () => {
 
   it('uses the typed plugin portal for a decoupled bold control', async () => {
     pluginMock.mockReturnValue({
-      key: 'bold',
       name: 'bold',
+      read: { isActive: () => true },
       update: { toggle: toggleMock },
     });
     const { MarkToolbarButton } = await import(
@@ -323,6 +323,7 @@ describe('feature toolbar plugin portals', () => {
     currentPluginName = 'fontSize';
     currentEditor.read.marks = () => ({ fontSize: '16px' });
     pluginMock.mockReturnValue({
+      read: { value: () => '16px' },
       update: { set: setMock },
     });
     const { FontSizeToolbarButton } = await import(
@@ -353,8 +354,8 @@ describe('feature toolbar plugin portals', () => {
       focus: { offset: 4, path: [0, 0] },
     });
     pluginMock.mockReturnValue({
-      key: 'color',
       name: 'color',
+      read: { value: () => currentEditor.read.marks().color },
       update: { clear: clearMock, set: setMock },
     });
     const { FontColorToolbarButton } = await import(
@@ -393,8 +394,8 @@ describe('feature toolbar plugin portals', () => {
       focus: { offset: 4, path: [0, 0] },
     });
     pluginMock.mockReturnValue({
-      key: 'color',
       name: 'color',
+      read: { value: () => currentEditor.read.marks().color },
       update: { clear: clearMock, set: setMock },
     });
     const { FontColorToolbarButton } = await import(
@@ -425,6 +426,7 @@ describe('feature toolbar plugin portals', () => {
     });
     pluginMock.mockReturnValue({
       name: 'color',
+      read: { value: () => currentEditor.read.marks().color },
       update: { clear: clearMock, set: setMock },
     });
     const { FontColorToolbarButton } = await import(

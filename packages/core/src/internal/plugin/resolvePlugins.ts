@@ -559,6 +559,83 @@ export const resolvePlugins = (
   return editor;
 };
 
+const publishCompiledSchemaHandles = (
+  model: CompiledPlateModel,
+  compiledSchema: NonNullable<ReturnType<typeof getCompiledEditorSchemaFromApi>>
+): CompiledPlateModel => {
+  const compiledProperties = [...compiledSchema.properties.byId.values()];
+  const bindings = model.bindings.map((binding) => {
+    const propertyHandles = Object.fromEntries(
+      Object.entries(binding.propertyHandles).map(([localId, handle]) => {
+        if (!handle) return [localId, handle];
+        const exact = compiledProperties.filter(
+          (property) =>
+            property.owner === binding.name && property.id === handle.id
+        );
+        const matches =
+          exact.length === 1
+            ? exact
+            : compiledProperties.filter(
+                (property) =>
+                  property.owner === binding.name &&
+                  property.placement === handle.placement &&
+                  (typeof property.key === 'string'
+                    ? property.key === handle.key
+                    : typeof handle.key !== 'string' &&
+                      property.key.prefix === handle.key.prefix)
+              );
+
+        if (matches.length !== 1) {
+          throw new Error(
+            `Plate plugin "${binding.name}" schema property "${localId}" did not resolve to one compiled property.`
+          );
+        }
+
+        return [
+          localId,
+          Object.freeze({
+            ...handle,
+            id: matches[0]!.id,
+          }),
+        ];
+      })
+    );
+
+    return Object.freeze({
+      ...binding,
+      propertyHandles: Object.freeze(propertyHandles),
+      schema: Object.freeze({
+        ...binding.schema,
+        properties: Object.freeze(
+          Object.fromEntries(
+            Object.keys(binding.schema.properties).map((localId) => [
+              localId,
+              propertyHandles[localId],
+            ])
+          )
+        ),
+      }),
+    });
+  });
+  const byName: Record<string, (typeof bindings)[number]> = Object.create(null);
+  const byType: Record<string, (typeof bindings)[number]> = Object.create(null);
+  const byKey: Record<string, (typeof bindings)[number]> = Object.create(null);
+
+  for (const binding of bindings) {
+    byName[binding.name] = binding;
+    if (binding.elementType) byType[binding.elementType] = binding;
+    if (binding.propertyKey) byKey[binding.propertyKey] = binding;
+  }
+
+  return Object.freeze({
+    ...model,
+    bindings: Object.freeze(bindings),
+    byKey: Object.freeze(byKey),
+    byName: Object.freeze(byName),
+    byType: Object.freeze(byType),
+  });
+};
+
 /** Compile the Plate runtime projection published by the schema extension. */
 export const createPlateModelPublication = (
   editor: BaseEditor,
@@ -572,24 +649,28 @@ export const createPlateModelPublication = (
   shortcutApiByPlugin: Readonly<Record<string, ShortcutApiOwner | undefined>>,
   updateMethods: Readonly<Record<string, readonly string[] | undefined>>
 ): PlateModelPublication => {
-  const publishedPluginList = publishPlatePluginDescriptors(pluginList, model);
-  const plugins: Record<string, AnyBasePlugin> = Object.create(null);
-
-  publishedPluginList.forEach((plugin) => {
-    plugins[plugin.name] = plugin;
-  });
   const compiledSchema = getCompiledEditorSchemaFromApi(schemaApi);
 
   if (!compiledSchema) {
     throw new Error('Plate model publication requires a compiled schema.');
   }
+  const publishedModel = publishCompiledSchemaHandles(model, compiledSchema);
+  const publishedPluginList = publishPlatePluginDescriptors(
+    pluginList,
+    publishedModel
+  );
+  const plugins: Record<string, AnyBasePlugin> = Object.create(null);
+
+  publishedPluginList.forEach((plugin) => {
+    plugins[plugin.name] = plugin;
+  });
 
   const decoratedMarks: string[] = [];
   const leafProps: string[] = [];
   const textMarks: string[] = [];
   const textProps: string[] = [];
   const components: NodeComponents = Object.create(null);
-  model.bindings.forEach((binding) => {
+  publishedModel.bindings.forEach((binding) => {
     const plugin = plugins[binding.name];
 
     if (binding.kind === 'none' || !plugin) return;
@@ -615,7 +696,7 @@ export const createPlateModelPublication = (
   });
 
   const blockTypes = compiledSchema.elements.groups.get('block');
-  const containerTypes = model.bindings.flatMap((binding) => {
+  const containerTypes = publishedModel.bindings.flatMap((binding) => {
     if (binding.kind !== 'element' || !blockTypes) return [];
 
     const childTypes = compiledSchema.elements.byType.get(binding.elementType!)
@@ -728,7 +809,7 @@ export const createPlateModelPublication = (
     components: Object.freeze(components),
     identity,
     inputRules: snapshotApiValue(createPluginInputRules(publishedPluginList)),
-    model,
+    model: publishedModel,
     pluginCache: publishedPluginCache,
     pluginList: Object.freeze(publishedPluginList),
     plugins: Object.freeze(plugins),
@@ -763,9 +844,11 @@ const inspectPluginUpdateMethods = (
   const updateMethods: Record<string, readonly string[]> = Object.create(null);
 
   pluginList.forEach((plugin) => {
-    const names = new Set<string>(
-      model.byName[plugin.name]?.elementType ? ['insert', 'remove', 'set'] : []
-    );
+    const binding = model.byName[plugin.name];
+    const names = new Set<string>([
+      ...(binding?.elementType ? ['insert', 'remove', 'set'] : []),
+      ...(binding?.kind === 'mark' ? ['clear', 'set', 'toggle'] : []),
+    ]);
 
     if (typeof plugin.update !== 'function') {
       if (names.size > 0) {
@@ -918,7 +1001,17 @@ export const createPlateRuntimeExtensions = (
     const on = createPluginLifecycleHandlers(editor, plugin);
     const stateFields = plugin.stateFields ?? [];
     const effectTypes = plugin.effectTypes ?? [];
-    const elementType = model.byName[plugin.name]?.elementType;
+    const binding = model.byName[plugin.name];
+    const elementType = binding?.elementType;
+    const markKey = binding?.kind === 'mark' ? binding.propertyKey : null;
+    const markIsBoolean =
+      markKey !== null &&
+      binding?.properties.some(
+        (property) =>
+          property.placement === 'text' &&
+          property.key === markKey &&
+          property.value.kind === 'boolean'
+      );
     const definition: EditorExtensionDefinitionInput<BaseEditor> = {
       ...(plugin.enabled === false ? { enabled: false } : {}),
       ...(dependencies.length > 0 ? { dependencies } : {}),
@@ -952,10 +1045,12 @@ export const createPlateRuntimeExtensions = (
             },
           }
         : {}),
-      ...(capabilities.read.length > 0 || typeof plugin.read === 'function'
+      ...(markKey ||
+      capabilities.read.length > 0 ||
+      typeof plugin.read === 'function'
         ? {
             read: (context) => {
-              const resolvedRead =
+              const authoredRead =
                 capabilities.read.length > 0
                   ? resolvePluginCapability(
                       editor,
@@ -963,27 +1058,62 @@ export const createPlateRuntimeExtensions = (
                       capabilities.read,
                       context
                     )
-                  : Reflect.apply(plugin.read!, undefined, [
-                      Object.assign(
-                        Object.create(createPluginContext(editor, plugin)),
-                        context
-                      ),
-                    ]);
+                  : typeof plugin.read === 'function'
+                    ? Reflect.apply(plugin.read, undefined, [
+                        Object.assign(
+                          Object.create(createPluginContext(editor, plugin)),
+                          context
+                        ),
+                      ])
+                    : {};
 
-              return isApiRecord(resolvedRead)
-                ? Object.fromEntries(
-                    Object.entries(resolvedRead).map(([name, value]) => [
-                      name,
-                      typeof value === 'function'
-                        ? txRead(value as (...args: never[]) => unknown)
-                        : value,
-                    ])
-                  )
-                : resolvedRead;
+              if (!markKey) {
+                return isApiRecord(authoredRead)
+                  ? Object.fromEntries(
+                      Object.entries(authoredRead).map(([name, value]) => [
+                        name,
+                        typeof value === 'function'
+                          ? txRead(value as (...args: never[]) => unknown)
+                          : value,
+                      ])
+                    )
+                  : authoredRead;
+              }
+
+              if (!isApiRecord(authoredRead)) {
+                throw new Error(
+                  `Plate mark plugin "${plugin.name}" read factories must return an object.`
+                );
+              }
+
+              const defaultRead = {
+                isActive: (expected?: unknown) => {
+                  const current = context.state.marks()?.[markKey];
+
+                  if (expected !== undefined) return current === expected;
+
+                  return markIsBoolean
+                    ? current === true
+                    : current !== undefined;
+                },
+                value: () => context.state.marks()?.[markKey],
+              };
+
+              return Object.fromEntries(
+                Object.entries(mergePlugins(defaultRead, authoredRead)).map(
+                  ([name, value]) => [
+                    name,
+                    typeof value === 'function'
+                      ? txRead(value as (...args: never[]) => unknown)
+                      : value,
+                  ]
+                )
+              );
             },
           }
         : {}),
       ...(elementType ||
+      markKey ||
       capabilities.update.length > 0 ||
       typeof plugin.update === 'function'
         ? {
@@ -1011,47 +1141,71 @@ export const createPlateRuntimeExtensions = (
                 );
               }
 
-              const defaultUpdate = elementType
-                ? {
-                    insert: (
-                      properties: Readonly<Record<string, unknown>> = {},
-                      options?: Readonly<Record<string, unknown>>
-                    ) => {
-                      if (
-                        !context.tx.selection() &&
-                        options?.at === undefined
-                      ) {
-                        return;
-                      }
-                      const element = context.tx.schema.create(
-                        elementType,
-                        properties
-                      );
+              const defaultUpdate = {
+                ...(elementType
+                  ? {
+                      insert: (
+                        properties: Readonly<Record<string, unknown>> = {},
+                        options?: Readonly<Record<string, unknown>>
+                      ) => {
+                        if (
+                          !context.tx.selection() &&
+                          options?.at === undefined
+                        ) {
+                          return;
+                        }
+                        const element = context.tx.schema.create(
+                          elementType,
+                          properties
+                        );
 
-                      if (
-                        context.tx.schema.isBlock(element) &&
-                        options?.at === undefined
-                      ) {
-                        return context.tx.blocks.insertAfter(element, options);
-                      }
+                        if (
+                          context.tx.schema.isBlock(element) &&
+                          options?.at === undefined
+                        ) {
+                          return context.tx.blocks.insertAfter(
+                            element,
+                            options
+                          );
+                        }
 
-                      return context.tx.nodes.insert(element, options);
-                    },
-                    remove: (options?: Readonly<Record<string, unknown>>) =>
-                      context.tx.nodes.remove({
-                        ...options,
-                        match: { type: elementType },
-                      }),
-                    set: (
-                      properties: Readonly<Record<string, unknown>>,
-                      options?: Readonly<Record<string, unknown>>
-                    ) =>
-                      context.tx.nodes.set(properties, {
-                        ...options,
-                        match: { type: elementType },
-                      }),
-                  }
-                : {};
+                        return context.tx.nodes.insert(element, options);
+                      },
+                      remove: (options?: Readonly<Record<string, unknown>>) =>
+                        context.tx.nodes.remove({
+                          ...options,
+                          match: { type: elementType },
+                        }),
+                      set: (
+                        properties: Readonly<Record<string, unknown>>,
+                        options?: Readonly<Record<string, unknown>>
+                      ) =>
+                        context.tx.nodes.set(properties, {
+                          ...options,
+                          match: { type: elementType },
+                        }),
+                    }
+                  : {}),
+                ...(markKey
+                  ? {
+                      clear: () => context.tx.marks.remove(markKey),
+                      set: (value: unknown) =>
+                        context.tx.marks.add(markKey, value),
+                      toggle: (value?: unknown) => {
+                        if (!markIsBoolean && value === undefined) {
+                          throw new TypeError(
+                            `Plate mark plugin "${plugin.name}" requires a value to toggle.`
+                          );
+                        }
+
+                        context.tx.marks.toggle(
+                          markKey,
+                          markIsBoolean ? true : value
+                        );
+                      },
+                    }
+                  : {}),
+              };
 
               return mergePlugins(defaultUpdate, authoredUpdate);
             },
@@ -1499,7 +1653,7 @@ const assertStaticPluginTopology = (
   }
 };
 
-const collectPlatePluginSourceCandidates = (
+export const collectPlatePluginSourceCandidates = (
   sourceInput: PlatePluginSourceInput
 ) => {
   const sources = normalizePlatePluginSources(sourceInput);

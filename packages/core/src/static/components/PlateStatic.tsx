@@ -16,6 +16,7 @@ import {
   isElementDecorationsEqual,
   isTextDecorationsEqual,
 } from '@platejs/plite-dom';
+import { MAIN_ROOT_KEY } from '@platejs/plite/internal';
 import clsx from 'clsx';
 
 import type { EditableProps, BaseEditor, RenderElementSlots } from '../../lib';
@@ -54,6 +55,8 @@ function BaseElementStatic({
 
   const attributes: PliteRenderElementProps['attributes'] = {
     'data-plite-node': 'element',
+    'data-plite-path': path.join(','),
+    'data-plite-root': rootStack.at(-1) ?? MAIN_ROOT_KEY,
   };
 
   const renderChildren = (range: { from?: number; to?: number } = {}) => (

@@ -867,7 +867,7 @@ test.describe('mentions example', () => {
     expect(proof.domSelection?.anchorOffset).toBe(1);
     expect(proof.focusOwner.kind).toBe('editor');
     expect(proof.selectionShells?.anchor.node?.path).toBe('1,1,0');
-    expect(proof.selectionShells?.anchor.node?.runtimeId).toBeTruthy();
+    expect(proof.selectionShells?.anchor.node?.nodeKey).toBeTruthy();
     expect(proof.selectionShells?.anchor.element?.path).toBe('1,1');
     expect(proof.selectionShells?.anchor.element?.isVoid).toBe(true);
     await expect(page.locator('[data-cy="mention-R2-D2"]')).toHaveCSS(
@@ -924,7 +924,7 @@ test.describe('mentions example', () => {
     });
     expect(proof.domSelection?.anchorOffset).toBe(1);
     expect(proof.selectionShells?.anchor.node?.path).toBe('1,3,0');
-    expect(proof.selectionShells?.anchor.node?.runtimeId).toBeTruthy();
+    expect(proof.selectionShells?.anchor.node?.nodeKey).toBeTruthy();
     expect(proof.selectionShells?.anchor.element?.path).toBe('1,3');
     expect(proof.selectionShells?.anchor.element?.isVoid).toBe(true);
     await expect(page.locator('[data-cy="mention-Mace-Windu"]')).toHaveCSS(

@@ -540,7 +540,7 @@ describe('DOM coverage private boundary harness', () => {
     });
   });
 
-  test('renderElement slots cover child ranges without exposing runtime ids', async () => {
+  test('renderElement slots cover child ranges without exposing node keys', async () => {
     const editor = createReactEditor();
 
     editorReplace(editor, {

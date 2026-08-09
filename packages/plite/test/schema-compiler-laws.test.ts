@@ -385,11 +385,13 @@ describe('compiled schema generated laws', () => {
           )!;
 
           assert.deepEqual(mark.lifecycle, {
+            copy: 'preserve',
             inclusive,
             split,
             typeChange,
           });
           assert.deepEqual(metadata.lifecycle, {
+            copy: 'preserve',
             inclusive: null,
             split,
             typeChange,

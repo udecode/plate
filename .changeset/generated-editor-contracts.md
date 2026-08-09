@@ -13,6 +13,12 @@ store capabilities plus descriptor-local schema operations while their global
 `Value` remains broad. Generated kits add exact application-wide `Value`, root
 and transaction mutation namespaces, and schema relationships without
 recursively evaluating the complete grammar at each editor access.
+Recursive JSON property edges degrade to `unknown` instead of overflowing the
+generator or emitting an unsafe recursive expansion; finite declared fields
+remain exact.
+Generated plugin bindings expose one flat primary identity at
+`EditorKit.schema.plugins.<name>.type` or `.key`; application-owned properties
+remain under `EditorKit.schema.properties`.
 
 Give every element descriptor standard `insert`, `set`, and `remove` updates
 through `editor.plugin(Plugin).update`. Generated editors also project them as

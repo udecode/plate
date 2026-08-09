@@ -2,6 +2,7 @@ import {
   type BaseEditorOptions,
   type BasePluginInput,
   createBaseEditor as createTypedBaseEditor,
+  ElementIdPlugin,
 } from '@platejs/core';
 import { BaseBoldPlugin } from '@platejs/basic-nodes';
 import { BaseFontColorPlugin } from '@platejs/basic-styles';
@@ -202,6 +203,28 @@ describe('MarkdownPlugin', () => {
         },
       ],
     });
+  });
+
+  it('serializes canonical persisted element ids', () => {
+    const editor = createBaseEditor({
+      plugins: [
+        ElementIdPlugin,
+        MarkdownPlugin.configure({
+          initialState: { remarkPlugins: [remarkMdx] },
+        }),
+      ],
+      initialValue: [
+        {
+          children: [{ text: 'Hello' }],
+          id: 'block-1',
+          type: 'paragraph',
+        },
+      ],
+    });
+
+    expect(editor.api.markdown.serialize({ withBlockId: true })).toContain(
+      '<block id="block-1">'
+    );
   });
 
   it('applies one-operation overrides by installed feature name', () => {

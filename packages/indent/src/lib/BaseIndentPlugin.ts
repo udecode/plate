@@ -1,6 +1,7 @@
 import {
+  BaseParagraphPlugin,
   type DefinitionOf,
-  createBasePlugin,
+  defineBasePlugin,
   getInjectMatch,
 } from '@platejs/core';
 import {
@@ -9,9 +10,10 @@ import {
   type NodeMatchPredicate,
   ElementApi,
   property,
+  schema,
   target,
 } from '@platejs/plite';
-import { KEYS } from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 
 export type IndentChangeOptions = {
   nodes?: Omit<EditorNodesOptions<Element>, 'match'> & {
@@ -44,40 +46,17 @@ const initialState: IndentPluginState = {
   unit: 'px',
 };
 
-export const BaseIndentPlugin = createBasePlugin({
-  name: KEYS.indent,
+export const BaseIndentPlugin = defineBasePlugin(PLUGINS.indent, {
   initialState,
-  schema: ({ own, plugins, targetPluginNames }) => ({
-    properties: [
-      own.elementProperty(property.number(), {
-        target: target.types(plugins.elementTypesByName(targetPluginNames)),
+  schema: ({ targetElementTypes }) => ({
+    properties: {
+      indent: schema.elementProperty(property.number(), {
+        target: target.types(targetElementTypes),
         typeChange: 'preserve-if-allowed',
       }),
-    ],
-  }),
-  targetPluginNames: [KEYS.p],
-  corrections: [
-    {
-      event: 'properties',
-      correct({ editor, entry, tx }) {
-        const [node, path] = entry;
-
-        if (!ElementApi.isElement(node)) return;
-
-        const { indentMax } = editor.plugin(BaseIndentPlugin).store.get();
-        const type = editor.plugin(BaseIndentPlugin).type;
-        const indent = node[type];
-
-        if (
-          typeof indentMax === 'number' &&
-          typeof indent === 'number' &&
-          indent > indentMax
-        ) {
-          tx.nodes.set({ [type]: indentMax }, { at: path });
-        }
-      },
     },
-  ],
+  }),
+  targetPlugins: [BaseParagraphPlugin],
   inject: {
     isBlock: true,
     nodeProps: {
@@ -89,8 +68,8 @@ export const BaseIndentPlugin = createBasePlugin({
       },
     },
   },
-  update: ({ editor, plugin, tx, type }) => {
-    const set = ({
+  update: ({ editor, plugin, tx }) => {
+    const change = ({
       nodes,
       offset = 1,
       setNodeProps,
@@ -107,31 +86,31 @@ export const BaseIndentPlugin = createBasePlugin({
       });
 
       for (const [node, path] of entries) {
-        const currentIndent = Number(node[type] ?? 0);
+        const currentIndent = Number(node.indent ?? 0);
         const nextIndent = currentIndent + offset;
         const props = setNodeProps?.({ indent: nextIndent }) ?? {};
 
         if (nextIndent <= 0) {
-          tx.nodes.unset([type, ...unsetNodeProps], { at: path });
+          tx.nodes.unset(['indent', ...unsetNodeProps], { at: path });
           continue;
         }
 
-        tx.nodes.set({ [type]: nextIndent, ...props }, { at: path });
+        tx.nodes.set({ indent: nextIndent, ...props }, { at: path });
       }
     };
 
     const increase = (options?: Omit<IndentChangeOptions, 'offset'>) => {
-      set({ ...options, offset: 1 });
+      change({ ...options, offset: 1 });
     };
 
     const decrease = (options?: Omit<IndentChangeOptions, 'offset'>) => {
-      set({ ...options, offset: -1 });
+      change({ ...options, offset: -1 });
     };
 
     return {
+      change,
       decrease,
       increase,
-      set,
       tab: () => {
         const match = getInjectMatch(editor, plugin);
         const entry = tx.nodes.block();
@@ -156,16 +135,17 @@ export const BaseIndentPlugin = createBasePlugin({
 
         if (!match(element, path)) return false;
 
-        if (!element[type]) {
-          const blockquote = editor.plugin(KEYS.blockquote);
+        if (!element.indent) {
+          const blockquote = editor.plugin(PLUGINS.blockquote);
+
+          if (!blockquote.installed) return true;
 
           return !tx.nodes.above({
             at: path,
             match: (node, nodePath) =>
               nodePath.length < path.length &&
               ElementApi.isElement(node) &&
-              node.type ===
-                (blockquote.installed ? blockquote.type : KEYS.blockquote),
+              node.type === blockquote.schema.type,
           });
         }
 
@@ -219,6 +199,28 @@ export const BaseIndentPlugin = createBasePlugin({
     tab: { keys: 'tab' },
     untab: { keys: 'shift+tab' },
   },
+}).extend({
+  corrections: [
+    {
+      event: 'properties',
+      correct({ editor, entry, tx }) {
+        const [node, path] = entry;
+
+        if (!ElementApi.isElement(node)) return;
+
+        const { indentMax } = editor.plugin(BaseIndentPlugin).store.get();
+        const indent = node.indent;
+
+        if (
+          typeof indentMax === 'number' &&
+          typeof indent === 'number' &&
+          indent > indentMax
+        ) {
+          tx.nodes.set('indent', indentMax, { at: path });
+        }
+      },
+    },
+  ],
 });
 
 export type IndentDefinition = DefinitionOf<typeof BaseIndentPlugin>;

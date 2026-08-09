@@ -60,7 +60,6 @@ describe('table insertion slow contracts', () => {
       ) as TestEditor;
 
       const editor = createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
         initialValue: input.children,
@@ -125,7 +124,6 @@ describe('table insertion slow contracts', () => {
       ) as TestEditor;
 
       const editor = createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
         initialValue: input.children,
@@ -200,7 +198,6 @@ describe('table insertion slow contracts', () => {
       ) as TestEditor;
 
       const editor = createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
         initialValue: input.children,
@@ -279,7 +276,6 @@ describe('table insertion slow contracts', () => {
       ) as TestEditor;
 
       const editor = createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
         initialValue: input.children,
@@ -354,7 +350,6 @@ describe('table insertion slow contracts', () => {
       ) as TestEditor;
 
       const editor = createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
         initialValue: input.children,
@@ -438,7 +433,6 @@ describe('table insertion slow contracts', () => {
           });
 
           const editor = createTestTableEditor({
-            nodeId: true,
             plugins: getTestTablePlugins({ disableMerge }),
             selection: input.selection,
             initialValue: input.children,
@@ -472,7 +466,6 @@ describe('table insertion slow contracts', () => {
           });
 
           const editor = createTestTableEditor({
-            nodeId: true,
             plugins: getTestTablePlugins({ disableMerge }),
             selection: input.selection,
             initialValue: input.children,
@@ -510,7 +503,6 @@ describe('table insertion slow contracts', () => {
           });
 
           const editor = createTestTableEditor({
-            nodeId: true,
             plugins: getTestTablePlugins({ disableMerge }),
             selection: input.selection,
             initialValue: input.children,
@@ -545,7 +537,6 @@ describe('table insertion slow contracts', () => {
           });
 
           const editor = createTestTableEditor({
-            nodeId: true,
             plugins: getTestTablePlugins({ disableMerge }),
             selection: input.selection,
             initialValue: input.children,
@@ -585,7 +576,6 @@ describe('table insertion slow contracts', () => {
             });
 
             const editor = createTestTableEditor({
-              nodeId: true,
               plugins: getTestTablePlugins({
                 disableMerge,
                 initialTableWidth: 100,
@@ -627,7 +617,6 @@ describe('table insertion slow contracts', () => {
             });
 
             const editor = createTestTableEditor({
-              nodeId: true,
               plugins: getTestTablePlugins({
                 disableMerge,
                 initialTableWidth: 100,
@@ -667,7 +656,6 @@ describe('table insertion slow contracts', () => {
             });
 
             const editor = createTestTableEditor({
-              nodeId: true,
               plugins: getTestTablePlugins({
                 disableMerge,
                 initialTableWidth: 100,
@@ -711,7 +699,6 @@ describe('table insertion slow contracts', () => {
             });
 
             const editor = createTestTableEditor({
-              nodeId: true,
               plugins: getTestTablePlugins({
                 disableMerge,
                 initialTableWidth: 100,
@@ -751,7 +738,6 @@ describe('table insertion slow contracts', () => {
             });
 
             const editor = createTestTableEditor({
-              nodeId: true,
               plugins: getTestTablePlugins({
                 disableMerge,
                 initialTableWidth: 100,
@@ -792,7 +778,6 @@ describe('table insertion slow contracts', () => {
           });
 
           const editor = createTestTableEditor({
-            nodeId: true,
             plugins: getTestTablePlugins({
               disableMerge,
               initialTableWidth: 100,
@@ -842,7 +827,6 @@ describe('table insertion slow contracts', () => {
           ) as TestEditor;
 
           const editor = createTestTableEditor({
-            nodeId: true,
             plugins: getTestTablePlugins({ disableMerge }),
             selection: input.selection,
             initialValue: input.children,

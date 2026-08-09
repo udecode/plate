@@ -2,10 +2,17 @@
 "@platejs/code-drawing": major
 ---
 
-Insert code drawings through `editor.update.codeDrawing.insert(props, options)`,
-append when no block target is available, and register code-drawing properties
-with versioned inline validation in compiled schemas. The capability name,
-command namespace, and persisted element type are all `codeDrawing`. Use
+Insert code drawings through the descriptor's standard
+`editor.plugin(BaseCodeDrawingPlugin).update.insert(props?, nodeOptions?)`
+update. The compiled schema owns the complete default drawing data and
+versioned inline validation. The plugin also owns its
+Markdown MDX codec, so code-drawing data round-trips through Markdown without
+falling through the generic unreachable-node path. The capability name,
+command namespace, and default persisted element type are all `codeDrawing`.
+The MDX tag follows the resolved application schema type. Use
 `PLUGINS.codeDrawing` for the capability name instead of `CODE_DRAWING_KEY`.
 
-**Migration:** Replace direct `insertCodeDrawing` calls with the installed plugin command. Pass `at` to target the block after which the drawing is inserted.
+**Migration:** Replace direct `insertCodeDrawing` calls with the installed
+plugin update. Pass `at` as the second argument for an explicit location.
+MDX attributes cannot replace code-drawing children or its resolved schema
+type.

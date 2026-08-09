@@ -25,6 +25,8 @@ shell components outside a `<Plite>` root.
 - Preserve inline decorated-range data in projection slices
 - Infer React editor values from complete installed schemas and expose typed
   interactive content-root slots
+- Keep `useEditor()` non-generic and let selector hooks infer only their result;
+  resolve exact extension capabilities through `editor.extension(Extension)`
 - Preserve element-owned named roots through projected clipboard serialization
   and insertion
 - Resolve projected clipboard ranges against the canonical runtime so

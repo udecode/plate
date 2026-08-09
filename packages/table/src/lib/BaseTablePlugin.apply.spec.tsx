@@ -1,6 +1,7 @@
 /** @jsx jsxt */
 
 import assert from 'node:assert/strict';
+import { ElementIdPlugin } from '@platejs/core';
 import { DocumentChange } from '@platejs/plite';
 import type { TableCellElement, TableElement } from './BaseTablePlugin';
 import { BaseYjsPlugin } from '@platejs/yjs';
@@ -11,6 +12,7 @@ import {
   createTestTableEditor,
   getTestTablePlugins,
 } from './__tests__/getTestTablePlugins';
+import type { TableElementWithId } from './__tests__/tableTestTypes';
 import { BaseTablePlugin } from './BaseTablePlugin';
 import { compileTableGrid } from './internal/grid';
 
@@ -18,7 +20,6 @@ jsxt;
 
 const createTableEditor = (input: TestEditor) =>
   createTestTableEditor({
-    nodeId: true,
     plugins: getTestTablePlugins(),
     selection: input.selection,
     initialValue: input.children,
@@ -27,7 +28,7 @@ const createTableEditor = (input: TestEditor) =>
 const tableElement = (
   id: string,
   rows: readonly (readonly string[])[]
-): TableElement => ({
+): TableElementWithId => ({
   children: rows.map((values, row) => ({
     children: values.map((value) => ({
       children: [
@@ -240,12 +241,14 @@ describe('BaseTablePlugin apply', () => {
       </editor>
     ) as TestEditor;
     const editor = createTableEditor(input);
+    const keepKey = editor.key([0, 0, 0])!;
+    const removeKey = editor.key([0, 0, 1])!;
 
     expect(
-      editor.plugin(BaseTablePlugin).read.getCellIndicesById('keep')
+      editor.plugin(BaseTablePlugin).read.getCellIndicesByKey(keepKey)
     ).toEqual({ col: 0, row: 0 });
     expect(
-      editor.plugin(BaseTablePlugin).read.getCellIndicesById('remove')
+      editor.plugin(BaseTablePlugin).read.getCellIndicesByKey(removeKey)
     ).toEqual({ col: 1, row: 0 });
     editor.update.table.removeColumn();
 
@@ -255,10 +258,10 @@ describe('BaseTablePlugin apply', () => {
       editor.plugin(BaseTablePlugin).read.getCellIndices(nextKeep[0])
     ).toEqual({ col: 0, row: 0 });
     expect(
-      editor.plugin(BaseTablePlugin).read.getCellIndicesById('keep')
+      editor.plugin(BaseTablePlugin).read.getCellIndicesByKey(keepKey)
     ).toEqual({ col: 0, row: 0 });
     expect(
-      editor.plugin(BaseTablePlugin).read.getCellIndicesById('remove')
+      editor.plugin(BaseTablePlugin).read.getCellIndicesByKey(removeKey)
     ).toBeUndefined();
   });
 
@@ -288,12 +291,14 @@ describe('BaseTablePlugin apply', () => {
       source.read.lastCommit()!.changes.toJSON()
     );
     const replay = createTableEditor(input);
+    const keepKey = replay.key([0, 0, 0])!;
+    const removeKey = replay.key([0, 0, 1])!;
 
     expect(
-      replay.plugin(BaseTablePlugin).read.getCellIndicesById('keep')
+      replay.plugin(BaseTablePlugin).read.getCellIndicesByKey(keepKey)
     ).toEqual({ col: 0, row: 0 });
     expect(
-      replay.plugin(BaseTablePlugin).read.getCellIndicesById('remove')
+      replay.plugin(BaseTablePlugin).read.getCellIndicesByKey(removeKey)
     ).toEqual({ col: 1, row: 0 });
     expect(change.primaryClassification).toBeNull();
     replay.update((tx) => tx.changes.apply(change));
@@ -304,10 +309,10 @@ describe('BaseTablePlugin apply', () => {
       replay.plugin(BaseTablePlugin).read.getCellIndices(nextKeep[0])
     ).toEqual({ col: 0, row: 0 });
     expect(
-      replay.plugin(BaseTablePlugin).read.getCellIndicesById('keep')
+      replay.plugin(BaseTablePlugin).read.getCellIndicesByKey(keepKey)
     ).toEqual({ col: 0, row: 0 });
     expect(
-      replay.plugin(BaseTablePlugin).read.getCellIndicesById('remove')
+      replay.plugin(BaseTablePlugin).read.getCellIndicesByKey(removeKey)
     ).toBeUndefined();
   });
 
@@ -339,7 +344,6 @@ describe('BaseTablePlugin apply', () => {
       </editor>
     ) as TestEditor;
     const editor = createTestTableEditor({
-      nodeId: true,
       plugins: getTestTablePlugins({ disableMerge: false }),
       selection: input.selection,
       initialValue: input.children,
@@ -409,20 +413,13 @@ describe('BaseTablePlugin apply', () => {
     const repaired = editor.read.nodes.get<TableElement>([0])?.[0];
     assert(repaired);
 
-    const repairedGrid = compileTableGrid(repaired);
+    const repairedGrid = editor.read((state) => compileTableGrid(state, [0]));
     const repairedChildren = editor.read.children();
     const repairedSelection = editor.read.selection();
-    const createdId = repairedGrid.slots[1][1]?.id;
 
     expect(editor.read.history.undos()).toHaveLength(1);
     expect(repairedGrid.problems).toEqual([]);
-    expect(repairedGrid.anchors.map(({ id }) => id)).toEqual([
-      'a',
-      'b',
-      'c',
-      createdId,
-    ]);
-    expect(createdId).toBeDefined();
+    expect(repairedGrid.anchors).toHaveLength(4);
     assert.deepEqual(repairedSelection, initialSelection);
 
     editor.update.history.undo();
@@ -434,9 +431,7 @@ describe('BaseTablePlugin apply', () => {
 
     assert.deepEqual(editor.read.children(), repairedChildren);
     assert.deepEqual(editor.read.selection(), repairedSelection);
-    expect(editor.read.nodes.get<TableCellElement>([0, 1, 1])?.[0].id).toBe(
-      createdId
-    );
+    expect(editor.read.nodes.get<TableCellElement>([0, 1, 1])).toBeDefined();
   });
 
   it('publishes one Yjs update and replays the complete table plan', () => {
@@ -447,8 +442,8 @@ describe('BaseTablePlugin apply', () => {
       kind: 'text' as const,
     };
     const source = createTestTableEditor({
-      nodeId: true,
       plugins: [
+        ElementIdPlugin,
         BaseTablePlugin,
         BaseYjsPlugin.configure({ initialState: { clientId: 'source' } }),
       ],
@@ -457,8 +452,8 @@ describe('BaseTablePlugin apply', () => {
     });
     const doc = source.extension(BaseYjsPlugin).read.doc();
     const replay = createTestTableEditor({
-      nodeId: true,
       plugins: [
+        ElementIdPlugin,
         BaseTablePlugin,
         BaseYjsPlugin.configure({
           initialState: { clientId: 'replay', doc },
@@ -473,8 +468,6 @@ describe('BaseTablePlugin apply', () => {
 
     expect(updateCount).toBe(1);
     assert.deepEqual(replay.read.children(), source.read.children());
-    expect(
-      replay.read.nodes.get<TableCellElement>([0, 0, 1])?.[0].id
-    ).toBeDefined();
+    expect(replay.read.nodes.get<TableCellElement>([0, 0, 1])).toBeDefined();
   });
 });

@@ -159,10 +159,13 @@ selection, history, browser proof, package API, and benchmarks.
   `name` identifies a capability only. Element plugins own a persisted `type`;
   mark/property plugins own a persisted `key`. Each defaults to `name` when
   omitted but may differ at definition time, and behavior plugins expose
-  neither. Uninstalled portals preserve an exact schema descriptor's identity,
-  while runtime strings use the string as conventional `.type`/`.key`;
-  `installed` guards behavior, not identity. These identities
-  are immutable after construction. Plugins have no
+  neither. Only an installed compiled portal exposes persisted identities at
+  `schema.type` for an exact element owner or `schema.key` for an exact primary
+  mark. Behavior and aggregate-property portals omit `schema`; consumer portals
+  never expose normalized property maps. Name-only portals keep non-optional
+  identity getters for package-decoupled code, but missing or wrong-kind access
+  throws after `installed: false`. These
+  identities are immutable after construction. Plugins have no
   `config`; immutable construction
   inputs and runtime resources stay in factory closures or honest host owners.
 - Extension-owned document capabilities are `read` and `update`; pure

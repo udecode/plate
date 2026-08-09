@@ -38,8 +38,7 @@ describe('BaseFontBackgroundColorPlugin', () => {
     });
     expect(
       editor.read.schema.property({
-        key: editor.plugin(BaseFontBackgroundColorPlugin).schema.properties
-          .backgroundColor.key,
+        key: editor.plugin(BaseFontBackgroundColorPlugin).schema.key,
         placement: 'text',
       })?.value.kind
     ).toBe('string');
@@ -105,7 +104,7 @@ describe('BaseFontColorPlugin', () => {
     });
     expect(
       editor.read.schema.property({
-        key: editor.plugin(BaseFontColorPlugin).schema.properties.color.key,
+        key: editor.plugin(BaseFontColorPlugin).schema.key,
         placement: 'text',
       })?.value.kind
     ).toBe('string');
@@ -171,8 +170,7 @@ describe('BaseFontFamilyPlugin', () => {
     );
     expect(
       editor.read.schema.property({
-        key: editor.plugin(BaseFontFamilyPlugin).schema.properties.fontFamily
-          .key,
+        key: editor.plugin(BaseFontFamilyPlugin).schema.key,
         placement: 'text',
       })?.value.kind
     ).toBe('string');
@@ -230,7 +228,7 @@ describe('BaseFontSizePlugin', () => {
     });
     expect(
       editor.read.schema.property({
-        key: editor.plugin(BaseFontSizePlugin).schema.properties.fontSize.key,
+        key: editor.plugin(BaseFontSizePlugin).schema.key,
         placement: 'text',
       })?.value.kind
     ).toBe('string');
@@ -290,8 +288,7 @@ describe('BaseFontWeightPlugin', () => {
     );
     expect(
       editor.read.schema.property({
-        key: editor.plugin(BaseFontWeightPlugin).schema.properties.fontWeight
-          .key,
+        key: editor.plugin(BaseFontWeightPlugin).schema.key,
         placement: 'text',
       })?.value.kind
     ).toBe('string');
@@ -341,7 +338,7 @@ describe('BaseLineHeightPlugin', () => {
 
     expect(plugin.inject.isBlock).toBe(true);
     expect(plugin.targetPlugins[0]?.name).toBe(
-      editor.plugin(BaseParagraphPlugin).schema.element.type
+      editor.plugin(BaseParagraphPlugin).schema.type
     );
     expect(editor.plugin(BaseLineHeightPlugin).inject.nodeProps!).toMatchObject(
       {
@@ -351,8 +348,7 @@ describe('BaseLineHeightPlugin', () => {
     );
     expect(
       editor.read.schema.property({
-        key: editor.plugin(BaseLineHeightPlugin).schema.properties.lineHeight
-          .key,
+        key: 'lineHeight',
         placement: 'element',
       })?.value.kind
     ).toBe('json');
@@ -388,7 +384,7 @@ describe('BaseLineHeightPlugin', () => {
       })
     ).toMatchObject([
       {
-        [editor.plugin(PLUGINS.lineHeight).schema.properties.lineHeight.key]: 2,
+        lineHeight: 2,
         children: [{ text: 'text' }],
         type: 'paragraph',
       },
@@ -498,7 +494,7 @@ describe('BaseTextAlignPlugin', () => {
 
     expect(plugin.inject.isBlock).toBe(true);
     expect(plugin.targetPlugins[0]?.name).toBe(
-      editor.plugin(BaseParagraphPlugin).schema.element.type
+      editor.plugin(BaseParagraphPlugin).schema.type
     );
     expect(plugin.inject.nodeProps).toMatchObject({
       defaultNodeValue: 'start',
@@ -507,7 +503,7 @@ describe('BaseTextAlignPlugin', () => {
     });
     expect(
       editor.read.schema.property({
-        key: editor.plugin(BaseTextAlignPlugin).schema.properties.textAlign.key,
+        key: 'textAlign',
         placement: 'element',
       })?.value.kind
     ).toBe('string');
@@ -525,8 +521,7 @@ describe('BaseTextAlignPlugin', () => {
       })
     ).toMatchObject([
       {
-        [editor.plugin(PLUGINS.textAlign).schema.properties.textAlign.key]:
-          'center',
+        textAlign: 'center',
         children: [{ text: 'text' }],
         type: 'paragraph',
       },
@@ -548,8 +543,7 @@ describe('BaseTextAlignPlugin', () => {
         },
       ],
     });
-    const nodeKey = editor.plugin(PLUGINS.textAlign).schema.properties.textAlign
-      .key;
+    const nodeKey = 'textAlign';
 
     editor.update.textAlign.set('center');
     expect(editor.read.children()[0]).toMatchObject({ [nodeKey]: 'center' });
@@ -602,9 +596,7 @@ describe('BaseTextAlignPlugin', () => {
 
     editor.update.textAlign.set('start');
 
-    expect(editor.read.children()[0]).not.toHaveProperty(
-      editor.plugin(BaseTextAlignPlugin).schema.properties.textAlign.key
-    );
+    expect(editor.read.children()[0]).not.toHaveProperty('textAlign');
   });
 });
 
@@ -619,7 +611,7 @@ describe('BaseTextIndentPlugin', () => {
 
     expect(plugin.inject.isBlock).toBe(true);
     expect(plugin.targetPlugins[0]?.name).toBe(
-      editor.plugin(BaseParagraphPlugin).schema.element.type
+      editor.plugin(BaseParagraphPlugin).schema.type
     );
     expect(nodeProps).toMatchObject({
       nodeKey: 'textIndent',
@@ -633,8 +625,7 @@ describe('BaseTextIndentPlugin', () => {
     ).toBe('48px');
     expect(
       editor.read.schema.property({
-        key: editor.plugin(BaseTextIndentPlugin).schema.properties.textIndent
-          .key,
+        key: 'textIndent',
         placement: 'element',
       })?.value.kind
     ).toBe('number');
@@ -684,7 +675,7 @@ describe('BaseTextIndentPlugin', () => {
     ]);
   });
 
-  it('applies and clears text indent through the typed tx group', () => {
+  it('applies and clears text indent through generic node updates', () => {
     const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, BaseTextIndentPlugin],
       initialValue: [
@@ -694,13 +685,12 @@ describe('BaseTextIndentPlugin', () => {
         },
       ],
     });
-    const nodeKey = editor.plugin(PLUGINS.textIndent).schema.properties
-      .textIndent.key;
+    const nodeKey = 'textIndent';
 
-    editor.update.textIndent.set(2, { at: [0] });
+    editor.update.nodes.set({ textIndent: 2 }, { at: [0] });
     expect(editor.read.children()[0]).toMatchObject({ [nodeKey]: 2 });
 
-    editor.update.textIndent.unset({ at: [0] });
+    editor.update.nodes.unset('textIndent', { at: [0] });
     expect(editor.read.children()[0]).not.toHaveProperty(nodeKey);
   });
 
@@ -722,12 +712,12 @@ describe('BaseTextIndentPlugin', () => {
       ],
     });
 
-    editor.update.textIndent.set(2, { at: [0] });
+    editor.update.nodes.set({ textIndent: 2 }, { at: [0] });
 
     expect(editor.read.children()[0]).toMatchObject({ textIndent: 2 });
     expect(editor.read.children()[0]).not.toHaveProperty('legacyTextIndent');
 
-    editor.update.textIndent.unset({ at: [0] });
+    editor.update.nodes.unset('textIndent', { at: [0] });
 
     expect(editor.read.children()[0]).not.toHaveProperty('textIndent');
   });

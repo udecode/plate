@@ -1,5 +1,5 @@
 import { type Descendant, TextApi } from '@platejs/plite';
-import { KEYS } from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 
 import type { MdParagraph } from '../mdast';
 import type { MdRules } from '../types';
@@ -59,8 +59,10 @@ export const intrinsicRules = {
       text: (node.value || '').replaceAll('<br />', '\n'),
     }),
   },
-  p: {
+  paragraph: {
     deserialize: (node, decoration, options) => {
+      const paragraphType =
+        options.registry.type(PLUGINS.paragraph) ?? 'paragraph';
       const children = convertChildrenDeserialize(
         node.children,
         decoration,
@@ -77,7 +79,7 @@ export const intrinsicRules = {
 
         elements.push({
           children: inlineNodes,
-          type: options.registry.getType(KEYS.p),
+          type: paragraphType,
         });
         inlineNodes = [];
       };
@@ -85,7 +87,7 @@ export const intrinsicRules = {
       children.forEach((child, index, allChildren) => {
         const { type } = child as { type?: string };
 
-        if (type === options.registry.getType(KEYS.img)) {
+        if (type === (options.registry.type(PLUGINS.image) ?? 'image')) {
           flushInlineNodes();
           elements.push(child);
         } else if (

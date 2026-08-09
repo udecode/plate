@@ -66,7 +66,6 @@ import {
 import { getSchemaInvalidatedRuntimeIds } from '../editable/schema-runtime-invalidation';
 import {
   type EditorSelectorContextValue,
-  type EditorStateSelectorOptions,
   useEditorSelectorContext,
 } from './use-editor-selector';
 import { useGenericSelector } from './use-generic-selector';
@@ -235,10 +234,13 @@ export type PliteRuntimeProps<
 export type PliteRuntimeStateSelectorOptions<
   T,
   TRuntime extends PliteRuntimeValue<any, any> = PliteRuntimeValue<any, any>,
-> = Pick<
-  EditorStateSelectorOptions<T, TRuntime['editor']>,
-  'deferred' | 'equalityFn' | 'shouldUpdate'
->;
+> = {
+  deferred?: boolean;
+  equalityFn?: (a: T | null, b: T) => boolean;
+  shouldUpdate?: (
+    change?: EditorCommit<ValueOf<TRuntime['editor']>>
+  ) => boolean;
+};
 
 export const PliteRuntimeContext = createContext<PliteRuntimeContextValue<
   any,
@@ -371,10 +373,9 @@ export function usePliteRuntime<
     shouldUseContext ? null : createReactRuntime(options ?? {})
   );
 
-  return (shouldUseContext ? context.runtime : runtime) as PliteRuntimeValue<
-    V,
-    TExtensions
-  >;
+  return (shouldUseContext
+    ? context.runtime
+    : runtime) as unknown as PliteRuntimeValue<V, TExtensions>;
 }
 
 export function useOptionalPliteRuntimeContext() {

@@ -9,6 +9,6 @@ Move indent commands to `editor.update.indent` and register validated
 indentation properties in compiled schemas under each plugin name.
 
 **Migration:** Replace `setIndent`, `indent`, and `outdent` with
-`editor.update.indent.set`, `editor.update.indent.increase`, and
+`editor.update.indent.change`, `editor.update.indent.increase`, and
 `editor.update.indent.decrease`. Configure indent targets through the plugin's
 top-level `targetPlugins` field.

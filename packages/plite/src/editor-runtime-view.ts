@@ -35,6 +35,7 @@ import {
   withEditorRootChildrenGenerator,
   withEditorTargetRuntime,
 } from './core/public-state';
+import { getNodeSetOptions } from './core/node-property-mutation';
 import type {
   AnyEditor as Editor,
   EditorAnchorApi,
@@ -59,6 +60,8 @@ import type {
   Value,
 } from './interfaces/editor';
 import { RangeApi } from './interfaces/range';
+import type { SchemaPropertyHandle } from './interfaces/schema';
+import type { NodeUnsetNodesOptions } from './interfaces/transforms/node';
 import { withImplicitRangeRoot } from './internal/root-location';
 import {
   MAIN_ROOT_KEY,
@@ -291,8 +294,8 @@ const withRootRuntime = <V extends Value, T extends ViewStateTransformInput<V>>(
 ): T['runtime'] =>
   Object.freeze({
     ...state.runtime,
-    idAt: rootMethod(editor, viewState, state.runtime.idAt),
-    pathOf: rootMethod(editor, viewState, state.runtime.pathOf),
+    id: rootMethod(editor, viewState, state.runtime.id),
+    path: rootMethod(editor, viewState, state.runtime.path),
     snapshot: () =>
       withViewSnapshot(
         withRootRead(editor, viewState, () => state.runtime.snapshot()),
@@ -355,6 +358,8 @@ const withViewState = <V extends Value, T extends ViewStateTransformInput<V>>(
         }
       )
     : undefined;
+  const ranges = withRootRanges<V, T>(editor, state, viewState);
+  const selectionRangeState = { ranges };
 
   scopedState = Object.freeze({
     ...state,
@@ -371,7 +376,7 @@ const withViewState = <V extends Value, T extends ViewStateTransformInput<V>>(
     marks: withRootMarks<V, T>(editor, state, viewState),
     nodes: withRootChildren<V, T>(editor, state, viewState),
     points: withRootPoints<V, T>(editor, state, viewState),
-    ranges: withRootRanges<V, T>(editor, state, viewState),
+    ranges,
     runtime: withRootRuntime<V, T>(editor, state, viewState),
     slice: Object.freeze({
       ...(fitSlice ? { fit: fitSlice } : {}),
@@ -384,10 +389,10 @@ const withViewState = <V extends Value, T extends ViewStateTransformInput<V>>(
     selection: Object.freeze(
       Object.assign(selection, {
         contains: (target: NodeTarget) =>
-          doesSelectionContain(scopedState, selection(), target),
+          doesSelectionContain(selectionRangeState, selection(), target),
         primaryRange: () => state.selection.primaryRange(),
         intersects: (target: NodeTarget) =>
-          doesSelectionIntersect(scopedState, selection(), target),
+          doesSelectionIntersect(selectionRangeState, selection(), target),
         isAcrossBlocks: (options?: EditorSelectionBlockOptions) =>
           isSelectionAcrossBlocks(scopedState, selection(), options),
         isAtBlockEnd: (options?: EditorSelectionBlockOptions) =>
@@ -407,9 +412,10 @@ const withViewState = <V extends Value, T extends ViewStateTransformInput<V>>(
         isWithinBlock: (options?: EditorSelectionBlockOptions) =>
           isSelectionWithinBlock(scopedState, selection(), options),
         isWithinText: (options?: EditorSelectionTargetOptions) =>
-          isSelectionWithinText(scopedState, selection(), options),
+          isSelectionWithinText(selectionRangeState, selection(), options),
         ranges: () => state.selection.ranges(),
         replacementRange: () => state.selection.replacementRange(),
+        root: () => (selection() ? toPublicRoot(viewState.root) : undefined),
       })
     ),
     text: Object.freeze({
@@ -618,20 +624,28 @@ const withViewTransaction = <V extends Value>(
           transaction.nodes.replaceChildren(children, options)
         ),
       set: ((...args: Parameters<typeof transaction.nodes.set>) => {
-        const [props, options] = args;
+        const options = getNodeSetOptions(args);
 
         return runImplicitSelectionMutation(options, () =>
-          transaction.nodes.set(props, options)
+          transaction.nodes.set(...args)
         );
       }) as typeof transaction.nodes.set,
       split: (options) =>
         runImplicitSelectionMutation(options, () =>
           transaction.nodes.split(options)
         ),
-      unset: (props, options) =>
+      unset: ((
+        props: string | readonly string[] | SchemaPropertyHandle,
+        options?: NodeUnsetNodesOptions
+      ) =>
         runImplicitSelectionMutation(options, () =>
-          transaction.nodes.unset(props, options)
-        ),
+          (
+            transaction.nodes.unset as (
+              property: string | readonly string[] | SchemaPropertyHandle,
+              options?: NodeUnsetNodesOptions
+            ) => void
+          )(props, options)
+        )) as typeof transaction.nodes.unset,
       unwrap: (options) =>
         runImplicitSelectionMutation(options, () =>
           transaction.nodes.unwrap(options)
@@ -660,6 +674,7 @@ const withViewTransaction = <V extends Value>(
           state.selection.isWithinText(options),
         ranges: () => state.selection.ranges(),
         replacementRange: () => state.selection.replacementRange(),
+        root: () => state.selection.root(),
         clear: () => runSelectionMutation(transaction.selection.clear),
         collapse: (options = {}) =>
           runSelectionMutation(() => transaction.selection.collapse(options)),

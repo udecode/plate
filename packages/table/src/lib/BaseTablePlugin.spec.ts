@@ -98,14 +98,14 @@ describe('BaseTablePlugin', () => {
       children: [{ text: '' }],
       colSpan: 2,
       rowSpan: 3,
-      type: editor.plugin(BaseTableCellPlugin).schema.element.type,
+      type: editor.plugin(BaseTableCellPlugin).schema.type,
     };
     const thElement: TableCellElement = {
       children: [{ text: '' }],
       colSpan: 4,
       header: true,
       rowSpan: 5,
-      type: editor.plugin(BaseTableCellPlugin).schema.element.type,
+      type: editor.plugin(BaseTableCellPlugin).schema.type,
     };
 
     expect(getProps(cellProps, tdElement)).toEqual({

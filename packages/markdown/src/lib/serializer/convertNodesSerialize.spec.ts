@@ -147,6 +147,8 @@ describe('convertNodesSerialize', () => {
         ],
         {
           ...baseOptions,
+          blockId: (node) =>
+            typeof node.id === 'string' ? node.id : undefined,
           withBlockId: true,
         },
         true
@@ -192,6 +194,8 @@ describe('convertNodesSerialize', () => {
         ],
         {
           ...baseOptions,
+          blockId: (node) =>
+            typeof node.id === 'string' ? node.id : undefined,
           withBlockId: true,
         },
         true

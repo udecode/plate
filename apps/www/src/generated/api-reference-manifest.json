@@ -912,7 +912,7 @@
           "name": "EditorCommitChanged",
           "route": null,
           "runtime": false,
-          "signature": "type EditorCommitChanged = {\n  has: <TRoot extends RootKey>(kind: EditorCommitChangeKind, root?: NamedRootKey<TRoot>) => boolean;\n  /** Whether any document root has this change kind. */\n  hasAny: (kind: EditorCommitChangeKind) => boolean;\n  hasRuntime: (runtimeId: RuntimeId, kind: EditorCommitRuntimeChangeKind) => boolean;\n  /** Final-coordinate paths touching changed ranges in one document root. */\n  paths: <TRoot extends RootKey>(root?: NamedRootKey<TRoot>) => readonly Path[];\n  runtimeIds: <TRoot extends RootKey>(kind: EditorCommitRuntimeChangeKind, root?: NamedRootKey<TRoot>) => readonly RuntimeId[];\n  /** Runtime ids with this change kind across every document root. */\n  runtimeIdsAll: (kind: EditorCommitRuntimeChangeKind) => readonly RuntimeId[];\n  topLevelRanges: <TRoot extends RootKey>(root?: NamedRootKey<TRoot>) => readonly TopLevelRuntimeRange[];\n};",
+          "signature": "type EditorCommitChanged = {\n  has: <TRoot extends RootKey>(kind: EditorCommitChangeKind, root?: NamedRootKey<TRoot>) => boolean;\n  /** Whether any document root has this change kind. */\n  hasAny: (kind: EditorCommitChangeKind) => boolean;\n  hasNodeKey: (nodeKey: NodeKey, kind: EditorCommitRuntimeChangeKind) => boolean;\n  /** Final-coordinate paths touching changed ranges in one document root. */\n  paths: <TRoot extends RootKey>(root?: NamedRootKey<TRoot>) => readonly Path[];\n  nodeKeys: <TRoot extends RootKey>(kind: EditorCommitRuntimeChangeKind, root?: NamedRootKey<TRoot>) => readonly NodeKey[];\n  /** Node keys with this change kind across every document root. */\n  nodeKeysAll: (kind: EditorCommitRuntimeChangeKind) => readonly NodeKey[];\n  topLevelRanges: <TRoot extends RootKey>(root?: NamedRootKey<TRoot>) => readonly TopLevelRuntimeRange[];\n};",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
@@ -1002,7 +1002,7 @@
           "name": "EditorCoreStateView",
           "route": null,
           "runtime": false,
-          "signature": "type EditorCoreStateView<V extends Value = Value> = {\n  /**\n   * Read the primary document children without cloning the full serializable\n   * document value. Treat the returned nodes as read-only live state.\n   */\n  children: () => readonly [...V];\n  facet: <TOutput>(facet: EditorFacet<any, TOutput>) => TOutput;\n  fragment: EditorStateFragmentApi<V>;\n  getField: <TValue>(field: EditorStateField<TValue>) => TValue;\n  lastCommit: () => EditorCommit<V> | null;\n  marks: EditorStateMarksApi<V>;\n  /**\n   * Read persisted document metadata. Use state fields for typed access.\n   */\n  meta: () => Readonly<Record<string, unknown>> | undefined;\n  nodes: EditorStateNodesApi<V>;\n  points: EditorStatePointsApi;\n  ranges: EditorStateRangesApi;\n  /**\n   * Read a named secondary root. Use `children()` for the primary document.\n   */\n  root: <TRoot extends RootKey>(root: NamedRootKey<TRoot>) => readonly V[number][];\n  runtime: EditorStateRuntimeApi<V>;\n  schema: EditorStateSchemaApi<V>;\n  selection: EditorStateSelectionApi;\n  slice: EditorStateSliceApi<V>;\n  text: EditorStateTextApi;\n  value: EditorStateValueApi<V>;\n  view: EditorStateViewApi;\n};",
+          "signature": "type EditorCoreStateView<V extends Value = Value> = {\n  /**\n   * Read the primary document children without cloning the full serializable\n   * document value. Treat the returned nodes as read-only live state.\n   */\n  children: () => readonly [...V];\n  facet: <TOutput>(facet: EditorFacet<any, TOutput>) => TOutput;\n  fragment: EditorStateFragmentApi<V>;\n  getField: <TValue>(field: EditorStateField<TValue>) => TValue;\n  lastCommit: () => EditorCommit<V> | null;\n  /** Return the stable runtime key for a live node or location. */\n  key: EditorKeyApi;\n  marks: EditorStateMarksApi<V>;\n  /**\n   * Read persisted document metadata. Use state fields for typed access.\n   */\n  meta: () => Readonly<Record<string, unknown>> | undefined;\n  nodes: EditorStateNodesApi<V>;\n  points: EditorStatePointsApi;\n  ranges: EditorStateRangesApi;\n  /**\n   * Read a named secondary root. Use `children()` for the primary document.\n   */\n  root: <TRoot extends RootKey>(root: NamedRootKey<TRoot>) => readonly V[number][];\n  runtime: EditorStateRuntimeApi<V>;\n  schema: EditorStateSchemaApi<V>;\n  selection: EditorStateSelectionApi;\n  slice: EditorStateSliceApi<V>;\n  text: EditorStateTextApi;\n  value: EditorStateValueApi<V>;\n  view: EditorStateViewApi;\n};",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
             "V extends Value = Value"
@@ -1016,7 +1016,7 @@
           "name": "EditorCoreUpdateMethods",
           "route": null,
           "runtime": false,
-          "signature": "type EditorCoreUpdateMethods<V extends Value = Value, TExtensions extends readonly unknown[] = readonly []> = {\n  annotations: EditorBivariantMethods<EditorTransactionAnnotationsApi>;\n  blocks: EditorBivariantMethods<EditorTransactionBlocksApi<V>>;\n  break: EditorBivariantMethods<EditorTransactionBreakApi>;\n  changes: EditorBivariantMethods<EditorTransactionChangesApi>;\n  /** Dispatch a typed semantic command in one update. */\n  command: EditorCommandDispatch<BaseEditor<V, TExtensions>>;\n  effects: EditorBivariantMethods<EditorTransactionEffectsApi>;\n  extensions: EditorBivariantMethods<EditorTransactionExtensionsApi>;\n  fragment: EditorBivariantMethods<Pick<EditorTransactionFragmentApi<V>, 'delete' | 'replace'>>;\n  marks: EditorBivariantMethods<Pick<EditorTransactionMarksApi<V>, 'add' | 'remove' | 'set' | 'toggle'>>;\n  nodes: EditorBivariantMethods<Pick<EditorTransactionNodesApi<V>, 'insert' | 'duplicate' | 'lift' | 'merge' | 'move' | 'remove' | 'replace' | 'replaceChildren' | 'split' | 'toggle' | 'unset' | 'unwrap' | 'wrap'>> & Pick<EditorTransactionNodesApi<V>, 'set'>;\n  roots: EditorBivariantMethods<EditorTransactionRootsApi<V>>;\n  slice: EditorBivariantMethods<Pick<EditorTransactionSliceApi<V>, 'replace'>>;\n  selection: EditorBivariantMethods<Pick<EditorTransactionSelectionApi, 'clear' | 'collapse' | 'move' | 'set' | 'setPoint' | 'setRange'>>;\n  setField: BivariantFunction<EditorCoreUpdateTransaction<V>['setField']>;\n  text: EditorBivariantMethods<Pick<EditorTransactionTextApi, 'delete' | 'deleteBackward' | 'deleteForward' | 'insert'>>;\n  value: EditorBivariantMethods<Pick<EditorUpdateValueApi<V>, 'repair' | 'replace'>>;\n};",
+          "signature": "type EditorCoreUpdateMethods<V extends Value = Value, TExtensions extends readonly unknown[] = readonly []> = {\n  annotations: EditorBivariantMethods<EditorTransactionAnnotationsApi>;\n  blocks: EditorBivariantMethods<EditorTransactionBlocksApi<V>>;\n  break: EditorBivariantMethods<EditorTransactionBreakApi>;\n  changes: EditorBivariantMethods<EditorTransactionChangesApi>;\n  /** Dispatch a typed semantic command in one update. */\n  command: EditorCommandDispatch<BaseEditor<V, TExtensions>>;\n  effects: EditorBivariantMethods<EditorTransactionEffectsApi>;\n  extensions: EditorBivariantMethods<EditorTransactionExtensionsApi>;\n  fragment: EditorBivariantMethods<Pick<EditorTransactionFragmentApi<V>, 'delete' | 'replace'>>;\n  marks: EditorBivariantMethods<Pick<EditorTransactionMarksApi<V>, 'add' | 'remove' | 'set' | 'toggle'>>;\n  nodes: EditorBivariantMethods<Pick<EditorTransactionNodesApi<V>, 'insert' | 'duplicate' | 'lift' | 'merge' | 'move' | 'remove' | 'replace' | 'replaceChildren' | 'split' | 'toggle' | 'unwrap' | 'wrap'>> & Pick<EditorTransactionNodesApi<V>, 'set' | 'unset'>;\n  roots: EditorBivariantMethods<EditorTransactionRootsApi<V>>;\n  slice: EditorBivariantMethods<Pick<EditorTransactionSliceApi<V>, 'replace'>>;\n  selection: EditorBivariantMethods<Pick<EditorTransactionSelectionApi, 'clear' | 'collapse' | 'move' | 'set' | 'setPoint' | 'setRange'>>;\n  setField: BivariantFunction<EditorCoreUpdateTransaction<V>['setField']>;\n  text: EditorBivariantMethods<Pick<EditorTransactionTextApi, 'delete' | 'deleteBackward' | 'deleteForward' | 'insert'>>;\n  value: EditorBivariantMethods<Pick<EditorUpdateValueApi<V>, 'repair' | 'replace'>>;\n};",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
             "V extends Value = Value",
@@ -1363,7 +1363,7 @@
           "name": "EditorExtensionPortal",
           "route": null,
           "runtime": false,
-          "signature": "type EditorExtensionPortal<TExtension, V extends Value = Value> = Readonly<{\n  api: EditorApiValueFromExtension<TExtension>;\n  read: EditorReadValueFromExtension<V, TExtension>;\n  update: EditorUpdateValueFromExtension<V, TExtension>;\n}>;",
+          "signature": "type EditorExtensionPortal<TExtension, V extends Value = Value> = Readonly<{\n  api: EditorApiValueFromExtension<TExtension>;\n  read: EditorReadValueFromExtension<V, TExtension>;\n  update: EditorUpdateValueFromExtension<V, TExtension> & ((policy: EditorUpdatePolicy) => EditorUpdateValueFromExtension<V, TExtension>);\n}>;",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
             "TExtension",
@@ -1849,6 +1849,20 @@
             "TTextFactory extends () => Text = () => Text"
           ]
         },
+        "@platejs/plite:EditorNodeUnsetOptions": {
+          "aliases": [],
+          "documentation": "",
+          "entrypoint": "@platejs/plite",
+          "kind": "type",
+          "name": "EditorNodeUnsetOptions",
+          "route": null,
+          "runtime": false,
+          "signature": "type EditorNodeUnsetOptions<T extends Node> = {\n  at?: NodeTarget<TargetDescendant<T>>;\n  match?: NodeMatch<T>;\n  mode?: MaximizeMode;\n  hanging?: boolean;\n  split?: boolean;\n  voids?: boolean;\n};",
+          "source": "packages/plite/src/interfaces/editor.ts",
+          "typeParameters": [
+            "T extends Node"
+          ]
+        },
         "@platejs/plite:EditorRead": {
           "aliases": [],
           "documentation": "",
@@ -1934,7 +1948,7 @@
           "name": "EditorReadMethods",
           "route": null,
           "runtime": false,
-          "signature": "type EditorReadMethods<V extends Value = Value, TExtensions extends readonly unknown[] = readonly []> = EditorCoreStateView<V> & EditorInstalledReadGroups<V, TExtensions>;",
+          "signature": "type EditorReadMethods<V extends Value = Value, TExtensions extends readonly unknown[] = readonly []> = Omit<EditorCoreStateView<V>, 'key'> & EditorInstalledReadGroups<V, TExtensions>;",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
             "V extends Value = Value",
@@ -1989,7 +2003,7 @@
           "name": "EditorReplaceChildrenOptions",
           "route": null,
           "runtime": false,
-          "signature": "type EditorReplaceChildrenOptions = Omit<NodeReplaceChildrenOptions, 'at'> & {\n  at: Element | Path;\n};",
+          "signature": "type EditorReplaceChildrenOptions = Omit<NodeReplaceChildrenOptions, 'at'> & {\n  at: NodeTarget<Element>;\n};",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
@@ -2109,7 +2123,7 @@
           "name": "EditorSchemaContractElement",
           "route": null,
           "runtime": false,
-          "signature": "type EditorSchemaContractElement = Readonly<{\n  behavior: CompiledSchemaElementBehavior;\n  content: EditorSchemaContractContentProgram | null;\n  contentRoots: readonly EditorSchemaContractEntry<EditorSchemaContractContentRoot>[];\n  construction: Readonly<{\n    defaultPropertyIds: readonly string[];\n    propertyIds: readonly string[];\n  }>;\n  groups: readonly string[];\n  propertyIds: readonly string[];\n  slice: CompiledSchemaElement['slice'];\n  type: string;\n}>;",
+          "signature": "type EditorSchemaContractElement = Readonly<{\n  behavior: CompiledSchemaElementBehavior;\n  content: EditorSchemaContractContentProgram | null;\n  contentRoots: readonly EditorSchemaContractEntry<EditorSchemaContractContentRoot>[];\n  construction: Readonly<{\n    materializedPropertyIds: readonly string[];\n    propertyIds: readonly string[];\n  }>;\n  groups: readonly string[];\n  propertyIds: readonly string[];\n  slice: CompiledSchemaElement['slice'];\n  type: string;\n}>;",
           "source": "packages/plite/src/core/schema-compiler.ts",
           "typeParameters": []
         },
@@ -2133,7 +2147,7 @@
           "name": "EditorSchemaContribution",
           "route": null,
           "runtime": false,
-          "signature": "type EditorSchemaContribution<TElements extends Readonly<Record<string, SchemaElement>> = Readonly<Record<string, SchemaElement>>, TProperties extends readonly SchemaProperty[] = readonly SchemaProperty[], TGroups extends Readonly<Record<string, SchemaGroup>> = Readonly<Record<string, SchemaGroup>>, TRoots extends Readonly<Record<string, SchemaContent>> = Readonly<Record<string, SchemaContent>>, TContentRoots extends readonly SchemaContentRootContribution[] = readonly SchemaContentRootContribution[]> = Readonly<{\n  /** Element-owned root slots projected onto matching element types. */\n  contentRoots?: TContentRoots;\n  elements?: TElements;\n  groups?: TGroups;\n  id?: never;\n  properties?: TProperties;\n  /** The complete schema definition exclusively owns the primary root. */\n  root?: never;\n  /** Named secondary roots only. The reserved key `main` is invalid. */\n  roots?: TRoots;\n  unknown?: never;\n  version?: never;\n}>;",
+          "signature": "type EditorSchemaContribution<TElements extends Readonly<Record<string, SchemaElement>> = Readonly<Record<string, SchemaElement>>, TProperties extends readonly SchemaProperty[] = readonly SchemaProperty[], TGroups extends Readonly<Record<string, SchemaGroup>> = Readonly<Record<string, SchemaGroup>>, TRoots extends Readonly<Record<string, SchemaContent>> = Readonly<Record<string, SchemaContent>>, TContentRoots extends readonly SchemaContentRootContribution[] = readonly SchemaContentRootContribution[]> = Readonly<{\n  /** Element-owned root slots projected onto matching element types. */\n  contentRoots?: TContentRoots;\n  elements?: TElements;\n  groups?: TGroups;\n  id?: never;\n  /** Closed-composition policy; ordinary feature contributions omit this. */\n  overrides?: readonly EditorSchemaOverride[];\n  properties?: TProperties;\n  /** The complete schema definition exclusively owns the primary root. */\n  root?: never;\n  /** Named secondary roots only. The reserved key `main` is invalid. */\n  roots?: TRoots;\n  unknown?: never;\n  version?: never;\n}>;",
           "source": "packages/plite/src/interfaces/schema.ts",
           "typeParameters": [
             "TElements extends Readonly<Record<string, SchemaElement>> = Readonly<Record<string, SchemaElement>>",
@@ -2216,6 +2230,30 @@
           "source": "packages/plite/src/interfaces/schema.ts",
           "typeParameters": []
         },
+        "@platejs/plite:EditorSchemaElementOverride": {
+          "aliases": [],
+          "documentation": "One closed-composition element relationship override.",
+          "entrypoint": "@platejs/plite",
+          "kind": "type",
+          "name": "EditorSchemaElementOverride",
+          "route": null,
+          "runtime": false,
+          "signature": "type EditorSchemaElementOverride = Readonly<{\n  /** Element type owned by `source` before application overrides. */\n  element: string;\n  kind: 'element';\n  /** Extension that owns the element declaration. */\n  source: string;\n  /** Replace the element's child grammar. */\n  content?: SchemaContent;\n  /** Replace explicit product-group membership. */\n  groups?: readonly string[];\n  /** Replace the persisted element discriminator. */\n  type?: string;\n}>;",
+          "source": "packages/plite/src/interfaces/schema.ts",
+          "typeParameters": []
+        },
+        "@platejs/plite:EditorSchemaElementOverrideInput": {
+          "aliases": [],
+          "documentation": "Element facets accepted by one closed-application override.",
+          "entrypoint": "@platejs/plite",
+          "kind": "type",
+          "name": "EditorSchemaElementOverrideInput",
+          "route": null,
+          "runtime": false,
+          "signature": "type EditorSchemaElementOverrideInput = Readonly<{\n  content?: SchemaContent;\n  groups?: readonly string[];\n  type?: string;\n}>;",
+          "source": "packages/plite/src/interfaces/schema.ts",
+          "typeParameters": []
+        },
         "@platejs/plite:EditorSchemaExtension": {
           "aliases": [],
           "documentation": "A complete schema packaged as one raw Plite extension contribution.",
@@ -2253,7 +2291,7 @@
           "name": "EditorSchemaGetProperty",
           "route": null,
           "runtime": false,
-          "signature": "type EditorSchemaGetProperty = {\n  (property: EditorSchemaPropertyHandle): EditorSchemaProperty | null;\n  <TSchema extends EditorSchemaSource, TType extends SchemaElementTypes<TSchema>, TKey extends SchemaElementPropertyKeys<TSchema, TType>>(property: SchemaElementPropertyHandle<TSchema, TType, TKey>): EditorSchemaProperty | null;\n  <const TQuery extends EditorSchemaPropertyQuery>(query: TQuery & WithoutInternalPrimaryRoot<TQuery>): EditorSchemaProperty | null;\n};",
+          "signature": "type EditorSchemaGetProperty = {\n  (property: SchemaPropertyHandle): EditorSchemaProperty | null;\n  <const TQuery extends EditorSchemaPropertyQuery>(query: TQuery & WithoutInternalPrimaryRoot<TQuery>): EditorSchemaProperty | null;\n};",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
@@ -2288,6 +2326,33 @@
             "TContentRoots extends readonly SchemaContentRootContribution[] = readonly SchemaContentRootContribution[]"
           ]
         },
+        "@platejs/plite:EditorSchemaOverride": {
+          "aliases": [],
+          "documentation": "Narrow schema policy applied before deterministic compilation.",
+          "entrypoint": "@platejs/plite",
+          "kind": "type",
+          "name": "EditorSchemaOverride",
+          "route": null,
+          "runtime": false,
+          "signature": "type EditorSchemaOverride = EditorSchemaElementOverride | EditorSchemaPropertyOverride;",
+          "source": "packages/plite/src/interfaces/schema.ts",
+          "typeParameters": []
+        },
+        "@platejs/plite:EditorSchemaOverrideInput": {
+          "aliases": [],
+          "documentation": "",
+          "entrypoint": "@platejs/plite",
+          "kind": "type",
+          "name": "EditorSchemaOverrideInput",
+          "route": null,
+          "runtime": false,
+          "signature": "type EditorSchemaOverrideInput<TSource extends string | Readonly<{\n  name: string;\n}> = string | Readonly<{\n  name: string;\n}>, TProperties extends Readonly<Record<string, EditorSchemaPropertyOverrideInput>> = Readonly<Record<string, EditorSchemaPropertyOverrideInput>>> = Readonly<{\n  element?: EditorSchemaElementOverrideInput;\n  kind: 'schema-override';\n  properties?: TProperties;\n  source: EditorSchemaOverrideSourceName<TSource>;\n}>;",
+          "source": "packages/plite/src/interfaces/schema.ts",
+          "typeParameters": [
+            "TSource extends string | Readonly<{\n  name: string;\n}> = string | Readonly<{\n  name: string;\n}>",
+            "TProperties extends Readonly<Record<string, EditorSchemaPropertyOverrideInput>> = Readonly<Record<string, EditorSchemaPropertyOverrideInput>>"
+          ]
+        },
         "@platejs/plite:EditorSchemaProperty": {
           "aliases": [],
           "documentation": "Immutable compiled property facts returned by `state.schema.property()`.",
@@ -2296,20 +2361,32 @@
           "name": "EditorSchemaProperty",
           "route": null,
           "runtime": false,
-          "signature": "type EditorSchemaProperty = Readonly<{\n  id: string;\n  key: SchemaPropertyKey;\n  lifecycle: Readonly<{\n    inclusive: boolean | null;\n    split: SchemaPropertySplitPolicy;\n    typeChange: SchemaPropertyTypeChangePolicy;\n  }>;\n  merge: 'replace' | 'set';\n  placement: 'element' | 'text';\n  role: SchemaPropertyRole;\n  target: SchemaTarget | null;\n  value: PropertyValueDescriptor;\n}>;",
+          "signature": "type EditorSchemaProperty = Readonly<{\n  id: string;\n  key: SchemaPropertyKey;\n  lifecycle: Readonly<{\n    copy: SchemaPropertyCopyPolicy;\n    inclusive: boolean | null;\n    split: SchemaPropertySplitPolicy;\n    typeChange: SchemaPropertyTypeChangePolicy;\n  }>;\n  merge: 'replace' | 'set';\n  placement: 'element' | 'text';\n  role: SchemaPropertyRole;\n  target: SchemaTarget | null;\n  value: PropertyValueDescriptor;\n}>;",
           "source": "packages/plite/src/interfaces/schema.ts",
           "typeParameters": []
         },
-        "@platejs/plite:EditorSchemaPropertyHandle": {
+        "@platejs/plite:EditorSchemaPropertyOverride": {
           "aliases": [],
-          "documentation": "Stable compiled property identity for descriptor and host integrations.",
+          "documentation": "One closed-composition property relationship override.",
           "entrypoint": "@platejs/plite",
           "kind": "type",
-          "name": "EditorSchemaPropertyHandle",
+          "name": "EditorSchemaPropertyOverride",
           "route": null,
           "runtime": false,
-          "signature": "type EditorSchemaPropertyHandle = Readonly<{\n  id: string;\n  kind: 'schema-property';\n}>;",
-          "source": "packages/plite/src/interfaces/editor.ts",
+          "signature": "type EditorSchemaPropertyOverride = Readonly<{\n  /** Compiled id of the property before application overrides. */\n  id: string;\n  kind: 'property';\n  /** Extension that owns the property declaration. */\n  source: string;\n  /** Replace the property's target relationship. */\n  target?: SchemaTarget | null;\n}>;",
+          "source": "packages/plite/src/interfaces/schema.ts",
+          "typeParameters": []
+        },
+        "@platejs/plite:EditorSchemaPropertyOverrideInput": {
+          "aliases": [],
+          "documentation": "Property relationship facets accepted by one closed-application override.",
+          "entrypoint": "@platejs/plite",
+          "kind": "type",
+          "name": "EditorSchemaPropertyOverrideInput",
+          "route": null,
+          "runtime": false,
+          "signature": "type EditorSchemaPropertyOverrideInput = Readonly<{\n  target?: SchemaTarget | null;\n}>;",
+          "source": "packages/plite/src/interfaces/schema.ts",
           "typeParameters": []
         },
         "@platejs/plite:EditorSchemaPropertyQuery": {
@@ -2322,6 +2399,30 @@
           "runtime": false,
           "signature": "type EditorSchemaPropertyQuery = Readonly<{\n  /** Immediate parent type first. */\n  ancestors?: readonly string[];\n  key: string;\n  placement: 'element' | 'text';\n  /** `null` or omission addresses the implicit primary root. */\n  root?: string | null;\n  /** Target element type, or text-parent type for text properties. */\n  type?: string;\n}>;",
           "source": "packages/plite/src/interfaces/schema.ts",
+          "typeParameters": []
+        },
+        "@platejs/plite:EditorSchemaPropertyReadOptions": {
+          "aliases": [],
+          "documentation": "",
+          "entrypoint": "@platejs/plite",
+          "kind": "type",
+          "name": "EditorSchemaPropertyReadOptions",
+          "route": null,
+          "runtime": false,
+          "signature": "type EditorSchemaPropertyReadOptions = Readonly<{\n  /** Immediate parent first. Required to apply targeted text-property defaults. */\n  ancestors?: readonly Element[];\n  /** Parent element for a text-property target. */\n  parent?: Element;\n  /** Omission addresses the implicit primary root. */\n  root?: RootKey;\n}>;",
+          "source": "packages/plite/src/interfaces/editor.ts",
+          "typeParameters": []
+        },
+        "@platejs/plite:EditorSchemaReadProperty": {
+          "aliases": [],
+          "documentation": "",
+          "entrypoint": "@platejs/plite",
+          "kind": "type",
+          "name": "EditorSchemaReadProperty",
+          "route": null,
+          "runtime": false,
+          "signature": "type EditorSchemaReadProperty = {\n  <TKey extends string, TValue, TPlacement extends 'element' | 'text'>(node: Element | Text, property: SchemaPropertyHandle<TKey, TValue, TPlacement>, options?: EditorSchemaPropertyReadOptions): TValue | undefined;\n  <T = unknown>(node: Element | Text, property: string, options?: EditorSchemaPropertyReadOptions): T | undefined;\n};",
+          "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
         "@platejs/plite:EditorSchemaUnknownPolicy": {
@@ -2546,7 +2647,7 @@
           "name": "EditorStateNodesApi",
           "route": null,
           "runtime": false,
-          "signature": "type EditorStateNodesApi<V extends Value = Value> = {\n  above: <T extends Ancestor = ValueElement<V>>(options?: WithNodeTarget<EditorAboveOptions<T>, TargetDescendant<T>>) => NodeEntry<T> | undefined;\n  block: <T extends Element = ValueElement<V>>(options?: WithNodeTarget<EditorBlockOptions<T>, T>) => NodeEntry<T> | undefined;\n  children: (at?: NodeTarget) => readonly ValueDescendant<V>[];\n  elementReadOnly: (options?: WithNodeTarget<EditorElementReadOnlyOptions>) => NodeEntry<Element> | undefined;\n  first: (at: NodeTarget) => NodeEntry | undefined;\n  get: <T extends Node = ValueNode<V>>(at: NodeTarget<TargetDescendant<T>>) => NodeEntry<T> | undefined;\n  hasBlocks: (element: Element) => boolean;\n  hasInlines: (element: Element) => boolean;\n  hasPath: (path: Path) => boolean;\n  hasTexts: (element: Element) => boolean;\n  isBlock: (element: Node) => boolean;\n  isSelectable: (element: Node) => boolean;\n  isEmpty: (element: Element) => boolean;\n  last: (at: NodeTarget, options?: EditorLastOptions) => NodeEntry | undefined;\n  leaf: (at: NodeTarget<Text>, options?: EditorLeafOptions) => NodeEntry<ValueText<V>> | undefined;\n  levels: <T extends Node = ValueNode<V>>(options?: WithNodeTarget<EditorLevelsOptions<T>, TargetDescendant<T>>) => Generator<NodeEntry<T>, void, undefined>;\n  path: (at: NodeTarget, options?: EditorPathOptions) => Path | undefined;\n  entries: <T extends Node = ValueNode<V>>(options?: EditorNodesReadOptions<T>) => Generator<NodeEntry<T>, void, undefined>;\n  find: <T extends Node = ValueNode<V>>(options?: EditorNodesReadOptions<T>) => NodeEntry<T> | undefined;\n  some: <T extends Node>(options?: EditorNodesReadOptions<T>) => boolean;\n  toArray: {\n    <T extends Node = ValueNode<V>>(options?: EditorNodesReadOptions<T>): readonly NodeEntry<T>[];\n    <T extends Node, R>(options: EditorNodesReadOptions<T> | undefined, map: (entry: NodeEntry<T>) => R): readonly R[];\n  };\n  next: <T extends Descendant = ValueDescendant<V>>(options?: WithNodeTarget<EditorNextOptions<T>, T>) => NodeEntry<T> | undefined;\n  parent: <T extends Ancestor = ValueElement<V>>(at: NodeTarget, options?: EditorParentOptions) => NodeEntry<T> | undefined;\n  previous: <T extends Node = ValueNode<V>>(options?: WithNodeTarget<EditorPreviousOptions<T>, TargetDescendant<T>>) => NodeEntry<T> | undefined;\n  shouldMergeNodesRemovePrevNode: (previous: NodeEntry, current: NodeEntry) => boolean;\n  void: (options?: WithNodeTarget<EditorVoidOptions>) => NodeEntry<Element> | undefined;\n};",
+          "signature": "type EditorStateNodesApi<V extends Value = Value> = {\n  above: <T extends Ancestor = ValueElement<V>>(options?: WithNodeTarget<EditorAboveOptions<T>, TargetDescendant<T>>) => NodeEntry<T> | undefined;\n  block: <T extends Element = ValueElement<V>>(options?: WithNodeTarget<EditorBlockOptions<T>, T>) => NodeEntry<T> | undefined;\n  children: (at?: NodeTarget) => readonly ValueDescendant<V>[];\n  elementReadOnly: (options?: WithNodeTarget<EditorElementReadOnlyOptions>) => NodeEntry<Element> | undefined;\n  first: (at: NodeTarget) => NodeEntry | undefined;\n  get: <T extends Node = ValueNode<V>>(at: NodeTarget<TargetDescendant<T>>) => NodeEntry<T> | undefined;\n  hasBlocks: (element: Element) => boolean;\n  hasInlines: (element: Element) => boolean;\n  hasPath: (path: Path) => boolean;\n  hasTexts: (element: Element) => boolean;\n  isBlock: (element: Node) => boolean;\n  isSelectable: (element: Node) => boolean;\n  isEmpty: (element: Element) => boolean;\n  last: (at: NodeTarget, options?: EditorLastOptions) => NodeEntry | undefined;\n  leaf: (at: NodeTarget<Text>, options?: EditorLeafOptions) => NodeEntry<ValueText<V>> | undefined;\n  levels: <T extends Node = ValueNode<V>>(options?: WithNodeTarget<EditorLevelsOptions<T>, TargetDescendant<T>>) => Generator<NodeEntry<T>, void, undefined>;\n  /**\n   * Resolve a path in this editor/view root. A `NodeKey` owned by another root\n   * returns `undefined`; create that root's view because `Path` has no root.\n   */\n  path: (at: NodeTarget, options?: EditorPathOptions) => Path | undefined;\n  entries: <T extends Node = ValueNode<V>>(options?: EditorNodesReadOptions<T>) => Generator<NodeEntry<T>, void, undefined>;\n  find: <T extends Node = ValueNode<V>>(options?: EditorNodesReadOptions<T>) => NodeEntry<T> | undefined;\n  some: <T extends Node>(options?: EditorNodesReadOptions<T>) => boolean;\n  toArray: {\n    <T extends Node = ValueNode<V>>(options?: EditorNodesReadOptions<T>): readonly NodeEntry<T>[];\n    <T extends Node, R>(options: EditorNodesReadOptions<T> | undefined, map: (entry: NodeEntry<T>) => R): readonly R[];\n  };\n  next: <T extends Descendant = ValueDescendant<V>>(options?: WithNodeTarget<EditorNextOptions<T>, T>) => NodeEntry<T> | undefined;\n  parent: <T extends Ancestor = ValueElement<V>>(at: NodeTarget, options?: EditorParentOptions) => NodeEntry<T> | undefined;\n  previous: <T extends Node = ValueNode<V>>(options?: WithNodeTarget<EditorPreviousOptions<T>, TargetDescendant<T>>) => NodeEntry<T> | undefined;\n  shouldMergeNodesRemovePrevNode: (previous: NodeEntry, current: NodeEntry) => boolean;\n  void: (options?: WithNodeTarget<EditorVoidOptions>) => NodeEntry<Element> | undefined;\n};",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
             "V extends Value = Value"
@@ -2584,7 +2685,7 @@
           "name": "EditorStateRuntimeApi",
           "route": null,
           "runtime": false,
-          "signature": "type EditorStateRuntimeApi<V extends Value = Value> = {\n  idAt: (path: Path) => RuntimeId | null;\n  pathOf: (runtimeId: RuntimeId) => Path | null;\n  snapshot: () => EditorSnapshot<V>;\n};",
+          "signature": "type EditorStateRuntimeApi<V extends Value = Value> = {\n  snapshot: () => EditorSnapshot<V>;\n};",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
             "V extends Value = Value"
@@ -2598,7 +2699,7 @@
           "name": "EditorStateSchemaApi",
           "route": null,
           "runtime": false,
-          "signature": "type EditorStateSchemaApi<V extends Value = Value> = {\n  /** Whether one child element type is accepted directly by one parent type. */\n  allowsElementType: (parentType: string, childType: string) => boolean;\n  /** Create one valid canonical element with every required default child. */\n  create: EditorSchemaCreate;\n  /** Create the declared default child for one document root. */\n  createDefaultRootChild: <TRoot extends RootKey>(root?: NamedRootKey<TRoot>) => Descendant | null;\n  /** Semantic resources changed by the current configuration publication. */\n  delta: () => EditorSchemaDelta | null;\n  /** Read immutable compiled facts for one declared element type. */\n  element: (type: string) => EditorSchemaElement | null;\n  /** Fit one external document through the candidate schema without publishing it. */\n  fitDocument: <TValue extends Value>(value: EditorDocumentValue<TValue>) => EditorDocumentValue<V>;\n  findWrapping: (parent: Element, child: Descendant) => readonly string[] | null;\n  getElementBehavior: (element: Element) => EditorElementBehavior;\n  /** Resolve every named document root projected by an element, keyed by slot. */\n  getElementContentRoots: (element: Element) => Readonly<Record<string, NamedRootKey>>;\n  getElementProperty: EditorSchemaGetElementProperty;\n  /** Compiled open-slice boundary behavior for one element. */\n  getElementSlicePolicy: (element: Element) => EditorElementSlicePolicy;\n  /** Return the immutable compiled schema vocabulary. */\n  getVocabulary: () => EditorSchemaVocabulary;\n  /** Whether the schema declares any element-owned document roots. */\n  hasContentRoots: () => boolean;\n  /** Stable persisted identity for the current compiled schema. */\n  identity: () => EditorSchemaIdentity;\n  isAtom: (element: Node) => boolean;\n  isBlock: (element: Node) => boolean;\n  isEditableIsland: (element: Node) => boolean;\n  /** Test one compiled, transitive schema group membership. */\n  isElementTypeInGroup: (type: string, group: string) => boolean;\n  isInline: (element: Node) => boolean;\n  isIsolating: (element: Node) => boolean;\n  isKeyboardSelectable: (element: Node) => boolean;\n  isReadOnly: (element: Node) => boolean;\n  isSelectable: (element: Node) => boolean;\n  isVoid: (element: Node) => boolean;\n  isMarkableVoid: (element: Node) => boolean;\n  /**\n   * Resolve one compiled property declaration for an exact runtime context.\n   * Omitting `type` succeeds only when the key has one unambiguous declaration.\n   */\n  property: EditorSchemaGetProperty;\n  /**\n   * Validate an external document against the compiled schema.\n   *\n   * Throws `EditorSchemaValidationError` with immutable root/path/property\n   * diagnostics on failure.\n   */\n  assertDocument(value: unknown): asserts value is EditorDocumentValue<V>;\n  /**\n   * Validate an external fragment against the compiled schema.\n   *\n   * Throws `EditorSchemaValidationError` with immutable path/property\n   * diagnostics on failure.\n   */\n  assertFragment(children: unknown): asserts children is readonly DescendantIn<V>[];\n};",
+          "signature": "type EditorStateSchemaApi<V extends Value = Value> = {\n  /** Whether one child element type is accepted directly by one parent type. */\n  allowsElementType: (parentType: string, childType: string) => boolean;\n  /** Create one valid canonical element with every required default child. */\n  create: EditorSchemaCreate;\n  /** Copy one node through its compiled property lifecycle. */\n  copy: <TNode extends Descendant>(node: TNode, options: Readonly<{\n    at: Path;\n    root?: NamedRootKey;\n  }>) => TNode;\n  /** Create the declared default child for one document root. */\n  createDefaultRootChild: <TRoot extends RootKey>(root?: NamedRootKey<TRoot>) => Descendant | null;\n  /** Semantic resources changed by the current configuration publication. */\n  delta: () => EditorSchemaDelta | null;\n  /** Read immutable compiled facts for one declared element type. */\n  element: (type: string) => EditorSchemaElement | null;\n  /** Fit one external document through the candidate schema without publishing it. */\n  fitDocument: <TValue extends Value>(value: EditorDocumentValue<TValue>) => EditorDocumentValue<V>;\n  findWrapping: (parent: Element, child: Descendant) => readonly string[] | null;\n  getElementBehavior: (element: Element) => EditorElementBehavior;\n  /** Resolve every named document root projected by an element, keyed by slot. */\n  getElementContentRoots: (element: Element) => Readonly<Record<string, NamedRootKey>>;\n  /** Read one stored or defaulted property through its schema identity. */\n  getProperty: EditorSchemaReadProperty;\n  /** Compiled open-slice boundary behavior for one element. */\n  getElementSlicePolicy: (element: Element) => EditorElementSlicePolicy;\n  /** Return the immutable compiled schema vocabulary. */\n  getVocabulary: () => EditorSchemaVocabulary;\n  /** Whether the schema declares any element-owned document roots. */\n  hasContentRoots: () => boolean;\n  /** Stable persisted identity for the current compiled schema. */\n  identity: () => EditorSchemaIdentity;\n  isAtom: (element: Node) => boolean;\n  isBlock: (element: Node) => boolean;\n  isEditableIsland: (element: Node) => boolean;\n  /** Test one compiled, transitive schema group membership. */\n  isElementTypeInGroup: (type: string, group: string) => boolean;\n  isInline: (element: Node) => boolean;\n  isIsolating: (element: Node) => boolean;\n  isKeyboardSelectable: (element: Node) => boolean;\n  isReadOnly: (element: Node) => boolean;\n  isSelectable: (element: Node) => boolean;\n  isVoid: (element: Node) => boolean;\n  isMarkableVoid: (element: Node) => boolean;\n  /**\n   * Resolve one compiled property declaration for an exact runtime context.\n   * Omitting `type` succeeds only when the key has one unambiguous declaration.\n   */\n  property: EditorSchemaGetProperty;\n  /**\n   * Validate an external document against the compiled schema.\n   *\n   * Throws `EditorSchemaValidationError` with immutable root/path/property\n   * diagnostics on failure.\n   */\n  assertDocument(value: unknown): asserts value is EditorDocumentValue<V>;\n  /**\n   * Validate an external fragment against the compiled schema.\n   *\n   * Throws `EditorSchemaValidationError` with immutable path/property\n   * diagnostics on failure.\n   */\n  assertFragment(children: unknown): asserts children is readonly DescendantIn<V>[];\n};",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
             "V extends Value = Value"
@@ -2612,7 +2713,7 @@
           "name": "EditorStateSelectionApi",
           "route": null,
           "runtime": false,
-          "signature": "type EditorStateSelectionApi = (() => Selection) & {\n  contains: (target: NodeTarget) => boolean;\n  intersects: (target: NodeTarget) => boolean;\n  isAcrossBlocks: (options?: EditorSelectionBlockOptions) => boolean;\n  isAtBlockEnd: (options?: EditorSelectionBlockOptions) => boolean;\n  isAtBlockStart: (options?: EditorSelectionBlockOptions) => boolean;\n  isCollapsed: () => boolean;\n  isExpanded: () => boolean;\n  isWithinBlock: (options?: EditorSelectionBlockOptions) => boolean;\n  isWithinText: (options?: EditorSelectionTargetOptions) => boolean;\n  primaryRange: () => Range | null;\n  ranges: () => readonly Range[];\n  replacementRange: () => Range | null;\n};",
+          "signature": "type EditorStateSelectionApi = (() => Selection) & {\n  contains: (target: NodeTarget) => boolean;\n  intersects: (target: NodeTarget) => boolean;\n  isAcrossBlocks: (options?: EditorSelectionBlockOptions) => boolean;\n  isAtBlockEnd: (options?: EditorSelectionBlockOptions) => boolean;\n  isAtBlockStart: (options?: EditorSelectionBlockOptions) => boolean;\n  isCollapsed: () => boolean;\n  isExpanded: () => boolean;\n  isWithinBlock: (options?: EditorSelectionBlockOptions) => boolean;\n  isWithinText: (options?: EditorSelectionTargetOptions) => boolean;\n  primaryRange: () => Range | null;\n  ranges: () => readonly Range[];\n  replacementRange: () => Range | null;\n  /** Named root containing the current selection, or `undefined` for primary. */\n  root: () => NamedRootKey | undefined;\n};",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
@@ -2939,7 +3040,7 @@
           "name": "EditorTransactionNodesApi",
           "route": null,
           "runtime": false,
-          "signature": "type EditorTransactionNodesApi<V extends Value = Value> = EditorStateNodesApi<V> & {\n  duplicate: <T extends ElementOrTextIn<V>>(entries: readonly NodeEntry<T>[], options?: NodeDuplicateOptions<T>) => void;\n  insert: <T extends ElementOrTextIn<V>>(nodes: T | readonly T[], options?: WithNodeTarget<NodeInsertNodesOptions<T>, T>) => void;\n  lift: <T extends NodeIn<V>>(options?: {\n    at?: NodeTarget<TargetDescendant<T>>;\n    match?: NodeMatch<T>;\n    mode?: MaximizeMode;\n    voids?: boolean;\n  }) => void;\n  merge: <T extends NodeIn<V>>(options?: {\n    at?: NodeTarget<TargetDescendant<T>>;\n    match?: NodeMatch<T>;\n    mode?: RangeMode;\n    hanging?: boolean;\n    voids?: boolean;\n  }) => void;\n  move: <T extends NodeIn<V>>(options: {\n    at?: NodeTarget<TargetDescendant<T>>;\n    match?: NodeMatch<T>;\n    mode?: MaximizeMode;\n    to: Path;\n    voids?: boolean;\n  }) => void;\n  remove: <T extends NodeIn<V>>(options?: {\n    at?: NodeTarget<TargetDescendant<T>>;\n    match?: NodeMatch<T>;\n    mode?: MaximizeMode;\n    hanging?: boolean;\n    voids?: boolean;\n  }) => void;\n  replace: <T extends ElementOrTextIn<V>>(nodes: T | readonly T[], options: EditorReplaceNodeOptions) => void;\n  replaceChildren: <T extends ElementOrTextIn<V>>(children: readonly T[], options: EditorReplaceChildrenOptions) => void;\n  set: {\n    <T extends Descendant>(props: Partial<NodeProps<NoInfer<T>>>, options: Omit<NodeSetNodesOptions<T>, 'at'> & {\n      at: T;\n    }): void;\n    (props: Partial<Omit<Element, 'children'>>, options?: NodeSetNodesOptions<Element>): void;\n    <T extends NodeIn<V>>(props: Partial<NodeProps<T>>, options?: NodeSetNodesOptions<T>): void;\n  };\n  split: <T extends NodeIn<V>>(options?: {\n    at?: NodeTarget<TargetDescendant<T>>;\n    match?: NodeMatch<T>;\n    mode?: RangeMode;\n    always?: boolean;\n    height?: number;\n    position?: number;\n    voids?: boolean;\n  }) => void;\n  toggle: (type: string, options?: EditorBlockToggleOptions<DescendantIn<V>>) => void;\n  unset: <T extends NodeIn<V>>(props: string | readonly string[], options?: {\n    at?: NodeTarget<TargetDescendant<T>>;\n    match?: NodeMatch<T>;\n    mode?: MaximizeMode;\n    hanging?: boolean;\n    split?: boolean;\n    voids?: boolean;\n  }) => void;\n  unwrap: <T extends NodeIn<V>>(options?: {\n    at?: NodeTarget<TargetDescendant<T>>;\n    match?: NodeMatch<T>;\n    mode?: MaximizeMode;\n    split?: boolean;\n    voids?: boolean;\n  }) => void;\n  wrap: <T extends NodeIn<V>, E extends ElementIn<V>>(element: E, options?: {\n    at?: NodeTarget<TargetDescendant<T>>;\n    match?: NodeMatch<T>;\n    mode?: MaximizeMode;\n    split?: boolean;\n    voids?: boolean;\n  }) => void;\n};",
+          "signature": "type EditorTransactionNodesApi<V extends Value = Value> = EditorStateNodesApi<V> & {\n  duplicate: <T extends ElementOrTextIn<V>>(entries: readonly NodeEntry<T>[], options?: NodeDuplicateOptions<T>) => void;\n  insert: <T extends ElementOrTextIn<V>>(nodes: T | readonly T[], options?: WithNodeTarget<NodeInsertNodesOptions<T>, T>) => void;\n  lift: <T extends NodeIn<V>>(options?: {\n    at?: NodeTarget<TargetDescendant<T>>;\n    match?: NodeMatch<T>;\n    mode?: MaximizeMode;\n    voids?: boolean;\n  }) => void;\n  merge: <T extends NodeIn<V>>(options?: {\n    at?: NodeTarget<TargetDescendant<T>>;\n    match?: NodeMatch<T>;\n    mode?: RangeMode;\n    hanging?: boolean;\n    voids?: boolean;\n  }) => void;\n  move: <T extends NodeIn<V>>(options: {\n    at?: NodeTarget<TargetDescendant<T>>;\n    match?: NodeMatch<T>;\n    mode?: MaximizeMode;\n    to: Path;\n    voids?: boolean;\n  }) => void;\n  remove: <T extends NodeIn<V>>(options?: {\n    at?: NodeTarget<TargetDescendant<T>>;\n    match?: NodeMatch<T>;\n    mode?: MaximizeMode;\n    hanging?: boolean;\n    voids?: boolean;\n  }) => void;\n  replace: <T extends ElementOrTextIn<V>>(nodes: T | readonly T[], options: EditorReplaceNodeOptions) => void;\n  replaceChildren: <T extends ElementOrTextIn<V>>(children: readonly T[], options: EditorReplaceChildrenOptions) => void;\n  set: EditorNodeSetObject<V> & EditorNodeSetProperty<V> & EditorNodeSetDynamicProperty & EditorNodeSetPropertyHandle<V>;\n  split: <T extends NodeIn<V>>(options?: {\n    at?: NodeTarget<TargetDescendant<T>>;\n    match?: NodeMatch<T>;\n    mode?: RangeMode;\n    always?: boolean;\n    height?: number;\n    position?: number;\n    voids?: boolean;\n  }) => void;\n  toggle: (type: string, options?: EditorBlockToggleOptions<DescendantIn<V>>) => void;\n  unset: {\n    <const TKey extends NodePropertyKeyIn<V>, T extends NodeIn<V>>(props: TKey | readonly TKey[], options?: EditorNodeUnsetOptions<T>): void;\n    <const THandle extends SchemaPropertyHandle<string, unknown>, T extends NodeIn<V>>(property: THandle, options?: EditorNodeUnsetOptions<T>): void;\n    <TKey extends string, T extends NodeIn<V>>(property: string extends TKey ? TKey | readonly TKey[] : never, options?: EditorNodeUnsetOptions<T>): void;\n  };\n  unwrap: <T extends NodeIn<V>>(options?: {\n    at?: NodeTarget<TargetDescendant<T>>;\n    match?: NodeMatch<T>;\n    mode?: MaximizeMode;\n    split?: boolean;\n    voids?: boolean;\n  }) => void;\n  wrap: <T extends NodeIn<V>, E extends ElementIn<V>>(element: E, options?: {\n    at?: NodeTarget<TargetDescendant<T>>;\n    match?: NodeMatch<T>;\n    mode?: MaximizeMode;\n    split?: boolean;\n    voids?: boolean;\n  }) => void;\n};",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
             "V extends Value = Value"
@@ -3005,7 +3106,7 @@
           "name": "EditorTransactionSpecBuilder",
           "route": null,
           "runtime": false,
-          "signature": "type EditorTransactionSpecBuilder<V extends Value = Value, TExtensions extends readonly unknown[] = readonly []> = Omit<EditorCoreUpdateTransaction<V>, 'anchor' | 'extensions'> & EditorExtensionSpecMethods<EditorInstalledUpdateGroups<V, TExtensions>>;",
+          "signature": "type EditorTransactionSpecBuilder<V extends Value = Value, TExtensions extends readonly unknown[] = readonly []> = Omit<EditorCoreUpdateTransaction<V>, 'anchor' | 'extensions' | 'key'> & EditorExtensionSpecMethods<EditorInstalledUpdateGroups<V, TExtensions>>;",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
             "V extends Value = Value",
@@ -3960,6 +4061,18 @@
           "source": "packages/plite/src/interfaces/node.ts",
           "typeParameters": []
         },
+        "@platejs/plite:NodeKey": {
+          "aliases": [],
+          "documentation": "Opaque identity for one descendant inside one editor runtime.",
+          "entrypoint": "@platejs/plite",
+          "kind": "type",
+          "name": "NodeKey",
+          "route": null,
+          "runtime": false,
+          "signature": "type NodeKey = string & {\n  readonly '~nodeKey': true;\n};",
+          "source": "packages/plite/src/interfaces/editor.ts",
+          "typeParameters": []
+        },
         "@platejs/plite:NodeLevelsOptions": {
           "aliases": [],
           "documentation": "",
@@ -4076,7 +4189,7 @@
           "name": "NodeReplaceChildrenOptions",
           "route": null,
           "runtime": false,
-          "signature": "interface NodeReplaceChildrenOptions {\n  at: Path;\n  count?: number;\n  index?: number;\n  newSelection?: Selection;\n}",
+          "signature": "interface NodeReplaceChildrenOptions {\n  at: Path;\n  count?: number;\n  index?: number;\n  newSelection?: Selection;\n  /** Preserve runtime keys for positionally corresponding replacements. */\n  preserveKeys?: boolean;\n}",
           "source": "packages/plite/src/interfaces/transforms/node.ts",
           "typeParameters": []
         },
@@ -4108,13 +4221,13 @@
         },
         "@platejs/plite:NodeTarget": {
           "aliases": [],
-          "documentation": "A document location or a live node whose current location should be used.",
+          "documentation": "A document location, node key, or live node to resolve.",
           "entrypoint": "@platejs/plite",
           "kind": "type",
           "name": "NodeTarget",
           "route": null,
           "runtime": false,
-          "signature": "type NodeTarget<N extends Descendant = Descendant> = Location | N;",
+          "signature": "type NodeTarget<N extends Descendant = Descendant> = Location | N | NodeKey;",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
             "N extends Descendant = Descendant"
@@ -4310,7 +4423,7 @@
           "name": "ProjectedRangeSegment",
           "route": null,
           "runtime": false,
-          "signature": "type ProjectedRangeSegment = Readonly<{\n  path: Path;\n  runtimeId: RuntimeId;\n  start: number;\n  end: number;\n}>;",
+          "signature": "type ProjectedRangeSegment = Readonly<{\n  path: Path;\n  key: NodeKey;\n  start: number;\n  end: number;\n}>;",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
@@ -4330,25 +4443,37 @@
           "aliases": [],
           "documentation": "",
           "entrypoint": "@platejs/plite",
-          "kind": "type",
+          "kind": "interface",
           "name": "PropertyBooleanDescriptor",
           "route": null,
           "runtime": false,
-          "signature": "type PropertyBooleanDescriptor<TOptions extends PropertyValueOptions<boolean> | undefined = undefined> = PropertyValueDescriptor<boolean, 'boolean', TOptions>;",
+          "signature": "interface PropertyBooleanDescriptor<TOptions extends PropertyValueOptions<boolean> | undefined = undefined> extends PropertyValueDescriptor<boolean, 'boolean', TOptions> {}",
           "source": "packages/plite/src/interfaces/schema.ts",
           "typeParameters": [
             "TOptions extends PropertyValueOptions<boolean> | undefined = undefined"
           ]
         },
+        "@platejs/plite:PropertyBuilderApi": {
+          "aliases": [],
+          "documentation": "Shared JSON property value builders.",
+          "entrypoint": "@platejs/plite",
+          "kind": "interface",
+          "name": "PropertyBuilderApi",
+          "route": null,
+          "runtime": false,
+          "signature": "interface PropertyBuilderApi {\n  readonly boolean: <const TOptions extends PropertyValueOptions<boolean> = {}>(options?: PropertyValueOptions<boolean> & TOptions) => PropertyBooleanDescriptor<TOptions>;\n  readonly enum: typeof defineEnum;\n  readonly json: typeof defineJson;\n  readonly number: <const TOptions extends PropertyValueOptions<number> = {}>(options?: PropertyValueOptions<number> & TOptions) => PropertyNumberDescriptor<TOptions>;\n  readonly set: <TItemDescriptor extends PropertyValueDescriptor, const TOptions extends PropertySetOptions<PropertyValueOf<TItemDescriptor>> = {}>(item: TItemDescriptor, options?: PropertySetOptions<PropertyValueOf<TItemDescriptor>> & TOptions) => PropertySetDescriptor<TItemDescriptor, TOptions>;\n  readonly string: <const TOptions extends PropertyValueOptions<string> = {}>(options?: PropertyValueOptions<string> & TOptions) => PropertyStringDescriptor<TOptions>;\n}",
+          "source": "packages/plite/src/core/schema-definition.ts",
+          "typeParameters": []
+        },
         "@platejs/plite:PropertyEnumDescriptor": {
           "aliases": [],
           "documentation": "",
           "entrypoint": "@platejs/plite",
-          "kind": "type",
+          "kind": "interface",
           "name": "PropertyEnumDescriptor",
           "route": null,
           "runtime": false,
-          "signature": "type PropertyEnumDescriptor<TValues extends readonly string[] = readonly string[], TOptions extends PropertyValueOptions<TValues[number]> | undefined = undefined> = PropertyValueDescriptor<TValues[number], 'enum', TOptions> & Readonly<{\n  values: TValues;\n}>;",
+          "signature": "interface PropertyEnumDescriptor<TValues extends readonly string[] = readonly string[], TOptions extends PropertyValueOptions<TValues[number]> | undefined = undefined> extends PropertyValueDescriptor<TValues[number], 'enum', TOptions> {\n  readonly values: TValues;\n}",
           "source": "packages/plite/src/interfaces/schema.ts",
           "typeParameters": [
             "TValues extends readonly string[] = readonly string[]",
@@ -4359,11 +4484,11 @@
           "aliases": [],
           "documentation": "",
           "entrypoint": "@platejs/plite",
-          "kind": "type",
+          "kind": "interface",
           "name": "PropertyJsonDescriptor",
           "route": null,
           "runtime": false,
-          "signature": "type PropertyJsonDescriptor<TValue = PropertyJsonValue, TOptions extends PropertyValueOptions<TValue> | undefined = undefined> = PropertyValueDescriptor<TValue, 'json', TOptions>;",
+          "signature": "interface PropertyJsonDescriptor<TValue = PropertyJsonValue, TOptions extends PropertyValueOptions<TValue> | undefined = undefined> extends PropertyValueDescriptor<TValue, 'json', TOptions> {}",
           "source": "packages/plite/src/interfaces/schema.ts",
           "typeParameters": [
             "TValue = PropertyJsonValue",
@@ -4400,25 +4525,39 @@
           "aliases": [],
           "documentation": "",
           "entrypoint": "@platejs/plite",
-          "kind": "type",
+          "kind": "interface",
           "name": "PropertyNumberDescriptor",
           "route": null,
           "runtime": false,
-          "signature": "type PropertyNumberDescriptor<TOptions extends PropertyValueOptions<number> | undefined = undefined> = PropertyValueDescriptor<number, 'number', TOptions>;",
+          "signature": "interface PropertyNumberDescriptor<TOptions extends PropertyValueOptions<number> | undefined = undefined> extends PropertyValueDescriptor<number, 'number', TOptions> {}",
           "source": "packages/plite/src/interfaces/schema.ts",
           "typeParameters": [
             "TOptions extends PropertyValueOptions<number> | undefined = undefined"
+          ]
+        },
+        "@platejs/plite:PropertyOptionsOf": {
+          "aliases": [],
+          "documentation": "",
+          "entrypoint": "@platejs/plite",
+          "kind": "type",
+          "name": "PropertyOptionsOf",
+          "route": null,
+          "runtime": false,
+          "signature": "type PropertyOptionsOf<TDescriptor> = TDescriptor extends Readonly<{\n  '~schema.options'?: infer TOptions;\n}> ? TOptions : never;",
+          "source": "packages/plite/src/interfaces/schema.ts",
+          "typeParameters": [
+            "TDescriptor"
           ]
         },
         "@platejs/plite:PropertySetDescriptor": {
           "aliases": [],
           "documentation": "",
           "entrypoint": "@platejs/plite",
-          "kind": "type",
+          "kind": "interface",
           "name": "PropertySetDescriptor",
           "route": null,
           "runtime": false,
-          "signature": "type PropertySetDescriptor<TItemDescriptor extends PropertyValueDescriptor = PropertyValueDescriptor, TOptions extends PropertySetOptions<PropertyValueOf<TItemDescriptor>> | undefined = undefined> = PropertyValueDescriptor<readonly PropertyValueOf<TItemDescriptor>[], 'set', TOptions> & Readonly<{\n  item: TItemDescriptor;\n}>;",
+          "signature": "interface PropertySetDescriptor<TItemDescriptor extends PropertyValueDescriptor = PropertyValueDescriptor, TOptions extends PropertySetOptions<PropertyValueOf<TItemDescriptor>> | undefined = undefined> extends PropertyValueDescriptor<readonly PropertyValueOf<TItemDescriptor>[], 'set', TOptions> {\n  readonly item: TItemDescriptor;\n}",
           "source": "packages/plite/src/interfaces/schema.ts",
           "typeParameters": [
             "TItemDescriptor extends PropertyValueDescriptor = PropertyValueDescriptor",
@@ -4443,11 +4582,11 @@
           "aliases": [],
           "documentation": "",
           "entrypoint": "@platejs/plite",
-          "kind": "type",
+          "kind": "interface",
           "name": "PropertyStringDescriptor",
           "route": null,
           "runtime": false,
-          "signature": "type PropertyStringDescriptor<TOptions extends PropertyValueOptions<string> | undefined = undefined> = PropertyValueDescriptor<string, 'string', TOptions>;",
+          "signature": "interface PropertyStringDescriptor<TOptions extends PropertyValueOptions<string> | undefined = undefined> extends PropertyValueDescriptor<string, 'string', TOptions> {}",
           "source": "packages/plite/src/interfaces/schema.ts",
           "typeParameters": [
             "TOptions extends PropertyValueOptions<string> | undefined = undefined"
@@ -4471,16 +4610,16 @@
           "aliases": [],
           "documentation": "One immutable JSON value law shared by text and element properties.",
           "entrypoint": "@platejs/plite",
-          "kind": "type",
+          "kind": "interface",
           "name": "PropertyValueDescriptor",
           "route": null,
           "runtime": false,
-          "signature": "type PropertyValueDescriptor<TValue = unknown, TKind extends PropertyValueKind = PropertyValueKind, TOptions extends PropertyValueOptions<TValue> | undefined = undefined> = Readonly<{\n  kind: TKind;\n  omitDefault: [TOptions] extends [undefined] ? boolean : TOptions extends {\n    omitDefault: true;\n  } ? true : false;\n  required: [TOptions] extends [undefined] ? boolean : TOptions extends {\n    required: true;\n  } ? true : false;\n  /** Runtime validator; excluded from structural schema identity. */\n  validate?: (value: unknown) => value is TValue;\n  /** Structural identity for `validate`; required whenever it is present. */\n  validationVersion?: number;\n} & ([TOptions] extends [undefined] ? {\n  default?: TValue;\n} : TOptions extends {\n  default: TValue;\n} ? {\n  default: TValue;\n} : {\n  default?: never;\n})>;",
+          "signature": "interface PropertyValueDescriptor<TValue = unknown, TKind extends PropertyValueKind = PropertyValueKind, TOptions extends PropertyValueOptions<TValue> | undefined = PropertyValueOptions<TValue> | undefined> {\n  /** Type-only carrier for exact property-option inference. */\n  readonly '~schema.options'?: TOptions;\n  /** Type-only carrier for exact property-value inference. */\n  readonly '~schema.value'?: TValue;\n  readonly default?: TValue;\n  readonly generate?: () => TValue;\n  readonly kind: TKind;\n  readonly omitDefault: [PropertyValueOptions<TValue> | undefined] extends [TOptions] ? boolean : TOptions extends {\n    omitDefault: true;\n  } ? true : false;\n  readonly required: [PropertyValueOptions<TValue> | undefined] extends [TOptions] ? boolean : TOptions extends {\n    required: true;\n  } ? true : false;\n  /** Runtime validator; excluded from structural schema identity. */\n  readonly validate?: (value: unknown) => value is TValue;\n  /** Structural identity for `validate`; required whenever it is present. */\n  readonly validationVersion?: number;\n}",
           "source": "packages/plite/src/interfaces/schema.ts",
           "typeParameters": [
             "TValue = unknown",
             "TKind extends PropertyValueKind = PropertyValueKind",
-            "TOptions extends PropertyValueOptions<TValue> | undefined = undefined"
+            "TOptions extends PropertyValueOptions<TValue> | undefined = PropertyValueOptions<TValue> | undefined"
           ]
         },
         "@platejs/plite:PropertyValueKind": {
@@ -4503,7 +4642,7 @@
           "name": "PropertyValueOf",
           "route": null,
           "runtime": false,
-          "signature": "type PropertyValueOf<TDescriptor> = TDescriptor extends PropertyValueDescriptor<infer TValue> ? TValue : never;",
+          "signature": "type PropertyValueOf<TDescriptor> = TDescriptor extends Readonly<{\n  '~schema.value'?: infer TValue;\n}> ? TValue : never;",
           "source": "packages/plite/src/interfaces/schema.ts",
           "typeParameters": [
             "TDescriptor"
@@ -4676,18 +4815,6 @@
           "route": null,
           "runtime": false,
           "signature": "type RootKey = string;",
-          "source": "packages/plite/src/interfaces/editor.ts",
-          "typeParameters": []
-        },
-        "@platejs/plite:RuntimeId": {
-          "aliases": [],
-          "documentation": "",
-          "entrypoint": "@platejs/plite",
-          "kind": "type",
-          "name": "RuntimeId",
-          "route": null,
-          "runtime": false,
-          "signature": "type RuntimeId = string;",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
@@ -4928,11 +5055,11 @@
           "name": "SchemaElementHandle",
           "route": null,
           "runtime": false,
-          "signature": "type SchemaElementHandle<TSchema extends EditorSchemaSource = EditorSchemaSource, TType extends SchemaElementTypes<TSchema> = SchemaElementTypes<TSchema>> = Readonly<{\n  kind: 'schema-element';\n  schema: TSchema;\n  type: TType;\n}>;",
+          "signature": "type SchemaElementHandle<TSchema extends object = EditorSchemaSource, TType extends string = TSchema extends EditorSchemaSource ? SchemaElementTypes<TSchema> : string> = Readonly<{\n  kind: 'schema-element';\n  schema: TSchema;\n  type: TType;\n}>;",
           "source": "packages/plite/src/interfaces/schema.ts",
           "typeParameters": [
-            "TSchema extends EditorSchemaSource = EditorSchemaSource",
-            "TType extends SchemaElementTypes<TSchema> = SchemaElementTypes<TSchema>"
+            "TSchema extends object = EditorSchemaSource",
+            "TType extends string = TSchema extends EditorSchemaSource ? SchemaElementTypes<TSchema> : string"
           ]
         },
         "@platejs/plite:SchemaElementInNode": {
@@ -4960,21 +5087,6 @@
           "signature": "type SchemaElementInput = Readonly<{\n  atom?: boolean;\n  content?: SchemaContent;\n  /** Projected named-root grammars keyed by the element's `childRoots` slot. */\n  contentRoots?: Readonly<Record<string, SchemaContentRootInput>>;\n  /** Explicit product groups. Structural groups are compiler-derived. */\n  groups?: readonly string[];\n  inline?: boolean;\n  isolating?: boolean;\n  keyboardSelectable?: boolean;\n  markableVoid?: boolean;\n  properties?: SchemaElementProperties;\n  readOnly?: boolean;\n  selectable?: boolean;\n  slice?: SchemaElementSlicePolicy;\n  void?: 'block' | 'editable-island' | 'inline' | 'markable-inline';\n}>;",
           "source": "packages/plite/src/interfaces/schema.ts",
           "typeParameters": []
-        },
-        "@platejs/plite:SchemaElementOf": {
-          "aliases": [],
-          "documentation": "Select one element descriptor from a complete schema owner's vocabulary.",
-          "entrypoint": "@platejs/plite",
-          "kind": "type",
-          "name": "SchemaElementOf",
-          "route": null,
-          "runtime": false,
-          "signature": "type SchemaElementOf<TSchemaOwner, TElement> = TSchemaOwner extends EditorSchemaExtensionProvider<infer TSchema> ? SchemaElementOfReference<TSchema, TElement> : never;",
-          "source": "packages/plite/src/interfaces/element.ts",
-          "typeParameters": [
-            "TSchemaOwner",
-            "TElement"
-          ]
         },
         "@platejs/plite:SchemaElementProperties": {
           "aliases": [],
@@ -5011,7 +5123,7 @@
           "name": "SchemaElementProperty",
           "route": null,
           "runtime": false,
-          "signature": "type SchemaElementProperty<TKey extends SchemaPropertyKey = SchemaPropertyKey, TDescriptor extends PropertyValueDescriptor = PropertyValueDescriptor, TTarget extends SchemaTarget = SchemaTarget> = Readonly<{\n  key: TKey;\n  placement: 'element';\n  role: SchemaPropertyRole;\n  split: SchemaPropertySplitPolicy;\n  target: TTarget;\n  typeChange: SchemaPropertyTypeChangePolicy;\n  value: TDescriptor;\n}>;",
+          "signature": "type SchemaElementProperty<TKey extends SchemaPropertyKey = SchemaPropertyKey, TDescriptor extends PropertyValueDescriptor = PropertyValueDescriptor, TTarget extends SchemaTarget = SchemaTarget> = Readonly<{\n  copy: SchemaPropertyCopyPolicy;\n  key: TKey;\n  placement: 'element';\n  role: SchemaPropertyRole;\n  split: SchemaPropertySplitPolicy;\n  target: TTarget;\n  typeChange: SchemaPropertyTypeChangePolicy;\n  value: TDescriptor;\n}>;",
           "source": "packages/plite/src/interfaces/schema.ts",
           "typeParameters": [
             "TKey extends SchemaPropertyKey = SchemaPropertyKey",
@@ -5019,20 +5131,19 @@
             "TTarget extends SchemaTarget = SchemaTarget"
           ]
         },
-        "@platejs/plite:SchemaElementPropertyHandle": {
+        "@platejs/plite:SchemaElementPropertyDefinition": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Element-property law before a keyed owner assigns persisted identity.",
           "entrypoint": "@platejs/plite",
           "kind": "type",
-          "name": "SchemaElementPropertyHandle",
+          "name": "SchemaElementPropertyDefinition",
           "route": null,
           "runtime": false,
-          "signature": "type SchemaElementPropertyHandle<TSchema extends EditorSchemaSource = EditorSchemaSource, TType extends SchemaElementTypes<TSchema> = SchemaElementTypes<TSchema>, TKey extends SchemaElementPropertyKeys<TSchema, TType> = SchemaElementPropertyKeys<TSchema, TType>> = Readonly<{\n  element: SchemaElementHandle<TSchema, TType>;\n  key: TKey;\n  kind: 'schema-element-property';\n}>;",
+          "signature": "type SchemaElementPropertyDefinition<TDescriptor extends PropertyValueDescriptor = PropertyValueDescriptor, TTarget extends SchemaTarget = SchemaTarget> = Omit<SchemaElementProperty<SchemaPropertyKey, TDescriptor, TTarget>, 'key'>;",
           "source": "packages/plite/src/interfaces/schema.ts",
           "typeParameters": [
-            "TSchema extends EditorSchemaSource = EditorSchemaSource",
-            "TType extends SchemaElementTypes<TSchema> = SchemaElementTypes<TSchema>",
-            "TKey extends SchemaElementPropertyKeys<TSchema, TType> = SchemaElementPropertyKeys<TSchema, TType>"
+            "TDescriptor extends PropertyValueDescriptor = PropertyValueDescriptor",
+            "TTarget extends SchemaTarget = SchemaTarget"
           ]
         },
         "@platejs/plite:SchemaElementPropertyKeys": {
@@ -5058,7 +5169,7 @@
           "name": "SchemaElementPropertyOptions",
           "route": null,
           "runtime": false,
-          "signature": "type SchemaElementPropertyOptions = Readonly<{\n  role?: SchemaPropertyRole;\n  split?: SchemaPropertySplitPolicy;\n  target: SchemaTarget;\n  typeChange?: SchemaPropertyTypeChangePolicy;\n}>;",
+          "signature": "type SchemaElementPropertyOptions = Readonly<{\n  copy?: SchemaPropertyCopyPolicy;\n  role?: SchemaPropertyRole;\n  split?: SchemaPropertySplitPolicy;\n  target: SchemaTarget;\n  typeChange?: SchemaPropertyTypeChangePolicy;\n}>;",
           "source": "packages/plite/src/interfaces/schema.ts",
           "typeParameters": []
         },
@@ -5091,21 +5202,6 @@
           "typeParameters": [
             "TSchema extends EditorSchemaSource",
             "TType extends SchemaElementTypes<TSchema> = SchemaElementTypes<TSchema>"
-          ]
-        },
-        "@platejs/plite:SchemaElementShapeOf": {
-          "aliases": [],
-          "documentation": "Select one descriptor-owned element shape before editor composition.",
-          "entrypoint": "@platejs/plite",
-          "kind": "type",
-          "name": "SchemaElementShapeOf",
-          "route": null,
-          "runtime": false,
-          "signature": "type SchemaElementShapeOf<TSchemaOwner, TElement> = TSchemaOwner extends EditorSchemaExtensionProvider<infer TSchema> ? SchemaElementShapeOfReference<TSchema, TElement> : never;",
-          "source": "packages/plite/src/interfaces/element.ts",
-          "typeParameters": [
-            "TSchemaOwner",
-            "TElement"
           ]
         },
         "@platejs/plite:SchemaElementSlicePolicy": {
@@ -5241,6 +5337,30 @@
           "source": "packages/plite/src/interfaces/schema.ts",
           "typeParameters": []
         },
+        "@platejs/plite:SchemaPropertyCopyPolicy": {
+          "aliases": [],
+          "documentation": "",
+          "entrypoint": "@platejs/plite",
+          "kind": "type",
+          "name": "SchemaPropertyCopyPolicy",
+          "route": null,
+          "runtime": false,
+          "signature": "type SchemaPropertyCopyPolicy = 'drop' | 'preserve';",
+          "source": "packages/plite/src/interfaces/schema.ts",
+          "typeParameters": []
+        },
+        "@platejs/plite:SchemaPropertyDefinition": {
+          "aliases": [],
+          "documentation": "Property law accepted by keyed schema-owner maps.",
+          "entrypoint": "@platejs/plite",
+          "kind": "type",
+          "name": "SchemaPropertyDefinition",
+          "route": null,
+          "runtime": false,
+          "signature": "type SchemaPropertyDefinition = SchemaElementPropertyDefinition | SchemaTextPropertyDefinition;",
+          "source": "packages/plite/src/interfaces/schema.ts",
+          "typeParameters": []
+        },
         "@platejs/plite:SchemaPropertyExclusiveGroup": {
           "aliases": [],
           "documentation": "",
@@ -5253,6 +5373,36 @@
           "source": "packages/plite/src/interfaces/schema.ts",
           "typeParameters": [
             "TId extends string = string"
+          ]
+        },
+        "@platejs/plite:SchemaPropertyHandle": {
+          "aliases": [],
+          "documentation": "One exact authored or compiled property identity.",
+          "entrypoint": "@platejs/plite",
+          "kind": "type",
+          "name": "SchemaPropertyHandle",
+          "route": null,
+          "runtime": false,
+          "signature": "type SchemaPropertyHandle<TKey extends SchemaPropertyKey = SchemaPropertyKey, TValue = unknown, TPlacement extends 'element' | 'text' = 'element' | 'text'> = Readonly<{\n  id: string;\n  key: TKey;\n  kind: 'schema-property';\n  placement: TPlacement;\n  /** @internal Covariant value witness; absent from runtime values. */\n  readonly [schemaPropertyHandleValue]?: TValue;\n}>;",
+          "source": "packages/plite/src/interfaces/schema.ts",
+          "typeParameters": [
+            "TKey extends SchemaPropertyKey = SchemaPropertyKey",
+            "TValue = unknown",
+            "TPlacement extends 'element' | 'text' = 'element' | 'text'"
+          ]
+        },
+        "@platejs/plite:SchemaPropertyHandleValue": {
+          "aliases": [],
+          "documentation": "",
+          "entrypoint": "@platejs/plite",
+          "kind": "type",
+          "name": "SchemaPropertyHandleValue",
+          "route": null,
+          "runtime": false,
+          "signature": "type SchemaPropertyHandleValue<THandle> = THandle extends SchemaPropertyHandle<SchemaPropertyKey, infer TValue> ? TValue : never;",
+          "source": "packages/plite/src/interfaces/schema.ts",
+          "typeParameters": [
+            "THandle"
           ]
         },
         "@platejs/plite:SchemaPropertyIds": {
@@ -5405,10 +5555,25 @@
           "name": "SchemaTextProperty",
           "route": null,
           "runtime": false,
-          "signature": "type SchemaTextProperty<TKey extends SchemaPropertyKey = SchemaPropertyKey, TDescriptor extends PropertyValueDescriptor = PropertyValueDescriptor, TTarget extends SchemaTarget | undefined = SchemaTarget | undefined> = Readonly<{\n  exclusive?: readonly SchemaPropertyExclusiveGroup[];\n  inclusive: boolean;\n  key: TKey;\n  placement: 'text';\n  role: SchemaPropertyRole;\n  split: SchemaPropertySplitPolicy;\n  target?: TTarget;\n  typeChange: SchemaPropertyTypeChangePolicy;\n  value: TDescriptor;\n}>;",
+          "signature": "type SchemaTextProperty<TKey extends SchemaPropertyKey = SchemaPropertyKey, TDescriptor extends PropertyValueDescriptor = PropertyValueDescriptor, TTarget extends SchemaTarget | undefined = SchemaTarget | undefined> = Readonly<{\n  copy: SchemaPropertyCopyPolicy;\n  exclusive?: readonly SchemaPropertyExclusiveGroup[];\n  inclusive: boolean;\n  key: TKey;\n  placement: 'text';\n  role: SchemaPropertyRole;\n  split: SchemaPropertySplitPolicy;\n  target?: TTarget;\n  typeChange: SchemaPropertyTypeChangePolicy;\n  value: TDescriptor;\n}>;",
           "source": "packages/plite/src/interfaces/schema.ts",
           "typeParameters": [
             "TKey extends SchemaPropertyKey = SchemaPropertyKey",
+            "TDescriptor extends PropertyValueDescriptor = PropertyValueDescriptor",
+            "TTarget extends SchemaTarget | undefined = SchemaTarget | undefined"
+          ]
+        },
+        "@platejs/plite:SchemaTextPropertyDefinition": {
+          "aliases": [],
+          "documentation": "Text-property law before a keyed owner assigns persisted identity.",
+          "entrypoint": "@platejs/plite",
+          "kind": "type",
+          "name": "SchemaTextPropertyDefinition",
+          "route": null,
+          "runtime": false,
+          "signature": "type SchemaTextPropertyDefinition<TDescriptor extends PropertyValueDescriptor = PropertyValueDescriptor, TTarget extends SchemaTarget | undefined = SchemaTarget | undefined> = Omit<SchemaTextProperty<SchemaPropertyKey, TDescriptor, TTarget>, 'key'>;",
+          "source": "packages/plite/src/interfaces/schema.ts",
+          "typeParameters": [
             "TDescriptor extends PropertyValueDescriptor = PropertyValueDescriptor",
             "TTarget extends SchemaTarget | undefined = SchemaTarget | undefined"
           ]
@@ -5435,7 +5600,7 @@
           "name": "SchemaTextPropertyOptions",
           "route": null,
           "runtime": false,
-          "signature": "type SchemaTextPropertyOptions = Readonly<{\n  exclusive?: readonly SchemaPropertyExclusiveGroup[];\n  inclusive?: boolean;\n  role?: SchemaPropertyRole;\n  split?: SchemaPropertySplitPolicy;\n  target?: SchemaTarget;\n  typeChange?: SchemaPropertyTypeChangePolicy;\n}>;",
+          "signature": "type SchemaTextPropertyOptions = Readonly<{\n  copy?: SchemaPropertyCopyPolicy;\n  exclusive?: readonly SchemaPropertyExclusiveGroup[];\n  inclusive?: boolean;\n  role?: SchemaPropertyRole;\n  split?: SchemaPropertySplitPolicy;\n  target?: SchemaTarget;\n  typeChange?: SchemaPropertyTypeChangePolicy;\n}>;",
           "source": "packages/plite/src/interfaces/schema.ts",
           "typeParameters": []
         },
@@ -5705,7 +5870,7 @@
           "name": "SnapshotIndex",
           "route": null,
           "runtime": false,
-          "signature": "type SnapshotIndex = Readonly<{\n  /** Materialize the lazy index and return stable, frozen runtime-id/path pairs. */\n  entries: () => readonly (readonly [RuntimeId, Path])[];\n  /** Return the runtime identity at a snapshot path, or `null` when absent. */\n  idAt: (path: Path) => RuntimeId | null;\n  /** Return the snapshot path for a runtime identity, or `null` when absent. */\n  pathOf: (runtimeId: RuntimeId) => Path | null;\n}>;",
+          "signature": "type SnapshotIndex = Readonly<{\n  /** Materialize the lazy index and return stable, frozen node-key/path pairs. */\n  entries: () => readonly (readonly [NodeKey, Path])[];\n  /** Return the node key at a snapshot path, or `null` when absent. */\n  keyAt: (path: Path) => NodeKey | null;\n  /** Return the snapshot path for a node key, or `null` when absent. */\n  pathOf: (nodeKey: NodeKey) => Path | null;\n}>;",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
@@ -5847,7 +6012,7 @@
           "name": "target",
           "route": null,
           "runtime": true,
-          "signature": "target: Readonly<{\n  and: <const TTargets extends readonly [SchemaTarget, SchemaTarget, ...SchemaTarget[]]>(...targets: TTargets) => Readonly<{\n    kind: \"and\";\n    targets: TTargets;\n  }>;\n  group: typeof groupTarget;\n  not: <const TTarget extends SchemaTarget>(target: TTarget) => {\n    kind: 'not';\n    target: TTarget;\n  };\n  or: <const TTargets extends readonly [SchemaTarget, SchemaTarget, ...SchemaTarget[]]>(...targets: TTargets) => Readonly<{\n    kind: \"or\";\n    targets: TTargets;\n  }>;\n  parent: <const TTarget extends SchemaTarget>(target: TTarget) => {\n    kind: 'parent';\n    target: TTarget;\n  };\n  root: typeof rootTarget;\n  type: typeof typeTarget;\n  types: typeof typesTarget;\n}>",
+          "signature": "target: Readonly<{\n  and: <const TTargets extends readonly [SchemaTarget, SchemaTarget, ...SchemaTarget[]]>(...targets: TTargets) => Readonly<{\n    kind: \"and\";\n    targets: TTargets;\n  }>;\n  group: typeof groupTarget;\n  element: typeof elementTarget;\n  elements: typeof elementTargets;\n  not: <const TTarget extends SchemaTarget>(target: TTarget) => {\n    kind: 'not';\n    target: TTarget;\n  };\n  or: <const TTargets extends readonly [SchemaTarget, SchemaTarget, ...SchemaTarget[]]>(...targets: TTargets) => Readonly<{\n    kind: \"or\";\n    targets: TTargets;\n  }>;\n  parent: <const TTarget extends SchemaTarget>(target: TTarget) => {\n    kind: 'parent';\n    target: TTarget;\n  };\n  root: typeof rootTarget;\n  type: typeof typeTarget;\n  types: typeof typesTarget;\n}>",
           "source": "packages/plite/src/core/schema-definition.ts",
           "typeParameters": []
         },
@@ -6264,7 +6429,7 @@
           "name": "applyBuiltDocumentChange",
           "route": null,
           "runtime": true,
-          "signature": "applyBuiltDocumentChange: (editor: AnyEditor, build: (builder: ChangeDraft, root: RootKey) => DocumentChangeStep, options?: ApplyDocumentChangeOptions & Readonly<{\n  runtimeIdTransfers?: readonly Readonly<{\n    path: Path;\n    source: Descendant;\n  }>[];\n}>) => void",
+          "signature": "applyBuiltDocumentChange: (editor: AnyEditor, build: (builder: ChangeDraft, root: RootKey) => DocumentChangeStep, options?: ApplyDocumentChangeOptions & Readonly<{\n  nodeKeyTransfers?: readonly Readonly<{\n    path: Path;\n    source: Descendant;\n  }>[];\n}>) => void",
           "source": "packages/plite/src/core/public-state.ts",
           "typeParameters": []
         },
@@ -6336,7 +6501,7 @@
           "name": "BaseEditor",
           "route": null,
           "runtime": false,
-          "signature": "interface BaseEditor<V extends Value = Value, TExtensions extends readonly unknown[] = readonly []> {\n  api: Readonly<EditorCoreApiGroups & EditorInstalledApiGroups<TExtensions>>;\n  /** Create a live location that rebases across document changes. */\n  anchor: EditorAnchorApi;\n  /** Stable logical identity for this editor instance. */\n  id: string;\n  extension: <const TExtension extends EditorExtensionReference>(extension: TExtension, ...guard: EditorInstalledExtensionGuard<TExtension, TExtensions> extends never ? [never] : []) => EditorExtensionPortal<TExtension, V>;\n  read: EditorRead<V, TExtensions>;\n  subscribe: (listener: SnapshotListener<any>) => () => void;\n  subscribeCommit: (listener: EditorCommitListener<any>) => () => void;\n  update: EditorUpdate<V, TExtensions>;\n  install: (extension: EditorExtensionInput, options?: EditorExtensionReconfigureOptions) => () => void;\n}",
+          "signature": "interface BaseEditor<V extends Value = Value, TExtensions extends readonly unknown[] = readonly []> {\n  api: Readonly<EditorCoreApiGroups & EditorInstalledApiGroups<TExtensions>>;\n  /** Create a live location that rebases across document changes. */\n  anchor: EditorAnchorApi;\n  /** Stable logical identity for this editor instance. */\n  id: string;\n  extension: <const TExtension extends EditorExtensionReference>(extension: TExtension, ...guard: EditorInstalledExtensionGuard<TExtension, TExtensions> extends never ? [never] : []) => EditorExtensionPortal<TExtension, V>;\n  /** Return the stable runtime key for a live node or location. */\n  key: EditorKeyApi;\n  read: EditorRead<V, TExtensions>;\n  subscribe: (listener: SnapshotListener<any>) => () => void;\n  subscribeCommit: (listener: EditorCommitListener<any>) => () => void;\n  update: EditorUpdate<V, TExtensions>;\n  install: (extension: EditorExtensionInput, options?: EditorExtensionReconfigureOptions) => () => void;\n}",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
             "V extends Value = Value",
@@ -6411,7 +6576,7 @@
           "name": "CompiledSchemaElement",
           "route": null,
           "runtime": false,
-          "signature": "type CompiledSchemaElement = Readonly<{\n  behavior: CompiledSchemaElementBehavior;\n  content: CompiledSchemaContentProgram | null;\n  contentRoots: ReadonlyMap<string, CompiledSchemaContentRoot>;\n  construction: Readonly<{\n    defaultPropertyIds: ReadonlySet<string>;\n    propertyIds: ReadonlySet<string>;\n  }>;\n  groups: ReadonlySet<string>;\n  propertyIds: ReadonlySet<string>;\n  slice: Readonly<{\n    preserveContext: boolean;\n    replaceWhenCovered: boolean;\n  }>;\n  type: string;\n}>;",
+          "signature": "type CompiledSchemaElement = Readonly<{\n  behavior: CompiledSchemaElementBehavior;\n  content: CompiledSchemaContentProgram | null;\n  contentRoots: ReadonlyMap<string, CompiledSchemaContentRoot>;\n  construction: Readonly<{\n    materializedPropertyIds: ReadonlySet<string>;\n    propertyIds: ReadonlySet<string>;\n  }>;\n  groups: ReadonlySet<string>;\n  propertyIds: ReadonlySet<string>;\n  slice: Readonly<{\n    preserveContext: boolean;\n    replaceWhenCovered: boolean;\n  }>;\n  type: string;\n}>;",
           "source": "packages/plite/src/core/schema-compiler.ts",
           "typeParameters": []
         },
@@ -6423,7 +6588,7 @@
           "name": "CompiledSchemaProperty",
           "route": null,
           "runtime": false,
-          "signature": "type CompiledSchemaProperty = Readonly<{\n  descriptor: PropertyValueDescriptor;\n  exclusiveGroupIds: readonly string[];\n  id: string;\n  key: SchemaPropertyKey;\n  lifecycle: Readonly<{\n    inclusive: boolean | null;\n    split: 'drop' | 'preserve';\n    typeChange: 'drop' | 'preserve-if-allowed';\n  }>;\n  merge: CompiledSchemaPropertyMergeStrategy;\n  owner: string;\n  placement: 'element' | 'text';\n  role: 'content' | 'metadata';\n  target: SchemaTarget | null;\n}>;",
+          "signature": "type CompiledSchemaProperty = Readonly<{\n  descriptor: PropertyValueDescriptor;\n  exclusiveGroupIds: readonly string[];\n  id: string;\n  key: SchemaPropertyKey;\n  lifecycle: Readonly<{\n    copy: 'drop' | 'preserve';\n    inclusive: boolean | null;\n    split: 'drop' | 'preserve';\n    typeChange: 'drop' | 'preserve-if-allowed';\n  }>;\n  merge: CompiledSchemaPropertyMergeStrategy;\n  owner: string;\n  placement: 'element' | 'text';\n  role: 'content' | 'metadata';\n  target: SchemaTarget | null;\n}>;",
           "source": "packages/plite/src/core/schema-compiler.ts",
           "typeParameters": []
         },
@@ -7205,6 +7370,18 @@
           "source": "packages/plite/src/core/public-state.ts",
           "typeParameters": []
         },
+        "@platejs/plite/internal:getEditorNodeKeyForNode": {
+          "aliases": [],
+          "documentation": "",
+          "entrypoint": "@platejs/plite/internal",
+          "kind": "const",
+          "name": "getEditorNodeKeyForNode",
+          "route": null,
+          "runtime": true,
+          "signature": "getEditorNodeKeyForNode: (editor: AnyEditor, node: Descendant) => NodeKey",
+          "source": "packages/plite/src/core/public-state.ts",
+          "typeParameters": []
+        },
         "@platejs/plite/internal:getEditorRuntime": {
           "aliases": [],
           "documentation": "",
@@ -7225,19 +7402,7 @@
           "name": "getEditorRuntimeElementEntries",
           "route": null,
           "runtime": true,
-          "signature": "getEditorRuntimeElementEntries: (editor: AnyEditor, types: readonly string[], root: RootKey) => readonly Readonly<{\n  path: Path;\n  runtimeId: RuntimeId;\n  type: string;\n}>[]",
-          "source": "packages/plite/src/core/public-state.ts",
-          "typeParameters": []
-        },
-        "@platejs/plite/internal:getEditorRuntimeIdForNode": {
-          "aliases": [],
-          "documentation": "",
-          "entrypoint": "@platejs/plite/internal",
-          "kind": "const",
-          "name": "getEditorRuntimeIdForNode",
-          "route": null,
-          "runtime": true,
-          "signature": "getEditorRuntimeIdForNode: (editor: AnyEditor, node: Node) => RuntimeId",
+          "signature": "getEditorRuntimeElementEntries: (editor: AnyEditor, types: readonly string[], root: RootKey) => readonly Readonly<{\n  path: Path;\n  nodeKey: NodeKey;\n  type: string;\n}>[]",
           "source": "packages/plite/src/core/public-state.ts",
           "typeParameters": []
         },
@@ -7435,15 +7600,27 @@
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
-        "@platejs/plite/internal:getPathByRuntimeId": {
+        "@platejs/plite/internal:getNodeKey": {
           "aliases": [],
           "documentation": "",
           "entrypoint": "@platejs/plite/internal",
           "kind": "const",
-          "name": "getPathByRuntimeId",
+          "name": "getNodeKey",
           "route": null,
           "runtime": true,
-          "signature": "getPathByRuntimeId: (editor: AnyEditor, runtimeId: RuntimeId) => Path | null",
+          "signature": "getNodeKey: (editor: AnyEditor, path: Path) => NodeKey | null",
+          "source": "packages/plite/src/interfaces/editor.ts",
+          "typeParameters": []
+        },
+        "@platejs/plite/internal:getPathByNodeKey": {
+          "aliases": [],
+          "documentation": "",
+          "entrypoint": "@platejs/plite/internal",
+          "kind": "const",
+          "name": "getPathByNodeKey",
+          "route": null,
+          "runtime": true,
+          "signature": "getPathByNodeKey: (editor: AnyEditor, nodeKey: NodeKey) => Path | null",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
@@ -7459,16 +7636,16 @@
           "source": "packages/plite/src/internal/root-location.ts",
           "typeParameters": []
         },
-        "@platejs/plite/internal:getRuntimeId": {
+        "@platejs/plite/internal:getSchemaElementSourceReference": {
           "aliases": [],
           "documentation": "",
           "entrypoint": "@platejs/plite/internal",
           "kind": "const",
-          "name": "getRuntimeId",
+          "name": "getSchemaElementSourceReference",
           "route": null,
           "runtime": true,
-          "signature": "getRuntimeId: (editor: AnyEditor, path: Path) => RuntimeId | null",
-          "source": "packages/plite/src/interfaces/editor.ts",
+          "signature": "getSchemaElementSourceReference: (value: unknown) => unknown",
+          "source": "packages/plite/src/core/schema-definition.ts",
           "typeParameters": []
         },
         "@platejs/plite/internal:getSelection": {
@@ -7777,7 +7954,7 @@
           "name": "InternalEditorRuntimeElementEntry",
           "route": null,
           "runtime": false,
-          "signature": "type InternalEditorRuntimeElementEntry = Readonly<{\n  path: Path;\n  runtimeId: RuntimeId;\n  type: string;\n}>;",
+          "signature": "type InternalEditorRuntimeElementEntry = Readonly<{\n  path: Path;\n  nodeKey: NodeKey;\n  type: string;\n}>;",
           "source": "packages/plite/src/core/snapshot-index.ts",
           "typeParameters": []
         },

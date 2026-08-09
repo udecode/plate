@@ -6,7 +6,7 @@ import {
   SelectionApi,
 } from '@platejs/plite';
 import {
-  getRuntimeId as editorGetRuntimeId,
+  getNodeKey as editorGetNodeKey,
   getSelection as editorGetSelection,
   replace as editorReplace,
 } from '@platejs/plite/internal';
@@ -718,15 +718,15 @@ test('beforeinput keeps current text host target ranges while the node map is di
     },
   });
 
-  const runtimeId = editorGetRuntimeId(editor, [0, 0]);
+  const nodeKey = editorGetNodeKey(editor, [0, 0]);
 
-  if (!runtimeId) {
-    throw new Error('Expected text runtime id');
+  if (!nodeKey) {
+    throw new Error('Expected text node key');
   }
 
   textHost.setAttribute('data-plite-node', 'text');
   textHost.setAttribute('data-plite-path', '0,0');
-  textHost.setAttribute('data-plite-runtime-id', runtimeId);
+  textHost.setAttribute('data-plite-node-key', nodeKey);
   string.setAttribute('data-plite-string', 'true');
   string.append(text);
   textHost.append(string);
@@ -1487,7 +1487,7 @@ test('selection reconciler keeps DOM coverage skip selections model-owned', () =
     coveredRuntimeRanges: [],
     findPolicy: 'native',
     ownerPath: [],
-    ownerRuntimeId: null,
+    ownerNodeKey: null,
     reason: 'app-hidden',
     selectionPolicy: 'skip',
     state: 'intentionally-hidden',
@@ -1581,7 +1581,7 @@ test('DOM coverage selection materializes every covered materialize boundary wit
       coveredRuntimeRanges: [],
       findPolicy: 'native',
       ownerPath: [],
-      ownerRuntimeId: null,
+      ownerNodeKey: null,
       reason: 'app-hidden',
       selectionPolicy: 'materialize',
       state: 'intentionally-hidden',
@@ -1651,7 +1651,7 @@ test('selection reconciler preserves visible anchor text across DOM coverage bou
     coveredRuntimeRanges: [],
     findPolicy: 'native',
     ownerPath: [],
-    ownerRuntimeId: null,
+    ownerNodeKey: null,
     reason: 'app-hidden',
     selectionPolicy: 'skip',
     state: 'intentionally-hidden',

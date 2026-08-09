@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   getLastCommit as editorGetLastCommit,
-  getPathByRuntimeId as editorGetPathByRuntimeId,
-  getRuntimeId as editorGetRuntimeId,
+  getPathByNodeKey as editorGetPathByNodeKey,
+  getNodeKey as editorGetNodeKey,
   getSnapshot as editorGetSnapshot,
   replace as editorReplace,
   string as editorString,
@@ -74,15 +74,15 @@ describe('collab canonical remote reconcile contract', () => {
         commits.push(commit);
       }
     });
-    const oldBlockRuntimeId = editorGetRuntimeId(editor, [0]);
-    const oldTextRuntimeId = editorGetRuntimeId(editor, [0, 0]);
+    const oldBlockNodeKey = editorGetNodeKey(editor, [0]);
+    const oldTextNodeKey = editorGetNodeKey(editor, [0, 0]);
     const anchor = createRangeAnchor(
       editor,
       range({ path: [0, 0], offset: 1 }, { path: [0, 0], offset: 3 })
     );
 
-    assert(oldBlockRuntimeId);
-    assert(oldTextRuntimeId);
+    assert(oldBlockNodeKey);
+    assert(oldTextNodeKey);
     commits.length = 0;
 
     editor.update(remoteCollabPolicy, (tx) => {
@@ -114,13 +114,10 @@ describe('collab canonical remote reconcile contract', () => {
       editorGetSnapshot(editor).selection,
       collapsed([1, 0], 'canonical'.length)
     );
-    assert.deepEqual(editorGetPathByRuntimeId(editor, oldBlockRuntimeId), [0]);
-    assert.deepEqual(
-      editorGetPathByRuntimeId(editor, oldTextRuntimeId),
-      [0, 0]
-    );
-    assert(editorGetRuntimeId(editor, [0]));
-    assert(editorGetRuntimeId(editor, [0, 0]));
+    assert.deepEqual(editorGetPathByNodeKey(editor, oldBlockNodeKey), [0]);
+    assert.deepEqual(editorGetPathByNodeKey(editor, oldTextNodeKey), [0, 0]);
+    assert(editorGetNodeKey(editor, [0]));
+    assert(editorGetNodeKey(editor, [0, 0]));
     assert.deepEqual(
       anchor.resolve(),
       range({ path: [0, 0], offset: 1 }, { path: [0, 0], offset: 3 })

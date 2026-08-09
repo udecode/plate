@@ -119,7 +119,7 @@ tests for package ownership, API intent, and public teaching surfaces.
   `$autoclosure`; `auto slate` and `auto plate packages` stay in `$auto`.
   Routing convenience is not ownership transfer.
 - `$autoclosure` is post-merge/current-tree until-clean closure for already
-  applied work. It loops like `autoreview`, patches safe findings, reruns proof,
+  applied work. It loops like P2 `autoreview`, patches safe findings, reruns proof,
   and stops only when no accepted actionable findings remain or a real boundary
   appears.
 - Source-backed pure improvements may be applied autonomously when they stay

@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-03-use-schema-handles",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-03-use-schema-handles.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-03",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Read persisted identities from schema handles",
+  "targets": [
+    {
+      "name": "editor",
+      "files": ["apps/www/src/registry/ui/editor.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ai-menu",
+      "files": ["apps/www/src/registry/ui/ai-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "comment-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/comment-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "font-color-toolbar-button",
+      "files": ["apps/www/src/registry/ui/font-color-toolbar-button.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "font-size-toolbar-button",
+      "files": ["apps/www/src/registry/ui/font-size-toolbar-button.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "mark-toolbar-button",
+      "files": ["apps/www/src/registry/ui/mark-toolbar-button.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-03-schema-handles-3fe678a1",
+      "kind": "wiring",
+      "summary": "Read final element types and property keys from installed schema handles.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "editor",
+        "ai-menu",
+        "comment-kit",
+        "font-color-toolbar-button",
+        "font-size-toolbar-button",
+        "mark-toolbar-button"
+      ],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-03",
+          "entry": "2026-08-03-use-schema-handles",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

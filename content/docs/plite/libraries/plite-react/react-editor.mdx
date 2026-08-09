@@ -143,6 +143,12 @@ range is not currently mappable.
 Resolve the bounding rect for a Plite range. Returns `null` when the range is
 not currently mappable to mounted DOM.
 
+#### `editor.api.dom.resolveVisualPoint(point: Point, options: { affinity?: SelectionAssociation; direction: 'left' | 'right'; unit: 'character' | 'word' }): DOMVisualPoint | null`
+
+Resolve one physical horizontal caret step through the mounted browser layout.
+The result carries both the next model point and its affinity. Returns `null`
+when the point is not mounted or the browser cannot resolve the step.
+
 #### `editor.api.dom.scrollIntoView(target: Point | Range | DOMRange, options?: ScrollIntoViewOptions): void`
 
 Scroll a Plite point, Plite range, or native DOM range into view. The DOM bridge

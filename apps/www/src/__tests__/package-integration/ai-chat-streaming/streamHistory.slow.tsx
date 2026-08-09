@@ -28,7 +28,7 @@ const streamPreview = (chunks: string[]) => {
   editor.update({ history: 'skip' }).nodes.insert(
     {
       children: [{ text: '' }],
-      type: editor.plugin(AIChatPlugin).schema.element.type,
+      type: editor.plugin(AIChatPlugin).schema.type,
     },
     {
       at: insertAt,
@@ -40,7 +40,7 @@ const streamPreview = (chunks: string[]) => {
   for (const chunk of chunks) {
     aiChat.update.insertChunk(chunk, {
       textProps: {
-        [editor.plugin(BaseAIPlugin).schema.properties.ai.key]: true,
+        [editor.plugin(BaseAIPlugin).schema.key]: true,
       },
     });
   }
@@ -84,14 +84,13 @@ describe('ai chat streaming history', () => {
         at: [],
         match: (n: any) =>
           ElementApi.isElement(n) &&
-          n.type === editor.plugin(AIChatPlugin).schema.element.type,
+          n.type === editor.plugin(AIChatPlugin).schema.type,
       })
     ).toBe(false);
     expect(
       editor.read.nodes.some({
         at: [],
-        match: (n: any) =>
-          !!n[editor.plugin(BaseAIPlugin).schema.properties.ai.key],
+        match: (n: any) => !!n[editor.plugin(BaseAIPlugin).schema.key],
       })
     ).toBe(false);
     expect(

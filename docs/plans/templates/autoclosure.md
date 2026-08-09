@@ -41,7 +41,7 @@ Completion threshold:
 
 Verification surface:
 - TODO: Name the source audits, focused tests, browser proof, package checks,
-  docs/build checks, generated-output sync, `autoreview`, and optional
+  docs/build checks, generated-output sync, P2 `autoreview`, and optional
   `architecture-cleanup` proof that prove closure.
 
 Constraints:
@@ -141,11 +141,11 @@ Work Checklist:
       Plite-vs-Plate boundary drift.
 - [ ] Focused proof is run for each changed behavior/API/docs/generated surface,
       or marked N/A with reason.
-- [ ] `autoreview` target mode is selected from actual target state.
-- [ ] Each accepted `autoreview` finding is fixed or rejected with source-backed
+- [ ] P2 `autoreview` target mode is selected from actual target state.
+- [ ] Each accepted P2 `autoreview` finding is fixed or rejected with source-backed
       reason.
 - [ ] Affected proof is rerun after every accepted finding fix.
-- [ ] `autoreview` is rerun after material fixes until zero accepted actionable
+- [ ] P2 `autoreview` is rerun after material fixes until zero accepted actionable
       findings remain.
 - [ ] `architecture-cleanup` is invoked when review/coherence finds source-shape,
       deslop, over-split, fake-wrapper, or agent-navigation issues, or marked
@@ -189,7 +189,7 @@ Completion Gates:
 | Clean pass count | pending | Record consecutive clean passes after the last patch | pending |
 | Changed list / review attention / stopping checkpoints | pending | Fill final handoff ledgers from current evidence | pending |
 | Agent-native review | pending | Load `agent-native-reviewer` for agent/tooling changes or record N/A | pending |
-| Autoreview | pending | Load `autoreview`, run selected target mode, fix/reject accepted findings, rerun after material fixes until clean | pending |
+| P2 autoreview | pending | Load `autoreview`, pass `--max-priority P2` in the selected target mode, fix/reject accepted findings, and rerun after material fixes until clean; P3 is opt-in only | pending |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 
 Phase / pass table:
@@ -198,8 +198,8 @@ Phase / pass table:
 | Checkpoint zero and requirement extraction | in_progress | created plan | target map |
 | Target map | pending | | coherence audit |
 | Coherence audit | pending | | focused proof |
-| Focused proof | pending | | autoreview |
-| Autoreview and finding verification | pending | | patch/reject/route |
+| Focused proof | pending | | P2 autoreview |
+| P2 autoreview and finding verification | pending | | patch/reject/route |
 | Patch/reject/route | pending | | rerun proof |
 | Architecture/docs/API/generated-output closure | pending | | clean pass |
 | Clean pass confirmation | pending | | final handoff |
@@ -226,7 +226,7 @@ Diff artifact ledger:
 | pending | pending | pending | pending | pending |
 
 Clean pass ledger:
-| Pass | After patch loop | Autoreview result | Proof result | Accepted findings left | Clean? |
+| Pass | After patch loop | P2 autoreview result | Proof result | Accepted findings left | Clean? |
 |------|------------------|-------------------|--------------|------------------------|--------|
 | pending | pending | pending | pending | pending | pending |
 
@@ -272,7 +272,7 @@ Final handoff contract:
 - Accepted findings fixed: pending
 - Findings rejected/routed: pending
 - Commands run with cwd: pending
-- Autoreview result and rerun count: pending
+- P2 autoreview result and rerun count: pending
 - Architecture-cleanup result: pending
 - Changed list: pending
 - Needs your attention: pending
@@ -283,7 +283,7 @@ Reboot status:
 | Question | Answer |
 |----------|--------|
 | Where am I? | Checkpoint zero |
-| Where am I going? | Target map, coherence audit, proof, autoreview, clean pass |
+| Where am I going? | Target map, coherence audit, proof, P2 autoreview, clean pass |
 | What is the goal? | TODO: Fill from Objective |
 | What have I learned? | See Findings |
 | What have I done? | See Timeline |

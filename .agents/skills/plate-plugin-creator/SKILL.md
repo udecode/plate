@@ -41,10 +41,13 @@ for current repo examples. Core builders and type tests outrank precedent.
 | `vision`                    | durable doctrine, Plate/Plite ownership, perf law        |
 | `best-api`                  | reusable call shape, naming, composition identity, DX/AX |
 | `plate-plan` / `plite-plan` | runtime/adoption boundary and proof plan                 |
+| `patch`                     | one local behavior bug or regression repair/proof closure |
 | `plate-plugin-creator`      | implementation mechanics and owner-first topology        |
 
 Continue here when the public target is already clear. Stop for `best-api` when
-the work invents or materially changes a reusable public shape.
+the work invents or materially changes a reusable public shape. For a local
+regression, keep `patch` as workflow owner and use this skill only as the Plate
+plugin implementation law.
 
 ## Semantic Layer
 
@@ -76,6 +79,11 @@ the work invents or materially changes a reusable public shape.
 - Plite owns generic editor substrate: nodes, ranges, selection, reads,
   updates, transactions, schema, history, DOM/runtime primitives, and editor
   extensions.
+- Live descendant identity is Plite `NodeKey`. Resolve it with `editor.key`,
+  coherent `state.key`, or active `tx.key`; reverse through `nodes.path`.
+  Feature state and arguments use `key` / `keys`, never `id` / `ids`.
+  Persisted `element.id` is a separate optional `ElementIdPlugin` capability;
+  never serialize a `NodeKey` or alias the plugin-authored `id` property.
 - Plate owns product composition: plugins, React integration, UI, app/registry
   kits, product commands, defaults, and docs/examples.
 - Do not wrap Plite APIs under second Plate names. If clean authoring needs
@@ -143,6 +151,16 @@ Let builders and initializers own contextual typing.
 
 - Infer plugin exports from `defineBasePlugin`, `definePlatePlugin`,
   `toPlatePlugin`, and chained `.extend()` calls.
+- Start the declaration at the public export. Never assign a plugin factory or
+  intermediate `.extend()` / `.configure()` result to a private constant when
+  every production reference only feeds that one exported chain. Type queries
+  do not count as another owner, and the constant's name is irrelevant. Keep
+  inference stages as one fluent export; use a small independent domain or
+  hook-stage contract when final-plugin type derivation would recurse. A
+  package-private domain contract may type internal algorithms, but it keeps
+  configurable schema identity broad, owns only the required structural
+  properties, never becomes a public consumer type, and never replaces the
+  final descriptor-derived AST alias.
 - Never annotate or cast an inferred plugin export to `BasePlugin`,
   `PlatePlugin`, or a definition type.
 - Do not create `PluginConfig` aliases. That parallel generic machine and its
@@ -198,6 +216,17 @@ Let builders and initializers own contextual typing.
 - If contextual inference fails, repair the owning Core builder/generic or
   source API. A new definition alias or explicit `editor`/`tx` annotation is
   not an inference fix.
+- A reusable factory whose generic definition requires an element or mark
+  schema receives a required flat `schema.type` or `schema.key`. Optionalizing
+  that handle because the plugin `name` is generic is a Core inference bug;
+  repair `PluginAuthorSchemaView` instead of adding a non-null assertion,
+  runtime guard, cast, or duplicated identity.
+- A context-bound factory may infer the exact installed-plugin editor inside
+  its author callback, but its public factory and emitted value must use the
+  smallest portable public contract. An `InternalBaseEditorWithInstalledPlugins`
+  declaration leak belongs to the Core return boundary. Do not patch it with a
+  package-level `BaseEditor<typeof Plugin>` alias, reconstructed option/rule
+  types, an export annotation, or a cast.
 - Forbid `any` in production source. A deliberate local non-type test escape is
   the only exception.
 
@@ -218,9 +247,20 @@ TS7056 is a declaration-boundary failure, not permission to widen a plugin.
 Keep the public descriptor inferred. Compact dependency-source carriers at the
 Core owner; only when a genuinely large plugin still cannot emit, split the
 minimum private stages, derive their exact types through documented internal
-declaration carriers, and mark a one-use stage
-`@plate-plugin-declaration-stage`. Do not export the staging constants or their
-internal definition types.
+declaration carriers, and mark every retained source/final stage
+`@plate-plugin-declaration-stage`. The private final stage may carry the exact
+annotation that TS7056 requires; the public export remains an unannotated alias.
+Require a captured failing direct declaration build, keep the pair out of
+barrels, count it explicitly in topology audits, and delete it when direct emit
+works. Do not export the staging constants or their internal definition types.
+
+When an update or API needs the element/text shape inferred by the constructor,
+put that capability in a direct `.extend(({ plugin }) => ...)` stage and derive
+the local shape with `ElementOf<typeof plugin>` or `TextOf<typeof plugin>`.
+Keep operation-option templates private and generic over that exact shape.
+Export public AST and option aliases only after the final descriptor, derived
+from `typeof FinalPlugin`. Never widen a node generic, annotate the exported
+plugin, or publish a context/definition type to make TypeScript finish.
 The positional name is required, lower camel case, and human-readable. Keep a
 different serialized node identity in `type`; do not encode storage syntax in
 the descriptor name. Package roots expose author-facing contracts only:
@@ -341,14 +381,28 @@ plugin-authoring targets.
 `defineBasePlugin(name, definition)` and
 `definePlatePlugin(name, definition)`. Name variables and parameters
 `plugin` when they accept an exact descriptor or `string`; call the normalized
-internal capability identity `name`. Element owners expose persisted `.type`;
-mark/property owners expose persisted `.key`; each defaults to `name` only when
-omitted at creation. Behavior plugins expose neither, and `.extend()` /
-`.configure()` cannot change schema identity. Input rules and every AST caller
-use resolved `type`/`key`, never `plugin.name`. `.extend()`
+internal capability identity `name`. Persisted element identity is
+`schema.type` on an exact element portal; persisted primary-mark identity is
+`schema.key`. Behavior and aggregate-property consumer portals omit `schema`.
+Author callbacks may use `schema.properties.<localId>` for additional declared
+properties, but consumer portals never expose that compiler map. `.extend()` /
+`.configure()` cannot change schema identity. Never derive persisted identity
+from `plugin.name`. Input rules and every AST caller use resolved schema
+identity or semantic capabilities, never `plugin.name`. `.extend()`
 widens the exact definition, `.configure()` is terminal and non-widening, and
 `toPlatePlugin()` is the exact live Base-to-React adapter. Factories replace
 cloning; never add `clone()` or another copy verb.
+
+Inside `update`, write one uniquely owned, unaliased property with
+`tx.nodes.set('property', value, options)` and remove it with
+`tx.nodes.unset('property', options)`. The literal key and value are inferred
+from the current plugin plus required dependencies through a shallow graph.
+Use the current owner's exact `schema.properties.<localId>` handle for an alias
+or local ambiguity, and a semantic owner operation for prefix families or
+cross-node behavior. Keep object mutation for structural changes, atomic
+multi-property writes, true dynamic keys, and unavoidable dependency
+ambiguity. Do not invent `tx.plugin`, `tx.properties`, or another mutation
+portal.
 
 State and native extension mechanics:
 
@@ -409,6 +463,9 @@ When `FooPlugin` is a valid optional peer, keep the typed portal and check
 `editor.plugin(FooPlugin).installed` before reading its API, updates, store,
 or installed descriptor. Disabled plugins count as absent. Do not probe root
 `editor.api`, node types, schema properties, caches, or caught access errors.
+When a factory reads a required plugin portal, declare that plugin at the
+lowest owning descriptor's `dependencies`. A schema default, import, or
+transitive coincidence is not an installation contract.
 
 ## API And Transaction Law
 
@@ -449,11 +506,15 @@ or installed descriptor. Disabled plugins count as absent. Do not probe root
   callback authoring contexts alone may expose the current raw descriptor as
   `plugin`. Keep callback-only `editor` and `defineCodecs` off consumer portals. Do not export standalone or
   editor-method alternatives for descriptor, name/type reverse, container, or
-  injection lookup. Use portal `.name` after lookup when the normalized runtime
-  identity is needed. Missing runtime names expose `installed: false`; `.type`
-  and `.key` resolve the exact descriptor identity or the runtime string's
-  conventional identity, while capability and descriptor fields throw. Never guard
-  `.type`/`.key` with an `installed` fallback. Keep compiler caches private,
+  injection lookup. Use portal `.name` after lookup when the normalized plugin
+  name is needed. Missing runtime names expose `installed: false`; they do
+  not invent persisted schema identity. Installed element and property
+  identity lives only at `portal.schema.type` for exact element owners and
+  `portal.schema.key` for exact primary-mark owners. Behavior and
+  aggregate-property portals omit `schema`; consumer portals never expose
+  `schema.properties`. Runtime-name portals keep both getters non-optional for
+  package-decoupled callers, but missing and wrong-kind access throws. Guard
+  optional integration with `installed`. Keep compiler caches private,
   use schema predicates for public node questions, read compiled injection at
   `portal.inject.nodeProps`, and expose codec installation membership
   without name/type translation.
@@ -518,6 +579,9 @@ or installed descriptor. Disabled plugins count as absent. Do not probe root
   values, or resolved plugin type merely to reuse plugin-owned behavior.
   Operation options remain valid domain input. Keep one-use machinery lexical;
   stage an honest reused plugin capability through another builder call.
+- A shared stage factory never accepts the current descriptor solely to infer
+  its name, schema, or element type. Let `.extend(factory(...))` contextually
+  bind the stage and read owner capabilities from its callback context.
 - Before adding a state/read-view parameter, try keeping the query in the
   active tx stage or callback owner. Allow an explicit active-state boundary
   only when the same public query must observe an uncommitted transaction
@@ -548,6 +612,13 @@ Schema authoring follows the Plite owner exactly:
   values; do not add meaning to the reusable value descriptor.
 - Plate editor creation uses `schemaIdentity`; Plate element declarations use
   `blockContent` for normal-flow membership.
+- A plugin may contribute several keyed properties. Domain code keeps direct
+  node access; generic plugin code destructures the exact property handle from
+  callback `schema`. Consumers use typed nodes or semantic plugin capabilities;
+  normalized property maps are not part of the plugin portal.
+- Only a closed `defineEditor(name, definition)` may remap final element type,
+  content, groups, or property targets and add app-owned properties. Property
+  keys and value laws stay owned by the feature plugin.
 - Use `schema.create`, `schema.assertDocument`, `schema.assertFragment`, and
   `schema.isMarkableVoid`. Assertion inputs are `unknown` and narrow after
   success.

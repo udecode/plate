@@ -661,7 +661,7 @@ test('keyboard history commands preserve model selection before DOM import', () 
     } as any,
     inputController,
     domStrategyRuntime: {
-      mountedTopLevelRuntimeIds: new Set(),
+      mountedTopLevelNodeKeys: new Set(),
       type: 'staged',
     },
   });
@@ -704,7 +704,7 @@ test('keyboard destructive commands keep partial-DOM-backed model selection', ()
     } as any,
     inputController,
     domStrategyRuntime: {
-      mountedTopLevelRuntimeIds: new Set(),
+      mountedTopLevelNodeKeys: new Set(),
       type: 'staged',
     },
   });
@@ -741,7 +741,7 @@ test('keyboard no-op shortcuts keep partial-DOM-backed model selection', () => {
     } as any,
     inputController,
     domStrategyRuntime: {
-      mountedTopLevelRuntimeIds: new Set(),
+      mountedTopLevelNodeKeys: new Set(),
       type: 'partial-dom',
     },
   });

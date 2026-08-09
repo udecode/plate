@@ -42,8 +42,7 @@ describe('FindReplacePlugin', () => {
 
     expect(
       editor.read.schema.property({
-        key: editor.plugin(FindReplacePlugin).schema.properties.searchHighlight
-          .key,
+        key: editor.plugin(FindReplacePlugin).schema.key,
         placement: 'text',
       })?.value.kind
     ).toBe('boolean');

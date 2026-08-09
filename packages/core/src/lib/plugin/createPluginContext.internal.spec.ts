@@ -1,4 +1,9 @@
-import { property, schema } from '@platejs/plite';
+import {
+  property,
+  schema,
+  target,
+  type SchemaPropertyHandle,
+} from '@platejs/plite';
 
 import type { BaseEditor } from '../editor';
 
@@ -76,6 +81,27 @@ describe('createPluginContext', () => {
     expect(context).not.toHaveProperty('editor');
   });
 
+  it('does not reevaluate published schema factories for plugin access', () => {
+    let schemaEvaluations = 0;
+    const plugin = defineBasePlugin('publishedSchema', {
+      schema: () => {
+        schemaEvaluations += 1;
+
+        return {
+          element: schema.element.textBlock(),
+        };
+      },
+    });
+    const typedEditor = createBaseEditor({ plugins: [plugin] });
+    const evaluationsAfterPublication = schemaEvaluations;
+
+    for (let index = 0; index < 20; index++) {
+      expect(typedEditor.plugin(plugin).schema.type).toBe('publishedSchema');
+    }
+
+    expect(schemaEvaluations).toBe(evaluationsAfterPublication);
+  });
+
   it('publishes compiled injection defaults on the resolved descriptor', () => {
     const plugin = defineBasePlugin('injected', {
       inject: { nodeProps: {} },
@@ -83,6 +109,35 @@ describe('createPluginContext', () => {
     const typedEditor = createBaseEditor({ plugins: [plugin] });
 
     expect(typedEditor.plugin(plugin).inject.nodeProps).toEqual({});
+  });
+
+  it('creates complete schema-property handles before model publication', () => {
+    let authoredHandle: SchemaPropertyHandle | undefined;
+    const plugin = defineBasePlugin('authoredHandle', {
+      api: ({ schema: authorSchema }) => {
+        authoredHandle = authorSchema.properties.tone;
+
+        return {};
+      },
+      schema: {
+        properties: {
+          tone: schema.elementProperty('persisted_tone', property.string(), {
+            target: target.group('block'),
+          }),
+        },
+      },
+    });
+    const typedEditor = createBaseEditor({ plugins: [plugin] });
+    const publishedHandle = createPluginContext(typedEditor, plugin).schema
+      .properties.tone;
+
+    expect(authoredHandle).toEqual({
+      id: expect.stringMatching(/^element:persisted_tone@/),
+      key: 'persisted_tone',
+      kind: 'schema-property',
+      placement: 'element',
+    });
+    expect(authoredHandle).toEqual(publishedHandle);
   });
 
   it('gets plugin context by plugin name', () => {
@@ -249,8 +304,12 @@ describe('createPluginContext', () => {
   it('exposes plugin-owned updates without their name namespace', () => {
     let mode: 'edit' | 'view' = 'view';
     let insertedBy: 'command' | null = null;
+    let applied = false;
     const plugin = defineBasePlugin('command', {
       update: () => ({
+        apply: () => {
+          applied = true;
+        },
         editorInsertNode: () => {
           insertedBy = 'command';
         },
@@ -266,11 +325,32 @@ describe('createPluginContext', () => {
       plugins: [plugin],
     });
 
+    typedEditor.plugin(plugin).update.apply();
     typedEditor.plugin(plugin).update.setMode('edit');
     typedEditor.plugin(plugin).update.insertNode();
     typedEditor.plugin(plugin).update.editorInsertNode();
 
     expect(mode).toBe('edit');
     expect(insertedBy).toBe('command');
+    expect(applied).toBe(true);
+  });
+
+  it('applies policy through the scoped update facade exactly once', () => {
+    let calls = 0;
+    let tagged = false;
+    const plugin = defineBasePlugin('policyCommand', {
+      update: ({ tx }) => ({
+        run: () => {
+          calls += 1;
+          tagged = tx.tags.has('policy-test');
+        },
+      }),
+    });
+    const typedEditor = createBaseEditor({ plugins: [plugin] });
+
+    typedEditor.plugin(plugin).update({ tags: 'policy-test' }).run();
+
+    expect(calls).toBe(1);
+    expect(tagged).toBe(true);
   });
 });

@@ -57,7 +57,7 @@ describe('TabbableKit', () => {
       expect(indent.shortcuts.untab).toBeNull();
       expect(getPlateRuntime(editor).shortcuts['indent.tab']).toBeUndefined();
       expect(getPlateRuntime(editor).shortcuts['indent.untab']).toBeUndefined();
-      expect(typeof editor.update.indent.set).toBe('function');
+      expect(typeof editor.update.indent.change).toBe('function');
     }
   });
 });

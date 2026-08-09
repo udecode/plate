@@ -1,11 +1,12 @@
+import type { Element } from '@platejs/plite';
+import type { TableCellElement } from '../BaseTablePlugin';
 import type {
-  TableCellElement,
-  TableElement,
-  TableRowElement,
-} from '../BaseTablePlugin';
+  TableCellElementWithId,
+  TableRowElementWithId,
+} from '../__tests__/tableTestTypes';
 
 import type { TableContext } from './context';
-import { compileTableGrid } from './grid';
+import { compileTableGrid, TABLE_CELL_OPERATION_KEY } from './grid';
 import {
   applyTableMutationPlanToTable,
   planTableMutation,
@@ -15,20 +16,21 @@ import {
 
 const cell = <TType extends string = 'tableCell'>(
   id: string,
-  options: Omit<Partial<TableCellElement>, 'type'> & { type?: TType } = {}
-): Omit<TableCellElement, 'type'> & { type: TType } =>
+  options: Omit<Partial<TableCellElementWithId<TType>>, 'type'> & {
+    type?: TType;
+  } = {}
+): TableCellElementWithId<TType> =>
   ({
+    [TABLE_CELL_OPERATION_KEY]: id,
     children: [{ text: id }],
     id,
-    type: 'tableCell',
+    type: 'tableCell' as TType,
     ...options,
-  }) as Omit<TableCellElement, 'type'> & { type: TType };
+  }) as TableCellElementWithId<TType>;
 
-const table = (
-  rows: readonly (readonly TableCellElement[])[]
-): TableElement => ({
+const table = (rows: readonly (readonly TableCellElement[])[]): Element => ({
   children: rows.map(
-    (children, index): TableRowElement => ({
+    (children, index): TableRowElementWithId => ({
       children: [...children],
       id: `row-${index}`,
       type: 'tableRow',
@@ -39,7 +41,7 @@ const table = (
 });
 
 const context = (
-  value: TableElement,
+  value: Element,
   tablePath: readonly number[] = [0]
 ): TableContext => {
   const grid = compileTableGrid(value);
@@ -49,9 +51,7 @@ const context = (
     anchorAt: (row, col) => grid.slots[row]?.[col] ?? null,
     anchorAtPath: (cellPath) =>
       grid.byPath.get(cellPath.slice(path.length).join(',')),
-    anchorOf: (value) =>
-      grid.byCell.get(value) ??
-      (value.id ? grid.byId.get(value.id) : undefined),
+    anchorOf: (value) => grid.byCell.get(value),
     entryAt: (row, col) => {
       const anchor = grid.slots[row]?.[col];
 
@@ -72,7 +72,7 @@ const createCell: TableCellFactory = ({ col, header, row }) =>
   });
 
 const apply = (
-  input: TableElement,
+  input: Element,
   plan: TableMutationPlan,
   tablePath: readonly number[] = [0]
 ) => applyTableMutationPlanToTable(input, tablePath, plan);
@@ -118,7 +118,7 @@ describe('planTableMutation', () => {
   it('emits frozen deterministic focused operations for column insertion', () => {
     const input = table([[cell('a', { rowSpan: 2 }), cell('b')], [cell('c')]]);
     const intent = {
-      anchorId: 'b',
+      anchorKey: 'b',
       before: true,
       createCell,
       kind: 'insert-column',
@@ -157,7 +157,7 @@ describe('planTableMutation', () => {
   it('extends only anchors crossing an inserted row boundary', () => {
     const input = table([[cell('a', { rowSpan: 2 }), cell('b')], [cell('c')]]);
     const result = planTableMutation(context(input), {
-      anchorId: 'c',
+      anchorKey: 'c',
       before: true,
       createCell,
       kind: 'insert-row',
@@ -177,7 +177,7 @@ describe('planTableMutation', () => {
 
     expect(grid?.height).toBe(3);
     expect(grid?.width).toBe(2);
-    expect(grid?.byId.get('a')?.rowSpan).toBe(3);
+    expect(grid?.byKey.get('a')?.rowSpan).toBe(3);
     expect(grid?.problems).toEqual([]);
   });
 
@@ -187,7 +187,7 @@ describe('planTableMutation', () => {
       [cell('c'), cell('d')],
     ]);
     const inserted = planTableMutation(context(input), {
-      anchorId: 'a',
+      anchorKey: 'a',
       createCell,
       kind: 'insert-column',
     });
@@ -200,10 +200,10 @@ describe('planTableMutation', () => {
     if (!withColumn) return;
 
     const insertedIds = compileTableGrid(withColumn)
-      .anchors.map(({ id }) => id)
+      .anchors.map(({ key }) => key)
       .filter((id): id is string => !!id && id.startsWith('created-'));
     const removed = planTableMutation(context(withColumn), {
-      anchorId: insertedIds[0],
+      anchorKey: insertedIds[0],
       kind: 'remove-column',
     });
 
@@ -212,7 +212,7 @@ describe('planTableMutation', () => {
 
     const output = apply(withColumn, removed);
     const ids = output
-      ? compileTableGrid(output).anchors.map(({ id }) => id)
+      ? compileTableGrid(output).anchors.map(({ key }) => key)
       : [];
 
     expect(ids).toEqual(['a', 'b', 'c', 'd']);
@@ -227,7 +227,7 @@ describe('planTableMutation', () => {
       [cell('d'), cell('e')],
     ]);
     const result = planTableMutation(context(input), {
-      anchorId: 'b',
+      anchorKey: 'b',
       kind: 'remove-row',
     });
 
@@ -237,8 +237,8 @@ describe('planTableMutation', () => {
     const output = apply(input, result);
     const grid = output && compileTableGrid(output);
 
-    expect(grid?.byId.get('move')).toMatchObject({ row: 1, rowSpan: 1 });
-    expect(grid?.byId.get('move')?.cell.children).toEqual([{ text: 'move' }]);
+    expect(grid?.byKey.get('move')).toMatchObject({ row: 1, rowSpan: 1 });
+    expect(grid?.byKey.get('move')?.cell.children).toEqual([{ text: 'move' }]);
     expect(grid?.problems).toEqual([]);
   });
 
@@ -248,7 +248,7 @@ describe('planTableMutation', () => {
       [cell('c'), cell('d')],
     ]);
     const merged = planTableMutation(context(input), {
-      cellIds: ['a', 'b', 'c', 'd'],
+      cellKeys: ['a', 'b', 'c', 'd'],
       createCell,
       kind: 'merge',
     });
@@ -265,7 +265,7 @@ describe('planTableMutation', () => {
     expect(mergedGrid.anchors).toHaveLength(1);
     expect(mergedGrid.anchors[0]).toMatchObject({
       colSpan: 2,
-      id: 'a',
+      key: 'a',
       rowSpan: 2,
     });
     expect(mergedGrid.anchors[0].cell.children).toEqual([
@@ -276,7 +276,7 @@ describe('planTableMutation', () => {
     ]);
 
     const split = planTableMutation(context(mergedTable), {
-      anchorId: 'a',
+      anchorKey: 'a',
       createCell,
       kind: 'split',
       rowType: 'tr',
@@ -289,7 +289,7 @@ describe('planTableMutation', () => {
     const splitGrid = output && compileTableGrid(output);
 
     expect(splitGrid?.anchors).toHaveLength(4);
-    expect(splitGrid?.byId.get('a')?.cell.children).toEqual([
+    expect(splitGrid?.byKey.get('a')?.cell.children).toEqual([
       { text: 'a' },
       { text: 'b' },
       { text: 'c' },
@@ -356,7 +356,7 @@ describe('planTableMutation', () => {
     expect(output && compileTableGrid(output).problems).toEqual([]);
     expect(output?.children[0].children).toEqual(input.children[0].children);
     expect(
-      output && compileTableGrid(output).byId.get('c')?.cell
+      output && compileTableGrid(output).byKey.get('c')?.cell
     ).toMatchObject({
       children: [{ text: 'c' }],
       id: 'c',
@@ -395,20 +395,20 @@ describe('planTableMutation', () => {
     const output = apply(input, repaired);
     const grid = output && compileTableGrid(output);
 
-    expect(grid?.byId.get('c')?.colSpan).toBe(1);
-    expect(grid?.byId.get('e')?.colSpan).toBe(2);
+    expect(grid?.byKey.get('c')?.colSpan).toBe(1);
+    expect(grid?.byKey.get('e')?.colSpan).toBe(2);
     expect(grid?.problems).toEqual([]);
   });
 
   it('returns deterministic diagnostics without operations for bad targets', () => {
     const input = table([[cell('a')]]);
     const result = planTableMutation(context(input), {
-      anchorId: 'missing',
+      anchorKey: 'missing',
       kind: 'remove-column',
     });
 
     expect(result).toEqual({
-      anchorId: 'missing',
+      anchorKey: 'missing',
       kind: 'missing-anchor',
     });
     expect(Object.isFrozen(result)).toBe(true);
@@ -441,37 +441,37 @@ describe('planTableMutation', () => {
               : requestedOperation;
         const before = random() % 2 === 0;
         const prefix = `seed-${initialSeed}-step-${step}`;
-        const anchorId = anchor.id;
+        const anchorKey = anchor.key;
 
-        expect(anchorId).toBeDefined();
-        if (!anchorId) continue;
+        expect(anchorKey).toBeDefined();
+        if (!anchorKey) continue;
 
         let first: ReturnType<typeof planTableMutation>;
         let replay: ReturnType<typeof planTableMutation>;
 
         if (operation === 0) {
           first = planTableMutation(context(value), {
-            anchorId,
+            anchorKey,
             before,
             createCell: seededFactory(prefix),
             kind: 'insert-column',
           });
           replay = planTableMutation(context(value), {
-            anchorId,
+            anchorKey,
             before,
             createCell: seededFactory(prefix),
             kind: 'insert-column',
           });
         } else if (operation === 1) {
           first = planTableMutation(context(value), {
-            anchorId,
+            anchorKey,
             before,
             createCell: seededFactory(prefix),
             kind: 'insert-row',
             rowType: 'tr',
           });
           replay = planTableMutation(context(value), {
-            anchorId,
+            anchorKey,
             before,
             createCell: seededFactory(prefix),
             kind: 'insert-row',
@@ -479,20 +479,20 @@ describe('planTableMutation', () => {
           });
         } else if (operation === 2) {
           first = planTableMutation(context(value), {
-            anchorId,
+            anchorKey,
             kind: 'remove-column',
           });
           replay = planTableMutation(context(value), {
-            anchorId,
+            anchorKey,
             kind: 'remove-column',
           });
         } else {
           first = planTableMutation(context(value), {
-            anchorId,
+            anchorKey,
             kind: 'remove-row',
           });
           replay = planTableMutation(context(value), {
-            anchorId,
+            anchorKey,
             kind: 'remove-row',
           });
         }
@@ -510,10 +510,10 @@ describe('planTableMutation', () => {
 
         value = output;
         const nextGrid = compileTableGrid(value);
-        const ids = nextGrid.anchors.flatMap(({ id }) => (id ? [id] : []));
+        const keys = nextGrid.anchors.flatMap(({ key }) => (key ? [key] : []));
 
         expect(nextGrid.problems).toEqual([]);
-        expect(new Set(ids).size).toBe(ids.length);
+        expect(new Set(keys).size).toBe(keys.length);
       }
     }
   });
@@ -562,9 +562,9 @@ describe('planTableMutation', () => {
 
       expect(outputGrid.problems).toEqual([]);
       for (const anchor of compileTableGrid(input).anchors) {
-        if (!anchor.id) continue;
+        if (!anchor.key) continue;
 
-        expect(textOf(outputGrid.byId.get(anchor.id)!.cell)).toBe(
+        expect(textOf(outputGrid.byKey.get(anchor.key)!.cell)).toBe(
           textOf(anchor.cell)
         );
       }
@@ -587,11 +587,11 @@ describe('planTableMutation', () => {
             Array.from({ length: colCount }, (_, col) => cell(`r${row}c${col}`))
           )
         );
-        const ids = compileTableGrid(input).anchors.flatMap(({ id }) =>
-          id ? [id] : []
+        const keys = compileTableGrid(input).anchors.flatMap(({ key }) =>
+          key ? [key] : []
         );
         const merged = planTableMutation(context(input), {
-          cellIds: ids,
+          cellKeys: keys,
           createCell: seededFactory(`merge-${rowCount}-${colCount}`),
           kind: 'merge',
         });
@@ -605,7 +605,7 @@ describe('planTableMutation', () => {
         if (!mergedTable) continue;
 
         const split = planTableMutation(context(mergedTable), {
-          anchorId: ids[0],
+          anchorKey: keys[0],
           createCell: seededFactory(`split-${rowCount}-${colCount}`),
           kind: 'split',
           rowType: 'tr',
@@ -620,8 +620,8 @@ describe('planTableMutation', () => {
         expect(grid?.height).toBe(rowCount);
         expect(grid?.width).toBe(colCount);
         expect(grid?.anchors).toHaveLength(rowCount * colCount);
-        expect(grid?.anchors[0].id).toBe(ids[0]);
-        expect(textOf(grid!.anchors[0].cell)).toBe(ids.join(''));
+        expect(grid?.anchors[0].key).toBe(keys[0]);
+        expect(textOf(grid!.anchors[0].cell)).toBe(keys.join(''));
         expect(grid?.problems).toEqual([]);
       }
     }

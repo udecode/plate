@@ -1,6 +1,12 @@
 import { type Ancestor, type Descendant, NodeApi, type Path } from '..';
 import { isObject } from '../utils/is-object';
-import type { BaseEditor } from './editor';
+import type { BaseEditor, EditorNodeTypeProvider } from './editor';
+import type {
+  EditorSchemaExtensionProvider,
+  SchemaElementInNode,
+  SchemaElementShapeFor,
+  SchemaElementTypes,
+} from './schema';
 
 /**
  * `Element` objects are a type of node in a Plite document that contain other
@@ -18,20 +24,28 @@ export type Element = BaseElement;
 
 export type ElementIn<V extends readonly unknown[]> = ElementOf<V[number]>;
 
-export type ElementOf<N> = Element extends N
+type ElementOfVariant<N> = Element extends N
   ? Element
-  : N extends BaseEditor<infer V>
-    ? ElementIn<V>
-    : N extends { getChildren: () => infer V }
-      ? V extends readonly (infer Child)[]
-        ? Extract<Child, Element> | ElementOf<Child>
-        : never
-      : N extends Element
-        ?
-            | N
-            | Extract<N['children'][number], Element>
-            | ElementOf<N['children'][number]>
-        : never;
+  : N extends EditorNodeTypeProvider<infer TElementFactory, any>
+    ? Extract<ReturnType<TElementFactory>, Element>
+    : N extends BaseEditor<infer V>
+      ? ElementIn<V>
+      : N extends EditorSchemaExtensionProvider<infer TSchema>
+        ? SchemaElementShapeFor<TSchema, SchemaElementTypes<TSchema>>
+        : N extends { getChildren: () => infer V }
+          ? V extends readonly (infer Child)[]
+            ? Extract<Child, Element> | ElementOf<Child>
+            : never
+          : [SchemaElementInNode<N>] extends [never]
+            ? N extends Element
+              ?
+                  | N
+                  | Extract<N['children'][number], Element>
+                  | ElementOf<N['children'][number]>
+              : never
+            : SchemaElementInNode<N>;
+
+export type ElementOf<N> = N extends unknown ? ElementOfVariant<N> : never;
 
 export type ElementOrTextOf<E> = ElementOf<E> | import('./text').TextOf<E>;
 

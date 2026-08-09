@@ -132,7 +132,7 @@ const historyReactEditor = createReactEditor({
   extensions: [HistoryExtension],
   initialValue,
 });
-const defaultHistoryReactEditor = createReactEditor({ initialValue });
+const defaultReactEditor = createReactEditor({ initialValue });
 const noHistoryReactEditor = createReactEditor({
   extensions: [DisabledHistoryExtension],
   initialValue,
@@ -220,21 +220,9 @@ historyReactEditor.api.dom.focus();
 historyReactEditor.api.dom.clipboard.writeSelection(dataTransfer);
 historyReactEditor.api.react.isFocused();
 
-defaultHistoryReactEditor.read((state) => {
-  const undos = state.history.undos();
-
-  void undos;
-});
-
-defaultHistoryReactEditor.update((tx) => {
-  tx.history.undo();
-});
-
-defaultHistoryReactEditor.update({ history: 'skip' }, () => {});
-const typedDefaultReactEditor: ReactEditor<CustomValue> =
-  defaultHistoryReactEditor;
+const typedDefaultReactEditor: ReactEditor<CustomValue> = defaultReactEditor;
 const typedNamespaceReactEditor: PliteReact.ReactEditor<CustomValue> =
-  defaultHistoryReactEditor;
+  defaultReactEditor;
 const typedCustomApiReactEditor: ReactEditor<
   CustomValue,
   readonly [typeof CustomApiExtension]
@@ -245,24 +233,19 @@ const typedNoHistoryReactEditor: ReactEditor<
 > = noHistoryReactEditor;
 
 const assertStateFieldSetterPolicies = (
-  defaultSetter: StateFieldSetter<string>,
-  noHistorySetter: StateFieldSetter<string, typeof typedNoHistoryReactEditor>
+  defaultSetter: StateFieldSetter<string>
 ) => {
   defaultSetter('title', {
     history: 'new-batch',
     tags: 'title-input',
   });
-
-  // @ts-expect-error disabled History rejects state-field history policy
-  noHistorySetter('title', { history: 'skip' });
 };
 
 void assertStateFieldSetterPolicies;
 
-typedDefaultReactEditor.update({ history: 'skip' }, () => {});
 typedDefaultReactEditor.api.dom.focus();
 typedDefaultReactEditor.api.react.isComposing();
-typedNamespaceReactEditor.update({ history: 'skip' }, () => {});
+typedNamespaceReactEditor.api.react.isFocused();
 const customApiResult: 'pong' =
   typedCustomApiReactEditor.api['custom-api'].ping();
 
@@ -290,12 +273,9 @@ noHistoryReactEditor.update((tx) => tx.history.undo());
 // @ts-expect-error disabled default history rejects history update policy
 noHistoryReactEditor.update({ history: 'skip' }, () => {});
 
-const selectorOptions: EditorSelectorOptions<
-  number,
-  typeof historyReactEditor
-> = {
+const selectorOptions: EditorSelectorOptions<number> = {
   shouldUpdate: (change) => {
-    const typedChange: EditorCommit<CustomValue> | undefined = change;
+    const typedChange: EditorCommit | undefined = change;
 
     void typedChange;
 
@@ -304,18 +284,13 @@ const selectorOptions: EditorSelectorOptions<
 };
 
 const SelectorProbe = () => {
-  const selected = useEditorSelector(
-    (selectedEditor: typeof historyReactEditor) => {
-      const valueFromSelector: Readonly<CustomValue> = selectedEditor.read(
-        (state) => state.children()
-      );
+  const selected = useEditorSelector((selectedEditor) => {
+    const valueFromSelector = selectedEditor.read((state) => state.children());
 
-      void valueFromSelector;
+    void valueFromSelector;
 
-      return valueFromSelector.length;
-    },
-    selectorOptions
-  );
+    return valueFromSelector.length;
+  }, selectorOptions);
   const inferredSelected: number = selected;
 
   void inferredSelected;
@@ -324,8 +299,18 @@ const SelectorProbe = () => {
   return null;
 };
 
+const ContextCapabilityProbe = () => {
+  const editor = PliteReact.useEditor();
+  const result: 'pong' = editor.extension(CustomApiExtension).api.ping();
+
+  void result;
+
+  return null;
+};
+
 const HookProbe = () => {
   const hookEditor = usePliteEditor({
+    extensions: [HistoryExtension],
     initialValue,
   });
   const valueFromHook: Readonly<CustomValue> = hookEditor.read((state) =>
@@ -484,6 +469,7 @@ void _placeholderAsSpan;
 void _placeholderAsInput;
 void (null as unknown as EditableHidesDOMStrategyLayout);
 void SelectorProbe;
+void ContextCapabilityProbe;
 void HookProbe;
 void SchemaHookProbe;
 void CommandHookProbe;

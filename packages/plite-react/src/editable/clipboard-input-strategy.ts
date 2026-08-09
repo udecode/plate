@@ -5,6 +5,7 @@ import {
   type Range,
   RangeApi,
   SelectionApi,
+  TextApi,
 } from '@platejs/plite';
 import {
   isDOMElement,
@@ -14,6 +15,9 @@ import {
 } from '@platejs/plite-dom';
 import {
   DOMCoverage,
+  getPliteStringCoordinatePlacement,
+  getPliteStringDocumentOffset,
+  getPliteStringEdgeOffset,
   isWebKitDOMHost,
   supportsDOMBeforeInput,
 } from '@platejs/plite-dom/internal';
@@ -238,6 +242,69 @@ const resolveBlockDropRangeFromEvent = (
     : (editorAfter(editor, edge) ?? edge);
 
   return editorRange(editor, point);
+};
+
+const resolveTextDropRangeFromEvent = (
+  editor: ReactRuntimeEditor,
+  event: DragEvent<HTMLDivElement>
+) => {
+  const target = resolveDragTarget(editor, event.target);
+
+  if (!target || !TextApi.isText(target.node)) {
+    return null;
+  }
+
+  const targetElement = isDOMText(event.nativeEvent.target)
+    ? event.nativeEvent.target.parentElement
+    : isDOMElement(event.nativeEvent.target)
+      ? event.nativeEvent.target
+      : null;
+  const textHost = targetElement?.closest<HTMLElement>(
+    '[data-plite-node="text"]'
+  );
+
+  if (!textHost) {
+    return null;
+  }
+
+  const strings = Array.from(
+    textHost.querySelectorAll<HTMLElement>(
+      '[data-plite-string], [data-plite-zero-width]'
+    )
+  );
+  const placement = getPliteStringCoordinatePlacement({
+    event: {
+      clientX: event.nativeEvent.clientX,
+      clientY: event.nativeEvent.clientY,
+    },
+    includeInsideString: true,
+    strings,
+  });
+
+  if (!placement) {
+    return null;
+  }
+
+  const offset =
+    placement.offset == null
+      ? getPliteStringEdgeOffset({
+          edge: placement.edge,
+          rect: placement.rect,
+          string: placement.string,
+          textHost,
+        })
+      : getPliteStringDocumentOffset({
+          offset: placement.offset,
+          string: placement.string,
+          textHost,
+        });
+
+  return offset == null
+    ? null
+    : editorRange(editor, {
+        offset: Math.max(0, Math.min(target.node.text.length, offset)),
+        path: target.path,
+      });
 };
 
 const isClipboardEventTargetInput = ({
@@ -694,10 +761,13 @@ export const applyEditableDrop = ({
       state.isDraggingInternally && isBlockDrag
         ? resolveBlockDropRangeFromEvent(editor, event)
         : null;
-    const range =
-      state.isDraggingInternally && isBlockDrag
-        ? (blockDropRange ?? defaultRange)
-        : defaultRange;
+    const textDropRange =
+      state.isDraggingInternally && !isBlockDrag
+        ? resolveTextDropRangeFromEvent(editor, event)
+        : null;
+    const range = isBlockDrag
+      ? (blockDropRange ?? defaultRange)
+      : (textDropRange ?? defaultRange);
 
     if (!range) {
       return clipboardResult({ command: null });
@@ -705,6 +775,9 @@ export const applyEditableDrop = ({
 
     const data = event.dataTransfer;
     const command: EditableCommand = { data, kind: 'insert-data' };
+    const internalSlice = state.isDraggingInternally
+      ? editor.api.dom.clipboard.readSlice(data)
+      : null;
     const movesDraggedRange =
       state.isDraggingInternally &&
       draggedRange !== null &&
@@ -712,18 +785,26 @@ export const applyEditableDrop = ({
         !!editorVoid(editor, { at: draggedRange, voids: true })) &&
       !RangeApi.equals(draggedRange, range) &&
       !editorVoid(editor, { at: range, voids: true });
-
     editor.update((tx) => {
-      applyEditableCommand({
-        command: { kind: 'select', selection: range },
-        editor,
+      const dropAnchor = tx.anchor(range, {
+        association: 'forward',
+        deletion: 'nearest',
       });
 
       if (movesDraggedRange) {
         tx.text.delete({ at: draggedRange });
       }
 
-      const inserted = applyEditableCommand({ command, editor });
+      const dropRange = dropAnchor.release();
+
+      if (!dropRange) return;
+
+      tx.selection.set(dropRange);
+
+      const inserted =
+        internalSlice?.kind === 'slice'
+          ? tx.slice.replace(internalSlice.slice)
+          : applyEditableCommand({ command, editor });
 
       if (inserted && movesDraggedRange && isBlockDrag) {
         const selection = tx.selection();

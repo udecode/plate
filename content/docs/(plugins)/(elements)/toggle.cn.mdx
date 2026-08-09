@@ -84,7 +84,8 @@ const editor = createPlateEditor({
 ```tsx
 import { IndentPlugin } from '@platejs/indent/react';
 import { TogglePlugin } from '@platejs/toggle/react';
-import { createPlateEditor, ParagraphPlugin } from 'platejs/react';
+import { PLUGINS } from 'platejs';
+import { createPlateEditor } from 'platejs/react';
 import { ToggleElement } from '@/components/ui/toggle-node';
 
 const editor = createPlateEditor({
@@ -93,8 +94,8 @@ const editor = createPlateEditor({
     IndentPlugin.configure({
       targetPlugins: [
         PLUGINS.h1, PLUGINS.h2, PLUGINS.h3, PLUGINS.h4, PLUGINS.h5, PLUGINS.h6,
-        ParagraphPlugin,
-        TogglePlugin,
+        PLUGINS.paragraph,
+        PLUGINS.toggle,
       ],
     }),
     TogglePlugin.configure({ component: ToggleElement }),

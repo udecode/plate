@@ -1,0 +1,28 @@
+{
+  "concepts": [
+    { "id": "WG-RUNTIME-001", "origin": "reference" },
+    { "id": "WG-POSITION-001", "origin": "reference" },
+    { "id": "WG-ANCHOR-001", "origin": "reference" },
+    { "id": "PLITE-RUNTIME-001", "origin": "Plite" },
+    { "id": "PLITE-ANCHOR-001", "origin": "Plite" },
+    { "id": "PLATE-PERSISTED-ID-001", "origin": "Plate" },
+    { "id": "SHARED-IDENTITY-POLICY-001", "origin": "shared" }
+  ],
+  "priorCandidates": [
+    {
+      "id": "OLD-WG-DOC-006",
+      "conceptIds": ["WG-POSITION-001"],
+      "evidence": "docs/plans/artifacts/wordgard-exhaustive-architecture-re-audit/concept-manifest.json"
+    },
+    {
+      "id": "OLD-WG-DOC-011",
+      "conceptIds": ["WG-POSITION-001"],
+      "evidence": "docs/plans/artifacts/wordgard-exhaustive-architecture-re-audit/concept-manifest.json"
+    },
+    {
+      "id": "OLD-WG-VIEW-005B",
+      "conceptIds": ["WG-ANCHOR-001"],
+      "evidence": "docs/plans/artifacts/wordgard-exhaustive-architecture-re-audit/concept-manifest.json"
+    }
+  ]
+}

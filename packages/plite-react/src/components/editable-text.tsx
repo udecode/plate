@@ -637,7 +637,7 @@ const BoundEditableText = <T,>({
     pliteNode: boundText.pliteNode,
   });
   const projections = usePliteProjectionEntries(
-    resolvedRuntimeId ?? ''
+    resolvedRuntimeId
   ) as readonly PliteProjectionSlice<T>[];
 
   const combinedRef = useCallback(
@@ -672,7 +672,7 @@ const ProjectedEditableText = <T,>({
 }: EditableTextProps<T>) => {
   const boundRef = usePliteNodeRef(runtimeId, { path, pliteNode });
   const projections = usePliteProjectionEntries(
-    runtimeId ?? ''
+    runtimeId
   ) as readonly PliteProjectionSlice<T>[];
 
   const combinedRef = useCallback(

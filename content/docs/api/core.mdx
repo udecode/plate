@@ -148,13 +148,13 @@ Generates a new instance of a `PlateEditor`, initialized with a set of plugins a
 
 For more details on editor configuration, refer to the [Editor Configuration](/docs/editor) guide.
 
-### `createPlatePlugin`
+### `definePlatePlugin`
 
 Creates a React Plate plugin from one inferred definition.
 
-<API name="createPlatePlugin">
+<API name="definePlatePlugin">
 <APIParameters>
-  <APIItem name="definition" type="PlatePluginDefinition">
+  <APIItem name="definition" type="BasePluginDefinition">
     The plugin definition. The factory infers its name, initial state, API,
     read and update methods, schema, dependencies, native Plite capabilities,
     and React fields from this object.
@@ -246,7 +246,7 @@ Creates a memoized Plate editor for React components.
 
 ### `useEditorPlugin`
 
-Get editor and plugin context.
+Get an installed plugin's flat consumer portal.
 
 <API name="useEditorPlugin">
 <APIParameters>
@@ -255,12 +255,9 @@ Get editor and plugin context.
   </APIItem>
 </APIParameters>
 
-<APIReturns type="PlatePluginContext">
-  <APIItem name="editor" type="PlateEditor">
-      The current editor instance.
-  </APIItem>
-  <APIItem name="plugin" type="PlatePlugin">
-      The plugin instance.
+<APIReturns type="PlatePluginPortal">
+  <APIItem name="name" type="string">
+      The installed plugin name.
   </APIItem>
   <APIItem name="store" type="PluginStore">
       The current plugin's mutable editor-local store.
@@ -647,17 +644,16 @@ const elementState = editor.plugin(ElementStatePlugin);
 
 elementState.api.isEmpty({
   children: [{ text: "" }],
-  type: "p",
+  type: "paragraph",
 }); // true
 
 elementState.api.isEmpty({
   children: [{ text: "" }],
   listStyleType: "disc",
-  type: "p",
+  type: "paragraph",
 }); // false
 
-const CustomMetadataPlugin = createBasePlugin({
-  name: "customMetadata",
+const CustomMetadataPlugin = defineBasePlugin("customMetadata", {
   schema: {
     properties: [
       schema.elementProperty(

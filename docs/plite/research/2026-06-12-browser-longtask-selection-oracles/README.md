@@ -30,7 +30,7 @@ Current local evidence gap:
 Expected promotion owner:
 - benchmark harness repair -> `plite-ar-perf` / benchmark scripts;
 - reusable browser proof helper -> `plite-browser`;
-- local oracle addition -> `plite-patch` / `tdd`;
+- local oracle addition -> `patch` / `tdd`;
 - architecture decision -> `plite-plan`.
 
 Current verdict:

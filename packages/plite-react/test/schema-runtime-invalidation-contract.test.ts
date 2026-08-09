@@ -9,10 +9,10 @@ import {
 } from '@platejs/plite';
 import {
   getEditorRuntimeElementEntries,
-  getRuntimeId,
+  getNodeKey,
 } from '@platejs/plite/internal';
 
-import { getSchemaInvalidatedRuntimeIds } from '../src/editable/schema-runtime-invalidation';
+import { getSchemaInvalidatedNodeKeys } from '../src/editable/schema-runtime-invalidation';
 
 const paragraph = (text: string) => ({
   children: [{ text }],
@@ -44,28 +44,28 @@ const articleSchema = (version: number, paragraphReadOnly: boolean) =>
     version,
   });
 
-test('schema invalidation targets runtime IDs of changed element types', () => {
+test('schema invalidation targets node keys of changed element types', () => {
   const slot = defineExtensionSlot('react-schema-runtime-invalidation');
   const editor = createEditor({
     extensions: [slot.of(articleSchema(1, false))],
     initialValue: [paragraph('body'), heading('title')],
   });
-  const paragraphRuntimeId = getRuntimeId(editor, [0]);
-  const headingRuntimeId = getRuntimeId(editor, [1]);
+  const paragraphNodeKey = getNodeKey(editor, [0]);
+  const headingNodeKey = getNodeKey(editor, [1]);
 
   editor.update.extensions.reconfigure(slot, articleSchema(2, true));
 
   const commit = editor.read.lastCommit();
 
-  if (!commit || !paragraphRuntimeId || !headingRuntimeId) {
-    throw new Error('Expected committed runtime identities');
+  if (!commit || !paragraphNodeKey || !headingNodeKey) {
+    throw new Error('Expected committed node keys');
   }
 
-  expect(getSchemaInvalidatedRuntimeIds(editor, commit)).toEqual([
-    paragraphRuntimeId,
+  expect(getSchemaInvalidatedNodeKeys(editor, commit)).toEqual([
+    paragraphNodeKey,
   ]);
-  expect(getSchemaInvalidatedRuntimeIds(editor, commit)).not.toContain(
-    headingRuntimeId
+  expect(getSchemaInvalidatedNodeKeys(editor, commit)).not.toContain(
+    headingNodeKey
   );
 });
 
@@ -88,7 +88,7 @@ const projectedSchema = (version: number, paragraphReadOnly: boolean) =>
     version,
   });
 
-test('schema invalidation includes runtime IDs in projected roots', () => {
+test('schema invalidation includes node keys in projected roots', () => {
   const slot = defineExtensionSlot(
     'react-projected-schema-runtime-invalidation'
   );
@@ -116,11 +116,11 @@ test('schema invalidation includes runtime IDs in projected roots', () => {
   const commit = editor.read.lastCommit();
 
   if (!commit || !projectedParagraph) {
-    throw new Error('Expected projected runtime identity and commit');
+    throw new Error('Expected projected node key and commit');
   }
 
-  expect(getSchemaInvalidatedRuntimeIds(editor, commit)).toEqual([
-    projectedParagraph.runtimeId,
+  expect(getSchemaInvalidatedNodeKeys(editor, commit)).toEqual([
+    projectedParagraph.nodeKey,
   ]);
 });
 
@@ -156,23 +156,23 @@ test('schema invalidation targets element-property applicability without widenin
     extensions: [slot.of(propertySchema(1, 'preserve', true))],
     initialValue: [paragraph('body'), heading('title')],
   });
-  const paragraphRuntimeId = getRuntimeId(editor, [0]);
-  const headingRuntimeId = getRuntimeId(editor, [1]);
+  const paragraphNodeKey = getNodeKey(editor, [0]);
+  const headingNodeKey = getNodeKey(editor, [1]);
 
   editor.update.extensions.reconfigure(slot, propertySchema(2, 'drop', true));
   const commit = editor.read.lastCommit();
 
-  if (!commit || !paragraphRuntimeId || !headingRuntimeId) {
-    throw new Error('Expected property publication runtime identities');
+  if (!commit || !paragraphNodeKey || !headingNodeKey) {
+    throw new Error('Expected property publication node keys');
   }
 
   expect(editor.read.schema.delta()?.elementTypes).toEqual(['paragraph']);
   expect(editor.read.schema.delta()?.propertyIds).toHaveLength(1);
-  expect(getSchemaInvalidatedRuntimeIds(editor, commit)).toEqual([
-    paragraphRuntimeId,
+  expect(getSchemaInvalidatedNodeKeys(editor, commit)).toEqual([
+    paragraphNodeKey,
   ]);
-  expect(getSchemaInvalidatedRuntimeIds(editor, commit)).not.toContain(
-    headingRuntimeId
+  expect(getSchemaInvalidatedNodeKeys(editor, commit)).not.toContain(
+    headingNodeKey
   );
 });
 
@@ -182,8 +182,8 @@ test('schema invalidation targets text-property parent elements', () => {
     extensions: [slot.of(propertySchema(1, 'preserve', true))],
     initialValue: [paragraph('body'), heading('title')],
   });
-  const paragraphRuntimeId = getRuntimeId(editor, [0]);
-  const headingRuntimeId = getRuntimeId(editor, [1]);
+  const paragraphNodeKey = getNodeKey(editor, [0]);
+  const headingNodeKey = getNodeKey(editor, [1]);
 
   editor.update.extensions.reconfigure(
     slot,
@@ -191,17 +191,17 @@ test('schema invalidation targets text-property parent elements', () => {
   );
   const commit = editor.read.lastCommit();
 
-  if (!commit || !paragraphRuntimeId || !headingRuntimeId) {
-    throw new Error('Expected text-property publication runtime identities');
+  if (!commit || !paragraphNodeKey || !headingNodeKey) {
+    throw new Error('Expected text-property publication node keys');
   }
 
   expect(editor.read.schema.delta()?.elementTypes).toEqual(['paragraph']);
   expect(editor.read.schema.delta()?.propertyIds).toHaveLength(1);
-  expect(getSchemaInvalidatedRuntimeIds(editor, commit)).toEqual([
-    paragraphRuntimeId,
+  expect(getSchemaInvalidatedNodeKeys(editor, commit)).toEqual([
+    paragraphNodeKey,
   ]);
-  expect(getSchemaInvalidatedRuntimeIds(editor, commit)).not.toContain(
-    headingRuntimeId
+  expect(getSchemaInvalidatedNodeKeys(editor, commit)).not.toContain(
+    headingNodeKey
   );
 });
 
@@ -269,28 +269,24 @@ test('schema invalidation targets only top-level elements in a changed main root
       roots: { notes: [heading('note'), paragraph('detail')] },
     },
   });
-  const mainRuntimeIds = [getRuntimeId(editor, [0]), getRuntimeId(editor, [1])];
-  const namedRuntimeIds = getEditorRuntimeElementEntries(
+  const mainNodeKeys = [getNodeKey(editor, [0]), getNodeKey(editor, [1])];
+  const namedNodeKeys = getEditorRuntimeElementEntries(
     editor,
     ['heading', 'paragraph'],
     'notes'
-  ).map((entry) => entry.runtimeId);
+  ).map((entry) => entry.nodeKey);
 
   editor.update.extensions.reconfigure(slot, rootedSchema(2, 2, 3));
   const commit = editor.read.lastCommit();
 
-  if (!commit || mainRuntimeIds.some((runtimeId) => !runtimeId)) {
-    throw new Error('Expected main-root runtime identities');
+  if (!commit || mainNodeKeys.some((nodeKey) => !nodeKey)) {
+    throw new Error('Expected main-root node keys');
   }
 
   expect(editor.read.schema.delta()?.roots).toEqual([null]);
-  expect(getSchemaInvalidatedRuntimeIds(editor, commit)).toEqual(
-    mainRuntimeIds
-  );
-  for (const runtimeId of namedRuntimeIds) {
-    expect(getSchemaInvalidatedRuntimeIds(editor, commit)).not.toContain(
-      runtimeId
-    );
+  expect(getSchemaInvalidatedNodeKeys(editor, commit)).toEqual(mainNodeKeys);
+  for (const nodeKey of namedNodeKeys) {
+    expect(getSchemaInvalidatedNodeKeys(editor, commit)).not.toContain(nodeKey);
   }
 });
 
@@ -303,27 +299,23 @@ test('schema invalidation isolates a changed named root', () => {
       roots: { notes: [heading('note'), paragraph('detail')] },
     },
   });
-  const mainRuntimeIds = [getRuntimeId(editor, [0]), getRuntimeId(editor, [1])];
-  const namedRuntimeIds = getEditorRuntimeElementEntries(
+  const mainNodeKeys = [getNodeKey(editor, [0]), getNodeKey(editor, [1])];
+  const namedNodeKeys = getEditorRuntimeElementEntries(
     editor,
     ['heading', 'paragraph'],
     'notes'
-  ).map((entry) => entry.runtimeId);
+  ).map((entry) => entry.nodeKey);
 
   editor.update.extensions.reconfigure(slot, rootedSchema(2, 3, 2));
   const commit = editor.read.lastCommit();
 
-  if (!commit || mainRuntimeIds.some((runtimeId) => !runtimeId)) {
-    throw new Error('Expected named-root runtime identities');
+  if (!commit || mainNodeKeys.some((nodeKey) => !nodeKey)) {
+    throw new Error('Expected named-root node keys');
   }
 
   expect(editor.read.schema.delta()?.roots).toEqual(['notes']);
-  expect(getSchemaInvalidatedRuntimeIds(editor, commit)).toEqual(
-    namedRuntimeIds
-  );
-  for (const runtimeId of mainRuntimeIds) {
-    expect(getSchemaInvalidatedRuntimeIds(editor, commit)).not.toContain(
-      runtimeId
-    );
+  expect(getSchemaInvalidatedNodeKeys(editor, commit)).toEqual(namedNodeKeys);
+  for (const nodeKey of mainNodeKeys) {
+    expect(getSchemaInvalidatedNodeKeys(editor, commit)).not.toContain(nodeKey);
   }
 });

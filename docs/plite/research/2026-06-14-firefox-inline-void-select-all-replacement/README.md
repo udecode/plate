@@ -68,7 +68,7 @@ browser unsupported.
 
 Promoted kept lead:
 
-- `inline-void-expanded-replacement`: owner `plite-patch`, proof kind
+- `inline-void-expanded-replacement`: owner `patch`, proof kind
   `mentions Firefox diagnostic + focused Playwright fix packet`, commands
   `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/mentions.test.ts --grep "keyboard undo restores select-all replacement content"`,
   `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/mentions.test.ts --project=firefox`,

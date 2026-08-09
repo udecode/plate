@@ -89,25 +89,41 @@ import { H1Element, H2Element, H3Element } from '@/components/ui/heading-node';
 const editor = createPlateEditor({
   plugins: [
     // ...其他插件,
-    H1Plugin.configure({
+    H1Plugin.configure(({ editor, schema }) => ({
       component: H1Element,
-      shortcuts: { toggle: { keys: 'mod+alt+1' } },
-    }),
-    H2Plugin.configure({
+      shortcuts: {
+        toggle: {
+          keys: 'mod+alt+1',
+          handler: () => editor.update.blocks.toggle(schema.type),
+        },
+      },
+    })),
+    H2Plugin.configure(({ editor, schema }) => ({
       component: H2Element,
-      shortcuts: { toggle: { keys: 'mod+alt+2' } },
-    }),
-    H3Plugin.configure({
+      shortcuts: {
+        toggle: {
+          keys: 'mod+alt+2',
+          handler: () => editor.update.blocks.toggle(schema.type),
+        },
+      },
+    })),
+    H3Plugin.configure(({ editor, schema }) => ({
       component: H3Element,
-      shortcuts: { toggle: { keys: 'mod+alt+3' } },
-    }),
+      shortcuts: {
+        toggle: {
+          keys: 'mod+alt+3',
+          handler: () => editor.update.blocks.toggle(schema.type),
+        },
+      },
+    })),
     // 类似地配置 H4Plugin、H5Plugin、H6Plugin
   ],
 });
 ```
 
 - `.configure({ component })`: 分配自定义 React 组件如 [`H1Element`](/docs/components/heading-node) 来渲染特定级别的标题。
-- `shortcuts.toggle`: 定义键盘[快捷键](/docs/plugin-shortcuts)（例如 `mod+alt+1`）来切换相应的标题级别。
+- Registry kit 为 `H1Plugin` 到 `H6Plugin` 分别配置 `mod+alt+1` 到
+  `mod+alt+6` 的键盘快捷键。
 
 ### 转换为工具栏按钮
 
@@ -195,6 +211,10 @@ const editor = createPlateEditor({
 
 ## 转换
 
-### `editor.update.h1.toggle`
+### `editor.update.blocks.toggle(type)`
 
-切换所选块类型为标题。
+使用标题插件解析出的 `schema.type` 切换所选块：
+
+```tsx
+editor.update.blocks.toggle(editor.plugin(H1Plugin).schema.type);
+```

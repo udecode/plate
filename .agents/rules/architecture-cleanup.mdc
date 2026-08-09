@@ -33,8 +33,8 @@ keep.
 
 ## Do Not Use When
 
-- The task is one normal patch: use `task`, `plite-patch`, or the package
-  owner.
+- The task is one local Plate/Plite behavior bug or regression: use `patch`.
+  For other ordinary tasks, use `task` or the package owner.
 - The task is public call-shape design/review: use `best-api`. For an accepted
   target needing runtime/product adoption, use `major-task`, `plite-plan`, or
   `plate-plan`.

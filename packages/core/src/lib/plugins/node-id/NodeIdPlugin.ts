@@ -2,13 +2,11 @@ import {
   type Descendant,
   DocumentChange,
   type EditorDocumentValue,
-  type Element,
   type EditorTransactionTopLevelRange,
   type NodeEntry,
   type NodeMatch,
   type NodeProps,
   type Path,
-  type PropertyValueOf,
   type Value,
   ElementApi,
   NodeApi,
@@ -28,6 +26,7 @@ import {
 
 import type { DefinitionOf } from '../../plugin/PluginDefinition';
 import { defineBasePlugin } from '../../plugin/defineBasePlugin';
+import type { ElementWith } from '../../plugin/pluginNodeTypes';
 
 const nodeIdProperty = property.json({
   validate: (value): value is number | string =>
@@ -37,18 +36,13 @@ const nodeIdProperty = property.json({
 });
 
 const canonicalNodeIdSchema = {
-  properties: [
-    schema.elementProperty('id', nodeIdProperty, {
+  properties: {
+    id: schema.elementProperty(nodeIdProperty, {
       role: 'metadata',
       target: target.group('element'),
     }),
-  ],
+  },
 } as const;
-
-/** Element narrowed to the canonical NodeId property. */
-export type IdElement = Element & {
-  id: PropertyValueOf<typeof nodeIdProperty>;
-};
 
 export type NodeIdPluginState = {
   /**
@@ -69,12 +63,6 @@ export type NodeIdPluginState = {
    * @default true
    */
   filterText: boolean;
-  /**
-   * Node key to store the id.
-   *
-   * @default 'id'
-   */
-  idKey: string;
   /**
    * Controls how missing ids are assigned in the initial value.
    *
@@ -113,7 +101,7 @@ export type NodeIdPluginState = {
 };
 
 export type NormalizeNodeIdOptions = Partial<
-  Pick<NodeIdPluginState, 'filterText' | 'idCreator' | 'idKey' | 'match'>
+  Pick<NodeIdPluginState, 'filterText' | 'idCreator' | 'match'>
 >;
 
 type NormalizeNodeIdRuntimeOptions = NormalizeNodeIdOptions &
@@ -152,11 +140,7 @@ const matchesNodeIdPolicy = (
 const shouldAssignNodeId = (
   entry: readonly [Descendant, Path],
   options: NormalizeNodeIdRuntimeOptions = {}
-) => {
-  const { idKey = 'id' } = options;
-
-  return !entry[0][idKey] && matchesNodeIdPolicy(entry, options);
-};
+) => !entry[0].id && matchesNodeIdPolicy(entry, options);
 
 const resolveInitialValueIds = (
   options: Pick<NodeIdPluginState, 'initialValueIds'>
@@ -191,11 +175,7 @@ const normalizeInsertedNodeIds = (
   reservedIds: Set<unknown>,
   freshIds: boolean
 ) => {
-  const {
-    disableInsertOverrides,
-    idCreator = () => nanoid(10),
-    idKey = 'id',
-  } = options;
+  const { disableInsertOverrides, idCreator = () => nanoid(10) } = options;
   const node = cloneDeep(input.node) as Descendant & {
     _id?: unknown;
   };
@@ -210,8 +190,8 @@ const normalizeInsertedNodeIds = (
     );
 
     if (matches && !freshIds) {
-      if (entryRecord[idKey] !== undefined) {
-        duplicateCandidateIds.add(entryRecord[idKey]);
+      if (entryRecord.id !== undefined) {
+        duplicateCandidateIds.add(entryRecord.id);
       }
 
       if (!disableInsertOverrides && entryRecord._id !== undefined) {
@@ -241,7 +221,7 @@ const normalizeInsertedNodeIds = (
       visitDocumentNodes(before, input.root, (entryNode) => {
         visitedCount += 1;
 
-        const id = (entryNode as Record<string, unknown>)[idKey];
+        const id = entryNode.id;
 
         if (id === undefined || !duplicateCandidateIds.has(id)) return;
 
@@ -271,14 +251,15 @@ const normalizeInsertedNodeIds = (
 
     if (matches) {
       if (
-        entryRecord[idKey] !== undefined &&
-        (freshIds || existingIds.has(entryRecord[idKey]))
+        entryRecord.id !== undefined &&
+        (freshIds || existingIds.has(entryRecord.id))
       ) {
-        delete entryRecord[idKey];
+        // biome-ignore lint/performance/noDelete: cloned inserts must omit stale IDs.
+        delete entryRecord.id;
       }
 
-      if (entryRecord[idKey] === undefined) {
-        Object.assign(entryRecord, { [idKey]: idCreator() });
+      if (entryRecord.id === undefined) {
+        entryRecord.id = idCreator();
       }
 
       if (entryRecord._id !== undefined) {
@@ -287,14 +268,14 @@ const normalizeInsertedNodeIds = (
         delete entryRecord._id;
 
         if (!freshIds && !disableInsertOverrides && !existingIds.has(id)) {
-          entryRecord[idKey] = id;
+          entryRecord.id = id;
         }
       }
     }
 
-    if (entryRecord[idKey] !== undefined) {
-      existingIds.add(entryRecord[idKey]);
-      reservedIds.add(entryRecord[idKey]);
+    if (entryRecord.id !== undefined) {
+      existingIds.add(entryRecord.id);
+      reservedIds.add(entryRecord.id);
     }
 
     if (!ElementApi.isElement(entryNode)) return;
@@ -319,7 +300,7 @@ const normalizeSplitNodeIds = (
   before: EditorDocumentValue,
   reservedIds: Set<unknown>
 ) => {
-  const { idCreator = () => nanoid(10), idKey = 'id', reuseId } = options;
+  const { idCreator = () => nanoid(10), reuseId } = options;
   const properties = {
     ...NodeApi.extractProps(input.node),
   } as NodeProps<Descendant> & Record<string, unknown>;
@@ -330,7 +311,7 @@ const normalizeSplitNodeIds = (
       properties as Descendant
     )
   ) {
-    const id = properties[idKey];
+    const id = properties.id;
     const duplicate =
       id !== undefined &&
       (reservedIds.has(id) ||
@@ -338,7 +319,7 @@ const normalizeSplitNodeIds = (
           let found = false;
 
           visitDocumentNodes(before, input.root, (node) => {
-            if ((node as Record<string, unknown>)[idKey] !== id) return;
+            if (node.id !== id) return;
 
             found = true;
             return true;
@@ -348,14 +329,15 @@ const normalizeSplitNodeIds = (
         })());
 
     if (!reuseId || id === undefined || duplicate) {
-      properties[idKey] = idCreator();
+      properties.id = idCreator();
     }
-  } else if (properties[idKey] !== undefined) {
-    delete properties[idKey];
+  } else if (properties.id !== undefined) {
+    // biome-ignore lint/performance/noDelete: split output must omit disallowed IDs.
+    delete properties.id;
   }
 
-  if (properties[idKey] !== undefined) {
-    reservedIds.add(properties[idKey]);
+  if (properties.id !== undefined) {
+    reservedIds.add(properties.id);
   }
 
   return TextApi.isText(input.node)
@@ -403,7 +385,6 @@ const pathKey = (path: readonly number[]) => path.join('.');
 const collectInsertedNodeEntries = (
   beforeChildren: readonly Descendant[],
   afterChildren: readonly Descendant[],
-  idKey: string,
   ranges: readonly EditorTransactionTopLevelRange[]
 ) => {
   const collectIndices = (
@@ -460,8 +441,8 @@ const collectInsertedNodeEntries = (
   claimMatches((after, before) => after.node === before.node);
   claimMatches((after, before) => isEqual(after.node, before.node));
   claimMatches((after, before) => {
-    const afterId = (after.node as Record<string, unknown>)[idKey];
-    const beforeId = (before.node as Record<string, unknown>)[idKey];
+    const afterId = after.node.id;
+    const beforeId = before.node.id;
 
     return (
       afterId !== undefined &&
@@ -583,7 +564,7 @@ const normalizeNodeIdRuntime = (
   value: Value,
   options: NormalizeNodeIdRuntimeOptions = {}
 ): Value => {
-  const { idCreator = () => nanoid(10), idKey = 'id' } = options;
+  const { idCreator = () => nanoid(10) } = options;
 
   if (isDefaultNodeIdFastPath(options)) {
     const normalizeNodeFast = <N extends Descendant>(node: N): N => {
@@ -604,11 +585,11 @@ const normalizeNodeIdRuntime = (
         }
       });
 
-      if (!node[idKey]) {
+      if (!node.id) {
         return {
           ...node,
           ...(nextChildren ? { children: nextChildren } : {}),
-          [idKey]: idCreator(),
+          id: idCreator(),
         };
       }
 
@@ -644,7 +625,7 @@ const normalizeNodeIdRuntime = (
     if (shouldAssignNodeId([node, path], options)) {
       nextNode = {
         ...node,
-        [idKey]: idCreator(),
+        id: idCreator(),
       };
     }
 
@@ -706,33 +687,16 @@ export function normalizeNodeId(
 const nodeIdInitialState: NodeIdPluginState = {
   filterInline: true,
   filterText: true,
-  idKey: 'id',
   idCreator: () => nanoid(10),
 };
 
 export const NodeIdPlugin = defineBasePlugin('nodeId', {
   initialState: nodeIdInitialState,
-  schema: ({ initialState }): typeof canonicalNodeIdSchema => {
-    const idKey = initialState.idKey ?? 'id';
-
-    if (idKey === 'id') return canonicalNodeIdSchema;
-
-    return {
-      properties: [
-        schema.elementProperty(idKey, nodeIdProperty, {
-          role: 'metadata',
-          target: target.group('element'),
-        }),
-      ],
-    } as unknown as typeof canonicalNodeIdSchema;
-  },
+  schema: canonicalNodeIdSchema,
   update: ({ store, tx }) => ({
     normalize() {
       const state = store.get();
-      const {
-        idCreator = nodeIdInitialState.idCreator,
-        idKey = nodeIdInitialState.idKey,
-      } = state;
+      const { idCreator = nodeIdInitialState.idCreator } = state;
       const updates: { at: Path; props: Record<string, unknown> }[] = [];
       const isBlock = (node: Descendant) =>
         ElementApi.isElement(node) && tx.schema.isBlock(node);
@@ -753,10 +717,10 @@ export const NodeIdPlugin = defineBasePlugin('nodeId', {
           if (!ElementApi.isElement(node)) return;
           if (!isBlockCandidate(node, isBlock)) return;
 
-          if (!node[idKey]) {
+          if (!node.id) {
             updates.push({
               at: [...path],
-              props: { [idKey]: idCreator() },
+              props: { id: idCreator() },
             });
           }
 
@@ -784,7 +748,7 @@ export const NodeIdPlugin = defineBasePlugin('nodeId', {
         if (shouldAssignNodeId(entry, { ...state, isBlock })) {
           updates.push({
             at: path,
-            props: { [idKey]: idCreator() },
+            props: { id: idCreator() },
           });
         }
 
@@ -811,10 +775,8 @@ export const NodeIdPlugin = defineBasePlugin('nodeId', {
       }
 
       const state = store.get();
-      const { idKey = 'id' } = state;
       const runtimeOptions = {
         ...state,
-        idKey,
         isBlock: (node: Descendant) => editor.read.schema.isBlock(node),
       };
       const roots = new Set([
@@ -841,7 +803,6 @@ export const NodeIdPlugin = defineBasePlugin('nodeId', {
         const insertedEntries = collectInsertedNodeEntries(
           beforeChildren,
           afterChildren,
-          idKey,
           changed.topLevelRanges(publicRoot)
         );
         const reservedIds = new Set<unknown>();
@@ -908,8 +869,7 @@ export const NodeIdPlugin = defineBasePlugin('nodeId', {
   },
   transformInitialValue: ({ editor, store, value }) => {
     const state = store.get();
-    const { idKey = 'id' } = state;
-    const runtimeOptions = { ...state, idKey };
+    const runtimeOptions = state;
     const initialValueIds = resolveInitialValueIds(state);
     const normalize = (children: Value) =>
       normalizeNodeIdRuntime(children, {
@@ -929,8 +889,7 @@ export const NodeIdPlugin = defineBasePlugin('nodeId', {
       if (
         roots.every(
           (children) =>
-            children.length === 0 ||
-            (children[0]?.[idKey] && children.at(-1)?.[idKey])
+            children.length === 0 || (children[0]?.id && children.at(-1)?.id)
         )
       ) {
         return value;
@@ -966,6 +925,9 @@ export const NodeIdPlugin = defineBasePlugin('nodeId', {
     };
   },
 });
+
+/** Element known to carry the NodeId plugin's schema-owned id. */
+export type IdElement = ElementWith<typeof NodeIdPlugin, 'id'>;
 
 export type NodeIdPluginUpdate = {
   normalize: () => void;

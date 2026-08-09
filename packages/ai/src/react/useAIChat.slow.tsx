@@ -161,9 +161,10 @@ import {
           { children: [{ text: 'two' }], id: 'b2', type: 'paragraph' },
         ],
       });
+      const selectedKey = editor.key([0])!;
       editor
         .plugin(BlockSelectionPlugin)
-        .store.set({ selectedIds: new Set(['b1']) });
+        .store.set({ selectedKeys: new Set([selectedKey]) });
       editor.plugin(AIChatPlugin).store.set({ open: true });
       const wrapper = ({ children }: { children: React.ReactNode }) => (
         <Plate editor={editor}>{children}</Plate>

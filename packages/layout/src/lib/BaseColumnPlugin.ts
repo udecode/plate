@@ -1,11 +1,12 @@
 import {
   BaseParagraphPlugin,
-  createBasePlugin,
+  defineBasePlugin,
   type DefinitionOf,
 } from '@platejs/core';
 import {
   type Element,
   ElementApi,
+  type ElementOf,
   type Location,
   NodeApi,
   type NodeEntry,
@@ -16,16 +17,7 @@ import {
   RangeApi,
   schema,
 } from '@platejs/plite';
-import type { TColumnElement, TColumnGroupElement } from '@platejs/utils';
-import { KEYS, NODES } from '@platejs/utils';
-
-export type InsertColumnOptions = NodeInsertNodesOptions<Element> & {
-  width?: string;
-};
-
-export type InsertColumnGroupOptions = NodeInsertNodesOptions<Element> & {
-  columns?: number;
-};
+import { PLUGINS } from '@platejs/utils';
 
 export type MoveMiddleColumnOptions = {
   direction: 'left' | 'right';
@@ -33,7 +25,7 @@ export type MoveMiddleColumnOptions = {
 
 export type SetColumnsOptions = {
   /** Column group location. */
-  at?: NodeTarget<TColumnGroupElement>;
+  at?: NodeTarget<Element>;
   columns?: number;
   widths?: string[];
 };
@@ -44,358 +36,363 @@ export type ToggleColumnGroupOptions = {
   widths?: string[];
 };
 
-export const BaseColumnItemPlugin = createBasePlugin({
-  name: KEYS.column,
+const getMarkdownAttributes = (element: Element) =>
+  Object.fromEntries(
+    Object.entries(NodeApi.extractProps(element)).filter(
+      ([key]) => key !== 'id' && key !== 'type'
+    )
+  );
+
+export const BaseColumnItemPlugin = defineBasePlugin(PLUGINS.column, {
+  dependencies: [BaseParagraphPlugin],
   schema: ({ plugins }) => ({
     element: {
       content: plugins.blockContent({
-        default: { type: plugins.elementType(BaseParagraphPlugin) },
+        default: BaseParagraphPlugin,
         min: 1,
       }),
-      properties: { width: property.string() },
+      properties: {
+        width: property.string({ default: '50%', omitDefault: false }),
+      },
       blockContent: false,
     },
   }),
-  corrections: [
-    {
-      event: 'content',
-      correct({ editor, entry: [node, path], tx }) {
-        const columnGroup = editor.plugin(KEYS.columnGroup);
-        const columnGroupType = columnGroup.installed
-          ? columnGroup.type
-          : KEYS.columnGroup;
+  codecs: ({ defineCodecs, schema: { type } }) =>
+    defineCodecs({
+      'text/markdown': {
+        from: type,
+        kind: 'node',
+        decode: ({ decode, decoration, node, parseAttributes }) => ({
+          ...parseAttributes(node.attributes),
+          children: decode(node.children, decoration),
+          type,
+        }),
+        encode: ({ encodeFlow, node, propsToAttributes }) => ({
+          attributes: propsToAttributes(getMarkdownAttributes(node)),
+          children: encodeFlow(node.children),
+          name: type,
+          type: 'mdxJsxFlowElement',
+        }),
+      },
+    }),
+})
+  .extend(({ schema: { type } }) => ({
+    update: ({ tx }) => {
+      const columnType = type;
 
-        if (
-          !ElementApi.isElementType<TColumnGroupElement>(node, columnGroupType)
-        ) {
-          return;
-        }
+      return {
+        moveMiddle: (
+          [node, path]: NodeEntry<Element>,
+          { direction = 'left' }: Partial<MoveMiddleColumnOptions> = {}
+        ) => {
+          if (direction !== 'left') return;
 
-        const widths = node.children.map((column) => {
-          const parsed = Number.parseFloat(column.width);
+          const middleChildNode = NodeApi.get(node, [1]);
 
-          return Number.isNaN(parsed) ? 0 : parsed;
-        });
-        const sum = widths.reduce((total, width) => total + width, 0);
+          if (!NodeApi.isElement(middleChildNode)) return false;
 
-        if (sum === 100) return;
+          const middleChildPath = path.concat([1]);
 
-        const adjustment = (100 - sum) / node.children.length;
+          if (NodeApi.string(middleChildNode) === '') {
+            tx.nodes.remove({ at: middleChildPath });
 
-        widths.forEach((width, index) => {
-          tx.nodes.set<TColumnElement>(
-            { width: `${width + adjustment}%` },
-            { at: path.concat([index]) }
-          );
-        });
+            return false;
+          }
+
+          const firstNode = NodeApi.descendant(node, [0]);
+
+          if (!NodeApi.isElement(firstNode)) return false;
+
+          const appendOffset = firstNode.children.length;
+
+          middleChildNode.children.forEach((_, childIndex) => {
+            tx.nodes.move({
+              at: middleChildPath.concat([0]),
+              to: path.concat([0, appendOffset + childIndex]),
+            });
+          });
+          tx.nodes.remove({ at: middleChildPath });
+        },
+        selectAll: () => {
+          const selection = tx.selection();
+
+          if (!selection) return false;
+
+          const column = tx.nodes.above<Element>({
+            at: selection,
+            match: { type: columnType },
+          });
+
+          if (!column) return false;
+
+          let targetPath = column[1];
+          const [start, end] = RangeApi.edges(selection);
+
+          if (
+            tx.points.isStart(start, targetPath) &&
+            tx.points.isEnd(end, targetPath)
+          ) {
+            targetPath = PathApi.parent(targetPath);
+          }
+
+          if (targetPath.length === 0) return false;
+
+          tx.selection.set(targetPath);
+
+          return true;
+        },
+      };
+    },
+  }))
+  .extend({ shortcuts: { selectAll: { keys: 'mod+a' } } });
+
+export type ColumnElement = ElementOf<typeof BaseColumnItemPlugin>;
+
+export const BaseColumnPlugin = defineBasePlugin(PLUGINS.columnGroup, {
+  dependencies: [BaseColumnItemPlugin],
+  schema: {
+    element: {
+      content: schema.content.element(BaseColumnItemPlugin, { min: 2 }),
+      properties: {
+        layout: property.json({
+          validate: (value): value is readonly number[] =>
+            Array.isArray(value) &&
+            value.every(
+              (width) => typeof width === 'number' && Number.isFinite(width)
+            ),
+          validationVersion: 1,
+        }),
       },
     },
-  ],
-  update: ({ editor, tx, type }) => {
-    const columnType = type;
-    const columnGroup = editor.plugin(KEYS.columnGroup);
-    const columnGroupType = columnGroup.installed
-      ? columnGroup.type
-      : KEYS.columnGroup;
-    const columnsToWidths = (columns = 2) =>
-      new Array(columns).fill(null).map(() => `${100 / columns}%`);
-    const set = ({ at, columns, widths }: SetColumnsOptions) => {
-      if (!at) return;
-
-      const nextWidths = widths ?? columnsToWidths(columns);
-
-      if (nextWidths.length === 0) return;
-
-      const columnGroup = tx.nodes.get<TColumnGroupElement>(at);
-
-      if (!columnGroup) return;
-
-      const [{ children }, path] = columnGroup;
-      const currentCount = children.length;
-      const targetCount = nextWidths.length;
-
-      if (currentCount === targetCount) {
-        nextWidths.forEach((width, index) => {
-          tx.nodes.set<TColumnElement>({ width }, { at: path.concat([index]) });
-        });
-
-        return;
-      }
-
-      if (targetCount > currentCount) {
-        tx.nodes.insert(
-          new Array(targetCount - currentCount).fill(null).map((_, index) => ({
-            children: [
-              {
-                children: [{ text: '' }],
-                type: editor.plugin(KEYS.p).type,
-              },
-            ],
-            type: columnType,
-            width: nextWidths[currentCount + index] || `${100 / targetCount}%`,
-          })),
-          { at: path.concat([currentCount]) }
-        );
-
-        nextWidths.forEach((width, index) => {
-          tx.nodes.set<TColumnElement>({ width }, { at: path.concat([index]) });
-        });
-
-        return;
-      }
-
-      const keepColumnIndex = targetCount - 1;
-      const keepColumnPath = path.concat([keepColumnIndex]);
-
-      if (!tx.nodes.get<TColumnElement>(keepColumnPath)) return;
-
-      tx.nodes.replaceChildren(
-        children.slice(keepColumnIndex).flatMap((column) => column.children),
-        { at: keepColumnPath }
-      );
-
-      for (let index = currentCount - 1; index > keepColumnIndex; index--) {
-        tx.nodes.remove({ at: path.concat([index]) });
-      }
-
-      nextWidths.forEach((width, index) => {
-        tx.nodes.set<TColumnElement>({ width }, { at: path.concat([index]) });
-      });
-    };
-
-    return {
-      insert: ({ width = '33%', ...options }: InsertColumnOptions = {}) => {
-        tx.nodes.insert(
-          {
-            children: [
-              {
-                children: [{ text: '' }],
-                type: editor.plugin(KEYS.p).type,
-              },
-            ],
-            type: columnType,
-            width,
-          },
-          options
-        );
+  },
+  codecs: ({ defineCodecs, schema: { type } }) =>
+    defineCodecs({
+      'text/markdown': {
+        from: type,
+        kind: 'node',
+        decode: ({ decode, decoration, node, parseAttributes }) => ({
+          ...parseAttributes(node.attributes),
+          children: decode(node.children, decoration),
+          type,
+        }),
+        encode: ({ encodeFlow, node, propsToAttributes }) => ({
+          attributes: propsToAttributes(getMarkdownAttributes(node)),
+          children: encodeFlow(node.children),
+          name: type,
+          type: 'mdxJsxFlowElement',
+        }),
       },
-      insertGroup: ({
-        columns = 2,
-        select,
-        ...options
-      }: InsertColumnGroupOptions = {}) => {
-        const width = 100 / columns;
+    }),
+}).extend(({ editor, plugin, schema: { type } }) => {
+  type ColumnGroup = ElementOf<typeof plugin>;
 
-        tx.nodes.insert(
-          {
-            children: new Array(columns).fill(null).map(() => ({
-              children: [
-                {
-                  children: [{ text: '' }],
-                  type: editor.plugin(KEYS.p).type,
-                },
-              ],
-              type: columnType,
-              width: `${width}%`,
-            })),
-            type: columnGroupType,
-          },
-          options
-        );
+  return {
+    corrections: [
+      {
+        event: 'content',
+        query: { type },
+        correct({ editor, entry: [node, path], tx }) {
+          if (!ElementApi.isElement(node)) return;
 
-        if (!select) return;
+          const columnType = editor.plugin(BaseColumnItemPlugin).schema.type;
+          const columns = node.children.filter(
+            (column): column is ColumnElement =>
+              ElementApi.isElementType<ColumnElement>(column, columnType) &&
+              typeof column.width === 'string'
+          );
 
-        const entry = tx.nodes.find<Element>({
-          at: options.at,
-          match: { type: columnType },
-        });
-        const point = entry && tx.points.start(entry[1]);
+          if (columns.length !== node.children.length) return;
 
-        if (point) tx.selection.set(point);
-      },
-      moveMiddle: (
-        [node, path]: NodeEntry<TColumnGroupElement>,
-        { direction = 'left' }: Partial<MoveMiddleColumnOptions> = {}
-      ) => {
-        if (direction !== 'left') return;
+          const widths = columns.map((column) => {
+            const parsed = Number.parseFloat(column.width);
 
-        const middleChildNode = NodeApi.get(node, [1]);
-
-        if (!NodeApi.isElement(middleChildNode)) return false;
-
-        const middleChildPath = path.concat([1]);
-
-        if (NodeApi.string(middleChildNode) === '') {
-          tx.nodes.remove({ at: middleChildPath });
-
-          return false;
-        }
-
-        const firstNode = NodeApi.descendant(node, [0]);
-
-        if (!NodeApi.isElement(firstNode)) return false;
-
-        const appendOffset = firstNode.children.length;
-
-        middleChildNode.children.forEach((_, childIndex) => {
-          tx.nodes.move({
-            at: middleChildPath.concat([0]),
-            to: path.concat([0, appendOffset + childIndex]),
+            return Number.isNaN(parsed) ? 0 : parsed;
           });
-        });
-        tx.nodes.remove({ at: middleChildPath });
+          const sum = widths.reduce((total, width) => total + width, 0);
+
+          if (sum === 100) return;
+
+          const adjustment = (100 - sum) / columns.length;
+
+          widths.forEach((width, index) => {
+            tx.nodes.set('width', `${width + adjustment}%`, {
+              at: path.concat([index]),
+            });
+          });
+        },
       },
-      selectAll: () => {
-        const selection = tx.selection();
+    ],
+    update: ({ tx }) => {
+      const columnType = editor.plugin(BaseColumnItemPlugin).schema.type;
+      const paragraphType = editor.plugin(BaseParagraphPlugin).schema.type;
+      const columnsToWidths = (columns = 2) =>
+        new Array(columns).fill(null).map(() => `${100 / columns}%`);
+      const setColumns = ({ at, columns, widths }: SetColumnsOptions) => {
+        if (!at) return;
 
-        if (!selection) return false;
+        const nextWidths = widths ?? columnsToWidths(columns);
 
-        const column = tx.nodes.above<Element>({
-          at: selection,
-          match: { type: columnType },
-        });
+        if (nextWidths.length === 0) return;
 
-        if (!column) return false;
+        const columnGroup = tx.nodes.get(at);
 
-        let targetPath = column[1];
-        const [start, end] = RangeApi.edges(selection);
+        if (!columnGroup) return;
 
-        if (
-          tx.points.isStart(start, targetPath) &&
-          tx.points.isEnd(end, targetPath)
-        ) {
-          targetPath = PathApi.parent(targetPath);
-        }
+        const [{ children }, path] = columnGroup;
+        const columnChildren = children.filter((child): child is Element =>
+          ElementApi.isElement(child)
+        );
 
-        if (targetPath.length === 0) return false;
+        if (columnChildren.length !== children.length) return;
 
-        tx.selection.set(targetPath);
+        const currentCount = children.length;
+        const targetCount = nextWidths.length;
 
-        return true;
-      },
-      set,
-      toggle: ({ at, columns = 2, widths }: ToggleColumnGroupOptions = {}) => {
-        const entry = tx.nodes.block<Element>({ at });
-        const columnGroupEntry = tx.nodes.above<Element>({
-          at,
-          match: { type: columnGroupType },
-        });
-
-        if (!entry) return;
-
-        if (columnGroupEntry) {
-          set({ at: columnGroupEntry[1], columns, widths });
+        if (currentCount === targetCount) {
+          nextWidths.forEach((width, index) => {
+            tx.nodes.set('width', width, { at: path.concat([index]) });
+          });
 
           return;
         }
 
-        const [node, path] = entry;
-        const columnWidths = widths ?? columnsToWidths(columns);
-        const columnGroup = {
-          children: new Array(columns).fill(null).map((_, index) => ({
-            children: [
-              index === 0
-                ? node
-                : {
+        if (targetCount > currentCount) {
+          tx.nodes.insert(
+            new Array(targetCount - currentCount)
+              .fill(null)
+              .map((_, index) => ({
+                children: [
+                  {
                     children: [{ text: '' }],
-                    type: editor.plugin(KEYS.p).type,
+                    type: paragraphType,
                   },
-            ],
-            type: columnType,
-            width: columnWidths[index],
-          })),
-          type: columnGroupType,
-        };
-        const parentPath = PathApi.parent(path);
-        const index = path.at(-1);
+                ],
+                type: columnType,
+                width:
+                  nextWidths[currentCount + index] || `${100 / targetCount}%`,
+              })),
+            { at: path.concat([currentCount]) }
+          );
 
-        if (index === undefined) return;
+          nextWidths.forEach((width, index) => {
+            tx.nodes.set('width', width, { at: path.concat([index]) });
+          });
 
-        tx.nodes.replaceChildren([columnGroup], {
-          at: parentPath,
-          count: 1,
-          index,
+          return;
+        }
+
+        const keepColumnIndex = targetCount - 1;
+        const keepColumnPath = path.concat([keepColumnIndex]);
+
+        if (!tx.nodes.get(keepColumnPath)) return;
+
+        tx.nodes.replaceChildren(
+          columnChildren
+            .slice(keepColumnIndex)
+            .flatMap((column) => column.children),
+          { at: keepColumnPath }
+        );
+
+        for (let index = currentCount - 1; index > keepColumnIndex; index--) {
+          tx.nodes.remove({ at: path.concat([index]) });
+        }
+
+        nextWidths.forEach((width, index) => {
+          tx.nodes.set('width', width, { at: path.concat([index]) });
         });
+      };
 
-        const point = tx.points.start(path.concat([0]));
+      return {
+        insert: (
+          { columns = 2 }: { columns?: number } = {},
+          { select, ...options }: NodeInsertNodesOptions<ColumnGroup> = {}
+        ) => {
+          const width = 100 / columns;
 
-        if (point) tx.selection.set(point);
-      },
-    };
-  },
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      'text/markdown': {
-        from: 'column',
-        kind: 'node',
-        decode: ({ decode, decoration, node, parseAttributes, type }) => ({
-          children: decode(node.children, decoration),
-          type,
-          ...parseAttributes(node.attributes),
-        }),
-        encode: ({ encodeFlow, node, propsToAttributes }) => {
-          const { children, id: _, type, ...rest } = node;
+          tx.nodes.insert(
+            {
+              children: new Array(columns).fill(null).map(() => ({
+                children: [
+                  {
+                    children: [{ text: '' }],
+                    type: paragraphType,
+                  },
+                ],
+                type: columnType,
+                width: `${width}%`,
+              })),
+              type,
+            },
+            options
+          );
 
-          return {
-            attributes: propsToAttributes(rest),
-            children: encodeFlow(children),
-            name: type,
-            type: 'mdxJsxFlowElement',
-          };
+          if (!select) return;
+
+          const entry = tx.nodes.find<Element>({
+            at: options.at,
+            match: { type: columnType },
+          });
+          const point = entry && tx.points.start(entry[1]);
+
+          if (point) tx.selection.set(point);
         },
-      },
-    }),
-  shortcuts: { selectAll: { keys: 'mod+a' } },
+        setColumns,
+        toggle: ({
+          at,
+          columns = 2,
+          widths,
+        }: ToggleColumnGroupOptions = {}) => {
+          const entry = tx.nodes.block<Element>({ at });
+          const columnGroupEntry = tx.nodes.above<Element>({
+            at,
+            match: { type },
+          });
+
+          if (!entry) return;
+
+          if (columnGroupEntry) {
+            setColumns({ at: columnGroupEntry[1], columns, widths });
+
+            return;
+          }
+
+          const [node, path] = entry;
+          const columnWidths = widths ?? columnsToWidths(columns);
+          const columnGroup = {
+            children: new Array(columns).fill(null).map((_, index) => ({
+              children: [
+                index === 0
+                  ? node
+                  : {
+                      children: [{ text: '' }],
+                      type: paragraphType,
+                    },
+              ],
+              type: columnType,
+              width: columnWidths[index],
+            })),
+            type,
+          };
+          const parentPath = PathApi.parent(path);
+          const index = path.at(-1);
+
+          if (index === undefined) return;
+
+          tx.nodes.replaceChildren([columnGroup], {
+            at: parentPath,
+            count: 1,
+            index,
+          });
+
+          const point = tx.points.start(path.concat([0]));
+
+          if (point) tx.selection.set(point);
+        },
+      };
+    },
+  };
 });
 
-export const BaseColumnPlugin = createBasePlugin({
-  name: KEYS.columnGroup,
-  dependencies: [BaseColumnItemPlugin],
-  schema: ({ plugins }) => {
-    const columnType = plugins.elementType(BaseColumnItemPlugin);
-
-    return {
-      element: {
-        content: schema.content.type(columnType, {
-          default: { type: columnType },
-          min: 2,
-        }),
-        properties: {
-          layout: property.json({
-            validate: (value): value is readonly number[] =>
-              Array.isArray(value) &&
-              value.every(
-                (width) => typeof width === 'number' && Number.isFinite(width)
-              ),
-            validationVersion: 1,
-          }),
-        },
-      },
-    };
-  },
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      'text/markdown': {
-        from: 'column_group',
-        kind: 'node',
-        decode: ({ decode, decoration, node, parseAttributes, type }) => ({
-          children: decode(node.children, decoration),
-          type,
-          ...parseAttributes(node.attributes),
-        }),
-        encode: ({ encodeFlow, node, propsToAttributes }) => {
-          const { children, id: _, type, ...rest } = node;
-
-          return {
-            attributes: propsToAttributes(rest),
-            children: encodeFlow(children),
-            name: type,
-            type: 'mdxJsxFlowElement',
-          };
-        },
-      },
-    }),
-  type: NODES.columnGroup,
-});
+export type ColumnGroupElement = ElementOf<typeof BaseColumnPlugin>;
 
 export type ColumnDefinition = DefinitionOf<typeof BaseColumnItemPlugin>;

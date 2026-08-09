@@ -63,11 +63,18 @@ donor checkout as proof after the transplant.
   existing `ValueOf`/`ElementOf`/`TextOf` extractors, never a parallel value
   generic or central node map. Raw schema-less Plite may still own an explicit
   `createEditor<ExternalValue>` generic. Feature aliases may name an inferred
-  owner result but never restate schema fields, and property-only plugins do
-  not become element handles.
+  owner result but never restate schema fields. Property-only plugins do not
+  become element identity handles; Plate may project their compiled property
+  capabilities onto broad elements or text while preserving aliases, prefixes,
+  defaults, and exact value domains from Plite descriptors.
 - Static portals require a unique literal name and mutually assignable
   descriptor/installed capabilities. Runtime portals require exact installed
   descriptor identity, so a same-name object is not an interchangeable token.
+- React context retrieval is non-generic. `useEditor()` returns the mounted
+  React editor contract, and selector hooks infer only their selected result.
+  Exact extension capabilities come from `editor.extension(Extension)`. Keep
+  editor generics only on constructors or hooks whose typed input actually
+  correlates with the result.
 - Low-level React composition receives the actual DOM dependency as
   `react({ dom })`. Its implementation may erase exactly one invariant-union
   boundary when TypeScript 7 cannot reduce it; the public call stays one exact
@@ -225,9 +232,10 @@ status -> gap scan -> behavior proof -> missing oracle repair -> visual proof
 - `resolve-slate-issue`: one public Slate issue coordinated through a local
   Plite repair, Plate PR targeting `next`, verified issue update, and honest
   integration/release state.
-- `plite-patch`: sole local Plite regression owner; reproduction, class-level
-  behavior coverage, durable fix, architecture pressure, proof, and autoreview
-  without public GitHub mutation.
+- `patch`: sole local Plate/Plite behavior-bug and regression owner; the Plite
+  lane provides reproduction, class-level behavior coverage, durable substrate
+  repair, architecture pressure, proof, and P2 autoreview without public
+  GitHub mutation.
 - `best-api`: concrete public API design, review, and P0/P1/P2/P3 debt
   ranking.
 - `plite-plan`: substrate architecture, adoption/proof planning, and accepted

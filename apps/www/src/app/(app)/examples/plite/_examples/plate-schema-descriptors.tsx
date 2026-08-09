@@ -93,10 +93,10 @@ const CodecProofPlugin = definePlatePlugin('codecProof', {
                   children: [
                     {
                       children: [{ text: `${label}:code` }],
-                      type: editor.plugin(CodeLinePlugin).type,
+                      type: editor.plugin(CodeLinePlugin).schema.type,
                     },
                   ],
-                  type: editor.plugin(CodeBlockPlugin).type,
+                  type: editor.plugin(CodeBlockPlugin).schema.type,
                 },
               ],
               openEnd: 2,
@@ -157,7 +157,7 @@ const PlateSchemaDescriptorControls = () => {
     JSON.stringify(editor.read.children())
   );
   const advancedMark = editor.read.schema.property({
-    key: editor.plugin(AdvancedMarkPlugin).key,
+    key: editor.plugin(AdvancedMarkPlugin).schema.key,
     placement: 'text',
   });
   const insertCodecProof = (kind: CodecProofPayload['kind']) => {
@@ -212,7 +212,7 @@ const PlateSchemaDescriptorControls = () => {
             {
               children: [{ text: 'a link' }],
               target: '_self',
-              type: editor.plugin(LinkPlugin).type,
+              type: editor.plugin(LinkPlugin).schema.type,
               url: 'https://example.com/docs',
             },
           ],
@@ -259,22 +259,22 @@ const PlateSchemaDescriptorControls = () => {
           children: [
             {
               children: [{ text: 'const codec = true;' }],
-              type: editor.plugin(CodeLinePlugin).type,
+              type: editor.plugin(CodeLinePlugin).schema.type,
             },
             {
               children: [{ text: '' }],
-              type: editor.plugin(CodeLinePlugin).type,
+              type: editor.plugin(CodeLinePlugin).schema.type,
             },
           ],
           lang: 'typescript',
-          type: editor.plugin(CodeBlockPlugin).type,
+          type: editor.plugin(CodeBlockPlugin).schema.type,
         },
         {
           alt: 'Plate codec image',
           children: [{ text: 'Image caption' }],
           initialHeight: 180,
           initialWidth: 320,
-          type: editor.plugin(ImagePlugin).type,
+          type: editor.plugin(ImagePlugin).schema.type,
           url: 'https://example.com/plate-codec.png',
           width: '50%',
         },
@@ -282,7 +282,7 @@ const PlateSchemaDescriptorControls = () => {
           children: [{ text: 'Media caption' }],
           provider: 'youtube',
           sourceUrl: 'https://www.youtube.com/watch?v=M7lc1UVf-VE',
-          type: editor.plugin(MediaEmbedPlugin).type,
+          type: editor.plugin(MediaEmbedPlugin).schema.type,
           url: 'https://www.youtube.com/embed/M7lc1UVf-VE',
           width: 480,
         },
@@ -297,10 +297,10 @@ const PlateSchemaDescriptorControls = () => {
           children: [
             {
               children: [{ text: 'left  right' }],
-              type: editor.plugin(CodeLinePlugin).type,
+              type: editor.plugin(CodeLinePlugin).schema.type,
             },
           ],
-          type: editor.plugin(CodeBlockPlugin).type,
+          type: editor.plugin(CodeBlockPlugin).schema.type,
         },
       ],
       selection: {

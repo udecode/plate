@@ -31,7 +31,7 @@ describe('BaseIndentPlugin', () => {
       unit: 'px',
     });
     expect(plugin.targetPlugins[0]?.name).toBe(
-      editor.plugin(BaseParagraphPlugin).schema.element.type
+      editor.plugin(BaseParagraphPlugin).schema.type
     );
     expect(nodeProps.nodeKey).toBe('indent');
     expect(nodeProps.styleKey).toBe('marginLeft');
@@ -71,7 +71,7 @@ describe('BaseIndentPlugin', () => {
       ],
     });
 
-    editor.update.indent.set({
+    editor.update.indent.change({
       nodes: { at: [] },
       setNodeProps: ({ indent }) => ({ foo: `indent-${indent}` }),
     });
@@ -156,7 +156,7 @@ describe('BaseIndentPlugin', () => {
     expect(thrown.diagnostics).toMatchObject([
       {
         code: 'property-target-mismatch',
-        nodeType: editor.plugin(BaseParagraphPlugin).schema.element.type,
+        nodeType: editor.plugin(BaseParagraphPlugin).schema.type,
         property: { key: 'indent' },
       },
     ]);
@@ -178,6 +178,7 @@ describe('BaseIndentPlugin', () => {
 
     expect(editor.update.indent.untab()).toBe(true);
     expect(editor.read.children()[0]).not.toHaveProperty('indent');
+    expect(editor.update.indent.untab()).toBe(true);
   });
 
   it('decodes CSS indentation through configured units', () => {
@@ -228,7 +229,7 @@ describe('BaseIndentPlugin', () => {
       ],
     });
 
-    editor.update.indent.set();
+    editor.update.indent.change();
 
     expect(editor.read.children()[0]).toMatchObject({ indent: 2 });
     expect(editor.read.children()[0]).not.toHaveProperty('legacyIndent');

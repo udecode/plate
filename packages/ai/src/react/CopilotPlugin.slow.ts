@@ -21,16 +21,17 @@ const createEditor = () =>
 describe('CopilotPlugin triggerSuggestion', () => {
   it('clears the suggested node after accepting the final word', () => {
     const editor = createEditor();
+    const nodeKey = editor.key([0])!;
 
     editor.plugin(CopilotPlugin).store.set({
-      suggestionNodeId: 'b1',
+      suggestionNodeKey: nodeKey,
       suggestionText: 'word',
     });
     editor.plugin(CopilotPlugin).update.acceptNextWord();
 
     expect(editor.read.text.string([])).toBe('one word');
     expect(
-      editor.plugin(CopilotPlugin).store.get('suggestionNodeId')
+      editor.plugin(CopilotPlugin).store.get('suggestionNodeKey')
     ).toBeNull();
     expect(editor.plugin(CopilotPlugin).store.get('suggestionText')).toBe('');
   });
@@ -78,6 +79,7 @@ describe('CopilotPlugin triggerSuggestion', () => {
 
   it('stores a finished completion as the current block suggestion', async () => {
     const editor = createEditor();
+    const nodeKey = editor.key([0])!;
     const fetchCompletion = mock(
       async (_input: RequestInfo | URL, _init?: RequestInit) =>
         new Response(JSON.stringify({ text: 'Completed' }), {
@@ -93,8 +95,8 @@ describe('CopilotPlugin triggerSuggestion', () => {
 
     await editor.plugin(CopilotPlugin).api.triggerSuggestion();
 
-    expect(editor.plugin(CopilotPlugin).store.get('suggestionNodeId')).toBe(
-      'b1'
+    expect(editor.plugin(CopilotPlugin).store.get('suggestionNodeKey')).toBe(
+      nodeKey
     );
     expect(editor.plugin(CopilotPlugin).store.get('suggestionText')).toBe(
       'Completed'

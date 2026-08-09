@@ -2,7 +2,7 @@ import { act, render } from '@testing-library/react';
 import { startTransition, Suspense, useLayoutEffect } from 'react';
 import { createEditor, type Editor, type Range } from '@platejs/plite';
 import {
-  getRuntimeId as editorGetRuntimeId,
+  getNodeKey as editorGetNodeKey,
   getSnapshot as editorGetSnapshot,
   replace as editorReplace,
 } from '@platejs/plite/internal';
@@ -87,7 +87,7 @@ const createChildren = () => [
 
 const AnnotationOverlaySlices = () => {
   const editor = useEditor();
-  const leftId = editorGetSnapshot(editor).index.idAt([0, 0]) ?? '';
+  const leftId = editorGetSnapshot(editor).index.keyAt([0, 0]) ?? '';
   const comment = usePliteAnnotation<CommentData, CommentProjection>(
     'comment-1'
   );
@@ -587,7 +587,7 @@ describe('plite-react annotation store contract', () => {
       selection: null,
     });
 
-    const runtimeId = editorGetRuntimeId(editor, [0, 0]);
+    const nodeKey = editorGetNodeKey(editor, [0, 0]);
     const staleRange = {
       kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
@@ -609,14 +609,14 @@ describe('plite-react annotation store contract', () => {
       },
     ]);
 
-    if (!runtimeId) {
-      throw new Error('Expected runtime id for stale annotation range proof');
+    if (!nodeKey) {
+      throw new Error('Expected node key for stale annotation range proof');
     }
 
     expect(formatRange(store.getAnnotation('comment-1')?.range ?? null)).toBe(
       '0.0:1|0.0:4'
     );
-    expect(store.projectionStore.getRuntimeSnapshot(runtimeId)).toEqual([
+    expect(store.projectionStore.getRuntimeSnapshot(nodeKey)).toEqual([
       {
         data: {
           annotationId: 'comment-1',
@@ -641,7 +641,7 @@ describe('plite-react annotation store contract', () => {
     });
 
     expect(store.getAnnotation('comment-1')?.range).toBeNull();
-    expect(store.projectionStore.getRuntimeSnapshot(runtimeId)).toEqual([]);
+    expect(store.projectionStore.getRuntimeSnapshot(nodeKey)).toEqual([]);
 
     store.destroy();
   });
@@ -751,7 +751,7 @@ describe('plite-react annotation store contract', () => {
     }
   });
 
-  test('annotation projection store reprojects touched interior runtime ids even when the resolved range is unchanged', async () => {
+  test('annotation projection store reprojects touched interior node keys even when the resolved range is unchanged', async () => {
     const editor = createEditor();
     const data = {
       kind: 'annotation',
@@ -773,7 +773,7 @@ describe('plite-react annotation store contract', () => {
     });
 
     const snapshot = editorGetSnapshot(editor);
-    const middleId = snapshot.index.idAt([0, 1]);
+    const middleId = snapshot.index.keyAt([0, 1]);
     const anchor = createRangeAnchor(editor, {
       kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
@@ -932,10 +932,10 @@ describe('plite-react annotation store contract', () => {
       selection: null,
     });
 
-    const runtimeId = editorGetRuntimeId(editor, [0, 0]);
+    const nodeKey = editorGetNodeKey(editor, [0, 0]);
 
-    if (!runtimeId) {
-      throw new Error('Expected runtime id for projection split proof');
+    if (!nodeKey) {
+      throw new Error('Expected node key for projection split proof');
     }
 
     const anchor = createRangeAnchor(editor, {
@@ -971,7 +971,7 @@ describe('plite-react annotation store contract', () => {
     store.projectionStore.subscribe(() => {
       projectionNotifications += 1;
     });
-    store.projectionStore.subscribeRuntimeId?.(runtimeId, () => {
+    store.projectionStore.subscribeNodeKey?.(nodeKey, () => {
       runtimeNotifications += 1;
     });
 
@@ -1013,10 +1013,10 @@ describe('plite-react annotation store contract', () => {
       selection: null,
     });
 
-    const runtimeId = editorGetRuntimeId(editor, [0, 0]);
+    const nodeKey = editorGetNodeKey(editor, [0, 0]);
 
-    if (!runtimeId) {
-      throw new Error('Expected runtime id for annotation order proof');
+    if (!nodeKey) {
+      throw new Error('Expected node key for annotation order proof');
     }
 
     const firstAnchor = createRangeAnchor(editor, {
@@ -1063,7 +1063,7 @@ describe('plite-react annotation store contract', () => {
     const store = createPliteAnnotationStore(editor, () => annotations);
     const projectionKeys = () =>
       store.projectionStore
-        .getRuntimeSnapshot(runtimeId)
+        .getRuntimeSnapshot(nodeKey)
         .map((entry) => `${entry.key}:${entry.data?.tone ?? 'none'}`);
 
     expect(projectionKeys()).toEqual(['comment-1:draft', 'comment-2:review']);
@@ -1106,10 +1106,10 @@ describe('plite-react annotation store contract', () => {
       selection: null,
     });
 
-    const runtimeId = editorGetRuntimeId(editor, [0, 0]);
+    const nodeKey = editorGetNodeKey(editor, [0, 0]);
 
-    if (!runtimeId) {
-      throw new Error('Expected runtime id for annotation metadata proof');
+    if (!nodeKey) {
+      throw new Error('Expected node key for annotation metadata proof');
     }
 
     const circularData: Record<string, unknown> = {};
@@ -1144,7 +1144,7 @@ describe('plite-react annotation store contract', () => {
     store.projectionStore.subscribe(() => {
       projectionNotifications += 1;
     });
-    store.projectionStore.subscribeRuntimeId?.(runtimeId, () => {
+    store.projectionStore.subscribeNodeKey?.(nodeKey, () => {
       runtimeNotifications += 1;
     });
 
@@ -1205,11 +1205,11 @@ describe('plite-react annotation store contract', () => {
       selection: null,
     });
 
-    const commentRuntimeId = editorGetRuntimeId(editor, [0, 0]);
-    const unrelatedRuntimeId = editorGetRuntimeId(editor, [1, 0]);
+    const commentNodeKey = editorGetNodeKey(editor, [0, 0]);
+    const unrelatedNodeKey = editorGetNodeKey(editor, [1, 0]);
 
-    if (!commentRuntimeId || !unrelatedRuntimeId) {
-      throw new Error('Expected runtime ids for scoped annotation proof');
+    if (!commentNodeKey || !unrelatedNodeKey) {
+      throw new Error('Expected node keys for scoped annotation proof');
     }
 
     const commentAnchor = createRangeAnchor(editor, {
@@ -1267,10 +1267,10 @@ describe('plite-react annotation store contract', () => {
     store.projectionStore.subscribe(() => {
       projectionNotifications += 1;
     });
-    store.projectionStore.subscribeRuntimeId?.(commentRuntimeId, () => {
+    store.projectionStore.subscribeNodeKey?.(commentNodeKey, () => {
       commentRuntimeNotifications += 1;
     });
-    store.projectionStore.subscribeRuntimeId?.(unrelatedRuntimeId, () => {
+    store.projectionStore.subscribeNodeKey?.(unrelatedNodeKey, () => {
       unrelatedRuntimeNotifications += 1;
     });
 
@@ -1296,7 +1296,7 @@ describe('plite-react annotation store contract', () => {
     expect(projectionNotifications).toBe(1);
     expect(commentRuntimeNotifications).toBe(1);
     expect(unrelatedRuntimeNotifications).toBe(0);
-    expect(store.projectionStore.getRuntimeSnapshot(commentRuntimeId)).toEqual([
+    expect(store.projectionStore.getRuntimeSnapshot(commentNodeKey)).toEqual([
       {
         data: {
           annotationId: 'comment-1',
@@ -1308,9 +1308,7 @@ describe('plite-react annotation store contract', () => {
         start: 1,
       },
     ]);
-    expect(
-      store.projectionStore.getRuntimeSnapshot(unrelatedRuntimeId)
-    ).toEqual([
+    expect(store.projectionStore.getRuntimeSnapshot(unrelatedNodeKey)).toEqual([
       {
         data: {
           annotationId: 'comment-2',
@@ -1358,13 +1356,11 @@ describe('plite-react annotation store contract', () => {
       selection: null,
     });
 
-    const targetRuntimeId = editorGetRuntimeId(editor, [targetIndex, 0]);
-    const unrelatedRuntimeId = editorGetRuntimeId(editor, [0, 0]);
+    const targetNodeKey = editorGetNodeKey(editor, [targetIndex, 0]);
+    const unrelatedNodeKey = editorGetNodeKey(editor, [0, 0]);
 
-    if (!targetRuntimeId || !unrelatedRuntimeId) {
-      throw new Error(
-        'Expected runtime ids for large annotation locality proof'
-      );
+    if (!targetNodeKey || !unrelatedNodeKey) {
+      throw new Error('Expected node keys for large annotation locality proof');
     }
 
     const anchors = Array.from({ length: blockCount }, (_, index) =>
@@ -1400,10 +1396,10 @@ describe('plite-react annotation store contract', () => {
     store.subscribeAnnotation('comment-0', () => {
       unrelatedAnnotationNotifications += 1;
     });
-    store.projectionStore.subscribeRuntimeId?.(targetRuntimeId, () => {
+    store.projectionStore.subscribeNodeKey?.(targetNodeKey, () => {
       targetRuntimeNotifications += 1;
     });
-    store.projectionStore.subscribeRuntimeId?.(unrelatedRuntimeId, () => {
+    store.projectionStore.subscribeNodeKey?.(unrelatedNodeKey, () => {
       unrelatedRuntimeNotifications += 1;
     });
 
@@ -1419,7 +1415,7 @@ describe('plite-react annotation store contract', () => {
     expect(unrelatedAnnotationNotifications).toBe(0);
     expect(targetRuntimeNotifications).toBe(1);
     expect(unrelatedRuntimeNotifications).toBe(0);
-    expect(store.projectionStore.getRuntimeSnapshot(targetRuntimeId)).toEqual([
+    expect(store.projectionStore.getRuntimeSnapshot(targetNodeKey)).toEqual([
       {
         data: {
           annotationId: `comment-${targetIndex}`,
@@ -1458,10 +1454,10 @@ describe('plite-react annotation store contract', () => {
       selection: null,
     });
 
-    const runtimeId = editorGetRuntimeId(editor, [0, 0]);
+    const nodeKey = editorGetNodeKey(editor, [0, 0]);
 
-    if (!runtimeId) {
-      throw new Error('Expected runtime id for annotation metrics proof');
+    if (!nodeKey) {
+      throw new Error('Expected node key for annotation metrics proof');
     }
 
     const anchor = createRangeAnchor(editor, {
@@ -1488,7 +1484,7 @@ describe('plite-react annotation store contract', () => {
     store.subscribeAnnotation('comment-1', () => {
       annotationNotifications += 1;
     });
-    store.projectionStore.subscribeRuntimeId?.(runtimeId, () => {
+    store.projectionStore.subscribeNodeKey?.(nodeKey, () => {
       runtimeNotifications += 1;
     });
 

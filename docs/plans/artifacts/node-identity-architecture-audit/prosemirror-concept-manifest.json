@@ -1,0 +1,12 @@
+{
+  "concepts": [
+    { "id": "PM-RUNTIME-001", "origin": "reference" },
+    { "id": "PM-POSITION-001", "origin": "reference" },
+    { "id": "PM-ANCHOR-001", "origin": "reference" },
+    { "id": "PLITE-RUNTIME-001", "origin": "Plite" },
+    { "id": "PLITE-ANCHOR-001", "origin": "Plite" },
+    { "id": "PLATE-PERSISTED-ID-001", "origin": "Plate" },
+    { "id": "SHARED-IDENTITY-POLICY-001", "origin": "shared" }
+  ],
+  "priorCandidates": []
+}

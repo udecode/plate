@@ -3,9 +3,9 @@ import {
   pipePreparedInsertDataQuery,
   prepareHtmlRegistry,
 } from '@platejs/core/internal';
-import { PathApi, property, schema } from '@platejs/plite';
+import { type ElementOf, PathApi, property, schema } from '@platejs/plite';
 import { clipboardHandler } from '@platejs/plite-dom';
-import { KEYS, NODES } from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 import { isUrl } from '@udecode/utils';
 
 import {
@@ -30,8 +30,7 @@ export type ImagePluginState = {
 const initialState: ImagePluginState = {};
 
 /** Enables support for images. */
-export const BaseImagePlugin = defineBasePlugin(KEYS.img, {
-  type: NODES.img,
+export const BaseImagePlugin = defineBasePlugin(PLUGINS.image, {
   initialState,
   schema: {
     element: schema.element.textBlock({
@@ -42,10 +41,11 @@ export const BaseImagePlugin = defineBasePlugin(KEYS.img, {
         alt: property.string(),
         initialHeight: property.number(),
         initialWidth: property.number(),
+        title: property.string(),
       },
     }),
   },
-  codecs: ({ defineCodecs }) =>
+  codecs: ({ defineCodecs, schema: { type } }) =>
     defineCodecs({
       'text/html': [
         {
@@ -146,12 +146,12 @@ export const BaseImagePlugin = defineBasePlugin(KEYS.img, {
         {
           from: 'image',
           kind: 'node',
-          decode: ({ node, type }) => ({
+          decode: ({ node }) => ({
             ...(node.alt === null || node.alt === undefined
               ? {}
               : { alt: node.alt }),
-            children: [{ text: '' }],
             ...(node.title ? { title: node.title } : {}),
+            children: [{ text: '' }],
             type,
             url: node.url,
           }),
@@ -159,7 +159,7 @@ export const BaseImagePlugin = defineBasePlugin(KEYS.img, {
         {
           from: 'img',
           kind: 'node',
-          decode: ({ caption, decode, node, parseAttributes, type }) => {
+          decode: ({ caption, decode, node, parseAttributes }) => {
             const {
               alt: altAttribute,
               src,
@@ -171,13 +171,13 @@ export const BaseImagePlugin = defineBasePlugin(KEYS.img, {
                 : [{ text: '' }];
 
             return {
+              ...rest,
               ...(typeof altAttribute === 'string'
                 ? { alt: altAttribute }
                 : {}),
               children: captionChildren,
               type,
               url: typeof src === 'string' ? src : '',
-              ...rest,
             };
           },
           encode: ({
@@ -185,7 +185,6 @@ export const BaseImagePlugin = defineBasePlugin(KEYS.img, {
             node,
             propsToAttributes,
             readPlainInline,
-            type,
           }) => {
             const { children, type: _, url, ...rest } = node;
             const plainCaption = readPlainInline(children);
@@ -217,7 +216,7 @@ export const BaseImagePlugin = defineBasePlugin(KEYS.img, {
                   {
                     attributes,
                     children: [],
-                    name: type,
+                    name: 'img',
                     type: 'mdxJsxFlowElement',
                   },
                   {
@@ -238,7 +237,7 @@ export const BaseImagePlugin = defineBasePlugin(KEYS.img, {
               return {
                 attributes,
                 children: [],
-                name: type,
+                name: 'img',
                 type: 'mdxJsxFlowElement',
               };
             }
@@ -259,15 +258,7 @@ export const BaseImagePlugin = defineBasePlugin(KEYS.img, {
         {
           from: 'figure',
           kind: 'node',
-          decode: ({
-            caption,
-            decode,
-            registry,
-            node,
-            parseAttributes,
-            serializeUnknown,
-            type,
-          }) => {
+          decode: ({ caption, decode, node, parseAttributes }) => {
             const [image, figcaption] = node.children;
 
             if (
@@ -278,10 +269,7 @@ export const BaseImagePlugin = defineBasePlugin(KEYS.img, {
               figcaption?.type !== 'mdxJsxFlowElement' ||
               figcaption.name !== 'figcaption'
             ) {
-              return {
-                children: [{ text: serializeUnknown(node) }],
-                type: registry.getType(KEYS.p),
-              };
+              return;
             }
 
             const { src, ...properties } = parseAttributes(image.attributes);
@@ -391,6 +379,7 @@ export const BaseImagePlugin = defineBasePlugin(KEYS.img, {
   });
 
 export type ImageDefinition = DefinitionOf<typeof BaseImagePlugin>;
+export type ImageElement = ElementOf<typeof BaseImagePlugin>;
 
 const imageExtensions = new Set([
   '3dv',

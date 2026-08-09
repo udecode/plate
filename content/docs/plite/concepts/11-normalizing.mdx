@@ -100,10 +100,9 @@ declares the node event that can make its invariant stale: `children`,
 `content`, or `properties`.
 
 ```ts
-import { ElementApi, defineEditorExtension } from "@platejs/plite";
+import { ElementApi, defineExtension } from "@platejs/plite";
 
-const ValidLinkExtension = defineEditorExtension({
-  name: "valid-link",
+const ValidLinkExtension = defineExtension("valid-link", {
   corrections: [
     {
       event: "properties",

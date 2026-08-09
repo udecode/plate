@@ -55,7 +55,7 @@ describe('BaseMathKit', () => {
 
     const editor = createMathEditor(input);
 
-    editor.plugin(BaseEquationPlugin).update.insert();
+    editor.plugin(BaseEquationPlugin).update.insert({}, { at: [1] });
 
     expect(editor.read.children()).toMatchObject([
       {

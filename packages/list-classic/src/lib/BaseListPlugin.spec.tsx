@@ -140,17 +140,16 @@ describe('input rules', () => {
               children: [
                 {
                   children: [{ text: 'hello' }],
-                  type: editor.plugin(PLUGINS.listItemContent).schema.element!
-                    .type,
+                  type: editor.plugin(PLUGINS.listItemContent).schema.type,
                 },
               ],
-              type: editor.plugin(PLUGINS.listItem).schema.element!.type,
+              type: editor.plugin(PLUGINS.listItem).schema.type,
             },
           ],
           type:
             title === 'formats bullet shorthand'
-              ? editor.plugin(PLUGINS.bulletedList).schema.element!.type
-              : editor.plugin(PLUGINS.numberedList).schema.element!.type,
+              ? editor.plugin(PLUGINS.bulletedList).schema.type
+              : editor.plugin(PLUGINS.numberedList).schema.type,
         },
       ]);
     });
@@ -262,10 +261,10 @@ describe('input rules', () => {
           children: [
             {
               children: [{ text: '- code' }],
-              type: editor.plugin(PLUGINS.codeLine).schema.element!.type,
+              type: editor.plugin(PLUGINS.codeLine).schema.type,
             },
           ],
-          type: editor.plugin(PLUGINS.codeBlock).schema.element!.type,
+          type: editor.plugin(PLUGINS.codeBlock).schema.type,
         },
       ]);
     });
@@ -456,7 +455,7 @@ describe('list toggling', () => {
     });
 
     editor.plugin(BaseListPlugin).update.toggle({
-      type: editor.plugin(plugin).schema.element!.type,
+      type: editor.plugin(plugin).schema.type,
     });
 
     return editor;
@@ -472,7 +471,7 @@ describe('list toggling', () => {
       const before = JSON.stringify(editor.read.children());
 
       editor.plugin(BaseListPlugin).update.toggle({
-        type: editor.plugin(PLUGINS.bulletedList).schema.element!.type,
+        type: editor.plugin(PLUGINS.bulletedList).schema.type,
       });
 
       expect(JSON.stringify(editor.read.children())).toBe(before);
@@ -596,7 +595,7 @@ describe('list toggling', () => {
 
         editor.plugin(BaseListPlugin).update.toggle({
           checked: true,
-          type: editor.plugin(PLUGINS.taskList).schema.element!.type,
+          type: editor.plugin(PLUGINS.taskList).schema.type,
         });
 
         expect(editor.read.children()).toMatchObject([

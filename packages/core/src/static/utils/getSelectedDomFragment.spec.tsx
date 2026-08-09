@@ -19,10 +19,17 @@ describe('getSelectedDomFragment', () => {
   });
 
   it('returns fully selected top-level blocks without deserializing them again', () => {
+    const editor = createBaseEditor();
+    const block = {
+      children: [{ text: 'hello' }],
+      type: 'paragraph',
+    };
+
+    editor.update.value.replace({ children: [block], selection: null });
     document.body.innerHTML =
-      '<div data-block-id="block-1" data-plite-node="element">hello</div>';
+      '<div data-plite-node="element" data-plite-path="0" data-plite-root="main">hello</div>';
     const blockElement = document.querySelector(
-      '[data-block-id="block-1"]'
+      '[data-plite-node="element"][data-plite-path]'
     ) as HTMLElement;
     const range = document.createRange();
     const selection = window.getSelection()!;
@@ -31,42 +38,11 @@ describe('getSelectedDomFragment', () => {
     selection.removeAllRanges();
     selection.addRange(range);
 
-    const editor = createBaseEditor({
-      nodeId: true,
-    });
-    const block = {
-      children: [{ text: 'hello' }],
-      id: 'block-1',
-      type: 'paragraph',
-    };
-
-    editor.update.value.replace({ children: [block], selection: null });
-
     expect(getSelectedDomFragment(editor)).toEqual([block]);
   });
 
   it('deserializes partial edge blocks for non-void selections', () => {
-    document.body.innerHTML = [
-      '<div data-block-id="block-1" data-plite-node="element">hello world</div>',
-      '<div data-block-id="block-2" data-plite-node="element">omega</div>',
-    ].join('');
-
-    selectText(
-      document.querySelector('[data-block-id="block-1"]')!.firstChild as Text,
-      1,
-      5
-    );
-    window
-      .getSelection()!
-      .getRangeAt(0)
-      .setEnd(
-        document.querySelector('[data-block-id="block-2"]')!.firstChild as Text,
-        5
-      );
-
-    const editor = createBaseEditor({
-      nodeId: true,
-    });
+    const editor = createBaseEditor();
     const blockOne = { children: [{ text: 'hello world' }], type: 'paragraph' };
     const blockTwo = { children: [{ text: 'omega' }], type: 'paragraph' };
     const partialOne = {
@@ -75,16 +51,27 @@ describe('getSelectedDomFragment', () => {
     };
 
     editor.update.value.replace({
-      children: [
-        { ...blockOne, id: 'block-1' },
-        { ...blockTwo, id: 'block-2' },
-      ],
+      children: [blockOne, blockTwo],
       selection: null,
     });
+    document.body.innerHTML = [
+      '<div data-plite-node="element" data-plite-path="0" data-plite-root="main">hello world</div>',
+      '<div data-plite-node="element" data-plite-path="1" data-plite-root="main">omega</div>',
+    ].join('');
 
-    expect(getSelectedDomFragment(editor)).toEqual([
-      partialOne,
-      { ...blockTwo, id: 'block-2' },
-    ]);
+    selectText(
+      document.querySelector('[data-plite-path="0"]')!.firstChild as Text,
+      1,
+      5
+    );
+    window
+      .getSelection()!
+      .getRangeAt(0)
+      .setEnd(
+        document.querySelector('[data-plite-path="1"]')!.firstChild as Text,
+        5
+      );
+
+    expect(getSelectedDomFragment(editor)).toEqual([partialOne, blockTwo]);
   });
 });

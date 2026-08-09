@@ -30,7 +30,7 @@ browser-unsupported skip.
 
 ## Promotion
 
-Next owner: `plite-patch`.
+Next owner: `patch`.
 
 Packet: make the Firefox mentions select-all replacement row diagnosable, then
 fix or keep-scoped from exact evidence. The diagnostic must record native

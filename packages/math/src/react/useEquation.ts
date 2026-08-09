@@ -2,7 +2,11 @@ import React, { useEffect, useRef } from 'react';
 
 import { isHotkey } from '@platejs/core';
 import { useEditor, useElement } from '@platejs/core/react';
-import type { TEquationElement } from '@platejs/utils';
+import {
+  BaseEquationPlugin,
+  BaseInlineEquationPlugin,
+  type EquationElement,
+} from '../lib/BaseEquationPlugin';
 import katex, { type KatexOptions } from 'katex';
 
 export const useEquationElement = ({
@@ -10,7 +14,7 @@ export const useEquationElement = ({
   katexRef,
   options,
 }: {
-  element: TEquationElement;
+  element: EquationElement;
   katexRef: React.MutableRefObject<HTMLDivElement | null>;
   options?: KatexOptions;
 }) => {
@@ -31,7 +35,9 @@ export const useEquationInput = ({
   onClose?: () => void;
 }) => {
   const editor = useEditor();
-  const element = useElement<TEquationElement>();
+  const element = useElement(
+    isInline ? BaseInlineEquationPlugin : BaseEquationPlugin
+  );
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [expressionInput, setExpressionInput] = React.useState<string>(
     element.texExpression
@@ -65,19 +71,19 @@ export const useEquationInput = ({
 
   useEffect(() => {
     const { editor, element, isInline } = effectContextRef.current;
+    const at = editor.read.nodes.path(element);
+
+    if (!at) return;
 
     if (isInline) {
       editor
-        .update({ tags: 'history-merge' })
-        .nodes.set<TEquationElement>(
-          { texExpression: expressionInput },
-          { at: element }
-        );
+        .plugin(BaseInlineEquationPlugin)
+        .update({ history: 'merge' })
+        .set({ texExpression: expressionInput }, { at });
     } else {
-      editor.update.nodes.set<TEquationElement>(
-        { texExpression: expressionInput },
-        { at: element }
-      );
+      editor
+        .plugin(BaseEquationPlugin)
+        .update.set({ texExpression: expressionInput }, { at });
     }
   }, [expressionInput]);
 
@@ -87,10 +93,13 @@ export const useEquationInput = ({
 
   const onDismiss = () => {
     if (isInline) {
-      editor.update.nodes.set<TEquationElement>(
-        { texExpression: initialExpressionRef.current },
-        { at: element }
-      );
+      const at = editor.read.nodes.path(element);
+
+      if (!at) return;
+
+      editor
+        .plugin(BaseInlineEquationPlugin)
+        .update.set({ texExpression: initialExpressionRef.current }, { at });
     }
 
     onClose?.();
@@ -158,6 +167,7 @@ export const useEquationInput = ({
 
     if (!point) return;
 
-    editor.update({ tags: 'focus' }).selection.set(point);
+    editor.update.selection.set(point);
+    editor.api.dom.focus();
   }
 };

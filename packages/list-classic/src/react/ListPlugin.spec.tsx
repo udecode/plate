@@ -1,9 +1,10 @@
 import { createPlateEditor, Plate } from '@platejs/core/react';
-import { createEditor, type Element, type Value } from '@platejs/plite';
+import { ElementApi } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
 
+import type { TTodoListItemElement } from '../lib';
 import { ListPlugin, TodoListPlugin } from './ListPlugin';
 import {
   useListToolbarButton,
@@ -50,7 +51,7 @@ describe('list-classic hooks', () => {
     });
 
     expect(editor.read.children()[0]).toMatchObject({
-      type: editor.plugin(PLUGINS.bulletedList).schema.element!.type,
+      type: editor.plugin(PLUGINS.bulletedList).schema.type,
     });
     await waitFor(() => {
       expect(result.current.pressed).toBe(true);
@@ -58,7 +59,7 @@ describe('list-classic hooks', () => {
   });
 
   it('toggles classic todo items by element reference when editable', () => {
-    const initialValue: Element[] = [
+    const initialValue: TTodoListItemElement[] = [
       {
         checked: false,
         children: [{ text: 'Task' }],
@@ -66,11 +67,21 @@ describe('list-classic hooks', () => {
       },
     ];
     const editor = createPlateEditor({
-      editor: createEditor<Value>(),
       initialValue,
       plugins: [TodoListPlugin],
     });
     const element = editor.read.children()[0];
+
+    if (
+      !ElementApi.isElementType<TTodoListItemElement>(
+        element,
+        editor.plugin(TodoListPlugin).schema.type
+      ) ||
+      typeof element.checked !== 'boolean'
+    ) {
+      throw new Error('Expected a todo list element');
+    }
+
     const { result } = renderHook(
       () => {
         const state = useTodoListElementState({ element });
@@ -94,7 +105,7 @@ describe('list-classic hooks', () => {
   });
 
   it('keeps classic todo items unchanged when read-only', () => {
-    const initialValue: Element[] = [
+    const initialValue: TTodoListItemElement[] = [
       {
         checked: false,
         children: [{ text: 'Task' }],
@@ -102,12 +113,22 @@ describe('list-classic hooks', () => {
       },
     ];
     const editor = createPlateEditor({
-      editor: createEditor<Value>(),
       initialValue,
       plugins: [TodoListPlugin],
       readOnly: true,
     });
     const element = editor.read.children()[0];
+
+    if (
+      !ElementApi.isElementType<TTodoListItemElement>(
+        element,
+        editor.plugin(TodoListPlugin).schema.type
+      ) ||
+      typeof element.checked !== 'boolean'
+    ) {
+      throw new Error('Expected a todo list element');
+    }
+
     const { result } = renderHook(
       () => {
         const state = useTodoListElementState({ element });

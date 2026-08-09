@@ -189,7 +189,7 @@ Plate 用于向任何节点组件注入 props 的属性。
 </APISubListItem>
 
 <APISubListItem parent="inject" name="excludePlugins" type="readonly (PluginReference | string)[]" optional>
-  排除节点属性注入的插件 name 数组。
+  排除节点属性注入的插件 descriptor 或动态 name 数组。
 </APISubListItem>
 
 <APISubListItem
@@ -198,7 +198,8 @@ Plate 用于向任何节点组件注入 props 的属性。
   type="readonly (PluginReference | string)[]"
   optional
 >
-  插件 name 数组。对于这些插件类型的元素后代节点，将排除节点属性注入。
+  插件 descriptor 或动态 name 数组。对于由这些插件拥有的元素后代节点，
+  将排除节点属性注入。
 </APISubListItem>
 <APISubListItem parent="inject" name="isBlock" type="boolean" optional>
   如果为 true，仅匹配块级元素。用于限制属性注入到块级节点。
@@ -220,8 +221,15 @@ Plate 用于向任何节点组件注入 props 的属性。
 通过 `element`、`mark`、键控 `properties` 和 `contentRoots` 字段声明插件的 Plite
 模型。Schema 工厂接收插件 `name`、配置后的 `initialState`、`targetElementTypes`
 和 Plate 关系 helper。`name` 只标识能力。已安装的 AST identity 通过插件 callback
-和 portal 的 `schema.element.type` 与 `schema.properties.&lt;localId&gt;.key` 发布。
+和 portal 的 `schema.type`（element 插件）或 `schema.key`（primary mark 插件）
+发布。Author callback 还可以通过 `schema.properties.&lt;localId&gt;` 访问额外声明的
+property；consumer portal 不公开该映射。Behavior 和 aggregate-property portal
+不包含 `schema`。
 布尔文本属性使用 `property.boolean({ default: false, omitDefault: true })`。
+在 `update` 中，唯一且未 alias 的 property 使用类型化
+`tx.nodes.set(key, value, options)` 或 `unset(key, options)` overload。Alias 使用
+精确的 authored property handle。结构性和原子写入保留 object form；prefix family
+和 cross-node behavior 使用语义 update method。
 </APIItem>
 
 <APIItem name="rules" type="object">
@@ -292,7 +300,8 @@ Plate 用于向任何节点组件注入 props 的属性。
 <APISubListItem parent="rules" name="match" type="MatchRules" optional>
 确定此插件的规则是否应用于节点的函数。用于基于节点属性（不仅仅是类型匹配）覆盖行为。
 
-**默认值:** `name === node.type`
+不会隐式匹配 capability name 或 schema identity。没有此 callback 时，Plate
+使用为该元素持久化 type 编译的插件所拥有的规则。
 
 **示例:** `matchRules: ({ node }) => Boolean(node.listStyleType)`
 
@@ -534,7 +543,7 @@ editOnly: {
 
 ```ts
 H1Plugin.configure({
-  shortcuts: { toggle: { keys: "mod+alt+1" } },
+  rules: { break: { empty: 'reset' } },
 });
 ```
 
@@ -606,7 +615,7 @@ MIME-keyed；`'text/html'` 接受单个 schema-aware rule 或非空有序 rule t
 
 <API name="GenericTypes">
   <APIAttributes>
-    <APIItem name="D" type="BasePluginDefinition | BasePluginDefinition">
+    <APIItem name="D" type="BasePluginDefinition">
       表示插件契约，包括
       `name`、`initialState`、`api`、`read`、`update`、selectors、dependencies
       和 schema 推断。

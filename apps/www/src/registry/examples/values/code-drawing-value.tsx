@@ -4,10 +4,9 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-import type { TCodeDrawingElement } from '@platejs/code-drawing';
-import type { NodeProps } from 'platejs';
+import type { CodeDrawingData } from '@platejs/code-drawing';
 
-export const codeDrawingInitialData: NodeProps<TCodeDrawingElement> = {
+export const codeDrawingInitialData: { data: CodeDrawingData } = {
   data: {
     drawingType: 'Mermaid',
     drawingMode: 'Both',

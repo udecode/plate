@@ -3,13 +3,14 @@ import {
   type TriggerComboboxPluginState,
 } from '@platejs/combobox';
 import { type DefinitionOf, defineBasePlugin } from '@platejs/core';
-import { property } from '@platejs/plite';
-import { KEYS, NODES } from '@platejs/utils';
+import {
+  type ElementOf,
+  type NodeInsertNodesOptions,
+  property,
+} from '@platejs/plite';
+import { PLUGINS } from '@platejs/utils';
 
-export type InsertMentionOptions = {
-  value: string;
-  key?: string;
-};
+const TRIGGER_PREVIOUS_CHAR_PATTERN = /^\s?$/;
 
 export type TMentionItemBase<TKey = unknown> = {
   text: string;
@@ -27,17 +28,7 @@ export type MentionPluginState = {
   >;
 } & TriggerComboboxPluginState;
 
-const initialState: MentionPluginState = {
-  trigger: '@',
-  triggerPreviousCharPattern: /^\s?$/,
-  createComboboxInput: (trigger) => ({
-    children: [{ text: '' }],
-    trigger,
-    type: NODES.mentionInput,
-  }),
-};
-
-export const BaseMentionInputPlugin = defineBasePlugin(KEYS.mentionInput, {
+export const BaseMentionInputPlugin = defineBasePlugin(PLUGINS.mentionInput, {
   schema: {
     element: {
       properties: {
@@ -48,30 +39,67 @@ export const BaseMentionInputPlugin = defineBasePlugin(KEYS.mentionInput, {
       void: 'inline',
     },
   },
-  type: NODES.mentionInput,
 });
 
+export type MentionInputElement = ElementOf<typeof BaseMentionInputPlugin>;
+
 /** Enables support for autocompleting @mentions. */
-export const BaseMentionPlugin = defineBasePlugin(KEYS.mention, {
+export const BaseMentionPlugin = defineBasePlugin(PLUGINS.mention, {
   dependencies: [BaseMentionInputPlugin],
   schema: {
     element: {
       properties: {
         key: property.string(),
-        value: property.string(),
+        value: property.string({ required: true }),
       },
       void: 'markable-inline',
     },
   },
-  initialState,
-  codecs: ({ defineCodecs }) =>
+  initialState: ({ editor }): MentionPluginState => ({
+    createComboboxInput: (trigger) => ({
+      children: [{ text: '' }],
+      trigger,
+      type: editor.plugin(BaseMentionInputPlugin).schema.type,
+    }),
+    insertSpaceAfterMention: false,
+    trigger: '@',
+    triggerPreviousCharPattern: TRIGGER_PREVIOUS_CHAR_PATTERN,
+  }),
+  codecs: ({ defineCodecs, schema: { type } }) =>
     defineCodecs({
+      'text/html': {
+        decode: ({ element }) => {
+          const value = element.getAttribute('data-plate-mention-value');
+
+          if (value === null) return;
+
+          const key = element.getAttribute('data-plate-mention-key');
+
+          return {
+            children: [{ text: '' }],
+            ...(key === null ? {} : { key }),
+            value,
+          };
+        },
+        encode: ({ content, node }) => ({
+          attributes: {
+            'data-plate-mention': true,
+            'data-plate-mention-key': node.key,
+            'data-plate-mention-value': node.value,
+          },
+          children: [content, { text: `@${node.value}` }],
+          tag: 'span',
+        }),
+        match: [{ attributes: { 'data-plate-mention': true }, tag: 'span' }],
+        priority: 10,
+      },
+
       'text/markdown': {
-        decode: ({ node, type }) => ({
+        decode: ({ node }) => ({
+          ...(node.displayText && { key: node.username }),
           children: [{ text: '' }],
           type,
           value: node.displayText || node.username,
-          ...(node.displayText && { key: node.username }),
         }),
         encode: ({ node }) => {
           const mentionId = node.key || node.value;
@@ -89,40 +117,53 @@ export const BaseMentionPlugin = defineBasePlugin(KEYS.mention, {
         kind: 'node',
       },
     }),
-  update: ({ store, tx, type }) => ({
-    insert: ({ key, value }: InsertMentionOptions) => {
-      const blockPath = tx.nodes.block()?.[1];
-      const selection = tx.selection();
-      const insertSpaceAfter =
-        store.get().insertSpaceAfterMention &&
-        blockPath &&
-        selection &&
-        tx.points.isEnd(selection.anchor, blockPath);
-      const mention = {
-        key,
-        children: [{ text: '' }],
-        type,
-        value,
-      };
+  update: ({ plugin, store, tx, schema: { type } }) => {
+    type Mention = ElementOf<typeof plugin>;
 
-      tx.nodes.insert(insertSpaceAfter ? [mention, { text: ' ' }] : mention);
+    return {
+      insert: (
+        { key, value }: { value: string; key?: string },
+        options: NodeInsertNodesOptions<Mention> = {}
+      ) => {
+        const selection = options.at === undefined ? tx.selection() : undefined;
+        const blockPath = selection ? tx.nodes.block()?.[1] : undefined;
+        const insertSpaceAfter =
+          store.get().insertSpaceAfterMention &&
+          blockPath &&
+          selection &&
+          tx.points.isEnd(selection.anchor, blockPath);
+        const mention = {
+          key,
+          children: [{ text: '' }],
+          type,
+          value,
+        };
 
-      if (insertSpaceAfter && blockPath) {
-        const at = tx.points.end(blockPath);
+        tx.nodes.insert(
+          insertSpaceAfter ? [mention, { text: ' ' }] : mention,
+          options
+        );
 
-        if (at) tx.selection.set(at);
-      } else {
-        tx.selection.move({ unit: 'offset' });
-      }
-    },
-  }),
-}).extend(({ editor, plugin, store, type }) =>
-  triggerCombobox({
-    editor,
-    getState: () => store.get(),
-    name: plugin.name,
-    type,
-  })
-);
+        if (options.at !== undefined || options.select) return;
+
+        if (insertSpaceAfter && blockPath) {
+          const at = tx.points.end(blockPath);
+
+          if (at) tx.selection.set(at);
+        } else {
+          tx.selection.move({ unit: 'offset' });
+        }
+      },
+    };
+  },
+}).extend(({ editor, store, schema: { type } }) => ({
+  commands: (context) =>
+    triggerCombobox(context, {
+      editor,
+      getState: () => store.get(),
+      type,
+    }),
+}));
 
 export type MentionDefinition = DefinitionOf<typeof BaseMentionPlugin>;
+export type MentionElement = ElementOf<typeof BaseMentionPlugin>;

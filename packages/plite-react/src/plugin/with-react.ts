@@ -3,6 +3,11 @@ import {
   createEditor,
   defineExtension,
   type Editor,
+  type EditorExtensionPortal,
+  type EditorExtensionReference,
+  type EditorUpdateContext,
+  type EditorUpdatePolicy,
+  type EditorUpdateTransaction,
   type EditorExtensionsFromOptions,
   type EditorValueFromOptions,
   type Value,
@@ -111,11 +116,21 @@ export type ReactEditor<
 
 /** React-only editor context value used by lower-level provider internals. */
 export type ReactEditorContextValue<V extends Value = Value> = Omit<
-  Editor<V, readonly [ReactExtension]>,
-  'api' | 'extension'
+  ReactEditor<V>,
+  'extension' | 'update'
 > & {
-  api: Editor<V, readonly [ReactExtension]>['api'];
-  extension: Editor<V, readonly [ReactExtension]>['extension'];
+  extension: ReactEditor<V>['extension'] &
+    (<const TExtension extends EditorExtensionReference>(
+      extension: TExtension
+    ) => EditorExtensionPortal<TExtension, V>);
+  update: ReactEditor<V>['update'] &
+    ((
+      policy: EditorUpdatePolicy,
+      fn: (
+        tx: EditorUpdateTransaction<V>,
+        context: EditorUpdateContext<ReactEditor<V>>
+      ) => void
+    ) => void);
 };
 
 /** Options for `createReactEditor`. */

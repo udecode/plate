@@ -3,6 +3,8 @@ import {
   type BlockStartInputRuleMatch,
   defineBasePlugin,
   createRuleFactory,
+  type InputRuleEditor,
+  type InsertTextInputRule,
   type TextSubstitutionMatch,
 } from '@platejs/core';
 
@@ -28,7 +30,7 @@ createRuleFactory({
   trigger: ' ',
 })();
 
-createListInputRule({
+const listInputRule = createListInputRule({
   type: 'blockStart',
   apply: ({ tx }) => {
     const style: 'decimal' | 'disc' = tx.listInputRule.toggle('disc');
@@ -40,7 +42,12 @@ createListInputRule({
   },
   match: '-',
   trigger: ' ',
-});
+})();
+
+const portableListInputRule: InsertTextInputRule<
+  BlockStartInputRuleMatch,
+  InputRuleEditor
+> = listInputRule;
 
 const blockStartRule = createRuleFactory({
   type: 'blockStart',
@@ -144,3 +151,4 @@ void insertDataFormat;
 void insertTextToken;
 void inputRuleMatchAnyGuards;
 void markStartPoint;
+void portableListInputRule;

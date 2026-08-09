@@ -226,7 +226,7 @@ describe('ElementProvider', () => {
       },
       () => {
         const matchingName = useElement(NamePlugin);
-        const fallback = useElement<AgeElement>();
+        const fallback = useElement();
 
         return (
           <div>

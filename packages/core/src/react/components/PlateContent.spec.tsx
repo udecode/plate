@@ -289,7 +289,6 @@ describe('PlateContent', () => {
       key: 'local-state',
     });
     const editor = createPlateEditor({
-      nodeId: false,
       plugins: [
         defineBasePlugin('figure', {
           schema: {

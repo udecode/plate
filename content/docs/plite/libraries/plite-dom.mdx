@@ -91,7 +91,7 @@ incoming host formats and files.
 
 ```ts
 import {
-  defineEditorExtension,
+  defineExtension,
   property,
   schema,
   target,
@@ -110,8 +110,7 @@ const DataAttribute = schema.elementProperty(
 
 const editor = usePliteEditor({
   extensions: [
-    defineEditorExtension({
-      name: "app-schema",
+    defineExtension("app-schema", {
       schema: { properties: [Bold, DataAttribute] },
     }),
     hostCodecs("app-host-codecs", [

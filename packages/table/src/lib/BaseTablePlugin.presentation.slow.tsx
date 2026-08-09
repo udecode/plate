@@ -17,7 +17,6 @@ describe('table presentation slow contracts', () => {
   describe('setBorderSize', () => {
     const createEditorInstance = (input: TestEditor) =>
       createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins(),
         selection: input.selection,
         initialValue: input.children,
@@ -519,7 +518,6 @@ describe('table presentation slow contracts', () => {
   describe('setCellBackground', () => {
     const createEditorInstance = (input: TestEditor) =>
       createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins(),
         selection: input.selection,
         initialValue: input.children,
@@ -721,7 +719,6 @@ describe('table presentation slow contracts', () => {
 
     const createTableEditor = (input: TestEditor) =>
       createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins(),
         selection: input.selection,
         initialValue: input.children,
@@ -755,7 +752,7 @@ describe('table presentation slow contracts', () => {
 
         editor
           .plugin(BaseTablePlugin)
-          .update.setMarginLeft({ marginLeft: 48 }, { at: [1] });
+          .update.set({ marginLeft: 48 }, { at: [1] });
 
         expect(editor.read.children()).toMatchObject([
           { type: 'table' },
@@ -777,7 +774,7 @@ describe('table presentation slow contracts', () => {
 
         editor
           .plugin(BaseTablePlugin)
-          .update.setMarginLeft({ marginLeft: 24 }, { at: [0] });
+          .update.set({ marginLeft: 24 }, { at: [0] });
 
         expect(editor.read.children()).toMatchObject(input.children);
       });
@@ -815,7 +812,6 @@ describe('table presentation slow contracts', () => {
 
     const createEditor = () =>
       createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins(),
         selection: input.selection,
         initialValue: input.children,

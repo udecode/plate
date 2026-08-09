@@ -1,19 +1,22 @@
-import { createRuleFactory } from '@platejs/core';
+import { BaseParagraphPlugin, createRuleFactory } from '@platejs/core';
 import type { BlockFenceInputRuleMatch, PluginReference } from '@platejs/core';
-import { KEYS } from '@platejs/utils';
+import { BaseCodeBlockPlugin } from './BaseCodeBlockPlugin';
+import { BaseCodeLinePlugin } from './BaseCodeBlockPlugin';
+
+const createCodeBlockRule = createRuleFactory(BaseCodeBlockPlugin);
 
 export const CodeBlockRules = {
-  markdown: createRuleFactory<
+  markdown: createCodeBlockRule<
     { on: 'break' | 'match' },
     { block: PluginReference | string; fence: string },
     BlockFenceInputRuleMatch
   >({
     type: 'blockFence',
     fence: '```',
-    block: KEYS.p,
+    block: BaseParagraphPlugin,
     enabled: ({ editor }) =>
       !editor.read.nodes.some({
-        match: { type: editor.plugin(KEYS.codeBlock).type },
+        match: { type: editor.plugin(BaseCodeBlockPlugin).schema.type },
       }),
     priority: 100,
     apply: ({ editor, tx }, match) => {
@@ -22,10 +25,10 @@ export const CodeBlockRules = {
           children: [
             {
               children: [{ text: '' }],
-              type: editor.plugin(KEYS.codeLine).type,
+              type: editor.plugin(BaseCodeLinePlugin).schema.type,
             },
           ],
-          type: editor.plugin(KEYS.codeBlock).type,
+          type: editor.plugin(BaseCodeBlockPlugin).schema.type,
         },
         { at: match.path }
       );

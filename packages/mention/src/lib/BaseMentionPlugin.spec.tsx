@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
-import { createBaseEditor } from '@platejs/core';
-import type { Element } from '@platejs/plite';
+import { createBaseEditor, defineEditor } from '@platejs/core';
+import { type Element, schema } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
 
 import { BaseMentionInputPlugin, BaseMentionPlugin } from './BaseMentionPlugin';
@@ -76,6 +76,78 @@ describe('BaseMentionPlugin', () => {
       value: 'Ada',
     });
     expect(children[2]).toEqual({ text: 'llo' });
+  });
+
+  it('round-trips mention identity through HTML clipboard data', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseMentionPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 7, path: [0, 0] },
+        focus: { offset: 0, path: [0, 2] },
+      },
+      initialValue: [
+        {
+          children: [
+            { text: 'before ' },
+            {
+              children: [{ text: '' }],
+              key: 'user-1',
+              type: 'mention',
+              value: 'Ada',
+            },
+            { text: ' after' },
+          ],
+          type: 'paragraph',
+        },
+      ],
+    });
+    const data = new DataTransfer();
+
+    editor.api.dom.clipboard.writeSelection(data);
+
+    const html = data.getData('text/html');
+    const element = new DOMParser()
+      .parseFromString(html, 'text/html')
+      .body.querySelector('[data-plate-mention]');
+
+    expect(element?.getAttribute('data-plate-mention-key')).toBe('user-1');
+    expect(element?.getAttribute('data-plate-mention-value')).toBe('Ada');
+    expect(element?.textContent).toBe('@Ada');
+
+    expect(editor.api.html.deserialize({ element: html })).toEqual([
+      {
+        children: [
+          { text: '' },
+          {
+            children: [{ text: '' }],
+            key: 'user-1',
+            type: 'mention',
+            value: 'Ada',
+          },
+          { text: '' },
+        ],
+        type: 'paragraph',
+      },
+    ]);
+  });
+
+  it('creates transient inputs with the configured schema type', () => {
+    const definition = defineEditor('customMentionInput', {
+      plugins: [BaseMentionPlugin],
+      schema: {
+        overrides: [
+          schema.override(BaseMentionInputPlugin, {
+            element: { type: 'customMentionInput' },
+          }),
+        ],
+      },
+    });
+    const editor = createBaseEditor({ plugins: definition.plugins });
+
+    expect(
+      editor.plugin(BaseMentionPlugin).store.get('createComboboxInput')('@')
+    ).toMatchObject({ type: 'customMentionInput' });
   });
 
   it('replaces a typed trigger with the transient mention input', () => {

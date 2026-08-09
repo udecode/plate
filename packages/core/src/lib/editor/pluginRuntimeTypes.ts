@@ -5,6 +5,7 @@ import type {
   EditorSchemaElement,
   EditorSchemaExtension,
   EditorSchemaExtensionProvider,
+  EditorNodeUnsetOptions,
   EditorExtensionPortal,
   EditorExtensionReference,
   EditorExtensionCapabilities,
@@ -21,6 +22,9 @@ import type {
   EditorUpdatePolicy,
   EditorValueFromExtensions,
   Element,
+  Descendant,
+  NodeIn,
+  NodeProps,
   NodeInsertNodesOptions,
   NodeRemoveNodesOptions,
   NodeSetNodesOptions,
@@ -34,6 +38,8 @@ import type {
   SchemaElementProperty,
   SchemaElementTypes,
   SchemaProperty,
+  SchemaPropertyHandle,
+  SchemaPropertyHandleValue,
   SchemaText,
   SchemaTextProperties,
   SchemaExtensionsOf,
@@ -65,6 +71,8 @@ import type { InternalPluginDefinitionOf } from '../plugin/pluginDefinitionLooku
 import type {
   InferExactPluginSchemaContribution,
   InferPluginElementType,
+  InferPluginMarkValue,
+  InferPluginWritablePropertyEntries,
 } from '../plugin/pluginSchemaModel.internal';
 import type {
   CoreEditorApi,
@@ -131,6 +139,9 @@ type NormalizeInstalledCapability<
         (TCapability extends Readonly<{ read: infer TRead extends object }>
           ? Readonly<{ read: TRead }>
           : {}) &
+        (TCapability extends Readonly<{ markValue: infer TMarkValue }>
+          ? Readonly<{ markValue: TMarkValue }>
+          : {}) &
         (TCapability extends Readonly<{
           schemaContribution: infer TProvider extends
             () => EditorSchemaContribution;
@@ -176,6 +187,9 @@ type CompactAuthoredPluginDefinition<D extends AnyBasePluginDefinition> =
     ([keyof InferRead<D>] extends [never]
       ? {}
       : Readonly<{ read: InferRead<D> }>) &
+    ([InferPluginMarkValue<D>] extends [never]
+      ? {}
+      : Readonly<{ markValue: InferPluginMarkValue<D> }>) &
     Readonly<{
       schemaContribution: () => ExactSchemaContribution<D>;
     }> &
@@ -362,13 +376,22 @@ type NormalizeInstalledRuntimeCapability<
         (TCapability extends Readonly<{ read: infer TRead extends object }>
           ? Readonly<{ read: TRead }>
           : {}) &
+        (TCapability extends Readonly<{ markValue: infer TMarkValue }>
+          ? Readonly<{ markValue: TMarkValue }>
+          : {}) &
         (TCapability extends Readonly<{ update: infer TUpdate extends object }>
           ? Readonly<{ update: TUpdate }>
           : {})
     : never;
 
+type PluginWritablePropertyProvider<D extends AnyBasePluginDefinition> =
+  Readonly<{
+    __pluginWritableProperties: InferPluginWritablePropertyEntries<D>;
+  }>;
+
 type CompactAuthoredRuntimePluginDefinition<D extends AnyBasePluginDefinition> =
   Readonly<{ name: D['name'] }> &
+    PluginWritablePropertyProvider<D> &
     ([keyof InferApi<D>] extends [never]
       ? {}
       : Readonly<{ api: InferApi<D> }>) &
@@ -378,6 +401,9 @@ type CompactAuthoredRuntimePluginDefinition<D extends AnyBasePluginDefinition> =
     ([keyof InferRead<D>] extends [never]
       ? {}
       : Readonly<{ read: InferRead<D> }>) &
+    ([InferPluginMarkValue<D>] extends [never]
+      ? {}
+      : Readonly<{ markValue: InferPluginMarkValue<D> }>) &
     ([keyof InferUpdate<D>] extends [never]
       ? {}
       : Readonly<{ update: InferUpdate<D> }>);
@@ -393,7 +419,8 @@ type DirectInstalledRuntimeCapability<P, D extends AnyBasePluginDefinition> = [
       P extends Readonly<{ type: infer TElementType extends string }>
         ? TElementType
         : InferPluginElementType<D>
-    >;
+    > &
+      PluginWritablePropertyProvider<D>;
 
 type InferHiddenRuntimeCapability<
   D extends AnyBasePluginDefinition,
@@ -586,13 +613,40 @@ type InferApiGroup<D> = [D] extends [never]
         }
     : never;
 
+type DefaultMarkRead<D extends AnyBasePluginDefinition> = [
+  InferPluginMarkValue<D>,
+] extends [never]
+  ? {}
+  : Readonly<{
+      isActive: (value?: InferPluginMarkValue<D>) => boolean;
+      value: () => InferPluginMarkValue<D> | undefined;
+    }>;
+
+type DefaultMarkUpdate<D extends AnyBasePluginDefinition> = [
+  InferPluginMarkValue<D>,
+] extends [never]
+  ? {}
+  : Readonly<{
+      clear: () => void;
+      set: (value: InferPluginMarkValue<D>) => void;
+      toggle: [InferPluginMarkValue<D>] extends [boolean]
+        ? () => void
+        : (value: InferPluginMarkValue<D>) => void;
+    }>;
+
+type PluginRead<D extends AnyBasePluginDefinition> = Omit<
+  DefaultMarkRead<D>,
+  keyof InferRead<D>
+> &
+  InferRead<D>;
+
 type InferReadGroup<D> = [D] extends [never]
   ? never
   : D extends AnyBasePluginDefinition
-    ? keyof InferRead<D> extends never
+    ? keyof PluginRead<D> extends never
       ? never
       : {
-          readonly [K in ExactName<D>]: InferRead<D>;
+          readonly [K in ExactName<D>]: PluginRead<D>;
         }
     : never;
 
@@ -604,6 +658,7 @@ type InstalledSchemaDefinitionsOf<D> =
 type EditorElementMutation = Readonly<{
   construction: object;
   properties: object;
+  type: string;
 }>;
 
 type GeneratedElementUpdate<
@@ -700,7 +755,8 @@ type PluginUpdate<TSchemaDefinitions, D extends AnyBasePluginDefinition> = Omit<
     TSchemaDefinitions extends InternalEditorMutationProvider<unknown>
       ? D
       : SchemaPluginDefinitionForRuntimePlugin<TSchemaDefinitions, D>
-  >,
+  > &
+    DefaultMarkUpdate<D>,
   keyof InferUpdate<D>
 > &
   InferUpdate<D>;
@@ -718,10 +774,10 @@ type InferUpdateGroup<D, TSchemaDefinitions = D> = [D] extends [never]
 type InferTransactionGroup<D, TSchemaDefinitions = D> = [D] extends [never]
   ? never
   : D extends AnyBasePluginDefinition
-    ? keyof (InferRead<D> & PluginUpdate<TSchemaDefinitions, D>) extends never
+    ? keyof (PluginRead<D> & PluginUpdate<TSchemaDefinitions, D>) extends never
       ? never
       : {
-          readonly [K in ExactName<D>]: InferRead<D> &
+          readonly [K in ExactName<D>]: PluginRead<D> &
             PluginUpdate<TSchemaDefinitions, D>;
         }
     : never;
@@ -1026,6 +1082,19 @@ export type InternalEditorDefinitionElementProperties<
   : Readonly<Record<never, never>>;
 
 /** @internal Property types declared by one plugin, independent of runtime targets. */
+type ExplicitEditorDefinitionPlugin<
+  TPlugins extends readonly unknown[],
+  TName extends string,
+> = TPlugins[number] extends infer TPlugin
+  ? PluginDefinitionOf<TPlugin> extends infer TDefinition
+    ? TDefinition extends AnyBasePluginDefinition
+      ? TDefinition['name'] extends TName
+        ? TDefinition
+        : never
+      : never
+    : never
+  : never;
+
 export type InternalEditorDefinitionOwnedElementProperties<
   TPlugins extends readonly unknown[],
   TName extends string,
@@ -1033,7 +1102,10 @@ export type InternalEditorDefinitionOwnedElementProperties<
     CorePluginDefinition,
     InferPlugins<TPlugins>
   >,
-  TPlugin = Extract<TDefinitions, { name: TName }>,
+  TExplicitPlugin = ExplicitEditorDefinitionPlugin<TPlugins, TName>,
+  TPlugin = [TExplicitPlugin] extends [never]
+    ? Extract<TDefinitions, { name: TName }>
+    : TExplicitPlugin,
 > = TPlugin extends AnyBasePluginDefinition
   ? ExactSchemaContribution<TPlugin> extends infer TContribution
     ? Materialize<
@@ -1099,6 +1171,7 @@ type EditorDefinitionElementMutation<D extends AnyBasePluginDefinition> = [
             PlateSchemaSourceForInstalledDefinitions<D>,
             TType
           >;
+          type: TType;
         }>
       : never
     : never;
@@ -1164,7 +1237,7 @@ type MutationPluginGuard<TMutations, TPlugin> = [
   : unknown;
 
 type PlateMutationSchemaCreate<TMutations> = (<
-  const TPlugin extends PluginReference & Readonly<{ type: string }>,
+  const TPlugin extends PluginReference,
 >(
   plugin: TPlugin & NoInfer<MutationPluginGuard<TMutations, TPlugin>>,
   ...properties: EditorMutationForPlugin<
@@ -1176,7 +1249,9 @@ type PlateMutationSchemaCreate<TMutations> = (<
       : [properties: NoInfer<TMutation['construction']>]
     : never
 ) => Element &
-  Readonly<{ type: TPlugin['type'] }> &
+  Readonly<{
+    type: EditorMutationForPlugin<TMutations, TPlugin>['type'];
+  }> &
   EditorMutationForPlugin<TMutations, TPlugin>['properties']) &
   EditorStateSchemaApi['create'];
 
@@ -1219,9 +1294,7 @@ type PlateMutationStateSchemaApi<
       isElementTypeInGroup: PlateMutationSchemaIsElementTypeInGroup<TMutations>;
     };
 
-type PlateRawSchemaCreate = (<
-  const TPlugin extends PluginReference & Readonly<{ type: string }>,
->(
+type PlateRawSchemaCreate = (<const TPlugin extends PluginReference>(
   plugin: TPlugin & NoInfer<RawElementPluginGuard<TPlugin>>,
   ...properties: RawEditorMutationForPlugin<TPlugin> extends infer TMutation extends
     EditorElementMutation
@@ -1230,7 +1303,7 @@ type PlateRawSchemaCreate = (<
       : [properties: NoInfer<TMutation['construction']>]
     : never
 ) => Element &
-  Readonly<{ type: TPlugin['type'] }> &
+  Readonly<{ type: RawEditorMutationForPlugin<TPlugin>['type'] }> &
   RawEditorMutationForPlugin<TPlugin>['properties']) &
   EditorStateSchemaApi['create'];
 
@@ -1373,11 +1446,140 @@ type BivariantFunction<TFunction> = TFunction extends (
   ? { bivarianceHack(...args: TArgs): TResult }['bivarianceHack']
   : never;
 
+type WritablePropertyEntries<D> =
+  D extends Readonly<{
+    __pluginWritableProperties: infer TEntry;
+  }>
+    ? TEntry
+    : never;
+
+type ExactUnaliasedWritableEntry<TEntry> =
+  TEntry extends Readonly<{
+    key: infer TKey extends string;
+    unaliased: true;
+  }>
+    ? TEntry & Readonly<{ key: TKey }>
+    : never;
+
+type WritableEntriesForKey<TEntries, TKey extends string> =
+  TEntries extends Readonly<{ key: infer TEntryKey extends string }>
+    ? TKey extends TEntryKey
+      ? TEntryKey extends TKey
+        ? TEntries
+        : never
+      : never
+    : never;
+
+type IsUnion<TValue, TWhole = TValue> = TValue extends unknown
+  ? [TWhole] extends [TValue]
+    ? false
+    : true
+  : never;
+
+type UniqueWritablePropertyEntry<
+  TAllEntries,
+  TEntry = ExactUnaliasedWritableEntry<TAllEntries>,
+> =
+  TEntry extends Readonly<{ key: infer TKey extends string }>
+    ? true extends IsUnion<
+        WritableEntriesForKey<ExactUnaliasedWritableEntry<TAllEntries>, TKey>
+      >
+      ? never
+      : TEntry
+    : never;
+
+type PluginWritablePropertyEntry<D> = UniqueWritablePropertyEntry<
+  WritablePropertyEntries<D>
+>;
+
+type PluginWritablePropertyKey<D> =
+  PluginWritablePropertyEntry<D> extends infer TEntry
+    ? TEntry extends Readonly<{ key: infer TKey extends string }>
+      ? TKey
+      : never
+    : never;
+
+type PluginWritablePropertyValue<D, TKey extends string> =
+  PluginWritablePropertyEntry<D> extends infer TEntry
+    ? TEntry extends Readonly<{
+        key: infer TEntryKey extends string;
+        value: infer TValue;
+      }>
+      ? TKey extends TEntryKey
+        ? TValue
+        : never
+      : never
+    : never;
+
+type PlatePluginTransactionNodes<D> = Omit<
+  EditorUpdateTransaction<Value>['nodes'],
+  'set' | 'unset'
+> & {
+  set: {
+    <T extends Descendant>(
+      props: Partial<NodeProps<NoInfer<T>>>,
+      options: Omit<NodeSetNodesOptions<T>, 'at'> & { at: T }
+    ): void;
+    (
+      props: Partial<Omit<Element, 'children'>>,
+      options?: NodeSetNodesOptions<Element>
+    ): void;
+    <T extends NodeIn<Value>>(
+      props: Partial<NodeProps<T>>,
+      options?: NodeSetNodesOptions<T>
+    ): void;
+    <const TKey extends PluginWritablePropertyKey<D>>(
+      key: TKey,
+      value: NoInfer<PluginWritablePropertyValue<D, TKey>>,
+      options?: NodeSetNodesOptions<NodeIn<Value>>
+    ): void;
+    <const THandle extends SchemaPropertyHandle<string, unknown>>(
+      property: THandle,
+      value: NoInfer<SchemaPropertyHandleValue<THandle>>,
+      options?: NodeSetNodesOptions<NodeIn<Value>>
+    ): void;
+    <TKey extends string>(
+      key: string extends TKey ? TKey : never,
+      value: unknown,
+      options?: NodeSetNodesOptions<NodeIn<Value>>
+    ): void;
+  };
+  unset: {
+    <const TKey extends PluginWritablePropertyKey<D>>(
+      property: TKey | readonly TKey[],
+      options?: EditorNodeUnsetOptions<NodeIn<Value>>
+    ): void;
+    <const THandle extends SchemaPropertyHandle<string, unknown>>(
+      property: THandle,
+      options?: EditorNodeUnsetOptions<NodeIn<Value>>
+    ): void;
+    <TKey extends string>(
+      property: string extends TKey ? TKey | readonly TKey[] : never,
+      options?: EditorNodeUnsetOptions<NodeIn<Value>>
+    ): void;
+  };
+};
+
+type WithPluginWritableNodes<TTransaction, D> = Omit<TTransaction, 'nodes'> &
+  Readonly<{ nodes: PlatePluginTransactionNodes<D> }>;
+
+type PlatePluginTransactionForInstalledDefinitions<
+  D,
+  S = D,
+  V extends Value = Value,
+> = WithPluginWritableNodes<
+  EditorUpdateTransaction<V, readonly [PlateTransactionExtension<D, S>]>,
+  D
+>;
+
 type PlateEditorTransactionBuilder<
   V extends Value,
   D,
   S = D,
-> = EditorTransactionSpecBuilder<V, readonly [PlateTransactionExtension<D, S>]>;
+> = WithPluginWritableNodes<
+  EditorTransactionSpecBuilder<V, readonly [PlateTransactionExtension<D, S>]>,
+  D
+>;
 
 type PlateEditorStateView<V extends Value, D, S = D> = EditorReadMethods<
   V,
@@ -1414,11 +1616,7 @@ type PlateEditorRead<V extends Value, D, S = D> = EditorReadMethods<
 type PlateEditorUpdate<V extends Value, D, S = D> = {
   <TTx extends object = {}>(
     fn: (
-      transaction: EditorUpdateTransaction<
-        V,
-        readonly [PlateTransactionExtension<D, S>]
-      > &
-        TTx,
+      transaction: PlatePluginTransactionForInstalledDefinitions<D, S, V> & TTx,
       context: EditorUpdateContext<
         PliteRuntimeBaseEditor<V, readonly [PlateInstalledExtension<V, D, S>]>
       >
@@ -1427,11 +1625,7 @@ type PlateEditorUpdate<V extends Value, D, S = D> = {
   <TTx extends object = {}>(
     policy: EditorUpdatePolicy,
     fn: (
-      transaction: EditorUpdateTransaction<
-        V,
-        readonly [PlateTransactionExtension<D, S>]
-      > &
-        TTx,
+      transaction: PlatePluginTransactionForInstalledDefinitions<D, S, V> & TTx,
       context: EditorUpdateContext<
         PliteRuntimeBaseEditor<V, readonly [PlateInstalledExtension<V, D, S>]>
       >
@@ -1487,11 +1681,6 @@ export type InternalPlateTextWithInstalledDefinitions<D> =
         import('@platejs/plite').Text
       >;
 
-type PlatePluginTransactionForInstalledDefinitions<D> = EditorUpdateTransaction<
-  Value,
-  readonly [PlateTransactionExtension<D>]
->;
-
 export type PlatePluginTransaction<P extends AnyBasePluginDefinition> =
   PlatePluginTransactionForInstalledDefinitions<
     InstalledRuntimePluginDefinitions<P>
@@ -1523,8 +1712,12 @@ type PlateOwnInstalledExtension<P> = {
   }>
 >;
 
-/** Update methods exposed directly by one plugin portal. */
-export type PlatePluginUpdate<P extends AnyBasePluginDefinition> = Materialize<
+/** Read methods exposed directly by one plugin portal. */
+export type PlatePluginRead<P extends AnyBasePluginDefinition> = Materialize<
+  PluginRead<Extract<OwnInferencePluginDefinition<P>, AnyBasePluginDefinition>>
+>;
+
+type PlatePluginUpdateMethods<P extends AnyBasePluginDefinition> = Materialize<
   PluginUpdate<
     InternalEditorMutationProvider<
       EditorDefinitionMutationsFromDefinitions<
@@ -1534,6 +1727,11 @@ export type PlatePluginUpdate<P extends AnyBasePluginDefinition> = Materialize<
     Extract<OwnInferencePluginDefinition<P>, AnyBasePluginDefinition>
   >
 >;
+
+/** One-shot update methods exposed directly by one plugin portal. */
+export type PlatePluginUpdate<P extends AnyBasePluginDefinition> =
+  PlatePluginUpdateMethods<P> &
+    ((policy: EditorUpdatePolicy) => PlatePluginUpdateMethods<P>);
 
 export type PlatePluginOwnUpdate<P extends AnyBasePluginDefinition> =
   PliteRuntimeBaseEditor<

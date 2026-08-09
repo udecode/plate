@@ -1,4 +1,4 @@
-import type { Value } from '@platejs/plite';
+import type { EditorUpdatePolicy, Value } from '@platejs/plite';
 
 import type {
   BaseEditor,
@@ -7,6 +7,7 @@ import type {
 import type {
   AnyBasePluginDefinition,
   PluginReference,
+  PluginSchemaDeclaration,
   PluginStore,
 } from './PluginDefinition';
 import type { InternalPluginDefinitionOf } from './pluginDefinitionLookup.internal';
@@ -17,12 +18,16 @@ import type {
   AnyPluginBase,
   BasePluginContext,
   BasePluginPortal,
+  DynamicBasePluginPortal,
 } from './BasePlugin';
 import { createDefinePluginCodecs } from './pluginAuthoringContext';
 import {
   getCompiledPlatePlugin,
   getCompiledPlatePluginApi,
   getCompiledPlateModelBinding,
+  getCandidateApplicationElementType,
+  getAuthoredPluginPropertyHandle,
+  evaluatePluginSchemaDeclaration,
   hasCompiledPlatePluginCandidate,
   hasCompiledPlatePluginApiCandidate,
   isResolvingPlatePlugin,
@@ -50,7 +55,7 @@ export function createPluginPortal<
 export function createPluginPortal(
   editor: BaseEditor,
   plugin: AnyBasePlugin | AnyPluginBase | PluginReference | string
-): AnyBasePluginPortal;
+): DynamicBasePluginPortal;
 export function createPluginPortal(
   editor: object,
   plugin: AnyBasePlugin | AnyPluginBase | PluginReference | string
@@ -90,10 +95,6 @@ const createPluginAccess = (
 
   const descriptor = typeof input === 'string' ? undefined : input;
   const name = typeof input === 'string' ? input : input.name;
-  const fallbackSchemaOwner =
-    descriptor && 'schema' in descriptor
-      ? (descriptor as AnyBasePlugin)
-      : undefined;
   const provided =
     descriptor && isPluginBaseDescriptor(descriptor) ? descriptor : undefined;
   const matchesDescriptorFamily = (plugin: AnyBasePlugin) =>
@@ -128,82 +129,169 @@ const createPluginAccess = (
     return plugin !== undefined && matchesDescriptorFamily(plugin);
   };
   const getStore = () => getPluginStore(editor, getPlugin());
-  const getElementType = () => {
-    const plugin = getCandidate() ?? getCompiledPlatePlugin(editor, name);
-
-    if (!plugin || !matchesDescriptorFamily(plugin)) {
-      if (!descriptor) return name;
-      if (
-        fallbackSchemaOwner?.schema &&
-        (typeof fallbackSchemaOwner.schema === 'function' ||
-          (typeof fallbackSchemaOwner.schema === 'object' &&
-            'element' in fallbackSchemaOwner.schema))
-      ) {
-        return resolvePluginElementType(fallbackSchemaOwner);
-      }
-
-      throw new Error(`Plate plugin "${name}" does not own an element type.`);
-    }
+  const getAuthoredSchema = () =>
+    evaluatePluginSchemaDeclaration(editor as BaseEditor, getPlugin());
+  const getPublishedBinding = () => {
+    const plugin = getPlugin();
     const binding = getCompiledPlateModelBinding(editor, plugin);
 
-    if (binding) {
-      if (binding.elementType) return binding.elementType;
-
+    if (!binding) {
       throw new Error(
-        `Plate plugin "${plugin.name}" does not own an element type.`
+        `Plate plugin "${plugin.name}" schema is not published yet.`
       );
     }
-    if (
-      plugin.schema &&
-      (typeof plugin.schema === 'function' ||
-        (typeof plugin.schema === 'object' && 'element' in plugin.schema))
-    ) {
-      return resolvePluginElementType(plugin);
-    }
 
-    throw new Error(
-      `Plate plugin "${plugin.name}" does not own an element type.`
-    );
+    return binding;
   };
-  const getPropertyKey = () => {
-    const plugin = getCandidate() ?? getCompiledPlatePlugin(editor, name);
+  const unpublishedProperties = new Proxy(
+    Object.create(null) as Record<PropertyKey, unknown>,
+    {
+      get(_target, localId) {
+        if (typeof localId !== 'string') return;
+        const property = getAuthoredPluginPropertyHandle(
+          editor as BaseEditor,
+          getPlugin(),
+          localId
+        );
 
-    if (!plugin || !matchesDescriptorFamily(plugin)) {
-      if (!descriptor) return name;
-      if (
-        fallbackSchemaOwner?.schema &&
-        (typeof fallbackSchemaOwner.schema === 'function' ||
-          (typeof fallbackSchemaOwner.schema === 'object' &&
-            ('mark' in fallbackSchemaOwner.schema ||
-              'properties' in fallbackSchemaOwner.schema)))
-      ) {
-        return resolvePluginPropertyKey(fallbackSchemaOwner);
+        if (!property) {
+          throw new Error(
+            `Plate plugin "${getPlugin().name}" schema property "${localId}" is not published yet.`
+          );
+        }
+
+        return property;
+      },
+    }
+  );
+  const authorSchema = new Proxy(
+    Object.create(null) as Record<PropertyKey, unknown>,
+    {
+      get(_target, key) {
+        if (key === 'then' || key === 'toJSON' || typeof key === 'symbol') {
+          return;
+        }
+        const binding = getCompiledPlateModelBinding(editor, getPlugin());
+
+        if (!binding && key === 'properties') return unpublishedProperties;
+        if (!binding && key === 'type') {
+          const plugin = getPlugin();
+
+          return (
+            getCandidateApplicationElementType(editor, plugin) ??
+            resolvePluginElementType(editor as BaseEditor, plugin)
+          );
+        }
+        if (!binding && key === 'key') {
+          return resolvePluginPropertyKey(editor as BaseEditor, getPlugin());
+        }
+
+        return Reflect.get(getPublishedBinding().schema, key);
+      },
+      getOwnPropertyDescriptor(_target, key) {
+        const descriptor = Object.getOwnPropertyDescriptor(
+          getPublishedBinding().schema,
+          key
+        );
+
+        return descriptor ? { ...descriptor, configurable: true } : undefined;
+      },
+      has(_target, key) {
+        return key in getPublishedBinding().schema;
+      },
+      ownKeys() {
+        return Reflect.ownKeys(getPublishedBinding().schema);
+      },
+    }
+  );
+  const getConsumerSchemaIdentity = (identity: 'key' | 'type') => {
+    const plugin = getPlugin();
+    const binding = getCompiledPlateModelBinding(editor, plugin);
+    const expectedKind = identity === 'type' ? 'element' : 'mark';
+
+    if (binding) {
+      if (binding.kind !== expectedKind) {
+        throw new Error(
+          `Plate plugin "${plugin.name}" does not own a primary ${expectedKind} schema identity.`
+        );
       }
 
-      throw new Error(`Plate plugin "${name}" does not own a property key.`);
+      return identity === 'type' ? binding.elementType : binding.propertyKey;
     }
-    const binding = getCompiledPlateModelBinding(editor, plugin);
 
-    if (binding) {
-      if (binding.propertyKey) return binding.propertyKey;
+    const authored = getAuthoredSchema();
+    const authoredKind = authored
+      ? authored.element
+        ? 'element'
+        : authored.mark
+          ? 'mark'
+          : 'none'
+      : 'none';
 
+    if (authoredKind !== expectedKind) {
       throw new Error(
-        `Plate plugin "${plugin.name}" does not own a property key.`
+        `Plate plugin "${plugin.name}" does not own a primary ${expectedKind} schema identity.`
       );
     }
-    if (
-      plugin.schema &&
-      (typeof plugin.schema === 'function' ||
-        (typeof plugin.schema === 'object' &&
-          ('mark' in plugin.schema || 'properties' in plugin.schema)))
-    ) {
-      return resolvePluginPropertyKey(plugin);
+
+    if (hasCompiledPlatePluginCandidate(editor)) {
+      if (identity === 'type') {
+        return (
+          getCandidateApplicationElementType(editor, plugin) ??
+          authored?.element?.type ??
+          plugin.name
+        );
+      }
+
+      return authored?.mark && 'property' in authored.mark
+        ? (authored.mark.key ?? plugin.name)
+        : plugin.name;
     }
 
-    throw new Error(
-      `Plate plugin "${plugin.name}" does not own a property key.`
-    );
+    return identity === 'type'
+      ? getPublishedBinding().elementType
+      : getPublishedBinding().propertyKey;
   };
+  const hasConsumerSchemaIdentity = (identity: 'key' | 'type') => {
+    try {
+      getConsumerSchemaIdentity(identity);
+
+      return true;
+    } catch {
+      return false;
+    }
+  };
+  const consumerSchema = new Proxy(
+    Object.create(null) as Record<PropertyKey, unknown>,
+    {
+      get(_target, key) {
+        if (key === 'then' || key === 'toJSON' || typeof key === 'symbol') {
+          return;
+        }
+        if (key === 'type' || key === 'key') {
+          return getConsumerSchemaIdentity(key);
+        }
+      },
+      getOwnPropertyDescriptor(_target, key) {
+        if (key !== 'type' && key !== 'key') return;
+
+        return {
+          configurable: true,
+          enumerable: true,
+          value: getConsumerSchemaIdentity(key),
+          writable: false,
+        };
+      },
+      has(_target, key) {
+        if (key !== 'type' && key !== 'key') return false;
+
+        return hasConsumerSchemaIdentity(key);
+      },
+      ownKeys() {
+        return (['type', 'key'] as const).filter(hasConsumerSchemaIdentity);
+      },
+    }
+  );
   const createApiFacade = (path: readonly PropertyKey[]): unknown =>
     new Proxy(
       (...args: unknown[]) => {
@@ -268,7 +356,10 @@ const createPluginAccess = (
 
     return getCompiledPlatePluginApi(editor, plugin) ?? {};
   };
-  const createUpdateFacade = (path: readonly PropertyKey[]): unknown =>
+  const createUpdateFacade = (
+    path: readonly PropertyKey[],
+    policy?: EditorUpdatePolicy
+  ): unknown =>
     new Proxy(
       (...args: unknown[]) => {
         let result: unknown;
@@ -278,37 +369,41 @@ const createPluginAccess = (
         if (typeof update !== 'function') {
           throw new TypeError('Plate editor update API is not callable.');
         }
-        Reflect.apply(update, editor, [
-          (transaction: Record<PropertyKey, unknown>) => {
-            const ownGroup = transaction[getPlugin().name];
-            const resolve = (source: unknown) => {
-              let owner: unknown = source;
-              let value: unknown = source;
+        const callback = (transaction: Record<PropertyKey, unknown>) => {
+          const ownGroup = transaction[getPlugin().name];
+          const resolve = (source: unknown) => {
+            let owner: unknown = source;
+            let value: unknown = source;
 
-              for (const key of path) {
-                owner = value;
-                value =
-                  value &&
-                  (typeof value === 'object' || typeof value === 'function')
-                    ? (value as Record<PropertyKey, unknown>)[key]
-                    : undefined;
-              }
-
-              return { owner, value };
-            };
-            const own = resolve(ownGroup);
-            const { owner, value } =
-              typeof own?.value === 'function' ? own : resolve(transaction);
-
-            if (typeof value !== 'function') {
-              throw new TypeError(
-                `Plugin update command "${path.map(String).join('.')}" is not callable.`
-              );
+            for (const key of path) {
+              owner = value;
+              value =
+                value &&
+                (typeof value === 'object' || typeof value === 'function')
+                  ? (value as Record<PropertyKey, unknown>)[key]
+                  : undefined;
             }
 
-            result = Reflect.apply(value, owner, args);
-          },
-        ]);
+            return { owner, value };
+          };
+          const own = resolve(ownGroup);
+          const { owner, value } =
+            typeof own?.value === 'function' ? own : resolve(transaction);
+
+          if (typeof value !== 'function') {
+            throw new TypeError(
+              `Plugin update command "${path.map(String).join('.')}" is not callable.`
+            );
+          }
+
+          result = Reflect.apply(value, owner, args);
+        };
+
+        Reflect.apply(
+          update,
+          editor,
+          policy === undefined ? [callback] : [policy, callback]
+        );
 
         return result;
       },
@@ -321,7 +416,7 @@ const createPluginAccess = (
             return Reflect.get(target, key, receiver);
           }
 
-          return createUpdateFacade([...path, key]);
+          return createUpdateFacade([...path, key], policy);
         },
       }
     );
@@ -374,18 +469,20 @@ const createPluginAccess = (
       return createReadFacade([key]);
     },
   });
-  const update = new Proxy(
-    Object.create(null) as Record<PropertyKey, unknown>,
-    {
-      get(_target, key) {
-        if (key === 'then' || key === 'toJSON' || typeof key === 'symbol') {
-          return;
-        }
+  const createScopedUpdateFacade = (policy?: EditorUpdatePolicy): unknown =>
+    new Proxy(
+      (nextPolicy: EditorUpdatePolicy) => createScopedUpdateFacade(nextPolicy),
+      {
+        get(_target, key) {
+          if (key === 'then' || key === 'toJSON' || typeof key === 'symbol') {
+            return;
+          }
 
-        return createUpdateFacade([key]);
-      },
-    }
-  );
+          return createUpdateFacade([key], policy);
+        },
+      }
+    );
+  const update = createScopedUpdateFacade();
   const store: PluginStore<AnyBasePluginDefinition> = Object.freeze({
     get(key?: PropertyKey, ...args: unknown[]) {
       const runtime = getStore();
@@ -431,7 +528,6 @@ const createPluginAccess = (
     },
   }) as PluginStore<AnyBasePluginDefinition>;
   const context = {} as Record<PropertyKey, unknown>;
-
   if (authoring) {
     context.defineCodecs = createDefinePluginCodecs<AnyBasePluginDefinition>();
     context.editor = editor;
@@ -441,10 +537,37 @@ const createPluginAccess = (
     });
   }
 
+  const declaration =
+    descriptor && 'schema' in descriptor
+      ? (descriptor.schema as PluginSchemaDeclaration | undefined)
+      : undefined;
+  const compiledPlugin = getCandidate() ?? getCompiledPlatePlugin(editor, name);
+  const compiledSchemaKind = compiledPlugin
+    ? getCompiledPlateModelBinding(editor, compiledPlugin)?.kind
+    : undefined;
+  const evaluatedDeclaration =
+    compiledPlugin && compiledSchemaKind === undefined
+      ? evaluatePluginSchemaDeclaration(editor as BaseEditor, compiledPlugin)
+      : undefined;
+  const effectiveDeclaration = evaluatedDeclaration ?? declaration;
+  const authoredSchemaKind =
+    effectiveDeclaration && typeof effectiveDeclaration === 'object'
+      ? effectiveDeclaration.element
+        ? 'element'
+        : effectiveDeclaration.mark
+          ? 'mark'
+          : 'none'
+      : 'none';
+  const exposesConsumerSchema =
+    typeof input === 'string' ||
+    compiledSchemaKind === 'element' ||
+    compiledSchemaKind === 'mark' ||
+    authoredSchemaKind === 'element' ||
+    authoredSchemaKind === 'mark';
+
   Object.defineProperties(context, {
     api: { enumerable: true, get: getRuntimeApi },
     installed: { enumerable: true, get: isInstalled },
-    key: { enumerable: false, get: getPropertyKey },
     name: { enumerable: true, get: () => getPlugin().name },
     read: {
       enumerable: true,
@@ -454,6 +577,18 @@ const createPluginAccess = (
         return read;
       },
     },
+    ...(authoring || exposesConsumerSchema
+      ? {
+          schema: {
+            enumerable: true,
+            get: () => {
+              getPlugin();
+
+              return authoring ? authorSchema : consumerSchema;
+            },
+          },
+        }
+      : {}),
     store: {
       enumerable: true,
       get: () => {
@@ -462,7 +597,6 @@ const createPluginAccess = (
         return store;
       },
     },
-    type: { enumerable: false, get: getElementType },
     update: {
       enumerable: true,
       get: () => {
@@ -478,6 +612,7 @@ const createPluginAccess = (
       if (Reflect.has(target, key)) {
         return Reflect.get(target, key, receiver);
       }
+      if (key === 'schema') return;
 
       return Reflect.get(getPlugin(), key);
     },
@@ -485,6 +620,7 @@ const createPluginAccess = (
       const ownDescriptor = Reflect.getOwnPropertyDescriptor(target, key);
 
       if (ownDescriptor) return ownDescriptor;
+      if (key === 'schema') return;
 
       const pluginDescriptor = Reflect.getOwnPropertyDescriptor(
         getPlugin(),
@@ -496,13 +632,15 @@ const createPluginAccess = (
         : undefined;
     },
     has(target, key) {
+      if (key === 'schema') return Reflect.has(target, key);
+
       return Reflect.has(target, key) || Reflect.has(getPlugin(), key);
     },
     ownKeys(target) {
       return [
         ...new Set([
           ...Reflect.ownKeys(target),
-          ...Reflect.ownKeys(getPlugin()),
+          ...Reflect.ownKeys(getPlugin()).filter((key) => key !== 'schema'),
         ]),
       ];
     },

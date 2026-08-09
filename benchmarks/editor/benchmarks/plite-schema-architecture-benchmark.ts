@@ -312,9 +312,9 @@ const createPlateDescriptorPlugins = (
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
+          type: `plate-descriptor-${cohort}-${count}-${index}`,
         },
       },
-      type: `plate-descriptor-${cohort}-${count}-${index}`,
     })
   );
 const measurePlateDescriptorStartup = (

@@ -83,6 +83,22 @@ Application code should not patch the browser `Selection` directly for normal ed
 
 Use [React Editor](../libraries/plite-react/react-editor) for DOM translation helpers and [Plite React Event Handling](../libraries/plite-react/event-handling) for browser event hooks.
 
+Horizontal arrow and word movement are visual DOM operations. Plite React asks
+the DOM capability for the next physical left or right point and affinity, so
+mixed-direction text follows the browser's rendered order rather than one
+block-wide direction guess. Core point transforms remain logical and DOM-free.
+
+```tsx
+const next = editor.api.dom.resolveVisualPoint(point, {
+  affinity: "forward",
+  direction: "left",
+  unit: "word",
+});
+```
+
+This low-level API is useful for renderer integrations. Normal editors should
+let `<Editable>` own keyboard movement.
+
 ## Keyboard-Selectable Content
 
 Use a non-void, isolating element with `keyboardSelectable: true` when one
@@ -99,10 +115,9 @@ creates its `NodeSelection`. Clicking editable child text creates a normal
 `TextSelection`.
 
 ```tsx
-import { defineEditorExtension, schema } from "@platejs/plite";
+import { defineExtension, schema } from "@platejs/plite";
 
-const media = defineEditorExtension({
-  name: "media",
+const media = defineExtension("media", {
   schema: {
     elements: {
       image: {
@@ -157,10 +172,9 @@ Use [DOM Coverage Boundaries](../libraries/plite-react/dom-coverage-boundaries) 
 Void elements still need a model text anchor so Plite can place selection around them. Editable islands keep an element void for outer rendering policy while allowing cursor projection into its text children.
 
 ```tsx
-import { defineEditorExtension, schema } from "@platejs/plite";
+import { defineExtension, schema } from "@platejs/plite";
 
-const media = defineEditorExtension({
-  name: "media",
+const media = defineExtension("media", {
   schema: {
     elements: {
       "captioned-image": {

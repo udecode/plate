@@ -41,7 +41,7 @@ import { Plate, PlateContent, usePlateEditor } from 'platejs/react';
 const initialValue = [
   {
     children: [{ text: 'Hello Plate.' }],
-    type: 'p',
+    type: 'paragraph',
   },
 ];
 
@@ -67,7 +67,7 @@ export const editor = createPlateEditor({
   initialValue: [
     {
       children: [{ text: 'Draft' }],
-      type: 'p',
+      type: 'paragraph',
     },
   ],
 });
@@ -113,10 +113,9 @@ Put a reusable document command under the plugin's `update` contribution. The
 command is available inside `editor.update(...)` under the plugin name.
 
 ```tsx title="components/editor/limit-exclamation-plugin.tsx" showLineNumbers
-import { createPlatePlugin } from 'platejs/react';
+import { definePlatePlugin } from 'platejs/react';
 
-export const SignaturePlugin = createPlatePlugin({
-  name: 'signature',
+export const SignaturePlugin = definePlatePlugin('signature', {
   update: ({ tx }) => ({
     insert() {
       tx.text.insert(' - Plate');
@@ -137,10 +136,9 @@ Keep plugin portal methods flat and task-shaped. The portal already owns the
 plugin noun, so a separate shared insert group adds taxonomy without clarity.
 
 ```tsx title="components/editor/callout-plugin.tsx" showLineNumbers
-import { createPlatePlugin } from 'platejs/react';
+import { definePlatePlugin } from 'platejs/react';
 
-export const CalloutPlugin = createPlatePlugin({
-  name: 'callout',
+export const CalloutPlugin = definePlatePlugin('callout', {
   update: ({ tx }) => ({
     insertCallout() {
       tx.nodes.insert({
@@ -170,10 +168,9 @@ or an earlier-stage type dependency.
 Move editor events into the plugin that owns the behavior.
 
 ```tsx title="components/editor/tab-plugin.tsx" showLineNumbers
-import { createPlatePlugin } from 'platejs/react';
+import { definePlatePlugin } from 'platejs/react';
 
-export const TabPlugin = createPlatePlugin({
-  name: 'tab',
+export const TabPlugin = definePlatePlugin('tab', {
   on: {
     keyDown: ({ event }) => {
       if (event.key !== 'Tab') return false;
@@ -189,10 +186,9 @@ export const TabPlugin = createPlatePlugin({
 Use `shortcuts` when the key combination should call a plugin API, transform, or explicit handler.
 
 ```tsx title="components/editor/save-plugin.tsx" showLineNumbers
-import { createPlatePlugin } from 'platejs/react';
+import { definePlatePlugin } from 'platejs/react';
 
-export const SavePlugin = createPlatePlugin({
-  name: 'save',
+export const SavePlugin = definePlatePlugin('save', {
   shortcuts: {
     draft: {
       keys: 'mod+s',
@@ -234,7 +230,7 @@ export const editor = createBaseEditor({
   initialValue: [
     {
       children: [{ text: 'Headless document.' }],
-      type: 'p',
+      type: 'paragraph',
     },
   ],
 });

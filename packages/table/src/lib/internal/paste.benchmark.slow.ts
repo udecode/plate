@@ -1,8 +1,9 @@
+import type { TableElement } from '../BaseTablePlugin';
 import type {
-  TableCellElement,
-  TableElement,
-  TableRowElement,
-} from '../BaseTablePlugin';
+  TableCellElementWithId,
+  TableElementWithId,
+  TableRowElementWithId,
+} from '../__tests__/tableTestTypes';
 
 import { createDetachedTableContext } from './context';
 import type { TableCellFactory } from './mutation';
@@ -15,27 +16,27 @@ const TABLE_PASTE_COHORTS = [
   { budgetMs: 300, samples: 5, size: 128 },
 ] as const;
 
-let createdCellId = 0;
+let createdCellKey = 0;
 
 const createCell: TableCellFactory = ({ header }) => ({
   children: [{ text: '' }],
-  id: `created-${createdCellId++}`,
+  id: `created-${createdCellKey++}`,
   type: header ? 'th' : 'td',
 });
 
-const createRow = (row: number): TableRowElement => ({
+const createRow = (row: number): TableRowElementWithId => ({
   children: [],
   id: `created-row-${row}`,
   type: 'tableRow',
 });
 
-const denseTable = (size: number, prefix: string): TableElement => ({
+const denseTable = (size: number, prefix: string): TableElementWithId => ({
   children: Array.from(
     { length: size },
-    (_, row): TableRowElement => ({
+    (_, row): TableRowElementWithId => ({
       children: Array.from(
         { length: size },
-        (_, col): TableCellElement => ({
+        (_, col): TableCellElementWithId => ({
           children: [{ text: `${row}:${col}` }],
           id: `${prefix}-cell-${row}-${col}`,
           type: 'tableCell',
@@ -183,7 +184,7 @@ describe('PreparedTablePaste benchmark', () => {
   });
 
   it('bounds a four-boundary span fallback by affected rows', () => {
-    const target: TableElement = {
+    const target: TableElementWithId = {
       children: [
         {
           children: [
@@ -200,7 +201,7 @@ describe('PreparedTablePaste benchmark', () => {
         },
         ...Array.from(
           { length: 63 },
-          (_, row): TableRowElement => ({
+          (_, row): TableRowElementWithId => ({
             children: [],
             id: `row-${row + 1}`,
             type: 'tableRow',

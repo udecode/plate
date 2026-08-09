@@ -1,7 +1,6 @@
 import React from 'react';
 
 import { PlateLeaf, toPlatePlugin } from '@platejs/core/react';
-import { KEYS } from '@platejs/utils';
 import { Key } from '@udecode/react-hotkeys';
 
 import {
@@ -49,10 +48,7 @@ export const KbdPlugin = toPlatePlugin(BaseKbdPlugin);
 
 export const ScriptPlugin = toPlatePlugin(BaseScriptPlugin, {
   component: (props) => (
-    <PlateLeaf
-      {...props}
-      as={props.leaf[KEYS.script] === 'sub' ? 'sub' : 'sup'}
-    >
+    <PlateLeaf {...props} as={props.leaf.script === 'sub' ? 'sub' : 'sup'}>
       {props.children}
     </PlateLeaf>
   ),

@@ -1,0 +1,304 @@
+---
+description: Fix one local Plate or Plite behavior bug or regression with reproduction, durable behavior coverage, architecture pressure, lane-specific proof, and P2 autoreview.
+argument-hint: '[repair <expectation> | <bug report, route, failing test, or regression cluster>]'
+disable-model-invocation: true
+name: patch
+metadata:
+  skiller:
+    source: .agents/rules/patch.mdc
+---
+
+# Patch
+
+Handle $ARGUMENTS.
+
+If the arguments start with `repair <expectation>`, run Repair Command.
+Otherwise run the normal workflow.
+
+This is the sole local repair owner for one Plate or Plite behavior bug or
+regression:
+
+```txt
+reproduce -> classify -> red proof -> fix durable owner
+-> architecture pressure -> verify -> P2 autoreview -> handoff
+```
+
+It owns local code and proof only. It does not read or mutate public issue/PR
+state. Use `resolve-slate-issue` when a Slate issue is the public target and
+`maintainer` for a public Plate issue; let the coordinator delegate the local
+repair here.
+
+## Use When
+
+- The user invokes `patch`.
+- `maintainer` or `resolve-slate-issue` delegates a normalized local repair
+  packet. The packet may retain an issue number or URL for provenance; do not
+  treat that as public-mutation authority.
+- One local Plate or Plite behavior is wrong relative to Slate or the intended
+  editor/product contract.
+- A failing test, browser route, or regression cluster needs a fix now.
+- A previous local patch fixed the symptom at the wrong owner.
+- The user invokes `patch repair <expectation>` because future runs
+  missed a recurring proof, workflow, or handoff standard.
+
+## Do Not Use When
+
+- A direct user prompt names a public issue or PR, even when it asks for a
+  local-only fix or no public mutation. Use `resolve-slate-issue` for one Slate
+  issue or `maintainer` for Plate/public queue work; accept issue provenance
+  only inside the normalized local repair packet that coordinator delegates
+  back here.
+- The defect is repo tooling, build infrastructure, or another non-product
+  task rather than Plate/Plite behavior. Use `task`.
+- The prompt asks for a public queue, batch, or repository heartbeat. Use
+  `maintainer`.
+- The prompt asks for broad or timed quality work. Use `auto`.
+- The prompt asks only for an architecture plan. Use `plite-plan` or
+  `plate-plan` after classifying the owning lane.
+- Reusable public call shape is unresolved. Use `best-api`, then the owning
+  lane plan for adoption/runtime planning.
+
+`patch repair` is the sole tooling-shaped exception: it repairs only this
+workflow's recurring reproduction, proof, routing, review, or handoff contract.
+Use `task` for every unrelated skill, generator, or repository-tooling change.
+
+## Authority
+
+- Implementation: the caller-provided current Plate checkout. Do not switch
+  branches; coordinators own integration-target decisions such as Slate work on
+  `next`.
+- Plite substrate owners: `packages/plite`, `packages/plite-dom`,
+  `packages/plite-react`, `packages/plite-history`, `packages/yjs`, and
+  `packages/browser`.
+- Plate product owners: the owning Plate core/plugin/component package and its
+  canonical example or registry source under `apps/www`.
+- Plite Browser proof: `apps/plite`, importing Plite examples from `apps/www`.
+- Plate Browser proof: the affected `apps/www` route; prefer
+  `/blocks/[id]-demo` for registry components when it exists.
+- Public mutation: none. Do not create, edit, comment on, close, or merge an
+  issue or PR.
+- Git mutation: do not commit unless the user explicitly asks. Never push;
+  return shipping to the coordinator or normal Git workflow after handoff.
+
+Current checkout source beats memory, old plans, ledgers, and upstream
+diagnosis. Upstream Slate is a behavior oracle when a shared editor contract is
+disputed, never the implementation owner. Plate owns product/plugin policy;
+Plite owns only editor-agnostic substrate behavior.
+
+## Hard Rules
+
+- Reproduce first whenever practical.
+- Add a behavior-level regression test when sane. Cover the bug class, not only
+  the screenshot that exposed it.
+- Classify Plate versus Plite ownership before adding the red proof.
+- Fix the durable owning package. Example patches are valid only when the
+  example contract is wrong.
+- Keep Plate product policy out of Plite substrate.
+- Public API changes go through `best-api`; broader adoption/runtime changes go
+  through `plite-plan` or `plate-plan` for the owning lane.
+- If the first green patch is not the cleanest long-term shape, rework it before
+  verification.
+- Add a changeset when published packages change.
+- Use Browser proof for visible behavior.
+- End non-trivial implementation work with P2 `autoreview` by passing
+  `--max-priority P2`. Use P3 only when explicitly requested.
+
+## Repair Command
+
+Trigger on:
+
+```txt
+repair <expectation>
+```
+
+Repair the workflow, not runtime code:
+
+1. State the missed recurring expectation.
+2. Patch `.agents/rules/patch.mdc`.
+3. Put large reusable coverage law in a focused reference doc. Selection and
+   navigation coverage belongs in
+   `docs/plite/selection-navigation-coverage.md`.
+4. Run `pnpm install`.
+5. Prove source and generated mirrors contain the rule:
+
+```bash
+rg '<expected text>' .agents/rules/patch.mdc
+rg '<expected text>' .agents/skills/patch/SKILL.md
+```
+
+6. Run agent-native review when routing, authority, proof, or handoff changed.
+
+Do not hand-edit `.agents/skills/**/SKILL.md`.
+
+## Goal Setup
+
+Use `autogoal` for non-trivial work.
+
+```txt
+Fix <Plate or Plite> behavior bug or regression <bug or cluster>; done when
+reproduction, durable behavior coverage, focused owning-lane proof, and P2
+autoreview pass in the current Plate checkout.
+```
+
+Add Browser or package proof packs only when the claim needs them. Add the
+agent-native pack in repair mode.
+
+## Workflow
+
+### 1. Reproduce And Bound
+
+Read the latest report, attached media, route, and failing test. Inspect the
+live owner, classify Plate versus Plite, then reproduce through the narrowest
+honest path:
+
+- package test for pure model behavior;
+- real keyboard, mouse, clipboard, focus, or composition input for browser
+  behavior;
+- both when model and DOM behavior can disagree.
+
+Record actual behavior, expected behavior, owning package/route, model state,
+and DOM/native state when relevant.
+
+### 2. Classify
+
+Name the class before patching:
+
+- selection/navigation;
+- focus/browser event ownership;
+- history/undo;
+- DOM coverage/hidden content;
+- multi-root/content root/void root;
+- rendering/projection;
+- normalization/schema;
+- clipboard/paste;
+- IME/mobile;
+- collaboration/replay;
+- performance/scalability.
+
+Search adjacent owners and tests when the same assumption can fail elsewhere.
+
+### 3. Add Red Proof
+
+Use:
+
+- package tests for operations, transforms, plugins, history, normalization,
+  codecs, schema, and deterministic model state;
+- focused Browser or Playwright proof on `apps/plite` for Plite or the owning
+  `apps/www` route for Plate browser-visible behavior;
+- both when the browser symptom starts in a model transform.
+
+Assert the user-visible invariant and the model invariant when both matter.
+For Plite selection/navigation, choose and name the relevant rows from
+`docs/plite/selection-navigation-coverage.md`: command, direction, topology,
+starting state, model result, and DOM/native result. For Plate product behavior,
+assert the plugin/component contract without moving product policy into Plite.
+
+Do not claim raw-device IME/mobile proof from viewport emulation.
+
+### 4. Fix The Durable Owner
+
+Prefer this ownership order after classifying the behavior:
+
+1. Plite model/runtime for editor-agnostic substrate behavior;
+2. the owning Plate core/plugin/component package for Plate product policy;
+3. the shared DOM/React bridge when browser/model projection owns the failure;
+4. the owning schema/API contract;
+5. the shared example/component pattern;
+6. one example, only when it owns the contract.
+
+Prefer deterministic model operations, stable identity, bounded hot paths,
+schema-owned behavior, and deletion of workarounds after the real fix.
+
+Reject caller-specific branches, example masking, compatibility aliases for
+unreleased APIs, timing waits, broad scans, and tests of implementation trivia.
+
+### 5. Apply Architecture Pressure
+
+After the first green patch, decide:
+
+- `keep`: the owner and shape are durable;
+- `rework`: simplify or move the fix before final proof;
+- `escalate`: public call shape needs `best-api`, or broader runtime/adoption
+  needs `plite-plan` or `plate-plan` for the owning lane.
+
+Check ownership, API/DX, unopinionated substrate, performance bounds,
+determinism, browser/model agreement, class-level coverage, and deletable
+machinery. Breaking cost does not justify preserving a bad unreleased shape.
+
+### 6. Verify
+
+Run focused proof first. Choose the lane; do not run both packs by habit.
+
+```bash
+# Plite package examples; choose only affected owners
+pnpm --filter @platejs/plite test
+pnpm --filter @platejs/plite-dom test
+pnpm --filter @platejs/plite-react test
+pnpm --filter @platejs/plite-react typecheck
+
+# Focused browser row
+pnpm --filter plite test:plite-browser:chromium <file-or--grep>
+
+# Normal affected development gate
+pnpm check:plite:dev
+
+# Strict handoff or release-quality breadth
+pnpm check:plite
+pnpm check:plite:browser-matrix
+
+# Plate package examples; replace placeholders with the exact owner
+pnpm --filter <package> test
+pnpm turbo typecheck --filter=./packages/<owner>
+pnpm exec biome check <changed-paths>
+```
+
+Run Browser proof for changed visible behavior on the owning route. `apps/plite`
+must continue to import examples from `apps/www`; never create a second example
+source tree. Never edit `templates/**`; fix its source owner and let CI
+regenerate it.
+
+Keep formatting and lint fixes inside the changed path set. Never run a
+workspace-wide mutating fixer from this narrow repair lane when unrelated work
+is present.
+
+Use the strict gate or browser matrix only when the claim width requires it.
+Record exact unrelated failures without hiding relevant failures.
+
+### 7. P2 Autoreview
+
+For non-trivial diffs:
+
+1. Load `.agents/skills/autoreview/SKILL.md` for the P2 review contract.
+2. Review the actual current-checkout diff with a strict file boundary and
+   `--max-priority P2`. Use P3 only when explicitly requested.
+3. Reject stale, out-of-scope, or non-matching findings.
+4. Fix valid findings.
+5. Rerun focused proof and P2 autoreview until no accepted actionable findings
+   remain.
+
+## Coordinator Handoff
+
+When invoked by `resolve-slate-issue` or `maintainer`, return a compact evidence
+packet:
+
+- classification and root cause;
+- durable owner and changed files;
+- red proof and passing commands;
+- Browser/device proof or explicit limitation;
+- architecture-pressure verdict;
+- changeset status;
+- P2 autoreview result;
+- unresolved caveat.
+
+Do not perform the coordinator's root check, push, PR, issue comment, release
+readback, or closure work.
+
+## Final Response
+
+Keep it short:
+
+- root cause and durable owner;
+- architecture-pressure verdict;
+- tests and Browser proof;
+- changeset and P2 autoreview status;
+- unresolved gate or next owner.

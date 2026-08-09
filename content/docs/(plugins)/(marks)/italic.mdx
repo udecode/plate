@@ -18,7 +18,7 @@ Italic applies the `italic` leaf mark to selected text. `ItalicPlugin` owns the 
 
 ## Features
 
-- `KEYS.italic` leaf mark.
+- `PLUGINS.italic` leaf mark.
 - Default `⌘I` / `Ctrl+I` shortcut.
 - HTML deserialization from `em`, `i`, and italic font style.
 - `<em>` rendering by default.
@@ -33,7 +33,7 @@ Italic applies the `italic` leaf mark to selected text. `ItalicPlugin` owns the 
 
 ### Add Basic Marks
 
-`BasicMarksKit` includes `ItalicPlugin`, `*` and `_` Markdown-style input rules, and the standard toolbar buttons that use `KEYS.italic`.
+`BasicMarksKit` includes `ItalicPlugin`, `*` and `_` Markdown-style input rules, and the standard toolbar buttons that use `PLUGINS.italic`.
 
 <ComponentSource name="basic-marks-kit" />
 
@@ -49,17 +49,16 @@ export const editor = createPlateEditor({
 
 ### Add A Toolbar Button
 
-Use `MarkToolbarButton` with `KEYS.italic`.
+Use `MarkToolbarButton` with `PLUGINS.italic`.
 
 ```tsx
 import { ItalicIcon } from 'lucide-react';
-import { KEYS } from 'platejs';
 
 import { MarkToolbarButton } from '@/components/ui/mark-toolbar-button';
 
 export function ItalicToolbarButton() {
   return (
-    <MarkToolbarButton nodeType={KEYS.italic} tooltip="Italic (⌘+I)">
+    <MarkToolbarButton nodeType={PLUGINS.italic} tooltip="Italic (⌘+I)">
       <ItalicIcon />
     </MarkToolbarButton>
   );
@@ -117,7 +116,7 @@ The package owns the mark. The registry owns toolbar placement and icon choice.
 
 | Behavior | Source |
 |----------|--------|
-| Mark key | `KEYS.italic` |
+| Mark key | `PLUGINS.italic` |
 | Mark declaration | `schema.mark: property.boolean({ default: false, omitDefault: true })` |
 | Toggle command | `tx.italic.toggle()` calls `tx.marks.toggle(type)`. |
 | Shortcut | `ItalicPlugin` registers `mod+i`. |

@@ -23,7 +23,6 @@ import {
   type Node,
   NodeApi,
   type NodeEntry,
-  type NodeRemoveNodesOptions,
   type Path,
   PathApi,
   type Range,
@@ -35,17 +34,12 @@ import {
 } from '@platejs/plite';
 import {
   type DefinitionOf,
+  type IdElement,
   nanoid,
   type PlatePluginReadState,
 } from '@platejs/core';
 import { type PlateEditor, definePlatePlugin } from '@platejs/core/react';
-import {
-  type TIdElement,
-  type TTableCellElement,
-  type TTableElement,
-  KEYS,
-  NODES,
-} from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 
 import { AI_PREVIEW_KEY, BaseAIPlugin } from '../lib/BaseAIPlugin';
 
@@ -105,7 +99,7 @@ export type AIChatPluginState = {
   _mdxName: string | null;
   _replaceIds: string[];
   chat: AIChatAdapter | null;
-  chatNodes: TIdElement[];
+  chatNodes: Array<IdElement & { id: string }>;
   chatSelection: Range | null;
   mode: AIMode;
   open: boolean;
@@ -142,7 +136,6 @@ const dependencies = [
   BlockSelectionPlugin,
   CursorOverlayPlugin,
   SuggestionPlugin,
-  BaseTablePlugin,
 ] as const;
 
 type AIChatPluginReadState = PlatePluginReadState<
@@ -168,7 +161,7 @@ const initialState: AIChatPluginState = {
   triggerPreviousCharPattern: /^\s?$/,
 };
 
-export const AIChatPlugin = definePlatePlugin(KEYS.aiChat, {
+export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
   dependencies,
   initialState,
   schema: {
@@ -179,9 +172,13 @@ export const AIChatPlugin = definePlatePlugin(KEYS.aiChat, {
 })
   .extend((context) => {
     const editor = context.editor;
-    const codeBlock = editor.plugin(KEYS.codeBlock);
-    const columnGroup = editor.plugin(KEYS.columnGroup);
-    const equation = editor.plugin(KEYS.equation);
+    const codeBlock = editor.plugin(PLUGINS.codeBlock);
+    const columnGroup = editor.plugin(PLUGINS.columnGroup);
+    const equation = editor.plugin(PLUGINS.equation);
+    const paragraph = editor.plugin(PLUGINS.paragraph);
+    const ai = editor.plugin(BaseAIPlugin);
+    const suggestionKey = editor.plugin(SuggestionPlugin).schema.key;
+    const tablePlugin = editor.plugin(BaseTablePlugin);
     const getChunkTrimmed = (
       chunk: string,
       { direction = 'right' }: { direction?: 'left' | 'right' } = {}
@@ -201,7 +198,9 @@ export const AIChatPlugin = definePlatePlugin(KEYS.aiChat, {
     const isCompleteMath = (value: string) => {
       const trimmed = value.trim();
 
-      return trimmed.startsWith('$$') && trimmed.endsWith('$$');
+      return (
+        trimmed.length > 4 && trimmed.startsWith('$$') && trimmed.endsWith('$$')
+      );
     };
     function withNodeProps(
       nodes: readonly Element[],
@@ -244,8 +243,8 @@ export const AIChatPlugin = definePlatePlugin(KEYS.aiChat, {
     }
     const isSameNode = (left: Descendant, right: Descendant) => {
       if (
-        left.type !== editor.plugin(KEYS.p).type ||
-        right.type !== editor.plugin(KEYS.p).type
+        left.type !== editor.plugin(PLUGINS.paragraph).schema.type ||
+        right.type !== editor.plugin(PLUGINS.paragraph).schema.type
       ) {
         return left.type === right.type;
       }
@@ -271,11 +270,7 @@ export const AIChatPlugin = definePlatePlugin(KEYS.aiChat, {
     const deserializeChunk = (data: string, options?: DeserializeMdOptions) => {
       let input = data;
 
-      if (
-        data.startsWith('$$') &&
-        !data.startsWith('$$\n') &&
-        !isCompleteMath(data)
-      ) {
+      if (data.startsWith('$$') && !isCompleteMath(data)) {
         input = data.replace('$$', String.raw`\$\$`);
       }
 
@@ -288,7 +283,7 @@ export const AIChatPlugin = definePlatePlugin(KEYS.aiChat, {
           return [
             {
               children: [{ text: input }],
-              type: editor.plugin(KEYS.p).type,
+              type: editor.plugin(PLUGINS.paragraph).schema.type,
             },
           ];
         }
@@ -320,8 +315,8 @@ export const AIChatPlugin = definePlatePlugin(KEYS.aiChat, {
           ? {
               ...node,
               children: [...node.children],
-              ...(node.type ===
-                (equation.installed ? equation.type : NODES.equation) &&
+              ...(equation.installed &&
+              node.type === equation.schema.type &&
               typeof node.texExpression === 'string'
                 ? { texExpression: node.texExpression.trim() }
                 : {}),
@@ -334,7 +329,8 @@ export const AIChatPlugin = definePlatePlugin(KEYS.aiChat, {
       const prependNewLine =
         getChunkTrimmed(data, { direction: 'left' }) === '\n\n';
       const isCodeBlockOrTable =
-        lastBlock?.type === 'code_block' || lastBlock?.type === 'table';
+        (codeBlock.installed && lastBlock?.type === codeBlock.schema.type) ||
+        (tablePlugin.installed && lastBlock?.type === tablePlugin.schema.type);
 
       if (
         lastBlock &&
@@ -371,10 +367,13 @@ export const AIChatPlugin = definePlatePlugin(KEYS.aiChat, {
         }
       }
       if (addNewLine && !isCodeBlockOrTable) {
-        result.push({ children: [{ text: '' }], type: NODES.p });
+        result.push({ children: [{ text: '' }], type: paragraph.schema.type });
       }
       if (prependNewLine && !isCodeBlockOrTable) {
-        result.unshift({ children: [{ text: '' }], type: NODES.p });
+        result.unshift({
+          children: [{ text: '' }],
+          type: paragraph.schema.type,
+        });
       }
 
       if (
@@ -395,12 +394,17 @@ export const AIChatPlugin = definePlatePlugin(KEYS.aiChat, {
       if (
         lastBlock &&
         ElementApi.isElement(lastBlock) &&
-        KEYS.heading.some((headingName) => {
+        [
+          PLUGINS.h1,
+          PLUGINS.h2,
+          PLUGINS.h3,
+          PLUGINS.h4,
+          PLUGINS.h5,
+          PLUGINS.h6,
+        ].some((headingName) => {
           const heading = editor.plugin(headingName);
 
-          return (
-            lastBlock.type === (heading.installed ? heading.type : headingName)
-          );
+          return heading.installed && lastBlock.type === heading.schema.type;
         })
       ) {
         const lastText = lastBlock.children.at(-1);
@@ -499,7 +503,7 @@ export const AIChatPlugin = definePlatePlugin(KEYS.aiChat, {
     const currentBlockPath = (state: AIChatInsertState) => {
       const anchor = state.nodes.find({
         at: [],
-        match: { type: context.type },
+        match: { type: context.schema.type },
       });
       const anchorPrevious =
         anchor && anchor[1].at(-1) !== 0
@@ -508,12 +512,13 @@ export const AIChatPlugin = definePlatePlugin(KEYS.aiChat, {
       const path = anchorPrevious ??
         state.selection()?.focus.path.slice(0, 1) ?? [0];
       const entry = state.nodes.get<Element>(path);
+      const containerTypes = new Set<string>(
+        [columnGroup, tablePlugin]
+          .filter((plugin) => plugin.installed)
+          .map((plugin) => plugin.schema.type)
+      );
 
-      return entry &&
-        [
-          columnGroup.installed ? columnGroup.type : NODES.columnGroup,
-          editor.plugin(KEYS.table).type,
-        ].includes(entry[0].type)
+      return entry && containerTypes.has(entry[0].type)
         ? (state.nodes.above()?.[1] ?? path)
         : path;
     };
@@ -527,7 +532,7 @@ export const AIChatPlugin = definePlatePlugin(KEYS.aiChat, {
         startInEmptyParagraph:
           !!startBlock &&
           NodeApi.string(startBlock).length === 0 &&
-          startBlock.type === editor.plugin(KEYS.p).type,
+          startBlock.type === paragraph.schema.type,
       };
     };
     const withoutSuggestionData = (
@@ -535,9 +540,7 @@ export const AIChatPlugin = definePlatePlugin(KEYS.aiChat, {
     ): Descendant[] =>
       nodes.map((node) => {
         if (TextApi.isText(node)) {
-          return node[KEYS.suggestion] || node[KEYS.comment]
-            ? { text: node.text }
-            : node;
+          return node.suggestion || node.comment ? { text: node.text } : node;
         }
         if (!ElementApi.isElement(node)) return node;
 
@@ -547,7 +550,12 @@ export const AIChatPlugin = definePlatePlugin(KEYS.aiChat, {
         };
 
         Object.keys(result).forEach((key) => {
-          if (key === KEYS.suggestion || key.startsWith(KEYS.suggestion)) {
+          if (
+            key === suggestionKey ||
+            key === 'suggestionData' ||
+            key === SUGGESTION_TRANSIENT_KEY ||
+            key.startsWith(`${suggestionKey}_`)
+          ) {
             Reflect.deleteProperty(result, key);
           }
         });
@@ -572,7 +580,8 @@ export const AIChatPlugin = definePlatePlugin(KEYS.aiChat, {
       if (
         chatNodes.length === 1 &&
         ElementApi.isElement(first) &&
-        first.type === editor.plugin(KEYS.table).type &&
+        tablePlugin.installed &&
+        first.type === tablePlugin.schema.type &&
         first.children.length === 1
       ) {
         const row = first.children[0];
@@ -581,9 +590,12 @@ export const AIChatPlugin = definePlatePlugin(KEYS.aiChat, {
             ? row.children[0]
             : undefined;
 
+        const tableCell = editor.plugin(PLUGINS.tableCell);
+
         if (
+          tableCell.installed &&
           ElementApi.isElement(cell) &&
-          cell.type === editor.plugin(KEYS.td).type
+          cell.type === tableCell.schema.type
         ) {
           chatNodes = [...cell.children];
         }
@@ -698,7 +710,7 @@ export const AIChatPlugin = definePlatePlugin(KEYS.aiChat, {
       editor.update({ history: 'skip' }, (tx) => {
         tx.nodes.remove({
           at: [],
-          match: { type: context.type },
+          match: { type: context.schema.type },
         });
       });
     };
@@ -730,7 +742,12 @@ export const AIChatPlugin = definePlatePlugin(KEYS.aiChat, {
         const fragment = state.fragment();
         const value: Element[] =
           fragment.length === 1 && ElementApi.isElement(fragment[0])
-            ? [{ children: fragment[0].children, type: NODES.p }]
+            ? [
+                {
+                  children: fragment[0].children,
+                  type: paragraph.schema.type,
+                },
+              ]
             : fragment.flatMap((node) =>
                 ElementApi.isElement(node) ? [node] : []
               );
@@ -746,7 +763,9 @@ export const AIChatPlugin = definePlatePlugin(KEYS.aiChat, {
       }
       if (type !== 'tableCellWithId') return '';
 
-      const cells = state.table.getGridAbove({ format: 'cell' });
+      if (!tablePlugin.installed) return '';
+
+      const cells = tablePlugin.read.getGridAbove({ format: 'cell' });
 
       if (cells.length === 0) return '';
 
@@ -755,17 +774,18 @@ export const AIChatPlugin = definePlatePlugin(KEYS.aiChat, {
           typeof cell.id === 'string' ? [cell.id] : []
         )
       );
-      const table = state.nodes.block<TTableElement>({
-        match: { type: editor.plugin(KEYS.table).type },
+      const table = state.nodes.block<Element>({
+        match: (node) =>
+          ElementApi.isElement(node) && node.type === tablePlugin.schema.type,
       })?.[0];
 
       if (!table) return '';
 
-      const selectedCells: Array<{ cell: TTableCellElement; id: string }> = [];
+      const selectedCells: Array<{ cell: Element; id: string }> = [];
       const rows = table.children.map((row, rowIndex) => {
         if (
           !ElementApi.isElement(row) ||
-          row.type !== editor.plugin(KEYS.tr).type
+          row.type !== editor.plugin(PLUGINS.tableRow).schema.type
         ) {
           throw new Error('Tables must contain table rows.');
         }
@@ -773,8 +793,7 @@ export const AIChatPlugin = definePlatePlugin(KEYS.aiChat, {
         const values = row.children.map((cell) => {
           if (
             !ElementApi.isElement(cell) ||
-            (cell.type !== editor.plugin(KEYS.td).type &&
-              cell.type !== editor.plugin(KEYS.th).type)
+            cell.type !== editor.plugin(PLUGINS.tableCell).schema.type
           ) {
             throw new Error('Table rows must contain table cells.');
           }
@@ -925,16 +944,22 @@ export const AIChatPlugin = definePlatePlugin(KEYS.aiChat, {
           const selection = blocks.length
             ? editor.read.ranges.fromEntries(blocks)
             : chatSelection;
-          const chatNodes = blocks.length
-            ? blocks.map(([block]) => block)
-            : editor.read.nodes
-                .toArray<TIdElement>({
-                  match: (node) =>
-                    ElementApi.isElement(node) &&
-                    editor.read.schema.isBlock(node),
-                  mode: 'highest',
-                })
-                .map(([block]) => block);
+          const chatNodes = (
+            blocks.length
+              ? blocks.map(([block]) => block)
+              : editor.read.nodes
+                  .toArray<IdElement>({
+                    match: (node) =>
+                      ElementApi.isElement(node) &&
+                      typeof node.id === 'string' &&
+                      editor.read.schema.isBlock(node),
+                    mode: 'highest',
+                  })
+                  .map(([block]) => block)
+          ).filter(
+            (node): node is IdElement & { id: string } =>
+              typeof node.id === 'string'
+          );
 
           context.store.set({ chatNodes });
           context.store.set({ chatSelection });
@@ -1003,7 +1028,7 @@ export const AIChatPlugin = definePlatePlugin(KEYS.aiChat, {
           if (anchor) {
             return state.nodes.find<Node>({
               at: [],
-              match: { type: context.type },
+              match: { type: context.schema.type },
               ...rest,
             });
           }
@@ -1014,8 +1039,7 @@ export const AIChatPlugin = definePlatePlugin(KEYS.aiChat, {
 
             return state.nodes.find<Node>({
               at: path,
-              match: (node) =>
-                Boolean(Reflect.get(node, editor.plugin(KEYS.ai).type)),
+              match: (node) => Boolean(Reflect.get(node, ai.schema.key)),
               mode: 'lowest',
               reverse: true,
               ...rest,
@@ -1023,8 +1047,7 @@ export const AIChatPlugin = definePlatePlugin(KEYS.aiChat, {
           }
 
           return state.nodes.find<Node>({
-            match: (node) =>
-              Boolean(Reflect.get(node, editor.plugin(KEYS.ai).type)),
+            match: (node) => Boolean(Reflect.get(node, ai.schema.key)),
             ...rest,
           });
         },
@@ -1079,7 +1102,11 @@ export const AIChatPlugin = definePlatePlugin(KEYS.aiChat, {
           chunk: string,
           options: StreamInsertOptions = {}
         ) => {
-          const insertOptions = tx.ai.hasPreview()
+          const hasPreview = tx.ai.hasPreview();
+
+          if (hasPreview) tx.history.skip();
+
+          const insertOptions = hasPreview
             ? {
                 ...options,
                 elementProps: {
@@ -1194,12 +1221,13 @@ export const AIChatPlugin = definePlatePlugin(KEYS.aiChat, {
                     { value: { children: blocks } },
                     combined
                   );
+                  const preserveChunkTypes = new Set<string>(
+                    [codeBlock, tablePlugin, equation]
+                      .filter((plugin) => plugin.installed)
+                      .map((plugin) => plugin.schema.type)
+                  );
 
-                  nextChunks = [
-                    codeBlock.installed ? codeBlock.type : NODES.codeBlock,
-                    editor.plugin(KEYS.table).type,
-                    equation.installed ? equation.type : NODES.equation,
-                  ].includes(blocks[0].type)
+                  nextChunks = preserveChunkTypes.has(blocks[0].type)
                     ? combined
                     : replacement;
                 }
@@ -1262,7 +1290,7 @@ export const AIChatPlugin = definePlatePlugin(KEYS.aiChat, {
               userId: data.userId,
             });
           });
-          tx.nodes.unset([SUGGESTION_TRANSIENT_KEY], {
+          tx.suggestion.clearTransient({
             at: [],
             mode: 'all',
             match: (node) =>
@@ -1298,7 +1326,7 @@ export const AIChatPlugin = definePlatePlugin(KEYS.aiChat, {
 
           if (context.store.get('_replaceIds').length === 0) {
             context.store.set({
-              _replaceIds: chatNodes.map((node) => node.id as string),
+              _replaceIds: chatNodes.map((node) => node.id),
             });
           }
 
@@ -1411,7 +1439,7 @@ export const AIChatPlugin = definePlatePlugin(KEYS.aiChat, {
 
           if (!selectedIds?.size) return [];
 
-          return tx.nodes.toArray<TIdElement>({
+          return tx.nodes.toArray<IdElement>({
             at: [],
             match: (node) =>
               ElementApi.isElement(node) &&
@@ -1431,9 +1459,11 @@ export const AIChatPlugin = definePlatePlugin(KEYS.aiChat, {
                 }
               });
 
-              if (!tx.ai.acceptPreview()) {
+              const acceptedPreview = tx.ai.acceptPreview();
+
+              if (!acceptedPreview) {
                 tx.ai.markBatch();
-                tx.nodes.unset(AI_PREVIEW_KEY, {
+                tx.ai.clearPreviewNodes({
                   at: [],
                   match: (node) =>
                     ElementApi.isElement(node) && !!node[AI_PREVIEW_KEY],
@@ -1441,17 +1471,19 @@ export const AIChatPlugin = definePlatePlugin(KEYS.aiChat, {
                 tx.ai.removeMarks();
                 tx.nodes.remove({
                   at: [],
-                  match: { type: context.type },
+                  match: { type: context.schema.type },
                 });
               }
 
-              if (focus) tx.selection.set({ anchor: focus, focus });
+              if (!acceptedPreview && focus) {
+                tx.selection.set({ anchor: focus, focus });
+              }
               updateContext.afterCommit(() => hideOptions());
             } else {
               reviewSuggestions('accept');
               tx.nodes.remove({
                 at: [],
-                match: { type: context.type },
+                match: { type: context.schema.type },
               });
               updateContext.afterCommit(() => hideOptions());
             }
@@ -1485,7 +1517,7 @@ export const AIChatPlugin = definePlatePlugin(KEYS.aiChat, {
               reviewSuggestions('accept');
               tx.nodes.remove({
                 at: [],
-                match: { type: context.type },
+                match: { type: context.schema.type },
               });
               updateContext.afterCommit(() => hideOptions({ focus: false }));
 
@@ -1502,7 +1534,7 @@ export const AIChatPlugin = definePlatePlugin(KEYS.aiChat, {
             tx.ai.undo();
             tx.nodes.remove({
               at: [],
-              match: { type: context.type },
+              match: { type: context.schema.type },
             });
             updateContext.afterCommit(() => hideOptions());
 
@@ -1565,13 +1597,6 @@ export const AIChatPlugin = definePlatePlugin(KEYS.aiChat, {
           },
           insertChunk,
           rejectSuggestions: () => reviewSuggestions('reject'),
-          removeAnchor: (options?: NodeRemoveNodesOptions) => {
-            tx.nodes.remove({
-              at: [],
-              match: { type: context.type },
-              ...options,
-            });
-          },
           replaceSelection: ({
             format = 'single',
           }: {
@@ -1584,7 +1609,7 @@ export const AIChatPlugin = definePlatePlugin(KEYS.aiChat, {
             tx.ai.undo();
             tx.nodes.remove({
               at: [],
-              match: { type: context.type },
+              match: { type: context.schema.type },
             });
             updateContext.afterCommit(() => hideOptions());
 
@@ -1606,9 +1631,13 @@ export const AIChatPlugin = definePlatePlugin(KEYS.aiChat, {
 
                 if (!blocks) return;
 
+                const codeLine = editor.plugin(PLUGINS.codeLine);
+
                 if (
-                  block[0].type === NODES.codeLine &&
-                  source[0].type === NODES.codeBlock &&
+                  codeLine.installed &&
+                  codeBlock.installed &&
+                  block[0].type === codeLine.schema.type &&
+                  source[0].type === codeBlock.schema.type &&
                   source.length === 1
                 ) {
                   tx.fragment.replace(blocks[0].children);
@@ -1690,16 +1719,16 @@ export const AIChatPlugin = definePlatePlugin(KEYS.aiChat, {
       {
         event: 'content',
         correct({ entry: [node, path], tx }) {
-          if (Reflect.get(node, KEYS.ai) && !context.store.get('open')) {
-            const aiType = context.editor.plugin(KEYS.ai).type;
+          const aiKey = context.editor.plugin(BaseAIPlugin).schema.key;
 
-            tx.nodes.unset(aiType, {
+          if (Reflect.get(node, aiKey) && !context.store.get('open')) {
+            tx.nodes.unset('ai', {
               at: path,
-              match: (candidate) => Boolean(Reflect.get(candidate, aiType)),
+              match: (candidate) => Boolean(Reflect.get(candidate, aiKey)),
             });
           } else if (
             ElementApi.isElement(node) &&
-            node.type === context.type &&
+            node.type === context.schema.type &&
             !context.store.get('open')
           ) {
             tx.nodes.remove({ at: path });

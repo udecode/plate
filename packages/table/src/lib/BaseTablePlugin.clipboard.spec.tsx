@@ -49,7 +49,6 @@ describe('table clipboard', () => {
       ) as TestEditor;
 
       const editor = createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
         initialValue: input.children,
@@ -95,7 +94,6 @@ describe('table clipboard', () => {
       ) as TestEditor;
 
       const editor = createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
         initialValue: input.children,
@@ -131,7 +129,6 @@ describe('table clipboard', () => {
       </editor>
     ) as TestEditor;
     const editor = createTestTableEditor({
-      nodeId: true,
       plugins: getTestTablePlugins(),
       selection: input.selection,
       initialValue: input.children,
@@ -206,7 +203,6 @@ describe('table clipboard', () => {
       ) as TestEditor;
 
       const editor = createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
         initialValue: input.children,
@@ -222,7 +218,6 @@ describe('table clipboard', () => {
 
     const createTableEditor = (input: TestEditor) =>
       createTestTableEditor({
-        nodeId: true,
         plugins: getTestTablePlugins(),
         selection: input.selection,
         initialValue: input.children,

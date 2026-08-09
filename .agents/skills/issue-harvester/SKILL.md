@@ -53,8 +53,12 @@ Clusters and matrices route work. They never close an issue row.
   without proof, no GitHub mutations unless explicitly asked.
 - `auto`: timeboxed/batch supervisor; delegates `issue-harvester`
   to this skill, then continues safe checkpoints.
-- `plite-patch` or `tdd`: write local Plite or Plate tests/fixes once an
-  issue row names owner, proof kind, and verification command.
+- `resolve-slate-issue`: receive one public Slate issue row, run coordinator
+  intake, and delegate a normalized local repair packet when warranted.
+- `maintainer`: receive any other public issue row, run queue/claim/authority
+  checks, and delegate a normalized local repair packet when warranted.
+- `patch` or `tdd`: receive only the resulting normalized local repair/test
+  packet, never a public issue row directly.
 - `best-api`: review broad public API/DX gaps.
 - `plite-plan`: defer broad runtime/adoption gaps that cannot be proved by one
   small test.
@@ -304,7 +308,9 @@ objective. For each unchecked row:
 
 Do not patch runtime just because an external issue exists. Patch runtime only
 after a local failing proof exists or the missing test proves a current behavior
-contract gap.
+contract gap. Return that issue-bearing candidate to `resolve-slate-issue` for
+one public Slate issue or `maintainer` for any other public issue; only the
+coordinator delegates the normalized local repair packet to `patch`.
 
 ## Coverage Search
 

@@ -1612,6 +1612,100 @@ describe('editor schema', () => {
         },
       ])
     );
+
+    const generatedTextEditor = createEditor({
+      extensions: [
+        defineEditorSchema('schema:generated-text-property', {
+          elements: {
+            paragraph: { content: schema.content.text() },
+          },
+          properties: [
+            schema.textProperty(
+              'textId',
+              property.string({ generate: () => 't1' }),
+              { target: target.type('paragraph') }
+            ),
+          ],
+          root: schema.content.type('paragraph'),
+          unknown: 'reject',
+        }),
+      ],
+    });
+
+    assert.throws(
+      () =>
+        generatedTextEditor.read.schema.assertFragment([
+          { children: [{ text: '' }], type: 'paragraph' },
+        ]),
+      /requires canonical property "textId"/i
+    );
+    assert.doesNotThrow(() =>
+      generatedTextEditor.read.schema.assertFragment([
+        {
+          children: [{ text: '', textId: 't1' }],
+          type: 'paragraph',
+        },
+      ])
+    );
+  });
+
+  it('materializes generated properties during local construction', () => {
+    let nextId = 0;
+    const editor = createEditor({
+      extensions: [
+        defineEditorSchema('schema:generated-properties', {
+          elements: {
+            paragraph: {
+              content: schema.content.text({ default: 'text', min: 1 }),
+            },
+          },
+          properties: [
+            schema.elementProperty(
+              'id',
+              property.string({ generate: () => `p${++nextId}` }),
+              {
+                copy: 'drop',
+                split: 'drop',
+                target: target.group('element'),
+              }
+            ),
+          ],
+          root: schema.content.type('paragraph'),
+          unknown: 'reject',
+        }),
+      ],
+      initialValue: [
+        { children: [{ text: 'source' }], id: 'source', type: 'paragraph' },
+      ],
+    });
+
+    assert.deepEqual(editor.read.schema.create('paragraph'), {
+      children: [{ text: '' }],
+      id: 'p1',
+      type: 'paragraph',
+    });
+    assert.deepEqual(editor.read.schema.create('paragraph', { id: 'fixed' }), {
+      children: [{ text: '' }],
+      id: 'fixed',
+      type: 'paragraph',
+    });
+    assert.throws(
+      () =>
+        editor.read.schema.assertFragment([
+          { children: [{ text: '' }], type: 'paragraph' },
+        ]),
+      /requires canonical property "id"/i
+    );
+
+    editor.update((tx) => {
+      tx.blocks.duplicate({ at: [0, 0] });
+    });
+    assert.deepEqual(
+      editor.read
+        .children()
+        .map((node) => (ElementApi.isElement(node) ? node.id : undefined)),
+      ['source', 'p2']
+    );
   });
 
   it('owns element predicates for app-defined specs', () => {
@@ -1837,15 +1931,15 @@ describe('editor schema', () => {
     );
 
     assert.equal(
-      editor.read((state) => state.schema.getElementProperty(cell, 'colSpan')),
+      editor.read((state) => state.schema.getProperty(cell, 'colSpan')),
       1
     );
     assert.equal(
-      editor.read((state) => state.schema.getElementProperty(cell, 'locked')),
+      editor.read((state) => state.schema.getProperty(cell, 'locked')),
       false
     );
     assert.equal(
-      editor.read((state) => state.schema.getElementProperty(cell, 'role')),
+      editor.read((state) => state.schema.getProperty(cell, 'role')),
       'cell'
     );
     assert.equal(
@@ -1867,6 +1961,28 @@ describe('editor schema', () => {
       type: 'table-cell',
       children: [{ text: '' }],
     });
+
+    const inheritedCell = Object.assign(Object.create({ colSpan: 99 }), cell);
+    let getterCalled = false;
+    const accessorCell = { ...cell };
+
+    Object.defineProperty(accessorCell, 'colSpan', {
+      get: () => {
+        getterCalled = true;
+
+        return 99;
+      },
+    });
+
+    assert.equal(
+      editor.read.schema.getProperty(inheritedCell, colSpanHandle),
+      1
+    );
+    assert.equal(
+      editor.read.schema.getProperty(accessorCell, colSpanHandle),
+      1
+    );
+    assert.equal(getterCalled, false);
   });
 
   it('resolves property defaults through exact element variants', () => {
@@ -1884,12 +2000,117 @@ describe('editor schema', () => {
 
     assert.equal(
       editor.read((state) =>
-        state.schema.getElementProperty(
+        state.schema.getProperty(
           { type: 'wide-table-cell', children: [{ text: '' }] },
           'colSpan'
         )
       ),
       2
+    );
+  });
+
+  it('keeps property-handle reads placement-safe and parent-optional', () => {
+    const tone = schema.textProperty(
+      'tone',
+      property.string({ default: 'neutral' })
+    );
+    const paragraphTone = schema.textProperty(
+      'paragraphTone',
+      property.string({ default: 'body' }),
+      { target: target.type('paragraph') }
+    );
+    const nonParagraphTone = schema.textProperty(
+      'nonParagraphTone',
+      property.string({ default: 'other' }),
+      { target: target.not(target.type('paragraph')) }
+    );
+    const rank = schema.elementProperty(
+      'rank',
+      property.number({ default: 1 }),
+      { target: target.type('paragraph') }
+    );
+    const editor = createEditor();
+
+    editor.install(
+      defineEditorSchema('schema:property-handle-placement', {
+        elements: {
+          heading: { content: schema.content.text() },
+          paragraph: { content: schema.content.text() },
+        },
+        properties: [tone, paragraphTone, nonParagraphTone, rank],
+        root: schema.content.type('paragraph'),
+      })
+    );
+    const toneHandle = schema.handle.property(tone);
+    const paragraphToneHandle = schema.handle.property(paragraphTone);
+    const rankHandle = schema.handle.property(rank);
+    const paragraph = { type: 'paragraph', children: [{ text: '' }] };
+    const text = paragraph.children[0]!;
+    const heading = {
+      type: 'heading',
+      children: [{ paragraphTone: 'wrong-target', text: '' }],
+    };
+
+    assert.equal(editor.read.schema.getProperty(text, toneHandle), 'neutral');
+    assert.equal(editor.read.schema.getProperty(text, 'tone'), 'neutral');
+    assert.equal(
+      editor.read.schema.getProperty({ ...text, tone: 'warm' }, toneHandle),
+      'warm'
+    );
+    assert.equal(
+      editor.read.schema.getProperty(text, paragraphToneHandle),
+      undefined
+    );
+    assert.equal(
+      editor.read.schema.getProperty(text, 'paragraphTone'),
+      undefined
+    );
+    assert.equal(
+      editor.read.schema.getProperty(text, 'nonParagraphTone'),
+      undefined
+    );
+    assert.equal(
+      editor.read.schema.getProperty(heading.children[0]!, 'nonParagraphTone', {
+        parent: heading,
+      }),
+      'other'
+    );
+    assert.equal(
+      editor.read.schema.getProperty(text, paragraphToneHandle, {
+        parent: paragraph,
+      }),
+      'body'
+    );
+    assert.equal(
+      editor.read.schema.getProperty(text, 'paragraphTone', {
+        parent: paragraph,
+      }),
+      'body'
+    );
+    assert.equal(
+      editor.read.schema.getProperty(
+        heading.children[0]!,
+        paragraphToneHandle,
+        { parent: heading }
+      ),
+      undefined
+    );
+    assert.equal(
+      editor.read.schema.getProperty({ ...heading, rank: 2 }, rankHandle),
+      undefined
+    );
+    assert.equal(
+      editor.read.schema.getProperty(
+        { ...paragraph, tone: 'wrong-placement' },
+        toneHandle
+      ),
+      undefined
+    );
+    assert.equal(
+      editor.read.schema.getProperty({ ...text, rank: 2 }, rankHandle, {
+        parent: paragraph,
+      }),
+      undefined
     );
   });
 });

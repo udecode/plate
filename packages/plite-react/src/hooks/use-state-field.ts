@@ -1,13 +1,11 @@
 import { useCallback } from 'react';
 import type {
-  Editor,
   EditorStateField,
-  EditorUpdatePolicyFor,
+  EditorUpdatePolicy,
   StateFieldValueInput,
 } from '@platejs/plite';
 import { withPliteReactPreservedSelection } from '../update-policy';
 import { PliteReactUpdatePolicy } from '../update-policy';
-import type { ReactEditor } from '../plugin/with-react';
 
 import { useEditor } from './use-editor';
 import {
@@ -16,21 +14,15 @@ import {
 } from './use-editor-selector';
 
 /** Selector options for subscribing to one editor state field. */
-export type UseStateFieldValueOptions<
-  TValue,
-  TEditor extends Editor<any> = ReactEditor<any>,
-> = Pick<
-  EditorStateSelectorOptions<TValue, TEditor>,
+export type UseStateFieldValueOptions<TValue> = Pick<
+  EditorStateSelectorOptions<TValue>,
   'deferred' | 'equalityFn'
 >;
 
 /** Setter returned by `useSetStateField` for one editor state field. */
-export type StateFieldSetter<
-  TValue,
-  TEditor extends Editor<any> = ReactEditor<any>,
-> = (
+export type StateFieldSetter<TValue> = (
   value: StateFieldValueInput<TValue>,
-  policy?: EditorUpdatePolicyFor<TEditor>
+  policy?: EditorUpdatePolicy
 ) => void;
 
 /**
@@ -40,14 +32,11 @@ export type StateFieldSetter<
  * state keys. Use it for document meta controls such as title, page settings,
  * or feature state that should not subscribe to every editor change.
  */
-export function useStateFieldValue<
-  TValue,
-  TEditor extends Editor<any> = ReactEditor<any>,
->(
+export function useStateFieldValue<TValue>(
   field: EditorStateField<TValue>,
-  options: UseStateFieldValueOptions<TValue, TEditor> = {}
+  options: UseStateFieldValueOptions<TValue> = {}
 ): TValue {
-  return useEditorState<TValue, TEditor>((state) => state.getField(field), {
+  return useEditorState<TValue>((state) => state.getField(field), {
     ...options,
     shouldUpdate: (change) =>
       Boolean(change?.dirtyStateKeys.includes(field.key)),
@@ -61,17 +50,13 @@ export function useStateFieldValue<
  * default so external controls can update state without stealing focus. Pass
  * an update policy when history or tags need additional control.
  */
-export function useSetStateField<
-  TValue,
-  TEditor extends Editor<any> = ReactEditor<any>,
->(field: EditorStateField<TValue>): StateFieldSetter<TValue, TEditor> {
-  const editor = useEditor<TEditor>();
+export function useSetStateField<TValue>(
+  field: EditorStateField<TValue>
+): StateFieldSetter<TValue> {
+  const editor = useEditor();
 
   return useCallback(
-    (
-      value: StateFieldValueInput<TValue>,
-      policy?: EditorUpdatePolicyFor<TEditor>
-    ) => {
+    (value: StateFieldValueInput<TValue>, policy?: EditorUpdatePolicy) => {
       if (policy) {
         editor.update(withPliteReactPreservedSelection(policy), (tx) => {
           tx.setField(field, value);

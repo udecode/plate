@@ -70,9 +70,9 @@ Text with custom line height
 
 <video src="https://example.com/video.mp4" />
 
-<media_embed src="https://www.youtube.com/watch?v=example" />
+<mediaEmbed src="https://www.youtube.com/watch?v=example" />
 
-<column_group layout="[50,50]">
+<columnGroup layout="[50,50]">
   <column width="50%">
     Left column
   </column>
@@ -80,7 +80,7 @@ Text with custom line height
   <column width="50%">
     Right column
   </column>
-</column_group>
+</columnGroup>
 
 Mention: [User](mention:User)
 

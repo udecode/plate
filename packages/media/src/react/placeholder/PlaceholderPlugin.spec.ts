@@ -125,6 +125,27 @@ describe('PlaceholderPlugin', () => {
     ]);
   });
 
+  it('associates files with placeholders from their own transaction call', () => {
+    const editor = createPlateEditor({
+      plugins: [PlaceholderPlugin],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
+    });
+    const first = new File(['first'], 'first.png', { type: 'image/png' });
+    const second = new File(['second'], 'second.png', { type: 'image/png' });
+
+    editor.update((tx) => {
+      tx.placeholder.insertMedia([first], { at: [1] });
+      tx.placeholder.insertMedia([second], { at: [2] });
+    });
+
+    const uploadingFiles = editor
+      .plugin(PlaceholderPlugin)
+      .store.get('uploadingFiles');
+
+    expect(uploadingFiles[editor.key([1])!]).toBe(first);
+    expect(uploadingFiles[editor.key([2])!]).toBe(second);
+  });
+
   it('replaces a placeholder with direct media caption children', () => {
     const editor = createPlateEditor({
       plugins: [BaseParagraphPlugin, BaseImagePlugin, PlaceholderPlugin],
@@ -140,7 +161,7 @@ describe('PlaceholderPlugin', () => {
     editor.plugin(PlaceholderPlugin).update.replaceMedia(
       {
         caption: 'Uploaded image',
-        type: 'image',
+        plugin: 'image',
         url: 'https://platejs.org/uploaded.png',
       },
       { at: [0] }
@@ -160,15 +181,16 @@ describe('PlaceholderPlugin', () => {
     const editor = createPlateEditor({ plugins: [PlaceholderPlugin] });
     const file = new File(['image'], 'image.png', { type: 'image/png' });
     const placeholder = editor.plugin(PlaceholderPlugin);
+    const nodeKey = editor.key([0])!;
 
-    placeholder.api.addUploadingFile('image', file);
+    placeholder.api.addUploadingFile(nodeKey, file);
     const publishedFiles = placeholder.store.get('uploadingFiles');
 
     expect(Object.isFrozen(publishedFiles)).toBe(true);
 
-    placeholder.api.removeUploadingFile('image');
+    placeholder.api.removeUploadingFile(nodeKey);
 
-    expect(publishedFiles).toEqual({ image: file });
+    expect(publishedFiles).toEqual({ [nodeKey]: file });
     expect(placeholder.store.get('uploadingFiles')).toEqual({});
     expect(placeholder.store.get('uploadingFiles')).not.toBe(publishedFiles);
   });

@@ -621,7 +621,7 @@ describe('plite-react surface contract', () => {
           next: 'root-source',
           owner: 'Editable root selector sources',
           rationale:
-            'Top-level runtime ids, root document epoch, selected top-level index, selection paths, placeholder visibility, and the editable root commit wakeup are owned by named root source selectors.',
+            'Top-level node keys, root document epoch, selected top-level index, selection paths, placeholder visibility, and the editable root commit wakeup are owned by named root source selectors.',
         },
         'packages/plite-react/src/hooks/use-node-selector.tsx': {
           count: 1,
@@ -1058,7 +1058,7 @@ describe('plite-react surface contract', () => {
       expect(hooks).toContain(
         'Use `usePliteEditor` to create an editor; use `useEditor` inside descendants'
       );
-      expect(hooks).toContain('usePliteProjectionEntries<T>(runtimeId)');
+      expect(hooks).toContain('usePliteProjectionEntries<T>(nodeKey)');
       expect(hooks).toContain(
         'UI should use decoration sources, annotation stores, or widget stores first.'
       );
@@ -1591,7 +1591,7 @@ describe('plite-react surface contract', () => {
     }
 
     expect(docs).toContain("type: 'virtualized'");
-    expect(docs).toContain("'data-plite-runtime-id': RuntimeId");
+    expect(docs).toContain("'data-plite-node-key': NodeKey");
     expect(docs).toContain('isInline: boolean');
     expect(docs).toContain('slots: EditableElementSlots');
   });
