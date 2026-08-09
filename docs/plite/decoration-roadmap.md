@@ -101,7 +101,7 @@ Current execution reality:
   note:
   the shared projection runtime substrate was more landed than the first plan
   draft assumed; the real missing work was proof hardening around nested
-  runtime-id projection behavior
+  node-key projection behavior
 - Wave 3: complete
 - Wave 4: complete
 - Wave 5: complete
@@ -227,7 +227,7 @@ They may **not** share ownership semantics.
 19. `plite-react` may mirror and index annotation data without owning
     canonical thread/comment metadata.
 20. Public widget anchors do not use Plite path addresses.
-    For live node-local UI, prefer node runtime identity.
+    For live node-local UI, prefer node node key.
 21. A field-best perf claim requires source-scoped invalidation below React.
     Local React subscriptions alone are not enough.
 22. Unknown source dirtiness must fall back to full refresh instead of producing
@@ -427,7 +427,7 @@ Reason:
 
 Freeze the recommendation:
 
-- widgets should anchor by annotation id, node runtime id, or current
+- widgets should anchor by annotation id, node node key, or current
   selection handle
 - public widget anchors should not use Plite path addresses
 - if an app has its own durable block ids, adapt them at the edge instead of
@@ -444,7 +444,7 @@ Freeze the recommendation:
 Reason:
 
 - path is a mutable tree address, not a stable overlay anchor contract
-- Plite already has runtime identity that survives structural edits better
+- Plite already has node key that survives structural edits better
   than path
 - DOM-node anchoring is brittle under rerender, remount, and offscreen work
 - logical anchoring without explicit placement is only half a design
@@ -484,7 +484,7 @@ Minimum target:
 - scope
   - `all`
   - `paths`
-  - `runtimeIds`
+  - `nodeKeys`
   - `selection`
 - mode
   - `sync`
@@ -558,10 +558,10 @@ type DecorationSourceAdapter =
 type DecorationRefresh = {
   sourceId: string;
   generation: number;
-  scope: "all" | "paths" | "runtimeIds" | "selection";
+  scope: "all" | "paths" | "nodeKeys" | "selection";
   mode?: "sync" | "deferred";
   paths?: Path[];
-  runtimeIds?: RuntimeId[];
+  nodeKeys?: NodeKey[];
 };
 
 type Annotation = {
@@ -585,7 +585,7 @@ type AnnotationStoreAdapter = {
 
 type WidgetAnchor =
   | { type: "annotation"; annotationId: string }
-  | { type: "node"; runtimeId: RuntimeId }
+  | { type: "node"; nodeKey: NodeKey }
   | { type: "selection" };
 
 type WidgetPlacement = {
@@ -862,7 +862,7 @@ scaling and invalidation, so benchmark truth is part of the contract.
    - durable anchors plus anchored widget on representative review data
    - decision unlocked: annotation store cost under edit churn
 4. `bench:react:overlay-subscriptions:local`
-   - isolate runtime-id subscription breadth for decorations, annotations, and
+   - isolate node-key subscription breadth for decorations, annotations, and
      widgets
    - decision unlocked: whether the store shape is truly local
 5. conditional widening lane:
@@ -911,14 +911,14 @@ Every new overlay lane should write at least:
   - rerender counts
   - annotation churn counts
   - widget placement counts
-  - affected runtime ids
+  - affected node keys
 
 ### Benchmark verdict thresholds
 
 These are default thresholds unless a lane owner justifies stricter ones.
 
 - `bench:react:overlay-subscriptions:local`
-  - pass if unrelated runtime-id rerender breadth is unchanged or lower than
+  - pass if unrelated node-key rerender breadth is unchanged or lower than
     the current proof path
 - `bench:replacement:search-highlighting:local`
   - pass if visible input / toggle latency stays within current blocker-facing
@@ -1033,7 +1033,7 @@ Status:
 - the codebase already held more of this substrate than the earliest planning
   pass assumed
 - the real delivered delta was projection-runtime proof hardening, especially
-  around nested rich-inline runtime-id behavior
+  around nested rich-inline node-key behavior
 
 Goal:
 
@@ -1059,7 +1059,7 @@ Tests:
 Required scenarios:
 
 - `useSyncExternalStore` snapshots are cached and immutable
-- unchanged runtime ids do not rerender
+- unchanged node keys do not rerender
 - explicit refresh can invalidate chosen scopes without global churn
 - selection-derived projections and durable-anchor projections can coexist
 - widget entries do not force text-leaf rerenders
@@ -1067,7 +1067,7 @@ Required scenarios:
 Exit:
 
 - one shared runtime can serve decorations, annotations, and widgets
-- mounted consumers subscribe by runtime id or explicit higher-level key
+- mounted consumers subscribe by node key or explicit higher-level key
 - the runtime supports the site example program without example-local store
   hacks
 - completed via proof hardening instead of a greenfield kernel rewrite
@@ -1313,7 +1313,7 @@ Exit:
 - no release doc still hides behind “projection-local is mirrored; broader
   decorate is explicit skip” if the final system chose a different contract
 
-## Wave 9. Core change metadata and touched runtime-id publication
+## Wave 9. Core change metadata and touched node-key publication
 
 Status:
 
@@ -1340,7 +1340,7 @@ Required model:
 - that change record names:
   - operations
   - dirty paths
-  - touched runtime ids when known
+  - touched node keys when known
   - replace epoch
   - operation class:
     - text
@@ -1349,14 +1349,14 @@ Required model:
     - structural
     - replace
 - collapsed `insert_text` / `remove_text` fast paths publish the touched text
-  runtime id without rebuilding the snapshot index
+  node key without rebuilding the snapshot index
 - structural operations may publish broader dirty regions first, then narrow as
   proof justifies it
 
 Required tests:
 
-- fast text insert publishes one touched runtime id
-- remove text publishes one touched runtime id
+- fast text insert publishes one touched node key
+- remove text publishes one touched node key
 - selection-only operations publish selection dirtiness without text dirtiness
 - `Editor.replace(...)` publishes a replace-level broad invalidation
 - subscribers that ignore change metadata keep working
@@ -1465,18 +1465,18 @@ Research pressure:
 
 Required implementation direction:
 
-- maintain projection buckets by source id and runtime id
-- preserve previous runtime-id slices when neither the source nor the runtime id
+- maintain projection buckets by source id and node key
+- preserve previous node-key slices when neither the source nor the node key
   is dirty
 - add a path/range index that lets `Editor.projectRange(...)` avoid collecting
   every text entry when the projected range is local
 - keep full traversal as fallback for cross-document, unknown, or broad ranges
-- count recomputed source ids and runtime ids in benchmark artifacts
+- count recomputed source ids and node keys in benchmark artifacts
 
 Required tests:
 
 - one text edit only recomputes the relevant local projection source
-- unrelated runtime ids preserve slice identity
+- unrelated node keys preserve slice identity
 - cross-node projections still split correctly
 - broad/unknown source invalidation still refreshes safely
 - deleted anchors fail closed
@@ -1485,8 +1485,8 @@ Required benchmark additions:
 
 - extend `pnpm bench:react:rerender-breadth:local` with recompute counters:
   - source ids recomputed
-  - runtime ids touched
-  - runtime ids with changed slice identity
+  - node keys touched
+  - node keys with changed slice identity
 - extend `pnpm bench:react:huge-document-overlays:local` with:
   - overlay-source recompute count
   - annotation-source recompute count
@@ -1520,7 +1520,7 @@ Strict order:
 7. Wave 6 huge-doc + React scheduling proof
 8. Wave 7 breaking migration truth
 9. Wave 8 RC reconciliation
-10. Wave 9 core change metadata and touched runtime-id publication
+10. Wave 9 core change metadata and touched node-key publication
 11. Wave 10 source dirtiness declarations
 12. Wave 11 indexed / child-scoped projection recompute
 

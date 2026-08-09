@@ -1,7 +1,7 @@
 import type {
   Editor as EditorType,
   Range,
-  RuntimeId,
+  NodeKey,
   Value,
 } from '@platejs/plite';
 import { RangeApi } from '@platejs/plite';
@@ -65,9 +65,7 @@ export type PliteDecorationSource<T = unknown> = {
   destroy: () => void;
   getMetrics: () => PliteProjectionStoreMetrics;
   getSourceStatus: () => PliteViewSourceStatus;
-  getRuntimeSnapshot: (
-    runtimeId: RuntimeId
-  ) => readonly PliteProjectionSlice<T>[];
+  getRuntimeSnapshot: (nodeKey: NodeKey) => readonly PliteProjectionSlice<T>[];
   getSnapshot: () => Readonly<
     Record<string, readonly PliteProjectionSlice<T>[]>
   >;
@@ -80,17 +78,12 @@ export type PliteDecorationSource<T = unknown> = {
   subscribeProjectionRefresh: (
     listener: PliteProjectionRefreshListener
   ) => () => void;
-  subscribeRuntimeId: (
-    runtimeId: RuntimeId,
-    listener: () => void
-  ) => () => void;
+  subscribeNodeKey: (nodeKey: NodeKey, listener: () => void) => () => void;
   subscribeSourceId: (sourceId: string, listener: () => void) => () => void;
 };
 
 export type PliteOverlayProjectionStore<T = unknown> = {
-  getRuntimeSnapshot?: (
-    runtimeId: RuntimeId
-  ) => readonly PliteProjectionSlice<T>[];
+  getRuntimeSnapshot?: (nodeKey: NodeKey) => readonly PliteProjectionSlice<T>[];
   getSnapshot: () => Readonly<
     Record<string, readonly PliteProjectionSlice<T>[]>
   >;
@@ -101,10 +94,7 @@ export type PliteOverlayProjectionStore<T = unknown> = {
   subscribeProjectionRefresh?: (
     listener: PliteProjectionRefreshListener
   ) => () => void;
-  subscribeRuntimeId?: (
-    runtimeId: RuntimeId,
-    listener: () => void
-  ) => () => void;
+  subscribeNodeKey?: (nodeKey: NodeKey, listener: () => void) => () => void;
   subscribeSourceId?: (sourceId: string, listener: () => void) => () => void;
 };
 
@@ -130,16 +120,16 @@ const mergeSnapshots = <T>(
   for (const source of sources) {
     const snapshot = source.getSnapshot();
 
-    for (const [runtimeId, slices] of Object.entries(snapshot)) {
-      merged[runtimeId] = [...(merged[runtimeId] ?? []), ...slices];
+    for (const [nodeKey, slices] of Object.entries(snapshot)) {
+      merged[nodeKey] = [...(merged[nodeKey] ?? []), ...slices];
     }
   }
 
   const frozen: Record<string, readonly PliteProjectionSlice<T>[]> =
     Object.create(null);
 
-  for (const runtimeId of Object.keys(merged)) {
-    frozen[runtimeId] = Object.freeze(merged[runtimeId]!);
+  for (const nodeKey of Object.keys(merged)) {
+    frozen[nodeKey] = Object.freeze(merged[nodeKey]!);
   }
 
   return Object.freeze(frozen);
@@ -256,7 +246,7 @@ export const composeProjectionSources = <T = unknown>(
 
   let snapshot = mergeSnapshots(sources);
   const runtimeSnapshots = new Map<
-    RuntimeId,
+    NodeKey,
     readonly PliteProjectionSlice<T>[]
   >();
 
@@ -267,8 +257,8 @@ export const composeProjectionSources = <T = unknown>(
   };
 
   return {
-    getRuntimeSnapshot(runtimeId: RuntimeId) {
-      const cached = runtimeSnapshots.get(runtimeId);
+    getRuntimeSnapshot(nodeKey: NodeKey) {
+      const cached = runtimeSnapshots.get(nodeKey);
 
       if (cached) {
         return cached;
@@ -276,8 +266,8 @@ export const composeProjectionSources = <T = unknown>(
 
       const slices = sources.flatMap(
         (source) =>
-          source.getRuntimeSnapshot?.(runtimeId) ??
-          source.getSnapshot()[runtimeId] ??
+          source.getRuntimeSnapshot?.(nodeKey) ??
+          source.getSnapshot()[nodeKey] ??
           []
       );
       const nextSnapshot =
@@ -285,7 +275,7 @@ export const composeProjectionSources = <T = unknown>(
           ? (EMPTY_RUNTIME_SNAPSHOT as readonly PliteProjectionSlice<T>[])
           : Object.freeze(slices);
 
-      runtimeSnapshots.set(runtimeId, nextSnapshot);
+      runtimeSnapshots.set(nodeKey, nextSnapshot);
 
       return nextSnapshot;
     },
@@ -304,10 +294,10 @@ export const composeProjectionSources = <T = unknown>(
           : () => {}
       );
     },
-    subscribeRuntimeId(runtimeId: RuntimeId, listener: () => void) {
+    subscribeNodeKey(nodeKey: NodeKey, listener: () => void) {
       return subscribeAll(sources, (source) =>
-        source.subscribeRuntimeId
-          ? source.subscribeRuntimeId(runtimeId, invalidate(listener))
+        source.subscribeNodeKey
+          ? source.subscribeNodeKey(nodeKey, invalidate(listener))
           : source.subscribe(invalidate(listener))
       );
     },

@@ -26,7 +26,7 @@ import {
   getContentSliceCanonicalAuthority,
 } from './content-slice';
 import type { AnyEditor as Editor } from '../interfaces/editor';
-import { inheritRuntimeId } from '../utils/runtime-ids';
+import { inheritNodeKey } from '../utils/node-keys';
 import { getEditorSchema } from './editor-runtime';
 import { profileCoreDuration } from './profiling';
 import { areEditorJsonValuesEqual } from './value-codec';
@@ -58,7 +58,7 @@ const mergeText = (
 ) => {
   const merged = { ...left, text: left.text + right.text };
 
-  inheritRuntimeId(merged, left, editor);
+  inheritNodeKey(merged, left, editor);
 
   return merged;
 };
@@ -278,7 +278,7 @@ const canonicalizeNode = (
       ? candidate
       : ({ ...candidate, children } as Element);
 
-  inheritRuntimeId(canonical, node, editor);
+  inheritNodeKey(canonical, node, editor);
 
   return canonical;
 };

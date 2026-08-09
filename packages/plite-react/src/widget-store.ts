@@ -2,7 +2,7 @@ import {
   type EditorCommit,
   PointApi,
   type Range,
-  type RuntimeId,
+  type NodeKey,
   type Editor as EditorType,
 } from '@platejs/plite';
 import type {
@@ -29,13 +29,13 @@ export type PliteWidgetAnchor =
     }
   | {
       type: 'node';
-      runtimeId: RuntimeId;
+      nodeKey: NodeKey;
     }
   | {
       type: 'selection';
     };
 
-/** UI descriptor anchored to an annotation, node runtime id, or selection. */
+/** UI descriptor anchored to an annotation, node node key, or selection. */
 export type PliteWidget<
   T extends Record<string, unknown> = Record<string, never>,
 > = {
@@ -131,7 +131,7 @@ const areWidgetAnchorsEqual = (
         right.type === 'annotation' && left.annotationId === right.annotationId
       );
     case 'node':
-      return right.type === 'node' && left.runtimeId === right.runtimeId;
+      return right.type === 'node' && left.nodeKey === right.nodeKey;
     case 'selection':
       return true;
   }
@@ -227,7 +227,7 @@ const createPliteWidgetStoreInternal = <
       }
       case 'node': {
         visible = Boolean(
-          mappingEditorSnapshot.index.pathOf(widget.anchor.runtimeId)
+          mappingEditorSnapshot.index.pathOf(widget.anchor.nodeKey)
         );
         break;
       }

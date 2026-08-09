@@ -2,7 +2,7 @@ import {
   PathApi,
   type Point,
   RangeApi,
-  type RuntimeId,
+  type NodeKey,
   type Path as PlitePath,
   type Range as PliteRange,
 } from '@platejs/plite';
@@ -10,7 +10,7 @@ import {
   type AnyEditor as EditorType,
   after as editorAfter,
   before as editorBefore,
-  getPathByRuntimeId as editorGetPathByRuntimeId,
+  getPathByNodeKey as editorGetPathByNodeKey,
   hasPath as editorHasPath,
 } from '@platejs/plite/internal';
 import { getSnapshotVersion } from '@platejs/plite/internal';
@@ -67,20 +67,20 @@ export interface DOMCoveragePathRange {
 
 /** Runtime-id range that can be rebased into current paths. */
 export interface DOMCoverageRuntimeRange {
-  anchor: RuntimeId;
-  focus: RuntimeId;
+  anchor: NodeKey;
+  focus: NodeKey;
 }
 
 /** DOM anchor used for native point/range conversion at a boundary edge. */
 export type DOMCoverageBoundaryAnchor =
   | { type: 'owner' }
-  | { runtimeId: RuntimeId; type: 'summary-slot' }
-  | { runtimeId?: RuntimeId; type: 'placeholder' };
+  | { nodeKey: NodeKey; type: 'summary-slot' }
+  | { nodeKey?: NodeKey; type: 'placeholder' };
 
 /** Registered coverage boundary for one owner element and its hidden ranges. */
 export interface DOMCoverageBoundary {
   boundaryId: string;
-  ownerRuntimeId: RuntimeId | null;
+  ownerNodeKey: NodeKey | null;
   ownerPath: PlitePath;
   coveredPathRanges: readonly DOMCoveragePathRange[];
   coveredRuntimeRanges: readonly DOMCoverageRuntimeRange[];
@@ -216,11 +216,11 @@ const resolveBoundary = (
   boundary: DOMCoverageBoundary
 ): DOMCoverageBoundary | null => {
   const nextOwnerPath =
-    boundary.ownerRuntimeId == null
+    boundary.ownerNodeKey == null
       ? boundary.ownerPath.length === 0
         ? []
         : null
-      : editorGetPathByRuntimeId(editor, boundary.ownerRuntimeId);
+      : editorGetPathByNodeKey(editor, boundary.ownerNodeKey);
 
   if (
     !nextOwnerPath ||
@@ -259,8 +259,8 @@ const pathIsInsideOwner = (path: PlitePath, ownerPath: PlitePath) => {
   );
 };
 
-const resolveRuntimePath = (editor: EditorType, runtimeId: RuntimeId) => {
-  const path = editorGetPathByRuntimeId(editor, runtimeId);
+const resolveRuntimePath = (editor: EditorType, nodeKey: NodeKey) => {
+  const path = editorGetPathByNodeKey(editor, nodeKey);
 
   if (!path || !editorHasPath(editor, path)) {
     return null;

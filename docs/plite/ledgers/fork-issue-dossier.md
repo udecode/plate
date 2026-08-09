@@ -5220,7 +5220,7 @@ Evidence:
   `gitcrawl threads ianstormtaylor/slate --numbers 3741 --include-closed --json`.
 - current core history plan:
   `docs/plans/2026-05-06-plite-core-history-selection-undo-ralplan.md`.
-- current v2 collaboration proof keeps runtime ids local and tests remote
+- current v2 collaboration proof keeps node keys local and tests remote
   move/remove rebase behavior in
   `packages/plite/test/collab-history-runtime-contract.ts`.
 
@@ -7120,7 +7120,7 @@ Evidence:
   now includes nested moved-node projection runtime-bucket mapping.
 - current v2 proof:
   `packages/plite-react/test/widget-layer-contract.tsx` now
-  includes runtime-id node-widget move/remove mapping.
+  includes node-key node-widget move/remove mapping.
 - verification:
   `cd /Users/zbeyens/git/plate-2/packages/plite-react && bun test:vitest -- projections-and-selection-contract annotation-store-contract widget-layer-contract`.
 - type/lint proof:

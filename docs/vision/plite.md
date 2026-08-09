@@ -157,6 +157,16 @@ donor checkout as proof after the transplant.
 - Anchors are live editor-scoped handles created through `editor.anchor` or
   `tx.anchor`. Serialized durable positions are a separate concern; low-level
   refs are runtime machinery.
+- `NodeKey` is the sole live descendant identity. Resolve it with
+  `editor.key`, coherent `state.key`, or active `tx.key`; resolve back through
+  `nodes.path`. It covers elements and text, stays editor-local, and never
+  enters schema or serialized data. Do not publish runtime-ID aliases or a
+  second identity namespace. Pure detached transaction-spec builders may
+  consume existing keys but do not allocate them. Keys are unique across one
+  editor's roots and may target node operations across roots, while
+  `nodes.path(key)` remains scoped to the current editor or view root because a
+  `Path` carries no root. Base-editor path inputs always address the main root;
+  view path inputs address that view's root.
 - Lightweight text problems do not automatically deserve the full editor stack.
 
 ## Plite Browser And Behavior Proof

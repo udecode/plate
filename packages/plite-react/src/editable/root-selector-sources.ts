@@ -1,5 +1,5 @@
 import { type ReactNode, useCallback, useMemo, useRef } from 'react';
-import type { EditorCommit, Path, RuntimeId } from '@platejs/plite';
+import type { EditorCommit, Path, NodeKey } from '@platejs/plite';
 import { NodeApi } from '@platejs/plite';
 import { toInternalRoot } from './runtime-editor-api';
 import { toPublicRootOption } from '../root-key';
@@ -16,37 +16,37 @@ export type DOMStrategyRootConfig = {
   threshold: number;
 };
 
-const EMPTY_RUNTIME_IDS: readonly RuntimeId[] = [];
+const EMPTY_RUNTIME_IDS: readonly NodeKey[] = [];
 
-type SegmentRuntimeIdGroup = {
+type SegmentNodeKeyGroup = {
   endIndex: number;
-  runtimeIds: readonly RuntimeId[];
+  nodeKeys: readonly NodeKey[];
   segmentIndex: number;
   startIndex: number;
 };
 
-const createSegmentRuntimeIdGroups = ({
+const createSegmentNodeKeyGroups = ({
   segmentSize,
-  topLevelRuntimeIds,
+  topLevelNodeKeys,
 }: {
   segmentSize: number;
-  topLevelRuntimeIds: readonly RuntimeId[];
+  topLevelNodeKeys: readonly NodeKey[];
 }) => {
-  const groups: SegmentRuntimeIdGroup[] = [];
+  const groups: SegmentNodeKeyGroup[] = [];
 
   for (
     let startIndex = 0, segmentIndex = 0;
-    startIndex < topLevelRuntimeIds.length;
+    startIndex < topLevelNodeKeys.length;
     startIndex += segmentSize, segmentIndex += 1
   ) {
     const endIndex = Math.min(
-      topLevelRuntimeIds.length - 1,
+      topLevelNodeKeys.length - 1,
       startIndex + segmentSize - 1
     );
 
     groups.push({
       endIndex,
-      runtimeIds: topLevelRuntimeIds.slice(startIndex, endIndex + 1),
+      nodeKeys: topLevelNodeKeys.slice(startIndex, endIndex + 1),
       segmentIndex,
       startIndex,
     });
@@ -64,7 +64,7 @@ const createSegmentPlanFromGroups = ({
   promotionWindowSize,
 }: {
   defaultActiveSegmentIndex: number;
-  groups: readonly SegmentRuntimeIdGroup[];
+  groups: readonly SegmentNodeKeyGroup[];
   overscan: number;
   promotedSegmentIndex: number | null;
   promotedWindowStartIndex: number | null;
@@ -83,36 +83,36 @@ const createSegmentPlanFromGroups = ({
         promotedSegmentIndex === group.segmentIndex &&
         promotedWindowStartIndex != null &&
         promotionWindowSize > 0 &&
-        promotionWindowSize < group.runtimeIds.length;
+        promotionWindowSize < group.nodeKeys.length;
       const windowOffset = shouldWindowPromotedSegment
         ? Math.min(
             Math.max(0, promotedWindowStartIndex - group.startIndex),
-            Math.max(0, group.runtimeIds.length - promotionWindowSize)
+            Math.max(0, group.nodeKeys.length - promotionWindowSize)
           )
         : 0;
-      const mountedRuntimeIds =
+      const mountedNodeKeys =
         isActive && shouldWindowPromotedSegment
-          ? group.runtimeIds.slice(
+          ? group.nodeKeys.slice(
               windowOffset,
               windowOffset + promotionWindowSize
             )
           : isActive
-            ? group.runtimeIds
+            ? group.nodeKeys
             : EMPTY_RUNTIME_IDS;
       const mountedStartIndex =
-        isActive && mountedRuntimeIds.length > 0
+        isActive && mountedNodeKeys.length > 0
           ? group.startIndex + windowOffset
           : null;
       const mountedEndIndex =
         mountedStartIndex == null
           ? null
-          : mountedStartIndex + mountedRuntimeIds.length - 1;
+          : mountedStartIndex + mountedNodeKeys.length - 1;
 
       return {
         ...group,
         isActive,
         mountedEndIndex,
-        mountedRuntimeIds,
+        mountedNodeKeys,
         mountedStartIndex,
       };
     }),
@@ -144,7 +144,7 @@ const topLevelRangesIncludeIndex = (
   index: number
 ) => ranges.some(([start, end]) => start <= index && end >= index);
 
-const shouldUpdateRootRuntimeIds = (root: string, change?: EditorCommit) =>
+const shouldUpdateRootNodeKeys = (root: string, change?: EditorCommit) =>
   !change || change.changed.has('root-order', toPublicRootOption(root));
 
 const shouldUpdateSelectedTopLevelIndex = (
@@ -176,14 +176,11 @@ const shouldUpdateEditableRootCommit = (root: string, change?: EditorCommit) =>
 const shouldUpdateRootDocumentEpoch = (root: string, change?: EditorCommit) =>
   !change || change.changed.has('replace', toPublicRootOption(root));
 
-const sameRuntimeIds = (
-  left: readonly RuntimeId[],
-  right: readonly RuntimeId[]
-) =>
+const sameNodeKeys = (left: readonly NodeKey[], right: readonly NodeKey[]) =>
   left.length === right.length &&
-  left.every((runtimeId, index) => runtimeId === right[index]);
+  left.every((nodeKey, index) => nodeKey === right[index]);
 
-const selectRootRuntimeIds = (editor: ReactRuntimeEditor) =>
+const selectRootNodeKeys = (editor: ReactRuntimeEditor) =>
   editor.read(
     (state) =>
       state.nodes
@@ -191,27 +188,27 @@ const selectRootRuntimeIds = (editor: ReactRuntimeEditor) =>
         .map((_node: unknown, index: number) => {
           const path = [index] as Path;
 
-          return state.runtime.id(path);
+          return state.key(path);
         })
-        .filter(Boolean) as RuntimeId[]
+        .filter(Boolean) as NodeKey[]
   );
 
-export const useRootRuntimeIds = () => {
+export const useRootNodeKeys = () => {
   const editor = useEditor();
   const root = toInternalRoot(editor.read((state) => state.view.root()));
   const selector = useCallback(
-    (editor: ReactRuntimeEditor) => selectRootRuntimeIds(editor),
+    (editor: ReactRuntimeEditor) => selectRootNodeKeys(editor),
     [root]
   );
   const shouldUpdate = useCallback(
-    (change?: EditorCommit) => shouldUpdateRootRuntimeIds(root, change),
+    (change?: EditorCommit) => shouldUpdateRootNodeKeys(root, change),
     [root]
   );
 
   return useEditorSelector(selector, {
     equalityFn: (left, right) =>
-      left != null && sameRuntimeIds(left as RuntimeId[], right),
-    profileId: 'root-runtime-ids',
+      left != null && sameNodeKeys(left as NodeKey[], right),
+    profileId: 'root-node-keys',
     shouldUpdate,
   });
 };
@@ -389,24 +386,24 @@ export const useInternalSegmentDOMStrategyRootSources = ({
   promotedSegmentOverscan?: number | null;
   promotedWindowStartIndex: number | null;
 }) => {
-  const topLevelRuntimeIds = useRootRuntimeIds();
-  const segmentRuntimeIdGroups = useMemo(
+  const topLevelNodeKeys = useRootNodeKeys();
+  const segmentNodeKeyGroups = useMemo(
     () =>
       internalSegmentDOMStrategyConfig &&
-      topLevelRuntimeIds.length >= internalSegmentDOMStrategyConfig.threshold
-        ? createSegmentRuntimeIdGroups({
+      topLevelNodeKeys.length >= internalSegmentDOMStrategyConfig.threshold
+        ? createSegmentNodeKeyGroups({
             segmentSize: internalSegmentDOMStrategyConfig.segmentSize,
-            topLevelRuntimeIds,
+            topLevelNodeKeys,
           })
         : null,
-    [internalSegmentDOMStrategyConfig, topLevelRuntimeIds]
+    [internalSegmentDOMStrategyConfig, topLevelNodeKeys]
   );
   const selectedTopLevelIndex = useTopLevelSelectionIndex(
-    segmentRuntimeIdGroups != null
+    segmentNodeKeyGroups != null
   );
   const selectedSegmentIndex =
     internalSegmentDOMStrategyConfig &&
-    segmentRuntimeIdGroups &&
+    segmentNodeKeyGroups &&
     selectedTopLevelIndex != null
       ? Math.floor(
           selectedTopLevelIndex / internalSegmentDOMStrategyConfig.segmentSize
@@ -422,23 +419,23 @@ export const useInternalSegmentDOMStrategyRootSources = ({
     });
 
     const segmentPlan =
-      internalSegmentDOMStrategyConfig && segmentRuntimeIdGroups
+      internalSegmentDOMStrategyConfig && segmentNodeKeyGroups
         ? createSegmentPlanFromGroups({
             overscan:
               promotedSegmentOverscan ??
               internalSegmentDOMStrategyConfig.overscan,
             defaultActiveSegmentIndex: selectedSegmentIndex,
-            groups: segmentRuntimeIdGroups,
+            groups: segmentNodeKeyGroups,
             promotedSegmentIndex,
             promotedWindowStartIndex,
             promotionWindowSize:
               internalSegmentDOMStrategyConfig.promotionWindowSize,
           })
         : null;
-    const mountedTopLevelRuntimeIds = segmentPlan
+    const mountedTopLevelNodeKeys = segmentPlan
       ? new Set(
           segmentPlan.segments.flatMap((segment) =>
-            segment.isActive ? segment.mountedRuntimeIds : []
+            segment.isActive ? segment.mountedNodeKeys : []
           )
         )
       : null;
@@ -454,16 +451,16 @@ export const useInternalSegmentDOMStrategyRootSources = ({
     return {
       segmentPlan,
       mountedTopLevelRanges,
-      mountedTopLevelRuntimeIds,
-      topLevelRuntimeIds,
+      mountedTopLevelNodeKeys,
+      topLevelNodeKeys,
     };
   }, [
     internalSegmentDOMStrategyConfig,
     promotedSegmentIndex,
     promotedSegmentOverscan,
     promotedWindowStartIndex,
-    segmentRuntimeIdGroups,
+    segmentNodeKeyGroups,
     selectedSegmentIndex,
-    topLevelRuntimeIds,
+    topLevelNodeKeys,
   ]);
 };

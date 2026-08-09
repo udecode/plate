@@ -1530,7 +1530,6 @@ type ElementOverridePatch = Readonly<{
 }>;
 
 type PropertyOverridePatch = Readonly<{
-  key?: string;
   target?: SchemaTarget | null;
 }>;
 
@@ -1614,7 +1613,7 @@ const prepareEditorSchemaRecords = (
 
     const key = `${override.source}\u0000${override.id}`;
 
-    for (const facet of ['key', 'target'] as const) {
+    for (const facet of ['target'] as const) {
       if (override[facet] !== undefined) {
         claim(
           `property:${override.source}:${override.id}:${facet}`,
@@ -1626,7 +1625,6 @@ const prepareEditorSchemaRecords = (
       key,
       Object.freeze({
         ...propertyPatches.get(key),
-        ...(override.key !== undefined ? { key: override.key } : {}),
         ...(override.target !== undefined ? { target: override.target } : {}),
       })
     );
@@ -1687,7 +1685,6 @@ const prepareEditorSchemaRecords = (
               `Schema property override "${extensionName}:${id}" cannot remove an element-property target.`
             );
           }
-          const finalKey = propertyPatch?.key ?? key;
           const finalTarget = remapSchemaTarget(
             propertyPatch && Object.hasOwn(propertyPatch, 'target')
               ? propertyPatch.target!
@@ -1705,11 +1702,11 @@ const prepareEditorSchemaRecords = (
             overriddenPropertyIds.set(preparedDescriptor, id);
           }
           if (finalTarget.kind === 'type' && finalTarget.type === finalType) {
-            return [[finalKey, preparedDescriptor] as const];
+            return [[key, preparedDescriptor] as const];
           }
           const promotedProperty = Object.freeze({
             copy: 'preserve' as const,
-            key: finalKey,
+            key,
             placement: 'element' as const,
             role: 'content' as const,
             split: 'preserve' as const,
@@ -1780,7 +1777,6 @@ const prepareEditorSchemaRecords = (
 
         const preparedProperty = {
           ...property,
-          ...(patch?.key !== undefined ? { key: patch.key } : {}),
           ...(target
             ? { target: remapSchemaTarget(target, renames) }
             : { target: undefined }),
@@ -2882,7 +2878,7 @@ const clonePropertyDescriptor = (
     });
   }
 
-  return Object.freeze(cloned) as PropertyValueDescriptor;
+  return Object.freeze(cloned) as unknown as PropertyValueDescriptor;
 };
 
 const propertyKeyLabel = (key: SchemaPropertyKey) =>
@@ -4970,9 +4966,13 @@ const isContractTarget = (
   return valid;
 };
 
-const isContractDescriptor = (value: unknown): boolean => {
+const isContractDescriptor = (
+  value: unknown,
+  seen: WeakSet<object> = new WeakSet()
+): boolean => {
   if (
     !isRecord(value) ||
+    seen.has(value) ||
     !['boolean', 'enum', 'json', 'number', 'set', 'string'].includes(
       String(value.kind)
     ) ||
@@ -4981,6 +4981,7 @@ const isContractDescriptor = (value: unknown): boolean => {
   ) {
     return false;
   }
+  seen.add(value);
   if (Object.hasOwn(value, 'default') && !isContractJsonValue(value.default)) {
     return false;
   }
@@ -4999,7 +5000,10 @@ const isContractDescriptor = (value: unknown): boolean => {
     return false;
   }
   if (value.kind === 'enum' && !isStringArray(value.values)) return false;
-  if (value.kind === 'set' && !isContractDescriptor(value.item)) return false;
+  if (value.kind === 'set' && !isContractDescriptor(value.item, seen)) {
+    return false;
+  }
+  seen.delete(value);
 
   return true;
 };

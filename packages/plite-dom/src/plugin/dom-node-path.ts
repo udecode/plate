@@ -1,7 +1,7 @@
-import type { Node, Path, RuntimeId, Value } from '@platejs/plite';
+import type { Node, Path, NodeKey, Value } from '@platejs/plite';
 import {
-  getPathByRuntimeId as editorGetPathByRuntimeId,
-  getRuntimeId as editorGetRuntimeId,
+  getPathByNodeKey as editorGetPathByNodeKey,
+  getNodeKey as editorGetNodeKey,
   hasPath as editorHasPath,
 } from '@platejs/plite/internal';
 
@@ -28,11 +28,9 @@ export const getPliteDOMRuntimePath = <V extends Value>(
   editor: DOMEditor<V>,
   element: HTMLElement
 ): Path | null => {
-  const runtimeId = element.getAttribute(
-    'data-plite-runtime-id'
-  ) as RuntimeId | null;
+  const nodeKey = element.getAttribute('data-plite-node-key') as NodeKey | null;
 
-  return runtimeId ? editorGetPathByRuntimeId(editor, runtimeId) : null;
+  return nodeKey ? editorGetPathByNodeKey(editor, nodeKey) : null;
 };
 
 export const isSamePath = (left: Path, right: Path) =>
@@ -71,7 +69,7 @@ export const findMountedDOMNodeByPath = <V extends Value>(
   }
 
   const pathAttr = path.join(',');
-  const runtimeId = editorGetRuntimeId(editor, path);
+  const nodeKey = editorGetNodeKey(editor, path);
   const elements = Array.from(
     editorEl.querySelectorAll(`[data-plite-path="${pathAttr}"]`)
   );
@@ -80,8 +78,7 @@ export const findMountedDOMNodeByPath = <V extends Value>(
     (element) =>
       isDOMElement(element) &&
       element.getAttribute('data-plite-node') &&
-      (!runtimeId ||
-        element.getAttribute('data-plite-runtime-id') === runtimeId)
+      (!nodeKey || element.getAttribute('data-plite-node-key') === nodeKey)
   );
 
   return domEl ? (domEl as HTMLElement) : null;
@@ -104,10 +101,8 @@ export const resolvePliteNodePath = <V extends Value>(
   editor: DOMEditor<V>,
   node: Node
 ): Path | null => {
-  const runtimeId = NODE_TO_RUNTIME_ID.get(node);
-  const runtimePath = runtimeId
-    ? editorGetPathByRuntimeId(editor, runtimeId)
-    : null;
+  const nodeKey = NODE_TO_RUNTIME_ID.get(node);
+  const runtimePath = nodeKey ? editorGetPathByNodeKey(editor, nodeKey) : null;
 
   if (runtimePath) {
     return runtimePath;

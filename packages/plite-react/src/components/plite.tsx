@@ -32,7 +32,7 @@ import {
   getSnapshot as editorGetSnapshot,
   toInternalRoot,
 } from '../editable/runtime-editor-api';
-import { getSchemaInvalidatedRuntimeIds } from '../editable/schema-runtime-invalidation';
+import { getSchemaInvalidatedNodeKeys } from '../editable/schema-runtime-invalidation';
 import { createRootSelectionCache } from '../hooks/root-selection-cache';
 import { EditorContext } from '../hooks/use-editor';
 import { FocusedContext } from '../hooks/use-editor-focused';
@@ -731,32 +731,23 @@ const PliteSingleEditor = <
 
     for (const [root, viewEditors] of mountedViewEditorsRef.current) {
       const publicRoot = toPublicRootOption(root);
-      const changedTextRuntimeIds = commit.changed.runtimeIds(
-        'text',
-        publicRoot
-      );
-      const changedPathRuntimeIds = commit.changed.runtimeIds(
-        'path',
-        publicRoot
-      );
-      let didSyncEveryView = changedTextRuntimeIds.length > 0;
+      const changedTextNodeKeys = commit.changed.nodeKeys('text', publicRoot);
+      const changedPathNodeKeys = commit.changed.nodeKeys('path', publicRoot);
+      let didSyncEveryView = changedTextNodeKeys.length > 0;
 
       for (const viewEditor of viewEditors) {
-        const textSync = syncChangedTextToDOM(
-          viewEditor,
-          changedTextRuntimeIds
-        );
+        const textSync = syncChangedTextToDOM(viewEditor, changedTextNodeKeys);
 
         if (textSync.syncedTextCount < textSync.changedTextCount) {
           didSyncEveryView = false;
         }
-        if (changedPathRuntimeIds.length > 0) {
-          syncPliteNodePathBindingsToDOM(viewEditor, changedPathRuntimeIds);
+        if (changedPathNodeKeys.length > 0) {
+          syncPliteNodePathBindingsToDOM(viewEditor, changedPathNodeKeys);
         }
       }
 
-      changedTextCount += changedTextRuntimeIds.length;
-      if (didSyncEveryView) syncedTextCount += changedTextRuntimeIds.length;
+      changedTextCount += changedTextNodeKeys.length;
+      if (didSyncEveryView) syncedTextCount += changedTextNodeKeys.length;
     }
 
     return { changedTextCount, syncedTextCount };
@@ -778,16 +769,16 @@ const PliteSingleEditor = <
           refreshFocused();
         });
         const textSync = profileRuntimeDuration('dom-text-sync', () =>
-          syncChangedTextToDOM(reactEditor, commit.changed.runtimeIds('text'))
+          syncChangedTextToDOM(reactEditor, commit.changed.nodeKeys('text'))
         );
         const rootTextSync = profileRuntimeDuration('dom-root-text-sync', () =>
           syncMountedRootChangesToDOM(commit)
         );
-        const mainPathRuntimeIds = commit.changed.runtimeIds('path');
+        const mainPathNodeKeys = commit.changed.nodeKeys('path');
 
-        if (mainPathRuntimeIds.length > 0) {
+        if (mainPathNodeKeys.length > 0) {
           profileRuntimeDuration('dom-path-sync', () =>
-            syncPliteNodePathBindingsToDOM(reactEditor, mainPathRuntimeIds)
+            syncPliteNodePathBindingsToDOM(reactEditor, mainPathNodeKeys)
           );
         }
         const hasUnsyncedTextChange =
@@ -832,7 +823,7 @@ const PliteSingleEditor = <
         profileRuntimeDuration('selector-dispatch', () =>
           handleSelectorChange(
             hasUnsyncedTextChange ? undefined : commit,
-            getSchemaInvalidatedRuntimeIds(editor, commit)
+            getSchemaInvalidatedNodeKeys(editor, commit)
           )
         );
 

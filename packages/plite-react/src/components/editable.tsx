@@ -9,7 +9,7 @@ import {
   type Path,
   type Range,
   RangeApi,
-  type RuntimeId,
+  type NodeKey,
 } from '@platejs/plite';
 import { type DOMRange, isDOMNode } from '@platejs/plite-dom';
 import {
@@ -72,7 +72,7 @@ export type EditableDOMStrategyScrollAlign =
   | 'start';
 
 export type EditableDOMStrategyRuntime = {
-  mountedTopLevelRuntimeIds: ReadonlySet<RuntimeId> | null;
+  mountedTopLevelNodeKeys: ReadonlySet<NodeKey> | null;
   mountedTopLevelRanges?: readonly MountedTopLevelRange[];
   scrollToPath?: (
     path: Path,

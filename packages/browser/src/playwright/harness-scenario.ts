@@ -106,7 +106,7 @@ export const createEditorHarnessScenario = ({
       summarizeScenarioReductionCandidate
     );
     const trace: PliteBrowserTraceEntry[] = [];
-    const capturedRuntimeIds = new Map<string, string>();
+    const capturedNodeKeys = new Map<string, string>();
     const runtimeErrors =
       options.runtimeErrors === false
         ? null
@@ -357,11 +357,11 @@ export const createEditorHarnessScenario = ({
               )
               .toBe(true);
             break;
-          case 'assertCapturedRuntimeIdPath': {
-            const runtimeId = capturedRuntimeIds.get(step.name);
+          case 'assertCapturedNodeKeyPath': {
+            const nodeKey = capturedNodeKeys.get(step.name);
 
-            if (!runtimeId) {
-              throw new Error(`No captured runtime id named "${step.name}"`);
+            if (!nodeKey) {
+              throw new Error(`No captured node key named "${step.name}"`);
             }
 
             await expect
@@ -369,19 +369,19 @@ export const createEditorHarnessScenario = ({
                 root.evaluate(
                   (
                     element: HTMLElement,
-                    { key, runtimeId }: { key: string; runtimeId: string }
+                    { key, nodeKey }: { key: string; nodeKey: string }
                   ) => {
                     const handle = (element as Record<string, any>)[key];
 
-                    if (!handle?.getPathByRuntimeId) {
+                    if (!handle?.getPathByNodeKey) {
                       throw new Error(
-                        'This editor surface does not expose getPathByRuntimeId'
+                        'This editor surface does not expose getPathByNodeKey'
                       );
                     }
 
-                    return handle.getPathByRuntimeId(runtimeId);
+                    return handle.getPathByNodeKey(nodeKey);
                   },
-                  { key: PLITE_BROWSER_HANDLE_KEY, runtimeId }
+                  { key: PLITE_BROWSER_HANDLE_KEY, nodeKey }
                 )
               )
               .toEqual(step.path);
@@ -550,32 +550,32 @@ export const createEditorHarnessScenario = ({
           case 'clickSelector':
             await page.locator(step.selector).first().click();
             break;
-          case 'captureRuntimeId': {
-            const runtimeId = await root.evaluate(
+          case 'captureNodeKey': {
+            const nodeKey = await root.evaluate(
               (
                 element: HTMLElement,
                 { key, path }: { key: string; path: number[] }
               ) => {
                 const handle = (element as Record<string, any>)[key];
 
-                if (!handle?.getRuntimeId) {
+                if (!handle?.getNodeKey) {
                   throw new Error(
-                    'This editor surface does not expose getRuntimeId'
+                    'This editor surface does not expose getNodeKey'
                   );
                 }
 
-                return handle.getRuntimeId(path);
+                return handle.getNodeKey(path);
               },
               { key: PLITE_BROWSER_HANDLE_KEY, path: step.path }
             );
 
-            if (!runtimeId) {
+            if (!nodeKey) {
               throw new Error(
-                `Could not capture runtime id for ${step.path.join('.')}`
+                `Could not capture node key for ${step.path.join('.')}`
               );
             }
 
-            capturedRuntimeIds.set(step.name, runtimeId);
+            capturedNodeKeys.set(step.name, nodeKey);
             break;
           }
           case 'composeText':

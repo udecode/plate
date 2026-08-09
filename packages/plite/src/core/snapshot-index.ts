@@ -1,21 +1,22 @@
 import type {
   AnyEditor as Editor,
-  RuntimeId,
+  NodeKey,
   SnapshotIndex,
 } from '../interfaces/editor';
 import type { Descendant } from '../interfaces/node';
 import type { Path } from '../interfaces/path';
 import {
-  assignFreshRuntimeId,
-  getOrCreateRuntimeId,
-  getRuntimeIdForNode,
-  setRuntimeId,
-} from '../utils/runtime-ids';
+  assignFreshNodeKey,
+  getOrCreateNodeKey,
+  getNodeKeyForNode,
+  setNodeKey,
+} from '../utils/node-keys';
 import type { DocumentChangeRuntimeCandidate } from './change/classification';
 import {
   PreparedTokenSlice,
+  getDocumentSliceNodeKeys,
   getPreparedDocumentSlice,
-  getPreparedDocumentRuntimeId,
+  getPreparedDocumentNodeKey,
   getPreparedDocumentRuntimePath,
   isDeferredPreparedDocumentSlice,
   type JsonNode,
@@ -26,12 +27,12 @@ import type { DocumentIndex } from './change/document-index';
 import { profileCoreDuration } from './profiling';
 
 const EMPTY_ENTRIES = Object.freeze([]) as readonly (readonly [
-  RuntimeId,
+  NodeKey,
   Path,
 ])[];
 export type InternalEditorRuntimeElementEntry = Readonly<{
   path: Path;
-  runtimeId: RuntimeId;
+  nodeKey: NodeKey;
   type: string;
 }>;
 
@@ -44,10 +45,14 @@ const SNAPSHOT_ELEMENT_ENTRIES = new WeakMap<
   SnapshotIndex,
   (types: readonly string[]) => readonly InternalEditorRuntimeElementEntry[]
 >();
+const SNAPSHOT_INDEX_CACHED_PATHS = new WeakMap<
+  SnapshotIndex,
+  (nodeKey: NodeKey) => Path | null | undefined
+>();
 
 export const EMPTY_RUNTIME_INDEX: SnapshotIndex = Object.freeze({
   entries: () => EMPTY_ENTRIES,
-  idAt: () => null,
+  keyAt: () => null,
   pathOf: () => null,
 });
 
@@ -62,7 +67,7 @@ export const getSnapshotIndexElementEntries = (
 
 const createElementEntryQuery = (
   entriesByType: ReadonlyMap<string, readonly ElementPathEntry[]>,
-  idAt: (path: Path) => RuntimeId | null
+  keyAt: (path: Path) => NodeKey | null
 ) => {
   const cache = new Map<string, readonly InternalEditorRuntimeElementEntry[]>();
 
@@ -77,10 +82,10 @@ const createElementEntryQuery = (
     const entries = orderedTypes
       .flatMap((type) => entriesByType.get(type) ?? [])
       .flatMap(({ path, type }) => {
-        const runtimeId = idAt(path);
+        const nodeKey = keyAt(path);
 
-        return runtimeId
-          ? [Object.freeze({ path, runtimeId, type })]
+        return nodeKey
+          ? [Object.freeze({ path, nodeKey, type })]
           : EMPTY_ELEMENT_ENTRIES;
       })
       .sort((left, right) => comparePaths(left.path, right.path));
@@ -109,8 +114,8 @@ export const buildSnapshotIndex = (
   children: readonly Descendant[],
   parentPath: Path = []
 ): SnapshotIndex => {
-  const idToPathCache = new Map<RuntimeId, Path>();
-  const pathToIdCache = new Map<string, RuntimeId | null>();
+  const idToPathCache = new Map<NodeKey, Path>();
+  const pathToIdCache = new Map<string, NodeKey | null>();
   const elementEntriesByType = new Map<string, ElementPathEntry[]>();
   const collectElementPaths = (
     nodes: readonly Descendant[],
@@ -132,28 +137,28 @@ export const buildSnapshotIndex = (
   };
 
   collectElementPaths(children, parentPath);
-  let materializedEntries: readonly (readonly [RuntimeId, Path])[] | undefined;
+  let materializedEntries: readonly (readonly [NodeKey, Path])[] | undefined;
   let activeChildren: readonly Descendant[] | null = children;
-  const cache = (runtimeId: RuntimeId, path: Path) => {
+  const cache = (nodeKey: NodeKey, path: Path) => {
     const key = pathKey(path);
-    const existingPath = idToPathCache.get(runtimeId);
-    const existingRuntimeId = pathToIdCache.get(key);
+    const existingPath = idToPathCache.get(nodeKey);
+    const existingNodeKey = pathToIdCache.get(key);
 
     if (
       (existingPath && pathKey(existingPath) !== key) ||
-      (existingRuntimeId && existingRuntimeId !== runtimeId)
+      (existingNodeKey && existingNodeKey !== nodeKey)
     ) {
       throw new Error(
-        `Snapshot index runtime identities must be injective: ${runtimeId} at [${path}] conflicts with ${
-          existingPath ? `[${existingPath}]` : existingRuntimeId
+        `Snapshot index node keys must be injective: ${nodeKey} at [${path}] conflicts with ${
+          existingPath ? `[${existingPath}]` : existingNodeKey
         }.`
       );
     }
 
     const frozenPath = Object.freeze([...path]) as Path;
 
-    idToPathCache.set(runtimeId, frozenPath);
-    pathToIdCache.set(key, runtimeId);
+    idToPathCache.set(nodeKey, frozenPath);
+    pathToIdCache.set(key, nodeKey);
 
     return frozenPath;
   };
@@ -183,15 +188,15 @@ export const buildSnapshotIndex = (
     if (materializedEntries) return materializedEntries;
 
     return profileCoreDuration('runtime-index-full-build', () => {
-      const entries: Array<readonly [RuntimeId, Path]> = [];
+      const entries: Array<readonly [NodeKey, Path]> = [];
 
       const visit = (nodes: readonly Descendant[], pathPrefix: Path) => {
         nodes.forEach((node, index) => {
           const path = [...pathPrefix, index] as Path;
-          const runtimeId = getOrCreateRuntimeId(node, editor);
-          const frozenPath = cache(runtimeId, path);
+          const nodeKey = getOrCreateNodeKey(node, editor);
+          const frozenPath = cache(nodeKey, path);
 
-          entries.push(Object.freeze([runtimeId, frozenPath] as const));
+          entries.push(Object.freeze([nodeKey, frozenPath] as const));
 
           if ('children' in node && Array.isArray(node.children)) {
             visit(node.children, path);
@@ -206,7 +211,7 @@ export const buildSnapshotIndex = (
       return materializedEntries;
     });
   };
-  const idAt = (path: Path): RuntimeId | null => {
+  const keyAt = (path: Path): NodeKey | null => {
     const key = pathKey(path);
     const cached = pathToIdCache.get(key);
 
@@ -218,36 +223,40 @@ export const buildSnapshotIndex = (
       return null;
     }
 
-    const runtimeId = getRuntimeIdForNode(node, editor);
+    const nodeKey = getNodeKeyForNode(node, editor);
 
-    if (!runtimeId) {
+    if (!nodeKey) {
       materialize();
 
       return pathToIdCache.get(key) ?? null;
     }
 
-    cache(runtimeId, path);
+    cache(nodeKey, path);
 
-    return runtimeId;
+    return nodeKey;
   };
 
   const index = Object.freeze({
     entries: materialize,
-    idAt,
-    pathOf: (runtimeId: RuntimeId) => {
-      const cached = idToPathCache.get(runtimeId);
+    keyAt,
+    pathOf: (nodeKey: NodeKey) => {
+      const cached = idToPathCache.get(nodeKey);
 
       if (cached) return cached;
 
       materialize();
 
-      return idToPathCache.get(runtimeId) ?? null;
+      return idToPathCache.get(nodeKey) ?? null;
     },
   });
 
+  SNAPSHOT_INDEX_CACHED_PATHS.set(index, (nodeKey) =>
+    idToPathCache.get(nodeKey)
+  );
+
   SNAPSHOT_ELEMENT_ENTRIES.set(
     index,
-    createElementEntryQuery(elementEntriesByType, idAt)
+    createElementEntryQuery(elementEntriesByType, keyAt)
   );
   return index;
 };
@@ -281,7 +290,7 @@ export const EMPTY_CANONICAL_DOCUMENT_PATH_MAPPING = Object.freeze(
 
 type MappedSnapshotIndexDescriptor = Readonly<{
   base: SnapshotIndex;
-  discardedRuntimeIds: ReadonlySet<RuntimeId>;
+  discardedNodeKeys: ReadonlySet<NodeKey>;
   preparedRuntimePlacements: readonly PreparedRuntimePlacement[];
   segments: readonly SnapshotIndexMappingSegment[];
 }>;
@@ -853,13 +862,13 @@ const collectChangedElementPaths = (
   return [...paths.values()];
 };
 
-const mapChangedRuntimeIds = (
+const mapChangedNodeKeys = (
   segment: StructuralSnapshotIndexMappingSegment,
   index: SnapshotIndex,
   editor: Editor,
-  discarded: ReadonlySet<RuntimeId>,
+  discarded: ReadonlySet<NodeKey>,
   preparedRuntimePlacements: readonly PreparedRuntimePlacement[],
-  publishRuntimeIds: boolean,
+  publishNodeKeys: boolean,
   runtimeCandidates?: readonly DocumentChangeRuntimeCandidate[]
 ) => {
   const sourceHasPreparedRuntimePlacements =
@@ -905,7 +914,7 @@ const mapChangedRuntimeIds = (
 
     if (segment.after.node(path) !== candidate.node) {
       throw new Error(
-        `Runtime identity candidate at [${path}] does not belong to the published document.`
+        `Node key candidate at [${path}] does not belong to the published document.`
       );
     }
     targetPaths.set(pathKey(path), path);
@@ -935,15 +944,15 @@ const mapChangedRuntimeIds = (
 
   const orderedSources = orderPaths(sourcePaths.values());
   const orderedTargets = orderPaths(targetPaths.values());
-  const usedRuntimeIds = new Set<RuntimeId>();
+  const usedNodeKeys = new Set<NodeKey>();
   const usedTargetPaths = new Set<string>();
-  const assignments: Array<readonly [RuntimeId, Path]> = [];
-  const claim = (runtimeId: RuntimeId, targetPath: Path) => {
+  const assignments: Array<readonly [NodeKey, Path]> = [];
+  const claim = (nodeKey: NodeKey, targetPath: Path) => {
     const targetKey = pathKey(targetPath);
 
     if (
-      discarded.has(runtimeId) ||
-      usedRuntimeIds.has(runtimeId) ||
+      discarded.has(nodeKey) ||
+      usedNodeKeys.has(nodeKey) ||
       usedTargetPaths.has(targetKey)
     ) {
       return false;
@@ -951,18 +960,70 @@ const mapChangedRuntimeIds = (
 
     const targetNode = segment.after.node(targetPath);
 
-    if (
-      publishRuntimeIds &&
-      getRuntimeIdForNode(targetNode, editor) !== runtimeId
-    ) {
-      setRuntimeId(targetNode, editor, runtimeId);
+    if (publishNodeKeys && getNodeKeyForNode(targetNode, editor) !== nodeKey) {
+      setNodeKey(targetNode, editor, nodeKey);
     }
-    usedRuntimeIds.add(runtimeId);
+    usedNodeKeys.add(nodeKey);
     usedTargetPaths.add(targetKey);
-    assignments.push(Object.freeze([runtimeId, targetPath] as const));
+    assignments.push(Object.freeze([nodeKey, targetPath] as const));
 
     return true;
   };
+
+  // Runtime identities attached to an inserted slice move with that slice
+  // through compose/transform. Claim them before positional heuristics.
+  let outputPosition = 0;
+
+  for (
+    let sectionIndex = 0, dataIndex = 0;
+    sectionIndex < segment.change.sections.length;
+    dataIndex++
+  ) {
+    const length = segment.change.sections[sectionIndex++]!;
+    const inserted = segment.change.sections[sectionIndex++]!;
+    const outputLength = inserted < 0 ? length : inserted;
+    const data = segment.change.data[dataIndex];
+
+    if (inserted >= 0 && data instanceof PreparedTokenSlice) {
+      for (const [offset, nodeKey] of getDocumentSliceNodeKeys(data)) {
+        const position = outputPosition + offset;
+        const entry = segment.after.nodeStartingAt(position);
+
+        if (entry?.from === position) {
+          const targetPath = [...entry.path] as Path;
+          const sourcePath = SNAPSHOT_INDEX_CACHED_PATHS.get(index)?.(nodeKey);
+          const survivingPath = sourcePath
+            ? mapPathForward(segment, sourcePath)
+            : null;
+          const survivingNode = survivingPath
+            ? segment.after.node(survivingPath)
+            : null;
+
+          if (
+            survivingPath &&
+            pathKey(survivingPath) !== pathKey(targetPath) &&
+            survivingNode &&
+            getNodeKeyForNode(survivingNode, editor) === nodeKey
+          ) {
+            // A skipped edit can revive the deleted object before its inverse
+            // insertion is replayed. The live continuation owns the old key;
+            // the duplicate restored by history receives a fresh identity.
+            claim(nodeKey, survivingPath);
+            if (publishNodeKeys) {
+              claim(
+                assignFreshNodeKey(segment.after.node(targetPath), editor),
+                targetPath
+              );
+            }
+          } else {
+            claim(nodeKey, targetPath);
+          }
+        }
+      }
+    }
+
+    outputPosition += outputLength;
+  }
 
   // Exact subtree relocations own their source identities before positional
   // survivors compete for the same target paths.
@@ -981,9 +1042,9 @@ const mapChangedRuntimeIds = (
         ...relocation.path,
         ...targetPath.slice(relocation.targetPath.length),
       ] as Path;
-      const runtimeId = index.idAt(sourcePath);
+      const nodeKey = index.keyAt(sourcePath);
 
-      if (runtimeId) claim(runtimeId, targetPath);
+      if (nodeKey) claim(nodeKey, targetPath);
     }
   }
 
@@ -1045,28 +1106,25 @@ const mapChangedRuntimeIds = (
     });
 
     if (continuations.length !== 1) continue;
-    const runtimeId = index.idAt(sourcePath);
+    const nodeKey = index.keyAt(sourcePath);
 
-    if (runtimeId) claim(runtimeId, continuations[0]!);
+    if (nodeKey) claim(nodeKey, continuations[0]!);
   }
 
-  // Transforms can explicitly transfer a runtime identity to the semantic
+  // Transforms can explicitly transfer a node key to the semantic
   // continuation of a split/merge. Reserve those claims before positional
   // opening-token inheritance.
   for (const targetPath of orderedTargets) {
-    const runtimeId = getRuntimeIdForNode(
-      segment.after.node(targetPath),
-      editor
-    );
+    const nodeKey = getNodeKeyForNode(segment.after.node(targetPath), editor);
 
-    if (runtimeId) claim(runtimeId, targetPath);
+    if (nodeKey) claim(nodeKey, targetPath);
   }
 
   for (const sourcePath of orderedSources) {
     const targetPath = mapPathForward(segment, sourcePath);
-    const runtimeId = index.idAt(sourcePath);
+    const nodeKey = index.keyAt(sourcePath);
 
-    if (targetPath && runtimeId) claim(runtimeId, targetPath);
+    if (targetPath && nodeKey) claim(nodeKey, targetPath);
   }
 
   // Non-prepared inserted or cloned nodes receive identities before
@@ -1078,19 +1136,19 @@ const mapChangedRuntimeIds = (
     if (usedTargetPaths.has(targetKey)) continue;
     if (isPreparedTargetPath(targetPath)) continue;
     const targetNode = segment.after.node(targetPath);
-    const currentRuntimeId = getRuntimeIdForNode(targetNode, editor);
+    const currentNodeKey = getNodeKeyForNode(targetNode, editor);
 
     if (
-      currentRuntimeId &&
-      !discarded.has(currentRuntimeId) &&
-      !usedRuntimeIds.has(currentRuntimeId)
+      currentNodeKey &&
+      !discarded.has(currentNodeKey) &&
+      !usedNodeKeys.has(currentNodeKey)
     ) {
-      claim(currentRuntimeId, targetPath);
+      claim(currentNodeKey, targetPath);
       continue;
     }
 
-    if (publishRuntimeIds) {
-      claim(assignFreshRuntimeId(targetNode, editor), targetPath);
+    if (publishNodeKeys) {
+      claim(assignFreshNodeKey(targetNode, editor), targetPath);
     }
   }
 
@@ -1187,10 +1245,10 @@ const queryMappedElementEntries = (
   return Object.freeze(
     [...paths.values()]
       .flatMap(({ path, type }) => {
-        const runtimeId = index.idAt(path);
+        const nodeKey = index.keyAt(path);
 
-        return runtimeId
-          ? [Object.freeze({ path, runtimeId, type })]
+        return nodeKey
+          ? [Object.freeze({ path, nodeKey, type })]
           : EMPTY_ELEMENT_ENTRIES;
       })
       .sort((left, right) => comparePaths(left.path, right.path))
@@ -1204,9 +1262,9 @@ export const mapSnapshotIndexThroughChange = (
   change: RootChange,
   index: SnapshotIndex,
   editor: Editor,
-  discardedRuntimeIds: ReadonlySet<RuntimeId> = new Set(),
+  discardedNodeKeys: ReadonlySet<NodeKey> = new Set(),
   runtimeCandidates?: readonly DocumentChangeRuntimeCandidate[],
-  publishRuntimeIds = true
+  publishNodeKeys = true
 ): SnapshotIndex => {
   assertMappingLengths(before, after, change);
 
@@ -1225,19 +1283,19 @@ export const mapSnapshotIndexThroughChange = (
 
   // Detached transaction specs still need a sparse identity overlay for draft
   // selection mapping. Publication remains the only authority allowed to
-  // allocate or attach runtime identities to nodes.
+  // allocate or attach node keys to nodes.
   const runtimeAssignments = profileCoreDuration(
-    publishRuntimeIds
+    publishNodeKeys
       ? 'runtime-index-publish-changed'
       : 'runtime-index-map-changed',
     () =>
-      mapChangedRuntimeIds(
+      mapChangedNodeKeys(
         segment,
         index,
         editor,
-        discardedRuntimeIds,
+        discardedNodeKeys,
         newPreparedRuntimePlacements,
-        publishRuntimeIds,
+        publishNodeKeys,
         runtimeCandidates
       )
   );
@@ -1250,9 +1308,9 @@ export const mapSnapshotIndexThroughChange = (
       );
       const descriptor: MappedSnapshotIndexDescriptor = Object.freeze({
         base: previous?.base ?? index,
-        discardedRuntimeIds: new Set([
-          ...(previous?.discardedRuntimeIds ?? []),
-          ...discardedRuntimeIds,
+        discardedNodeKeys: new Set([
+          ...(previous?.discardedNodeKeys ?? []),
+          ...discardedNodeKeys,
         ]),
         preparedRuntimePlacements: Object.freeze([
           ...advancePreparedRuntimePlacements(
@@ -1309,14 +1367,14 @@ export const mapSnapshotIndexThroughChange = (
     base: previousElementDescriptor?.base ?? index,
     segments: elementSegments,
   });
-  const discarded = descriptor.discardedRuntimeIds;
-  const idToPathCache = new Map<RuntimeId, Path | null>();
-  const pathToIdCache = new Map<string, RuntimeId | null>();
+  const discarded = descriptor.discardedNodeKeys;
+  const idToPathCache = new Map<NodeKey, Path | null>();
+  const pathToIdCache = new Map<string, NodeKey | null>();
   const materializedElementPathsByType = new Map<string, ElementPathEntry[]>();
   let activeDescriptor: MappedSnapshotIndexDescriptor | null = descriptor;
   let activeSegments: readonly SnapshotIndexMappingSegment[] | null = segments;
   let currentDocument: DocumentIndex | null = segments.at(-1)!.after;
-  let materializedEntries: readonly (readonly [RuntimeId, Path])[] | undefined;
+  let materializedEntries: readonly (readonly [NodeKey, Path])[] | undefined;
   let mappedIndex: SnapshotIndex;
 
   const nodeAt = (path: Path) => {
@@ -1326,36 +1384,36 @@ export const mapSnapshotIndexThroughChange = (
       return null;
     }
   };
-  const cache = (runtimeId: RuntimeId, path: Path) => {
+  const cache = (nodeKey: NodeKey, path: Path) => {
     const frozenPath = Object.freeze([...path]) as Path;
-    const existingPath = idToPathCache.get(runtimeId);
-    const existingRuntimeId = pathToIdCache.get(pathKey(frozenPath));
+    const existingPath = idToPathCache.get(nodeKey);
+    const existingNodeKey = pathToIdCache.get(pathKey(frozenPath));
 
     if (
       (existingPath && pathKey(existingPath) !== pathKey(frozenPath)) ||
-      (existingRuntimeId && existingRuntimeId !== runtimeId)
+      (existingNodeKey && existingNodeKey !== nodeKey)
     ) {
       throw new Error(
-        `Snapshot index runtime identities must be injective: ${runtimeId} at [${frozenPath}] conflicts with ${
+        `Snapshot index node keys must be injective: ${nodeKey} at [${frozenPath}] conflicts with ${
           existingPath
             ? `[${existingPath}]${
                 nodeAt(existingPath) === nodeAt(frozenPath)
                   ? ' (same node)'
                   : ''
               }`
-            : existingRuntimeId
+            : existingNodeKey
         }.`
       );
     }
 
-    idToPathCache.set(runtimeId, frozenPath);
-    pathToIdCache.set(pathKey(frozenPath), runtimeId);
+    idToPathCache.set(nodeKey, frozenPath);
+    pathToIdCache.set(pathKey(frozenPath), nodeKey);
 
     return frozenPath;
   };
 
-  for (const [runtimeId, path] of runtimeAssignments) {
-    cache(runtimeId, path);
+  for (const [nodeKey, path] of runtimeAssignments) {
+    cache(nodeKey, path);
   }
   const targetPathFor = (path: Path) => {
     let targetPath: Path | null = path;
@@ -1379,33 +1437,33 @@ export const mapSnapshotIndexThroughChange = (
 
     return sourcePath;
   };
-  const preparedRuntimeIdAtPath = (path: Path, node: Descendant) => {
+  const preparedNodeKeyAtPath = (path: Path, node: Descendant) => {
     for (const placement of activeDescriptor!.preparedRuntimePlacements) {
       const originPath = mapPreparedPathBackward(placement, path);
       const localPath = originPath
         ? preparedLocalPath(placement, originPath)
         : null;
-      const runtimeId = localPath
-        ? getPreparedDocumentRuntimeId(placement.slice, localPath)
+      const nodeKey = localPath
+        ? getPreparedDocumentNodeKey(placement.slice, localPath)
         : null;
 
-      if (!runtimeId) continue;
-      if (discarded.has(runtimeId)) return null;
+      if (!nodeKey) continue;
+      if (discarded.has(nodeKey)) return null;
 
-      if (publishRuntimeIds) setRuntimeId(node, editor, runtimeId);
+      if (publishNodeKeys) setNodeKey(node, editor, nodeKey);
 
-      return runtimeId;
+      return nodeKey;
     }
 
     return null;
   };
-  const preparedPathForRuntimeId = (runtimeId: RuntimeId) => {
-    if (!runtimeId.startsWith('p')) return null;
+  const preparedPathForNodeKey = (nodeKey: NodeKey) => {
+    if (!nodeKey.startsWith('p')) return null;
 
     for (const placement of activeDescriptor!.preparedRuntimePlacements) {
       const localPath = getPreparedDocumentRuntimePath(
         placement.slice,
-        runtimeId
+        nodeKey
       );
       const originPath = localPath
         ? preparedOriginPath(placement, localPath)
@@ -1418,20 +1476,20 @@ export const mapSnapshotIndexThroughChange = (
       const node = nodeAt(targetPath);
 
       if (!node) return null;
-      const claimedRuntimeId = pathToIdCache.get(pathKey(targetPath));
+      const claimedNodeKey = pathToIdCache.get(pathKey(targetPath));
 
-      if (claimedRuntimeId && claimedRuntimeId !== runtimeId) return null;
-      const existing = getRuntimeIdForNode(node, editor);
+      if (claimedNodeKey && claimedNodeKey !== nodeKey) return null;
+      const existing = getNodeKeyForNode(node, editor);
 
-      if (existing && existing !== runtimeId) return null;
-      if (publishRuntimeIds) setRuntimeId(node, editor, runtimeId);
+      if (existing && existing !== nodeKey) return null;
+      if (publishNodeKeys) setNodeKey(node, editor, nodeKey);
 
       return targetPath;
     }
 
     return null;
   };
-  const idAt = (path: Path): RuntimeId | null => {
+  const keyAt = (path: Path): NodeKey | null => {
     const key = pathKey(path);
     const cached = pathToIdCache.get(key);
 
@@ -1443,69 +1501,70 @@ export const mapSnapshotIndexThroughChange = (
       return null;
     }
 
-    const availableAtPath = (runtimeId: RuntimeId | null) => {
-      if (!runtimeId) return null;
+    const availableAtPath = (nodeKey: NodeKey | null) => {
+      if (!nodeKey) return null;
 
-      const claimedPath = idToPathCache.get(runtimeId);
+      const claimedPath = idToPathCache.get(nodeKey);
 
       return claimedPath === undefined ||
         (claimedPath !== null && pathKey(claimedPath) === key)
-        ? runtimeId
+        ? nodeKey
         : null;
     };
-    const nodeRuntimeId = getRuntimeIdForNode(node, editor);
+    const existingNodeKey = getNodeKeyForNode(node, editor);
     const existing = availableAtPath(
-      nodeRuntimeId && !discarded.has(nodeRuntimeId) ? nodeRuntimeId : null
+      existingNodeKey && !discarded.has(existingNodeKey)
+        ? existingNodeKey
+        : null
     );
-    const preparedRuntimeId = existing
+    const preparedNodeKey = existing
       ? null
-      : availableAtPath(preparedRuntimeIdAtPath(path, node as Descendant));
-    const sourcePath =
-      existing || preparedRuntimeId ? null : sourcePathFor(path);
-    const inheritedRuntimeId = availableAtPath(
-      sourcePath ? activeDescriptor!.base.idAt(sourcePath) : null
+      : availableAtPath(preparedNodeKeyAtPath(path, node as Descendant));
+    const sourcePath = existing || preparedNodeKey ? null : sourcePathFor(path);
+    const inheritedNodeKey = availableAtPath(
+      sourcePath ? activeDescriptor!.base.keyAt(sourcePath) : null
     );
-    const runtimeId =
+    const nodeKey =
       existing ??
-      preparedRuntimeId ??
-      inheritedRuntimeId ??
-      (publishRuntimeIds ? assignFreshRuntimeId(node, editor) : null);
+      preparedNodeKey ??
+      inheritedNodeKey ??
+      (publishNodeKeys ? assignFreshNodeKey(node, editor) : null);
 
-    if (!runtimeId) {
+    if (!nodeKey) {
       pathToIdCache.set(key, null);
       return null;
     }
-    if (publishRuntimeIds && !existing && !preparedRuntimeId) {
-      setRuntimeId(node, editor, runtimeId);
+    if (publishNodeKeys && !existing && !preparedNodeKey) {
+      setNodeKey(node, editor, nodeKey);
     }
-    cache(runtimeId, path);
+    cache(nodeKey, path);
 
-    return runtimeId;
+    return nodeKey;
   };
   const materialize = () => {
     if (materializedEntries) return materializedEntries;
-    const entries: Array<readonly [RuntimeId, Path]> = [];
+    const entries: Array<readonly [NodeKey, Path]> = [];
 
     const visit = (nodes: readonly Descendant[], parentPath: Path) => {
       nodes.forEach((node, childIndex) => {
         const path = [...parentPath, childIndex] as Path;
-        const runtimeId = idAt(path);
+        const nodeKey = keyAt(path);
 
-        if (!runtimeId && publishRuntimeIds) {
+        if (!nodeKey && publishNodeKeys) {
           throw new Error(
-            `Snapshot index cannot materialize a runtime identity at [${path}].`
+            `Snapshot index cannot materialize a node key at [${path}].`
           );
         }
-        const frozenPath = runtimeId ? idToPathCache.get(runtimeId) : undefined;
+        const frozenPath = nodeKey ? idToPathCache.get(nodeKey) : undefined;
 
-        if (runtimeId && !frozenPath) {
+        if (nodeKey && !frozenPath) {
           throw new Error(
-            `Snapshot index lost the cached path for runtime identity ${runtimeId}.`
+            `Snapshot index lost the cached path for node key ${nodeKey}.`
           );
         }
 
-        if (runtimeId && frozenPath) {
-          entries.push(Object.freeze([runtimeId, frozenPath] as const));
+        if (nodeKey && frozenPath) {
+          entries.push(Object.freeze([nodeKey, frozenPath] as const));
         }
 
         if ('children' in node && Array.isArray(node.children)) {
@@ -1527,7 +1586,7 @@ export const mapSnapshotIndexThroughChange = (
     materializedEntries = Object.freeze(entries);
     SNAPSHOT_ELEMENT_ENTRIES.set(
       mappedIndex,
-      createElementEntryQuery(materializedElementPathsByType, idAt)
+      createElementEntryQuery(materializedElementPathsByType, keyAt)
     );
     MAPPED_SNAPSHOT_INDEXES.delete(mappedIndex);
     MAPPED_ELEMENT_INDEXES.delete(mappedIndex);
@@ -1537,21 +1596,21 @@ export const mapSnapshotIndexThroughChange = (
 
     return materializedEntries;
   };
-  const pathOf = (runtimeId: RuntimeId): Path | null => {
-    const cached = idToPathCache.get(runtimeId);
+  const pathOf = (nodeKey: NodeKey): Path | null => {
+    const cached = idToPathCache.get(nodeKey);
 
     if (cached !== undefined) return cached;
-    if (discarded.has(runtimeId)) {
-      idToPathCache.set(runtimeId, null);
+    if (discarded.has(nodeKey)) {
+      idToPathCache.set(nodeKey, null);
       return null;
     }
     if (!activeDescriptor) return null;
 
-    const preparedPath = preparedPathForRuntimeId(runtimeId);
+    const preparedPath = preparedPathForNodeKey(nodeKey);
 
-    if (preparedPath) return cache(runtimeId, preparedPath);
+    if (preparedPath) return cache(nodeKey, preparedPath);
 
-    const sourcePath = activeDescriptor.base.pathOf(runtimeId);
+    const sourcePath = activeDescriptor.base.pathOf(nodeKey);
 
     if (sourcePath) {
       const targetPath = targetPathFor(sourcePath);
@@ -1559,23 +1618,26 @@ export const mapSnapshotIndexThroughChange = (
 
       if (
         node &&
-        getRuntimeIdForNode(node, editor) === runtimeId &&
-        !discarded.has(runtimeId)
+        getNodeKeyForNode(node, editor) === nodeKey &&
+        !discarded.has(nodeKey)
       ) {
-        return cache(runtimeId, targetPath!);
+        return cache(nodeKey, targetPath!);
       }
     }
 
     materialize();
 
-    return idToPathCache.get(runtimeId) ?? null;
+    return idToPathCache.get(nodeKey) ?? null;
   };
 
   mappedIndex = Object.freeze({
     entries: materialize,
-    idAt,
+    keyAt,
     pathOf,
   });
+  SNAPSHOT_INDEX_CACHED_PATHS.set(mappedIndex, (nodeKey) =>
+    idToPathCache.get(nodeKey)
+  );
   MAPPED_SNAPSHOT_INDEXES.set(mappedIndex, descriptor);
   MAPPED_ELEMENT_INDEXES.set(mappedIndex, elementDescriptor);
   const elementQueryCache = new Map<
@@ -1617,13 +1679,13 @@ export const advancePathStableSnapshotIndex = (
 
     if (after.node(path) !== candidate.node) {
       throw new Error(
-        `Runtime identity candidate at [${path}] does not belong to the published document.`
+        `Node key candidate at [${path}] does not belong to the published document.`
       );
     }
 
-    const runtimeId = index.idAt(path);
+    const nodeKey = index.keyAt(path);
 
-    if (runtimeId) setRuntimeId(candidate.node, editor, runtimeId);
+    if (nodeKey) setNodeKey(candidate.node, editor, nodeKey);
   }
 
   const previous = MAPPED_SNAPSHOT_INDEXES.get(index);

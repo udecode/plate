@@ -3,7 +3,7 @@ import type {
   EditorCommit,
   EditorStateView,
   ExtensionsOf,
-  RuntimeId,
+  NodeKey,
   ValueOf,
 } from '@platejs/plite';
 import { recordPliteReactRender } from '../render-profiler';
@@ -35,8 +35,8 @@ export interface EditorSelectorOptions<T = unknown> {
   includeRootOrderChanges?: boolean;
   profileId?: string;
   runtimeEventSource?: 'node' | 'path' | 'render';
-  runtimeId?: RuntimeId | null;
-  runtimeIds?: readonly RuntimeId[] | null;
+  nodeKey?: NodeKey | null;
+  nodeKeys?: readonly NodeKey[] | null;
   shouldUpdate?: (change?: EditorCommit<ValueOf<ContextEditor>>) => boolean;
 }
 
@@ -54,9 +54,9 @@ const refEquality = <T,>(a: T | null, b: T) => a === b;
 
 const getSelectorProfileId = (
   profileId: string | undefined,
-  runtimeId: RuntimeId | null | undefined,
+  nodeKey: NodeKey | null | undefined,
   phase: 'check' | 'notify'
-) => `selector-${profileId ?? (runtimeId ? 'runtime' : 'global')}-${phase}`;
+) => `selector-${profileId ?? (nodeKey ? 'runtime' : 'global')}-${phase}`;
 
 const scheduleMicrotask =
   typeof queueMicrotask === 'function'
@@ -91,7 +91,7 @@ export function useRequiredEditorSelectorContext() {
 /**
  * Subscribe to editor commits and derive a render value from the editor.
  *
- * Scope updates with roots/runtime ids or `shouldUpdate`, and use
+ * Scope updates with roots/node keys or `shouldUpdate`, and use
  * `useEditorState` when the selector only needs the immutable state view.
  */
 export function useEditorSelector<T>(
@@ -102,8 +102,8 @@ export function useEditorSelector<T>(
     includeRootOrderChanges,
     profileId,
     runtimeEventSource,
-    runtimeId,
-    runtimeIds,
+    nodeKey,
+    nodeKeys,
     shouldUpdate,
   }: EditorSelectorOptions<T> = {}
 ): T {
@@ -140,8 +140,8 @@ export function useEditorSelector<T>(
       includeRootOrderChanges,
       profileId,
       runtimeEventSource,
-      runtimeId,
-      runtimeIds,
+      nodeKey,
+      nodeKeys,
       shouldUpdate: shouldUpdateWithEditor,
     });
     update();
@@ -153,8 +153,8 @@ export function useEditorSelector<T>(
     deferred,
     profileId,
     runtimeEventSource,
-    runtimeId,
-    runtimeIds,
+    nodeKey,
+    nodeKeys,
     includeRootOrderChanges,
     shouldUpdateWithEditor,
   ]);
@@ -192,11 +192,9 @@ export function useEditorState<T>(
 
 export function useEditorSelectorContext() {
   const eventListeners = useRef(new Set<Callback>());
-  const runtimeEventListeners = useRef(new Map<RuntimeId, Set<Callback>>());
-  const runtimePathEventListeners = useRef(new Map<RuntimeId, Set<Callback>>());
-  const runtimeRenderEventListeners = useRef(
-    new Map<RuntimeId, Set<Callback>>()
-  );
+  const runtimeEventListeners = useRef(new Map<NodeKey, Set<Callback>>());
+  const runtimePathEventListeners = useRef(new Map<NodeKey, Set<Callback>>());
+  const runtimeRenderEventListeners = useRef(new Map<NodeKey, Set<Callback>>());
   const rootOrderRuntimeEventListeners = useRef(new Set<Callback>());
   const deferredEventListeners = useRef(
     new Map<Callback, DeferredCallbackPayload>()
@@ -221,10 +219,7 @@ export function useEditorSelectorContext() {
   }, [flushDeferred]);
 
   const onChange = useCallback(
-    (
-      change?: EditorCommit,
-      invalidatedRuntimeIds: readonly RuntimeId[] = []
-    ) => {
+    (change?: EditorCommit, invalidatedNodeKeys: readonly NodeKey[] = []) => {
       eventListeners.current.forEach((listener) => {
         listener(change);
       });
@@ -232,9 +227,8 @@ export function useEditorSelectorContext() {
       const shouldRouteRootOrderRuntimeListeners = Boolean(
         change?.changed.hasAny('root-order')
       );
-      const affectedRuntimeIds = change?.changed.runtimeIdsAll('node') ?? [];
-      const affectedPathRuntimeIds =
-        change?.changed.runtimeIdsAll('path') ?? [];
+      const affectedNodeKeys = change?.changed.nodeKeysAll('node') ?? [];
+      const affectedPathNodeKeys = change?.changed.nodeKeysAll('path') ?? [];
       const syncedTextOnlyChange = Boolean(
         change?.changed.hasAny('text') &&
           !change.tags.includes('historic') &&
@@ -254,11 +248,11 @@ export function useEditorSelectorContext() {
           });
         });
       } else {
-        for (const runtimeId of new Set([
-          ...affectedRuntimeIds,
-          ...affectedPathRuntimeIds,
+        for (const nodeKey of new Set([
+          ...affectedNodeKeys,
+          ...affectedPathNodeKeys,
         ])) {
-          runtimeEventListeners.current.get(runtimeId)?.forEach((listener) => {
+          runtimeEventListeners.current.get(nodeKey)?.forEach((listener) => {
             runtimeCallbacks.add(listener);
           });
         }
@@ -270,9 +264,9 @@ export function useEditorSelectorContext() {
           });
         });
       } else {
-        for (const runtimeId of affectedPathRuntimeIds) {
+        for (const nodeKey of affectedPathNodeKeys) {
           runtimePathEventListeners.current
-            .get(runtimeId)
+            .get(nodeKey)
             ?.forEach((listener) => {
               runtimeCallbacks.add(listener);
             });
@@ -286,22 +280,22 @@ export function useEditorSelectorContext() {
             });
           });
         } else {
-          for (const runtimeId of affectedRuntimeIds) {
+          for (const nodeKey of affectedNodeKeys) {
             runtimeRenderEventListeners.current
-              .get(runtimeId)
+              .get(nodeKey)
               ?.forEach((listener) => {
                 runtimeCallbacks.add(listener);
               });
           }
         }
       }
-      for (const runtimeId of invalidatedRuntimeIds) {
-        runtimeEventListeners.current.get(runtimeId)?.forEach((listener) => {
+      for (const nodeKey of invalidatedNodeKeys) {
+        runtimeEventListeners.current.get(nodeKey)?.forEach((listener) => {
           runtimeCallbacks.add(listener);
           invalidatedRuntimeCallbacks.add(listener);
         });
         runtimeRenderEventListeners.current
-          .get(runtimeId)
+          .get(nodeKey)
           ?.forEach((listener) => {
             runtimeCallbacks.add(listener);
             invalidatedRuntimeCallbacks.add(listener);
@@ -334,26 +328,24 @@ export function useEditorSelectorContext() {
         includeRootOrderChanges = false,
         profileId,
         runtimeEventSource = 'node',
-        runtimeId = null,
-        runtimeIds = null,
+        nodeKey = null,
+        nodeKeys = null,
         shouldUpdate,
       }: EditorSelectorOptions = {}
     ) => {
-      const subscribedRuntimeIds =
-        runtimeIds && runtimeIds.length > 0
-          ? Array.from(new Set(runtimeIds))
-          : runtimeId
-            ? [runtimeId]
+      const subscribedNodeKeys =
+        nodeKeys && nodeKeys.length > 0
+          ? Array.from(new Set(nodeKeys))
+          : nodeKey
+            ? [nodeKey]
             : null;
-      const profileRuntimeId =
-        subscribedRuntimeIds?.length === 1
-          ? subscribedRuntimeIds[0]
-          : runtimeId;
+      const profileNodeKey =
+        subscribedNodeKeys?.length === 1 ? subscribedNodeKeys[0] : nodeKey;
       const shouldNotify = (change?: EditorCommit) => {
         recordPliteReactRender({
-          id: getSelectorProfileId(profileId, profileRuntimeId, 'check'),
+          id: getSelectorProfileId(profileId, profileNodeKey, 'check'),
           kind: 'selector',
-          runtimeId: profileRuntimeId,
+          nodeKey: profileNodeKey,
         });
 
         return shouldUpdate ? shouldUpdate(change) : true;
@@ -370,9 +362,9 @@ export function useEditorSelectorContext() {
         ? (change?: EditorCommit) => {
             if (shouldNotify(change)) {
               recordPliteReactRender({
-                id: getSelectorProfileId(profileId, profileRuntimeId, 'notify'),
+                id: getSelectorProfileId(profileId, profileNodeKey, 'notify'),
                 kind: 'selector',
-                runtimeId: profileRuntimeId,
+                nodeKey: profileNodeKey,
               });
               queueDeferredCallback(
                 deferredEventListeners.current,
@@ -384,25 +376,25 @@ export function useEditorSelectorContext() {
         : (change?: EditorCommit) => {
             if (shouldNotify(change)) {
               recordPliteReactRender({
-                id: getSelectorProfileId(profileId, profileRuntimeId, 'notify'),
+                id: getSelectorProfileId(profileId, profileNodeKey, 'notify'),
                 kind: 'selector',
-                runtimeId: profileRuntimeId,
+                nodeKey: profileNodeKey,
               });
               callbackProp(change);
             }
           };
 
       recordPliteReactRender({
-        id: subscribedRuntimeIds
+        id: subscribedNodeKeys
           ? 'selector-subscription-runtime'
           : deferred
             ? 'selector-subscription-deferred'
             : 'selector-subscription-global',
         kind: 'selector',
-        runtimeId: profileRuntimeId,
+        nodeKey: profileNodeKey,
       });
 
-      if (subscribedRuntimeIds) {
+      if (subscribedNodeKeys) {
         const listenerMap =
           runtimeEventSource === 'path'
             ? runtimePathEventListeners.current
@@ -411,12 +403,12 @@ export function useEditorSelectorContext() {
               : runtimeEventListeners.current;
         const listenerSets: Set<Callback>[] = [];
 
-        subscribedRuntimeIds.forEach((subscribedRuntimeId) => {
+        subscribedNodeKeys.forEach((subscribedNodeKey) => {
           const listeners =
-            listenerMap.get(subscribedRuntimeId) ?? new Set<Callback>();
+            listenerMap.get(subscribedNodeKey) ?? new Set<Callback>();
 
           listeners.add(callback);
-          listenerMap.set(subscribedRuntimeId, listeners);
+          listenerMap.set(subscribedNodeKey, listeners);
           listenerSets.push(listeners);
         });
 
@@ -427,13 +419,13 @@ export function useEditorSelectorContext() {
         return () => {
           isSubscribed = false;
           deferredEventListeners.current.delete(queuedCallback);
-          subscribedRuntimeIds.forEach((subscribedRuntimeId, index) => {
+          subscribedNodeKeys.forEach((subscribedNodeKey, index) => {
             const listeners = listenerSets[index];
 
             listeners.delete(callback);
 
             if (listeners.size === 0) {
-              listenerMap.delete(subscribedRuntimeId);
+              listenerMap.delete(subscribedNodeKey);
             }
           });
           rootOrderRuntimeEventListeners.current.delete(callback);

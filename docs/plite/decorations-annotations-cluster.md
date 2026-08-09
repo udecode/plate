@@ -846,7 +846,7 @@ search results, the API is bad.
 
 - hierarchical or indexed propagation, not flat top-down scans
 - explicit invalidation scopes from transactions and source refreshes
-- block/text runtime-id indexing
+- block/text node-key indexing
 - overlap-friendly payload storage
 - active-corridor priority
 - offscreen occlusion and deferred work
@@ -900,7 +900,7 @@ The remaining unknowns are design questions, not discovery questions:
 - exact public API names
 - whether annotations are a dedicated store or editor-owned registry
 - how source refresh scoping is expressed
-- whether widget/chrome entries are block-keyed, runtime-id-keyed, or both
+- whether widget/chrome entries are block-keyed, node-key-keyed, or both
 - what the migration adapter for legacy `decorate` looks like
 - which lanes are urgent vs transition/deferred by default
 
@@ -1018,8 +1018,8 @@ This is where the systems meet.
 The shared layer should:
 
 - take logical ranges or anchor resolutions
-- project them into runtime-local slices keyed by stable runtime ids
-- index them by text runtime id, block runtime id, and maybe higher semantic
+- project them into runtime-local slices keyed by stable node keys
+- index them by text node key, block node key, and maybe higher semantic
   island ids
 - expose narrow subscriptions for mounted consumers
 
@@ -1063,7 +1063,7 @@ Do:
 
 - `useSyncExternalStore` or equivalent subscription semantics
 - stable snapshot reads
-- per-runtime-id subscriptions
+- per-node-key subscriptions
 - dirty-scope invalidation
 - optional derived selectors for aggregate views
 
@@ -1159,9 +1159,9 @@ Not one magic callback.
 ### React runtime
 
 - `createPliteProjectionStore(editor, options)`
-- `useTextProjections(runtimeId, layer?)`
-- `useBlockProjections(runtimeId, layer?)`
-- `useAnchoredWidgets(runtimeId | blockId)`
+- `useTextProjections(nodeKey, layer?)`
+- `useBlockProjections(nodeKey, layer?)`
+- `useAnchoredWidgets(nodeKey | blockId)`
 - explicit `refresh(sourceId, scope?)`
 
 ### Decorations

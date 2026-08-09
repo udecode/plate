@@ -104,7 +104,7 @@ There is no per-operation dirty-path normalizer loop.
 
 ## Identity and anchors
 
-Runtime ids are private editor-local identity. Snapshot indexes map runtime ids
+Node keys are private editor-local identity. Snapshot indexes map node keys
 to paths without entering serialized document data.
 
 `editor.anchor` and `tx.anchor` map paths, points, and ranges through committed
@@ -179,7 +179,7 @@ scope local commands without changing canonical ownership.
 awareness, offline, root, and history behavior. Yjs events translate into
 canonical changes, and local canonical changes translate into Yjs deltas.
 
-`@platejs/plite-layout` consumes `commit.changed` range and runtime-id queries.
+`@platejs/plite-layout` consumes `commit.changed` range and node-key queries.
 Pagination and virtualization do not own a parallel document model.
 
 ## Package boundaries

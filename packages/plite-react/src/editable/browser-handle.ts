@@ -7,7 +7,7 @@ import {
   type Point,
   type Range,
   RangeApi,
-  type RuntimeId,
+  type NodeKey,
   type TextSelection,
 } from '@platejs/plite';
 import type { EditableDOMStrategyScrollAlign } from '../components/editable';
@@ -44,8 +44,8 @@ import { getProjectedNativeAffordanceMatrix } from './projected-native-affordanc
 import {
   deleteFragment as editorDeleteFragment,
   getLastCommit as editorGetLastCommit,
-  getPathByRuntimeId as editorGetPathByRuntimeId,
-  getRuntimeId as editorGetRuntimeId,
+  getPathByNodeKey as editorGetPathByNodeKey,
+  getNodeKey as editorGetNodeKey,
   getSelection as editorGetSelection,
   getEditorSelectionRoot,
   getInternalDocumentChangeRootKeys,
@@ -97,9 +97,9 @@ export type PliteBrowserHandle = {
     DOMPhaseScheduler['diagnostics']
   > | null;
   getElementByPath: (path: Path) => HTMLElement | null;
-  getPathByRuntimeId: (runtimeId: RuntimeId) => Path | null;
+  getPathByNodeKey: (nodeKey: NodeKey) => Path | null;
   getProjectedNativeAffordanceMatrix: () => unknown;
-  getRuntimeId: (path: Path) => RuntimeId | null;
+  getNodeKey: (path: Path) => NodeKey | null;
   getSelection: () => TextSelection | null;
   getText: () => string;
   getValue: () => JsonEditorValue;
@@ -561,10 +561,9 @@ export const attachPliteBrowserHandle = ({
       };
     },
     getElementByPath: (path) => getPliteNodeElementByPath(editor, path),
-    getPathByRuntimeId: (runtimeId) =>
-      editorGetPathByRuntimeId(editor, runtimeId),
+    getPathByNodeKey: (nodeKey) => editorGetPathByNodeKey(editor, nodeKey),
     getProjectedNativeAffordanceMatrix,
-    getRuntimeId: (path) => editorGetRuntimeId(editor, path),
+    getNodeKey: (path) => editorGetNodeKey(editor, path),
     getSelection: () => {
       const selection = readRuntimeSelection(editor);
 

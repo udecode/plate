@@ -5,7 +5,7 @@ import type {
   EditorDocumentValue,
   NamedRootKey,
   RootKey,
-  RuntimeId,
+  NodeKey,
 } from '../interfaces/editor';
 import { LocationApi } from '../interfaces/location';
 import { PathApi, type Path } from '../interfaces/path';
@@ -68,7 +68,7 @@ type PointState = {
   includeRoot: boolean;
   point: Point;
   position: number;
-  runtimeId: RuntimeId | null;
+  nodeKey: NodeKey | null;
 };
 
 type MappedPoint = {
@@ -76,14 +76,14 @@ type MappedPoint = {
   runtimeStable: boolean;
 };
 
-const runtimeIdAt = (editor: Editor, root: string, path: Path) =>
+const nodeKeyAt = (editor: Editor, root: string, path: Path) =>
   withEditorRootChildren(editor, root, () =>
-    getEditorRuntime(editor).getRuntimeId(path)
+    getEditorRuntime(editor).getNodeKey(path)
   );
 
-const pathOfRuntimeId = (editor: Editor, root: string, runtimeId: RuntimeId) =>
+const pathOfNodeKey = (editor: Editor, root: string, nodeKey: NodeKey) =>
   withEditorRootChildren(editor, root, () =>
-    getEditorRuntime(editor).getPathByRuntimeId(runtimeId)
+    getEditorRuntime(editor).getPathByNodeKey(nodeKey)
   );
 
 const rootNodes = (value: JsonEditorValue, root: string) =>
@@ -172,7 +172,7 @@ const createPointState = (
     includeRoot: point.root !== undefined,
     point: localPoint,
     position: document.positionAt(localPoint),
-    runtimeId: runtimeIdAt(editor, root, point.path),
+    nodeKey: nodeKeyAt(editor, root, point.path),
   };
 };
 
@@ -213,10 +213,10 @@ export function createAnchor<TValue extends AnchorValue>(
     readValue(runtimeEditor);
   let released = false;
   let current: AnchorValue | null = value;
-  const pathRuntimeId = pathValue
+  const pathNodeKey = pathValue
     ? (() => {
         try {
-          return runtimeIdAt(runtimeEditor, root, pathValue);
+          return nodeKeyAt(runtimeEditor, root, pathValue);
         } catch {
           return null;
         }
@@ -225,7 +225,7 @@ export function createAnchor<TValue extends AnchorValue>(
   const pathMode =
     pathValue?.length === 0
       ? 'root'
-      : pathValue && !pathRuntimeId
+      : pathValue && !pathNodeKey
         ? 'boundary'
         : 'node';
   let pathPosition = pathValue
@@ -279,8 +279,8 @@ export function createAnchor<TValue extends AnchorValue>(
     endpointAssociation: -1 | 1,
     preserveSamePathOffset: boolean
   ): MappedPoint | null => {
-    const runtimePath = state.runtimeId
-      ? pathOfRuntimeId(runtimeEditor, root, state.runtimeId)
+    const runtimePath = state.nodeKey
+      ? pathOfNodeKey(runtimeEditor, root, state.nodeKey)
       : null;
     const position = change.mapPosition(state.position, {
       association: endpointAssociation === -1 ? 'backward' : 'forward',
@@ -401,8 +401,8 @@ export function createAnchor<TValue extends AnchorValue>(
         return;
       }
 
-      const runtimePath = pathRuntimeId
-        ? pathOfRuntimeId(runtimeEditor, root, pathRuntimeId)
+      const runtimePath = pathNodeKey
+        ? pathOfNodeKey(runtimeEditor, root, pathNodeKey)
         : null;
 
       if (runtimePath) {

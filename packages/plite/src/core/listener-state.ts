@@ -60,7 +60,7 @@ export const getSourcesForChange = (
 
   if (
     change.selectionChanged ||
-    change.changed.runtimeIdsAll('selection').length > 0
+    change.changed.nodeKeysAll('selection').length > 0
   ) {
     sources.push('selection');
   }

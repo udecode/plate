@@ -49,6 +49,8 @@ export interface NodeReplaceChildrenOptions {
   count?: number;
   index?: number;
   newSelection?: Selection;
+  /** Preserve runtime keys for positionally corresponding replacements. */
+  preserveKeys?: boolean;
 }
 
 export interface NodeSetNodesOptions<T extends Node = Node> {

@@ -270,7 +270,7 @@ package/runtime truth already captured in the draft stack.
 - `packages/plite-react/src/annotation-store.ts`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
-  note: first source-backed annotation store now exists over core bookmarks and projected runtime-id slices
+  note: first source-backed annotation store now exists over core bookmarks and projected node-key slices
 - `packages/plite-react/src/projection-context.tsx`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
@@ -282,11 +282,11 @@ package/runtime truth already captured in the draft stack.
 - `packages/plite-react/src/context.tsx`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
-  note: runtime-id and element-path contexts now exist as first-class public support surface
+  note: node-key and element-path contexts now exist as first-class public support surface
 - `packages/plite-react/src/hooks/use-plite-node-ref.tsx`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
-  note: runtime-id DOM binding hook now also seeds plain-editor DOM key maps so
+  note: node-key DOM binding hook now also seeds plain-editor DOM key maps so
   app-owned selection/scroll rows can resolve text nodes honestly
 - `packages/plite-react/src/hooks/use-slate-selector.tsx`
   disposition: adapted
@@ -295,12 +295,12 @@ package/runtime truth already captured in the draft stack.
 - `packages/plite-react/src/components/slate.tsx`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
-  note: provider no longer churns runtime ids on auto-wrapped app-owned
+  note: provider no longer churns node keys on auto-wrapped app-owned
   surfaces, and plain-editor changes now reach selector subscribers
 - `packages/plite-react/src/components/editable-text-blocks.tsx`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
-  note: public `Editable` now keeps projection/runtime ids stable,
+  note: public `Editable` now keeps projection/node keys stable,
   forwards app-owned block behavior honestly, and owns the shell/promotion
   large-document surface
 - `packages/plite-react/src/large-document/create-island-plan.ts`

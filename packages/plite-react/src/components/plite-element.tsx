@@ -7,11 +7,7 @@ import React, {
   useContext,
 } from 'react';
 
-import {
-  ElementContext,
-  ElementPathContext,
-  NodeRuntimeIdContext,
-} from '../context';
+import { ElementContext, ElementPathContext, NodeKeyContext } from '../context';
 import { usePliteNodeRef } from '../hooks/use-plite-node-ref';
 import { recordPliteReactRender } from '../render-profiler';
 import { getPliteElementShellAttributes } from '../shell-runtime';
@@ -64,10 +60,10 @@ export const PliteElement = ({
   const Component = as as ElementType<PliteElementComponentProps>;
   const path = useContext(ElementPathContext);
   const pliteNode = useContext(ElementContext);
-  const runtimeId = useContext(NodeRuntimeIdContext);
-  const boundRef = usePliteNodeRef(runtimeId, { path, pliteNode });
+  const nodeKey = useContext(NodeKeyContext);
+  const boundRef = usePliteNodeRef(nodeKey, { path, pliteNode });
 
-  recordPliteReactRender({ id, kind: 'element', runtimeId });
+  recordPliteReactRender({ id, kind: 'element', nodeKey });
 
   const combinedRef = useCallback(
     (node: HTMLElement | null) => {
@@ -82,7 +78,7 @@ export const PliteElement = ({
       {...domProps}
       className={className}
       data-plite-path={path ? path.join(',') : undefined}
-      data-plite-runtime-id={runtimeId ?? undefined}
+      data-plite-node-key={nodeKey ?? undefined}
       {...getPliteElementShellAttributes({ isInline, isVoid })}
       id={id}
       ref={combinedRef}

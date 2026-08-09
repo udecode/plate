@@ -28,7 +28,7 @@ const takeSelectionShellsSnapshot = async (
             isVoid: target.getAttribute('data-plite-void') === 'true',
             kind: target.getAttribute('data-plite-node'),
             path: target.getAttribute('data-plite-path'),
-            runtimeId: target.getAttribute('data-plite-runtime-id'),
+            nodeKey: target.getAttribute('data-plite-node-key'),
             tagName: target.tagName.toLowerCase(),
           }
         : null;
@@ -79,21 +79,21 @@ const takeSelectionShellsSnapshot = async (
       'focus',
       domSelection?.focusNode ?? null
     );
-    const runtimeIds = Array.from(
+    const nodeKeys = Array.from(
       new Set(
         [
-          anchor.node?.runtimeId,
-          anchor.element?.runtimeId,
-          focus.node?.runtimeId,
-          focus.element?.runtimeId,
-        ].filter((runtimeId): runtimeId is string => Boolean(runtimeId))
+          anchor.node?.nodeKey,
+          anchor.element?.nodeKey,
+          focus.node?.nodeKey,
+          focus.element?.nodeKey,
+        ].filter((nodeKey): nodeKey is string => Boolean(nodeKey))
       )
     );
 
     return {
       anchor,
       focus,
-      runtimeIds,
+      nodeKeys,
     };
   }, selection);
 };

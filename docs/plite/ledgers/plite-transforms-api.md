@@ -20,7 +20,7 @@ ambient editor reads remain committed. Pure commands return a frozen
 Primitive draft steps may temporarily violate representation rules. Final
 construction merges equal adjacent text, removes redundant empty leaves,
 preserves inline caret spacers, fills compiled schema defaults, and maps
-selection and runtime identity before publication.
+selection and node key before publication.
 
 External direct changes are strict. Fragment and paste callers pass an intact
 `ContentSlice` through `state.slice.fit(...)` or `tx.slice.replace(...)`.

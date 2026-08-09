@@ -9,7 +9,7 @@ import {
   type Range,
   RangeApi,
   type RootKey,
-  type RuntimeId,
+  type NodeKey,
   type SelectionAssociation,
   type EditorUpdateTransaction,
   TextApi,
@@ -22,8 +22,8 @@ import {
   type AnyEditor as EditorType,
   getSelection as editorGetSelection,
   getActiveEditorTransaction,
-  getEditorRuntimeIdForNode,
-  getRuntimeId as editorGetRuntimeId,
+  getEditorNodeKeyForNode,
+  getNodeKey as editorGetNodeKey,
   getSelectionPrimaryRange,
   hasPath as editorHasPath,
   isVoid as editorIsVoid,
@@ -669,10 +669,10 @@ const cachePliteDOMNode = (
   editor: DOMEditor<any>,
   node: Descendant,
   domNode: HTMLElement,
-  runtimeId?: RuntimeId | null
+  nodeKey?: NodeKey | null
 ) => {
-  const key = runtimeId
-    ? getOrCreateDOMNodeKey(editor, runtimeId, node)
+  const key = nodeKey
+    ? getOrCreateDOMNodeKey(editor, nodeKey, node)
     : DOMEditor.findKey(editor, node);
   const keyToElement = EDITOR_TO_KEY_TO_ELEMENT.get(editor) ?? new WeakMap();
 
@@ -683,8 +683,8 @@ const cachePliteDOMNode = (
   keyToElement.set(key, domNode);
   ELEMENT_TO_NODE.set(domNode, node);
   NODE_TO_ELEMENT.set(node, domNode);
-  if (runtimeId) {
-    NODE_TO_RUNTIME_ID.set(node, runtimeId);
+  if (nodeKey) {
+    NODE_TO_RUNTIME_ID.set(node, nodeKey);
   }
 
   return domNode;
@@ -896,19 +896,19 @@ export const subscribeEditorDOMScope = (
   };
 };
 
-/** @internal Reuse one DOM key for a node's editor-scoped runtime identity. */
+/** @internal Reuse one DOM key for a node's editor-scoped node key. */
 export const getOrCreateDOMNodeKey = (
   editor: DOMEditor<any>,
-  runtimeId: RuntimeId,
+  nodeKey: NodeKey,
   node: Descendant
 ) => {
   const runtimeKeys =
-    EDITOR_TO_RUNTIME_ID_TO_KEY.get(editor) ?? new Map<RuntimeId, Key>();
-  let key = runtimeKeys.get(runtimeId);
+    EDITOR_TO_RUNTIME_ID_TO_KEY.get(editor) ?? new Map<NodeKey, Key>();
+  let key = runtimeKeys.get(nodeKey);
 
   if (!key) {
     key = new Key();
-    runtimeKeys.set(runtimeId, key);
+    runtimeKeys.set(nodeKey, key);
     EDITOR_TO_RUNTIME_ID_TO_KEY.set(editor, runtimeKeys);
   }
 
@@ -1066,9 +1066,9 @@ export const DOMEditor: DOMEditorInterface = {
   },
 
   findKey: (editor, node) => {
-    const runtimeId = getEditorRuntimeIdForNode(editor, node);
+    const nodeKey = getEditorNodeKeyForNode(editor, node);
 
-    return getOrCreateDOMNodeKey(editor, runtimeId, node);
+    return getOrCreateDOMNodeKey(editor, nodeKey, node);
   },
 
   assertPath: (editor, node) => {
@@ -1799,7 +1799,7 @@ export const DOMEditor: DOMEditorInterface = {
         editor,
         mountedNode,
         domEl as HTMLElement,
-        editorGetRuntimeId(editor, mountedPath)
+        editorGetNodeKey(editor, mountedPath)
       );
 
       return mountedNode;

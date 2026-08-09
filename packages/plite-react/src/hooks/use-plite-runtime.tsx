@@ -63,7 +63,7 @@ import {
   createRootSelectionCache,
   getSelectionRoot,
 } from './root-selection-cache';
-import { getSchemaInvalidatedRuntimeIds } from '../editable/schema-runtime-invalidation';
+import { getSchemaInvalidatedNodeKeys } from '../editable/schema-runtime-invalidation';
 import {
   type EditorSelectorContextValue,
   useEditorSelectorContext,
@@ -590,32 +590,23 @@ function OwnedPliteRuntime<
 
     for (const [root, viewEditors] of mountedViewEditorsRef.current) {
       const publicRoot = toPublicRootOption(root);
-      const changedTextRuntimeIds = commit.changed.runtimeIds(
-        'text',
-        publicRoot
-      );
-      const changedPathRuntimeIds = commit.changed.runtimeIds(
-        'path',
-        publicRoot
-      );
-      let didSyncEveryView = changedTextRuntimeIds.length > 0;
+      const changedTextNodeKeys = commit.changed.nodeKeys('text', publicRoot);
+      const changedPathNodeKeys = commit.changed.nodeKeys('path', publicRoot);
+      let didSyncEveryView = changedTextNodeKeys.length > 0;
 
       for (const viewEditor of viewEditors) {
-        const textSync = syncChangedTextToDOM(
-          viewEditor,
-          changedTextRuntimeIds
-        );
+        const textSync = syncChangedTextToDOM(viewEditor, changedTextNodeKeys);
 
         if (textSync.syncedTextCount < textSync.changedTextCount) {
           didSyncEveryView = false;
         }
-        if (changedPathRuntimeIds.length > 0) {
-          syncPliteNodePathBindingsToDOM(viewEditor, changedPathRuntimeIds);
+        if (changedPathNodeKeys.length > 0) {
+          syncPliteNodePathBindingsToDOM(viewEditor, changedPathNodeKeys);
         }
       }
 
-      changedTextCount += changedTextRuntimeIds.length;
-      if (didSyncEveryView) syncedTextCount += changedTextRuntimeIds.length;
+      changedTextCount += changedTextNodeKeys.length;
+      if (didSyncEveryView) syncedTextCount += changedTextNodeKeys.length;
     }
 
     return { changedTextCount, syncedTextCount };
@@ -647,7 +638,7 @@ function OwnedPliteRuntime<
 
         handleSelectorChange(
           hasUnsyncedTextChange ? undefined : commit,
-          getSchemaInvalidatedRuntimeIds(runtime.editor, commit)
+          getSchemaInvalidatedNodeKeys(runtime.editor, commit)
         );
 
         if (viewEffectQueue.hasEffects()) {

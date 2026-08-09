@@ -1,4 +1,4 @@
-import type { EditorSnapshot, Path, RuntimeId } from '@platejs/plite';
+import type { EditorSnapshot, Path, NodeKey } from '@platejs/plite';
 
 import type { DOMStrategyOptions } from '../dom-strategy/create-segment-plan';
 import type { DOMStrategyVirtualizedConfig } from '../dom-strategy/use-virtualized-root-plan';
@@ -30,8 +30,8 @@ export const resolveProjectionRuntimeScope = (
 
 export const mergeMountedRuntimeScope = (
   snapshot: EditorSnapshot,
-  explicitRuntimeScope: readonly RuntimeId[] | null,
-  mountedRuntimeScope: readonly RuntimeId[] | null
+  explicitRuntimeScope: readonly NodeKey[] | null,
+  mountedRuntimeScope: readonly NodeKey[] | null
 ) => {
   if (!mountedRuntimeScope) {
     return explicitRuntimeScope;
@@ -41,19 +41,19 @@ export const mergeMountedRuntimeScope = (
     return mountedRuntimeScope;
   }
 
-  const mountedTopLevelRuntimeIds = new Set(mountedRuntimeScope);
+  const mountedTopLevelNodeKeys = new Set(mountedRuntimeScope);
 
-  return explicitRuntimeScope.filter((runtimeId) => {
-    const path = snapshot.index.pathOf(runtimeId);
+  return explicitRuntimeScope.filter((nodeKey) => {
+    const path = snapshot.index.pathOf(nodeKey);
     const topLevelPath = path ? [path[0]] : null;
-    const topLevelRuntimeId =
+    const topLevelNodeKey =
       topLevelPath && typeof topLevelPath[0] === 'number'
-        ? snapshot.index.idAt(topLevelPath)
+        ? snapshot.index.keyAt(topLevelPath)
         : null;
 
-    return topLevelRuntimeId
-      ? mountedTopLevelRuntimeIds.has(topLevelRuntimeId)
-      : mountedTopLevelRuntimeIds.has(runtimeId);
+    return topLevelNodeKey
+      ? mountedTopLevelNodeKeys.has(topLevelNodeKey)
+      : mountedTopLevelNodeKeys.has(nodeKey);
   });
 };
 

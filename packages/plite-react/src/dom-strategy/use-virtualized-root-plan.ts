@@ -6,7 +6,7 @@ import {
 } from '@tanstack/react-virtual';
 import React from 'react';
 import { flushSync } from 'react-dom';
-import type { Path, RuntimeId } from '@platejs/plite';
+import type { Path, NodeKey } from '@platejs/plite';
 
 import type {
   VirtualizedPageLayoutItem,
@@ -24,7 +24,7 @@ export type VirtualizedTopLevelItem = {
   index: number;
   key: VirtualItem['key'];
   left?: number;
-  runtimeId: RuntimeId;
+  nodeKey: NodeKey;
   size: number;
   start: number;
   width?: number;
@@ -33,10 +33,10 @@ export type VirtualizedTopLevelItem = {
 export type VirtualizedMissingTopLevelRange = {
   boundaryId: string;
   endIndex: number;
-  focusRuntimeId: RuntimeId | null;
-  runtimeIds: readonly RuntimeId[];
+  focusNodeKey: NodeKey | null;
+  nodeKeys: readonly NodeKey[];
   startIndex: number;
-  anchorRuntimeId: RuntimeId | null;
+  anchorNodeKey: NodeKey | null;
 };
 
 const SCROLLABLE_OVERFLOW_PATTERN = /(auto|scroll|overlay)/;
@@ -286,11 +286,11 @@ export const createPageItemIndexesForPath = (
 const getMissingRanges = ({
   count,
   mountedRanges,
-  topLevelRuntimeIds,
+  topLevelNodeKeys,
 }: {
   count: number;
   mountedRanges: readonly MountedTopLevelRange[];
-  topLevelRuntimeIds: readonly RuntimeId[];
+  topLevelNodeKeys: readonly NodeKey[];
 }): readonly VirtualizedMissingTopLevelRange[] => {
   const ranges: VirtualizedMissingTopLevelRange[] = [];
   let nextIndex = 0;
@@ -300,14 +300,14 @@ const getMissingRanges = ({
       return;
     }
 
-    const runtimeIds = topLevelRuntimeIds.slice(startIndex, endIndex + 1);
+    const nodeKeys = topLevelNodeKeys.slice(startIndex, endIndex + 1);
 
     ranges.push({
-      anchorRuntimeId: runtimeIds[0] ?? null,
+      anchorNodeKey: nodeKeys[0] ?? null,
       boundaryId: `viewport-virtualization:${startIndex}-${endIndex}`,
       endIndex,
-      focusRuntimeId: runtimeIds.at(-1) ?? null,
-      runtimeIds,
+      focusNodeKey: nodeKeys.at(-1) ?? null,
+      nodeKeys,
       startIndex,
     });
   };
@@ -332,7 +332,7 @@ export const useVirtualizedRootPlan = ({
   selectionPaths,
   selectedTopLevelIndex,
   topLevelLayoutItems,
-  topLevelRuntimeIds,
+  topLevelNodeKeys,
   visiblePageLayoutItems,
 }: {
   config: DOMStrategyVirtualizedConfig | null;
@@ -344,14 +344,14 @@ export const useVirtualizedRootPlan = ({
   selectedTopLevelIndex: number | null;
   pageLayoutItems?: readonly VirtualizedPageLayoutItem[] | null;
   topLevelLayoutItems?: readonly VirtualizedTopLevelLayoutItem[] | null;
-  topLevelRuntimeIds: readonly RuntimeId[];
+  topLevelNodeKeys: readonly NodeKey[];
   visiblePageLayoutItems?: readonly VirtualizedPageLayoutItem[] | null;
 }) => {
   const hasPageLayoutItems = Boolean(pageLayoutItems?.length);
   const count = config
     ? hasPageLayoutItems
       ? (pageLayoutItems?.length ?? 0)
-      : topLevelRuntimeIds.length
+      : topLevelNodeKeys.length
     : 0;
   const estimatedBlockSize = config?.estimatedBlockSize ?? 32;
   const configuredOverscan = config?.overscan ?? 0;
@@ -477,7 +477,7 @@ export const useVirtualizedRootPlan = ({
     getItemKey: (index) =>
       hasPageLayoutItems
         ? (pageItemByIndex.get(index)?.key ?? index)
-        : (topLevelRuntimeIds[index] ?? index),
+        : (topLevelNodeKeys[index] ?? index),
     getScrollElement: () => scrollElement,
     initialRect: {
       height: getElementViewportHeight(scrollElement, estimatedBlockSize * 8),
@@ -546,9 +546,9 @@ export const useVirtualizedRootPlan = ({
 
         return {
           index,
-          key: topLevelRuntimeIds[index] ?? index,
+          key: topLevelNodeKeys[index] ?? index,
           left: layoutItem?.left,
-          runtimeId: topLevelRuntimeIds[index]!,
+          nodeKey: topLevelNodeKeys[index]!,
           size: layoutItem?.size ?? virtualizerItem?.size ?? estimatedBlockSize,
           start:
             layoutItem?.start ??
@@ -557,7 +557,7 @@ export const useVirtualizedRootPlan = ({
           width: layoutItem?.width,
         };
       })
-      .filter((item) => item.runtimeId)
+      .filter((item) => item.nodeKey)
       .map((item) => [item.index, item])
   );
 
@@ -569,15 +569,15 @@ export const useVirtualizedRootPlan = ({
     if (
       typeof index !== 'number' ||
       index < 0 ||
-      index >= topLevelRuntimeIds.length ||
+      index >= topLevelNodeKeys.length ||
       virtualItemsByIndex.has(index)
     ) {
       continue;
     }
 
-    const runtimeId = topLevelRuntimeIds[index];
+    const nodeKey = topLevelNodeKeys[index];
 
-    if (!runtimeId) {
+    if (!nodeKey) {
       continue;
     }
 
@@ -585,9 +585,9 @@ export const useVirtualizedRootPlan = ({
 
     virtualItemsByIndex.set(index, {
       index,
-      key: runtimeId,
+      key: nodeKey,
       left: layoutItem?.left,
-      runtimeId,
+      nodeKey,
       size: layoutItem?.size ?? estimatedBlockSize,
       start: layoutItem?.start ?? index * estimatedBlockSize,
       width: layoutItem?.width,
@@ -599,13 +599,13 @@ export const useVirtualizedRootPlan = ({
   );
   const mountedIndexes = virtualItems.map((item) => item.index);
   const mountedTopLevelRanges = coalesceIndexes(mountedIndexes);
-  const mountedTopLevelRuntimeIds = new Set(
-    virtualItems.map((item) => item.runtimeId)
+  const mountedTopLevelNodeKeys = new Set(
+    virtualItems.map((item) => item.nodeKey)
   );
   const missingRanges = getMissingRanges({
-    count: topLevelRuntimeIds.length,
+    count: topLevelNodeKeys.length,
     mountedRanges: mountedTopLevelRanges,
-    topLevelRuntimeIds,
+    topLevelNodeKeys,
   });
   const pageLayoutTotalSize =
     pageLayoutItems && pageLayoutItems.length > 0
@@ -705,7 +705,7 @@ export const useVirtualizedRootPlan = ({
     estimatedBlockSize,
     missingRanges,
     mountedTopLevelRanges,
-    mountedTopLevelRuntimeIds,
+    mountedTopLevelNodeKeys,
     scrollToTopLevelIndex,
     scrollToPath,
     totalSize:

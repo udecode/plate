@@ -11,8 +11,8 @@ import type {
 } from '@platejs/plite-dom/internal';
 import { DOMCoverage } from '@platejs/plite-dom/internal';
 
-import { ElementPathContext, NodeRuntimeIdContext } from '../context';
-import { getRuntimeId as editorGetRuntimeId } from '../editable/runtime-editor-api';
+import { ElementPathContext, NodeKeyContext } from '../context';
+import { getNodeKey as editorGetNodeKey } from '../editable/runtime-editor-api';
 import { useClaimEditableDOMCommit } from '../hooks/use-claim-editable-dom-commit';
 import { useEditor } from '../hooks/use-editor';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
@@ -56,20 +56,18 @@ export const DOMCoverageBoundaryRange = ({
 }: DOMCoverageBoundaryRangeProps) => {
   const editor = useEditor();
   const ownerPath = useContext(ElementPathContext);
-  const ownerRuntimeId = useContext(NodeRuntimeIdContext);
+  const ownerNodeKey = useContext(NodeKeyContext);
 
   useClaimEditableDOMCommit();
 
   const anchorPath = ownerPath ? [...ownerPath, from] : null;
   const focusPath = ownerPath ? [...ownerPath, to] : null;
-  const anchorRuntimeId = anchorPath
-    ? editorGetRuntimeId(editor, anchorPath)
+  const anchorNodeKey = anchorPath
+    ? editorGetNodeKey(editor, anchorPath)
     : null;
-  const focusRuntimeId = focusPath
-    ? editorGetRuntimeId(editor, focusPath)
-    : null;
+  const focusNodeKey = focusPath ? editorGetNodeKey(editor, focusPath) : null;
   const boundary =
-    ownerPath && ownerRuntimeId
+    ownerPath && ownerNodeKey
       ? {
           anchor: { type: 'placeholder' as const },
           boundaryId,
@@ -81,12 +79,12 @@ export const DOMCoverageBoundaryRange = ({
             },
           ],
           coveredRuntimeRanges:
-            anchorRuntimeId && focusRuntimeId
-              ? [{ anchor: anchorRuntimeId, focus: focusRuntimeId }]
+            anchorNodeKey && focusNodeKey
+              ? [{ anchor: anchorNodeKey, focus: focusNodeKey }]
               : [],
           findPolicy,
           ownerPath,
-          ownerRuntimeId,
+          ownerNodeKey,
           reason,
           selectionPolicy,
           state: 'intentionally-hidden' as const,
@@ -154,23 +152,21 @@ export const DOMCoverageSelfBoundary = ({
 }: DOMCoverageBoundaryBaseProps) => {
   const editor = useEditor();
   const ownerPath = useContext(ElementPathContext);
-  const ownerRuntimeId = useContext(NodeRuntimeIdContext);
+  const ownerNodeKey = useContext(NodeKeyContext);
 
   useClaimEditableDOMCommit();
 
   const boundary =
-    ownerPath && ownerRuntimeId
+    ownerPath && ownerNodeKey
       ? {
           anchor: { type: 'placeholder' as const },
           boundaryId,
           copyPolicy,
           coveredPathRanges: [{ anchor: ownerPath, focus: ownerPath }],
-          coveredRuntimeRanges: [
-            { anchor: ownerRuntimeId, focus: ownerRuntimeId },
-          ],
+          coveredRuntimeRanges: [{ anchor: ownerNodeKey, focus: ownerNodeKey }],
           findPolicy,
           ownerPath,
-          ownerRuntimeId,
+          ownerNodeKey,
           reason,
           selectionPolicy,
           state: 'intentionally-hidden' as const,

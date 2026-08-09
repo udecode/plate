@@ -7,7 +7,7 @@ import {
   NodeApi,
   type Path,
   type RootKey,
-  type RuntimeId,
+  type NodeKey,
   type Element as PliteElementNode,
   type Node as PliteNode,
   type Range as PliteRange,
@@ -28,7 +28,7 @@ import {
 import {
   ElementContext,
   ElementPathContext,
-  NodeRuntimeIdContext,
+  NodeKeyContext,
   PliteContentRootOwnerContext,
   PliteDOMStrategyVirtualOffsetContext,
   PliteDOMTextSyncContext,
@@ -120,10 +120,7 @@ import {
   resolveProjectionRuntimeScope,
 } from './editable-dom-strategy-helpers';
 import { EditableElement } from './editable-element';
-import {
-  sameDescendantBinding,
-  sameRuntimeIds,
-} from './editable-node-equality';
+import { sameDescendantBinding, sameNodeKeys } from './editable-node-equality';
 import {
   createRootGroupRenderItems,
   createRootGroups,
@@ -217,14 +214,14 @@ export type EditableElementSlots = {
 };
 
 const createContentBoundaryId = (
-  runtimeId: RuntimeId,
+  nodeKey: NodeKey,
   scope: EditableDOMCoverageBoundaryScope
 ) => {
   if (scope.type === 'self') {
-    return `content-boundary:${runtimeId}:self`;
+    return `content-boundary:${nodeKey}:self`;
   }
 
-  return `content-boundary:${runtimeId}:children:${scope.from}:${
+  return `content-boundary:${nodeKey}:children:${scope.from}:${
     scope.to ?? scope.from
   }`;
 };
@@ -247,7 +244,7 @@ const createEditableElementSlots = <
     renderText?: (props: RenderTextProps) => ReactNode;
     renderVoid?: RenderVoidRenderer<TElement>;
     ownerPath: Path;
-    runtimeId: RuntimeId;
+    nodeKey: NodeKey;
   }
 ): EditableElementSlots => {
   const renderContentBoundary = ({
@@ -263,7 +260,7 @@ const createEditableElementSlots = <
     selectionPolicy,
   }: EditableDOMCoverageBoundaryProps) => {
     const resolvedBoundaryId =
-      boundaryId ?? createContentBoundaryId(props.runtimeId, scope);
+      boundaryId ?? createContentBoundaryId(props.nodeKey, scope);
     const materialize = () => {
       DOMCoverage.materializeBoundary(
         editor,
@@ -329,7 +326,7 @@ const createEditableElementSlots = <
         <>
           {childCount > 0
             ? renderContentBoundary({
-                boundaryId: `content-root:${props.runtimeId}:${slot}`,
+                boundaryId: `content-root:${props.nodeKey}:${slot}`,
                 copyPolicy: 'exclude',
                 findPolicy: 'native',
                 mounted: false,
@@ -547,7 +544,7 @@ export type RenderElementProps<
         'data-plite-inline'?: true;
         'data-plite-node': 'element';
         'data-plite-path': string;
-        'data-plite-runtime-id': RuntimeId;
+        'data-plite-node-key': NodeKey;
         'data-plite-void'?: true;
         ref: React.RefCallback<HTMLElement>;
       };
@@ -657,7 +654,7 @@ export type EditableProps<
    */
   decorateDirtiness?: PliteSourceDirtiness;
   /**
-   * Limits decoration refresh work to the runtime ids affected by the source.
+   * Limits decoration refresh work to the node keys affected by the source.
    */
   decorateRuntimeScope?: PliteProjectionRuntimeScope;
   disableDefaultStyles?: boolean;
@@ -716,7 +713,7 @@ const EditableDescendantNodeInner = <T, TElement extends PliteElementNode>({
   renderSegment,
   renderText,
   renderVoid,
-  runtimeId,
+  nodeKey,
 }: {
   placeholder?: ReactNode;
   placeholderRef?: React.RefCallback<HTMLElement>;
@@ -729,7 +726,7 @@ const EditableDescendantNodeInner = <T, TElement extends PliteElementNode>({
   ) => ReactNode;
   renderText?: (props: RenderTextProps) => ReactNode;
   renderVoid?: RenderVoidRenderer<TElement>;
-  runtimeId: RuntimeId;
+  nodeKey: NodeKey;
 }) => {
   const editor = useEditor();
 
@@ -744,18 +741,18 @@ const EditableDescendantNodeInner = <T, TElement extends PliteElementNode>({
         renderText,
       }),
     sameDescendantBinding,
-    { runtimeId }
+    { nodeKey }
   );
 
   const {
-    childRuntimeIds,
+    childNodeKeys,
     isInline: inline,
     isVoid: voidNode,
     node,
     path,
     renderRevision,
   } = binding;
-  const bindNodeRef = usePliteNodeRef(runtimeId, { path, pliteNode: node });
+  const bindNodeRef = usePliteNodeRef(nodeKey, { path, pliteNode: node });
 
   if (!node || !path) {
     return null;
@@ -780,7 +777,7 @@ const EditableDescendantNodeInner = <T, TElement extends PliteElementNode>({
 
     return (
       <EditableText
-        key={`${runtimeId}:${renderRevision}`}
+        key={`${nodeKey}:${renderRevision}`}
         marks={marks}
         path={path}
         placeholder={placeholder}
@@ -789,7 +786,7 @@ const EditableDescendantNodeInner = <T, TElement extends PliteElementNode>({
         renderPlaceholder={renderPlaceholder}
         renderSegment={renderSegment}
         renderText={renderText}
-        runtimeId={runtimeId}
+        nodeKey={nodeKey}
         pliteNode={node}
         text={node.text}
         zeroWidth={resolveTextZeroWidth({ editor, node, path })}
@@ -801,12 +798,12 @@ const EditableDescendantNodeInner = <T, TElement extends PliteElementNode>({
     'data-plite-inline': inline ? (true as const) : undefined,
     'data-plite-node': 'element' as const,
     'data-plite-path': path.join(','),
-    'data-plite-runtime-id': runtimeId,
+    'data-plite-node-key': nodeKey,
     'data-plite-void': voidNode ? (true as const) : undefined,
     ref: bindNodeRef as React.RefCallback<HTMLElement>,
   };
   const renderDirectTextChild = (
-    childRuntimeId: RuntimeId,
+    childNodeKey: NodeKey,
     child: Descendant | undefined,
     index: number
   ) => {
@@ -829,7 +826,7 @@ const EditableDescendantNodeInner = <T, TElement extends PliteElementNode>({
 
     return (
       <EditableText
-        key={`${childRuntimeId}:${getDOMTextRenderRevision(editor, [childRuntimeId])}`}
+        key={`${childNodeKey}:${getDOMTextRenderRevision(editor, [childNodeKey])}`}
         marks={marks}
         path={childPath}
         placeholder={placeholder}
@@ -838,7 +835,7 @@ const EditableDescendantNodeInner = <T, TElement extends PliteElementNode>({
         renderPlaceholder={renderPlaceholder}
         renderSegment={renderSegment}
         renderText={renderText}
-        runtimeId={childRuntimeId}
+        nodeKey={childNodeKey}
         pliteNode={child}
         text={child.text}
         zeroWidth={resolveTextZeroWidth({
@@ -849,10 +846,10 @@ const EditableDescendantNodeInner = <T, TElement extends PliteElementNode>({
       />
     );
   };
-  const renderChild = (childRuntimeId: RuntimeId, index: number) =>
-    renderDirectTextChild(childRuntimeId, node.children[index], index) ?? (
+  const renderChild = (childNodeKey: NodeKey, index: number) =>
+    renderDirectTextChild(childNodeKey, node.children[index], index) ?? (
       <EditableDescendantNode
-        key={childRuntimeId}
+        key={childNodeKey}
         placeholder={placeholder}
         placeholderRef={placeholderRef}
         renderElement={renderElement}
@@ -861,21 +858,19 @@ const EditableDescendantNodeInner = <T, TElement extends PliteElementNode>({
         renderSegment={renderSegment}
         renderText={renderText}
         renderVoid={renderVoid}
-        runtimeId={childRuntimeId}
+        nodeKey={childNodeKey}
       />
     );
-  const renderChildren = (from = 0, to = childRuntimeIds.length - 1) => {
-    if (childRuntimeIds.length === 0 || to < from) {
+  const renderChildren = (from = 0, to = childNodeKeys.length - 1) => {
+    if (childNodeKeys.length === 0 || to < from) {
       return null;
     }
 
-    return childRuntimeIds
+    return childNodeKeys
       .slice(from, to + 1)
-      .map((childRuntimeId, offset) =>
-        renderChild(childRuntimeId, from + offset)
-      );
+      .map((childNodeKey, offset) => renderChild(childNodeKey, from + offset));
   };
-  const defaultChildren = childRuntimeIds.map(renderChild);
+  const defaultChildren = childNodeKeys.map(renderChild);
 
   if (voidNode && renderVoid) {
     if (!path) {
@@ -885,7 +880,7 @@ const EditableDescendantNodeInner = <T, TElement extends PliteElementNode>({
     const children = renderChildren();
 
     return (
-      <NodeRuntimeIdContext.Provider key={runtimeId} value={runtimeId}>
+      <NodeKeyContext.Provider key={nodeKey} value={nodeKey}>
         <ElementPathContext.Provider value={path}>
           <ElementContext.Provider value={node}>
             <EditableRenderedVoid
@@ -897,7 +892,7 @@ const EditableDescendantNodeInner = <T, TElement extends PliteElementNode>({
             </EditableRenderedVoid>
           </ElementContext.Provider>
         </ElementPathContext.Provider>
-      </NodeRuntimeIdContext.Provider>
+      </NodeKeyContext.Provider>
     );
   }
 
@@ -930,12 +925,12 @@ const EditableDescendantNodeInner = <T, TElement extends PliteElementNode>({
         renderText,
         renderVoid,
         ownerPath: path,
-        runtimeId,
+        nodeKey,
       }),
     } as unknown as RenderElementProps<TElement>;
 
     return (
-      <NodeRuntimeIdContext.Provider key={runtimeId} value={runtimeId}>
+      <NodeKeyContext.Provider key={nodeKey} value={nodeKey}>
         <ElementPathContext.Provider value={path}>
           <ElementContext.Provider value={node}>
             <EditableRenderedElement
@@ -945,7 +940,7 @@ const EditableDescendantNodeInner = <T, TElement extends PliteElementNode>({
             />
           </ElementContext.Provider>
         </ElementPathContext.Provider>
-      </NodeRuntimeIdContext.Provider>
+      </NodeKeyContext.Provider>
     );
   }
 
@@ -957,7 +952,7 @@ const EditableDescendantNodeInner = <T, TElement extends PliteElementNode>({
     const children = renderChildren();
 
     return (
-      <NodeRuntimeIdContext.Provider key={runtimeId} value={runtimeId}>
+      <NodeKeyContext.Provider key={nodeKey} value={nodeKey}>
         <ElementPathContext.Provider value={path}>
           <ElementContext.Provider value={node}>
             <EditableRenderedVoid element={node as TElement} isInline={inline}>
@@ -965,12 +960,12 @@ const EditableDescendantNodeInner = <T, TElement extends PliteElementNode>({
             </EditableRenderedVoid>
           </ElementContext.Provider>
         </ElementPathContext.Provider>
-      </NodeRuntimeIdContext.Provider>
+      </NodeKeyContext.Provider>
     );
   }
 
   return (
-    <NodeRuntimeIdContext.Provider key={runtimeId} value={runtimeId}>
+    <NodeKeyContext.Provider key={nodeKey} value={nodeKey}>
       <ElementPathContext.Provider value={path}>
         <ElementContext.Provider value={node}>
           <EditableElement as={inline ? 'span' : 'div'} isInline={inline}>
@@ -978,7 +973,7 @@ const EditableDescendantNodeInner = <T, TElement extends PliteElementNode>({
           </EditableElement>
         </ElementContext.Provider>
       </ElementPathContext.Provider>
-    </NodeRuntimeIdContext.Provider>
+    </NodeKeyContext.Provider>
   );
 };
 
@@ -996,7 +991,7 @@ const EditableRootGroupInner = <T, TElement extends PliteElementNode>({
   renderSegment,
   renderText,
   renderVoid,
-  runtimeIds,
+  nodeKeys,
   startIndex,
 }: {
   endIndex: number;
@@ -1012,7 +1007,7 @@ const EditableRootGroupInner = <T, TElement extends PliteElementNode>({
   ) => ReactNode;
   renderText?: (props: RenderTextProps) => ReactNode;
   renderVoid?: RenderVoidRenderer<TElement>;
-  runtimeIds: readonly RuntimeId[];
+  nodeKeys: readonly NodeKey[];
   startIndex: number;
 }) => {
   recordPliteReactRender({
@@ -1022,9 +1017,9 @@ const EditableRootGroupInner = <T, TElement extends PliteElementNode>({
 
   return (
     <>
-      {runtimeIds.map((runtimeId) => (
+      {nodeKeys.map((nodeKey) => (
         <EditableDescendantNode
-          key={runtimeId}
+          key={nodeKey}
           placeholder={placeholder}
           placeholderRef={placeholderRef}
           renderElement={renderElement}
@@ -1033,7 +1028,7 @@ const EditableRootGroupInner = <T, TElement extends PliteElementNode>({
           renderSegment={renderSegment}
           renderText={renderText}
           renderVoid={renderVoid}
-          runtimeId={runtimeId}
+          nodeKey={nodeKey}
         />
       ))}
     </>
@@ -1054,7 +1049,7 @@ const EditableRootGroup = React.memo(
     previous.renderText === next.renderText &&
     previous.renderVoid === next.renderVoid &&
     previous.startIndex === next.startIndex &&
-    sameRuntimeIds(previous.runtimeIds, next.runtimeIds)
+    sameNodeKeys(previous.nodeKeys, next.nodeKeys)
 ) as typeof EditableRootGroupInner;
 
 const EditableInner = <T, TElement extends PliteElementNode>({
@@ -1103,7 +1098,7 @@ const EditableInner = <T, TElement extends PliteElementNode>({
   const upstreamProjectionStore = React.useContext(ProjectionContext);
   const [decorateCell] = React.useState(() => ({ current: decorate }));
   decorateCell.current = decorate;
-  const autoDecorateRuntimeScopeRef = React.useRef<readonly RuntimeId[] | null>(
+  const autoDecorateRuntimeScopeRef = React.useRef<readonly NodeKey[] | null>(
     null
   );
 
@@ -1251,8 +1246,8 @@ const EditableInner = <T, TElement extends PliteElementNode>({
   const {
     segmentPlan,
     mountedTopLevelRanges,
-    mountedTopLevelRuntimeIds,
-    topLevelRuntimeIds,
+    mountedTopLevelNodeKeys,
+    topLevelNodeKeys,
   } = useInternalSegmentDOMStrategyRootSources({
     internalSegmentDOMStrategyConfig,
     promotedSegmentIndex,
@@ -1286,7 +1281,7 @@ const EditableInner = <T, TElement extends PliteElementNode>({
     selectionPaths: selectedDOMStrategyPaths,
     selectedTopLevelIndex: selectedVirtualizedTopLevelIndex,
     topLevelLayoutItems: virtualizedLayoutItems,
-    topLevelRuntimeIds,
+    topLevelNodeKeys,
     visiblePageLayoutItems: visibleVirtualizedPageItems,
   });
   const internalSegmentDOMStrategySize =
@@ -1300,7 +1295,7 @@ const EditableInner = <T, TElement extends PliteElementNode>({
     if (
       (domStrategyType !== 'staged' && !shouldUseStagedFallback) ||
       segmentPlan ||
-      topLevelRuntimeIds.length < ROOT_GROUP_THRESHOLD
+      topLevelNodeKeys.length < ROOT_GROUP_THRESHOLD
     ) {
       return null;
     }
@@ -1310,19 +1305,14 @@ const EditableInner = <T, TElement extends PliteElementNode>({
       kind: 'root-plan',
     });
 
-    return createRootGroups(topLevelRuntimeIds);
-  }, [
-    domStrategyType,
-    segmentPlan,
-    shouldUseStagedFallback,
-    topLevelRuntimeIds,
-  ]);
+    return createRootGroups(topLevelNodeKeys);
+  }, [domStrategyType, segmentPlan, shouldUseStagedFallback, topLevelNodeKeys]);
   const rootGroupPlanKey = React.useMemo(
     () =>
       rootGroups
-        ? getRootGroupPlanKey(topLevelRuntimeIds, rootDocumentEpoch)
+        ? getRootGroupPlanKey(topLevelNodeKeys, rootDocumentEpoch)
         : null,
-    [rootDocumentEpoch, rootGroups, topLevelRuntimeIds]
+    [rootDocumentEpoch, rootGroups, topLevelNodeKeys]
   );
   const selectedRootGroupIndex = useTopLevelSelectionIndex(rootGroups != null);
   const selectedRootGroupFocusIndex = React.useMemo(() => {
@@ -1464,11 +1454,11 @@ const EditableInner = <T, TElement extends PliteElementNode>({
     () => renderedRootGroups?.filter((group) => group.isMounted) ?? null,
     [renderedRootGroups]
   );
-  const domPresentMountedTopLevelRuntimeIds = React.useMemo(
+  const domPresentMountedTopLevelNodeKeys = React.useMemo(
     () =>
       domPresentMountedGroups
         ? new Set(
-            domPresentMountedGroups.flatMap((group) => [...group.runtimeIds])
+            domPresentMountedGroups.flatMap((group) => [...group.nodeKeys])
           )
         : null,
     [domPresentMountedGroups]
@@ -1482,24 +1472,24 @@ const EditableInner = <T, TElement extends PliteElementNode>({
     [domPresentMountedGroups]
   );
   const autoDecorateRuntimeScope = React.useMemo<
-    readonly RuntimeId[] | null
+    readonly NodeKey[] | null
   >(() => {
     if (virtualizedPlan) {
-      return [...virtualizedPlan.mountedTopLevelRuntimeIds];
+      return [...virtualizedPlan.mountedTopLevelNodeKeys];
     }
 
-    if (segmentPlan && mountedTopLevelRuntimeIds) {
-      return [...mountedTopLevelRuntimeIds];
+    if (segmentPlan && mountedTopLevelNodeKeys) {
+      return [...mountedTopLevelNodeKeys];
     }
 
-    if (domPresentMountedTopLevelRuntimeIds) {
-      return [...domPresentMountedTopLevelRuntimeIds];
+    if (domPresentMountedTopLevelNodeKeys) {
+      return [...domPresentMountedTopLevelNodeKeys];
     }
 
     return null;
   }, [
-    domPresentMountedTopLevelRuntimeIds,
-    mountedTopLevelRuntimeIds,
+    domPresentMountedTopLevelNodeKeys,
+    mountedTopLevelNodeKeys,
     segmentPlan,
     virtualizedPlan,
   ]);
@@ -1671,16 +1661,16 @@ const EditableInner = <T, TElement extends PliteElementNode>({
       ? { minHeight: placeholderHeight, ...style }
       : style;
   const domStrategyMetrics = React.useMemo(() => {
-    const documentSize = topLevelRuntimeIds.length;
+    const documentSize = topLevelNodeKeys.length;
     const mountedTopLevelCount = virtualizedPlan
-      ? virtualizedPlan.mountedTopLevelRuntimeIds.size
+      ? virtualizedPlan.mountedTopLevelNodeKeys.size
       : segmentPlan
         ? segmentPlan.segments.reduce(
-            (total, segment) => total + segment.mountedRuntimeIds.length,
+            (total, segment) => total + segment.mountedNodeKeys.length,
             0
           )
-        : domPresentMountedTopLevelRuntimeIds
-          ? domPresentMountedTopLevelRuntimeIds.size
+        : domPresentMountedTopLevelNodeKeys
+          ? domPresentMountedTopLevelNodeKeys.size
           : documentSize;
     const partialDOMCount =
       segmentPlan?.segments.filter((segment) => !segment.isActive).length ?? 0;
@@ -1755,7 +1745,7 @@ const EditableInner = <T, TElement extends PliteElementNode>({
         virtualizedPlan?.virtualizerMeasuredCount ?? null,
     } satisfies EditableDOMStrategyMetricsBase;
   }, [
-    domPresentMountedTopLevelRuntimeIds,
+    domPresentMountedTopLevelNodeKeys,
     virtualizedPlan,
     segmentPlan,
     internalSegmentDOMStrategyConfig,
@@ -1764,7 +1754,7 @@ const EditableInner = <T, TElement extends PliteElementNode>({
     renderedRootGroups,
     rootGroups,
     selectedVirtualizedTopLevelIndex,
-    topLevelRuntimeIds.length,
+    topLevelNodeKeys.length,
   ]);
   const virtualizedItemGroups = virtualizedPlan
     ? createVirtualizedTopLevelItemGroups(virtualizedPlan.virtualItems)
@@ -1784,8 +1774,8 @@ const EditableInner = <T, TElement extends PliteElementNode>({
             domStrategyRuntime={
               virtualizedPlan
                 ? {
-                    mountedTopLevelRuntimeIds:
-                      virtualizedPlan.mountedTopLevelRuntimeIds,
+                    mountedTopLevelNodeKeys:
+                      virtualizedPlan.mountedTopLevelNodeKeys,
                     mountedTopLevelRanges:
                       virtualizedPlan.mountedTopLevelRanges ?? undefined,
                     scrollToPath: scrollVirtualizedPathIntoView,
@@ -1793,14 +1783,14 @@ const EditableInner = <T, TElement extends PliteElementNode>({
                   }
                 : segmentPlan
                   ? {
-                      mountedTopLevelRuntimeIds,
+                      mountedTopLevelNodeKeys,
                       mountedTopLevelRanges: mountedTopLevelRanges ?? undefined,
                       type: 'partial-dom',
                     }
                   : rootGroups
                     ? {
-                        mountedTopLevelRuntimeIds:
-                          domPresentMountedTopLevelRuntimeIds,
+                        mountedTopLevelNodeKeys:
+                          domPresentMountedTopLevelNodeKeys,
                         mountedTopLevelRanges:
                           domPresentMountedTopLevelRanges ?? undefined,
                         type: 'staged',
@@ -1838,10 +1828,10 @@ const EditableInner = <T, TElement extends PliteElementNode>({
               >
                 {virtualizedPlan.missingRanges.map((range) => (
                   <DOMStrategyVirtualizedRangeBoundary
-                    anchorRuntimeId={range.anchorRuntimeId}
+                    anchorNodeKey={range.anchorNodeKey}
                     boundaryId={range.boundaryId}
                     endIndex={range.endIndex}
-                    focusRuntimeId={range.focusRuntimeId}
+                    focusNodeKey={range.focusNodeKey}
                     key={range.boundaryId}
                     startIndex={range.startIndex}
                   />
@@ -1902,7 +1892,7 @@ const EditableInner = <T, TElement extends PliteElementNode>({
                                 renderSegment={renderSegment}
                                 renderText={renderText}
                                 renderVoid={renderVoid}
-                                runtimeId={item.runtimeId}
+                                nodeKey={item.nodeKey}
                               />
                             </div>
                           </PliteDOMStrategyVirtualOffsetContext.Provider>
@@ -1931,7 +1921,7 @@ const EditableInner = <T, TElement extends PliteElementNode>({
                         previewChars={
                           internalSegmentDOMStrategyConfig!.previewChars
                         }
-                        runtimeIds={segment.runtimeIds.slice(
+                        nodeKeys={segment.nodeKeys.slice(
                           0,
                           segment.mountedStartIndex - segment.startIndex
                         )}
@@ -1939,9 +1929,9 @@ const EditableInner = <T, TElement extends PliteElementNode>({
                         startIndex={segment.startIndex}
                       />
                     ) : null}
-                    {segment.mountedRuntimeIds.map((runtimeId) => (
+                    {segment.mountedNodeKeys.map((nodeKey) => (
                       <EditableDescendantNode
-                        key={runtimeId}
+                        key={nodeKey}
                         placeholder={placeholderValue}
                         placeholderRef={placeholderRef}
                         renderElement={renderElement}
@@ -1950,7 +1940,7 @@ const EditableInner = <T, TElement extends PliteElementNode>({
                         renderSegment={renderSegment}
                         renderText={renderText}
                         renderVoid={renderVoid}
-                        runtimeId={runtimeId}
+                        nodeKey={nodeKey}
                       />
                     ))}
                     {segment.mountedEndIndex != null &&
@@ -1968,7 +1958,7 @@ const EditableInner = <T, TElement extends PliteElementNode>({
                         previewChars={
                           internalSegmentDOMStrategyConfig!.previewChars
                         }
-                        runtimeIds={segment.runtimeIds.slice(
+                        nodeKeys={segment.nodeKeys.slice(
                           segment.mountedEndIndex - segment.startIndex + 1
                         )}
                         segmentIndex={segment.segmentIndex}
@@ -1989,7 +1979,7 @@ const EditableInner = <T, TElement extends PliteElementNode>({
                     previewChars={
                       internalSegmentDOMStrategyConfig!.previewChars
                     }
-                    runtimeIds={segment.runtimeIds}
+                    nodeKeys={segment.nodeKeys}
                     segmentIndex={segment.segmentIndex}
                     startIndex={segment.startIndex}
                   />
@@ -2010,14 +2000,14 @@ const EditableInner = <T, TElement extends PliteElementNode>({
                     renderSegment={renderSegment}
                     renderText={renderText}
                     renderVoid={renderVoid}
-                    runtimeIds={item.group.runtimeIds}
+                    nodeKeys={item.group.nodeKeys}
                     startIndex={item.group.startIndex}
                   />
                 ) : (
                   <EditableRootGroupPlaceholder
-                    anchorRuntimeId={item.anchorRuntimeId}
+                    anchorNodeKey={item.anchorNodeKey}
                     endIndex={item.endIndex}
-                    focusRuntimeId={item.focusRuntimeId}
+                    focusNodeKey={item.focusNodeKey}
                     groupId={item.groupId}
                     key={item.groupId}
                     startIndex={item.startIndex}
@@ -2025,9 +2015,9 @@ const EditableInner = <T, TElement extends PliteElementNode>({
                 )
               )
             ) : (
-              topLevelRuntimeIds.map((runtimeId) => (
+              topLevelNodeKeys.map((nodeKey) => (
                 <EditableDescendantNode
-                  key={runtimeId}
+                  key={nodeKey}
                   placeholder={placeholderValue}
                   placeholderRef={placeholderRef}
                   renderElement={renderElement}
@@ -2036,7 +2026,7 @@ const EditableInner = <T, TElement extends PliteElementNode>({
                   renderSegment={renderSegment}
                   renderText={renderText}
                   renderVoid={renderVoid}
-                  runtimeId={runtimeId}
+                  nodeKey={nodeKey}
                 />
               ))
             )}

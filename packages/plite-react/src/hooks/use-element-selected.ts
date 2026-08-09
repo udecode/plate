@@ -6,9 +6,9 @@ import {
   RangeApi,
   SelectionApi,
 } from '@platejs/plite';
-import { ElementPathContext, NodeRuntimeIdContext } from '../context';
+import { ElementPathContext, NodeKeyContext } from '../context';
 import {
-  getPathByRuntimeId as editorGetPathByRuntimeId,
+  getPathByNodeKey as editorGetPathByNodeKey,
   hasPath as editorHasPath,
   range as editorRange,
 } from '../editable/runtime-editor-api';
@@ -33,7 +33,7 @@ export const useElementSelected = ({
 }: UseElementSelectedOptions = {}): boolean => {
   const element = useOptionalElement();
   const contextPath = useContext(ElementPathContext);
-  const runtimeId = useContext(NodeRuntimeIdContext);
+  const nodeKey = useContext(NodeKeyContext);
 
   const selector = useCallback(
     (editor: ReactRuntimeEditor) => {
@@ -44,7 +44,7 @@ export const useElementSelected = ({
       if (!selection) return false;
       const selectedPath =
         path ??
-        (runtimeId ? editorGetPathByRuntimeId(editor, runtimeId) : null) ??
+        (nodeKey ? editorGetPathByNodeKey(editor, nodeKey) : null) ??
         contextPath ??
         (element ? ReactEditor.resolvePath(editor, element) : null);
       if (!selectedPath) return false;
@@ -61,7 +61,7 @@ export const useElementSelected = ({
       const range = editorRange(editor, selectedPath);
       return !!RangeApi.intersection(range, selection);
     },
-    [contextPath, element, mode, path, runtimeId]
+    [contextPath, element, mode, path, nodeKey]
   );
 
   const shouldUpdate = useCallback(
@@ -75,16 +75,16 @@ export const useElementSelected = ({
         );
       }
 
-      if (!runtimeId || !change) {
+      if (!nodeKey || !change) {
         return true;
       }
 
       return (
-        change.changed.hasRuntime(runtimeId, 'selection') ||
-        change.changed.hasRuntime(runtimeId, 'path')
+        change.changed.hasNodeKey(nodeKey, 'selection') ||
+        change.changed.hasNodeKey(nodeKey, 'path')
       );
     },
-    [path, runtimeId]
+    [path, nodeKey]
   );
 
   return useEditorSelector(selector, {

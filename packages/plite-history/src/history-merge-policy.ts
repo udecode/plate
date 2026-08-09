@@ -15,7 +15,7 @@ import type { Batch } from './history';
 
 type HistoryTarget = Readonly<{
   path: string;
-  runtimeId?: string;
+  nodeKey?: string;
 }>;
 
 type HistoryPoint = Readonly<{
@@ -114,19 +114,19 @@ const getTarget = (
   path: readonly number[] | null,
   kind: 'node' | 'text'
 ): HistoryTarget | null => {
-  const runtimeIds = commit.changed.runtimeIds(kind, toPublicRoot(root));
+  const nodeKeys = commit.changed.nodeKeys(kind, toPublicRoot(root));
 
-  if (!path && runtimeIds.length !== 1) return null;
+  if (!path && nodeKeys.length !== 1) return null;
 
   return Object.freeze({
     path: path ? pathKey(path) : '',
-    ...(runtimeIds.length === 1 ? { runtimeId: runtimeIds[0]! } : {}),
+    ...(nodeKeys.length === 1 ? { nodeKey: nodeKeys[0]! } : {}),
   });
 };
 
 const sameTarget = (left: HistoryTarget, right: HistoryTarget) =>
-  left.runtimeId && right.runtimeId
-    ? left.runtimeId === right.runtimeId
+  left.nodeKey && right.nodeKey
+    ? left.nodeKey === right.nodeKey
     : left.path === right.path;
 
 export const isSameHistoryPath = (

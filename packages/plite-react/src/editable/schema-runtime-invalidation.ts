@@ -1,4 +1,4 @@
-import type { Editor, EditorCommit, RuntimeId, Value } from '@platejs/plite';
+import type { Editor, EditorCommit, NodeKey, Value } from '@platejs/plite';
 
 import {
   getEditorRuntimeElementEntries,
@@ -7,20 +7,20 @@ import {
 } from './runtime-editor-api';
 import { MAIN_ROOT_KEY } from '../root-key';
 
-export const getSchemaInvalidatedRuntimeIds = <
+export const getSchemaInvalidatedNodeKeys = <
   V extends Value,
   TExtensions extends readonly unknown[],
 >(
   editor: Editor<V, TExtensions>,
   commit: Pick<EditorCommit, 'dirtyStateKeys'>
-): readonly RuntimeId[] => {
+): readonly NodeKey[] => {
   if (!commit.dirtyStateKeys.includes('$configuration')) return [];
 
   return editor.read((state) => {
     const delta = state.schema.delta();
 
     if (!delta) return [];
-    const runtimeIds = new Set<RuntimeId>();
+    const nodeKeys = new Set<NodeKey>();
     const runtimeOwner = getEditorRuntimeOwner(editor);
     const runtimeRoots = new Set(getEditorRuntimeRootKeys(runtimeOwner));
 
@@ -31,7 +31,7 @@ export const getSchemaInvalidatedRuntimeIds = <
           delta.elementTypes,
           root
         )) {
-          runtimeIds.add(entry.runtimeId);
+          nodeKeys.add(entry.nodeKey);
         }
       }
     }
@@ -48,11 +48,11 @@ export const getSchemaInvalidatedRuntimeIds = <
           allElementTypes,
           root
         )) {
-          if (entry.path.length === 1) runtimeIds.add(entry.runtimeId);
+          if (entry.path.length === 1) nodeKeys.add(entry.nodeKey);
         }
       }
     }
 
-    return [...runtimeIds];
+    return [...nodeKeys];
   });
 };

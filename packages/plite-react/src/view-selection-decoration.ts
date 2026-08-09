@@ -197,8 +197,8 @@ const readScopedPliteViewSelectionDecorations = (
   const visitedPathKeys = new Set<string>();
   const scopedPaths: Path[] = [];
 
-  context.runtimeScope.forEach((runtimeId) => {
-    const path = context.snapshot.index.pathOf(runtimeId);
+  context.runtimeScope.forEach((nodeKey) => {
+    const path = context.snapshot.index.pathOf(nodeKey);
 
     if (!path) {
       return;

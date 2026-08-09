@@ -1,5 +1,5 @@
 import { useCallback, useContext, useSyncExternalStore } from 'react';
-import type { RuntimeId } from '@platejs/plite';
+import type { NodeKey } from '@platejs/plite';
 import { ProjectionContext } from '../projection-context';
 import type { PliteProjectionRefreshResult } from '../projection-store';
 
@@ -11,22 +11,17 @@ export interface PliteProjectionEntry<T = unknown> {
   start: number;
 }
 
-/** External store that publishes projection entries by runtime id. */
+/** External store that publishes projection entries by node key. */
 export interface PliteProjectionStore<T = unknown> {
   getSnapshot: () => Readonly<
     Record<string, readonly PliteProjectionEntry<T>[]>
   >;
-  getRuntimeSnapshot?: (
-    runtimeId: RuntimeId
-  ) => readonly PliteProjectionEntry<T>[];
+  getRuntimeSnapshot?: (nodeKey: NodeKey) => readonly PliteProjectionEntry<T>[];
   subscribeProjectionRefresh?: (
     listener: (result: PliteProjectionRefreshResult) => void
   ) => () => void;
   subscribe: (listener: () => void) => () => void;
-  subscribeRuntimeId?: (
-    runtimeId: RuntimeId,
-    listener: () => void
-  ) => () => void;
+  subscribeNodeKey?: (nodeKey: NodeKey, listener: () => void) => () => void;
   subscribeSourceId?: (sourceId: string, listener: () => void) => () => void;
 }
 
@@ -37,37 +32,37 @@ const subscribeEmpty = () => () => {};
 const getEmptyRuntimeSnapshot = () => EMPTY_PROJECTIONS;
 
 /**
- * Read projection entries for one runtime id from the current projection store.
+ * Read projection entries for one node key from the current projection store.
  *
  * Returns an empty frozen list when no projection store or runtime snapshot is
  * available.
  */
 export function usePliteProjectionEntries<T = unknown>(
-  runtimeId: RuntimeId | null
+  nodeKey: NodeKey | null
 ): readonly PliteProjectionEntry<T>[] {
   const store = useContext(ProjectionContext);
   const subscribe = useCallback(
     (listener: () => void) => {
-      if (runtimeId && store?.subscribeRuntimeId) {
-        return store.subscribeRuntimeId(runtimeId, listener);
+      if (nodeKey && store?.subscribeNodeKey) {
+        return store.subscribeNodeKey(nodeKey, listener);
       }
 
       return store?.subscribe(listener) ?? subscribeEmpty();
     },
-    [runtimeId, store]
+    [nodeKey, store]
   );
   const getSnapshot = useCallback(
     () =>
-      (runtimeId &&
-        (store?.getRuntimeSnapshot?.(runtimeId) as
+      (nodeKey &&
+        (store?.getRuntimeSnapshot?.(nodeKey) as
           | readonly PliteProjectionEntry<T>[]
           | undefined)) ??
-      ((runtimeId &&
-        (store?.getSnapshot()[runtimeId] as
+      ((nodeKey &&
+        (store?.getSnapshot()[nodeKey] as
           | readonly PliteProjectionEntry<T>[]
           | undefined)) ||
         EMPTY_PROJECTIONS),
-    [runtimeId, store]
+    [nodeKey, store]
   );
 
   return useSyncExternalStore(

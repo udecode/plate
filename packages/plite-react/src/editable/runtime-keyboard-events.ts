@@ -1,5 +1,5 @@
 import { type KeyboardEvent, useCallback } from 'react';
-import type { Point, Range, RuntimeId } from '@platejs/plite';
+import type { Point, Range, NodeKey } from '@platejs/plite';
 import type { EditableKeyDownHandler } from '../components/editable';
 import type { MountedTopLevelRange } from '../dom-strategy/dom-strategy-commands';
 import { useOptionalPliteRuntimeContext } from '../hooks/use-plite-runtime';
@@ -193,7 +193,7 @@ export const isNativeVerticalKeyFastPathFullyMounted = ({
   editor,
 }: {
   domStrategyRuntime: {
-    mountedTopLevelRuntimeIds: ReadonlySet<RuntimeId> | null;
+    mountedTopLevelNodeKeys: ReadonlySet<NodeKey> | null;
     mountedTopLevelRanges?: readonly MountedTopLevelRange[];
   } | null;
   editor: ReactRuntimeEditor;
@@ -202,7 +202,7 @@ export const isNativeVerticalKeyFastPathFullyMounted = ({
     return true;
   }
 
-  if (!domStrategyRuntime.mountedTopLevelRuntimeIds) {
+  if (!domStrategyRuntime.mountedTopLevelNodeKeys) {
     return true;
   }
 
@@ -259,7 +259,7 @@ export const useRuntimeKeyboardEvents = ({
   inputController: EditableInputController;
   domStrategyRuntime: {
     type: 'staged' | 'partial-dom' | 'virtualized';
-    mountedTopLevelRuntimeIds: ReadonlySet<RuntimeId> | null;
+    mountedTopLevelNodeKeys: ReadonlySet<NodeKey> | null;
     mountedTopLevelRanges?: readonly MountedTopLevelRange[];
   } | null;
   flushPendingNativeTextInput?: () => void;

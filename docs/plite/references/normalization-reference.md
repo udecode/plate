@@ -17,7 +17,7 @@ Canonical construction:
 - merges adjacent text leaves with equal registered properties;
 - removes redundant empty leaves while preserving inline caret spacers;
 - enforces root and element content defaults from the compiled schema;
-- maps selection and runtime identity through the construction change.
+- maps selection and node key through the construction change.
 
 An externally supplied `DocumentChange` must already produce canonical editor
 representation. Invalid or noncanonical direct changes fail atomically.

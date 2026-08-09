@@ -77,7 +77,7 @@ Reference:
 `plite-react` is already aiming at the structural fix:
 
 - committed immutable snapshots
-- stable runtime ids
+- stable node keys
 - `useSyncExternalStore` selectors
 - narrow node/leaf subscriptions
 - no half-mutated editor reads during render

@@ -43,6 +43,7 @@ export type {
   EditorExtensionSlotValue,
 } from './core/extension-slot';
 export { property, schema, target } from './core/schema-definition';
+export type { PropertyBuilderApi } from './core/schema-definition';
 export { EditorSchemaValidationError } from './core/schema-validation';
 export {
   createEditorSchemaContract,
@@ -254,7 +255,7 @@ export type {
   NodeTarget,
   ProjectedRangeSegment,
   RootKey,
-  RuntimeId,
+  NodeKey,
   SnapshotIndex,
   SnapshotInput,
   SnapshotListener,

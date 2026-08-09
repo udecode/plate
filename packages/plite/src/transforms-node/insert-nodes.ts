@@ -1,7 +1,7 @@
 import { getEditorRuntimeOwner, getEditorSchema } from '../core/editor-runtime';
 import {
   applyBuiltDocumentChange,
-  getPathByRuntimeId,
+  getPathByNodeKey,
   isBuildingTransactionSpec,
   runEditorTransaction,
 } from '../core/public-state';
@@ -25,7 +25,7 @@ import {
 } from '../interfaces/editor';
 import type { NodeMutationMethods } from '../interfaces/transforms/node';
 import { getDefaultInsertLocation } from '../utils';
-import { getRuntimeIdForNode, seedRuntimeIds } from '../utils/runtime-ids';
+import { getNodeKeyForNode, seedNodeKeys } from '../utils/node-keys';
 import { select as selectSelection } from '../transforms-selection/select';
 import { deleteText } from '../transforms-text/delete-text';
 import { splitNodes } from './split-nodes';
@@ -151,12 +151,12 @@ export const insertNodes: NodeMutationMethods<any>['insertNodes'] = (
     for (const child of nextNodes) {
       const path = parentPath.concat(index);
       const owner = getEditorRuntimeOwner(editor);
-      const runtimeId = getRuntimeIdForNode(child, owner);
+      const nodeKey = getNodeKeyForNode(child, owner);
       const inheritIdentity =
-        runtimeId === null || getPathByRuntimeId(editor, runtimeId) === null;
+        nodeKey === null || getPathByNodeKey(editor, nodeKey) === null;
 
       if (inheritIdentity && !isBuildingTransactionSpec(editor)) {
-        seedRuntimeIds([child], owner);
+        seedNodeKeys([child], owner);
       }
       index++;
 
@@ -164,7 +164,7 @@ export const insertNodes: NodeMutationMethods<any>['insertNodes'] = (
         editor,
         (builder, root) => builder.insertNode(root, path, child),
         {
-          runtimeIdTransfers: inheritIdentity
+          nodeKeyTransfers: inheritIdentity
             ? [{ path, source: child }]
             : undefined,
         }

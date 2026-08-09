@@ -199,7 +199,7 @@ device gate explicitly runs.
 React 19.2 runtime proof is based on:
 
 - selector-first live reads
-- lazy `commit.changed.runtimeIds(...)` and `topLevelRanges(...)` queries
+- lazy `commit.changed.nodeKeys(...)` and `topLevelRanges(...)` queries
 - canonical `EditorCommit` metadata
 - source-scoped projection invalidation
 - semantic islands

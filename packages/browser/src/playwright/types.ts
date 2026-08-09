@@ -709,7 +709,7 @@ export type PliteBrowserShellSummary = {
   isVoid: boolean;
   kind: string | null;
   path: string | null;
-  runtimeId: string | null;
+  nodeKey: string | null;
   tagName: string | null;
 };
 
@@ -726,7 +726,7 @@ export type PliteBrowserSelectedShellSnapshot = {
 export type PliteBrowserSelectionShellsSnapshot = {
   anchor: PliteBrowserSelectedShellSnapshot;
   focus: PliteBrowserSelectedShellSnapshot;
-  runtimeIds: string[];
+  nodeKeys: string[];
 };
 
 /** Full render state snapshot including selected and selection shells. */
@@ -832,7 +832,7 @@ export type PliteBrowserScenarioStep = (
       label?: string;
     }
   | {
-      kind: "assertCapturedRuntimeIdPath";
+      kind: "assertCapturedNodeKeyPath";
       label?: string;
       name: string;
       path: number[] | null;
@@ -904,7 +904,7 @@ export type PliteBrowserScenarioStep = (
   | { kind: "assertLastCommitTags"; label?: string; tags: readonly string[] }
   | { kind: "clickTestId"; label?: string; testId: string }
   | { kind: "clickSelector"; label?: string; selector: string }
-  | { kind: "captureRuntimeId"; label?: string; name: string; path: number[] }
+  | { kind: "captureNodeKey"; label?: string; name: string; path: number[] }
   | {
       committedText?: string;
       kind: "composeText";

@@ -16,7 +16,7 @@ export type PliteReactRenderProfilerEvent = {
   kind: PliteReactRenderKind;
   duration?: number;
   id?: string | null;
-  runtimeId?: string | null;
+  nodeKey?: string | null;
 };
 
 export type PliteReactRenderProfilerSnapshot = {
@@ -35,7 +35,7 @@ declare global {
 }
 
 const getRenderKey = (event: PliteReactRenderProfilerEvent) => {
-  const id = event.id ?? event.runtimeId;
+  const id = event.id ?? event.nodeKey;
 
   return id ? `${event.kind}:${id}` : event.kind;
 };

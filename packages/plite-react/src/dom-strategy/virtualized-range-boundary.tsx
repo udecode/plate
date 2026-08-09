@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Path, RuntimeId } from '@platejs/plite';
+import type { Path, NodeKey } from '@platejs/plite';
 import { DOMCoverage } from '@platejs/plite-dom/internal';
 
 import { useEditor } from '../hooks/use-editor';
@@ -7,16 +7,16 @@ import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect
 
 export const DOMStrategyVirtualizedRangeBoundary = React.memo(
   ({
-    anchorRuntimeId,
+    anchorNodeKey,
     boundaryId,
     endIndex,
-    focusRuntimeId,
+    focusNodeKey,
     startIndex,
   }: {
-    anchorRuntimeId: RuntimeId | null;
+    anchorNodeKey: NodeKey | null;
     boundaryId: string;
     endIndex: number;
-    focusRuntimeId: RuntimeId | null;
+    focusNodeKey: NodeKey | null;
     startIndex: number;
   }) => {
     const editor = useEditor();
@@ -32,18 +32,18 @@ export const DOMStrategyVirtualizedRangeBoundary = React.memo(
           },
         ],
         coveredRuntimeRanges:
-          anchorRuntimeId && focusRuntimeId
-            ? [{ anchor: anchorRuntimeId, focus: focusRuntimeId }]
+          anchorNodeKey && focusNodeKey
+            ? [{ anchor: anchorNodeKey, focus: focusNodeKey }]
             : [],
         findPolicy: 'native' as const,
         ownerPath: [] as Path,
-        ownerRuntimeId: null,
+        ownerNodeKey: null,
         reason: 'viewport-virtualization' as const,
         selectionPolicy: 'materialize' as const,
         state: 'virtualized' as const,
         version: 1,
       }),
-      [anchorRuntimeId, boundaryId, endIndex, focusRuntimeId, startIndex]
+      [anchorNodeKey, boundaryId, endIndex, focusNodeKey, startIndex]
     );
 
     useIsomorphicLayoutEffect(

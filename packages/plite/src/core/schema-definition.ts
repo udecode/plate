@@ -515,7 +515,7 @@ const defineSet = <
     options.validate,
     options.generate,
     'property.set'
-  ) as PropertySetDescriptor<TItemDescriptor, TOptions>;
+  ) as unknown as PropertySetDescriptor<TItemDescriptor, TOptions>;
 };
 
 const defineEnum = <
@@ -604,7 +604,7 @@ const defineEnum = <
     options.validate,
     options.generate,
     'property.enum'
-  ) as PropertyEnumDescriptor<TValues, TOptions>;
+  ) as unknown as PropertyEnumDescriptor<TValues, TOptions>;
 };
 
 type PropertyJsonOptionsWithoutValidation = Readonly<{
@@ -666,20 +666,23 @@ function defineJson<
     'property.json'
   );
 
-  return defineValue<TValue, 'json', TOptions>('json', options as TOptions);
+  return defineValue<TValue, 'json', TOptions>(
+    'json',
+    options as TOptions
+  ) as PropertyJsonDescriptor<TValue, TOptions>;
 }
 
 /** Shared JSON property value builders. */
-type PropertyBuilderApi = Readonly<{
-  boolean: <const TOptions extends PropertyValueOptions<boolean> = {}>(
+export interface PropertyBuilderApi {
+  readonly boolean: <const TOptions extends PropertyValueOptions<boolean> = {}>(
     options?: PropertyValueOptions<boolean> & TOptions
   ) => PropertyBooleanDescriptor<TOptions>;
-  enum: typeof defineEnum;
-  json: typeof defineJson;
-  number: <const TOptions extends PropertyValueOptions<number> = {}>(
+  readonly enum: typeof defineEnum;
+  readonly json: typeof defineJson;
+  readonly number: <const TOptions extends PropertyValueOptions<number> = {}>(
     options?: PropertyValueOptions<number> & TOptions
   ) => PropertyNumberDescriptor<TOptions>;
-  set: <
+  readonly set: <
     TItemDescriptor extends PropertyValueDescriptor,
     const TOptions extends PropertySetOptions<
       PropertyValueOf<TItemDescriptor>
@@ -688,12 +691,12 @@ type PropertyBuilderApi = Readonly<{
     item: TItemDescriptor,
     options?: PropertySetOptions<PropertyValueOf<TItemDescriptor>> & TOptions
   ) => PropertySetDescriptor<TItemDescriptor, TOptions>;
-  string: <const TOptions extends PropertyValueOptions<string> = {}>(
+  readonly string: <const TOptions extends PropertyValueOptions<string> = {}>(
     options?: PropertyValueOptions<string> & TOptions
   ) => PropertyStringDescriptor<TOptions>;
-}>;
+}
 
-export const property: PropertyBuilderApi = Object.freeze({
+export const property = Object.freeze({
   boolean: <const TOptions extends PropertyValueOptions<boolean> = {}>(
     options: PropertyValueOptions<boolean> & TOptions = {} as TOptions
   ) => defineValue<boolean, 'boolean', TOptions>('boolean', options),
@@ -706,7 +709,7 @@ export const property: PropertyBuilderApi = Object.freeze({
   string: <const TOptions extends PropertyValueOptions<string> = {}>(
     options: PropertyValueOptions<string> & TOptions = {} as TOptions
   ) => defineValue<string, 'string', TOptions>('string', options),
-});
+}) as unknown as PropertyBuilderApi;
 
 const freezeStringSet = <const TValues extends readonly string[]>(
   values: TValues,

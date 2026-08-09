@@ -9,7 +9,7 @@ import {
 } from '../interfaces';
 import { getChildren as editorGetChildren } from '../interfaces/editor';
 import { formatDebugValue } from './format-debug-value';
-import { inheritRuntimeId } from './runtime-ids';
+import { inheritNodeKey } from './node-keys';
 
 const setChildren = (root: Ancestor, children: readonly Descendant[]) => {
   if (NodeApi.isEditor(root)) {
@@ -72,7 +72,7 @@ export const modifyDescendant = <N extends Descendant>(
   const node = NodeApi.get(root, path) as N;
   const slicedPath = path.slice();
   let modifiedNode: Descendant = f(node);
-  inheritRuntimeId(modifiedNode, node, owner);
+  inheritNodeKey(modifiedNode, node, owner);
 
   while (slicedPath.length > 1) {
     const index = slicedPath.pop()!;
@@ -90,7 +90,7 @@ export const modifyDescendant = <N extends Descendant>(
         modifiedNode
       ),
     };
-    inheritRuntimeId(modifiedNode, ancestorNode, owner);
+    inheritNodeKey(modifiedNode, ancestorNode, owner);
   }
 
   const index = slicedPath.pop()!;

@@ -108,7 +108,7 @@ export const isEditableDOMSelectionPartial = ({
     domStrategyRuntime?.type === 'virtualized'
       ? isSelectionPartialDOMBacked(
           selection,
-          domStrategyRuntime.mountedTopLevelRuntimeIds,
+          domStrategyRuntime.mountedTopLevelNodeKeys,
           domStrategyRuntime.mountedTopLevelRanges ?? null
         )
       : false;

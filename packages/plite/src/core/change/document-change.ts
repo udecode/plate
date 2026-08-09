@@ -18,7 +18,7 @@ import {
   type JsonNode,
   type JsonPoint,
 } from './tokens';
-import type { NamedRootKey } from '../../interfaces/editor';
+import type { NamedRootKey, NodeKey } from '../../interfaces/editor';
 import { assertEditorJsonValue } from '../value-codec';
 
 export type DocumentChangedRange = Readonly<{
@@ -543,6 +543,34 @@ export const createInternalDocumentChange = (
     roots,
   });
 };
+
+/** @internal Carry target-document runtime identities inside inserted node slices. */
+export const bindDocumentChangeNodeKeys = (
+  change: DocumentChange,
+  target: JsonEditorValue,
+  nodeKeyAt: (root: string, path: readonly number[]) => NodeKey | null
+) =>
+  createInternalDocumentChange(
+    new Map(
+      [...getInternalDocumentChangeEntries(change)].map(
+        ([root, rootChange]) =>
+          [
+            root,
+            rootChange.withInsertedNodeKeys(
+              DocumentIndex.fromValue(valueRoot(target, root)),
+              (path) => nodeKeyAt(root, path)
+            ),
+          ] as const
+      )
+    ),
+    {
+      classifications: new Map(
+        getInternalDocumentChangeClassificationEntries(change)
+      ),
+      createRoots: change.createRoots,
+      deleteRoots: change.deleteRoots,
+    }
+  );
 
 export type InternalRootChangeSection = Readonly<{
   after: readonly JsonNode[];

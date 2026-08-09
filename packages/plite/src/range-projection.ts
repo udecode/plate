@@ -5,13 +5,13 @@ import type {
   Point,
   ProjectedRangeSegment,
   Range,
-  RuntimeId,
+  NodeKey,
   Text,
 } from './interfaces';
 
 type TextEntry = {
   readonly path: Path;
-  readonly runtimeId: RuntimeId;
+  readonly key: NodeKey;
   readonly text: string;
 };
 
@@ -78,15 +78,15 @@ const collectTextEntries = (
     const path = [...parentPath, index] as Path;
 
     if (isText(node)) {
-      const runtimeId = snapshot.index.idAt(path);
+      const key = snapshot.index.keyAt(path);
 
-      if (!runtimeId) {
-        throw new Error(`Missing runtime id for text path ${pathKey(path)}`);
+      if (!key) {
+        throw new Error(`Missing node key for text path ${pathKey(path)}`);
       }
 
       entries.push({
         path: clonePath(path),
-        runtimeId,
+        key,
         text: node.text,
       });
       return;
@@ -124,15 +124,15 @@ const getTextEntryAtPath = (
     return null;
   }
 
-  const runtimeId = snapshot.index.idAt(path);
+  const key = snapshot.index.keyAt(path);
 
-  if (!runtimeId) {
-    throw new Error(`Missing runtime id for text path ${pathKey(path)}`);
+  if (!key) {
+    throw new Error(`Missing node key for text path ${pathKey(path)}`);
   }
 
   return {
     path: clonePath(path),
-    runtimeId,
+    key,
     text: current.text,
   };
 };
@@ -148,16 +148,16 @@ const getTopLevelBlockTextEntries = (
   }
 
   if (isText(block)) {
-    const runtimeId = snapshot.index.idAt([blockIndex]);
+    const key = snapshot.index.keyAt([blockIndex]);
 
-    if (!runtimeId) {
-      throw new Error(`Missing runtime id for text path ${blockIndex}`);
+    if (!key) {
+      throw new Error(`Missing node key for text path ${blockIndex}`);
     }
 
     return Object.freeze([
       {
         path: Object.freeze([blockIndex]) as Path,
-        runtimeId,
+        key,
         text: block.text,
       },
     ]);
@@ -223,7 +223,7 @@ export const projectRangeInSnapshot = (
 
     return Object.freeze([
       Object.freeze({
-        runtimeId: entry.runtimeId,
+        key: entry.key,
         path: entry.path,
         start: start.offset,
         end: end.offset,
@@ -259,7 +259,7 @@ export const projectRangeInSnapshot = (
         if (comparedToStart === 0 && comparedToEnd === 0) {
           return [
             Object.freeze({
-              runtimeId: entry.runtimeId,
+              key: entry.key,
               path: entry.path,
               start: start.offset,
               end: end.offset,
@@ -270,7 +270,7 @@ export const projectRangeInSnapshot = (
         if (comparedToStart === 0) {
           return [
             Object.freeze({
-              runtimeId: entry.runtimeId,
+              key: entry.key,
               path: entry.path,
               start: start.offset,
               end: entry.text.length,
@@ -281,7 +281,7 @@ export const projectRangeInSnapshot = (
         if (comparedToEnd === 0) {
           return [
             Object.freeze({
-              runtimeId: entry.runtimeId,
+              key: entry.key,
               path: entry.path,
               start: 0,
               end: end.offset,
@@ -291,7 +291,7 @@ export const projectRangeInSnapshot = (
 
         return [
           Object.freeze({
-            runtimeId: entry.runtimeId,
+            key: entry.key,
             path: entry.path,
             start: 0,
             end: entry.text.length,
@@ -329,7 +329,7 @@ export const projectRangeInSnapshot = (
       if (comparedToStart === 0 && comparedToEnd === 0) {
         return [
           Object.freeze({
-            runtimeId: entry.runtimeId,
+            key: entry.key,
             path: entry.path,
             start: start.offset,
             end: end.offset,
@@ -340,7 +340,7 @@ export const projectRangeInSnapshot = (
       if (comparedToStart === 0) {
         return [
           Object.freeze({
-            runtimeId: entry.runtimeId,
+            key: entry.key,
             path: entry.path,
             start: start.offset,
             end: entry.text.length,
@@ -351,7 +351,7 @@ export const projectRangeInSnapshot = (
       if (comparedToEnd === 0) {
         return [
           Object.freeze({
-            runtimeId: entry.runtimeId,
+            key: entry.key,
             path: entry.path,
             start: 0,
             end: end.offset,
@@ -361,7 +361,7 @@ export const projectRangeInSnapshot = (
 
       return [
         Object.freeze({
-          runtimeId: entry.runtimeId,
+          key: entry.key,
           path: entry.path,
           start: 0,
           end: entry.text.length,

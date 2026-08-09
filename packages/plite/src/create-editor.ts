@@ -47,8 +47,8 @@ import {
   getEditorDocumentValue,
   getLastCommit,
   getLiveSelection,
-  getPathByRuntimeId,
-  getRuntimeId,
+  getPathByNodeKey,
+  getNodeKey,
   getSnapshot,
   createTransactionSpec,
   applyTransactionSpecToDocument,
@@ -67,14 +67,17 @@ import {
 import {
   assertPublicLocationRoot,
   assertPublicRootKey,
+  MAIN_ROOT_KEY,
 } from './core/public-root';
 import type {
   AnyEditor,
   BaseEditor,
   CreateEditorOptions,
   DescendantIn,
+  Descendant,
   Editor,
   EditorAnchorApi,
+  EditorKeyApi,
   EditorCommit,
   EditorExtensionReference,
   EditorExtensionApiMap,
@@ -85,6 +88,7 @@ import type {
   EditorUpdateTransaction,
   EditorValueFromExtensions,
   SchemaExtensionsOf,
+  Location,
   Value,
 } from './interfaces';
 import type { InternalEditorUpdateOptions } from './core/update-policy';
@@ -405,8 +409,8 @@ const createEditorImplementation = <
     getChildren: () => getChildren(editor),
     getFragment: () => getFragment(editor) as DescendantIn<V>[],
     getLastCommit: () => getLastCommit(editor) as EditorCommit<V> | null,
-    getPathByRuntimeId: (runtimeId) => getPathByRuntimeId(editor, runtimeId),
-    getRuntimeId: (path) => getRuntimeId(editor, path),
+    getPathByNodeKey: (nodeKey) => getPathByNodeKey(editor, nodeKey),
+    getNodeKey: (path) => getNodeKey(editor, path),
     getSelection: () => getLiveSelection(editor),
     getSnapshot: () => getSnapshot(editor) as EditorSnapshot<V>,
   } satisfies InternalEditorSnapshotRuntime<V>;
@@ -534,6 +538,10 @@ const createEditorImplementation = <
   const read = createEditorReadApi<V, TExtensions>((fn) =>
     withEditorRootChildren(editor, 'main', () => readEditor(editor, fn))
   );
+  const key = ((target: Descendant | Location) =>
+    withEditorRootChildren(editor, MAIN_ROOT_KEY, () =>
+      readEditor(editor, (state) => state.key(target as never))
+    )) as EditorKeyApi;
   const update = createEditorUpdateApi<V, TExtensions>(
     (fn, policy) =>
       updateEditor(
@@ -562,6 +570,7 @@ const createEditorImplementation = <
       V,
       TExtensions
     >['extension'],
+    key,
     read,
     subscribe: (listener) => subscribe(editor, listener),
     subscribeCommit: (listener) => subscribeCommit(editor, listener),

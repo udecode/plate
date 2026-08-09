@@ -1,7 +1,7 @@
 import type {
   Descendant,
   Path,
-  RuntimeId,
+  NodeKey,
   Text as PliteTextNode,
 } from '@platejs/plite';
 
@@ -54,12 +54,12 @@ const sameDescendant = (
   );
 };
 
-export const sameRuntimeIds = (
-  left: readonly RuntimeId[],
-  right: readonly RuntimeId[]
+export const sameNodeKeys = (
+  left: readonly NodeKey[],
+  right: readonly NodeKey[]
 ) =>
   left.length === right.length &&
-  left.every((runtimeId, index) => runtimeId === right[index]);
+  left.every((nodeKey, index) => nodeKey === right[index]);
 
 const sameDirectTextChildNodes = (
   left: readonly (PliteTextNode | null)[],
@@ -70,7 +70,7 @@ const sameDirectTextChildNodes = (
 
 export const sameDescendantBinding = (
   left: {
-    childRuntimeIds: readonly RuntimeId[];
+    childNodeKeys: readonly NodeKey[];
     directTextChildNodes: readonly (PliteTextNode | null)[];
     isInline: boolean;
     isVoid: boolean;
@@ -79,7 +79,7 @@ export const sameDescendantBinding = (
     renderRevision: number;
   } | null,
   right: {
-    childRuntimeIds: readonly RuntimeId[];
+    childNodeKeys: readonly NodeKey[];
     directTextChildNodes: readonly (PliteTextNode | null)[];
     isInline: boolean;
     isVoid: boolean;
@@ -94,7 +94,7 @@ export const sameDescendantBinding = (
   left.isVoid === right.isVoid &&
   samePath(left.path, right.path) &&
   sameDescendant(left.node, right.node) &&
-  sameRuntimeIds(left.childRuntimeIds, right.childRuntimeIds) &&
+  sameNodeKeys(left.childNodeKeys, right.childNodeKeys) &&
   sameDirectTextChildNodes(
     left.directTextChildNodes,
     right.directTextChildNodes

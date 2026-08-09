@@ -6,7 +6,7 @@ import type {
   Point,
   Range,
   RootKey,
-  RuntimeId,
+  NodeKey,
   Text,
 } from '@platejs/plite';
 import type { TextDiff } from './diff-text';
@@ -24,7 +24,7 @@ export const IS_NODE_MAP_DIRTY: WeakMap<AnyExtensionEditor, boolean> =
   new WeakMap();
 export const NODE_TO_INDEX: WeakMap<Node, number> = new WeakMap();
 export const NODE_TO_PARENT: WeakMap<Node, Ancestor> = new WeakMap();
-export const NODE_TO_RUNTIME_ID: WeakMap<Node, RuntimeId> = new WeakMap();
+export const NODE_TO_RUNTIME_ID: WeakMap<Node, NodeKey> = new WeakMap();
 
 /**
  * Weak maps that allow us to go between Plite nodes and DOM nodes. These
@@ -57,7 +57,7 @@ export const NODE_TO_ELEMENT: WeakMap<Node, HTMLElement> = new WeakMap();
 export const NODE_TO_KEY: WeakMap<Node, Key> = new WeakMap();
 export const EDITOR_TO_RUNTIME_ID_TO_KEY: WeakMap<
   AnyExtensionEditor,
-  Map<RuntimeId, Key>
+  Map<NodeKey, Key>
 > = new WeakMap();
 export const EDITOR_TO_KEY_TO_ELEMENT: WeakMap<
   AnyExtensionEditor,

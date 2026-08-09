@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Path, RuntimeId, Range as PliteRange } from '@platejs/plite';
+import type { Path, NodeKey, Range as PliteRange } from '@platejs/plite';
 import {
   DOMCoverage,
   type DOMCoverageBoundary,
@@ -12,30 +12,27 @@ import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect
 const ROOT_GROUP_SIZE = 16;
 
 export const createRootGroups = (
-  runtimeIds: readonly RuntimeId[],
+  nodeKeys: readonly NodeKey[],
   groupSize = ROOT_GROUP_SIZE
 ) => {
   const groups: {
     endIndex: number;
     groupId: string;
-    runtimeIds: readonly RuntimeId[];
+    nodeKeys: readonly NodeKey[];
     startIndex: number;
   }[] = [];
 
   for (
     let startIndex = 0;
-    startIndex < runtimeIds.length;
+    startIndex < nodeKeys.length;
     startIndex += groupSize
   ) {
-    const endIndex = Math.min(
-      runtimeIds.length - 1,
-      startIndex + groupSize - 1
-    );
+    const endIndex = Math.min(nodeKeys.length - 1, startIndex + groupSize - 1);
 
     groups.push({
       endIndex,
       groupId: `${startIndex}-${endIndex}`,
-      runtimeIds: runtimeIds.slice(startIndex, endIndex + 1),
+      nodeKeys: nodeKeys.slice(startIndex, endIndex + 1),
       startIndex,
     });
   }
@@ -48,9 +45,9 @@ export type EditableRootGroupRecord = ReturnType<
 >[number];
 
 export const getRootGroupPlanKey = (
-  runtimeIds: readonly RuntimeId[],
+  nodeKeys: readonly NodeKey[],
   documentEpoch: number
-) => `${documentEpoch}:${runtimeIds.join('\u001f')}`;
+) => `${documentEpoch}:${nodeKeys.join('\u001f')}`;
 
 export const getActiveRootGroupIds = (
   groups: readonly EditableRootGroupRecord[] | null,
@@ -234,9 +231,9 @@ export const createRootGroupRenderItems = (
         kind: 'mounted';
       }
     | {
-        anchorRuntimeId: RuntimeId | null;
+        anchorNodeKey: NodeKey | null;
         endIndex: number;
-        focusRuntimeId: RuntimeId | null;
+        focusNodeKey: NodeKey | null;
         groupId: string;
         kind: 'pending';
         startIndex: number;
@@ -251,9 +248,9 @@ export const createRootGroupRenderItems = (
     }
 
     items.push({
-      anchorRuntimeId: pendingStartGroup.runtimeIds[0] ?? null,
+      anchorNodeKey: pendingStartGroup.nodeKeys[0] ?? null,
       endIndex: pendingEndGroup.endIndex,
-      focusRuntimeId: pendingEndGroup.runtimeIds.at(-1) ?? null,
+      focusNodeKey: pendingEndGroup.nodeKeys.at(-1) ?? null,
       groupId: `${pendingStartGroup.groupId}-${pendingEndGroup.groupId}`,
       kind: 'pending',
       startIndex: pendingStartGroup.startIndex,
@@ -279,15 +276,15 @@ export const createRootGroupRenderItems = (
 };
 
 export const EditableRootGroupPlaceholder = ({
-  anchorRuntimeId,
+  anchorNodeKey,
   endIndex,
-  focusRuntimeId,
+  focusNodeKey,
   groupId,
   startIndex,
 }: {
-  anchorRuntimeId: RuntimeId | null;
+  anchorNodeKey: NodeKey | null;
   endIndex: number;
-  focusRuntimeId: RuntimeId | null;
+  focusNodeKey: NodeKey | null;
   groupId: string;
   startIndex: number;
 }) => {
@@ -305,18 +302,18 @@ export const EditableRootGroupPlaceholder = ({
         },
       ],
       coveredRuntimeRanges:
-        anchorRuntimeId && focusRuntimeId
-          ? [{ anchor: anchorRuntimeId, focus: focusRuntimeId }]
+        anchorNodeKey && focusNodeKey
+          ? [{ anchor: anchorNodeKey, focus: focusNodeKey }]
           : [],
       findPolicy: 'native' as const,
       ownerPath: [] as Path,
-      ownerRuntimeId: null,
+      ownerNodeKey: null,
       reason: 'rendering-staged' as const,
       selectionPolicy: 'materialize' as const,
       state: 'pending-mount' as const,
       version: 1,
     }),
-    [anchorRuntimeId, boundaryId, endIndex, focusRuntimeId, startIndex]
+    [anchorNodeKey, boundaryId, endIndex, focusNodeKey, startIndex]
   );
 
   useIsomorphicLayoutEffect(

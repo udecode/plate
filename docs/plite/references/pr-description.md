@@ -728,7 +728,7 @@ Current implemented shape:
 - `on.transactionChange` receives canonical incremental changes with the active
   transaction, `on.commit` observes publication, and `activate` owns
   extension-local runtime resources.
-- Refs, raw snapshots, runtime IDs, and lifecycle controls remain engine-owned.
+- Refs, raw snapshots, node keys, and lifecycle controls remain engine-owned.
 
 Why it belongs in the PR:
 
@@ -1091,7 +1091,7 @@ Accepted current shape:
 - `RenderVoidProps` receives `{ element }`; it does not expose eager `path`.
 - Event handlers resolve the current location with
   `editor.api.dom.findPath(element)`.
-- The installed DOM extension handle resolves by runtime id before stale
+- The installed DOM extension handle resolves by node key before stale
   weak-map indexes.
 - `useElementPath()` is the opt-in render-time path subscription.
 - `useElementSelected()` keeps intersection semantics; block voids that only

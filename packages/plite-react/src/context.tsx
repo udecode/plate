@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import type { Path, RootKey, RuntimeId } from '@platejs/plite';
+import type { Path, RootKey, NodeKey } from '@platejs/plite';
 import type { DOMTextSyncOptions } from './dom-text-sync';
 
 export { EditorContext } from './hooks/use-editor';
@@ -9,7 +9,7 @@ export { ReadOnlyContext } from './hooks/use-editor-read-only';
 export { ElementContext } from './hooks/use-element';
 
 export const ElementPathContext = createContext<Path | null>(null);
-export const NodeRuntimeIdContext = createContext<RuntimeId | null>(null);
+export const NodeKeyContext = createContext<NodeKey | null>(null);
 export const PliteEditableRootContext = createContext<RootKey | null>(null);
 export const PliteContentRootOwnerContext = createContext<{
   childRoot: RootKey;

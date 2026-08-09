@@ -6,7 +6,7 @@ import type {
   EditorNodeChangeKind,
   EditorTextChangeContext,
   RootKey,
-  RuntimeId,
+  NodeKey,
   SnapshotIndex,
   ValueOf,
 } from '../interfaces/editor';
@@ -88,14 +88,14 @@ const nodeProperties = (node: Descendant | null) =>
 
 /** @internal */
 export const hasChangedRuntimeAncestor = (
-  runtimeIds: ReadonlySet<RuntimeId>,
+  nodeKeys: ReadonlySet<NodeKey>,
   index: SnapshotIndex,
   path: Path
 ) => {
   for (let depth = 1; depth < path.length; depth++) {
-    const runtimeId = index.idAt(path.slice(0, depth));
+    const nodeKey = index.keyAt(path.slice(0, depth));
 
-    if (runtimeId !== null && runtimeIds.has(runtimeId)) return true;
+    if (nodeKey !== null && nodeKeys.has(nodeKey)) return true;
   }
 
   return false;
@@ -148,23 +148,23 @@ const getSparseNodeCandidates = (
   beforeIndex: SnapshotIndex,
   afterIndex: SnapshotIndex
 ) => {
-  const candidates = new Map<RuntimeId, SparseNodeCandidate>();
-  const add = (runtimeId: RuntimeId, phase: 'after' | 'before', path: Path) => {
-    const candidate = candidates.get(runtimeId) ?? {};
+  const candidates = new Map<NodeKey, SparseNodeCandidate>();
+  const add = (nodeKey: NodeKey, phase: 'after' | 'before', path: Path) => {
+    const candidate = candidates.get(nodeKey) ?? {};
 
     candidate[phase === 'before' ? 'beforePath' : 'afterPath'] = path;
-    candidates.set(runtimeId, candidate);
+    candidates.set(nodeKey, candidate);
   };
   const addAt = (phase: 'after' | 'before', path: Path) => {
     const index = phase === 'before' ? beforeIndex : afterIndex;
     const otherIndex = phase === 'before' ? afterIndex : beforeIndex;
-    const runtimeId = index.idAt(path);
+    const nodeKey = index.keyAt(path);
 
-    if (!runtimeId) return;
+    if (!nodeKey) return;
 
-    add(runtimeId, phase, path);
-    if (otherIndex.idAt(path) === runtimeId) {
-      add(runtimeId, phase === 'before' ? 'after' : 'before', path);
+    add(nodeKey, phase, path);
+    if (otherIndex.keyAt(path) === nodeKey) {
+      add(nodeKey, phase === 'before' ? 'after' : 'before', path);
     }
   };
 
@@ -175,35 +175,35 @@ const getSparseNodeCandidates = (
     addAt('after', path);
   }
 
-  const relocated = new Set<RuntimeId>();
+  const relocated = new Set<NodeKey>();
   const relocation = change.movedNode(beforeDocument);
 
   if (relocation) {
     const beforePath = [...relocation.path] as Path;
     const afterPath = [...relocation.targetPath] as Path;
-    const runtimeId = beforeIndex.idAt(beforePath);
+    const nodeKey = beforeIndex.keyAt(beforePath);
 
-    if (runtimeId && afterIndex.idAt(afterPath) === runtimeId) {
-      add(runtimeId, 'before', beforePath);
-      add(runtimeId, 'after', afterPath);
-      relocated.add(runtimeId);
+    if (nodeKey && afterIndex.keyAt(afterPath) === nodeKey) {
+      add(nodeKey, 'before', beforePath);
+      add(nodeKey, 'after', afterPath);
+      relocated.add(nodeKey);
     }
   }
 
   return { candidates, relocated };
 };
 
-const getParentRuntimeId = (index: SnapshotIndex, path: Path) =>
-  path.length === 1 ? null : index.idAt(path.slice(0, -1));
+const getParentNodeKey = (index: SnapshotIndex, path: Path) =>
+  path.length === 1 ? null : index.keyAt(path.slice(0, -1));
 
-const getStableRuntimeIds = (
-  before: readonly RuntimeId[],
-  after: readonly RuntimeId[]
+const getStableNodeKeys = (
+  before: readonly NodeKey[],
+  after: readonly NodeKey[]
 ) => {
   const afterPositions = new Map(
-    after.map((runtimeId, index) => [runtimeId, index] as const)
+    after.map((nodeKey, index) => [nodeKey, index] as const)
   );
-  const common = before.filter((runtimeId) => afterPositions.has(runtimeId));
+  const common = before.filter((nodeKey) => afterPositions.has(nodeKey));
   const predecessors = new Array<number>(common.length).fill(-1);
   const tails: number[] = [];
 
@@ -224,7 +224,7 @@ const getStableRuntimeIds = (
     tails[low] = index;
   }
 
-  const stable = new Set<RuntimeId>();
+  const stable = new Set<NodeKey>();
   let cursor = tails.at(-1) ?? -1;
 
   while (cursor >= 0) {
@@ -235,14 +235,14 @@ const getStableRuntimeIds = (
   return stable;
 };
 
-const getMovedRuntimeIds = (
+const getMovedNodeKeys = (
   beforeIndex: SnapshotIndex,
   afterIndex: SnapshotIndex,
-  beforeEntries: readonly (readonly [RuntimeId, Path])[],
-  afterEntries: readonly (readonly [RuntimeId, Path])[],
-  exactMovedRuntimeIds: ReadonlySet<RuntimeId>
+  beforeEntries: readonly (readonly [NodeKey, Path])[],
+  afterEntries: readonly (readonly [NodeKey, Path])[],
+  exactMovedNodeKeys: ReadonlySet<NodeKey>
 ) => {
-  const orderEntries = (entries: readonly (readonly [RuntimeId, Path])[]) => {
+  const orderEntries = (entries: readonly (readonly [NodeKey, Path])[]) => {
     for (let index = 1; index < entries.length; index++) {
       if (comparePaths(entries[index - 1]![1], entries[index]![1]) > 0) {
         return [...entries].sort(([, left], [, right]) =>
@@ -255,55 +255,53 @@ const getMovedRuntimeIds = (
   };
   const orderedBeforeEntries = orderEntries(beforeEntries);
   const orderedAfterEntries = orderEntries(afterEntries);
-  const beforeParents = new Map<RuntimeId, RuntimeId | null>();
-  const afterParents = new Map<RuntimeId, RuntimeId | null>();
-  const beforeChildren = new Map<RuntimeId | null, RuntimeId[]>();
-  const afterChildren = new Map<RuntimeId | null, RuntimeId[]>();
+  const beforeParents = new Map<NodeKey, NodeKey | null>();
+  const afterParents = new Map<NodeKey, NodeKey | null>();
+  const beforeChildren = new Map<NodeKey | null, NodeKey[]>();
+  const afterChildren = new Map<NodeKey | null, NodeKey[]>();
 
   const collect = (
-    entries: readonly (readonly [RuntimeId, Path])[],
+    entries: readonly (readonly [NodeKey, Path])[],
     index: SnapshotIndex,
-    parents: Map<RuntimeId, RuntimeId | null>,
-    children: Map<RuntimeId | null, RuntimeId[]>
+    parents: Map<NodeKey, NodeKey | null>,
+    children: Map<NodeKey | null, NodeKey[]>
   ) => {
-    for (const [runtimeId, path] of entries) {
-      const parent = getParentRuntimeId(index, path);
+    for (const [nodeKey, path] of entries) {
+      const parent = getParentNodeKey(index, path);
       const siblings = children.get(parent);
 
-      parents.set(runtimeId, parent);
-      if (siblings) siblings.push(runtimeId);
-      else children.set(parent, [runtimeId]);
+      parents.set(nodeKey, parent);
+      if (siblings) siblings.push(nodeKey);
+      else children.set(parent, [nodeKey]);
     }
   };
 
   collect(orderedBeforeEntries, beforeIndex, beforeParents, beforeChildren);
   collect(orderedAfterEntries, afterIndex, afterParents, afterChildren);
 
-  const moved = new Set(exactMovedRuntimeIds);
-  const sameParentRuntimeIds = new Set<RuntimeId>();
+  const moved = new Set(exactMovedNodeKeys);
+  const sameParentNodeKeys = new Set<NodeKey>();
 
-  for (const [runtimeId, beforeParent] of beforeParents) {
-    if (!afterParents.has(runtimeId)) continue;
+  for (const [nodeKey, beforeParent] of beforeParents) {
+    if (!afterParents.has(nodeKey)) continue;
 
-    if (afterParents.get(runtimeId) !== beforeParent) moved.add(runtimeId);
-    else sameParentRuntimeIds.add(runtimeId);
+    if (afterParents.get(nodeKey) !== beforeParent) moved.add(nodeKey);
+    else sameParentNodeKeys.add(nodeKey);
   }
 
-  for (const [parent, beforeRuntimeIds] of beforeChildren) {
-    const candidatesBefore = beforeRuntimeIds.filter(
-      (runtimeId) =>
-        sameParentRuntimeIds.has(runtimeId) &&
-        !exactMovedRuntimeIds.has(runtimeId)
+  for (const [parent, beforeNodeKeys] of beforeChildren) {
+    const candidatesBefore = beforeNodeKeys.filter(
+      (nodeKey) =>
+        sameParentNodeKeys.has(nodeKey) && !exactMovedNodeKeys.has(nodeKey)
     );
     const candidatesAfter = (afterChildren.get(parent) ?? []).filter(
-      (runtimeId) =>
-        sameParentRuntimeIds.has(runtimeId) &&
-        !exactMovedRuntimeIds.has(runtimeId)
+      (nodeKey) =>
+        sameParentNodeKeys.has(nodeKey) && !exactMovedNodeKeys.has(nodeKey)
     );
-    const stable = getStableRuntimeIds(candidatesBefore, candidatesAfter);
+    const stable = getStableNodeKeys(candidatesBefore, candidatesAfter);
 
-    for (const runtimeId of candidatesBefore) {
-      if (!stable.has(runtimeId)) moved.add(runtimeId);
+    for (const nodeKey of candidatesBefore) {
+      if (!stable.has(nodeKey)) moved.add(nodeKey);
     }
   }
 
@@ -358,24 +356,24 @@ export const forEachEditorNodeChange = <TEditor extends Editor>(
       beforeIndex,
       afterIndex
     );
-    const beforeEntries: Array<readonly [RuntimeId, Path]> = [];
-    const afterEntries: Array<readonly [RuntimeId, Path]> = [];
+    const beforeEntries: Array<readonly [NodeKey, Path]> = [];
+    const afterEntries: Array<readonly [NodeKey, Path]> = [];
 
-    for (const [runtimeId, { afterPath, beforePath }] of candidates) {
-      if (beforePath) beforeEntries.push([runtimeId, beforePath]);
-      if (afterPath) afterEntries.push([runtimeId, afterPath]);
+    for (const [nodeKey, { afterPath, beforePath }] of candidates) {
+      if (beforePath) beforeEntries.push([nodeKey, beforePath]);
+      if (afterPath) afterEntries.push([nodeKey, afterPath]);
     }
     const inserted = new Set(
       [...candidates]
         .filter(([, candidate]) => !candidate.beforePath)
-        .map(([runtimeId]) => runtimeId)
+        .map(([nodeKey]) => nodeKey)
     );
     const removed = new Set(
       [...candidates]
         .filter(([, candidate]) => !candidate.afterPath)
-        .map(([runtimeId]) => runtimeId)
+        .map(([nodeKey]) => nodeKey)
     );
-    const moved = getMovedRuntimeIds(
+    const moved = getMovedNodeKeys(
       beforeIndex,
       afterIndex,
       beforeEntries,
@@ -383,7 +381,7 @@ export const forEachEditorNodeChange = <TEditor extends Editor>(
       relocated
     );
 
-    for (const [runtimeId, { afterPath, beforePath }] of candidates) {
+    for (const [nodeKey, { afterPath, beforePath }] of candidates) {
       if (
         (!beforePath &&
           afterPath &&
@@ -391,7 +389,7 @@ export const forEachEditorNodeChange = <TEditor extends Editor>(
         (!afterPath &&
           beforePath &&
           hasChangedRuntimeAncestor(removed, beforeIndex, beforePath)) ||
-        (moved.has(runtimeId) &&
+        (moved.has(nodeKey) &&
           ((beforePath &&
             hasChangedRuntimeAncestor(moved, beforeIndex, beforePath)) ||
             (afterPath &&
@@ -407,7 +405,7 @@ export const forEachEditorNodeChange = <TEditor extends Editor>(
         afterPath,
         beforeNode,
         afterNode,
-        moved.has(runtimeId)
+        moved.has(nodeKey)
       );
 
       if (!kind) continue;

@@ -62,7 +62,7 @@ actual target before publication.
 - structural `Path` values address one immutable snapshot;
 - `editor.anchor` creates editor-scoped live handles;
 - `tx.anchor` creates handles against transaction-local state;
-- runtime IDs belong to React/runtime identity, not public document addressing;
+- node keys belong to React/node key, not public document addressing;
 - serialized selections and collaboration-relative positions have separate
   codecs and owners.
 

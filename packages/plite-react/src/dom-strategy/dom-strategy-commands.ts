@@ -1,4 +1,4 @@
-import type { Editor, EditorSnapshot, Range, RuntimeId } from '@platejs/plite';
+import type { Editor, EditorSnapshot, Range, NodeKey } from '@platejs/plite';
 import { usesAppleDOMHotkeys } from '@platejs/plite-dom/internal';
 import { point as editorPoint } from '../editable/runtime-editor-api';
 
@@ -41,10 +41,10 @@ export const isFullDocumentSelection = (
 
 export const isSelectionPartialDOMBacked = (
   selection: Range | null,
-  mountedTopLevelRuntimeIds: ReadonlySet<RuntimeId> | null,
+  mountedTopLevelNodeKeys: ReadonlySet<NodeKey> | null,
   mountedTopLevelRanges?: readonly MountedTopLevelRange[] | null
 ) => {
-  if (!mountedTopLevelRuntimeIds || !selection) {
+  if (!mountedTopLevelNodeKeys || !selection) {
     return false;
   }
 

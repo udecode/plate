@@ -1,7 +1,7 @@
 import {
   type Node,
   type Path,
-  type RuntimeId,
+  type NodeKey,
   NodeApi as PliteNode,
   type Text as PliteText,
   TextApi,
@@ -11,13 +11,13 @@ import {
   getEditorLiveNode,
   getEditorLiveText,
   getSnapshot as editorGetSnapshot,
-  getPathByRuntimeId as editorGetPathByRuntimeId,
+  getPathByNodeKey as editorGetPathByNodeKey,
 } from './runtime-editor-api';
 
 export type RuntimeNodeBinding = {
   node: Node | null;
   path: Path | null;
-  runtimeId: RuntimeId | null;
+  nodeKey: NodeKey | null;
 };
 
 const readRuntimeNodeFromView = (editor: Editor, path: Path): Node | null =>
@@ -41,22 +41,22 @@ export const readRuntimeText = (
   return TextApi.isText(node) ? node : null;
 };
 
-export const readRuntimeNodeById = (
+export const readNodeByKey = (
   editor: Editor,
-  runtimeId: RuntimeId | null
+  nodeKey: NodeKey | null
 ): RuntimeNodeBinding => {
-  if (!runtimeId) {
-    return { node: null, path: null, runtimeId: null };
+  if (!nodeKey) {
+    return { node: null, path: null, nodeKey: null };
   }
 
   const snapshot = editorGetSnapshot(editor);
   const path =
-    editorGetPathByRuntimeId(editor, runtimeId) ??
-    snapshot.index.pathOf(runtimeId) ??
+    editorGetPathByNodeKey(editor, nodeKey) ??
+    snapshot.index.pathOf(nodeKey) ??
     null;
 
   if (!path) {
-    return { node: null, path: null, runtimeId };
+    return { node: null, path: null, nodeKey };
   }
 
   const editorRoot = editor as unknown as Node;
@@ -67,14 +67,14 @@ export const readRuntimeNodeById = (
     PliteNode.getIf(snapshotRoot, path) ??
     null;
 
-  return { node, path, runtimeId };
+  return { node, path, nodeKey };
 };
 
-export const readRuntimeTextById = (
+export const readTextByKey = (
   editor: Editor,
-  runtimeId: RuntimeId | null
+  nodeKey: NodeKey | null
 ): RuntimeNodeBinding & { text: PliteText | null } => {
-  const binding = readRuntimeNodeById(editor, runtimeId);
+  const binding = readNodeByKey(editor, nodeKey);
 
   return {
     ...binding,

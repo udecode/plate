@@ -23,6 +23,7 @@
     "lint:fix": "pnpm lint --fix",
     "perf:editor": "tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/run-editor-perf.mts",
     "perf:editor:public": "tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/run-editor-perf.mts --preset public-slate-vs-plate --summary-out .tmp/editor-perf-public-summary.json",
+    "perf:homepage-input": "tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/run-homepage-input-perf.mts",
     "perf:table": "tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/run-table-perf.mts",
     "postinstall": "fumadocs-mdx",
     "preview": "next build && next start",
@@ -209,6 +210,7 @@
   "devDependencies": {
     "@shikijs/compat": "1.1.7",
     "@tailwindcss/cli": "4.1.8",
+    "@types/mdast": "^4.0.4",
     "@types/react-syntax-highlighter": "15.5.13",
     "@types/unist": "^3.0.3",
     "autoprefixer": "10.4.21",

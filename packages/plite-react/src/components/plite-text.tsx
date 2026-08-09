@@ -1,5 +1,5 @@
 import React, { type ReactNode, type Ref } from 'react';
-import type { Path, RuntimeId } from '@platejs/plite';
+import type { Path, NodeKey } from '@platejs/plite';
 
 import { recordPliteReactRender } from '../render-profiler';
 import { getPliteTextShellAttributes } from '../shell-runtime';
@@ -17,7 +17,7 @@ export const PliteText = ({
   children,
   path,
   ref,
-  runtimeId,
+  nodeKey,
 }: {
   children: ReactNode;
   domSync?: boolean;
@@ -25,7 +25,7 @@ export const PliteText = ({
   path?: Path;
   projectedDomSync?: boolean;
   ref?: Ref<HTMLSpanElement>;
-  runtimeId?: RuntimeId | null;
+  nodeKey?: NodeKey | null;
 }) => {
   recordPliteReactRender({ kind: 'text' });
 
@@ -33,7 +33,7 @@ export const PliteText = ({
     <span
       data-plite-path={path ? path.join(',') : undefined}
       data-plite-projected-dom-sync={projectedDomSync ? true : undefined}
-      data-plite-runtime-id={runtimeId ?? undefined}
+      data-plite-node-key={nodeKey ?? undefined}
       {...getPliteTextShellAttributes({ domSync, domSyncReason })}
       ref={ref}
     >

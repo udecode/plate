@@ -360,7 +360,7 @@ What changed:
 - `plite-view-selection` decorations now live in `EditableTextBlocks`, where
   mounted top-level runtime scope is known, instead of in the root `Plite`
   provider with no scope.
-- Scoped view-selection decorations are clipped to mounted top-level runtime ids
+- Scoped view-selection decorations are clipped to mounted top-level node keys
   plus the selection endpoint top-level ids. Endpoint inclusion is required:
   the first browser proof caught staged ShiftDown losing the off-window focus
   marker when the source used only the mounted window.
@@ -987,7 +987,7 @@ What changed:
 - The slate delete contract proves arbitrary `replace_children` replay payloads
   are still isolated by default.
 - `buildSnapshotChange` now exposes subphase profiler labels.
-- Full-root structural `replace_children` reports `nodeImpactRuntimeIds: null`,
+- Full-root structural `replace_children` reports `nodeImpactNodeKeys: null`,
   the existing all-node sentinel, instead of enumerating every previous runtime
   id.
 

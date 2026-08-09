@@ -4,7 +4,7 @@ import type {
   Descendant,
   EditorCommit,
   Path,
-  RuntimeId,
+  NodeKey,
   Editor as EditorType,
 } from '@platejs/plite';
 import type {
@@ -14,7 +14,7 @@ import type {
 import { DOMCoverage, IS_COMPOSING } from '@platejs/plite-dom/internal';
 import {
   getSnapshot as editorGetSnapshot,
-  getPathByRuntimeId as editorGetPathByRuntimeId,
+  getPathByNodeKey as editorGetPathByNodeKey,
   hasPath as editorHasPath,
 } from '../editable/runtime-editor-api';
 
@@ -52,10 +52,7 @@ const shellStyle = {
   paddingLeft: 12,
 } satisfies CSSProperties;
 
-const sameRuntimeIds = (
-  left: readonly RuntimeId[],
-  right: readonly RuntimeId[]
-) => {
+const sameNodeKeys = (left: readonly NodeKey[], right: readonly NodeKey[]) => {
   if (left.length !== right.length) return false;
 
   for (let index = 0; index < left.length; index += 1) {
@@ -120,7 +117,7 @@ export const DOMStrategySegmentPlaceholder = React.memo(
     segmentIndex,
     onPromote,
     previewChars,
-    runtimeIds,
+    nodeKeys,
     startIndex,
   }: {
     coverageReason?: Extract<
@@ -136,18 +133,18 @@ export const DOMStrategySegmentPlaceholder = React.memo(
       options?: { select?: boolean; startIndex?: number }
     ) => void;
     previewChars: number;
-    runtimeIds: readonly RuntimeId[];
+    nodeKeys: readonly NodeKey[];
     startIndex: number;
   }) => {
     const editor = useEditor();
-    const previewRuntimeIds = React.useMemo(
-      () => runtimeIds.slice(0, MAX_PREVIEW_LINES),
-      [runtimeIds]
+    const previewNodeKeys = React.useMemo(
+      () => nodeKeys.slice(0, MAX_PREVIEW_LINES),
+      [nodeKeys]
     );
     const boundaryId =
       explicitBoundaryId ?? `${coverageReason}:${segmentIndex}`;
-    const anchorRuntimeId = runtimeIds[0] ?? null;
-    const focusRuntimeId = runtimeIds.at(-1) ?? null;
+    const anchorNodeKey = nodeKeys[0] ?? null;
+    const focusNodeKey = nodeKeys.at(-1) ?? null;
     const selectionPolicy: DOMCoverageSelectionPolicy =
       coverageReason === 'viewport-virtualization' ? 'materialize' : 'model';
     const boundary = React.useMemo(
@@ -162,23 +159,23 @@ export const DOMStrategySegmentPlaceholder = React.memo(
           },
         ],
         coveredRuntimeRanges:
-          anchorRuntimeId && focusRuntimeId
-            ? [{ anchor: anchorRuntimeId, focus: focusRuntimeId }]
+          anchorNodeKey && focusNodeKey
+            ? [{ anchor: anchorNodeKey, focus: focusNodeKey }]
             : [],
         findPolicy: 'native' as const,
         ownerPath: [] as Path,
-        ownerRuntimeId: null,
+        ownerNodeKey: null,
         reason: coverageReason,
         selectionPolicy,
         state: 'virtualized' as const,
         version: 1,
       }),
       [
-        anchorRuntimeId,
+        anchorNodeKey,
         boundaryId,
         coverageReason,
         endIndex,
-        focusRuntimeId,
+        focusNodeKey,
         selectionPolicy,
         startIndex,
       ]
@@ -193,11 +190,11 @@ export const DOMStrategySegmentPlaceholder = React.memo(
       (editorValue: EditorType): SegmentPreview => {
         const lines: string[] = [];
 
-        previewRuntimeIds.forEach((runtimeId) => {
+        previewNodeKeys.forEach((nodeKey) => {
           const snapshot = editorGetSnapshot(editorValue);
           const path =
-            editorGetPathByRuntimeId(editorValue, runtimeId) ??
-            snapshot.index.pathOf(runtimeId);
+            editorGetPathByNodeKey(editorValue, nodeKey) ??
+            snapshot.index.pathOf(nodeKey);
 
           if (!path || !editorHasPath(editorValue, path)) {
             return;
@@ -223,7 +220,7 @@ export const DOMStrategySegmentPlaceholder = React.memo(
           lines,
         };
       },
-      [previewChars, previewRuntimeIds]
+      [previewChars, previewNodeKeys]
     );
     const shouldUpdatePreview = React.useMemo(
       () => shouldRefreshPreview({ endIndex, startIndex }),
@@ -233,7 +230,7 @@ export const DOMStrategySegmentPlaceholder = React.memo(
       equalityFn: sameSegmentPreview,
       includeRootOrderChanges: true,
       profileId: 'dom-strategy-partial-dom-preview',
-      runtimeIds: previewRuntimeIds,
+      nodeKeys: previewNodeKeys,
       shouldUpdate: shouldUpdatePreview,
     });
 
@@ -294,14 +291,14 @@ export const DOMStrategySegmentPlaceholder = React.memo(
         role="button"
         style={{
           ...shellStyle,
-          containIntrinsicSize: `${Math.max(runtimeIds.length, 1) * 28}px`,
+          containIntrinsicSize: `${Math.max(nodeKeys.length, 1) * 28}px`,
         }}
         tabIndex={0}
       >
         {preview.lines.map((line, index) => (
           <div
             data-plite-dom-strategy-line="true"
-            key={`${previewRuntimeIds[index] ?? segmentIndex}-${index}`}
+            key={`${previewNodeKeys[index] ?? segmentIndex}-${index}`}
           >
             {line || '\u00A0'}
           </div>
@@ -318,5 +315,5 @@ export const DOMStrategySegmentPlaceholder = React.memo(
     prev.coverageReason === next.coverageReason &&
     prev.onPromote === next.onPromote &&
     prev.previewChars === next.previewChars &&
-    sameRuntimeIds(prev.runtimeIds, next.runtimeIds)
+    sameNodeKeys(prev.nodeKeys, next.nodeKeys)
 );

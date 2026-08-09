@@ -491,7 +491,7 @@ const scenarioStepShapes = {
     optional: { startIndex: isNonnegativeInteger },
     required: { texts: isStringArray },
   },
-  assertCapturedRuntimeIdPath: {
+  assertCapturedNodeKeyPath: {
     required: { name: isString, path: isPathOrNull },
   },
   assertDOMCaret: {
@@ -590,7 +590,7 @@ const scenarioStepShapes = {
       Object.hasOwn(value, 'contains') ||
       Object.hasOwn(value, 'text'),
   },
-  captureRuntimeId: { required: { name: isString, path: isPath } },
+  captureNodeKey: { required: { name: isString, path: isPath } },
   clickSelector: { required: { selector: isString } },
   clickTestId: { required: { testId: isString } },
   clickTextOffset: {

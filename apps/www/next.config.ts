@@ -131,7 +131,7 @@ const buildWorkspaceDevAliases = () => {
 const buildWorkspaceDevWebpackAliases = () =>
   Object.fromEntries(
     Object.entries(buildWorkspaceDevAliases()).map(([key, value]) => [
-      key,
+      `${key}$`,
       path.resolve(APP_ROOT, value),
     ])
   );

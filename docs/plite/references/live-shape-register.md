@@ -14,7 +14,7 @@ finalization constructs one canonical change before publication.
 
 Canonical construction merges equal adjacent text, preserves required inline
 caret spacers, flattens invalid inline content, and fills compiled schema
-defaults. Selection and runtime identity map through the same change.
+defaults. Selection and node key map through the same change.
 
 External direct changes must already satisfy the canonical representation.
 `editor.update.value.repair()` is the explicit all-root maintenance boundary

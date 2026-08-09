@@ -63,7 +63,13 @@ export const replaceChildren = <
 >(
   editor: Editor<V, TExtensions>,
   children: readonly T[],
-  { at, count, index = 0, newSelection }: NodeReplaceChildrenOptions
+  {
+    at,
+    count,
+    index = 0,
+    newSelection,
+    preserveKeys = false,
+  }: NodeReplaceChildrenOptions
 ) => {
   const parentChildren = getParentChildren(editor, at);
   const replacementCount = count ?? parentChildren.length - index;
@@ -126,6 +132,14 @@ export const replaceChildren = <
         ...children,
       ] as Descendant[]),
     {
+      nodeKeyTransfers: preserveKeys
+        ? children
+            .slice(0, replacedChildren.length)
+            .map((_child, childIndex) => ({
+              path: [...at, index + childIndex],
+              source: replacedChildren[childIndex]!,
+            }))
+        : undefined,
       ...(selectionAfter === undefined ? {} : { selectionAfter }),
       selectionRoot: getEditorUpdateRoot(editor),
     }

@@ -185,7 +185,7 @@ export const PLITE_BROWSER_FIRST_PARTY_INTENT_FAMILY_CONTRACTS = [
   {
     assertions: [
       'beforeinput target ranges replace browser substitution spans',
-      'dirty node maps reject stale target ranges while keeping current runtime ids',
+      'dirty node maps reject stale target ranges while keeping current node keys',
       'native partial text replacement undo restores text and selection',
       'mouse-drag typed replacement undo restores DOM and model selection',
     ],

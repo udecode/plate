@@ -1,4 +1,4 @@
-import type { Path, RuntimeId } from '@platejs/plite';
+import type { Path, NodeKey } from '@platejs/plite';
 import type { DOMTextSyncOptions } from '../dom-text-sync';
 
 export type DOMStrategyType = 'auto' | 'full' | 'staged';
@@ -55,8 +55,8 @@ export type DOMStrategySegment = {
   endIndex: number;
   segmentIndex: number;
   isActive: boolean;
-  mountedRuntimeIds: readonly RuntimeId[];
-  runtimeIds: readonly RuntimeId[];
+  mountedNodeKeys: readonly NodeKey[];
+  nodeKeys: readonly NodeKey[];
   startIndex: number;
 };
 
@@ -65,13 +65,13 @@ export const createSegmentPlan = ({
   defaultActiveSegmentIndex,
   segmentSize,
   promotedSegmentIndex,
-  topLevelRuntimeIds,
+  topLevelNodeKeys,
 }: {
   overscan: number;
   defaultActiveSegmentIndex: number;
   segmentSize: number;
   promotedSegmentIndex: number | null;
-  topLevelRuntimeIds: readonly RuntimeId[];
+  topLevelNodeKeys: readonly NodeKey[];
 }) => {
   if (!Number.isInteger(segmentSize) || segmentSize <= 0) {
     throw new RangeError('segmentSize must be a positive integer');
@@ -84,22 +84,22 @@ export const createSegmentPlan = ({
 
   for (
     let startIndex = 0, segmentIndex = 0;
-    startIndex < topLevelRuntimeIds.length;
+    startIndex < topLevelNodeKeys.length;
     startIndex += segmentSize, segmentIndex += 1
   ) {
     const endIndex = Math.min(
-      topLevelRuntimeIds.length - 1,
+      topLevelNodeKeys.length - 1,
       startIndex + segmentSize - 1
     );
     const isActive = segmentIndex >= activeStart && segmentIndex <= activeEnd;
-    const runtimeIds = topLevelRuntimeIds.slice(startIndex, endIndex + 1);
+    const nodeKeys = topLevelNodeKeys.slice(startIndex, endIndex + 1);
 
     segments.push({
       endIndex,
       segmentIndex,
       isActive,
-      mountedRuntimeIds: isActive ? runtimeIds : [],
-      runtimeIds,
+      mountedNodeKeys: isActive ? nodeKeys : [],
+      nodeKeys,
       startIndex,
     });
   }

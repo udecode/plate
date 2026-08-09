@@ -440,9 +440,9 @@ const createMapContext = (
         : next
           ? publicPoint(next as Point, targetRoot, point.root !== undefined)
           : null;
-    const runtimeId = runtimeIndexes?.before.idAt(point.path);
-    const retainedPath = runtimeId
-      ? runtimeIndexes?.after.pathOf(runtimeId)
+    const nodeKey = runtimeIndexes?.before.keyAt(point.path);
+    const retainedPath = nodeKey
+      ? runtimeIndexes?.after.pathOf(nodeKey)
       : undefined;
     const retainedNode = retainedPath
       ? rawNodeAt(
@@ -459,7 +459,7 @@ const createMapContext = (
         (options.preferPositionMapping && retainedText.startsWith(sourceText)));
 
     if (
-      runtimeId &&
+      nodeKey &&
       retainedPath &&
       retainedTextPosition &&
       typeof sourceText === 'string'
@@ -483,9 +483,9 @@ const createMapContext = (
   ) => {
     if (change.deleteRoots.has(root)) return null;
 
-    const runtimeId = runtimeIndexes?.before.idAt(path);
-    const retainedPath = runtimeId
-      ? runtimeIndexes?.after.pathOf(runtimeId)
+    const nodeKey = runtimeIndexes?.before.keyAt(path);
+    const retainedPath = nodeKey
+      ? runtimeIndexes?.after.pathOf(nodeKey)
       : undefined;
 
     if (retainedPath) {

@@ -110,7 +110,6 @@ import type {
   SchemaElementHandle,
   SchemaElementTypes,
   SchemaPropertyHandle,
-  SchemaPropertyHandleValue,
   SchemaDescendantInValue,
   SchemaValueFromExtensions,
 } from './schema';
@@ -147,11 +146,11 @@ type NodePropertyValueIn<V extends Value, TKey extends NodePropertyKeyIn<V>> =
       : never
     : never;
 
-type WithRuntimeTarget<TOptions extends { at?: Location }> = Omit<
+type WithNodeKeyTarget<TOptions extends { at?: Location }> = Omit<
   TOptions,
   'at'
 > & {
-  at?: Location | RuntimeId;
+  at?: Location | NodeKey;
 };
 
 type EditorNodeSetObject<V extends Value> = {
@@ -160,38 +159,14 @@ type EditorNodeSetObject<V extends Value> = {
     options: Omit<NodeSetNodesOptions<T>, 'at'> & { at: T }
   ): void;
   (
-    props: Partial<Omit<Element, 'children'>>,
-    options?: WithRuntimeTarget<NodeSetNodesOptions<Element>>
+    props: [Value] extends [V] ? Partial<Omit<Element, 'children'>> : never,
+    options?: WithNodeKeyTarget<NodeSetNodesOptions<Element>>
   ): void;
   <T extends NodeIn<V>>(
     props: Partial<NodeProps<T>>,
-    options?: WithRuntimeTarget<NodeSetNodesOptions<T>>
+    options?: WithNodeKeyTarget<NodeSetNodesOptions<T>>
   ): void;
 };
-
-type EditorNodeSetProperty<V extends Value> = {
-  bivarianceHack<const TKey extends NodePropertyKeyIn<V>>(
-    key: TKey,
-    value: NoInfer<NodePropertyValueIn<V, TKey>>,
-    options?: WithRuntimeTarget<NodeSetNodesOptions<NodeIn<V>>>
-  ): void;
-}['bivarianceHack'];
-
-type EditorNodeSetDynamicProperty = {
-  bivarianceHack<TKey extends string>(
-    key: string extends TKey ? TKey : never,
-    value: unknown,
-    options?: WithRuntimeTarget<NodeSetNodesOptions>
-  ): void;
-}['bivarianceHack'];
-
-type EditorNodeSetPropertyHandle<V extends Value> = {
-  bivarianceHack<const THandle extends SchemaPropertyHandle<string, unknown>>(
-    property: THandle,
-    value: NoInfer<SchemaPropertyHandleValue<THandle>>,
-    options?: WithRuntimeTarget<NodeSetNodesOptions<NodeIn<V>>>
-  ): void;
-}['bivarianceHack'];
 
 export type EditorNodeUnsetOptions<T extends Node> = {
   at?: NodeTarget<TargetDescendant<T>>;
@@ -243,17 +218,17 @@ export type InitialValue<V extends Value = Value> =
       roots?: Readonly<Record<RootKey, V>>;
     }>;
 
-/** A document location, runtime identity, or live node to resolve. */
+/** A document location, node key, or live node to resolve. */
 export type NodeTarget<N extends Descendant = Descendant> =
   | Location
   | N
-  | RuntimeId;
+  | NodeKey;
 
 export type EditorReplaceChildrenOptions = Omit<
   NodeReplaceChildrenOptions,
   'at'
 > & {
-  at: Element | Path;
+  at: NodeTarget<Element>;
 };
 
 /** Options for replacing exactly one node with zero or more nodes. */
@@ -729,6 +704,10 @@ export type EditorStateNodesApi<V extends Value = Value> = {
   levels: <T extends Node = ValueNode<V>>(
     options?: WithNodeTarget<EditorLevelsOptions<T>, TargetDescendant<T>>
   ) => Generator<NodeEntry<T>, void, undefined>;
+  /**
+   * Resolve a path in this editor/view root. A `NodeKey` owned by another root
+   * returns `undefined`; create that root's view because `Path` has no root.
+   */
   path: (at: NodeTarget, options?: EditorPathOptions) => Path | undefined;
   entries: <T extends Node = ValueNode<V>>(
     options?: EditorNodesReadOptions<T>
@@ -810,10 +789,7 @@ export type EditorTransactionNodesApi<V extends Value = Value> =
       children: readonly T[],
       options: EditorReplaceChildrenOptions
     ) => void;
-    set: EditorNodeSetObject<V> &
-      EditorNodeSetProperty<V> &
-      EditorNodeSetDynamicProperty &
-      EditorNodeSetPropertyHandle<V>;
+    set: EditorNodeSetObject<V>;
     split: <T extends NodeIn<V>>(options?: {
       at?: NodeTarget<TargetDescendant<T>>;
       match?: NodeMatch<T>;
@@ -1106,9 +1082,6 @@ export type ContentSlice<V extends Value = Value> = Readonly<{
 }>;
 
 export type EditorStateRuntimeApi<V extends Value = Value> = {
-  id(node: Descendant): RuntimeId;
-  id(at: Location): RuntimeId | null;
-  path: (runtimeId: RuntimeId) => Path | null;
   snapshot: () => EditorSnapshot<V>;
 };
 
@@ -1139,6 +1112,8 @@ export type EditorCoreStateView<V extends Value = Value> = {
   fragment: EditorStateFragmentApi<V>;
   getField: <TValue>(field: EditorStateField<TValue>) => TValue;
   lastCommit: () => EditorCommit<V> | null;
+  /** Return the stable runtime key for a live node or location. */
+  key: EditorKeyApi;
   marks: EditorStateMarksApi<V>;
   /**
    * Read persisted document metadata. Use state fields for typed access.
@@ -1228,13 +1203,14 @@ export type EditorUpdateTransaction<
 export type EditorTransactionSpecBuilder<
   V extends Value = Value,
   TExtensions extends readonly unknown[] = readonly [],
-> = Omit<EditorCoreUpdateTransaction<V>, 'anchor' | 'extensions'> &
+> = Omit<EditorCoreUpdateTransaction<V>, 'anchor' | 'extensions' | 'key'> &
   EditorExtensionSpecMethods<EditorInstalledUpdateGroups<V, TExtensions>>;
 
 export type EditorReadMethods<
   V extends Value = Value,
   TExtensions extends readonly unknown[] = readonly [],
-> = EditorCoreStateView<V> & EditorInstalledReadGroups<V, TExtensions>;
+> = Omit<EditorCoreStateView<V>, 'key'> &
+  EditorInstalledReadGroups<V, TExtensions>;
 
 export type EditorRead<
   V extends Value = Value,
@@ -1386,6 +1362,8 @@ export interface BaseEditor<
       ? [never]
       : []
   ) => EditorExtensionPortal<TExtension, V>;
+  /** Return the stable runtime key for a live node or location. */
+  key: EditorKeyApi;
   read: EditorRead<V, TExtensions>;
   subscribe: (listener: SnapshotListener<any>) => () => void;
   subscribeCommit: (listener: EditorCommitListener<any>) => () => void;
@@ -1511,25 +1489,23 @@ export type EditorMarksOf<E extends BaseEditor<any> = Editor> = EditorMarks<
   ValueOf<E>
 >;
 
-declare const runtimeId: unique symbol;
-
 /** Opaque identity for one descendant inside one editor runtime. */
-export type RuntimeId = string & {
-  readonly [runtimeId]: true;
+export type NodeKey = string & {
+  readonly '~nodeKey': true;
 };
 
 export type SnapshotIndex = Readonly<{
-  /** Materialize the lazy index and return stable, frozen runtime-id/path pairs. */
-  entries: () => readonly (readonly [RuntimeId, Path])[];
-  /** Return the runtime identity at a snapshot path, or `null` when absent. */
-  idAt: (path: Path) => RuntimeId | null;
-  /** Return the snapshot path for a runtime identity, or `null` when absent. */
-  pathOf: (runtimeId: RuntimeId) => Path | null;
+  /** Materialize the lazy index and return stable, frozen node-key/path pairs. */
+  entries: () => readonly (readonly [NodeKey, Path])[];
+  /** Return the node key at a snapshot path, or `null` when absent. */
+  keyAt: (path: Path) => NodeKey | null;
+  /** Return the snapshot path for a node key, or `null` when absent. */
+  pathOf: (nodeKey: NodeKey) => Path | null;
 }>;
 
 export type ProjectedRangeSegment = Readonly<{
   path: Path;
-  runtimeId: RuntimeId;
+  key: NodeKey;
   start: number;
   end: number;
 }>;
@@ -2032,6 +2008,11 @@ export type EditorAnchorApi = <
   value: TValue,
   options: AnchorOptions<TValue, TRoot>
 ) => Anchor<TValue>;
+
+export type EditorKeyApi = {
+  (node: Descendant): NodeKey;
+  (at: Location): NodeKey | null;
+};
 
 export type EditorCoreApiGroups = Record<never, never>;
 
@@ -2979,18 +2960,18 @@ export type EditorCommitChanged = {
   ) => boolean;
   /** Whether any document root has this change kind. */
   hasAny: (kind: EditorCommitChangeKind) => boolean;
-  hasRuntime: (
-    runtimeId: RuntimeId,
+  hasNodeKey: (
+    nodeKey: NodeKey,
     kind: EditorCommitRuntimeChangeKind
   ) => boolean;
   /** Final-coordinate paths touching changed ranges in one document root. */
   paths: <TRoot extends RootKey>(root?: NamedRootKey<TRoot>) => readonly Path[];
-  runtimeIds: <TRoot extends RootKey>(
+  nodeKeys: <TRoot extends RootKey>(
     kind: EditorCommitRuntimeChangeKind,
     root?: NamedRootKey<TRoot>
-  ) => readonly RuntimeId[];
-  /** Runtime ids with this change kind across every document root. */
-  runtimeIdsAll: (kind: EditorCommitRuntimeChangeKind) => readonly RuntimeId[];
+  ) => readonly NodeKey[];
+  /** Node keys with this change kind across every document root. */
+  nodeKeysAll: (kind: EditorCommitRuntimeChangeKind) => readonly NodeKey[];
   topLevelRanges: <TRoot extends RootKey>(
     root?: NamedRootKey<TRoot>
   ) => readonly TopLevelRuntimeRange[];
@@ -3281,14 +3262,15 @@ export interface EditorStaticApi {
   getExtensionRegistry: (editor: AnyEditor) => EditorExtensionRegistry;
 
   /**
-   * Resolve the current live path for a runtime id without rebuilding a snapshot.
+   * Resolve the current-root live path for a node key without rebuilding a
+   * snapshot.
    */
-  getPathByRuntimeId: (editor: AnyEditor, runtimeId: RuntimeId) => Path | null;
+  getPathByNodeKey: (editor: AnyEditor, nodeKey: NodeKey) => Path | null;
 
   /**
-   * Get the runtime id for a live node path without rebuilding a snapshot.
+   * Get the node key for a live node path without rebuilding a snapshot.
    */
-  getRuntimeId: (editor: AnyEditor, path: Path) => RuntimeId | null;
+  getNodeKey: (editor: AnyEditor, path: Path) => NodeKey | null;
 
   /**
    * Run a coherent synchronous read against the current editor/runtime state.
@@ -3871,12 +3853,12 @@ const editorInternalApi: EditorInternalApiTable = {
     return getEditorRuntime(editor).getSnapshot();
   },
 
-  getPathByRuntimeId(editor, runtimeId) {
-    return getEditorRuntime(editor).getPathByRuntimeId(runtimeId);
+  getPathByNodeKey(editor, nodeKey) {
+    return getEditorRuntime(editor).getPathByNodeKey(nodeKey);
   },
 
-  getRuntimeId(editor, path) {
-    return getEditorRuntime(editor).getRuntimeId(path);
+  getNodeKey(editor, path) {
+    return getEditorRuntime(editor).getNodeKey(path);
   },
 
   read(editor, fn) {
@@ -4210,8 +4192,8 @@ const {
   getCollabEffects,
   getExtensionRegistry,
   getSnapshot,
-  getPathByRuntimeId,
-  getRuntimeId,
+  getPathByNodeKey,
+  getNodeKey,
   read,
   getSelection,
   hasBlocks,
@@ -4299,8 +4281,8 @@ export {
   getExtensionRegistry,
   getFragment,
   getLastCommit,
-  getPathByRuntimeId,
-  getRuntimeId,
+  getPathByNodeKey,
+  getNodeKey,
   getSelection,
   getSnapshot,
   hasBlocks,

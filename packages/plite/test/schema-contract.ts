@@ -1230,7 +1230,7 @@ describe('editor schema', () => {
     assert.throws(
       () =>
         editor.update((tx) => {
-          tx.nodes.set({ type: 'paragraph' }, { at: [0, 0, 0] });
+          tx.nodes.set({ type: 'paragraph' } as never, { at: [0, 0, 0] });
         }),
       /derived-row.*cannot contain.*paragraph/
     );

@@ -137,6 +137,11 @@ Current priorities:
   dependency graph. Do not import `FooElement` only to pass it back as a
   generic; reserve bare hooks and direct `Element` generics for intentionally
   erased or schema-agnostic code.
+- Feature state uses Plite `NodeKey` values for live node identity and names
+  those fields `key` or `keys`, never `id`. Optional durable element identity
+  belongs to `ElementIdPlugin` under the canonical schema property `id`.
+  Exact generated nodes read `element.id`; generic package boundaries use the
+  installed plugin portal. Runtime keys never leak into persisted content.
 - Low-level React composition is `react({ dom })`: one required object with the
   exact DOM descriptor. Keep one explicit erased implementation boundary only
   for the TypeScript 7 invariant-union reduction limit.
@@ -379,7 +384,7 @@ Current priorities:
   `update`, `store`, and `installed`. Never nest the descriptor under
   `portal.plugin`; callback authoring contexts alone expose the current raw
   descriptor as `plugin`, with `editor` and `defineCodecs`. Use portal `.name` after lookup when the normalized
-  runtime identity is needed. Name every
+  plugin name is needed. Name every
   descriptor-aware API input `plugin`; call it `name` only after normalization.
   Missing runtime names expose `installed: false`; `.type` and `.key` expose
   exact descriptor identity or the runtime string's conventional identity,

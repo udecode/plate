@@ -1,15 +1,10 @@
-import {
-  PathApi,
-  type Point,
-  type Range,
-  type RuntimeId,
-} from '@platejs/plite';
+import { PathApi, type Point, type Range, type NodeKey } from '@platejs/plite';
 import { isDOMElement, isDOMText } from '@platejs/plite-dom';
 
 import { getPliteNodePathFromDOMElement } from '../hooks/use-plite-node-ref';
 import {
   type Editor,
-  getPathByRuntimeId as editorGetPathByRuntimeId,
+  getPathByNodeKey as editorGetPathByNodeKey,
   range as editorRange,
 } from './runtime-editor-api';
 import { readRuntimeText } from './runtime-live-state';
@@ -42,11 +37,11 @@ const resolvePliteTextPointFromDOMPoint = (
   if (!path || !pliteNode) return null;
 
   if (requireCurrentRuntimeBinding) {
-    const runtimeId = textHost.getAttribute(
-      'data-plite-runtime-id'
-    ) as RuntimeId | null;
-    const currentPath = runtimeId
-      ? editorGetPathByRuntimeId(editor, runtimeId)
+    const nodeKey = textHost.getAttribute(
+      'data-plite-node-key'
+    ) as NodeKey | null;
+    const currentPath = nodeKey
+      ? editorGetPathByNodeKey(editor, nodeKey)
       : null;
 
     if (!currentPath || !PathApi.equals(currentPath, path)) {

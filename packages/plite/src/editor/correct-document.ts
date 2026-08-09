@@ -12,8 +12,8 @@ import { toPublicRoot } from '../core/public-root';
 import {
   getActiveTransactionDocumentChange,
   getEditorUpdateRoot,
-  getPathByRuntimeId,
-  getRuntimeId,
+  getPathByNodeKey,
+  getNodeKey,
   isInTransaction,
   runEditorTransaction,
   withTransactionDocumentChangeObserver,
@@ -26,7 +26,7 @@ import type {
   EditorCorrectionEvent,
   EditorTransactionChangeHandler,
   EditorTransactionChanged,
-  RuntimeId,
+  NodeKey,
 } from '../interfaces/editor';
 import { getChildren as getEditorChildren } from '../interfaces/editor';
 import { NodeApi, type NodeEntry } from '../interfaces/node';
@@ -40,7 +40,7 @@ const CORRECTION_EVENTS: readonly EditorCorrectionEvent[] = [
 ];
 
 const MAX_CORRECTION_MUTATIONS = 100_000;
-const ROOT_RUNTIME_KEY = '@root';
+const ROOT_NODE_KEY = '@root';
 
 type IndexedCorrection = Readonly<{
   correction: EditorCorrection;
@@ -53,7 +53,7 @@ type CorrectionTarget = Readonly<{
   event: EditorCorrectionEvent;
   key: string;
   path: Path;
-  runtimeId: RuntimeId | null;
+  nodeKey: NodeKey | null;
 }>;
 
 const comparePaths = (left: Path, right: Path) =>
@@ -61,11 +61,11 @@ const comparePaths = (left: Path, right: Path) =>
 
 const targetKey = (
   root: string,
-  runtimeId: RuntimeId | null,
+  nodeKey: NodeKey | null,
   event: EditorCorrectionEvent,
   correctionId: string
 ) =>
-  `${root}\u0000${runtimeId ?? ROOT_RUNTIME_KEY}\u0000${event}\u0000${correctionId}`;
+  `${root}\u0000${nodeKey ?? ROOT_NODE_KEY}\u0000${event}\u0000${correctionId}`;
 
 const fingerprintValue = (value: unknown) => {
   let left = 0x81_1c_9d_c5;
@@ -193,20 +193,20 @@ export const correctDocument = (
       events: readonly EditorCorrectionEvent[]
     ) => {
       const [, path] = entry;
-      const runtimeId = getRuntimeId(editor, path);
+      const nodeKey = getNodeKey(editor, path);
 
       for (const event of events) {
         for (const indexed of corrections.get(event)!) {
           if (!matchesEditorCorrection(entry, indexed.correction)) continue;
 
-          const key = targetKey(root, runtimeId, event, indexed.id);
+          const key = targetKey(root, nodeKey, event, indexed.id);
           const target: CorrectionTarget = {
             correction: indexed.correction,
             correctionId: indexed.id,
             event,
             key,
             path: [...path],
-            runtimeId,
+            nodeKey,
           };
 
           if (!pending.has(key)) order.push(key);
@@ -279,9 +279,9 @@ export const correctDocument = (
     };
     const remapPendingTargets = () => {
       for (const [key, target] of pending) {
-        if (target.runtimeId === null) continue;
+        if (target.nodeKey === null) continue;
 
-        const retainedPath = getPathByRuntimeId(editor, target.runtimeId);
+        const retainedPath = getPathByNodeKey(editor, target.nodeKey);
 
         if (!retainedPath) {
           pending.delete(key);
@@ -319,8 +319,8 @@ export const correctDocument = (
       }
     };
     const resolveTarget = (target: CorrectionTarget): NodeEntry | null => {
-      const runtimePath = target.runtimeId
-        ? getPathByRuntimeId(editor, target.runtimeId)
+      const runtimePath = target.nodeKey
+        ? getPathByNodeKey(editor, target.nodeKey)
         : null;
       const path = runtimePath ?? target.path;
 
@@ -330,8 +330,8 @@ export const correctDocument = (
 
       if (
         runtimePath &&
-        target.runtimeId !== null &&
-        getRuntimeId(editor, entry[1]) !== target.runtimeId
+        target.nodeKey !== null &&
+        getNodeKey(editor, entry[1]) !== target.nodeKey
       ) {
         return null;
       }
@@ -424,7 +424,7 @@ export const correctDocument = (
               recordMutation(
                 target.key,
                 `${target.event} correction "${target.correctionId}" for ${
-                  target.runtimeId ?? ROOT_RUNTIME_KEY
+                  target.nodeKey ?? ROOT_NODE_KEY
                 } at [${target.path.join(',')}] in root "${root}"`,
                 beforeFingerprint,
                 changes

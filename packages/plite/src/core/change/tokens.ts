@@ -325,7 +325,7 @@ export const normalizeTokens = (tokens: readonly JsonToken[]) => {
 export type PreparedNodeSlice = Readonly<{
   index: TreeIndexChildren;
   nodes: readonly JsonNode[];
-  runtimeIds: PreparedRuntimeIdRange;
+  nodeKeys: PreparedNodeKeyRange;
 }>;
 
 export const DOCUMENT_SLICE_TOKENS = new WeakMap<
@@ -348,13 +348,21 @@ export const DOCUMENT_SLICE_DEFERRED_VIEWS = new WeakMap<
     to: number;
   }>
 >();
+const DOCUMENT_SLICE_RUNTIME_NODE_KEYS = new WeakMap<
+  PreparedTokenSlice,
+  ReadonlyMap<number, NodeKey>
+>();
+
+/** @internal Runtime-only identities carried by inserted token content. */
+export const getDocumentSliceNodeKeys = (slice: PreparedTokenSlice) =>
+  DOCUMENT_SLICE_RUNTIME_NODE_KEYS.get(slice) ?? new Map<number, NodeKey>();
 
 /** @internal Read the immutable node/index run behind a prepared slice. */
 export const getPreparedDocumentSlice = (slice: PreparedTokenSlice) =>
   DOCUMENT_SLICE_PREPARED_NODES.get(slice);
 
 /** @internal Resolve one prepared node path without materializing slice tokens. */
-export const getPreparedDocumentRuntimeId = (
+export const getPreparedDocumentNodeKey = (
   slice: PreparedTokenSlice,
   path: readonly number[]
 ) => {
@@ -373,7 +381,10 @@ export const getPreparedDocumentRuntimeId = (
     position += offset;
 
     if (depth === path.length - 1) {
-      return preparedRuntimeIdAt(prepared.runtimeIds, position);
+      return (
+        DOCUMENT_SLICE_RUNTIME_NODE_KEYS.get(slice)?.get(position) ??
+        preparedNodeKeyAt(prepared.nodeKeys, position)
+      );
     }
     if (!node.children) return null;
     position += 1;
@@ -386,12 +397,17 @@ export const getPreparedDocumentRuntimeId = (
 /** @internal Resolve one prepared identity without materializing slice tokens. */
 export const getPreparedDocumentRuntimePath = (
   slice: PreparedTokenSlice,
-  runtimeId: RuntimeId
+  nodeKey: NodeKey
 ) => {
   const prepared = DOCUMENT_SLICE_PREPARED_NODES.get(slice);
 
   if (!prepared) return null;
-  const position = preparedRuntimeIdOffset(prepared.runtimeIds, runtimeId);
+  const runtimeNodeKeys = DOCUMENT_SLICE_RUNTIME_NODE_KEYS.get(slice);
+  const runtimePosition = runtimeNodeKeys
+    ? [...runtimeNodeKeys].find(([, key]) => key === nodeKey)?.[0]
+    : undefined;
+  const position =
+    runtimePosition ?? preparedNodeKeyOffset(prepared.nodeKeys, nodeKey);
 
   if (position === null) return null;
 
@@ -422,7 +438,8 @@ export class PreparedTokenSlice {
       from: number;
       source: PreparedTokenSlice;
       to: number;
-    }>
+    }>,
+    runtimeNodeKeys?: ReadonlyMap<number, NodeKey>
   ) {
     const source = normalized ? Object.freeze(tokens) : normalizeTokens(tokens);
     const offsets: number[] = [];
@@ -441,6 +458,10 @@ export class PreparedTokenSlice {
       }
       DOCUMENT_SLICE_TOKENS.set(this, source);
       DOCUMENT_SLICE_OFFSETS.set(this, Object.freeze(offsets));
+    }
+
+    if (runtimeNodeKeys && runtimeNodeKeys.size > 0) {
+      DOCUMENT_SLICE_RUNTIME_NODE_KEYS.set(this, new Map(runtimeNodeKeys));
     }
 
     this.length = length;
@@ -537,15 +558,43 @@ export class PreparedTokenSlice {
   }
 
   /** @internal Encode already detached, frozen, and shape-validated nodes. */
-  static fromPreparedNodes(nodes: readonly JsonNode[]) {
+  static fromPreparedNodes(
+    nodes: readonly JsonNode[],
+    nodeKeyAt?: (path: readonly number[]) => NodeKey | null
+  ) {
     const index = createTreeIndex(nodes);
+    const runtimeNodeKeys = new Map<number, NodeKey>();
+    const collectNodeKeys = (
+      children: TreeIndexChildren,
+      path: readonly number[] = [],
+      position = 0
+    ) => {
+      children.children.forEach((child, childIndex) => {
+        const childPath = [...path, childIndex];
+        const childPosition = position + children.offsets[childIndex]!;
+        const nodeKey = nodeKeyAt?.(childPath);
+
+        if (nodeKey) runtimeNodeKeys.set(childPosition, nodeKey);
+        if (child.children) {
+          collectNodeKeys(child.children, childPath, childPosition + 1);
+        }
+      });
+    };
+
+    if (nodeKeyAt) collectNodeKeys(index);
     const prepared = Object.freeze({
       index,
       nodes,
-      runtimeIds: reservePreparedRuntimeIdRange(index.length),
+      nodeKeys: reservePreparedNodeKeyRange(index.length),
     });
 
-    return new PreparedTokenSlice([], true, prepared);
+    return new PreparedTokenSlice(
+      [],
+      true,
+      prepared,
+      undefined,
+      runtimeNodeKeys
+    );
   }
 
   /** @internal Encode immutable nodes already owned by an indexed document. */
@@ -566,8 +615,13 @@ export class PreparedTokenSlice {
   /** @internal Concatenate normalized slices with one token/offset pass. */
   static concat(slices: readonly PreparedTokenSlice[]) {
     const tokens: JsonToken[] = [];
+    const runtimeNodeKeys = new Map<number, NodeKey>();
+    let position = 0;
 
     for (const slice of slices) {
+      for (const [offset, nodeKey] of getDocumentSliceNodeKeys(slice)) {
+        runtimeNodeKeys.set(position + offset, nodeKey);
+      }
       for (const token of slice.tokens) {
         const previous = tokens.at(-1);
 
@@ -577,11 +631,18 @@ export class PreparedTokenSlice {
           tokens.push(token);
         }
       }
+      position += slice.length;
     }
 
     return tokens.length === 0
       ? PreparedTokenSlice.empty
-      : new PreparedTokenSlice(tokens, true);
+      : new PreparedTokenSlice(
+          tokens,
+          true,
+          undefined,
+          undefined,
+          runtimeNodeKeys
+        );
   }
 
   concat(other: PreparedTokenSlice) {
@@ -598,28 +659,51 @@ export class PreparedTokenSlice {
 
     if (from === to) return PreparedTokenSlice.empty;
     if (from === 0 && to === this.length) return this;
+    const runtimeNodeKeys = new Map<number, NodeKey>();
+
+    for (const [offset, nodeKey] of getDocumentSliceNodeKeys(this)) {
+      if (offset >= from && offset < to) {
+        runtimeNodeKeys.set(offset - from, nodeKey);
+      }
+    }
 
     const deferred = DOCUMENT_SLICE_DEFERRED_VIEWS.get(this);
 
     if (deferred) {
-      return new PreparedTokenSlice([], true, undefined, {
-        from: deferred.from + from,
-        source: deferred.source,
-        to: deferred.from + to,
-      });
+      return new PreparedTokenSlice(
+        [],
+        true,
+        undefined,
+        {
+          from: deferred.from + from,
+          source: deferred.source,
+          to: deferred.from + to,
+        },
+        runtimeNodeKeys
+      );
     }
     if (DOCUMENT_SLICE_PREPARED_NODES.has(this)) {
-      return new PreparedTokenSlice([], true, undefined, {
-        from,
-        source: this,
-        to,
-      });
+      return new PreparedTokenSlice(
+        [],
+        true,
+        undefined,
+        {
+          from,
+          source: this,
+          to,
+        },
+        runtimeNodeKeys
+      );
     }
 
-    return this.sliceMaterialized(from, to);
+    return this.sliceMaterialized(from, to, runtimeNodeKeys);
   }
 
-  private sliceMaterialized(from: number, to: number) {
+  private sliceMaterialized(
+    from: number,
+    to: number,
+    runtimeNodeKeys = new Map<number, NodeKey>()
+  ) {
     if (from < 0 || to < from || to > this.length) {
       throw new RangeError(`Invalid token slice range ${from}-${to}.`);
     }
@@ -667,7 +751,13 @@ export class PreparedTokenSlice {
       if (end >= to) break;
     }
 
-    return new PreparedTokenSlice(result);
+    return new PreparedTokenSlice(
+      result,
+      false,
+      undefined,
+      undefined,
+      runtimeNodeKeys
+    );
   }
 
   toJSON(): readonly JsonTokenData[] {
@@ -807,11 +897,11 @@ import {
   ResolvedTokenCursor,
   type TreeIndexChildren,
 } from '../resolved-token-cursor';
-import type { RuntimeId } from '../../interfaces/editor';
+import type { NodeKey } from '../../interfaces/editor';
 import { assertEditorJsonValue } from '../value-codec';
 import {
-  preparedRuntimeIdAt,
-  preparedRuntimeIdOffset,
-  type PreparedRuntimeIdRange,
-  reservePreparedRuntimeIdRange,
-} from '../../utils/runtime-ids';
+  preparedNodeKeyAt,
+  preparedNodeKeyOffset,
+  type PreparedNodeKeyRange,
+  reservePreparedNodeKeyRange,
+} from '../../utils/node-keys';

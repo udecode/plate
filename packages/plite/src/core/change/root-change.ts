@@ -36,6 +36,7 @@ import {
 } from './transform';
 import { profileCoreDuration } from '../profiling';
 import { assertEditorJsonValue } from '../value-codec';
+import type { NodeKey } from '../../interfaces/editor';
 
 /** @internal Concrete placement used to resolve schema-owned property laws. */
 export type DocumentPropertyContext = Readonly<{
@@ -838,7 +839,7 @@ export const commonTextSuffixLength = (
  * Build a structural diff only when one source node has a uniquely stronger
  * continuation later in its sibling list. Flat prefix/suffix diffs can
  * otherwise retain an opening token on one inserted sibling and that node's
- * content/closing token on another, splitting one runtime identity in two.
+ * content/closing token on another, splitting one node key in two.
  */
 export const createStructurallyAlignedChanges = (
   before: DocumentIndex,
@@ -2569,6 +2570,72 @@ export class RootChange {
     }
 
     return new RootChange(sections, data);
+  }
+
+  /** @internal Bind existing runtime identities to whole nodes inserted by this change. */
+  withInsertedNodeKeys(
+    after: DocumentIndex,
+    nodeKeyAt: (path: readonly number[]) => NodeKey | null
+  ) {
+    if (after.length !== this.newLength) {
+      throw new Error('Cannot bind node keys against a mismatched document.');
+    }
+    const data = [...this.data];
+    let changed = false;
+    let outputPosition = 0;
+
+    for (
+      let sectionIndex = 0, dataIndex = 0;
+      sectionIndex < this.sections.length;
+      dataIndex++
+    ) {
+      const length = this.sections[sectionIndex++]!;
+      const inserted = this.sections[sectionIndex++]!;
+      const outputLength = inserted < 0 ? length : inserted;
+      const value = data[dataIndex];
+
+      if (
+        inserted > 0 &&
+        value instanceof PreparedTokenSlice &&
+        value.length === inserted
+      ) {
+        const from = after.childBoundaryAt(outputPosition);
+        const to = after.childBoundaryAt(outputPosition + inserted);
+
+        if (
+          from &&
+          to &&
+          pathKey(from.parentPath) === pathKey(to.parentPath) &&
+          from.index < to.index
+        ) {
+          const children =
+            from.parentPath.length === 0
+              ? after.value
+              : (() => {
+                  const parent = after.node(from.parentPath);
+
+                  return isElementNode(parent) ? parent.children : [];
+                })();
+          const nodes = children.slice(from.index, to.index);
+          const prepared = PreparedTokenSlice.fromPreparedNodes(nodes, (path) =>
+            nodeKeyAt([
+              ...from.parentPath,
+              from.index + path[0]!,
+              ...path.slice(1),
+            ])
+          );
+
+          if (prepared.length === inserted) {
+            data[dataIndex] = prepared;
+            changed = true;
+          }
+        }
+      }
+
+      outputPosition += outputLength;
+    }
+
+    return changed ? new RootChange(this.sections, data) : this;
   }
 
   iterChangedRanges(

@@ -18,7 +18,7 @@ export type PliteReactRenderKind =
 export type PliteReactRenderProfilerEvent = {
   kind: PliteReactRenderKind;
   id?: string | null;
-  runtimeId?: string | null;
+  nodeKey?: string | null;
 };
 
 /** Collected Plite React render profiler events and counters. */
@@ -50,7 +50,7 @@ const installPliteReactRenderProfilerScript = () => {
 
     for (const event of events) {
       byKind[event.kind] = (byKind[event.kind] ?? 0) + 1;
-      const id = event.id ?? event.runtimeId;
+      const id = event.id ?? event.nodeKey;
       const key = id ? `${event.kind}:${id}` : event.kind;
       byKey[key] = (byKey[key] ?? 0) + 1;
     }

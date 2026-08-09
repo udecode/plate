@@ -7,7 +7,7 @@ import type {
   AnyEditor as Editor,
   EditorSnapshot,
   RootKey,
-  RuntimeId,
+  NodeKey,
   Selection,
   SnapshotIndex,
   TopLevelRuntimeRange,
@@ -18,6 +18,7 @@ import { type Path, PathApi } from '../interfaces/path';
 import { RangeApi } from '../interfaces/range';
 import { SelectionApi } from '../interfaces/selection';
 import {
+  bindDocumentChangeNodeKeys,
   type DocumentChange,
   getInternalDocumentChangeClassification,
   getInternalDocumentChangeEntries,
@@ -32,14 +33,14 @@ import { toInternalRoot, toPublicRoot } from './public-root';
 import { cloneFrozenEditorJsonValue } from './value-codec';
 
 type RootChangeDetails = {
-  nodeRuntimeIds: ReadonlySet<RuntimeId>;
+  changedNodeKeys: ReadonlySet<NodeKey>;
   paths: readonly Path[];
-  pathRuntimeIds: ReadonlySet<RuntimeId>;
+  pathNodeKeys: ReadonlySet<NodeKey>;
   propertiesChanged: boolean;
   structureChanged: boolean;
   textChanged: boolean;
-  textRuntimeIds: ReadonlySet<RuntimeId>;
-  touchedRuntimeIds: ReadonlySet<RuntimeId>;
+  textNodeKeys: ReadonlySet<NodeKey>;
+  touchedNodeKeys: ReadonlySet<NodeKey>;
   topLevelOrderChanged: boolean;
   topLevelRanges: readonly TopLevelRuntimeRange[];
 };
@@ -70,6 +71,7 @@ type CommitInput<V extends Value> = Omit<
   | 'version'
 > & {
   afterValue: EditorDocumentValue<V>;
+  beforeIndexAt?: (root: RootKey) => SnapshotIndex | undefined;
   beforeValue: EditorDocumentValue<V>;
   editor: Editor<V>;
   replace?: boolean;
@@ -146,15 +148,41 @@ const buildOwnedSnapshotIndex = (
   editor: Editor
 ): SnapshotIndex => buildSnapshotIndex(getEditorRuntimeOwner(editor), children);
 
+const bindInverseNodeKeys = (
+  inverse: DocumentChange,
+  before: JsonEditorValue,
+  editor: Editor,
+  beforeIndexAt?: (root: RootKey) => SnapshotIndex | undefined
+) => {
+  const indexes = new Map<RootKey, SnapshotIndex>();
+  const keyAt = (root: RootKey, path: readonly number[]) => {
+    let index = indexes.get(root);
+
+    if (!index) {
+      index =
+        beforeIndexAt?.(root) ??
+        buildOwnedSnapshotIndex(
+          valueRoot(before, root) as readonly Descendant[],
+          editor
+        );
+      indexes.set(root, index);
+    }
+
+    return index.keyAt(path as Path);
+  };
+
+  return bindDocumentChangeNodeKeys(inverse, before, keyAt);
+};
+
 const getSelectionRoot = (selection: Selection, fallback: RootKey): RootKey =>
   selection?.focus.root ?? selection?.anchor.root ?? fallback;
 
-const getSelectionRuntimeIds = (
+const getSelectionNodeKeys = (
   selection: Selection,
   root: RootKey,
   index: SnapshotIndex,
   selectionRoot: RootKey
-): RuntimeId[] => {
+): NodeKey[] => {
   if (!selection || getSelectionRoot(selection, selectionRoot) !== root) {
     return [];
   }
@@ -176,8 +204,8 @@ const getSelectionRuntimeIds = (
   return [
     ...new Set(
       paths
-        .map((path) => index.idAt(path))
-        .filter((runtimeId): runtimeId is RuntimeId => Boolean(runtimeId))
+        .map((path) => index.keyAt(path))
+        .filter((nodeKey): nodeKey is NodeKey => Boolean(nodeKey))
     ),
   ];
 };
@@ -266,14 +294,14 @@ const mergeTopLevelRanges = (
   return Object.freeze(merged);
 };
 
-const getStableTopLevelRuntimeIds = (
-  before: readonly RuntimeId[],
-  after: readonly RuntimeId[]
+const getStableTopLevelNodeKeys = (
+  before: readonly NodeKey[],
+  after: readonly NodeKey[]
 ) => {
   const afterPositions = new Map(
-    after.map((runtimeId, index) => [runtimeId, index] as const)
+    after.map((nodeKey, index) => [nodeKey, index] as const)
   );
-  const common = before.filter((runtimeId) => afterPositions.has(runtimeId));
+  const common = before.filter((nodeKey) => afterPositions.has(nodeKey));
   const predecessors = new Array<number>(common.length).fill(-1);
   const tails: number[] = [];
 
@@ -294,7 +322,7 @@ const getStableTopLevelRuntimeIds = (
     tails[low] = index;
   }
 
-  const stable = new Set<RuntimeId>();
+  const stable = new Set<NodeKey>();
   let cursor = tails.at(-1) ?? -1;
 
   while (cursor >= 0) {
@@ -308,8 +336,8 @@ const getStableTopLevelRuntimeIds = (
 const samePath = (left: Path | undefined, right: Path | undefined) =>
   left !== undefined && right !== undefined && PathApi.equals(left, right);
 
-const getNodeRuntimeId = (index: SnapshotIndex, path: readonly number[]) =>
-  index.idAt(path as Path);
+const getNodeKeyAtPath = (index: SnapshotIndex, path: readonly number[]) =>
+  index.keyAt(path as Path);
 
 const getDescendantAtPath = (
   children: readonly Descendant[],
@@ -419,8 +447,8 @@ const createCommitChanged = ({
     RootKey,
     readonly TopLevelRuntimeRange[]
   >();
-  const selectionRuntimeIds = new Map<RootKey, ReadonlySet<RuntimeId>>();
-  const runtimeIds = new Map<string, readonly RuntimeId[]>();
+  const selectionNodeKeys = new Map<RootKey, ReadonlySet<NodeKey>>();
+  const nodeKeys = new Map<string, readonly NodeKey[]>();
 
   const roots = new Set<RootKey>([
     ...[...getInternalDocumentChangeEntries(changes)].map(([root]) => root),
@@ -558,57 +586,57 @@ const createCommitChanged = ({
     if (classification && !classification.structure) {
       const afterRoot = valueRoot(after, root) as readonly Descendant[];
       const touchedPaths = new Map<string, Path>();
-      const touchedNodeRuntimeIds = new Set<RuntimeId>();
-      const nodeRuntimeIds = new Set<RuntimeId>();
-      const pathRuntimeIds = new Set<RuntimeId>();
-      const textRuntimeIds = new Set<RuntimeId>();
-      let runtimeIdentityChanged = false;
+      const touchedChangedNodeKeys = new Set<NodeKey>();
+      const changedNodeKeys = new Set<NodeKey>();
+      const pathNodeKeys = new Set<NodeKey>();
+      const textNodeKeys = new Set<NodeKey>();
+      let nodeKeyChanged = false;
       let topLevelIdentityChanged = false;
 
       for (const changedPath of classification.paths) {
         for (let depth = 1; depth <= changedPath.length; depth++) {
           const path = changedPath.slice(0, depth) as Path;
           const key = path.join('.');
-          const beforeRuntimeId = beforeIndex.idAt(path);
-          const afterRuntimeId = afterIndex.idAt(path);
+          const beforeNodeKey = beforeIndex.keyAt(path);
+          const afterNodeKey = afterIndex.keyAt(path);
 
           touchedPaths.set(key, path);
-          if (beforeRuntimeId !== afterRuntimeId) {
-            runtimeIdentityChanged = true;
+          if (beforeNodeKey !== afterNodeKey) {
+            nodeKeyChanged = true;
             if (depth === 1) topLevelIdentityChanged = true;
-            if (afterRuntimeId) pathRuntimeIds.add(afterRuntimeId);
+            if (afterNodeKey) pathNodeKeys.add(afterNodeKey);
           }
-          if (beforeRuntimeId) touchedNodeRuntimeIds.add(beforeRuntimeId);
-          if (afterRuntimeId) {
-            touchedNodeRuntimeIds.add(afterRuntimeId);
-            nodeRuntimeIds.add(afterRuntimeId);
+          if (beforeNodeKey) touchedChangedNodeKeys.add(beforeNodeKey);
+          if (afterNodeKey) {
+            touchedChangedNodeKeys.add(afterNodeKey);
+            changedNodeKeys.add(afterNodeKey);
           }
         }
 
         if (classification.text) {
           const path = changedPath as Path;
-          const runtimeId = afterIndex.idAt(path);
+          const nodeKey = afterIndex.keyAt(path);
 
           if (
-            runtimeId &&
+            nodeKey &&
             'text' in (getDescendantAtPath(afterRoot, path) ?? {})
           ) {
-            textRuntimeIds.add(runtimeId);
+            textNodeKeys.add(nodeKey);
           }
         }
       }
 
       const details = Object.freeze({
-        nodeRuntimeIds,
+        changedNodeKeys,
         paths: Object.freeze(
           classification.paths.map((path) => Object.freeze([...path]) as Path)
         ),
-        pathRuntimeIds,
+        pathNodeKeys,
         propertiesChanged: classification.properties,
-        structureChanged: runtimeIdentityChanged,
+        structureChanged: nodeKeyChanged,
         textChanged: classification.text,
-        textRuntimeIds,
-        touchedRuntimeIds: touchedNodeRuntimeIds,
+        textNodeKeys,
+        touchedNodeKeys: touchedChangedNodeKeys,
         topLevelOrderChanged: topLevelIdentityChanged,
         topLevelRanges: getTopLevelRanges(touchedPaths.values()),
       });
@@ -622,39 +650,37 @@ const createCommitChanged = ({
       .entries()
       .filter(([, path]) => path.length === 1)
       .sort(([, left], [, right]) => left[0]! - right[0]!)
-      .map(([runtimeId]) => runtimeId);
+      .map(([nodeKey]) => nodeKey);
     const afterTopLevel = afterIndex
       .entries()
       .filter(([, path]) => path.length === 1)
       .sort(([, left], [, right]) => left[0]! - right[0]!)
-      .map(([runtimeId]) => runtimeId);
+      .map(([nodeKey]) => nodeKey);
     const topLevelOrderChanged =
       beforeTopLevel.length !== afterTopLevel.length ||
-      beforeTopLevel.some(
-        (runtimeId, index) => runtimeId !== afterTopLevel[index]
-      );
+      beforeTopLevel.some((nodeKey, index) => nodeKey !== afterTopLevel[index]);
 
     const beforeDocument = DocumentIndex.fromValue(valueRoot(before, root));
     const afterDocument = DocumentIndex.fromValue(valueRoot(after, root));
     const change = getInternalDocumentRootChange(changes, root);
     const touchedPaths = new Map<string, Path>();
     const topLevelTouchedPaths = new Map<string, Path>();
-    const touchedNodeRuntimeIds = new Set<RuntimeId>();
-    const pathRuntimeIds = new Set<RuntimeId>();
-    const stableTopLevelRuntimeIds = getStableTopLevelRuntimeIds(
+    const touchedChangedNodeKeys = new Set<NodeKey>();
+    const pathNodeKeys = new Set<NodeKey>();
+    const stableTopLevelNodeKeys = getStableTopLevelNodeKeys(
       beforeTopLevel,
       afterTopLevel
     );
     const beforeTopLevelPositions = new Map(
-      beforeTopLevel.map((runtimeId, index) => [runtimeId, index] as const)
+      beforeTopLevel.map((nodeKey, index) => [nodeKey, index] as const)
     );
     const afterTopLevelPositions = new Map(
-      afterTopLevel.map((runtimeId, index) => [runtimeId, index] as const)
+      afterTopLevel.map((nodeKey, index) => [nodeKey, index] as const)
     );
 
-    for (const runtimeId of new Set([...beforeTopLevel, ...afterTopLevel])) {
-      const beforePosition = beforeTopLevelPositions.get(runtimeId);
-      const afterPosition = afterTopLevelPositions.get(runtimeId);
+    for (const nodeKey of new Set([...beforeTopLevel, ...afterTopLevel])) {
+      const beforePosition = beforeTopLevelPositions.get(nodeKey);
+      const afterPosition = afterTopLevelPositions.get(nodeKey);
       const beforePath =
         beforePosition === undefined ? undefined : ([beforePosition] as Path);
       const afterPath =
@@ -671,7 +697,7 @@ const createCommitChanged = ({
         beforePath === undefined ||
         afterPath === undefined ||
         contentChanged ||
-        !stableTopLevelRuntimeIds.has(runtimeId)
+        !stableTopLevelNodeKeys.has(nodeKey)
       ) {
         if (beforePath) {
           topLevelTouchedPaths.set(pathKey(beforePath), beforePath);
@@ -686,10 +712,10 @@ const createCommitChanged = ({
         toBefore
       )) {
         const path = [...entry.path] as Path;
-        const runtimeId = getNodeRuntimeId(beforeIndex, path);
+        const nodeKey = getNodeKeyAtPath(beforeIndex, path);
 
         touchedPaths.set(pathKey(path), path);
-        if (runtimeId) touchedNodeRuntimeIds.add(runtimeId);
+        if (nodeKey) touchedChangedNodeKeys.add(nodeKey);
       }
 
       for (const entry of afterDocument.nodeRangesTouching(
@@ -697,58 +723,56 @@ const createCommitChanged = ({
         toAfter
       )) {
         const path = [...entry.path] as Path;
-        const runtimeId = getNodeRuntimeId(afterIndex, path);
+        const nodeKey = getNodeKeyAtPath(afterIndex, path);
 
         touchedPaths.set(pathKey(path), path);
-        if (runtimeId) touchedNodeRuntimeIds.add(runtimeId);
+        if (nodeKey) touchedChangedNodeKeys.add(nodeKey);
       }
     });
 
-    const allRuntimeIds = new Set<RuntimeId>([
-      ...beforeIndex.entries().map(([runtimeId]) => runtimeId),
-      ...afterIndex.entries().map(([runtimeId]) => runtimeId),
+    const allNodeKeys = new Set<NodeKey>([
+      ...beforeIndex.entries().map(([nodeKey]) => nodeKey),
+      ...afterIndex.entries().map(([nodeKey]) => nodeKey),
     ]);
 
-    for (const runtimeId of allRuntimeIds) {
-      const beforePath = beforeIndex.pathOf(runtimeId) ?? undefined;
-      const afterPath = afterIndex.pathOf(runtimeId) ?? undefined;
+    for (const nodeKey of allNodeKeys) {
+      const beforePath = beforeIndex.pathOf(nodeKey) ?? undefined;
+      const afterPath = afterIndex.pathOf(nodeKey) ?? undefined;
 
       if (afterPath && !samePath(beforePath, afterPath)) {
-        pathRuntimeIds.add(runtimeId);
+        pathNodeKeys.add(nodeKey);
         if (beforePath) touchedPaths.set(pathKey(beforePath), beforePath);
         if (afterPath) touchedPaths.set(pathKey(afterPath), afterPath);
       }
     }
 
-    const beforeRuntimeIds = new Set(
-      beforeIndex.entries().map(([runtimeId]) => runtimeId)
+    const beforeNodeKeys = new Set(
+      beforeIndex.entries().map(([nodeKey]) => nodeKey)
     );
-    const afterRuntimeIds = new Set(
-      afterIndex.entries().map(([runtimeId]) => runtimeId)
+    const afterNodeKeys = new Set(
+      afterIndex.entries().map(([nodeKey]) => nodeKey)
     );
-    const nodeRuntimeIds = new Set(
-      [...touchedNodeRuntimeIds].filter((runtimeId) =>
-        afterRuntimeIds.has(runtimeId)
+    const changedNodeKeys = new Set(
+      [...touchedChangedNodeKeys].filter((nodeKey) =>
+        afterNodeKeys.has(nodeKey)
       )
     );
 
     const runtimeMembershipChanged =
-      beforeRuntimeIds.size !== afterRuntimeIds.size ||
-      [...beforeRuntimeIds].some(
-        (runtimeId) => !afterRuntimeIds.has(runtimeId)
-      );
+      beforeNodeKeys.size !== afterNodeKeys.size ||
+      [...beforeNodeKeys].some((nodeKey) => !afterNodeKeys.has(nodeKey));
     const structureChanged =
       changes.createRoots.has(root) ||
       changes.deleteRoots.has(root) ||
       runtimeMembershipChanged ||
-      pathRuntimeIds.size > 0;
-    const textRuntimeIds = new Set<RuntimeId>();
+      pathNodeKeys.size > 0;
+    const textNodeKeys = new Set<NodeKey>();
     let propertiesChanged = false;
     let textChanged = false;
 
-    for (const runtimeId of nodeRuntimeIds) {
-      const beforePath = beforeIndex.pathOf(runtimeId);
-      const afterPath = afterIndex.pathOf(runtimeId);
+    for (const nodeKey of changedNodeKeys) {
+      const beforePath = beforeIndex.pathOf(nodeKey);
+      const afterPath = afterIndex.pathOf(nodeKey);
       const beforeNode = beforePath ? beforeDocument.node(beforePath) : null;
       const afterNode = afterPath ? afterDocument.node(afterPath) : null;
       const beforeText =
@@ -761,7 +785,7 @@ const createCommitChanged = ({
         beforeText !== afterText
       ) {
         textChanged = true;
-        textRuntimeIds.add(runtimeId);
+        textNodeKeys.add(nodeKey);
       }
       if (
         beforeNode &&
@@ -773,18 +797,18 @@ const createCommitChanged = ({
     }
 
     const details = Object.freeze({
-      nodeRuntimeIds,
+      changedNodeKeys,
       paths: Object.freeze(
         (change ? getDocumentChangeAfterPaths(change, afterDocument) : []).map(
           (path) => Object.freeze([...path]) as Path
         )
       ),
-      pathRuntimeIds,
+      pathNodeKeys,
       propertiesChanged,
       structureChanged,
       textChanged,
-      textRuntimeIds,
-      touchedRuntimeIds: touchedNodeRuntimeIds,
+      textNodeKeys,
+      touchedNodeKeys: touchedChangedNodeKeys,
       topLevelOrderChanged,
       topLevelRanges: getTopLevelRanges(topLevelTouchedPaths.values()),
     });
@@ -795,18 +819,18 @@ const createCommitChanged = ({
   };
 
   const getSelectionIds = (root: RootKey) => {
-    const cached = selectionRuntimeIds.get(root);
+    const cached = selectionNodeKeys.get(root);
 
     if (cached) return cached;
 
-    const runtimeIds = new Set<RuntimeId>([
-      ...getSelectionRuntimeIds(
+    const nodeKeys = new Set<NodeKey>([
+      ...getSelectionNodeKeys(
         selectionBefore,
         root,
         getIndex('before', root),
         selectionBeforeRoot
       ),
-      ...getSelectionRuntimeIds(
+      ...getSelectionNodeKeys(
         selectionAfter,
         root,
         getIndex('after', root),
@@ -814,9 +838,9 @@ const createCommitChanged = ({
       ),
     ]);
 
-    selectionRuntimeIds.set(root, runtimeIds);
+    selectionNodeKeys.set(root, nodeKeys);
 
-    return runtimeIds;
+    return nodeKeys;
   };
 
   const hasInRoot = (kind: EditorCommitChangeKind, root: RootKey): boolean => {
@@ -873,16 +897,16 @@ const createCommitChanged = ({
     }
   };
 
-  const getRuntimeIds = (
+  const getNodeKeys = (
     kind: EditorCommitRuntimeChangeKind,
     root: RootKey
-  ): readonly RuntimeId[] => {
+  ): readonly NodeKey[] => {
     const cacheKey = `${root}\u0000${kind}`;
-    const cached = runtimeIds.get(cacheKey);
+    const cached = nodeKeys.get(cacheKey);
 
     if (cached) return cached;
 
-    let result: readonly RuntimeId[];
+    let result: readonly NodeKey[];
 
     switch (kind) {
       case 'decoration': {
@@ -890,9 +914,9 @@ const createCommitChanged = ({
 
         result = Object.freeze([
           ...new Set([
-            ...details.nodeRuntimeIds,
-            ...details.touchedRuntimeIds,
-            ...details.pathRuntimeIds,
+            ...details.changedNodeKeys,
+            ...details.touchedNodeKeys,
+            ...details.pathNodeKeys,
             ...getSelectionIds(root),
           ]),
         ]);
@@ -903,29 +927,29 @@ const createCommitChanged = ({
 
         result = Object.freeze([
           ...new Set([
-            ...details.nodeRuntimeIds,
-            ...details.touchedRuntimeIds,
-            ...details.pathRuntimeIds,
+            ...details.changedNodeKeys,
+            ...details.touchedNodeKeys,
+            ...details.pathNodeKeys,
             ...getSelectionIds(root),
           ]),
         ]);
         break;
       }
       case 'node':
-        result = Object.freeze([...getRootDetails(root).nodeRuntimeIds]);
+        result = Object.freeze([...getRootDetails(root).changedNodeKeys]);
         break;
       case 'path':
-        result = Object.freeze([...getRootDetails(root).pathRuntimeIds]);
+        result = Object.freeze([...getRootDetails(root).pathNodeKeys]);
         break;
       case 'selection':
         result = Object.freeze([...getSelectionIds(root)]);
         break;
       case 'text':
-        result = Object.freeze([...getRootDetails(root).textRuntimeIds]);
+        result = Object.freeze([...getRootDetails(root).textNodeKeys]);
         break;
     }
 
-    runtimeIds.set(cacheKey, result);
+    nodeKeys.set(cacheKey, result);
 
     return result;
   };
@@ -948,16 +972,16 @@ const createCommitChanged = ({
     has: (kind, root) => hasInRoot(kind, toInternalRoot(root)),
     hasAny: (kind) =>
       [...allKnownRoots()].some((root) => hasInRoot(kind, root)),
-    hasRuntime: (runtimeId, kind) =>
+    hasNodeKey: (nodeKey, kind) =>
       [...allKnownRoots()].some((root) =>
-        getRuntimeIds(kind, root).includes(runtimeId)
+        getNodeKeys(kind, root).includes(nodeKey)
       ),
     paths: (root) => getRootDetails(toInternalRoot(root)).paths,
-    runtimeIds: (kind, root) => getRuntimeIds(kind, toInternalRoot(root)),
-    runtimeIdsAll: (kind) =>
+    nodeKeys: (kind, root) => getNodeKeys(kind, toInternalRoot(root)),
+    nodeKeysAll: (kind) =>
       Object.freeze([
         ...new Set(
-          [...allKnownRoots()].flatMap((root) => getRuntimeIds(kind, root))
+          [...allKnownRoots()].flatMap((root) => getNodeKeys(kind, root))
         ),
       ]),
     topLevelRanges: (root) => getChangedTopLevelRanges(toInternalRoot(root)),
@@ -968,7 +992,14 @@ export const createEditorCommit = <V extends Value>(
   input: CommitInput<V>,
   versions: { previousVersion: number; version: number }
 ): EditorCommit<V> => {
-  const { afterValue, beforeValue, editor, replace = false, ...body } = input;
+  const {
+    afterValue,
+    beforeIndexAt,
+    beforeValue,
+    editor,
+    replace = false,
+    ...body
+  } = input;
   const commit = {
     ...body,
     annotations: Object.freeze({ ...body.annotations }),
@@ -1008,7 +1039,12 @@ export const createEditorCommit = <V extends Value>(
     configurable: false,
     enumerable: true,
     get: () =>
-      (inverseChanges ??= body.changes.invert(beforeValue as JsonEditorValue)),
+      (inverseChanges ??= bindInverseNodeKeys(
+        body.changes.invert(beforeValue as JsonEditorValue),
+        beforeValue as JsonEditorValue,
+        editor,
+        beforeIndexAt
+      )),
   });
 
   EDITOR_COMMIT_SNAPSHOT_SOURCES.set(commit, {

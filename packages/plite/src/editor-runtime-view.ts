@@ -29,18 +29,19 @@ import {
   isSelectionAcrossBlocks,
   isSelectionWithinText,
   isSelectionWithinBlock,
+  readEditor,
   withEditorUpdateRoot,
   withEditorUpdateRootChildren,
   withEditorRootChildren,
   withEditorRootChildrenGenerator,
   withEditorTargetRuntime,
 } from './core/public-state';
-import { getNodeSetOptions } from './core/node-property-mutation';
 import type {
   AnyEditor as Editor,
   EditorAnchorApi,
   EditorCommitContext,
   EditorExtensionReference,
+  EditorKeyApi,
   EditorSelectionBlockOptions,
   EditorSelectionTargetOptions,
   EditorSnapshot,
@@ -79,6 +80,7 @@ type ViewState = {
 type ViewStateTransformInput<V extends Value> = Pick<
   EditorStateView<V>,
   | 'fragment'
+  | 'key'
   | 'marks'
   | 'nodes'
   | 'points'
@@ -294,8 +296,6 @@ const withRootRuntime = <V extends Value, T extends ViewStateTransformInput<V>>(
 ): T['runtime'] =>
   Object.freeze({
     ...state.runtime,
-    id: rootMethod(editor, viewState, state.runtime.id),
-    path: rootMethod(editor, viewState, state.runtime.path),
     snapshot: () =>
       withViewSnapshot(
         withRootRead(editor, viewState, () => state.runtime.snapshot()),
@@ -373,6 +373,7 @@ const withViewState = <V extends Value, T extends ViewStateTransformInput<V>>(
         state.fragment
       )
     ),
+    key: rootMethod(editor, viewState, state.key),
     marks: withRootMarks<V, T>(editor, state, viewState),
     nodes: withRootChildren<V, T>(editor, state, viewState),
     points: withRootPoints<V, T>(editor, state, viewState),
@@ -623,13 +624,10 @@ const withViewTransaction = <V extends Value>(
         runImplicitSelectionMutation({ at: options.at }, () =>
           transaction.nodes.replaceChildren(children, options)
         ),
-      set: ((...args: Parameters<typeof transaction.nodes.set>) => {
-        const options = getNodeSetOptions(args);
-
-        return runImplicitSelectionMutation(options, () =>
+      set: ((...args: Parameters<typeof transaction.nodes.set>) =>
+        runImplicitSelectionMutation(args[1], () =>
           transaction.nodes.set(...args)
-        );
-      }) as typeof transaction.nodes.set,
+        )) as typeof transaction.nodes.set,
       split: (options) =>
         runImplicitSelectionMutation(options, () =>
           transaction.nodes.split(options)
@@ -793,12 +791,12 @@ const createViewRuntime = <V extends Value>(
       withRootRead(editor, viewState, () => baseRuntime.getChildren()),
     getFragment: () =>
       withRootRead(editor, viewState, () => baseRuntime.getFragment()),
-    getPathByRuntimeId: (...args) =>
+    getPathByNodeKey: (...args) =>
       withRootRead(editor, viewState, () =>
-        baseRuntime.getPathByRuntimeId(...args)
+        baseRuntime.getPathByNodeKey(...args)
       ),
-    getRuntimeId: (...args) =>
-      withRootRead(editor, viewState, () => baseRuntime.getRuntimeId(...args)),
+    getNodeKey: (...args) =>
+      withRootRead(editor, viewState, () => baseRuntime.getNodeKey(...args)),
     getSelection: () =>
       withViewSelection(
         baseRuntime.getSelection(),
@@ -1007,6 +1005,12 @@ export const createEditorView = <
     runRootTransform(sourceEditor, viewState, () =>
       sourceEditor.anchor(value, anchorOptions)
     );
+  const createViewKey: EditorKeyApi = rootMethod(sourceEditor, viewState, ((
+    target
+  ) =>
+    readEditor(sourceEditor, (state) =>
+      state.key(target as never)
+    )) as EditorKeyApi);
   const installView: EditorView<V, TExtensions>['install'] = (
     extension,
     options
@@ -1040,6 +1044,7 @@ export const createEditorView = <
         ) => Readonly<{ api: unknown }>
       )(descriptor)) as unknown as Editor<V, TExtensions>['extension'],
     id: sourceEditor.id,
+    key: createViewKey,
     read: viewRead,
     root: toPublicRoot(viewState.root) as NamedRootKey | undefined,
     subscribe: viewRuntime.subscribe,

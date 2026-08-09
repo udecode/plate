@@ -63,7 +63,7 @@ import type {
   EditorUpdateAnnotation,
   NodeTarget,
   RootKey,
-  RuntimeId,
+  NodeKey,
   Selection,
   SnapshotIndex,
   SnapshotInput,
@@ -97,10 +97,7 @@ import { stripLocationRoots } from '../internal/root-location';
 import { isTxOnlyMethod } from './tx-only';
 import type { InternalEditorSchemaApi } from './editor-schema';
 import { defineSemanticUpdateMethod } from './semantic-update-method';
-import {
-  normalizeNodeSetInput,
-  normalizeNodeUnsetInput,
-} from './node-property-mutation';
+import { normalizeNodeUnsetInput } from './node-property-mutation';
 import type { Text } from '../interfaces/text';
 import type { SchemaPropertyHandle } from '../interfaces/schema';
 import type { NodeUnsetNodesOptions } from '../interfaces/transforms/node';
@@ -127,12 +124,12 @@ import {
 } from '../transforms-selection';
 import { deleteText } from '../transforms-text';
 import {
-  getRuntimeIdForNode,
-  getOrCreateRuntimeId,
-  inheritRuntimeId,
-  inheritRuntimeIds,
-  seedRuntimeIds,
-} from '../utils/runtime-ids';
+  getNodeKeyForNode,
+  getOrCreateNodeKey,
+  inheritNodeKey,
+  inheritNodeKeys,
+  seedNodeKeys,
+} from '../utils/node-keys';
 import { cloneFrozen, cloneValue } from './clone';
 import {
   areEditorJsonValuesEqual,
@@ -300,7 +297,7 @@ type TransactionSnapshot = {
   childrenRoot: string;
   contentSliceRoots: Set<string>;
   documentState: Record<string, unknown> | undefined;
-  discardedRuntimeIds: Set<RuntimeId>;
+  discardedNodeKeys: Set<NodeKey>;
   dirtyStateKeys: Set<string>;
   draftRefs: Set<{ release: () => unknown }>;
   effects: EditorEffect[];
@@ -553,7 +550,7 @@ const PREPARED_TRANSACTION_SPECS = new WeakMap<
   TransactionSpec,
   Readonly<{
     deferValidation: boolean;
-    discardedRuntimeIds: ReadonlySet<RuntimeId>;
+    discardedNodeKeys: ReadonlySet<NodeKey>;
     document: object;
   }>
 >();
@@ -949,7 +946,7 @@ const resolveNodeTargetLocation = (
   target: NodeTarget
 ): Location | undefined => {
   if (typeof target === 'string') {
-    return getPathByRuntimeId(editor, target) ?? undefined;
+    return getPathByNodeKey(editor, target) ?? undefined;
   }
 
   if (
@@ -967,11 +964,9 @@ const resolveNodeTargetLocation = (
     return target as Location;
   }
 
-  const runtimeId = getRuntimeIdForNode(target, getEditorRuntimeOwner(editor));
+  const nodeKey = getNodeKeyForNode(target, getEditorRuntimeOwner(editor));
 
-  return runtimeId
-    ? (getPathByRuntimeId(editor, runtimeId) ?? undefined)
-    : undefined;
+  return nodeKey ? (getPathByNodeKey(editor, nodeKey) ?? undefined) : undefined;
 };
 
 const resolveReadableNodeTarget = (
@@ -986,7 +981,7 @@ const getOptionsNodeTarget = (options: object | undefined) =>
 
 const getRuntimeTargetRoot = (
   editor: Editor,
-  runtimeId: RuntimeId
+  nodeKey: NodeKey
 ): string | undefined => {
   for (const root of new Set([
     getCurrentChildrenRoot(editor),
@@ -994,7 +989,7 @@ const getRuntimeTargetRoot = (
     ...getEditorRuntimeRootKeys(editor),
   ])) {
     const path = withEditorRootChildren(editor, root, () =>
-      getPathByRuntimeId(editor, runtimeId)
+      getPathByNodeKey(editor, nodeKey)
     );
 
     if (path) return root;
@@ -1736,8 +1731,8 @@ export const getLiveText = (editor: Editor, path: Path): Text | null => {
 export const getLiveSelection = (editor: Editor): Selection =>
   getCurrentSelection(editor);
 
-export const getRuntimeId = (editor: Editor, path: Path): RuntimeId | null =>
-  path.length === 0 ? null : getCurrentRuntimeIndex(editor).idAt(path);
+export const getNodeKey = (editor: Editor, path: Path): NodeKey | null =>
+  path.length === 0 ? null : getCurrentRuntimeIndex(editor).keyAt(path);
 
 /** @internal Query runtime-backed element entries in one explicit root. */
 export const getEditorRuntimeElementEntries = (
@@ -1753,23 +1748,23 @@ export const getEditorRuntimeElementEntries = (
 export const getEditorRuntimeRootKeys = (editor: Editor): readonly RootKey[] =>
   Object.freeze(Object.keys(getEditorDocumentRoots(editor)));
 
-export const getEditorRuntimeIdForNode = (
+export const getEditorNodeKeyForNode = (
   editor: Editor,
   node: Descendant
-): RuntimeId => {
+): NodeKey => {
   const owner = getEditorRuntimeOwner(editor);
-  let runtimeId = getRuntimeIdForNode(node, owner);
+  let nodeKey = getNodeKeyForNode(node, owner);
   const index = getCurrentRuntimeIndex(editor);
   const resolvesIn = (candidate: SnapshotIndex) => {
-    if (runtimeId && candidate.pathOf(runtimeId)) return true;
+    if (nodeKey && candidate.pathOf(nodeKey)) return true;
 
     candidate.entries();
-    runtimeId = getRuntimeIdForNode(node, owner);
+    nodeKey = getNodeKeyForNode(node, owner);
 
-    return Boolean(runtimeId && candidate.pathOf(runtimeId));
+    return Boolean(nodeKey && candidate.pathOf(nodeKey));
   };
 
-  if (resolvesIn(index)) return runtimeId!;
+  if (resolvesIn(index)) return nodeKey!;
   const currentRoot = getCurrentChildrenRoot(editor);
   const transactionSnapshot = getTransactionSnapshot(owner);
 
@@ -1779,19 +1774,19 @@ export const getEditorRuntimeIdForNode = (
       ? getTransactionSnapshotIndex(owner, transactionSnapshot, root)
       : getCurrentRootSnapshot(owner, root).index;
 
-    if (resolvesIn(rootIndex)) return runtimeId!;
+    if (resolvesIn(rootIndex)) return nodeKey!;
   }
 
   throw new Error(
-    `Runtime identity requires a live node in this editor; received ${'text' in node ? 'text' : `"${node.type}" element`}.`
+    `Node key requires a live node in this editor; received ${'text' in node ? 'text' : `"${node.type}" element`}.`
   );
 };
 
-export const getPathByRuntimeId = (
+export const getPathByNodeKey = (
   editor: Editor,
-  runtimeId: RuntimeId
+  nodeKey: NodeKey
 ): Path | null => {
-  const path = getCurrentRuntimeIndex(editor).pathOf(runtimeId);
+  const path = getCurrentRuntimeIndex(editor).pathOf(nodeKey);
 
   return path ? ([...path] as Path) : null;
 };
@@ -2560,17 +2555,17 @@ const getStateView = <
         ? (entry as NodeEntry<any>)
         : undefined;
     });
-  function getStateRuntimeId(node: Descendant): RuntimeId;
-  function getStateRuntimeId(at: Location): RuntimeId | null;
-  function getStateRuntimeId(target: Descendant | Location): RuntimeId | null {
+  function getStateNodeKey(node: Descendant): NodeKey;
+  function getStateNodeKey(at: Location): NodeKey | null;
+  function getStateNodeKey(target: Descendant | Location): NodeKey | null {
     if (NodeApi.isDescendant(target)) {
-      return getEditorRuntimeIdForNode(editor, target);
+      return getEditorNodeKeyForNode(editor, target);
     }
 
     return withLocationRootRead(editor, target, () => {
       const path = readNodePath(editor, target);
 
-      return path ? getRuntimeId(editor, path) : null;
+      return path ? getNodeKey(editor, path) : null;
     });
   }
 
@@ -2592,6 +2587,7 @@ const getStateView = <
     fragment: fragmentApi,
     getField: <TValue>(field: EditorStateField<TValue>) =>
       getStateFieldValue(editor, field),
+    key: getStateNodeKey,
     lastCommit: () => getLastCommit(editor) as EditorCommit<V> | null,
     marks: marksApi,
     meta: () => getEditorDocumentValue(editor).meta,
@@ -2719,17 +2715,18 @@ const getStateView = <
               : [];
           }
         ) as Generator<[T, Path], void, undefined>,
-      path: (target: NodeTarget, options: EditorPathOptions = {}) =>
-        withNodeTargetRootRead(editor, target, () => {
-          const at = resolveReadableNodeTarget(editor, target);
+      path: (target: NodeTarget, options: EditorPathOptions = {}) => {
+        // A Path has no root discriminator. Keep this lookup scoped to the
+        // current editor/view root; use a root view for a named-root path.
+        const at = resolveReadableNodeTarget(editor, target);
 
-          if (!at) return;
+        if (!at) return;
 
-          return (({ at, options }) =>
-            withLocationRootRead(editor, at, () =>
-              readNodePath(editor, at, options)
-            ))({ at, options });
-        }),
+        return (({ at, options }) =>
+          withLocationRootRead(editor, at, () =>
+            readNodePath(editor, at, options)
+          ))({ at, options });
+      },
       entries: <T extends PliteNode>(options = {}) =>
         withNodeTargetRootGenerator(
           editor,
@@ -3000,8 +2997,6 @@ const getStateView = <
         []) as readonly V[number][];
     },
     runtime: Object.freeze({
-      id: getStateRuntimeId,
-      path: (runtimeId) => getPathByRuntimeId(editor, runtimeId),
       snapshot: () => getSnapshot(editor) as EditorSnapshot<V>,
     }),
     schema: getEditorSchema(editor),
@@ -3317,7 +3312,10 @@ const getUpdateView = <
       }
 
       runMutation({ at: targetAt }, () =>
-        txRecord.nodes.set({ type: nextType }, { at: targetAt, ...options })
+        setNodes(editor, { type: nextType } as never, {
+          at: targetAt,
+          ...options,
+        })
       );
     },
     (command, [blockType, options]) => {
@@ -3497,24 +3495,12 @@ const getUpdateView = <
   const setTransactionNodes = defineSemanticUpdateMethod<
     EditorTransactionNodesApi<V>['set']
   >(
-    (...args) => {
-      const { options, props } = normalizeNodeSetInput<V>(
-        args,
-        (property) => state.schema.property(property)?.key
-      );
-
-      return runTargetMutation(options, (resolvedOptions) =>
+    (props, options) =>
+      runTargetMutation(options, (resolvedOptions) =>
         setNodes(editor, props, resolvedOptions)
-      );
-    },
-    (command, args) => {
-      const { options, props } = normalizeNodeSetInput<V>(
-        args,
-        (property) => state.schema.property(property)?.key
-      );
-
-      command(editorCommands.setNodes, { options, props });
-    }
+      ),
+    (command, [props, options]) =>
+      command(editorCommands.setNodes, { options, props })
   );
   const unsetTransactionNodes = ((
     props: string | readonly string[] | SchemaPropertyHandle,
@@ -3530,7 +3516,7 @@ const getUpdateView = <
         resolvedOptions
       )
     )) as EditorTransactionNodesApi<V>['unset'];
-  const discardReplacedRuntimeIdentities = (root: string, path: Path) => {
+  const discardReplacedNodeKeys = (root: string, path: Path) => {
     const snapshot = getTransactionSnapshot(editor);
 
     if (!snapshot) return;
@@ -3538,12 +3524,12 @@ const getUpdateView = <
     const owner = getEditorRuntimeOwner(editor);
     const currentIndex = getTransactionSnapshotIndex(owner, snapshot, root);
 
-    for (const [runtimeId, currentPath] of currentIndex.entries()) {
+    for (const [nodeKey, currentPath] of currentIndex.entries()) {
       if (
         currentPath.length >= path.length &&
         path.every((part, index) => currentPath[index] === part)
       ) {
-        snapshot.discardedRuntimeIds.add(runtimeId as RuntimeId);
+        snapshot.discardedNodeKeys.add(nodeKey as NodeKey);
       }
     }
   };
@@ -3561,10 +3547,7 @@ const getUpdateView = <
       }
 
       NodeApi.get(editor, at);
-      discardReplacedRuntimeIdentities(
-        getActiveUpdateRoot(editor) ?? MAIN_ROOT_KEY,
-        at
-      );
+      discardReplacedNodeKeys(getActiveUpdateRoot(editor) ?? MAIN_ROOT_KEY, at);
 
       const replacements = Array.isArray(nodes) ? nodes : [nodes];
       const parentPath = PathApi.parent(at);
@@ -3601,15 +3584,14 @@ const getUpdateView = <
     });
   };
   const replaceChildrenNodes: EditorTransactionNodesApi<V>['replaceChildren'] =
-    (children, options) => {
-      const at = resolveNodeTargetLocation(editor, options.at);
+    (children, options) =>
+      runTargetMutation(options, (resolvedOptions) => {
+        const at = resolvedOptions?.at;
 
-      if (!at || !LocationApi.isPath(at)) return;
+        if (!at || !LocationApi.isPath(at)) return;
 
-      return runMutation({ at }, () =>
-        replaceChildren(editor, children, { ...options, at })
-      );
-    };
+        return replaceChildren(editor, children, { ...options, at });
+      });
 
   const tx: EditorCoreUpdateTransaction<V> = {
     ...state,
@@ -4216,7 +4198,7 @@ const createTransactionSpecContext = (editor: Editor) => {
     contentSliceRoots: new Set(),
     dirtyStateKeys: new Set(),
     documentState: copyDocumentState(getDocumentState(editor)),
-    discardedRuntimeIds: new Set(),
+    discardedNodeKeys: new Set(),
     draftRefs: new Set(),
     effects: [],
     extensionReconfigurations: new Map(),
@@ -4458,7 +4440,7 @@ const finalizeTransactionSpecContext = (
     spec,
     Object.freeze({
       deferValidation: context.parentId !== undefined,
-      discardedRuntimeIds: new Set(snapshot.discardedRuntimeIds),
+      discardedNodeKeys: new Set(snapshot.discardedNodeKeys),
       document: snapshot.builder.prepare(changes, { classify: false }),
     })
   );
@@ -4521,8 +4503,8 @@ const applyPreparedTransactionSpecChange = (
 
   if (prepared.deferValidation) snapshot.builder.requireValidation();
 
-  for (const runtimeId of prepared.discardedRuntimeIds) {
-    snapshot.discardedRuntimeIds.add(runtimeId);
+  for (const nodeKey of prepared.discardedNodeKeys) {
+    snapshot.discardedNodeKeys.add(nodeKey);
   }
 
   applyTransactionSpecDocumentChangeStep(editor, step, options);
@@ -5464,8 +5446,8 @@ const shareSnapshotNode = (
   path: Path,
   previousSnapshot: EditorSnapshot
 ): Descendant => {
-  const runtimeId = getOrCreateRuntimeId(node, editor);
-  const previousPath = previousSnapshot.index.pathOf(runtimeId);
+  const nodeKey = getOrCreateNodeKey(node, editor);
+  const previousPath = previousSnapshot.index.pathOf(nodeKey);
   const previousNode = previousPath
     ? getSnapshotNode(previousSnapshot.children, previousPath)
     : undefined;
@@ -5495,7 +5477,7 @@ const shareSnapshotNode = (
       })
     : Object.freeze(props);
 
-  inheritRuntimeId(nextNode, node, editor);
+  inheritNodeKey(nextNode, node, editor);
 
   return nextNode as Descendant;
 };
@@ -5542,7 +5524,7 @@ const snapshotIndexesEqual = (left: SnapshotIndex, right: SnapshotIndex) => {
 
   return (
     leftEntries.length === rightEntries.length &&
-    leftEntries.every(([runtimeId, path]) => right.idAt(path) === runtimeId)
+    leftEntries.every(([nodeKey, path]) => right.keyAt(path) === nodeKey)
   );
 };
 
@@ -5857,7 +5839,7 @@ export const applyBuiltDocumentChange = (
   build: (builder: ChangeDraft, root: RootKey) => DocumentChangeStep,
   options: ApplyDocumentChangeOptions &
     Readonly<{
-      runtimeIdTransfers?: readonly Readonly<{
+      nodeKeyTransfers?: readonly Readonly<{
         path: Path;
         source: Descendant;
       }>[];
@@ -5865,16 +5847,16 @@ export const applyBuiltDocumentChange = (
 ) => {
   const root = getActiveUpdateRoot(editor) ?? MAIN_ROOT_KEY;
   const step = build(getActiveDocumentChangeBuilder(editor), root);
-  const { runtimeIdTransfers, ...applyOptions } = options;
+  const { nodeKeyTransfers, ...applyOptions } = options;
 
-  if (runtimeIdTransfers) {
+  if (nodeKeyTransfers) {
     const children = getDocumentRootChildren(step.after, root);
     const owner = getEditorRuntimeOwner(editor);
 
-    for (const transfer of runtimeIdTransfers) {
+    for (const transfer of nodeKeyTransfers) {
       const node = NodeApi.get({ children } as PliteNode, transfer.path);
 
-      inheritRuntimeIds(node as Descendant, transfer.source, owner);
+      inheritNodeKeys(node as Descendant, transfer.source, owner);
     }
   }
 
@@ -6102,14 +6084,14 @@ const getDocumentRootChildren = (
     ? value.children
     : (value.roots?.[root] ?? [])) as readonly Descendant[];
 
-const inheritDocumentChangeStepRuntimeIds = (
+const inheritDocumentChangeStepNodeKeys = (
   editor: Editor,
   snapshot: TransactionSnapshot,
   step: DocumentChangeStep,
   options: Readonly<{ defer?: boolean }> = {}
 ) => {
   const owner = getEditorRuntimeOwner(editor);
-  const publishRuntimeIds = getTransactionSpecContext(editor)?.kind !== 'spec';
+  const publishNodeKeys = getTransactionSpecContext(editor)?.kind !== 'spec';
   const indexes = new Map<
     string,
     Readonly<{ after: SnapshotIndex; before: SnapshotIndex }>
@@ -6160,11 +6142,11 @@ const inheritDocumentChangeStepRuntimeIds = (
           }
         });
       const pathStable =
-        publishRuntimeIds &&
+        publishNodeKeys &&
         classification &&
         !classification.structure &&
         !changesElementType &&
-        snapshot.discardedRuntimeIds.size === 0;
+        snapshot.discardedNodeKeys.size === 0;
 
       if (pathStable && !snapshot.runtimeIndexRollbacks.has(source)) {
         snapshot.runtimeIndexRollbacks.set(
@@ -6189,9 +6171,9 @@ const inheritDocumentChangeStepRuntimeIds = (
               rootChange,
               source,
               owner,
-              snapshot.discardedRuntimeIds,
+              snapshot.discardedNodeKeys,
               step.runtimeCandidates.get(root),
-              publishRuntimeIds
+              publishNodeKeys
             )
       );
     };
@@ -6206,6 +6188,10 @@ const inheritDocumentChangeStepRuntimeIds = (
 
     const mappedIndex = mapIndex();
     const resolvedSourceIndex = getSourceIndex();
+
+    if (!currentIndex && !baseIndex) {
+      snapshot.baseRuntimeIndexes[root] = () => resolvedSourceIndex;
+    }
 
     snapshot.rootIndexes[root] = mappedIndex;
     indexes.set(
@@ -6243,12 +6229,13 @@ const applyTransactionSpecDocumentChangeStep = (
   const selectionBefore = getCurrentSelection(editor);
   const selectionRoot = getCurrentSelectionRoot(editor);
   const hasExplicitSelection = Object.hasOwn(options, 'selectionAfter');
+
   const runtimeIndexes = profileCoreDuration(
     specContext.kind === 'spec'
       ? 'transaction-draft-runtime-paths'
-      : 'transaction-runtime-ids',
+      : 'transaction-node-keys',
     () =>
-      inheritDocumentChangeStepRuntimeIds(editor, snapshot, step, {
+      inheritDocumentChangeStepNodeKeys(editor, snapshot, step, {
         defer: specContext.kind === 'spec' && hasExplicitSelection,
       })
   );
@@ -6353,11 +6340,9 @@ export const applyDocumentChange = (
     throw new Error('Document changes require an active transaction draft.');
   }
 
-  applyTransactionSpecDocumentChangeStep(
-    editor,
-    snapshot.builder.applyCanonical(change),
-    options
-  );
+  const step = snapshot.builder.applyCanonical(change);
+
+  applyTransactionSpecDocumentChangeStep(editor, step, options);
 };
 
 export const notifyListeners = (editor: Editor, change?: EditorCommit) => {
@@ -6533,7 +6518,7 @@ const createEditorUpdateDraftContext = (
     childrenRoot,
     contentSliceRoots: new Set(),
     documentState,
-    discardedRuntimeIds: new Set(),
+    discardedNodeKeys: new Set(),
     dirtyStateKeys: new Set(),
     draftRefs: new Set(),
     effects: [],
@@ -6922,6 +6907,11 @@ export const runEditorTransaction = (
                   ])
                 ),
                 before: beforeSnapshot,
+                beforeIndexAt: (root) =>
+                  root === MAIN_ROOT_KEY
+                    ? beforeSnapshot.index
+                    : (snapshot.baseRuntimeIndexes[root]?.() ??
+                      snapshot.baseSnapshots[root]?.index),
                 beforeValue,
                 changes: canonicalChanges,
                 dirtyStateKeys: [...snapshot.dirtyStateKeys],
@@ -7283,6 +7273,7 @@ export const toEditorCoreStateView = <V extends Value>(
     facet: state.facet,
     fragment: state.fragment,
     getField: state.getField,
+    key: state.key,
     lastCommit: state.lastCommit,
     marks: state.marks,
     meta: state.meta,
@@ -7337,9 +7328,9 @@ export const initializePublicState = <
   EDITOR_FOCUSED.set(editor, false);
   setEditorMaxLength(editor, options.maxLength);
   EDITOR_READ_ONLY.set(editor, options.readOnly ?? false);
-  seedRuntimeIds(initialChildren, editor);
+  seedNodeKeys(initialChildren, editor);
   for (const children of Object.values(initialRoots)) {
-    seedRuntimeIds(children, editor);
+    seedNodeKeys(children, editor);
   }
   const initialSelectionRoot =
     getPublicExplicitRangeRoot(options.initialSelection) ?? MAIN_ROOT_KEY;
@@ -7375,6 +7366,6 @@ export const initializeEditorSchemaDocument = (
   CURRENT_CHILDREN_ROOT.set(editor, MAIN_ROOT_KEY);
   if (document.meta === undefined) DOCUMENT_STATE.delete(editor);
   else DOCUMENT_STATE.set(editor, document.meta);
-  for (const children of Object.values(roots)) seedRuntimeIds(children, editor);
+  for (const children of Object.values(roots)) seedNodeKeys(children, editor);
   clearSnapshotCache(editor);
 };

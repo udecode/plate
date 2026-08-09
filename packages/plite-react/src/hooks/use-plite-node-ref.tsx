@@ -3,7 +3,7 @@ import type {
   Descendant,
   Editor as PliteEditor,
   Path,
-  RuntimeId,
+  NodeKey,
 } from '@platejs/plite';
 import {
   EDITOR_TO_KEY_TO_ELEMENT,
@@ -18,7 +18,7 @@ import { EditorContext } from '../context';
 import {
   type Editor,
   getEditorRuntimeOwner,
-  getPathByRuntimeId as editorGetPathByRuntimeId,
+  getPathByNodeKey as editorGetPathByNodeKey,
   hasPath as editorHasPath,
 } from '../editable/runtime-editor-api';
 import { recordPliteReactRender } from '../render-profiler';
@@ -30,16 +30,16 @@ const EDITOR_TO_PATH_TO_ELEMENT = new WeakMap<
 >();
 const EDITOR_TO_RUNTIME_ID_TO_ELEMENTS = new WeakMap<
   Editor,
-  Map<RuntimeId, Set<HTMLElement>>
+  Map<NodeKey, Set<HTMLElement>>
 >();
 const EDITOR_TO_SYNCED_TEXT_PATHS = new WeakMap<Editor, Set<string>>();
 const EDITOR_TO_SYNCED_TEXT_VALUES = new WeakMap<
   Editor,
-  Map<RuntimeId, string>
+  Map<NodeKey, string>
 >();
 const EDITOR_TO_TEXT_RENDER_REVISIONS = new WeakMap<
   Editor,
-  Map<RuntimeId, number>
+  Map<NodeKey, number>
 >();
 const ELEMENT_TO_PATH = new WeakMap<HTMLElement, Path>();
 
@@ -98,34 +98,34 @@ const unbindPathElement = (
   }
 };
 
-const getRuntimeIdElementMap = (editor: Editor) => {
+const getNodeKeyElementMap = (editor: Editor) => {
   const existing = EDITOR_TO_RUNTIME_ID_TO_ELEMENTS.get(editor);
 
   if (existing) {
     return existing;
   }
 
-  const next = new Map<RuntimeId, Set<HTMLElement>>();
+  const next = new Map<NodeKey, Set<HTMLElement>>();
   EDITOR_TO_RUNTIME_ID_TO_ELEMENTS.set(editor, next);
   return next;
 };
 
-const bindRuntimeIdElement = (
+const bindNodeKeyElement = (
   editor: Editor,
-  runtimeId: RuntimeId,
+  nodeKey: NodeKey,
   element: HTMLElement
 ) => {
-  const runtimeElementMap = getRuntimeIdElementMap(editor);
-  const elements = runtimeElementMap.get(runtimeId) ?? new Set<HTMLElement>();
+  const runtimeElementMap = getNodeKeyElementMap(editor);
+  const elements = runtimeElementMap.get(nodeKey) ?? new Set<HTMLElement>();
 
   elements.add(element);
-  runtimeElementMap.set(runtimeId, elements);
+  runtimeElementMap.set(nodeKey, elements);
 
   return () => {
     elements.delete(element);
 
     if (elements.size === 0) {
-      runtimeElementMap.delete(runtimeId);
+      runtimeElementMap.delete(nodeKey);
     }
   };
 };
@@ -134,12 +134,12 @@ const syncPliteElementPath = ({
   editor,
   element,
   path,
-  runtimeId,
+  nodeKey,
 }: {
   editor: Editor;
   element: HTMLElement;
   path: Path;
-  runtimeId: RuntimeId;
+  nodeKey: NodeKey;
 }) => {
   const nextPathKey = pathKey(path);
   const previousPath = ELEMENT_TO_PATH.get(element);
@@ -155,14 +155,14 @@ const syncPliteElementPath = ({
   ELEMENT_TO_PATH.set(element, [...path] as Path);
   markDOMSyncMutationTarget(element, 'attributes', 'data-plite-path');
   element.setAttribute('data-plite-path', path.join(','));
-  markDOMSyncMutationTarget(element, 'attributes', 'data-plite-runtime-id');
-  element.setAttribute('data-plite-runtime-id', runtimeId);
+  markDOMSyncMutationTarget(element, 'attributes', 'data-plite-node-key');
+  element.setAttribute('data-plite-node-key', nodeKey);
   bindPathElement(editor, path, element);
 };
 
 export const syncPliteNodePathBindingsToDOM = (
   editor: PliteEditor<any, any>,
-  runtimeIds?: readonly RuntimeId[] | null
+  nodeKeys?: readonly NodeKey[] | null
 ) => {
   const runtimeElementMap = EDITOR_TO_RUNTIME_ID_TO_ELEMENTS.get(editor);
 
@@ -171,16 +171,16 @@ export const syncPliteNodePathBindingsToDOM = (
   }
 
   const entries =
-    runtimeIds == null
+    nodeKeys == null
       ? [...runtimeElementMap.entries()]
-      : runtimeIds.flatMap((runtimeId) => {
-          const elements = runtimeElementMap.get(runtimeId);
+      : nodeKeys.flatMap((nodeKey) => {
+          const elements = runtimeElementMap.get(nodeKey);
 
-          return elements ? ([[runtimeId, elements]] as const) : [];
+          return elements ? ([[nodeKey, elements]] as const) : [];
         });
 
-  for (const [runtimeId, elements] of entries) {
-    const path = editorGetPathByRuntimeId(editor, runtimeId);
+  for (const [nodeKey, elements] of entries) {
+    const path = editorGetPathByNodeKey(editor, nodeKey);
 
     for (const element of [...elements]) {
       if (!element.isConnected) {
@@ -201,11 +201,11 @@ export const syncPliteNodePathBindingsToDOM = (
         continue;
       }
 
-      syncPliteElementPath({ editor, element, path, runtimeId });
+      syncPliteElementPath({ editor, element, path, nodeKey });
     }
 
     if (elements.size === 0) {
-      runtimeElementMap.delete(runtimeId);
+      runtimeElementMap.delete(nodeKey);
     }
   }
 };
@@ -247,24 +247,24 @@ export const didSyncTextPathToDOM = (editor: Editor, path: readonly number[]) =>
 
 export const getDOMTextRenderRevision = (
   editor: Editor,
-  runtimeIds: readonly RuntimeId[]
+  nodeKeys: readonly NodeKey[]
 ) => {
   const revisions = EDITOR_TO_TEXT_RENDER_REVISIONS.get(
     getEditorRuntimeOwner(editor)
   );
 
-  return runtimeIds.reduce(
-    (revision, runtimeId) => revision + (revisions?.get(runtimeId) ?? 0),
+  return nodeKeys.reduce(
+    (revision, nodeKey) => revision + (revisions?.get(nodeKey) ?? 0),
     0
   );
 };
 
-const bumpDOMTextRenderRevision = (editor: Editor, runtimeId: RuntimeId) => {
+const bumpDOMTextRenderRevision = (editor: Editor, nodeKey: NodeKey) => {
   const owner = getEditorRuntimeOwner(editor);
   const revisions =
-    EDITOR_TO_TEXT_RENDER_REVISIONS.get(owner) ?? new Map<RuntimeId, number>();
+    EDITOR_TO_TEXT_RENDER_REVISIONS.get(owner) ?? new Map<NodeKey, number>();
 
-  revisions.set(runtimeId, (revisions.get(runtimeId) ?? 0) + 1);
+  revisions.set(nodeKey, (revisions.get(nodeKey) ?? 0) + 1);
   EDITOR_TO_TEXT_RENDER_REVISIONS.set(owner, revisions);
 };
 
@@ -504,10 +504,10 @@ const syncChangedTextToElement = ({
 };
 
 const getMappedTextElements = (
-  runtimeElementMap: Map<RuntimeId, Set<HTMLElement>>,
-  runtimeId: RuntimeId
+  runtimeElementMap: Map<NodeKey, Set<HTMLElement>>,
+  nodeKey: NodeKey
 ) => {
-  const mappedElements = runtimeElementMap.get(runtimeId);
+  const mappedElements = runtimeElementMap.get(nodeKey);
 
   if (!mappedElements) return [];
 
@@ -516,7 +516,7 @@ const getMappedTextElements = (
   for (const element of mappedElements) {
     if (
       element.isConnected &&
-      element.getAttribute('data-plite-runtime-id') === runtimeId
+      element.getAttribute('data-plite-node-key') === nodeKey
     ) {
       elements.push(element);
     } else {
@@ -524,7 +524,7 @@ const getMappedTextElements = (
     }
   }
 
-  if (mappedElements.size === 0) runtimeElementMap.delete(runtimeId);
+  if (mappedElements.size === 0) runtimeElementMap.delete(nodeKey);
 
   return elements;
 };
@@ -553,18 +553,18 @@ const readTextAtPath = (editor: Editor, path: Path) => {
 
 export const syncChangedTextToDOM = (
   editor: PliteEditor<any, any>,
-  changedTextRuntimeIds: readonly RuntimeId[]
+  changedTextNodeKeys: readonly NodeKey[]
 ) => {
   const synced = new Set<string>();
   const runtimeElementMap = EDITOR_TO_RUNTIME_ID_TO_ELEMENTS.get(editor);
   const syncedValues =
-    EDITOR_TO_SYNCED_TEXT_VALUES.get(editor) ?? new Map<RuntimeId, string>();
+    EDITOR_TO_SYNCED_TEXT_VALUES.get(editor) ?? new Map<NodeKey, string>();
   const result = () => ({
-    changedTextCount: changedTextRuntimeIds.length,
+    changedTextCount: changedTextNodeKeys.length,
     syncedTextCount: synced.size,
   });
 
-  if (changedTextRuntimeIds.length > 0) {
+  if (changedTextNodeKeys.length > 0) {
     recordDOMTextSyncProfile('attempt');
   }
 
@@ -580,8 +580,8 @@ export const syncChangedTextToDOM = (
     return result();
   }
 
-  for (const runtimeId of changedTextRuntimeIds) {
-    const path = editorGetPathByRuntimeId(editor, runtimeId);
+  for (const nodeKey of changedTextNodeKeys) {
+    const path = editorGetPathByNodeKey(editor, nodeKey);
 
     if (!path) {
       recordDOMTextSyncProfile('skip-no-path');
@@ -589,7 +589,7 @@ export const syncChangedTextToDOM = (
     }
 
     const key = pathKey(path);
-    const elements = getMappedTextElements(runtimeElementMap, runtimeId);
+    const elements = getMappedTextElements(runtimeElementMap, nodeKey);
 
     if (elements.length === 0) {
       recordDOMTextSyncProfile('skip-no-element');
@@ -609,7 +609,7 @@ export const syncChangedTextToDOM = (
     }
 
     const previousText =
-      syncedValues.get(runtimeId) ??
+      syncedValues.get(nodeKey) ??
       elements[0]!.textContent?.replace(/\uFEFF/g, '');
 
     if (previousText == null) {
@@ -625,12 +625,12 @@ export const syncChangedTextToDOM = (
       })
     );
 
-    syncedValues.set(runtimeId, text);
+    syncedValues.set(nodeKey, text);
 
     if (didSyncEveryElement) {
       synced.add(key);
     } else {
-      bumpDOMTextRenderRevision(editor, runtimeId);
+      bumpDOMTextRenderRevision(editor, nodeKey);
     }
   }
 
@@ -644,17 +644,17 @@ const bindPliteNodeElement = ({
   node,
   providedPathKey,
   providedPliteNode,
-  runtimeId,
+  nodeKey,
 }: {
   editor: Editor;
   node: Node;
   providedPathKey: string | null;
   providedPliteNode: Descendant | null;
-  runtimeId: RuntimeId;
+  nodeKey: NodeKey;
 }) => {
   const path =
     providedPathKey == null
-      ? editorGetPathByRuntimeId(editor, runtimeId)
+      ? editorGetPathByNodeKey(editor, nodeKey)
       : parsePathKey(providedPathKey);
 
   if (!path || !(node instanceof HTMLElement)) {
@@ -670,7 +670,7 @@ const bindPliteNodeElement = ({
   if (!pliteNode) {
     return null;
   }
-  const key = getOrCreateDOMNodeKey(editor, runtimeId, pliteNode);
+  const key = getOrCreateDOMNodeKey(editor, nodeKey, pliteNode);
   const keyToElement = EDITOR_TO_KEY_TO_ELEMENT.get(editor) ?? new WeakMap();
 
   if (!EDITOR_TO_KEY_TO_ELEMENT.has(editor)) {
@@ -679,20 +679,20 @@ const bindPliteNodeElement = ({
 
   keyToElement.set(key, node);
   NODE_TO_ELEMENT.set(pliteNode, node);
-  NODE_TO_RUNTIME_ID.set(pliteNode, runtimeId);
+  NODE_TO_RUNTIME_ID.set(pliteNode, nodeKey);
   ELEMENT_TO_NODE.set(node, pliteNode);
   if ('text' in pliteNode && typeof pliteNode.text === 'string') {
     const syncedValues =
-      EDITOR_TO_SYNCED_TEXT_VALUES.get(editor) ?? new Map<RuntimeId, string>();
+      EDITOR_TO_SYNCED_TEXT_VALUES.get(editor) ?? new Map<NodeKey, string>();
 
-    syncedValues.set(runtimeId, pliteNode.text);
+    syncedValues.set(nodeKey, pliteNode.text);
     EDITOR_TO_SYNCED_TEXT_VALUES.set(editor, syncedValues);
   }
-  syncPliteElementPath({ editor, element: node, path, runtimeId });
-  const cleanupRuntimeIdElement = bindRuntimeIdElement(editor, runtimeId, node);
+  syncPliteElementPath({ editor, element: node, path, nodeKey });
+  const cleanupNodeKeyElement = bindNodeKeyElement(editor, nodeKey, node);
 
   return () => {
-    cleanupRuntimeIdElement();
+    cleanupNodeKeyElement();
 
     if (keyToElement.get(key) === node) {
       keyToElement.delete(key);
@@ -701,7 +701,7 @@ const bindPliteNodeElement = ({
     if (NODE_TO_ELEMENT.get(pliteNode) === node) {
       NODE_TO_ELEMENT.delete(pliteNode);
 
-      if (NODE_TO_RUNTIME_ID.get(pliteNode) === runtimeId) {
+      if (NODE_TO_RUNTIME_ID.get(pliteNode) === nodeKey) {
         NODE_TO_RUNTIME_ID.delete(pliteNode);
       }
     }
@@ -717,15 +717,15 @@ const bindPliteNodeElement = ({
       ELEMENT_TO_PATH.delete(node);
     }
 
-    if (node.getAttribute('data-plite-runtime-id') === runtimeId) {
+    if (node.getAttribute('data-plite-node-key') === nodeKey) {
       markDOMSyncMutationTarget(node, 'attributes', 'data-plite-path');
       node.removeAttribute('data-plite-path');
-      markDOMSyncMutationTarget(node, 'attributes', 'data-plite-runtime-id');
-      node.removeAttribute('data-plite-runtime-id');
+      markDOMSyncMutationTarget(node, 'attributes', 'data-plite-node-key');
+      node.removeAttribute('data-plite-node-key');
     }
 
-    if (!getRuntimeIdElementMap(editor).has(runtimeId)) {
-      EDITOR_TO_SYNCED_TEXT_VALUES.get(editor)?.delete(runtimeId);
+    if (!getNodeKeyElementMap(editor).has(nodeKey)) {
+      EDITOR_TO_SYNCED_TEXT_VALUES.get(editor)?.delete(nodeKey);
     }
   };
 };
@@ -737,7 +737,7 @@ const bindPliteNodeElement = ({
  * DOM-to-Plite translation accurate for a known runtime, node, or path.
  */
 export const usePliteNodeRef = (
-  runtimeId: RuntimeId | null,
+  nodeKey: NodeKey | null,
   options: {
     path?: Path | null;
     pliteNode?: Descendant | null;
@@ -762,7 +762,7 @@ export const usePliteNodeRef = (
         return;
       }
 
-      if (!editor || !runtimeId) {
+      if (!editor || !nodeKey) {
         return;
       }
 
@@ -771,10 +771,10 @@ export const usePliteNodeRef = (
         node: nextNode,
         providedPathKey,
         providedPliteNode,
-        runtimeId,
+        nodeKey,
       });
     },
-    [cleanupBinding, editor, providedPathKey, providedPliteNode, runtimeId]
+    [cleanupBinding, editor, providedPathKey, providedPliteNode, nodeKey]
   );
 
   useIsomorphicLayoutEffect(() => {

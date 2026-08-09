@@ -47,81 +47,83 @@ export type PropertyValueOptions<TValue> = PropertyValueBaseOptions<TValue> &
   PropertyValidation<TValue>;
 
 /** One immutable JSON value law shared by text and element properties. */
-export type PropertyValueDescriptor<
+export interface PropertyValueDescriptor<
   TValue = unknown,
   TKind extends PropertyValueKind = PropertyValueKind,
-  TOptions extends PropertyValueOptions<TValue> | undefined = undefined,
-> = Readonly<
-  {
-    /** Type-only carrier for exact property-value inference. */
-    readonly '~schema.value'?: TValue;
-    kind: TKind;
-    omitDefault: [TOptions] extends [undefined]
-      ? boolean
-      : TOptions extends { omitDefault: true }
-        ? true
-        : false;
-    required: [TOptions] extends [undefined]
-      ? boolean
-      : TOptions extends { required: true }
-        ? true
-        : false;
-    /** Runtime validator; excluded from structural schema identity. */
-    validate?: (value: unknown) => value is TValue;
-    /** Structural identity for `validate`; required whenever it is present. */
-    validationVersion?: number;
-  } & ([TOptions] extends [undefined]
-    ? { default?: TValue }
-    : TOptions extends { default: infer TDefault extends TValue }
-      ? { default: TDefault }
-      : { default?: never }) &
-    ([TOptions] extends [undefined]
-      ? { generate?: () => TValue }
-      : TOptions extends { generate: infer TGenerate extends () => TValue }
-        ? { generate: TGenerate }
-        : { generate?: never })
->;
+  TOptions extends PropertyValueOptions<TValue> | undefined =
+    | PropertyValueOptions<TValue>
+    | undefined,
+> {
+  /** Type-only carrier for exact property-option inference. */
+  readonly '~schema.options'?: TOptions;
+  /** Type-only carrier for exact property-value inference. */
+  readonly '~schema.value'?: TValue;
+  readonly default?: TValue;
+  readonly generate?: () => TValue;
+  readonly kind: TKind;
+  readonly omitDefault: [PropertyValueOptions<TValue> | undefined] extends [
+    TOptions,
+  ]
+    ? boolean
+    : TOptions extends { omitDefault: true }
+      ? true
+      : false;
+  readonly required: [PropertyValueOptions<TValue> | undefined] extends [
+    TOptions,
+  ]
+    ? boolean
+    : TOptions extends { required: true }
+      ? true
+      : false;
+  /** Runtime validator; excluded from structural schema identity. */
+  readonly validate?: (value: unknown) => value is TValue;
+  /** Structural identity for `validate`; required whenever it is present. */
+  readonly validationVersion?: number;
+}
 
-export type PropertyBooleanDescriptor<
+export interface PropertyBooleanDescriptor<
   TOptions extends PropertyValueOptions<boolean> | undefined = undefined,
-> = PropertyValueDescriptor<boolean, 'boolean', TOptions>;
-export type PropertyEnumDescriptor<
+> extends PropertyValueDescriptor<boolean, 'boolean', TOptions> {}
+export interface PropertyEnumDescriptor<
   TValues extends readonly string[] = readonly string[],
   TOptions extends
     | PropertyValueOptions<TValues[number]>
     | undefined = undefined,
-> = PropertyValueDescriptor<TValues[number], 'enum', TOptions> &
-  Readonly<{
-    values: TValues;
-  }>;
-export type PropertyJsonDescriptor<
+> extends PropertyValueDescriptor<TValues[number], 'enum', TOptions> {
+  readonly values: TValues;
+}
+export interface PropertyJsonDescriptor<
   TValue = PropertyJsonValue,
   TOptions extends PropertyValueOptions<TValue> | undefined = undefined,
-> = PropertyValueDescriptor<TValue, 'json', TOptions>;
-export type PropertyNumberDescriptor<
+> extends PropertyValueDescriptor<TValue, 'json', TOptions> {}
+export interface PropertyNumberDescriptor<
   TOptions extends PropertyValueOptions<number> | undefined = undefined,
-> = PropertyValueDescriptor<number, 'number', TOptions>;
-export type PropertyStringDescriptor<
+> extends PropertyValueDescriptor<number, 'number', TOptions> {}
+export interface PropertyStringDescriptor<
   TOptions extends PropertyValueOptions<string> | undefined = undefined,
-> = PropertyValueDescriptor<string, 'string', TOptions>;
+> extends PropertyValueDescriptor<string, 'string', TOptions> {}
 
-export type PropertySetDescriptor<
+export interface PropertySetDescriptor<
   TItemDescriptor extends PropertyValueDescriptor = PropertyValueDescriptor,
   TOptions extends
     | PropertySetOptions<PropertyValueOf<TItemDescriptor>>
     | undefined = undefined,
-> = PropertyValueDescriptor<
-  readonly PropertyValueOf<TItemDescriptor>[],
-  'set',
-  TOptions
-> &
-  Readonly<{
-    item: TItemDescriptor;
-  }>;
+> extends PropertyValueDescriptor<
+    readonly PropertyValueOf<TItemDescriptor>[],
+    'set',
+    TOptions
+  > {
+  readonly item: TItemDescriptor;
+}
 
 export type PropertyValueOf<TDescriptor> =
   TDescriptor extends Readonly<{ '~schema.value'?: infer TValue }>
     ? TValue
+    : never;
+
+export type PropertyOptionsOf<TDescriptor> =
+  TDescriptor extends Readonly<{ '~schema.options'?: infer TOptions }>
+    ? TOptions
     : never;
 
 export type PropertySetOptions<TItem> = PropertyValueOptions<readonly TItem[]>;
@@ -477,8 +479,6 @@ export type EditorSchemaPropertyOverride = Readonly<{
   kind: 'property';
   /** Extension that owns the property declaration. */
   source: string;
-  /** Replace the persisted property key. */
-  key?: string;
   /** Replace the property's target relationship. */
   target?: SchemaTarget | null;
 }>;
@@ -497,7 +497,6 @@ export type EditorSchemaElementOverrideInput = Readonly<{
 
 /** Property relationship facets accepted by one closed-application override. */
 export type EditorSchemaPropertyOverrideInput = Readonly<{
-  key?: string;
   target?: SchemaTarget | null;
 }>;
 
@@ -1310,10 +1309,14 @@ type SchemaEntryRequiredKey<TEntry> = TEntry extends {
 }
   ? TDescriptor extends { required: true }
     ? TKey
-    : TDescriptor extends { generate: (...args: never[]) => unknown }
+    : PropertyOptionsOf<TDescriptor> extends {
+          generate: (...args: never[]) => unknown;
+        }
       ? TKey
-      : TDescriptor extends { default: unknown; omitDefault: false }
-        ? TKey
+      : PropertyOptionsOf<TDescriptor> extends { default: unknown }
+        ? TDescriptor extends { omitDefault: false }
+          ? TKey
+          : never
         : never
   : never;
 

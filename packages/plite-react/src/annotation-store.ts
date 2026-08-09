@@ -2,7 +2,7 @@ import type {
   Anchor,
   EditorCommit,
   Range,
-  RuntimeId,
+  NodeKey,
   Editor as EditorType,
 } from '@platejs/plite';
 import {
@@ -314,7 +314,7 @@ const createPliteAnnotationStoreInternal = <
           entity: resolved,
           outputs:
             projected?.map((segment) => ({
-              key: segment.runtimeId,
+              key: segment.key,
               value: Object.freeze({
                 data: projectionData,
                 end: segment.end,
@@ -354,7 +354,7 @@ const createPliteAnnotationStoreInternal = <
   const getProjectionSnapshot = () =>
     mappedSource.getSnapshot().byOutputKey as Readonly<
       Record<
-        RuntimeId,
+        NodeKey,
         readonly PliteProjectionEntry<
           PliteAnnotationProjectionData<TProjection>
         >[]
@@ -390,8 +390,8 @@ const createPliteAnnotationStoreInternal = <
     if (!mappedResult.ok) return;
 
     const annotationChangedIds = mappedResult.value.changedEntityIds;
-    const projectionChangedRuntimeIds = mappedResult.value
-      .changedOutputKeys as readonly RuntimeId[];
+    const projectionChangedNodeKeys = mappedResult.value
+      .changedOutputKeys as readonly NodeKey[];
 
     metrics = Object.freeze({
       ...metrics,
@@ -408,7 +408,7 @@ const createPliteAnnotationStoreInternal = <
 
     if (
       annotationChangedIds.length === 0 &&
-      projectionChangedRuntimeIds.length === 0 &&
+      projectionChangedNodeKeys.length === 0 &&
       !mappedResult.value.orderChanged
     ) {
       return;
@@ -420,11 +420,11 @@ const createPliteAnnotationStoreInternal = <
           annotationsStore.countKeySubscribers(annotationChangedIds)
         : 0;
     const projectionSubscriberWakeCount =
-      projectionChangedRuntimeIds.length > 0
+      projectionChangedNodeKeys.length > 0
         ? projectionsStore.subscriberCount()
         : 0;
     const runtimeSubscriberWakeCount = projectionsStore.countKeySubscribers(
-      projectionChangedRuntimeIds
+      projectionChangedNodeKeys
     );
 
     metrics = Object.freeze({
@@ -434,7 +434,7 @@ const createPliteAnnotationStoreInternal = <
       changedAnnotationCount:
         metrics.changedAnnotationCount + annotationChangedIds.length,
       changedRuntimeBucketCount:
-        metrics.changedRuntimeBucketCount + projectionChangedRuntimeIds.length,
+        metrics.changedRuntimeBucketCount + projectionChangedNodeKeys.length,
       projectionSubscriberWakeCount:
         metrics.projectionSubscriberWakeCount + projectionSubscriberWakeCount,
       recomputeCount: metrics.recomputeCount + 1,
@@ -446,10 +446,10 @@ const createPliteAnnotationStoreInternal = <
       annotationsStore.publish(toAnnotationSnapshot(), annotationChangedIds);
     }
 
-    if (projectionChangedRuntimeIds.length > 0) {
+    if (projectionChangedNodeKeys.length > 0) {
       projectionsStore.publish(
         getProjectionSnapshot(),
-        projectionChangedRuntimeIds
+        projectionChangedNodeKeys
       );
     }
   };
@@ -462,7 +462,7 @@ const createPliteAnnotationStoreInternal = <
         ? Array.from(
             new Set([
               ...mappedSource.getIdsForOutputKeys(
-                change.changed.runtimeIdsAll('decoration')
+                change.changed.nodeKeysAll('decoration')
               ),
               ...(change.changed.hasAny('document')
                 ? mappedSource.getIdsWithoutOutputs()
@@ -521,9 +521,9 @@ const createPliteAnnotationStoreInternal = <
       return annotationsStore.getSnapshot();
     },
     projectionStore: {
-      getRuntimeSnapshot(runtimeId) {
+      getRuntimeSnapshot(nodeKey) {
         return (
-          projectionsStore.getSnapshot()[runtimeId] ?? EMPTY_PROJECTION_ENTRIES
+          projectionsStore.getSnapshot()[nodeKey] ?? EMPTY_PROJECTION_ENTRIES
         );
       },
       getSnapshot() {
@@ -532,8 +532,8 @@ const createPliteAnnotationStoreInternal = <
       subscribe(listener) {
         return projectionsStore.subscribe(listener);
       },
-      subscribeRuntimeId(runtimeId, listener) {
-        return projectionsStore.subscribeKey(runtimeId, listener);
+      subscribeNodeKey(nodeKey, listener) {
+        return projectionsStore.subscribeKey(nodeKey, listener);
       },
     },
     refresh,

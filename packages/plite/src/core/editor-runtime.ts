@@ -32,7 +32,7 @@ import type {
   EditorUpdateContext,
   EditorUpdateTransaction,
   RootKey,
-  RuntimeId,
+  NodeKey,
   Selection,
   SnapshotListener,
   Value,
@@ -99,8 +99,8 @@ export type InternalEditorSnapshotRuntime<V extends Value = Value> = {
   getChildren: () => V;
   getFragment: () => DescendantIn<V>[];
   getLastCommit: () => EditorCommit<V> | null;
-  getPathByRuntimeId: (runtimeId: RuntimeId) => Path | null;
-  getRuntimeId: (path: Path) => RuntimeId | null;
+  getPathByNodeKey: (nodeKey: NodeKey) => Path | null;
+  getNodeKey: (path: Path) => NodeKey | null;
   getSelection: () => Selection;
   getSnapshot: () => EditorSnapshot<V>;
 };

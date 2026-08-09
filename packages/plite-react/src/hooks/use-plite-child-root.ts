@@ -1,7 +1,7 @@
 import { useContext, useMemo } from 'react';
 import type { Element, NamedRootKey, RootKey } from '@platejs/plite';
 
-import { NodeRuntimeIdContext } from '../context';
+import { NodeKeyContext } from '../context';
 import { useOptionalElement } from './use-element';
 
 const DEFAULT_CHILD_ROOT_SLOT = 'default';
@@ -34,7 +34,7 @@ const getExplicitChildRoot = (
  * Resolve a stable same-runtime root key owned by an element.
  *
  * Prefer storing `childRoots[slot]` on the element when the child root is part
- * of persisted document data. The runtime-id fallback is useful for ephemeral
+ * of persisted document data. The node-key fallback is useful for ephemeral
  * island roots, but it is intentionally not a persistence contract.
  */
 export function usePliteChildRoot(
@@ -42,7 +42,7 @@ export function usePliteChildRoot(
   slot: string = DEFAULT_CHILD_ROOT_SLOT
 ): NamedRootKey {
   const contextElement = useOptionalElement();
-  const runtimeId = useContext(NodeRuntimeIdContext);
+  const nodeKey = useContext(NodeKeyContext);
   const targetElement = element ?? contextElement;
 
   return useMemo(() => {
@@ -64,12 +64,12 @@ export function usePliteChildRoot(
       return explicitRoot as NamedRootKey;
     }
 
-    if (!runtimeId) {
+    if (!nodeKey) {
       throw new Error(
-        '`usePliteChildRoot` needs an element runtime id when no explicit child root key exists.'
+        '`usePliteChildRoot` needs an element node key when no explicit child root key exists.'
       );
     }
 
-    return `plite-child:${runtimeId}:${slot}`;
-  }, [runtimeId, slot, targetElement]);
+    return `plite-child:${nodeKey}:${slot}`;
+  }, [nodeKey, slot, targetElement]);
 }

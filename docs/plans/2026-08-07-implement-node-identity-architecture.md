@@ -101,12 +101,13 @@ Execution contract:
       repository's migration tooling supports it. N/A: the pure
       `migrateElementIds` boundary is the authoritative migration because raw
       persisted values cannot be migrated safely by a source codemod.
-- [ ] Add one changeset per changed published package relative to `main`, run
+- [x] Add one changeset per changed published package relative to `main`, run
       barrels/API owners, focused package proofs, lint, P2 autoreview, and
-      relevant browser demos.
-- [ ] Keep physical-device testing deferred because no device-specific behavior
+      relevant browser demos. Changeset status has no forbidden minor release;
+      barrels, package, browser, lint, and review proof is below.
+- [x] Keep physical-device testing deferred because no device-specific behavior
       is claimed; do not edit `templates/**`, publish, commit, push, or open a PR.
-- [ ] Final handoff reports root cause/owners, final invariant/API, exact proof,
+- [x] Final handoff reports root cause/owners, final invariant/API, exact proof,
       hard cuts, migration, remaining risk, and goal-tool usage.
 
 Timed checkpoint:
@@ -184,18 +185,18 @@ Blocked condition:
 Major state:
 - task_type: major
 - task_complexity: major
-- current_phase: Targeted proof and final review
-- current_phase_status: in_progress
-- next_phase: Strict Plite, final P2 review, release/docs closure
-- goal_status: active
+- current_phase: Closeout
+- current_phase_status: completed
+- next_phase: Final handoff
+- goal_status: complete
 
 Current verdict:
-- verdict: keep the accepted two-layer identity architecture; repair its four
-  remaining implementation defects without reopening the public API
-- confidence: high in the design, not yet handoff-ready in implementation
-- next owner: final cross-package proof and release/docs closure
-- reason: all accepted Core/CLI owner findings are repaired and their focused
-  tests/typechecks pass
+- verdict: ship the accepted two-layer identity architecture; every accepted
+  owner defect and required proof gate is closed without reopening the API
+- confidence: high
+- next owner: none
+- reason: focused owners, affected source-first proof, strict Plite, public
+  declaration builds, docs, browser, release, lint, and review gates pass
 
 Completion rule:
 - Do not call `update_goal(status: complete)` while any required checklist item
@@ -253,78 +254,78 @@ Work Checklist:
 - [x] Major source records source type, id/link, title, decision type, expected
       outcome, decision criteria, likely files/packages/surfaces, browser
       surface, and highest-leverage owner.
-- [ ] Current state is mapped before proposing a new architecture, migration,
+- [x] Current state is mapped before proposing a new architecture, migration,
       benchmark, or plan.
-- [ ] Existing repo patterns, prior decisions, and nearby implementation
+- [x] Existing repo patterns, prior decisions, and nearby implementation
       constraints are recorded before external research.
-- [ ] External docs or source are used only where repo evidence does not settle
+- [x] External docs or source are used only where repo evidence does not settle
       the question, or N/A reason is recorded.
-- [ ] Options, recommendation, tradeoffs, blast radius, and rejection reasons
+- [x] Options, recommendation, tradeoffs, blast radius, and rejection reasons
       are recorded.
-- [ ] Facts, inference, and recommendation are separated.
-- [ ] Review or pressure lenses are selected and completed, or marked N/A with
+- [x] Facts, inference, and recommendation are separated.
+- [x] Review or pressure lenses are selected and completed, or marked N/A with
       reason.
-- [ ] If implementation happens, touched-surface packs cover docs, browser,
+- [x] If implementation happens, touched-surface packs cover docs, browser,
       package/API, or agent-native surfaces as needed.
-- [ ] Workspace authority recorded: every proof command names the cwd/tool that
+- [x] Workspace authority recorded: every proof command names the cwd/tool that
       owns the analyzed or changed behavior.
-- [ ] Output budget discipline recorded and followed: broad searches are
+- [x] Output budget discipline recorded and followed: broad searches are
       scoped, capped, counted, or artifacted instead of streamed into goal
       context.
-- [ ] Accepted/actionable review findings are fixed or explicitly rejected with
+- [x] Accepted/actionable review findings are fixed or explicitly rejected with
       evidence.
-- [ ] Docs pack: docs lane, target docs, nearest sibling docs, and source owner are recorded.
-- [ ] Docs pack: every named API, import, option, route, component, transform, demo, and preview is source-backed or marked N/A with reason.
-- [ ] Docs pack: docs use current-state reference voice, not changelog voice.
-- [ ] Docs pack: links, anchors, and previews target real leaf pages or are marked N/A with reason.
-- [ ] Browser pack: route, interaction path, and expected visible outcome are recorded before proof.
-- [ ] Browser pack: Browser proof is used for normal app surfaces; Chrome proof
+- [x] Docs pack: docs lane, target docs, nearest sibling docs, and source owner are recorded.
+- [x] Docs pack: every named API, import, option, route, component, transform, demo, and preview is source-backed or marked N/A with reason.
+- [x] Docs pack: docs use current-state reference voice, not changelog voice.
+- [x] Docs pack: links, anchors, and previews target real leaf pages or are marked N/A with reason.
+- [x] Browser pack: route, interaction path, and expected visible outcome are recorded before proof.
+- [x] Browser pack: Browser proof is used for normal app surfaces; Chrome proof
       is used directly for native downloads, print/print-preview, file
       picker/uploads, clipboard, dialogs/permissions, profile/extension state,
       or exact Chrome rendering; Computer Use is used when native Chrome/OS UI
       needs visual inspection and Chrome automation cannot read it.
-- [ ] Browser pack: console and network errors are checked or explicitly out of scope.
-- [ ] Browser pack: screenshot or visual waiver happens only after the
+- [x] Browser pack: console and network errors are checked or explicitly out of scope.
+- [x] Browser pack: screenshot or visual waiver happens only after the
       applicable Browser->Chrome->Computer path cannot inspect the state.
-- [ ] Package/API pack: public API, package boundary, export, and release-artifact impact are recorded.
-- [ ] Package/API pack: release artifact matrix is applied: `.changeset`, registry changelog, or explicit no-artifact reason.
-- [ ] Package/API pack: `.changeset` work loads `changeset` and follows its package/version/prose rules.
-- [ ] Package/API pack: registry-only work uses the `registry-changelog` pack instead of adding a package changeset.
-- [ ] Package/API pack: no-artifact decisions state why the diff has no published package user-visible delta from `main`.
-- [ ] Package/API pack: compatibility, migration, or hard-cut decision is explicit when public shape changes.
-- [ ] Package/API pack: package-owned typecheck/build/test proof is recorded or marked N/A with reason.
-- [ ] Package/API pack: generated barrels or release notes are updated when required.
+- [x] Package/API pack: public API, package boundary, export, and release-artifact impact are recorded.
+- [x] Package/API pack: release artifact matrix is applied: `.changeset`, registry changelog, or explicit no-artifact reason.
+- [x] Package/API pack: `.changeset` work loads `changeset` and follows its package/version/prose rules.
+- [x] Package/API pack: registry-only work uses the `registry-changelog` pack instead of adding a package changeset.
+- [x] Package/API pack: no-artifact decisions state why the diff has no published package user-visible delta from `main`. N/A: this is a published breaking API/runtime change.
+- [x] Package/API pack: compatibility, migration, or hard-cut decision is explicit when public shape changes.
+- [x] Package/API pack: package-owned typecheck/build/test proof is recorded or marked N/A with reason.
+- [x] Package/API pack: generated barrels or release notes are updated when required.
 
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
-| Named verification threshold | pending | Run the repo audit, benchmark, review, prototype, or artifact check named in this plan | pending |
-| Current-state source audit | pending | Map current owner, boundaries, constraints, and affected surfaces | pending |
-| Decision criteria closure | pending | Mark each criterion satisfied, narrowed, rejected, or blocked with evidence | pending |
-| Options / tradeoffs / rejection record | pending | Record viable options, chosen recommendation, and why alternatives lose | pending |
-| Review / pressure pass | pending | Run selected reviewer/lens or record N/A with reason | pending |
-| Review findings closure | pending | Fix or explicitly reject accepted/actionable findings and record closure proof | pending |
-| External-source audit | pending | Cite official/local clone/external sources when used, or record N/A | pending |
-| Implementation gates | pending | If code changed, close primary-template and touched-surface gates; otherwise N/A | pending |
-| Final handoff contract | pending | Record recommendation, evidence, caveats, residual risk, and next owner | pending |
-| Final lint | pending | Run `pnpm lint:fix` or scoped equivalent when files changed | pending |
-| Output budget discipline | pending | Verify no unbounded high-volume command output was streamed, or record the accidental output and recovery | pending |
-| Timed checkpoint | pending | If duration was requested, keep improving until elapsed, then finish the current loop cleanly; otherwise N/A | pending |
-| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-08-07-implement-node-identity-architecture.md` | pending |
-| Docs source-backed claim audit | pending | Verify docs claims against current source or record N/A | pending |
-| Docs links / routes / previews | pending | Verify leaf links, routes, anchors, and preview names or record N/A | pending |
-| Docs MDX/content parser | pending | Run `pnpm --filter www build:source` for MDX/content changes, or record N/A | pending |
-| Plugin page specifics | pending | For plugin pages, apply `docs-creator` kit/manual/API rules; otherwise N/A | pending |
-| Browser interaction proof | pending | Exercise target route/interaction with Browser for normal app surfaces or Chrome/Computer for native browser/OS surfaces; otherwise record blocker | pending |
-| Browser console/network check | pending | Record console/network state or why it is not applicable | pending |
-| Browser final proof artifact | pending | Record screenshot/trace/route/native proof or exact caveat | pending |
-| Public API / package boundary proof | pending | Source-audit public API, exports, and package boundary impact | pending |
-| Release artifact classification | pending | Record whether the change is published package behavior/API/types/config/runtime, registry-only, or no published user-visible delta | pending |
-| Published package changeset | pending | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/plite`, `@platejs/core`, or `platejs` | pending |
-| Registry changelog | pending | If the change is registry-only under `apps/www/src/registry/**`, use the `registry-changelog` pack and do not add a package changeset | pending |
-| No release artifact | pending | If no artifact is needed, record the exact reason: internal-only, docs-only, agent-only, test-only, or no user-visible delta from `main` | pending |
-| Package typecheck/build/test | pending | Run owning package checks or record N/A with reason | pending |
-| Barrel/export generation | pending | Run `pnpm brl` when exports or exported file layout changed, otherwise N/A | pending |
+| Named verification threshold | yes | Run the named proof | Strict Plite: 1,432 unit tests; Chromium: 698 passed, 6 expected skips; post-fix affected proof and contracts passed. |
+| Current-state source audit | yes | Map owners and boundaries | Accepted local audit plus live owner refresh for every packet. |
+| Decision criteria closure | yes | Close every criterion | Execution contract is fully checked; no public-design exception. |
+| Options / tradeoffs / rejection record | yes | Record chosen and rejected shapes | RuntimeId, path, anchor, and persisted ID remain separate; compatibility and serialized RuntimeId rejected. |
+| Review / pressure pass | yes | Run P2 review | P2 convergence review completed; accepted findings are listed below. |
+| Review findings closure | yes | Fix or reject findings | All owner defects fixed; unreachable array-property compatibility finding rejected and branch deleted. |
+| External-source audit | yes | Record source authority | N/A: accepted clean local-clone audit settled the decision. |
+| Implementation gates | yes | Close touched-surface packs | Source, types, runtime, docs, browser, release, and ledger closed. |
+| Final handoff contract | yes | Record outcome and caveats | Recorded below; device testing alone remains explicitly deferred. |
+| Final lint | yes | Run `pnpm lint:fix` | Passed; only known oversized audit-manifest warnings. |
+| Output budget discipline | yes | Keep proof bounded | Focused reads and capped output used; one broad hard-cut search exposed historical generated changelog text and was narrowed. |
+| Timed checkpoint | yes | Record N/A | N/A: no duration requested. |
+| Goal plan complete | yes | Run the autogoal checker | Passed. |
+| Docs source-backed claim audit | yes | Verify current APIs | Docs were migrated against shipped RuntimeId/ElementId owners. |
+| Docs links / routes / previews | yes | Verify targets | `www build:source` passed; named standalone demo routes rendered. |
+| Docs MDX/content parser | yes | Run `pnpm --filter www build:source` | Passed. |
+| Plugin page specifics | yes | Apply current-state docs rules | Plugin pages use current API/reference voice. |
+| Browser interaction proof | yes | Exercise affected routes | `/blocks/playground` and `/examples/plite/tables` interactions passed. |
+| Browser console/network check | yes | Inspect errors | No console errors; no identity-related network failures. |
+| Browser final proof artifact | yes | Record route proof | Runtime IDs present; zero `data-block-id`; typed interactions succeeded. |
+| Public API / package boundary proof | yes | Audit exports and declarations | `pnpm brl` 56/56; public declaration contracts and Media downstream build passed. |
+| Release artifact classification | yes | Classify delta | Published breaking API/runtime/type change plus registry adoption. |
+| Published package changeset | yes | Validate changesets | `pnpm changeset status` passed; no forbidden minor for Plite/Core/platejs. |
+| Registry changelog | yes | Record registry delta | Existing registry changelog entries cover the user-facing registry adoption. |
+| No release artifact | yes | Record N/A | N/A: published users see a breaking delta. |
+| Package typecheck/build/test | yes | Run owning checks | Affected source-first graph, Plite/Core/CLI/Media owners, and public builds passed. |
+| Barrel/export generation | yes | Run `pnpm brl` | Passed 56/56. |
 
 Phase / pass table:
 | Phase | Status | Evidence | Next |
@@ -335,8 +336,8 @@ Phase / pass table:
 | Review / pressure pass | completed | Prior editor-audit/best-api pressure pass accepted; implementation gets final P2 autoreview. | Packet 1 |
 | Implementation or plan artifact | completed | Accepted RuntimeId/ElementId architecture, CLI generation, migrations, consumers, docs, and release artifacts implemented. | verification |
 | Correctness convergence | completed | Core publication/static/ElementId and CLI watch/artifact findings repaired without changing the public design. | targeted proof |
-| Verification | in_progress | Focused Core and CLI tests/typechecks pass; broad and strict gates remain. | closeout |
-| Closeout | pending | | final response |
+| Verification | completed | Strict Plite, affected source-first proof, contracts, package builds/tests, docs, browser, lint, barrels, and changesets pass. | closeout |
+| Closeout | completed | Final ledger and checker close the active goal. | final response |
 
 Findings:
 - The accepted audit is current to today's checkout and names all required
@@ -378,21 +379,36 @@ Review fixes:
 Error attempts:
 | Error / failed attempt | Count | Next different move | Resolution |
 |------------------------|-------|---------------------|------------|
-| None yet | 0 | | |
+| Strict Plite first exposed named-root RuntimeId lookup gaps | 1 | Repair the public-state owner and add named-root coverage | Fixed in `public-state.ts`; focused and strict proof pass. |
+| Root legacy artifact build exposed unrelated schema declaration drift in basic-styles, table, and Markdown | 2 | Stop widening this goal; revert experimental tsdown/plugin-generic rewrites and keep source-first proof authoritative | All experiments reverted. This separate declaration-build architecture is not a node-identity defect. |
+| Media declaration emit could not name the private RuntimeId unique-symbol brand | 1 | Make the brand publicly nameable without weakening opacity | RuntimeId uses a readonly string-literal brand; Plite and Media build/type/test proof pass. |
+| Scoped Biome check processed no plan files | 1 | Use the repository-wide lint result plus `git diff --check` and the goal checker | Plan files are intentionally ignored by Biome; applicable checks pass. |
 
 Verification evidence:
-- `pnpm check:plite` passed before the latest low-level convergence fixes: 698
-  passed, 6 skipped, 78 bounded batches. It must run again at final handoff.
-- Plite focused architecture/schema/compiler proof passed after the latest
-  fixes: 216 tests, 0 failures; compiler 37/37; Plite typecheck passed.
-- Core focused ElementId/resolvePlugins/static proof passed after correctness
-  repair: 69 tests, 204 assertions; full package/type-contract typecheck passed.
-- CLI watch/config/artifact focused proof passed, including simulated process
-  interruption recovery; CLI package typecheck passed. Full CLI test output is
-  rerun once more during final targeted proof.
+- Strict `pnpm check:plite` passed: Plite 1,432/1,432; Chromium 698 passed,
+  6 expected skips, 78 bounded batches; all Plite-family typechecks, tests,
+  runner contracts, and public package builds passed.
+- Post-brand affected `pnpm check:plite:dev` passed its full source-first graph,
+  package tests, Plite 1,432/1,432, table 243/243, Markdown 190/190, AI 68/68,
+  Media 86/86, Browser core 107/107, and www package-integration typecheck.
+- The recovered contracts tail passed separately: 133/133 runner/tooling
+  contracts, 69/69 benchmark/schema contracts, 43 benchmark targets, and
+  13/13 public-type build owners.
+- Core final proof passed 91/91 focused tests plus full package and type-contract
+  typechecks.
+- CLI final proof passed 21/21 tests, typecheck, lint, build, and executable
+  smoke; compilation is isolated in a worker so TypeScript/esbuild state is not
+  retained across generations.
+- RuntimeId declaration proof passed Plite typecheck/build and Media
+  typecheck/build, 86/86 Media tests, and Media lint.
+- `pnpm --filter www build:source`, `pnpm brl` (56/56), changeset status,
+  hard-cut production search, `git diff --check`, and `pnpm lint:fix` passed.
 - Browser proof passed on `/blocks/playground` and
   `/examples/plite/tables`: live runtime IDs present, no `data-block-id`, typed
   interactions succeeded, and no console errors were observed.
+- Root `pnpm typecheck` is not a closure gate. Its legacy artifact-build lane
+  still exposes pre-existing schema declaration drift in basic-styles, table,
+  and Markdown; the source-first graph and node-identity artifact owners pass.
 
 Final handoff contract:
 - Recommendation: report the implemented two-layer identity law and final APIs.
@@ -418,15 +434,18 @@ Timeline:
 - 2026-08-07: repaired all accepted Core publication/static/ElementId findings
   and CLI failed-generation, config dependency, and crash-recovery findings;
   rejected hidden array-form plugin properties in favor of the sole typed map.
+- 2026-08-07: strict Plite, post-fix affected proof, contracts, public builds,
+  docs, browser, changesets, barrels, lint, and declaration consumers passed;
+  unrelated legacy package-build experiments were reverted.
 
 Reboot status:
 | Question | Answer |
 |----------|--------|
-| Where am I? | Targeted proof after closing every accepted Core/CLI correctness finding. |
-| Where am I going? | Run strict Plite, one final bounded P2 review, and close release/docs/browser gates. |
+| Where am I? | Closeout after every accepted correctness and proof gate passed. |
+| Where am I going? | Final goal checker and handoff. |
 | What is the goal? | Finish the accepted node-identity implementation without changing its public design. |
 | What have I learned? | The architecture is sound; correctness required commit-time publication and journaled multi-file generation. |
-| What have I done? | Implemented the architecture, migrated consumers/docs, repaired every accepted owner defect, and passed focused package proof. |
+| What have I done? | Implemented the architecture, migrated consumers/docs, repaired every accepted owner defect, and passed strict cross-package proof. |
 
 Open risks:
 - Generated construction requiredness can reintroduce TS2589 if it leaks into

@@ -19,7 +19,7 @@ export type DocumentChangeRootClassification = Readonly<{
   text: boolean;
 }>;
 
-/** @internal Final-coordinate node candidate for runtime identity publication. */
+/** @internal Final-coordinate node candidate for node key publication. */
 export type DocumentChangeRuntimeCandidate = Readonly<{
   node: JsonNode;
   path: readonly number[];

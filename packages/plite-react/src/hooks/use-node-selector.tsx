@@ -3,12 +3,12 @@ import {
   type EditorCommit,
   type Node,
   type Path,
-  type RuntimeId,
+  type NodeKey,
   type Text,
   TextApi,
 } from '@platejs/plite';
-import { NodeRuntimeIdContext } from '../context';
-import { readRuntimeNodeById } from '../editable/runtime-live-state';
+import { NodeKeyContext } from '../context';
+import { readNodeByKey } from '../editable/runtime-live-state';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { useEditor } from './use-editor';
 import { useEditorSelector } from './use-editor-selector';
@@ -21,7 +21,7 @@ export type EditorNodeSelectorContext = {
   editor: ReactRuntimeEditor;
   node: Node | null;
   path: Path | null;
-  runtimeId: RuntimeId | null;
+  nodeKey: NodeKey | null;
 };
 
 /** Node selector payload narrowed with the text node when available. */
@@ -29,11 +29,11 @@ export type EditorTextSelectorContext = EditorNodeSelectorContext & {
   text: Text | null;
 };
 
-/** Update-scoping options for selectors tied to a rendered runtime id. */
+/** Update-scoping options for selectors tied to a rendered node key. */
 export type EditorRuntimeSelectorOptions = {
   deferred?: boolean;
   includeRootOrderChanges?: boolean;
-  runtimeId?: RuntimeId | null;
+  nodeKey?: NodeKey | null;
 };
 
 type PliteRuntimeSelectorUpdatePolicy =
@@ -46,19 +46,19 @@ type InternalEditorRuntimeSelectorOptions = EditorRuntimeSelectorOptions & {
 
 const shouldUpdateRuntimeNode = (
   editor: ReactRuntimeEditor,
-  runtimeId: RuntimeId | null,
+  nodeKey: NodeKey | null,
   change?: EditorCommit,
   updatePolicy: PliteRuntimeSelectorUpdatePolicy = 'model-truth',
   includeRootOrderChanges = false
 ) => {
   if (
     updatePolicy === 'skip-synced-text-render' &&
-    shouldSkipSyncedTextRender(editor, runtimeId, change)
+    shouldSkipSyncedTextRender(editor, nodeKey, change)
   ) {
     return false;
   }
 
-  if (!runtimeId || !change) {
+  if (!nodeKey || !change) {
     return true;
   }
 
@@ -67,8 +67,8 @@ const shouldUpdateRuntimeNode = (
   }
 
   return (
-    change.changed.hasRuntime(runtimeId, 'node') ||
-    change.changed.hasRuntime(runtimeId, 'path')
+    change.changed.hasNodeKey(nodeKey, 'node') ||
+    change.changed.hasNodeKey(nodeKey, 'path')
   );
 };
 
@@ -81,7 +81,7 @@ const isAncestorOrSelfPath = (
 
 const shouldSkipSyncedTextRender = (
   editor: ReactRuntimeEditor,
-  runtimeId: RuntimeId | null,
+  nodeKey: NodeKey | null,
   change?: EditorCommit
 ) => {
   if (
@@ -93,20 +93,20 @@ const shouldSkipSyncedTextRender = (
     return false;
   }
 
-  if (!runtimeId) {
+  if (!nodeKey) {
     return false;
   }
 
-  const { path } = readRuntimeNodeById(editor, runtimeId);
+  const { path } = readNodeByKey(editor, nodeKey);
 
   if (!path) {
     return false;
   }
 
   const relevantTextPaths = change.changed
-    .runtimeIds('text')
-    .flatMap((textRuntimeId) => {
-      const textPath = readRuntimeNodeById(editor, textRuntimeId).path;
+    .nodeKeys('text')
+    .flatMap((textNodeKey) => {
+      const textPath = readNodeByKey(editor, textNodeKey).path;
 
       return textPath && isAncestorOrSelfPath(path, textPath) ? [textPath] : [];
     });
@@ -125,46 +125,46 @@ function useRuntimeNodeSelector<T>(
   {
     deferred = false,
     includeRootOrderChanges = false,
-    runtimeId: runtimeIdProp,
+    nodeKey: nodeKeyProp,
     updatePolicy = 'model-truth',
   }: InternalEditorRuntimeSelectorOptions = {}
 ): T {
   const editor = useEditor();
-  const contextRuntimeId = useContext(NodeRuntimeIdContext);
-  const runtimeId = runtimeIdProp ?? contextRuntimeId;
+  const contextNodeKey = useContext(NodeKeyContext);
+  const nodeKey = nodeKeyProp ?? contextNodeKey;
   const nodeSelector = useCallback(
     (editor: ReactRuntimeEditor) => {
-      const { node, path } = readRuntimeNodeById(editor, runtimeId);
+      const { node, path } = readNodeByKey(editor, nodeKey);
 
       return selector({
         editor,
         node,
         path,
-        runtimeId,
+        nodeKey,
       });
     },
-    [runtimeId, selector]
+    [nodeKey, selector]
   );
   const shouldUpdate = useCallback(
     (change?: EditorCommit) =>
       shouldUpdateRuntimeNode(
         editor,
-        runtimeId,
+        nodeKey,
         change,
         updatePolicy,
         includeRootOrderChanges
       ),
-    [editor, includeRootOrderChanges, runtimeId, updatePolicy]
+    [editor, includeRootOrderChanges, nodeKey, updatePolicy]
   );
 
   return useEditorSelector(nodeSelector, {
     deferred,
     equalityFn,
     includeRootOrderChanges,
-    profileId: runtimeId ? 'runtime-node' : 'runtime-node-missing-id',
+    profileId: nodeKey ? 'runtime-node' : 'runtime-node-missing-id',
     runtimeEventSource:
       updatePolicy === 'skip-synced-text-render' ? 'render' : 'node',
-    runtimeId,
+    nodeKey,
     shouldUpdate,
   });
 }
