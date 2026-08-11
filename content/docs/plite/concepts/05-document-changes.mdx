@@ -71,15 +71,15 @@ const unsubscribe = editor.subscribeCommit((commit) => {
   if (!commit.changed.has("document")) return;
 
   const changedBlocks = commit.changed.topLevelRanges();
-  const changedRuntimeIds = commit.changed.runtimeIds("node");
+  const changedNodeKeys = commit.changed.nodeKeys("node");
 
-  refreshDocumentConsumers(changedBlocks, changedRuntimeIds);
+  refreshDocumentConsumers(changedBlocks, changedNodeKeys);
 });
 ```
 
-`commit.changed.has(kind)` and `runtimeIds(kind)` query the primary document.
+`commit.changed.has(kind)` and `nodeKeys(kind)` query the primary document.
 Pass a named `root` for one secondary document. Use `hasAny(kind)` and
-`runtimeIdsAll(kind)` only when a consumer intentionally spans every root. The
+`nodeKeysAll(kind)` only when a consumer intentionally spans every root. The
 queries derive their answers from `DocumentChange` plus the retained before and
 after snapshot indexes.
 

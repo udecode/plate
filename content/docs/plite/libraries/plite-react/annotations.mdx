@@ -203,7 +203,7 @@ or side-panel rows that need resolved visibility.
 ```ts
 type PliteWidgetAnchor =
   | { annotationId: string; type: "annotation" }
-  | { runtimeId: RuntimeId; type: "node" }
+  | { nodeKey: NodeKey; type: "node" }
   | { type: "selection" };
 
 type PliteWidget<TData> = {

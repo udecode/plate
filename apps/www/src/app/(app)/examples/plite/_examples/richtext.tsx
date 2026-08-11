@@ -608,8 +608,8 @@ interface BlockButtonProps {
 }
 
 const BlockButton = ({ format, icon }: BlockButtonProps) => {
-  const editor = useEditor<RichTextEditor>();
-  const active = useEditorSelector<boolean, RichTextEditor>((editor) =>
+  const editor = useEditor();
+  const active = useEditorSelector((editor) =>
     isBlockActive(editor, format, isAlignType(format) ? 'align' : 'type')
   );
   const runCommand = () => toggleBlock(editor, format);
@@ -628,7 +628,7 @@ const BlockButton = ({ format, icon }: BlockButtonProps) => {
 };
 
 const ClearFormattingButton = () => {
-  const editor = useEditor<RichTextEditor>();
+  const editor = useEditor();
   const runCommand = () => clearRichTextFormatting(editor);
 
   return (
@@ -650,8 +650,8 @@ interface MarkButtonProps {
 }
 
 const MarkButton = ({ format, icon }: MarkButtonProps) => {
-  const editor = useEditor<RichTextEditor>();
-  const active = useEditorSelector<boolean, RichTextEditor>(
+  const editor = useEditor();
+  const active = useEditorSelector(
     (editor) => editor.read.marks()?.[format] === true
   );
   const runCommand = () => editor.update.marks.toggle(format);

@@ -44,8 +44,7 @@ export const useZoom = () => {
 export const useImage = () => {
   const element = useElement(ImagePlugin);
   const editor = useEditor();
-  const id =
-    'id' in element && typeof element.id === 'string' ? element.id : undefined;
+  const key = editor.key(element);
 
   return {
     props: {
@@ -54,7 +53,7 @@ export const useImage = () => {
       onDoubleClickCapture: () => {
         ImagePreviewStore.set('openEditorId', editor.id);
         ImagePreviewStore.set('currentPreview', {
-          id,
+          key,
           url: element.url,
         });
         ImagePreviewStore.set(
@@ -66,11 +65,8 @@ export const useImage = () => {
                 type: editor.plugin(BaseImagePlugin).schema.type,
               },
             }),
-            ([node]) => ({
-              id:
-                'id' in node && typeof node.id === 'string'
-                  ? node.id
-                  : undefined,
+            ([node, path]) => ({
+              key: editor.key(path)!,
               url: node.url,
             })
           )
@@ -171,7 +167,7 @@ export const useImagePreview = ({ scrollSpeed }: { scrollSpeed: number }) => {
   const currentPreviewIndex = currentPreview
     ? previewList.findIndex(
         (item) =>
-          item.url === currentPreview.url && item.id === currentPreview.id
+          item.url === currentPreview.url && item.key === currentPreview.key
       )
     : null;
   const onClose = useCallback(() => {

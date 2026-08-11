@@ -392,7 +392,6 @@ export function PlaceholderElement({
               file.installed && element.mediaType === file.schema.type
                 ? uploadedFile.name
                 : '',
-            placeholderId: element.id as string,
             type: element.mediaType,
             url: uploadedFile.url,
           },
@@ -810,9 +809,6 @@ enum UploadErrorCode {
 </APIParameters>
 
 <APIReturns type="object">
-  <APIItem name="id" type="string | undefined">
-    媒体元素 ID。
-  </APIItem>
   <APIItem name="textAlign" type="'center' | 'left' | 'right' | undefined">
     媒体元素的对齐方式。
   </APIItem>

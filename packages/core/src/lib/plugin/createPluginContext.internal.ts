@@ -1,4 +1,8 @@
-import type { EditorUpdatePolicy, Value } from '@platejs/plite';
+import type {
+  EditorUpdatePolicy,
+  SchemaPropertyHandle,
+  Value,
+} from '@platejs/plite';
 
 import type {
   BaseEditor,
@@ -143,24 +147,49 @@ const createPluginAccess = (
 
     return binding;
   };
+  const pendingPropertyHandles = new Map<string, SchemaPropertyHandle>();
+  const getPendingPropertyHandle = (localId: string) => {
+    const known = pendingPropertyHandles.get(localId);
+
+    if (known) return known;
+    const authored = getAuthoredPluginPropertyHandle(
+      editor as BaseEditor,
+      getPlugin(),
+      localId
+    );
+
+    if (!authored) {
+      throw new Error(
+        `Plate plugin "${getPlugin().name}" schema property "${localId}" is not published yet.`
+      );
+    }
+    const current = () =>
+      getCompiledPlateModelBinding(editor, getPlugin())?.propertyHandles[
+        localId
+      ] ?? authored;
+    const pending = Object.freeze(
+      Object.defineProperties(
+        {},
+        {
+          id: { enumerable: true, get: () => current().id },
+          key: { enumerable: true, get: () => current().key },
+          kind: { enumerable: true, value: 'schema-property' },
+          placement: { enumerable: true, get: () => current().placement },
+        }
+      )
+    ) as SchemaPropertyHandle;
+
+    pendingPropertyHandles.set(localId, pending);
+
+    return pending;
+  };
   const unpublishedProperties = new Proxy(
     Object.create(null) as Record<PropertyKey, unknown>,
     {
       get(_target, localId) {
         if (typeof localId !== 'string') return;
-        const property = getAuthoredPluginPropertyHandle(
-          editor as BaseEditor,
-          getPlugin(),
-          localId
-        );
 
-        if (!property) {
-          throw new Error(
-            `Plate plugin "${getPlugin().name}" schema property "${localId}" is not published yet.`
-          );
-        }
-
-        return property;
+        return getPendingPropertyHandle(localId);
       },
     }
   );

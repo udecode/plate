@@ -45,16 +45,38 @@ const summary = editor.read((state) => ({
 
 ## 节点目标
 
-带 `at` 选项的读取方法接受位置或实时后代节点。
+带 `at` 选项的读取和更新方法接受位置、实时 descendant，或来自同一 editor 的
+`NodeKey`。节点键可以定位任意文档 root 中的节点。
 
 ```ts
+const nodeKey = editor.key(element);
 const path = editor.read.nodes.path(element);
-const entry = editor.read.nodes.get(element);
-const parent = editor.read.nodes.parent(element);
+const entry = editor.read.nodes.get(nodeKey);
+const parent = editor.read.nodes.parent(nodeKey);
 ```
 
 生命周期中的节点、点和范围读取在目标不可用时返回 `undefined`。对于节点
-目标，这包括已分离的节点，以及属于其他编辑器或其他根的节点。
+目标，这包括已分离的节点，以及属于其他编辑器的节点。
+
+## 运行时身份
+
+`NodeKey` 是每个实时 descendant 的 editor 私有身份，也覆盖文本节点。它在移动
+和不可变更新后保持稳定，在节点删除后失效，并且不会进入序列化值、slice、历史
+记录或协作数据。
+
+```ts
+const nodeKey = editor.key(element);
+const nodeKeyAtPath = editor.key([0]);
+const currentPath = editor.read.nodes.path(nodeKey);
+
+editor.update.nodes.remove({ at: nodeKey });
+```
+
+`nodes.path(nodeKey)` 只在节点属于当前 editor 或 view root 时返回路径。
+base editor 的路径输入指向 main root；view 的路径输入指向该 view 的 root。
+
+选区、拖放、overlay 和组件状态等临时行为使用运行时身份。需要持久化的应用引用
+应由 schema 属性声明。
 
 ## 节点匹配
 

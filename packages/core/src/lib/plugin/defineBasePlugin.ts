@@ -5,6 +5,7 @@ import type {
   BasePluginDefinitionInput,
   BasePlugin,
   EditorShortcut,
+  PluginCodecMapDeclaration,
 } from './BasePlugin';
 import type {
   PluginSchemaContext,
@@ -523,6 +524,7 @@ type BasePluginConstructorRestInput<
     >
   >,
   | 'api'
+  | 'codecs'
   | 'conflicts'
   | 'dependencies'
   | 'enabled'
@@ -633,6 +635,22 @@ export function defineBasePlugin<
           >
         >
       ) => TApi;
+      codecs?:
+        | PluginCodecMapDeclaration
+        | ((
+            context: BasePluginContext<
+              NoInfer<
+                BasePluginConstructorCapabilityDefinition<
+                  N,
+                  TKeys,
+                  BasePluginConstructorDependencies<TKeys, D>,
+                  S,
+                  'schema' extends TKeys ? TSchema : never,
+                  TTargetPlugins
+                >
+              >
+            >
+          ) => PluginCodecMapDeclaration);
       conflicts?: TConflicts;
       dependencies?: D;
       enabled?: TEnabled;

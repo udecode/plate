@@ -34,7 +34,7 @@ const migrateMediaDescendant = (
   const migratedType = options.types.has(input.type)
     ? undefined
     : options.typeMigrations.get(input.type);
-  const element = migratedType ? { ...input, type: migratedType } : input;
+  let element = migratedType ? { ...input, type: migratedType } : input;
 
   if (!options.types.has(element.type)) {
     let changed = element !== input;
@@ -51,6 +51,18 @@ const migrateMediaDescendant = (
     });
 
     return changed ? { ...element, children } : input;
+  }
+
+  if (
+    !Object.hasOwn(element, 'url') ||
+    Object.hasOwn(element, 'placeholderId')
+  ) {
+    const { placeholderId: _placeholderId, ...properties } = element;
+
+    element = {
+      ...properties,
+      ...(Object.hasOwn(element, 'url') ? {} : { url: '' }),
+    };
   }
 
   if (!Object.hasOwn(element, 'caption')) return element;

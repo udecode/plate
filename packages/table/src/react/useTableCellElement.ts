@@ -1,8 +1,4 @@
-import type {
-  BorderDirection,
-  BorderStylesDefault,
-  TableBorderStates,
-} from '../lib/types';
+import type { BorderDirection, BorderStylesDefault } from '../lib/types';
 import { useTableColSizes } from './useTableElement';
 import {
   useOverrideColSize,
@@ -10,27 +6,27 @@ import {
   useOverrideRowSize,
   useTableValue,
 } from './useTableStore';
-import { TablePlugin } from './TablePlugin';
+import { TableCellPlugin, TablePlugin } from './TablePlugin';
 import {
+  useEditor,
   useEditorPlugin,
   useEditorSelector,
   useElement,
   useElementSelector,
   useOptionalElement,
+  usePath,
 } from '@platejs/core/react';
-import type { Element, NodeEntry } from '@platejs/plite';
+import type { Element } from '@platejs/plite';
 import {
   type ResizeEvent,
   type ResizeHandle,
   resizeLengthClampStatic,
 } from '@platejs/resizable';
-import {
-  KEYS,
-  type TTableCellElement,
-  type TTableElement,
-  type TTableRowElement,
-} from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
+import type { TableCellElement, TableElement } from '../lib/BaseTablePlugin';
 import React from 'react';
+
+import { shouldUpdateCellIndices } from './internal/shouldUpdateCellIndices';
 
 /**
  * Rounds a cell size to the nearest step, or returns the size if the step is
@@ -39,35 +35,37 @@ import React from 'react';
 export const roundCellSizeToStep = (size: number, step?: number) =>
   step ? Math.round(size / step) * step : size;
 
-export const useIsCellSelected = (element: Element) => {
-  const { editor } = useEditorPlugin(TablePlugin);
-
-  return useEditorSelector<boolean, typeof editor>((editor) =>
-    editor
-      .plugin(TablePlugin)
-      .read.isCellSelected(element.id as string | null | undefined)
+export const useIsCellSelected = (element: Element) =>
+  useEditorSelector((editor) =>
+    editor.plugin(TablePlugin).read.isCellSelected(editor.key(element))
   );
-};
 
 export function useTableCellBorders({
   element: el,
 }: {
-  element?: TTableCellElement;
+  element?: TableCellElement;
 } = {}) {
-  const { editor } = useEditorPlugin(TablePlugin);
-  const element = useElement<TTableCellElement>() ?? el;
-  const cellIndices = useCellIndices();
+  const editor = useEditor();
+  const contextElement = useOptionalElement(TableCellPlugin);
+  const element = el ?? contextElement;
+  const cellIndices = useCellIndices(element ?? undefined);
 
-  return React.useMemo(
-    () =>
-      editor.plugin(TablePlugin).read.getCellBorders({ cellIndices, element }),
-    [editor, element, cellIndices]
-  );
+  return React.useMemo(() => {
+    if (!element) {
+      throw new Error(
+        'useTableCellBorders() requires a table-cell element provider or an explicit element.'
+      );
+    }
+
+    return editor
+      .plugin(TablePlugin)
+      .read.getCellBorders({ cellIndices, element });
+  }, [editor, element, cellIndices]);
 }
 
 export const useTableBordersDropdownMenuContentState = () => {
-  const { editor } = useEditorPlugin(TablePlugin);
-  const borderStates = useEditorSelector<TableBorderStates>((editor) =>
+  const editor = useEditor();
+  const borderStates = useEditorSelector((editor) =>
     editor.plugin(TablePlugin).read.getSelectedCellsBorders()
   );
 
@@ -88,18 +86,18 @@ export const useTableBordersDropdownMenuContentState = () => {
 export function useTableCellSize({
   element: el,
 }: {
-  element?: TTableCellElement;
+  element?: TableCellElement;
 } = {}) {
-  const { editor } = useEditorPlugin(TablePlugin);
+  const editor = useEditor();
 
-  const contextElement = useOptionalElement<TTableCellElement>();
+  const contextElement = useOptionalElement(TableCellPlugin);
   const element = el ?? contextElement;
   const colSizes = useTableColSizes();
   const cellIndices = useCellIndices(element ?? undefined);
   const rowSize = useElementSelector(
-    ([node]: NodeEntry<TTableRowElement>) => node.size,
+    ([node]) => (typeof node.size === 'number' ? node.size : undefined),
     {
-      name: KEYS.tr,
+      name: PLUGINS.tableRow,
     }
   );
 
@@ -131,13 +129,13 @@ export type TableCellElementState = {
 };
 
 export const useTableCellElement = (): TableCellElementState => {
-  const { editor } = useEditorPlugin(TablePlugin);
-  const element = useElement<TTableCellElement>();
-  const selectionState = useEditorSelector<number, typeof editor>((editor) => {
+  const editor = useEditor();
+  const element = useElement(TableCellPlugin);
+  const selectionState = useEditorSelector((editor) => {
     const table = editor.plugin(TablePlugin).read;
 
     return (
-      (table.isCellSelected(element.id) ? 1 : 0) |
+      (table.isCellSelected(editor.key(element)) ? 1 : 0) |
       (table.isSelectingCell() ? 2 : 0)
     );
   });
@@ -192,18 +190,19 @@ export const useTableCellElementResizable = ({
   leftProps: React.ComponentPropsWithoutRef<typeof ResizeHandle>;
   rightProps: React.ComponentPropsWithoutRef<typeof ResizeHandle>;
 } => {
-  const { editor, store } = useEditorPlugin(TablePlugin);
-  const element = useElement();
+  const editor = useEditor();
+  const { store } = useEditorPlugin(TablePlugin);
+  const tablePath = usePath(TablePlugin);
   const { disableMarginLeft, minColumnWidth = 0 } = store.get();
 
   const initialWidth = useElementSelector(
     ([node]) =>
-      colSpan > 1 ? (node as TTableElement).colSizes?.[colIndex] : undefined,
-    { name: KEYS.table }
+      colSpan > 1 ? (node as TableElement).colSizes?.[colIndex] : undefined,
+    { name: PLUGINS.table }
   );
   const marginLeft = useElementSelector(
-    ([node]) => (node as TTableElement).marginLeft ?? 0,
-    { name: KEYS.table }
+    ([node]) => (node as TableElement).marginLeft ?? 0,
+    { name: PLUGINS.table }
   );
 
   const colSizesWithoutOverrides = useTableColSizes({ disableOverrides: true });
@@ -220,36 +219,34 @@ export const useTableCellElementResizable = ({
     (colIndex: number, width: number) => {
       editor
         .plugin(TablePlugin)
-        .update.setColumnSize({ colIndex, width }, { at: element });
+        .update.setColumnSize({ colIndex, width }, { at: tablePath });
 
       // Prevent flickering
       setTimeout(() => overrideColSize(colIndex, null), 0);
     },
-    [editor, element, overrideColSize]
+    [editor, overrideColSize, tablePath]
   );
 
   const setRowSize = React.useCallback(
     (rowIndex: number, height: number) => {
       editor
         .plugin(TablePlugin)
-        .update.setRowSize({ height, rowIndex }, { at: element });
+        .update.setRowSize({ height, rowIndex }, { at: tablePath });
 
       // Prevent flickering
       setTimeout(() => overrideRowSize(rowIndex, null), 0);
     },
-    [editor, element, overrideRowSize]
+    [editor, overrideRowSize, tablePath]
   );
 
   const setMarginLeft = React.useCallback(
     (marginLeft: number) => {
-      editor
-        .plugin(TablePlugin)
-        .update.setMarginLeft({ marginLeft }, { at: element });
+      editor.plugin(TablePlugin).update.set({ marginLeft }, { at: tablePath });
 
       // Prevent flickering
       setTimeout(() => overrideMarginLeft(null), 0);
     },
-    [editor, element, overrideMarginLeft]
+    [editor, overrideMarginLeft, tablePath]
   );
 
   const handleResizeRight = React.useCallback(
@@ -364,9 +361,9 @@ export const useTableCellElementResizable = ({
   };
 };
 
-export const useCellIndices = (providedElement?: TTableCellElement) => {
-  const { editor } = useEditorPlugin(TablePlugin);
-  const contextElement = useOptionalElement<TTableCellElement>();
+export const useCellIndices = (providedElement?: TableCellElement) => {
+  const editor = useEditor();
+  const contextElement = useOptionalElement(TableCellPlugin);
   const element = providedElement ?? contextElement ?? null;
   const cellIndices = useEditorSelector(
     (editor) =>
@@ -376,6 +373,7 @@ export const useCellIndices = (providedElement?: TTableCellElement) => {
     {
       equalityFn: (next, previous) =>
         next?.col === previous?.col && next?.row === previous?.row,
+      shouldUpdate: shouldUpdateCellIndices,
     }
   );
 

@@ -1,9 +1,5 @@
-import type { EditorStateView, Path } from '@platejs/plite';
-import type {
-  TTableCellElement,
-  TTableElement,
-  TTableRowElement,
-} from '@platejs/utils';
+import type { EditorStateView, Element, Path, Value } from '@platejs/plite';
+import type { TableCellElement, TableRowElement } from '../BaseTablePlugin';
 
 import { getColSpan, getRowSpan } from './codec';
 
@@ -16,18 +12,8 @@ export type TableGridProblem =
     }>
   | Readonly<{
       cellPath: Path;
-      id: string;
-      kind: 'duplicate-id';
-      previousCellPath: Path;
-    }>
-  | Readonly<{
-      cellPath: Path;
       kind: 'invalid-col-span' | 'invalid-row-span';
       value: unknown;
-    }>
-  | Readonly<{
-      cellPath: Path;
-      kind: 'missing-id';
     }>
   | Readonly<{
       actual: number;
@@ -41,11 +27,11 @@ export type TableGridProblem =
     }>;
 
 export type TableGridAnchor = Readonly<{
-  cell: TTableCellElement;
+  cell: TableCellElement;
   cellIndex: number;
   col: number;
   colSpan: number;
-  id?: string;
+  key: string;
   order: number;
   path: Path;
   row: number;
@@ -55,8 +41,8 @@ export type TableGridAnchor = Readonly<{
 export type TableGrid = Readonly<{
   anchors: readonly TableGridAnchor[];
   anchorsByRow: readonly (readonly TableGridAnchor[])[];
-  byCell: ReadonlyMap<TTableCellElement, TableGridAnchor>;
-  byId: ReadonlyMap<string, TableGridAnchor>;
+  byCell: ReadonlyMap<TableCellElement, TableGridAnchor>;
+  byKey: ReadonlyMap<string, TableGridAnchor>;
   byPath: ReadonlyMap<string, TableGridAnchor>;
   height: number;
   problems: readonly TableGridProblem[];
@@ -69,7 +55,8 @@ export type TableGridCompilerMetrics = Readonly<{
   compileCount: number;
 }>;
 
-const cache = new WeakMap<TTableElement, TableGrid>();
+const cache = new WeakMap<Element, TableGrid>();
+export const TABLE_CELL_OPERATION_KEY = Symbol('tableCellOperationKey');
 let cacheHitCount = 0;
 let compileCount = 0;
 
@@ -79,6 +66,13 @@ const isValidSpan = (value: unknown) =>
     Number.isInteger(value) &&
     Number.isFinite(value) &&
     value > 0);
+
+export const isTableColumnSizes = (value: unknown): value is number[] =>
+  Array.isArray(value) &&
+  value.every((size) => typeof size === 'number' && Number.isFinite(size));
+
+export const getTableColumnSizes = (node: Element) =>
+  isTableColumnSizes(node.colSizes) ? node.colSizes : undefined;
 
 const freezePath = (path: readonly number[]): Path =>
   Object.freeze([...path]) as Path;
@@ -104,8 +98,11 @@ const freezeMap = <K, V>(map: Map<K, V>): ReadonlyMap<K, V> => {
   return Object.freeze(view);
 };
 
-const compileTableElement = (table: TTableElement): TableGrid => {
-  const cached = cache.get(table);
+const compileTableElement = (
+  table: Element,
+  getKey?: (cell: TableCellElement, path: Path) => string
+): TableGrid => {
+  const cached = getKey ? undefined : cache.get(table);
 
   if (cached) {
     cacheHitCount++;
@@ -125,17 +122,17 @@ const compileTableElement = (table: TTableElement): TableGrid => {
     { length: height },
     () => []
   );
-  const byCell = new Map<TTableCellElement, TableGridAnchor>();
-  const byId = new Map<string, TableGridAnchor>();
+  const byCell = new Map<TableCellElement, TableGridAnchor>();
+  const byKey = new Map<string, TableGridAnchor>();
   const byPath = new Map<string, TableGridAnchor>();
   const problems: TableGridProblem[] = [];
   let width = 0;
 
   table.children.forEach((rowNode, row) => {
-    const tableRow = rowNode as TTableRowElement;
+    const tableRow = rowNode as TableRowElement;
     let col = 0;
 
-    (tableRow.children as readonly TTableCellElement[]).forEach(
+    (tableRow.children as readonly TableCellElement[]).forEach(
       (cell, cellIndex) => {
         while (slots[row][col]) col++;
 
@@ -173,12 +170,20 @@ const compileTableElement = (table: TTableElement): TableGrid => {
           );
         }
 
+        const key =
+          getKey?.(cell, cellPath) ??
+          (
+            cell as TableCellElement & {
+              [TABLE_CELL_OPERATION_KEY]?: string;
+            }
+          )[TABLE_CELL_OPERATION_KEY] ??
+          cellPath.join(',');
         const anchor = Object.freeze({
           cell,
           cellIndex,
           col,
           colSpan,
-          ...(cell.id ? { id: cell.id } : {}),
+          key,
           order: anchors.length,
           path: cellPath,
           row,
@@ -190,24 +195,7 @@ const compileTableElement = (table: TTableElement): TableGrid => {
         byCell.set(cell, anchor);
         byPath.set(cellPath.join(','), anchor);
 
-        if (cell.id) {
-          const previous = byId.get(cell.id);
-
-          if (previous) {
-            problems.push(
-              Object.freeze({
-                cellPath,
-                id: cell.id,
-                kind: 'duplicate-id',
-                previousCellPath: previous.path,
-              })
-            );
-          } else {
-            byId.set(cell.id, anchor);
-          }
-        } else {
-          problems.push(Object.freeze({ cellPath, kind: 'missing-id' }));
-        }
+        byKey.set(key, anchor);
 
         for (let rowOffset = 0; rowOffset < rowSpan; rowOffset++) {
           for (let colOffset = 0; colOffset < colSpan; colOffset++) {
@@ -254,7 +242,7 @@ const compileTableElement = (table: TTableElement): TableGrid => {
     anchors: Object.freeze(anchors),
     anchorsByRow: Object.freeze(anchorsByRow.map((row) => Object.freeze(row))),
     byCell: freezeMap(byCell),
-    byId: freezeMap(byId),
+    byKey: freezeMap(byKey),
     byPath: freezeMap(byPath),
     height,
     problems: Object.freeze(problems),
@@ -262,32 +250,36 @@ const compileTableElement = (table: TTableElement): TableGrid => {
     width,
   }) satisfies TableGrid;
 
-  cache.set(table, grid);
+  if (!getKey) cache.set(table, grid);
 
   return grid;
 };
 
-export function compileTableGrid(
-  state: Pick<EditorStateView, 'nodes'>,
-  tablePath: Path
+export function compileTableGrid<V extends Value>(
+  state: Pick<EditorStateView<V>, 'key' | 'nodes'>,
+  tablePath: Path,
+  root?: string
 ): TableGrid;
-export function compileTableGrid(table: TTableElement): TableGrid;
+export function compileTableGrid(table: Element): TableGrid;
 export function compileTableGrid(
-  stateOrTable: Pick<EditorStateView, 'nodes'> | TTableElement,
-  tablePath?: Path
+  stateOrTable: Element | Pick<EditorStateView, 'key' | 'nodes'>,
+  tablePath?: Path,
+  root?: string
 ): TableGrid {
   if (tablePath !== undefined) {
-    const state = stateOrTable as Pick<EditorStateView, 'nodes'>;
-    const table = state.nodes.get<TTableElement>(tablePath)?.[0];
+    const state = stateOrTable as Pick<EditorStateView, 'key' | 'nodes'>;
+    const table = state.nodes.get<Element>(
+      root ? { offset: 0, path: tablePath, root } : tablePath
+    )?.[0];
 
     if (!table) {
       throw new Error(`No table found at path ${tablePath}`);
     }
 
-    return compileTableElement(table);
+    return compileTableElement(table, (cell) => state.key(cell));
   }
 
-  return compileTableElement(stateOrTable as TTableElement);
+  return compileTableElement(stateOrTable as Element);
 }
 
 export const readTableGridCompilerMetrics = (): TableGridCompilerMetrics =>

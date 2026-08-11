@@ -6,7 +6,7 @@ import {
   type TableCellElement,
   type TableElement,
 } from '@platejs/table';
-import { ElementApi } from 'platejs';
+import { ElementApi, ElementIdPlugin } from 'platejs';
 import dedent from 'dedent';
 
 import {
@@ -22,8 +22,9 @@ export function buildEditTableMultiCellPrompt(
   const cells = editor
     .plugin(BaseTablePlugin)
     .read.getGridAbove({ format: 'cell' });
-  const selectedIds = new Set(
-    cells.flatMap(([cell]) => (typeof cell.id === 'string' ? [cell.id] : []))
+  const elementId = editor.plugin(ElementIdPlugin);
+  const selectedElementIds = new Set(
+    cells.map(([cell]) => elementId.read.id(cell))
   );
   const table = editor.read.nodes.block<TableElement>({
     match: { type: editor.plugin(BaseTablePlugin).schema.type },
@@ -32,10 +33,12 @@ export function buildEditTableMultiCellPrompt(
   const rows =
     table?.children.map((row, rowIndex) => {
       const values = (row.children as TableCellElement[]).map((cell) => {
-        if (typeof cell.id === 'string' && selectedIds.has(cell.id)) {
-          selectedCells.push({ cell, id: cell.id });
+        const id = elementId.read.id(cell);
 
-          return `<CellRef id="${cell.id}" />`;
+        if (selectedElementIds.has(id)) {
+          selectedCells.push({ cell, id });
+
+          return `<CellRef id="${id}" />`;
         }
 
         return cell.children

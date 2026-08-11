@@ -104,7 +104,7 @@ type RenderElementProps = {
     "data-plite-inline"?: true;
     "data-plite-node": "element";
     "data-plite-path": string;
-    "data-plite-runtime-id": RuntimeId;
+    "data-plite-node-key": NodeKey;
     "data-plite-void"?: true;
     ref: React.RefCallback<HTMLElement>;
   };
@@ -475,7 +475,8 @@ const renderElement = ({ children, element, slots }) => {
         {React.Children.toArray(children)[0]}
         {slots.contentBoundary({
           mounted: !element.collapsed,
-          onMaterialize: () => openSection(element.id),
+          onMaterialize: () =>
+            openSection(editor.key(element)),
           renderPlaceholder: ({ materialize }) => (
             <button onClick={materialize} type="button">
               Show section

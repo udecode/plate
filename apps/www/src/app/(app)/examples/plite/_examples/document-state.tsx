@@ -3,13 +3,11 @@ import {
   defineExtension,
   defineStateField,
   type EditorCommit,
-  type Value,
   valueCodecs,
 } from '@platejs/plite';
 import { history } from '@platejs/plite-history';
 import {
   Editable,
-  type ReactEditor,
   Plite,
   PliteReactUpdatePolicy,
   useEditor,
@@ -44,11 +42,6 @@ const HistoryExtension = history();
 const DocumentStateExtension = defineExtension('documentState', {
   stateFields: [documentTitle, spellcheck],
 });
-type DocumentStateEditor = ReactEditor<
-  Value,
-  readonly [typeof HistoryExtension, typeof DocumentStateExtension]
->;
-
 const formatList = (items: readonly string[]) =>
   items.length === 0 ? 'none' : items.join(',');
 
@@ -99,7 +92,8 @@ const getHistoryShortcut = (event: KeyboardEvent<HTMLInputElement>) => {
 };
 
 const DocumentStatePanel = () => {
-  const editor = useEditor<DocumentStateEditor>();
+  const editor = useEditor();
+  const historyPortal = editor.extension(HistoryExtension);
   const title = useStateFieldValue(documentTitle);
   const setTitle = useSetStateField(documentTitle);
   const spellcheckEnabled = useStateFieldValue(spellcheck);
@@ -137,11 +131,10 @@ const DocumentStatePanel = () => {
       return;
     }
 
-    const hasHistoryBatch = editor.read((state) =>
+    const hasHistoryBatch =
       direction === 'undo'
-        ? state.history.undos().length > 0
-        : state.history.redos().length > 0
-    );
+        ? historyPortal.read.undos().length > 0
+        : historyPortal.read.redos().length > 0;
 
     event.preventDefault();
     event.stopPropagation();
@@ -151,13 +144,11 @@ const DocumentStatePanel = () => {
       return;
     }
 
-    editor.update(PliteReactUpdatePolicy.preserveSelection, (tx) => {
-      if (direction === 'undo') {
-        tx.history.undo();
-      } else {
-        tx.history.redo();
-      }
-    });
+    if (direction === 'undo') {
+      historyPortal.update(PliteReactUpdatePolicy.preserveSelection).undo();
+    } else {
+      historyPortal.update(PliteReactUpdatePolicy.preserveSelection).redo();
+    }
     restoreTitleFocus();
   };
 
@@ -217,7 +208,7 @@ const DocumentStatePanel = () => {
         </Button>
         <Button
           onClick={() => {
-            editor.update.history.undo();
+            historyPortal.update.undo();
           }}
           type="button"
           variant="outline"
@@ -226,7 +217,7 @@ const DocumentStatePanel = () => {
         </Button>
         <Button
           onClick={() => {
-            editor.update.history.redo();
+            historyPortal.update.redo();
           }}
           type="button"
           variant="outline"

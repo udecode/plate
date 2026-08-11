@@ -6,13 +6,13 @@ import {
   TextApi,
   type Text,
 } from '@platejs/plite';
-import type { TTagElement } from '@platejs/utils';
+import type { TagElement } from '../lib/BaseTagPlugin';
 
 import { BaseTagPlugin } from '../lib';
 
 export const MultiSelectPlugin = toPlatePlugin(
   BaseTagPlugin,
-  ({ editor, type }) => ({
+  ({ editor, schema: { type } }) => ({
     commands: ({ around }) => [
       around(editorCommands.delete, ({ input, state, next }) => {
         if (input.direction !== 'backward') return false;
@@ -62,11 +62,11 @@ export const MultiSelectPlugin = toPlatePlugin(
         event: 'content',
         correct({ entry: [node, path], tx }) {
           if (
-            ElementApi.isElementType<TTagElement>(node, type) &&
-            tx.nodes.some<TTagElement>({
+            ElementApi.isElementType<TagElement>(node, type) &&
+            tx.nodes.some<TagElement>({
               at: [],
               match: (candidate, candidatePath) =>
-                ElementApi.isElementType<TTagElement>(candidate, type) &&
+                ElementApi.isElementType<TagElement>(candidate, type) &&
                 candidate.value === node.value &&
                 !PathApi.equals(candidatePath, path),
             })

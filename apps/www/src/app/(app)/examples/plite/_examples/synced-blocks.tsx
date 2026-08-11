@@ -15,7 +15,6 @@ import {
 import { Button, Icon, Toolbar } from './components';
 import type {
   BlockQuoteElement,
-  CustomEditor,
   CustomElement,
   CustomText,
   CustomValue,
@@ -179,7 +178,7 @@ const SyncedBlock = ({
   element,
   slots,
 }: RenderElementProps<SyncedBlockElement>) => {
-  const editor = useEditor<CustomEditor>();
+  const editor = useEditor();
   const path = useElementPath();
   const bodyRoot = element.childRoots.body;
   const isOriginal = element.copyId === 'original';
@@ -263,7 +262,7 @@ const SyncedBlock = ({
 };
 
 const InsertSyncedBlockButton = () => {
-  const editor = useEditor<CustomEditor>();
+  const editor = useEditor();
 
   return (
     <Button

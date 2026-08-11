@@ -21,15 +21,17 @@ import type {
   EditorUpdateMethods,
   EditorUpdatePolicy,
   EditorValueFromExtensions,
-  Element,
   Descendant,
+  Element,
+  Location,
+  NodeKey,
   NodeIn,
-  NodeProps,
   NodeInsertNodesOptions,
   NodeRemoveNodesOptions,
   NodeSetNodesOptions,
   PropertyValueDescriptor,
   PropertyValueOf,
+  PropertyOptionsOf,
   SchemaContentRootContribution,
   SchemaElement,
   SchemaElementConstructionPropertiesFor,
@@ -39,7 +41,6 @@ import type {
   SchemaElementTypes,
   SchemaProperty,
   SchemaPropertyHandle,
-  SchemaPropertyHandleValue,
   SchemaText,
   SchemaTextProperties,
   SchemaExtensionsOf,
@@ -846,11 +847,10 @@ type RequiredSchemaPropertyKey<TProperty> =
       ? never
       : TDescriptor extends Readonly<{ required: true }>
         ? TKey
-        : TDescriptor extends Readonly<{
-              default: unknown;
-              omitDefault: false;
-            }>
-          ? TKey
+        : PropertyOptionsOf<TDescriptor> extends { default: unknown }
+          ? TDescriptor extends Readonly<{ omitDefault: false }>
+            ? TKey
+            : never
           : never
     : never;
 
@@ -884,11 +884,10 @@ type RequiredDescriptorKey<TProperties> = {
     required: true;
   }>
     ? TKey
-    : TProperties[TKey] extends Readonly<{
-          default: unknown;
-          omitDefault: false;
-        }>
-      ? TKey
+    : PropertyOptionsOf<TProperties[TKey]> extends { default: unknown }
+      ? TProperties[TKey] extends Readonly<{ omitDefault: false }>
+        ? TKey
+        : never
       : never;
 }[Extract<keyof TProperties, string>];
 
@@ -1499,8 +1498,36 @@ type PluginWritablePropertyKey<D> =
       : never
     : never;
 
-type PluginWritablePropertyValue<D, TKey extends string> =
-  PluginWritablePropertyEntry<D> extends infer TEntry
+type ExactWritablePropertyEntry<TEntry> =
+  TEntry extends Readonly<{ key: infer TKey extends string }>
+    ? TEntry & Readonly<{ key: TKey }>
+    : never;
+
+type UniqueExactWritablePropertyEntry<
+  TAllEntries,
+  TEntry = ExactWritablePropertyEntry<TAllEntries>,
+> =
+  TEntry extends Readonly<{ key: infer TKey extends string }>
+    ? true extends IsUnion<
+        WritableEntriesForKey<ExactWritablePropertyEntry<TAllEntries>, TKey>
+      >
+      ? never
+      : TEntry
+    : never;
+
+type PluginExactWritablePropertyEntry<D> = UniqueExactWritablePropertyEntry<
+  WritablePropertyEntries<D>
+>;
+
+type PluginExactWritablePropertyKey<D> =
+  PluginExactWritablePropertyEntry<D> extends infer TEntry
+    ? TEntry extends Readonly<{ key: infer TKey extends string }>
+      ? TKey
+      : never
+    : never;
+
+type PluginExactWritablePropertyValue<D, TKey extends string> =
+  PluginExactWritablePropertyEntry<D> extends infer TEntry
     ? TEntry extends Readonly<{
         key: infer TEntryKey extends string;
         value: infer TValue;
@@ -1511,39 +1538,111 @@ type PluginWritablePropertyValue<D, TKey extends string> =
       : never
     : never;
 
+/** `undefined` removes a property inside the same atomic node patch. */
+type PluginWritablePropertyPatchValue<D, TKey extends string> =
+  | PluginExactWritablePropertyValue<D, TKey>
+  | undefined;
+
+type PluginAmbiguousWritablePropertyKey<D> = Exclude<
+  ExactWritablePropertyEntry<WritablePropertyEntries<D>> extends infer TEntry
+    ? TEntry extends Readonly<{ key: infer TKey extends string }>
+      ? TKey
+      : never
+    : never,
+  PluginExactWritablePropertyKey<D>
+>;
+
+type PluginAliasedLocalPropertyKey<D> =
+  WritablePropertyEntries<D> extends infer TEntry
+    ? TEntry extends Readonly<{
+        localId: infer TLocalId extends string;
+        unaliased: false;
+      }>
+      ? TLocalId
+      : never
+    : never;
+
+type PluginForbiddenWritablePropertyKey<D> =
+  | PluginAmbiguousWritablePropertyKey<D>
+  | PluginAliasedLocalPropertyKey<D>;
+
+type InvalidPluginWritablePropertyKey<D, TProps> =
+  | Extract<PluginForbiddenWritablePropertyKey<D>, keyof TProps>
+  | {
+      [TKey in Extract<
+        PluginExactWritablePropertyKey<D>,
+        keyof TProps
+      >]: TProps[TKey] extends PluginWritablePropertyPatchValue<D, TKey>
+        ? never
+        : TKey;
+    }[Extract<PluginExactWritablePropertyKey<D>, keyof TProps>];
+
+type IsOpenPluginWritablePropertyPatch<TProps> = string extends keyof TProps
+  ? unknown extends TProps[Extract<keyof TProps, string>]
+    ? true
+    : false
+  : false;
+
+type HasRejectedPluginWritablePropertyIndex<TProps> =
+  string extends keyof TProps
+    ? true
+    : number extends keyof TProps
+      ? true
+      : false;
+
+type IsInvalidPluginWritablePropertyPatchMember<D, TProps> =
+  true extends IsBroadPluginDefinition<D>
+    ? false
+    : true extends IsOpenPluginWritablePropertyPatch<TProps>
+      ? false
+      : true extends HasRejectedPluginWritablePropertyIndex<TProps>
+        ? true
+        : [InvalidPluginWritablePropertyKey<D, TProps>] extends [never]
+          ? false
+          : true;
+
+type InvalidPluginWritablePropertyPatchMember<D, TProps> =
+  IsAny<TProps> extends true
+    ? never
+    : TProps extends unknown
+      ? true extends IsInvalidPluginWritablePropertyPatchMember<D, TProps>
+        ? TProps
+        : never
+      : never;
+
+type ValidatePluginWritablePropertyPatch<D, TProps> = [
+  InvalidPluginWritablePropertyPatchMember<D, TProps>,
+] extends [never]
+  ? unknown
+  : never;
+
+type PluginWritablePropertyPatch<D> = {
+  [TKey in PluginExactWritablePropertyKey<D>]?: PluginWritablePropertyPatchValue<
+    D,
+    TKey
+  >;
+};
+
+type PluginForbiddenWritablePropertyPatch<D> = {
+  [TKey in PluginForbiddenWritablePropertyKey<D>]?: never;
+};
+
+type PlatePluginNodeSetProps<D> = Partial<Omit<Element, 'children'>> &
+  PluginWritablePropertyPatch<D> &
+  PluginForbiddenWritablePropertyPatch<D>;
+
+type PlatePluginNodeSetOptions = Omit<NodeSetNodesOptions<any>, 'at'> & {
+  at?: Descendant | Location | NodeKey;
+};
+
 type PlatePluginTransactionNodes<D> = Omit<
   EditorUpdateTransaction<Value>['nodes'],
   'set' | 'unset'
 > & {
-  set: {
-    <T extends Descendant>(
-      props: Partial<NodeProps<NoInfer<T>>>,
-      options: Omit<NodeSetNodesOptions<T>, 'at'> & { at: T }
-    ): void;
-    (
-      props: Partial<Omit<Element, 'children'>>,
-      options?: NodeSetNodesOptions<Element>
-    ): void;
-    <T extends NodeIn<Value>>(
-      props: Partial<NodeProps<T>>,
-      options?: NodeSetNodesOptions<T>
-    ): void;
-    <const TKey extends PluginWritablePropertyKey<D>>(
-      key: TKey,
-      value: NoInfer<PluginWritablePropertyValue<D, TKey>>,
-      options?: NodeSetNodesOptions<NodeIn<Value>>
-    ): void;
-    <const THandle extends SchemaPropertyHandle<string, unknown>>(
-      property: THandle,
-      value: NoInfer<SchemaPropertyHandleValue<THandle>>,
-      options?: NodeSetNodesOptions<NodeIn<Value>>
-    ): void;
-    <TKey extends string>(
-      key: string extends TKey ? TKey : never,
-      value: unknown,
-      options?: NodeSetNodesOptions<NodeIn<Value>>
-    ): void;
-  };
+  set: <const TProps extends PlatePluginNodeSetProps<D>>(
+    props: TProps & ValidatePluginWritablePropertyPatch<D, TProps>,
+    options?: PlatePluginNodeSetOptions
+  ) => void;
   unset: {
     <const TKey extends PluginWritablePropertyKey<D>>(
       property: TKey | readonly TKey[],
@@ -1581,9 +1680,9 @@ type PlateEditorTransactionBuilder<
   D
 >;
 
-type PlateEditorStateView<V extends Value, D, S = D> = EditorReadMethods<
-  V,
-  readonly [PlateInstalledExtension<V, D, S>]
+type PlateEditorStateView<V extends Value, D, S = D> = Omit<
+  EditorStateView<V, readonly [PlateInstalledExtension<V, D, S>]>,
+  'transaction'
 > & {
   transaction: BivariantFunction<
     (

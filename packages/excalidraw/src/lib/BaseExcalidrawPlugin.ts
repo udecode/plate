@@ -1,14 +1,18 @@
 import type { ImportedDataState } from '@excalidraw/excalidraw/data/types';
 
 import { defineBasePlugin } from '@platejs/core';
-import { type ElementOf, property } from '@platejs/plite';
+import {
+  type ElementOf,
+  property,
+  type PropertyJsonValue,
+} from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
 
 export type ExcalidrawDataState = ImportedDataState;
 
 type ExcalidrawElementData = {
-  elements: ExcalidrawDataState['elements'];
-  state: ExcalidrawDataState['appState'];
+  elements: readonly PropertyJsonValue[];
+  state: Readonly<Record<string, PropertyJsonValue>>;
 } | null;
 
 /** Enables support for Excalidraw drawing tool within a Slate document */

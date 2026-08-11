@@ -6,6 +6,7 @@ import type {
 import {
   compileEditorExtension,
   getCandidateEditorExtensionApi,
+  getCompiledSchemaPropertyId,
   getCompiledEditorSchemaFromApi,
   txRead,
 } from '@platejs/plite/internal';
@@ -565,6 +566,36 @@ const publishCompiledSchemaHandles = (
 ): CompiledPlateModel => {
   const compiledProperties = [...compiledSchema.properties.byId.values()];
   const bindings = model.bindings.map((binding) => {
+    const properties = Object.freeze(
+      binding.properties.map((property) => {
+        const id = getCompiledSchemaPropertyId(property);
+        const matches = compiledProperties.filter(
+          (compiled) => compiled.owner === binding.name && compiled.id === id
+        );
+
+        if (matches.length !== 1) {
+          throw new Error(
+            `Plate plugin "${binding.name}" schema property "${id}" did not resolve to one compiled property.`
+          );
+        }
+        const compiled = matches[0]!;
+        const compiledTarget = compiled.target ?? undefined;
+
+        if (
+          JSON.stringify(property.key) === JSON.stringify(compiled.key) &&
+          JSON.stringify(property.target ?? null) ===
+            JSON.stringify(compiledTarget ?? null)
+        ) {
+          return property;
+        }
+
+        return Object.freeze({
+          ...property,
+          key: compiled.key,
+          target: compiledTarget,
+        }) as typeof property;
+      })
+    );
     const propertyHandles = Object.fromEntries(
       Object.entries(binding.propertyHandles).map(([localId, handle]) => {
         if (!handle) return [localId, handle];
@@ -587,25 +618,54 @@ const publishCompiledSchemaHandles = (
 
         if (matches.length !== 1) {
           throw new Error(
-            `Plate plugin "${binding.name}" schema property "${localId}" did not resolve to one compiled property.`
+            `Plate plugin "${binding.name}" schema property "${localId}" (${handle.id}) did not resolve to one compiled property. Compiled owner candidates: ${
+              compiledProperties
+                .filter((property) => property.owner === binding.name)
+                .map(
+                  (property) =>
+                    `${property.id}:${typeof property.key === 'string' ? property.key : `${property.key.prefix}*`}`
+                )
+                .join(', ') || 'none'
+            }.`
           );
         }
 
         return [
           localId,
           Object.freeze({
-            ...handle,
             id: matches[0]!.id,
+            key: matches[0]!.key,
+            kind: 'schema-property' as const,
+            placement: matches[0]!.placement,
           }),
         ];
       })
     );
+    const primaryPropertyHandle = binding.textPropertyId
+      ? Object.values(propertyHandles).find(
+          (handle) => handle?.id === binding.textPropertyId
+        )
+      : binding.propertyKey
+        ? propertyHandles[binding.propertyKey]
+        : undefined;
+    const propertyKey = binding.propertyKey
+      ? typeof primaryPropertyHandle?.key === 'string'
+        ? primaryPropertyHandle.key
+        : (() => {
+            throw new Error(
+              `Plate plugin "${binding.name}" primary property must compile to one exact string key.`
+            );
+          })()
+      : null;
 
     return Object.freeze({
       ...binding,
+      properties,
+      propertyKey,
       propertyHandles: Object.freeze(propertyHandles),
       schema: Object.freeze({
         ...binding.schema,
+        ...(binding.kind === 'mark' ? { key: propertyKey! } : {}),
         properties: Object.freeze(
           Object.fromEntries(
             Object.keys(binding.schema.properties).map((localId) => [
@@ -1009,7 +1069,7 @@ export const createPlateRuntimeExtensions = (
       binding?.properties.some(
         (property) =>
           property.placement === 'text' &&
-          property.key === markKey &&
+          getCompiledSchemaPropertyId(property) === binding.textPropertyId &&
           property.value.kind === 'boolean'
       );
     const definition: EditorExtensionDefinitionInput<BaseEditor> = {

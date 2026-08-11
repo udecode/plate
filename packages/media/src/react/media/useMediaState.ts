@@ -27,8 +27,6 @@ export const useMediaState = (
   const readOnly = useEditorReadOnly();
 
   const { isUpload, name, type, url } = element;
-  const id =
-    'id' in element && typeof element.id === 'string' ? element.id : undefined;
   const elementTextAlign =
     'textAlign' in element ? element.textAlign : undefined;
   let textAlign: 'center' | 'left' | 'right' | undefined;
@@ -56,7 +54,6 @@ export const useMediaState = (
   const isYoutube = embed?.provider === 'youtube';
 
   return {
-    id,
     embed,
     focused,
     isTweet,

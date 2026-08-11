@@ -320,8 +320,12 @@ const compileResolvedPluginTargetBinding = (
     names: Object.freeze(plugins.map(({ name }) => name)),
     plugins: Object.freeze(plugins),
     types: Object.freeze(
-      plugins.map((targetPlugin) =>
-        resolvePluginElementType(editor, targetPlugin)
+      plugins.map(
+        (targetPlugin) =>
+          getCandidateApplicationElementType(editor, targetPlugin) ??
+          getPlateModelPublication(editor)?.model.byName[targetPlugin.name]
+            ?.elementType ??
+          resolvePluginElementType(editor, targetPlugin)
       )
     ),
   });
@@ -503,14 +507,7 @@ export const getAuthoredPluginPropertyHandle = (
     );
   }
 
-  const rawProperties = declaration.properties;
-  const property = Array.isArray(rawProperties)
-    ? rawProperties.find((candidate) => {
-        const key = candidate.key;
-
-        return (typeof key === 'string' ? key : `${key.prefix}*`) === localId;
-      })
-    : rawProperties?.[localId];
+  const property = declaration.properties?.[localId];
 
   if (!property) return;
 
@@ -716,14 +713,16 @@ const lowerPluginTarget = (
   }
 };
 
-const lowerPluginProperty = (
-  property: SchemaProperty,
+const lowerPluginProperty = <
+  TProperty extends Readonly<{ target?: SchemaTarget }>,
+>(
+  property: TProperty,
   owner: string,
   elementTypes: ReadonlyMap<string, AuthoredElementSource>,
   references: PendingReference[]
-): SchemaProperty =>
+): TProperty =>
   property.target
-    ? Object.freeze({
+    ? (Object.freeze({
         ...property,
         target: lowerPluginTarget(
           property.target,
@@ -731,7 +730,7 @@ const lowerPluginProperty = (
           elementTypes,
           references
         ),
-      })
+      }) as TProperty)
     : property;
 
 const lowerPluginSchemaDeclaration = (
@@ -802,12 +801,7 @@ const lowerPluginSchemaDeclaration = (
         Object.fromEntries(
           Object.entries(properties).map(([localId, property]) => [
             localId,
-            lowerPluginProperty(
-              property as SchemaProperty,
-              owner,
-              elementTypes,
-              references
-            ),
+            lowerPluginProperty(property, owner, elementTypes, references),
           ])
         )
       )
@@ -938,20 +932,8 @@ export const compilePlateModel = (editor: BaseEditor): CompiledPlateModel => {
     const elementType = element?.type ?? plugin.name;
     const propertyKey =
       mark && 'property' in mark ? (mark.key ?? plugin.name) : plugin.name;
-    const rawDeclaredProperties = declaration?.properties ?? {};
     const declaredPropertyEntries = Object.freeze(
-      (Array.isArray(rawDeclaredProperties)
-        ? rawDeclaredProperties.map(
-            (property) =>
-              [
-                typeof property.key === 'string'
-                  ? property.key
-                  : `${property.key.prefix}*`,
-                property,
-              ] as const
-          )
-        : Object.entries(rawDeclaredProperties)
-      ).map(([localId, property]) =>
+      Object.entries(declaration?.properties ?? {}).map(([localId, property]) =>
         Object.freeze({
           localId,
           property: Object.freeze({
@@ -1404,9 +1386,13 @@ export const compileEditorApplicationSchema = (
           id: handle.id,
           kind: 'property' as const,
           source,
-          target: propertyOverride.target
-            ? lowerApplicationTarget(model, propertyOverride.target)
-            : null,
+          ...(Object.hasOwn(propertyOverride, 'target')
+            ? {
+                target: propertyOverride.target
+                  ? lowerApplicationTarget(model, propertyOverride.target)
+                  : null,
+              }
+            : {}),
         })
       );
     }
@@ -1432,16 +1418,14 @@ export const compileEditorApplicationSchema = (
 /** @internal Materialize final element handles without rewriting authored contributions. */
 export const applyEditorApplicationSchema = (
   model: CompiledPlateModel,
-  policy: EditorApplicationSchema | undefined
+  applicationSchema: EditorSchemaContribution | undefined
 ): CompiledPlateModel => {
-  if (!policy?.overrides?.some((override) => override.element?.type)) {
-    return model;
-  }
+  if (!applicationSchema?.overrides?.length) return model;
 
   const finalTypes = new Map<string, string>();
-
-  for (const override of policy.overrides) {
-    if (!override.element?.type) continue;
+  for (const override of applicationSchema.overrides) {
+    if (override.kind === 'property') continue;
+    if (!override.type) continue;
     const source = override.source;
 
     if (finalTypes.has(source)) {
@@ -1449,14 +1433,15 @@ export const applyEditorApplicationSchema = (
         `Editor schema overrides element type for plugin "${source}" more than once.`
       );
     }
-    finalTypes.set(source, override.element.type);
+    finalTypes.set(source, override.type);
   }
 
   const bindings = model.bindings.map((binding) => {
     const type = finalTypes.get(binding.name);
+    const propertyHandles = binding.propertyHandles;
+    const propertyKey = binding.propertyKey;
 
-    if (!type) return binding;
-    if (!binding.elementType || !binding.schema.type) {
+    if (type && (!binding.elementType || !binding.schema.type)) {
       throw new Error(
         `Editor schema override references non-element plugin "${binding.name}".`
       );
@@ -1464,10 +1449,21 @@ export const applyEditorApplicationSchema = (
 
     return Object.freeze({
       ...binding,
-      elementType: type,
+      elementType: type ?? binding.elementType,
+      propertyHandles,
+      propertyKey,
       schema: Object.freeze({
         ...binding.schema,
-        type,
+        ...(binding.kind === 'mark' ? { key: propertyKey! } : {}),
+        properties: Object.freeze(
+          Object.fromEntries(
+            Object.keys(binding.schema.properties).map((localId) => [
+              localId,
+              propertyHandles[localId],
+            ])
+          )
+        ),
+        ...(type ? { type } : {}),
       }),
     });
   });

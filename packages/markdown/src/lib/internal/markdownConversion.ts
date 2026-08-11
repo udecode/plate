@@ -3,7 +3,11 @@ import remarkParse from 'remark-parse';
 import remarkStringify from 'remark-stringify';
 import { type Plugin, unified } from 'unified';
 
-import type { BaseEditor, MarkdownPluginRegistry } from '@platejs/core';
+import {
+  type BaseEditor,
+  ElementIdPlugin,
+  type MarkdownPluginRegistry,
+} from '@platejs/core';
 import type { NormalizePluginState } from '@platejs/core/internal';
 import {
   type Descendant,
@@ -64,6 +68,7 @@ type MarkdownRuntimeOptions = Readonly<{
 
 export type MarkdownRuntime = Readonly<{
   codecs: CompiledMarkdownCodecs;
+  elementId: ((element: Element) => string) | null;
   options: MarkdownRuntimeOptions;
   registry: MarkdownPluginRegistry;
   state: MarkdownRuntimeEditorState;
@@ -73,9 +78,12 @@ export const createMarkdownRuntime = <E extends BaseEditor>(
   editor: E,
   options: MarkdownRuntimeState,
   state: MarkdownRuntimeEditorState
-): MarkdownRuntime =>
-  Object.freeze({
+): MarkdownRuntime => {
+  const elementId = editor.plugin(ElementIdPlugin);
+
+  return Object.freeze({
     codecs: compileMarkdownCodecs(editor),
+    elementId: elementId.installed ? elementId.read.id : null,
     options: Object.freeze(options),
     registry: Object.freeze({
       has: (plugin) => editor.plugin(plugin).installed,
@@ -87,6 +95,7 @@ export const createMarkdownRuntime = <E extends BaseEditor>(
     } satisfies MarkdownPluginRegistry),
     state,
   });
+};
 
 export const withMarkdownRuntime = <T, E extends BaseEditor>(
   editor: E,
@@ -150,6 +159,13 @@ export const getMergedOptionsSerialize = (
   } = runtime.options;
 
   const document = documentOverride ?? options?.value ?? runtime.state.value();
+  const withBlockId = options?.withBlockId ?? false;
+
+  if (withBlockId && !runtime.elementId) {
+    throw new Error(
+      'Markdown withBlockId requires ElementIdPlugin in the editor.'
+    );
+  }
   const context: SerializeMdContext = {
     allowedNodes:
       options?.allowedNodes ??
@@ -177,7 +193,8 @@ export const getMergedOptionsSerialize = (
     },
     spread: options?.spread,
     value: [...document.children],
-    withBlockId: options?.withBlockId ?? false,
+    withBlockId,
+    ...(runtime.elementId ? { blockId: runtime.elementId } : {}),
   };
 
   return context;

@@ -13,31 +13,27 @@ import { useToggleIndex } from './useToggle';
 
 /** Enables support for toggleable elements in the editor. */
 export const TogglePlugin = toPlatePlugin(BaseTogglePlugin).extend(
-  ({ store, type }) => ({
+  ({ schema, store }) => ({
     commands: ({ around }) => [
       around(editorCommands.insertBreak, ({ state, next }) => {
         const currentBlockEntry = state.nodes.block();
 
-        if (
-          !currentBlockEntry ||
-          currentBlockEntry[0].type !== type ||
-          typeof currentBlockEntry[0].id !== 'string'
-        ) {
+        if (!currentBlockEntry || currentBlockEntry[0].type !== schema.type) {
           return false;
         }
 
-        const toggleId = currentBlockEntry[0].id;
-        const isOpen = store.get('isOpen', toggleId);
+        const toggleKey = state.key(currentBlockEntry[1])!;
+        const isOpen = store.get('isOpen', toggleKey);
         const lastEnclosedEntry = isOpen
           ? undefined
-          : state.toggle.lastEnclosedEntry(toggleId);
+          : state.toggle.lastEnclosedEntry(toggleKey);
         const result = next();
 
         if (result === false) return false;
 
         return state.transaction.extend(result, (tx) => {
           if (isOpen) {
-            tx.blocks.toggle(type);
+            tx.blocks.toggle(schema.type);
 
             const insertedBlock = tx.nodes.block();
 
@@ -82,8 +78,7 @@ export const TogglePlugin = toPlatePlugin(BaseTogglePlugin).extend(
             if (
               !blockBefore ||
               !ElementApi.isElement(blockBefore[0]) ||
-              typeof blockBefore[0].id !== 'string' ||
-              !store.get('isClosed', blockBefore[0].id)
+              !store.get('isClosed', state.key(blockBefore[1])!)
             ) {
               return;
             }
@@ -92,8 +87,7 @@ export const TogglePlugin = toPlatePlugin(BaseTogglePlugin).extend(
               at: blockBefore[1],
               match: (node) =>
                 ElementApi.isElement(node) &&
-                (typeof node.id !== 'string' ||
-                  !store.get('isClosed', node.id)),
+                !store.get('isClosed', state.key(node)),
             });
 
             if (!previousSelectableBlock) {
@@ -117,8 +111,7 @@ export const TogglePlugin = toPlatePlugin(BaseTogglePlugin).extend(
           if (
             !blockAfter ||
             !ElementApi.isElement(blockAfter[0]) ||
-            typeof blockAfter[0].id !== 'string' ||
-            !store.get('isClosed', blockAfter[0].id)
+            !store.get('isClosed', state.key(blockAfter[1])!)
           ) {
             return;
           }
@@ -127,7 +120,7 @@ export const TogglePlugin = toPlatePlugin(BaseTogglePlugin).extend(
             at: blockAfter[1],
             match: (node) =>
               ElementApi.isElement(node) &&
-              (typeof node.id !== 'string' || !store.get('isClosed', node.id)),
+              !store.get('isClosed', state.key(node)),
           });
 
           if (!nextSelectableBlock) {
@@ -146,10 +139,13 @@ export const TogglePlugin = toPlatePlugin(BaseTogglePlugin).extend(
       }),
     ],
     readMiddleware: ({ around }) => [
-      around(editorReads.nodes.isSelectable, ({ input: { element }, next }) =>
-        typeof element.id === 'string' && store.get('isClosed', element.id)
-          ? false
-          : next()
+      around(
+        editorReads.nodes.isSelectable,
+        ({ input: { element }, next, state }) =>
+          ElementApi.isElement(element) &&
+          store.get('isClosed', state.key(element))
+            ? false
+            : next()
       ),
     ],
     render: {

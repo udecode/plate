@@ -35,16 +35,14 @@ plugin author can declare a different value at creation.
 
 | Export | Contains | Use |
 | --- | --- | --- |
-| `PLUGINS` | First-party capability names such as `paragraph`, `codeBlock`, `bold`, and `fixedToolbar` | Plugin lookup, dependencies, targets, and copied registry plugin references. Persisted element types and property keys come from `.type` / `.key` or explicit document literals. |
+| `PLUGINS` | First-party capability names such as `paragraph`, `codeBlock`, `bold`, and `fixedToolbar` | Plugin lookup, dependencies, targets, and copied registry plugin references. Persisted identities come from `editor.plugin(Plugin).schema.type`, `editor.plugin(Plugin).schema.key`, generated schema handles, or explicit document literals. |
 | `PluginName` | Union of all values in `PLUGINS` | APIs that accept any first-party plugin identity. |
 
 ```ts title="Use one identity"
-import { BaseBoldPlugin, BaseParagraphPlugin } from '@platejs/basic-nodes';
-
 const value = [
   {
-    type: BaseParagraphPlugin.type,
-    children: [{ [BaseBoldPlugin.key]: true, text: 'Hello' }],
+    type: 'paragraph',
+    children: [{ bold: true, text: 'Hello' }],
   },
 ];
 ```
@@ -57,14 +55,13 @@ written with different identities. The migration rewrites only the element
 types and top-level properties you declare; unknown custom data stays intact.
 
 ```ts title="Migrate persisted identities"
-import { PLUGINS } from 'platejs';
 import { migratePlateAstIdentities } from 'platejs/migrations';
 
 const initialValue = migratePlateAstIdentities(persistedValue, {
-  properties: { align: PLUGINS.textAlign },
+  properties: { align: 'textAlign' },
   types: {
-    code_block: PLUGINS.codeBlock,
-    p: PLUGINS.paragraph,
+    code_block: 'codeBlock',
+    p: 'paragraph',
   },
 });
 ```
@@ -125,7 +122,7 @@ Use the plugin guide pages for options and examples:
 
 | Hook                                              | Returns                        | Use                                                                                             |
 | ------------------------------------------------- | ------------------------------ | ----------------------------------------------------------------------------------------------- |
-| `useEditorString()`                               | `string`                       | Reads `editor.api.string([])` through `useEditorSelector`.                                      |
+| `useEditorString()`                               | `string`                       | Reads `editor.read.text.string([])` through `useEditorSelector`.                                 |
 | `useFormInputProps(options?)`                     | `{ props }`                    | Adds an optional `onKeyDownCapture` handler that prevents Enter from submitting a wrapper form. |
 | `useMarkToolbarButtonState({ nodeType })` | `{ nodeType, pressed }` | Reads whether a mark is active.                                                                 |
 | `useMarkToolbarButton(state)`                     | `{ props }`                    | Provides `pressed`, `onClick`, and `onMouseDown` props that toggle a mark and focus the editor. |
@@ -159,12 +156,13 @@ focused, editable, collapsed selection. Configure `placeholders` by plugin name
 and `query` by node/path.
 
 ```tsx title="components/editor/plugins/block-placeholder-kit.tsx"
+import { PLUGINS } from "platejs";
 import { BlockPlaceholderPlugin } from "platejs/react";
 
 export const blockPlaceholderPlugin = BlockPlaceholderPlugin.configure({
   initialState: {
     placeholders: {
-      ['paragraph']: "Type something...",
+      [PLUGINS.paragraph]: "Type something...",
     },
     query: ({ path }) => path.length === 1,
   },

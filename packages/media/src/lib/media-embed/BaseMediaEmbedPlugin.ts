@@ -101,8 +101,7 @@ export const BaseMediaEmbedPlugin = defineBasePlugin(PLUGINS.mediaEmbed, {
             if (
               !url ||
               node.isUpload !== undefined ||
-              node.name !== undefined ||
-              node.placeholderId !== undefined
+              node.name !== undefined
             ) {
               return null;
             }
@@ -154,43 +153,60 @@ export const BaseMediaEmbedPlugin = defineBasePlugin(PLUGINS.mediaEmbed, {
           match: [{ tag: 'iframe' }],
         },
       ],
-      'text/markdown': {
-        from: type,
-        kind: 'node',
-        decode: ({ caption, decode, node, parseAttributes }) => {
-          const { src, ...props } = parseAttributes(node.attributes);
+      'text/markdown': [
+        {
+          from: type,
+          kind: 'node',
+          decode: ({ caption, decode, node, parseAttributes }) => {
+            const { src, ...props } = parseAttributes(node.attributes);
 
-          return {
-            ...props,
-            children: caption(decode(node.children)),
-            type,
-            url: typeof src === 'string' ? src : '',
-          };
-        },
-        encode: ({
-          encodePhrasing,
-          node,
-          propsToAttributes,
-          readPlainInline,
-        }) => {
-          const { children, type: _, url, ...rest } = node;
+            return {
+              ...props,
+              children: caption(decode(node.children)),
+              type,
+              url: typeof src === 'string' ? src : '',
+            };
+          },
+          encode: ({
+            encodePhrasing,
+            node,
+            propsToAttributes,
+            readPlainInline,
+          }) => {
+            const { children, type: _, url, ...rest } = node;
 
-          return {
-            attributes: propsToAttributes({ ...rest, src: url }),
-            children:
-              readPlainInline(children) !== ''
-                ? [
-                    {
-                      children: encodePhrasing(children),
-                      type: 'paragraph',
-                    },
-                  ]
-                : [],
-            name: type,
-            type: 'mdxJsxFlowElement',
-          };
+            return {
+              attributes: propsToAttributes({ ...rest, src: url }),
+              children:
+                readPlainInline(children) !== ''
+                  ? [
+                      {
+                        children: encodePhrasing(children),
+                        type: 'paragraph',
+                      },
+                    ]
+                  : [],
+              name: type,
+              type: 'mdxJsxFlowElement',
+            };
+          },
         },
-      },
+        {
+          from: 'media_embed',
+          kind: 'node',
+          decode: ({ caption, decode, node, parseAttributes }) => {
+            const { src, ...props } = parseAttributes(node.attributes);
+
+            return {
+              ...props,
+              children: caption(decode(node.children)),
+              type,
+              url: typeof src === 'string' ? src : '',
+            };
+          },
+          priority: -1,
+        },
+      ],
     }),
 }).extend(
   defineMediaPlugin((options, url) => {

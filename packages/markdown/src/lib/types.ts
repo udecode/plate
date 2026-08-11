@@ -102,7 +102,10 @@ export type DeserializeMdContext = Readonly<DeserializeMdOptions> &
 export type SerializeMdContext = Readonly<
   Omit<SerializeMdOptions, 'value'> & { value: readonly Descendant[] }
 > &
-  MarkdownConversionContext;
+  MarkdownConversionContext & {
+    /** Read the configured persisted element ID through its schema owner. */
+    blockId?: (element: Element) => string | undefined;
+  };
 
 export type MdRules = Partial<{
   [K in keyof PlateNodeMap & keyof MdNodeMap]: Nullable<MdNodeParser<K>>;

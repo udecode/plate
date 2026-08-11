@@ -215,9 +215,12 @@ export const BaseColumnPlugin = defineBasePlugin(PLUGINS.columnGroup, {
           const adjustment = (100 - sum) / columns.length;
 
           widths.forEach((width, index) => {
-            tx.nodes.set('width', `${width + adjustment}%`, {
-              at: path.concat([index]),
-            });
+            tx.nodes.set(
+              { width: `${width + adjustment}%` },
+              {
+                at: path.concat([index]),
+              }
+            );
           });
         },
       },
@@ -250,7 +253,7 @@ export const BaseColumnPlugin = defineBasePlugin(PLUGINS.columnGroup, {
 
         if (currentCount === targetCount) {
           nextWidths.forEach((width, index) => {
-            tx.nodes.set('width', width, { at: path.concat([index]) });
+            tx.nodes.set({ width }, { at: path.concat([index]) });
           });
 
           return;
@@ -275,7 +278,7 @@ export const BaseColumnPlugin = defineBasePlugin(PLUGINS.columnGroup, {
           );
 
           nextWidths.forEach((width, index) => {
-            tx.nodes.set('width', width, { at: path.concat([index]) });
+            tx.nodes.set({ width }, { at: path.concat([index]) });
           });
 
           return;
@@ -298,7 +301,7 @@ export const BaseColumnPlugin = defineBasePlugin(PLUGINS.columnGroup, {
         }
 
         nextWidths.forEach((width, index) => {
-          tx.nodes.set('width', width, { at: path.concat([index]) });
+          tx.nodes.set({ width }, { at: path.concat([index]) });
         });
       };
 

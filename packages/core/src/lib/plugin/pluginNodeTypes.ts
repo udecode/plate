@@ -2,6 +2,7 @@ import type {
   Element,
   PropertyValueDescriptor,
   PropertyValueOf,
+  PropertyOptionsOf,
   SchemaKeyPrefix,
   Text,
 } from '@platejs/plite';
@@ -54,13 +55,6 @@ type SchemaPropertyEntriesOf<
       >
   : never;
 
-type SchemaPropertyLocalId<TEntries> =
-  TEntries extends Readonly<{
-    localId: infer TLocalId extends string;
-  }>
-    ? TLocalId
-    : never;
-
 type SchemaPropertyRequiredLocalId<TEntries> =
   TEntries extends Readonly<{
     key: string;
@@ -68,9 +62,6 @@ type SchemaPropertyRequiredLocalId<TEntries> =
   }>
     ? TLocalId
     : never;
-
-type SchemaPropertyEntryForLocalId<TEntries, TLocalId extends string> =
-  TEntries extends Readonly<{ localId: TLocalId }> ? TEntries : never;
 
 type SchemaPropertyName<TKey> = TKey extends string
   ? TKey
@@ -97,44 +88,44 @@ type PresentSchemaPropertyEntryValue<TEntry> =
     descriptor: infer TDescriptor;
   }>
     ? TDescriptor extends PropertyValueDescriptor
-      ? TDescriptor extends Readonly<{
-          default: infer TDefault;
-          omitDefault: true;
-        }>
-        ? Exclude<PropertyValueOf<TDescriptor>, TDefault>
+      ? TDescriptor extends Readonly<{ omitDefault: true }>
+        ? PropertyOptionsOf<TDescriptor> extends {
+            default: infer TDefault;
+          }
+          ? Exclude<PropertyValueOf<TDescriptor>, TDefault>
+          : PropertyValueOf<TDescriptor>
         : PropertyValueOf<TDescriptor>
       : never
     : never;
 
-type SchemaPropertyRequiredNames<
-  TEntries,
-  TRequired extends string,
-> = SchemaPropertyEntryName<SchemaPropertyEntryForLocalId<TEntries, TRequired>>;
-
 type Materialize<T> = { [TKey in keyof T]: T[TKey] };
+
+type UnionToIntersection<T> = (
+  T extends unknown
+    ? (value: T) => void
+    : never
+) extends (value: infer TIntersection) => void
+  ? TIntersection
+  : never;
+
+type SchemaPropertyEntryShape<TEntry, TRequired extends string> =
+  TEntry extends Readonly<{
+    localId: infer TLocalId extends string;
+  }>
+    ? TLocalId extends TRequired
+      ? Readonly<{
+          [TName in SchemaPropertyEntryName<TEntry>]-?: PresentSchemaPropertyEntryValue<TEntry>;
+        }>
+      : Readonly<{
+          [TName in SchemaPropertyEntryName<TEntry>]?: SchemaPropertyEntryValue<TEntry>;
+        }>
+    : never;
 
 type SchemaPropertyShape<
   TEntries,
   TRequired extends SchemaPropertyRequiredLocalId<TEntries>,
 > = Materialize<
-  Readonly<{
-    [TLocalId in SchemaPropertyLocalId<TEntries> as SchemaPropertyEntryName<
-      SchemaPropertyEntryForLocalId<TEntries, TLocalId>
-    > extends SchemaPropertyRequiredNames<TEntries, TRequired>
-      ? never
-      : SchemaPropertyEntryName<
-          SchemaPropertyEntryForLocalId<TEntries, TLocalId>
-        >]?: SchemaPropertyEntryValue<
-      SchemaPropertyEntryForLocalId<TEntries, TLocalId>
-    >;
-  }> &
-    Readonly<{
-      [TLocalId in TRequired as SchemaPropertyEntryName<
-        SchemaPropertyEntryForLocalId<TEntries, TLocalId>
-      >]-?: PresentSchemaPropertyEntryValue<
-        SchemaPropertyEntryForLocalId<TEntries, TLocalId>
-      >;
-    }>
+  UnionToIntersection<SchemaPropertyEntryShape<TEntries, TRequired>>
 >;
 
 type SchemaPropertySource =

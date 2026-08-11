@@ -175,7 +175,7 @@ const TextAlignPlugin = definePlatePlugin("textAlign", {
   }),
   targetPlugins: [PLUGINS.paragraph],
   update: ({ tx }) => ({
-    set: (value: string) => tx.nodes.set('textAlign', value),
+    set: (value: string) => tx.nodes.set({ textAlign: value }),
   }),
 });
 ```
@@ -186,9 +186,8 @@ const TextAlignPlugin = definePlatePlugin("textAlign", {
 通过类型化节点字段或插件语义能力访问数据，而不读取该 property 映射。`name`
 只标识能力 namespace。`.configure()` 和 `.extend()` 不更改 schema identity。闭合的
 `defineEditor()` 可以重映射 element type 或关系；插件拥有的 property key 保持固定。
-插件 update 使用 literal-key form 写入一个唯一 property，因此 key 和 value 都从插件的
-shallow schema contract 推断。Alias 使用精确的 author handle；结构性或原子写入保留
-object form。
+插件 update 传入一个原子 property patch，因此每个 key 和 value 都从插件的 shallow
+schema contract 推断。Alias 使用精确 author handle 的 key 作为 computed object key。
 
 受该插件影响的段落节点如下：
 

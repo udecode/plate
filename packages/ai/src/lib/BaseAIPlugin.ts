@@ -400,7 +400,7 @@ export const BaseAIPlugin = defineBasePlugin(PLUGINS.ai, {
         tx.effects.emit(aiBatchEffect, 1);
       },
       removeMarks: ({ at = [] }: { at?: Location } = {}) => {
-        tx.nodes.unset('ai', {
+        tx.nodes.unset(key, {
           at,
           match: (node) => Boolean(Reflect.get(node, key)),
         });

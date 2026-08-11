@@ -74,7 +74,6 @@ export const PLUGINS = {
   mention: 'mention',
   mentionInput: 'mentionInput',
   navigationFeedback: 'navigationFeedback',
-  nodeId: 'nodeId',
   normalizeTypes: 'normalizeTypes',
   numberedList: 'numberedList',
   override: 'override',

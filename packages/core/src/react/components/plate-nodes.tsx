@@ -44,26 +44,6 @@ export const useNodeAttributes = (props: any, ref?: any) => ({
 export const isHtmlVoidElementTag = (tag: keyof HTMLElementTagNameMap) =>
   VOID_HTML_TAGS.has(tag);
 
-export const useBlockIdAttributeRef = <T extends HTMLElement>(
-  blockId: unknown,
-  ref?: React.Ref<T>
-) => {
-  const blockIdRef = React.useCallback(
-    (node: T | null) => {
-      if (!node) return;
-
-      if (blockId) {
-        node.setAttribute('data-block-id', String(blockId));
-      } else {
-        node.removeAttribute('data-block-id');
-      }
-    },
-    [blockId]
-  );
-
-  return useComposedRef(blockIdRef, ref);
-};
-
 type PlateElementPropsDescriptor = EditorSchemaSource & PluginReference;
 
 type PlateElementPropsNode<
@@ -135,18 +115,13 @@ export const PlateElement = React.forwardRef(function PlateElement(
   { as: Tag = 'div', children, insetProp, ...props }: StyledPlateElementProps,
   ref: React.ForwardedRef<HTMLDivElement>
 ) {
-  const blockId =
-    props.element.id && props.editor.read.schema.isBlock(props.element)
-      ? props.element.id
-      : undefined;
-  const blockIdRef = useBlockIdAttributeRef(blockId, ref);
   const attributes = useNodeAttributes(
     {
       attributes: props.attributes,
       className: props.className,
       style: props.style,
     },
-    blockIdRef
+    ref
   );
 
   const inset =

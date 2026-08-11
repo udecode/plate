@@ -14,7 +14,6 @@ import {
 
 import { Button, Icon, Toolbar } from './components';
 import type {
-  CustomEditor,
   CustomText,
   CustomTextKey,
   CustomValue,
@@ -131,10 +130,8 @@ interface MarkButtonProps {
 }
 
 const MarkButton = ({ format, icon }: MarkButtonProps) => {
-  const editor = useEditor<CustomEditor>();
-  const active = useEditorSelector((editor: CustomEditor) =>
-    isMarkActive(editor, format)
-  );
+  const editor = useEditor();
+  const active = useEditorSelector((editor) => isMarkActive(editor, format));
   return (
     <Button
       active={active}

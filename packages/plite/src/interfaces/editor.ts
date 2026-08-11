@@ -137,15 +137,6 @@ type NodePropertyEntryIn<V extends Value> =
 
 type NodePropertyKeyIn<V extends Value> = NodePropertyEntryIn<V>['key'];
 
-type NodePropertyValueIn<V extends Value, TKey extends NodePropertyKeyIn<V>> =
-  NodePropertyEntryIn<V> extends infer TEntry
-    ? TEntry extends Readonly<{ key: infer TEntryKey; value: infer TValue }>
-      ? TKey extends TEntryKey
-        ? TValue
-        : never
-      : never
-    : never;
-
 type WithNodeKeyTarget<TOptions extends { at?: Location }> = Omit<
   TOptions,
   'at'
@@ -153,17 +144,25 @@ type WithNodeKeyTarget<TOptions extends { at?: Location }> = Omit<
   at?: Location | NodeKey;
 };
 
+type NodePropertyPatch<TProps> = TProps extends unknown
+  ? {
+      [TKey in keyof TProps]?: TProps[TKey] | undefined;
+    }
+  : never;
+
 type EditorNodeSetObject<V extends Value> = {
   <T extends Descendant>(
-    props: Partial<NodeProps<NoInfer<T>>>,
+    props: NodePropertyPatch<NodeProps<NoInfer<T>>>,
     options: Omit<NodeSetNodesOptions<T>, 'at'> & { at: T }
   ): void;
   (
-    props: [Value] extends [V] ? Partial<Omit<Element, 'children'>> : never,
+    props: [Value] extends [V]
+      ? NodePropertyPatch<Omit<Element, 'children'>>
+      : never,
     options?: WithNodeKeyTarget<NodeSetNodesOptions<Element>>
   ): void;
   <T extends NodeIn<V>>(
-    props: Partial<NodeProps<T>>,
+    props: NodePropertyPatch<NodeProps<T>>,
     options?: WithNodeKeyTarget<NodeSetNodesOptions<T>>
   ): void;
 };

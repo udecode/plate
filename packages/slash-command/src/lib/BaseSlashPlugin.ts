@@ -3,8 +3,10 @@ import {
   type TriggerComboboxPluginState,
 } from '@platejs/combobox';
 import { type DefinitionOf, defineBasePlugin } from '@platejs/core';
-import { property } from '@platejs/plite';
-import { KEYS, NODES } from '@platejs/utils';
+import { type ElementOf, property } from '@platejs/plite';
+import { PLUGINS } from '@platejs/utils';
+
+const TRIGGER_PREVIOUS_CHAR_PATTERN = /^\s?$/;
 
 export type SlashPluginState = TriggerComboboxPluginState & {
   createComboboxInput: NonNullable<
@@ -16,7 +18,7 @@ export type SlashPluginState = TriggerComboboxPluginState & {
   >;
 };
 
-export const BaseSlashInputPlugin = defineBasePlugin(KEYS.slashInput, {
+export const BaseSlashInputPlugin = defineBasePlugin(PLUGINS.slashInput, {
   schema: {
     element: {
       properties: {
@@ -27,31 +29,30 @@ export const BaseSlashInputPlugin = defineBasePlugin(KEYS.slashInput, {
       void: 'inline',
     },
   },
-  type: NODES.slashInput,
   editOnly: true,
 });
 
-const slashInitialState: SlashPluginState = {
-  trigger: '/',
-  triggerPreviousCharPattern: /^\s?$/,
-  createComboboxInput: () => ({
-    children: [{ text: '' }],
-    type: NODES.slashInput,
-  }),
-};
+export type SlashInputElement = ElementOf<typeof BaseSlashInputPlugin>;
 
-export const BaseSlashPlugin = defineBasePlugin(KEYS.slashCommand, {
+export const BaseSlashPlugin = defineBasePlugin(PLUGINS.slashCommand, {
   dependencies: [BaseSlashInputPlugin],
-  initialState: slashInitialState,
+  initialState: ({ editor }): SlashPluginState => ({
+    createComboboxInput: () => ({
+      children: [{ text: '' }],
+      type: editor.plugin(BaseSlashInputPlugin).schema.type,
+    }),
+    trigger: '/',
+    triggerPreviousCharPattern: TRIGGER_PREVIOUS_CHAR_PATTERN,
+  }),
 
   editOnly: true,
-}).extend(({ editor, plugin, store, type }) =>
-  triggerCombobox({
-    editor,
-    getState: () => store.get(),
-    name: plugin.name,
-    type,
-  })
-);
+}).extend(({ editor, store }) => ({
+  commands: (context) =>
+    triggerCombobox(context, {
+      editor,
+      getState: () => store.get(),
+      type: editor.plugin(BaseSlashInputPlugin).schema.type,
+    }),
+}));
 
 export type SlashDefinition = DefinitionOf<typeof BaseSlashPlugin>;

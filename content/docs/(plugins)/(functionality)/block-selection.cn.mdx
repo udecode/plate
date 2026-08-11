@@ -235,12 +235,12 @@ render: {
     块选择期间查询节点的选项。
     - **默认值:** `{ maxLevel: 1 }`
   </APIItem>
-  <APIItem name="selectedIds" type="Set<string>" optional>
-    当前选中块的 ID 集合。
+  <APIItem name="selectedKeys" type="Set<NodeKey>" optional>
+    当前选中块的节点键 集合。
     - **默认值:** `new Set()`
   </APIItem>
-  <APIItem name="anchorId" type="string | null" optional>
-    （内部）当前选择中锚点块的 ID。用于基于 Shift 的选择。
+  <APIItem name="anchorKey" type="NodeKey | null" optional>
+    （内部）当前选择中锚点块的节点键。用于基于 Shift 的选择。
     - **默认值:** `null`
   </APIItem>
   <APIItem name="isSelectable" type="(element: Element, path: Path) => boolean" optional>
@@ -252,30 +252,30 @@ render: {
 
 ## API
 
-### `editor.plugin(BlockSelectionPlugin).api.add(id)`
+### `editor.plugin(BlockSelectionPlugin).api.add(key)`
 
 将一个或多个块添加到选择中。
 
 <API name="editor.plugin(BlockSelectionPlugin).api.add">
   <APIParameters>
-    <APIItem name="id" type="string | string[]">
-      要选择的块的 ID。
+    <APIItem name="key" type="NodeKey | NodeKey[]">
+      要选择的块的节点键。
     </APIItem>
   </APIParameters>
 </API>
 
 ### `editor.plugin(BlockSelectionPlugin).api.clear()`
 
-将选中的 ID 集合重置为空集合。
+将选中的节点键 集合重置为空集合。
 
-### `editor.plugin(BlockSelectionPlugin).api.delete(id)`
+### `editor.plugin(BlockSelectionPlugin).api.delete(key)`
 
 从选择中移除一个或多个块。
 
 <API name="editor.plugin(BlockSelectionPlugin).api.delete">
   <APIParameters>
-    <APIItem name="id" type="string | string[]">
-      要从选择中移除的块的 ID。
+    <APIItem name="key" type="NodeKey | NodeKey[]">
+      要从选择中移除的块的节点键。
     </APIItem>
   </APIParameters>
 </API>
@@ -310,14 +310,14 @@ render: {
 </APIReturns>
 </API>
 
-### `editor.plugin(BlockSelectionPlugin).store.get('has', id)`
+### `editor.plugin(BlockSelectionPlugin).store.get('has', key)`
 
 检查一个或多个块是否被选中。
 
 <API name="editor.plugin(BlockSelectionPlugin).store.get">
   <APIParameters>
-    <APIItem name="id" type="string | string[]">
-      要检查的块的 ID。
+    <APIItem name="key" type="NodeKey | NodeKey[]">
+      要检查的块的节点键。
     </APIItem>
   </APIParameters>
   <APIReturns>
@@ -367,14 +367,14 @@ render: {
 
 选择编辑器中所有可选择的块。
 
-### `editor.plugin(BlockSelectionPlugin).api.set(id)`
+### `editor.plugin(BlockSelectionPlugin).api.set(key)`
 
 将选择设置为一个或多个块，清除任何现有选择。
 
 <API name="editor.plugin(BlockSelectionPlugin).api.set">
   <APIParameters>
-    <APIItem name="id" type="string | string[]">
-      要选择的块的 ID。
+    <APIItem name="key" type="NodeKey | NodeKey[]">
+      要选择的块的节点键。
     </APIItem>
   </APIParameters>
 </API>
@@ -414,7 +414,7 @@ render: {
 
 ### `editor.plugin(BlockSelectionPlugin).update.select`
 
-在编辑器中选择由 `editor.plugin(BlockSelectionPlugin).read.getNodes()` 返回的节点并重置选中的 ID。
+在编辑器中选择由 `editor.plugin(BlockSelectionPlugin).read.getNodes()` 返回的节点并重置选中的节点键。
 
 ### `editor.plugin(BlockSelectionPlugin).update.setNodes`
 

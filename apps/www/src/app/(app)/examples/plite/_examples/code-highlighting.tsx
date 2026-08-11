@@ -152,7 +152,7 @@ const editor = usePliteEditor<CustomValue>({ initialValue })`),
 
 const ElementWrapper = (props: RenderElementProps<CustomElement>) => {
   const { attributes, children, element } = props;
-  const editor = useEditor<CustomEditor>();
+  const editor = useEditor();
 
   if (element.type === CodeBlockType) {
     const setLanguage = (language: string) => {
@@ -221,7 +221,7 @@ const ExampleToolbar = () => (
 );
 
 const CodeBlockButton = () => {
-  const editor = useEditor<CustomEditor>();
+  const editor = useEditor();
 
   return (
     <Button

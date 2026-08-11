@@ -1,4 +1,8 @@
-import { defineBasePlugin, type DefinitionOf } from '@platejs/core';
+import {
+  BaseParagraphPlugin,
+  defineBasePlugin,
+  type DefinitionOf,
+} from '@platejs/core';
 import {
   type Descendant,
   ElementApi,
@@ -23,7 +27,7 @@ export type TrailingBlockPluginState = {
 export const TrailingBlockPlugin = defineBasePlugin(PLUGINS.trailingBlock, {
   initialState: ({ editor }): TrailingBlockPluginState => ({
     level: 0,
-    type: editor.plugin(PLUGINS.paragraph).type,
+    type: editor.plugin(BaseParagraphPlugin).schema.type,
   }),
   corrections: [
     {

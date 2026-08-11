@@ -144,33 +144,33 @@ const editor = createPlateEditor({
 
 <API name="TogglePlugin">
 <APIOptions type="object">
-  <APIItem name="openIds" type="Set<string>" optional>
-    当前展开的折叠项ID集合
+  <APIItem name="openKeys" type="Set<NodeKey>" optional>
+    当前展开的折叠项运行时标识集合
     - **默认值:** `new Set()`
   </APIItem>
-  <APIItem name="isOpen" type="(toggleId: string) => boolean" optional>
+  <APIItem name="isOpen" type="(toggleKey: NodeKey) => boolean" optional>
     检查折叠项是否展开的函数
-    - **默认值:** `(id) => openIds.has(id)`
+    - **默认值:** `(key) => openKeys.has(key)`
   </APIItem>
-  <APIItem name="someClosed" type="(toggleIds: string[]) => boolean" optional>
+  <APIItem name="someClosed" type="(toggleKeys: NodeKey[]) => boolean" optional>
     检查是否存在收起状态的折叠项
-    - **默认值:** `(ids) => ids.some(id => !isOpen(id))`
+    - **默认值:** `(keys) => keys.some(key => !isOpen(key))`
   </APIItem>
 </APIOptions>
 </API>
 
 ## API接口
 
-### `editor.api.toggle.toggleIds`
+### `editor.plugin(TogglePlugin).api.toggleKeys`
 
 切换指定折叠项的展开状态。
 
-<API name="editor.api.toggle.toggleIds">
+<API name="editor.plugin(TogglePlugin).api.toggleKeys">
 切换折叠项展开状态
 
 <APIParameters>
-  <APIItem name="ids" type="readonly (PluginReference | string)[]">
-    需要切换的元素ID数组
+  <APIItem name="keys" type="NodeKey[]">
+    需要切换的折叠元素运行时标识数组
   </APIItem>
   <APIItem name="force" type="boolean | null" optional>
     强制切换状态：
@@ -232,14 +232,14 @@ const editor = createPlateEditor({
 获取折叠按钮状态
 
 <APIParameters>
-  <APIItem name="toggleId" type="string">
-    折叠元素ID
+  <APIItem name="toggleKey" type="NodeKey">
+    折叠元素的运行时标识
   </APIItem>
 </APIParameters>
 
 <APIReturns type="object">
-  <APIItem name="toggleId" type="string">
-    折叠元素ID
+  <APIItem name="toggleKey" type="NodeKey">
+    折叠元素的运行时标识
   </APIItem>
   <APIItem name="open" type="boolean">
     是否处于展开状态
@@ -255,8 +255,8 @@ const editor = createPlateEditor({
 处理折叠按钮行为
 
 <APIParameters>
-  <APIItem name="toggleId" type="string">
-    折叠元素ID
+  <APIItem name="toggleKey" type="NodeKey">
+    折叠元素的运行时标识
   </APIItem>
   <APIItem name="open" type="boolean">
     是否展开状态
@@ -264,8 +264,8 @@ const editor = createPlateEditor({
 </APIParameters>
 
 <APIReturns type="object">
-  <APIItem name="toggleId" type="string">
-    折叠元素ID
+  <APIItem name="toggleKey" type="NodeKey">
+    折叠元素的运行时标识
   </APIItem>
   <APIItem name="open" type="boolean">
     是否展开状态

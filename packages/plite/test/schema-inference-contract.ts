@@ -713,6 +713,8 @@ const handledAlignProperty: EditorSchemaProperty | null =
   editor.read.schema.property(alignHandle);
 editor.update((tx) => {
   tx.nodes.set({ [alignHandle.key]: 'end' });
+  tx.nodes.set({ [alignHandle.key]: undefined });
+  tx.nodes.set({ align: undefined });
   // @ts-expect-error handle-owned mutations retain their value type
   tx.nodes.set({ [alignHandle.key]: 1 });
 });

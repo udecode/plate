@@ -1193,7 +1193,7 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
 
             if (options.type === taskListType) {
               for (const itemPath of listItemPaths) {
-                tx.nodes.set('checked', options.checked, { at: itemPath });
+                tx.nodes.set({ checked: options.checked }, { at: itemPath });
               }
             }
           };
@@ -1226,11 +1226,14 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
             );
 
             if (options.type === taskListType) {
-              tx.nodes.set('checked', options.checked, {
-                at,
-                match: isTaskListItem,
-                mode: 'all',
-              });
+              tx.nodes.set(
+                { checked: options.checked },
+                {
+                  at,
+                  match: isTaskListItem,
+                  mode: 'all',
+                }
+              );
             }
           };
           const selection = tx.selection();
@@ -2133,15 +2136,15 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
                 }
               }
 
-              const liEndRuntimeId = !context.api.hasListChild(liEnd[0])
-                ? state.runtime.idAt(liEnd[1])
+              const liEndNodeKey = !context.api.hasListChild(liEnd[0])
+                ? state.key(liEnd[1])
                 : undefined;
               const result = next();
 
-              if (result === false || !liEndRuntimeId) return result;
+              if (result === false || !liEndNodeKey) return result;
 
               return state.transaction.extend(result, (tx) => {
-                const liEndPath = tx.runtime.pathOf(liEndRuntimeId);
+                const liEndPath = tx.nodes.path(liEndNodeKey);
                 const nextSelection = tx.selection();
 
                 if (!liEndPath || !nextSelection) return;

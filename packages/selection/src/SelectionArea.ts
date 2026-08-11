@@ -38,8 +38,9 @@ export type SelectionAreaOptions = {
   container: SelectionAreaTarget | SelectionAreaTarget[];
   document: Document;
   features: SelectionAreaFeatures;
-  selectables: string | string[];
+  selectables: SelectionAreaSelectables;
   selectionAreaClass: string;
+  selectionAreaElement?: HTMLElement;
   startAreas: SelectionAreaTarget | SelectionAreaTarget[];
 };
 
@@ -58,6 +59,11 @@ export type SelectionAreaSingleTap = {
   intersect: SelectionAreaTapMode;
 };
 
+export type SelectionAreaSelectables =
+  | (() => HTMLElement[])
+  | string
+  | readonly string[];
+
 export type SelectionAreaTapMode = 'native' | 'touch';
 
 export type SelectionAreaTarget = HTMLElement | string;
@@ -66,11 +72,13 @@ export type SelectionAreaTrigger =
   | SelectionAreaMouseButton
   | SelectionAreaMouseButtonWithModifiers;
 
-type SelectionAreaDeepPartial<T> = T extends unknown[]
+type SelectionAreaDeepPartial<T> = T extends (...args: never[]) => unknown
   ? T
-  : T extends HTMLElement
+  : T extends readonly unknown[]
     ? T
-    : { [P in keyof T]?: SelectionAreaDeepPartial<T[P]> };
+    : T extends HTMLElement
+      ? T
+      : { [P in keyof T]?: SelectionAreaDeepPartial<T[P]> };
 
 type EventCallback = (...args: never[]) => unknown;
 type EventMap<Events> = {
@@ -338,6 +346,7 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
   private _container?: HTMLElement;
   private _containerRect?: DOMRect;
   private readonly _frame: Frames;
+  private readonly _ownsArea: boolean;
   private _initScrollDelta: Coordinates = { x: 0, y: 0 };
   private _latestElement?: Element;
   // Options
@@ -431,7 +440,8 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
     }
 
     const { document, selectionAreaClass } = this._options;
-    this._area = document.createElement('div');
+    this._ownsArea = !opt.selectionAreaElement;
+    this._area = opt.selectionAreaElement ?? document.createElement('div');
     // this._clippingElement = document.createElement('div');
     // this._clippingElement.appendChild(this._area);
 
@@ -440,7 +450,7 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
 
     css(this._area, {
       left: 0,
-      position: 'absolute',
+      position: this._ownsArea ? 'absolute' : 'fixed',
       top: 0,
       willChange: 'top, left, bottom, right, width, height',
     });
@@ -503,15 +513,18 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
         return;
       }
 
+      evt.preventDefault();
+      document.getSelection()?.removeAllRanges();
+
       on(document, ['mousemove', 'touchmove'], this._onTapMove, {
         passive: false,
       });
+      on(document, 'selectionchange', this._onNativeSelectionChange);
 
       // Make area element visible
       css(this._area, 'display', 'block');
 
-      // Append selection-area to the dom
-      this._container!.append(this._area);
+      if (this._ownsArea) this._container!.append(this._area);
 
       this.resolveSelectables();
 
@@ -725,6 +738,8 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
   }
 
   _onTapMove(evt: MouseEvent | TouchEvent): void {
+    evt.preventDefault();
+
     const { x, y } = simplifyEvent(evt);
 
     const {
@@ -791,12 +806,17 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
     this._handleMoveEvent(evt);
   }
 
+  _onNativeSelectionChange(): void {
+    const selection = this._options.document.getSelection();
+
+    if (selection?.rangeCount) selection.removeAllRanges();
+  }
+
   _onTapStart(evt: MouseEvent | TouchEvent, silent = false): void {
     const { container, document } = this._options;
     const { target, x, y } = simplifyEvent(evt);
 
     const containerElement = selectAll(container, document)[0];
-
     if (!(containerElement instanceof HTMLElement)) return;
 
     this._container = containerElement;
@@ -872,6 +892,7 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
     off(document, ['mousemove', 'touchmove'], this._delayedTapMove);
     off(document, ['touchmove', 'mousemove'], this._onTapMove);
     off(document, ['mouseup', 'touchcancel', 'touchend'], this._onTapStop);
+    off(document, 'selectionchange', this._onNativeSelectionChange);
     off(document, 'wheel', this._onScroll);
 
     // Keep selection until the next time
@@ -893,7 +914,7 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
     off(this._container, 'wheel', this._manualScroll, { passive: true });
 
     // Remove selection-area from dom
-    this._area.remove();
+    if (this._ownsArea) this._area.remove();
 
     // Cancel current frame
     this._frame?.cancel();
@@ -1006,10 +1027,18 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
   _redrawSelectionArea(): void {
     const { height, width, x, y } = this._areaRect;
     const { style } = this._area;
+    const left =
+      !this._ownsArea && this._container && this._containerRect
+        ? x + this._containerRect.left - this._container.scrollLeft
+        : x;
+    const top =
+      !this._ownsArea && this._container && this._containerRect
+        ? y + this._containerRect.top - this._container.scrollTop
+        : y;
 
     // Using transform will make the area's borders look blurry
-    style.left = `${x}px`;
-    style.top = `${y}px`;
+    style.left = `${left}px`;
+    style.top = `${top}px`;
     style.width = `${width}px`;
     style.height = `${height}px`;
   }
@@ -1181,10 +1210,10 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
    * everything which can be selected.
    */
   resolveSelectables(): void {
-    this._selectables = selectAll(
-      this._options.selectables,
-      this._options.document
-    );
+    this._selectables =
+      typeof this._options.selectables === 'function'
+        ? this._options.selectables()
+        : selectAll(this._options.selectables, this._options.document);
   }
 
   /**

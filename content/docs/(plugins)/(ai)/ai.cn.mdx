@@ -486,7 +486,7 @@ const range = editor.plugin(AIPlugin).api.findTextRangeInBlock({
     <APIItem name="triggerPreviousCharPattern" type="RegExp" optional>触发器前字符必须匹配的模式。默认为 `/^\s?$/`。</APIItem>
     <APIItem name="triggerQuery" type="(editor: BaseEditor) => boolean" optional>返回 `false` 以在特定上下文中取消打开。</APIItem>
     <APIItem name="chat" type="AIChatAdapter" optional>存储 `createAIChatAdapter(useChat(...))` 返回的适配器，以便 API 调用可以访问聊天状态和控制器。</APIItem>
-    <APIItem name="chatNodes" type="Array<IdElement & { id: string }>" optional>用于差异编辑建议的节点快照（内部管理）。</APIItem>
+    <APIItem name="chatNodes" type="AIChatNodeSnapshot[]" optional>与编辑器作用域运行时标识配对的差异编辑建议节点快照（内部管理）。</APIItem>
     <APIItem name="chatSelection" type="Range | null" optional>提交提示前捕获的选择（内部管理）。</APIItem>
     <APIItem name="mode" type="'chat' | 'insert'">控制响应是直接流式传输到文档还是打开审查面板。默认为 `'insert'`。</APIItem>
     <APIItem name="open" type="boolean" optional>AI 菜单是否可见。默认为 `false`。</APIItem>

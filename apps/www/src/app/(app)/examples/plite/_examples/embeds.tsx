@@ -10,7 +10,6 @@ import {
 } from '@platejs/plite-react';
 import { Input } from '@/components/ui/input';
 import type {
-  CustomEditor,
   CustomElement,
   ParagraphElement as ParagraphElementType,
   VideoElement as VideoElementType,
@@ -90,7 +89,7 @@ const ParagraphElement = ({
 const allowedSchemes = ['http:', 'https:'];
 
 const VideoElement = ({ element }: RenderVoidProps<VideoElementType>) => {
-  const editor = useEditor<CustomEditor>();
+  const editor = useEditor();
   const { url } = element;
 
   const safeUrl = useMemo(() => {

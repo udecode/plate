@@ -103,18 +103,10 @@ export const PliteElement = React.forwardRef<
 >(function PliteElement({ as: Tag = 'div', children, ...props }, ref) {
   const attributes = useNodeAttributes(props, ref);
 
-  const block =
-    !!props.element.id && props.editor.read.schema.isBlock(props.element);
-  const blockId =
-    block && typeof props.element.id === 'string'
-      ? props.element.id
-      : undefined;
-
   return (
     <Tag
       data-plite-node="element"
       data-plite-inline={attributes['data-plite-inline']}
-      data-block-id={blockId}
       {...attributes}
       style={
         {

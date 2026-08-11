@@ -125,7 +125,7 @@ export const commentPlugin = toPlatePlugin(BaseCommentPlugin, {
               break;
             }
 
-            const id = api.nodeId(commentsEntry[0]);
+            const id = api.id(commentsEntry[0]);
             store.set({ activeId: id ?? null });
             isSet = true;
             break;
@@ -292,11 +292,11 @@ const editor = createPlateEditor({
   </APIReturns>
 </API>
 
-### `editor.api.comment.nodeId`
+### `editor.api.comment.id`
 
 从叶子节点获取评论的 ID。
 
-<API name="editor.api.comment.nodeId">
+<API name="editor.api.comment.id">
   <APIParameters>
     <APIItem name="leaf" type="CommentText">
       评论叶子节点。

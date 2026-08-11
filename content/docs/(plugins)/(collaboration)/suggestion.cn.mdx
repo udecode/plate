@@ -132,7 +132,7 @@ export const suggestionPlugin = SuggestionPlugin.configure({
             break;
           }
 
-          const id = api.nodeId(suggestionEntry[0]);
+          const id = api.id(suggestionEntry[0]);
           store.set({ activeId: id ?? null });
           isSet = true;
           break;
@@ -280,7 +280,7 @@ const descriptions = read.activeDescriptions();
 | `api.key(id?)` / `api.keyId(node)` / `api.keys(node)` | 读取和构建内联建议键。 |
 | `read.node(options?)` / `read.nodes(options?)` | 查找一个或全部建议条目。 |
 | `read.nodeEntries(id, options?)` | 查找建议 ID 对应的内联条目。 |
-| `api.nodeId(node)` | 返回节点的建议 ID。 |
+| `api.id(node)` | 返回节点的建议 ID。 |
 | `api.skipDeletes(node)` | 返回不含删除建议的文本。 |
 | `api.suggestionData(node)` | 返回内联或区块建议数据。 |
 | `api.untracked(fn)` | 同步运行操作且不递归创建建议。 |

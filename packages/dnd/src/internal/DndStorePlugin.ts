@@ -1,7 +1,7 @@
 import type React from 'react';
 
 import { definePlatePlugin, type PlateEditor } from '@platejs/core/react';
-import type { Path } from '@platejs/plite';
+import type { Path, NodeKey } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
 import type { DropTargetMonitor } from 'react-dnd';
 
@@ -14,10 +14,10 @@ import type {
 
 export type DndPluginState = {
   _isOver: boolean;
-  draggingId: string[] | string | null;
+  draggingKey: NodeKey[] | NodeKey | null;
   dropTarget:
     | {
-        id: string | null;
+        key: NodeKey | null;
         line: DropLineDirection;
       }
     | undefined;
@@ -26,7 +26,7 @@ export type DndPluginState = {
   multiplePreviewRef: React.RefObject<HTMLDivElement | null> | null;
   scrollerProps: Partial<ScrollerProps>;
   onDropFiles?: (props: {
-    id: string;
+    key: NodeKey;
     dragItem: FileDragItemNode;
     editor: PlateEditor;
     monitor: DropTargetMonitor<DragItemNode, unknown>;
@@ -37,8 +37,8 @@ export type DndPluginState = {
 
 const initialState: DndPluginState = {
   _isOver: false,
-  draggingId: null,
-  dropTarget: { id: null, line: '' },
+  draggingKey: null,
+  dropTarget: { key: null, line: '' },
   enableScroller: false,
   isDragging: false,
   multiplePreviewRef: null,
@@ -51,7 +51,7 @@ export const DndStorePlugin = definePlatePlugin(PLUGINS.dnd, {
   on: {
     dragEnd: ({ store }) => {
       store.set({ isDragging: false });
-      store.set({ dropTarget: { id: null, line: '' } });
+      store.set({ dropTarget: { key: null, line: '' } });
     },
     dragEnter: ({ store }) => {
       store.set({ _isOver: true });
@@ -66,18 +66,18 @@ export const DndStorePlugin = definePlatePlugin(PLUGINS.dnd, {
       dataTransfer.effectAllowed = 'move';
       dataTransfer.dropEffect = 'move';
 
-      const id = event.target.dataset.blockId;
+      const key = event.target.dataset.pliteNodeKey as NodeKey | undefined;
 
-      if (!id) return;
+      if (!key) return;
 
-      store.set({ draggingId: id });
+      store.set({ draggingKey: key });
       store.set({ isDragging: true });
       store.set({ _isOver: true });
     },
     drop: ({ store }) => store.get().isDragging,
     focus: ({ store }) => {
       store.set({ isDragging: false });
-      store.set({ dropTarget: { id: null, line: '' } });
+      store.set({ dropTarget: { key: null, line: '' } });
       store.set({ _isOver: false });
       store.get('multiplePreviewRef')?.current?.replaceChildren();
     },

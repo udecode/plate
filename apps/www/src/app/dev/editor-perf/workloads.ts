@@ -1,4 +1,4 @@
-import { normalizeNodeId, type Descendant, type Value } from 'platejs';
+import { migrateElementIds, type Descendant, type Value } from 'platejs';
 import type { Element } from '@platejs/plite';
 
 import { createHugeDocumentValue } from '@/registry/examples/values/huge-document-value';
@@ -23,7 +23,7 @@ export type EditorPerfWorkloadId =
 
 export type ScenarioWorkloadId = Exclude<EditorPerfWorkloadId, 'huge-bold'>;
 
-export type NodeIdFragmentBenchmarkKind =
+export type ElementIdFragmentBenchmarkKind =
   | 'raw-import'
   | 'seeded-duplicate-paste';
 
@@ -190,7 +190,7 @@ const markDocumentCache = new Map<string, Value>();
 const denseTextDocumentCache = new Map<number, Value>();
 const denseInlinePropsDocumentCache = new Map<number, Value>();
 const fallbackParagraphDocumentCache = new Map<number, Value>();
-const nodeIdFragmentDocumentCache = new Map<
+const elementIdFragmentDocumentCache = new Map<
   string,
   { fragment: Value; value: Value }
 >();
@@ -211,7 +211,7 @@ export function createBenchIdFactory(
   };
 }
 
-export function getDefaultNodeIdFragmentBlockCount(blocks: number) {
+export function getDefaultElementIdFragmentBlockCount(blocks: number) {
   return Math.max(25, Math.min(200, Math.floor(blocks / 25)));
 }
 
@@ -530,33 +530,33 @@ export function getSeededEditorPerfWorkloadValue({
     return cloneValue(cachedValue);
   }
 
-  const seededValue = normalizeNodeId(
+  const seededValue = migrateElementIds(
     getEditorPerfWorkloadValue({ blocks, workloadId }),
     {
-      idCreator: createBenchIdFactory(
+      generateId: createBenchIdFactory(
         { count: 0 },
         `seed-${resolvedCacheKey.replace(/[^a-z0-9-]/gi, '-')}`
       ),
     }
-  );
+  ).value;
 
   seededDocumentCache.set(resolvedCacheKey, seededValue);
 
   return cloneValue(seededValue);
 }
 
-export function getNodeIdFragmentBenchmarkData({
+export function getElementIdFragmentBenchmarkData({
   blocks,
-  fragmentBlocks = getDefaultNodeIdFragmentBlockCount(blocks),
+  fragmentBlocks = getDefaultElementIdFragmentBlockCount(blocks),
   kind,
 }: {
   blocks: number;
   fragmentBlocks?: number;
-  kind: NodeIdFragmentBenchmarkKind;
+  kind: ElementIdFragmentBenchmarkKind;
 }) {
   const resolvedFragmentBlocks = Math.max(1, Math.min(blocks, fragmentBlocks));
   const cacheKey = `${kind}:${blocks}:${resolvedFragmentBlocks}`;
-  const cachedValue = nodeIdFragmentDocumentCache.get(cacheKey);
+  const cachedValue = elementIdFragmentDocumentCache.get(cacheKey);
 
   if (cachedValue) {
     return {
@@ -571,7 +571,7 @@ export function getNodeIdFragmentBenchmarkData({
   if (kind === 'seeded-duplicate-paste') {
     const sourceValue = getSeededEditorPerfWorkloadValue({
       blocks,
-      cacheKey: `nodeid-fragment:${blocks}`,
+      cacheKey: `element-id-fragment:${blocks}`,
       workloadId: 'huge-mixed-block',
     });
 
@@ -590,7 +590,7 @@ export function getNodeIdFragmentBenchmarkData({
     });
   }
 
-  nodeIdFragmentDocumentCache.set(cacheKey, { fragment, value });
+  elementIdFragmentDocumentCache.set(cacheKey, { fragment, value });
 
   return {
     fragment: cloneValue(fragment),

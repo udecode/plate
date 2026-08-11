@@ -98,12 +98,21 @@ export function ParagraphElement({
 export const AppParagraphPlugin = ParagraphPlugin.configure({ component: ParagraphElement });
 ```
 
-If your Plite document stores a custom type like `paragraph`, keep that type on the plugin.
+If an existing document uses a different persisted type, remap that element in
+the closed editor schema. Plugin configuration cannot rewrite schema identity.
 
 ```tsx title="components/editor/paragraph-plugin.tsx" showLineNumbers
-export const AppParagraphPlugin = ParagraphPlugin.configure({
-  component: ParagraphElement,
-  type: 'paragraph',
+import { defineEditor, schema } from 'platejs';
+
+export default defineEditor('app', {
+  plugins: [AppParagraphPlugin] as const,
+  schema: {
+    overrides: [
+      schema.override(AppParagraphPlugin, {
+        element: { type: 'p' },
+      }),
+    ],
+  },
 });
 ```
 
@@ -132,29 +141,27 @@ editor.update((tx) => {
 });
 ```
 
-Keep plugin portal methods flat and task-shaped. The portal already owns the
-plugin noun, so a separate shared insert group adds taxonomy without clarity.
+Element plugins already receive schema-inferred `insert`, `set`, and `remove`
+updates. Do not wrap those generic operations in a feature method.
 
 ```tsx title="components/editor/callout-plugin.tsx" showLineNumbers
+import { schema } from 'platejs';
 import { definePlatePlugin } from 'platejs/react';
 
 export const CalloutPlugin = definePlatePlugin('callout', {
-  update: ({ tx }) => ({
-    insertCallout() {
-      tx.nodes.insert({
-        children: [{ text: '' }],
-        type: 'callout',
-      });
-    },
-  }),
+  schema: {
+    element: schema.element.textBlock(),
+  },
 });
 ```
 
 ```ts title="commands.ts"
-editor.update((tx) => {
-  tx.callout.insertCallout();
-});
+editor.plugin(CalloutPlugin).update.insert();
 ```
+
+Add a custom update only when it performs behavior beyond those generic node
+operations. Keep that method flat and task-shaped; the portal already owns the
+plugin noun.
 
 Use `api` for plugin-scoped immutable services, `read` for snapshot-local
 queries, and the root native Plite fields for commands, corrections, read

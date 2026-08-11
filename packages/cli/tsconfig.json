@@ -1,0 +1,15 @@
+{
+  "extends": "../../tooling/config/tsconfig.base.json",
+  "include": ["src", "test", "../../tooling/config/global.d.ts"],
+  "exclude": [],
+  "compilerOptions": {
+    "paths": {
+      "@platejs/core": ["../core/src/index.ts"],
+      "@platejs/core/internal": ["../core/src/internal/index.ts"],
+      "@platejs/core/react": ["../core/src/react/index.ts"],
+      "@platejs/plite": ["../plite/src/index.ts"],
+      "@platejs/plite/internal": ["../plite/src/internal/index.ts"]
+    },
+    "types": ["bun", "node"]
+  }
+}

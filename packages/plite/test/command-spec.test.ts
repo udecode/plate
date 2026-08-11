@@ -374,7 +374,10 @@ describe('pure command transaction specs', () => {
         () => editor.update.nodes.insert({ text: 'x' }),
       ],
       [editorCommands.removeNodes.id, () => editor.update.nodes.remove()],
-      [editorCommands.setNodes.id, () => editor.update.nodes.set({ bold: true })],
+      [
+        editorCommands.setNodes.id,
+        () => editor.update.nodes.set({ bold: true }),
+      ],
       [editorCommands.collapse.id, () => editor.update.selection.collapse()],
       [editorCommands.move.id, () => editor.update.selection.move()],
       [editorCommands.select.id, () => editor.update.selection.set(selection)],

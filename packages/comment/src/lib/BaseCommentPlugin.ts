@@ -78,7 +78,7 @@ export const BaseCommentPlugin = defineBasePlugin(PLUGINS.comment, {
 
     return {
       api: () => ({
-        nodeId: (leaf: Text) => {
+        id: (leaf: Text) => {
           const keys = Object.keys(leaf);
 
           if (keys.includes(getDraftCommentKey())) return;
@@ -205,7 +205,7 @@ export const BaseCommentPlugin = defineBasePlugin(PLUGINS.comment, {
             at: [],
             transient,
           })) {
-            const removedId = id ?? api.nodeId(node);
+            const removedId = id ?? api.id(node);
             const unsetKeys: string[] = [
               getDraftCommentKey(),
               getTransientCommentKey(),

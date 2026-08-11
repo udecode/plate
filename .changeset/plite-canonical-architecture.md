@@ -29,10 +29,10 @@
 - Delete the exact selected node when Backspace or Delete targets a serializable `NodeSelection`, then place a text selection at the nearest surviving sibling
 - Let extensions register serializable selection kinds with validation, mapping, range enumeration, replacement, and DOM projection hooks
 - Publish one-shot `editor.read.*` and `editor.update.*` APIs with callback forms for grouped work
-- Type one-property node mutations as `nodes.set(key, value, options)` and
-  `nodes.unset(key, options)`, and accept exact schema-property handles for
-  aliased or generic ownership. Keep object-form structural and atomic writes.
-  Prefix handles cannot address one property.
+- Type node-property mutations as atomic `nodes.set(props, options)` patches
+  and removals as `nodes.unset(key, options)`. Use exact schema-property handle
+  keys as computed object keys for aliases. Prefix handles cannot address one
+  property.
 - Add schema property copy policy and generated construction/canonical
   presence. Plugin-authored property keys are invariant; closed applications
   may retarget a property but cannot alias its storage key.

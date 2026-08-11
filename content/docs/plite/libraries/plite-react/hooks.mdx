@@ -298,9 +298,9 @@ type UseElementSelectedOptions = {
 };
 ```
 
-#### `usePliteNodeRef(runtimeId, options?): (node) => void`
+#### `usePliteNodeRef(nodeKey, options?): (node) => void`
 
-Bind a custom node element to Plite's runtime id, path, and DOM lookup maps.
+Bind a custom node element to Plite's node key, path, and DOM lookup maps.
 
 Use this only when replacing Plite's render primitives with a custom DOM shell.
 Normal renderers should use `PliteElement`, `PliteText`, `PliteLeaf`, or
@@ -310,21 +310,21 @@ Normal renderers should use `PliteElement`, `PliteText`, `PliteLeaf`, or
 
 Subscribe to a value derived from one mounted node.
 
-Pass `options.runtimeId` to target a specific node, or call it inside an editor
+Pass `options.nodeKey` to target a specific node, or call it inside an editor
 node renderer to use that renderer's runtime target.
 
 #### `useTextSelector<T>(selector, equalityFn?, options?): T`
 
 Subscribe to a value derived from one mounted text node.
 
-Pass `options.runtimeId` to target a specific text node, or call it inside an
+Pass `options.nodeKey` to target a specific text node, or call it inside an
 editor text renderer to use that renderer's runtime target.
 
 #### `useDecorationSelector<T>(selector, equalityFn?, options?): T`
 
 Subscribe to decoration/projection data for one mounted runtime target.
 
-Pass `options.runtimeId` to target a specific runtime node, or call it inside a
+Pass `options.nodeKey` to target a specific runtime node, or call it inside a
 renderer that already has runtime target context.
 
 ## Projection Hooks
@@ -332,12 +332,12 @@ renderer that already has runtime target context.
 Use projection hooks when ranges need to be shared across the editor, overlays,
 sidebars, annotations, or widgets.
 
-#### `usePliteProjectionEntries<T>(runtimeId): readonly PliteProjectionEntry<T>[]`
+#### `usePliteProjectionEntries<T>(nodeKey): readonly PliteProjectionEntry<T>[]`
 
 Subscribe to low-level projected range entries for one runtime node. Normal app
 UI should use decoration sources, annotation stores, or widget stores first.
 Use projection entries only when custom inline rendering needs the exact
-projected slices for one mounted runtime id.
+projected slices for one mounted node key.
 
 #### `usePliteDecorationSource<T>(editor, options): PliteDecorationSource<T>`
 

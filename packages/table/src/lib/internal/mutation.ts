@@ -8,17 +8,14 @@ import type {
   Text,
 } from '@platejs/plite';
 import { ElementApi } from '@platejs/plite';
-import type {
-  TTableCellElement,
-  TTableElement,
-  TTableRowElement,
-} from '@platejs/utils';
+import type { TableCellElement, TableRowElement } from '../BaseTablePlugin';
 import cloneDeep from 'lodash/cloneDeep.js';
 
 import { createDetachedTableContext, type TableContext } from './context';
 import { getColSpan, getRowSpan, setSpan } from './codec';
 import {
   compileTableGrid,
+  getTableColumnSizes,
   type TableGridAnchor,
   type TableGridProblem,
 } from './grid';
@@ -29,18 +26,18 @@ type MutableElement = {
   type: string;
   [key: string]: unknown;
 };
-type MutableCell = MutableElement & {
-  background?: string;
-  borders?: TTableCellElement['borders'];
-  colSpan?: number;
-  id?: string;
-  rowSpan?: number;
-  size?: number;
+type DeepMutable<T> = T extends (...args: any[]) => unknown
+  ? T
+  : T extends readonly (infer TValue)[]
+    ? DeepMutable<TValue>[]
+    : T extends object
+      ? { -readonly [TKey in keyof T]: DeepMutable<T[TKey]> }
+      : T;
+type RuntimeTableCellElement = Omit<TableCellElement, 'type'> & {
+  type: string;
 };
-type MutableTable = MutableElement & {
-  colSizes?: number[];
-  marginLeft?: number;
-};
+type MutableCell = DeepMutable<RuntimeTableCellElement>;
+type MutableTable = DeepMutable<Element>;
 
 const cloneMutableDescendant = (node: Descendant): MutableDescendant =>
   ElementApi.isElement(node) ? cloneMutableElement(node) : cloneDeep(node);
@@ -50,31 +47,27 @@ const cloneMutableElement = (element: Element): MutableElement => ({
   children: element.children.map(cloneMutableDescendant),
 });
 
-const cloneMutableCell = (cell: TTableCellElement): MutableCell => ({
-  ...cloneDeep(cell),
-  children: cell.children.map(cloneMutableDescendant),
-});
+const cloneMutableCell = (cell: RuntimeTableCellElement): MutableCell =>
+  cloneDeep(cell) as MutableCell;
 
-const cloneMutableTable = (table: TTableElement): MutableTable => ({
-  ...cloneDeep(table),
-  children: table.children.map(cloneMutableDescendant),
-});
+const cloneMutableTable = (table: Element): MutableTable =>
+  cloneDeep(table) as MutableTable;
 
 const isMutableElement = (node: MutableDescendant): node is MutableElement =>
   ElementApi.isElement(node);
 
 export type TableCellFactory = (options: {
-  children?: readonly Descendant[];
+  children?: TableCellElement['children'];
   col: number;
   header: boolean;
   row: number;
-  sourceRow?: TTableRowElement;
-}) => TTableCellElement;
+  sourceRow?: TableRowElement;
+}) => RuntimeTableCellElement;
 
 export type TableOperation =
   | Readonly<{
       kind: 'insert-node';
-      node: TTableCellElement | TTableElement | TTableRowElement;
+      node: Element;
       options?: Omit<NodeInsertNodesOptions, 'at' | 'select'>;
       path: Path;
     }>
@@ -110,14 +103,14 @@ export type TableMutationPlan = Readonly<{
 
 export type TableMutationDiagnostic =
   | Readonly<{
-      anchorId?: string;
+      anchorKey?: string;
       anchorPath?: Path;
       kind: 'missing-anchor';
     }>
   | Readonly<{
-      cellIds: readonly string[];
+      cellKeys: readonly string[];
       kind: 'invalid-selection';
-      reason: 'duplicate-id' | 'empty' | 'non-rectangular' | 'unknown-id';
+      reason: 'duplicate-key' | 'empty' | 'non-rectangular' | 'unknown-key';
     }>
   | Readonly<{
       kind: 'invalid-table';
@@ -126,7 +119,7 @@ export type TableMutationDiagnostic =
     }>;
 
 type TableTarget = Readonly<{
-  anchorId?: string;
+  anchorKey?: string;
   anchorPath?: Path;
 }>;
 
@@ -154,7 +147,7 @@ type InsertRowIntent = TableTarget &
 
 type InsertTableIntent = Readonly<{
   kind: 'insert-table';
-  options?: NodeInsertNodesOptions<TTableElement>;
+  options?: NodeInsertNodesOptions<Element>;
 }>;
 
 type RemoveColumnIntent = TableTarget &
@@ -179,7 +172,7 @@ type RemoveTableIntent = Readonly<{
 }>;
 
 type MergeIntent = Readonly<{
-  cellIds: readonly string[];
+  cellKeys: readonly string[];
   createCell: TableCellFactory;
   kind: 'merge';
 }>;
@@ -193,7 +186,7 @@ type SplitIntent = TableTarget &
 
 type RepairIntent = Readonly<{
   createCell: TableCellFactory;
-  createRow?: (row: number) => TTableRowElement;
+  createRow?: (row: number) => TableRowElement;
   extendRowSpans?: boolean;
   kind: 'repair';
 }>;
@@ -212,7 +205,7 @@ export type TableIntent =
 type MutableOperation =
   | {
       kind: 'insert-node';
-      node: TTableCellElement | TTableElement | TTableRowElement;
+      node: Element;
       options?: Omit<NodeInsertNodesOptions, 'at' | 'select'>;
       path: Path;
     }
@@ -275,13 +268,13 @@ const freezePlan = (
 
 const missingAnchor = (target: TableTarget): TableMutationDiagnostic =>
   deepFreeze({
-    ...(target.anchorId ? { anchorId: target.anchorId } : {}),
+    ...(target.anchorKey ? { anchorKey: target.anchorKey } : {}),
     ...(target.anchorPath ? { anchorPath: freezePath(target.anchorPath) } : {}),
     kind: 'missing-anchor' as const,
   });
 
 const invalidSelection = (
-  cellIds: readonly string[],
+  cellKeys: readonly string[],
   reason: TableMutationDiagnostic extends infer T
     ? T extends { kind: 'invalid-selection'; reason: infer R }
       ? R
@@ -289,7 +282,7 @@ const invalidSelection = (
     : never
 ): TableMutationDiagnostic =>
   deepFreeze({
-    cellIds: [...cellIds],
+    cellKeys: [...cellKeys],
     kind: 'invalid-selection' as const,
     reason,
   });
@@ -298,7 +291,7 @@ const targetAnchor = (
   context: TableContext,
   target: TableTarget
 ): TableGridAnchor | undefined => {
-  if (target.anchorId) return context.grid.byId.get(target.anchorId);
+  if (target.anchorKey) return context.grid.byKey.get(target.anchorKey);
   if (!target.anchorPath) return;
 
   const relative =
@@ -339,11 +332,11 @@ const spanOperations = (
     : [{ keys: [key], kind: 'unset-node', path }];
 };
 
-const cellIsHeader = (cell: TTableCellElement) => cell.type === 'th';
+const cellIsHeader = (cell: RuntimeTableCellElement) => cell.header === true;
 
-const rowIsHeader = (row: TTableRowElement) =>
+const rowIsHeader = (row: TableRowElement) =>
   row.children.length > 0 &&
-  (row.children as readonly TTableCellElement[]).every(cellIsHeader);
+  (row.children as readonly TableCellElement[]).every(cellIsHeader);
 
 const resizeColumnSizes = (
   colSizes: readonly number[],
@@ -376,7 +369,7 @@ const resizeColumnSizes = (
 };
 
 const firstTextPoint = (
-  cell: TTableCellElement,
+  cell: TableCellElement,
   cellPath: Path,
   edge: 'end' | 'start'
 ) => {
@@ -416,18 +409,18 @@ const firstTextPoint = (
 };
 
 const selectionForTable = (
-  table: TTableElement,
+  table: Element,
   tablePath: Path,
   target: {
     col?: number;
     edge?: 'end' | 'start';
-    id?: string;
+    key?: string;
     row?: number;
   }
 ): Range | undefined => {
   const grid = compileTableGrid(table);
   const anchor =
-    (target.id ? grid.byId.get(target.id) : undefined) ??
+    (target.key ? grid.byKey.get(target.key) : undefined) ??
     grid.slots[target.row ?? 0]?.[target.col ?? 0] ??
     grid.anchors[0];
 
@@ -451,7 +444,7 @@ const selectionForTable = (
 type TableSelectionTarget = Parameters<typeof selectionForTable>[2];
 
 const selectionForTableTargets = (
-  table: TTableElement,
+  table: Element,
   tablePath: Path,
   target:
     | TableSelectionTarget
@@ -546,7 +539,7 @@ const planInsertColumn = (
       continue;
     }
 
-    const sourceRow = context.table.children[anchor.row] as TTableRowElement;
+    const sourceRow = context.table.children[anchor.row] as TableRowElement;
     const header = intent.header ?? rowIsHeader(sourceRow);
     const cell = intent.createCell({
       col: insertCol,
@@ -577,13 +570,15 @@ const planInsertColumn = (
     return comparePaths(left.path, right.path);
   });
 
-  if (context.table.colSizes) {
+  const currentColSizes = getTableColumnSizes(context.table);
+
+  if (currentColSizes) {
     operations.push({
       kind: 'set-node',
       path: freezePath(context.tablePath),
       properties: {
         colSizes: resizeColumnSizes(
-          context.table.colSizes,
+          currentColSizes,
           insertCol,
           intent.initialTableWidth,
           intent.minColumnWidth
@@ -622,7 +617,7 @@ const planInsertRow = (
     )
   );
   const operations: MutableOperation[] = [];
-  const newCells: { cell: TTableCellElement; col: number }[] = [];
+  const newCells: { cell: RuntimeTableCellElement; col: number }[] = [];
 
   for (const anchor of affected) {
     if (anchor.row + anchor.rowSpan - 1 >= insertRow && !firstRow) {
@@ -632,7 +627,7 @@ const planInsertRow = (
       continue;
     }
 
-    const sourceRow = context.table.children[anchor.row] as TTableRowElement;
+    const sourceRow = context.table.children[anchor.row] as TableRowElement;
     const header = intent.header ?? rowIsHeader(sourceRow);
     const cell = cloneMutableCell(
       intent.createCell({
@@ -743,8 +738,10 @@ const planRemoveColumn = (
   });
   operations.push(...removals);
 
-  if (context.table.colSizes) {
-    const colSizes = [...context.table.colSizes];
+  const currentColSizes = getTableColumnSizes(context.table);
+
+  if (currentColSizes) {
+    const colSizes = [...currentColSizes];
 
     colSizes.splice(start, count);
     operations.push({
@@ -797,7 +794,8 @@ const planRemoveRow = (
   }
 
   const operations: MutableOperation[] = [];
-  const moved: { anchor: TableGridAnchor; cell: TTableCellElement }[] = [];
+  const moved: { anchor: TableGridAnchor; cell: RuntimeTableCellElement }[] =
+    [];
 
   for (const anchor of context.grid.anchors) {
     const anchorEnd = anchor.row + anchor.rowSpan - 1;
@@ -821,12 +819,12 @@ const planRemoveRow = (
 
   if (moved.length > 0) {
     const targetRow = context.table.children[targetRowIndex] as
-      | TTableRowElement
+      | TableRowElement
       | undefined;
 
     if (targetRow) {
       const cells = [
-        ...(targetRow.children as readonly TTableCellElement[]).map(
+        ...(targetRow.children as readonly TableCellElement[]).map(
           (cell, index) => ({
             cell,
             col:
@@ -876,17 +874,17 @@ const planMerge = (
   context: TableContext,
   intent: MergeIntent
 ): TableMutationPlan | TableMutationDiagnostic => {
-  if (intent.cellIds.length === 0) {
-    return invalidSelection(intent.cellIds, 'empty');
+  if (intent.cellKeys.length === 0) {
+    return invalidSelection(intent.cellKeys, 'empty');
   }
-  if (new Set(intent.cellIds).size !== intent.cellIds.length) {
-    return invalidSelection(intent.cellIds, 'duplicate-id');
+  if (new Set(intent.cellKeys).size !== intent.cellKeys.length) {
+    return invalidSelection(intent.cellKeys, 'duplicate-key');
   }
 
-  const requested = intent.cellIds.map((id) => context.grid.byId.get(id));
+  const requested = intent.cellKeys.map((key) => context.grid.byKey.get(key));
 
   if (requested.some((anchor) => !anchor)) {
-    return invalidSelection(intent.cellIds, 'unknown-id');
+    return invalidSelection(intent.cellKeys, 'unknown-key');
   }
 
   const anchors = requested as TableGridAnchor[];
@@ -912,7 +910,7 @@ const planMerge = (
     closure.size !== anchors.length ||
     anchors.some((anchor) => !closure.has(anchor))
   ) {
-    return invalidSelection(intent.cellIds, 'non-rectangular');
+    return invalidSelection(intent.cellKeys, 'non-rectangular');
   }
 
   const ordered = context.grid.anchors.filter((anchor) => closure.has(anchor));
@@ -925,7 +923,7 @@ const planMerge = (
     col: minCol,
     header: cellIsHeader(first.cell),
     row: minRow,
-    sourceRow: context.table.children[minRow] as TTableRowElement,
+    sourceRow: context.table.children[minRow] as TableRowElement,
   });
   const merged = cloneMutableCell({
     ...fallback,
@@ -949,13 +947,13 @@ const planMerge = (
   for (const [rowIndex, indexes] of [...selectedByRow].sort(
     ([left], [right]) => right - left
   )) {
-    const row = context.table.children[rowIndex] as TTableRowElement;
-    const children = (row.children as readonly TTableCellElement[]).filter(
-      (_, index) => !indexes.has(index)
-    );
+    const row = context.table.children[rowIndex] as TableRowElement;
+    const children: RuntimeTableCellElement[] = (
+      row.children as readonly TableCellElement[]
+    ).filter((_, index) => !indexes.has(index));
 
     if (rowIndex === first.row) {
-      const insertionIndex = (row.children as readonly TTableCellElement[])
+      const insertionIndex = (row.children as readonly TableCellElement[])
         .slice(0, first.cellIndex)
         .filter((_, index) => !indexes.has(index)).length;
 
@@ -971,7 +969,7 @@ const planMerge = (
 
   return planWithSelection(context, operations, {
     edge: 'end',
-    id: first.id,
+    key: first.key,
     row: first.row,
     col: first.col,
   });
@@ -996,11 +994,9 @@ const planSplit = (
     rowIndex < selected.row + rowSpan;
     rowIndex++
   ) {
-    const row = context.table.children[rowIndex] as
-      | TTableRowElement
-      | undefined;
-    const existing = row
-      ? [...(row.children as readonly TTableCellElement[])]
+    const row = context.table.children[rowIndex] as TableRowElement | undefined;
+    const existing: RuntimeTableCellElement[] = row
+      ? [...(row.children as readonly TableCellElement[])]
       : [];
     const rowAnchors = context.grid.anchorsByRow[rowIndex] ?? [];
     const insertionIndex =
@@ -1008,7 +1004,7 @@ const planSplit = (
         ? selected.cellIndex
         : (rowAnchors.find((anchor) => anchor.col >= selected.col)?.cellIndex ??
           existing.length);
-    const cells: TTableCellElement[] = [];
+    const cells: RuntimeTableCellElement[] = [];
 
     for (let colOffset = 0; colOffset < colSpan; colOffset++) {
       if (rowIndex === selected.row && colOffset === 0) {
@@ -1052,7 +1048,7 @@ const planSplit = (
 
   return planWithSelection(context, operations, {
     edge: 'end',
-    id: selected.id,
+    key: selected.key,
     row: selected.row,
     col: selected.col,
   });
@@ -1062,7 +1058,7 @@ type PreparedTableRepair = Readonly<{
   context: TableContext;
   kind: 'prepared-repair';
   operations: readonly MutableOperation[];
-  table: TTableElement;
+  table: Element;
 }>;
 
 const isRepairableGridProblem = (problem: TableGridProblem) =>
@@ -1109,7 +1105,7 @@ const prepareTableRepair = (
         context.grid.height
       );
       const fallbackRowType = (
-        context.table.children.at(-1) as TTableRowElement | undefined
+        context.table.children.at(-1) as TableRowElement | undefined
       )?.type;
 
       for (let row = context.grid.height; row < requiredHeight; row++) {
@@ -1119,8 +1115,8 @@ const prepareTableRepair = (
             intent.createRow?.(row) ??
             ({
               children: [],
-              type: fallbackRowType ?? 'tr',
-            } as TTableRowElement),
+              type: fallbackRowType ?? 'tableRow',
+            } as TableRowElement),
           path: absolutePath(context, [row]),
         });
       }
@@ -1215,7 +1211,7 @@ const prepareTableRepair = (
       for (const [row, columns] of [...uncoveredByRow].sort(
         ([left], [right]) => left - right
       )) {
-        const sourceRow = context.table.children[row] as TTableRowElement;
+        const sourceRow = context.table.children[row] as TableRowElement;
         const anchors = context.grid.anchorsByRow[row] ?? [];
 
         columns.sort((left, right) => left - right);
@@ -1323,10 +1319,10 @@ const mutableNodeAt = (
 };
 
 const applyOperations = (
-  table: TTableElement,
+  table: Element,
   tablePath: readonly number[],
   operations: readonly (MutableOperation | TableOperation)[]
-): TTableElement | null => {
+): Element | null => {
   const next = cloneMutableTable(table);
 
   for (const operation of operations) {
@@ -1381,10 +1377,10 @@ const applyOperations = (
 };
 
 export const applyTableMutationPlanToTable = (
-  table: TTableElement,
+  table: Element,
   tablePath: readonly number[],
   plan: TableMutationPlan
-): TTableElement | null => applyOperations(table, tablePath, plan.operations);
+): Element | null => applyOperations(table, tablePath, plan.operations);
 
 export const applyTableMutationPlan = (
   tx: Pick<EditorCoreUpdateTransaction, 'nodes' | 'selection'>,

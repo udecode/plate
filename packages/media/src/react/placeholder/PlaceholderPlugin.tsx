@@ -1,4 +1,4 @@
-import { type DefinitionOf, nanoid, type PluginReference } from '@platejs/core';
+import type { DefinitionOf, PluginReference } from '@platejs/core';
 import { toPlatePlugin } from '@platejs/core/react';
 import { createAtomStore } from '@platejs/core/react/internal';
 import {
@@ -6,6 +6,7 @@ import {
   NodeApi,
   type Path,
   PathApi,
+  type NodeKey,
 } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
 
@@ -130,7 +131,7 @@ export type PlaceholderPluginState = {
   /** Whether multiple files can be uploaded in one update. */
   multiple: boolean;
   uploadConfig: UploadConfig;
-  uploadingFiles: Record<string, File>;
+  uploadingFiles: Partial<Record<NodeKey, File>>;
 };
 
 type ErrorData<T extends UploadErrorCode> = Extract<
@@ -206,26 +207,28 @@ export const PlaceholderPlugin = toPlatePlugin(BasePlaceholderPlugin, {
 })
   .extend(({ store }) => ({
     api: () => ({
-      addUploadingFile: (id: string, file: File) => {
+      addUploadingFile: (key: NodeKey, file: File) => {
         store.set({
           uploadingFiles: {
             ...store.get('uploadingFiles'),
-            [id]: file,
+            [key]: file,
           },
         });
       },
-      removeUploadingFile: (id: string) => {
+      removeUploadingFile: (key: NodeKey) => {
         const uploadingFiles = { ...store.get('uploadingFiles') };
 
-        delete uploadingFiles[id];
+        delete uploadingFiles[key];
         store.set({ uploadingFiles });
       },
     }),
     selectors: {
       uploadingFile: (
-        state: Readonly<{ uploadingFiles: Record<string, File> }>,
-        id: string
-      ): File | undefined => state.uploadingFiles[id],
+        state: Readonly<{
+          uploadingFiles: Partial<Record<NodeKey, File>>;
+        }>,
+        key: NodeKey
+      ): File | undefined => state.uploadingFiles[key],
     },
   }))
   .extend(({ api, editor, store, schema: { type } }) => ({
@@ -385,6 +388,8 @@ export const PlaceholderPlugin = toPlatePlugin(BasePlaceholderPlugin, {
           tx.tags.add('history-push');
         }
 
+        const insertedUploads: [NodeKey, File][] = [];
+
         for (const [index, file] of Array.from(files).entries()) {
           if (index > 0) {
             currentAt = currentAt ? PathApi.next(currentAt) : undefined;
@@ -397,12 +402,28 @@ export const PlaceholderPlugin = toPlatePlugin(BasePlaceholderPlugin, {
 
           if (!mediaType) continue;
 
-          const id = nanoid();
+          const element = tx.schema.create(type, { mediaType });
 
-          afterCommit(() => api.addUploadingFile(id, file));
-          tx.nodes.insert(tx.schema.create(type, { id, mediaType }), {
+          tx.nodes.insert(element, {
             ...restOptions,
             at: currentAt,
+          });
+          insertedUploads.push([tx.key(element), file]);
+        }
+
+        if (insertedUploads.length > 0) {
+          afterCommit(({ editor }) => {
+            for (const [nodeKey, file] of insertedUploads) {
+              const entry = editor.read.nodes.get<PlaceholderElement>(nodeKey);
+
+              if (
+                entry &&
+                NodeApi.isElement(entry[0]) &&
+                entry[0].type === type
+              ) {
+                api.addUploadingFile(nodeKey, file);
+              }
+            }
           });
         }
       },

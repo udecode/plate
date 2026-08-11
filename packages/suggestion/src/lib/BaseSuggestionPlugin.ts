@@ -2,12 +2,15 @@ import {
   type BaseEditor,
   defineBasePlugin,
   type DefinitionOf,
+  type ElementWith,
   nanoid,
+  type TextWith,
 } from '@platejs/core';
 import {
   ContentSlice,
   type Descendant,
   type EditorNodesOptions,
+  type EditorNodeUnsetOptions,
   type EditorUpdatePolicy,
   type Element,
   type EditorUpdateTag,
@@ -31,13 +34,7 @@ import {
   type TextUnit,
   TextApi,
 } from '@platejs/plite';
-import {
-  KEYS,
-  type TInlineSuggestionData,
-  type TSuggestionElement,
-  type TSuggestionText,
-  type TUpdateSuggestionData,
-} from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 import { type ComputeDiffOptions, computeDiff } from '@platejs/diff';
 import isEqual from 'lodash/isEqual.js';
 
@@ -45,7 +42,7 @@ import isEqual from 'lodash/isEqual.js';
 export const SUGGESTION_SKIP_TAG = 'skip-suggestion' as const;
 
 /** Property used for transient suggestions without colliding with IDs. */
-export const SUGGESTION_TRANSIENT_KEY = `${KEYS.suggestion}Transient`;
+export const SUGGESTION_TRANSIENT_KEY = 'suggestionTransient';
 
 /** Semantic update policies owned by the Suggestion plugin. */
 export const SuggestionUpdatePolicy = Object.freeze({
@@ -59,7 +56,43 @@ export type BaseSuggestionPluginState = {
   isSuggesting: boolean;
 };
 
-export type TResolvedSuggestion = {
+export type SuggestionData = {
+  id: string;
+  createdAt: number;
+  type: 'insert' | 'remove';
+  userId: string;
+  isLineBreak?: boolean;
+};
+
+export type InsertSuggestionData = {
+  id: string;
+  createdAt: number;
+  type: 'insert';
+  userId: string;
+};
+
+export type RemoveSuggestionData = {
+  id: string;
+  createdAt: number;
+  type: 'remove';
+  userId: string;
+};
+
+export type UpdateSuggestionData = {
+  id: string;
+  createdAt: number;
+  type: 'update';
+  userId: string;
+  newProperties?: Readonly<Record<string, PropertyJsonValue>>;
+  properties?: Readonly<Record<string, PropertyJsonValue>>;
+};
+
+export type InlineSuggestionData =
+  | InsertSuggestionData
+  | RemoveSuggestionData
+  | UpdateSuggestionData;
+
+export type ResolvedSuggestion = {
   createdAt: Date;
   keyId: string;
   suggestionId: string;
@@ -71,22 +104,22 @@ export type TResolvedSuggestion = {
   text?: string;
 };
 
-export type TSuggestionDescription =
+export type SuggestionDescription =
   | ({
       deletedText: string;
       type: 'deletion';
-    } & TSuggestionCommonDescription)
+    } & SuggestionCommonDescription)
   | ({
       insertedText: string;
       type: 'insertion';
-    } & TSuggestionCommonDescription)
+    } & SuggestionCommonDescription)
   | ({
       deletedText: string;
       insertedText: string;
       type: 'replacement';
-    } & TSuggestionCommonDescription);
+    } & SuggestionCommonDescription);
 
-type TSuggestionCommonDescription = {
+type SuggestionCommonDescription = {
   suggestionId: string;
   userId: string;
 };
@@ -97,7 +130,7 @@ type SuggestionIdentity = {
 };
 
 type BaseSuggestionApi = {
-  dataList: (node: Element | Text) => TInlineSuggestionData[];
+  dataList: (node: Element | Text) => InlineSuggestionData[];
   createFragment: (
     fragment: readonly Descendant[],
     identity: SuggestionIdentity
@@ -128,18 +161,21 @@ type BaseSuggestionApi = {
       transient?: boolean;
     }
   ) => Record<string, unknown>;
-  inlineData: (node: Element | Text) => TInlineSuggestionData | undefined;
+  inlineData: (node: Element | Text) => InlineSuggestionData | undefined;
   /** Whether suggestion middleware should track the current operation. */
   isTracking: (tags: readonly EditorUpdateTag[]) => boolean;
-  isBlockSuggestion: (node: Node) => node is TSuggestionElement;
+  isBlockSuggestion: (node: Node) => node is SuggestionElementContract;
   isCurrentUser: (node: Element | Text) => boolean;
-  key: (id?: string) => string;
+  key: (id?: string) => `suggestion_${string}`;
   keyId: (node: Element | Text) => string | undefined;
   keys: (node: Node) => string[];
-  nodeId: (node: Node) => string | undefined;
+  id: (node: Node) => string | undefined;
   suggestionData: (
     node: Node
-  ) => TInlineSuggestionData | TSuggestionElement['suggestion'] | undefined;
+  ) =>
+    | InlineSuggestionData
+    | SuggestionElementContract['suggestion']
+    | undefined;
   skipDeletes: (node: Node) => string;
   /** Run synchronous operations without recursively creating suggestions. */
   untracked: <T>(fn: () => T) => T;
@@ -202,7 +238,7 @@ const hasSuggestionIdentity = (
 
 const isInlineSuggestionData = (
   value: unknown
-): value is TInlineSuggestionData => {
+): value is InlineSuggestionData => {
   if (!hasSuggestionIdentity(value)) return false;
   if (value.type === 'insert' || value.type === 'remove') return true;
 
@@ -218,357 +254,48 @@ const inlineSuggestionDataProperty = property.json({
   validationVersion: 1,
 });
 
+const blockSuggestionProperty = property.json({
+  validate: (value): value is SuggestionData =>
+    hasSuggestionIdentity(value) &&
+    (value.type === 'insert' || value.type === 'remove') &&
+    (!('isLineBreak' in value) || typeof value.isLineBreak === 'boolean'),
+  validationVersion: 1,
+});
+
+const suggestionMarkProperty = property.boolean({
+  default: false,
+  omitDefault: true,
+});
+
+type SuggestionElementContract = ElementWith<
+  Readonly<{ suggestion: typeof blockSuggestionProperty }>,
+  'suggestion'
+>;
+
+type SuggestionTextContract = TextWith<
+  Readonly<{ suggestion: typeof suggestionMarkProperty }>,
+  'suggestion'
+>;
+type SuggestionTextProperties = Partial<
+  Record<`suggestion_${string}`, InlineSuggestionData>
+>;
+
 const initialState: BaseSuggestionPluginState = {
   currentUserId: 'alice',
   isSuggesting: false,
 };
 
-export const BaseSuggestionPlugin = defineBasePlugin(KEYS.suggestion, {
-  schema: {
-    mark: {
-      property: property.boolean({ default: false, omitDefault: true }),
-      split: 'preserve',
-      target: target.group('element'),
-      typeChange: 'preserve-if-allowed',
-    },
-    properties: [
-      schema.elementProperty(
-        KEYS.suggestion,
-        property.json({
-          validate: (value): value is TSuggestionElement['suggestion'] =>
-            hasSuggestionIdentity(value) &&
-            (value.type === 'insert' || value.type === 'remove') &&
-            (!('isLineBreak' in value) ||
-              typeof value.isLineBreak === 'boolean'),
-          validationVersion: 1,
-        }),
-        {
-          split: 'preserve',
-          target: target.group('block'),
-          typeChange: 'preserve-if-allowed',
-        }
-      ),
-      schema.elementProperty(
-        KEYS.suggestion,
-        property.boolean({ default: false, omitDefault: true }),
-        {
-          split: 'preserve',
-          target: target.group('inline'),
-          typeChange: 'preserve-if-allowed',
-        }
-      ),
-      schema.elementProperty(
-        SUGGESTION_TRANSIENT_KEY,
-        property.boolean({ default: false, omitDefault: true }),
-        {
-          split: 'preserve',
-          target: target.group('element'),
-          typeChange: 'preserve-if-allowed',
-        }
-      ),
-      schema.elementProperty('suggestionData', inlineSuggestionDataProperty, {
-        split: 'preserve',
-        target: target.group('inline'),
-        typeChange: 'preserve-if-allowed',
-      }),
-      schema.elementProperty(
-        schema.key.prefix(`${KEYS.suggestion}_`),
-        inlineSuggestionDataProperty,
-        {
-          split: 'preserve',
-          target: target.group('inline'),
-          typeChange: 'preserve-if-allowed',
-        }
-      ),
-      schema.textProperty(
-        SUGGESTION_TRANSIENT_KEY,
-        property.boolean({ default: false, omitDefault: true }),
-        {
-          split: 'preserve',
-          target: target.group('element'),
-          typeChange: 'preserve-if-allowed',
-        }
-      ),
-      schema.textProperty('suggestionData', inlineSuggestionDataProperty, {
-        split: 'preserve',
-        target: target.group('element'),
-        typeChange: 'preserve-if-allowed',
-      }),
-      schema.textProperty(
-        schema.key.prefix(`${KEYS.suggestion}_`),
-        inlineSuggestionDataProperty,
-        {
-          split: 'preserve',
-          target: target.group('element'),
-          typeChange: 'preserve-if-allowed',
-        }
-      ),
-    ],
-  },
-  rules: { selection: { affinity: 'outward' } },
+export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
   initialState,
-  api: ({ editor, store, type }): BaseSuggestionApi => {
-    const key = (id = '0') => `${KEYS.suggestion}_${id}`;
-    const keyId = (node: Element | Text) =>
-      Object.keys(node)
-        .filter((nodeKey) => nodeKey.startsWith(`${KEYS.suggestion}_`))
-        .at(-1);
-    const keys = (node: Node) =>
-      Object.keys(node).filter((nodeKey) =>
-        nodeKey.startsWith(`${KEYS.suggestion}_`)
-      );
-    const inlineData = (node: Element | Text) => {
-      const nodeKey = keyId(node);
-
-      if (!nodeKey) return;
-
-      const value = node[nodeKey];
-
-      return isInlineSuggestionData(value) ? value : undefined;
-    };
-    const dataList = (node: Element | Text): TInlineSuggestionData[] =>
-      Object.keys(node)
-        .filter((nodeKey) => nodeKey.startsWith(`${KEYS.suggestion}_`))
-        .map((nodeKey) => node[nodeKey])
-        .filter(isInlineSuggestionData);
-    const isBlockSuggestion = (node: Node): node is TSuggestionElement =>
-      ElementApi.isElement(node) &&
-      !editor.read.schema.isInline(node) &&
-      'suggestion' in node;
-    const isInlineSuggestion = (node: Node): node is Element | Text =>
-      TextApi.isText(node) ||
-      (ElementApi.isElement(node) && editor.read.schema.isInline(node));
-    const nodeId = (node: Node) => {
-      if (isInlineSuggestion(node)) {
-        return keyId(node)?.replace(`${type}_`, '');
-      }
-
-      if (isBlockSuggestion(node)) return node.suggestion.id;
-    };
-    const suggestionData = (node: Node) => {
-      if (isInlineSuggestion(node)) return inlineData(node);
-      if (isBlockSuggestion(node)) return node.suggestion;
-    };
-    const skipDeletes = (node: Node): string => {
-      if (
-        TextApi.isText(node) ||
-        (ElementApi.isElement(node) && editor.read.schema.isInline(node))
-      ) {
-        if (ElementApi.isElement(node)) return NodeApi.string(node);
-        if (!node[KEYS.suggestion]) return node.text;
-        if (suggestionData(node)?.type === 'remove') return '';
-
-        return node.text;
-      }
-      if (!ElementApi.isElement(node) && !NodeApi.isEditor(node)) return '';
-
-      return Array.from(NodeApi.children(node, []))
-        .map(([child]) => skipDeletes(child))
-        .join('');
-    };
-    const getProps: BaseSuggestionApi['getProps'] = (
-      node,
-      {
-        id = nanoid(),
-        createdAt = Date.now(),
-        suggestionDeletion,
-        suggestionUpdate,
-        transient,
-      } = {}
-    ) => {
-      const currentUserId = store.get().currentUserId;
-
-      if (currentUserId === null) return {};
-
-      const suggestion = {
-        id,
-        createdAt,
-        type: suggestionDeletion
-          ? 'remove'
-          : suggestionUpdate
-            ? 'update'
-            : 'insert',
-        userId: currentUserId,
-        ...suggestionUpdate,
-      };
-
-      if (ElementApi.isElement(node) && !editor.read.schema.isInline(node)) {
-        return { [KEYS.suggestion]: suggestion };
-      }
-
-      return {
-        [key(id)]: suggestion,
-        [KEYS.suggestion]: true,
-        ...(transient ? { [SUGGESTION_TRANSIENT_KEY]: true } : {}),
-      };
-    };
-    function diff(
-      doc0: readonly Element[],
-      doc1: readonly Element[],
-      options?: Partial<ComputeDiffOptions>
-    ): Element[];
-    function diff(
-      doc0: readonly Descendant[],
-      doc1: readonly Descendant[],
-      options?: Partial<ComputeDiffOptions>
-    ): Descendant[];
-    function diff(
-      doc0: readonly Descendant[],
-      doc1: readonly Descendant[],
-      {
-        getDeleteProps = (node) => getProps(node, { suggestionDeletion: true }),
-        getInsertProps = (node) => getProps(node),
-        getUpdateProps = (node, properties, newProperties) =>
-          getProps(node, {
-            suggestionUpdate: {
-              newProperties: Object.fromEntries(
-                Object.entries(newProperties).filter(
-                  ([, value]) => value !== undefined
-                )
-              ),
-              properties: Object.fromEntries(
-                Object.entries(properties).filter(
-                  ([, value]) => value !== undefined
-                )
-              ),
-            },
-          }),
-        isInline = editor.read.schema.isInline,
-        ...options
-      }: Partial<ComputeDiffOptions> = {}
-    ): Descendant[] {
-      const values = computeDiff(doc0, doc1, {
-        getDeleteProps,
-        getInsertProps,
-        getUpdateProps,
-        isInline,
-        ...options,
-      });
-      const traverse = (nodes: readonly Descendant[]): Descendant[] =>
-        nodes.map((node, index) => {
-          if (ElementApi.isElement(node)) {
-            return { ...node, children: traverse(node.children) };
-          }
-          if (!TextApi.isText(node) || !node[KEYS.suggestion]) return node;
-
-          const current = suggestionData(node);
-          const previous = index > 0 ? nodes[index - 1] : undefined;
-          const previousData =
-            previous && Boolean(previous[KEYS.suggestion])
-              ? suggestionData(previous)
-              : undefined;
-
-          if (current?.type !== 'insert' || previousData?.type !== 'remove') {
-            return node;
-          }
-
-          const next = {
-            ...node,
-            [key(previousData.id)]: {
-              ...current,
-              id: previousData.id,
-              createdAt: previousData.createdAt,
-            },
-          };
-
-          delete next[key(current.id)];
-
-          return next;
-        });
-
-      return traverse(values);
-    }
-
-    return {
-      createFragment: (fragment, { createdAt, id }) => {
-        const currentUserId = store.get().currentUserId;
-
-        if (currentUserId === null) {
-          return fragment.map((source) => ({ ...source }));
-        }
-
-        return fragment.map((source) => {
-          if (TextApi.isText(source)) {
-            const node: { [key: string]: unknown; text: string } = {
-              ...source,
-            };
-
-            node[KEYS.suggestion] = true;
-            keys(node).forEach((nodeKey) => {
-              delete node[nodeKey];
-            });
-            node[key(id)] = {
-              id,
-              createdAt,
-              type: 'insert',
-              userId: currentUserId,
-            };
-
-            return node;
-          }
-
-          return {
-            ...source,
-            [KEYS.suggestion]: {
-              id,
-              createdAt,
-              type: 'insert',
-              userId: currentUserId,
-            },
-          };
-        });
-      },
-      createIdentity: () => ({ createdAt: Date.now(), id: nanoid() }),
-      dataList,
-      diff,
-      getProps,
-      inlineData,
-      isBlockSuggestion,
-      isCurrentUser: (node) =>
-        inlineData(node)?.userId === store.get().currentUserId,
-      isTracking: (tags) =>
-        store.get().currentUserId !== null &&
-        (suggestionUntrackedDepth.get(editor) ?? 0) === 0 &&
-        !tags.includes(SUGGESTION_SKIP_TAG),
-      key,
-      keyId,
-      keys,
-      nodeId,
-      skipDeletes,
-      suggestionData,
-      untracked: (fn) => {
-        const depth = suggestionUntrackedDepth.get(editor) ?? 0;
-        suggestionUntrackedDepth.set(editor, depth + 1);
-
-        try {
-          return fn();
-        } finally {
-          if (depth === 0) {
-            suggestionUntrackedDepth.delete(editor);
-          } else {
-            suggestionUntrackedDepth.set(editor, depth);
-          }
-        }
-      },
-      userId: (node) =>
-        keys(node)
-          .map((nodeKey) => Reflect.get(node, nodeKey)?.userId)
-          .find((id): id is string => typeof id === 'string'),
-      userIds: (node) =>
-        keys(node)
-          .map((nodeKey) => Reflect.get(node, nodeKey)?.userId)
-          .filter((id): id is string => typeof id === 'string'),
-    };
-  },
-  codecs: ({ defineCodecs }) =>
+  codecs: ({ defineCodecs, schema: { key } }) =>
     defineCodecs({
       'text/markdown': {
         from: 'suggestion',
         kind: 'node',
         mark: true,
-        decode: ({ decode, decoration, node, type }) =>
+        decode: ({ decode, decoration, node }) =>
           decode(node.children, {
-            [type]: true,
+            [key]: true,
             ...decoration,
           }),
         encode: ({ node }) => {
@@ -583,21 +310,423 @@ export const BaseSuggestionPlugin = defineBasePlugin(KEYS.suggestion, {
         },
       },
     }),
+  schema: {
+    mark: {
+      property: suggestionMarkProperty,
+      split: 'preserve',
+      target: target.group('element'),
+      typeChange: 'preserve-if-allowed',
+    },
+    properties: {
+      blockSuggestion: schema.elementProperty(
+        'suggestion',
+        blockSuggestionProperty,
+        {
+          split: 'preserve',
+          target: target.group('block'),
+          typeChange: 'preserve-if-allowed',
+        }
+      ),
+      inlineSuggestion: schema.elementProperty(
+        'suggestion',
+        property.boolean({ default: false, omitDefault: true }),
+        {
+          split: 'preserve',
+          target: target.group('inline'),
+          typeChange: 'preserve-if-allowed',
+        }
+      ),
+      transientElement: schema.elementProperty(
+        SUGGESTION_TRANSIENT_KEY,
+        property.boolean({ default: false, omitDefault: true }),
+        {
+          split: 'preserve',
+          target: target.group('element'),
+          typeChange: 'preserve-if-allowed',
+        }
+      ),
+      inlineSuggestionData: schema.elementProperty(
+        'suggestionData',
+        inlineSuggestionDataProperty,
+        {
+          split: 'preserve',
+          target: target.group('inline'),
+          typeChange: 'preserve-if-allowed',
+        }
+      ),
+      inlineSuggestionById: schema.elementProperty(
+        schema.key.prefix('suggestion_'),
+        inlineSuggestionDataProperty,
+        {
+          split: 'preserve',
+          target: target.group('inline'),
+          typeChange: 'preserve-if-allowed',
+        }
+      ),
+      transientText: schema.textProperty(
+        SUGGESTION_TRANSIENT_KEY,
+        property.boolean({ default: false, omitDefault: true }),
+        {
+          split: 'preserve',
+          target: target.group('element'),
+          typeChange: 'preserve-if-allowed',
+        }
+      ),
+      textSuggestionData: schema.textProperty(
+        'suggestionData',
+        inlineSuggestionDataProperty,
+        {
+          split: 'preserve',
+          target: target.group('element'),
+          typeChange: 'preserve-if-allowed',
+        }
+      ),
+      textSuggestionById: schema.textProperty(
+        schema.key.prefix('suggestion_'),
+        inlineSuggestionDataProperty,
+        {
+          split: 'preserve',
+          target: target.group('element'),
+          typeChange: 'preserve-if-allowed',
+        }
+      ),
+    },
+  },
 })
-  .extend(({ api, store, type }) => ({
+  .extend({
+    rules: { selection: { affinity: 'outward' } },
+    api: ({
+      editor,
+      schema: { key: suggestionKey },
+      store,
+    }): BaseSuggestionApi => {
+      const key = (id = '0'): `suggestion_${string}` =>
+        `${suggestionKey}_${id}`;
+      const keyId = (node: Element | Text) =>
+        Object.keys(node)
+          .filter((nodeKey) => nodeKey.startsWith(`${suggestionKey}_`))
+          .at(-1);
+      const keys = (node: Node) =>
+        Object.keys(node).filter((nodeKey) =>
+          nodeKey.startsWith(`${suggestionKey}_`)
+        );
+      const inlineData = (node: Element | Text) => {
+        const nodeKey = keyId(node);
+
+        if (!nodeKey) return;
+
+        const value = node[nodeKey];
+
+        return isInlineSuggestionData(value) ? value : undefined;
+      };
+      const dataList = (node: Element | Text): InlineSuggestionData[] =>
+        Object.keys(node)
+          .filter((nodeKey) => nodeKey.startsWith(`${suggestionKey}_`))
+          .map((nodeKey) => node[nodeKey])
+          .filter(isInlineSuggestionData);
+      const isBlockSuggestion = (
+        node: Node
+      ): node is SuggestionElementContract =>
+        ElementApi.isElement(node) &&
+        !editor.read.schema.isInline(node) &&
+        'suggestion' in node;
+      const isInlineSuggestion = (node: Node): node is Element | Text =>
+        TextApi.isText(node) ||
+        (ElementApi.isElement(node) && editor.read.schema.isInline(node));
+      const id = (node: Node) => {
+        if (isInlineSuggestion(node)) {
+          return keyId(node)?.replace(`${suggestionKey}_`, '');
+        }
+
+        if (isBlockSuggestion(node)) return node.suggestion.id;
+      };
+      const suggestionData = (node: Node) => {
+        if (isInlineSuggestion(node)) return inlineData(node);
+        if (isBlockSuggestion(node)) return node.suggestion;
+      };
+      const skipDeletes = (node: Node): string => {
+        if (
+          TextApi.isText(node) ||
+          (ElementApi.isElement(node) && editor.read.schema.isInline(node))
+        ) {
+          if (ElementApi.isElement(node)) return NodeApi.string(node);
+          if (!Reflect.get(node, suggestionKey)) return node.text;
+          if (suggestionData(node)?.type === 'remove') return '';
+
+          return node.text;
+        }
+        if (!ElementApi.isElement(node) && !NodeApi.isEditor(node)) return '';
+
+        return Array.from(NodeApi.children(node, []))
+          .map(([child]) => skipDeletes(child))
+          .join('');
+      };
+      const getProps: BaseSuggestionApi['getProps'] = (
+        node,
+        {
+          id = nanoid(),
+          createdAt = Date.now(),
+          suggestionDeletion,
+          suggestionUpdate,
+          transient,
+        } = {}
+      ) => {
+        const currentUserId = store.get().currentUserId;
+
+        if (currentUserId === null) return {};
+
+        const suggestion = {
+          id,
+          createdAt,
+          type: suggestionDeletion
+            ? 'remove'
+            : suggestionUpdate
+              ? 'update'
+              : 'insert',
+          userId: currentUserId,
+          ...suggestionUpdate,
+        };
+
+        if (ElementApi.isElement(node) && !editor.read.schema.isInline(node)) {
+          return { suggestion };
+        }
+
+        return {
+          [key(id)]: suggestion,
+          [suggestionKey]: true,
+          ...(transient ? { [SUGGESTION_TRANSIENT_KEY]: true } : {}),
+        };
+      };
+      function diff(
+        doc0: readonly Element[],
+        doc1: readonly Element[],
+        options?: Partial<ComputeDiffOptions>
+      ): Element[];
+      function diff(
+        doc0: readonly Descendant[],
+        doc1: readonly Descendant[],
+        options?: Partial<ComputeDiffOptions>
+      ): Descendant[];
+      function diff(
+        doc0: readonly Descendant[],
+        doc1: readonly Descendant[],
+        {
+          getDeleteProps = (node) =>
+            getProps(node, { suggestionDeletion: true }),
+          getInsertProps = (node) => getProps(node),
+          getUpdateProps = (node, properties, newProperties) =>
+            getProps(node, {
+              suggestionUpdate: {
+                newProperties: Object.fromEntries(
+                  Object.entries(newProperties).filter(
+                    (entry): entry is [string, PropertyJsonValue] =>
+                      isJsonValue(entry[1])
+                  )
+                ),
+                properties: Object.fromEntries(
+                  Object.entries(properties).filter(
+                    (entry): entry is [string, PropertyJsonValue] =>
+                      isJsonValue(entry[1])
+                  )
+                ),
+              },
+            }),
+          isInline = editor.read.schema.isInline,
+          ...options
+        }: Partial<ComputeDiffOptions> = {}
+      ): Descendant[] {
+        const ignoredProperties = new Set(options.ignoreProps);
+        const collectMetadataKeys = (
+          nodes: readonly Descendant[],
+          ancestors: readonly string[] = []
+        ) => {
+          for (const node of nodes) {
+            if (ElementApi.isElement(node)) {
+              if (typeof node.type !== 'string') continue;
+
+              for (const key of Object.keys(node)) {
+                if (key === 'children' || key === 'type') continue;
+
+                if (
+                  editor.read.schema.property({
+                    ancestors,
+                    key,
+                    placement: 'element',
+                    type: node.type,
+                  })?.role === 'metadata'
+                ) {
+                  ignoredProperties.add(key);
+                }
+              }
+              collectMetadataKeys(node.children, [node.type, ...ancestors]);
+              continue;
+            }
+
+            const parentType = ancestors[0];
+
+            if (!parentType) continue;
+            for (const key of Object.keys(node)) {
+              if (key === 'text') continue;
+
+              if (
+                editor.read.schema.property({
+                  ancestors: ancestors.slice(1),
+                  key,
+                  placement: 'text',
+                  type: parentType,
+                })?.role === 'metadata'
+              ) {
+                ignoredProperties.add(key);
+              }
+            }
+          }
+        };
+
+        collectMetadataKeys(doc0);
+        collectMetadataKeys(doc1);
+        const values = computeDiff(doc0, doc1, {
+          getDeleteProps,
+          getInsertProps,
+          getUpdateProps,
+          ...options,
+          ignoreProps: [...ignoredProperties],
+          isInline,
+        });
+        const traverse = (nodes: readonly Descendant[]): Descendant[] =>
+          nodes.map((node, index) => {
+            if (ElementApi.isElement(node)) {
+              return { ...node, children: traverse(node.children) };
+            }
+            if (!TextApi.isText(node) || !Reflect.get(node, suggestionKey)) {
+              return node;
+            }
+
+            const current = suggestionData(node);
+            const previous = index > 0 ? nodes[index - 1] : undefined;
+            const previousData =
+              previous && Boolean(Reflect.get(previous, suggestionKey))
+                ? suggestionData(previous)
+                : undefined;
+
+            if (current?.type !== 'insert' || previousData?.type !== 'remove') {
+              return node;
+            }
+
+            const next = {
+              ...node,
+              [key(previousData.id)]: {
+                ...current,
+                id: previousData.id,
+                createdAt: previousData.createdAt,
+              },
+            };
+
+            delete next[key(current.id)];
+
+            return next;
+          });
+
+        return traverse(values);
+      }
+
+      return {
+        createFragment: (fragment, { createdAt, id }) => {
+          const currentUserId = store.get().currentUserId;
+
+          if (currentUserId === null) {
+            return fragment.map((source) => ({ ...source }));
+          }
+
+          return fragment.map((source) => {
+            if (TextApi.isText(source)) {
+              const node: { [key: string]: unknown; text: string } = {
+                ...source,
+              };
+
+              node[suggestionKey] = true;
+              keys(node).forEach((nodeKey) => {
+                delete node[nodeKey];
+              });
+              node[key(id)] = {
+                id,
+                createdAt,
+                type: 'insert',
+                userId: currentUserId,
+              };
+
+              return node;
+            }
+
+            return {
+              ...source,
+              suggestion: {
+                id,
+                createdAt,
+                type: 'insert',
+                userId: currentUserId,
+              },
+            };
+          });
+        },
+        createIdentity: () => ({ createdAt: Date.now(), id: nanoid() }),
+        dataList,
+        diff,
+        getProps,
+        inlineData,
+        isBlockSuggestion,
+        isCurrentUser: (node) =>
+          inlineData(node)?.userId === store.get().currentUserId,
+        isTracking: (tags) =>
+          store.get().currentUserId !== null &&
+          (suggestionUntrackedDepth.get(editor) ?? 0) === 0 &&
+          !tags.includes(SUGGESTION_SKIP_TAG),
+        key,
+        keyId,
+        keys,
+        id,
+        skipDeletes,
+        suggestionData,
+        untracked: (fn) => {
+          const depth = suggestionUntrackedDepth.get(editor) ?? 0;
+          suggestionUntrackedDepth.set(editor, depth + 1);
+
+          try {
+            return fn();
+          } finally {
+            if (depth === 0) {
+              suggestionUntrackedDepth.delete(editor);
+            } else {
+              suggestionUntrackedDepth.set(editor, depth);
+            }
+          }
+        },
+        userId: (node) =>
+          keys(node)
+            .map((nodeKey) => Reflect.get(node, nodeKey)?.userId)
+            .find((id): id is string => typeof id === 'string'),
+        userIds: (node) =>
+          keys(node)
+            .map((nodeKey) => Reflect.get(node, nodeKey)?.userId)
+            .filter((id): id is string => typeof id === 'string'),
+      };
+    },
+  })
+  .extend(({ api, store, schema: { key } }) => ({
     read: ({ state }) => {
       function node(
         options: EditorNodesOptions<Node> & {
           id?: string;
           isText: true;
         }
-      ): NodeEntry<TSuggestionText> | undefined;
+      ): NodeEntry<SuggestionTextContract> | undefined;
       function node(
         options?: EditorNodesOptions<Node> & {
           id?: string;
           isText?: boolean;
         }
-      ): NodeEntry<TSuggestionElement | TSuggestionText> | undefined;
+      ):
+        | NodeEntry<SuggestionElementContract | SuggestionTextContract>
+        | undefined;
       function node(
         options: EditorNodesOptions<Node> & {
           id?: string;
@@ -606,9 +735,11 @@ export const BaseSuggestionPlugin = defineBasePlugin(KEYS.suggestion, {
       ) {
         const { id, isText, ...rest } = options;
 
-        return state.nodes.find<TSuggestionElement | TSuggestionText>({
+        return state.nodes.find<
+          SuggestionElementContract | SuggestionTextContract
+        >({
           match: (candidate) => {
-            if (!Reflect.get(candidate, type)) return false;
+            if (!Reflect.get(candidate, key)) return false;
             if (isText && !TextApi.isText(candidate)) return false;
             if (!id) return true;
             if (TextApi.isText(candidate)) {
@@ -630,11 +761,10 @@ export const BaseSuggestionPlugin = defineBasePlugin(KEYS.suggestion, {
         type: 'insert' | 'remove' | 'update';
       }): SuggestionIdentity | undefined => {
         const getTextEntry = (location: Location) =>
-          state.nodes.find<TSuggestionText>({
+          state.nodes.find<SuggestionTextContract>({
             at: location,
             match: (candidate) =>
-              TextApi.isText(candidate) &&
-              Boolean(Reflect.get(candidate, type)),
+              TextApi.isText(candidate) && Boolean(Reflect.get(candidate, key)),
           });
         const getInlineEntry = (point: Point) =>
           state.nodes.above<Element>({
@@ -642,7 +772,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(KEYS.suggestion, {
             match: (candidate) =>
               ElementApi.isElement(candidate) &&
               state.schema.isInline(candidate) &&
-              Boolean(api.nodeId(candidate)),
+              Boolean(api.id(candidate)),
           });
 
         let entry = getTextEntry(at);
@@ -672,7 +802,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(KEYS.suggestion, {
             const block = state.nodes.block({ at: start });
 
             if (!entry && block && state.points.isStart(start, block[1])) {
-              const lineBreak = state.nodes.above<TSuggestionElement>({
+              const lineBreak = state.nodes.above<SuggestionElementContract>({
                 at: previousPoint ?? start,
               });
               const identity = lineBreak?.[0].suggestion;
@@ -717,16 +847,16 @@ export const BaseSuggestionPlugin = defineBasePlugin(KEYS.suggestion, {
 
           if (!entry) return [];
 
-          const suggestionId = api.nodeId(entry[0]);
+          const suggestionId = api.id(entry[0]);
 
           if (!suggestionId) return [];
 
           return api
             .dataList(entry[0])
-            .map(({ id, userId }): TSuggestionDescription => {
+            .map(({ id, userId }): SuggestionDescription => {
               const suggestionKey = api.key(id);
               const nodes = state.nodes
-                .toArray<TSuggestionText>({
+                .toArray<SuggestionTextContract>({
                   at: [],
                   match: (candidate) =>
                     Boolean(Reflect.get(candidate, suggestionKey)),
@@ -787,7 +917,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(KEYS.suggestion, {
           suggestionId: string,
           { at = [], ...options }: EditorNodesOptions<Node> = {}
         ) =>
-          state.nodes.toArray<TSuggestionText>({
+          state.nodes.toArray<SuggestionTextContract>({
             at,
             ...options,
             match: (candidate, path) =>
@@ -799,12 +929,12 @@ export const BaseSuggestionPlugin = defineBasePlugin(KEYS.suggestion, {
           transient,
           ...options
         }: EditorNodesOptions<Node> & { transient?: boolean } = {}) =>
-          state.nodes.toArray<Element | TSuggestionText>({
+          state.nodes.toArray<Element | SuggestionTextContract>({
             ...options,
             at: options.at ?? [],
             mode: 'all',
             match: (candidate) =>
-              Boolean(Reflect.get(candidate, type)) &&
+              Boolean(Reflect.get(candidate, key)) &&
               (!transient ||
                 Boolean(Reflect.get(candidate, SUGGESTION_TRANSIENT_KEY))),
           }),
@@ -813,7 +943,11 @@ export const BaseSuggestionPlugin = defineBasePlugin(KEYS.suggestion, {
   }))
   .extend((context) => ({
     update: ({ tx }) => {
-      const { api, store } = context;
+      const {
+        api,
+        schema: { key },
+        store,
+      } = context;
       const setNodes = (
         options: SetSuggestionNodesOptions = {}
       ): string | undefined => {
@@ -842,16 +976,17 @@ export const BaseSuggestionPlugin = defineBasePlugin(KEYS.suggestion, {
                 ElementApi.isElement(node) && tx.schema.isInline(node),
             })
           : [];
-        const suggestion: TInlineSuggestionData = {
+        const suggestion: InlineSuggestionData = {
           id: suggestionId,
           createdAt,
           type: 'remove',
           userId: currentUserId,
         };
-        const props = {
-          [api.key(suggestionId)]: suggestion,
-          [KEYS.suggestion]: true,
+        const props: SuggestionTextProperties & Record<string, unknown> = {
+          [key]: true,
         };
+
+        props[api.key(suggestionId)] = suggestion;
         const matchTextOutsideInline: NodeSetNodesOptions<Node>['match'] = (
           node,
           path
@@ -870,7 +1005,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(KEYS.suggestion, {
         };
 
         inlineEntries.forEach(([, path]) => {
-          tx.nodes.set<TSuggestionText>(props, {
+          tx.nodes.set<SuggestionTextContract>(props, {
             ...nodeOptions,
             at: path,
             match: (node) =>
@@ -947,7 +1082,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(KEYS.suggestion, {
           return node.children.some(
             (child) =>
               TextApi.isText(child) &&
-              Boolean(child[KEYS.suggestion]) &&
+              Boolean(Reflect.get(child, key)) &&
               api.inlineData(child)?.type === 'insert' &&
               api.isCurrentUser(child)
           );
@@ -970,11 +1105,11 @@ export const BaseSuggestionPlugin = defineBasePlugin(KEYS.suggestion, {
 
           if (!pointTarget || PointApi.equals(pointCurrent, pointTarget)) break;
 
-          if (
-            !tx.selection.isAcrossBlocks({
-              at: { anchor: pointCurrent, focus: pointTarget },
-            })
-          ) {
+          const crossesBlocks = tx.selection.isAcrossBlocks({
+            at: { anchor: pointCurrent, focus: pointTarget },
+          });
+
+          if (!crossesBlocks) {
             const inlineRange = reverse
               ? { anchor: pointTarget, focus: pointCurrent }
               : { anchor: pointCurrent, focus: pointTarget };
@@ -1042,7 +1177,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(KEYS.suggestion, {
                   type: 'remove',
                   userId: currentUserId,
                 },
-                [KEYS.suggestion]: true,
+                [key]: true,
               },
               { at: inlineEntry[1] }
             );
@@ -1096,7 +1231,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(KEYS.suggestion, {
             if (previousBlock && ElementApi.isElement(previousBlock[0])) {
               if (api.isBlockSuggestion(previousBlock[0])) {
                 if (previousBlock[0].suggestion.type === 'insert') {
-                  tx.nodes.unset([KEYS.suggestion], {
+                  tx.nodes.unset(['suggestion'], {
                     at: previousBlock[1],
                   });
                   tx.nodes.merge({ at: PathApi.next(previousBlock[1]) });
@@ -1113,7 +1248,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(KEYS.suggestion, {
 
               tx.nodes.set(
                 {
-                  [KEYS.suggestion]: {
+                  suggestion: {
                     id,
                     createdAt,
                     type: 'remove',
@@ -1201,7 +1336,9 @@ export const BaseSuggestionPlugin = defineBasePlugin(KEYS.suggestion, {
         );
       };
       return {
-        accept: (description: TResolvedSuggestion) => {
+        clearTransient: (options?: EditorNodeUnsetOptions<Node>) =>
+          tx.nodes.unset(context.schema.properties.transientElement, options),
+        accept: (description: ResolvedSuggestion) => {
           tx.tags.add(SUGGESTION_SKIP_TAG);
 
           const mergeNodes = tx.nodes.toArray({
@@ -1218,42 +1355,39 @@ export const BaseSuggestionPlugin = defineBasePlugin(KEYS.suggestion, {
             tx.nodes.merge({ at: PathApi.next(path) });
           });
 
-          tx.nodes.unset(
-            [description.keyId, KEYS.suggestion, SUGGESTION_TRANSIENT_KEY],
-            {
-              at: [],
-              mode: 'all',
-              match: (node) => {
-                if (
-                  TextApi.isText(node) ||
-                  (ElementApi.isElement(node) && tx.schema.isInline(node))
-                ) {
-                  const suggestions = api.dataList(node);
+          tx.nodes.unset([description.keyId, key, SUGGESTION_TRANSIENT_KEY], {
+            at: [],
+            mode: 'all',
+            match: (node) => {
+              if (
+                TextApi.isText(node) ||
+                (ElementApi.isElement(node) && tx.schema.isInline(node))
+              ) {
+                const suggestions = api.dataList(node);
 
-                  if (suggestions.some((data) => data.type === 'update')) {
-                    return suggestions.some(
-                      (data) => data.id === description.suggestionId
-                    );
-                  }
-
-                  const suggestion = api.inlineData(node);
-
-                  return Boolean(
-                    suggestion?.type === 'insert' &&
-                      suggestion.id === description.suggestionId
+                if (suggestions.some((data) => data.type === 'update')) {
+                  return suggestions.some(
+                    (data) => data.id === description.suggestionId
                   );
                 }
-                if (ElementApi.isElement(node) && api.isBlockSuggestion(node)) {
-                  return node.suggestion.isLineBreak
-                    ? node.suggestion.id === description.suggestionId
-                    : node.suggestion.type === 'insert' &&
-                        node.suggestion.id === description.suggestionId;
-                }
 
-                return false;
-              },
-            }
-          );
+                const suggestion = api.inlineData(node);
+
+                return Boolean(
+                  suggestion?.type === 'insert' &&
+                    suggestion.id === description.suggestionId
+                );
+              }
+              if (ElementApi.isElement(node) && api.isBlockSuggestion(node)) {
+                return node.suggestion.isLineBreak
+                  ? node.suggestion.id === description.suggestionId
+                  : node.suggestion.type === 'insert' &&
+                      node.suggestion.id === description.suggestionId;
+              }
+
+              return false;
+            },
+          });
 
           const emptyInlineEntries = tx.nodes.toArray({
             at: [],
@@ -1304,13 +1438,13 @@ export const BaseSuggestionPlugin = defineBasePlugin(KEYS.suggestion, {
         addMark: (mark: string, value: unknown) => {
           const currentUserId = store.get().currentUserId;
 
-          if (currentUserId === null) return;
+          if (currentUserId === null || !isJsonValue(value)) return;
 
           const id = nanoid();
           const createdAt = Date.now();
           const match = (node: Node) => {
             if (!TextApi.isText(node)) return false;
-            if (!node[KEYS.suggestion]) return true;
+            if (!Reflect.get(node, key)) return true;
 
             return api.inlineData(node)?.type === 'update';
           };
@@ -1325,7 +1459,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(KEYS.suggestion, {
                 type: 'update',
                 userId: currentUserId,
               },
-              [KEYS.suggestion]: true,
+              [key]: true,
             },
             { match, split: true }
           );
@@ -1375,21 +1509,21 @@ export const BaseSuggestionPlugin = defineBasePlugin(KEYS.suggestion, {
             : undefined;
           const suggestionId = deletedId ?? id;
 
-          tx.nodes.insert<TSuggestionText>(
-            {
-              [api.key(suggestionId)]: {
-                id: suggestionId,
-                createdAt,
-                type: 'insert',
-                userId: currentUserId,
-              },
-              suggestion: true,
-              text,
-            },
+          const properties: SuggestionTextProperties = {};
+
+          properties[api.key(suggestionId)] = {
+            id: suggestionId,
+            createdAt,
+            type: 'insert',
+            userId: currentUserId,
+          };
+
+          tx.nodes.insert(
+            { ...properties, [key]: true, text },
             { at: tx.selection() ?? selection, select: true }
           );
         },
-        reject: (description: TResolvedSuggestion) => {
+        reject: (description: ResolvedSuggestion) => {
           tx.tags.add(SUGGESTION_SKIP_TAG);
 
           const inlineInsertElements = tx.nodes.toArray({
@@ -1421,34 +1555,31 @@ export const BaseSuggestionPlugin = defineBasePlugin(KEYS.suggestion, {
             tx.nodes.merge({ at: PathApi.next(path) });
           });
 
-          tx.nodes.unset(
-            [description.keyId, KEYS.suggestion, SUGGESTION_TRANSIENT_KEY],
-            {
-              at: [],
-              mode: 'all',
-              match: (node) => {
-                if (
-                  TextApi.isText(node) ||
-                  (ElementApi.isElement(node) && tx.schema.isInline(node))
-                ) {
-                  const suggestion = api.inlineData(node);
+          tx.nodes.unset([description.keyId, key, SUGGESTION_TRANSIENT_KEY], {
+            at: [],
+            mode: 'all',
+            match: (node) => {
+              if (
+                TextApi.isText(node) ||
+                (ElementApi.isElement(node) && tx.schema.isInline(node))
+              ) {
+                const suggestion = api.inlineData(node);
 
-                  return Boolean(
-                    suggestion?.type === 'remove' &&
-                      suggestion.id === description.suggestionId
-                  );
-                }
-                if (ElementApi.isElement(node) && api.isBlockSuggestion(node)) {
-                  return node.suggestion.isLineBreak
-                    ? node.suggestion.id === description.suggestionId
-                    : node.suggestion.type === 'remove' &&
-                        node.suggestion.id === description.suggestionId;
-                }
+                return Boolean(
+                  suggestion?.type === 'remove' &&
+                    suggestion.id === description.suggestionId
+                );
+              }
+              if (ElementApi.isElement(node) && api.isBlockSuggestion(node)) {
+                return node.suggestion.isLineBreak
+                  ? node.suggestion.id === description.suggestionId
+                  : node.suggestion.type === 'remove' &&
+                      node.suggestion.id === description.suggestionId;
+              }
 
-                return false;
-              },
-            }
-          );
+              return false;
+            },
+          });
 
           tx.nodes.remove({
             at: [],
@@ -1495,7 +1626,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(KEYS.suggestion, {
               const suggestion = api
                 .dataList(node)
                 .find(
-                  (data): data is TUpdateSuggestionData =>
+                  (data): data is UpdateSuggestionData =>
                     data.type === 'update' &&
                     data.id === description.suggestionId
                 );
@@ -1512,19 +1643,21 @@ export const BaseSuggestionPlugin = defineBasePlugin(KEYS.suggestion, {
               if (Object.keys(previousProperties).length > 0) {
                 tx.nodes.set(previousProperties, { at: path });
               }
-              tx.nodes.unset([api.key(suggestion.id)], { at: path });
+              const suggestionKey: string = api.key(suggestion.id);
+
+              tx.nodes.unset(suggestionKey, { at: path });
             });
         },
         removeMark: (mark: string, previousValue: unknown = true) => {
           const currentUserId = store.get().currentUserId;
 
-          if (currentUserId === null) return;
+          if (currentUserId === null || !isJsonValue(previousValue)) return;
 
           const id = nanoid();
           const createdAt = Date.now();
           const match = (node: Node) => {
             if (!TextApi.isText(node)) return false;
-            if (!node[KEYS.suggestion]) return true;
+            if (!Reflect.get(node, key)) return true;
 
             return api.inlineData(node)?.type === 'update';
           };
@@ -1539,7 +1672,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(KEYS.suggestion, {
                 type: 'update',
                 userId: currentUserId,
               },
-              [KEYS.suggestion]: true,
+              [key]: true,
             },
             { match }
           );
@@ -1563,7 +1696,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(KEYS.suggestion, {
           nodes.forEach(([, path]) => {
             tx.nodes.set(
               {
-                [KEYS.suggestion]: {
+                suggestion: {
                   id,
                   createdAt,
                   type: 'remove',
@@ -1647,11 +1780,14 @@ export const BaseSuggestionPlugin = defineBasePlugin(KEYS.suggestion, {
           const nodes = Array.isArray(input.nodes)
             ? input.nodes
             : [input.nodes];
+          const slashInput = editor.plugin(PLUGINS.slashInput);
 
           if (
+            slashInput.installed &&
             nodes.some(
               (node) =>
-                ElementApi.isElement(node) && node.type === 'slash_input'
+                ElementApi.isElement(node) &&
+                node.type === slashInput.schema.type
             )
           ) {
             return next();
@@ -1659,7 +1795,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(KEYS.suggestion, {
 
           const suggestionNodes = nodes.map((node) => ({
             ...node,
-            [KEYS.suggestion]: {
+            suggestion: {
               id: nanoid(),
               createdAt: Date.now(),
               type: 'insert',
@@ -1675,11 +1811,14 @@ export const BaseSuggestionPlugin = defineBasePlugin(KEYS.suggestion, {
           }
 
           const nodes = state.nodes.toArray<Element | Text>(input.options);
+          const slashInput = editor.plugin(PLUGINS.slashInput);
 
           if (
+            slashInput.installed &&
             nodes.some(
               ([node]) =>
-                ElementApi.isElement(node) && node.type === 'slash_input'
+                ElementApi.isElement(node) &&
+                node.type === slashInput.schema.type
             )
           ) {
             return false;
@@ -1745,12 +1884,9 @@ export const BaseSuggestionPlugin = defineBasePlugin(KEYS.suggestion, {
 
           if (store.get().isSuggesting && context.api.isTracking(tags)) {
             if (reverse) {
-              const node = state.nodes.above<TSuggestionElement>();
+              const node = state.nodes.above<SuggestionElementContract>();
 
-              if (
-                node?.[0][KEYS.suggestion] &&
-                !node[0].suggestion.isLineBreak
-              ) {
+              if (node?.[0].suggestion && !node[0].suggestion.isLineBreak) {
                 return next();
               }
             }
@@ -1773,7 +1909,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(KEYS.suggestion, {
             })
           ) {
             const prefix = state.transaction((tx) => {
-              tx.nodes.unset([KEYS.suggestion], { at: pointTarget });
+              tx.nodes.unset(['suggestion'], { at: pointTarget });
             });
 
             return next.after(prefix);
@@ -1819,7 +1955,10 @@ export const BaseSuggestionPlugin = defineBasePlugin(KEYS.suggestion, {
 
           const [node, path] = above;
 
-          if (path.length > 1 || node.type !== editor.plugin(KEYS.p).type) {
+          if (
+            path.length > 1 ||
+            node.type !== editor.plugin(PLUGINS.paragraph).schema.type
+          ) {
             return state.transaction((tx) => {
               tx.suggestion.insertText('\n');
             });
@@ -1838,7 +1977,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(KEYS.suggestion, {
             tx.tags.add('history-merge');
             tx.nodes.set(
               {
-                [KEYS.suggestion]: {
+                suggestion: {
                   id,
                   createdAt,
                   isLineBreak: true,
@@ -1855,9 +1994,9 @@ export const BaseSuggestionPlugin = defineBasePlugin(KEYS.suggestion, {
             return false;
           }
 
-          const node = state.nodes.above<TSuggestionElement>();
+          const node = state.nodes.above<SuggestionElementContract>();
 
-          if (node?.[0][KEYS.suggestion] && !node[0].suggestion.isLineBreak) {
+          if (node?.[0].suggestion && !node[0].suggestion.isLineBreak) {
             return false;
           }
 
@@ -1878,7 +2017,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(KEYS.suggestion, {
               ? node
               : undefined;
 
-          if (!inlineNode || !Reflect.get(inlineNode, KEYS.suggestion)) {
+          if (!inlineNode || !Reflect.get(inlineNode, context.schema.key)) {
             return;
           }
 
@@ -1886,7 +2025,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(KEYS.suggestion, {
 
           if (!keyId) {
             context.api.untracked(() => {
-              tx.nodes.unset([KEYS.suggestion, 'suggestionData'], {
+              tx.nodes.unset([context.schema.key, 'suggestionData'], {
                 at: path,
               });
             });
@@ -1900,7 +2039,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(KEYS.suggestion, {
 
           if (inlineData?.type === 'remove') {
             context.api.untracked(() => {
-              tx.nodes.unset([KEYS.suggestion, keyId], { at: path });
+              tx.nodes.unset([context.schema.key, keyId], { at: path });
             });
           } else {
             context.api.untracked(() => {
@@ -1911,6 +2050,18 @@ export const BaseSuggestionPlugin = defineBasePlugin(KEYS.suggestion, {
       },
     ],
   }));
+
+/** Element carrying the active schema-owned block suggestion property. */
+export type SuggestionElement = ElementWith<
+  typeof BaseSuggestionPlugin,
+  'blockSuggestion'
+>;
+
+/** Text carrying the active schema-owned suggestion mark. */
+export type SuggestionText = TextWith<
+  typeof BaseSuggestionPlugin,
+  'suggestion'
+>;
 
 export type BaseSuggestionDefinition = DefinitionOf<
   typeof BaseSuggestionPlugin

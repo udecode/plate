@@ -33,52 +33,6 @@ description: \@platejs/core 的 API 参考文档。
   <APIItem name="maxLength" type="number" optional>
     限制用户输入、片段插入和节点插入的最大字符数。
   </APIItem>
-  <APIItem name="nodeId" type="object | boolean" optional>
-    自动节点 ID 生成和管理的配置。
-    <APISubList>
-      <APISubListItem parent="nodeId" name="disableInsertOverrides" type="boolean" optional>
-        插入节点时禁用使用现有 ID。
-        - 当 `false`: 如果文档中不存在则保留现有 ID
-        - 当 `true`: 总是生成新 ID
-        - **默认值:** `false`
-      </APISubListItem>
-      <APISubListItem parent="nodeId" name="filterInline" type="boolean" optional>
-        过滤内联 Element 节点不接收 ID。
-        - **默认值:** `true`
-      </APISubListItem>
-      <APISubListItem parent="nodeId" name="filterText" type="boolean" optional>
-        过滤 Text 节点不接收 ID。
-        - **默认值:** `true`
-      </APISubListItem>
-      <APISubListItem parent="nodeId" name="idCreator" type="() => string" optional>
-        生成唯一 ID 的函数。
-        - **默认值:** `() => nanoid(10)`
-      </APISubListItem>
-      <APISubListItem parent="nodeId" name="initialValueIds" type="false | 'always' | 'if-needed'" optional>
-        控制如何为初始值中的缺失 ID 赋值。
-        - 当 `'if-needed'`: 仅检查首尾顶层节点
-        - 当 `'always'`: 遍历整个初始值并补齐缺失 ID
-        - 当 `false`: 跳过初始值 ID 分配
-        - **默认值:** `'if-needed'`
-      </APISubListItem>
-      <APISubListItem parent="nodeId" name="reuseId" type="boolean" optional>
-        粘贴剪贴板内容时重用 ID。
-        - 当 `true`: 如果目标文档中不存在则保留源 ID
-        - 当 `false`: 为粘贴的节点生成新 ID
-        - **默认值:** `false`
-      </APISubListItem>
-      <APISubListItem parent="nodeId" name="allow" type="string[]" optional>
-        应接收 ID 的节点类型。
-      </APISubListItem>
-      <APISubListItem parent="nodeId" name="exclude" type="string[]" optional>
-        不应接收 ID 的节点类型。
-      </APISubListItem>
-      <APISubListItem parent="nodeId" name="filter" type="(node: NodeEntry) => boolean" optional>
-        自定义过滤函数，确定哪些节点应接收 ID。
-        - **默认值:** `() => true`
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
   <APIItem name="selection" type="TSelection" optional>
     编辑器的初始选区。
   </APIItem>
@@ -545,6 +499,25 @@ const generic = useElement();
 
 查看[调试](/docs/debugging)了解更多详情。
 
+### `ElementIdPlugin`
+
+为所有 block 和 inline 元素添加持久化字符串 ID。该插件是可选的，不会为文本
+节点生成 ID。
+
+```ts
+const editor = createPlateEditor({
+  plugins: [ElementIdPlugin],
+});
+
+const elementId = editor.plugin(ElementIdPlugin);
+const id = elementId.read.id(element);
+const entry = elementId.read.entry(id);
+```
+
+通过 `initialState.generateId` 替换默认的完整长度 `nanoid()` 生成器。已存储输入
+缺少 ID、包含旧数字 ID，或需要通过 `sourceKey` 规范化旧属性时，使用
+`migrateElementIds(value, options)`。
+
 ### `ElementStatePlugin`
 
 在 Plite 之上扩展 Plate 编辑器行为。
@@ -552,8 +525,8 @@ const generic = useElement();
 `ElementStatePlugin` 提供
 `editor.plugin(ElementStatePlugin).api.isEmpty(element)`。它检查元素自身的属性状态，而不是文本内容。默认只忽略
 `type` 和通过 `role: "metadata"`
-声明的已编译元素属性；任何其他属性都表示该元素带有状态。`NodeIdPlugin`
-将配置的 NodeId 属性声明为元数据。
+声明的已编译元素属性；任何其他属性都表示该元素带有状态。`ElementIdPlugin`
+将持久化元素 ID 属性声明为元数据。
 
 ```tsx
 const elementState = editor.plugin(ElementStatePlugin);

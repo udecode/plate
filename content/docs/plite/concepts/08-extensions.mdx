@@ -303,7 +303,8 @@ const tableCell = schema.handle.element(tableModel, "tableCell");
 const colSpan = schema.handle.property(tableCell, "colSpan");
 
 const TablesExtension = defineExtension("tables", {
-  ...tableModel,  read: ({ state }) => ({
+  ...tableModel,
+  read: ({ state }) => ({
     selectedCellColSpan(element) {
       return state.schema.getElementProperty(element, colSpan);
     },

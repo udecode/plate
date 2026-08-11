@@ -56,7 +56,6 @@ import type {
   BasePluginDefinitionInput,
   DynamicBasePluginPortal,
 } from '../plugin/BasePlugin';
-import type { NodeIdPluginState } from '../plugins/node-id/NodeIdPlugin';
 import type {
   InferPlugins,
   InferRuntimePlugins,
@@ -312,7 +311,10 @@ const createPlateConfiguration = (
       authoredModel,
       policy
     );
-    const model = applyEditorApplicationSchema(authoredModel, policy);
+    const model = applyEditorApplicationSchema(
+      authoredModel,
+      applicationSchema
+    );
     const modelExtensions = createPlateSchemaExtensions(
       editor,
       identity,
@@ -552,21 +554,6 @@ export type BaseEditorOptions<
    */
   maxLength?: number;
   /**
-   * Configuration for automatic node ID generation and management.
-   *
-   * Unless set to `false`, the editor automatically adds unique IDs to nodes
-   * through the core NodeIdPlugin:
-   *
-   * - Normalizes the initial value for missing IDs
-   * - Adds IDs to new nodes during insertion
-   * - Preserves explicit target-unique IDs on generic inserts
-   * - Generates fresh clipboard-paste IDs unless `reuseId` is true
-   * - Handles ID conflicts and duplicates
-   *
-   * @default { filterInline: true, filterText: true, idCreator: () => nanoid(10) }
-   */
-  nodeId?: Partial<NodeIdPluginState> | boolean;
-  /**
    * Array of plugins to be loaded into the editor. Plugins extend the editor's
    * functionality and define custom behavior.
    */
@@ -666,7 +653,6 @@ const applyBaseEditor = <
     autoSelect,
     initialValue,
     maxLength,
-    nodeId,
     plugins = [],
     readOnly,
     schemaIdentity,
@@ -703,10 +689,7 @@ const applyBaseEditor = <
     return createPluginPortal(editor, plugin);
   }
   editor.plugin = getInstalledPluginPortal;
-  const baseCorePlugins = getCorePlugins({
-    affinity,
-    nodeId,
-  });
+  const baseCorePlugins = getCorePlugins({ affinity });
 
   const internalRootCandidate = Reflect.apply(defineBasePlugin, undefined, [
     'root',
@@ -773,36 +756,42 @@ const applyBaseEditor = <
         };
       }
     );
-    installPlateEditorExtensions(
+    withEditorApplicationSchemaCandidate(
       editor,
-      effectiveSchemaIdentity
-        ? Object.freeze({
-            id: effectiveSchemaIdentity.id,
-            version: effectiveSchemaIdentity.version,
-          })
-        : undefined,
-      skipInitialization
-        ? undefined
-        : (tx) =>
-            initializeBaseEditor(editor, tx, {
-              autoSelect,
-              initialValue:
-                typeof initialValue === 'function'
-                  ? () =>
-                      initialValue({
-                        editor:
-                          editor as unknown as InternalBaseEditorWithInstalledPlugins<
-                            V,
-                            InferBaseEditorPlugins<P[]>,
-                            InferBaseEditorSchemaPlugins<P[]>
-                          >,
-                      })
-                  : initialValue,
-              selection,
-              shouldNormalizeEditor,
-            }),
-      generatedContract,
-      editorDefinition
+      applicationPolicy,
+      collectPlatePluginSourceCandidates(sourcePlugins),
+      () =>
+        installPlateEditorExtensions(
+          editor,
+          effectiveSchemaIdentity
+            ? Object.freeze({
+                id: effectiveSchemaIdentity.id,
+                version: effectiveSchemaIdentity.version,
+              })
+            : undefined,
+          skipInitialization
+            ? undefined
+            : (tx) =>
+                initializeBaseEditor(editor, tx, {
+                  autoSelect,
+                  initialValue:
+                    typeof initialValue === 'function'
+                      ? () =>
+                          initialValue({
+                            editor:
+                              editor as unknown as InternalBaseEditorWithInstalledPlugins<
+                                V,
+                                InferBaseEditorPlugins<P[]>,
+                                InferBaseEditorSchemaPlugins<P[]>
+                              >,
+                          })
+                      : initialValue,
+                  selection,
+                  shouldNormalizeEditor,
+                }),
+          generatedContract,
+          editorDefinition
+        )
     );
 
     return editor as unknown as InternalBaseEditorWithInstalledPlugins<
@@ -867,9 +856,8 @@ type InferCreateBaseEditorPlugins<P extends readonly unknown[]> =
  *
  * // Editor with custom configuration
  * const editor = createBaseEditor({
- *   plugins: [ParagraphPlugin],
+ *   plugins: [ParagraphPlugin, ElementIdPlugin],
  *   maxLength: 1000,
- *   nodeId: { idCreator: () => uuidv4() },
  *   autoSelect: 'end',
  * });
  *

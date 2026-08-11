@@ -106,9 +106,13 @@ Unwrap matching nodes.
 
 Options: `at`, `match`, `mode`, `split`, `voids`.
 
-#### `tx.nodes.set(props: Partial<Node>, options?)`
+#### `tx.nodes.set(props, options?)`
 
 Set properties on matching nodes.
+
+```ts
+tx.nodes.set(props: Partial<Node>, options?);
+```
 
 Options: `at`, `match`, `mode`, `hanging`, `split`, `voids`, `compare`,
 `merge`.
@@ -122,9 +126,30 @@ Pass an exact node as `at` to preserve its property inference.
 editor.update.nodes.set({ icon: "🔥" }, { at: calloutElement });
 ```
 
-#### `tx.nodes.unset(props: string | string[], options?)`
+Set one or several properties in the same patch. Their values are inferred from
+the editor's closed `Value` type:
+
+```ts
+editor.update.nodes.set({ indent: 2 });
+```
+
+Use `undefined` to remove a property in the same atomic patch:
+
+```ts
+editor.update.nodes.set({ indent: undefined, listStyleType: undefined });
+```
+
+For an aliased persisted property, use its exact schema key as a computed object
+key. Prefix handles cannot address one property.
+
+#### `tx.nodes.unset(props, options?)`
 
 Unset properties on matching nodes.
+
+```ts
+tx.nodes.unset(key | key[], options?);
+tx.nodes.unset(propertyHandle, options?);
+```
 
 Options: `at`, `match`, `mode`, `hanging`, `split`, `voids`.
 

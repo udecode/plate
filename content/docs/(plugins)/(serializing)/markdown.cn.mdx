@@ -432,7 +432,9 @@ slice，并在需要时回退到这些外部格式。
       序列化时保留空段落节点。
     </APIItem>
     <APIItem name="withBlockId" type="boolean" optional>
-      若为 true，序列化时会保留区块 ID，用于如 AI 评论跟踪。会以 `<block id="...">内容</block>` 语法包裹。**默认值**：`false`
+      将 `ElementIdPlugin` 的 ID 序列化为 `<block id="...">内容</block>`。
+      编辑器必须安装 `ElementIdPlugin`，并且会遵循插件编译后的属性键。
+      **默认值**：`false`
     </APIItem>
   </APIOptions>
   <APIReturns type="string">返回 Markdown 字符串。</APIReturns>

@@ -61,7 +61,7 @@ const editor = createBaseEditor({
   initialValue: value,
 });
 
-const plainText = editor.api.string([]);
+const plainText = editor.read.text.string([]);
 
 console.info(plainText);
 ```

@@ -31,7 +31,8 @@ import type { Editor, Element as PliteElement } from '@platejs/plite';
 import { createReactEditor, Plite as PliteRuntime } from '@platejs/plite-react';
 import { getPlateRuntime } from '@platejs/core/internal';
 import {
-  normalizeNodeId,
+  ElementIdPlugin,
+  migrateElementIds,
   type Descendant,
   type Path,
   type RenderElementProps,
@@ -48,14 +49,12 @@ import {
   createPlateEditor,
   useEditableProps,
   useEditorReadOnly,
-  useEditorMounted,
   useEditor,
   useEditorSelector,
   useEditorState,
   useEditorValue,
   useElement,
   useElementSelector,
-  useNodeAttributes,
   usePath,
   usePlateEditor,
   usePluginStore,
@@ -86,12 +85,12 @@ import {
 import {
   SCENARIO_WORKLOADS,
   createBenchIdFactory,
-  getDefaultNodeIdFragmentBlockCount,
+  getDefaultElementIdFragmentBlockCount,
   getEditorPerfWorkloadValue,
-  getNodeIdFragmentBenchmarkData,
+  getElementIdFragmentBenchmarkData,
   getSeededEditorPerfWorkloadValue,
   type EditorPerfWorkloadId,
-  type NodeIdFragmentBenchmarkKind,
+  type ElementIdFragmentBenchmarkKind,
   type ScenarioWorkloadId,
 } from './workloads';
 
@@ -229,7 +228,7 @@ type RunnerBenchmarkName =
   | 'construction'
   | 'core-mount'
   | 'init-dissection'
-  | 'nodeid-fragment'
+  | 'element-id-fragment'
   | 'input'
   | 'mount'
   | 'plugin-census'
@@ -241,7 +240,7 @@ type EditorPerfRunnerControls = {
   chunkSize: number;
   chunking: boolean;
   coreMountCase?: string;
-  coreMountNodeId?: string;
+  coreMountElementId?: string;
   fanoutSubscribers?: string;
   pluginCensusEntry?: CorePluginCensusEntryId | 'all';
   scenarioWorkload: ScenarioWorkloadId;
@@ -275,8 +274,8 @@ type LatencyResult = {
 type ScenarioId =
   | 'slate'
   | 'plate-core'
-  | 'plate-core-nodeid'
-  | 'plate-core-nodeid-seeded'
+  | 'plate-core-element-id'
+  | 'plate-core-element-id-seeded'
   | 'plate-basic'
   | 'plate-code-only';
 
@@ -286,7 +285,7 @@ type Scenario = {
   description: string;
   id: ScenarioId;
   label: string;
-  nodeId?: boolean;
+  elementId?: boolean;
   plugins: BenchmarkPlugins;
   kind: 'plate' | 'slate';
   seedIds?: boolean;
@@ -300,17 +299,16 @@ type ScenarioMetrics = {
 };
 
 type DissectionCaseId =
-  | 'plate-core-nodeid-off'
-  | 'plate-core-nodeid-raw'
-  | 'plate-core-nodeid-seeded'
-  | 'plate-core-nodeid-skip-initial-normalize'
-  | 'plate-basic-nodeid-off';
+  | 'plate-core-element-id-off'
+  | 'plate-core-element-id-raw'
+  | 'plate-core-element-id-seeded'
+  | 'plate-basic-element-id-off';
 
 type DissectionCase = {
   description: string;
   id: DissectionCaseId;
   label: string;
-  nodeId: false | 'default' | 'skip-initial-normalize';
+  elementId: boolean;
   plugins: BenchmarkPlugins;
   seedIds: boolean;
 };
@@ -320,31 +318,25 @@ type DissectionMetrics = {
   createWithValue: BenchmarkResult | null;
   idsAssigned: BenchmarkResult | null;
   initOnly: BenchmarkResult | null;
-  nodeLookupCalls: BenchmarkResult | null;
-  nodeLookupTime: BenchmarkResult | null;
   pluginCount: number | null;
-  setNodesCalls: BenchmarkResult | null;
-  setNodesTime: BenchmarkResult | null;
   staticNormalize: BenchmarkResult | null;
 };
 
-type NodeIdFragmentCaseId =
-  | 'plate-core-nodeid-off-raw-import'
-  | 'plate-core-nodeid-raw-import'
-  | 'plate-core-nodeid-off-seeded-duplicate-paste'
-  | 'plate-core-nodeid-on-seeded-duplicate-paste';
+type ElementIdFragmentCaseId =
+  | 'plate-core-element-id-off-raw-import'
+  | 'plate-core-element-id-raw-import'
+  | 'plate-core-element-id-off-seeded-duplicate-paste'
+  | 'plate-core-element-id-on-seeded-duplicate-paste';
 
-type NodeIdFragmentCase = {
+type ElementIdFragmentCase = {
   description: string;
-  fragmentKind: NodeIdFragmentBenchmarkKind;
-  id: NodeIdFragmentCaseId;
+  fragmentKind: ElementIdFragmentBenchmarkKind;
+  id: ElementIdFragmentCaseId;
   label: string;
-  nodeId: false | 'default';
+  elementId: boolean;
 };
 
-type NodeIdFragmentMetrics = {
-  duplicateScanCalls: BenchmarkResult | null;
-  duplicateScanTime: BenchmarkResult | null;
+type ElementIdFragmentMetrics = {
   fragmentReplace: BenchmarkResult | null;
   fragmentBlocks: number | null;
   idsAssigned: BenchmarkResult | null;
@@ -390,10 +382,6 @@ type CoreMountCaseId =
   | 'plite-only'
   | 'editable-props-only'
   | 'editable-static'
-  | 'editable-element-benchmark-plate-element-no-block-id'
-  | 'editable-element-benchmark-plate-element-no-mounted'
-  | 'editable-element-benchmark-mounted-block-element'
-  | 'editable-element-benchmark-plate-element-node-attributes'
   | 'editable-element-plate-element-no-provider'
   | 'editable-element-plate-element-plugin-only-no-provider'
   | 'editable-element-plate-element-plugin-context-no-provider'
@@ -468,10 +456,10 @@ type CoreMountCase = {
   plugins?: 'basic' | 'bold-only' | 'code-only' | 'none' | 'underline-only';
 };
 
-type CoreMountNodeIdMode = 'off' | 'seeded';
+type CoreMountElementIdMode = 'off' | 'seeded';
 
 type CoreMountMetrics = {
-  mountByNodeIdMode: Record<CoreMountNodeIdMode, BenchmarkResult | null>;
+  mountByElementIdMode: Record<CoreMountElementIdMode, BenchmarkResult | null>;
 };
 
 type PluginCensusSurface = {
@@ -539,24 +527,24 @@ const SCENARIOS: Scenario[] = [
     id: 'plate-core',
     kind: 'plate',
     label: 'Plate core minimal',
-    nodeId: false,
+    elementId: false,
     plugins: 'none',
   },
   {
     description: 'Plate React wrapper only. No user plugins. Node IDs enabled.',
-    id: 'plate-core-nodeid',
+    id: 'plate-core-element-id',
     kind: 'plate',
-    label: 'Plate core + nodeId',
-    nodeId: true,
+    label: 'Plate core + elementId',
+    elementId: true,
     plugins: 'none',
   },
   {
     description:
       'Plate React wrapper only. No user plugins. Node IDs enabled on a document that already has ids.',
-    id: 'plate-core-nodeid-seeded',
+    id: 'plate-core-element-id-seeded',
     kind: 'plate',
-    label: 'Plate core + nodeId (seeded)',
-    nodeId: true,
+    label: 'Plate core + elementId (seeded)',
+    elementId: true,
     plugins: 'none',
     seedIds: true,
   },
@@ -566,7 +554,7 @@ const SCENARIOS: Scenario[] = [
     id: 'plate-basic',
     kind: 'plate',
     label: 'Plate basic plugins',
-    nodeId: false,
+    elementId: false,
     plugins: 'basic',
   },
   {
@@ -575,7 +563,7 @@ const SCENARIOS: Scenario[] = [
     id: 'plate-code-only',
     kind: 'plate',
     label: 'Plate code only',
-    nodeId: false,
+    elementId: false,
     plugins: 'code-only',
   },
 ];
@@ -583,83 +571,74 @@ const SCENARIOS: Scenario[] = [
 const DISSECTION_CASES: DissectionCase[] = [
   {
     description:
-      'Plate core without nodeId. This is the closest thing to base wrapper tax.',
-    id: 'plate-core-nodeid-off',
-    label: 'Plate core, nodeId off',
-    nodeId: false,
+      'Plate core without elementId. This is the closest thing to base wrapper tax.',
+    id: 'plate-core-element-id-off',
+    label: 'Plate core, elementId off',
+    elementId: false,
     plugins: 'none',
     seedIds: false,
   },
   {
     description:
-      'Plate core with default nodeId behavior against the raw huge document.',
-    id: 'plate-core-nodeid-raw',
-    label: 'Plate core, nodeId raw',
-    nodeId: 'default',
+      'Plate core with default elementId behavior against the raw huge document.',
+    id: 'plate-core-element-id-raw',
+    label: 'Plate core, elementId raw',
+    elementId: true,
     plugins: 'none',
     seedIds: false,
   },
   {
     description:
-      'Plate core with nodeId on a document that already has ids everywhere.',
-    id: 'plate-core-nodeid-seeded',
-    label: 'Plate core, nodeId pre-seeded',
-    nodeId: 'default',
+      'Plate core with elementId on a document that already has ids everywhere.',
+    id: 'plate-core-element-id-seeded',
+    label: 'Plate core, elementId pre-seeded',
+    elementId: true,
     plugins: 'none',
     seedIds: true,
   },
   {
     description:
-      'Plate core with nodeId loaded but initial-value normalization disabled.',
-    id: 'plate-core-nodeid-skip-initial-normalize',
-    label: 'Plate core, nodeId no init normalize',
-    nodeId: 'skip-initial-normalize',
-    plugins: 'none',
-    seedIds: false,
-  },
-  {
-    description:
-      'Plate basic plugins with nodeId off to expose plugin-count tax without id work.',
-    id: 'plate-basic-nodeid-off',
-    label: 'Plate basic, nodeId off',
-    nodeId: false,
+      'Plate basic plugins with elementId off to expose plugin-count tax without id work.',
+    id: 'plate-basic-element-id-off',
+    label: 'Plate basic, elementId off',
+    elementId: false,
     plugins: 'basic',
     seedIds: false,
   },
 ];
 
-const NODE_ID_FRAGMENT_CASES: NodeIdFragmentCase[] = [
+const ELEMENT_ID_FRAGMENT_CASES: ElementIdFragmentCase[] = [
   {
     description:
-      'Plate core without nodeId, inserting a raw fragment with no ids. This is the baseline fragment.replace cost.',
+      'Plate core without elementId, inserting a raw fragment with no ids. This is the baseline fragment.replace cost.',
     fragmentKind: 'raw-import',
-    id: 'plate-core-nodeid-off-raw-import',
-    label: 'NodeId off, raw import',
-    nodeId: false,
+    id: 'plate-core-element-id-off-raw-import',
+    label: 'ElementId off, raw import',
+    elementId: false,
   },
   {
     description:
-      'Plate core with nodeId, inserting a raw fragment with no ids. This isolates id assignment cost during import.',
+      'Plate core with elementId, inserting a raw fragment with no ids. This isolates id assignment cost during import.',
     fragmentKind: 'raw-import',
-    id: 'plate-core-nodeid-raw-import',
-    label: 'NodeId on, raw import',
-    nodeId: 'default',
+    id: 'plate-core-element-id-raw-import',
+    label: 'ElementId on, raw import',
+    elementId: true,
   },
   {
     description:
-      'Plate core without nodeId, pasting a seeded fragment whose ids already exist in the destination document.',
+      'Plate core without elementId, pasting a seeded fragment whose ids already exist in the destination document.',
     fragmentKind: 'seeded-duplicate-paste',
-    id: 'plate-core-nodeid-off-seeded-duplicate-paste',
-    label: 'NodeId off, duplicate paste',
-    nodeId: false,
+    id: 'plate-core-element-id-off-seeded-duplicate-paste',
+    label: 'ElementId off, duplicate paste',
+    elementId: false,
   },
   {
     description:
-      'Plate core with nodeId, pasting a seeded fragment whose ids already exist in the destination document. This is the real duplicate-id paste lane.',
+      'Plate core with elementId, pasting a seeded fragment whose ids already exist in the destination document. This is the real duplicate-id paste lane.',
     fragmentKind: 'seeded-duplicate-paste',
-    id: 'plate-core-nodeid-on-seeded-duplicate-paste',
-    label: 'NodeId on, duplicate paste',
-    nodeId: 'default',
+    id: 'plate-core-element-id-on-seeded-duplicate-paste',
+    label: 'ElementId on, duplicate paste',
+    elementId: true,
   },
 ];
 
@@ -914,7 +893,7 @@ function BenchRenderNodeHookElementFromProvider({
   attributes: Record<string, unknown>;
   children: React.ReactNode;
 }) {
-  const element = useElement<PliteElement>();
+  const element = useElement();
   const path = usePath();
   const pathDepth = path.length;
 
@@ -1144,30 +1123,6 @@ const CORE_MOUNT_CASES: CoreMountCase[] = [
       'Provider plus Plite and Editable with direct static props. No useEditableProps and no PlateContent effect stack.',
     id: 'editable-static',
     label: 'Editable static props',
-  },
-  {
-    description:
-      'Static Editable baseline plus a local PlateElement clone without any data-block-id logic. This isolates the plain wrapper markup.',
-    id: 'editable-element-benchmark-plate-element-no-block-id',
-    label: 'Editable + bench element, no block-id',
-  },
-  {
-    description:
-      'Static Editable baseline plus a local PlateElement clone that keeps block-id logic but does not subscribe to useEditorMounted. This isolates the per-node plate-store subscription cost.',
-    id: 'editable-element-benchmark-plate-element-no-mounted',
-    label: 'Editable + bench element, no mounted sub',
-  },
-  {
-    description:
-      'Static Editable baseline plus the old mounted block-id branch. This isolates the useEditorMounted() gate without putting it back on the seeded nodeId fast path.',
-    id: 'editable-element-benchmark-mounted-block-element',
-    label: 'Editable + bench mounted block-id old',
-  },
-  {
-    description:
-      'The same local element lane, but using real useNodeAttributes() ref/class/style merging without PlateElement or the mounted store. This isolates node-attribute composition cost on id-seeded nodes.',
-    id: 'editable-element-benchmark-plate-element-node-attributes',
-    label: 'Editable + bench element + node attrs',
   },
   {
     description:
@@ -1624,10 +1579,13 @@ function getDissectionValue(caseItem: DissectionCase, blocks: number) {
       });
 }
 
-function getNodeIdFragmentValue(caseItem: NodeIdFragmentCase, blocks: number) {
-  return getNodeIdFragmentBenchmarkData({
+function getElementIdFragmentValue(
+  caseItem: ElementIdFragmentCase,
+  blocks: number
+) {
+  return getElementIdFragmentBenchmarkData({
     blocks,
-    fragmentBlocks: getDefaultNodeIdFragmentBlockCount(blocks),
+    fragmentBlocks: getDefaultElementIdFragmentBlockCount(blocks),
     kind: caseItem.fragmentKind,
   });
 }
@@ -1736,40 +1694,22 @@ function getScenarioPlugins(plugins: BenchmarkPlugins): any[] {
   return [];
 }
 
-function getNodeIdOption({
+function getElementIdPlugins({
   counter,
-  duplicateScanStats,
-  mode,
+  enabled,
 }: {
   counter?: { count: number };
-  duplicateScanStats?: { count: number; time: number };
-  mode?: boolean | DissectionCase['nodeId'];
-}): any {
-  if (mode === false) return false;
+  enabled?: boolean;
+}) {
+  if (!enabled) return [];
 
-  const baseOptions =
-    counter || duplicateScanStats
-      ? {
-          ...(counter ? { idCreator: createBenchIdFactory(counter) } : {}),
-          ...(duplicateScanStats
-            ? {
-                onDuplicateIdScan: ({ duration }: { duration: number }) => {
-                  duplicateScanStats.count += 1;
-                  duplicateScanStats.time += duration;
-                },
-              }
-            : {}),
-        }
-      : undefined;
-
-  if (mode === 'skip-initial-normalize') {
-    return {
-      ...baseOptions,
-      initialValueIds: false,
-    };
-  }
-
-  return baseOptions;
+  return [
+    counter
+      ? ElementIdPlugin.configure({
+          initialState: { generateId: createBenchIdFactory(counter) },
+        })
+      : ElementIdPlugin,
+  ];
 }
 
 function getScenarioValue({
@@ -1876,8 +1816,10 @@ function createScenarioConstructionEditor(scenario: Scenario) {
   }
 
   return createPlateEditor({
-    nodeId: getNodeIdOption({ mode: scenario.nodeId }) as any,
-    plugins: getScenarioPlugins(scenario.plugins),
+    plugins: [
+      ...getElementIdPlugins({ enabled: scenario.elementId }),
+      ...getScenarioPlugins(scenario.plugins),
+    ],
   });
 }
 
@@ -1894,8 +1836,10 @@ function createScenarioMountedEditor({
   }
 
   return createPlateEditor({
-    nodeId: getNodeIdOption({ mode: scenario.nodeId }) as any,
-    plugins: getScenarioPlugins(scenario.plugins),
+    plugins: [
+      ...getElementIdPlugins({ enabled: scenario.elementId }),
+      ...getScenarioPlugins(scenario.plugins),
+    ],
     initialValue: value,
   }) as unknown as Editor;
 }
@@ -1911,8 +1855,10 @@ function createPlateDissectionEditor({
   value?: Value;
 }) {
   return createPlateEditor({
-    nodeId: getNodeIdOption({ counter, mode: caseItem.nodeId }) as any,
-    plugins: getScenarioPlugins(caseItem.plugins),
+    plugins: [
+      ...getElementIdPlugins({ counter, enabled: caseItem.elementId }),
+      ...getScenarioPlugins(caseItem.plugins),
+    ],
     initialValue: value,
   });
 }
@@ -1924,25 +1870,26 @@ function createFanoutEditor({
   value: Value;
 }) {
   return createPlateEditor({
-    nodeId: false,
     plugins: [BenchmarkStorePlugin],
     initialValue: value,
   });
 }
 
 function createCoreMountEditor({
-  nodeId = false,
+  elementId = false,
   plugins = 'none',
   value,
 }: {
   config: BenchmarkConfig;
-  nodeId?: false | 'default';
+  elementId?: boolean;
   plugins?: BenchmarkPlugins;
   value: Value;
 }) {
   return createPlateEditor({
-    nodeId: getNodeIdOption({ mode: nodeId }) as any,
-    plugins: getScenarioPlugins(plugins),
+    plugins: [
+      ...getElementIdPlugins({ enabled: elementId }),
+      ...getScenarioPlugins(plugins),
+    ],
     initialValue: value,
   });
 }
@@ -1956,7 +1903,6 @@ function createPluginCensusMountedEditor({
   value: Value;
 }) {
   return createPlateEditor({
-    nodeId: false,
     plugins: getScenarioPlugins(plugins),
     initialValue: value,
   }) as unknown as Editor;
@@ -2014,106 +1960,6 @@ function BenchmarkElement({
         </p>
       );
   }
-}
-
-function BenchmarkPlateElement({
-  attributes,
-  children,
-  editor,
-  element,
-  includeBlockId = true,
-}: {
-  attributes: Record<string, unknown>;
-  children: React.ReactNode;
-  editor: any;
-  element: PliteElement;
-  includeBlockId?: boolean;
-}) {
-  const blockId =
-    includeBlockId && element.id && editor.read.schema.isBlock(element)
-      ? element.id
-      : undefined;
-
-  return (
-    <div
-      data-plite-node="element"
-      data-plite-inline={(attributes as any)['data-plite-inline']}
-      data-block-id={blockId}
-      {...attributes}
-      style={
-        {
-          position: 'relative',
-          ...((attributes as any)?.style ?? {}),
-        } as React.CSSProperties
-      }
-    >
-      {children}
-    </div>
-  );
-}
-
-function BenchmarkPlateElementNodeAttributes({
-  attributes: rawAttributes,
-  children,
-  editor,
-  element,
-}: {
-  attributes: Record<string, unknown>;
-  children: React.ReactNode;
-  editor: any;
-  element: PliteElement;
-}) {
-  const attributes = useNodeAttributes({
-    attributes: rawAttributes,
-  } as any);
-  const blockId =
-    element.id && editor.read.schema.isBlock(element) ? element.id : undefined;
-
-  return (
-    <div
-      data-plite-node="element"
-      data-plite-inline={(attributes as any)['data-plite-inline']}
-      data-block-id={blockId}
-      {...attributes}
-      style={
-        {
-          position: 'relative',
-          ...((attributes as any)?.style ?? {}),
-        } as React.CSSProperties
-      }
-    >
-      {children}
-    </div>
-  );
-}
-
-function BenchmarkMountedBlockElement({
-  attributes,
-  blockId,
-  children,
-}: {
-  attributes: Record<string, unknown>;
-  blockId: string;
-  children: React.ReactNode;
-}) {
-  const mounted = useEditorMounted();
-
-  return (
-    <div
-      data-plite-node="element"
-      data-plite-inline={(attributes as any)['data-plite-inline']}
-      data-block-id={mounted ? blockId : undefined}
-      {...attributes}
-      style={
-        {
-          position: 'relative',
-          ...((attributes as any)?.style ?? {}),
-        } as React.CSSProperties
-      }
-    >
-      {children}
-    </div>
-  );
 }
 
 function ScenarioEditor({
@@ -2236,8 +2082,10 @@ function PlateScenarioEditor({
   value: Value;
 }) {
   const editor = usePlateEditor({
-    nodeId: scenario.nodeId === false ? false : undefined,
-    plugins: getScenarioPlugins(scenario.plugins),
+    plugins: [
+      ...getElementIdPlugins({ enabled: scenario.elementId }),
+      ...getScenarioPlugins(scenario.plugins),
+    ],
     initialValue: value,
   });
 
@@ -2621,10 +2469,6 @@ function BenchmarkEditableMount({
 }: {
   config: BenchmarkConfig;
   elementBenchmarkMode?:
-    | 'benchmark-plate-element-no-block-id'
-    | 'benchmark-plate-element-no-mounted'
-    | 'benchmark-mounted-block-element'
-    | 'benchmark-plate-element-node-attributes'
     | 'jotai-hydrate-only-plugin-fast-node-props'
     | 'jotai-hydrate-only-provider-only'
     | 'jotai-hydrate-sync-plugin-fast-node-props'
@@ -2823,63 +2667,6 @@ function BenchmarkEditableMount({
             .filter(Boolean)
             .join(' ') || undefined,
       };
-
-      if (elementBenchmarkMode === 'benchmark-plate-element-no-block-id') {
-        return (
-          <BenchmarkPlateElement
-            attributes={baseAttributes}
-            editor={editor}
-            element={element}
-            includeBlockId={false}
-          >
-            {props.children}
-          </BenchmarkPlateElement>
-        );
-      }
-
-      if (elementBenchmarkMode === 'benchmark-plate-element-no-mounted') {
-        return (
-          <BenchmarkPlateElement
-            attributes={baseAttributes}
-            editor={editor}
-            element={element}
-          >
-            {props.children}
-          </BenchmarkPlateElement>
-        );
-      }
-
-      if (elementBenchmarkMode === 'benchmark-plate-element-node-attributes') {
-        return (
-          <BenchmarkPlateElementNodeAttributes
-            attributes={baseAttributes}
-            editor={editor}
-            element={element}
-          >
-            {props.children}
-          </BenchmarkPlateElementNodeAttributes>
-        );
-      }
-
-      if (elementBenchmarkMode === 'benchmark-mounted-block-element') {
-        const blockId =
-          typeof element.id === 'string' && editor.read.schema.isBlock(element)
-            ? element.id
-            : undefined;
-
-        if (!blockId) {
-          return <div {...baseAttributes}>{props.children}</div>;
-        }
-
-        return (
-          <BenchmarkMountedBlockElement
-            attributes={baseAttributes}
-            blockId={blockId}
-          >
-            {props.children}
-          </BenchmarkMountedBlockElement>
-        );
-      }
 
       if (elementBenchmarkMode === 'plate-element-no-provider') {
         return (
@@ -3909,32 +3696,6 @@ function CoreMountSurface({
           <EditablePropsProbe config={config} />
         ) : caseId === 'editable-static' ? (
           <BenchmarkEditableMount config={config} id={id} />
-        ) : caseId ===
-          'editable-element-benchmark-plate-element-no-block-id' ? (
-          <BenchmarkEditableMount
-            config={config}
-            elementBenchmarkMode="benchmark-plate-element-no-block-id"
-            id={id}
-          />
-        ) : caseId === 'editable-element-benchmark-plate-element-no-mounted' ? (
-          <BenchmarkEditableMount
-            config={config}
-            elementBenchmarkMode="benchmark-plate-element-no-mounted"
-            id={id}
-          />
-        ) : caseId === 'editable-element-benchmark-mounted-block-element' ? (
-          <BenchmarkEditableMount
-            config={config}
-            elementBenchmarkMode="benchmark-mounted-block-element"
-            id={id}
-          />
-        ) : caseId ===
-          'editable-element-benchmark-plate-element-node-attributes' ? (
-          <BenchmarkEditableMount
-            config={config}
-            elementBenchmarkMode="benchmark-plate-element-node-attributes"
-            id={id}
-          />
         ) : caseId === 'editable-element-plate-element-no-provider' ? (
           <BenchmarkEditableMount
             config={config}
@@ -4456,19 +4217,19 @@ function FanoutCard({
 }
 
 function CoreMountCard({
-  activeNodeIdMode,
+  activeElementIdMode,
   description,
   label,
   metrics,
 }: {
-  activeNodeIdMode: CoreMountNodeIdMode;
+  activeElementIdMode: CoreMountElementIdMode;
   description: string;
   label: string;
   metrics: CoreMountMetrics;
 }) {
-  const activeMetrics = metrics.mountByNodeIdMode[activeNodeIdMode];
-  const offMetrics = metrics.mountByNodeIdMode.off;
-  const seededMetrics = metrics.mountByNodeIdMode.seeded;
+  const activeMetrics = metrics.mountByElementIdMode[activeElementIdMode];
+  const offMetrics = metrics.mountByElementIdMode.off;
+  const seededMetrics = metrics.mountByElementIdMode.seeded;
 
   return (
     <div className="rounded-lg border bg-background p-4">
@@ -4490,7 +4251,7 @@ function CoreMountCard({
         </div>
         <div className="flex justify-between">
           <span className="text-muted-foreground">
-            {activeNodeIdMode} median
+            {activeElementIdMode} median
           </span>
           <span>
             {activeMetrics
@@ -4499,7 +4260,9 @@ function CoreMountCard({
           </span>
         </div>
         <div className="flex justify-between">
-          <span className="text-muted-foreground">{activeNodeIdMode} p95</span>
+          <span className="text-muted-foreground">
+            {activeElementIdMode} p95
+          </span>
           <span>
             {activeMetrics ? `${activeMetrics.p95.toFixed(2)} ms` : 'No data'}
           </span>
@@ -4622,7 +4385,7 @@ function DissectionCard({
           </span>
         </div>
         <div className="flex justify-between">
-          <span className="text-muted-foreground">pure normalizeNodeId</span>
+          <span className="text-muted-foreground">pure migrateElementIds</span>
           <span>
             {metrics.staticNormalize
               ? `${metrics.staticNormalize.mean.toFixed(2)} ms`
@@ -4637,51 +4400,19 @@ function DissectionCard({
               : 'No data'}
           </span>
         </div>
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">api.node calls</span>
-          <span>
-            {metrics.nodeLookupCalls
-              ? metrics.nodeLookupCalls.mean.toFixed(0)
-              : 'No data'}
-          </span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">api.node time</span>
-          <span>
-            {metrics.nodeLookupTime
-              ? `${metrics.nodeLookupTime.mean.toFixed(2)} ms`
-              : 'No data'}
-          </span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">node-id write calls</span>
-          <span>
-            {metrics.setNodesCalls
-              ? metrics.setNodesCalls.mean.toFixed(0)
-              : 'No data'}
-          </span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">node-id write time</span>
-          <span>
-            {metrics.setNodesTime
-              ? `${metrics.setNodesTime.mean.toFixed(2)} ms`
-              : 'No data'}
-          </span>
-        </div>
       </div>
     </div>
   );
 }
 
-function NodeIdFragmentCard({
+function ElementIdFragmentCard({
   label,
   description,
   metrics,
 }: {
   label: string;
   description: string;
-  metrics: NodeIdFragmentMetrics;
+  metrics: ElementIdFragmentMetrics;
 }) {
   return (
     <div className="rounded-lg border bg-background p-4">
@@ -4709,22 +4440,6 @@ function NodeIdFragmentCard({
               : 'No data'}
           </span>
         </div>
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">duplicate scans</span>
-          <span>
-            {metrics.duplicateScanCalls
-              ? metrics.duplicateScanCalls.mean.toFixed(0)
-              : 'No data'}
-          </span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">duplicate scan time</span>
-          <span>
-            {metrics.duplicateScanTime
-              ? `${metrics.duplicateScanTime.mean.toFixed(2)} ms`
-              : 'No data'}
-          </span>
-        </div>
       </div>
     </div>
   );
@@ -4741,8 +4456,8 @@ export default function EditorPerfPage() {
     React.useState<FanoutCaseId>('none');
   const [activeCoreMountCaseId, setActiveCoreMountCaseId] =
     React.useState<CoreMountCaseId>('provider-only');
-  const [activeCoreMountNodeIdMode, setActiveCoreMountNodeIdMode] =
-    React.useState<CoreMountNodeIdMode>('off');
+  const [activeCoreMountElementIdMode, setActiveCoreMountElementIdMode] =
+    React.useState<CoreMountElementIdMode>('off');
   const [activePluginCensusEntryId, setActivePluginCensusEntryId] =
     React.useState<CorePluginCensusEntryId | 'all'>('all');
   const [displayMode, setDisplayMode] = React.useState<'live' | 'prebuilt'>(
@@ -4799,33 +4514,26 @@ export default function EditorPerfPage() {
             createWithValue: null,
             idsAssigned: null,
             initOnly: null,
-            nodeLookupCalls: null,
-            nodeLookupTime: null,
             pluginCount: null,
-            setNodesCalls: null,
-            setNodesTime: null,
             staticNormalize: null,
           } satisfies DissectionMetrics,
         ])
       ) as Record<DissectionCaseId, DissectionMetrics>
   );
-  const [nodeIdFragmentResults, setNodeIdFragmentResults] = React.useState<
-    Record<NodeIdFragmentCaseId, NodeIdFragmentMetrics>
-  >(
-    () =>
-      Object.fromEntries(
-        NODE_ID_FRAGMENT_CASES.map((caseItem) => [
-          caseItem.id,
-          {
-            duplicateScanCalls: null,
-            duplicateScanTime: null,
-            fragmentReplace: null,
-            fragmentBlocks: null,
-            idsAssigned: null,
-          } satisfies NodeIdFragmentMetrics,
-        ])
-      ) as Record<NodeIdFragmentCaseId, NodeIdFragmentMetrics>
-  );
+  const [elementIdFragmentResults, setElementIdFragmentResults] =
+    React.useState<Record<ElementIdFragmentCaseId, ElementIdFragmentMetrics>>(
+      () =>
+        Object.fromEntries(
+          ELEMENT_ID_FRAGMENT_CASES.map((caseItem) => [
+            caseItem.id,
+            {
+              fragmentReplace: null,
+              fragmentBlocks: null,
+              idsAssigned: null,
+            } satisfies ElementIdFragmentMetrics,
+          ])
+        ) as Record<ElementIdFragmentCaseId, ElementIdFragmentMetrics>
+    );
   const [fanoutResults, setFanoutResults] = React.useState<
     Record<FanoutCaseId, FanoutMetrics>
   >(
@@ -4849,7 +4557,7 @@ export default function EditorPerfPage() {
         CORE_MOUNT_CASES.map((caseItem) => [
           caseItem.id,
           {
-            mountByNodeIdMode: {
+            mountByElementIdMode: {
               off: null,
               seeded: null,
             },
@@ -4964,12 +4672,12 @@ export default function EditorPerfPage() {
           staticNormalize: 25,
         },
       },
-      nodeIdFragment: {
-        cases: NODE_ID_FRAGMENT_CASES,
+      elementIdFragment: {
+        cases: ELEMENT_ID_FRAGMENT_CASES,
         config: {
-          fragmentBlocks: getDefaultNodeIdFragmentBlockCount(config.blocks),
+          fragmentBlocks: getDefaultElementIdFragmentBlockCount(config.blocks),
         },
-        results: nodeIdFragmentResults,
+        results: elementIdFragmentResults,
         runs: {
           fragmentReplace: 25,
         },
@@ -4987,7 +4695,7 @@ export default function EditorPerfPage() {
       },
       coreMount: {
         activeCaseId: activeCoreMountCaseId,
-        activeNodeIdMode: activeCoreMountNodeIdMode,
+        activeElementIdMode: activeCoreMountElementIdMode,
         cases: CORE_MOUNT_CASES,
         results: coreMountResults,
         runs: {
@@ -5009,12 +4717,12 @@ export default function EditorPerfPage() {
         prebuiltMount: 10,
       },
       scenarios: SCENARIOS.map(
-        ({ description, id, kind, label, nodeId, plugins, seedIds }) => ({
+        ({ description, id, kind, label, elementId, plugins, seedIds }) => ({
           description,
           id,
           kind,
           label,
-          nodeId: nodeId ?? null,
+          elementId: elementId ?? null,
           plugins,
           seedIds: seedIds ?? false,
         })
@@ -5023,11 +4731,11 @@ export default function EditorPerfPage() {
     [
       config,
       activeCoreMountCaseId,
-      activeCoreMountNodeIdMode,
+      activeCoreMountElementIdMode,
       activePluginCensusEntryId,
       coreMountResults,
       dissectionResults,
-      nodeIdFragmentResults,
+      elementIdFragmentResults,
       fanoutResults,
       fanoutSubscriberCount,
       lastCompletedBenchmark,
@@ -5110,7 +4818,7 @@ export default function EditorPerfPage() {
     async (caseId: CoreMountCaseId) => {
       coreMountDurationRef.current[caseId] = undefined;
       const caseItem = CORE_MOUNT_CASES.find((item) => item.id === caseId);
-      const seedIds = activeCoreMountNodeIdMode === 'seeded';
+      const seedIds = activeCoreMountElementIdMode === 'seeded';
       const value = getCoreMountValue({
         blocks: config.blocks,
         documentMode: caseItem?.documentMode,
@@ -5119,7 +4827,7 @@ export default function EditorPerfPage() {
 
       const nextEditor = createCoreMountEditor({
         config,
-        nodeId: seedIds ? 'default' : false,
+        elementId: seedIds,
         plugins: caseItem?.plugins ?? 'none',
         value,
       });
@@ -5130,7 +4838,7 @@ export default function EditorPerfPage() {
       await waitForNextPaint();
       await wait(80);
     },
-    [activeCoreMountNodeIdMode, config]
+    [activeCoreMountElementIdMode, config]
   );
 
   const unmountCoreMountSurface = React.useCallback(async () => {
@@ -5456,10 +5164,6 @@ export default function EditorPerfPage() {
         const createWithValueSamples: number[] = [];
         const idsAssignedSamples: number[] = [];
         const initOnlySamples: number[] = [];
-        const nodeLookupCallSamples: number[] = [];
-        const nodeLookupTimeSamples: number[] = [];
-        const setNodesCallSamples: number[] = [];
-        const setNodesTimeSamples: number[] = [];
         const staticNormalizeSamples: number[] = [];
         let pluginCount: number | null = null;
 
@@ -5492,10 +5196,6 @@ export default function EditorPerfPage() {
           if (!isWarmup) {
             idsAssignedSamples.push(initCounter.count);
             initOnlySamples.push(initDuration);
-            nodeLookupCallSamples.push(0);
-            nodeLookupTimeSamples.push(0);
-            setNodesCallSamples.push(0);
-            setNodesTimeSamples.push(0);
           }
 
           const createCounter = { count: 0 };
@@ -5514,12 +5214,12 @@ export default function EditorPerfPage() {
             createWithValueSamples.push(createDuration);
           }
 
-          if (caseItem.nodeId !== false) {
+          if (caseItem.elementId) {
             const staticNormalizeCounter = { count: 0 };
             const staticNormalizeStart = performance.now();
 
-            normalizeNodeId(getDissectionValue(caseItem, config.blocks), {
-              idCreator: createBenchIdFactory(
+            migrateElementIds(getDissectionValue(caseItem, config.blocks), {
+              generateId: createBenchIdFactory(
                 staticNormalizeCounter,
                 'static-normalize'
               ),
@@ -5545,15 +5245,10 @@ export default function EditorPerfPage() {
             createWithValue: calculateStats(createWithValueSamples),
             idsAssigned: calculateStats(idsAssignedSamples),
             initOnly: calculateStats(initOnlySamples),
-            nodeLookupCalls: calculateStats(nodeLookupCallSamples),
-            nodeLookupTime: calculateStats(nodeLookupTimeSamples),
             pluginCount,
-            setNodesCalls: calculateStats(setNodesCallSamples),
-            setNodesTime: calculateStats(setNodesTimeSamples),
-            staticNormalize:
-              caseItem.nodeId === false
-                ? null
-                : calculateStats(staticNormalizeSamples),
+            staticNormalize: caseItem.elementId
+              ? calculateStats(staticNormalizeSamples)
+              : null,
           },
         }));
       }
@@ -5563,16 +5258,14 @@ export default function EditorPerfPage() {
     markBenchmarkComplete('init-dissection');
   }, [config, markBenchmarkComplete]);
 
-  const runNodeIdFragmentBenchmark = React.useCallback(async () => {
+  const runElementIdFragmentBenchmark = React.useCallback(async () => {
     const WARMUP_RUNS = 5;
     const MEASURED_RUNS = 25;
 
-    setRunningLabel('Running nodeId paste/import dissection');
+    setRunningLabel('Running elementId paste/import dissection');
 
     try {
-      for (const caseItem of NODE_ID_FRAGMENT_CASES) {
-        const duplicateScanCallSamples: number[] = [];
-        const duplicateScanTimeSamples: number[] = [];
+      for (const caseItem of ELEMENT_ID_FRAGMENT_CASES) {
         const fragmentReplaceSamples: number[] = [];
         const idsAssignedSamples: number[] = [];
         let fragmentBlocks: number | null = null;
@@ -5580,17 +5273,15 @@ export default function EditorPerfPage() {
         for (let run = 0; run < WARMUP_RUNS + MEASURED_RUNS; run++) {
           const isWarmup = run < WARMUP_RUNS;
           const idCounter = { count: 0 };
-          const { fragment, value } = getNodeIdFragmentValue(
+          const { fragment, value } = getElementIdFragmentValue(
             caseItem,
             config.blocks
           );
-          const duplicateScanStats = { count: 0, time: 0 };
           const editor = createPlateEditor({
-            nodeId: getNodeIdOption({
+            plugins: getElementIdPlugins({
               counter: idCounter,
-              duplicateScanStats,
-              mode: caseItem.nodeId,
-            }) as any,
+              enabled: caseItem.elementId,
+            }),
             initialValue: value,
           });
           const idCountBeforeInsert = idCounter.count;
@@ -5611,8 +5302,6 @@ export default function EditorPerfPage() {
 
           if (!isWarmup) {
             fragmentBlocks = fragment.length;
-            duplicateScanCallSamples.push(duplicateScanStats.count);
-            duplicateScanTimeSamples.push(duplicateScanStats.time);
             fragmentReplaceSamples.push(insertDuration);
             idsAssignedSamples.push(idCounter.count - idCountBeforeInsert);
           }
@@ -5622,11 +5311,9 @@ export default function EditorPerfPage() {
           }
         }
 
-        setNodeIdFragmentResults((current) => ({
+        setElementIdFragmentResults((current) => ({
           ...current,
           [caseItem.id]: {
-            duplicateScanCalls: calculateStats(duplicateScanCallSamples),
-            duplicateScanTime: calculateStats(duplicateScanTimeSamples),
             fragmentReplace: calculateStats(fragmentReplaceSamples),
             fragmentBlocks,
             idsAssigned: calculateStats(idsAssignedSamples),
@@ -5637,7 +5324,7 @@ export default function EditorPerfPage() {
       setRunningLabel(null);
     }
 
-    markBenchmarkComplete('nodeid-fragment');
+    markBenchmarkComplete('element-id-fragment');
   }, [config, markBenchmarkComplete]);
 
   const runFanoutBenchmark = React.useCallback(async () => {
@@ -5742,9 +5429,9 @@ export default function EditorPerfPage() {
           setCoreMountResults((current) => ({
             ...current,
             [caseId]: {
-              mountByNodeIdMode: {
-                ...current[caseId].mountByNodeIdMode,
-                [activeCoreMountNodeIdMode]: calculateStats(samples),
+              mountByElementIdMode: {
+                ...current[caseId].mountByElementIdMode,
+                [activeCoreMountElementIdMode]: calculateStats(samples),
               },
             },
           }));
@@ -5754,7 +5441,7 @@ export default function EditorPerfPage() {
         setRunningLabel(null);
       }
     },
-    [activeCoreMountNodeIdMode, mountCoreMountCase, unmountCoreMountSurface]
+    [activeCoreMountElementIdMode, mountCoreMountCase, unmountCoreMountSurface]
   );
 
   const runCoreMountBenchmark = React.useCallback(async () => {
@@ -5841,7 +5528,7 @@ export default function EditorPerfPage() {
       chunkSize,
       chunking,
       coreMountCase,
-      coreMountNodeId,
+      coreMountElementId,
       fanoutSubscribers,
       pluginCensusEntry,
       scenarioWorkload,
@@ -5865,8 +5552,10 @@ export default function EditorPerfPage() {
       if (coreMountCase) {
         setActiveCoreMountCaseId(coreMountCase as CoreMountCaseId);
       }
-      if (coreMountNodeId) {
-        setActiveCoreMountNodeIdMode(coreMountNodeId as CoreMountNodeIdMode);
+      if (coreMountElementId) {
+        setActiveCoreMountElementIdMode(
+          coreMountElementId as CoreMountElementIdMode
+        );
       }
       if (pluginCensusEntry) {
         setActivePluginCensusEntryId(
@@ -5895,8 +5584,8 @@ export default function EditorPerfPage() {
         await runDissectionBenchmark();
         return;
       }
-      if (benchmark === 'nodeid-fragment') {
-        await runNodeIdFragmentBenchmark();
+      if (benchmark === 'element-id-fragment') {
+        await runElementIdFragmentBenchmark();
         return;
       }
       if (benchmark === 'core-mount') {
@@ -5921,7 +5610,7 @@ export default function EditorPerfPage() {
     [
       runConstructionBenchmark,
       runDissectionBenchmark,
-      runNodeIdFragmentBenchmark,
+      runElementIdFragmentBenchmark,
       runFanoutBenchmark,
       runInputBenchmark,
       runMountBenchmark,
@@ -5970,6 +5659,11 @@ export default function EditorPerfPage() {
         <p className="max-w-4xl text-muted-foreground">
           One scenario is mounted at a time. That is intentional. Mounting four
           huge editors at once would make the numbers useless.
+        </p>
+        <p className="max-w-4xl text-muted-foreground text-sm">
+          The input lane calls the editor API against reduced plugin sets. Run
+          <code> pnpm --filter www perf:homepage-input</code> for native
+          keyboard latency through the complete homepage editor stack.
         </p>
       </section>
 
@@ -6181,10 +5875,10 @@ export default function EditorPerfPage() {
             Run init dissection
           </Button>
           <Button
-            data-testid="run-nodeid-fragment-benchmark"
+            data-testid="run-element-id-fragment-benchmark"
             disabled={!!runningLabel}
             variant="secondary"
-            onClick={runNodeIdFragmentBenchmark}
+            onClick={runElementIdFragmentBenchmark}
           >
             Run paste/import dissection
           </Button>
@@ -6322,9 +6016,9 @@ export default function EditorPerfPage() {
             <h2 className="font-semibold">Plate init dissection</h2>
             <p className="mt-2 text-muted-foreground text-sm">
               This lane splits Plate into wrapper construction, value init, pure{' '}
-              <code>normalizeNodeId</code>, and the mount of a prebuilt editor.
-              That is the cleanest way to separate store/plugin tax, nodeId tax,
-              and React/provider tax.
+              <code>migrateElementIds</code>, and the mount of a prebuilt
+              editor. That is the cleanest way to separate store/plugin tax,
+              elementId tax, and React/provider tax.
             </p>
 
             <div className="mt-4 grid gap-4 xl:grid-cols-2">
@@ -6340,21 +6034,21 @@ export default function EditorPerfPage() {
           </div>
 
           <div className="rounded-xl border bg-background p-4">
-            <h2 className="font-semibold">NodeId paste/import dissection</h2>
+            <h2 className="font-semibold">ElementId paste/import dissection</h2>
             <p className="mt-2 text-muted-foreground text-sm">
               This lane times real <code>fragment.replace</code> work against
               raw import data and duplicate-id paste data. That is the only
-              honest way to see whether NodeId normalization still has money on
-              the table.
+              honest way to see whether ElementId normalization still has money
+              on the table.
             </p>
 
             <div className="mt-4 grid gap-4 xl:grid-cols-2">
-              {NODE_ID_FRAGMENT_CASES.map((caseItem) => (
-                <NodeIdFragmentCard
+              {ELEMENT_ID_FRAGMENT_CASES.map((caseItem) => (
+                <ElementIdFragmentCard
                   key={caseItem.id}
                   description={caseItem.description}
                   label={caseItem.label}
-                  metrics={nodeIdFragmentResults[caseItem.id]}
+                  metrics={elementIdFragmentResults[caseItem.id]}
                 />
               ))}
             </div>
@@ -6430,12 +6124,12 @@ export default function EditorPerfPage() {
             <div className="mt-4 rounded-lg border">
               {coreMountEditor ? (
                 <React.Profiler
-                  key={`core-mount:${activeCoreMountCaseId}:${activeCoreMountNodeIdMode}:${coreMountVersion}`}
+                  key={`core-mount:${activeCoreMountCaseId}:${activeCoreMountElementIdMode}:${coreMountVersion}`}
                   id={activeCoreMountCaseId}
                   onRender={onCoreMountRender}
                 >
                   <CoreMountSurface
-                    key={`core-mount:${activeCoreMountCaseId}:${activeCoreMountNodeIdMode}:${config.blocks}:${config.chunkSize}:${config.chunking}:${config.contentVisibility}:${coreMountVersion}`}
+                    key={`core-mount:${activeCoreMountCaseId}:${activeCoreMountElementIdMode}:${config.blocks}:${config.chunkSize}:${config.chunking}:${config.contentVisibility}:${coreMountVersion}`}
                     caseId={activeCoreMountCaseId}
                     config={config}
                     editor={coreMountEditor}
@@ -6459,8 +6153,8 @@ export default function EditorPerfPage() {
                 <div>{config.blocks.toLocaleString()} blocks</div>
               </div>
               <div className="rounded-md border p-3">
-                <div className="text-muted-foreground">nodeId mode</div>
-                <div>{activeCoreMountNodeIdMode}</div>
+                <div className="text-muted-foreground">elementId mode</div>
+                <div>{activeCoreMountElementIdMode}</div>
               </div>
             </div>
 
@@ -6488,15 +6182,15 @@ export default function EditorPerfPage() {
 
             <label className="mt-4 block space-y-2">
               <span className="block font-medium text-sm">
-                Core mount nodeId mode
+                Core mount elementId mode
               </span>
               <select
-                aria-label="Core mount nodeId mode"
+                aria-label="Core mount elementId mode"
                 className="w-full rounded-md border bg-background px-3 py-2"
-                value={activeCoreMountNodeIdMode}
+                value={activeCoreMountElementIdMode}
                 onChange={(event) => {
-                  setActiveCoreMountNodeIdMode(
-                    event.target.value as CoreMountNodeIdMode
+                  setActiveCoreMountElementIdMode(
+                    event.target.value as CoreMountElementIdMode
                   );
                 }}
               >
@@ -6508,7 +6202,7 @@ export default function EditorPerfPage() {
             <div className="mt-4 grid gap-4 xl:grid-cols-2">
               {CORE_MOUNT_CASES.map((caseItem) => (
                 <CoreMountCard
-                  activeNodeIdMode={activeCoreMountNodeIdMode}
+                  activeElementIdMode={activeCoreMountElementIdMode}
                   key={caseItem.id}
                   description={caseItem.description}
                   label={caseItem.label}

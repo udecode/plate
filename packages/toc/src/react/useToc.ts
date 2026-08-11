@@ -43,6 +43,17 @@ export type TocElementState = {
   ) => void;
 };
 
+export type TocSideBarState = {
+  activeContentId: string;
+  editor: PlateEditor;
+  headingList: Heading[];
+  mouseInToc: boolean;
+  onContentScroll: ReturnType<typeof useContentController>['onContentScroll'];
+  open: boolean;
+  setMouseInToc: React.Dispatch<React.SetStateAction<boolean>>;
+  tocRef: React.RefObject<HTMLElement | null>;
+};
+
 export const useContentObserver = ({
   editorContent,
   isObserve,
@@ -295,7 +306,7 @@ export const useTocController = ({
 };
 
 export const useTocElementState = (): TocElementState => {
-  const { editor } = useEditorPlugin(TocPlugin);
+  const editor = useEditor();
   const isScroll = usePluginStore(TocPlugin, 'isScroll');
   const topOffset = usePluginStore(TocPlugin, 'topOffset');
   const headingList = useEditorSelector((editor) =>
@@ -356,7 +367,7 @@ export const useTocSideBarState = ({
   open = true,
   rootMargin = '0px 0px 0px 0px',
   topOffset = 0,
-}: TocSideBarProps) => {
+}: TocSideBarProps): TocSideBarState => {
   const editor = useEditor();
   const headingList = useEditorSelector((editor) =>
     editor.plugin(TocPlugin).read.headings()
@@ -397,7 +408,7 @@ export const useTocSideBar = ({
   open,
   setMouseInToc,
   tocRef,
-}: ReturnType<typeof useTocSideBarState>) => {
+}: TocSideBarState) => {
   const onContentClick = React.useCallback(
     (
       event: React.MouseEvent<HTMLElement, globalThis.MouseEvent>,

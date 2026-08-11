@@ -12,11 +12,7 @@ import {
 } from '@platejs/plite-react';
 
 import { Button, Icon, Menu, Portal } from './components';
-import type {
-  CustomEditor,
-  CustomTextKey,
-  CustomValue,
-} from './custom-types.d';
+import type { CustomTextKey, CustomValue } from './custom-types.d';
 import { isMarkActive, toggleMark } from './mark-utils';
 
 const HoveringMenuExample = () => {
@@ -91,7 +87,7 @@ const Leaf = ({ attributes, children, leaf }: RenderLeafProps) => {
 
 const HoveringToolbar = () => {
   const ref = useRef<HTMLDivElement | null>(null);
-  const editor = useEditor<CustomEditor>();
+  const editor = useEditor();
   const inFocus = useEditorFocused();
   const selection = useEditorSelection();
 
@@ -168,10 +164,8 @@ const handleToolbarButtonPointerDown = (
 };
 
 const FormatButton = ({ format, icon }: FormatButtonProps) => {
-  const editor = useEditor<CustomEditor>();
-  const active = useEditorSelector((editor: CustomEditor) =>
-    isMarkActive(editor, format)
-  );
+  const editor = useEditor();
+  const active = useEditorSelector((editor) => isMarkActive(editor, format));
   const runCommand = () => toggleMark(editor, format);
 
   return (

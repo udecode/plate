@@ -141,8 +141,8 @@ DndPlugin.configure({
   <APIItem name="onDropFiles" type="function" optional>
     文件拖放事件处理器
     <APISubList>
-      <APISubListItem parent="onDropFiles" name="id" type="string">
-        目标元素ID
+      <APISubListItem parent="onDropFiles" name="key" type="NodeKey">
+        目标元素的运行时标识
       </APISubListItem>
       <APISubListItem parent="onDropFiles" name="dragItem" type="FileDragItemNode">
         包含拖放文件的对象
@@ -155,38 +155,10 @@ DndPlugin.configure({
       </APISubListItem>
     </APISubList>
   </APIItem>
-  <APIItem name="dropTarget" type="{ id: string | null; line: DropLineDirection }" optional>
-    当前拖放目标状态，包含目标元素ID和放置线方向
+  <APIItem name="dropTarget" type="{ key: NodeKey | null; line: DropLineDirection }" optional>
+    当前拖放目标状态，包含目标元素的运行时标识和放置线方向
   </APIItem>
 </APIOptions>
-</API>
-
-## API
-
-### `focusBlockStartById`
-
-通过ID选中区块起始位置并聚焦编辑器。
-
-<API name="focusBlockStartById">
-<APIParameters>
-  <APIItem name="id" type="string">
-    要聚焦的区块ID
-  </APIItem>
-</APIParameters>
-</API>
-
-### `getBlocksWithId`
-
-返回带有ID的区块数组。
-
-<API name="getBlocksWithId">
-<APIOptions type="object">
-  获取节点条目的选项
-</APIOptions>
-
-<APIReturns type="NodeEntry[]">
-  带有ID的区块数组
-</APIReturns>
 </API>
 
 ## 钩子
@@ -323,9 +295,9 @@ DndPlugin.configure({
 
 <API name="useDropLine">
 <APIOptions type="object">
-  <APIItem name="id" type="string" optional>
-    显示放置线的元素ID
-    - **默认值:** 当前元素ID
+  <APIItem name="key" type="NodeKey" optional>
+    用于显示元素放置线的运行时标识
+    - **默认值:** 当前元素的运行时标识
   </APIItem>
   <APIItem name="orientation" type="'horizontal' | 'vertical'" optional>
     按方向过滤放置线

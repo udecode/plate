@@ -2,7 +2,7 @@ import type { DefinitionOf } from '@platejs/core';
 import { type PlateEditor, definePlatePlugin } from '@platejs/core/react';
 import { type Element, type Path, PathApi } from '@platejs/plite';
 
-import { KEYS } from '../../lib';
+import { PLUGINS } from '../../lib';
 import {
   useBlockPlaceholder,
   useBlockPlaceholderProps,
@@ -27,43 +27,42 @@ export type BlockPlaceholderPluginState = {
   query: (context: BlockPlaceholderQueryContext) => boolean;
 };
 
-const BlockPlaceholderPluginBase = definePlatePlugin(KEYS.blockPlaceholder, {
-  initialState: (): BlockPlaceholderPluginState => ({
-    _target: null,
-    className: undefined,
-    placeholders: {
-      [KEYS.p]: 'Type something...',
+export const BlockPlaceholderPlugin = definePlatePlugin(
+  PLUGINS.blockPlaceholder,
+  {
+    initialState: (): BlockPlaceholderPluginState => ({
+      _target: null,
+      className: undefined,
+      placeholders: {
+        paragraph: 'Type something...',
+      },
+      query: ({ path }) => path.length === 1,
+    }),
+    editOnly: true,
+    inject: {
+      isBlock: true,
     },
-    query: ({ path }) => path.length === 1,
-  }),
-  editOnly: true,
-  inject: {
-    isBlock: true,
-  },
-}).extend({
-  selectors: {
-    placeholder: (state, path?: Path) => {
-      const target = state._target;
+  }
+)
+  .extend({
+    selectors: {
+      placeholder: (state, path?: Path) => {
+        const target = state._target;
 
-      if (target && path && PathApi.equals(target.path, path)) {
-        return target.placeholder;
-      }
+        if (target && path && PathApi.equals(target.path, path)) {
+          return target.placeholder;
+        }
+      },
     },
-  },
-});
-
-export type BlockPlaceholderHookDefinition = DefinitionOf<
-  typeof BlockPlaceholderPluginBase
->;
-
-export const BlockPlaceholderPlugin = BlockPlaceholderPluginBase.extend({
-  inject: {
-    nodeProps: {
-      transformProps: useBlockPlaceholderProps,
+  })
+  .extend({
+    inject: {
+      nodeProps: {
+        transformProps: useBlockPlaceholderProps,
+      },
     },
-  },
-  useHooks: useBlockPlaceholder,
-});
+    useHooks: useBlockPlaceholder,
+  });
 
 export type BlockPlaceholderDefinition = DefinitionOf<
   typeof BlockPlaceholderPlugin

@@ -1,4 +1,4 @@
-import { defineBasePlugin } from '@platejs/core';
+import { BaseParagraphPlugin, defineBasePlugin } from '@platejs/core';
 import { PathApi, type Element, type Node, type Path } from '@platejs/plite';
 
 import { PLUGINS } from '../plate-keys';
@@ -25,7 +25,7 @@ export const ExitBreakPlugin = defineBasePlugin(PLUGINS.exitBreak, {
 
       if (!block) return;
 
-      const paragraphType = editor.plugin(PLUGINS.paragraph).type;
+      const paragraphType = editor.plugin(BaseParagraphPlugin).schema.type;
 
       const target = tx.nodes.above({
         at: block[1],

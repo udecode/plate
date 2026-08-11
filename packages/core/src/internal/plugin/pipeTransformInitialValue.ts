@@ -8,6 +8,7 @@ import {
   type EditorDocumentValue,
   type Editor as PliteEditor,
   type Path,
+  type NodeKey,
   type Selection,
   type SnapshotIndex,
   type Value,
@@ -27,27 +28,27 @@ const getSharedNodeIndexes = (
   before: Value,
   after: Value
 ): Readonly<{ after: SnapshotIndex; before: SnapshotIndex }> => {
-  const afterEntries: Array<readonly [string, Path]> = [];
-  const beforeEntries: Array<readonly [string, Path]> = [];
-  const ids = new WeakMap<object, string>();
-  let nextId = 0;
+  const afterEntries: Array<readonly [NodeKey, Path]> = [];
+  const beforeEntries: Array<readonly [NodeKey, Path]> = [];
+  const keys = new WeakMap<object, NodeKey>();
+  let nextKey = 0;
   const visitBefore = (nodes: Value[number]['children'], parent: number[]) => {
     nodes.forEach((node, index) => {
       const path = [...parent, index];
-      const id = `initial:${nextId++}`;
+      const key = `initial:${nextKey++}` as NodeKey;
 
-      ids.set(node, id);
-      beforeEntries.push([id, path]);
+      keys.set(node, key);
+      beforeEntries.push([key, path]);
       if (ElementApi.isElement(node)) visitBefore(node.children, path);
     });
   };
   const visitAfter = (nodes: Value[number]['children'], parent: number[]) => {
     nodes.forEach((node, index) => {
       const path = [...parent, index];
-      const id = ids.get(node);
+      const key = keys.get(node);
 
-      if (id) {
-        afterEntries.push([id, path]);
+      if (key) {
+        afterEntries.push([key, path]);
       }
       if (ElementApi.isElement(node)) visitAfter(node.children, path);
     });
@@ -57,22 +58,22 @@ const getSharedNodeIndexes = (
   visitAfter(after, []);
 
   const createIndex = (
-    entries: readonly (readonly [string, Path])[]
+    entries: readonly (readonly [NodeKey, Path])[]
   ): SnapshotIndex => {
     const frozenEntries = Object.freeze(
-      entries.map(([runtimeId, path]) =>
-        Object.freeze([runtimeId, Object.freeze([...path]) as Path] as const)
+      entries.map(([nodeKey, path]) =>
+        Object.freeze([nodeKey, Object.freeze([...path]) as Path] as const)
       )
     );
-    const byId = new Map(frozenEntries);
+    const byKey = new Map(frozenEntries);
     const byPath = new Map(
-      frozenEntries.map(([runtimeId, path]) => [path.join('.'), runtimeId])
+      frozenEntries.map(([nodeKey, path]) => [path.join('.'), nodeKey])
     );
 
     const index = {
       entries: () => frozenEntries,
-      idAt: (path) => byPath.get(path.join('.')) ?? null,
-      pathOf: (runtimeId) => byId.get(runtimeId) ?? null,
+      keyAt: (path) => byPath.get(path.join('.')) ?? null,
+      pathOf: (nodeKey) => byKey.get(nodeKey) ?? null,
     } satisfies SnapshotIndex;
 
     return Object.freeze(index);

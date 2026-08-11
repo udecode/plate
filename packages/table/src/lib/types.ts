@@ -1,15 +1,15 @@
 import type {
-  Descendant,
   EditorNodesOptions,
+  Element,
   NodeTarget,
   Path,
   Span,
 } from '@platejs/plite';
 import type {
-  TTableCellBorder,
-  TTableElement,
-  TTableRowElement,
-} from '@platejs/utils';
+  TableCellBorder,
+  TableCellElement,
+  TableRowElement,
+} from './BaseTablePlugin';
 
 export type { TableContext } from './internal/context';
 export type {
@@ -30,9 +30,9 @@ export type {
 export type BorderDirection = 'bottom' | 'left' | 'right' | 'top';
 
 export type CreateCellOptions = {
-  children?: Descendant[];
+  children?: TableCellElement['children'];
   header?: boolean;
-  row?: TTableRowElement;
+  row?: TableRowElement;
 };
 
 export type GetEmptyRowNodeOptions = CreateCellOptions & {
@@ -49,10 +49,10 @@ export type CellIndices = {
 };
 
 export type BorderStylesDefault = {
-  bottom: TTableCellBorder;
-  right: TTableCellBorder;
-  left?: TTableCellBorder;
-  top?: TTableCellBorder;
+  bottom: TableCellBorder;
+  right: TableCellBorder;
+  left?: TableCellBorder;
+  top?: TableCellBorder;
 };
 
 export type SetBorderSizeOptions = {
@@ -73,8 +73,8 @@ export type TableBorderStates = {
 export type TableStoreSizeOverrides = Map<number, number>;
 
 export type TableFindOptions = Omit<
-  EditorNodesOptions<TTableElement>,
+  EditorNodesOptions<Element>,
   'at' | 'match'
 > & {
-  at?: NodeTarget<TTableElement> | Span;
+  at?: NodeTarget | Span;
 };

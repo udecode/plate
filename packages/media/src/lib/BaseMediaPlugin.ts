@@ -23,7 +23,6 @@ import { isUrl as defaultIsUrl } from '@udecode/utils';
 export const mediaElementProperties = {
   isUpload: property.boolean(),
   name: property.string(),
-  placeholderId: property.string(),
   url: property.string({ required: true }),
   width: property.json({
     validate: (value): value is number | string =>
@@ -57,7 +56,6 @@ export type MediaInsertInput = {
   id?: string;
   isUpload?: boolean;
   name?: string;
-  placeholderId?: string;
   width?: number | string;
 };
 

@@ -1,12 +1,11 @@
-import { type DefinitionOf, defineBasePlugin } from '@platejs/core';
-import type {
-  EditorStateView,
-  Element,
-  NodeInsertNodesOptions,
-  Path,
-} from '@platejs/plite';
+import {
+  type DefinitionOf,
+  defineBasePlugin,
+  ElementIdPlugin,
+} from '@platejs/core';
+import type { EditorStateView, Element, Path } from '@platejs/plite';
 import { ElementApi, NodeApi } from '@platejs/plite';
-import { KEYS, NODES } from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 
 export type Heading = {
   depth: number;
@@ -22,20 +21,20 @@ export type TocPluginState = {
   queryHeading?: (state: EditorStateView) => Heading[];
 };
 
-export const BaseTocPlugin = defineBasePlugin(KEYS.toc, {
-  codecs: ({ defineCodecs }) =>
+export const BaseTocPlugin = defineBasePlugin(PLUGINS.toc, {
+  codecs: ({ defineCodecs, schema: { type } }) =>
     defineCodecs({
       'text/markdown': {
-        from: 'toc',
+        from: type,
         kind: 'node',
-        decode: ({ decode, decoration, node, type }) => ({
+        decode: ({ decode, decoration, node }) => ({
           children: decode(node.children, decoration),
           type,
         }),
         encode: ({ encodeFlow, node }) => ({
           attributes: [],
           children: encodeFlow(node.children),
-          name: 'toc',
+          name: type,
           type: 'mdxJsxFlowElement',
         }),
       },
@@ -44,12 +43,13 @@ export const BaseTocPlugin = defineBasePlugin(KEYS.toc, {
     isScroll: true,
     topOffset: 80,
   }),
+  dependencies: [ElementIdPlugin],
   schema: {
     element: {
       void: 'block',
     },
   },
-}).extend({
+}).extend(({ editor }) => ({
   read: ({ store, state }) => ({
     headings: () => {
       const { queryHeading } = store.get();
@@ -57,20 +57,26 @@ export const BaseTocPlugin = defineBasePlugin(KEYS.toc, {
       if (queryHeading) return queryHeading(state);
 
       const headings: Heading[] = [];
+      const headingDepthByType = new Map(
+        [PLUGINS.h1, PLUGINS.h2, PLUGINS.h3, PLUGINS.h4, PLUGINS.h5, PLUGINS.h6]
+          .map((name, index) => [editor.plugin(name), index + 1] as const)
+          .filter(([plugin]) => plugin.installed)
+          .map(([plugin, depth]) => [plugin.schema.type, depth] as const)
+      );
 
       for (const [node, path] of state.nodes.entries<Element>({
         at: [],
         match: (node) =>
           ElementApi.isElement(node) &&
           typeof node.type === 'string' &&
-          NODES.heading.some((type) => type === node.type),
+          headingDepthByType.has(node.type),
       })) {
         const title = NodeApi.string(node);
 
-        if (title && typeof node.id === 'string') {
+        if (title) {
           headings.push({
-            depth: Number.parseInt(node.type.slice(1), 10),
-            id: node.id,
+            depth: headingDepthByType.get(node.type)!,
+            id: editor.plugin(ElementIdPlugin).read.id(node),
             path,
             title,
             type: node.type,
@@ -81,17 +87,6 @@ export const BaseTocPlugin = defineBasePlugin(KEYS.toc, {
       return headings;
     },
   }),
-  update: ({ tx, type }) => ({
-    insert: (options?: NodeInsertNodesOptions<Element>) => {
-      tx.nodes.insert(
-        {
-          children: [{ text: '' }],
-          type,
-        },
-        options
-      );
-    },
-  }),
-});
+}));
 
 export type TocDefinition = DefinitionOf<typeof BaseTocPlugin>;

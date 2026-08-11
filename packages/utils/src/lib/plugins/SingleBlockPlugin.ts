@@ -1,10 +1,10 @@
 import { defineBasePlugin } from '@platejs/core';
 import { editorCommands, NodeApi } from '@platejs/plite';
 
-import { KEYS } from '../plate-keys';
+import { PLUGINS } from '../plate-keys';
 
 /** Forces editor to only have one block. */
-export const SingleBlockPlugin = defineBasePlugin(KEYS.singleBlock, {
+export const SingleBlockPlugin = defineBasePlugin(PLUGINS.singleBlock, {
   commands: ({ handle }) => [
     handle(editorCommands.insertBreak, ({ state }) =>
       state.transaction((tx) => {
@@ -48,7 +48,7 @@ export const SingleBlockPlugin = defineBasePlugin(KEYS.singleBlock, {
   ],
   override: {
     plugins: {
-      [KEYS.trailingBlock]: {
+      [PLUGINS.trailingBlock]: {
         enabled: false,
       },
     },

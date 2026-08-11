@@ -2,12 +2,13 @@ import type { DefinitionOf } from '@platejs/core';
 
 import { definePlatePlugin } from '@platejs/core/react';
 import { PLUGINS } from '@platejs/utils';
+import type { NodeKey } from '@platejs/plite';
 
 import { BlockSelectionPlugin } from './BlockSelectionPlugin';
 
 export const BLOCK_CONTEXT_MENU_ID = 'context';
 
-type OpenId = (string & {}) | typeof BLOCK_CONTEXT_MENU_ID;
+type OpenKey = NodeKey | typeof BLOCK_CONTEXT_MENU_ID;
 
 type BlockMenuPosition = {
   x: number;
@@ -15,12 +16,12 @@ type BlockMenuPosition = {
 };
 
 export type BlockMenuPluginState = {
-  openId: OpenId | null;
+  openKey: OpenKey | null;
   position: BlockMenuPosition;
 };
 
 const initialState: BlockMenuPluginState = {
-  openId: null,
+  openKey: null,
   position: {
     x: -10_000,
     y: -10_000,
@@ -34,32 +35,32 @@ export const BlockMenuPlugin = definePlatePlugin(PLUGINS.blockMenu, {
   api: ({ editor, store }) => {
     const hide = () => {
       store.set({
-        openId: null,
+        openKey: null,
         position: {
           x: -10_000,
           y: -10_000,
         },
       });
     };
-    const show = (id: OpenId, position?: BlockMenuPosition) => {
+    const show = (key: OpenKey, position?: BlockMenuPosition) => {
       if (position) {
         store.set({
-          openId: id,
+          openKey: key,
           position,
         });
       } else {
-        store.set({ openId: id });
+        store.set({ openKey: key });
       }
     };
 
     return {
       hide,
       show,
-      showContextMenu: (blockId: string, position: BlockMenuPosition) => {
+      showContextMenu: (nodeKey: NodeKey, position: BlockMenuPosition) => {
         const blockSelection = editor.plugin(BlockSelectionPlugin);
 
         if (blockSelection.installed) {
-          blockSelection.store.set({ selectedIds: new Set([blockId]) });
+          blockSelection.store.set({ selectedKeys: new Set([nodeKey]) });
         }
         show(BLOCK_CONTEXT_MENU_ID, position);
       },
@@ -68,7 +69,7 @@ export const BlockMenuPlugin = definePlatePlugin(PLUGINS.blockMenu, {
 }).extend(({ api }) => ({
   on: {
     mouseDown: ({ event, store }) => {
-      if (event.button === 0 && store.get().openId) {
+      if (event.button === 0 && store.get().openKey) {
         event.preventDefault();
         api.hide();
       }

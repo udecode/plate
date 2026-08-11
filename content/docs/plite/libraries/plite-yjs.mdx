@@ -135,7 +135,8 @@ const incrementCounter = defineEffect<number>({
 });
 
 const counterEffects = defineExtension("counter-effects", {
-  effectTypes: [incrementCounter],});
+  effectTypes: [incrementCounter],
+});
 
 const editor = createEditor({
   extensions: [counterEffects, yjs({ doc })],

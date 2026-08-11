@@ -1,7 +1,7 @@
 import type { DefinitionOf } from '@platejs/core';
 import { definePlatePlugin } from '@platejs/core/react';
 import { PathApi } from '@platejs/plite';
-import { KEYS } from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 
 import type {
   FindTabDestinationOptions,
@@ -10,7 +10,7 @@ import type {
 } from '../lib/TabbablePluginTypes';
 import { TabbableEffects } from './TabbableEffects';
 
-export const TabbablePlugin = definePlatePlugin(KEYS.tabbable, {
+export const TabbablePlugin = definePlatePlugin(PLUGINS.tabbable, {
   initialState: ({ editor }): TabbablePluginState => ({
     globalEventListener: false,
     insertTabbableEntries: (_event) => [],

@@ -1,12 +1,12 @@
 import { defineBasePlugin } from '@platejs/core';
 import { editorCommands, NodeApi } from '@platejs/plite';
 
-import { KEYS } from '../plate-keys';
+import { PLUGINS } from '../plate-keys';
 
 const LINE_BREAK = /[\r\n\u2028\u2029]/g;
 
 /** Forces editor to only have one line. */
-export const SingleLinePlugin = defineBasePlugin(KEYS.singleLine, {
+export const SingleLinePlugin = defineBasePlugin(PLUGINS.singleLine, {
   commands: ({ handle }) => [
     handle(editorCommands.insertBreak, ({ state }) =>
       state.transaction(() => {})
@@ -65,7 +65,7 @@ export const SingleLinePlugin = defineBasePlugin(KEYS.singleLine, {
   ],
   override: {
     plugins: {
-      [KEYS.trailingBlock]: {
+      [PLUGINS.trailingBlock]: {
         enabled: false,
       },
     },

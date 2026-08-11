@@ -6,7 +6,6 @@ import type { MarkdownEditor } from '@platejs/markdown';
 import type { NodeEntry, Text } from '@platejs/plite';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import {
-  type PlateEditor,
   useEditor,
   useEditorPlugin,
   useEditorRuntimeState,
@@ -15,10 +14,7 @@ import {
 
 import { AIChatPlugin } from './AIChatPlugin';
 
-export const useAIChatEditor = (
-  editor: MarkdownEditor<PlateEditor>,
-  content: string
-) => {
+export const useAIChatEditor = (editor: MarkdownEditor, content: string) => {
   const { store } = useEditorPlugin(AIChatPlugin);
   const document = useMemo(
     () => editor.api.markdown.deserialize(content),

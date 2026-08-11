@@ -221,7 +221,7 @@ const Paragraph = ({
 }: RenderElementProps<ParagraphElement>) => <p {...attributes}>{children}</p>;
 
 const Image = ({ element }: RenderVoidProps<ImageElement>) => {
-  const editor = useEditor<CustomEditor>();
+  const editor = useEditor();
   const focused = useEditorFocused();
   const selected = useElementSelected({ mode: 'collapsed' });
 
@@ -263,7 +263,7 @@ const Image = ({ element }: RenderVoidProps<ImageElement>) => {
 };
 
 const InsertImageButton = () => {
-  const editor = useEditor<CustomEditor>();
+  const editor = useEditor();
   return (
     <Button
       onClick={() => {

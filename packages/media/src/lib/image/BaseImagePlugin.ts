@@ -80,8 +80,7 @@ export const BaseImagePlugin = defineBasePlugin(PLUGINS.image, {
               typeof node.url !== 'string' ||
               node.url.length === 0 ||
               node.isUpload !== undefined ||
-              node.name !== undefined ||
-              node.placeholderId !== undefined
+              node.name !== undefined
             ) {
               return null;
             }

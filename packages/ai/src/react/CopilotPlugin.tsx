@@ -4,10 +4,11 @@ import React from 'react';
 import debounce from 'lodash/debounce.js';
 
 import { type MarkdownEditor, MarkdownPlugin } from '@platejs/markdown';
-import { type DefinitionOf, NodeIdPlugin } from '@platejs/core';
+import type { DefinitionOf } from '@platejs/core';
 import { type PlateEditor, definePlatePlugin } from '@platejs/core/react';
 import {
   type Range,
+  type NodeKey,
   RangeApi,
   defineEffect,
   defineStateField,
@@ -55,13 +56,13 @@ export type CopilotPluginState = {
   isLoading: boolean;
   renderGhostText: (() => React.ReactNode) | null;
   shouldAbort: boolean;
-  suggestionNodeId: string | null;
+  suggestionNodeKey: NodeKey | null;
   suggestionText: string | null;
   triggerQuery: (options: { editor: MarkdownEditor<PlateEditor> }) => boolean;
 };
 
 type CopilotSuggestionState = {
-  id: string | null;
+  nodeKey: NodeKey | null;
   text: string | null;
 };
 
@@ -77,12 +78,12 @@ const copilotSuggestionField = defineStateField<CopilotSuggestionState>({
   key: 'copilot.suggestion',
   collab: 'local',
   history: 'push',
-  initial: () => ({ id: null, text: null }),
+  initial: () => ({ nodeKey: null, text: null }),
   reduce: (value, effect) =>
     effect.type === copilotSuggestionEffect ? effect.value.next : value,
 });
 
-const dependencies = [NodeIdPlugin, MarkdownPlugin] as const;
+const dependencies = [MarkdownPlugin] as const;
 
 const initialState: CopilotPluginState = {
   abortController: null,
@@ -119,7 +120,7 @@ const initialState: CopilotPluginState = {
   isLoading: false,
   renderGhostText: null,
   shouldAbort: true,
-  suggestionNodeId: null,
+  suggestionNodeKey: null,
   suggestionText: null,
   autoTriggerQuery: ({ editor }) => {
     if (editor.read.getField(copilotSuggestionField).text) {
@@ -167,13 +168,13 @@ export const CopilotPlugin = definePlatePlugin(PLUGINS.copilot, {
         if (!suggestionText?.length) return false;
 
         tx.tags.add(COPILOT_SKIP_ABORT_TAG);
-        setSuggestion({ id: null, text: null });
+        setSuggestion({ nodeKey: null, text: null });
         tx.fragment.replace(
           editor.api.markdown.deserializeInline(suggestionText)
         );
       },
       acceptNextWord: () => {
-        const { getNextWord, suggestionNodeId, suggestionText } = store.get();
+        const { getNextWord, suggestionNodeKey, suggestionText } = store.get();
 
         if (!getNextWord || !suggestionText?.length) return false;
 
@@ -183,7 +184,7 @@ export const CopilotPlugin = definePlatePlugin(PLUGINS.copilot, {
 
         tx.tags.add(COPILOT_SKIP_ABORT_TAG);
         setSuggestion({
-          id: remainingText.length ? (suggestionNodeId ?? null) : null,
+          nodeKey: remainingText.length ? (suggestionNodeKey ?? null) : null,
           text: remainingText,
         });
         tx.fragment.replace(editor.api.markdown.deserializeInline(firstWord));
@@ -195,7 +196,7 @@ export const CopilotPlugin = definePlatePlugin(PLUGINS.copilot, {
 
         tx.tags.add('history-skip');
         tx.tags.add(COPILOT_SKIP_ABORT_TAG);
-        setSuggestion({ id: null, text: null });
+        setSuggestion({ nodeKey: null, text: null });
         context.afterCommit(() => {
           abortController?.abort();
           store.set({ abortController: null });
@@ -203,19 +204,19 @@ export const CopilotPlugin = definePlatePlugin(PLUGINS.copilot, {
         });
       },
       setBlockSuggestion: ({
-        id = store.get().suggestionNodeId,
+        key = store.get().suggestionNodeKey,
         text,
       }: {
         text: string;
-        id?: string | null;
+        key?: NodeKey | null;
       }) => {
         tx.tags.add('history-skip');
         const block = tx.nodes.block();
-        const blockId = id ?? block?.[0].id;
+        const blockKey = key ?? (block ? tx.key(block[1]) : null);
 
-        if (typeof blockId !== 'string') return;
+        if (!blockKey) return;
 
-        setSuggestion({ id: blockId, text });
+        setSuggestion({ nodeKey: blockKey, text });
       },
       setSuggestion,
     };
@@ -417,7 +418,7 @@ export const CopilotPlugin = definePlatePlugin(PLUGINS.copilot, {
         },
       },
       selectors: {
-        isSuggested: (state, id: string) => state.suggestionNodeId === id,
+        isSuggested: (state, key: NodeKey) => state.suggestionNodeKey === key,
       },
       shortcuts: {
         accept: {
@@ -443,7 +444,7 @@ export const CopilotPlugin = definePlatePlugin(PLUGINS.copilot, {
             context.update.reject();
             context.store.set({
               completion: null,
-              suggestionNodeId: null,
+              suggestionNodeKey: null,
               suggestionText: null,
             });
           }
@@ -454,7 +455,7 @@ export const CopilotPlugin = definePlatePlugin(PLUGINS.copilot, {
 
           if (next) {
             context.store.set({
-              suggestionNodeId: next.id,
+              suggestionNodeKey: next.nodeKey,
               suggestionText: next.text,
             });
           }
@@ -490,7 +491,7 @@ export const CopilotPlugin = definePlatePlugin(PLUGINS.copilot, {
             tx.tags.add(COPILOT_SKIP_ABORT_TAG);
             tx.effects.emit(copilotSuggestionEffect, {
               next: {
-                id: context.store.get().suggestionNodeId ?? null,
+                nodeKey: context.store.get().suggestionNodeKey ?? null,
                 text: suggestionText.slice(input.text.length),
               },
               previous: tx.getField(copilotSuggestionField),

@@ -17,7 +17,6 @@ import {
 import { Button, Icon, Toolbar } from './components';
 import type {
   BlockQuoteElement,
-  CustomEditor,
   CustomElement,
   CustomText,
   CustomValue,
@@ -230,7 +229,7 @@ const EditableVoid = ({ element }: { element: EditableVoidElement }) => {
 };
 
 const InsertEditableVoidButton = () => {
-  const editor = useEditor<CustomEditor>();
+  const editor = useEditor();
   return (
     <Button
       onClick={() => {

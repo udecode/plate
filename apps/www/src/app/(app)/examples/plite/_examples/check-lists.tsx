@@ -20,7 +20,6 @@ import { cn } from '@/utils/cn';
 
 import type {
   CheckListItemElement as CheckListItemType,
-  CustomEditor,
   ParagraphElement as ParagraphElementType,
 } from './custom-types.d';
 
@@ -154,7 +153,7 @@ const CheckListItemElement = ({
   element,
 }: RenderElementProps<CheckListItemType>) => {
   const { checked } = element;
-  const editor = useEditor<CustomEditor>();
+  const editor = useEditor();
   const readOnly = useEditorReadOnly();
   return (
     <div {...attributes} className="plite-check-lists-item">

@@ -1,26 +1,32 @@
-import type { EditorStateView, NodeEntry, Path } from '@platejs/plite';
-import type { TTableCellElement, TTableElement } from '@platejs/utils';
+import type {
+  EditorStateView,
+  Element,
+  NodeEntry,
+  Path,
+  Value,
+} from '@platejs/plite';
+import type { TableCellElement } from '../BaseTablePlugin';
 
 import { compileTableGrid, type TableGrid, type TableGridAnchor } from './grid';
 
 export type TableContext = Readonly<{
   anchorAt: (row: number, col: number) => TableGridAnchor | null;
   anchorAtPath: (path: Path) => TableGridAnchor | undefined;
-  anchorOf: (cell: TTableCellElement) => TableGridAnchor | undefined;
+  anchorOf: (cell: TableCellElement) => TableGridAnchor | undefined;
   entryAt: (
     row: number,
     col: number
-  ) => NodeEntry<TTableCellElement> | undefined;
+  ) => NodeEntry<TableCellElement> | undefined;
   grid: TableGrid;
-  table: TTableElement;
+  table: Element;
   tablePath: Path;
 }>;
 
-export const createDetachedTableContext = (
-  table: TTableElement,
-  tablePath: Path = []
+const createContext = (
+  table: Element,
+  tablePath: Path,
+  grid: TableGrid
 ): TableContext => {
-  const grid = compileTableGrid(table);
   const anchorAt = (row: number, col: number) => grid.slots[row]?.[col] ?? null;
   const relativeCellPath = (path: Path) => {
     if (path.length === 2) return path;
@@ -37,8 +43,11 @@ export const createDetachedTableContext = (
 
       return relativePath ? grid.byPath.get(relativePath.join(',')) : undefined;
     },
-    anchorOf: (cell: TTableCellElement) =>
-      grid.byCell.get(cell) ?? (cell.id ? grid.byId.get(cell.id) : undefined),
+    anchorOf: (cell: TableCellElement) => {
+      const direct = grid.byCell.get(cell);
+
+      if (direct) return direct;
+    },
     entryAt: (row: number, col: number) => {
       const anchor = anchorAt(row, col);
 
@@ -47,7 +56,7 @@ export const createDetachedTableContext = (
       return [
         anchor.cell,
         tablePath.concat(anchor.path),
-      ] as NodeEntry<TTableCellElement>;
+      ] as NodeEntry<TableCellElement>;
     },
     grid,
     table,
@@ -55,13 +64,25 @@ export const createDetachedTableContext = (
   });
 };
 
-export const createTableContext = (
-  state: Pick<EditorStateView, 'nodes'>,
-  tablePath: Path
+export const createDetachedTableContext = (
+  table: Element,
+  tablePath: Path = []
+): TableContext => createContext(table, tablePath, compileTableGrid(table));
+
+export const createTableContext = <V extends Value>(
+  state: Pick<EditorStateView<V>, 'key' | 'nodes'>,
+  tablePath: Path,
+  root?: string
 ): TableContext | null => {
-  const table = state.nodes.get<TTableElement>(tablePath)?.[0];
+  const table = state.nodes.get<Element>(
+    root ? { offset: 0, path: tablePath, root } : tablePath
+  )?.[0];
 
   if (!table) return null;
 
-  return createDetachedTableContext(table, tablePath);
+  return createContext(
+    table,
+    tablePath,
+    compileTableGrid(state, tablePath, root)
+  );
 };

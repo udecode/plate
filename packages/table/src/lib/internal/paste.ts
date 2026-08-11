@@ -1,24 +1,28 @@
 import type { BaseEditor } from '@platejs/core';
 import {
   ContentSlice,
+  createEditorView,
   type Descendant,
   DocumentChange,
   type EditorDocumentValue,
+  type Element,
   type Path,
   type Range,
+  type NodeKey,
   type Value,
 } from '@platejs/plite';
-import { ElementApi } from '@platejs/plite';
-import type {
-  TTableCellElement,
-  TTableElement,
-  TTableRowElement,
-} from '@platejs/utils';
+import { ElementApi, PathApi } from '@platejs/plite';
+import type { TableCellElement, TableRowElement } from '../BaseTablePlugin';
 import cloneDeep from 'lodash/cloneDeep.js';
 
 import { createDetachedTableContext, type TableContext } from './context';
 import { getColSpan, getRowSpan, setSpan } from './codec';
-import type { TableGrid, TableGridAnchor, TableGridProblem } from './grid';
+import {
+  TABLE_CELL_OPERATION_KEY,
+  type TableGrid,
+  type TableGridAnchor,
+  type TableGridProblem,
+} from './grid';
 import {
   applyTableMutationPlanToTable,
   planTableMutation,
@@ -45,7 +49,7 @@ export type TablePasteDiagnostic =
         | 'empty'
         | 'malformed-exact'
         | 'repair-stalled';
-      sourceCellId?: string;
+      sourceCellKey?: string;
     }>
   | Readonly<{
       kind: 'invalid-target';
@@ -55,10 +59,8 @@ export type TablePasteDiagnostic =
   | Readonly<{
       kind: 'stale-drag';
       reason:
-        | 'duplicate-id'
         | 'editor-mismatch'
         | 'invalid-grid'
-        | 'missing-id'
         | 'missing-table'
         | 'version-mismatch';
     }>;
@@ -71,10 +73,10 @@ export type PreparedTablePastePlan = Readonly<{
 
 export type TableDragCapture = Readonly<{
   bounds: TableSelectionBounds;
-  cellIds: readonly string[];
+  cellKeys: readonly NodeKey[];
   editor: BaseEditor;
   root?: string;
-  tableId: string;
+  tableKey: NodeKey;
   tablePath: Path;
   version: number;
 }>;
@@ -85,23 +87,31 @@ export type TableCellDropPlan = Readonly<{
   selection: Range;
 }>;
 
-type MutableCell = TTableCellElement & { children: Descendant[] };
+type DeepMutable<T> = T extends (...args: any[]) => unknown
+  ? T
+  : T extends readonly (infer TValue)[]
+    ? DeepMutable<TValue>[]
+    : T extends object
+      ? { -readonly [TKey in keyof T]: DeepMutable<T[TKey]> }
+      : T;
+
+type MutableCell = DeepMutable<TableCellElement>;
 
 type PrepareTablePasteOptions = Readonly<{
   createCell: TableCellFactory;
-  createRow: (row: number) => TTableRowElement;
+  createRow: (row: number) => TableRowElement;
   source: TablePasteSource;
 }>;
 
 export type PlanPreparedTablePasteOptions = Readonly<{
   createCell: TableCellFactory;
-  createRow: (row: number) => TTableRowElement;
+  createRow: (row: number) => TableRowElement;
   disableExpand?: boolean;
   fillBounds?: TableSelectionBounds;
   fitChildren: (
-    cell: TTableCellElement,
-    children: readonly Descendant[]
-  ) => readonly Descendant[] | null;
+    cell: TableCellElement,
+    children: TableCellElement['children']
+  ) => TableCellElement['children'] | null;
   root?: string;
   startCol: number;
   startRow: number;
@@ -114,7 +124,7 @@ type TablePasteElementTypes = Readonly<{
 }>;
 
 type Placement = Readonly<{
-  cell: TTableCellElement;
+  cell: TableCellElement;
   col: number;
   colSpan: number;
   row: number;
@@ -165,7 +175,7 @@ const repairTable = (
     owner,
   }: Readonly<{
     createCell: TableCellFactory;
-    createRow?: (row: number) => TTableRowElement;
+    createRow?: (row: number) => TableRowElement;
     extendRowSpans?: boolean;
     owner: 'source' | 'target';
   }>
@@ -210,72 +220,75 @@ const repairTable = (
 export const getTablePasteElement = (
   slice: ContentSlice,
   { cellTypes, rowType, tableType }: TablePasteElementTypes
-): TTableElement | null => {
+): Element | null => {
   const content = [...slice.content];
   const table = content.find(
     (node) => ElementApi.isElement(node) && node.type === tableType
   );
 
-  if (table) return table as TTableElement;
+  if (table) return table as Element;
 
   if (
     content.length > 0 &&
     content.every((node) => ElementApi.isElement(node) && node.type === rowType)
   ) {
     return {
-      children: content as TTableRowElement[],
+      children: content as TableRowElement[],
       type: tableType,
-    } as TTableElement;
+    } as Element;
   }
 
   if (
     content.length > 0 &&
     content.every(
-      (node) => ElementApi.isElement(node) && cellTypes.includes(node.type)
+      (node) =>
+        ElementApi.isElement(node) &&
+        cellTypes.some((cellType) => cellType === node.type)
     )
   ) {
     return {
       children: [
         {
-          children: content as TTableCellElement[],
+          children: content as TableCellElement[],
           type: rowType,
         },
       ],
       type: tableType,
-    } as TTableElement;
+    } as Element;
   }
 
   return null;
 };
 
 export const createOrdinaryTablePasteElement = (
-  children: readonly Descendant[],
+  children: TableCellElement['children'],
   {
     cell,
     rowType,
     tableType,
   }: Readonly<{
-    cell: TTableCellElement;
+    cell: TableCellElement;
     rowType: string;
     tableType: string;
   }>
-): TTableElement => {
+): Element => {
+  const clonedCell: Element = cloneDeep(cell);
   const {
+    children: _children,
     colSpan: _colSpan,
     id: _id,
     rowSpan: _rowSpan,
     ...cellProps
-  } = cloneDeep(cell);
+  } = clonedCell;
+  const pastedCell: Element = {
+    ...cellProps,
+    children: cloneDeep(children),
+  };
 
   return {
     children: [
       {
-        children: [
-          {
-            ...cellProps,
-            children: cloneDeep(children),
-          },
-        ],
+        children: [pastedCell],
         type: rowType,
       },
     ],
@@ -284,7 +297,7 @@ export const createOrdinaryTablePasteElement = (
 };
 
 export const prepareTablePaste = (
-  table: TTableElement,
+  table: Element,
   { createCell, createRow, source }: PrepareTablePasteOptions
 ): PreparedTablePaste | TablePasteDiagnostic => {
   const repaired = repairTable(createDetachedTableContext(table), {
@@ -316,7 +329,7 @@ export const prepareTablePaste = (
 const cloneUnitCell = (
   context: TableContext,
   createCell: TableCellFactory,
-  rows: ReadonlyMap<number, TTableRowElement>,
+  rows: ReadonlyMap<number, TableRowElement>,
   row: number,
   col: number
 ): MutableCell => {
@@ -339,8 +352,8 @@ const cloneUnitCell = (
       header:
         !!sourceRow &&
         sourceRow.children.length > 0 &&
-        (sourceRow.children as readonly TTableCellElement[]).every(
-          (cell) => cell.type === 'th'
+        (sourceRow.children as readonly TableCellElement[]).every(
+          (cell) => cell.header === true
         ),
       row,
       ...(sourceRow ? { sourceRow } : {}),
@@ -385,7 +398,7 @@ const firstTextPoint = (
 
 const pointForPlacement = (
   placement: Placement,
-  rowChildren: ReadonlyMap<number, readonly TTableCellElement[]>,
+  rowChildren: ReadonlyMap<number, readonly TableCellElement[]>,
   tablePath: Path,
   edge: 'end' | 'start',
   root?: string
@@ -470,7 +483,7 @@ const planUnitTablePaste = (
     }
   }
 
-  const fitted = new Map<TableGridAnchor, readonly Descendant[]>();
+  const fitted = new Map<TableGridAnchor, TableCellElement['children']>();
   const operations: TableOperation[] = [];
   let anchorPoint: ReturnType<typeof firstTextPoint> = null;
   let focusPoint: ReturnType<typeof firstTextPoint> = null;
@@ -499,7 +512,7 @@ const planUnitTablePaste = (
           return Object.freeze({
             kind: 'invalid-source',
             reason: 'content-rejected',
-            ...(source.id ? { sourceCellId: source.id } : {}),
+            ...(source.key ? { sourceCellKey: source.key } : {}),
           });
         }
 
@@ -591,10 +604,10 @@ export const planPreparedTablePaste = (
 
   const finalHeight = Math.max(context.grid.height, endRow);
   const finalWidth = Math.max(context.grid.width, endCol);
-  const rows = new Map<number, TTableRowElement>();
+  const rows = new Map<number, TableRowElement>();
 
   for (let row = 0; row < context.table.children.length; row++) {
-    rows.set(row, context.table.children[row] as TTableRowElement);
+    rows.set(row, context.table.children[row] as TableRowElement);
   }
   for (let row = context.table.children.length; row < finalHeight; row++) {
     rows.set(row, cloneDeep(options.createRow(row)));
@@ -633,7 +646,7 @@ export const planPreparedTablePaste = (
   const destinationSlots = new Map<string, Placement>();
   let collision = false;
   const addPlacement = (
-    cell: TTableCellElement,
+    cell: TableCellElement,
     row: number,
     col: number,
     rowSpan = getRowSpan(cell),
@@ -694,7 +707,7 @@ export const planPreparedTablePaste = (
 
   const fitted = new Map<
     TableGridAnchor,
-    readonly Descendant[] | TablePasteDiagnostic
+    TableCellElement['children'] | TablePasteDiagnostic
   >();
 
   for (
@@ -729,7 +742,9 @@ export const planPreparedTablePaste = (
               ? Object.freeze({
                   kind: 'invalid-source' as const,
                   reason: 'content-rejected' as const,
-                  ...(sourceAnchor.id ? { sourceCellId: sourceAnchor.id } : {}),
+                  ...(sourceAnchor.key
+                    ? { sourceCellKey: sourceAnchor.key }
+                    : {}),
                 })
               : Object.freeze(cloneDeep(nextChildren));
           fitted.set(sourceAnchor, children);
@@ -763,7 +778,7 @@ export const planPreparedTablePaste = (
     return Object.freeze({ kind: 'invalid-target', reason: 'collision' });
   }
 
-  const rowChildren = new Map<number, readonly TTableCellElement[]>();
+  const rowChildren = new Map<number, readonly TableCellElement[]>();
   const operations: TableOperation[] = [...repaired.operations];
 
   for (const row of [...rowsToRebuild].sort((left, right) => left - right)) {
@@ -847,9 +862,9 @@ type TableNodeFactory = Readonly<{
   createCell: (options?: {
     children?: Descendant[];
     header?: boolean;
-    row?: TTableRowElement;
-  }) => TTableCellElement;
-  createRow: (options?: { colCount?: number }) => TTableRowElement;
+    row?: TableRowElement;
+  }) => TableCellElement;
+  createRow: (options?: { colCount?: number }) => TableRowElement;
 }>;
 
 const rootChildren = (
@@ -913,7 +928,7 @@ const replaceDocumentTable = (
   value: EditorDocumentValue,
   root: string | undefined,
   tablePath: Path,
-  table: TTableElement
+  table: Element
 ): EditorDocumentValue | null => {
   const children = rootChildren(value, root);
 
@@ -940,11 +955,11 @@ const replaceDocumentTable = (
 };
 
 const applyFocusedTableOperations = (
-  table: TTableElement,
+  table: Element,
   tablePath: Path,
   operations: readonly TableOperation[]
-): TTableElement | null => {
-  const rows = [...(table.children as readonly TTableRowElement[])];
+): Element | null => {
+  const rows = [...(table.children as readonly TableRowElement[])];
 
   for (const operation of operations) {
     const relative = operation.path.slice(tablePath.length);
@@ -960,7 +975,7 @@ const applyFocusedTableOperations = (
 
       if (relative.length === 2) {
         const cellIndex = relative[1];
-        const cells = [...(current.children as readonly TTableCellElement[])];
+        const cells = [...(current.children as readonly TableCellElement[])];
         const currentCell =
           cellIndex === undefined ? undefined : cells[cellIndex];
 
@@ -980,7 +995,7 @@ const applyFocusedTableOperations = (
 
       rows[row] = {
         ...current,
-        children: operation.children as readonly TTableCellElement[],
+        children: operation.children as readonly TableCellElement[],
       };
       continue;
     }
@@ -990,7 +1005,7 @@ const applyFocusedTableOperations = (
       operation.kind === 'insert-node' &&
       ElementApi.isElement(operation.node)
     ) {
-      rows.splice(row, 0, operation.node as TTableRowElement);
+      rows.splice(row, 0, operation.node as TableRowElement);
       continue;
     }
 
@@ -1000,42 +1015,78 @@ const applyFocusedTableOperations = (
   return Object.freeze({
     ...table,
     children: Object.freeze(rows),
-  }) as TTableElement;
+  }) as Element;
+};
+
+const tagTableCells = (
+  table: Element,
+  tablePath: Path,
+  cells: readonly Readonly<{ key: NodeKey; path: Path }>[]
+): Element | null => {
+  const tagged = cloneDeep(table);
+
+  for (const { key, path } of cells) {
+    const relativePath = path.slice(tablePath.length);
+    const cell = nodeAtPath(tagged.children, relativePath);
+
+    if (!cell || !ElementApi.isElement(cell)) return null;
+
+    Object.defineProperty(cell, TABLE_CELL_OPERATION_KEY, {
+      configurable: true,
+      enumerable: true,
+      value: key,
+    });
+  }
+
+  return tagged;
+};
+
+const stripTableCellOperationIds = (table: Element): Element => {
+  const clean = cloneDeep(table);
+
+  for (const row of clean.children) {
+    if (!ElementApi.isElement(row)) continue;
+
+    for (const cell of row.children) {
+      if (!ElementApi.isElement(cell)) continue;
+
+      delete (
+        cell as TableCellElement & {
+          [TABLE_CELL_OPERATION_KEY]?: string;
+        }
+      )[TABLE_CELL_OPERATION_KEY];
+    }
+  }
+
+  return clean;
 };
 
 const selectedSourceTable = (
-  table: TTableElement,
+  table: Element,
   capture: TableDragCapture
-): TTableElement | TablePasteDiagnostic => {
+): Element | TablePasteDiagnostic => {
   const context = createDetachedTableContext(table, capture.tablePath);
-  const duplicateSourceId = context.grid.problems.some(
-    (problem) => problem.kind === 'duplicate-id'
-  );
-
-  if (duplicateSourceId) {
-    return Object.freeze({ kind: 'stale-drag', reason: 'duplicate-id' });
-  }
   if (context.grid.problems.length > 0) {
     return Object.freeze({ kind: 'stale-drag', reason: 'invalid-grid' });
   }
 
-  const selected = capture.cellIds.map((id) => context.grid.byId.get(id));
+  const selected = capture.cellKeys.map((key) => context.grid.byKey.get(key));
 
   if (selected.some((anchor) => !anchor)) {
-    return Object.freeze({ kind: 'stale-drag', reason: 'missing-id' });
+    return Object.freeze({ kind: 'stale-drag', reason: 'missing-table' });
   }
 
   const unique = new Set(selected);
 
   if (unique.size !== selected.length) {
-    return Object.freeze({ kind: 'stale-drag', reason: 'duplicate-id' });
+    return Object.freeze({ kind: 'stale-drag', reason: 'missing-table' });
   }
 
   const anchors = selected as TableGridAnchor[];
-  const rows: TTableRowElement[] = [];
+  const rows: TableRowElement[] = [];
 
   for (let row = capture.bounds.minRow; row <= capture.bounds.maxRow; row++) {
-    const sourceRow = table.children[row] as TTableRowElement | undefined;
+    const sourceRow = table.children[row] as TableRowElement | undefined;
 
     if (!sourceRow) {
       return Object.freeze({ kind: 'stale-drag', reason: 'missing-table' });
@@ -1053,23 +1104,23 @@ const selectedSourceTable = (
   return Object.freeze({
     ...table,
     children: Object.freeze(rows),
-  }) as TTableElement;
+  }) as Element;
 };
 
 const clearTableCells = (
-  table: TTableElement,
-  cellIds: readonly string[],
-  keepIds: ReadonlySet<string>,
+  table: Element,
+  cellKeys: readonly string[],
+  keepKeys: ReadonlySet<string>,
   createCell: TableNodeFactory['createCell']
-): TTableElement => {
+): Element => {
   const context = createDetachedTableContext(table);
-  const rows = [...(table.children as readonly TTableRowElement[])];
-  const nextRows = new Map<number, TTableCellElement[]>();
+  const rows = [...(table.children as readonly TableRowElement[])];
+  const nextRows = new Map<number, TableCellElement[]>();
 
-  for (const id of cellIds) {
-    if (keepIds.has(id)) continue;
+  for (const key of cellKeys) {
+    if (keepKeys.has(key)) continue;
 
-    const anchor = context.grid.byId.get(id);
+    const anchor = context.grid.byKey.get(key);
 
     if (!anchor) continue;
 
@@ -1080,10 +1131,10 @@ const clearTableCells = (
     const children =
       nextRows.get(anchor.row) ??
       ([
-        ...(row.children as readonly TTableCellElement[]),
-      ] as TTableCellElement[]);
+        ...(row.children as readonly TableCellElement[]),
+      ] as TableCellElement[]);
     const empty = createCell({
-      header: anchor.cell.type === 'th',
+      header: anchor.cell.header === true,
       row,
     });
 
@@ -1106,11 +1157,11 @@ const clearTableCells = (
   return Object.freeze({
     ...table,
     children: Object.freeze(rows),
-  }) as TTableElement;
+  }) as Element;
 };
 
 const tableCellSelection = (
-  table: TTableElement,
+  table: Element,
   tablePath: Path,
   root: string | undefined,
   bounds: TableSelectionBounds
@@ -1220,23 +1271,22 @@ export const planTableCellDrop = (
   if (source.version !== version || target.version !== version) {
     return Object.freeze({ kind: 'stale-drag', reason: 'version-mismatch' });
   }
-  const targetTableId =
-    typeof target.table.id === 'string' ? target.table.id : undefined;
+  const sourceRead = source.root
+    ? createEditorView(editor, { root: source.root }).read
+    : editor.read;
+  const sourceTablePath = sourceRead.nodes.path(source.tableKey);
+  const sourceCells = source.cellKeys.map((key) => ({
+    key,
+    path: sourceRead.nodes.path(key),
+  }));
 
   if (
-    !source.tableId ||
-    !targetTableId ||
-    !target.complete ||
-    target.cellIds.length !== target.anchors.length
+    !sourceTablePath ||
+    !PathApi.equals(sourceTablePath, source.tablePath) ||
+    sourceCells.some(({ path }) => !path) ||
+    !target.complete
   ) {
-    return Object.freeze({ kind: 'stale-drag', reason: 'missing-id' });
-  }
-  const duplicateTargetId = target.grid.problems.some(
-    (problem) => problem.kind === 'duplicate-id'
-  );
-
-  if (duplicateTargetId) {
-    return Object.freeze({ kind: 'stale-drag', reason: 'duplicate-id' });
+    return Object.freeze({ kind: 'stale-drag', reason: 'missing-table' });
   }
   if (target.grid.problems.length > 0) {
     return Object.freeze({
@@ -1255,16 +1305,23 @@ export const planTableCellDrop = (
   if (
     !currentSource ||
     !ElementApi.isElement(currentSource) ||
-    currentSource.id !== source.tableId ||
     !currentTarget ||
-    !ElementApi.isElement(currentTarget) ||
-    currentTarget.id !== targetTableId
+    !ElementApi.isElement(currentTarget)
   ) {
     return Object.freeze({ kind: 'stale-drag', reason: 'missing-table' });
   }
 
-  const sourceTable = currentSource as TTableElement;
-  const targetTable = currentTarget as TTableElement;
+  const sourceTable = tagTableCells(
+    currentSource as Element,
+    source.tablePath,
+    sourceCells as readonly Readonly<{ key: NodeKey; path: Path }>[]
+  );
+
+  if (!sourceTable) {
+    return Object.freeze({ kind: 'stale-drag', reason: 'missing-table' });
+  }
+
+  const targetTable = currentTarget as Element;
   const sourceElement = selectedSourceTable(sourceTable, source);
 
   if (!ElementApi.isElement(sourceElement)) {
@@ -1286,19 +1343,42 @@ export const planTableCellDrop = (
 
   if ('kind' in prepared) return prepared;
 
+  const sameTable =
+    source.root === target.root &&
+    source.tablePath.length === target.tablePath.length &&
+    source.tablePath.every(
+      (index, offset) => target.tablePath[offset] === index
+    );
+  const workingTargetTable = sameTable ? sourceTable : targetTable;
   const tableContext = createDetachedTableContext(
-    targetTable,
+    workingTargetTable,
     target.tablePath
   );
   const plan = planPreparedTablePaste(tableContext, prepared, {
     createCell,
     createRow,
     disableExpand,
-    fitChildren: (cell, children) =>
-      editor.read.slice.fitContent(ContentSlice.closed(children), {
-        parent: cell,
-        ...(target.root === undefined ? {} : { root: target.root }),
-      }),
+    fitChildren: (cell, children) => {
+      const fitted = editor.read.slice.fitContent(
+        ContentSlice.closed(children),
+        {
+          parent: cell,
+          ...(target.root === undefined ? {} : { root: target.root }),
+        }
+      );
+
+      if (!copy || !fitted) return fitted;
+
+      const anchor = tableContext.anchorOf(cell);
+      const at = target.tablePath.concat(anchor?.path ?? []).concat(0);
+
+      return fitted.map((node) =>
+        editor.read.schema.copy(node, {
+          at,
+          ...(target.root === undefined ? {} : { root: target.root }),
+        })
+      );
+    },
     ...(target.root === undefined ? {} : { root: target.root }),
     startCol: target.anchor.col,
     startRow: target.anchor.row,
@@ -1307,7 +1387,7 @@ export const planTableCellDrop = (
   if (plan.kind !== 'plan') return plan;
 
   let nextTarget = applyFocusedTableOperations(
-    targetTable,
+    workingTargetTable,
     target.tablePath,
     plan.operations
   );
@@ -1326,7 +1406,7 @@ export const planTableCellDrop = (
     prepared,
     disableExpand
   );
-  const destinationIds = new Set<string>();
+  const destinationKeys = new Set<string>();
   const nextTargetContext = createDetachedTableContext(
     nextTarget,
     target.tablePath
@@ -1342,26 +1422,20 @@ export const planTableCellDrop = (
       col <= destinationBounds.maxCol;
       col++
     ) {
-      const id = nextTargetContext.grid.slots[row]?.[col]?.id;
+      const key = nextTargetContext.grid.slots[row]?.[col]?.key;
 
-      if (id) destinationIds.add(id);
+      if (key) destinationKeys.add(key);
     }
   }
 
-  const sameTable =
-    source.root === target.root &&
-    source.tablePath.length === target.tablePath.length &&
-    source.tablePath.every(
-      (index, offset) => target.tablePath[offset] === index
-    );
   let after: EditorDocumentValue | null;
 
   if (sameTable) {
     if (!copy) {
       nextTarget = clearTableCells(
         nextTarget,
-        source.cellIds,
-        destinationIds,
+        source.cellKeys,
+        destinationKeys,
         createTableCell
       );
     }
@@ -1370,14 +1444,14 @@ export const planTableCellDrop = (
       before,
       target.root,
       target.tablePath,
-      nextTarget
+      stripTableCellOperationIds(nextTarget)
     );
   } else {
     const nextSource = copy
-      ? sourceTable
+      ? stripTableCellOperationIds(sourceTable)
       : clearTableCells(
           sourceTable,
-          source.cellIds,
+          source.cellKeys,
           new Set(),
           createTableCell
         );
@@ -1385,7 +1459,7 @@ export const planTableCellDrop = (
       before,
       source.root,
       source.tablePath,
-      nextSource
+      stripTableCellOperationIds(nextSource)
     );
 
     after = withSource
@@ -1393,7 +1467,7 @@ export const planTableCellDrop = (
           withSource,
           target.root,
           target.tablePath,
-          nextTarget
+          stripTableCellOperationIds(nextTarget)
         )
       : null;
   }
@@ -1401,6 +1475,8 @@ export const planTableCellDrop = (
   if (!after) {
     return Object.freeze({ kind: 'stale-drag', reason: 'missing-table' });
   }
+
+  after = editor.read.schema.fitDocument(after);
 
   const selection = tableCellSelection(
     nextTarget,

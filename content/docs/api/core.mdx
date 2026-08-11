@@ -43,56 +43,6 @@ Generates a new instance of a `PlateEditor`, initialized with a set of plugins a
       </APISubListItem>
     </APISubList>
   </APIItem>
-  <APIItem name="nodeId" type="object | boolean" optional>
-    Configuration for automatic node ID generation and management.
-    <APISubList>
-      <APISubListItem parent="nodeId" name="disableInsertOverrides" type="boolean" optional>
-        Disable using existing IDs when inserting nodes.
-        - When `false`: Keeps existing IDs if they don't exist in document
-        - When `true`: Always generates new IDs
-        - **Default:** `false`
-      </APISubListItem>
-      <APISubListItem parent="nodeId" name="filterInline" type="boolean" optional>
-        Filter inline Element nodes from receiving IDs.
-        - **Default:** `true`
-      </APISubListItem>
-      <APISubListItem parent="nodeId" name="filterText" type="boolean" optional>
-        Filter Text nodes from receiving IDs.
-        - **Default:** `true`
-      </APISubListItem>
-      <APISubListItem parent="nodeId" name="idCreator" type="() => string" optional>
-        Function to generate unique IDs.
-        - **Default:** `() => nanoid(10)`
-      </APISubListItem>
-      <APISubListItem parent="nodeId" name="idKey" type="string" optional>
-        Property key used to store node IDs.
-        - **Default:** `'id'`
-      </APISubListItem>
-      <APISubListItem parent="nodeId" name="initialValueIds" type="false | 'always' | 'if-needed'" optional>
-        Controls how missing IDs are assigned in the initial value.
-        - When `'if-needed'`: Only checks the first and last top-level nodes
-        - When `'always'`: Walks the whole initial value and fills missing IDs
-        - When `false`: Skips initial-value ID assignment
-        - **Default:** `'if-needed'`
-      </APISubListItem>
-      <APISubListItem parent="nodeId" name="reuseId" type="boolean" optional>
-        Reuse IDs from clipboard pastes.
-        - When `true`: Keeps source IDs that do not exist in the target document
-        - When `false`: Generates fresh IDs for pasted nodes
-        - **Default:** `false`
-      </APISubListItem>
-      <APISubListItem parent="nodeId" name="allow" type="string[]" optional>
-        Node types that should receive IDs.
-      </APISubListItem>
-      <APISubListItem parent="nodeId" name="exclude" type="string[]" optional>
-        Node types that should not receive IDs.
-      </APISubListItem>
-      <APISubListItem parent="nodeId" name="filter" type="(node: NodeEntry) => boolean" optional>
-        Custom filter function for nodes that should receive IDs.
-        - **Default:** `() => true`
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
   <APIItem name="selection" type="TSelection" optional>
     Initial selection for the editor.
   </APIItem>
@@ -154,7 +104,10 @@ Creates a React Plate plugin from one inferred definition.
 
 <API name="definePlatePlugin">
 <APIParameters>
-  <APIItem name="definition" type="BasePluginDefinition">
+  <APIItem name="name" type="string">
+    The stable capability name used for plugin lookup and API namespaces.
+  </APIItem>
+  <APIItem name="definition" type="PlatePluginDefinitionInput">
     The plugin definition. The factory infers its name, initial state, API,
     read and update methods, schema, dependencies, native Plite capabilities,
     and React fields from this object.
@@ -587,8 +540,8 @@ const state = useEditorPluginStore(editor, plugin, (state) => state);
 ### `useElement`
 
 Get the current element and throw when the matching provider is absent. Pass a
-plugin descriptor for configured schema inference, or pass the element type as
-a generic in reusable component code.
+plugin descriptor for configured schema inference. Call it without a descriptor
+only when deliberately working with the erased `Element` shape.
 
 <API name="useElement">
 <APIParameters>
@@ -598,27 +551,24 @@ a generic in reusable component code.
   </APIItem>
 </APIParameters>
 
-<APIReturns type="PlateElementForDescriptor<TPlugin> | TElement">
+<APIReturns type="PlateElementForDescriptor<TPlugin> | Element">
   The current element. Throws when used outside the requested element provider.
 </APIReturns>
 </API>
 
 ```tsx
 import { BlockquotePlugin } from "@platejs/basic-nodes/react";
-import type { Element } from "platejs";
 import { useElement } from "platejs/react";
 
-type MyElement = Element & { type: "my-element" };
-
 const quote = useElement(BlockquotePlugin);
-const generic = useElement<MyElement>();
+const generic = useElement();
 ```
 
 ### `useOptionalElement`
 
-Use `useOptionalElement(Plugin)` or `useOptionalElement<TElement>()` when the
-provider is intentionally optional. It returns `null` instead of a placeholder
-element.
+Use `useOptionalElement(Plugin)` when a specific provider is optional, or call
+`useOptionalElement()` for the erased nearest provider. It returns `null`
+instead of a placeholder element.
 
 ## Core plugins
 
@@ -628,6 +578,26 @@ Provides debugging capabilities with configurable log levels and error handling.
 
 See [Debugging](/docs/debugging) for more details.
 
+### `ElementIdPlugin`
+
+Adds persisted string IDs to every block and inline element. It is opt-in and
+never assigns IDs to text nodes.
+
+```ts
+const editor = createPlateEditor({
+  plugins: [ElementIdPlugin],
+});
+
+const elementId = editor.plugin(ElementIdPlugin);
+const id = elementId.read.id(element);
+const entry = elementId.read.entry(id);
+```
+
+Configure `initialState.generateId` to replace the default full-length
+`nanoid()` generator. Use `migrateElementIds(value, options)` for stored input
+that lacks IDs, contains legacy numeric IDs, or needs a legacy property
+canonicalized through `sourceKey`.
+
 ### `ElementStatePlugin`
 
 Extend Plate editor behavior on top of Plite.
@@ -636,7 +606,7 @@ Extend Plate editor behavior on top of Plite.
 `editor.plugin(ElementStatePlugin).api.isEmpty(element)`. It checks the
 element's own props, not its text content. By default, only `type` and compiled
 element properties declared with `role: "metadata"` are ignored; any other prop
-means the element carries state. `NodeIdPlugin` declares its configured ID
+means the element carries state. `ElementIdPlugin` declares its persisted ID
 property as metadata.
 
 ```tsx
@@ -655,13 +625,12 @@ elementState.api.isEmpty({
 
 const CustomMetadataPlugin = defineBasePlugin("customMetadata", {
   schema: {
-    properties: [
-      schema.elementProperty(
-        "customId",
-        property.string(),
-        { role: "metadata", target: target.group("block") }
-      ),
-    ],
+    properties: {
+      customId: schema.elementProperty(property.string(), {
+        role: "metadata",
+        target: target.group("block"),
+      }),
+    },
   },
 });
 ```

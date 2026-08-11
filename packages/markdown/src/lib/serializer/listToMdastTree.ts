@@ -36,9 +36,11 @@ export function listToMdastTree(
     throw new Error('Cannot create a list from empty nodes');
   }
 
-  // If withBlockId is enabled, isBlock is true, and any node has an ID,
-  // we need to wrap each list item separately
-  if (options.withBlockId && isBlock && nodes.some((node) => node.id)) {
+  if (
+    options.withBlockId &&
+    isBlock &&
+    nodes.some((node) => options.blockId?.(node))
+  ) {
     return processListWithBlockIds(nodes, options);
   }
 
@@ -208,9 +210,10 @@ function processListWithBlockIds(
 
     singleList.children.push(listItem);
 
-    // Wrap with block ID if this node has one
-    if (node.id) {
-      fragments.push(wrapWithBlockId(singleList, String(node.id)));
+    const blockId = options.blockId?.(node);
+
+    if (blockId) {
+      fragments.push(wrapWithBlockId(singleList, blockId));
     } else {
       fragments.push(singleList);
     }

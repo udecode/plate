@@ -1546,7 +1546,7 @@ const PaginationSurface = ({
   controls: PaginationControls;
   setControls: SetPaginationControls;
 }) => {
-  const editor = useEditor<CustomEditor>();
+  const editor = useEditor();
   const setSettings = useSetStateField(pageSettings);
   const [effectiveDOMStrategy, setEffectiveDOMStrategy] =
     useState<EditableDOMStrategyEffectiveType | null>(null);

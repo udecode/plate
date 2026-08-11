@@ -135,7 +135,7 @@ export {
 } from './lib/plugins/html/HtmlPlugin';
 export { someHtmlElement } from './lib/plugins/html/htmlDom';
 export * from './lib/plugins/input-rules/index';
-export * from './lib/plugins/node-id/index';
+export * from './lib/plugins/element-id/index';
 export * from './lib/plugins/override/index';
 export * from './lib/plugins/paragraph/index';
 export * from './lib/types/index';

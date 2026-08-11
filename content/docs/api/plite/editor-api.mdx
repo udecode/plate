@@ -31,7 +31,7 @@ The main groups are:
 | `editor.read.text` | Read text from a location. |
 | `editor.read.schema` | Ask block, inline, void, and selectable policy. |
 | `editor.read.view` | Read focus, composition, and read-only state. |
-| `editor.read.runtime` | Read runtime IDs and snapshots. |
+| `editor.read.runtime` | Read immutable runtime snapshots. |
 
 ## Snapshot Reads
 
@@ -49,17 +49,46 @@ The callback is for grouped reads. It does not unlock a second API.
 
 ## Node Targets
 
-Read methods with an `at` option accept a location or a live descendant.
+Read and update methods with an `at` option accept a location, a live
+descendant, or a `NodeKey` from the same editor. A node key can target a node
+in any document root.
 
 ```ts
+const nodeKey = editor.key(element);
 const path = editor.read.nodes.path(element);
-const entry = editor.read.nodes.get(element);
-const parent = editor.read.nodes.parent(element);
+const entry = editor.read.nodes.get(nodeKey);
+const parent = editor.read.nodes.parent(nodeKey);
 ```
 
 Lifecycle node, point, and range reads return `undefined` when their target is
 unavailable. For node targets, that includes detached nodes and nodes owned by
-another editor or root.
+another editor.
+
+## Node Keys
+
+`NodeKey` is private editor identity for every live descendant, including
+text. It is stable across moves and immutable updates, invalid after removal,
+and absent from serialized values, slices, history, and collaboration data.
+
+```ts
+const nodeKey = editor.key(element);
+const nodeKeyAtPath = editor.key([0]);
+const currentPath = editor.read.nodes.path(nodeKey);
+
+editor.update.nodes.remove({ at: nodeKey });
+
+editor.read((state) => state.key([0]));
+editor.update((tx) => tx.key([0]));
+```
+
+`nodes.path(nodeKey)` returns a path only when the node belongs to the current
+editor or view root. Base-editor path inputs address the main root. A view's
+path inputs address that view's root.
+
+Use node keys for temporary behavior such as selection, drag and drop,
+overlays, and component state. Persisted application references belong in a
+schema property instead. Detached `state.transaction(...)` spec builders may
+target an existing key but do not allocate keys.
 
 ## Matching Nodes
 

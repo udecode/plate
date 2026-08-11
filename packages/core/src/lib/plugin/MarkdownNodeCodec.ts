@@ -197,6 +197,7 @@ type SourceNodeMap = {
   mark: MdxJsxTextElement;
   math: MdMathNode;
   mediaEmbed: MdxJsxFlowElement;
+  media_embed: MdxJsxFlowElement;
   mention: UnistNode & {
     displayText?: string;
     type: 'mention';

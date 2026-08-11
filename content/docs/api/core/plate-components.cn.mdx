@@ -145,7 +145,7 @@ export function FigureElement({
 
 | 原语                | 行为                                                                                                                                                                                          |
 | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `PlateElement`      | 添加 `data-plite-node="element"`，保留 inline 元数据，为带 `id` 的已挂载 block 元素设置 `data-block-id`，提供类型化的元素自有 content-root slot，并在需要时添加 directional-affinity spacer。 |
+| `PlateElement`      | 添加 `data-plite-node="element"`，保留 Plite 的 `data-plite-node-key`，提供类型化的元素自有 content-root slot，并在需要时添加 directional-affinity spacer。 |
 | `PlateLeaf`         | 渲染文本 leaf，并在需要时添加 hard-affinity spacer。                                                                                                                                          |
 | `PlateText`         | 渲染文本节点，不匹配 leaf decoration。                                                                                                                                                        |
 | `useNodeAttributes` | 为节点原语合并 Plite attributes、ref、class name 和 style。                                                                                                                                   |

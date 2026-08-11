@@ -1,5 +1,18 @@
 import type { Descendant } from '@platejs/plite';
-import type { TTableCellBorder, TTableCellElement } from '@platejs/utils';
+import type { TableCellBorder, TableCellBorders } from '../BaseTablePlugin';
+
+type TableCellSpan = {
+  readonly colSpan?: number;
+  readonly rowSpan?: number;
+};
+type MutableTableCellSpan = {
+  -readonly [TKey in keyof TableCellSpan]: TableCellSpan[TKey];
+};
+type TableCellHtmlProperties = TableCellSpan & {
+  readonly background?: string;
+  readonly borders?: TableCellBorders;
+  readonly size?: number;
+};
 
 const borderDirections = ['bottom', 'left', 'right', 'top'] as const;
 
@@ -63,7 +76,7 @@ const getBorderStyle = (
 const parseBorder = (
   style: CSSStyleDeclaration,
   direction: (typeof borderDirections)[number]
-): TTableCellBorder | undefined => {
+): TableCellBorder | undefined => {
   const border = getBorderStyle(style, direction);
 
   if (!border.color && border.size === undefined && !border.style) return;
@@ -75,7 +88,7 @@ const parseBorder = (
   };
 };
 
-const serializeBorder = (border: TTableCellBorder | undefined) => {
+const serializeBorder = (border: TableCellBorder | undefined) => {
   if (!border) return;
 
   return `${border.size ?? 1}px ${border.style ?? 'solid'} ${
@@ -83,14 +96,14 @@ const serializeBorder = (border: TTableCellBorder | undefined) => {
   }`;
 };
 
-export const getColSpan = (cell: TTableCellElement): number =>
+export const getColSpan = (cell: TableCellSpan): number =>
   normalizeSpan(cell.colSpan);
 
-export const getRowSpan = (cell: TTableCellElement): number =>
+export const getRowSpan = (cell: TableCellSpan): number =>
   normalizeSpan(cell.rowSpan);
 
 export const setSpan = (
-  cell: TTableCellElement,
+  cell: MutableTableCellSpan,
   key: 'colSpan' | 'rowSpan',
   value: number
 ) => {
@@ -106,7 +119,7 @@ export const setSpan = (
 export const getTableCellHtmlProps = (element?: Descendant) => {
   if (!element || !('children' in element)) return {};
 
-  const cell = element as TTableCellElement;
+  const cell = element as TableCellSpan;
   const colSpan = getColSpan(cell);
   const rowSpan = getRowSpan(cell);
 
@@ -116,7 +129,7 @@ export const getTableCellHtmlProps = (element?: Descendant) => {
   };
 };
 
-export const getTableCellHtmlCodecProps = (cell: TTableCellElement) => ({
+export const getTableCellHtmlCodecProps = (cell: TableCellHtmlProperties) => ({
   attributes: {
     colspan: getColSpan(cell) > 1 ? getColSpan(cell) : undefined,
     rowspan: getRowSpan(cell) > 1 ? getRowSpan(cell) : undefined,

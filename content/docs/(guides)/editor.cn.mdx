@@ -246,67 +246,69 @@ const editor = createPlateEditor({
 当 controller-aware hook 需要选择特定的已挂载 editor 时，传入同一个 ID，
 例如 `useEditor({ id: 'my-custom-editor-id' })`。
 
-### 节点ID
+### 节点身份
 
-Plate内置了为节点自动分配唯一ID的系统，这对于某些插件和依赖稳定标识符的数据持久化策略至关重要。
-
-此功能默认启用。可以通过`nodeId`选项自定义其行为或完全禁用。
-
-#### 配置
-
-创建编辑器时，向`nodeId`属性传递对象来配置节点ID行为：
+每个实时 descendant 都有一个 editor 作用域内的 `NodeKey`。节点键
+覆盖文本节点，在移动和不可变更新后保持稳定，并在节点删除后失效。它不会写入
+JSON、剪贴板 slice、历史记录或协作数据。选区、拖放、临时 UI 状态和延迟路径
+查找都应使用它。
 
 ```ts
-const editor = usePlateEditor({
-  // ... 其他插件和选项
-  nodeId: {
-    // 生成ID的函数（默认：nanoid(10)）
-    idCreator: () => uuidv4(),
+const nodeKey = editor.key(element);
+const path = editor.read.nodes.path(nodeKey);
 
-    // 排除内联元素获取ID（默认：true）
-    filterInline: true, 
-
-    // 排除文本节点获取ID（默认：true）
-    filterText: true,
-
-    // 粘贴时重用目标文档中不存在的源ID（默认：false）
-    reuseId: false,
-
-    // 控制初始值中的 ID 分配（默认：'if-needed'）
-    // 使用 'always' 为初始值中的所有缺失 ID 补齐
-    initialValueIds: 'always',
-    // 始终生成新 ID，而不是复用不冲突的来源 ID（默认：false）
-    disableInsertOverrides: true,
-
-    // 进一步限制经过上述过滤器后的候选节点（默认：全部）
-    match: (_node, path) => path.length === 1,
-  },
-});
+editor.update.nodes.remove({ at: nodeKey });
 ```
 
-<Callout type="note">
-  `NodeIdPlugin`（处理此功能）是核心插件的一部分，已自动包含。只有在需要自定义其默认行为时才需要指定`nodeId`选项。
-</Callout>
+节点键可以定位同一 editor 的任意文档 root。路径查找仍属于当前 root：base editor
+在 main root 中解析路径，editor view 则在自己的 root 中解析路径。
 
-#### 禁用节点ID
-
-如果不需要自动节点ID，可以禁用此功能：
+只有当元素 ID 需要跨存储或会话引用时才安装 `ElementIdPlugin`。该插件是可选的，
+为 block 和 inline 元素生成持久化字符串 ID，但不会为文本节点生成 ID。
 
 ```ts
+import { ElementIdPlugin } from "platejs";
+
 const editor = usePlateEditor({
-  // ... 其他插件和选项
-  nodeId: false, // 这将禁用NodeIdPlugin
+  plugins: [
+    ElementIdPlugin.configure({
+      initialState: {
+        generateId: () => crypto.randomUUID(),
+      },
+    }),
+  ],
 });
+
+const elementId = editor.plugin(ElementIdPlugin);
+const id = elementId.read.id(element);
+const entry = elementId.read.entry(id);
 ```
 
-禁用后，依赖节点ID的某些插件将无法正常工作。以下插件需要块ID才能工作：
+默认生成器是完整长度的 `nanoid()`。加载和移动保留有效 ID；复制、拆分、重复和
+粘贴副本使用新 ID；显式重复 ID 会被拒绝。精确 schema 派生元素可直接读取
+`element.id`；类型擦除或可选安装的 package 边界通过插件读取。
 
-- **[块选择](/docs/block-selection)** - 需要ID来跟踪选中的块
-- **[块菜单](/docs/block-menu)** - 需要ID显示特定块的上下文菜单  
-- **[拖放](/docs/dnd)** - 使用ID在拖拽操作中识别块
-- **[表格](/docs/table)** - 依赖ID进行单元格选择
-- **[目录](/docs/toc)** - 需要标题ID进行导航和滚动
-- **[折叠](/docs/toggle)** - 使用ID跟踪哪些折叠项是打开/关闭的
+缺少 ID 的已存储文档应在加载前使用纯迁移 helper。它保留有效字符串、补齐缺失
+ID、报告重复项，并要求显式处理旧数字 ID。
+
+```ts
+import { migrateElementIds, nanoid } from "platejs";
+
+const result = migrateElementIds(storedValue, {
+  convertNumericId: (id) => `legacy-${id}`,
+  generateId: nanoid,
+  sourceKey: 'legacyElementId',
+});
+
+if (result.duplicates.length > 0) {
+  throw new Error("请先解决重复的元素 ID，再加载文档。");
+}
+
+const editor = createPlateEditor({
+  plugins: [ElementIdPlugin],
+  initialValue: result.value,
+});
+```
 
 ### 规范化
 
@@ -426,14 +428,12 @@ editor.update((tx) => {
 
 ```ts
 import type { ValueOf } from 'platejs';
-import { type PlateEditor, useEditor } from 'platejs/react';
+import type { PlateEditor } from 'platejs/react';
 
 const AppKit = [TablePlugin, LinkPlugin] as const;
 
 export type MyEditor = PlateEditor<typeof AppKit>;
 export type MyValue = ValueOf<MyEditor>;
-
-export const useMyEditor = () => useEditor<MyEditor>();
 
 const value: MyValue = [{
   type: 'paragraph',
@@ -445,3 +445,6 @@ const editor = createPlateEditor({
   initialValue: value,
 });
 ```
+
+React 组件调用不带类型参数的 `useEditor()`。组件需要精确的插件能力时，使用
+`useEditorPlugin(Plugin)`。

@@ -38,7 +38,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
   }, [store]);
 
   React.useEffect(() => {
-    if (!isSelectingSome) store.set({ anchorId: null });
+    if (!isSelectingSome) store.set({ anchorKey: null });
   }, [isSelectingSome, store]);
 
   React.useEffect(() => {
@@ -91,7 +91,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
         return;
       }
       if (isHotkey('enter')(event)) {
-        const selectedIds = store.get('selectedIds');
+        const selectedKeys = store.get('selectedKeys');
         let handled = false;
 
         editor.update((tx, { afterCommit }) => {
@@ -100,8 +100,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
             match: (node) =>
               ElementApi.isElement(node) &&
               tx.schema.isBlock(node) &&
-              typeof node.id === 'string' &&
-              selectedIds.has(node.id),
+              selectedKeys.has(tx.key(node)!),
           });
 
           if (!entry) return;

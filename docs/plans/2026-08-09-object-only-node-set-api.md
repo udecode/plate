@@ -25,6 +25,8 @@ Mode:
 
 Completion threshold:
 - `nodes.set(props, options?)` is the sole public form.
+- Plugin-scoped patch objects autocomplete their exact schema-owned property
+  keys and retain exact values.
 - Zero source, test, docs, or example uses of positional
   `nodes.set(keyOrHandle, value, options?)` remain.
 - Positional public types and implementation branches are deleted with no
@@ -69,47 +71,48 @@ Blocked condition:
   remains; compile evidence must name the minimal failing case.
 
 Plite Plan state:
-- status: active
-- phase: ground
-- next: decide
-- handoff: accepted execution in progress
+- status: done
+- phase: prove and hand off
+- next: complete
+- handoff: object-only API, adoption, inference, runtime, docs, and review are
+  verified; one unrelated Core compile error remains recorded below
 
 Start Gates:
 | Gate | Applies | Evidence |
 | --- | --- | --- |
-| Prompt requirements captured | pending | pending |
+| Prompt requirements captured | yes | Object-only API, no compatibility path, schema inference, and later autocomplete requirement are explicit above |
 | Active goal and plan verified | yes | `create_goal` active; this exact plan path is in the objective |
-| Current owners read | pending | pending |
+| Current owners read | yes | Plite editor interface/runtime, Core plugin runtime types, compile contracts, consumers, docs, and generated reference were audited |
 | Best API target resolved | yes | Accepted target: `nodes.set(props, options?)` only; options remain separate |
 | Mode and execution boundary resolved | yes | One-shot accepted-target execution; no unrelated API work |
 
 Work Checklist:
 - [x] Outcome, scope, non-goals, constraints, and owners are concrete.
-- [ ] Current API/docs/tests/exports/behavior claims cite live source.
-- [ ] Reusable public call shape has one `best-api` verdict before target lock.
-- [ ] Every concept-level decision row has owner, adoption, proof, risk, and verdict.
-- [ ] Public breaks and any private bridge have complete adoption/deletion answers.
-- [ ] Execution slices and focused proof matrix are concrete.
-- [ ] Conditional work and final handoff are resolved without generic N/A matrices.
+- [x] Current API/docs/tests/exports/behavior claims cite live source.
+- [x] Reusable public call shape has one `best-api` verdict before target lock.
+- [x] Every concept-level decision row has owner, adoption, proof, risk, and verdict.
+- [x] Public breaks and any private bridge have complete adoption/deletion answers.
+- [x] Execution slices and focused proof matrix are concrete.
+- [x] Conditional work and final handoff are resolved without generic N/A matrices.
 
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
 | --- | --- | --- | --- |
-| Binary readiness | pending | Resolve every readiness condition | pending |
-| Fresh source evidence | pending | Recheck decision-changing current claims | pending |
-| Best API review | pending | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | pending |
-| Conditional risk and adoption | pending | Complete triggered risk/browser/benchmark/provenance work or give one scoped N/A reason | pending |
-| Verification recorded | pending | Record fresh planning proof and exact execution gates | pending |
-| Handoff prepared | pending | Prepare concise ownership, breaks, proof, risks, and execution order | pending |
-| P2 autoreview | pending | Run with `--max-priority P2` for implementation changes; P3 is opt-in only, or record planning-only N/A | pending |
-| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-08-09-object-only-node-set-api.md` | pending |
+| Binary readiness | yes | Resolve every readiness condition | Sole signature and zero positional callers proved |
+| Fresh source evidence | yes | Recheck decision-changing current claims | Final AST caller audit, language-service completion probe, typechecks, tests, docs check, and lint are recorded below |
+| Best API review | yes | Resolve/reject every P0/P1 call-shape finding | Object patches are the sole accepted shape; reviewer findings were fixed or rejected with the explicit boundary below |
+| Conditional risk and adoption | yes | Complete triggered risk/browser/docs work | Dedicated Plite browser routes passed; www registry blocker is unrelated and recorded |
+| Verification recorded | yes | Record fresh planning proof and exact execution gates | See Verification evidence |
+| Handoff prepared | yes | Prepare ownership, breaks, proof, risks, and execution order | See Final handoff prepared |
+| P2 autoreview | yes | Run with `--max-priority P2` | Four review loops fixed index, union, and deletion-sentinel gaps; final remaining table finding is outside this lane and contradicts its earlier accepted hard cut |
+| Goal plan complete | yes | Run the autogoal checker | Final checker is the last command after this update |
 
 Phase / pass table:
 | Phase | Status | Evidence | Next |
 | --- | --- | --- | --- |
-| Ground | in_progress | Plan created | Decide |
-| Decide | pending | | Prove and hand off |
-| Prove and hand off | pending | | User review |
+| Ground | completed | Owners, scope, public break, and all consumers audited | Decide |
+| Decide | completed | Object-only patch law plus exact contextual property inference locked | Prove and hand off |
+| Prove and hand off | completed | Source, type, runtime, browser, docs, generated reference, lint, audit, and review proof recorded | Complete |
 
 Decision brief:
 - outcome: one obvious, atomic, typed node-property patch API.
@@ -135,9 +138,10 @@ Execution slices:
 Proof matrix:
 | Claim | Planning evidence | Execution proof | Status |
 | --- | --- | --- | --- |
-| Object patch is sole public form | Current declarations and all call sites | Type tests and zero-match audit | pending |
-| Node props stay separate from transform options | Existing object/option split | Focused runtime/type proof | pending |
-| Schema-derived property/value typing survives | Current compile tests | Updated positive and negative compile tests | pending |
+| Object patch is sole public form | Current declarations and all call sites | 290 AST-inspected calls; zero calls with more than two arguments | passed |
+| Node props stay separate from transform options | Existing object/option split | 61 primitive tests and 555 consumer tests | passed |
+| Schema-derived property/value typing survives | Current compile tests | Positive/negative direct, computed, alias, ambiguous-owner, index, union, deletion, and live-node assertions | passed |
+| Plugin property autocomplete survives | Real `BaseTextAlignPlugin` author callback | TS 6 language service returned only `textAlign`, with zero diagnostics | passed |
 
 Conditional evidence:
 - High-risk scenarios: object patch accidentally accepts wrong schema values;
@@ -160,23 +164,68 @@ Decisions and tradeoffs:
   typing must be solved in the object-patch owner.
 
 Review fixes:
-- None yet.
+- Required a genuine broad string index for the safe `Record<string, unknown>`
+  erased escape; concrete broad string and number indexes are rejected.
+- Distributed validation across union members so an unsafe index signature
+  cannot hide behind `keyof` union intersection behavior.
+- Added `undefined` to every public Plite node patch property so atomic deletion
+  works with `exactOptionalPropertyTypes`.
+- Preserved exact plugin autocomplete, wrong-value rejection, persisted-alias
+  enforcement, duplicate-owner rejection, and exact node targets.
+- Rejected reviewer requests to ban explicit `any` or checking in a genuinely
+  broad plugin definition: those are deliberate TypeScript/base-editor erased
+  boundaries, and pretending otherwise breaks structural substitutability.
+- Rejected the final table-header migration finding as outside this object-patch
+  lane; it targets a separate user-approved schema hard cut already present in
+  the review bundle.
 
 Error attempts:
 | Error / failed attempt | Count | Next different move | Resolution |
 | --- | ---: | --- | --- |
-| None | 0 | N/A | N/A |
+| Static contextual overload plus permissive fallback lost exact value safety | 1 | Move validation into one inferred generic signature | Exact values and autocomplete both pass |
+| Narrow exact-only signature broke editor structural assignability | 1 | Add only the safe erased record boundary | Core variance errors cleared |
+| Index detection looked at aggregate keys and missed union members | 1 | Distribute validation over every member | Direct and union index negatives compile |
+| Reviewer proposed banning explicit `any` and broad definitions | 1 | Test the structural owner instead of accepting impossible safety | Kept intentional erased boundary; exact contexts remain strict |
+| First www registry browser route imported deleted `plate-types.ts` | 1 | Use the dedicated Plite runtime owner | Table and checklist routes passed, including a live checkbox update |
+| Core compile proof reaches unrelated Plite React generic error | 1 | Isolate changed compile contracts and record owner | Only `packages/plite-react/src/plugin/with-react.ts:178` remains |
 
 Verification evidence:
-- Goal setup: active objective points to this plan; source and command evidence
-  pending.
+- API caller audit: TypeScript AST inspected 290 `.nodes.set` calls under
+  `packages`, `apps`, and `content`; positional offenders: 0.
+- Autocomplete: TypeScript 6 language service queried the real
+  `BaseStylePlugins.ts` text-align callback with an empty patch object; result
+  was exactly `["textAlign"]`, semantic diagnostics: 0.
+- Plite typecheck: `pnpm --filter @platejs/plite typecheck` passed.
+- Core artifact build: `pnpm --filter @platejs/core build` passed.
+- Core compile contracts: every changed assertion is accepted; the command
+  stops only at pre-existing/shared
+  `packages/plite-react/src/plugin/with-react.ts:178` because `dom` is missing
+  from an unrelated generic projection.
+- Primitive behavior: focused Plite transaction and command suite passed 61/61.
+- Consumer behavior: Basic Styles, Footnote, Indent, Layout, Link,
+  List Classic, List, and Table suites passed 555/555 across 39 files.
+- Generated API reference: `pnpm --filter www api-reference:check` passed.
+- Formatting/lint: `pnpm lint:fix` passed with no fixes and 15 existing
+  oversized-artifact warnings.
+- Browser: dedicated Plite table and checklist routes rendered; the checklist
+  mutation changed the third checkbox from false to true. The normal www block
+  route remains blocked by an unrelated stale registry import of deleted
+  `plate-types.ts`.
+- P2 autoreview: fixed direct index, union index, and base deletion-sentinel
+  findings. The final reported table-header migration is outside this plan.
 
 Final handoff prepared:
-- Ownership and target API/runtime: pending.
-- Public breaks and Plate/collaboration adoption: pending.
-- Applicable browser/benchmark/docs/provenance decisions: pending.
-- Proof and execution risks: pending.
-- Execution order and user attention: pending.
+- Ownership and target API/runtime: Plite owns one
+  `nodes.set(props, options?)` primitive; Core specializes plugin patches from
+  the installed schema.
+- Public breaks and adoption: positional overloads, runtime normalization, and
+  all callers are removed with no alias or shim.
+- Inference: exact property completion and values survive, including computed
+  persisted aliases and atomic deletion.
+- Proof: source audit, compile contracts, 616 focused tests, browser mutation,
+  docs/generated reference, lint, and P2 review are complete.
+- Remaining risk: only the unrelated Plite React `dom` projection compile error
+  and unrelated www stale registry import remain; neither belongs to this API.
 
 Timeline:
 - 2026-08-09T20:55:35.101Z Plite Plan created.
@@ -191,5 +240,5 @@ Reboot status:
 | What have I done? | See Timeline |
 
 Open risks:
-- Computed generic keys may require an internal typed patch constructor; do not
-  expose that machinery unless a real remaining caller proves it necessary.
+- Explicit `any` and genuinely broad plugin definitions remain deliberately
+  untyped. Exact plugin contexts reject concrete direct and union index maps.

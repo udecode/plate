@@ -14,9 +14,23 @@ import {
   useEditorSelector,
   usePluginStore,
 } from '@platejs/core/react';
-import { PathApi } from '@platejs/plite';
+import { type Path, PathApi } from '@platejs/plite';
+import type { PLUGINS } from '../../lib';
 import { useEffect } from 'react';
-import type { BlockPlaceholderHookDefinition } from '../plugins/BlockPlaceholderPlugin';
+import type { BlockPlaceholderPluginState } from '../plugins/BlockPlaceholderPlugin';
+
+type BlockPlaceholderHookDefinition = Readonly<{
+  editOnly: true;
+  initialState: BlockPlaceholderPluginState;
+  inject: true;
+  name: typeof PLUGINS.blockPlaceholder;
+  selectors: {
+    placeholder: (
+      state: Readonly<BlockPlaceholderPluginState>,
+      path?: Path
+    ) => string | undefined;
+  };
+}>;
 
 type BlockPlaceholderHookContextDefinition =
   WithAnyName<BlockPlaceholderHookDefinition>;
@@ -87,7 +101,7 @@ export const useBlockPlaceholder: UseHooks<
     const placeholder = Object.keys(placeholders).find((name) => {
       const target = editor.plugin(name);
 
-      return target.type === node.type;
+      return target.schema.type === node.type;
     });
 
     if (

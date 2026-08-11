@@ -34,7 +34,7 @@ Projection is a React rendering layer, not a second document model.
 | Projection     | Sources are projected onto runtime text ids and split into slices.                                            | `@platejs/plite-react`                      |
 | Render         | `Editable` renders projected text through `renderSegment`, `renderLeaf`, `renderText`, and element renderers. | `@platejs/plite-react`                      |
 | Overlay UI     | Sidebars, popovers, toolbars, and widgets read annotation or widget snapshots.                                | App UI plus `@platejs/plite-react`          |
-| Commit refresh | Editor commits name the affected projection runtime ids when possible.                                        | `@platejs/plite` and `@platejs/plite-react` |
+| Commit refresh | Editor commits name the affected projection node keys when possible.                                         | `@platejs/plite` and `@platejs/plite-react` |
 | Proof          | Browser tests verify visible highlights, selection, focus, and follow-up editing.                             | `@platejs/browser`                          |
 
 Keep document data in Plite nodes, roots, and document meta. Keep overlay

@@ -55,7 +55,7 @@ editor.update((tx) => {
 ## Public Type Groups
 
 Core document and editor shapes include `Editor`, `BaseEditor`, `Value`,
-`InitialValue`, `Selection`, `RootKey`, and `RuntimeId`.
+`InitialValue`, `Selection`, `RootKey`, and `NodeKey`.
 
 View, snapshot, and commit types include `EditorView`, `EditorSnapshot`,
 `EditorCommit`, `EditorCommitChanged`,
@@ -146,7 +146,8 @@ const extension = defineExtension("host-state", {
         tx.marks.set(null);
       });
     });
-  },});
+  },
+});
 ```
 
 ## Helper Namespaces

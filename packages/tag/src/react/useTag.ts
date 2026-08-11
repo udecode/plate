@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 
 import { useEditor, useEditorSelector } from '@platejs/core/react';
 import { TextApi } from '@platejs/plite';
-import type { TTagProps } from '@platejs/utils';
+import type { TagItem } from '../lib/BaseTagPlugin';
 import { useEditorString } from '@platejs/utils/react';
 
 import { BaseTagPlugin } from '../lib';
@@ -91,7 +91,7 @@ export const useSelectEditorCombobox = ({
 }: {
   open: boolean;
   selectFirstItem: () => void;
-  onValueChange?: (items: TTagProps[]) => void;
+  onValueChange?: (items: TagItem[]) => void;
 }) => {
   const editor = useEditor();
   const search = useEditorString();

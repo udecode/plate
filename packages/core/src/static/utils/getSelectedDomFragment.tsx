@@ -1,9 +1,11 @@
 import {
   type Descendant,
   type Element as PliteElement,
+  createEditorView,
   ElementApi,
   NodeApi,
 } from '@platejs/plite';
+import { MAIN_ROOT_KEY } from '@platejs/plite/internal';
 
 import { type BaseEditor, HtmlPlugin } from '../../lib';
 
@@ -16,7 +18,9 @@ export const getSelectedDomFragment = (editor: BaseEditor): Descendant[] => {
   const fragment = range.cloneContents();
 
   const domBlocks = Array.from(
-    fragment.querySelectorAll('[data-plite-node="element"][data-block-id]')
+    fragment.querySelectorAll(
+      '[data-plite-node="element"][data-plite-path][data-plite-root]'
+    )
   );
 
   if (domBlocks.length === 0) return [];
@@ -24,14 +28,20 @@ export const getSelectedDomFragment = (editor: BaseEditor): Descendant[] => {
   const nodes: Descendant[] = [];
 
   domBlocks.forEach((node, index) => {
-    const blockId = (node as HTMLElement).dataset.blockId;
-    const block = editor.read((state) =>
-      state.nodes.find<PliteElement>({
-        at: [],
-        match: (n): n is PliteElement =>
-          ElementApi.isElement(n) && n.id === blockId,
-      })
-    );
+    const path = node.getAttribute('data-plite-path')?.split(',').map(Number);
+    const root = node.getAttribute('data-plite-root');
+
+    if (
+      !path ||
+      path.length === 0 ||
+      path.some((part) => !Number.isSafeInteger(part) || part < 0) ||
+      !root
+    ) {
+      return;
+    }
+    const block = (
+      root === MAIN_ROOT_KEY ? editor : createEditorView(editor, { root })
+    ).read.nodes.get<PliteElement>(path);
 
     // prevent inline elements like link and table cells.
     if (!block || block[1].length !== 1) return;

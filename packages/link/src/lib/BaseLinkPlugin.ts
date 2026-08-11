@@ -458,13 +458,13 @@ export const BaseLinkPlugin = defineBasePlugin('link', {
             const [link, linkPath] = linkAbove;
 
             if (url !== link.url) {
-              tx.nodes.set('url', url, { at: linkPath });
+              tx.nodes.set({ url }, { at: linkPath });
             }
             if (target !== link.target) {
               if (target === undefined) {
                 tx.nodes.unset('target', { at: linkPath });
               } else {
-                tx.nodes.set('target', target, { at: linkPath });
+                tx.nodes.set({ target }, { at: linkPath });
               }
             }
 

@@ -33,12 +33,12 @@ export const isMdPhrasingContent = (
  * preserving block IDs when serializing to markdown.
  *
  * @param mdastNode - The mdast node to wrap
- * @param nodeId - The ID to attach to the block element
+ * @param blockId - The persisted element ID to attach to the block element
  * @returns The wrapped mdast node with block element and ID attribute
  */
 export const wrapWithBlockId = (
   mdastNode: MdRootContent,
-  nodeId: string
+  blockId: string
 ): MdMdxJsxFlowElement => {
   if (!isMdFlowContent(mdastNode)) {
     throw new Error('Block IDs can only wrap Markdown flow content.');
@@ -49,7 +49,7 @@ export const wrapWithBlockId = (
       {
         name: 'id',
         type: 'mdxJsxAttribute',
-        value: String(nodeId),
+        value: blockId,
       },
     ],
     children: [mdastNode],

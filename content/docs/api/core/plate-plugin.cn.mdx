@@ -226,10 +226,10 @@ Plate 用于向任何节点组件注入 props 的属性。
 property；consumer portal 不公开该映射。Behavior 和 aggregate-property portal
 不包含 `schema`。
 布尔文本属性使用 `property.boolean({ default: false, omitDefault: true })`。
-在 `update` 中，唯一且未 alias 的 property 使用类型化
-`tx.nodes.set(key, value, options)` 或 `unset(key, options)` overload。Alias 使用
-精确的 authored property handle。结构性和原子写入保留 object form；prefix family
-和 cross-node behavior 使用语义 update method。
+在 `update` 中，`tx.nodes.set(props, options)` 接受 typed property patch，
+`unset(key, options)` 删除 exact property。Alias 在 computed patch 中使用精确的
+authored property handle key。Prefix family 和 cross-node behavior 使用语义
+update method。
 </APIItem>
 
 <APIItem name="rules" type="object">

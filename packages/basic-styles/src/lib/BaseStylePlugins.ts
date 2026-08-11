@@ -343,10 +343,13 @@ export const BaseLineHeightPlugin = defineBasePlugin(PLUGINS.lineHeight, {
         return;
       }
 
-      tx.nodes.set('lineHeight', value, {
-        match,
-        ...options,
-      });
+      tx.nodes.set(
+        { lineHeight: value },
+        {
+          match,
+          ...options,
+        }
+      );
     },
   }),
 });
@@ -397,10 +400,13 @@ export const BaseTextAlignPlugin = defineBasePlugin(PLUGINS.textAlign, {
         return;
       }
 
-      tx.nodes.set('textAlign', value, {
-        match,
-        ...options,
-      });
+      tx.nodes.set(
+        { textAlign: value },
+        {
+          match,
+          ...options,
+        }
+      );
     },
   }),
 });

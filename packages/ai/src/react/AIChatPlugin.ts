@@ -17,15 +17,18 @@ import { SuggestionPlugin } from '@platejs/suggestion/react';
 import { BaseTablePlugin } from '@platejs/table';
 import {
   type Descendant,
+  createEditorView,
   type EditorNodesOptions,
   type Element,
   ElementApi,
   type Node,
   NodeApi,
   type NodeEntry,
+  type NamedRootKey,
   type Path,
   PathApi,
   type Range,
+  type NodeKey,
   type Value,
   defineEffect,
   editorCommands,
@@ -34,8 +37,8 @@ import {
 } from '@platejs/plite';
 import {
   type DefinitionOf,
-  type IdElement,
-  nanoid,
+  type ElementIdEntry,
+  ElementIdPlugin,
   type PlatePluginReadState,
 } from '@platejs/core';
 import { type PlateEditor, definePlatePlugin } from '@platejs/core/react';
@@ -93,13 +96,23 @@ export type TableCellUpdate = {
   id: string;
 };
 
+export type AIChatNodeSnapshot = {
+  node: Element;
+  nodeKey: NodeKey;
+  root?: NamedRootKey;
+};
+
 export type AIChatPluginState = {
   _blockChunks: string;
   _blockPath: Path | null;
   _mdxName: string | null;
-  _replaceIds: string[];
+  _replaceNodeKeys: NodeKey[];
+  _tableCellRefs: Record<
+    string,
+    Readonly<{ key: NodeKey; root?: NamedRootKey }>
+  >;
   chat: AIChatAdapter | null;
-  chatNodes: Array<IdElement & { id: string }>;
+  chatNodes: AIChatNodeSnapshot[];
   chatSelection: Range | null;
   mode: AIMode;
   open: boolean;
@@ -148,7 +161,8 @@ const initialState: AIChatPluginState = {
   _blockChunks: '',
   _blockPath: null,
   _mdxName: null,
-  _replaceIds: [],
+  _replaceNodeKeys: [],
+  _tableCellRefs: {},
   chat: null,
   chatNodes: [],
   chatSelection: null,
@@ -175,6 +189,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
     const codeBlock = editor.plugin(PLUGINS.codeBlock);
     const columnGroup = editor.plugin(PLUGINS.columnGroup);
     const equation = editor.plugin(PLUGINS.equation);
+    const elementId = editor.plugin(ElementIdPlugin);
     const paragraph = editor.plugin(PLUGINS.paragraph);
     const ai = editor.plugin(BaseAIPlugin);
     const suggestionKey = editor.plugin(SuggestionPlugin).schema.key;
@@ -540,7 +555,9 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
     ): Descendant[] =>
       nodes.map((node) => {
         if (TextApi.isText(node)) {
-          return node.suggestion || node.comment ? { text: node.text } : node;
+          return Reflect.get(node, suggestionKey) || node.comment
+            ? { text: node.text }
+            : node;
         }
         if (!ElementApi.isElement(node)) return node;
 
@@ -574,7 +591,9 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
       );
     const diffNodes = (content: string) => {
       const rawChatNodes = context.store.get('chatNodes');
-      let chatNodes = withoutSuggestionData(cloneDeep(rawChatNodes));
+      let chatNodes = withoutSuggestionData(
+        cloneDeep(rawChatNodes.map(({ node }) => node))
+      );
       const first = chatNodes[0];
 
       if (
@@ -607,7 +626,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
           ElementApi.isElement(node)
             ? {
                 ...node,
-                ...(chatNodes[index] ?? { id: nanoid() }),
+                ...chatNodes[index],
                 children: node.children,
               }
             : node
@@ -669,9 +688,9 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
       const chat = context.store.get().chat;
 
       if (chat?.messages.length) chat.clear();
-
       context.store.set({
-        _replaceIds: [],
+        _replaceNodeKeys: [],
+        _tableCellRefs: {},
         chatNodes: [],
         mode: 'insert',
         previewValue: [],
@@ -718,6 +737,8 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
       state: AIChatPluginReadState,
       { type }: { type: MarkdownType }
     ) => {
+      context.store.set({ _tableCellRefs: {} });
+
       if (type === 'editor' || type === 'editorWithBlockId') {
         return editor.api.markdown.serialize({
           value: state.value(),
@@ -768,19 +789,22 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
       const cells = tablePlugin.read.getGridAbove({ format: 'cell' });
 
       if (cells.length === 0) return '';
+      const root = state.view.root() ?? state.selection.root();
+      const tableView = root ? createEditorView(editor, { root }) : null;
+      const tableNodes = tableView?.read.nodes ?? state.nodes;
+      const tableKey = (path: Path) =>
+        tableView ? tableView.key(path) : state.key(path);
 
-      const selectedIds = new Set(
-        cells.flatMap(([cell]) =>
-          typeof cell.id === 'string' ? [cell.id] : []
-        )
-      );
-      const table = state.nodes.block<Element>({
+      const selectedNodeKeys = new Set(cells.map(([, path]) => tableKey(path)));
+      const tableEntry = tableNodes.block<Element>({
         match: (node) =>
           ElementApi.isElement(node) && node.type === tablePlugin.schema.type,
-      })?.[0];
+      });
 
-      if (!table) return '';
+      if (!tableEntry) return '';
+      const [table, tablePath] = tableEntry;
 
+      const refs: AIChatPluginState['_tableCellRefs'] = {};
       const selectedCells: Array<{ cell: Element; id: string }> = [];
       const rows = table.children.map((row, rowIndex) => {
         if (
@@ -790,7 +814,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
           throw new Error('Tables must contain table rows.');
         }
 
-        const values = row.children.map((cell) => {
+        const values = row.children.map((cell, cellIndex) => {
           if (
             !ElementApi.isElement(cell) ||
             cell.type !== editor.plugin(PLUGINS.tableCell).schema.type
@@ -798,10 +822,15 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
             throw new Error('Table rows must contain table cells.');
           }
 
-          if (typeof cell.id === 'string' && selectedIds.has(cell.id)) {
-            selectedCells.push({ cell, id: cell.id });
+          const nodeKey = tableKey([...tablePath, rowIndex, cellIndex]);
 
-            return `<CellRef id="${cell.id}" />`;
+          if (nodeKey && selectedNodeKeys.has(nodeKey)) {
+            const id = `c${selectedCells.length + 1}`;
+
+            refs[id] = { key: nodeKey, ...(root ? { root } : {}) };
+            selectedCells.push({ cell, id });
+
+            return `<CellRef id="${id}" />`;
           }
 
           return cell.children
@@ -839,6 +868,8 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
         })
         .join('\n\n');
 
+      context.store.set({ _tableCellRefs: refs });
+
       return `${rows.join('\n')}\n\n${cellBlocks}`;
     };
     const getPrompt = (
@@ -873,12 +904,20 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
             context.store.get();
 
           context.store.set({ previewValue: [] });
-          editor.plugin(BaseAIPlugin).update.undo();
+          if (!editor.plugin(BaseAIPlugin).update.undo()) return;
           if (chatSelection) editor.update.selection.set(chatSelection);
           else {
-            editor
-              .plugin(BlockSelectionPlugin)
-              .api.set(chatNodes.map((node) => node.id));
+            const nodeKeys = chatNodes.flatMap(({ nodeKey }) =>
+              editor.read.nodes.get(nodeKey) ? [nodeKey] : []
+            );
+
+            if (
+              nodeKeys.length !== chatNodes.length ||
+              new Set(nodeKeys).size !== chatNodes.length
+            ) {
+              return;
+            }
+            editor.plugin(BlockSelectionPlugin).api.set(nodeKeys);
           }
 
           const blocks = editor.plugin(BlockSelectionPlugin).read.getNodes({});
@@ -946,20 +985,23 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
             : chatSelection;
           const chatNodes = (
             blocks.length
-              ? blocks.map(([block]) => block)
-              : editor.read.nodes
-                  .toArray<IdElement>({
-                    match: (node) =>
-                      ElementApi.isElement(node) &&
-                      typeof node.id === 'string' &&
-                      editor.read.schema.isBlock(node),
-                    mode: 'highest',
-                  })
-                  .map(([block]) => block)
-          ).filter(
-            (node): node is IdElement & { id: string } =>
-              typeof node.id === 'string'
-          );
+              ? blocks
+              : editor.read.nodes.toArray<Element>({
+                  match: (node) =>
+                    ElementApi.isElement(node) &&
+                    editor.read.schema.isBlock(node),
+                  mode: 'highest',
+                })
+          ).map(([node]) => {
+            const root =
+              editor.read.view.root() ?? editor.read.selection.root();
+
+            return {
+              node,
+              nodeKey: editor.key(node),
+              ...(root ? { root } : {}),
+            };
+          });
 
           context.store.set({ chatNodes });
           context.store.set({ chatSelection });
@@ -978,32 +1020,43 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
       }),
       read: ({ state }) => ({
         commentRange: (comment: TComment) => {
+          if (!elementId.installed) return;
+
           const nodes = editor.api.markdown.deserialize(
             comment.content
           ).children;
-          let firstBlock: NodeEntry<Element> | undefined;
+          let firstBlock: ElementIdEntry | undefined;
           const ranges: Range[] = [];
 
           nodes.forEach((node, index) => {
-            const block =
-              index === 0
-                ? state.nodes.find<Element>({
-                    at: [],
-                    match: { id: comment.blockId },
-                  })
-                : firstBlock
-                  ? state.nodes.get<Element>([firstBlock[1][0] + index])
-                  : undefined;
+            if (index === 0) {
+              firstBlock = elementId.read.entry(comment.blockId);
+            }
+            const firstEntry = firstBlock;
+            const block = firstEntry
+              ? index === 0
+                ? ([firstEntry.node, firstEntry.path] as NodeEntry<Element>)
+                : (firstEntry.root === 'main'
+                    ? editor
+                    : createEditorView(editor, { root: firstEntry.root })
+                  ).read.nodes.get<Element>([firstEntry.path[0]! + index])
+              : undefined;
 
-            if (index === 0) firstBlock = block;
-            if (!block) return;
+            if (!block || !firstEntry) return;
 
-            const range = context.editor
+            const localRange = context.editor
               .plugin(BaseAIPlugin)
               .api.findTextRangeInBlock({
                 block,
                 findText: NodeApi.string(node),
               });
+            const range =
+              localRange && firstEntry.root !== 'main'
+                ? {
+                    anchor: { ...localRange.anchor, root: firstEntry.root },
+                    focus: { ...localRange.focus, root: firstEntry.root },
+                  }
+                : localRange;
 
             if (range) ranges.push(range);
           });
@@ -1301,9 +1354,23 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
           content: string,
           _options: { split?: boolean } = {}
         ) => {
-          editor.plugin(CursorOverlayPlugin).api.removeCursor('selection');
-
           const chatNodes = context.store.get('chatNodes');
+          const sourceRoots = new Set(chatNodes.map(({ root }) => root));
+
+          // A scoped plugin portal is required to mutate a named root. Until
+          // Plate exposes one, fail closed instead of applying rootless paths
+          // to the primary document.
+          if (
+            sourceRoots.size !== 1 ||
+            !sourceRoots.has(editor.read.view.root())
+          ) {
+            return;
+          }
+          if (chatNodes.length === 1 && !tx.nodes.get(chatNodes[0]!.nodeKey)) {
+            return;
+          }
+
+          editor.plugin(CursorOverlayPlugin).api.removeCursor('selection');
           const nextNodes = diffNodes(content);
 
           if (chatNodes.length <= 1) {
@@ -1324,28 +1391,38 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
             return;
           }
 
-          if (context.store.get('_replaceIds').length === 0) {
+          if (context.store.get('_replaceNodeKeys').length === 0) {
             context.store.set({
-              _replaceIds: chatNodes.map((node) => node.id),
+              _replaceNodeKeys: chatNodes.map(({ nodeKey }) => nodeKey),
             });
           }
 
-          const replaceNodes = tx.nodes.toArray<Element>({
-            at: [],
-            match: (node) =>
-              ElementApi.isElement(node) &&
-              typeof node.id === 'string' &&
-              context.store.get('_replaceIds').includes(node.id),
-          });
-          const suggestion = editor.plugin(SuggestionPlugin).api;
+          const replaceNodeKeys = context.store.get('_replaceNodeKeys');
+
+          if (
+            replaceNodeKeys.length === 0 ||
+            new Set(replaceNodeKeys).size !== replaceNodeKeys.length
+          ) {
+            return;
+          }
+          const resolvedReplaceNodes = replaceNodeKeys.map((nodeKey) =>
+            tx.nodes.get<Element>(nodeKey)
+          );
+
+          if (resolvedReplaceNodes.some((entry) => !entry)) return;
+
+          const replaceNodes = resolvedReplaceNodes
+            .map((entry) => entry!)
+            .toSorted(([, a], [, b]) => PathApi.compare(a, b));
           const groups: {
             at: number[];
             children: Descendant[];
             count: number;
             index: number;
+            keys: NodeKey[];
           }[] = [];
 
-          replaceNodes.forEach(([node, path], index) => {
+          replaceNodes.forEach(([, path], index) => {
             const next = nextNodes[index];
             let replacement: Descendant[] = [];
 
@@ -1355,15 +1432,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
                 nextNodes.length > replaceNodes.length
                   ? nextNodes.slice(index)
                   : [next];
-              replacement =
-                candidates.length === 1 &&
-                suggestion.skipDeletes(node) === suggestion.skipDeletes(next) &&
-                ElementApi.isElement(next) &&
-                suggestion.suggestionData(node)?.type ===
-                  suggestion.suggestionData(next)?.type &&
-                node.id === next.id
-                  ? [node]
-                  : candidates;
+              replacement = candidates;
             }
 
             const at = path.slice(0, -1);
@@ -1386,66 +1455,122 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
                 children: replacement,
                 count: 1,
                 index: childIndex,
+                keys: [],
               });
             }
           });
 
           tx.ai.markBatch();
           groups.toReversed().forEach((group) => {
-            tx.nodes.replaceChildren(group.children, group);
+            tx.nodes.replaceChildren(group.children, {
+              at: group.at,
+              count: group.count,
+              index: group.index,
+              preserveKeys: true,
+            });
+
+            group.keys = group.children.map((_node, offset) => {
+              const node = tx.nodes.get<Element>([
+                ...group.at,
+                group.index + offset,
+              ])?.[0];
+
+              if (!node || !ElementApi.isElement(node)) {
+                throw new Error('AI block replacements must be elements.');
+              }
+
+              return tx.key(node);
+            });
           });
 
-          const ids = nextNodes.flatMap((node) =>
-            ElementApi.isElement(node) && typeof node.id === 'string'
-              ? [node.id]
-              : []
-          );
+          const replacementKeys = groups.flatMap(({ keys }) => keys);
+
+          if (
+            replacementKeys.length !== nextNodes.length ||
+            new Set(replacementKeys).size !== replacementKeys.length
+          ) {
+            throw new Error('AI block replacement identity is ambiguous.');
+          }
 
           updateContext.afterCommit(() => {
-            editor.plugin(BlockSelectionPlugin).api.set(ids);
-            context.store.set({ _replaceIds: ids });
+            editor.plugin(BlockSelectionPlugin).api.set(replacementKeys);
+            context.store.set({ _replaceNodeKeys: replacementKeys });
           });
         };
         const applyTableCellSuggestion = ({ content, id }: TableCellUpdate) => {
-          const entry = tx.nodes.find<Element>({
-            at: [],
-            match: { id },
-          });
+          const refs = context.store.get('_tableCellRefs');
+          const ref = Object.hasOwn(refs, id) ? refs[id] : undefined;
+          const entry = ref ? tx.nodes.get<Element>(ref.key) : undefined;
 
-          if (!entry) {
-            console.warn(`Table cell with id "${id}" not found`);
+          if (!ref || !entry) {
+            console.warn('Table cell reference not found');
 
             return;
           }
 
           const [cell, path] = entry;
+          const children = ref.root ? tx.root(ref.root) : tx.children();
+          const rootedCell = NodeApi.get({ children, type: '' }, path);
+
+          if (rootedCell !== cell) {
+            console.warn('Table cell reference root does not match');
+
+            return;
+          }
+          const current = withoutSuggestionData(cell.children);
+          const parsed = editor.api.markdown
+            .deserialize(content)
+            .children.map((node, index) => {
+              const previous = current[index];
+              const id = previous && Reflect.get(previous, 'id');
+
+              return ElementApi.isElement(node) && typeof id === 'string'
+                ? { ...node, id }
+                : node;
+            });
           const next = withTransient(
-            editor
-              .plugin(SuggestionPlugin)
-              .api.diff(
-                withoutSuggestionData(cell.children),
-                editor.api.markdown.deserialize(content).children,
-                { ignoreProps: ['id'] }
-              )
+            editor.plugin(SuggestionPlugin).api.diff(current, parsed, {
+              ignoreProps: ['id'],
+            })
           );
 
           tx.ai.markBatch();
-          tx.nodes.replaceChildren(next, { at: path });
+          tx.nodes.replaceChildren(next, { at: ref.key });
         };
         const getSelectedBlocks = () => {
-          const selectedIds = editor
+          const selectedKeys = editor
             .plugin(BlockSelectionPlugin)
-            .store.get('selectedIds');
+            .store.get('selectedKeys');
 
-          if (!selectedIds?.size) return [];
+          if (!selectedKeys?.size) return [];
 
-          return tx.nodes.toArray<IdElement>({
-            at: [],
-            match: (node) =>
-              ElementApi.isElement(node) &&
-              typeof node.id === 'string' &&
-              selectedIds.has(node.id),
+          return [...selectedKeys]
+            .flatMap((nodeKey) => {
+              const entry = tx.nodes.get<Element>(nodeKey);
+
+              return entry ? [entry] : [];
+            })
+            .toSorted(([, a], [, b]) => PathApi.compare(a, b));
+        };
+        const getChatBlocks = (restored: boolean) => {
+          if (!restored) return [];
+
+          const chatNodes = context.store.get('chatNodes');
+          const entries = chatNodes.flatMap(({ nodeKey }) => {
+            const keyedEntry = tx.nodes.get<Element>(nodeKey);
+
+            return keyedEntry ? [keyedEntry] : [];
           });
+
+          if (
+            entries.length !== chatNodes.length ||
+            new Set(entries.map(([node]) => tx.key(node))).size !==
+              chatNodes.length
+          ) {
+            return [];
+          }
+
+          return entries.toSorted(([, a], [, b]) => PathApi.compare(a, b));
         };
 
         return {
@@ -1500,14 +1625,9 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
 
             if (context.store.get('toolName') !== 'generate') {
               const selected = getSelectedBlocks();
-              const selectedIds = blockSelection.store.get('selectedIds');
               const nodes = cloneDeep(selected.map(([node]) => node));
 
-              tx.ai.undo();
-
-              if (!selectedIds || selectedIds.size === 0) return;
-
-              const last = getSelectedBlocks().at(-1);
+              const last = getChatBlocks(tx.ai.undo()).at(-1);
 
               if (!last) return;
 
@@ -1531,7 +1651,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
             const isBlockSelecting =
               blockSelection.store.get('isSelectingSome');
 
-            tx.ai.undo();
+            const restored = tx.ai.undo();
             tx.nodes.remove({
               at: [],
               match: { type: context.schema.type },
@@ -1539,10 +1659,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
             updateContext.afterCommit(() => hideOptions());
 
             if (isBlockSelecting) {
-              const selected = getSelectedBlocks();
-              const selectedIds = blockSelection.store.get('selectedIds');
-
-              if (!selectedIds || selectedIds.size === 0) return;
+              const selected = getChatBlocks(restored);
 
               const last = selected.at(-1);
 
@@ -1606,7 +1723,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
 
             if (!source) return;
 
-            tx.ai.undo();
+            const restored = tx.ai.undo();
             tx.nodes.remove({
               at: [],
               match: { type: context.schema.type },
@@ -1651,7 +1768,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
               return;
             }
 
-            const selected = getSelectedBlocks();
+            const selected = getChatBlocks(restored);
 
             if (selected.length === 0) return;
 
@@ -1722,7 +1839,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
           const aiKey = context.editor.plugin(BaseAIPlugin).schema.key;
 
           if (Reflect.get(node, aiKey) && !context.store.get('open')) {
-            tx.nodes.unset('ai', {
+            tx.nodes.unset(aiKey, {
               at: path,
               match: (candidate) => Boolean(Reflect.get(candidate, aiKey)),
             });

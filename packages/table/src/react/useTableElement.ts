@@ -1,24 +1,24 @@
 import { useTableValue } from './useTableStore';
 import { TablePlugin } from './TablePlugin';
 import {
+  useEditor,
   useEditorPlugin,
   useEditorSelector,
   useElement,
-  useElementSelector,
 } from '@platejs/core/react';
-import { PathApi } from '@platejs/plite';
+import { PathApi, type NodeKey } from '@platejs/plite';
 import { useClaimEditableDOMCommit } from '@platejs/plite-react/internal';
-import { KEYS, type TTableElement } from '@platejs/utils';
 import React from 'react';
 
 export const useTableElement = () => {
   useClaimEditableDOMCommit();
 
-  const { editor, store } = useEditorPlugin(TablePlugin);
+  const editor = useEditor();
+  const { store } = useEditorPlugin(TablePlugin);
 
   const { disableMarginLeft } = store.get();
 
-  const element = useElement<TTableElement>();
+  const element = useElement(TablePlugin);
   const marginLeftOverride = useTableValue('marginLeftOverride');
 
   const marginLeft = disableMarginLeft
@@ -50,18 +50,12 @@ export const useTableColSizes = ({
   disableOverrides?: boolean;
   transformColSizes?: (colSizes: number[]) => number[];
 } = {}): number[] => {
-  const { editor } = useEditorPlugin(TablePlugin);
+  const editor = useEditor();
   const colSizeOverrides = useTableValue('colSizeOverrides');
-  const tablePath = useElementSelector(([, path]) => path, {
-    name: KEYS.table,
-  });
+  const tableNode = useElement(TablePlugin);
 
   const overriddenColSizes = useEditorSelector(
     () => {
-      const tableNode = editor.read.nodes.get<TTableElement>(tablePath)?.[0];
-
-      if (!tableNode) return [];
-
       const colSizes = editor
         .plugin(TablePlugin)
         .api.getOverriddenColumnSizes(
@@ -81,7 +75,7 @@ export const useTableColSizes = ({
   return overriddenColSizes;
 };
 
-const hasSameIds = (
+const hasSameKeys = (
   nextValue: readonly string[] | null | undefined,
   prevValue: readonly string[] | null | undefined
 ) => {
@@ -89,8 +83,8 @@ const hasSameIds = (
   if (!nextValue || !prevValue) return !nextValue && !prevValue;
   if (nextValue.length !== prevValue.length) return false;
 
-  for (const [index, nextId] of nextValue.entries()) {
-    if (nextId !== prevValue[index]) return false;
+  for (const [index, nextKey] of nextValue.entries()) {
+    if (nextKey !== prevValue[index]) return false;
   }
 
   return true;
@@ -99,8 +93,8 @@ const hasSameIds = (
 const TABLE_CELL_SELECTED_ATTRIBUTE = 'data-table-cell-selected';
 
 type TableSelectionDomState = Readonly<{
-  caretCellId: string | null;
-  selectedCellIds: readonly string[] | null;
+  caretCellKey: NodeKey | null;
+  selectedCellKeys: readonly NodeKey[] | null;
 }>;
 
 const hasSameSelectionDomState = (
@@ -111,33 +105,33 @@ const hasSameSelectionDomState = (
   if (!nextValue || !prevValue) return false;
 
   return (
-    nextValue.caretCellId === prevValue.caretCellId &&
-    hasSameIds(nextValue.selectedCellIds, prevValue.selectedCellIds)
+    nextValue.caretCellKey === prevValue.caretCellKey &&
+    hasSameKeys(nextValue.selectedCellKeys, prevValue.selectedCellKeys)
   );
 };
 
 const getSelectedCellElement = (
   table: HTMLTableElement,
-  cellId: string,
-  tableCellElementsById: Map<string, HTMLElement>
+  cellKey: string,
+  tableCellElementsByKey: Map<string, HTMLElement>
 ) => {
-  const cachedElement = tableCellElementsById.get(cellId);
+  const cachedElement = tableCellElementsByKey.get(cellKey);
 
   if (cachedElement?.isConnected && table.contains(cachedElement)) {
     return cachedElement;
   }
 
-  const escapedCellId = globalThis.CSS?.escape
-    ? globalThis.CSS.escape(cellId)
-    : cellId.replaceAll('"', '\\"');
+  const escapedCellKey = globalThis.CSS?.escape
+    ? globalThis.CSS.escape(cellKey)
+    : cellKey.replaceAll('"', '\\"');
   const element = table.querySelector<HTMLElement>(
-    `[data-table-cell-id="${escapedCellId}"]`
+    `[data-table-cell-key="${escapedCellKey}"]`
   );
 
   if (element) {
-    tableCellElementsById.set(cellId, element);
+    tableCellElementsByKey.set(cellKey, element);
   } else {
-    tableCellElementsById.delete(cellId);
+    tableCellElementsByKey.delete(cellKey);
   }
 
   return element;
@@ -148,24 +142,26 @@ export const useTableSelectionDom = (
 ) => {
   const previousTableRef = React.useRef<HTMLTableElement | null>(null);
   const previousCaretCellElementRef = React.useRef<HTMLElement | null>(null);
-  const previousCaretCellIdRef = React.useRef<string | null>(null);
+  const previousCaretCellKeyRef = React.useRef<NodeKey | null>(null);
   const previousCaretColorRef = React.useRef('');
-  const previousSelectedCellIdsRef = React.useRef<readonly string[] | null>(
+  const previousSelectedCellKeysRef = React.useRef<readonly NodeKey[] | null>(
     null
   );
-  const tableCellElementsByIdRef = React.useRef<Map<
+  const tableCellElementsByKeyRef = React.useRef<Map<
     string,
     HTMLElement
   > | null>(null);
-  const { caretCellId, selectedCellIds } = useEditorSelector(
+  const { caretCellKey, selectedCellKeys } = useEditorSelector(
     (editor) => {
       const view = editor.plugin(TablePlugin).read.getSelection();
       const isExpanded = !!view && view.anchors.length > 1;
 
       return {
-        caretCellId: isExpanded ? (view.anchor.id ?? null) : null,
-        selectedCellIds:
-          isExpanded && view.cellIds.length > 0 ? view.cellIds : null,
+        caretCellKey: isExpanded
+          ? (view.cellKeys[view.anchors.indexOf(view.anchor)] ?? null)
+          : null,
+        selectedCellKeys:
+          isExpanded && view.cellKeys.length > 0 ? view.cellKeys : null,
       };
     },
     {
@@ -189,50 +185,51 @@ export const useTableSelectionDom = (
     if (!table) return;
 
     const tableChanged = previousTableRef.current !== table;
-    const previousSelectedCellIdsRefValue = previousSelectedCellIdsRef.current;
+    const previousSelectedCellKeysRefValue =
+      previousSelectedCellKeysRef.current;
 
     if (
       !tableChanged &&
-      caretCellId === previousCaretCellIdRef.current &&
-      hasSameIds(selectedCellIds, previousSelectedCellIdsRefValue)
+      caretCellKey === previousCaretCellKeyRef.current &&
+      hasSameKeys(selectedCellKeys, previousSelectedCellKeysRefValue)
     ) {
       return;
     }
 
-    const previousSelectedCellIds = tableChanged
+    const previousSelectedCellKeys = tableChanged
       ? []
-      : (previousSelectedCellIdsRefValue ?? []);
-    const nextSelectedCellIds = selectedCellIds ?? [];
-    let tableCellElementsById = tableCellElementsByIdRef.current;
+      : (previousSelectedCellKeysRefValue ?? []);
+    const nextSelectedCellKeys = selectedCellKeys ?? [];
+    let tableCellElementsByKey = tableCellElementsByKeyRef.current;
 
-    if (tableChanged || !tableCellElementsById) {
-      const nextTableCellElementsById = new Map<string, HTMLElement>();
+    if (tableChanged || !tableCellElementsByKey) {
+      const nextTableCellElementsByKey = new Map<string, HTMLElement>();
 
       table
-        .querySelectorAll<HTMLElement>('[data-table-cell-id]')
+        .querySelectorAll<HTMLElement>('[data-table-cell-key]')
         .forEach((element) => {
-          const cellId = element.getAttribute('data-table-cell-id');
+          const cellKey = element.getAttribute('data-table-cell-key');
 
-          if (cellId) nextTableCellElementsById.set(cellId, element);
+          if (cellKey) nextTableCellElementsByKey.set(cellKey, element);
         });
 
-      tableCellElementsById = nextTableCellElementsById;
+      tableCellElementsByKey = nextTableCellElementsByKey;
     }
 
-    tableCellElementsByIdRef.current = tableCellElementsById;
+    tableCellElementsByKeyRef.current = tableCellElementsByKey;
 
-    if (tableChanged || caretCellId !== previousCaretCellIdRef.current) {
+    if (tableChanged || caretCellKey !== previousCaretCellKeyRef.current) {
       if (previousCaretCellElementRef.current) {
         previousCaretCellElementRef.current.style.caretColor =
           previousCaretColorRef.current;
       }
 
-      const nextCaretCellElement = caretCellId
-        ? getSelectedCellElement(table, caretCellId, tableCellElementsById)
+      const nextCaretCellElement = caretCellKey
+        ? getSelectedCellElement(table, caretCellKey, tableCellElementsByKey)
         : null;
 
       previousCaretCellElementRef.current = nextCaretCellElement;
-      previousCaretCellIdRef.current = caretCellId;
+      previousCaretCellKeyRef.current = caretCellKey;
       previousCaretColorRef.current =
         nextCaretCellElement?.style.caretColor ?? '';
 
@@ -241,60 +238,60 @@ export const useTableSelectionDom = (
       }
     }
 
-    if (previousSelectedCellIds.length === 0) {
-      nextSelectedCellIds.forEach((cellId) => {
+    if (previousSelectedCellKeys.length === 0) {
+      nextSelectedCellKeys.forEach((cellKey) => {
         getSelectedCellElement(
           table,
-          cellId,
-          tableCellElementsById
+          cellKey,
+          tableCellElementsByKey
         )?.setAttribute(TABLE_CELL_SELECTED_ATTRIBUTE, 'true');
       });
 
       previousTableRef.current = table;
-      previousSelectedCellIdsRef.current = nextSelectedCellIds;
+      previousSelectedCellKeysRef.current = nextSelectedCellKeys;
 
       return;
     }
 
-    if (nextSelectedCellIds.length === 0) {
-      previousSelectedCellIds.forEach((cellId) => {
+    if (nextSelectedCellKeys.length === 0) {
+      previousSelectedCellKeys.forEach((cellKey) => {
         getSelectedCellElement(
           table,
-          cellId,
-          tableCellElementsById
+          cellKey,
+          tableCellElementsByKey
         )?.removeAttribute(TABLE_CELL_SELECTED_ATTRIBUTE);
       });
 
       previousTableRef.current = table;
-      previousSelectedCellIdsRef.current = nextSelectedCellIds;
+      previousSelectedCellKeysRef.current = nextSelectedCellKeys;
 
       return;
     }
 
-    const nextSelectedCellIdsSet = new Set(nextSelectedCellIds);
-    const previousSelectedCellIdsSet = new Set(previousSelectedCellIds);
+    const nextSelectedCellKeysSet = new Set(nextSelectedCellKeys);
+    const previousSelectedCellKeysSet = new Set(previousSelectedCellKeys);
 
-    previousSelectedCellIds.forEach((cellId) => {
-      if (nextSelectedCellIdsSet.has(cellId)) return;
+    previousSelectedCellKeys.forEach((cellKey) => {
+      if (nextSelectedCellKeysSet.has(cellKey)) return;
 
       getSelectedCellElement(
         table,
-        cellId,
-        tableCellElementsById
+        cellKey,
+        tableCellElementsByKey
       )?.removeAttribute(TABLE_CELL_SELECTED_ATTRIBUTE);
     });
 
-    nextSelectedCellIds.forEach((cellId) => {
-      if (previousSelectedCellIdsSet.has(cellId)) return;
+    nextSelectedCellKeys.forEach((cellKey) => {
+      if (previousSelectedCellKeysSet.has(cellKey)) return;
 
       getSelectedCellElement(
         table,
-        cellId,
-        tableCellElementsById
+        cellKey,
+        tableCellElementsByKey
       )?.setAttribute(TABLE_CELL_SELECTED_ATTRIBUTE, 'true');
     });
 
     previousTableRef.current = table;
-    previousSelectedCellIdsRef.current = nextSelectedCellIds;
+    previousSelectedCellKeysRef.current = nextSelectedCellKeys;
   });
 };

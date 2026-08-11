@@ -1,19 +1,18 @@
 import type {
   EditorStateView,
+  Element,
   ElementEntry,
   Location,
+  Node,
   Path,
   Range,
+  NodeKey,
   Value,
 } from '@platejs/plite';
-import { PathApi, PointApi, RangeApi } from '@platejs/plite';
-import type {
-  TTableCellElement,
-  TTableElement,
-  TTableRowElement,
-} from '@platejs/utils';
+import { ElementApi, PathApi, PointApi, RangeApi } from '@platejs/plite';
+import type { TableCellElement } from '../BaseTablePlugin';
 
-import { createDetachedTableContext, type TableContext } from './context';
+import { createTableContext, type TableContext } from './context';
 import type { TableGrid, TableGridAnchor } from './grid';
 
 export type TableSelectionBounds = Readonly<{
@@ -29,16 +28,17 @@ export type TableSelectionView = Readonly<{
   anchor: TableGridAnchor;
   anchors: readonly TableGridAnchor[];
   bounds: TableSelectionBounds;
-  cellIds: readonly string[];
-  cellEntries: readonly ElementEntry<TTableCellElement>[];
+  cellKeys: readonly NodeKey[];
+  cellEntries: readonly ElementEntry<TableCellElement>[];
   complete: boolean;
   context: TableContext;
   focus: TableGridAnchor;
   grid: TableGrid;
-  hasCellId: (id: string) => boolean;
+  hasCellKey: (key: NodeKey) => boolean;
   root?: string;
   selection: Range;
-  table: TTableElement;
+  table: Element;
+  tableKey: NodeKey;
   tablePath: Path;
   version: number;
 }>;
@@ -190,7 +190,10 @@ const getAnchorsWithinBounds = (
 };
 
 export const readTableSelection = <V extends Value>(
-  state: Pick<EditorStateView<V>, 'nodes' | 'ranges' | 'runtime' | 'selection'>,
+  state: Pick<
+    EditorStateView<V>,
+    'key' | 'nodes' | 'ranges' | 'runtime' | 'selection' | 'view'
+  >,
   {
     at,
     cellTypes,
@@ -213,6 +216,10 @@ export const readTableSelection = <V extends Value>(
   }
 
   compileCount++;
+
+  const isCell = (node: Node): node is TableCellElement =>
+    ElementApi.isElement(node) &&
+    cellTypes.some((cellType) => cellType === node.type);
 
   const publish = (view: TableSelectionView | null) => {
     if (cacheKey) {
@@ -238,10 +245,16 @@ export const readTableSelection = <V extends Value>(
     return publish(null);
   }
 
+  const root =
+    selection.anchor.root ??
+    (at === undefined ? state.selection.root() : state.view.root());
+  const inRoot = (point: Range['anchor']) =>
+    root === undefined ? point : { ...point, root };
+
   const readCell = (point: Range['anchor']) =>
-    state.nodes.above<TTableCellElement>({
-      at: point,
-      match: { type: cellTypes },
+    state.nodes.above<TableCellElement>({
+      at: inRoot(point),
+      match: isCell,
     });
   const anchorEntry = readCell(selection.anchor);
   const focusEntry = readCell(selection.focus);
@@ -249,9 +262,9 @@ export const readTableSelection = <V extends Value>(
   if (!anchorEntry || !focusEntry) return publish(null);
 
   const readTable = (point: Range['anchor']) =>
-    state.nodes.above<TTableElement>({
-      at: point,
-      match: { type: tableType },
+    state.nodes.above<Element>({
+      at: inRoot(point),
+      match: (node) => ElementApi.isElement(node) && node.type === tableType,
     });
   const anchorTableEntry = readTable(selection.anchor);
   const focusTableEntry = readTable(selection.focus);
@@ -265,7 +278,7 @@ export const readTableSelection = <V extends Value>(
   }
 
   const [table, tablePath] = anchorTableEntry;
-  const context = createDetachedTableContext(table, tablePath);
+  const context = createTableContext(state, tablePath, root)!;
   const anchor =
     context.anchorAtPath(anchorEntry[1]) ?? context.anchorOf(anchorEntry[0]);
   const focus =
@@ -280,33 +293,30 @@ export const readTableSelection = <V extends Value>(
       : endpointBounds;
   const { anchors, complete } = getAnchorsWithinBounds(context, bounds);
   const cellEntries = anchors.map(
-    (cell): ElementEntry<TTableCellElement> => [
+    (cell): ElementEntry<TableCellElement> => [
       cell.cell,
       tablePath.concat(cell.path),
     ]
   );
-  const cellIds = Object.freeze(
-    anchors.flatMap(({ id }) => (typeof id === 'string' ? [id] : []))
-  );
-  const cellIdSet = new Set(cellIds);
+  const cellKeys = Object.freeze(anchors.map(({ cell }) => state.key(cell)));
+  const cellKeySet = new Set(cellKeys);
 
   return publish(
     Object.freeze({
       anchor,
       anchors: Object.freeze(anchors),
       bounds: Object.freeze(bounds),
-      cellIds,
+      cellKeys,
       cellEntries: Object.freeze(cellEntries),
       complete,
       context,
       focus,
       grid: context.grid,
-      hasCellId: (id: string) => cellIdSet.has(id),
-      ...(selection.anchor.root === undefined
-        ? {}
-        : { root: selection.anchor.root }),
+      hasCellKey: (key: NodeKey) => cellKeySet.has(key),
+      ...(root === undefined ? {} : { root }),
       selection,
       table,
+      tableKey: state.key(table),
       tablePath,
       version: snapshot.version,
     })
@@ -371,25 +381,17 @@ export const getTableSelectionExpansion = (
   return Object.freeze({ anchor: view.anchor, focus: target });
 };
 
-export const projectTableSelection = (
-  view: TableSelectionView
-): TTableElement => {
+export const projectTableSelection = (view: TableSelectionView): Element => {
   const rows = view.table.children
     .slice(view.bounds.minRow, view.bounds.maxRow + 1)
-    .map(
-      (row) =>
-        ({
-          ...row,
-          children: [],
-        }) as TTableRowElement & { children: TTableCellElement[] }
-    );
+    .map((row) => ({ children: [] as TableCellElement[], row }));
 
   for (const anchor of view.anchors) {
     rows[anchor.row - view.bounds.minRow]?.children.push(anchor.cell);
   }
 
   return {
-    children: rows,
+    children: rows.map(({ children, row }) => ({ ...row, children })),
     type: view.table.type,
   };
 };

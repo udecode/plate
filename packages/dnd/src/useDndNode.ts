@@ -18,6 +18,7 @@ import {
   type NodeEntry,
   type Path,
   PathApi,
+  type NodeKey,
 } from '@platejs/plite';
 import { DndStorePlugin, type DndPluginState } from './internal/DndStorePlugin';
 
@@ -37,7 +38,7 @@ export type DropDirection = 'bottom' | 'left' | 'right' | 'top' | undefined;
 export type DropLineDirection = '' | 'bottom' | 'left' | 'right' | 'top';
 
 export type ElementDragItemNode = {
-  id: string[] | string;
+  key: NodeKey[] | NodeKey;
   [key: string]: unknown;
   editorId: string;
   element: Element;
@@ -71,7 +72,7 @@ export interface UseDropNodeOptions
   onDropHandler?: (
     editor: PlateEditor,
     props: {
-      id: string;
+      key: NodeKey;
       dragItem: DragItemNode;
       monitor: DropTargetMonitor<DragItemNode, unknown>;
       nodeRef: React.RefObject<HTMLElement | null>;
@@ -95,7 +96,7 @@ export type UseDndNodeOptions = Pick<UseDropNodeOptions, 'element'> &
     onDropHandler?: (
       editor: PlateEditor,
       props: {
-        id: string;
+        key: NodeKey;
         dragItem: DragItemNode;
         monitor: DropTargetMonitor<DragItemNode, unknown>;
         nodeRef: React.RefObject<HTMLElement | null>;
@@ -150,8 +151,8 @@ export const useDndPlugin = () => {
           : relatedTarget instanceof Node
             ? relatedTarget.parentElement
             : null;
-      const targetBlock = targetElement?.closest('[data-block-id]');
-      const relatedBlock = relatedElement?.closest('[data-block-id]');
+      const targetBlock = targetElement?.closest('[data-plite-node-key]');
+      const relatedBlock = relatedElement?.closest('[data-plite-node-key]');
       const isLeavingEditor = !(
         event.target === editorDOMNode || editorDOMNode.contains(event.target)
       );
@@ -191,6 +192,7 @@ export type GetHoverDirectionOptions = {
   monitor: DropTargetMonitor;
   nodeRef: React.RefObject<HTMLElement | null>;
   editorId?: string;
+  nodeKey?: NodeKey;
   orientation?: 'horizontal' | 'vertical';
 };
 
@@ -201,18 +203,21 @@ export const getHoverDirection = ({
   monitor,
   nodeRef,
   orientation = 'vertical',
+  nodeKey,
 }: GetHoverDirectionOptions): DropDirection => {
   if (!nodeRef.current) return;
 
   if ('element' in dragItem) {
     if (element === dragItem.element) return;
 
-    const draggedIds = Array.isArray(dragItem.id) ? dragItem.id : [dragItem.id];
+    const draggedKeys = Array.isArray(dragItem.key)
+      ? dragItem.key
+      : [dragItem.key];
 
     if (
       (editorId === undefined || dragItem.editorId === editorId) &&
-      typeof element.id === 'string' &&
-      draggedIds.includes(element.id)
+      nodeKey !== undefined &&
+      draggedKeys.includes(nodeKey)
     ) {
       return;
     }
@@ -260,6 +265,7 @@ export const getDropPath = (
     monitor,
     nodeRef,
     orientation,
+    nodeKey: editor.key(element),
   });
 
   if (!direction) return;
@@ -283,10 +289,9 @@ export const getDropPath = (
     }
     dropEntry = [element, hoveredPath];
   } else {
-    dropEntry = editor.read.nodes.find<Element>({
-      at: [],
-      match: { id: element.id },
-    });
+    const hoveredPath = editor.read.nodes.path(element);
+
+    if (hoveredPath) dropEntry = [element, hoveredPath];
   }
   if (!dropEntry) return;
   if (
@@ -342,7 +347,7 @@ const useDomDragNode = (
   ConnectDragSource,
   ConnectDragPreview,
 ] => {
-  const elementId = staleElement.id;
+  const elementKey = editor.key(staleElement);
   const [isAboutToDrag, setIsAboutToDrag] = React.useState(false);
   const [collected, dragRef, preview] = useDrag<
     DragItemNode,
@@ -361,8 +366,6 @@ const useDomDragNode = (
       setIsAboutToDrag(false);
     },
     item(monitor) {
-      if (typeof elementId !== 'string') return null;
-
       const store = editor.plugin(DndStorePlugin).store;
 
       store.set({ isDragging: true });
@@ -370,29 +373,26 @@ const useDomDragNode = (
       document.body.classList.add('dragging');
 
       const itemValue = typeof item === 'function' ? item(monitor) : item;
-      const element = editor.read.nodes.find<Element>({
-        at: [],
-        match: { id: elementId },
-      })?.[0];
+      const element = editor.read.nodes.get<Element>(elementKey)?.[0];
 
       if (!element) return null;
 
-      const currentDraggingId = store.get('draggingId');
-      let id: string[] | string;
+      const currentDraggingKey = store.get('draggingKey');
+      let key: NodeKey[] | NodeKey;
 
       if (
-        Array.isArray(currentDraggingId) &&
-        currentDraggingId.length > 1 &&
-        currentDraggingId.includes(elementId)
+        Array.isArray(currentDraggingKey) &&
+        currentDraggingKey.length > 1 &&
+        currentDraggingKey.includes(elementKey)
       ) {
-        id = Array.from(currentDraggingId);
+        key = Array.from(currentDraggingKey);
       } else {
-        id = elementId;
-        store.set({ draggingId: elementId });
+        key = elementKey;
+        store.set({ draggingKey: elementKey });
       }
 
       return {
-        id,
+        key,
         editor,
         editorId: editor.id,
         element,
@@ -435,11 +435,9 @@ const useDomDropNode = (
       isOver: monitor.isOver({ shallow: true }),
     }),
     drop: (dragItem, monitor) => {
-      const id = element.id;
+      const key = editor.key(element);
 
-      if (typeof id !== 'string') return;
-
-      if (!('id' in dragItem)) {
+      if (!('key' in dragItem)) {
         const result = getDropPath(editor, {
           canDropNode,
           dragItem,
@@ -455,7 +453,7 @@ const useDomDropNode = (
         if (!result || !onDropFiles) return;
 
         return onDropFiles({
-          id,
+          key,
           dragItem,
           editor,
           monitor,
@@ -466,7 +464,7 @@ const useDomDropNode = (
 
       const handled =
         !!onDropHandler &&
-        onDropHandler(editor, { id, dragItem, monitor, nodeRef });
+        onDropHandler(editor, { key, dragItem, monitor, nodeRef });
 
       if (handled) return;
 
@@ -484,25 +482,17 @@ const useDomDropNode = (
       const { direction, dragPath, to } = result;
 
       if (dragItem.editorId === editor.id) {
-        const draggedIds = Array.isArray(dragItem.id)
-          ? dragItem.id
-          : [dragItem.id];
+        const draggedKeys = Array.isArray(dragItem.key)
+          ? dragItem.key
+          : [dragItem.key];
 
-        if (draggedIds.length > 1) {
-          if (
-            typeof element.id === 'string' &&
-            draggedIds.includes(element.id)
-          ) {
+        if (draggedKeys.length > 1) {
+          if (draggedKeys.includes(editor.key(element))) {
             return;
           }
 
-          const entries = draggedIds
-            .map((draggedId) =>
-              editor.read.nodes.find<Element>({
-                at: [],
-                match: { id: draggedId },
-              })
-            )
+          const entries = draggedKeys
+            .map((draggedKey) => editor.read.nodes.get<Element>(draggedKey))
             .filter((entry): entry is NodeEntry<Element> => !!entry)
             .toSorted(([, a], [, b]) => PathApi.compare(a, b));
           const insertAfter = direction === 'bottom' || direction === 'right';
@@ -549,18 +539,13 @@ const useDomDropNode = (
         return;
       }
 
-      const draggedIds = Array.isArray(dragItem.id)
-        ? dragItem.id
-        : dragItem.id
-          ? [dragItem.id]
+      const draggedKeys = Array.isArray(dragItem.key)
+        ? dragItem.key
+        : dragItem.key
+          ? [dragItem.key]
           : [];
-      const entries = draggedIds
-        .map((draggedId) =>
-          sourceEditor.read.nodes.find<Element>({
-            at: [],
-            match: { id: draggedId },
-          })
-        )
+      const entries = draggedKeys
+        .map((draggedKey) => sourceEditor.read.nodes.get<Element>(draggedKey))
         .filter((entry): entry is NodeEntry<Element> => !!entry);
       const elements = entries
         .toSorted(([, a], [, b]) => PathApi.compare(a, b))
@@ -585,7 +570,7 @@ const useDomDropNode = (
     hover: (dragItem, monitor) => {
       const store = editor.plugin(DndStorePlugin).store;
       const { _isOver, dropTarget } = store.get();
-      const currentId = dropTarget?.id ?? null;
+      const currentKey = dropTarget?.key ?? null;
       const currentLine = dropTarget?.line ?? '';
       const result = getDropPath(editor, {
         canDropNode,
@@ -597,22 +582,20 @@ const useDomDropNode = (
       });
 
       if (!result) {
-        if (currentId || currentLine) {
-          store.set({ dropTarget: { id: null, line: '' } });
+        if (currentKey || currentLine) {
+          store.set({ dropTarget: { key: null, line: '' } });
         }
 
         return;
       }
 
       const { direction } = result;
-      const elementId = element.id;
+      const elementKey = editor.key(element);
 
-      if (typeof elementId !== 'string') return;
-
-      const newDropTarget = { id: elementId, line: direction };
+      const newDropTarget = { key: elementKey, line: direction };
 
       if (
-        newDropTarget.id !== currentId ||
+        newDropTarget.key !== currentKey ||
         newDropTarget.line !== currentLine
       ) {
         if (!_isOver) return;
@@ -630,13 +613,13 @@ const useDomDropNode = (
             return;
           }
 
-          const previousNode = editor.read.nodes.get(previousPath)?.[0];
-
           store.set({
-            dropTarget:
-              typeof previousNode?.id === 'string'
-                ? { id: previousNode.id, line: 'bottom' }
-                : newDropTarget,
+            dropTarget: editor.read.nodes.get(previousPath)
+              ? {
+                  key: editor.key(previousPath),
+                  line: 'bottom',
+                }
+              : newDropTarget,
           });
 
           return;
@@ -739,18 +722,19 @@ export const useDraggable = (props: UseDndNodeOptions): DraggableState => {
 };
 
 export const useDropLine = ({
-  id: idProp,
+  key: keyProp,
   orientation = 'vertical',
 }: {
-  id?: string;
+  key?: NodeKey;
   orientation?: 'horizontal' | 'vertical';
 } = {}): {
   dropLine?: DropLineDirection;
 } => {
   const element = useElement();
-  const id = idProp ?? element.id;
+  const editor = useEditor();
+  const key = keyProp ?? editor.key(element);
   const dropTarget = useDndPluginStore('dropTarget');
-  const dropLine = dropTarget && dropTarget.id === id ? dropTarget.line : '';
+  const dropLine = dropTarget && dropTarget.key === key ? dropTarget.line : '';
 
   if (orientation) {
     const isHorizontal = dropLine === 'left' || dropLine === 'right';

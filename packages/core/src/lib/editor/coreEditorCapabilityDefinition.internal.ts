@@ -6,7 +6,6 @@ import type { DebugApi } from '../plugins/debug/DebugPlugin';
 import type { DomApi, DomPluginUpdate } from '../plugins/dom/DOMPlugin';
 import type { ElementStateApi } from '../plugins/element-state/ElementStatePlugin';
 import type { HtmlApi } from '../plugins/html/HtmlPlugin';
-import type { NodeIdPluginUpdate } from '../plugins/node-id/NodeIdPlugin';
 import type { OverridePluginUpdate } from '../plugins/override/OverridePlugin';
 
 /**
@@ -42,10 +41,6 @@ export type CoreEditorCapabilityDefinition =
     }>
   | Readonly<{ name: 'inputRules' }>
   | Readonly<{
-      name: 'nodeId';
-      update: NodeIdPluginUpdate;
-    }>
-  | Readonly<{
       name: 'override';
       update: OverridePluginUpdate;
     }>
@@ -66,7 +61,6 @@ export type CoreEditorTransaction = Readonly<{
   affinity: AffinityPluginUpdate;
   dom: DomPluginUpdate;
   history: HistoryStateApi & HistoryTxApi;
-  nodeId: NodeIdPluginUpdate;
   override: OverridePluginUpdate;
 }>;
 
@@ -74,6 +68,5 @@ export type CoreEditorUpdate = Readonly<{
   affinity: AffinityPluginUpdate;
   dom: DomPluginUpdate;
   history: HistoryTxApi;
-  nodeId: NodeIdPluginUpdate;
   override: OverridePluginUpdate;
 }>;

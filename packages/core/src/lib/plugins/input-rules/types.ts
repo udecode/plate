@@ -2,6 +2,7 @@ import type {
   Element,
   EditorUpdateTransactionOf,
   NodeEntry,
+  NodeTarget,
   Path,
   Point,
   PropertyJsonValue,
@@ -15,6 +16,10 @@ import type { AnyBasePlugin, PluginReference } from '../../plugin';
 export interface InputRuleEditor extends BaseEditor {}
 
 export type InputRuleTarget = 'insertBreak' | 'insertData' | 'insertText';
+
+type InputRuleInsertTextOptions = Omit<TextInsertTextOptions, 'at'> & {
+  at?: NodeTarget;
+};
 
 export type MarkInputRuleMatch = {
   afterStartMatchPoint: Point;
@@ -67,8 +72,8 @@ export type InsertTextInputRuleContext<TEditor = BaseEditor> =
   SelectionInputRuleContext<TEditor> &
     TransformInputRuleContext<TEditor> & {
       cause: 'insertText';
-      insertText: (text: string, options?: TextInsertTextOptions) => void;
-      options?: TextInsertTextOptions;
+      insertText: (text: string, options?: InputRuleInsertTextOptions) => void;
+      options?: InputRuleInsertTextOptions;
       text: string;
     };
 

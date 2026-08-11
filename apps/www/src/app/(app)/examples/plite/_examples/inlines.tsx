@@ -520,10 +520,8 @@ const InlineText = (props: RenderTextProps) => {
 };
 
 const AddLinkButton = () => {
-  const editor = useEditor<CustomEditor>();
-  const active = useEditorSelector((editor: CustomEditor) =>
-    isLinkActive(editor)
-  );
+  const editor = useEditor();
+  const active = useEditorSelector((editor) => isLinkActive(editor));
   return (
     <Button
       active={active}
@@ -543,10 +541,8 @@ const AddLinkButton = () => {
 };
 
 const RemoveLinkButton = () => {
-  const editor = useEditor<CustomEditor>();
-  const active = useEditorSelector((editor: CustomEditor) =>
-    isLinkActive(editor)
-  );
+  const editor = useEditor();
+  const active = useEditorSelector((editor) => isLinkActive(editor));
 
   return (
     <Button
@@ -564,7 +560,7 @@ const RemoveLinkButton = () => {
 };
 
 const ToggleEditableButtonButton = () => {
-  const editor = useEditor<CustomEditor>();
+  const editor = useEditor();
   return (
     <Button
       active

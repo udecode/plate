@@ -116,10 +116,10 @@ export const buildMdastNode = (
   if (nodeParser) {
     const mdastNode = nodeParser(node, options);
 
-    // If withBlockId is enabled and the node has an ID, wrap it
-    // But only wrap if isBlock is true (top-level elements only)
-    if (options.withBlockId && typeof node.id === 'string' && isBlock) {
-      return wrapWithBlockId(mdastNode, node.id);
+    if (options.withBlockId && isBlock) {
+      const blockId = options.blockId?.(node);
+
+      if (blockId) return wrapWithBlockId(mdastNode, blockId);
     }
 
     return mdastNode;

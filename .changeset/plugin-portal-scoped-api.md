@@ -12,11 +12,11 @@ duplicates, and canonicalize a legacy property through `sourceKey`. Use editor-s
 `NodeKey` for live node targeting, selection, drag and drop, and temporary UI
 state; node keys cover text nodes and never enter serialized data.
 
-Infer plugin-local keyed node mutations from the current plugin plus its
-required dependencies through a shallow capability graph. Use literal
-`nodes.set(key, value)` / `unset(key)` for one unique unaliased property, exact
-handles for aliases, semantic owner updates for prefix or cross-node behavior,
-and object mutations for structural, atomic, dynamic, or ambiguous writes.
+Infer plugin-local node-property patches from the current plugin plus its
+required dependencies through a shallow capability graph. Use
+`nodes.set(props, options)` for typed atomic writes, the exact property handle
+key for aliases, `unset(key, options)` for removals, and semantic owner updates
+for prefix or cross-node behavior.
 
 Rename Plate plugin identity from `key` to `name` across descriptor
 definitions, inferred contracts, installed descriptors, lookup parameters,

@@ -1,4 +1,3 @@
-import { NODES } from '@platejs/utils';
 import { useEditorPlugin, useEditorSelector } from '@platejs/core/react';
 import { RangeApi } from '@platejs/plite';
 import { useEditorReadOnly } from '@platejs/plite-react';
@@ -11,9 +10,11 @@ export const useTableMergeState = () => {
   const { disableMerge } = store.get();
 
   const readOnly = useEditorReadOnly();
-  const someTable = useEditorSelector((editor) =>
-    editor.read.nodes.some({ match: { type: NODES.table } })
-  );
+  const someTable = useEditorSelector((editor) => {
+    const { schema } = editor.plugin(TablePlugin);
+
+    return editor.read.nodes.some({ match: { type: schema.type } });
+  });
   const selectionExpanded = useEditorSelector((editor) =>
     editor.read.selection.isExpanded()
   );

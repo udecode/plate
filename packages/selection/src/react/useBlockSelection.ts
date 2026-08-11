@@ -1,4 +1,4 @@
-import React, { useMemo, useSyncExternalStore } from 'react';
+import React, { useMemo } from 'react';
 
 import { getFragmentProp, type GetFragmentPropOptions } from '@platejs/core';
 import type { NormalizePluginState } from '@platejs/core/internal';
@@ -6,19 +6,25 @@ import {
   useEditor,
   useEditorPlugin,
   useEditorSelector,
+  usePluginStore,
 } from '@platejs/core/react';
 import { useElementContext } from '@platejs/core/react/internal';
-import { type Element, ElementApi, type Path } from '@platejs/plite';
+import {
+  type Element,
+  ElementApi,
+  type Path,
+  type NodeKey,
+} from '@platejs/plite';
+import { PLUGINS } from '@platejs/utils';
 
 import {
   type PartialSelectionAreaOptions,
+  type SelectionAreaSelectables,
   SelectionArea,
   type SelectionAreaTarget,
   type SelectionAreaTrigger,
 } from '../SelectionArea';
 import { BlockSelectionPlugin } from './BlockSelectionPlugin';
-
-const EMPTY_SELECTED_IDS = new Set<string>();
 
 export const useBlockSelectable = ({
   element: elementProp,
@@ -45,39 +51,26 @@ export const useBlockSelectable = ({
   };
 };
 
-export const useBlockSelected = (id?: string) => {
+export const useBlockSelected = (key?: NodeKey) => {
+  const editor = useEditor();
   const element = useElementContext()?.element;
-  const blockSelection = useEditorPlugin(BlockSelectionPlugin);
-  const selectedIds = useSyncExternalStore(
-    blockSelection.store.subscribe,
-    () => blockSelection.store.get('selectedIds'),
-    () => EMPTY_SELECTED_IDS
-  );
-  const blockId =
-    id ?? (typeof element?.id === 'string' ? element.id : undefined);
+  const nodeKey = key ?? (element ? editor.key(element) : undefined);
 
-  return typeof blockId === 'string' && selectedIds.has(blockId);
+  return usePluginStore(BlockSelectionPlugin, 'isSelected', nodeKey);
 };
 
 export function useBlockSelectionNodes() {
   const editor = useEditor();
-  const blockSelection = useEditorPlugin(BlockSelectionPlugin);
-  const selectedIds = useSyncExternalStore(
-    blockSelection.store.subscribe,
-    () => blockSelection.store.get('selectedIds'),
-    () => EMPTY_SELECTED_IDS
-  );
+  const selectedKeys = usePluginStore(BlockSelectionPlugin, 'selectedKeys');
 
   return useMemo(
     () =>
       editor.read.nodes.toArray<Element>({
         at: [],
         match: (node) =>
-          ElementApi.isElement(node) &&
-          typeof node.id === 'string' &&
-          selectedIds.has(node.id),
+          ElementApi.isElement(node) && selectedKeys.has(editor.key(node)!),
       }),
-    [editor, selectedIds]
+    [editor, selectedKeys]
   );
 }
 
@@ -96,11 +89,9 @@ export function useBlockSelectionFragmentProp(
 }
 
 export const useIsSelecting = () => {
-  const blockSelection = useEditorPlugin(BlockSelectionPlugin);
-  const isSelectingSome = useSyncExternalStore(
-    blockSelection.store.subscribe,
-    () => blockSelection.store.get('isSelectingSome'),
-    () => false
+  const isSelectingSome = usePluginStore(
+    BlockSelectionPlugin,
+    'isSelectingSome'
   );
   const selectionExpanded = useEditorSelector((editor) =>
     editor.read.selection.isExpanded()
@@ -109,21 +100,23 @@ export const useIsSelecting = () => {
   return selectionExpanded || isSelectingSome;
 };
 
-function toMutableSelectionTargets(
-  value: readonly string[] | string | undefined
-): string[] | string | undefined;
-function toMutableSelectionTargets(
+const toMutableSelectionTargets = (
   value: readonly SelectionAreaTarget[] | SelectionAreaTarget | undefined
-): SelectionAreaTarget[] | SelectionAreaTarget | undefined;
-function toMutableSelectionTargets(
-  value: readonly SelectionAreaTarget[] | SelectionAreaTarget | undefined
-) {
-  return value === undefined
+): SelectionAreaTarget[] | SelectionAreaTarget | undefined =>
+  value === undefined
     ? undefined
     : typeof value === 'string' || value instanceof HTMLElement
       ? value
       : Array.from(value);
-}
+
+const toMutableSelectables = (
+  value: SelectionAreaSelectables | undefined
+): (() => HTMLElement[]) | string[] | string | undefined =>
+  value === undefined ||
+  typeof value === 'function' ||
+  typeof value === 'string'
+    ? value
+    : Array.from(value);
 
 const toMutableSelectionAreaOptions = (
   options: NormalizePluginState<PartialSelectionAreaOptions> | undefined
@@ -150,15 +143,16 @@ const toMutableSelectionAreaOptions = (
     : undefined,
   boundaries: toMutableSelectionTargets(options?.boundaries),
   container: toMutableSelectionTargets(options?.container),
-  selectables: toMutableSelectionTargets(options?.selectables),
+  selectables: toMutableSelectables(options?.selectables),
   startAreas: toMutableSelectionTargets(options?.startAreas),
 });
 
-export const useSelectionArea = () => {
-  const { api, editor, store } = useEditorPlugin(BlockSelectionPlugin);
+export const useSelectionArea = (selectionAreaElement?: HTMLElement | null) => {
+  const editor = useEditor();
+  const { api, store } = useEditorPlugin(BlockSelectionPlugin);
   const { areaOptions } = store.get();
-  const areaRef = React.useRef({ ids: new Set<string>() });
-  const trsRef = React.useRef({ ids: new Set<string>() });
+  const areaRef = React.useRef({ keys: new Set<NodeKey>() });
+  const trsRef = React.useRef({ keys: new Set<NodeKey>() });
 
   React.useEffect(() => {
     const onStart = () => {
@@ -168,14 +162,25 @@ export const useSelectionArea = () => {
       store.set({ isSelectionAreaVisible: true });
     };
     const selectionAreaOptions = toMutableSelectionAreaOptions(areaOptions);
+    const editable = editor.api.dom.editable();
+    const defaultTarget = editable ?? `#${editor.id}`;
+    const defaultContainer = editor.api.dom.scroll?.() ?? defaultTarget;
     const selection = new SelectionArea({
       document: window.document,
       selectionAreaClass: 'plite-selection-area',
+      selectionAreaElement: selectionAreaElement ?? undefined,
       ...selectionAreaOptions,
-      boundaries: selectionAreaOptions.boundaries ?? `#${editor.id}`,
-      container: selectionAreaOptions.container ?? `#${editor.id}`,
+      boundaries: selectionAreaOptions.boundaries ?? defaultTarget,
+      container: selectionAreaOptions.container ?? defaultContainer,
       selectables:
-        selectionAreaOptions.selectables ?? `#${editor.id} .plite-selectable`,
+        selectionAreaOptions.selectables ??
+        (editable
+          ? () =>
+              Array.from(
+                editable.querySelectorAll<HTMLElement>('.plite-selectable')
+              )
+          : `#${editor.id} .plite-selectable`),
+      startAreas: selectionAreaOptions.startAreas ?? defaultTarget,
     })
       .on('beforestart', () => {
         store.set({ isSelecting: false });
@@ -191,37 +196,37 @@ export const useSelectionArea = () => {
       .on('move', ({ store: { changed } }) => {
         if (!store.get().isSelectionAreaVisible) onStart();
 
+        const getBlockByNodeKey = (nodeKey: NodeKey) =>
+          editor.read.nodes.get<Element>(nodeKey);
+
         if (changed.added.length > 0 || changed.removed.length > 0) {
-          const next = new Set(store.get().selectedIds);
+          const next = new Set(store.get().selectedKeys);
 
           changed.removed.forEach((element) => {
             if (!(element instanceof HTMLElement)) return;
 
-            const { blockId } = element.dataset;
+            const nodeKey = element.dataset.pliteNodeKey as NodeKey | undefined;
 
-            if (!blockId) return;
+            if (!nodeKey) return;
 
-            next.delete(blockId);
-            areaRef.current.ids.delete(blockId);
+            next.delete(nodeKey);
+            areaRef.current.keys.delete(nodeKey);
           });
 
           changed.added.forEach((element) => {
             if (!(element instanceof HTMLElement)) return;
 
-            const { blockId } = element.dataset;
+            const nodeKey = element.dataset.pliteNodeKey as NodeKey | undefined;
 
-            if (!blockId) return;
+            if (!nodeKey) return;
 
-            const block = editor.read.nodes.block({
-              at: [],
-              match: { id: blockId },
-            });
+            const block = getBlockByNodeKey(nodeKey);
 
             if (!block || block[0].type === 'table') return;
 
             if (block[1].length === 1) {
-              next.add(blockId);
-              areaRef.current.ids.add(blockId);
+              next.add(nodeKey);
+              areaRef.current.keys.add(nodeKey);
               return;
             }
 
@@ -229,75 +234,85 @@ export const useSelectionArea = () => {
               at: block[1],
               match: (node) =>
                 ElementApi.isElement(node) &&
-                typeof node.id === 'string' &&
-                areaRef.current.ids.has(node.id),
+                areaRef.current.keys.has(editor.key(node)!),
             });
 
             if (!hasAncestor) {
-              next.add(blockId);
-              areaRef.current.ids.add(blockId);
+              next.add(nodeKey);
+              areaRef.current.keys.add(nodeKey);
             }
           });
 
-          store.set({ selectedIds: next });
+          store.set({ selectedKeys: next });
         }
 
-        const storedIds = store.get('selectedIds');
-        const next = new Set<string>(
-          storedIds instanceof Set
-            ? [...storedIds].filter(
-                (id): id is string => typeof id === 'string'
-              )
-            : []
+        const storedKeys = store.get('selectedKeys');
+        const next = new Set<NodeKey>(
+          storedKeys instanceof Set ? storedKeys : []
         );
-        const ids = [...next];
-        const getBlockById = (id: string) =>
-          editor.read.nodes.block({ at: [], match: { id } });
-        const isTableOnlySelection = ids.every((id) => {
-          const block = getBlockById(id);
+        const keys = [...next];
+        const table = editor.plugin(PLUGINS.table);
+        const tableRow = editor.plugin(PLUGINS.tableRow);
+        const tableCell = editor.plugin(PLUGINS.tableCell);
+        const tableTypes = [table, tableRow, tableCell]
+          .filter((plugin) => plugin.installed)
+          .map((plugin) => plugin.schema.type);
+        const tableType = table.installed ? table.schema.type : undefined;
+        const isTableOnlySelection =
+          tableTypes.length > 0 &&
+          keys.every((key) => {
+            const block = getBlockByNodeKey(key);
 
-          if (!block) return false;
-          if (block[1].length >= 3) return true;
+            if (!block) return false;
+            if (block[1].length >= 3) return true;
 
-          return ['table', 'tr', 'th'].includes(block[0].type);
-        });
+            return tableTypes.includes(block[0].type);
+          });
 
         if (isTableOnlySelection) {
-          ids.some((id) => {
-            const block = getBlockById(id);
+          keys.some((key) => {
+            const block = getBlockByNodeKey(key);
 
-            if (!block || block[0].type !== 'table') return false;
+            if (!block || block[0].type !== tableType) return false;
 
-            next.delete(id);
-            trsRef.current.ids.forEach((rowId) => {
-              next.add(rowId);
+            next.delete(key);
+            trsRef.current.keys.forEach((rowKey) => {
+              next.add(rowKey);
             });
-            trsRef.current.ids.clear();
+            trsRef.current.keys.clear();
 
             return true;
           });
         } else {
-          ids.some((id) => {
-            const block = getBlockById(id);
+          keys.some((key) => {
+            const block = getBlockByNodeKey(key);
 
-            if (!block || !['tr', 'th'].includes(block[0].type)) return false;
+            if (
+              !block ||
+              ![tableRow, tableCell].some(
+                (plugin) =>
+                  plugin.installed && plugin.schema.type === block[0].type
+              )
+            )
+              return false;
 
             const table = editor.read.nodes.above<Element>({
               at: block[1],
               match: (node) => ElementApi.isElement(node),
             });
 
-            if (!table || typeof table[0].id !== 'string') return false;
+            if (!table) return false;
+            const tableKey = editor.key(table[0]);
 
-            next.add(table[0].id);
+            if (!tableKey) return false;
+            next.add(tableKey);
             table[0].children.forEach((row) => {
-              if (
-                ElementApi.isElement(row) &&
-                typeof row.id === 'string' &&
-                next.has(row.id)
-              ) {
-                trsRef.current.ids.add(row.id);
-                next.delete(row.id);
+              if (!ElementApi.isElement(row)) return;
+              const rowKey = editor.key(row);
+
+              if (rowKey && next.has(rowKey)) {
+                trsRef.current.keys.add(rowKey);
+                next.delete(rowKey);
               }
             });
 
@@ -305,16 +320,16 @@ export const useSelectionArea = () => {
           });
         }
 
-        store.set({ selectedIds: next });
+        store.set({ selectedKeys: next });
       })
       .on('stop', () => {
-        areaRef.current = { ids: new Set() };
-        trsRef.current = { ids: new Set() };
+        areaRef.current = { keys: new Set() };
+        trsRef.current = { keys: new Set() };
         store.set({ isSelectionAreaVisible: false });
       });
 
     return () => selection.destroy();
     // The selection engine owns one lifecycle per mounted editor.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [selectionAreaElement]);
 };

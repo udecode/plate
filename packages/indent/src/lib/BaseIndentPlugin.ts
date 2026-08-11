@@ -216,7 +216,7 @@ export const BaseIndentPlugin = defineBasePlugin(PLUGINS.indent, {
           typeof indent === 'number' &&
           indent > indentMax
         ) {
-          tx.nodes.set('indent', indentMax, { at: path });
+          tx.nodes.set({ indent: indentMax }, { at: path });
         }
       },
     },

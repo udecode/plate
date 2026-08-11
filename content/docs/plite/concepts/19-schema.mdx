@@ -198,7 +198,7 @@ bookkeeping and should not make a node meaningfully non-empty or appear in
 content-only serialization.
 
 ```ts
-const NodeId = schema.elementProperty("id", property.json(), {
+const ImportSource = schema.elementProperty("importSource", property.string(), {
   role: "metadata",
   target: target.group("block"),
 });

@@ -71,8 +71,14 @@ export const useExcalidrawElement = ({
   // Excalidraw treats initialData as an initialization boundary and mutates it.
   const initialData = React.useMemo(
     () => ({
-      appState: element.data?.state ? cloneDeep(element.data.state) : undefined,
-      elements: element.data?.elements ? cloneDeep(element.data.elements) : [],
+      appState: element.data?.state
+        ? (cloneDeep(element.data.state) as Partial<AppState>)
+        : undefined,
+      elements: element.data?.elements
+        ? (cloneDeep(
+            element.data.elements
+          ) as unknown as readonly OrderedExcalidrawElement[])
+        : [],
       libraryItems: cloneDeep(libraryItems),
       scrollToContent,
     }),

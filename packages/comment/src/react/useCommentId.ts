@@ -10,5 +10,5 @@ export const useCommentId = () =>
 
     if (!commentNode) return;
 
-    return api.nodeId(commentNode[0]);
+    return api.id(commentNode[0]);
   });

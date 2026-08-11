@@ -121,17 +121,51 @@ const assertTypedPluginPropertyMutations = () => {
       },
     },
     update: ({ schema: authorSchema, tx }) => {
+      const countOrCustomKey = 'count' as 'count' | 'custom';
+      const invalidNumberIndexUnion = {} as
+        | Record<number, string>
+        | { count: number };
+      const invalidStringIndexUnion = {} as
+        | Record<string, string>
+        | { count: number };
+      const dynamicNumberKey = 1 as number;
+      const dynamicStringKey = 'count' as string;
+      const storedToneOrCustomKey = 'storedTone' as 'storedTone' | 'custom';
+      const validPatchUnion = {} as
+        | { count: number }
+        | { dependencyTone: string };
+
       tx.nodes.set({ count: 1 });
+      tx.nodes.set({ count: undefined });
       tx.nodes.set({ dependencyTone: 'warning' });
+      tx.nodes.set(validPatchUnion);
       tx.nodes.set({
         [authorSchema.properties.storedTone.key]: 'warning',
       });
+      tx.nodes.set(
+        { count: 1 },
+        { at: {} as import('@platejs/plite').Element }
+      );
       tx.nodes.unset(authorSchema.properties.storedTone);
 
       // @ts-expect-error local property values remain exact
       tx.nodes.set({ count: '1' });
+      // @ts-expect-error indexed patches must satisfy every owned key they may address
+      tx.nodes.set({ [countOrCustomKey]: '1' });
+      // @ts-expect-error broad number indexes cannot bypass schema ownership
+      tx.nodes.set({ [dynamicNumberKey]: 1 });
+      // @ts-expect-error broad string indexes require the explicit unknown escape
+      tx.nodes.set({ [dynamicStringKey]: 1 });
+      // @ts-expect-error every union member must satisfy schema ownership
+      tx.nodes.set(invalidNumberIndexUnion);
+      // @ts-expect-error every union member must satisfy schema ownership
+      tx.nodes.set(invalidStringIndexUnion);
+      // @ts-expect-error unknown on one closed property is not an open record
+      tx.nodes.set({ count: undefined as unknown });
       // @ts-expect-error aliased properties use their persisted schema key
       tx.nodes.set({ storedTone: 'warning' });
+      // @ts-expect-error indexed patches cannot bypass aliased local keys
+      tx.nodes.set({ [storedToneOrCustomKey]: 'warning' });
 
       return {};
     },

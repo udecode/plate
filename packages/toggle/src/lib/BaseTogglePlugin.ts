@@ -1,15 +1,15 @@
 import { defineBasePlugin, type DefinitionOf } from '@platejs/core';
-import { ElementApi, schema } from '@platejs/plite';
-import { KEYS } from '@platejs/utils';
+import { ElementApi, type NodeKey, schema } from '@platejs/plite';
+import { PLUGINS } from '@platejs/utils';
 
 export type BaseTogglePluginState = {
-  openIds: Set<string>;
-  toggleIndex: Map<string, string[]>;
+  openKeys: Set<NodeKey>;
+  toggleIndex: Map<NodeKey, NodeKey[]>;
 };
 
-export const BaseTogglePlugin = defineBasePlugin(KEYS.toggle, {
+export const BaseTogglePlugin = defineBasePlugin(PLUGINS.toggle, {
   initialState: (): BaseTogglePluginState => ({
-    openIds: new Set(),
+    openKeys: new Set(),
     toggleIndex: new Map(),
   }),
   schema: {
@@ -17,34 +17,32 @@ export const BaseTogglePlugin = defineBasePlugin(KEYS.toggle, {
       content: schema.content.text({ default: 'text', min: 1 }),
     },
   },
-}).extend(({ store, type }) => ({
+}).extend(({ store, schema: { type } }) => ({
   api: () => ({
-    toggleIds: (ids: string[], force: boolean | null = null) => {
+    toggleKeys: (keys: NodeKey[], force: boolean | null = null) => {
       store.set((draft) => {
-        if (!draft.openIds) draft.openIds = new Set();
+        if (!draft.openKeys) draft.openKeys = new Set();
 
-        const { openIds } = draft;
+        const { openKeys } = draft;
 
-        ids.forEach((id) => {
-          const isOpen = openIds.has(id);
+        keys.forEach((key) => {
+          const isOpen = openKeys.has(key);
           const nextOpen = force === null ? !isOpen : force;
 
           if (nextOpen) {
-            openIds.add(id);
+            openKeys.add(key);
           } else {
-            openIds.delete(id);
+            openKeys.delete(key);
           }
         });
       });
     },
   }),
   read: ({ state }) => ({
-    isActive: () =>
-      !!state.selection() &&
-      state.nodes.some({
-        match: { type },
-      }),
-    lastEnclosedEntry: (toggleId: string) => {
+    lastEnclosedEntry: (toggleKey: NodeKey) => {
+      const togglePath = state.nodes.path(toggleKey);
+
+      if (!togglePath || togglePath.length !== 1) return;
       let inside = false;
       let last:
         | readonly [ReturnType<typeof state.children>[number], number[]]
@@ -54,12 +52,12 @@ export const BaseTogglePlugin = defineBasePlugin(KEYS.toggle, {
       state.children().forEach((node, index) => {
         if (!ElementApi.isElement(node)) return;
 
-        const indentValue = node[KEYS.indent];
+        const indentValue = node.indent;
         const indent = typeof indentValue === 'number' ? indentValue : 0;
         const adjustedIndent =
           node.listStyleType && indent ? indent - 1 : indent;
 
-        if (node.id === toggleId && node.type === type) {
+        if (index === togglePath[0] && node.type === type) {
           inside = true;
           toggleIndent = adjustedIndent;
           return;
@@ -77,15 +75,15 @@ export const BaseTogglePlugin = defineBasePlugin(KEYS.toggle, {
     },
   }),
   selectors: {
-    enclosingIds: (state, elementId: string) =>
-      state.toggleIndex.get(elementId) ?? [],
-    isClosed: (state, elementId: string) =>
-      (state.toggleIndex.get(elementId) ?? []).some(
-        (toggleId) => !state.openIds.has(toggleId)
+    enclosingKeys: (state, elementKey: NodeKey) =>
+      state.toggleIndex.get(elementKey) ?? [],
+    isClosed: (state, elementKey: NodeKey) =>
+      (state.toggleIndex.get(elementKey) ?? []).some(
+        (toggleKey) => !state.openKeys.has(toggleKey)
       ),
-    isOpen: (state, toggleId: string) => state.openIds.has(toggleId),
-    someClosed: (state, toggleIds: string[]) =>
-      toggleIds.some((id) => !state.openIds.has(id)),
+    isOpen: (state, toggleKey: NodeKey) => state.openKeys.has(toggleKey),
+    someClosed: (state, toggleKeys: NodeKey[]) =>
+      toggleKeys.some((key) => !state.openKeys.has(key)),
   },
 }));
 

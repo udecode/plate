@@ -182,8 +182,8 @@ const MyPlugin = definePlatePlugin('myPlugin', {
 
 ### Property mutation
 
-在 `update` 中，写入一个唯一 property 时使用 literal-key overload。Plate 从当前
-插件及其 required dependencies 推断 key 和 value：
+在 `update` 中传入 property patch object。Plate 从当前插件及其 required
+dependencies 推断每个 key 和 value：
 
 ```ts
 const LineHeightPlugin = defineBasePlugin('lineHeight', {
@@ -193,15 +193,14 @@ const LineHeightPlugin = defineBasePlugin('lineHeight', {
     },
   },
   update: ({ tx }) => ({
-    set: (value: number) => tx.nodes.set('lineHeight', value),
+    set: (value: number) => tx.nodes.set({ lineHeight: value }),
     unset: () => tx.nodes.unset('lineHeight'),
   }),
 });
 ```
 
-Aliased property 使用 `schema.properties.<localId>`。结构性变更和原子 multi-property
-写入保留 object form。Prefix family 和 cross-node behavior 放在语义 plugin update
-method 中。
+Aliased property 使用 property handle 的精确 key 作为 computed object key。Prefix
+family 和 cross-node behavior 放在语义 plugin update method 中。
 
 ### `defineCodecs`
 

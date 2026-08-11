@@ -1,10 +1,9 @@
 import { DebugPlugin, Hotkeys } from '@platejs/core';
 import { type PlateEditor, toPlatePlugin } from '@platejs/core/react';
-import { PathApi } from '@platejs/plite';
+import { createEditorView, PathApi, type NodeKey } from '@platejs/plite';
 import { getSelection } from '@platejs/plite-dom';
 
 import {
-  BaseTableCellHeaderPlugin,
   BaseTableCellPlugin,
   BaseTablePlugin,
   BaseTableRowPlugin,
@@ -13,6 +12,7 @@ import {
   planTableCellDrop,
   type TableDragCapture,
 } from '../lib/internal/paste';
+import { readTableSelection } from '../lib/internal/selection';
 
 const tableDragCaptures = new WeakMap<PlateEditor, TableDragCapture>();
 const TABLE_CELL_DRAG_MIME = 'application/x-plate-table-cell-selection';
@@ -25,15 +25,28 @@ const consumeTableDragEvent = (event: {
   event.stopPropagation();
 };
 
-export const TableRowPlugin = toPlatePlugin(BaseTableRowPlugin);
-
 export const TableCellPlugin = toPlatePlugin(BaseTableCellPlugin);
 
-export const TableCellHeaderPlugin = toPlatePlugin(BaseTableCellHeaderPlugin);
+export const TableRowPlugin = toPlatePlugin(BaseTableRowPlugin, {
+  dependencies: [TableCellPlugin],
+});
 
 /** Enables support for tables with React-specific features. */
 export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
-  dependencies: [TableRowPlugin, TableCellPlugin, TableCellHeaderPlugin],
+  dependencies: [TableRowPlugin],
+  shortcuts: {
+    tab: {
+      handler: ({ editor }) => editor.plugin(BaseTablePlugin).update.tab(),
+      keys: 'tab',
+      priority: 10,
+    },
+    untab: {
+      handler: ({ editor }) =>
+        editor.plugin(BaseTablePlugin).update.tab({ reverse: true }),
+      keys: 'shift+tab',
+      priority: 10,
+    },
+  },
   on: {
     copy: ({ api, event }) => {
       if (!api.writeSelection(event.clipboardData)) {
@@ -58,7 +71,7 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
     dragStart: ({ editor, event, read }) => {
       tableDragCaptures.delete(editor);
 
-      const dragCellId =
+      const dragCellKey =
         (
           event.target as {
             closest?: (selector: string) => Element | null;
@@ -67,11 +80,11 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
           ?.closest?.('[data-table-cell-drag-handle="true"]')
           ?.getAttribute('data-table-cell-drag-for') ?? undefined;
 
-      if (!dragCellId) return;
+      if (!dragCellKey) return;
 
       const source = read.getSelection();
 
-      if (!source || !source.cellIds.includes(dragCellId)) {
+      if (!source || !source.cellKeys.includes(dragCellKey as NodeKey)) {
         return;
       }
       if (!source.complete || source.grid.problems.length > 0) {
@@ -86,34 +99,7 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
 
         return true;
       }
-      if (source.cellIds.length !== source.anchors.length) {
-        consumeTableDragEvent(event);
-        editor
-          .plugin(DebugPlugin)
-          .api.warn(
-            'Table drag/drop rejected before mutation.',
-            'TABLE_MUTATION_DIAGNOSTIC',
-            { kind: 'invalid', reason: 'missing-cell-id' }
-          );
-
-        return true;
-      }
-
-      const tableId =
-        typeof source.table.id === 'string' ? source.table.id : undefined;
-
-      if (!tableId) {
-        consumeTableDragEvent(event);
-        editor
-          .plugin(DebugPlugin)
-          .api.warn(
-            'Table drag/drop rejected before mutation.',
-            'TABLE_MUTATION_DIAGNOSTIC',
-            { kind: 'invalid', reason: 'missing-table-id' }
-          );
-
-        return true;
-      }
+      const tableKey = source.tableKey;
 
       event.dataTransfer.effectAllowed = 'copyMove';
       event.dataTransfer.setData(TABLE_CELL_DRAG_MIME, '1');
@@ -121,16 +107,16 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
         editor,
         Object.freeze({
           bounds: source.bounds,
-          cellIds: Object.freeze([...source.cellIds]),
+          cellKeys: Object.freeze([...source.cellKeys]),
           editor,
           ...(source.root === undefined ? {} : { root: source.root }),
-          tableId,
+          tableKey,
           tablePath: Object.freeze([...source.tablePath]),
           version: source.version,
         })
       );
     },
-    drop: ({ api, editor, event, read, store }) => {
+    drop: ({ api, editor, event, store }) => {
       const source = tableDragCaptures.get(editor);
 
       if (!source) return;
@@ -145,7 +131,17 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
       }
 
       const at = editor.api.dom.resolveEventRange(event);
-      const target = at ? read.getSelection(at) : null;
+      const target = at
+        ? createEditorView(editor, {
+            ...(at.anchor.root === undefined ? {} : { root: at.anchor.root }),
+          }).read((state) =>
+            readTableSelection(state, {
+              at,
+              cellTypes: [editor.plugin(BaseTableCellPlugin).schema.type],
+              tableType: editor.plugin(BaseTablePlugin).schema.type,
+            })
+          )
+        : null;
 
       if (!target) return;
 
@@ -202,21 +198,21 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
 
       return true;
     },
-    keyDown: ({ api, editor, event, read, update }) => {
+    keyDown: ({ editor, event, read, update }) => {
       if (event.defaultPrevented) return;
 
-      const cellTypes = api.getCellTypes();
+      const cellType = editor.plugin(TableCellPlugin).schema.type;
       const getMoveContext = (point = editor.read.selection()?.anchor) => {
         if (
           !point ||
-          !editor.read.selection.isWithinBlock({ match: { type: cellTypes } })
+          !editor.read.selection.isWithinBlock({ match: { type: cellType } })
         ) {
           return;
         }
 
         const cellEntry = editor.read.nodes.above({
           at: point,
-          match: { type: cellTypes },
+          match: { type: cellType },
         });
         const blockEntry = editor.read.nodes.block({ at: point });
 
@@ -370,17 +366,14 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
         }
       }
 
-      const handled = Hotkeys.isMoveLineBackward(event)
-        ? moveLine(true)
-        : Hotkeys.isMoveLineForward(event)
-          ? moveLine(false)
-          : Hotkeys.isUntab(editor, event)
-            ? update.tab({ reverse: true })
-            : Hotkeys.isTab(editor, event)
-              ? update.tab()
-              : Hotkeys.isSelectAll(event)
-                ? update.selectAll()
-                : false;
+      const handled =
+        Hotkeys.isMoveUpward(event) || Hotkeys.isMoveLineBackward(event)
+          ? moveLine(true)
+          : Hotkeys.isMoveDownward(event) || Hotkeys.isMoveLineForward(event)
+            ? moveLine(false)
+            : Hotkeys.isSelectAll(event)
+              ? update.selectAll()
+              : false;
 
       if (handled) {
         event.preventDefault();

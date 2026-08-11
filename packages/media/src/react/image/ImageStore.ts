@@ -1,8 +1,9 @@
 import { createZustandStore } from '@platejs/core/react/internal';
+import type { NodeKey } from '@platejs/plite';
 
 export type PreviewItem = {
+  key: NodeKey;
   url: string;
-  id?: string;
 };
 
 export const ImagePreviewStore = createZustandStore(
