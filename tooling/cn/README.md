@@ -43,6 +43,6 @@ Plate
 
 我们希望您能加入我们！无论是给我们一个🌟星标，提交一个📥拉取请求，还是**分享您的插件**，您的帮助总是值得称赞的。
 
-[![Star历史图表](https://api.star-history.com/svg?repos=udecode/plate&type=Date)](https://star-history.com/#udecode/plate&Date)
+[![Star历史图表](https://star-history.dera.page/svg?repos=udecode/plate&type=Date)](https://star-history.dera.page/#udecode/plate&Date)
 
 需要更多帮助？加入我们的[Discord](https://discord.gg/mAZRuBzGM3)。我们随时为您提供指导。(可以在中文频道使用中文进行提问)
