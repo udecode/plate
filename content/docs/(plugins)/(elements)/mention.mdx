@@ -19,7 +19,7 @@ Mention turns trigger text such as `@` into an inline combobox input and inserts
 ## Features
 
 - Inline void `mention` nodes with `value` and optional `key`.
-- Inline void `mention_input` nodes created by trigger text.
+- Inline void `mentionInput` nodes created by trigger text.
 - Trigger combobox support from `@platejs/combobox`.
 - Configurable trigger strings, regexes, and trigger queries.
 - Markable void rendering so bold, italic, and underline can style a mention.
@@ -132,9 +132,9 @@ Call the installed mention update from your combobox item renderer. It inserts t
 
 ## Value Shape
 
-`BaseMentionPlugin` uses `KEYS.mention`. The transient input plugin uses the
-camelCase identity `KEYS.mentionInput` and stores the
-`NODES.mentionInput` (`mention_input`) node type.
+`PLUGINS.mention` and `PLUGINS.mentionInput` identify the two capabilities.
+Their default persisted element types are `mention` and `mentionInput`.
+Reusable code reads configured types through each plugin portal's `schema.type`.
 
 ```tsx
 const value = [
@@ -149,7 +149,7 @@ const value = [
       },
       { text: '.' },
     ],
-    type: 'p',
+    type: 'paragraph',
   },
 ];
 ```
@@ -179,12 +179,11 @@ The runtime creates a combobox input from trigger metadata only when every gate 
 The default `createComboboxInput` creates:
 
 ```tsx
-import { NODES } from 'platejs';
 
 {
   children: [{ text: '' }],
   trigger: '@',
-  type: NODES.mentionInput,
+  type: 'mentionInput',
 }
 ```
 

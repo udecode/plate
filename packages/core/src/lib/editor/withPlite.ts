@@ -19,6 +19,7 @@ import {
   setEditorMaxLength,
   setEditorReadOnly,
   setEditorSnapshotInputTransform,
+  setEditorTransactionViewTransform,
 } from '@platejs/plite/internal';
 
 import type { NoInfer } from '../../internal/types';
@@ -81,6 +82,7 @@ import { transformInitialValue } from '../../internal/plugin/pipeTransformInitia
 import {
   getGeneratedEditorContract,
   getRuntimeEditorDefinition,
+  setInstalledGeneratedEditorContract,
   type RuntimeEditorDefinition,
   type RuntimeGeneratedEditorContract,
 } from './defineEditor';
@@ -722,6 +724,7 @@ const applyBaseEditor = <
   const applicationPolicy =
     generatedContract?.schemaPolicy ?? editorDefinition?.schema;
   let restoreSnapshotInputTransform: (() => void) | undefined;
+  let restoreTransactionViewTransform: (() => void) | undefined;
 
   try {
     withEditorApplicationSchemaCandidate(
@@ -729,6 +732,75 @@ const applyBaseEditor = <
       applicationPolicy,
       collectPlatePluginSourceCandidates(sourcePlugins),
       () => resolvePlugins(editor, sourcePlugins)
+    );
+    restoreTransactionViewTransform = setEditorTransactionViewTransform(
+      editor,
+      (transaction) => {
+        const bindings = getPlateRuntimeExtensionBindings(editor);
+        const groups = new Map<string, unknown>();
+
+        bindings?.plugins.forEach((binding, name) => {
+          const group = Reflect.get(transaction, binding.extension.name);
+
+          if (group !== undefined) groups.set(name, group);
+        });
+
+        const portal = (plugin: PluginLookupInput) => {
+          if (
+            typeof plugin !== 'string' &&
+            !isNominalPluginDescriptor(plugin)
+          ) {
+            throw new TypeError(
+              'Plate transaction plugin lookup requires a plugin descriptor or plugin name string.'
+            );
+          }
+
+          const name = typeof plugin === 'string' ? plugin : plugin.name;
+          const binding = bindings?.plugins.get(name);
+
+          if (!binding) {
+            throw new Error(`Plate plugin "${name}" is not installed.`);
+          }
+          if (
+            typeof plugin !== 'string' &&
+            getPluginSchemaFamily(plugin) !== binding.family
+          ) {
+            throw new Error(
+              `Plate plugin "${name}" resolves to a different descriptor family.`
+            );
+          }
+
+          const group = groups.get(name);
+
+          if (group === undefined) {
+            throw new Error(
+              `Plate plugin "${name}" does not expose transaction methods.`
+            );
+          }
+
+          return group;
+        };
+        const directPluginGroup = groups.get('plugin');
+
+        transaction.plugin =
+          (typeof directPluginGroup === 'object' &&
+            directPluginGroup !== null) ||
+          typeof directPluginGroup === 'function'
+            ? new Proxy(portal, {
+                get(target, property, receiver) {
+                  if (Reflect.has(directPluginGroup, property)) {
+                    return Reflect.get(
+                      directPluginGroup,
+                      property,
+                      directPluginGroup
+                    );
+                  }
+
+                  return Reflect.get(target, property, receiver);
+                },
+              })
+            : portal;
+      }
     );
     restoreSnapshotInputTransform = setEditorSnapshotInputTransform(
       editor,
@@ -794,6 +866,8 @@ const applyBaseEditor = <
         )
     );
 
+    setInstalledGeneratedEditorContract(editor, generatedContract);
+
     return editor as unknown as InternalBaseEditorWithInstalledPlugins<
       V,
       InferBaseEditorPlugins<P[]>,
@@ -801,6 +875,7 @@ const applyBaseEditor = <
     >;
   } catch (error) {
     restoreSnapshotInputTransform?.();
+    restoreTransactionViewTransform?.();
     if (!publicationBeforeExtension) clearPlateModelPublication(editor);
     clearPluginStores(editor);
     throw error;

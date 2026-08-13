@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-12-more-toolbar-plugin-transaction",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-12-more-toolbar-plugin-transaction.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-12",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Use the typed keyboard plugin transaction",
+  "targets": [
+    {
+      "name": "more-toolbar-button",
+      "files": ["apps/www/src/registry/ui/more-toolbar-button.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-12-more-toolbar-plugin-transaction-4d7a8c21",
+      "kind": "wiring",
+      "summary": "Use the typed keyboard plugin command while preserving one atomic selection update.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["more-toolbar-button"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-12",
+          "entry": "2026-08-12-more-toolbar-plugin-transaction",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

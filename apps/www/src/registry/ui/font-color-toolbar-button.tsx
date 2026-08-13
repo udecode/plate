@@ -84,6 +84,7 @@ function getNextRecentColors(
 }
 
 type ColorPlugin = typeof FontBackgroundColorPlugin | typeof FontColorPlugin;
+type PluginPortalEditor = Pick<PlateEditor, 'plugin'>;
 
 function setColor(editor: PlateEditor, plugin: ColorPlugin, value: string) {
   switch (plugin.name) {
@@ -100,6 +101,15 @@ function clearColor(editor: PlateEditor, plugin: ColorPlugin) {
       return editor.plugin(plugin).update.clear();
     case FontColorPlugin.name:
       return editor.plugin(plugin).update.clear();
+  }
+}
+
+function getColor(editor: PluginPortalEditor, plugin: ColorPlugin) {
+  switch (plugin.name) {
+    case FontBackgroundColorPlugin.name:
+      return editor.plugin(FontBackgroundColorPlugin).read.value();
+    case FontColorPlugin.name:
+      return editor.plugin(FontColorPlugin).read.value();
   }
 }
 
@@ -125,15 +135,12 @@ export function FontColorToolbarButton({
   tooltip?: string;
 } & DropdownMenuProps) {
   const editor = useEditor();
-  const { type } = editor.plugin(plugin);
 
   const selectionDefined = useEditorSelector(
     (editor) => !!editor.read.selection()
   );
 
-  const color = useEditorSelector(
-    (editor) => editor.read.marks()?.[type] as string
-  );
+  const color = useEditorSelector((editor) => getColor(editor, plugin));
 
   const [selectedColor, setSelectedColor] = React.useState<string>();
   const [updatedColor, setUpdatedColor] = React.useState<string>();

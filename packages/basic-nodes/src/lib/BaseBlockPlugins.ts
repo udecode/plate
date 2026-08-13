@@ -165,6 +165,7 @@ export const BaseBlockquotePlugin = defineBasePlugin(PLUGINS.blockquote, {
     untab: { keys: 'shift+tab' },
   },
   update: ({ editor, tx, schema: { type } }) => ({
+    toggle: () => tx.blocks.toggle(type, { wrap: true }),
     untab: () => {
       const paragraphType = editor.plugin(PLUGINS.paragraph).schema.type;
       const blocks = [

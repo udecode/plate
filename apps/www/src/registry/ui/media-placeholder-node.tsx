@@ -2,14 +2,15 @@
 
 import * as React from 'react';
 
-import type { TPlaceholderElement } from 'platejs';
+import { PLUGINS } from 'platejs';
 import type { PlateElementProps } from 'platejs/react';
 
 import { PlaceholderPlugin, PlaceholderProvider } from '@platejs/media/react';
 import { AudioLines, FileUp, Film, ImageIcon, Loader2Icon } from 'lucide-react';
-import { KEYS } from 'platejs';
+
 import {
   PlateElement,
+  useEditor,
   useEditorPlugin,
   usePath,
   usePluginStore,
@@ -28,22 +29,22 @@ const CONTENT: Record<
     icon: React.ReactNode;
   }
 > = {
-  [KEYS.audio]: {
+  [PLUGINS.audio]: {
     accept: ['audio/*'],
     content: 'Add an audio file',
     icon: <AudioLines />,
   },
-  [KEYS.file]: {
+  [PLUGINS.file]: {
     accept: ['*'],
     content: 'Add a file',
     icon: <FileUp />,
   },
-  [KEYS.img]: {
+  [PLUGINS.image]: {
     accept: ['image/*'],
     content: 'Add an image',
     icon: <ImageIcon />,
   },
-  [KEYS.video]: {
+  [PLUGINS.video]: {
     accept: ['video/*'],
     content: 'Add a video',
     icon: <Film />,
@@ -52,15 +53,19 @@ const CONTENT: Record<
 
 export const PlaceholderElement = withHOC(
   PlaceholderProvider,
-  function PlaceholderElement(props: PlateElementProps<TPlaceholderElement>) {
+  function PlaceholderElement(
+    props: PlateElementProps<typeof PlaceholderPlugin>
+  ) {
     const { element } = props;
     const path = usePath();
 
-    const { api, editor } = useEditorPlugin(PlaceholderPlugin);
+    const editor = useEditor();
+    const nodeKey = editor.key(element);
+    const { api, update } = useEditorPlugin(PlaceholderPlugin);
     const currentFile = usePluginStore(
       PlaceholderPlugin,
       'uploadingFile',
-      element.id as string
+      nodeKey
     );
 
     const { isUploading, progress, uploadedFile, uploadFile, uploadingFile } =
@@ -68,9 +73,19 @@ export const PlaceholderElement = withHOC(
 
     const loading = isUploading && uploadingFile;
 
-    const currentContent = CONTENT[element.mediaType];
+    const mediaPlugin = [
+      PLUGINS.audio,
+      PLUGINS.file,
+      PLUGINS.image,
+      PLUGINS.video,
+    ].find((plugin) => {
+      const media = editor.plugin(plugin);
 
-    const isImage = element.mediaType === KEYS.img;
+      return media.installed && media.name === element.mediaType;
+    });
+    const currentContent = mediaPlugin ? CONTENT[mediaPlugin] : undefined;
+
+    const isImage = mediaPlugin === PLUGINS.image;
 
     const imageRef = React.useRef<HTMLImageElement>(null);
     const isReplaced = React.useRef(false);
@@ -78,13 +93,13 @@ export const PlaceholderElement = withHOC(
     const replaceCurrentPlaceholder = React.useCallback(
       (file: File) => {
         void uploadFile(file);
-        api.addUploadingFile(element.id as string, file);
+        api.addUploadingFile(nodeKey, file);
       },
-      [api, element.id, uploadFile]
+      [api, nodeKey, uploadFile]
     );
 
     const { openFilePicker } = useFilePicker({
-      accept: currentContent.accept,
+      accept: currentContent?.accept ?? [],
       multiple: true,
       onFilesSelected: ({ plainFiles: updatedFiles }) => {
         const firstFile = updatedFiles[0];
@@ -94,42 +109,41 @@ export const PlaceholderElement = withHOC(
         replaceCurrentPlaceholder(firstFile);
 
         if (restFiles.length > 0) {
-          editor.plugin(PlaceholderPlugin).update.insertMedia(restFiles);
+          update.insertMedia(restFiles);
         }
       },
     });
 
     React.useEffect(() => {
-      if (!uploadedFile) return;
+      if (!mediaPlugin || !uploadedFile) return;
 
       if (!path) return;
 
-      editor.update({ history: 'skip' }, (tx) => {
-        tx.placeholder.replaceMedia(
-          {
-            initialHeight: imageRef.current?.height,
-            initialWidth: imageRef.current?.width,
-            isUpload: true,
-            name: element.mediaType === KEYS.file ? uploadedFile.name : '',
-            placeholderId: element.id as string,
-            type: element.mediaType!,
-            url: uploadedFile.url,
-          },
-          { at: path }
-        );
-      });
+      update({ history: 'skip' }).replaceMedia(
+        {
+          initialHeight: imageRef.current?.height,
+          initialWidth: imageRef.current?.width,
+          isUpload: true,
+          name: mediaPlugin === PLUGINS.file ? uploadedFile.name : '',
+          plugin: mediaPlugin,
+          url: uploadedFile.url,
+        },
+        { at: path }
+      );
 
-      api.removeUploadingFile(element.id as string);
+      api.removeUploadingFile(nodeKey);
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [uploadedFile, element.id, path]);
+    }, [uploadedFile, nodeKey, path]);
 
     /** Paste and drop */
     React.useEffect(() => {
-      if (isReplaced.current || !currentFile) return;
+      if (!mediaPlugin || isReplaced.current || !currentFile) return;
 
       isReplaced.current = true;
       replaceCurrentPlaceholder(currentFile);
-    }, [currentFile, replaceCurrentPlaceholder]);
+    }, [currentFile, mediaPlugin, replaceCurrentPlaceholder]);
+
+    if (!currentContent) return null;
 
     return (
       <PlateElement className="my-1" {...props}>

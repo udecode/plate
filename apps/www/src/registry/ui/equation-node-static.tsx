@@ -1,9 +1,12 @@
 import * as React from 'react';
 
-import type { TEquationElement } from 'platejs';
+import {
+  type BaseEquationPlugin,
+  type BaseInlineEquationPlugin,
+  getEquationHtml,
+} from '@platejs/math';
 import type { PliteElementProps } from 'platejs/static';
 
-import { getEquationHtml } from '@platejs/math';
 import { RadicalIcon } from 'lucide-react';
 import { PliteElement } from 'platejs/static';
 
@@ -11,7 +14,7 @@ import { cn } from '@/lib/utils';
 import { inlineSuggestionVariants } from '@/registry/lib/suggestion';
 
 export function EquationElementStatic(
-  props: PliteElementProps<TEquationElement>
+  props: PliteElementProps<typeof BaseEquationPlugin>
 ) {
   const { element } = props;
 
@@ -57,7 +60,7 @@ export function EquationElementStatic(
 }
 
 export function InlineEquationElementStatic(
-  props: PliteElementProps<TEquationElement>
+  props: PliteElementProps<typeof BaseInlineEquationPlugin>
 ) {
   const html = getEquationHtml({
     element: props.element,
@@ -106,7 +109,7 @@ export function InlineEquationElementStatic(
  * Displays LaTeX source code with styling.
  */
 export function EquationElementDocx(
-  props: PliteElementProps<TEquationElement>
+  props: PliteElementProps<typeof BaseEquationPlugin>
 ) {
   const { element } = props;
 
@@ -141,7 +144,7 @@ export function EquationElementDocx(
  * Displays LaTeX source code inline.
  */
 export function InlineEquationElementDocx(
-  props: PliteElementProps<TEquationElement>
+  props: PliteElementProps<typeof BaseInlineEquationPlugin>
 ) {
   const { element } = props;
 

@@ -760,6 +760,9 @@ importers:
         specifier: 3.25.61
         version: 3.25.61
     devDependencies:
+      '@platejs/cli':
+        specifier: workspace:*
+        version: link:../../packages/cli
       '@shikijs/compat':
         specifier: 1.1.7
         version: 1.1.7
@@ -1022,9 +1025,12 @@ importers:
       esbuild:
         specifier: 0.25.12
         version: 0.25.12
+      get-tsconfig:
+        specifier: 5.0.0-beta.5
+        version: 5.0.0-beta.5
       typescript:
-        specifier: 6.0.2
-        version: 6.0.2
+        specifier: 7.0.2
+        version: 7.0.2
     devDependencies:
       '@plate/scripts':
         specifier: workspace:*

@@ -1,11 +1,13 @@
 import * as React from 'react';
 
-import type { TColumnElement } from 'platejs';
+import type { BaseColumnItemPlugin, BaseColumnPlugin } from '@platejs/layout';
 import type { PliteElementProps } from 'platejs/static';
 
 import { PliteElement } from 'platejs/static';
 
-export function ColumnElementStatic(props: PliteElementProps<TColumnElement>) {
+export function ColumnElementStatic(
+  props: PliteElementProps<typeof BaseColumnItemPlugin>
+) {
   const { width } = props.element;
 
   return (
@@ -22,7 +24,9 @@ export function ColumnElementStatic(props: PliteElementProps<TColumnElement>) {
   );
 }
 
-export function ColumnGroupElementStatic(props: PliteElementProps) {
+export function ColumnGroupElementStatic(
+  props: PliteElementProps<typeof BaseColumnPlugin>
+) {
   return (
     <PliteElement className="mb-2" {...props}>
       <div className="flex size-full rounded">{props.children}</div>
@@ -33,7 +37,9 @@ export function ColumnGroupElementStatic(props: PliteElementProps) {
 /**
  * DOCX-compatible column component using table cell.
  */
-export function ColumnElementDocx(props: PliteElementProps<TColumnElement>) {
+export function ColumnElementDocx(
+  props: PliteElementProps<typeof BaseColumnItemPlugin>
+) {
   const { width } = props.element;
 
   return (
@@ -55,7 +61,9 @@ export function ColumnElementDocx(props: PliteElementProps<TColumnElement>) {
 /**
  * DOCX-compatible column group component using table layout.
  */
-export function ColumnGroupElementDocx(props: PliteElementProps) {
+export function ColumnGroupElementDocx(
+  props: PliteElementProps<typeof BaseColumnPlugin>
+) {
   return (
     <PliteElement {...props}>
       <table

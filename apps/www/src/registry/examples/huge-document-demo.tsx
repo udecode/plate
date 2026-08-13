@@ -289,7 +289,6 @@ const createEditor = ({
   }
 
   return createPlateEditor({
-    nodeId: false,
     initialValue: structuredClone(initialValue),
   }) as unknown as Editor;
 };

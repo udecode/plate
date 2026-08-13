@@ -49,8 +49,8 @@ First, create an input plugin that will be inserted when the trigger is activate
 import { defineBasePlugin } from 'platejs';
 
 const TagInputPlugin = defineBasePlugin('tagInput', {
-  type: 'tag_input',
-  editOnly: true,  schema: { element: { void: 'inline' } },
+  editOnly: true,
+  schema: { element: { type: 'tag_input', void: 'inline' } },
 });
 ```
 
@@ -75,7 +75,8 @@ const initialState: TagPluginState = {
 
 export const TagPlugin = defineBasePlugin('tag', {
   dependencies: [TagInputPlugin],
-  initialState,  schema: { element: { void: 'inline' } },
+  initialState,
+  schema: { element: { void: 'inline' } },
 });
 ```
 
@@ -90,7 +91,13 @@ export const TagPlugin = defineBasePlugin('tag', {
 Create the input element component using `InlineCombobox`:
 
 ```tsx
-import { PlateElement, useFocused, useReadOnly, useSelected } from 'platejs/react';
+import {
+  PlateElement,
+  useEditor,
+  useEditorFocused,
+  useEditorReadOnly,
+  useElementSelected,
+} from 'platejs/react';
 import {
   InlineCombobox,
   InlineComboboxContent,
@@ -108,6 +115,8 @@ const tags = [
 ];
 
 export function TagInputElement({ element, ...props }) {
+  const editor = useEditor();
+
   return (
     <PlateElement as="span" {...props}>
       <InlineCombobox element={element} trigger="#">
@@ -142,9 +151,9 @@ export function TagInputElement({ element, ...props }) {
 }
 
 export function TagElement({ element, ...props }) {
-  const selected = useSelected();
-  const focused = useFocused();
-  const readOnly = useReadOnly();
+  const selected = useElementSelected();
+  const focused = useEditorFocused();
+  const readOnly = useEditorReadOnly();
 
   return (
     <PlateElement
@@ -170,6 +179,7 @@ export function TagElement({ element, ...props }) {
 ### Add to Editor
 
 ```tsx
+import { PLUGINS } from 'platejs';
 import { createPlateEditor } from 'platejs/react';
 import { TagPlugin, TagInputPlugin } from './tag-plugin';
 import { TagElement, TagInputElement } from './tag-components';
@@ -182,7 +192,12 @@ const editor = createPlateEditor({
       initialState: {
         triggerQuery: (editor) => {
           // Disable in code blocks
-          return !editor.read.nodes.some({ match: { type: 'codeBlock' } });
+          const codeBlock = editor.plugin(PLUGINS.codeBlock);
+
+          return (
+            !codeBlock.installed ||
+            !editor.read.nodes.some({ match: { type: codeBlock.schema.type } })
+          );
         },
       },
     }),

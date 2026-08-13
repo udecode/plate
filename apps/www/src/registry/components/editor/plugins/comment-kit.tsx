@@ -37,13 +37,13 @@ export const commentPlugin = toPlatePlugin(BaseCommentPlugin, {
       const commentEntry = read.node();
 
       store.set({
-        activeId: commentEntry ? (api.nodeId(commentEntry[0]) ?? null) : null,
+        activeId: commentEntry ? (api.id(commentEntry[0]) ?? null) : null,
       });
     },
   },
   initialState,
 })
-  .extend(({ key, store }) => ({
+  .extend(({ schema, store }) => ({
     update: ({ tx }) => ({
       setDraft: (options = {}) => {
         const commentingBlock = tx.selection()?.focus.path.slice(0, 1) ?? null;
@@ -59,7 +59,7 @@ export const commentPlugin = toPlatePlugin(BaseCommentPlugin, {
         tx.nodes.set(
           {
             [getDraftCommentKey()]: true,
-            [key]: true,
+            [schema.key]: true,
           },
           { match: TextApi.isText, split: true, ...options }
         );

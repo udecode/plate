@@ -103,11 +103,13 @@ const editor = createPlateEditor({
 You can add a toolbar button to insert code drawing elements. Add this item to the [Insert Toolbar Button](/docs/toolbar#insert-toolbar-button):
 
 ```tsx
-{
+import { PLUGINS } from 'platejs';
+
+const insertItem = {
   icon: <Code2Icon />,
   label: 'Code Drawing',
-  value: KEYS.codeDrawing,
-}
+  value: PLUGINS.codeDrawing,
+};
 ```
 
 </Steps>
@@ -126,7 +128,7 @@ Inserts a code drawing element at the current selection.
 
 <API name="editor.plugin(BaseCodeDrawingPlugin).update.insert">
 <APIParameters>
-<APIItem name="props" type="NodeProps<TCodeDrawingElement>" optional>
+<APIItem name="props" type="NodeProps<CodeDrawingElement>" optional>
 Props for the code drawing element.
 <APISubList>
 <APISubListItem parent="props" name="data" type="CodeDrawingData" optional>
@@ -174,7 +176,7 @@ A hook for a code drawing element that handles rendering and state management.
 
 <API name="useCodeDrawingElement">
 <APIParameters>
-<APIItem name="element" type="TCodeDrawingElement">
+<APIItem name="element" type="CodeDrawingElement">
 The code drawing element.
 </APIItem>
 </APIParameters>
@@ -200,14 +202,15 @@ Function to remove the code drawing element.
 
 ## Types
 
-### `TCodeDrawingElement`
+### `CodeDrawingElement`
 
 The code drawing element type.
 
-<API name="TCodeDrawingElement">
+<API name="CodeDrawingElement">
 <APIAttributes>
 <APIItem name="type" type="string">
-The serialized element type. Always `NODES.codeDrawing` (`code_drawing`).
+The serialized element type. Its default is `codeDrawing`; read the installed
+value from `editor.plugin(BaseCodeDrawingPlugin).schema.type`.
 </APIItem>
 <APIItem name="data" type="CodeDrawingData" optional>
 The data for the code drawing element.

@@ -1,12 +1,15 @@
 import * as React from 'react';
 
+import type { BaseParagraphPlugin } from 'platejs';
 import type { PliteElementProps } from 'platejs/static';
 
 import { PliteElement } from 'platejs/static';
 
 import { cn } from '@/lib/utils';
 
-export function ParagraphElementStatic(props: PliteElementProps) {
+export function ParagraphElementStatic(
+  props: PliteElementProps<typeof BaseParagraphPlugin>
+) {
   return (
     <PliteElement {...props} className={cn('m-0 px-0 py-1')}>
       {props.children}

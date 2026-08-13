@@ -5,7 +5,12 @@ import * as React from 'react';
 import { DndPlugin } from '@platejs/dnd';
 import { useBlockSelected } from '@platejs/selection/react';
 import { cva } from 'class-variance-authority';
-import { usePluginStore } from 'platejs/react';
+import { PLUGINS } from 'platejs';
+import {
+  type RenderNodeWrapperProps,
+  useEditor,
+  usePluginStore,
+} from 'platejs/react';
 
 export const blockSelectionVariants = cva(
   'pointer-events-none absolute inset-0 z-1 bg-brand/[.13] transition-opacity',
@@ -22,14 +27,17 @@ export const blockSelectionVariants = cva(
   }
 );
 
-export function BlockSelection(props: { plugin: { name: string } }) {
+export function BlockSelection(props: RenderNodeWrapperProps) {
+  const editor = useEditor();
   const isBlockSelected = useBlockSelected();
   const isDragging = usePluginStore(DndPlugin, 'isDragging');
+  const table = editor.plugin(PLUGINS.table);
+  const tableRow = editor.plugin(PLUGINS.tableRow);
 
   if (
     !isBlockSelected ||
-    props.plugin.name === 'tr' ||
-    props.plugin.name === 'table'
+    (tableRow.installed && props.element.type === tableRow.schema.type) ||
+    (table.installed && props.element.type === table.schema.type)
   )
     return null;
 
@@ -38,6 +46,8 @@ export function BlockSelection(props: { plugin: { name: string } }) {
       className={blockSelectionVariants({
         active: isBlockSelected && !isDragging,
       })}
+      contentEditable={false}
+      data-plite-root-chrome-ignore="true"
       data-slot="block-selection"
     />
   );

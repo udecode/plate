@@ -1,11 +1,14 @@
 import * as React from 'react';
 
+import type { BaseTogglePlugin } from '@platejs/toggle';
 import type { PliteElementProps } from 'platejs/static';
 
 import { ChevronRight } from 'lucide-react';
 import { PliteElement } from 'platejs/static';
 
-export function ToggleElementStatic(props: PliteElementProps) {
+export function ToggleElementStatic(
+  props: PliteElementProps<typeof BaseTogglePlugin>
+) {
   return (
     <PliteElement {...props} className="pl-6">
       <div

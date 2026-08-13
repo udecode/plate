@@ -24,7 +24,11 @@ export const BlockSelectionKit = [
       enableContextMenu: true,
       isSelectable: (element) =>
         ![PLUGINS.column, PLUGINS.codeLine, PLUGINS.tableCell]
-          .map((name) => editor.plugin(name).type)
+          .flatMap((name) => {
+            const plugin = editor.plugin(name);
+
+            return plugin.installed ? [plugin.schema.type] : [];
+          })
           .includes(element.type),
       onKeyDownSelecting: (editor, e) => {
         if (isHotkey('mod+j')(e)) {

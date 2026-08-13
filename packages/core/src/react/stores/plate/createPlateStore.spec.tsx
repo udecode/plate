@@ -1,10 +1,17 @@
 import React from 'react';
 
-import type { Range } from '@platejs/plite';
+import { createEditorSchemaContract, schema, type Range } from '@platejs/plite';
+import { getCompiledEditorSchema } from '@platejs/plite/internal';
 
 import { act, renderHook, waitFor } from '@testing-library/react';
 
 import { createPlateEditor } from '../../editor';
+import { defineBasePlugin } from '../../../lib/plugin/defineBasePlugin';
+import {
+  bindGeneratedEditor,
+  defineEditor,
+  type GeneratedEditorTypes,
+} from '../../../lib/editor/defineEditor';
 import {
   PlateStoreProvider,
   useEditor,
@@ -163,5 +170,58 @@ describe('createPlateStore', () => {
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     });
+  });
+
+  it('infers and verifies the exact generated editor kit', () => {
+    const GeneratedBlockPlugin = defineBasePlugin('generatedStoreBlock', {
+      schema: { element: schema.element.textBlock() },
+    });
+    const createKit = (name: string) => {
+      const definition = defineEditor(name, {
+        plugins: [GeneratedBlockPlugin],
+      });
+      const sourceEditor = createPlateEditor({
+        plugins: definition.plugins,
+        skipInitialization: true,
+      });
+      const schemaContract = createEditorSchemaContract(
+        getCompiledEditorSchema(sourceEditor)
+      );
+
+      return bindGeneratedEditor(definition, {
+        bindings: { plugins: {}, properties: {} },
+        fingerprint: schemaContract.fingerprint,
+        schema: schemaContract,
+        types: undefined as unknown as GeneratedEditorTypes,
+      });
+    };
+    const EditorKit = createKit('generatedStore');
+    const OtherEditorKit = createKit('otherGeneratedStore');
+    const editor = createPlateEditor({
+      id: 'generated-store-editor',
+      plugins: EditorKit,
+    });
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <PlateStoreProvider editor={editor} scope="generated">
+        {children}
+      </PlateStoreProvider>
+    );
+
+    const { result } = renderHook(
+      () => useEditor(EditorKit, { id: 'generated' }),
+      { wrapper }
+    );
+
+    expect(result.current).toBe(editor);
+    expect(result.current.plugin(GeneratedBlockPlugin).name).toBe(
+      GeneratedBlockPlugin.name
+    );
+    expect(() =>
+      renderHook(() => useEditor(OtherEditorKit, { id: 'generated' }), {
+        wrapper,
+      })
+    ).toThrow(
+      'The active editor was not created with the generated EditorKit passed to this hook.'
+    );
   });
 });

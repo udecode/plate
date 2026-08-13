@@ -140,7 +140,7 @@ describe('BaseTodoListPlugin', () => {
       initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
 
-    editor.update.nodes.toggle(editor.plugin(BaseTodoListPlugin).schema.type);
+    editor.plugin(BaseTodoListPlugin).update.toggle();
 
     expect(editor.read.children()[0].type).toBe(
       editor.plugin(PLUGINS.todoList).schema.type

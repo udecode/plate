@@ -31,7 +31,7 @@ import {
   UnderlineIcon,
   WandSparklesIcon,
 } from 'lucide-react';
-import { KEYS } from 'platejs';
+import { PLUGINS } from 'platejs';
 import { useEditorReadOnly } from 'platejs/react';
 
 import { AIToolbarButton } from './ai-toolbar-button';
@@ -129,9 +129,9 @@ export function FixedToolbarButtons() {
           <ToolbarGroup>
             <AlignToolbarButton />
 
-            <ListToolbarButton nodeType={KEYS.ulClassic} />
-            <ListToolbarButton nodeType={KEYS.olClassic} />
-            <ListToolbarButton nodeType={KEYS.taskList} />
+            <ListToolbarButton plugin={PLUGINS.bulletedList} />
+            <ListToolbarButton plugin={PLUGINS.numberedList} />
+            <ListToolbarButton plugin={PLUGINS.taskList} />
             <ToggleToolbarButton />
           </ToolbarGroup>
 

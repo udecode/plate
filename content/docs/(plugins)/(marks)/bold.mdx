@@ -18,7 +18,7 @@ Bold applies the `bold` leaf mark to selected text. `BoldPlugin` owns the mark k
 
 ## Features
 
-- `PLUGINS.bold` leaf mark.
+- Boolean `bold` leaf property owned by the `PLUGINS.bold` capability.
 - Default `⌘B` / `Ctrl+B` shortcut.
 - HTML deserialization from `strong`, `b`, and bold font weight.
 - `<strong>` rendering by default.
@@ -33,7 +33,7 @@ Bold applies the `bold` leaf mark to selected text. `BoldPlugin` owns the mark k
 
 ### Add Basic Marks
 
-`BasicMarksKit` includes `BoldPlugin`, bold input rules, and the standard toolbar buttons that use `PLUGINS.bold`.
+`BasicMarksKit` includes `BoldPlugin`, bold input rules, and the standard toolbar buttons that use the plugin descriptor.
 
 <ComponentSource name="basic-marks-kit" />
 
@@ -49,16 +49,17 @@ export const editor = createPlateEditor({
 
 ### Add A Toolbar Button
 
-Use `MarkToolbarButton` with `PLUGINS.bold`.
+Pass `BoldPlugin` to `MarkToolbarButton` so the button uses the configured mark key.
 
 ```tsx
 import { BoldIcon } from 'lucide-react';
+import { BoldPlugin } from '@platejs/basic-nodes/react';
 
 import { MarkToolbarButton } from '@/components/ui/mark-toolbar-button';
 
 export function BoldToolbarButton() {
   return (
-    <MarkToolbarButton nodeType={PLUGINS.bold} tooltip="Bold (⌘+B)">
+    <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold (⌘+B)">
       <BoldIcon />
     </MarkToolbarButton>
   );
@@ -116,9 +117,9 @@ The package owns the mark. The registry owns toolbar placement and icon choice.
 
 | Behavior | Source |
 |----------|--------|
-| Mark key | `PLUGINS.bold` |
+| Mark key | `editor.plugin(BoldPlugin).schema.key` (default: `bold`) |
 | Mark declaration | `schema.mark: property.boolean({ default: false, omitDefault: true })` |
-| Toggle command | `tx.bold.toggle()` calls `tx.marks.toggle(type)`. |
+| Toggle command | `tx.bold.toggle()` toggles the resolved schema key. |
 | Shortcut | `BoldPlugin` registers `mod+b`. |
 | HTML tags | `strong`, `b` |
 | HTML styles | `font-weight: 600`, `700`, or `bold` |

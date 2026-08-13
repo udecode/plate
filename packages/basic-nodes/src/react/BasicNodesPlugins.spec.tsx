@@ -61,7 +61,7 @@ describe('basic node plugin composition', () => {
       initialValue: [{ children: [{ text: 'text' }], type: 'paragraph' }],
     });
 
-    editor.update.blocks.toggle(editor.plugin(BaseH1Plugin).schema.type);
+    editor.plugin(BaseH1Plugin).update.toggle();
     editor.update.bold.toggle();
 
     expect(editor.read.children()[0]).toMatchObject({
@@ -143,7 +143,7 @@ describe('basic node plugin composition', () => {
       initialValue: [{ children: [{ text: 'text' }], type: 'paragraph' }],
     });
 
-    editor.update.blocks.toggle(editor.plugin(BaseH6Plugin).schema.type);
+    editor.plugin(BaseH6Plugin).update.toggle();
     editor.update.italic.toggle();
 
     expect(editor.read.children()[0]).toMatchObject({

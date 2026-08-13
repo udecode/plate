@@ -1,6 +1,124 @@
 {
   "schemaVersion": 1,
   "components": {
+    "ai-node": [
+      "2026-08-12-canonical-node-props",
+      "2026-07-26-plugin-store-state"
+    ],
+    "basic-marks-base-kit": [
+      "2026-08-12-canonical-node-props",
+      "2026-07-26-unify-script-mark",
+      "2026-07-25-static-base-plugin-components"
+    ],
+    "blockquote-node": [
+      "2026-08-12-canonical-node-props",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "callout-node": [
+      "2026-08-12-canonical-node-props",
+      "2026-08-04-infer-node-props-from-plugins",
+      "2026-01-20-add-docx-file-import-word-export-support",
+      "2025-11-20-biome-ultracite",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "code-block-node": [
+      "2026-08-12-canonical-node-props",
+      "2026-08-04-infer-node-props-from-plugins",
+      "2026-06-13-show-code-block-language-labels-read-only-mode",
+      "2026-01-20-add-docx-file-import-word-export-support",
+      "2025-11-20-biome-ultracite",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "code-node": [
+      "2026-08-12-canonical-node-props",
+      "2025-11-20-biome-ultracite",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "editable-voids-demo": ["2026-08-12-canonical-node-props"],
+    "emoji-node": [
+      "2026-08-12-canonical-node-props",
+      "2026-07-26-plugin-store-state",
+      "2025-11-20-biome-ultracite"
+    ],
+    "footnote-node": [
+      "2026-08-12-canonical-node-props",
+      "2026-08-04-infer-node-props-from-plugins",
+      "2026-07-22-plugin-portal-wiring"
+    ],
+    "heading-node": [
+      "2026-08-12-canonical-node-props",
+      "2026-01-20-add-docx-file-import-word-export-support",
+      "2025-11-20-biome-ultracite",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "highlight-node": [
+      "2026-08-12-canonical-node-props",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "hr-node": [
+      "2026-08-12-canonical-node-props",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "kbd-node": [
+      "2026-08-12-canonical-node-props",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "link-node": [
+      "2026-08-12-canonical-node-props",
+      "2026-08-04-infer-node-props-from-plugins",
+      "2026-04-29-codex-fix-discussion-suggestion-regressions",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "link-node-static": [
+      "2026-08-12-canonical-node-props",
+      "2026-08-04-infer-node-props-from-plugins"
+    ],
+    "list-classic-node": [
+      "2026-08-12-canonical-node-props",
+      "2025-11-20-biome-ultracite"
+    ],
+    "paragraph-node": [
+      "2026-08-12-canonical-node-props",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "search-highlight-node": ["2026-08-12-canonical-node-props"],
+    "suggestion-node": [
+      "2026-08-12-canonical-node-props",
+      "2026-07-26-plugin-store-state",
+      "2026-04-29-codex-fix-discussion-suggestion-regressions",
+      "2025-11-20-biome-ultracite",
+      "2025-10-21-add-rejectaisuggestions",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "tabbable-demo": ["2026-08-12-canonical-node-props"],
+    "toc-node": [
+      "2026-08-12-canonical-node-props",
+      "2026-01-20-add-docx-file-import-word-export-support",
+      "2025-11-20-biome-ultracite"
+    ],
+    "toggle-node": [
+      "2026-08-12-canonical-node-props",
+      "2025-11-20-biome-ultracite"
+    ],
+    "version-history-demo": [
+      "2026-08-12-canonical-node-props",
+      "2025-11-20-biome-ultracite"
+    ],
+    "font-size-toolbar-button": [
+      "2026-08-12-fix-font-size-selection-highlight",
+      "2026-08-03-use-schema-handles",
+      "2026-07-24-feature-toolbar-plugin-portals",
+      "2025-11-20-biome-ultracite"
+    ],
+    "more-toolbar-button": [
+      "2026-08-12-more-toolbar-plugin-transaction",
+      "2026-07-26-unify-script-mark",
+      "2026-07-24-feature-toolbar-plugin-portals"
+    ],
+    "table-toolbar-button": [
+      "2026-08-12-table-toolbar-focus",
+      "2025-11-20-biome-ultracite"
+    ],
     "block-draggable": [
       "2026-08-06-fix-block-selection-drag",
       "2026-08-06-stabilize-block-drag-drop",
@@ -33,20 +151,7 @@
       "2025-11-20-biome-ultracite",
       "2025-10-21-add-rejectaisuggestions"
     ],
-    "callout-node": [
-      "2026-08-04-infer-node-props-from-plugins",
-      "2026-01-20-add-docx-file-import-word-export-support",
-      "2025-11-20-biome-ultracite",
-      "2025-10-17-fix-react-decouple"
-    ],
     "callout-node-static": ["2026-08-04-infer-node-props-from-plugins"],
-    "code-block-node": [
-      "2026-08-04-infer-node-props-from-plugins",
-      "2026-06-13-show-code-block-language-labels-read-only-mode",
-      "2026-01-20-add-docx-file-import-word-export-support",
-      "2025-11-20-biome-ultracite",
-      "2025-10-17-fix-react-decouple"
-    ],
     "code-block-node-static": [
       "2026-08-04-infer-node-props-from-plugins",
       "2026-06-13-show-code-block-language-labels-read-only-mode"
@@ -80,17 +185,7 @@
       "2026-08-04-infer-node-props-from-plugins",
       "2026-04-29-codex-fix-discussion-suggestion-regressions"
     ],
-    "footnote-node": [
-      "2026-08-04-infer-node-props-from-plugins",
-      "2026-07-22-plugin-portal-wiring"
-    ],
     "footnote-node-static": ["2026-08-04-infer-node-props-from-plugins"],
-    "link-node": [
-      "2026-08-04-infer-node-props-from-plugins",
-      "2026-04-29-codex-fix-discussion-suggestion-regressions",
-      "2025-10-17-fix-react-decouple"
-    ],
-    "link-node-static": ["2026-08-04-infer-node-props-from-plugins"],
     "media-audio-node": [
       "2026-08-04-infer-node-props-from-plugins",
       "2026-07-23-rich-media-caption-children",
@@ -211,11 +306,6 @@
       "2026-03-19-improve-non-react-test-coverage-ci-workflow-hygiene",
       "2025-11-20-biome-ultracite"
     ],
-    "font-size-toolbar-button": [
-      "2026-08-03-use-schema-handles",
-      "2026-07-24-feature-toolbar-plugin-portals",
-      "2025-11-20-biome-ultracite"
-    ],
     "code-drawing-demo": [
       "2026-07-29-preserve-feature-example-wiring",
       "2026-07-26-fix-code-drawing-demo",
@@ -303,7 +393,6 @@
       "2026-07-24-compose-markdown-footnotes",
       "2026-07-23-terminal-plugin-configure"
     ],
-    "ai-node": ["2026-07-26-plugin-store-state"],
     "block-context-menu": [
       "2026-07-26-plugin-store-state",
       "2026-01-28-add-code-drawing-node"
@@ -312,10 +401,6 @@
     "comment-node": [
       "2026-07-26-plugin-store-state",
       "2025-10-17-fix-react-decouple"
-    ],
-    "emoji-node": [
-      "2026-07-26-plugin-store-state",
-      "2025-11-20-biome-ultracite"
     ],
     "floating-toolbar": [
       "2026-07-26-plugin-store-state",
@@ -331,13 +416,6 @@
       "2025-11-20-biome-ultracite"
     ],
     "settings-dialog": ["2026-07-26-plugin-store-state"],
-    "suggestion-node": [
-      "2026-07-26-plugin-store-state",
-      "2026-04-29-codex-fix-discussion-suggestion-regressions",
-      "2025-11-20-biome-ultracite",
-      "2025-10-21-add-rejectaisuggestions",
-      "2025-10-17-fix-react-decouple"
-    ],
     "suggestion-toolbar-button": ["2026-07-26-plugin-store-state"],
     "use-chat": [
       "2026-07-26-plugin-store-state",
@@ -356,14 +434,6 @@
     "basic-marks-kit": [
       "2026-07-26-unify-script-mark",
       "2026-07-24-compose-markdown-footnotes"
-    ],
-    "basic-marks-base-kit": [
-      "2026-07-26-unify-script-mark",
-      "2026-07-25-static-base-plugin-components"
-    ],
-    "more-toolbar-button": [
-      "2026-07-26-unify-script-mark",
-      "2026-07-24-feature-toolbar-plugin-portals"
     ],
     "basic-marks-value": ["2026-07-26-unify-script-mark"],
     "plugin-rules-value": ["2026-07-26-unify-script-mark"],
@@ -523,15 +593,6 @@
       "2026-01-20-add-docx-file-import-word-export-support",
       "2025-10-17-fix-react-decouple"
     ],
-    "heading-node": [
-      "2026-01-20-add-docx-file-import-word-export-support",
-      "2025-11-20-biome-ultracite",
-      "2025-10-17-fix-react-decouple"
-    ],
-    "toc-node": [
-      "2026-01-20-add-docx-file-import-word-export-support",
-      "2025-11-20-biome-ultracite"
-    ],
     "ai-api": [
       "2026-01-09-support-using-ai-features-tables-improve-prompts",
       "2025-11-20-biome-ultracite",
@@ -544,23 +605,16 @@
     ],
     "copilot-api": ["2025-11-20-biome-ultracite"],
     "markdown-joiner-transform": ["2025-11-20-biome-ultracite"],
-    "code-node": [
-      "2025-11-20-biome-ultracite",
-      "2025-10-17-fix-react-decouple"
-    ],
     "emoji-toolbar-button": ["2025-11-20-biome-ultracite"],
     "fixed-toolbar": ["2025-11-20-biome-ultracite"],
-    "list-classic-node": ["2025-11-20-biome-ultracite"],
     "list-classic-toolbar-button": ["2025-11-20-biome-ultracite"],
     "media-preview-dialog": ["2025-11-20-biome-ultracite"],
     "resize-handle": ["2025-11-20-biome-ultracite"],
     "select-editor": ["2025-11-20-biome-ultracite"],
-    "table-toolbar-button": ["2025-11-20-biome-ultracite"],
     "toc-node-static": [
       "2025-11-20-biome-ultracite",
       "2025-10-17-fix-react-decouple"
     ],
-    "toggle-node": ["2025-11-20-biome-ultracite"],
     "toggle-node-static": [
       "2025-11-20-biome-ultracite",
       "2025-10-17-fix-react-decouple"
@@ -569,13 +623,7 @@
     "image-pro-demo": ["2025-11-20-biome-ultracite"],
     "preview-markdown-demo": ["2025-11-20-biome-ultracite"],
     "pro-iframe-demo": ["2025-11-20-biome-ultracite"],
-    "version-history-demo": ["2025-11-20-biome-ultracite"],
     "fumadocs-mdx-components": ["2025-11-20-biome-ultracite"],
-    "mdx-plate-components": ["2025-11-20-biome-ultracite"],
-    "blockquote-node": ["2025-10-17-fix-react-decouple"],
-    "highlight-node": ["2025-10-17-fix-react-decouple"],
-    "hr-node": ["2025-10-17-fix-react-decouple"],
-    "kbd-node": ["2025-10-17-fix-react-decouple"],
-    "paragraph-node": ["2025-10-17-fix-react-decouple"]
+    "mdx-plate-components": ["2025-11-20-biome-ultracite"]
   }
 }

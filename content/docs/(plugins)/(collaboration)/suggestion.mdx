@@ -134,7 +134,7 @@ export const suggestionPlugin = SuggestionPlugin.configure({
             break;
           }
 
-          const id = api.nodeId(suggestionEntry[0]);
+          const id = api.id(suggestionEntry[0]);
           store.set({ activeId: id ?? null });
           isSet = true;
           break;
@@ -159,11 +159,10 @@ The click handler tracks which suggestion is currently active:
 ### Add Plugins
 
 ```tsx
-import { createPlateEditor, createPlatePlugin } from 'platejs/react';
+import { createPlateEditor, definePlatePlugin } from 'platejs/react';
 import { SuggestionLineBreak } from '@/components/ui/suggestion-node';
 
-const suggestionLineBreakPlugin = createPlatePlugin({
-  name: 'suggestionLineBreak',
+const suggestionLineBreakPlugin = definePlatePlugin('suggestionLineBreak', {
   render: { belowNodes: SuggestionLineBreak as any },
 });
 
@@ -283,7 +282,7 @@ const descriptions = read.activeDescriptions();
 | `api.key(id?)` / `api.keyId(node)` / `api.keys(node)` | Reads and builds inline suggestion keys. |
 | `read.node(options?)` / `read.nodes(options?)` | Finds one or all suggestion entries. |
 | `read.nodeEntries(id, options?)` | Finds inline entries for a suggestion ID. |
-| `api.nodeId(node)` | Returns a node's suggestion ID. |
+| `api.id(node)` | Returns a node's suggestion ID. |
 | `api.skipDeletes(node)` | Returns text without removed suggestions. |
 | `api.suggestionData(node)` | Returns inline or block suggestion data. |
 | `api.untracked(fn)` | Runs synchronous work without recursively creating suggestions. |
@@ -328,38 +327,38 @@ editor.update(SuggestionUpdatePolicy.skip, (tx) => {
 
 ## Types
 
-### `TSuggestionText`
+### `SuggestionText`
 
 Text nodes that can contain suggestions.
 
-<API name="TSuggestionText">
+<API name="SuggestionText">
 <APIAttributes>
   <APIItem name="suggestion" type="boolean" optional>
     Whether this is a suggestion.
   </APIItem>
-  <APIItem name="suggestion_<id>" type="TInlineSuggestionData" optional>
+  <APIItem name="suggestion_<id>" type="InlineSuggestionData" optional>
     Suggestion data. Multiple suggestions can exist in one text node.
   </APIItem>
 </APIAttributes>
 </API>
 
-### `TSuggestionElement`
+### `SuggestionElement`
 
 Block elements that contain suggestion metadata.
 
-<API name="TSuggestionElement">
+<API name="SuggestionElement">
 <APIAttributes>
-  <APIItem name="suggestion" type="TSuggestionData">
+  <APIItem name="suggestion" type="SuggestionData">
     Block-level suggestion data including type, user, and timing information.
   </APIItem>
 </APIAttributes>
 </API>
 
-### `TInlineSuggestionData`
+### `InlineSuggestionData`
 
 Data structure for inline text suggestions.
 
-<API name="TInlineSuggestionData">
+<API name="InlineSuggestionData">
 <APIAttributes>
   <APIItem name="id" type="string">
     Unique identifier for the suggestion.
@@ -382,11 +381,11 @@ Data structure for inline text suggestions.
 </APIAttributes>
 </API>
 
-### `TSuggestionData`
+### `SuggestionData`
 
 Data structure for block-level suggestions.
 
-<API name="TSuggestionData">
+<API name="SuggestionData">
 <APIAttributes>
   <APIItem name="id" type="string">
     Unique identifier for the suggestion.

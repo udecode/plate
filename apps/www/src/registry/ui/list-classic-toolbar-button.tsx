@@ -14,27 +14,30 @@ import {
   ListTodo,
   OutdentIcon,
 } from 'lucide-react';
-import { KEYS } from 'platejs';
+import { PLUGINS, type PluginReference } from 'platejs';
 import { useEditor } from 'platejs/react';
 
 import { ToolbarButton } from './toolbar';
 
-const nodeTypeMap: Record<string, { icon: React.JSX.Element; label: string }> =
-  {
-    [KEYS.olClassic]: { icon: <ListOrdered />, label: 'Numbered List' },
-    [KEYS.taskList]: { icon: <ListTodo />, label: 'Task List' },
-    [KEYS.ulClassic]: { icon: <List />, label: 'Bulleted List' },
-  };
+const pluginMap: Record<string, { icon: React.JSX.Element; label: string }> = {
+  [PLUGINS.numberedList]: {
+    icon: <ListOrdered />,
+    label: 'Numbered List',
+  },
+  [PLUGINS.taskList]: { icon: <ListTodo />, label: 'Task List' },
+  [PLUGINS.bulletedList]: { icon: <List />, label: 'Bulleted List' },
+};
 
 export function ListToolbarButton({
-  nodeType = KEYS.ulClassic,
+  plugin = PLUGINS.bulletedList,
   ...props
 }: React.ComponentProps<typeof ToolbarButton> & {
-  nodeType?: string;
+  plugin?: PluginReference | string;
 }) {
-  const state = useListToolbarButtonState({ nodeType });
+  const state = useListToolbarButtonState({ plugin });
   const { props: buttonProps } = useListToolbarButton(state);
-  const { icon, label } = nodeTypeMap[nodeType] ?? nodeTypeMap[KEYS.ulClassic];
+  const name = typeof plugin === 'string' ? plugin : plugin.name;
+  const { icon, label } = pluginMap[name] ?? pluginMap[PLUGINS.bulletedList];
 
   return (
     <ToolbarButton {...props} {...buttonProps} tooltip={label}>

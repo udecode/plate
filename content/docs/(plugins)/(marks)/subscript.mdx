@@ -20,7 +20,7 @@ Subscript is the `'sub'` value of Plate's `script` mark. `ScriptPlugin` owns bot
 
 ## Features
 
-- One `PLUGINS.script` mark with `'sub' | 'sup'` values.
+- One `script` leaf property with `'sub' | 'sup'` values, owned by the `PLUGINS.script` capability.
 - Directional selection affinity.
 - HTML deserialization from `sub` and `vertical-align: sub`.
 - `<sub>` rendering for the `'sub'` value.
@@ -117,7 +117,7 @@ editor.update.script.toggle('sub');
 
 | API | Use |
 |-----|-----|
-| `PLUGINS.script` | The `script` text property. |
+| `editor.plugin(ScriptPlugin).schema.key` | The configured text property (default: `script`). |
 | `ScriptPlugin` | Shared React plugin for subscript and superscript. |
 | `ScriptRules.markdown({ value: 'sub' })` | Creates the subscript input rule. |
 | `editor.update.script.toggle('sub')` | Applies subscript or removes it when already active. |

@@ -2,7 +2,8 @@
 
 import * as React from 'react';
 
-import {
+import type { ScriptValue } from '@platejs/basic-nodes';
+import type {
   BoldPlugin,
   CodePlugin,
   HighlightPlugin,
@@ -12,9 +13,8 @@ import {
   StrikethroughPlugin,
   UnderlinePlugin,
 } from '@platejs/basic-nodes/react';
-import type { TScriptValue } from '@platejs/utils';
 
-import { type PlateEditor, useEditor, useEditorSelector } from 'platejs/react';
+import { useEditor, useEditorSelector } from 'platejs/react';
 
 import { ToolbarButton } from './toolbar';
 
@@ -37,37 +37,9 @@ type MarkToolbarButtonProps = ToolbarButtonProps &
       }
     | {
         plugin: typeof ScriptPlugin;
-        value: TScriptValue;
+        value: ScriptValue;
       }
   );
-
-function toggleMark(
-  editor: PlateEditor,
-  plugin: BooleanMarkPlugin | typeof ScriptPlugin,
-  value?: TScriptValue
-) {
-  switch (plugin.name) {
-    case BoldPlugin.name:
-      return editor.plugin(plugin).update.toggle();
-    case CodePlugin.name:
-      return editor.plugin(plugin).update.toggle();
-    case HighlightPlugin.name:
-      return editor.plugin(plugin).update.toggle();
-    case ItalicPlugin.name:
-      return editor.plugin(plugin).update.toggle();
-    case KbdPlugin.name:
-      return editor.plugin(plugin).update.toggle();
-    case StrikethroughPlugin.name:
-      return editor.plugin(plugin).update.toggle();
-    case ScriptPlugin.name: {
-      if (value === undefined) return;
-
-      return editor.plugin(ScriptPlugin).update.toggle(value);
-    }
-    case UnderlinePlugin.name:
-      return editor.plugin(plugin).update.toggle();
-  }
-}
 
 export function MarkToolbarButton({
   plugin,
@@ -75,19 +47,21 @@ export function MarkToolbarButton({
   ...props
 }: MarkToolbarButtonProps) {
   const editor = useEditor();
-  const { type } = editor.plugin(plugin);
-  const pressed = useEditorSelector((editor) => {
-    const mark = editor.read.marks()?.[type];
-
-    return value === undefined ? !!mark : mark === value;
-  });
+  const pressed = useEditorSelector((editor) =>
+    editor.plugin(plugin).read.isActive(value)
+  );
 
   return (
     <ToolbarButton
       {...props}
       pressed={pressed}
       onClick={() => {
-        toggleMark(editor, plugin, value);
+        if (value === undefined) {
+          editor.plugin(plugin).update.toggle();
+        } else {
+          editor.plugin(plugin).update.toggle(value);
+        }
+
         editor.api.dom.focus();
       }}
       onMouseDown={(event) => {

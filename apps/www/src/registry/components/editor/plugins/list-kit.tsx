@@ -7,7 +7,7 @@ import {
   TaskListRules,
 } from '@platejs/list';
 import { ListPlugin } from '@platejs/list/react';
-import { KEYS } from 'platejs';
+import { PLUGINS } from 'platejs';
 
 import { IndentKit } from '@/registry/components/editor/plugins/indent-kit';
 import { BlockList } from '@/registry/ui/block-list';
@@ -25,7 +25,7 @@ export const ListKit = [
     ],
     inject: {
       nodeProps: {
-        nodeKey: KEYS.listType,
+        nodeKey: 'listStyleType',
         query: ({ nodeProps }) => {
           const element = nodeProps.element;
 
@@ -44,13 +44,18 @@ export const ListKit = [
     render: {
       belowNodes: BlockList,
     },
-    targetPluginNames: [
-      ...KEYS.heading,
-      KEYS.p,
-      KEYS.blockquote,
-      KEYS.codeBlock,
-      KEYS.toggle,
-      KEYS.img,
+    targetPlugins: [
+      PLUGINS.h1,
+      PLUGINS.h2,
+      PLUGINS.h3,
+      PLUGINS.h4,
+      PLUGINS.h5,
+      PLUGINS.h6,
+      PLUGINS.paragraph,
+      PLUGINS.blockquote,
+      PLUGINS.codeBlock,
+      PLUGINS.toggle,
+      PLUGINS.image,
     ],
   }),
 ];

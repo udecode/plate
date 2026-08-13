@@ -635,6 +635,19 @@ export const registryKits: Registry['items'] = [
         path: 'components/editor/editor-kit.tsx',
         type: 'registry:component',
       },
+      {
+        path: 'components/editor/editor-definition.tsx',
+        type: 'registry:component',
+      },
+      {
+        path: 'components/editor/editor.generated.ts',
+        type: 'registry:component',
+      },
+      {
+        path: 'components/editor/editor.schema.json',
+        target: '@components/editor/editor.schema.json',
+        type: 'registry:file',
+      },
     ],
     name: 'editor-kit',
     registryDependencies: [

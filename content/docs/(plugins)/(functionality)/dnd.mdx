@@ -143,8 +143,8 @@ Plugin for drag and drop functionality within the editor.
   <APIItem name="onDropFiles" type="function" optional>
     Handler for file drop events.
     <APISubList>
-      <APISubListItem parent="onDropFiles" name="id" type="string">
-        ID of the target element.
+      <APISubListItem parent="onDropFiles" name="key" type="NodeKey">
+        Node key of the target element.
       </APISubListItem>
       <APISubListItem parent="onDropFiles" name="dragItem" type="FileDragItemNode">
         Object containing the dropped files.
@@ -157,38 +157,10 @@ Plugin for drag and drop functionality within the editor.
       </APISubListItem>
     </APISubList>
   </APIItem>
-  <APIItem name="dropTarget" type="{ id: string | null; line: DropLineDirection }" optional>
-    The current drop target state containing both the target element id and drop line direction.
+  <APIItem name="dropTarget" type="{ key: NodeKey | null; line: DropLineDirection }" optional>
+    The current drop target state containing its node key and drop line direction.
   </APIItem>
 </APIOptions>
-</API>
-
-## API
-
-### `focusBlockStartById`
-
-Selects the start of a block by ID and focuses the editor.
-
-<API name="focusBlockStartById">
-<APIParameters>
-  <APIItem name="id" type="string">
-    The ID of the block to be focused.
-  </APIItem>
-</APIParameters>
-</API>
-
-### `getBlocksWithId`
-
-Returns an array of blocks that have an ID.
-
-<API name="getBlocksWithId">
-<APIOptions type="object">
-  The options for getting node entries.
-</APIOptions>
-
-<APIReturns type="NodeEntry[]">
-  Array of blocks that have an ID.
-</APIReturns>
 </API>
 
 ## Hooks
@@ -325,9 +297,9 @@ Returns the current drop line state for an element.
 
 <API name="useDropLine">
 <APIOptions type="object">
-  <APIItem name="id" type="string" optional>
-    Element ID to show drop line for.
-    - **Default:** Current element ID
+  <APIItem name="key" type="NodeKey" optional>
+    Node key used to show the element's drop line.
+    - **Default:** Current element node key
   </APIItem>
   <APIItem name="orientation" type="'horizontal' | 'vertical'" optional>
     Filter drop lines by orientation.

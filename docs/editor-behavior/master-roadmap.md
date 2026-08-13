@@ -295,6 +295,35 @@ Supporting plan:
 
 - [2026-04-11-link-input-autolink-policy-rewrite-plan.md](../plans/2026-04-11-link-input-autolink-policy-rewrite-plan.md)
 
+### [ ] Lane 10: Async Hover Sources
+
+This is design law, not a shipped link-preview feature. A concrete product
+surface must be approved before implementation.
+
+Ownership:
+
+- the consuming component family owns request identity, cancellation,
+  loading, empty, error, and stale-result rejection
+- the overlay primitive owns pointer transit, focus, delays, dismissal,
+  portals, and geometry
+- editor plugins expose only feature queries; request state does not belong in
+  plugin state, document state, or Core
+- keep the first implementation local; promote a shared hook only after a
+  second maintained component family proves the same lifecycle
+
+Required proof:
+
+- closing, unmounting, changing the target, or starting a newer request aborts
+  the obsolete request
+- rapid A → B → A changes never publish B for A
+- rejection has an explicit UI state and no unhandled promise
+- pointer, keyboard, focus, touch, and editor-update behavior remain correct
+
+Entry condition:
+
+- one approved product surface needs remote or otherwise asynchronous hover
+  content; architectural curiosity is not enough
+
 ## Batch Exit Rule
 
 After any lane changes implementation truth:

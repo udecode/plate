@@ -539,12 +539,14 @@ export const resolvePlugins = (
 
   setPlateRuntimeCandidate(editor, {
     components: Object.create(null),
+    genericElementToggles: Object.freeze([]),
     inputRules: createMutableResolvedInputRulesMeta(),
     pluginCache,
     pluginList: [],
     plugins: Object.create(null),
     shortcutTable: [],
     shortcuts: Object.create(null),
+    updateMethods: Object.freeze(Object.create(null)),
   });
   const resolvedPlugins = resolveAndSortPlugins(editor, sources);
   const snapshotState = createPluginStateSnapshot();
@@ -719,6 +721,34 @@ export const createPlateModelPublication = (
     pluginList,
     publishedModel
   );
+  const genericElementToggles = Object.freeze(
+    publishedPluginList.flatMap((plugin) => {
+      const elementType = publishedModel.byName[plugin.name]?.elementType;
+
+      return elementType &&
+        !updateMethods[plugin.name]?.includes('toggle') &&
+        isGenericElementToggleEligible(compiledSchema, elementType)
+        ? [plugin.name]
+        : [];
+    })
+  );
+  const publishedUpdateMethods = Object.freeze(
+    Object.fromEntries(
+      publishedPluginList.map((plugin) => {
+        const methods = new Set(updateMethods[plugin.name] ?? []);
+        const elementType = publishedModel.byName[plugin.name]?.elementType;
+
+        if (
+          elementType &&
+          isGenericElementToggleEligible(compiledSchema, elementType)
+        ) {
+          methods.add('toggle');
+        }
+
+        return [plugin.name, Object.freeze([...methods])] as const;
+      })
+    )
+  );
   const plugins: Record<string, AnyBasePlugin> = Object.create(null);
 
   publishedPluginList.forEach((plugin) => {
@@ -860,13 +890,14 @@ export const createPlateModelPublication = (
       editor,
       publishedPluginList,
       shortcutApiByPlugin,
-      updateMethods
+      publishedUpdateMethods
     )
   );
 
   return Object.freeze({
     apiByPlugin,
     components: Object.freeze(components),
+    genericElementToggles,
     identity,
     inputRules: snapshotApiValue(createPluginInputRules(publishedPluginList)),
     model: publishedModel,
@@ -875,7 +906,27 @@ export const createPlateModelPublication = (
     plugins: Object.freeze(plugins),
     shortcutTable: shortcutRuntime.shortcutTable,
     shortcuts: shortcutRuntime.shortcuts,
+    updateMethods,
   });
+};
+
+const isGenericElementToggleEligible = (
+  schema: NonNullable<ReturnType<typeof getCompiledEditorSchemaFromApi>>,
+  elementType: string
+) => {
+  if (!schema.elements.groups.get('textBlock')?.has(elementType)) return false;
+  if (!schema.primaryRoot.content.allowedElementTypes.has(elementType)) {
+    return false;
+  }
+  const element = schema.elements.byType.get(elementType);
+
+  return (
+    !!element &&
+    [...element.construction.propertyIds].every(
+      (propertyId) =>
+        schema.properties.byId.get(propertyId)?.descriptor.required !== true
+    )
+  );
 };
 
 const resolvePluginStores = (editor: BaseEditor) => {
@@ -1200,6 +1251,12 @@ export const createPlateRuntimeExtensions = (
                   `Plate plugin "${plugin.name}" update factories must return an object.`
                 );
               }
+              const hasAuthoredToggle =
+                typeof authoredUpdate.toggle === 'function';
+              const hasGenericToggle =
+                getPlateModelPublication(
+                  editor
+                )?.genericElementToggles.includes(plugin.name) === true;
 
               const defaultUpdate = {
                 ...(elementType
@@ -1244,6 +1301,25 @@ export const createPlateRuntimeExtensions = (
                           ...options,
                           match: { type: elementType },
                         }),
+                      ...(hasGenericToggle && !hasAuthoredToggle
+                        ? {
+                            toggle: (
+                              options: Readonly<Record<string, unknown>> = {}
+                            ) => {
+                              const { collapse, ...blockOptions } = options;
+
+                              context.tx.blocks.toggle(
+                                elementType,
+                                blockOptions
+                              );
+                              if (collapse) {
+                                context.tx.selection.collapse(
+                                  collapse === true ? undefined : collapse
+                                );
+                              }
+                            },
+                          }
+                        : {}),
                     }
                   : {}),
                 ...(markKey

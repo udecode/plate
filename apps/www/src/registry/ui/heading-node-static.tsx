@@ -1,5 +1,6 @@
 import * as React from 'react';
 
+import { ElementIdPlugin } from 'platejs';
 import type { PliteElementProps } from 'platejs/static';
 
 import { type VariantProps, cva } from 'class-variance-authority';
@@ -22,7 +23,8 @@ export function HeadingElementStatic({
   variant = 'h1',
   ...props
 }: PliteElementProps & VariantProps<typeof headingVariants>) {
-  const id = props.element.id as string | undefined;
+  const elementId = props.editor.plugin(ElementIdPlugin);
+  const id = elementId.installed ? elementId.read.id(props.element) : undefined;
 
   return (
     <PliteElement

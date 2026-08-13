@@ -81,19 +81,18 @@ const editor = createPlateEditor({
 You can configure the `IndentPlugin` to target specific elements and customize indentation behavior.
 
 ```tsx
-import { BlockquotePlugin } from "@platejs/basic-nodes/react";
 import { IndentPlugin } from "@platejs/indent/react";
-import { KEYS } from "platejs";
-import { createPlateEditor, ParagraphPlugin } from "platejs/react";
+import { PLUGINS } from "platejs";
+import { createPlateEditor } from "platejs/react";
 
 const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
     IndentPlugin.configure({
-      targetPluginNames: [
-        ...KEYS.heading,
-        ParagraphPlugin.name,
-        BlockquotePlugin.name,
+      targetPlugins: [
+        PLUGINS.h1, PLUGINS.h2, PLUGINS.h3, PLUGINS.h4, PLUGINS.h5, PLUGINS.h6,
+        PLUGINS.paragraph,
+        PLUGINS.blockquote,
       ],
       inject: {
         nodeProps: {
@@ -111,7 +110,7 @@ const editor = createPlateEditor({
 ```
 
 - `inject.nodeProps.styleKey`: Maps the injected prop to the CSS `marginLeft` property.
-- `targetPluginNames`: Element plugin names whose types can store indentation.
+- `targetPlugins`: Element plugin descriptors or dynamic names whose nodes can store indentation.
 - `initialState.offset`: Indentation offset in pixels (default: `24`).
 - `initialState.unit`: Unit for indentation values (default: `'px'`).
 - `initialState.indentMax`: Maximum number of indentations allowed.
@@ -126,19 +125,16 @@ You can add [`IndentToolbarButton`](/docs/components/indent-toolbar-button) to y
 
 ### `IndentPlugin`
 
-Plugin for indenting block elements. It injects an `indent` prop into the elements specified by `targetPluginNames` and applies `marginLeft` styling.
+Plugin for indenting block elements. It injects an `indent` prop into the elements specified by `targetPlugins` and applies `marginLeft` styling.
 
 <API name="IndentPlugin">
   <APIOptions type="object">
-    <APIItem name="type" type="string" optional>
-      Resolved schema and rendered model-property key. - **Default:** `'indent'`
-    </APIItem>
     <APIItem name="inject.nodeProps.styleKey" type="string" optional>
       CSS property name for styling. - **Default:** `'marginLeft'`
     </APIItem>
-    <APIItem name="targetPluginNames" type="string[]" optional>
-      Element plugin names targeted for indent storage and injection. -
-      **Default:** `[BaseParagraphPlugin.name]`
+    <APIItem name="targetPlugins" type="readonly (PluginReference | string)[]" optional>
+      Element plugin descriptors or dynamic names targeted for indent storage and injection. -
+      **Default:** `[BaseParagraphPlugin]`
     </APIItem>
     <APIItem name="initialState.offset" type="number" optional>
       Indentation offset used in `(offset * element.indent) + unit`. -
@@ -156,67 +152,67 @@ Plugin for indenting block elements. It injects an `indent` prop into the elemen
 
 ## API
 
-### `indent`
+### `editor.plugin(IndentPlugin).update.increase`
 
 Indents the selected block(s) in the editor.
 
-<API name="indent">
-  <APIOptions type="SetIndentOptions" optional>
+<API name="increase">
+  <APIOptions type="Omit<IndentChangeOptions, 'offset'>" optional>
     Options for indenting blocks.
   </APIOptions>
 </API>
 
-### `outdent`
+### `editor.plugin(IndentPlugin).update.decrease`
 
-Decrease the indentation of the selected blocks.
+Decreases the indentation of the selected blocks.
 
-<API name="outdent">
-  <APIOptions type="SetIndentOptions" optional>
+<API name="decrease">
+  <APIOptions type="Omit<IndentChangeOptions, 'offset'>" optional>
     Options for outdenting blocks.
   </APIOptions>
 </API>
 
-### `setIndent`
+### `editor.plugin(IndentPlugin).update.change`
 
-Add offset to the indentation of the selected blocks.
+Adds an offset to the indentation of the selected blocks.
 
-<API name="setIndent">
-  <APIOptions type="SetIndentOptions">
+<API name="change">
+  <APIOptions type="IndentChangeOptions">
     <APIItem name="offset" type="number" optional>
       Indentation offset used in `(offset * element.indent) + unit`. -
       **Default:** `1`
     </APIItem>
-    <APIItem name="getNodeOptions" type="object" optional>
-      Options to get nodes to indent.
+    <APIItem name="nodes" type="EditorNodesOptions<Element>" optional>
+      Node query and update options. `match` may further restrict target blocks.
     </APIItem>
-    <APIItem name="setNodesProps" type="object" optional>
-      Additional props to set on nodes to indent.
+    <APIItem name="setNodeProps" type="({ indent }: { indent: number }) => Record<string, unknown>" optional>
+      Returns additional properties to set for the next indent value.
     </APIItem>
-    <APIItem name="unsetNodesProps" type="string[]" optional>
-      Additional props to unset on nodes to indent. - **Default:** `[]`
+    <APIItem name="unsetNodeProps" type="string[]" optional>
+      Additional persisted property keys to unset when indentation reaches zero. - **Default:** `[]`
     </APIItem>
   </APIOptions>
 </API>
 
 ## Types
 
-### `SetIndentOptions`
+### `IndentChangeOptions`
 
 Used to provide options for setting the indentation of a block of text.
 
-<API name="SetIndentOptions">
+<API name="IndentChangeOptions">
   <APIOptions>
     <APIItem name="offset" type="number">
       Change in indentation (1 to indent, -1 to outdent). - **Default:** `1`
     </APIItem>
-    <APIItem name="getNodesOptions" type="object<V>">
-      Additional `getNodes` options.
+    <APIItem name="nodes" type="EditorNodesOptions<Element>">
+      Node query and update options.
     </APIItem>
-    <APIItem name="setNodesProps" type="object">
-      Additional `setNodes` options.
+    <APIItem name="setNodeProps" type="({ indent }: { indent: number }) => Record<string, unknown>">
+      Builds additional properties from the next indent value.
     </APIItem>
-    <APIItem name="unsetNodesProps" type="string[]">
-      Properties to unset when indentation is 0.
+    <APIItem name="unsetNodeProps" type="string[]">
+      Persisted property keys to unset when indentation reaches zero.
     </APIItem>
   </APIOptions>
 </API>

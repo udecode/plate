@@ -3,11 +3,11 @@
 import * as React from 'react';
 
 import type { Element } from '@platejs/plite';
+import type { SuggestionData } from '@platejs/suggestion';
 import { SuggestionPlugin } from '@platejs/suggestion/react';
 import { cva } from 'class-variance-authority';
 import { CornerDownLeftIcon } from 'lucide-react';
-import type { TSuggestionData, TSuggestionText } from 'platejs';
-import { NODES } from 'platejs';
+import { PLUGINS } from 'platejs';
 import type {
   PlateEditor,
   PlateLeafProps,
@@ -63,20 +63,20 @@ const voidRemoveSuggestionOverlayVariants = cva(
 );
 
 export function getBlockSuggestionWrapperClassName({
-  elementType,
   isActive,
+  isColumnGroup,
   isHover,
   isInsert,
   isRemove,
 }: {
-  elementType?: string;
   isActive: boolean;
+  isColumnGroup: boolean;
   isHover: boolean;
   isInsert: boolean;
   isRemove: boolean;
 }) {
   return cn(
-    elementType === NODES.columnGroup && 'flex size-full rounded',
+    isColumnGroup && 'flex size-full rounded',
     suggestionVariants({
       insertActive: isInsert && (isActive || isHover),
       remove: isRemove,
@@ -213,11 +213,11 @@ function SuggestionLineBreakElementAnchor({
   );
 }
 
-export function SuggestionLeaf(props: PlateLeafProps<TSuggestionText>) {
+export function SuggestionLeaf(props: PlateLeafProps<typeof SuggestionPlugin>) {
   const { api, store } = useEditorPlugin(SuggestionPlugin);
   const leaf = props.leaf;
 
-  const leafId: string = api.nodeId(leaf) ?? '';
+  const leafId: string = api.id(leaf) ?? '';
   const activeSuggestionId = usePluginStore(SuggestionPlugin, 'activeId');
   const hoverSuggestionId = usePluginStore(SuggestionPlugin, 'hoverId');
   const dataList = api.dataList(leaf);
@@ -258,12 +258,15 @@ export const SuggestionLineBreak: RenderNodeWrapper = ({ editor, element }) => {
     return;
   }
 
-  const suggestionData = element.suggestion as TSuggestionData;
+  const suggestionData = element.suggestion as SuggestionData;
+  const columnGroup = editor.plugin(PLUGINS.columnGroup);
+  const isColumnGroup =
+    columnGroup.installed && element.type === columnGroup.schema.type;
 
   return function Component({ children }) {
     return (
       <SuggestionLineBreakContent
-        elementType={element.type}
+        isColumnGroup={isColumnGroup}
         suggestionData={suggestionData}
       >
         {children}
@@ -274,12 +277,12 @@ export const SuggestionLineBreak: RenderNodeWrapper = ({ editor, element }) => {
 
 export function SuggestionLineBreakContent({
   children,
-  elementType,
+  isColumnGroup,
   suggestionData,
 }: {
   children: React.ReactNode;
-  elementType?: string;
-  suggestionData: TSuggestionData;
+  isColumnGroup: boolean;
+  suggestionData: SuggestionData;
 }) {
   const { isLineBreak, type } = suggestionData;
   const isRemove = type === 'remove';
@@ -353,8 +356,8 @@ export function SuggestionLineBreakContent({
       ) : (
         <div
           className={getBlockSuggestionWrapperClassName({
-            elementType,
             isActive,
+            isColumnGroup,
             isHover,
             isInsert,
             isRemove,

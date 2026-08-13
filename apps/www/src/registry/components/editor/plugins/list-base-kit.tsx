@@ -1,5 +1,5 @@
 import { BaseListPlugin, isOrderedList } from '@platejs/list';
-import { KEYS } from 'platejs';
+import { PLUGINS } from 'platejs';
 
 import { BaseIndentKit } from '@/registry/components/editor/plugins/indent-base-kit';
 import { BlockListStatic } from '@/registry/ui/block-list-static';
@@ -9,7 +9,7 @@ export const BaseListKit = [
   BaseListPlugin.configure({
     inject: {
       nodeProps: {
-        nodeKey: KEYS.listType,
+        nodeKey: 'listStyleType',
         query: ({ nodeProps }) => {
           const element = nodeProps.element;
 
@@ -28,12 +28,17 @@ export const BaseListKit = [
     render: {
       belowNodes: BlockListStatic,
     },
-    targetPluginNames: [
-      KEYS.p,
-      ...KEYS.heading,
-      KEYS.blockquote,
-      KEYS.codeBlock,
-      KEYS.toggle,
+    targetPlugins: [
+      PLUGINS.paragraph,
+      PLUGINS.h1,
+      PLUGINS.h2,
+      PLUGINS.h3,
+      PLUGINS.h4,
+      PLUGINS.h5,
+      PLUGINS.h6,
+      PLUGINS.blockquote,
+      PLUGINS.codeBlock,
+      PLUGINS.toggle,
     ],
   }),
 ];

@@ -6,13 +6,14 @@ import type { Alignment } from '@platejs/basic-styles';
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
 import { TextAlignPlugin } from '@platejs/basic-styles/react';
+import { ElementApi } from 'platejs';
 import {
   AlignCenterIcon,
   AlignJustifyIcon,
   AlignLeftIcon,
   AlignRightIcon,
 } from 'lucide-react';
-import { useEditorPlugin, useSelectionFragmentProp } from 'platejs/react';
+import { useEditor, useSelectionFragmentProp } from 'platejs/react';
 
 import {
   DropdownMenu,
@@ -41,14 +42,20 @@ const items = [
     icon: AlignJustifyIcon,
     value: 'justify',
   },
-];
+] as const satisfies readonly {
+  icon: React.ComponentType;
+  value: Alignment;
+}[];
 
 export function AlignToolbarButton(props: DropdownMenuProps) {
-  const { editor } = useEditorPlugin(TextAlignPlugin);
+  const editor = useEditor();
   const value =
     useSelectionFragmentProp({
       defaultValue: 'start',
-      getProp: (node) => (node as { align?: Alignment }).align,
+      getProp: (node) =>
+        ElementApi.isElement(node)
+          ? items.find(({ value }) => value === node.textAlign)?.value
+          : undefined,
     }) ?? 'left';
   const selectedValue = String(value);
 
@@ -68,7 +75,11 @@ export function AlignToolbarButton(props: DropdownMenuProps) {
         <DropdownMenuRadioGroup
           value={selectedValue}
           onValueChange={(value) => {
-            editor.plugin(TextAlignPlugin).update.set(value as Alignment);
+            const alignment = items.find((item) => item.value === value)?.value;
+
+            if (!alignment) return;
+
+            editor.plugin(TextAlignPlugin).update.set(alignment);
             editor.api.dom.focus();
           }}
         >

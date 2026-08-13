@@ -1,9 +1,11 @@
-import { createHash, randomUUID } from 'node:crypto';
 import { execFile } from 'node:child_process';
+import { createHash, randomUUID } from 'node:crypto';
 import {
   closeSync,
   existsSync,
   fsyncSync,
+  linkSync,
+  mkdtempSync,
   mkdirSync,
   openSync,
   readdirSync,
@@ -13,7 +15,15 @@ import {
   statSync,
   writeFileSync,
 } from 'node:fs';
-import { basename, dirname, extname, join, relative, resolve } from 'node:path';
+import {
+  basename,
+  dirname,
+  extname,
+  isAbsolute,
+  join,
+  relative,
+  resolve,
+} from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import type {
@@ -22,14 +32,30 @@ import type {
   SchemaPropertyKey,
 } from '@platejs/plite';
 import { build } from 'esbuild';
-import ts from 'typescript';
+
+import {
+  discoverEditorConfigFiles,
+  editorSourceImportCandidates,
+  findEditorConfig,
+  NativeTypeScriptSession,
+  resolveEditorSourceImport,
+  type EditorTsconfigCache,
+  type NativeTypeProperties,
+} from './typescript';
+import {
+  artifactStateRoot,
+  canonicalPath,
+  compilerDirectoryPrefix,
+  findProjectRoot,
+  pathFingerprint,
+} from './state';
 
 export type GenerateEditorOptions = Readonly<{
   check?: boolean;
   cwd?: string;
 }>;
 
-export type GeneratedEditorArtifacts = Readonly<{
+type EditorArtifacts = Readonly<{
   entryPath: string;
   schema: EditorSchemaContract;
   schemaPath: string;
@@ -37,7 +63,10 @@ export type GeneratedEditorArtifacts = Readonly<{
   typesPath: string;
 }>;
 
-export type CompiledEditorArtifacts = GeneratedEditorArtifacts &
+export type GeneratedEditorArtifacts = EditorArtifacts &
+  Readonly<{ status: 'generated' | 'upToDate' }>;
+
+export type CompiledEditorArtifacts = EditorArtifacts &
   Readonly<{
     schemaSource: string;
     typesSource: string;
@@ -50,6 +79,7 @@ type ElementBinding = Readonly<{
 }>;
 
 type CompiledPluginBinding = Readonly<{
+  authoredToggle?: true;
   key?: string;
   name: string;
   type?: string;
@@ -67,36 +97,41 @@ type CompiledDefinition = Readonly<{
   schema: EditorSchemaContract;
 }>;
 
-type TypeProperties = Readonly<
-  Record<
-    string,
-    Readonly<{
-      optional: boolean;
-      type: string;
-    }>
-  >
->;
+type TypeProperties = NativeTypeProperties;
 
 type ContractPropertyDescriptor =
   EditorSchemaContract['properties']['byId'][number]['descriptor'];
 
 type MaterializedProperties = Readonly<{
-  elements: Readonly<Record<string, TypeProperties>>;
-  owners: Readonly<Record<string, TypeProperties>>;
+  byPropertyId: Readonly<
+    Record<string, Readonly<{ optional: boolean; type: string }>>
+  >;
   sourceFiles: readonly string[];
-  text: TypeProperties;
 }>;
 
 const ANY_PATH_PATTERN = /.*/;
 const CAMEL_BOUNDARY_PATTERN = /([a-z\d])([A-Z])/g;
 const CSS_PATH_PATTERN = /\.css$/;
 const DEFINITION_SUFFIX_PATTERN = /(?:[.-]definition)$/;
+const EDITOR_DEFINITION_PATTERN = /^plate:editor-definition$/;
 const LEADING_DIGIT_PATTERN = /^\d/;
 const NON_IDENTIFIER_PATTERN = /[^A-Z_a-z\d]+/;
 const NODE_MODULES_PATH_PATTERN = /(^|[\\/])node_modules([\\/]|$)/;
 const PROPERTY_NAME_PATTERN = /^[$A-Z_a-z][$\w]*$/;
+const PORTABLE_SHELL_PATH_PATTERN = /^[./A-Z_a-z\d-]+$/;
+const SHELL_EXPANSION_PATTERN = /["$`%!\r\n]/;
 const REACT_LITE_YOUTUBE_EMBED_PATTERN = /^react-lite-youtube-embed$/;
+const UNRESOLVED_IMPORT_PATTERN = /Could not resolve "([^"]+)"/;
 const SOURCE_EXTENSION_PATTERN = /\.[cm]?[jt]sx?$/;
+const TYPE_ONLY_IMPORT_PATTERNS = [
+  /\b(?:export|import)\s+type\b[^;]*?\bfrom\s*['"]([^'"]+)['"]/gu,
+  /\b(?:export|import)\s*\{[^}]*\btype\b[^}]*\}\s*from\s*['"]([^'"]+)['"]/gu,
+  /\bimport\s+(?!type\b)(?:[^'";]*?\s+from\s*)?['"]([^'"]+)['"]/gu,
+  /\bimport\s+(?:type\s+)?[$\w]+\s*=\s*require\s*\(\s*['"]([^'"]+)['"]\s*\)/gu,
+  /\bexport\s*(?:\*|\{[^}]*\})\s*from\s*['"]([^'"]+)['"]/gu,
+  /\bimport\s*\(\s*['"]([^'"]+)['"]\s*\)/gu,
+  /<reference\s+path\s*=\s*['"]([^'"]+)['"]/gu,
+] as const;
 const SOURCE_RESOLUTION_EXTENSIONS = [
   '.ts',
   '.tsx',
@@ -116,19 +151,35 @@ const bundleDefinition = async (
   dependencies: Set<string>,
   silent = false,
   attemptedDependencies = dependencies
-) =>
-  build({
+) => {
+  const configPath = findEditorConfig(entryPath);
+
+  return build({
     banner: {
-      js: `import { createRequire as __plateCreateRequire } from 'node:module'; const require = __plateCreateRequire(import.meta.url);`,
+      js: `import { createRequire as __plateCreateRequire } from 'node:module'; const __plateEntryUrl = ${JSON.stringify(pathToFileURL(entryPath).href)}; const require = __plateCreateRequire(__plateEntryUrl); const __plateImportMetaResolve = (specifier) => import.meta.resolve(specifier, __plateEntryUrl);`,
     },
     bundle: true,
     conditions: ['production'],
+    define: {
+      'import.meta.dirname': JSON.stringify(dirname(entryPath)),
+      'import.meta.filename': JSON.stringify(entryPath),
+      'import.meta.resolve': '__plateImportMetaResolve',
+      'import.meta.url': JSON.stringify(pathToFileURL(entryPath).href),
+    },
     format: 'esm',
     jsx: 'automatic',
     logLevel: silent ? 'silent' : 'info',
     logOverride: { 'ignored-bare-import': 'silent' },
     platform: 'node',
     plugins: [
+      {
+        name: 'plate-editor-definition',
+        setup(context) {
+          context.onResolve({ filter: EDITOR_DEFINITION_PATTERN }, () => ({
+            path: entryPath,
+          }));
+        },
+      },
       {
         name: 'plate-codegen-dependencies',
         setup(context) {
@@ -194,7 +245,7 @@ const bundleDefinition = async (
     ],
     sourcemap: false,
     stdin: {
-      contents: `import definition from ${JSON.stringify(`./${basename(entryPath)}`)};
+      contents: `import definition from 'plate:editor-definition';
 import { createBaseEditor } from '@platejs/core';
 import { getPlateRuntime } from '@platejs/core/internal';
 import { createEditorSchemaContract } from '@platejs/plite';
@@ -216,6 +267,9 @@ export default {
     })
   ),
   bindings: runtime.model.bindings.map((binding) => ({
+    ...(runtime.updateMethods[binding.name]?.includes('toggle')
+      ? { authoredToggle: true }
+      : {}),
     ...(binding.propertyKey ? { key: binding.propertyKey } : {}),
     name: binding.name,
     ...(binding.elementType ? { type: binding.elementType } : {}),
@@ -228,19 +282,53 @@ export default {
       resolveDir: dirname(entryPath),
       sourcefile: 'plate-codegen-entry.ts',
     },
-    tsconfig: findTsconfig(entryPath),
+    tsconfig: configPath,
     write: false,
+  });
+};
+
+const evaluationWorkerPath = fileURLToPath(
+  new URL(
+    import.meta.url.endsWith('.ts')
+      ? './evaluation-worker.ts'
+      : './evaluation-worker.js',
+    import.meta.url
+  )
+);
+
+const evaluateDefinition = (
+  bundlePath: string,
+  resultPath: string,
+  cwd: string
+) =>
+  new Promise<void>((resolvePromise, reject) => {
+    execFile(
+      process.execPath,
+      [
+        '--experimental-import-meta-resolve',
+        evaluationWorkerPath,
+        bundlePath,
+        resultPath,
+      ],
+      { cwd, maxBuffer: 16 * 1024 * 1024 },
+      (error, _stdout, stderr) => {
+        if (!error) return resolvePromise();
+        reject(
+          new Error(
+            stderr.trim() ||
+              `Plate could not evaluate the bundled editor definition: ${error.message}`
+          )
+        );
+      }
+    );
   });
 
 const readDefinition = async (
-  entryPath: string
+  entryPath: string,
+  cwd: string
 ): Promise<
   Readonly<{ definition: CompiledDefinition; sourceFiles: readonly string[] }>
 > => {
-  const outputPath = join(
-    dirname(entryPath),
-    `.plate-codegen-${process.pid}-${randomUUID()}.mjs`
-  );
   const dependencies = new Set<string>();
   const result = await bundleDefinition(
     entryPath,
@@ -251,15 +339,17 @@ const readDefinition = async (
   const output = result.outputFiles?.[0];
 
   if (!output) throw new Error(`Plate could not bundle "${entryPath}".`);
-  writeDurableFile(outputPath, output.text);
+  const outputDirectory = mkdtempSync(compilerDirectoryPrefix(entryPath));
+  const outputPath = join(outputDirectory, 'definition.mjs');
+  const resultPath = join(outputDirectory, 'definition.json');
   let imported: unknown;
 
   try {
-    imported = (
-      await import(`${pathToFileURL(outputPath).href}?${randomUUID()}`)
-    ).default;
+    writeDurableFile(outputPath, output.text);
+    await evaluateDefinition(outputPath, resultPath, cwd);
+    imported = JSON.parse(readFileSync(resultPath, 'utf8'));
   } finally {
-    rmSync(outputPath, { force: true });
+    rmSync(outputDirectory, { force: true, recursive: true });
   }
 
   if (
@@ -283,99 +373,88 @@ const readDefinition = async (
   });
 };
 
-const findTsconfig = (entryPath: string) =>
-  ts.findConfigFile(dirname(entryPath), ts.sys.fileExists, 'tsconfig.json');
+const discoverTypeOnlySourceFiles = (
+  roots: readonly string[],
+  missingDependencies?: Set<string>,
+  projectConfigPath?: string,
+  configCache: EditorTsconfigCache = new Map(),
+  dependencyCache = new Map<
+    string,
+    Readonly<{
+      dependencies: readonly string[];
+      missingCandidates: readonly string[];
+    }>
+  >()
+) => {
+  const sources = new Set(
+    roots
+      .map((path) => resolve(path))
+      .filter(
+        (path) =>
+          !NODE_MODULES_PATH_PATTERN.test(path) &&
+          existsSync(path) &&
+          statSync(path).isFile()
+      )
+  );
+  const pending = [...sources];
 
-const resolveProjectConfig = (path: string) =>
-  existsSync(path) && statSync(path).isFile()
-    ? path
-    : join(path, 'tsconfig.json');
+  while (pending.length > 0) {
+    const path = pending.pop()!;
 
-class EditorConfigReadError extends Error {
-  readonly configFiles: readonly string[];
+    if (!SOURCE_EXTENSION_PATTERN.test(path) || !existsSync(path)) continue;
+    const dependencyKey = `${projectConfigPath ?? ''}\0${path}`;
+    let discovered = dependencyCache.get(dependencyKey);
 
-  constructor(error: unknown, configFiles: readonly string[]) {
-    super(error instanceof Error ? error.message : String(error));
-    this.configFiles = Object.freeze([...configFiles]);
-  }
-}
+    if (!discovered) {
+      const source = readFileSync(path, 'utf8');
+      const specifiers = new Set<string>();
 
-const readEditorConfig = (
-  entryPath: string,
-  cwd: string
-): Readonly<{
-  configFiles: readonly string[];
-  parsed: ts.ParsedCommandLine;
-}> => {
-  const configPath = findTsconfig(entryPath);
+      TYPE_ONLY_IMPORT_PATTERNS.forEach((pattern) => {
+        for (const match of source.matchAll(pattern)) {
+          specifiers.add(match[1]!);
+        }
+      });
+      const dependencies: string[] = [];
+      const missingCandidates: string[] = [];
 
-  if (!configPath) {
-    return {
-      configFiles: [],
-      parsed: ts.parseJsonConfigFileContent({}, ts.sys, dirname(entryPath), {
-        noEmit: true,
-      }),
-    };
-  }
-  const configFiles = new Set<string>();
-  const visited = new Set<string>();
+      specifiers.forEach((specifier) => {
+        const dependency = resolveEditorSourceImport(
+          path,
+          specifier,
+          configCache,
+          projectConfigPath
+        );
 
-  const parse = (path: string): ts.ParsedCommandLine => {
-    const resolvedPath = resolve(path);
-
-    if (visited.has(resolvedPath)) {
-      return ts.parseJsonConfigFileContent(
-        {},
-        ts.sys,
-        dirname(resolvedPath),
-        { noEmit: true },
-        resolvedPath
-      );
+        if (dependency) dependencies.push(dependency);
+        else {
+          missingCandidates.push(
+            ...editorSourceImportCandidates(
+              path,
+              specifier,
+              configCache,
+              projectConfigPath
+            )
+          );
+        }
+      });
+      discovered = Object.freeze({
+        dependencies: Object.freeze(dependencies),
+        missingCandidates: Object.freeze(missingCandidates),
+      });
+      dependencyCache.set(dependencyKey, discovered);
     }
-    visited.add(resolvedPath);
-    configFiles.add(resolvedPath);
-    const config = ts.readConfigFile(resolvedPath, ts.sys.readFile);
-
-    if (config.error) throw new Error(formatDiagnostics([config.error], cwd));
-    const extendedConfigCache = new Map<string, ts.ExtendedConfigCacheEntry>();
-    const parsed = ts.parseJsonConfigFileContent(
-      config.config,
-      ts.sys,
-      dirname(resolvedPath),
-      { noEmit: true },
-      resolvedPath,
-      undefined,
-      undefined,
-      extendedConfigCache
-    );
-
-    extendedConfigCache.forEach((entry) => {
-      configFiles.add(resolve(entry.extendedResult.fileName));
+    discovered.missingCandidates.forEach((candidate) => {
+      sources.add(candidate);
+      missingDependencies?.add(candidate);
     });
-    if (parsed.errors.length > 0) {
-      throw new Error(formatDiagnostics(parsed.errors, cwd));
-    }
-    parsed.projectReferences?.forEach((reference) => {
-      const referenceConfig = resolveProjectConfig(reference.path);
-
-      if (existsSync(referenceConfig)) parse(referenceConfig);
+    discovered.dependencies.forEach((dependency) => {
+      if (sources.has(dependency)) return;
+      sources.add(dependency);
+      pending.push(dependency);
     });
-
-    return parsed;
-  };
-
-  let parsed: ts.ParsedCommandLine;
-
-  try {
-    parsed = parse(configPath);
-  } catch (error) {
-    throw new EditorConfigReadError(error, [...configFiles]);
   }
 
-  return {
-    configFiles: Object.freeze([...configFiles]),
-    parsed,
-  };
+  return [...sources];
 };
 
 /** @internal Discover attempted source dependencies even when generation fails. */
@@ -385,41 +464,11 @@ export const discoverEditorSourceFiles = (
 ) => {
   const cwd = resolve(options.cwd ?? process.cwd());
   const entryPath = resolve(cwd, entry);
-  let editorConfig: ReturnType<typeof readEditorConfig>;
-
-  try {
-    editorConfig = readEditorConfig(entryPath, cwd);
-  } catch (error) {
-    const configPath = findTsconfig(entryPath);
-    const configFiles =
-      error instanceof EditorConfigReadError ? error.configFiles : [];
-
-    return Object.freeze(
-      [entryPath, ...(configPath ? [configPath] : []), ...configFiles].filter(
-        (fileName, index, files) => files.indexOf(fileName) === index
-      )
-    );
-  }
-  const { configFiles, parsed } = editorConfig;
-  const generatedPaths = new Set(Object.values(outputPaths(entryPath)));
-  const program = ts.createProgram({
-    options: parsed.options,
-    projectReferences: parsed.projectReferences,
-    rootNames: [...new Set([...parsed.fileNames, entryPath])],
-  });
 
   return Object.freeze(
-    [
-      ...configFiles,
-      ...program
-        .getSourceFiles()
-        .map(({ fileName }) => fileName)
-        .filter(
-          (fileName) =>
-            !NODE_MODULES_PATH_PATTERN.test(fileName) &&
-            !generatedPaths.has(fileName)
-        ),
-    ].filter((fileName, index, files) => files.indexOf(fileName) === index)
+    [entryPath, ...discoverEditorConfigFiles(entryPath)].filter(
+      (fileName, index, files) => files.indexOf(fileName) === index
+    )
   );
 };
 
@@ -431,369 +480,236 @@ export const discoverEditorWatchFiles = async (
   const cwd = resolve(options.cwd ?? process.cwd());
   const entryPath = resolve(cwd, entry);
   const dependencies = new Set(discoverEditorSourceFiles(entry, options));
+  const missingDependencies = new Set<string>();
 
   try {
     await bundleDefinition(entryPath, dependencies, true);
-  } catch {
-    // Resolution hooks still collect loaded files and local missing candidates.
+  } catch (error) {
+    if (isRecord(error) && Array.isArray(error.errors)) {
+      error.errors.forEach((item) => {
+        if (!isRecord(item) || typeof item.text !== 'string') return;
+        const specifier = item.text.match(UNRESOLVED_IMPORT_PATTERN)?.[1];
+        const location = isRecord(item.location) ? item.location : undefined;
+        const importer =
+          location && typeof location.file === 'string'
+            ? resolve(cwd, location.file)
+            : entryPath;
+
+        if (specifier?.startsWith('.')) {
+          // Keep the unresolved extensionless candidate. Watch mode targets
+          // its parent directory, then an unmatched add retries every entry.
+          missingDependencies.add(resolve(dirname(importer), specifier));
+        }
+      });
+    }
   }
+  discoverTypeOnlySourceFiles(
+    [...dependencies],
+    missingDependencies,
+    findEditorConfig(entryPath)
+  ).forEach((path) => {
+    dependencies.add(path);
+  });
   const generatedPaths = new Set(Object.values(outputPaths(entryPath)));
 
   return Object.freeze(
     [...dependencies].filter(
       (path) =>
-        !NODE_MODULES_PATH_PATTERN.test(path) && !generatedPaths.has(path)
+        !NODE_MODULES_PATH_PATTERN.test(path) &&
+        !generatedPaths.has(path) &&
+        (existsSync(path) || missingDependencies.has(path))
     )
   );
 };
-
-const formatDiagnostics = (
-  diagnostics: readonly ts.Diagnostic[],
-  cwd: string
-) =>
-  diagnostics
-    .map((diagnostic) => {
-      const message = ts.flattenDiagnosticMessageText(
-        diagnostic.messageText,
-        '\n'
-      );
-
-      if (!diagnostic.file || diagnostic.start === undefined) return message;
-      const location = diagnostic.file.getLineAndCharacterOfPosition(
-        diagnostic.start
-      );
-
-      return `${relative(cwd, diagnostic.file.fileName)}:${location.line + 1}:${location.character + 1} ${message}`;
-    })
-    .join('\n');
 
 const propertyName = (name: string) =>
   PROPERTY_NAME_PATTERN.test(name) ? name : JSON.stringify(name);
+type MaterializationRequest = Readonly<{
+  entryPath: string;
+  bindings: readonly ElementBinding[];
+  owners: readonly string[];
+  generatedPaths: ReadonlySet<string>;
+  schema: EditorSchemaContract;
+}>;
 
-const literalType = (type: ts.Type) => {
-  if (type.flags & ts.TypeFlags.StringLiteral) {
-    return JSON.stringify((type as ts.StringLiteralType).value);
-  }
-  if (type.flags & ts.TypeFlags.NumberLiteral) {
-    return String((type as ts.NumberLiteralType).value);
-  }
-  if (type.flags & ts.TypeFlags.BooleanLiteral) {
-    return (type as { intrinsicName?: string }).intrinsicName === 'true'
-      ? 'true'
-      : 'false';
-  }
-};
+type MaterializationGroup = Readonly<{
+  aliasName: string;
+  properties: readonly Readonly<{
+    key: string;
+    propertyId: string;
+  }>[];
+  source: string;
+}>;
 
-const isExternalNamedType = (type: ts.Type) => {
-  const symbol = type.aliasSymbol ?? type.getSymbol();
-
-  return symbol?.declarations?.some((declaration) =>
-    NODE_MODULES_PATH_PATTERN.test(declaration.getSourceFile().fileName)
-  );
-};
-
-const escapeTemplateLiteralText = (value: string) =>
-  value
-    .replaceAll('\\', '\\\\')
-    .replaceAll('`', '\\`')
-    .replaceAll('${', '\\${');
-
-const printPropertyType = (
-  checker: ts.TypeChecker,
-  type: ts.Type,
-  seen = new Set<ts.Type>(),
-  excludeUndefined = false
-): string => {
-  const literal = literalType(type);
-
-  if (literal) return literal;
-  if (type.flags & ts.TypeFlags.Any) return 'unknown';
-  if (type.flags & ts.TypeFlags.Never) {
-    throw new Error('Generated editor property types cannot contain `never`.');
-  }
-  if (type.flags & ts.TypeFlags.Unknown) return 'unknown';
-  if (type.flags & ts.TypeFlags.TemplateLiteral) {
-    const template = type as ts.TemplateLiteralType;
-    const templateSeen = new Set(seen).add(type);
-
-    return `\`${template.texts
-      .map((text, index) => {
-        const nested = template.types[index];
-
-        return `${escapeTemplateLiteralText(text)}${nested ? `\${${printPropertyType(checker, nested, templateSeen)}}` : ''}`;
-      })
-      .join('')}\``;
-  }
-  if (type.flags & ts.TypeFlags.StringLike) return 'string';
-  if (type.flags & ts.TypeFlags.NumberLike) return 'number';
-  if (type.flags & ts.TypeFlags.BigIntLike) return 'bigint';
-  if (type.flags & ts.TypeFlags.BooleanLike) return 'boolean';
-  if (type.flags & ts.TypeFlags.ESSymbolLike) return 'symbol';
-  if (type.flags & ts.TypeFlags.Null) return 'null';
-  if (type.flags & (ts.TypeFlags.Undefined | ts.TypeFlags.Void)) {
-    return 'undefined';
-  }
-  if (seen.has(type)) return 'unknown';
-  const nextSeen = new Set(seen).add(type);
-  if (type.isUnion()) {
-    const values = [
-      ...new Set(
-        type.types
-          .filter(
-            (item) =>
-              !excludeUndefined ||
-              !(item.flags & (ts.TypeFlags.Undefined | ts.TypeFlags.Void))
-          )
-          .map((item) => printPropertyType(checker, item, nextSeen))
-      ),
-    ];
-
-    if (values.includes('unknown')) return 'unknown';
-    if (values.includes('false') && values.includes('true')) {
-      values.splice(values.indexOf('false'), 1);
-      values.splice(values.indexOf('true'), 1);
-      values.push('boolean');
-    }
-
-    return values.sort().join(' | ') || 'undefined';
-  }
-  if (type.isIntersection()) {
-    const values = [
-      ...new Set(
-        type.types
-          .map((item) => {
-            const printed = printPropertyType(checker, item, nextSeen);
-
-            return item.isUnion() ? `(${printed})` : printed;
-          })
-          .filter((item) => item !== 'unknown')
-      ),
-    ];
-
-    return values.join(' & ') || 'unknown';
-  }
-  if (checker.isTupleType(type)) {
-    const tuple = type as ts.TupleTypeReference;
-    const items = checker.getTypeArguments(tuple);
-
-    return `readonly [${items
-      .map((item, index) => {
-        const flag =
-          tuple.target.elementFlags[index] ?? ts.ElementFlags.Required;
-        const printed = printPropertyType(
-          checker,
-          item,
-          nextSeen,
-          Boolean(flag & ts.ElementFlags.Optional)
-        );
-
-        if (flag & (ts.ElementFlags.Rest | ts.ElementFlags.Variadic)) {
-          return `...${item.isUnion() ? `(${printed})` : printed}[]`;
-        }
-
-        return flag & ts.ElementFlags.Optional ? `${printed}?` : printed;
-      })
-      .join(', ')}]`;
-  }
-  if (checker.isArrayType(type)) {
-    const item = checker.getIndexTypeOfType(type, ts.IndexKind.Number);
-
-    return `readonly (${item ? printPropertyType(checker, item, nextSeen) : 'unknown'})[]`;
-  }
-  if (type.flags & ts.TypeFlags.TypeParameter) {
-    const constraint = checker.getBaseConstraintOfType(type);
-
-    return constraint
-      ? printPropertyType(checker, constraint, nextSeen)
-      : 'unknown';
-  }
-  if (isExternalNamedType(type)) return 'unknown';
-  if (!(type.flags & ts.TypeFlags.Object)) {
-    throw new Error(
-      `Cannot materialize editor property type "${checker.typeToString(type)}".`
-    );
-  }
-  const calls = checker.getSignaturesOfType(type, ts.SignatureKind.Call);
-
-  if (calls.length > 0) return 'unknown';
-
-  const fields = type.getProperties().map((symbol) => {
-    const declaration = symbol.valueDeclaration ?? symbol.declarations?.[0];
-    const value = checker.getTypeOfSymbolAtLocation(
-      symbol,
-      declaration ?? (type.symbol?.valueDeclaration as ts.Node)
-    );
-    const optional = (symbol.flags & ts.SymbolFlags.Optional) !== 0;
-    const printed = printPropertyType(checker, value, nextSeen, optional);
-
-    return `readonly ${propertyName(symbol.getName())}${optional ? '?' : ''}: ${printed};`;
-  });
-  const indexes = checker.getIndexInfosOfType(type).map((index) => {
-    const key =
-      index.keyType.flags & ts.TypeFlags.NumberLike ? 'number' : 'string';
-
-    return `readonly [key: ${key}]: ${printPropertyType(checker, index.type, nextSeen)};`;
-  });
-
-  return `{ ${[...fields, ...indexes].join(' ')} }`;
-};
-
-const readTypeProperties = (
-  checker: ts.TypeChecker,
-  declaration: ts.TypeAliasDeclaration
-): TypeProperties => {
-  const type = checker.getTypeFromTypeNode(declaration.type);
-
-  return Object.freeze(
-    Object.fromEntries(
-      type.getProperties().map((symbol) => {
-        const location =
-          symbol.valueDeclaration ?? symbol.declarations?.[0] ?? declaration;
-        const optional = (symbol.flags & ts.SymbolFlags.Optional) !== 0;
-        const value = checker.getTypeOfSymbolAtLocation(symbol, location);
-        let printed: string;
-
-        try {
-          printed = printPropertyType(
-            checker,
-            value,
-            new Set<ts.Type>(),
-            optional
-          );
-        } catch (error) {
-          throw new Error(
-            `Cannot materialize schema property "${symbol.getName()}": ${error instanceof Error ? error.message : String(error)}`
-          );
-        }
-
-        return [
-          symbol.getName(),
-          Object.freeze({
-            optional,
-            type: printed || 'never',
-          }),
-        ];
-      })
-    )
-  );
-};
-
-const materializeProperties = (
-  entryPath: string,
-  bindings: readonly ElementBinding[],
-  owners: readonly string[],
+const materializePropertyGroups = async (
+  requests: readonly MaterializationRequest[],
   cwd: string,
-  generatedPaths: ReadonlySet<string>
-): MaterializedProperties => {
-  const helperPath = join(
-    dirname(entryPath),
-    `.plate-codegen-${process.pid}-${randomUUID()}.ts`
-  );
-  const entryImport = `./${basename(entryPath, extname(entryPath))}`;
-  const aliases = bindings
-    .map(
-      (binding, index) =>
-        `type __PlateElement${index} = InternalEditorDefinitionElementProperties<typeof definition.plugins, ${JSON.stringify(binding.name)}>;`
-    )
-    .join('\n');
-  const ownerAliases = owners
-    .map(
-      (owner, index) =>
-        `type __PlateOwner${index} = InternalEditorDefinitionOwnedElementProperties<typeof definition.plugins, ${JSON.stringify(owner)}>;`
-    )
-    .join('\n');
-  const helper = `import definition from ${JSON.stringify(entryImport)};\nimport type { InternalEditorDefinitionElementProperties, InternalEditorDefinitionOwnedElementProperties, InternalEditorDefinitionTextProperties } from '@platejs/core/internal';\n${aliases}\n${ownerAliases}\ntype __PlateText = InternalEditorDefinitionTextProperties<typeof definition.plugins>;\n`;
+  existingSession?: NativeTypeScriptSession
+): Promise<readonly MaterializedProperties[]> => {
+  const session = existingSession ?? new NativeTypeScriptSession(cwd);
+  const ownsSession = !existingSession;
+  const helperPaths: string[] = [];
+  let prepared: readonly Readonly<{
+    generatedPaths: ReadonlySet<string>;
+    groups: readonly MaterializationGroup[];
+    helper: string;
+    helperPath: string;
+    nativeAliases: readonly Readonly<{
+      name: string;
+      position: number;
+      propertyNames: readonly string[];
+    }>[];
+  }>[];
 
-  writeFileSync(helperPath, helper);
   try {
-    const { configFiles, parsed } = readEditorConfig(entryPath, cwd);
-    const program = ts.createProgram({
-      options: parsed.options,
-      projectReferences: parsed.projectReferences,
-      rootNames: [...new Set([...parsed.fileNames, helperPath])],
-    });
-    const source = program.getSourceFile(helperPath);
+    prepared = requests.map(
+      ({ bindings, entryPath, generatedPaths, owners, schema }) => {
+        const helperPath = session.helperPath(entryPath);
 
-    if (!source) throw new Error('Plate codegen type helper was not loaded.');
-    const diagnostics = [
-      ...program.getOptionsDiagnostics(),
-      ...program.getSyntacticDiagnostics(source),
-      ...program.getSemanticDiagnostics(source),
-    ];
+        helperPaths.push(helperPath);
+        const relativeEntry = relative(
+          dirname(helperPath),
+          entryPath.slice(0, -extname(entryPath).length)
+        ).replaceAll('\\', '/');
+        const entryImport = relativeEntry.startsWith('.')
+          ? relativeEntry
+          : `./${relativeEntry}`;
+        const bindingByType = new Map(
+          bindings.map((binding) => [binding.type, binding])
+        );
+        const groupMap = new Map<
+          string,
+          {
+            aliasName: string;
+            properties: { key: string; propertyId: string }[];
+            source: string;
+          }
+        >();
 
-    if (diagnostics.length > 0) {
-      throw new Error(formatDiagnostics(diagnostics, cwd));
-    }
-    const declarations = new Map(
-      source.statements.flatMap((statement) =>
-        ts.isTypeAliasDeclaration(statement)
-          ? [[statement.name.text, statement] as const]
-          : []
-      )
+        schema.properties.byId.forEach((property) => {
+          if (
+            typeof property.key !== 'string' ||
+            property.descriptor.kind !== 'json'
+          ) {
+            return;
+          }
+          let groupKey = 'text';
+          let aliasName = '__PlateText';
+          let source =
+            'InternalEditorDefinitionTextProperties<typeof definition.plugins>';
+
+          if (property.placement === 'element') {
+            const hasIdentityCollision = schema.properties.byId.some(
+              (candidate) =>
+                candidate.id !== property.id &&
+                candidate.owner === property.owner &&
+                candidate.key === property.key
+            );
+            const element = hasIdentityCollision
+              ? schema.elements.byType.find(({ propertyIds }) =>
+                  propertyIds.includes(property.id)
+                )
+              : undefined;
+            const binding = element
+              ? bindingByType.get(element.type)
+              : undefined;
+
+            if (binding) {
+              const bindingIndex = bindings.indexOf(binding);
+
+              groupKey = `element:${binding.name}`;
+              aliasName = `__PlateElement${bindingIndex}`;
+              source = `InternalEditorDefinitionElementProperties<typeof definition.plugins, ${JSON.stringify(binding.name)}>`;
+            } else {
+              groupKey = `owner:${property.owner}`;
+              aliasName = `__PlateOwner${owners.indexOf(property.owner)}`;
+              source = `InternalEditorDefinitionOwnedElementProperties<typeof definition.plugins, ${JSON.stringify(property.owner)}>`;
+            }
+          }
+          const group = groupMap.get(groupKey) ?? {
+            aliasName,
+            properties: [],
+            source,
+          };
+
+          group.properties.push({ key: property.key, propertyId: property.id });
+          groupMap.set(groupKey, group);
+        });
+        const groups: MaterializationGroup[] = [...groupMap.values()];
+        const aliases = bindings
+          .map(
+            (binding, index) =>
+              `type __PlateElement${index} = InternalEditorDefinitionElementProperties<typeof definition.plugins, ${JSON.stringify(binding.name)}>;`
+          )
+          .join('\n');
+        const ownerAliases = owners
+          .map(
+            (owner, index) =>
+              `type __PlateOwner${index} = InternalEditorDefinitionOwnedElementProperties<typeof definition.plugins, ${JSON.stringify(owner)}>;`
+          )
+          .join('\n');
+        const aliasSource = `${aliases}\n${ownerAliases}\ntype __PlateText = InternalEditorDefinitionTextProperties<typeof definition.plugins>;`;
+        const helper = `import definition from ${JSON.stringify(entryImport)};\nimport type { InternalEditorDefinitionElementProperties, InternalEditorDefinitionOwnedElementProperties, InternalEditorDefinitionTextProperties } from '@platejs/core/internal';\n${aliasSource}\n`;
+        const propertyNamesByAlias = new Map(
+          groups.map((group) => [
+            group.aliasName,
+            group.properties.map(({ key }) => key),
+          ])
+        );
+        const nativeAliases = [
+          ...bindings.map((_binding, index) => `__PlateElement${index}`),
+          ...owners.map((_owner, index) => `__PlateOwner${index}`),
+          '__PlateText',
+        ].map((name) => ({
+          name,
+          position: helper.indexOf(`type ${name}`) + 5,
+          propertyNames: propertyNamesByAlias.get(name) ?? [],
+        }));
+
+        return {
+          generatedPaths,
+          groups,
+          helper,
+          helperPath,
+          nativeAliases,
+        };
+      }
     );
-    const checker = program.getTypeChecker();
-    const elementProperties = Object.fromEntries(
-      bindings.map((binding, index) => {
-        const declaration = declarations.get(`__PlateElement${index}`);
+  } catch (error) {
+    session.discardHelpers(helperPaths);
+    if (ownsSession) await session.close();
+    throw error;
+  }
 
-        if (!declaration) {
-          throw new Error(
-            `Missing generated type helper for "${binding.name}".`
-          );
-        }
-
-        try {
-          return [binding.name, readTypeProperties(checker, declaration)];
-        } catch (error) {
-          throw new Error(
-            `Cannot materialize element plugin "${binding.name}": ${error instanceof Error ? error.message : String(error)}`
-          );
-        }
-      })
+  try {
+    const materialized = await session.materialize(
+      prepared.map(({ generatedPaths, helper, helperPath, nativeAliases }) => ({
+        aliases: nativeAliases,
+        generatedPaths,
+        path: helperPath,
+        source: helper,
+      }))
     );
-    const ownerProperties = Object.fromEntries(
-      owners.map((owner, index) => {
-        const declaration = declarations.get(`__PlateOwner${index}`);
 
-        if (!declaration) {
-          throw new Error(`Missing generated property owner "${owner}".`);
-        }
+    return materialized.map(({ properties, sourceFiles }, index) => {
+      const request = prepared[index]!;
 
-        try {
-          return [owner, readTypeProperties(checker, declaration)];
-        } catch (error) {
-          throw new Error(
-            `Cannot materialize property owner "${owner}": ${error instanceof Error ? error.message : String(error)}`
-          );
-        }
-      })
-    );
-    const textDeclaration = declarations.get('__PlateText');
-
-    if (!textDeclaration)
-      throw new Error('Missing generated text type helper.');
-
-    return Object.freeze({
-      elements: Object.freeze(elementProperties),
-      owners: Object.freeze(ownerProperties),
-      sourceFiles: Object.freeze(
-        [
-          ...configFiles,
-          ...program
-            .getSourceFiles()
-            .map(({ fileName }) => fileName)
-            .filter(
-              (fileName) =>
-                !NODE_MODULES_PATH_PATTERN.test(fileName) &&
-                fileName !== helperPath &&
-                !generatedPaths.has(fileName)
-            ),
-        ].filter((fileName, index, files) => files.indexOf(fileName) === index)
-      ),
-      text: readTypeProperties(checker, textDeclaration),
+      return Object.freeze({
+        byPropertyId: Object.freeze(
+          Object.fromEntries(
+            request.groups.flatMap((group) => [
+              ...group.properties.map(({ key, propertyId }) => [
+                propertyId,
+                properties[group.aliasName]![key]!,
+              ]),
+            ])
+          )
+        ),
+        sourceFiles,
+      });
     });
   } finally {
-    rmSync(helperPath, { force: true });
+    if (ownsSession) await session.close();
   }
 };
 
@@ -928,6 +844,35 @@ const relativeImport = (fromPath: string, toPath: string) => {
   return value.startsWith('.') ? value : `./${value}`;
 };
 
+const portableShellArgument = (value: string) => {
+  if (SHELL_EXPANSION_PATTERN.test(value)) return;
+
+  return PORTABLE_SHELL_PATH_PATTERN.test(value) ? value : `"${value}"`;
+};
+
+const generatedHeader = (entryPath: string) => {
+  const packageRoot = findProjectRoot(entryPath);
+  const configPath = findEditorConfig(entryPath);
+  const sourceRoot = existsSync(join(packageRoot, 'package.json'))
+    ? packageRoot
+    : configPath
+      ? dirname(configPath)
+      : dirname(entryPath);
+  const source = relative(sourceRoot, entryPath).replaceAll('\\', '/');
+  const commentSource = JSON.stringify(source)
+    .slice(1, -1)
+    .replaceAll('*/', '*\\/');
+  const argument = portableShellArgument(source);
+  const command =
+    source === 'src/editor/editor-definition.tsx'
+      ? 'pnpm exec plate generate'
+      : argument
+        ? `pnpm exec plate generate -- ${argument}`
+        : undefined;
+
+  return `/* Generated by @platejs/cli from ${commentSource}.\n * ${command ? `Regenerate with: ${command}` : 'Regenerate with @platejs/cli using the source path above.'}\n * Do not edit.\n */`;
+};
+
 const renderGeneratedTypes = (
   entryPath: string,
   typesPath: string,
@@ -944,6 +889,9 @@ const renderGeneratedTypes = (
   );
   const elementByType = new Map(
     schema.elements.byType.map((element) => [element.type, element])
+  );
+  const compiledBindingByName = new Map(
+    compiledBindings.map((binding) => [binding.name, binding])
   );
   const propertyById = new Map(
     schema.properties.byId.map((property) => [property.id, property])
@@ -1041,9 +989,7 @@ const renderGeneratedTypes = (
     const persisted: Record<
       string,
       Readonly<{ optional: boolean; type: string }>
-    > = {
-      ...(properties.elements[binding.name] ?? {}),
-    };
+    > = {};
     const construction: Record<
       string,
       Readonly<{ optional: boolean; type: string }>
@@ -1056,10 +1002,11 @@ const renderGeneratedTypes = (
       const property = propertyById.get(propertyId);
 
       if (!property || typeof property.key !== 'string') return;
-      const owned = properties.owners[property.owner]?.[property.key];
-      const current = persisted[property.key];
       const fallback = propertyTypeFromContract(property.descriptor);
-      const type = current?.type ?? owned?.type ?? fallback.type;
+      const type =
+        property.descriptor.kind === 'json'
+          ? (properties.byPropertyId[propertyId]?.type ?? fallback.type)
+          : fallback.type;
 
       persisted[property.key] = Object.freeze({
         optional:
@@ -1078,6 +1025,21 @@ const renderGeneratedTypes = (
   };
   const resolvedProperties = new Map(
     bindings.map((binding) => [binding.name, resolveElementProperties(binding)])
+  );
+  const resolvedTextProperties = Object.freeze(
+    Object.fromEntries(
+      schema.properties.byId.flatMap((property) =>
+        property.placement === 'text' && typeof property.key === 'string'
+          ? [
+              [
+                property.key,
+                properties.byPropertyId[property.id] ??
+                  propertyTypeFromContract(property.descriptor),
+              ] as const,
+            ]
+          : []
+      )
+    )
   );
   const elementDeclarations = bindings
     .map((binding) => {
@@ -1102,14 +1064,24 @@ const renderGeneratedTypes = (
     .join('\n\n');
   const mutationDeclarations = bindings
     .map((binding) => {
+      const element = elementByType.get(binding.type)!;
       const mutation = resolvedProperties.get(binding.name)!;
       const construction = renderProperties(mutation.construction, '      ');
       const persisted = renderProperties(mutation.persisted, '      ');
+      const toggle =
+        element.groups.includes('textBlock') &&
+        schema.primaryRoot.content.allowedElementTypes.includes(binding.type) &&
+        Object.values(mutation.construction).every(
+          (property) => property.optional
+        ) &&
+        compiledBindingByName.get(binding.name)?.authoredToggle !== true
+          ? '\n    readonly toggle: true;'
+          : '';
 
-      return `  readonly ${propertyName(binding.name)}: Readonly<{\n    readonly construction: Readonly<{${construction ? `\n${construction}\n    ` : ''}}>;\n    readonly properties: Readonly<{${persisted ? `\n${persisted}\n    ` : ''}}>;\n    readonly type: ${JSON.stringify(binding.type)};\n  }>;`;
+      return `  readonly ${propertyName(binding.name)}: Readonly<{\n    readonly construction: Readonly<{${construction ? `\n${construction}\n    ` : ''}}>;\n    readonly properties: Readonly<{${persisted ? `\n${persisted}\n    ` : ''}}>;${toggle}\n    readonly type: ${JSON.stringify(binding.type)};\n  }>;`;
     })
     .join('\n');
-  const textFields = renderProperties(properties.text, '  ');
+  const textFields = renderProperties(resolvedTextProperties, '  ');
   const rootType = childrenType(
     schema.primaryRoot.content,
     bindingByType,
@@ -1119,8 +1091,16 @@ const renderGeneratedTypes = (
     bindings.map(({ typeName }) => typeName).join(' | ') || 'Element';
   const definitionImport = relativeImport(typesPath, entryPath);
   const schemaImport = relativeImport(typesPath, schemaPath);
+  const coreTypeImports = [
+    'EditorSchemaContract',
+    'Element',
+    // Plugin bindings emit only invariant type/key identities. Application
+    // properties are the sole generated SchemaPropertyHandle surface.
+    ...(schemaApplicationTypeFields ? ['SchemaPropertyHandle'] : []),
+    'Text',
+  ].join(', ');
 
-  return `/* Generated by @platejs/cli. Do not edit. */\nimport type { EditorSchemaContract, Element, SchemaPropertyHandle, Text } from 'platejs';\nimport { bindGeneratedEditor, type GeneratedEditorContract, type GeneratedEditorTypes } from 'platejs';\nimport type { PlateEditor } from 'platejs/react';\n\nimport definition from ${JSON.stringify(definitionImport)};\nimport schemaContract from ${JSON.stringify(schemaImport)};\n\nexport interface EditorText extends Text {\n  readonly text: string;${textFields ? `\n${textFields}` : ''}\n}\n\n${elementDeclarations}\n\nexport type EditorElement = ${elementUnion};\nexport type Value = ${rootType};\nexport type Schema = Readonly<{\n  readonly plugins: Readonly<{${schemaPluginTypeFields ? `\n${schemaPluginTypeFields}\n  ` : ''}}>;\n  readonly properties: Readonly<{${schemaApplicationTypeFields ? `\n${schemaApplicationTypeFields}\n  ` : ''}}>;\n}>;\nexport type Mutations = Readonly<{\n${mutationDeclarations}\n}>;\ntype Types = GeneratedEditorTypes<Value, EditorElement, EditorText, Schema, Mutations>;\n\nconst schemaBindings = Object.freeze({\n  plugins: Object.freeze({${schemaPluginValueFields ? `\n${schemaPluginValueFields}\n  ` : ''}}),\n  properties: Object.freeze({${schemaApplicationValueFields ? `\n${schemaApplicationValueFields}\n  ` : ''}}),\n}) satisfies Schema;\n\nconst contract = {\n  bindings: schemaBindings,\n  fingerprint: ${JSON.stringify(schema.fingerprint)},\n  schema: schemaContract as unknown as EditorSchemaContract,\n  types: undefined as unknown as Types,\n} satisfies GeneratedEditorContract<Types>;\n\nexport const EditorKit = bindGeneratedEditor(definition, contract);\nexport type Editor = PlateEditor<typeof EditorKit>;\n`;
+  return `${generatedHeader(entryPath)}\nimport type { ${coreTypeImports} } from 'platejs';\nimport { bindGeneratedEditor, type GeneratedEditorContract, type GeneratedEditorTypes } from 'platejs';\nimport type { PlateEditor } from 'platejs/react';\n\nimport definition from ${JSON.stringify(definitionImport)};\nimport schemaContract from ${JSON.stringify(schemaImport)};\n\nexport interface EditorText extends Text {\n  readonly text: string;${textFields ? `\n${textFields}` : ''}\n}\n\n${elementDeclarations}\n\nexport type EditorElement = ${elementUnion};\nexport type Value = ${rootType};\nexport type Schema = Readonly<{\n  readonly plugins: Readonly<{${schemaPluginTypeFields ? `\n${schemaPluginTypeFields}\n  ` : ''}}>;\n  readonly properties: Readonly<{${schemaApplicationTypeFields ? `\n${schemaApplicationTypeFields}\n  ` : ''}}>;\n}>;\nexport type Mutations = Readonly<{\n${mutationDeclarations}\n}>;\ntype Types = GeneratedEditorTypes<Value, EditorElement, EditorText, Schema, Mutations>;\n\nconst schemaBindings = Object.freeze({\n  plugins: Object.freeze({${schemaPluginValueFields ? `\n${schemaPluginValueFields}\n  ` : ''}}),\n  properties: Object.freeze({${schemaApplicationValueFields ? `\n${schemaApplicationValueFields}\n  ` : ''}}),\n}) satisfies Schema;\n\nconst contract = {\n  bindings: schemaBindings,\n  fingerprint: ${JSON.stringify(schema.fingerprint)},\n  schema: schemaContract as unknown as EditorSchemaContract,\n  types: undefined as unknown as Types,\n} satisfies GeneratedEditorContract<Types>;\n\nexport const EditorKit = bindGeneratedEditor(definition, contract);\nexport type Editor = PlateEditor<typeof EditorKit>;\n`;
 };
 
 const outputPaths = (entryPath: string) => {
@@ -1135,7 +1115,12 @@ const outputPaths = (entryPath: string) => {
   };
 };
 
+/** @internal Generated artifact paths owned by one editor definition. */
+export const editorArtifactPaths = (entryPath: string) =>
+  Object.freeze(Object.values(outputPaths(resolve(entryPath))));
+
 const writeDurableFile = (path: string, content: string) => {
+  mkdirSync(dirname(path), { recursive: true });
   const descriptor = openSync(path, 'w');
 
   try {
@@ -1157,11 +1142,24 @@ type ArtifactJournal = Readonly<{
   version: 1;
 }>;
 
+type ArtifactJournalReference = Readonly<{
+  journalPath: string;
+  version: 1;
+}>;
+
 type ArtifactLock = Readonly<{
   path: string;
 }>;
 
 type ArtifactLockOwner = Readonly<{
+  pid: number;
+  processToken: string;
+  token: string;
+  version: 1;
+}>;
+
+type WatchArtifactOwner = Readonly<{
+  entryPath: string;
   pid: number;
   processToken: string;
   token: string;
@@ -1176,14 +1174,44 @@ class SimulatedArtifactProcessInterruption extends Error {
   }
 }
 
+const artifactBatchFingerprint = (paths: readonly string[]) =>
+  createHash('sha256')
+    .update(paths.map(canonicalPath).sort().join('\0'))
+    .digest('hex')
+    .slice(0, 32);
+
 const artifactJournalPath = (paths: readonly string[]) => {
   const sorted = [...paths].sort();
-  const fingerprint = createHash('sha256')
-    .update(sorted.join('\0'))
-    .digest('hex')
-    .slice(0, 16);
 
-  return join(dirname(sorted[0]!), `.plate-artifacts-${fingerprint}.journal`);
+  return join(
+    artifactStateRoot(sorted[0]!),
+    'transactions',
+    `${artifactBatchFingerprint(sorted)}.json`
+  );
+};
+
+const artifactJournalReferencePath = (artifactPath: string) =>
+  join(
+    artifactStateRoot(artifactPath),
+    'artifacts',
+    `${pathFingerprint(artifactPath)}.json`
+  );
+
+const artifactLockPath = (artifactPath: string) =>
+  join(
+    artifactStateRoot(artifactPath),
+    'locks',
+    `artifact-${pathFingerprint(artifactPath)}`
+  );
+
+const artifactBatchLockPath = (paths: readonly string[]) => {
+  const sorted = [...paths].sort();
+
+  return join(
+    artifactStateRoot(sorted[0]!),
+    'locks',
+    `transaction-${artifactBatchFingerprint(sorted)}`
+  );
 };
 
 const isProcessAlive = (pid: number) => {
@@ -1196,16 +1224,160 @@ const isProcessAlive = (pid: number) => {
   }
 };
 
-const acquireArtifactLock = (journalPath: string): ArtifactLock => {
-  const directory = dirname(journalPath);
-  const prefix = `${basename(journalPath)}.lock.`;
+const watchArtifactOwnerPath = (artifactPath: string) =>
+  join(
+    artifactStateRoot(artifactPath),
+    'watch',
+    `${pathFingerprint(artifactPath)}.json`
+  );
+
+/** @internal Private ownership records for one watched editor. */
+export const editorWatchOwnershipPaths = (entryPath: string) =>
+  Object.freeze(editorArtifactPaths(entryPath).map(watchArtifactOwnerPath));
+
+/** @internal Private state roots excluded from editor source watches. */
+export const editorPrivateStateRoots = (entryPaths: readonly string[]) =>
+  Object.freeze([
+    ...new Set(
+      entryPaths.flatMap((entryPath) =>
+        editorArtifactPaths(entryPath).map(artifactStateRoot)
+      )
+    ),
+  ]);
+
+const readActiveWatchArtifactOwner = (
+  path: string
+): WatchArtifactOwner | undefined => {
+  if (!existsSync(path)) return;
+  const owner = JSON.parse(readFileSync(path, 'utf8')) as WatchArtifactOwner;
+
+  if (
+    owner.version !== 1 ||
+    typeof owner.entryPath !== 'string' ||
+    typeof owner.pid !== 'number' ||
+    typeof owner.processToken !== 'string' ||
+    typeof owner.token !== 'string'
+  ) {
+    throw new Error(`Invalid Plate watch artifact owner: ${path}`);
+  }
+  if (
+    (owner.pid === process.pid &&
+      owner.processToken !== ARTIFACT_PROCESS_TOKEN) ||
+    !isProcessAlive(owner.pid)
+  ) {
+    rmSync(path, { force: true });
+
+    return;
+  }
+
+  return owner;
+};
+
+const assertNoForeignWatchArtifactOwner = (
+  artifactPaths: readonly string[]
+) => {
+  artifactPaths.forEach((artifactPath) => {
+    const owner = readActiveWatchArtifactOwner(
+      watchArtifactOwnerPath(artifactPath)
+    );
+
+    if (owner && owner.processToken !== ARTIFACT_PROCESS_TOKEN) {
+      throw new Error(
+        `Another Plate watcher owns generated artifact ${artifactPath} from ${owner.entryPath}.`
+      );
+    }
+  });
+};
+
+/** @internal Hold exclusive generated-artifact ownership for a watch lifetime. */
+export const acquireEditorWatchOwnership = (entryPaths: readonly string[]) => {
+  const owned: { path: string; token: string }[] = [];
+  const artifactPaths = [
+    ...new Set(
+      entryPaths.flatMap((entryPath) => editorArtifactPaths(entryPath))
+    ),
+  ].sort();
+  const gates = acquireArtifactPublicationGates(artifactPaths);
+
+  try {
+    artifactPaths.forEach((artifactPath) => {
+      const entryPath = entryPaths.find((candidate) =>
+        editorArtifactPaths(candidate).includes(artifactPath)
+      )!;
+      const path = watchArtifactOwnerPath(artifactPath);
+      const token = randomUUID();
+      const owner = `${JSON.stringify({
+        entryPath,
+        pid: process.pid,
+        processToken: ARTIFACT_PROCESS_TOKEN,
+        token,
+        version: 1,
+      } satisfies WatchArtifactOwner)}\n`;
+
+      mkdirSync(dirname(path), { recursive: true });
+      while (true) {
+        const temporary = `${path}.${token}.tmp`;
+
+        try {
+          writeFileSync(temporary, owner);
+          linkSync(temporary, path);
+          owned.push({ path, token });
+          break;
+        } catch (error) {
+          if ((error as NodeJS.ErrnoException).code !== 'EEXIST') {
+            throw error;
+          }
+          const active = readActiveWatchArtifactOwner(path);
+
+          if (active) {
+            throw new Error(
+              `Another Plate watcher owns generated artifact ${artifactPath} from ${active.entryPath}.`
+            );
+          }
+        } finally {
+          rmSync(temporary, { force: true });
+        }
+      }
+    });
+  } catch (error) {
+    owned.forEach(({ path }) => {
+      rmSync(path, { force: true });
+    });
+    throw error;
+  } finally {
+    releaseArtifactPublicationGates(gates);
+  }
+  let released = false;
+
+  return Object.freeze({
+    release: () => {
+      if (released) return;
+      released = true;
+      owned.forEach(({ path, token }) => {
+        const owner = readActiveWatchArtifactOwner(path);
+
+        if (
+          owner?.processToken === ARTIFACT_PROCESS_TOKEN &&
+          owner.token === token
+        ) {
+          rmSync(path, { force: true });
+        }
+      });
+    },
+  });
+};
+
+const acquireArtifactLock = (lockPath: string): ArtifactLock => {
+  const directory = dirname(lockPath);
+  const prefix = `${basename(lockPath)}.`;
   const token = randomUUID();
-  const path = join(directory, `${prefix}${process.pid}-${token}`);
+  const path = join(directory, `${prefix}${process.pid}-${token}.json`);
 
   const temporary = `${path}.tmp`;
 
+  mkdirSync(directory, { recursive: true });
   try {
-    writeDurableFile(
+    writeFileSync(
       temporary,
       `${JSON.stringify({ pid: process.pid, processToken: ARTIFACT_PROCESS_TOKEN, token, version: 1 } satisfies ArtifactLockOwner)}\n`
     );
@@ -1252,6 +1424,25 @@ const acquireArtifactLock = (journalPath: string): ArtifactLock => {
 const releaseArtifactLock = ({ path }: ArtifactLock) =>
   rmSync(path, { force: true });
 
+const acquireArtifactPublicationGates = (artifactPaths: readonly string[]) => {
+  const locks: ArtifactLock[] = [];
+
+  try {
+    [...artifactPaths].sort().forEach((artifactPath) => {
+      locks.push(acquireArtifactLock(artifactLockPath(artifactPath)));
+    });
+  } catch (error) {
+    locks.reverse().forEach(releaseArtifactLock);
+    throw error;
+  }
+
+  return locks;
+};
+
+const releaseArtifactPublicationGates = (locks: readonly ArtifactLock[]) => {
+  [...locks].reverse().forEach(releaseArtifactLock);
+};
+
 const writeArtifactJournal = (path: string, journal: ArtifactJournal) => {
   const temporary = `${path}.${process.pid}-${randomUUID()}.tmp`;
 
@@ -1263,20 +1454,58 @@ const writeArtifactJournal = (path: string, journal: ArtifactJournal) => {
   }
 };
 
+const writeArtifactJournalReference = (
+  artifactPath: string,
+  journalPath: string
+) => {
+  const path = artifactJournalReferencePath(artifactPath);
+  const temporary = `${path}.${process.pid}-${randomUUID()}.tmp`;
+
+  try {
+    writeDurableFile(
+      temporary,
+      `${JSON.stringify({ journalPath, version: 1 } satisfies ArtifactJournalReference)}\n`
+    );
+    renameSync(temporary, path);
+  } finally {
+    rmSync(temporary, { force: true });
+  }
+};
+
+const readArtifactJournalReference = (artifactPath: string) => {
+  const path = artifactJournalReferencePath(artifactPath);
+
+  if (!existsSync(path)) return;
+  const reference = JSON.parse(
+    readFileSync(path, 'utf8')
+  ) as ArtifactJournalReference;
+
+  if (
+    reference.version !== 1 ||
+    typeof reference.journalPath !== 'string' ||
+    !isAbsolute(reference.journalPath)
+  ) {
+    throw new Error(`Invalid Plate artifact journal reference: ${path}`);
+  }
+
+  return reference;
+};
+
 const readArtifactJournal = (
   path: string,
-  expectedPaths: readonly string[]
+  expectedPaths?: readonly string[]
 ): ArtifactJournal | undefined => {
   if (!existsSync(path)) return;
   const journal = JSON.parse(readFileSync(path, 'utf8')) as ArtifactJournal;
   const actual = journal.artifacts.map((artifact) => artifact.path).sort();
-  const expected = [...expectedPaths].sort();
+  const expected = expectedPaths ? new Set(expectedPaths) : undefined;
 
   if (
     journal.version !== 1 ||
     (journal.phase !== 'installed' && journal.phase !== 'installing') ||
-    actual.length !== expected.length ||
-    actual.some((value, index) => value !== expected[index])
+    actual.length === 0 ||
+    new Set(actual).size !== actual.length ||
+    (expected && actual.some((value) => !expected.has(value)))
   ) {
     throw new Error(`Invalid Plate artifact journal: ${path}`);
   }
@@ -1311,24 +1540,97 @@ const recoverArtifactJournal = (
       }
     });
   }
+  new Set(journal.artifacts.map(({ backup }) => dirname(backup))).forEach(
+    (directory) => {
+      rmSync(directory, { force: true, recursive: true });
+    }
+  );
+  journal.artifacts.forEach(({ path }) => {
+    rmSync(artifactJournalReferencePath(path), { force: true });
+  });
   rmSync(path, { force: true });
 };
 
-/** @internal Exported only for atomic rollback proof. */
-export const replaceArtifacts = (
+const acquireArtifactRecoveryGates = (artifactPaths: readonly string[]) => {
+  let paths = [...new Set(artifactPaths.map((path) => resolve(path)))].sort();
+
+  while (true) {
+    const gates = acquireArtifactPublicationGates(paths);
+
+    try {
+      const journalPaths = new Set<string>();
+
+      paths.forEach((path) => {
+        const reference = readArtifactJournalReference(path);
+
+        if (!reference) return;
+        // Publication holds this artifact's gate. A missing referenced journal
+        // can therefore only belong to a process that died before it made the
+        // batch recoverable or changed any artifact.
+        if (!existsSync(reference.journalPath)) {
+          rmSync(artifactJournalReferencePath(path), { force: true });
+
+          return;
+        }
+        journalPaths.add(reference.journalPath);
+      });
+      const recoveredPaths = [...journalPaths].flatMap((journalPath) => {
+        const journal = readArtifactJournal(journalPath);
+
+        return journal?.artifacts.map(({ path }) => path) ?? [];
+      });
+      const nextPaths = [...new Set([...paths, ...recoveredPaths])].sort();
+
+      if (
+        nextPaths.length === paths.length &&
+        nextPaths.every((path, index) => path === paths[index])
+      ) {
+        return { gates, journalPaths, paths };
+      }
+      releaseArtifactPublicationGates(gates);
+      paths = nextPaths;
+    } catch (error) {
+      releaseArtifactPublicationGates(gates);
+      throw error;
+    }
+  }
+};
+
+const recoverReferencedArtifactJournals = (
+  journalPaths: ReadonlySet<string>
+) => {
+  journalPaths.forEach((journalPath) => {
+    const journal = readArtifactJournal(journalPath);
+
+    if (journal) {
+      recoverArtifactJournal(
+        journalPath,
+        journal.artifacts.map(({ path }) => path)
+      );
+    }
+  });
+};
+
+const isCurrent = (path: string, content: string) =>
+  existsSync(path) && readFileSync(path, 'utf8') === content;
+
+const replaceArtifactsWithResult = (
   artifacts: readonly Readonly<{ content: string; path: string }>[],
   {
     afterInstall,
     interruptAfterInstall,
+    interruptAfterReference,
     removeBackup = (path) => rmSync(path, { force: true }),
   }: Readonly<{
     afterInstall?: (path: string, index: number) => void;
     /** Test-only process interruption point. */
     interruptAfterInstall?: number;
+    /** Test-only interruption before artifacts can be modified. */
+    interruptAfterReference?: number;
     removeBackup?: (path: string, index: number) => void;
   }> = {}
 ) => {
-  if (artifacts.length === 0) return;
+  if (artifacts.length === 0) return Object.freeze([] as string[]);
   const paths = artifacts.map(({ path }) => resolve(path));
 
   if (new Set(paths).size !== paths.length) {
@@ -1337,30 +1639,51 @@ export const replaceArtifacts = (
   const journalPath = artifactJournalPath(paths);
 
   mkdirSync(dirname(journalPath), { recursive: true });
-  const lock = acquireArtifactLock(journalPath);
+  const recovery = acquireArtifactRecoveryGates(paths);
+  let lock: ArtifactLock | undefined;
 
   try {
-    recoverArtifactJournal(journalPath, paths);
-    const token = `${process.pid}-${randomUUID()}`;
-    const prepared = artifacts.map((artifact, index) => ({
-      ...artifact,
-      backup: `${paths[index]}.${token}.backup`,
-      existed: existsSync(paths[index]!),
-      path: paths[index]!,
-      temporary: `${paths[index]}.${token}.tmp`,
-    }));
-
-    try {
-      prepared.forEach(({ content, path, temporary }) => {
-        mkdirSync(dirname(path), { recursive: true });
-        writeDurableFile(temporary, content);
-      });
-    } catch (error) {
-      prepared.forEach(({ temporary }) => {
-        rmSync(temporary, { force: true });
-      });
-      throw error;
+    lock =
+      paths.length === 1
+        ? undefined
+        : acquireArtifactLock(artifactBatchLockPath(paths));
+    recoverReferencedArtifactJournals(recovery.journalPaths);
+    if (!recovery.journalPaths.has(journalPath)) {
+      recoverArtifactJournal(journalPath, paths);
     }
+    // Decide a no-op only while holding every artifact gate. This keeps an
+    // unchanged generation serialized with concurrent publishers without
+    // applying foreign-watcher rejection to a read-only result.
+    if (
+      artifacts.every(({ content }, index) => isCurrent(paths[index]!, content))
+    ) {
+      return Object.freeze([] as string[]);
+    }
+    const token = `${process.pid}-${randomUUID()}`;
+    const prepared = artifacts.flatMap((artifact, index) => {
+      const path = paths[index]!;
+      const stagingDirectory = join(artifactStateRoot(path), 'staging', token);
+      const artifactFingerprint = pathFingerprint(path);
+
+      return existsSync(path) && readFileSync(path, 'utf8') === artifact.content
+        ? []
+        : [
+            {
+              ...artifact,
+              backup: join(stagingDirectory, `${artifactFingerprint}.backup`),
+              existed: existsSync(path),
+              path,
+              temporary: join(
+                stagingDirectory,
+                `${artifactFingerprint}.generated`
+              ),
+            },
+          ];
+    });
+
+    if (prepared.length === 0) return Object.freeze([] as string[]);
+    assertNoForeignWatchArtifactOwner(prepared.map(({ path }) => path));
+
     const journal = {
       artifacts: prepared.map(({ backup, existed, path, temporary }) => ({
         backup,
@@ -1372,7 +1695,26 @@ export const replaceArtifacts = (
       version: 1,
     } satisfies ArtifactJournal;
 
+    // References are harmless until the journal exists. Once it does, every
+    // artifact can discover the whole batch before staged bytes or artifacts
+    // are modified.
+    prepared.forEach(({ path }, index) => {
+      writeArtifactJournalReference(path, journalPath);
+      if (interruptAfterReference === index) {
+        throw new SimulatedArtifactProcessInterruption();
+      }
+    });
     writeArtifactJournal(journalPath, journal);
+
+    try {
+      prepared.forEach(({ content, path, temporary }) => {
+        mkdirSync(dirname(path), { recursive: true });
+        writeDurableFile(temporary, content);
+      });
+    } catch (error) {
+      recoverArtifactJournal(journalPath, paths);
+      throw error;
+    }
 
     try {
       prepared.forEach(({ backup, existed, path }) => {
@@ -1408,157 +1750,227 @@ export const replaceArtifacts = (
         `Generated artifacts were committed, but backup cleanup failed: ${cleanupErrors.join('; ')}\n`
       );
     } else {
+      new Set(prepared.map(({ backup }) => dirname(backup))).forEach(
+        (directory) => {
+          rmSync(directory, { force: true, recursive: true });
+        }
+      );
+      prepared.forEach(({ path }) => {
+        rmSync(artifactJournalReferencePath(path), { force: true });
+      });
       rmSync(journalPath, { force: true });
     }
+    return Object.freeze(prepared.map(({ path }) => path));
   } finally {
-    releaseArtifactLock(lock);
+    if (lock) releaseArtifactLock(lock);
+    releaseArtifactPublicationGates(recovery.gates);
   }
 };
 
-const assertCurrent = (path: string, content: string) => {
-  if (!existsSync(path) || readFileSync(path, 'utf8') !== content) {
-    throw new Error(`Generated Plate artifact is stale: ${path}`);
+/** @internal Exported only for atomic rollback proof. */
+export const replaceArtifacts = (
+  ...args: Parameters<typeof replaceArtifactsWithResult>
+) => replaceArtifactsWithResult(...args).length > 0;
+
+/** @internal Resolve entries and reject overlapping artifact ownership. */
+export const resolveEditorEntryPaths = (
+  entries: readonly string[],
+  cwd = process.cwd()
+) => {
+  const entryPaths = [
+    ...new Set(entries.map((entry) => canonicalPath(resolve(cwd, entry)))),
+  ];
+
+  if (entryPaths.length === 0) {
+    throw new Error('Plate requires at least one editor definition.');
   }
-};
-
-/** @internal Compile one definition without mutating its generated artifacts. */
-/** @internal Run by the isolated codegen worker. */
-export const compileEditorInProcess = async (
-  entry: string,
-  options: Pick<GenerateEditorOptions, 'cwd'> = {}
-): Promise<CompiledEditorArtifacts> => {
-  const cwd = resolve(options.cwd ?? process.cwd());
-  const entryPath = resolve(cwd, entry);
-
-  if (!existsSync(entryPath) || !statSync(entryPath).isFile()) {
-    throw new Error(`Plate editor entry does not exist: ${entryPath}`);
-  }
-  const { definition, sourceFiles: bundleSourceFiles } =
-    await readDefinition(entryPath);
-  const schemaContract = definition.schema;
-  const bindings = createBindings(definition.bindings, schemaContract);
-  const owners = [
-    ...new Set(schemaContract.properties.byId.map(({ owner }) => owner)),
-  ].sort();
-  const { schemaPath, typesPath } = outputPaths(entryPath);
-  const materialized = materializeProperties(
-    entryPath,
-    bindings,
-    owners,
-    cwd,
-    new Set([schemaPath, typesPath])
-  );
-  const schemaSource = `${JSON.stringify(schemaContract, null, 2)}\n`;
-  const typesSource = renderGeneratedTypes(
-    entryPath,
-    typesPath,
-    schemaPath,
-    schemaContract,
-    bindings,
-    materialized,
-    definition.bindings,
-    definition.applicationProperties,
-    definition.name
-  );
-
-  return Object.freeze({
-    entryPath,
-    schema: schemaContract,
-    schemaPath,
-    schemaSource,
-    sourceFiles: Object.freeze(
-      [...materialized.sourceFiles, ...bundleSourceFiles].filter(
-        (path, index, paths) =>
-          path !== schemaPath &&
-          path !== typesPath &&
-          paths.indexOf(path) === index
-      )
-    ),
-    typesPath,
-    typesSource,
+  entryPaths.forEach((entryPath) => {
+    if (!existsSync(entryPath) || !statSync(entryPath).isFile()) {
+      throw new Error(`Plate editor entry does not exist: ${entryPath}`);
+    }
   });
-};
+  const outputOwners = new Map<string, string>();
 
-const compileWorkerPath = fileURLToPath(
-  new URL(
-    import.meta.url.endsWith('.ts')
-      ? './compile-worker.ts'
-      : './compile-worker.js',
-    import.meta.url
-  )
-);
+  entryPaths.forEach((entryPath) => {
+    Object.values(outputPaths(entryPath)).forEach((outputPath) => {
+      const owner = outputOwners.get(outputPath);
 
-const runCompileWorker = (entry: string, cwd: string, resultPath: string) =>
-  new Promise<void>((resolvePromise, reject) => {
-    execFile(
-      process.execPath,
-      [compileWorkerPath, entry, cwd, resultPath],
-      { cwd, maxBuffer: 16 * 1024 * 1024 },
-      (error, stdout, stderr) => {
-        if (!error) {
-          resolvePromise();
-
-          return;
-        }
-        reject(
-          new Error(
-            stderr || stdout || error.message || 'Plate codegen worker failed.'
-          )
+      if (owner) {
+        throw new Error(
+          `Plate editor definitions produce the same generated artifact: ${owner} and ${entryPath} -> ${outputPath}`
         );
       }
-    );
+      outputOwners.set(outputPath, entryPath);
+    });
   });
 
-/** Compile one definition in an isolated process so repeated watch runs release TypeScript state. */
+  return Object.freeze(entryPaths);
+};
+
+/** @internal Compile definitions without mutating generated artifacts. */
+export const compileEditors = async (
+  entries: readonly string[],
+  options: Pick<GenerateEditorOptions, 'cwd'> = {},
+  session?: NativeTypeScriptSession
+): Promise<readonly CompiledEditorArtifacts[]> => {
+  const cwd = resolve(options.cwd ?? process.cwd());
+  const entryPaths = resolveEditorEntryPaths(entries, cwd);
+  const definitions = await Promise.all(
+    entryPaths.map((entryPath) => readDefinition(entryPath, cwd))
+  );
+  const prepared = definitions.map(
+    ({ definition, sourceFiles: bundleSourceFiles }, index) => {
+      const entryPath = entryPaths[index]!;
+      const schema = definition.schema;
+      const bindings = createBindings(definition.bindings, schema);
+      const owners = [
+        ...new Set(schema.properties.byId.map(({ owner }) => owner)),
+      ].sort();
+      const { schemaPath, typesPath } = outputPaths(entryPath);
+
+      return {
+        bindings,
+        bundleSourceFiles,
+        definition,
+        entryPath,
+        owners,
+        schema,
+        schemaPath,
+        typesPath,
+      };
+    }
+  );
+  const materialized = await materializePropertyGroups(
+    prepared.map(
+      ({ bindings, entryPath, owners, schema, schemaPath, typesPath }) => ({
+        bindings,
+        entryPath,
+        generatedPaths: new Set([schemaPath, typesPath]),
+        owners,
+        schema,
+      })
+    ),
+    cwd,
+    session
+  );
+  const configCache: EditorTsconfigCache = new Map();
+  const dependencyCache = new Map();
+  const sourceFileClosures = prepared.map(({ bundleSourceFiles, entryPath }) =>
+    discoverTypeOnlySourceFiles(
+      bundleSourceFiles,
+      undefined,
+      findEditorConfig(entryPath),
+      configCache,
+      dependencyCache
+    )
+  );
+
+  return Object.freeze(
+    prepared.map((current, index) => {
+      const properties = materialized[index]!;
+      const schemaSource = `${JSON.stringify(current.schema, null, 2)}\n`;
+      const typesSource = renderGeneratedTypes(
+        current.entryPath,
+        current.typesPath,
+        current.schemaPath,
+        current.schema,
+        current.bindings,
+        properties,
+        current.definition.bindings,
+        current.definition.applicationProperties,
+        current.definition.name
+      );
+
+      return Object.freeze({
+        entryPath: current.entryPath,
+        schema: current.schema,
+        schemaPath: current.schemaPath,
+        schemaSource,
+        sourceFiles: Object.freeze(
+          [...properties.sourceFiles, ...sourceFileClosures[index]!].filter(
+            (path, pathIndex, paths) =>
+              path !== current.schemaPath &&
+              path !== current.typesPath &&
+              paths.indexOf(path) === pathIndex
+          )
+        ),
+        typesPath: current.typesPath,
+        typesSource,
+      });
+    })
+  );
+};
+
+/** @internal Compile one definition without mutating generated artifacts. */
 export const compileEditor = async (
   entry: string,
   options: Pick<GenerateEditorOptions, 'cwd'> = {}
-): Promise<CompiledEditorArtifacts> => {
-  const cwd = resolve(options.cwd ?? process.cwd());
-  const entryPath = resolve(cwd, entry);
-  const resultPath = join(
-    dirname(entryPath),
-    `.plate-codegen-${process.pid}-${randomUUID()}.compile.json`
+): Promise<CompiledEditorArtifacts> =>
+  (await compileEditors([entry], options))[0]!;
+
+export const generateEditors = async (
+  entries: readonly string[],
+  options: GenerateEditorOptions = {},
+  session?: NativeTypeScriptSession
+): Promise<readonly GeneratedEditorArtifacts[]> => {
+  const compiled = await compileEditors(entries, options, session);
+  const artifacts = compiled.flatMap(
+    ({ schemaPath, schemaSource, typesPath, typesSource }) => [
+      { content: typesSource, path: typesPath },
+      { content: schemaSource, path: schemaPath },
+    ]
   );
+  let publishedPaths = new Set<string>();
 
-  try {
-    await runCompileWorker(entryPath, cwd, resultPath);
+  if (options.check) {
+    const recovery = acquireArtifactRecoveryGates(
+      artifacts.map(({ path }) => path)
+    );
+    let stale: string[];
 
-    if (!existsSync(resultPath)) {
-      throw new Error(
-        `Plate could not compile "${entryPath}": the worker produced no result.`
+    try {
+      recoverReferencedArtifactJournals(recovery.journalPaths);
+      stale = artifacts.flatMap(({ content, path }) =>
+        isCurrent(path, content) ? [] : [path]
       );
+    } finally {
+      releaseArtifactPublicationGates(recovery.gates);
     }
 
-    return Object.freeze(
-      JSON.parse(readFileSync(resultPath, 'utf8')) as CompiledEditorArtifacts
-    );
-  } finally {
-    rmSync(resultPath, { force: true });
+    if (stale.length > 0) {
+      throw new Error(
+        `Generated Plate artifacts are stale:\n${stale
+          .map((path) => `- ${path}`)
+          .join('\n')}`
+      );
+    }
+  } else {
+    publishedPaths = new Set(replaceArtifactsWithResult(artifacts));
   }
+
+  return Object.freeze(
+    compiled.map((current) => {
+      const {
+        schemaSource: _schemaSource,
+        typesSource: _typesSource,
+        ...artifacts
+      } = current;
+
+      return Object.freeze({
+        ...artifacts,
+        status:
+          publishedPaths.has(current.typesPath) ||
+          publishedPaths.has(current.schemaPath)
+            ? 'generated'
+            : 'upToDate',
+      });
+    })
+  );
 };
 
 export const generateEditor = async (
   entry: string,
-  options: GenerateEditorOptions = {}
-): Promise<GeneratedEditorArtifacts> => {
-  const compiled = await compileEditor(entry, options);
-
-  if (options.check) {
-    assertCurrent(compiled.schemaPath, compiled.schemaSource);
-    assertCurrent(compiled.typesPath, compiled.typesSource);
-  } else {
-    replaceArtifacts([
-      { content: compiled.schemaSource, path: compiled.schemaPath },
-      { content: compiled.typesSource, path: compiled.typesPath },
-    ]);
-  }
-
-  const {
-    schemaSource: _schemaSource,
-    typesSource: _typesSource,
-    ...artifacts
-  } = compiled;
-
-  return Object.freeze(artifacts);
-};
+  options: GenerateEditorOptions = {},
+  session?: NativeTypeScriptSession
+): Promise<GeneratedEditorArtifacts> =>
+  (await generateEditors([entry], options, session))[0]!;

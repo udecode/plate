@@ -12,7 +12,7 @@ docs:
 ## Features
 
 - **Flat list model**: Any supported block can become a list item without a nested list-node tree.
-- **Bulleted, numbered, and todo styles**: Use CSS list styles or `KEYS.listTodo`.
+- **Bulleted, numbered, and todo styles**: Use CSS list styles or `'todo'`.
 - **Automatic indentation support**: `ListPlugin` installs its required Indent dependency.
 - **Targeted commands**: Toggle, indent, or outdent the selection, a path, a point, or a range.
 - **Input rules**: Register the shipped Markdown rules for `-`, `*`, `1.`, and task-list syntax.
@@ -65,19 +65,16 @@ import {
   OrderedListRules,
   TaskListRules,
 } from '@platejs/list';
-import { BlockquotePlugin } from '@platejs/basic-nodes/react';
-import { CodeBlockPlugin } from '@platejs/code-block/react';
 import { ListPlugin } from '@platejs/list/react';
-import { KEYS } from 'platejs';
-import { ParagraphPlugin } from 'platejs/react';
+import { PLUGINS } from 'platejs';
 import { BlockList } from '@/components/ui/block-list';
 
 const CustomListPlugin = ListPlugin.configure({
-  targetPluginNames: [
-    ...KEYS.heading,
-    ParagraphPlugin.name,
-    BlockquotePlugin.name,
-    CodeBlockPlugin.name,
+  targetPlugins: [
+    PLUGINS.h1, PLUGINS.h2, PLUGINS.h3, PLUGINS.h4, PLUGINS.h5, PLUGINS.h6,
+    PLUGINS.paragraph,
+    PLUGINS.blockquote,
+    PLUGINS.codeBlock,
   ],
   inputRules: [
     BulletedListRules.markdown({ variant: '-' }),
@@ -103,7 +100,7 @@ const list = editor.plugin(ListPlugin);
 
 list.read.isActive(ListStyleType.Disc);
 list.read.isActive([ListStyleType.Disc, ListStyleType.Circle]);
-list.read.isActive(KEYS.listTodo);
+list.read.isActive('todo');
 ```
 
 `isActive` returns `false` when the editor has no selection.

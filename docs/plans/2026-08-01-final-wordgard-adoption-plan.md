@@ -96,7 +96,8 @@ Execution checklist:
 - [x] Slice 3: lifecycle, grammar defaults, History idle boundary, and constructor-only max length implemented and proved.
 - [x] Slice 4: visual bidi caret and accessible media resize implemented and proved; direction remains CSS-only.
 - [x] Slice 5: explicit math CSS and source-backed API facts implemented and proved; `*Api` remains.
-- [x] Slice 6: async hover lifecycle and raw-device proof tooling implemented and proved.
+- [x] Slice 6: raw-device proof tooling implemented and proved; async hover
+  lifecycle remains an approval-gated editor-behavior backlog item.
 - [x] Package/docs/registry adoption, barrels, changesets, lint, Browser, and strict Plite checks complete.
 - [x] Final autoreview complete.
 - [x] Final stale-API/source topology audit complete.
@@ -154,7 +155,7 @@ Phase / pass table:
 | Execute slice 3 | complete | Atomic activation, schema-owned defaults, `newBatchDelay`, constructor-only max length | Slice 4 |
 | Execute slice 4 | complete | Visual bidi affinity and plugin-owned accessible media width; CSS-only direction | Slice 5 |
 | Execute slice 5 | complete | Explicit packaged KaTeX CSS and source-derived API facts; root `*Api` retained | Slice 6 |
-| Execute slice 6 | complete | Family-owned abortable link hover and fail-closed raw-device proof tooling | Final closure |
+| Execute slice 6 | complete | Fail-closed raw-device proof tooling; async hover implementation deferred | Final closure |
 | Portal correction | complete | Core and React consumer portals expose descriptor fields and scoped capabilities directly; authoring contexts alone retain `plugin` | Execution closure |
 | Execution closure | complete | Root/package/www typechecks, 3,031 tests, lint, stale scans, table Browser proof, doctrine v44, and autoreview pass; raw receipts remain deferred without a raw-device claim | Handoff |
 
@@ -284,7 +285,7 @@ Decision ledger:
 | 8 | Mixed-bidi caret | Horizontal movement reduces a block to one first-strong direction | DOM visual-point resolver returns point plus affinity; React uses it for physical left/right and word movement | `plite-dom`, then `plite-react` | Remove first-strong horizontal routing; keep Core logical movement; no copied Wordgard bidi engine | Mixed-script/isolates/brackets/graphemes/voids across Chromium, Firefox, WebKit plus bounded-work benchmark | Geometry cache staleness or affinity loss | rearchitect / accept P1 |
 | 9 | Persisted block direction | No first-party persisted direction plugin | Keep direction as app/renderer CSS policy; no persisted property, command, codec, control, or list projection | App/registry renderer only | Reject `BaseTextDirectionPlugin`, `editor.update.textDirection`, persisted `dir`/`textDirection`, and related docs | Existing CSS direction and packet 8 browser matrices; no persistence migration | Per-block semantic direction and HTML `dir` round-trip remain unsupported by design | keep/reject packet 9 |
 | 10 | Keyboard media resize | Pointer UI writes generic width mutations; handles lack keyboard semantics | Media plugin owns `update.setWidth`; UI owns pointer/keyboard math and ARIA | `packages/media`, `packages/resizable`, registry UI | Route pointer and keyboard commits through one update; remove generic width mutation; add slider behavior | Type inference, pointer/keyboard parity, RTL/clamp/px/% proof, one undo batch, a11y Browser route | Preview writes leaking into document or double History batches | move / accept P2 |
-| 11 | Async hover source | No bounded async request lifecycle; donor over-centralizes tooltip behavior | First real component family colocates abort/stale/loading/error state; HoverCard keeps geometry/focus | Consuming registry component family | No Core tooltip manager or plugin state; promote a hook only after a second maintained consumer | A→B→A, abort/unmount/editor-change, rejection, keyboard/pointer/touch and standalone route proof | Premature generic hook or stale response publication | move / accept P2 |
+| 11 | Async hover source | No approved product surface requires a bounded async request lifecycle | Keep the ownership and proof law in `docs/editor-behavior`; implement only after a concrete product surface is approved | Consuming component family | No Core tooltip manager, plugin state, speculative hook, or server endpoint | A→B→A, abort/unmount/editor-change, rejection, keyboard/pointer/touch proof when implemented | Architecture-proof feature work without product demand | defer P2 |
 | 12 | Source-backed API facts | Curated MDX copies signatures and export facts manually | Packed declarations generate facts only; curated MDX owns narrative/examples/order | Docs tooling and curated pages | Add deterministic symbol manifest/renderer; delete copied facts only after parity; do not generate prose | Root/subpath include-exclude parity, declaration/runtime/links/anchors/search/localization checks, Browser navigation | Generator becoming a second docs system | rearchitect / accept P2 |
 | 13 | Raw mobile proof | Pixel emulation and lab captures can be mistaken for device proof | Replayable direct-Appium Android Chrome and iOS Safari receipts | Plite raw-device proof lane | Add receipt schema, scenario matrix, validator/readback; emulation remains diagnostic only | Both platforms, exact event/model/DOM/native-selection/update-count artifacts; command fails on incomplete/proxy proof | Device-lab access and native flakiness; no release claim without artifacts | gate / accept P2 |
 | 14 | Complete-schema relationship rebinding | Contributions are immutable and complete schema cannot replace one relation | No API until one maintained consumer proves the exact gap; then reconsider frozen complete-schema-only relationships | `best-api` then `plite-plan` after entry condition | Delete nothing; reject mutable override/deep merge/callback transformers | Future consumer plus compile/runtime/reconfiguration/History/Yjs/browser proof | Speculative machinery without a consumer | defer P2 |
@@ -297,7 +298,7 @@ Execution slices:
 | 3. Plite semantic kernel | Plite schema/publication + Plite History | Packets 2, 3, and 4; packet 5 only removes view-level max-length alternative while retaining constructor option | Identity kernel stable enough for schema/plugin adoption | Lifecycle/default/history laws ship with no packet-5 extension API | Focused Plite and History suites, fake clocks, configuration rollback, schema contracts, `pnpm check:plite:dev`, then strict `pnpm check:plite` |
 | 4. DOM/input and media behavior | `plite-dom`, `plite-react`, media/resizable/registry | Packets 8 and 10; packet 9 stays CSS-only | Semantic kernel green | Visual caret and accessible resize behavior pass cross-browser; no direction persistence added | Focused package tests, standalone registry demos, Chromium/Firefox/WebKit geometry and interaction proof, bounded-work benchmark |
 | 5. Packaging and docs facts | Math package/app owners + docs tooling | Packets 7 and 12; packet 6 stays `*Api` | Package APIs stable | Explicit CSS and source-backed facts work from packed artifacts without generated prose or utility subpaths | Tarball/export checks, bundlers, static/RSC/live Browser, API route/link/search/localization proof |
-| 6. Async UI and raw-device closure | Registry component owner + device-lab proof owner | Packets 11 and 13 | Reusable runtime owners stable | Async hover is family-owned; raw mobile claims have both immutable device receipts | Component/browser tests; Appium artifacts, replay parser, release validator/readback |
+| 6. Raw-device closure | Device-lab proof owner | Packet 13; packet 11 remains behavior law only | Reusable runtime owners stable | Raw mobile claims have both immutable device receipts | Appium artifacts, replay parser, release validator/readback |
 
 Proof matrix:
 | Claim | Planning evidence | Execution proof | Status |
@@ -394,12 +395,9 @@ Verification evidence:
   all 113 batches complete.
 - Browser: `/blocks/equation-demo` renders five KaTeX nodes with the packaged
   stylesheet; `/blocks/media-demo` keyboard resize publishes
-  `55% -> 56.4286%`; `/blocks/link-demo` and `/api/link-preview` hydrate and
-  resolve the pinned Wikipedia preview without console errors.
-- Browser-driven fixes: canonical persisted `textAlign`; node-width publication
-  through `withResizableProvider`; Next-compatible route runtime export; and
-  DNS-pinned Node lookup handling for both single-address and `{ all: true }`
-  callbacks.
+  `55% -> 56.4286%`; `/blocks/link-demo` renders the normal link surface.
+- Browser-driven fixes: canonical persisted `textAlign` and node-width
+  publication through `withResizableProvider`.
 - Command: `pnpm test:mobile-device-proof:raw` -> correctly fails closed because
   `test-results/release-proof/mobile-device-proof.json` is absent; direct-Appium
   Android Chrome and iOS Safari receipts require the external device lane.

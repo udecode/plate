@@ -4,13 +4,11 @@ import * as React from 'react';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
 import { Tweet } from 'react-tweet';
 
-import type { TMediaEmbedElement } from 'platejs';
 import type { PlateElementProps } from 'platejs/react';
 
 import { parseTwitterUrl, parseVideoUrl } from '@platejs/media';
 import { MediaEmbedPlugin, useMediaState } from '@platejs/media/react';
-import { ResizableProvider } from '@platejs/resizable';
-import { PlateElement, withHOC } from 'platejs/react';
+import { PlateElement, useEditor } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
 
@@ -20,13 +18,14 @@ import {
   mediaResizeHandleVariants,
   Resizable,
   ResizeHandle,
+  withResizableProvider,
 } from './resize-handle';
 
-export const MediaEmbedElement = withHOC(
-  ResizableProvider,
-  function MediaEmbedElement(props: PlateElementProps<TMediaEmbedElement>) {
+export const MediaEmbedElement = withResizableProvider(
+  function MediaEmbedElement(
+    props: PlateElementProps<typeof MediaEmbedPlugin>
+  ) {
     const {
-      align = 'center',
       embed,
       focused,
       isTweet,
@@ -34,9 +33,11 @@ export const MediaEmbedElement = withHOC(
       isYoutube,
       readOnly,
       selected,
-    } = useMediaState({
+      textAlign = 'center',
+    } = useMediaState(MediaEmbedPlugin, {
       urlParsers: [parseTwitterUrl, parseVideoUrl],
     });
+    const editor = useEditor();
     const captionFocused = useCaptionFocused(props.path);
     const provider = embed?.provider;
 
@@ -46,11 +47,16 @@ export const MediaEmbedElement = withHOC(
           <figure className="group relative m-0 w-full cursor-default">
             <div contentEditable={false}>
               <Resizable
-                align={align}
+                align={textAlign}
                 options={{
-                  align,
+                  align: textAlign,
                   maxWidth: isTweet ? 550 : '100%',
                   minWidth: isTweet ? 300 : 100,
+                  onResizeEnd: (width) =>
+                    editor
+                      .plugin(MediaEmbedPlugin)
+                      .update.set({ width }, { at: props.path }),
+                  width: props.element.width,
                 }}
               >
                 <ResizeHandle
@@ -131,7 +137,7 @@ export const MediaEmbedElement = withHOC(
             </div>
             <Caption
               active={selected || captionFocused}
-              align={align}
+              align={textAlign}
               element={props.element}
               slots={props.slots}
             >

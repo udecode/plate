@@ -18,7 +18,6 @@ Date adds inline void elements that display a date label inside text. Canonical 
 
 - Inline void `date` element.
 - `date.insert` transaction command.
-- Direct `insertDate(editor, options)` helper.
 - Canonical `date` storage with `rawDate` fallback.
 - Calendar editing in the registry UI.
 - Static renderer for read-only output.
@@ -54,14 +53,15 @@ export const editor = createPlateEditor({
 
 ### Add An Insert Action
 
-The registry insert toolbar maps `KEYS.date` to `insertDate(editor, { select: true })`.
+The registry insert toolbar maps `PLUGINS.date` to the plugin-owned update.
 
 ```tsx title="components/editor/transforms.ts"
-import { insertDate } from '@platejs/date';
-import { KEYS } from 'platejs';
+import { BaseDatePlugin } from '@platejs/date';
+import { PLUGINS } from 'platejs';
 
 export const insertInlineMap = {
-  [KEYS.date]: (editor) => insertDate(editor, { select: true }),
+  [PLUGINS.date]: (editor) =>
+    editor.plugin(BaseDatePlugin).update.insert({}, { select: true }),
 };
 ```
 
@@ -71,7 +71,7 @@ export const insertInlineMap = {
 
 | Layer | Owner | What It Does |
 |-------|-------|--------------|
-| `@platejs/date` | Package | Exports `BaseDatePlugin`, `insertDate`, date value helpers, and `isPointNextToNode`. |
+| `@platejs/date` | Package | Exports `BaseDatePlugin`, date value helpers, and `isPointNextToNode`. |
 | `@platejs/date/react` | Package | Exports `DatePlugin`. |
 | `date-kit` | Registry | Adds `DatePlugin.configure({ component: DateElement })`. |
 | `date-base-kit` | Registry | Adds `BaseDatePlugin.configure({ component: DateElementStatic })`. |
@@ -117,22 +117,8 @@ Use the base kit when rendering read-only output with `platejs/static`.
 
 ```tsx
 editor.update((tx) =>
-  tx.date.insert({
-    date: '2026-03-23',
-    select: true,
-  })
+  tx.date.insert({ date: '2026-03-23' }, { select: true })
 );
-```
-
-Use the package helper directly when you are outside editor transaction access.
-
-```tsx
-import { insertDate } from '@platejs/date';
-
-insertDate(editor, {
-  date: '2026-03-23',
-  select: true,
-});
 ```
 
 </Steps>
@@ -153,14 +139,14 @@ const value = [
       },
       { text: '.' },
     ],
-    type: 'p',
+    type: 'paragraph',
   },
 ];
 ```
 
 | Field | Type | Notes |
 |-------|------|-------|
-| `type` | `'date'` | Plugin name and node type from `KEYS.date`. |
+| `type` | `'date'` | Persisted element type owned by `BaseDatePlugin`. |
 | `children` | `[{ text: '' }]` | Required Plite child for the inline void element. |
 | `date` | `string` | Canonical `YYYY-MM-DD` value. |
 | `rawDate` | `string` | Fallback for non-normalizable input. |
@@ -215,11 +201,10 @@ The deserializer also accepts child text such as `<date>Mon Mar 23 2026</date>` 
 |-----|---------|-----|
 | `BaseDatePlugin` | `@platejs/date` | Headless inline void date plugin. |
 | `DatePlugin` | `@platejs/date/react` | React date plugin. |
-| `insertDate(editor, options)` | `@platejs/date` | Inserts a date element plus a trailing text space. |
-| `editor.update((tx) => tx.date.insert(options))` | `BaseDatePlugin` transaction | Inserts a date through the editor transaction. |
+| `editor.plugin(BaseDatePlugin).update.insert(input?, options?)` | `BaseDatePlugin` update | Inserts a date with separate date input and node placement options. |
 | `normalizeDateValue(value)` | `@platejs/date` | Returns `{ date }`, `{ rawDate }`, or an empty object. |
 | `formatDateValue(date)` | `@platejs/date` | Formats a `Date` object as `YYYY-MM-DD`. |
 | `parseCanonicalDateValue(value)` | `@platejs/date` | Parses only valid canonical date strings. |
 | `getDateDisplayLabel(options)` | `@platejs/date` | Builds the visible date label. |
 | `isPointNextToNode(editor, options)` | `@platejs/date` | Checks whether a point is adjacent to a node type. Throws when neither `options.at` nor editor selection exists. |
-| `TDateElement` | `platejs` | Element shape with optional `date` and `rawDate`. |
+| `DateElement` | `@platejs/date` | Element shape with optional `date` and `rawDate`. |

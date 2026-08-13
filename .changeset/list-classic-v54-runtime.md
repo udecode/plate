@@ -26,3 +26,5 @@ Configure additional list-item children through
 
 Classic list elements persist as `bulletedList`, `numberedList`, `listItem`,
 `listItemContent`, and `todoList`.
+
+Infer classic-list renderer and todo-state props from their owning descriptors.

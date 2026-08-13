@@ -59,7 +59,8 @@ export type BasePluginDefinition = Readonly<{
   conflicts?: readonly (EditorExtensionReference | PluginReference)[];
   contributions?: true;
   corrections?: true;
-  decorate?: true;
+  /** Exact transient payload merged into leaves by this plugin's decorator. */
+  decorate?: object;
   dependencies?: readonly (EditorExtensionReference | PluginReference)[];
   editOnly?: true;
   effectTypes?: true;
@@ -665,6 +666,13 @@ export type InferRead<P> = P extends { read: infer R extends object } ? R : {};
 
 export type InferUpdate<P> = P extends { update: infer U extends object }
   ? U
+  : {};
+
+/** Transient leaf fields produced by one plugin's decorator. */
+export type InferPluginDecoration<P> = P extends {
+  decorate: infer TDecoration extends object;
+}
+  ? TDecoration
   : {};
 
 export type InferEnabled<P> = P extends { enabled?: infer E }

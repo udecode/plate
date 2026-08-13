@@ -1,8 +1,11 @@
 import * as React from 'react';
 
+import type { BaseBlockquotePlugin } from '@platejs/basic-nodes';
 import { type PliteElementProps, PliteElement } from 'platejs/static';
 
-export function BlockquoteElementStatic(props: PliteElementProps) {
+export function BlockquoteElementStatic(
+  props: PliteElementProps<typeof BaseBlockquotePlugin>
+) {
   return (
     <PliteElement
       as="blockquote"

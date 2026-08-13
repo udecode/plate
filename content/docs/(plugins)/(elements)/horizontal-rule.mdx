@@ -10,7 +10,7 @@ docs:
     title: Plus
 ---
 
-Horizontal Rule adds a void `hr` block for separating sections. The package owns the element type, HTML parser, default `<hr>` render tag, and Markdown-style input rules. The registry kit adds the Plate UI divider component, static renderer, and insert toolbar item.
+Horizontal Rule adds a void `horizontalRule` block for separating sections. The package owns the element type, HTML parser, default `<hr>` render tag, and Markdown-style input rules. The registry kit adds the Plate UI divider component, static renderer, and insert toolbar item.
 
 <ComponentPreview name="basic-blocks-demo" />
 
@@ -18,7 +18,7 @@ Horizontal Rule adds a void `hr` block for separating sections. The package owns
 
 ## Features
 
-- Void block `hr` element.
+- Void block `horizontalRule` element.
 - HTML deserialization from `<hr>`.
 - Default render tag of `<hr>`.
 - `---` and `___ ` input rules through `HorizontalRuleRules.markdown()`.
@@ -70,9 +70,9 @@ Use `BaseBasicBlocksKit` when rendering read-only content with `platejs/static`.
 | `basic-blocks-kit` | Registry | Adds `HorizontalRulePlugin` with dash and underscore input rules plus `HrElement`. |
 | `basic-blocks-base-kit` | Registry | Adds `BaseHorizontalRulePlugin.configure({ component: HrElementStatic })`. |
 | `hr-node` | Registry UI | Renders editable and static divider components. |
-| Insert toolbar | Registry UI | Inserts `KEYS.hr` through the generic `insertBlock` path. |
+| Insert toolbar | Registry UI | Uses `PLUGINS.horizontalRule` to select the horizontal-rule capability, then inserts its resolved schema type through the generic `insertBlock` path. |
 
-There is no package-specific `insertHorizontalRule` helper. App UI usually inserts `KEYS.hr` through the same block insertion helper used by other registry blocks.
+There is no package-specific `insertHorizontalRule` helper. App UI usually passes `PLUGINS.horizontalRule` to the same descriptor-aware block insertion helper used by other registry blocks.
 
 ## Manual Setup
 
@@ -114,7 +114,7 @@ Use the base plugin with the static component in static rendering paths.
 
 ```tsx
 import { BaseHorizontalRulePlugin } from '@platejs/basic-nodes';
-import { createStaticEditor } from 'platejs';
+import { createStaticEditor } from 'platejs/static';
 
 import { HrElementStatic } from '@/components/ui/hr-node-static';
 
@@ -137,34 +137,34 @@ Horizontal rules are void block elements. Keep the empty text child so the node 
 const value = [
   {
     children: [{ text: 'Before the divider' }],
-    type: 'p',
+    type: 'paragraph',
   },
   {
     children: [{ text: '' }],
-    type: 'hr',
+    type: 'horizontalRule',
   },
   {
     children: [{ text: 'After the divider' }],
-    type: 'p',
+    type: 'paragraph',
   },
 ];
 ```
 
 | Field | Type | Notes |
 |-------|------|-------|
-| `type` | `'hr'` | Plugin name and node type from `KEYS.hr`. |
+| `type` | `'horizontalRule'` | Default persisted element type. Read the resolved type from `editor.plugin(BaseHorizontalRulePlugin).schema.type` in reusable code. |
 | `children` | `[{ text: '' }]` | Required child for the void element. |
 
 ## Input Rules
 
-`HorizontalRuleRules.markdown()` converts a paragraph into an `hr` block and inserts an empty paragraph after it.
+`HorizontalRuleRules.markdown()` converts a paragraph into a `horizontalRule` block and inserts an empty paragraph after it.
 
 | Rule | Trigger | Behavior |
 |------|---------|----------|
-| `HorizontalRuleRules.markdown({ variant: '-' })` | type the third `-` after `--` | Converts `---` to `hr`, then inserts a paragraph. |
-| `HorizontalRuleRules.markdown({ variant: '_' })` | type a space after `___` | Converts `___ ` to `hr`, then inserts a paragraph. |
+| `HorizontalRuleRules.markdown({ variant: '-' })` | type the third `-` after `--` | Converts `---` to `horizontalRule`, then inserts a paragraph. |
+| `HorizontalRuleRules.markdown({ variant: '_' })` | type a space after `___` | Converts `___ ` to `horizontalRule`, then inserts a paragraph. |
 
-The rule uses `tx.nodes.set({ type: KEYS.hr })`, so it transforms the current block instead of inserting a second divider elsewhere.
+The rule resolves `BaseHorizontalRulePlugin` through the editor and passes its `schema.type` to `tx.nodes.set`, so configured element types keep working.
 
 ## Registry UI
 
@@ -174,7 +174,7 @@ The rule uses `tx.nodes.set({ type: KEYS.hr })`, so it transforms the current bl
 | Selected + focused | Adds a focus ring around the divider. |
 | Read-only | Removes the pointer cursor from the editable component. |
 | Static element | Renders the same divider inside `PliteElement`. |
-| Insert toolbar | Adds a `Divider` item with `MinusIcon` and `KEYS.hr`. |
+| Insert toolbar | Adds a `Divider` item with `MinusIcon`; `PLUGINS.horizontalRule` selects the capability. |
 
 The divider component renders `{props.children}` after the non-editable wrapper so Plite can still keep the void child mounted.
 
@@ -182,7 +182,7 @@ The divider component renders `{props.children}` after the non-editable wrapper 
 
 | API | Package | Use |
 |-----|---------|-----|
-| `BaseHorizontalRulePlugin` | `@platejs/basic-nodes` | Headless void `hr` block with HTML deserialization and default render tag. |
+| `BaseHorizontalRulePlugin` | `@platejs/basic-nodes` | Headless void `horizontalRule` block with HTML deserialization and default render tag. |
 | `HorizontalRulePlugin` | `@platejs/basic-nodes/react` | React horizontal rule plugin. |
 | `HorizontalRuleRules.markdown({ variant: '-' })` | `@platejs/basic-nodes` | Creates the dash input rule for `---`. |
 | `HorizontalRuleRules.markdown({ variant: '_' })` | `@platejs/basic-nodes` | Creates the underscore input rule for `___ `. |

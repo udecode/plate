@@ -4,7 +4,11 @@ import * as React from 'react';
 
 import type { PlateElementProps } from 'platejs/react';
 
-import { useTocElement, useTocElementState } from '@platejs/toc/react';
+import {
+  type TocPlugin,
+  useTocElement,
+  useTocElementState,
+} from '@platejs/toc/react';
 import { cva } from 'class-variance-authority';
 import { PlateElement } from 'platejs/react';
 
@@ -27,7 +31,7 @@ const headingItemVariants = cva(
   }
 );
 
-export function TocElement(props: PlateElementProps) {
+export function TocElement(props: PlateElementProps<typeof TocPlugin>) {
   const state = useTocElementState();
   const { props: btnProps } = useTocElement(state);
   const { activeContentId, headingList } = state;

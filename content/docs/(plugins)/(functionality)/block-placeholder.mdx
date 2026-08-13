@@ -77,7 +77,7 @@ The plugin stores its current target in `_target`. That option is runtime state 
 `BlockPlaceholderPlugin` is available from `platejs/react`.
 
 ```tsx
-import { KEYS } from 'platejs';
+import { PLUGINS } from 'platejs';
 import { BlockPlaceholderPlugin, createPlateEditor } from 'platejs/react';
 
 export const editor = createPlateEditor({
@@ -87,7 +87,7 @@ export const editor = createPlateEditor({
         className:
           'before:absolute before:cursor-text before:text-muted-foreground/80 before:content-[attr(placeholder)]',
         placeholders: {
-          [KEYS.p]: 'Type something...',
+          [PLUGINS.paragraph]: 'Type something...',
         },
         query: ({ path }) => path.length === 1,
       },
@@ -98,18 +98,17 @@ export const editor = createPlateEditor({
 
 ### Add Type-Specific Copy
 
-Names in `placeholders` are plugin names. The plugin resolves each
-`pluginName` with `editor.plugin(pluginName).type` before matching the active block
-type.
+Keys in `placeholders` are plugin names. The plugin resolves each `name` through
+`editor.plugin(name).schema.type` before matching the active block type.
 
 ```tsx
 BlockPlaceholderPlugin.configure({
   initialState: {
     placeholders: {
-      [KEYS.p]: 'Type something...',
-      [KEYS.h1]: 'Untitled',
-      [KEYS.blockquote]: 'Quote',
-      [KEYS.codeBlock]: 'Code',
+      [PLUGINS.paragraph]: 'Type something...',
+      [PLUGINS.h1]: 'Untitled',
+      [PLUGINS.blockquote]: 'Quote',
+      [PLUGINS.codeBlock]: 'Code',
     },
   },
 });
@@ -126,7 +125,7 @@ The plugin shows a placeholder only when every gate passes.
 | Editor mode | Not read-only and not composing. |
 | Focus | Editor is focused and has a selection. |
 | Selection | Selection is collapsed. |
-| Active block | `editor.api.block()` returns an empty block. |
+| Active block | `editor.read.nodes.block()` returns an empty block. |
 | Whole editor | The editor is not in its pristine single-empty-block state. Empty blocks with visible structural state, such as list metadata, still qualify. |
 | Placeholder map | The block type matches one entry in `placeholders`. |
 | Query | `query({ editor, node, path, ...ctx })` returns `true`. |
@@ -163,7 +162,7 @@ className:
 | API | Package | Use |
 |-----|---------|-----|
 | `BlockPlaceholderPlugin` | `platejs/react` / `@platejs/utils/react` | Adds block placeholders through injected node props. |
-| `initialState.placeholders` | `Record<string, string>` | Maps plugin names to placeholder text. Default: `{ [KEYS.p]: 'Type something...' }`. |
+| `initialState.placeholders` | `Record<string, string>` | Maps plugin names to placeholder text. Default: `{ [PLUGINS.paragraph]: 'Type something...' }`. |
 | `initialState.query` | `(context) => boolean` | Filters eligible blocks. Default: `({ path }) => path.length === 1`. |
 | `initialState.className` | `string` | Class applied to the block only while its placeholder is active. |
 | `initialState._target` | Internal runtime state | Stores the current target node and placeholder string. |

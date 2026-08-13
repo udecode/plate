@@ -6,9 +6,12 @@ import { useClaimEditableDOMCommit } from '@platejs/plite-react/internal';
 import type { PlateEditor } from '../editor/PlateEditor';
 import type { AnyResolvedPlatePlugin } from '../plugin/PlatePlugin';
 
+import type { Path } from '@platejs/plite';
+
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
-import { type PlateElementProps, PlateElement } from '../components';
+import type { RenderElementProps } from '../../lib';
+import { type PlateNodeProps, PlateElement } from '../components';
 import { createPluginContext } from '../plugin/createPluginContext.internal';
 import { useEditor } from '../stores';
 import { ElementProvider } from '../stores/element/useElementStore';
@@ -19,8 +22,11 @@ import { getRenderNodeProps } from './getRenderNodeProps';
  * the next RenderElement function is called. If the function renders a JSX
  * element then that JSX element is rendered.
  */
+type PlateElementRenderProps = PlateNodeProps &
+  RenderElementProps & { path: Path };
+
 export type RenderElement = (
-  props: PlateElementProps
+  props: PlateElementRenderProps
 ) => React.ReactElement<any> | undefined;
 
 function ElementContent({
@@ -28,7 +34,7 @@ function ElementContent({
   plugin,
   pluginContext,
   ...props
-}: PlateElementProps & { pluginContext?: Record<string, unknown> }) {
+}: PlateElementRenderProps & { pluginContext?: Record<string, unknown> }) {
   const readOnly = useEditorReadOnly();
 
   useClaimEditableDOMCommit();

@@ -1,11 +1,12 @@
+import type { ElementWith } from '@platejs/core';
 import { useEditor } from '@platejs/core/react';
 
-import type { TTodoListItemElement } from '../lib';
+import type { BaseListPlugin } from '../lib';
 
 export const useTodoListElementState = ({
   element,
 }: {
-  element: TTodoListItemElement;
+  element: ElementWith<typeof BaseListPlugin>;
 }) => {
   const { checked } = element;
 

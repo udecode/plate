@@ -5,10 +5,14 @@ import TextareaAutosize, {
   type TextareaAutosizeProps,
 } from 'react-textarea-autosize';
 
-import type { TEquationElement } from 'platejs';
 import type { PlateEditor, PlateElementProps } from 'platejs/react';
 
-import { useEquationElement, useEquationInput } from '@platejs/math/react';
+import {
+  EquationPlugin,
+  InlineEquationPlugin,
+  useEquationElement,
+  useEquationInput,
+} from '@platejs/math/react';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import { CornerDownLeftIcon, RadicalIcon } from 'lucide-react';
 import {
@@ -33,15 +37,15 @@ import { inlineSuggestionVariants } from '@/registry/lib/suggestion';
 const getBlockSelectionApi = (editor: PlateEditor) =>
   editor.plugin(BlockSelectionPlugin).api;
 
-export function EquationElement(props: PlateElementProps<TEquationElement>) {
+export function EquationElement(
+  props: PlateElementProps<typeof EquationPlugin> & {
+    lineBreakBadge?: React.ReactNode;
+  }
+) {
   const selected = useElementSelected();
   const [open, setOpen] = React.useState(selected);
   const katexRef = React.useRef<HTMLDivElement | null>(null);
-  const lineBreakBadge = (
-    props as PlateElementProps<TEquationElement> & {
-      lineBreakBadge?: React.ReactNode;
-    }
-  ).lineBreakBadge;
+  const { lineBreakBadge } = props;
 
   useEquationElement({
     element: props.element,
@@ -107,7 +111,7 @@ export function EquationElement(props: PlateElementProps<TEquationElement>) {
 }
 
 export function InlineEquationElement(
-  props: PlateElementProps<TEquationElement>
+  props: PlateElementProps<typeof InlineEquationPlugin>
 ) {
   const { element } = props;
   const katexRef = React.useRef<HTMLDivElement | null>(null);
@@ -121,6 +125,9 @@ export function InlineEquationElement(
     if (selected && isCollapsed) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- Open the inline equation popover when editor selection enters it.
       setOpen(true);
+    } else if (!selected) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Close the popover when editor selection leaves the inline equation.
+      setOpen(false);
     }
   }, [selected, isCollapsed]);
 
@@ -219,7 +226,7 @@ const EquationPopoverContent = ({
 } & TextareaAutosizeProps) => {
   const editor = useEditor();
   const readOnly = useEditorReadOnly();
-  const element = useElement<TEquationElement>();
+  const element = useElement(isInline ? InlineEquationPlugin : EquationPlugin);
 
   React.useEffect(() => {
     if (isInline && open) {
@@ -240,13 +247,16 @@ const EquationPopoverContent = ({
       }
       editor.api.dom.focus();
     } else {
-      getBlockSelectionApi(editor).set(element.id as string);
+      getBlockSelectionApi(editor).set(editor.key(element));
     }
   };
 
   return (
     <PopoverContent
       className="flex gap-2"
+      onCloseAutoFocus={(event) => {
+        if (isInline) event.preventDefault();
+      }}
       onEscapeKeyDown={(e) => {
         e.preventDefault();
       }}

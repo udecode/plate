@@ -92,9 +92,15 @@ export function ReadOnlyEditor() {
 在插件组件中使用 `PlateElement`、`PlateLeaf` 和 `PlateText`。它们会将 Plite attributes 与你的 `className`、`style` 和 `ref` 合并。
 
 ```tsx title="components/paragraph-element.tsx"
-import { PlateElement, type PlateElementProps } from "platejs/react";
+import {
+  ParagraphPlugin,
+  PlateElement,
+  type PlateElementProps,
+} from "platejs/react";
 
-export function ParagraphElement(props: PlateElementProps) {
+export function ParagraphElement(
+  props: PlateElementProps<typeof ParagraphPlugin>
+) {
   return <PlateElement as="p" className="leading-7" {...props} />;
 }
 ```
@@ -110,16 +116,15 @@ export function QuoteElement(props: PlateElementProps<typeof QuotePlugin>) {
 }
 ```
 
-可复用组件库也可以直接传入元素类型：
+没有插件所有者的底层 renderer 基础设施使用原始 render contract：
 
 ```tsx
-import type { Element } from "platejs";
-import { PlateElement, type PlateElementProps } from "platejs/react";
+import type { Element, RenderElementProps } from "platejs";
 
 export function TypedElement<TElement extends Element>(
-  props: PlateElementProps<TElement>
+  props: RenderElementProps<TElement>
 ) {
-  return <PlateElement {...props} />;
+  return <div {...props.attributes}>{props.children}</div>;
 }
 ```
 

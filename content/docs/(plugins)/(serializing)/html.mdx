@@ -153,10 +153,13 @@ Refer to the [Static Rendering Guide](/docs/static) for detailed instructions on
 
 ```tsx title="components/ui/paragraph-node-static.tsx"
 import React from 'react';
+import type { BaseParagraphPlugin } from 'platejs';
 import type { PliteElementProps } from 'platejs/static';
 
 // Example static paragraph component
-export function ParagraphElementStatic(props: PliteElementProps) {
+export function ParagraphElementStatic(
+  props: PliteElementProps<typeof BaseParagraphPlugin>
+) {
   return (
     <PliteElement {...props} className={cn('m-0 px-0 py-1')}>
       {props.children}
@@ -298,7 +301,8 @@ const CalloutPlugin = definePlatePlugin('callout', {
         }),
         match: [{ tag: 'aside' }],
       },
-    }),  schema: {
+    }),
+  schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
       properties: {
@@ -330,9 +334,9 @@ const HtmlCleanupPlugin = definePlatePlugin('htmlCleanup', {
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       'text/html': {
-      query: ({ source }) => source.types.includes('text/html'),
-      transformData: ({ data }) =>
-        data.replaceAll(/<!--(?:Start|End)Fragment-->/g, ''),
+        query: ({ source }) => source.types.includes('text/html'),
+        transformData: ({ data }) =>
+          data.replaceAll(/<!--(?:Start|End)Fragment-->/g, ''),
       },
     }),
 });

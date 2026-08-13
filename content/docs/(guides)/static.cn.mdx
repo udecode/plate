@@ -100,9 +100,12 @@ const editor = createBaseEditor({
 
 ```tsx title="components/ui/paragraph-node-static.tsx"
 import React from 'react';
+import type { BaseParagraphPlugin } from 'platejs';
 import type { PliteElementProps } from 'platejs/static';
 
-export function ParagraphElementStatic(props: PliteElementProps) {
+export function ParagraphElementStatic(
+  props: PliteElementProps<typeof BaseParagraphPlugin>
+) {
   return (
     <PliteElement {...props}>
       {props.children}

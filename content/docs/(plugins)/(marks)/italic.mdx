@@ -18,7 +18,7 @@ Italic applies the `italic` leaf mark to selected text. `ItalicPlugin` owns the 
 
 ## Features
 
-- `PLUGINS.italic` leaf mark.
+- Boolean `italic` leaf property owned by the `PLUGINS.italic` capability.
 - Default `⌘I` / `Ctrl+I` shortcut.
 - HTML deserialization from `em`, `i`, and italic font style.
 - `<em>` rendering by default.
@@ -33,7 +33,7 @@ Italic applies the `italic` leaf mark to selected text. `ItalicPlugin` owns the 
 
 ### Add Basic Marks
 
-`BasicMarksKit` includes `ItalicPlugin`, `*` and `_` Markdown-style input rules, and the standard toolbar buttons that use `PLUGINS.italic`.
+`BasicMarksKit` includes `ItalicPlugin`, `*` and `_` Markdown-style input rules, and the standard toolbar buttons that use the plugin descriptor.
 
 <ComponentSource name="basic-marks-kit" />
 
@@ -49,16 +49,17 @@ export const editor = createPlateEditor({
 
 ### Add A Toolbar Button
 
-Use `MarkToolbarButton` with `PLUGINS.italic`.
+Pass `ItalicPlugin` to `MarkToolbarButton` so the button uses the configured mark key.
 
 ```tsx
 import { ItalicIcon } from 'lucide-react';
+import { ItalicPlugin } from '@platejs/basic-nodes/react';
 
 import { MarkToolbarButton } from '@/components/ui/mark-toolbar-button';
 
 export function ItalicToolbarButton() {
   return (
-    <MarkToolbarButton nodeType={PLUGINS.italic} tooltip="Italic (⌘+I)">
+    <MarkToolbarButton plugin={ItalicPlugin} tooltip="Italic (⌘+I)">
       <ItalicIcon />
     </MarkToolbarButton>
   );
@@ -116,9 +117,9 @@ The package owns the mark. The registry owns toolbar placement and icon choice.
 
 | Behavior | Source |
 |----------|--------|
-| Mark key | `PLUGINS.italic` |
+| Mark key | `editor.plugin(ItalicPlugin).schema.key` (default: `italic`) |
 | Mark declaration | `schema.mark: property.boolean({ default: false, omitDefault: true })` |
-| Toggle command | `tx.italic.toggle()` calls `tx.marks.toggle(type)`. |
+| Toggle command | `tx.italic.toggle()` toggles the resolved schema key. |
 | Shortcut | `ItalicPlugin` registers `mod+i`. |
 | HTML tags | `em`, `i` |
 | HTML styles | `font-style: italic` |

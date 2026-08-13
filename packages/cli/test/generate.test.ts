@@ -1,25 +1,35 @@
 import {
+  chmodSync,
   existsSync,
   mkdtempSync,
+  mkdirSync,
   readdirSync,
   readFileSync,
+  realpathSync,
   rmSync,
   statSync,
+  symlinkSync,
   writeFileSync,
 } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { basename, dirname, join, relative, resolve } from 'node:path';
+import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 
 import { afterEach, describe, expect, it } from 'bun:test';
-import ts from 'typescript';
+import { API, type Diagnostic, type Snapshot } from 'typescript/unstable/async';
 
 import {
   discoverEditorSourceFiles,
+  editorWatchOwnershipPaths,
   generateEditor,
+  generateEditors,
   replaceArtifacts,
+  resolveEditorEntryPaths,
 } from '../src/generate';
 import { createEditorMigration } from '../src/migrate';
-import { watchEditor } from '../src/watch';
+import { artifactStateRoot, pathFingerprint } from '../src/state';
+import { NativeTypeScriptSession } from '../src/typescript';
+import { watchEditor, watchEditors } from '../src/watch';
 
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const repoRoot = resolve(packageRoot, '../..');
@@ -37,12 +47,69 @@ const waitFor = async (condition: () => boolean, timeout = 5000) => {
   }
 };
 
+const hasWatchOwnership = (entryPath: string) =>
+  editorWatchOwnershipPaths(entryPath).every(existsSync);
+
+const expectOnlyFixtureFiles = (
+  directory: string,
+  paths: readonly string[] = []
+) => {
+  const allowed = new Set([
+    'editor-definition.ts',
+    'tsconfig.json',
+    ...paths.map((path) => basename(path)),
+  ]);
+
+  expect(readdirSync(directory).every((name) => allowed.has(name))).toBe(true);
+};
+
+const diagnosticText = (diagnostic: Diagnostic): string =>
+  [
+    diagnostic.text,
+    ...(diagnostic.messageChain?.map(diagnosticText) ?? []),
+  ].join('\n');
+
+const expectTypeScriptFilesCompile = async (
+  configPath: string,
+  files: readonly string[]
+) => {
+  const api = new API({ cwd: dirname(configPath) });
+  let snapshot: Snapshot | undefined;
+
+  try {
+    snapshot = await api.updateSnapshot({
+      openFiles: [...files],
+      openProjects: [configPath],
+    });
+    const project = await snapshot.getDefaultProjectForFile(files[0]!);
+
+    expect(project).toBeDefined();
+    const diagnostics = [
+      ...(await project!.program.getConfigFileParsingDiagnostics()),
+      ...(
+        await Promise.all(
+          files.flatMap((file) => [
+            project!.program.getSyntacticDiagnostics(file),
+            project!.program.getSemanticDiagnostics(file),
+          ])
+        )
+      ).flat(),
+    ];
+
+    expect(diagnostics.map(diagnosticText)).toEqual([]);
+  } finally {
+    if (snapshot) await snapshot.dispose();
+    await api.close();
+  }
+};
+
 const createFixture = (
   tsx = false,
   recursiveJson = false,
-  recursiveElement = false
+  recursiveElement = false,
+  applicationProperties = true
 ) => {
-  const directory = mkdtempSync(join(packageRoot, '.plate-cli-test-'));
+  const directory = mkdtempSync(join(packageRoot, 'tmp-cli-test-'));
   const entryPath = join(directory, `editor-definition.${tsx ? 'tsx' : 'ts'}`);
   const entry = `import { defineBasePlugin, defineEditor } from '../../core/src/index';
 import { property, schema, target } from '../../plite/src/index';
@@ -87,7 +154,9 @@ const AlignPlugin = defineBasePlugin('align', {
 
 export default defineEditor('fixture', {
   plugins: [CalloutPlugin, AlignPlugin],
-  schema: {
+  ${
+    applicationProperties
+      ? `schema: {
     properties: {
       reviewFlags: schema.textProperty(
         schema.key.prefix('reviewFlag_'),
@@ -98,7 +167,9 @@ export default defineEditor('fixture', {
         { target: target.element(CalloutPlugin) }
       ),
     },
-  },
+  },`
+      : ''
+  }
   schemaIdentity: { id: 'fixture-document', version: 2 },
 });
 ${tsx ? 'export const FixtureComponent = () => <div />;\n' : ''}`;
@@ -144,15 +215,26 @@ afterEach(() => {
 describe('plate generate', () => {
   it('emits deterministic concrete types and checks committed artifacts', async () => {
     const { directory, entryPath } = createFixture();
-    const first = await generateEditor(entryPath);
+    const session = new NativeTypeScriptSession(packageRoot);
+    const first = await generateEditor(entryPath, {}, session);
     const firstTypes = readFileSync(first.typesPath, 'utf8');
     const firstSchema = readFileSync(first.schemaPath, 'utf8');
-    const second = await generateEditor(entryPath);
+    const typesMtime = statSync(first.typesPath).mtimeMs;
+    const schemaMtime = statSync(first.schemaPath).mtimeMs;
+    const second = await generateEditor(entryPath, {}, session);
 
+    expect(second.status).toBe('upToDate');
+    expect(statSync(second.typesPath).mtimeMs).toBe(typesMtime);
+    expect(statSync(second.schemaPath).mtimeMs).toBe(schemaMtime);
     expect(readFileSync(second.typesPath, 'utf8')).toBe(firstTypes);
     expect(readFileSync(second.schemaPath, 'utf8')).toBe(firstSchema);
     expect(firstTypes).toContain('export interface CalloutCapabilityElement');
     expect(firstTypes).toContain('readonly type: "callout_node"');
+    const calloutMutation = firstTypes.match(
+      /readonly calloutCapability: Readonly<\{[\s\S]*?\n {2}\}>;/
+    )?.[0];
+
+    expect(calloutMutation).not.toContain('readonly toggle: true');
     expect(firstTypes).toContain('readonly align?: "left" | "right"');
     expect(firstTypes).not.toContain('readonly id?:');
     expect(firstTypes).toContain('readonly tone: "info" | "warning"');
@@ -174,12 +256,12 @@ describe('plate generate', () => {
     );
     expect(firstTypes).not.toContain('InternalEditorDefinition');
     expect(firstTypes).not.toContain('any');
-    await generateEditor(entryPath, { check: true });
+    await generateEditor(entryPath, { check: true }, session);
 
     writeFileSync(first.typesPath, `${firstTypes}\n// stale`);
-    await expect(generateEditor(entryPath, { check: true })).rejects.toThrow(
-      'is stale'
-    );
+    await expect(
+      generateEditor(entryPath, { check: true }, session)
+    ).rejects.toThrow('are stale');
 
     writeFileSync(
       join(directory, 'contract.ts'),
@@ -210,35 +292,374 @@ EditorKit.schema.properties.reviewFlags.key.prefix satisfies 'reviewFlag_';
     );
     writeFileSync(first.typesPath, firstTypes);
     const configPath = join(directory, 'tsconfig.json');
-    const config = ts.readConfigFile(configPath, ts.sys.readFile);
-    const parsed = ts.parseJsonConfigFileContent(
-      config.config,
-      ts.sys,
-      directory,
-      { noEmit: true },
-      configPath
-    );
     const contractPath = join(directory, 'contract.ts');
-    const program = ts.createProgram([contractPath], parsed.options);
-    const contract = program.getSourceFile(contractPath)!;
-    const diagnostics = [
-      ...program.getSyntacticDiagnostics(contract),
-      ...program.getSemanticDiagnostics(contract),
+
+    await expectTypeScriptFilesCompile(configPath, [contractPath]);
+    await session.close();
+  }, 60_000);
+
+  it('keeps virtual helpers in an explicitly listed editor project', async () => {
+    const { directory, entryPath } = createFixture();
+    const configPath = join(directory, 'tsconfig.json');
+    const config = JSON.parse(readFileSync(configPath, 'utf8')) as Record<
+      string,
+      unknown
+    >;
+
+    delete config.include;
+    config.files = ['./editor-definition.ts'];
+    writeFileSync(configPath, JSON.stringify(config));
+
+    const generated = await generateEditor(entryPath);
+
+    expect(readFileSync(generated.typesPath, 'utf8')).toContain(
+      'readonly tone: "info" | "warning"'
+    );
+  }, 60_000);
+
+  it('keeps standalone generated headers independent of machine paths', async () => {
+    const sourceFixture = createFixture();
+    const standaloneSource = readFileSync(sourceFixture.entryPath, 'utf8')
+      .replace(
+        '../../core/src/index',
+        resolve(repoRoot, 'packages/core/src/index.ts')
+      )
+      .replace(
+        '../../plite/src/index',
+        resolve(repoRoot, 'packages/plite/src/index.ts')
+      );
+    const config = JSON.parse(
+      readFileSync(join(sourceFixture.directory, 'tsconfig.json'), 'utf8')
+    ) as { compilerOptions: Record<string, unknown> };
+
+    config.compilerOptions.rootDir = '/';
+    const directories = [
+      mkdtempSync(join(tmpdir(), 'plate-cli-standalone-a-')),
+      mkdtempSync(join(tmpdir(), 'plate-cli-standalone-b-')),
     ];
 
-    expect(
-      diagnostics.map((diagnostic) =>
-        ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n')
+    temporaryDirectories.push(...directories);
+    const generated = await Promise.all(
+      directories.map(async (directory) => {
+        const entryPath = join(directory, "src/editor's*/editor-definition.ts");
+
+        mkdirSync(dirname(entryPath), { recursive: true });
+        writeFileSync(entryPath, standaloneSource);
+        writeFileSync(join(directory, 'tsconfig.json'), JSON.stringify(config));
+
+        return generateEditor("src/editor's*/editor-definition.ts", {
+          cwd: directory,
+        });
+      })
+    );
+    const first = readFileSync(generated[0]!.typesPath, 'utf8');
+    const second = readFileSync(generated[1]!.typesPath, 'utf8');
+
+    expect(first).toBe(second);
+    expect(first).toStartWith(
+      "/* Generated by @platejs/cli from src/editor's*\\/editor-definition.ts."
+    );
+    expect(first).toContain(
+      'Regenerate with: pnpm exec plate generate -- "src/editor\'s*/editor-definition.ts"'
+    );
+  }, 60_000);
+
+  it('preserves entry-relative import.meta.url during evaluation', async () => {
+    const { directory, entryPath } = createFixture();
+
+    writeFileSync(
+      join(directory, 'element-type.txt'),
+      'entry_relative_callout'
+    );
+    writeFileSync(
+      entryPath,
+      readFileSync(entryPath, 'utf8')
+        .replace(
+          "import { defineBasePlugin, defineEditor } from '../../core/src/index';",
+          "import { readFileSync } from 'node:fs';\nimport { dirname } from 'node:path';\nimport { fileURLToPath } from 'node:url';\nimport { defineBasePlugin, defineEditor } from '../../core/src/index';"
+        )
+        .replace(
+          "const CalloutPlugin = defineBasePlugin('calloutCapability', {",
+          `const elementTypes = [
+  readFileSync(new URL('./element-type.txt', import.meta.url), 'utf8'),
+  readFileSync(\`\${import.meta.dirname}/element-type.txt\`, 'utf8'),
+  readFileSync(\`\${dirname(import.meta.filename)}/element-type.txt\`, 'utf8'),
+  readFileSync(fileURLToPath(import.meta.resolve('./element-type.txt')), 'utf8'),
+];
+if (import.meta.resolve('node:fs') !== 'node:fs') throw new Error('builtin resolution changed');
+const elementType = [...new Set(elementTypes)].join(',');
+
+const CalloutPlugin = defineBasePlugin('calloutCapability', {`
+        )
+        .replace("type: 'callout_node'", 'type: elementType')
+    );
+
+    const generated = await generateEditor(entryPath);
+
+    expect(readFileSync(generated.typesPath, 'utf8')).toContain(
+      'readonly type: "entry_relative_callout"'
+    );
+  }, 60_000);
+
+  it('evaluates each compilation in a disposable process', async () => {
+    const { entryPath } = createFixture();
+
+    writeFileSync(
+      entryPath,
+      readFileSync(entryPath, 'utf8')
+        .replace(
+          "const CalloutPlugin = defineBasePlugin('calloutCapability', {",
+          `const evaluationGlobal = globalThis as typeof globalThis & { __plateEvaluationCount?: number };
+evaluationGlobal.__plateEvaluationCount = (evaluationGlobal.__plateEvaluationCount ?? 0) + 1;
+const evaluationCount = evaluationGlobal.__plateEvaluationCount;
+
+const CalloutPlugin = defineBasePlugin('calloutCapability', {`
+        )
+        .replace(
+          "type: 'callout_node'",
+          `type: \`callout_\${evaluationCount}\``
+        )
+    );
+
+    const first = await generateEditor(entryPath);
+    const firstTypes = readFileSync(first.typesPath, 'utf8');
+    const second = await generateEditor(entryPath);
+
+    expect(firstTypes).toContain('readonly type: "callout_1"');
+    expect(readFileSync(second.typesPath, 'utf8')).toBe(firstTypes);
+  }, 60_000);
+
+  it('preserves the generation cwd during evaluation', async () => {
+    const { directory, entryPath } = createFixture();
+    const nestedEntryPath = join(directory, 'src/editor/editor-definition.ts');
+
+    mkdirSync(dirname(nestedEntryPath), { recursive: true });
+    writeFileSync(join(directory, 'element-type.txt'), 'cwd_relative_callout');
+    writeFileSync(
+      nestedEntryPath,
+      readFileSync(entryPath, 'utf8')
+        .replace(
+          "import { defineBasePlugin, defineEditor } from '../../core/src/index';",
+          "import { readFileSync } from 'node:fs';\nimport { defineBasePlugin, defineEditor } from '../../../../core/src/index';"
+        )
+        .replace(
+          "from '../../plite/src/index'",
+          "from '../../../../plite/src/index'"
+        )
+        .replace(
+          "const CalloutPlugin = defineBasePlugin('calloutCapability', {",
+          "const elementType = readFileSync('element-type.txt', 'utf8');\n\nconst CalloutPlugin = defineBasePlugin('calloutCapability', {"
+        )
+        .replace("type: 'callout_node'", 'type: elementType')
+    );
+
+    const generated = await generateEditor('src/editor/editor-definition.ts', {
+      cwd: directory,
+    });
+
+    expect(readFileSync(generated.typesPath, 'utf8')).toContain(
+      'readonly type: "cwd_relative_callout"'
+    );
+  }, 60_000);
+
+  it('terminates evaluation with persistent handles', async () => {
+    const { entryPath } = createFixture();
+
+    writeFileSync(
+      entryPath,
+      `setInterval(() => {}, 60_000);\n${readFileSync(entryPath, 'utf8')}`
+    );
+
+    const generated = await generateEditor(entryPath);
+
+    expect(existsSync(generated.typesPath)).toBe(true);
+  }, 60_000);
+
+  it('compiles every entry before publishing a batch', async () => {
+    const first = createFixture();
+    const second = createFixture();
+    const generated = await generateEditors([
+      first.entryPath,
+      second.entryPath,
+    ]);
+    const previous = generated.flatMap(({ schemaPath, typesPath }) => [
+      [typesPath, readFileSync(typesPath, 'utf8')] as const,
+      [schemaPath, readFileSync(schemaPath, 'utf8')] as const,
+    ]);
+
+    writeFileSync(
+      first.entryPath,
+      readFileSync(first.entryPath, 'utf8').replace('version: 2', 'version: 3')
+    );
+    writeFileSync(second.entryPath, 'export default this is invalid');
+
+    await expect(
+      generateEditors([first.entryPath, second.entryPath])
+    ).rejects.toThrow();
+    previous.forEach(([path, source]) => {
+      expect(readFileSync(path, 'utf8')).toBe(source);
+    });
+  }, 60_000);
+
+  it('does not rewrite current editors in a partially stale batch', async () => {
+    const first = createFixture();
+    const second = createFixture();
+    const initial = await generateEditors([first.entryPath, second.entryPath]);
+    const secondTypesMtime = statSync(initial[1]!.typesPath).mtimeMs;
+    const secondSchemaMtime = statSync(initial[1]!.schemaPath).mtimeMs;
+
+    writeFileSync(
+      first.entryPath,
+      readFileSync(first.entryPath, 'utf8').replace('version: 2', 'version: 3')
+    );
+    const regenerated = await generateEditors([
+      first.entryPath,
+      second.entryPath,
+    ]);
+
+    expect(regenerated.map(({ status }) => status)).toEqual([
+      'generated',
+      'upToDate',
+    ]);
+    expect(statSync(initial[1]!.typesPath).mtimeMs).toBe(secondTypesMtime);
+    expect(statSync(initial[1]!.schemaPath).mtimeMs).toBe(secondSchemaMtime);
+  }, 60_000);
+
+  it('reports every stale artifact in a batch', async () => {
+    const first = createFixture();
+    const second = createFixture();
+    const generated = await generateEditors([
+      first.entryPath,
+      second.entryPath,
+    ]);
+
+    writeFileSync(
+      generated[0]!.typesPath,
+      `${readFileSync(generated[0]!.typesPath, 'utf8')}\n// stale`
+    );
+    writeFileSync(
+      generated[1]!.schemaPath,
+      `${readFileSync(generated[1]!.schemaPath, 'utf8')}\n`
+    );
+    let message = '';
+
+    try {
+      await generateEditors([first.entryPath, second.entryPath], {
+        check: true,
+      });
+    } catch (error) {
+      message = error instanceof Error ? error.message : String(error);
+    }
+
+    expect(message).toContain(generated[0]!.typesPath);
+    expect(message).toContain(generated[1]!.schemaPath);
+  }, 60_000);
+
+  it('rejects entries that own the same output paths', async () => {
+    const { directory, entryPath } = createFixture();
+    const collidingEntry = join(directory, 'editor.definition.ts');
+
+    writeFileSync(collidingEntry, readFileSync(entryPath, 'utf8'));
+
+    await expect(generateEditors([entryPath, collidingEntry])).rejects.toThrow(
+      'produce the same generated artifact'
+    );
+    await expect(watchEditors([entryPath, collidingEntry])).rejects.toThrow(
+      'produce the same generated artifact'
+    );
+  });
+
+  it('omits generic toggle from structural element mutations', async () => {
+    const { directory, entryPath } = createFixture(false, false, false, false);
+    const entry = readFileSync(entryPath, 'utf8')
+      .replace(
+        "const AlignPlugin = defineBasePlugin('align', {",
+        `const ImagePlugin = defineBasePlugin('image', { schema: { element: { void: 'block' } } });\n\nconst AlignPlugin = defineBasePlugin('align', {`
       )
-    ).toEqual([]);
+      .replace(
+        'plugins: [CalloutPlugin, AlignPlugin],',
+        'plugins: [CalloutPlugin, ImagePlugin, AlignPlugin],'
+      );
+
+    writeFileSync(entryPath, entry);
+    const result = await generateEditor(entryPath);
+    const generated = readFileSync(result.typesPath, 'utf8');
+    const imageMutation = generated.match(
+      /readonly image: Readonly<\{[\s\S]*?\n {2}\}>;/
+    )?.[0];
+
+    expect(imageMutation).toBeDefined();
+    expect(imageMutation).not.toContain('readonly toggle: true');
+    expect(generated).not.toContain('SchemaPropertyHandle');
+    const configPath = join(directory, 'tsconfig.json');
+    const config = JSON.parse(readFileSync(configPath, 'utf8')) as {
+      compilerOptions: Record<string, unknown>;
+    };
+
+    config.compilerOptions.noUnusedLocals = true;
+    writeFileSync(configPath, JSON.stringify(config));
+    await expectTypeScriptFilesCompile(configPath, [result.typesPath]);
+  }, 60_000);
+
+  it('emits generic toggle only for default-constructible text blocks without authored toggle semantics', async () => {
+    const { entryPath } = createFixture();
+    const entry = readFileSync(entryPath, 'utf8')
+      .replace(
+        "const AlignPlugin = defineBasePlugin('align', {",
+        `const HeadingPlugin = defineBasePlugin('heading', { schema: { element: schema.element.textBlock() } });
+const NestedPlugin = defineBasePlugin('nested', {
+  schema: { element: { blockContent: false, content: schema.content.text({ default: 'text', min: 1 }) } },
+});
+const QuotePlugin = defineBasePlugin('quote', {
+  schema: { element: schema.element.textBlock() },
+  update: () => ({ toggle: () => undefined }),
+});
+
+const AlignPlugin = defineBasePlugin('align', {`
+      )
+      .replace(
+        'plugins: [CalloutPlugin, AlignPlugin],',
+        'plugins: [CalloutPlugin, HeadingPlugin, NestedPlugin, QuotePlugin, AlignPlugin],'
+      );
+
+    writeFileSync(entryPath, entry);
+    const result = await generateEditor(entryPath);
+    const generated = readFileSync(result.typesPath, 'utf8');
+    const mutationMap = generated.match(
+      /export type Mutations = Readonly<\{([\s\S]*?)\n\}>;/
+    )?.[1];
+    const mutation = (name: string) =>
+      mutationMap?.match(
+        new RegExp(`readonly ${name}: Readonly<\\{[\\s\\S]*?\\n {2}\\}>;`)
+      )?.[0];
+
+    expect(mutation('heading')).toContain('readonly toggle: true');
+    expect(mutation('calloutCapability')).not.toContain(
+      'readonly toggle: true'
+    );
+    expect(mutation('nested')).not.toContain('readonly toggle: true');
+    expect(mutation('quote')).not.toContain('readonly toggle: true');
   }, 60_000);
 
   it('terminates recursive JSON types at an unknown edge', async () => {
     const { entryPath } = createFixture(false, true);
-    const result = await generateEditor(entryPath);
+    const entry = `type Left = { leftOnly: string; right: Right };
+type Right = { left: Left; rightOnly: number };
+${readFileSync(entryPath, 'utf8').replace(
+  "value is { id: string; tags: readonly ('a' | 'b')[] }",
+  "value is { id: string; left: Left; right: Right; tags: readonly ('a' | 'b')[] }"
+)}`;
 
-    expect(readFileSync(result.typesPath, 'utf8')).toContain(
-      'readonly raw?: unknown'
+    writeFileSync(entryPath, entry);
+    const result = await generateEditor(entryPath);
+    const generated = readFileSync(result.typesPath, 'utf8');
+
+    expect(generated).toContain('readonly raw?: unknown');
+    expect(generated).toContain(
+      'readonly left: { readonly leftOnly: string; readonly right: { readonly left: unknown; readonly rightOnly: number; }; };'
+    );
+    expect(generated).toContain(
+      'readonly right: { readonly left: { readonly leftOnly: string; readonly right: unknown; }; readonly rightOnly: number; };'
     );
   }, 60_000);
 
@@ -251,23 +672,105 @@ EditorKit.schema.properties.reviewFlags.key.prefix satisfies 'reviewFlag_';
     );
   }, 60_000);
 
-  it('materializes globals included by the editor tsconfig', async () => {
+  it('materializes and watches ambient declarations from the editor tsconfig', async () => {
     const { directory, entryPath } = createFixture();
+    const globalsDirectory = join(directory, 'custom-types/fixture');
+    const globalsPath = join(globalsDirectory, 'index.d.ts');
+    const configPath = join(directory, 'tsconfig.json');
+    const config = JSON.parse(readFileSync(configPath, 'utf8')) as {
+      compilerOptions: Record<string, unknown>;
+      exclude?: string[];
+    };
     const entry = readFileSync(entryPath, 'utf8').replace(
       "value is { id: string; tags: readonly ('a' | 'b')[] }",
       'value is FixturePayload'
     );
 
+    mkdirSync(globalsDirectory, { recursive: true });
     writeFileSync(
-      join(directory, 'globals.d.ts'),
-      "type FixturePayload = { id: string; tags: readonly ('a' | 'b')[] };\n"
+      globalsPath,
+      "declare type FixturePayload = { id: string; tags: readonly ('a' | 'b')[] };\n"
     );
+    config.compilerOptions.typeRoots = ['./custom-types'];
+    config.compilerOptions.types = ['fixture'];
+    config.exclude = ['./custom-types'];
+    writeFileSync(configPath, JSON.stringify(config));
     writeFileSync(entryPath, entry);
-    const result = await generateEditor(entryPath);
+    const initial = await generateEditor(entryPath);
 
-    expect(readFileSync(result.typesPath, 'utf8')).toContain(
+    expect(readFileSync(initial.typesPath, 'utf8')).toContain(
       'readonly payload?: { readonly id: string; readonly tags: readonly ("a" | "b")[]; }'
     );
+    const watcher = await watchEditor(entryPath);
+
+    try {
+      expect(
+        Object.entries(watcher.getWatched()).some(([directory, files]) =>
+          files.some((file) => resolve(directory, file) === globalsPath)
+        )
+      ).toBe(true);
+      const generated = new Promise<void>((resolve) => {
+        const unsubscribe = watcher.onGenerated(() => {
+          unsubscribe();
+          resolve();
+        });
+      });
+
+      writeFileSync(
+        globalsPath,
+        "declare type FixturePayload = { id: string; priority: number; tags: readonly ('a' | 'b')[] };\n"
+      );
+      await generated;
+      expect(readFileSync(initial.typesPath, 'utf8')).toContain(
+        'readonly priority: number'
+      );
+    } finally {
+      await watcher.close();
+    }
+  }, 60_000);
+
+  it('watches ambient declarations with generated-looking filenames', async () => {
+    const { directory, entryPath } = createFixture();
+    const ambientPath = join(directory, 'schema.generated.d.ts');
+
+    writeFileSync(
+      ambientPath,
+      'declare type GeneratedAmbientPayload = { readonly id: string };\n'
+    );
+    writeFileSync(
+      entryPath,
+      readFileSync(entryPath, 'utf8').replace(
+        "value is { id: string; tags: readonly ('a' | 'b')[] }",
+        'value is GeneratedAmbientPayload'
+      )
+    );
+    const initial = await generateEditor(entryPath);
+    const watcher = await watchEditor(entryPath);
+
+    try {
+      expect(
+        Object.entries(watcher.getWatched()).some(([directory, files]) =>
+          files.some((file) => resolve(directory, file) === ambientPath)
+        )
+      ).toBe(true);
+      const generated = new Promise<void>((resolve) => {
+        const unsubscribe = watcher.onGenerated(() => {
+          unsubscribe();
+          resolve();
+        });
+      });
+
+      writeFileSync(
+        ambientPath,
+        'declare type GeneratedAmbientPayload = { readonly id: string; readonly ambientRevision: true };\n'
+      );
+      await generated;
+      expect(readFileSync(initial.typesPath, 'utf8')).toContain(
+        'readonly ambientRevision: true'
+      );
+    } finally {
+      await watcher.close();
+    }
   }, 60_000);
 
   it('preserves template, intersection, and rest tuple types', async () => {
@@ -410,7 +913,6 @@ EditorKit.schema.properties.reviewFlags.key.prefix satisfies 'reviewFlag_';
     let sawFailure = false;
     const watcher = await watchEditor(entryPath);
 
-    await new Promise<void>((resolve) => watcher.once('ready', resolve));
     process.stderr.write = ((chunk: string | Uint8Array) => {
       if (String(chunk).includes('watch-dependency.ts')) sawFailure = true;
 
@@ -429,11 +931,712 @@ EditorKit.schema.properties.reviewFlags.key.prefix satisfies 'reviewFlag_';
         )
       );
       const failedMtime = statSync(initial.typesPath).mtimeMs;
+      let generated = false;
+      const unsubscribeGenerated = watcher.onGenerated(() => {
+        generated = true;
+      });
+      const regenerated = new Promise<void>((resolve) => {
+        const unsubscribe = watcher.onChecked(() => {
+          unsubscribe();
+          resolve();
+        });
+      });
 
       writeFileSync(dependencyPath, 'export {};\n');
-      await waitFor(() => statSync(initial.typesPath).mtimeMs > failedMtime);
+      await regenerated;
+      unsubscribeGenerated();
+      expect(generated).toBe(false);
+      expect(statSync(initial.typesPath).mtimeMs).toBe(failedMtime);
     } finally {
       process.stderr.write = previousStderrWrite;
+      await watcher.close();
+    }
+  }, 60_000);
+
+  it('recovers when the editor definition is recreated', async () => {
+    const { entryPath } = createFixture();
+    const originalEntry = readFileSync(entryPath, 'utf8');
+    const previousStderrWrite = process.stderr.write;
+    const watcher = await watchEditor(entryPath);
+    let sawFailure = false;
+
+    process.stderr.write = ((chunk: string | Uint8Array) => {
+      if (String(chunk).includes('does not exist')) sawFailure = true;
+
+      return true;
+    }) as typeof process.stderr.write;
+    try {
+      rmSync(entryPath);
+      await waitFor(() => sawFailure);
+      const checked = new Promise<void>((resolveChecked) => {
+        const unsubscribe = watcher.onChecked(() => {
+          unsubscribe();
+          resolveChecked();
+        });
+      });
+
+      writeFileSync(entryPath, originalEntry);
+      await checked;
+    } finally {
+      process.stderr.write = previousStderrWrite;
+      await watcher.close();
+    }
+  }, 60_000);
+
+  it('ignores unrelated files while waiting for a missing deep dependency', async () => {
+    const { directory, entryPath } = createFixture();
+    const dependencyPath = join(directory, 'missing/deep/dependency.ts');
+    const unrelatedPath = join(directory, 'unrelated.ts');
+    const previousStderrWrite = process.stderr.write;
+
+    writeFileSync(
+      entryPath,
+      `import './missing/deep/dependency';\n${readFileSync(entryPath, 'utf8')}`
+    );
+    process.stderr.write = (() => true) as typeof process.stderr.write;
+    const watcher = await watchEditor(entryPath);
+    let checked = 0;
+    const unsubscribeChecked = watcher.onChecked(() => {
+      checked += 1;
+    });
+
+    try {
+      writeFileSync(unrelatedPath, 'export {};\n');
+      await new Promise((resolveDelay) => setTimeout(resolveDelay, 75));
+      expect(checked).toBe(0);
+
+      mkdirSync(dirname(dependencyPath), { recursive: true });
+      await waitFor(() =>
+        Object.keys(watcher.getWatched()).some(
+          (path) => resolve(path) === dirname(dependencyPath)
+        )
+      );
+      const generated = new Promise<void>((resolveGenerated) => {
+        const unsubscribe = watcher.onGenerated(() => {
+          unsubscribe();
+          resolveGenerated();
+        });
+      });
+
+      writeFileSync(dependencyPath, 'export {};\n');
+      await generated;
+    } finally {
+      unsubscribeChecked();
+      process.stderr.write = previousStderrWrite;
+      await watcher.close();
+    }
+  }, 60_000);
+
+  it('recovers an initially invalid type-only dependency', async () => {
+    const { directory, entryPath } = createFixture();
+    const payloadPath = join(directory, 'invalid-type-payload.ts');
+    const previousStderrWrite = process.stderr.write;
+
+    writeFileSync(payloadPath, 'export type Payload = { readonly id: ; };\n');
+    writeFileSync(
+      entryPath,
+      readFileSync(entryPath, 'utf8')
+        .replace(
+          "import { property, schema, target } from '../../plite/src/index';",
+          "import { property, schema, target } from '../../plite/src/index';\nimport type { Payload } from './invalid-type-payload';"
+        )
+        .replace(
+          "value is { id: string; tags: readonly ('a' | 'b')[] }",
+          'value is Payload'
+        )
+    );
+    process.stderr.write = (() => true) as typeof process.stderr.write;
+    let watcher: Awaited<ReturnType<typeof watchEditor>> | undefined;
+
+    try {
+      watcher = await watchEditor(entryPath);
+      const generated = new Promise<void>((resolve) => {
+        const unsubscribe = watcher!.onGenerated(() => {
+          unsubscribe();
+          resolve();
+        });
+      });
+
+      writeFileSync(
+        payloadPath,
+        'export type Payload = { readonly id: string; readonly recovered: true };\n'
+      );
+      await generated;
+      expect(
+        readFileSync(join(directory, 'editor.generated.ts'), 'utf8')
+      ).toContain('readonly recovered: true');
+    } finally {
+      process.stderr.write = previousStderrWrite;
+      await watcher?.close();
+    }
+  }, 60_000);
+
+  it('watches the TypeScript source substituted for a JavaScript import', async () => {
+    const { directory, entryPath } = createFixture();
+    const javascriptPath = join(directory, 'substituted-payload.js');
+    const typescriptPath = join(directory, 'substituted-payload.ts');
+
+    writeFileSync(javascriptPath, 'export const runtime = true;\n');
+    writeFileSync(
+      typescriptPath,
+      'export type Payload = { readonly id: string };\n'
+    );
+    writeFileSync(
+      entryPath,
+      readFileSync(entryPath, 'utf8')
+        .replace(
+          "import { property, schema, target } from '../../plite/src/index';",
+          "import { property, schema, target } from '../../plite/src/index';\nimport type { Payload } from './substituted-payload.js';"
+        )
+        .replace(
+          "value is { id: string; tags: readonly ('a' | 'b')[] }",
+          'value is Payload'
+        )
+    );
+    const initial = await generateEditor(entryPath);
+    const watcher = await watchEditor(entryPath);
+
+    try {
+      expect(
+        Object.entries(watcher.getWatched()).some(([directory, files]) =>
+          files.some((file) => resolve(directory, file) === typescriptPath)
+        )
+      ).toBe(true);
+      const generated = new Promise<void>((resolve) => {
+        const unsubscribe = watcher.onGenerated(() => {
+          unsubscribe();
+          resolve();
+        });
+      });
+
+      writeFileSync(
+        typescriptPath,
+        'export type Payload = { readonly id: string; readonly substituted: true };\n'
+      );
+      await generated;
+      expect(readFileSync(initial.typesPath, 'utf8')).toContain(
+        'readonly substituted: true'
+      );
+    } finally {
+      await watcher.close();
+    }
+  }, 60_000);
+
+  it('watches local type-only dependencies that shape generated properties', async () => {
+    const { directory, entryPath } = createFixture();
+    const payloadPath = join(directory, 'payload.ts');
+    const typesPath = join(directory, 'types.ts');
+    const configPath = join(directory, 'tsconfig.json');
+    const config = JSON.parse(readFileSync(configPath, 'utf8')) as {
+      compilerOptions: { paths: Record<string, string[]> };
+    };
+    const initialPayload = `export type Payload = {
+  readonly id: string;
+  readonly tags: readonly ('a' | 'b')[];
+};
+`;
+
+    writeFileSync(payloadPath, initialPayload);
+    writeFileSync(typesPath, "export * from '@fixture/payload';\n");
+    config.compilerOptions.paths['@fixture/*'] = ['./*'];
+    writeFileSync(configPath, JSON.stringify(config));
+    writeFileSync(
+      entryPath,
+      readFileSync(entryPath, 'utf8')
+        .replace(
+          "import { property, schema, target } from '../../plite/src/index';",
+          "import { property, schema, target } from '../../plite/src/index';\nimport type { Payload } from './types';"
+        )
+        .replace(
+          "value is { id: string; tags: readonly ('a' | 'b')[] }",
+          'value is Payload'
+        )
+    );
+    const initial = await generateEditor(entryPath);
+    const watcher = await watchEditor(entryPath);
+
+    try {
+      expect(
+        Object.entries(watcher.getWatched()).some(([directory, files]) =>
+          files.some((file) => resolve(directory, file) === payloadPath)
+        )
+      ).toBe(true);
+      const generated = new Promise<void>((resolve) => {
+        const unsubscribe = watcher.onGenerated(() => {
+          unsubscribe();
+          resolve();
+        });
+      });
+
+      writeFileSync(
+        payloadPath,
+        initialPayload.replace(
+          'readonly id: string;',
+          'readonly id: string;\n  readonly priority: number;'
+        )
+      );
+      await generated;
+      expect(readFileSync(initial.typesPath, 'utf8')).toContain(
+        'readonly priority: number'
+      );
+    } finally {
+      await watcher.close();
+    }
+  }, 60_000);
+
+  it('watches the most specific TypeScript paths match', async () => {
+    const { directory, entryPath } = createFixture();
+    const catchAllPath = join(directory, 'catch-all/@app/payload.ts');
+    const actualPath = join(directory, 'actual/payload.ts');
+    const configPath = join(directory, 'tsconfig.json');
+    const config = JSON.parse(readFileSync(configPath, 'utf8')) as {
+      compilerOptions: { paths: Record<string, string[]> };
+    };
+
+    mkdirSync(dirname(catchAllPath), { recursive: true });
+    mkdirSync(dirname(actualPath), { recursive: true });
+    writeFileSync(
+      catchAllPath,
+      'export type Payload = { readonly wrong: true };\n'
+    );
+    writeFileSync(
+      actualPath,
+      'export type Payload = { readonly id: string };\n'
+    );
+    config.compilerOptions.paths = {
+      '*': ['./catch-all/*'],
+      '@app/*': ['./actual/*'],
+      ...config.compilerOptions.paths,
+    };
+    writeFileSync(configPath, JSON.stringify(config));
+    writeFileSync(
+      entryPath,
+      readFileSync(entryPath, 'utf8')
+        .replace(
+          "import { property, schema, target } from '../../plite/src/index';",
+          "import { property, schema, target } from '../../plite/src/index';\nimport type { Payload } from '@app/payload';"
+        )
+        .replace(
+          "value is { id: string; tags: readonly ('a' | 'b')[] }",
+          'value is Payload'
+        )
+    );
+    const initial = await generateEditor(entryPath);
+    const watcher = await watchEditor(entryPath);
+
+    try {
+      expect(
+        Object.entries(watcher.getWatched()).some(([directory, files]) =>
+          files.some((file) => resolve(directory, file) === actualPath)
+        )
+      ).toBe(true);
+      const generated = new Promise<void>((resolve) => {
+        const unsubscribe = watcher.onGenerated(() => {
+          unsubscribe();
+          resolve();
+        });
+      });
+
+      writeFileSync(
+        actualPath,
+        'export type Payload = { readonly id: string; readonly priority: number };\n'
+      );
+      await generated;
+      expect(readFileSync(initial.typesPath, 'utf8')).toContain(
+        'readonly priority: number'
+      );
+    } finally {
+      await watcher.close();
+    }
+  }, 60_000);
+
+  it('uses the editor project paths for type-only imports outside its directory', async () => {
+    const { directory, entryPath } = createFixture();
+    const sharedDirectory = mkdtempSync(join(packageRoot, 'tmp-cli-shared-'));
+    const modelPath = join(sharedDirectory, 'model.ts');
+    const payloadPath = join(directory, 'external-payload.ts');
+    const configPath = join(directory, 'tsconfig.json');
+    const config = JSON.parse(readFileSync(configPath, 'utf8')) as {
+      compilerOptions: { paths: Record<string, string[]> };
+    };
+    const modelImport = relative(
+      dirname(entryPath),
+      modelPath.slice(0, -'.ts'.length)
+    ).replaceAll('\\', '/');
+
+    temporaryDirectories.push(sharedDirectory);
+    config.compilerOptions.paths['@external/*'] = [join(directory, '*')];
+    writeFileSync(configPath, JSON.stringify(config));
+    writeFileSync(
+      modelPath,
+      "import type { ExternalPayload } from '@external/external-payload';\nexport type Payload = ExternalPayload;\n"
+    );
+    writeFileSync(
+      payloadPath,
+      'export type ExternalPayload = { readonly id: string };\n'
+    );
+    writeFileSync(
+      entryPath,
+      readFileSync(entryPath, 'utf8')
+        .replace(
+          "import { property, schema, target } from '../../plite/src/index';",
+          `import { property, schema, target } from '../../plite/src/index';\nimport type { Payload } from '${modelImport.startsWith('.') ? modelImport : `./${modelImport}`}';`
+        )
+        .replace(
+          "value is { id: string; tags: readonly ('a' | 'b')[] }",
+          'value is Payload'
+        )
+    );
+    const initial = await generateEditor(entryPath);
+    const watcher = await watchEditor(entryPath);
+
+    try {
+      expect(
+        Object.entries(watcher.getWatched()).some(([directory, files]) =>
+          files.some((file) => resolve(directory, file) === payloadPath)
+        )
+      ).toBe(true);
+      const generated = new Promise<void>((resolve) => {
+        const unsubscribe = watcher.onGenerated(() => {
+          unsubscribe();
+          resolve();
+        });
+      });
+
+      writeFileSync(
+        payloadPath,
+        'export type ExternalPayload = { readonly id: string; readonly externalRevision: true };\n'
+      );
+      await generated;
+      expect(readFileSync(initial.typesPath, 'utf8')).toContain(
+        'readonly externalRevision: true'
+      );
+    } finally {
+      await watcher.close();
+    }
+  }, 60_000);
+
+  it('does not fall through a missing exact paths match', async () => {
+    const { directory, entryPath } = createFixture();
+    const exactPath = join(directory, 'exact/payload.ts');
+    const wildcardPath = join(directory, 'wildcard/payload.ts');
+    const typesPath = join(directory, 'editor.generated.ts');
+    const configPath = join(directory, 'tsconfig.json');
+    const config = JSON.parse(readFileSync(configPath, 'utf8')) as {
+      compilerOptions: { paths: Record<string, string[]> };
+    };
+
+    mkdirSync(dirname(wildcardPath), { recursive: true });
+    writeFileSync(
+      wildcardPath,
+      'export type Payload = { readonly wrong: true };\n'
+    );
+    config.compilerOptions.paths = {
+      '@app/payload': ['./exact/payload'],
+      '@app/*': ['./wildcard/*'],
+      ...config.compilerOptions.paths,
+    };
+    writeFileSync(configPath, JSON.stringify(config));
+    writeFileSync(
+      entryPath,
+      readFileSync(entryPath, 'utf8')
+        .replace(
+          "import { property, schema, target } from '../../plite/src/index';",
+          "import { property, schema, target } from '../../plite/src/index';\nimport type { Payload } from '@app/payload';"
+        )
+        .replace(
+          "value is { id: string; tags: readonly ('a' | 'b')[] }",
+          'value is Payload'
+        )
+    );
+    const previousStderrWrite = process.stderr.write;
+
+    process.stderr.write = (() => true) as typeof process.stderr.write;
+    let watcher: Awaited<ReturnType<typeof watchEditor>> | undefined;
+
+    try {
+      watcher = await watchEditor(entryPath);
+      const generated = new Promise<void>((resolve) => {
+        const unsubscribe = watcher!.onGenerated(() => {
+          unsubscribe();
+          resolve();
+        });
+      });
+
+      mkdirSync(dirname(exactPath), { recursive: true });
+      writeFileSync(
+        exactPath,
+        'export type Payload = { readonly id: string };\n'
+      );
+      await generated;
+      expect(readFileSync(typesPath, 'utf8')).toContain(
+        'readonly payload?: { readonly id: string; }'
+      );
+      expect(readFileSync(typesPath, 'utf8')).not.toContain('readonly wrong');
+    } finally {
+      process.stderr.write = previousStderrWrite;
+      await watcher?.close();
+    }
+  }, 60_000);
+
+  it('resolves paths from the effective extended tsconfig', async () => {
+    const { directory, entryPath } = createFixture();
+    const configPath = join(directory, 'tsconfig.json');
+    const baseConfigPath = join(directory, 'config/base.json');
+    const payloadPath = join(directory, 'sources/actual/payload.ts');
+    const config = JSON.parse(readFileSync(configPath, 'utf8')) as {
+      compilerOptions: { paths: Record<string, string[]> };
+      extends: string;
+    };
+    const inheritedPaths = config.compilerOptions.paths;
+
+    mkdirSync(dirname(baseConfigPath), { recursive: true });
+    mkdirSync(dirname(payloadPath), { recursive: true });
+    writeFileSync(
+      baseConfigPath,
+      JSON.stringify({
+        compilerOptions: {
+          paths: {
+            ...inheritedPaths,
+            '@app/*': ['../sources/actual/*'],
+          },
+        },
+        extends: config.extends,
+      })
+    );
+    config.extends = './config/base.json';
+    delete (config.compilerOptions as { paths?: Record<string, string[]> })
+      .paths;
+    writeFileSync(configPath, JSON.stringify(config));
+    writeFileSync(
+      payloadPath,
+      'export type Payload = { readonly id: string };\n'
+    );
+    writeFileSync(
+      entryPath,
+      readFileSync(entryPath, 'utf8')
+        .replace(
+          "import { property, schema, target } from '../../plite/src/index';",
+          "import { property, schema, target } from '../../plite/src/index';\nimport type { Payload } from '@app/payload';"
+        )
+        .replace(
+          "value is { id: string; tags: readonly ('a' | 'b')[] }",
+          'value is Payload'
+        )
+    );
+    const initial = await generateEditor(entryPath);
+    const watcher = await watchEditor(entryPath);
+
+    try {
+      expect(
+        Object.entries(watcher.getWatched()).some(([directory, files]) =>
+          files.some((file) => resolve(directory, file) === payloadPath)
+        )
+      ).toBe(true);
+      const generated = new Promise<void>((resolve) => {
+        const unsubscribe = watcher.onGenerated(() => {
+          unsubscribe();
+          resolve();
+        });
+      });
+
+      writeFileSync(
+        payloadPath,
+        'export type Payload = { readonly id: string; readonly priority: number };\n'
+      );
+      await generated;
+      expect(readFileSync(initial.typesPath, 'utf8')).toContain(
+        'readonly priority: number'
+      );
+    } finally {
+      await watcher.close();
+    }
+  }, 60_000);
+
+  it('materializes an unlink-add dependency replacement as one change', async () => {
+    const { directory, entryPath } = createFixture();
+    const payloadPath = join(directory, 'payload.ts');
+    const session = new NativeTypeScriptSession(packageRoot);
+
+    writeFileSync(
+      payloadPath,
+      'export type Payload = { readonly id: string };\n'
+    );
+    writeFileSync(
+      entryPath,
+      readFileSync(entryPath, 'utf8')
+        .replace(
+          "import { property, schema, target } from '../../plite/src/index';",
+          "import { property, schema, target } from '../../plite/src/index';\nimport type { Payload } from './payload';"
+        )
+        .replace(
+          "value is { id: string; tags: readonly ('a' | 'b')[] }",
+          'value is Payload'
+        )
+    );
+
+    try {
+      const initial = await generateEditor(entryPath, {}, session);
+
+      expect(readFileSync(initial.typesPath, 'utf8')).not.toContain(
+        'readonly priority: number'
+      );
+      rmSync(payloadPath);
+      session.recordFileChange('unlink', payloadPath);
+      writeFileSync(
+        payloadPath,
+        'export type Payload = { readonly id: string; readonly priority: number };\n'
+      );
+      session.recordFileChange('add', payloadPath);
+
+      await generateEditor(entryPath, {}, session);
+      expect(readFileSync(initial.typesPath, 'utf8')).toContain(
+        'readonly priority: number'
+      );
+    } finally {
+      await session.close();
+    }
+  }, 60_000);
+
+  it('recovers when an initially missing aliased type-only dependency is created', async () => {
+    const { directory, entryPath } = createFixture();
+    const payloadPath = join(directory, 'payload.ts');
+    const configPath = join(directory, 'tsconfig.json');
+    const config = JSON.parse(readFileSync(configPath, 'utf8')) as {
+      compilerOptions: { paths: Record<string, string[]> };
+    };
+    const validPayload =
+      'export type Payload = { readonly id: string; readonly tags: readonly string[] };\n';
+
+    config.compilerOptions.paths['@fixture/*'] = ['./*'];
+    writeFileSync(configPath, JSON.stringify(config));
+    writeFileSync(
+      entryPath,
+      readFileSync(entryPath, 'utf8')
+        .replace(
+          "import { property, schema, target } from '../../plite/src/index';",
+          "import { property, schema, target } from '../../plite/src/index';\nimport type { Payload } from '@fixture/payload';"
+        )
+        .replace(
+          "value is { id: string; tags: readonly ('a' | 'b')[] }",
+          'value is Payload'
+        )
+    );
+    const previousStderrWrite = process.stderr.write;
+
+    const watcher = await watchEditor(entryPath);
+
+    try {
+      const generated = new Promise<void>((resolve) => {
+        const unsubscribe = watcher.onGenerated(() => {
+          unsubscribe();
+          resolve();
+        });
+      });
+
+      writeFileSync(payloadPath, validPayload);
+      await generated;
+      expect(existsSync(join(directory, 'editor.generated.ts'))).toBe(true);
+    } finally {
+      process.stderr.write = previousStderrWrite;
+      await watcher.close();
+    }
+  }, 60_000);
+
+  it('recovers an ordinary import erased as type-only', async () => {
+    const { directory, entryPath } = createFixture();
+    const payloadPath = join(directory, 'ordinary-payload.ts');
+    const validPayload =
+      'export type Payload = { readonly id: string; readonly tags: readonly string[] };\n';
+
+    writeFileSync(
+      entryPath,
+      readFileSync(entryPath, 'utf8')
+        .replace(
+          "import { property, schema, target } from '../../plite/src/index';",
+          "import { property, schema, target } from '../../plite/src/index';\nimport { Payload } from './ordinary-payload';"
+        )
+        .replace(
+          "value is { id: string; tags: readonly ('a' | 'b')[] }",
+          'value is Payload'
+        )
+    );
+    const previousStderrWrite = process.stderr.write;
+
+    process.stderr.write = (() => true) as typeof process.stderr.write;
+    let watcher: Awaited<ReturnType<typeof watchEditor>> | undefined;
+
+    try {
+      watcher = await watchEditor(entryPath);
+      const generated = new Promise<void>((resolve) => {
+        const unsubscribe = watcher!.onGenerated(() => {
+          unsubscribe();
+          resolve();
+        });
+      });
+
+      writeFileSync(payloadPath, validPayload);
+      await generated;
+      expect(existsSync(join(directory, 'editor.generated.ts'))).toBe(true);
+    } finally {
+      process.stderr.write = previousStderrWrite;
+      await watcher?.close();
+    }
+  }, 60_000);
+
+  it('watches a type-only import-equals dependency', async () => {
+    const { directory, entryPath } = createFixture();
+    const payloadPath = join(directory, 'import-equals-payload.ts');
+    const configPath = join(directory, 'tsconfig.json');
+    const config = JSON.parse(readFileSync(configPath, 'utf8')) as {
+      compilerOptions: Record<string, unknown>;
+    };
+
+    config.compilerOptions.module = 'CommonJS';
+    config.compilerOptions.moduleResolution = 'Node';
+    config.compilerOptions.verbatimModuleSyntax = false;
+    writeFileSync(configPath, JSON.stringify(config));
+
+    writeFileSync(
+      payloadPath,
+      "declare class Payload { readonly id: string; readonly tags: readonly ('a' | 'b')[] }\nexport = Payload;\n"
+    );
+    writeFileSync(
+      entryPath,
+      readFileSync(entryPath, 'utf8')
+        .replace(
+          "import { property, schema, target } from '../../plite/src/index';",
+          "import { property, schema, target } from '../../plite/src/index';\nimport type Payload = require('./import-equals-payload');"
+        )
+        .replace(
+          /payload: property\.json\(\{[\s\S]*?validationVersion: 1,\n {8}\}\),/,
+          'payload: property.json<Payload>(),'
+        )
+    );
+    const initial = await generateEditor(entryPath);
+    const initialMtime = statSync(initial.typesPath).mtimeMs;
+    const watcher = await watchEditor(entryPath);
+
+    try {
+      expect(
+        Object.entries(watcher.getWatched()).some(([directory, files]) =>
+          files.some((file) => resolve(directory, file) === payloadPath)
+        )
+      ).toBe(true);
+      const generated = new Promise<void>((resolve) => {
+        const unsubscribe = watcher.onChecked(() => {
+          unsubscribe();
+          resolve();
+        });
+      });
+
+      writeFileSync(
+        payloadPath,
+        "declare class Payload { readonly id: number; readonly tags: readonly ('a' | 'b')[] }\nexport = Payload;\n"
+      );
+      await generated;
+      expect(statSync(initial.typesPath).mtimeMs).toBe(initialMtime);
+    } finally {
       await watcher.close();
     }
   }, 60_000);
@@ -456,7 +1659,6 @@ EditorKit.schema.properties.reviewFlags.key.prefix satisfies 'reviewFlag_';
 
     try {
       watcher = await watchEditor(entryPath);
-      await new Promise<void>((resolve) => watcher!.once('ready', resolve));
 
       writeFileSync(
         dependencyPath,
@@ -482,21 +1684,24 @@ EditorKit.schema.properties.reviewFlags.key.prefix satisfies 'reviewFlag_';
 
   it('starts watching when the initial generation fails', async () => {
     const { directory, entryPath } = createFixture();
-    const dependencyPath = join(directory, 'initial-watch-dependency.ts');
+    const dependencyPath = join(directory, 'initial-globals.ts');
     const typesPath = join(directory, 'editor.generated.ts');
-    const originalEntry = readFileSync(entryPath, 'utf8');
     const previousStderrWrite = process.stderr.write;
     let sawFailure = false;
 
-    writeFileSync(dependencyPath, 'export const broken = ;\n');
+    writeFileSync(
+      dependencyPath,
+      'export {};\ndeclare global { type FixturePayload = { broken: never }; }\n'
+    );
     writeFileSync(
       entryPath,
-      `import './initial-watch-dependency';\n${originalEntry}`
+      readFileSync(entryPath, 'utf8').replace(
+        "value is { id: string; tags: readonly ('a' | 'b')[] }",
+        'value is FixturePayload'
+      )
     );
     process.stderr.write = ((chunk: string | Uint8Array) => {
-      if (String(chunk).includes('initial-watch-dependency.ts')) {
-        sawFailure = true;
-      }
+      if (String(chunk).length > 0) sawFailure = true;
 
       return true;
     }) as typeof process.stderr.write;
@@ -505,15 +1710,17 @@ EditorKit.schema.properties.reviewFlags.key.prefix satisfies 'reviewFlag_';
 
     try {
       watcher = await watchEditor(entryPath);
-      await new Promise<void>((resolve) => watcher!.once('ready', resolve));
       expect(sawFailure).toBe(true);
       expect(
         Object.values(watcher.getWatched()).some((files) =>
-          files.includes('initial-watch-dependency.ts')
+          files.includes('initial-globals.ts')
         )
       ).toBe(true);
 
-      writeFileSync(dependencyPath, 'export {};\n');
+      writeFileSync(
+        dependencyPath,
+        'export {};\ndeclare global { type FixturePayload = { id: string; tags: readonly string[] }; }\n'
+      );
       await waitFor(() => existsSync(typesPath));
     } finally {
       process.stderr.write = previousStderrWrite;
@@ -534,7 +1741,6 @@ EditorKit.schema.properties.reviewFlags.key.prefix satisfies 'reviewFlag_';
 
     try {
       watcher = await watchEditor(entryPath);
-      await new Promise<void>((resolve) => watcher!.once('ready', resolve));
       expect(
         Object.values(watcher.getWatched()).some((files) =>
           files.includes('tsconfig.json')
@@ -570,7 +1776,6 @@ EditorKit.schema.properties.reviewFlags.key.prefix satisfies 'reviewFlag_';
     const watcher = await watchEditor(entryPath);
 
     try {
-      await new Promise<void>((resolve) => watcher.once('ready', resolve));
       expect(Object.values(watcher.getWatched()).flat()).not.toContain(
         'editor.generated.ts'
       );
@@ -578,6 +1783,16 @@ EditorKit.schema.properties.reviewFlags.key.prefix satisfies 'reviewFlag_';
         'editor.schema.json'
       );
       const previousMtime = statSync(initial.typesPath).mtimeMs;
+      let generated = false;
+      const unsubscribeGenerated = watcher.onGenerated(() => {
+        generated = true;
+      });
+      const regenerated = new Promise<void>((resolve) => {
+        const unsubscribe = watcher.onChecked(() => {
+          unsubscribe();
+          resolve();
+        });
+      });
 
       writeFileSync(
         baseConfigPath,
@@ -586,11 +1801,172 @@ EditorKit.schema.properties.reviewFlags.key.prefix satisfies 'reviewFlag_';
           compilerOptions: { noUnusedLocals: false },
         })
       );
-      await waitFor(() => statSync(initial.typesPath).mtimeMs > previousMtime);
+      await regenerated;
+      unsubscribeGenerated();
+      expect(generated).toBe(false);
+      expect(statSync(initial.typesPath).mtimeMs).toBe(previousMtime);
     } finally {
       await watcher.close();
     }
   }, 60_000);
+
+  it('regenerates only the editors affected by a watched source', async () => {
+    const first = createFixture();
+    const second = createFixture();
+    const watcher = await watchEditors([first.entryPath, second.entryPath]);
+    const collidingEntry = join(first.directory, 'editor.definition.ts');
+
+    try {
+      await expect(
+        watchEditors([second.entryPath, first.entryPath])
+      ).rejects.toThrow('Another Plate watcher owns generated artifact');
+      writeFileSync(collidingEntry, readFileSync(first.entryPath, 'utf8'));
+      await expect(watchEditor(collidingEntry)).rejects.toThrow(
+        'Another Plate watcher owns generated artifact'
+      );
+      const generated = new Promise<readonly string[]>((resolve) => {
+        const unsubscribe = watcher.onGenerated((entryPaths) => {
+          unsubscribe();
+          resolve(entryPaths);
+        });
+      });
+
+      writeFileSync(
+        first.entryPath,
+        readFileSync(first.entryPath, 'utf8').replace(
+          'version: 2',
+          'version: 3'
+        )
+      );
+
+      expect(await generated).toEqual([first.entryPath]);
+    } finally {
+      await watcher.close();
+    }
+    expect(
+      readdirSync(first.directory).some((name) => name.endsWith('.watch'))
+    ).toBe(false);
+  }, 60_000);
+
+  it('does not miss an entry edit during initial watch compilation', async () => {
+    const { directory, entryPath } = createFixture();
+    const outputPath = join(directory, 'watch.stdout');
+    const schemaPath = join(directory, 'editor.schema.json');
+    const child = Bun.spawn(
+      [
+        process.execPath,
+        resolve(packageRoot, 'src/bin.ts'),
+        'generate',
+        '--watch',
+        entryPath,
+      ],
+      {
+        cwd: packageRoot,
+        stderr: 'pipe',
+        stdout: Bun.file(outputPath),
+      }
+    );
+
+    try {
+      await waitFor(() => hasWatchOwnership(entryPath));
+      writeFileSync(
+        entryPath,
+        readFileSync(entryPath, 'utf8').replace('version: 2', 'version: 3')
+      );
+      await waitFor(
+        () =>
+          existsSync(outputPath) &&
+          readFileSync(outputPath, 'utf8').includes('Watching 1 editor'),
+        15_000
+      );
+      await waitFor(
+        () =>
+          existsSync(schemaPath) &&
+          (
+            JSON.parse(readFileSync(schemaPath, 'utf8')) as {
+              identity: { version: number };
+            }
+          ).identity.version === 3
+      );
+    } finally {
+      child.kill('SIGINT');
+      await child.exited;
+    }
+  }, 30_000);
+
+  it('allows unchanged generation while another process watches', async () => {
+    const { directory, entryPath } = createFixture();
+    const initial = await generateEditor(entryPath);
+    const outputPath = join(directory, 'watch.stdout');
+    const child = Bun.spawn(
+      [
+        process.execPath,
+        resolve(packageRoot, 'src/bin.ts'),
+        'generate',
+        '--watch',
+        entryPath,
+      ],
+      {
+        cwd: packageRoot,
+        stderr: 'pipe',
+        stdout: Bun.file(outputPath),
+      }
+    );
+
+    try {
+      await waitFor(
+        () =>
+          existsSync(outputPath) &&
+          readFileSync(outputPath, 'utf8').includes('Watching 1 editor'),
+        15_000
+      );
+      const typesMtime = statSync(initial.typesPath).mtimeMs;
+      const schemaMtime = statSync(initial.schemaPath).mtimeMs;
+      const unchanged = await generateEditor(entryPath);
+
+      expect(unchanged.status).toBe('upToDate');
+      expect(statSync(initial.typesPath).mtimeMs).toBe(typesMtime);
+      expect(statSync(initial.schemaPath).mtimeMs).toBe(schemaMtime);
+    } finally {
+      child.kill('SIGINT');
+      await child.exited;
+    }
+  }, 30_000);
+
+  it('exits cleanly when watch is interrupted during initialization', async () => {
+    const { directory, entryPath } = createFixture();
+    const child = Bun.spawn(
+      [
+        process.execPath,
+        resolve(packageRoot, 'src/bin.ts'),
+        'generate',
+        '--watch',
+        entryPath,
+      ],
+      {
+        cwd: packageRoot,
+        stderr: 'pipe',
+        stdout: 'pipe',
+      }
+    );
+
+    await waitFor(() => hasWatchOwnership(entryPath));
+    child.kill('SIGINT');
+
+    expect(await child.exited).toBe(130);
+    expect(await new Response(child.stderr).text()).toBe('');
+    expect(hasWatchOwnership(entryPath)).toBe(false);
+    expect(
+      readdirSync(directory).every((name) =>
+        [
+          'editor-definition.ts',
+          'editor.generated.ts',
+          'editor.schema.json',
+          'tsconfig.json',
+        ].includes(name)
+      )
+    ).toBe(true);
+  }, 15_000);
 
   it('loads TSX entries', async () => {
     const { entryPath } = createFixture(true);
@@ -626,6 +2002,73 @@ EditorKit.schema.properties.reviewFlags.key.prefix satisfies 'reviewFlag_';
     ).toThrow('simulated interruption');
     expect(readFileSync(first, 'utf8')).toBe('first-old');
     expect(readFileSync(second, 'utf8')).toBe('second-old');
+    const firstMtime = statSync(first).mtimeMs;
+
+    expect(
+      replaceArtifacts([
+        { content: 'first-old', path: first },
+        { content: 'second-final', path: second },
+      ])
+    ).toBe(true);
+    expect(statSync(first).mtimeMs).toBe(firstMtime);
+    expect(readFileSync(first, 'utf8')).toBe('first-old');
+    expect(readFileSync(second, 'utf8')).toBe('second-final');
+  });
+
+  it('uses the conventional package cache outside Git', () => {
+    const directory = mkdtempSync(join(tmpdir(), 'plate-cli-no-git-'));
+    const artifactPath = join(directory, 'src/editor.generated.ts');
+
+    temporaryDirectories.push(directory);
+    writeFileSync(join(directory, 'package.json'), '{}');
+    expect(
+      relative(realpathSync(directory), artifactStateRoot(artifactPath))
+    ).toBe('node_modules/.cache/plate/state');
+    replaceArtifacts([{ content: 'export {};\n', path: artifactPath }]);
+    expect(readFileSync(artifactPath, 'utf8')).toBe('export {};\n');
+    expect(readdirSync(dirname(artifactPath))).toEqual(['editor.generated.ts']);
+  });
+
+  it('canonicalizes symlink aliases before deriving artifact identities', () => {
+    const directory = mkdtempSync(join(tmpdir(), 'plate-cli-realpath-'));
+    const alias = `${directory}-alias`;
+    const entryPath = join(directory, 'editor-definition.ts');
+    const aliasEntryPath = join(alias, 'editor-definition.ts');
+    const artifactPath = join(directory, 'editor.generated.ts');
+    const aliasArtifactPath = join(alias, 'editor.generated.ts');
+
+    temporaryDirectories.push(directory, alias);
+    writeFileSync(join(directory, 'package.json'), '{}');
+    writeFileSync(entryPath, 'export {};\n');
+    symlinkSync(directory, alias, 'dir');
+
+    expect(pathFingerprint(aliasArtifactPath)).toBe(
+      pathFingerprint(artifactPath)
+    );
+    expect(artifactStateRoot(aliasArtifactPath)).toBe(
+      artifactStateRoot(artifactPath)
+    );
+    expect(resolveEditorEntryPaths([entryPath, aliasEntryPath])).toEqual([
+      realpathSync(entryPath),
+    ]);
+  });
+
+  it('fails instead of splitting cache roots when the package cache is not writable', () => {
+    const directory = mkdtempSync(join(tmpdir(), 'plate-cli-cache-fallback-'));
+    const nodeModulesPath = join(directory, 'node_modules');
+    const artifactPath = join(directory, 'writable/editor.generated.ts');
+
+    temporaryDirectories.push(directory);
+    writeFileSync(join(directory, 'package.json'), '{}');
+    mkdirSync(nodeModulesPath);
+    chmodSync(nodeModulesPath, 0o500);
+    try {
+      expect(() => artifactStateRoot(artifactPath)).toThrow(
+        'could not create private state'
+      );
+    } finally {
+      chmodSync(nodeModulesPath, 0o700);
+    }
   });
 
   it('recovers a process-interrupted artifact transaction on the next run', () => {
@@ -643,6 +2086,7 @@ EditorKit.schema.properties.reviewFlags.key.prefix satisfies 'reviewFlag_';
     expect(() =>
       replaceArtifacts(artifacts, { interruptAfterInstall: 0 })
     ).toThrow('simulated process interruption');
+    expectOnlyFixtureFiles(directory, [first, second]);
     replaceArtifacts([
       { content: 'first-final', path: first },
       { content: 'second-final', path: second },
@@ -650,11 +2094,130 @@ EditorKit.schema.properties.reviewFlags.key.prefix satisfies 'reviewFlag_';
 
     expect(readFileSync(first, 'utf8')).toBe('first-final');
     expect(readFileSync(second, 'utf8')).toBe('second-final');
-    expect(
-      readdirSync(directory).filter((name) =>
-        /plate-artifacts|\.backup$|\.tmp$/.test(name)
+    expectOnlyFixtureFiles(directory, [first, second]);
+  });
+
+  it('recovers interruption after every artifact install index', () => {
+    const { directory } = createFixture();
+
+    [0, 1].forEach((interruptAfterInstall) => {
+      const first = join(directory, `index-${interruptAfterInstall}-first.txt`);
+      const second = join(
+        directory,
+        `index-${interruptAfterInstall}-second.txt`
+      );
+      const artifacts = [
+        { content: 'first-new', path: first },
+        { content: 'second-new', path: second },
+      ];
+
+      writeFileSync(first, 'first-old');
+      writeFileSync(second, 'second-old');
+      expect(() =>
+        replaceArtifacts(artifacts, { interruptAfterInstall })
+      ).toThrow('simulated process interruption');
+      replaceArtifacts([
+        { content: 'first-final', path: first },
+        { content: 'second-final', path: second },
+      ]);
+      expect(readFileSync(first, 'utf8')).toBe('first-final');
+      expect(readFileSync(second, 'utf8')).toBe('second-final');
+    });
+    expectOnlyFixtureFiles(
+      directory,
+      [0, 1].flatMap((index) => [
+        join(directory, `index-${index}-first.txt`),
+        join(directory, `index-${index}-second.txt`),
+      ])
+    );
+  });
+
+  it('recovers an interrupted publication before check mode reads', async () => {
+    const { entryPath } = createFixture();
+    const generated = await generateEditor(entryPath);
+    const typesSource = readFileSync(generated.typesPath, 'utf8');
+    const schemaSource = readFileSync(generated.schemaPath, 'utf8');
+
+    expect(() =>
+      replaceArtifacts(
+        [
+          { content: 'invalid types', path: generated.typesPath },
+          { content: 'invalid schema', path: generated.schemaPath },
+        ],
+        { interruptAfterInstall: 0 }
       )
-    ).toEqual([]);
+    ).toThrow('simulated process interruption');
+
+    await generateEditor(entryPath, { check: true });
+    expect(readFileSync(generated.typesPath, 'utf8')).toBe(typesSource);
+    expect(readFileSync(generated.schemaPath, 'utf8')).toBe(schemaSource);
+  }, 60_000);
+
+  it('recovers an interrupted batch before publishing an overlapping subset', () => {
+    const { directory } = createFixture();
+    const first = join(directory, 'overlap-first.txt');
+    const second = join(directory, 'overlap-second.txt');
+
+    writeFileSync(first, 'first-old');
+    writeFileSync(second, 'second-old');
+
+    expect(() =>
+      replaceArtifacts(
+        [
+          { content: 'first-interrupted', path: first },
+          { content: 'second-interrupted', path: second },
+        ],
+        { interruptAfterInstall: 0 }
+      )
+    ).toThrow('simulated process interruption');
+    expectOnlyFixtureFiles(directory, [first, second]);
+
+    replaceArtifacts([{ content: 'first-subset', path: first }]);
+
+    expect(readFileSync(first, 'utf8')).toBe('first-subset');
+    expect(readFileSync(second, 'utf8')).toBe('second-old');
+
+    replaceArtifacts([
+      { content: 'first-final', path: first },
+      { content: 'second-final', path: second },
+    ]);
+
+    expect(readFileSync(first, 'utf8')).toBe('first-final');
+    expect(readFileSync(second, 'utf8')).toBe('second-final');
+    expectOnlyFixtureFiles(directory, [first, second]);
+  });
+
+  it('keeps subset publication safe if journal linkage is interrupted', () => {
+    const { directory } = createFixture();
+    const first = join(directory, 'link-first.txt');
+    const second = join(directory, 'link-second.txt');
+
+    writeFileSync(first, 'first-old');
+    writeFileSync(second, 'second-old');
+
+    expect(() =>
+      replaceArtifacts(
+        [
+          { content: 'first-interrupted', path: first },
+          { content: 'second-interrupted', path: second },
+        ],
+        { interruptAfterReference: 0 }
+      )
+    ).toThrow('simulated process interruption');
+    expectOnlyFixtureFiles(directory, [first, second]);
+
+    expect(readFileSync(first, 'utf8')).toBe('first-old');
+    expect(readFileSync(second, 'utf8')).toBe('second-old');
+
+    replaceArtifacts([{ content: 'second-subset', path: second }]);
+    replaceArtifacts([
+      { content: 'first-final', path: first },
+      { content: 'second-final', path: second },
+    ]);
+
+    expect(readFileSync(first, 'utf8')).toBe('first-final');
+    expect(readFileSync(second, 'utf8')).toBe('second-final');
+    expectOnlyFixtureFiles(directory, [first, second]);
   });
 
   it('rejects a concurrent artifact transaction for the same outputs', () => {
@@ -722,11 +2285,7 @@ EditorKit.schema.properties.reviewFlags.key.prefix satisfies 'reviewFlag_';
     ]);
     expect(readFileSync(first, 'utf8')).toBe('first-final');
     expect(readFileSync(second, 'utf8')).toBe('second-final');
-    expect(
-      readdirSync(directory).filter((name) =>
-        /plate-artifacts|\.backup$|\.tmp$/.test(name)
-      )
-    ).toEqual([]);
+    expectOnlyFixtureFiles(directory, [first, second]);
   });
 
   it('scaffolds a typed migration from the last-good artifacts', async () => {
@@ -764,32 +2323,24 @@ EditorKit.schema.properties.reviewFlags.key.prefix satisfies 'reviewFlag_';
     expect(migration).toContain('Plate never runs this automatically');
     expect(existsSync(join(result.directory, 'from.schema.json'))).toBe(true);
     expect(existsSync(join(result.directory, 'to.schema.json'))).toBe(true);
+    expect(result.paths).toHaveLength(6);
+    expect(result.paths).toEqual(
+      expect.arrayContaining([
+        result.manifestPath,
+        result.migrationPath,
+        fromTypesPath,
+        toTypesPath,
+      ])
+    );
     expect(readFileSync(fromTypesPath, 'utf8')).toContain(
       'EditorSchemaContract'
     );
 
     const configPath = join(dirname(entryPath), 'tsconfig.json');
-    const config = ts.readConfigFile(configPath, ts.sys.readFile);
-    const parsed = ts.parseJsonConfigFileContent(
-      config.config,
-      ts.sys,
-      dirname(entryPath),
-      { noEmit: true },
-      configPath
-    );
-    const program = ts.createProgram(
-      [fromTypesPath, toTypesPath, result.migrationPath],
-      parsed.options
-    );
-    const diagnostics = [
-      ...program.getSyntacticDiagnostics(),
-      ...program.getSemanticDiagnostics(),
-    ];
-
-    expect(
-      diagnostics.map((diagnostic) =>
-        ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n')
-      )
-    ).toEqual([]);
+    await expectTypeScriptFilesCompile(configPath, [
+      fromTypesPath,
+      toTypesPath,
+      result.migrationPath,
+    ]);
   }, 60_000);
 });

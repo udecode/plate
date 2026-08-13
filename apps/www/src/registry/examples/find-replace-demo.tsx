@@ -5,6 +5,7 @@ import * as React from 'react';
 import { FindReplacePlugin } from '@platejs/find-replace';
 import {
   Plate,
+  useEditor,
   useEditorPlugin,
   usePlateEditor,
   usePluginStore,
@@ -18,7 +19,8 @@ import { FixedToolbar } from '@/registry/ui/fixed-toolbar';
 import { SearchHighlightLeaf } from '@/registry/ui/search-highlight-node';
 
 export function FindToolbar() {
-  const { editor, store } = useEditorPlugin(FindReplacePlugin);
+  const editor = useEditor();
+  const { store } = useEditorPlugin(FindReplacePlugin);
   const search = usePluginStore(FindReplacePlugin, 'search');
 
   return (

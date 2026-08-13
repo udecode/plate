@@ -6,7 +6,7 @@ import {
   useOverrideRowSize,
   useTableValue,
 } from './useTableStore';
-import { TableCellPlugin, TablePlugin } from './TablePlugin';
+import { TableCellPlugin, TablePlugin, TableRowPlugin } from './TablePlugin';
 import {
   useEditor,
   useEditorPlugin,
@@ -22,8 +22,7 @@ import {
   type ResizeHandle,
   resizeLengthClampStatic,
 } from '@platejs/resizable';
-import { PLUGINS } from '@platejs/utils';
-import type { TableCellElement, TableElement } from '../lib/BaseTablePlugin';
+import type { TableCellElement } from '../lib/BaseTablePlugin';
 import React from 'react';
 
 import { shouldUpdateCellIndices } from './internal/shouldUpdateCellIndices';
@@ -94,12 +93,7 @@ export function useTableCellSize({
   const element = el ?? contextElement;
   const colSizes = useTableColSizes();
   const cellIndices = useCellIndices(element ?? undefined);
-  const rowSize = useElementSelector(
-    ([node]) => (typeof node.size === 'number' ? node.size : undefined),
-    {
-      name: PLUGINS.tableRow,
-    }
-  );
+  const rowSize = useElementSelector(TableRowPlugin, ([node]) => node.size);
 
   return React.useMemo(() => {
     if (!element) {
@@ -195,14 +189,12 @@ export const useTableCellElementResizable = ({
   const tablePath = usePath(TablePlugin);
   const { disableMarginLeft, minColumnWidth = 0 } = store.get();
 
-  const initialWidth = useElementSelector(
-    ([node]) =>
-      colSpan > 1 ? (node as TableElement).colSizes?.[colIndex] : undefined,
-    { name: PLUGINS.table }
+  const initialWidth = useElementSelector(TablePlugin, ([node]) =>
+    colSpan > 1 ? node.colSizes?.[colIndex] : undefined
   );
   const marginLeft = useElementSelector(
-    ([node]) => (node as TableElement).marginLeft ?? 0,
-    { name: PLUGINS.table }
+    TablePlugin,
+    ([node]) => node.marginLeft ?? 0
   );
 
   const colSizesWithoutOverrides = useTableColSizes({ disableOverrides: true });

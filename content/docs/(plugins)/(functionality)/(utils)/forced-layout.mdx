@@ -20,7 +20,7 @@ Forced Layout is the `NormalizeTypesPlugin` pattern for pinning document positio
 - `strictType` for rewriting an existing node to a required type.
 - `type` for inserting a missing node without rewriting an existing node.
 - Root-only normalization pass.
-- Automatic block creation through `editor.api.create.block`.
+- Automatic missing-node insertion through the plugin correction transaction.
 - `onError` callback when insertion fails.
 - Conditional enabling through normal plugin `enabled` configuration.
 
@@ -31,19 +31,27 @@ Forced Layout is the `NormalizeTypesPlugin` pattern for pinning document positio
 Add `NormalizeTypesPlugin` when specific paths must exist or hold a specific block type.
 
 ```tsx
-import { NormalizeTypesPlugin } from 'platejs';
+import { H1Plugin } from '@platejs/basic-nodes/react';
+import { NormalizeTypesPlugin, PLUGINS } from 'platejs';
 import { createPlateEditor } from 'platejs/react';
 
 export const editor = createPlateEditor({
   plugins: [
-    NormalizeTypesPlugin.configure({
+    H1Plugin,
+    NormalizeTypesPlugin.configure(({ editor }) => ({
       initialState: {
         rules: [
-          { path: [0], strictType: PLUGINS.h1 },
-          { path: [1], type: 'paragraph' },
+          {
+            path: [0],
+            strictType: editor.plugin(PLUGINS.h1).schema.type,
+          },
+          {
+            path: [1],
+            type: editor.plugin(PLUGINS.paragraph).schema.type,
+          },
         ],
       },
-    }),
+    })),
   ],
 });
 ```
@@ -55,27 +63,27 @@ This keeps the first block as an H1 and inserts a paragraph at path `[1]` when t
 | Layer | Owner | What It Does |
 |-------|-------|--------------|
 | `NormalizeTypesPlugin` | `platejs` / `@platejs/utils` | Stores `rules` and `onError`, then overrides normalization. |
-| `withNormalizeTypes` | `@platejs/utils` | Runs the path rules during root normalization. |
-| `NodeApi.get(editor, path)` | `@platejs/plite` | Reads the node at the configured path. |
-| `editor.api.create.block` | Core editor API | Creates inserted or replacement block props. |
+| `NormalizeTypesPlugin.corrections` | `@platejs/utils` | Runs the configured path rules when root children change. |
+| `tx.nodes.get(path)` | Plite transaction | Reads the node at the configured path. |
+| `tx.nodes.insert` / `tx.nodes.set` | Plite transaction | Inserts missing nodes or corrects a strict type. |
 | Playground demo | Registry example | Enables a first-block H1 rule when the playground id is `forced-layout`. |
 
 There is no `ForcedLayoutPlugin` and no `forced-layout-kit`. The public plugin is `NormalizeTypesPlugin`.
 
 ## Rule Semantics
 
-`NormalizeTypesPlugin` runs only when the root editor node normalizes. It checks rules in order and stops the current normalization pass after the first rule that changes the document.
+`NormalizeTypesPlugin` runs its root-level correction when root children change. It evaluates every configured rule in order during that correction.
 
 | Rule Shape | Existing Node | Missing Node |
 |------------|---------------|--------------|
-| `{ path, strictType }` | If the node is an element with a different type, Plate sets its block props to `strictType` and preserves children. | Plate inserts `editor.api.create.block({ type: strictType })`. |
-| `{ path, type }` | Plate leaves the node alone. | Plate inserts `editor.api.create.block({ type })`. |
+| `{ path, strictType }` | If the node is an element with a different type, Plate sets its type to `strictType` and preserves children. | Plate inserts `{ type: strictType, children: [{ text: '' }] }`. |
+| `{ path, type }` | Plate leaves the node alone. | Plate inserts `{ type, children: [{ text: '' }] }`. |
 
 Use `strictType` for required slots. Use `type` for optional slots that should be filled only when empty.
 
 ## Error Handling
 
-If inserting a missing node fails, `withNormalizeTypes` calls `onError(error)` and falls through to the editor's normal `normalizeNode`.
+If inserting a missing node fails, the correction calls `onError(error)` and leaves the failed rule unchanged.
 
 ```tsx
 import { NormalizeTypesPlugin } from 'platejs';

@@ -5,7 +5,7 @@ import * as React from 'react';
 import type { PlateElementProps } from 'platejs/react';
 
 import { EmojiInlineIndexSearch } from '@platejs/emoji';
-import { EmojiPlugin } from '@platejs/emoji/react';
+import { type EmojiInputPlugin, EmojiPlugin } from '@platejs/emoji/react';
 import { PlateElement, usePluginStore } from 'platejs/react';
 
 import { useDebounce } from '@/registry/hooks/use-debounce';
@@ -21,7 +21,9 @@ import {
 
 const TRAILING_COLON_REGEX = /:$/;
 
-export function EmojiInputElement(props: PlateElementProps) {
+export function EmojiInputElement(
+  props: PlateElementProps<typeof EmojiInputPlugin>
+) {
   const { children, editor, element } = props;
   const data = usePluginStore(EmojiPlugin, 'data')!;
   const [value, setValue] = React.useState('');

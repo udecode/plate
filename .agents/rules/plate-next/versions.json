@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "latestVersion": 67,
+  "latestVersion": 70,
   "versions": [
     {
       "version": 0,
@@ -800,6 +800,39 @@
         "Resolve live identity through editor.key, coherent state.key, or active tx.key, and reverse through nodes.path without another public identity namespace.",
         "Keep NodeKey out of serialized formats and retain optional persisted element.id ownership under ElementIdPlugin.",
         "Prove source sweeps, affected package types and behavior, DOM and React bindings, docs, generated skills, strict Plite checks, and P2 review."
+      ]
+    },
+    {
+      "version": 68,
+      "date": "2026-08-12",
+      "doctrineFingerprint": "sha256:40b49d25f3652139b38c8c9fe93338d94525ed08cff34ca26e0976f17bfddb1f",
+      "summary": "Plate transaction composition uses a descriptor-aware plugin portal while Plite retains direct named groups.",
+      "migrationChecks": [
+        "Replace computed tx[plugin.name] calls with tx.plugin(Plugin) in generic or package code while preserving generated direct tx.pluginName groups.",
+        "Keep composition inside the same active transaction and reject nested editor.plugin(...).update calls and tx.extension(...).",
+        "Prove descriptor and literal-name inference, descriptor-family and missing-plugin errors, rollback, detached spec reuse, legal plugin-name collisions, zero computed callers, and no public Plite portal."
+      ]
+    },
+    {
+      "version": 69,
+      "date": "2026-08-13",
+      "doctrineFingerprint": "sha256:76c0a153c109a65e839de6caf5450b72954f8f5745afb081758eb92d41115def",
+      "summary": "Plugin-owned decorators infer transient leaf fields without polluting persisted text schema or renderer call sites.",
+      "migrationChecks": [
+        "Carry each decorator's exact non-range payload through Base and Plate constructors, adapters, and ordered extension stages.",
+        "Infer optional transient fields on descriptor-owned live and static leaf props while keeping source text schema-only.",
+        "Remove Reflect.get, casts, and restated leaf shapes used to recover known decoration fields, then prove syntax and decoration rendering."
+      ]
+    },
+    {
+      "version": 70,
+      "date": "2026-08-13",
+      "doctrineFingerprint": "sha256:aa7e87deba98a5ce9f7eb8d15ce823a1d037bf8ae357a975f55d95f12fea4dcb",
+      "summary": "Renderer wrappers and element selectors infer local schema nodes directly from plugin descriptors.",
+      "migrationChecks": [
+        "Pass plugin descriptors directly to RenderNodeWrapper, RenderStaticNodeWrapper, and useElementSelector instead of extracting DefinitionOf or restating node types.",
+        "Remove consumer Reflect.get calls, casts, and structural mirrors used only to recover descriptor-owned schema or decoration fields.",
+        "Prove direct descriptor inference without recursive type expansion, focused renderer and selector behavior, generated skill parity, and zero unjustified consumer escapes."
       ]
     }
   ],

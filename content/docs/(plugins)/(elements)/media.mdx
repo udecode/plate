@@ -251,7 +251,7 @@ resulting media element:
 
 ```ts
 {
-  type: 'img',
+  type: 'image',
   url: 'https://example.com/image.png',
   children: [{ text: 'Plain caption' }],
 }
@@ -261,7 +261,7 @@ An empty text child is the canonical absent-caption state:
 
 ```ts
 {
-  type: 'img',
+  type: 'image',
   url: 'https://example.com/image.png',
   children: [{ text: '' }],
 }
@@ -371,14 +371,15 @@ export function useUploadFile({
 Then integrate your custom upload hook with the media components:
 
 ```tsx
-import { KEYS, type TPlaceholderElement } from 'platejs';
 import { type PlateElementProps, useEditor } from 'platejs/react';
+import { PlaceholderPlugin } from '@platejs/media/react';
+import { PLUGINS } from 'platejs';
 
 import { useUploadFile } from '@/hooks/use-upload-file'; // Your custom hook
 
 export function PlaceholderElement({
   element,
-}: PlateElementProps<TPlaceholderElement>) {
+}: PlateElementProps<typeof PlaceholderPlugin>) {
   const editor = useEditor();
   const { uploadFile, isUploading, progress } = useUploadFile({
     onUploadComplete: (uploadedFile) => {
@@ -386,14 +387,18 @@ export function PlaceholderElement({
 
       if (!path) return;
 
+      const file = editor.plugin(PLUGINS.file);
+
       editor.update({ history: 'skip' }, (tx) => {
         tx.nodes.remove({ at: path });
         tx.nodes.insert(
           {
             children: [{ text: '' }],
             isUpload: true,
-            name: element.mediaType === KEYS.file ? uploadedFile.name : '',
-            placeholderId: element.id as string,
+            name:
+              file.installed && element.mediaType === file.schema.type
+                ? uploadedFile.name
+                : '',
             type: element.mediaType,
             url: uploadedFile.url,
           },
@@ -422,7 +427,7 @@ You can add these items to the [Insert Toolbar Button](/docs/toolbar#insert-tool
 {
   icon: <ImageIcon />,
   label: 'Image',
-  value: KEYS.img,
+  value: PLUGINS.image,
 }
 ```
 
@@ -500,37 +505,37 @@ Configuration for different file types. Default configuration:
   audio: {
     maxFileCount: 1,
     maxFileSize: '8MB',
-    mediaType: KEYS.audio,
+    mediaType: 'audio',
     minFileCount: 1,
   },
   blob: {
     maxFileCount: 1,
     maxFileSize: '8MB',
-    mediaType: KEYS.file,
+    mediaType: 'file',
     minFileCount: 1,
   },
   image: {
     maxFileCount: 3,
     maxFileSize: '4MB',
-    mediaType: KEYS.img,
+    mediaType: 'image',
     minFileCount: 1,
   },
   pdf: {
     maxFileCount: 1,
     maxFileSize: '4MB',
-    mediaType: KEYS.file,
+    mediaType: 'file',
     minFileCount: 1,
   },
   text: {
     maxFileCount: 1,
     maxFileSize: '64KB',
-    mediaType: KEYS.file,
+    mediaType: 'file',
     minFileCount: 1,
   },
   video: {
     maxFileCount: 1,
     maxFileSize: '16MB',
-    mediaType: KEYS.video,
+    mediaType: 'video',
     minFileCount: 1,
   },
 }
@@ -538,7 +543,7 @@ Configuration for different file types. Default configuration:
 Supported file types: `'image' | 'video' | 'audio' | 'pdf' | 'text' | 'blob'`
 <APISubList>
   <APISubListItem parent="uploadConfig" name="mediaType" type="MediaKeys">
-    The media plugin names that this config is for: `'audio' | 'file' | 'image' | 'video'`
+    The default persisted media types: `'audio' | 'file' | 'image' | 'video'`.
   </APISubListItem>
   <APISubListItem parent="uploadConfig" name="maxFileCount" type="number" optional>
     The maximum number of files of this type that can be uploaded.
@@ -664,10 +669,10 @@ Inserts one headless placeholder for an image, video, audio, or file.
 <API name="insert">
 <APIParameters>
   <APIItem name="mediaType" type="string">
-    The media node type created after upload, such as `KEYS.img`,
-    `KEYS.video`, `KEYS.audio`, or `KEYS.file`.
+    The resolved persisted media type created after upload, such as
+    `editor.plugin(ImagePlugin).schema.type`.
   </APIItem>
-  <APIItem name="options" type="NodeInsertNodesOptions<TPlaceholderElement>" optional>
+  <APIItem name="options" type="NodeInsertNodesOptions<PlaceholderElement>" optional>
     Exact-path and selection options.
   </APIItem>
 </APIParameters>
@@ -682,12 +687,12 @@ Inserts an image element into the editor.
   <APIItem name="url" type="string">
     The image URL.
   </APIItem>
-  <APIItem name="options" type="NodeInsertNodesOptions<TImageElement>" optional>
+  <APIItem name="options" type="NodeInsertNodesOptions<ImageElement>" optional>
     Exact-path and selection options.
   </APIItem>
 </APIParameters>
 
-<APIOptions type="NodeInsertNodesOptions<TImageElement>">
+<APIOptions type="NodeInsertNodesOptions<ImageElement>">
   <APIItem name="at" type="Location" optional>
     Exact insertion target. When omitted, the image is inserted after the
     selected block.
@@ -707,12 +712,12 @@ Transforms and normalizes a URL, then inserts a media embed.
   <APIItem name="url" type="string">
     A media URL or embed snippet.
   </APIItem>
-  <APIItem name="options" type="NodeInsertNodesOptions<TMediaEmbedElement>" optional>
+  <APIItem name="options" type="NodeInsertNodesOptions<MediaEmbedElement>" optional>
     Exact-path and selection options.
   </APIItem>
 </APIParameters>
 
-<APIOptions type="NodeInsertNodesOptions<TMediaEmbedElement>">
+<APIOptions type="NodeInsertNodesOptions<MediaEmbedElement>">
   <APIItem name="at" type="Location" optional>
     Exact insertion target. When omitted, the current selection is required.
   </APIItem>
@@ -742,7 +747,8 @@ Import it from `@platejs/media/react`.
     Resolves a URL without showing the browser prompt.
   </APIItem>
   <APIItem name="type" type="string" optional>
-    `KEYS.img` or `KEYS.mediaEmbed`. Defaults to `KEYS.img`.
+    The resolved image or media-embed schema type. When omitted, the helper
+    prefers the installed image type, then the installed media-embed type.
   </APIItem>
 </APIOptions>
 </API>
@@ -764,8 +770,8 @@ Handles the resizable properties of a media element.
   <APIItem name="maxWidth" type="ResizeLength">
     The maximum width that the resizable element can be adjusted to.
   </APIItem>
-  <APIItem name="setNodeWidth" type="(width: number | string) => void">
-    Function to set the width of the node when resizing.
+  <APIItem name="onResizeEnd" type="((width: ResizeLength) => void) | undefined">
+    Commit callback supplied by the media owner.
   </APIItem>
   <APIItem name="setWidth" type="(width: number | string) => void">
     Function to set the width of the resizable element directly.
@@ -785,11 +791,18 @@ Handles the resizable properties of a media element.
   <APIItem name="props.style" type="CSSProperties">
     CSS styles for the resizable element.
   </APIItem>
-  <APIItem name="context.onResize" type="() => void">
-    Callback function called when the element is resized.
+  <APIItem name="context.onResize" type="(event: ResizeEvent) => void">
+    Updates preview width while dragging and commits through `onResizeEnd` when finished.
+  </APIItem>
+  <APIItem name="context.nudgeWidth" type="(delta: number) => void">
+    Clamps and commits a keyboard resize step.
   </APIItem>
 </APIReturns>
 </API>
+
+The resizable package owns pointer and keyboard math, not document writes.
+Image UI commits through
+`editor.plugin(ImagePlugin).update.set({ width }, { at: element })`.
 
 ### `useMediaState`
 
@@ -797,6 +810,9 @@ A state hook for a media element.
 
 <API name="useMediaState">
 <APIParameters>
+  <APIItem name="plugin" type="MediaPlugin" required>
+    The exact image, video, audio, file, or embed plugin for the rendered element.
+  </APIItem>
   <APIItem name="options.urlParsers" type="EmbedUrlParser[]" optional>
     Array of URL parsers to parse the media element URL.
     - **`EmbedUrlParser`:** `(url: string) => EmbedUrlData | undefined`
@@ -804,10 +820,7 @@ A state hook for a media element.
 </APIParameters>
 
 <APIReturns type="object">
-  <APIItem name="id" type="string | undefined">
-    The media element ID.
-  </APIItem>
-  <APIItem name="align" type="string | undefined">
+  <APIItem name="textAlign" type="'center' | 'left' | 'right' | undefined">
     The alignment of the media element.
   </APIItem>
   <APIItem name="embed" type="EmbedUrlData | undefined">
@@ -866,6 +879,11 @@ A behavior hook for a media toolbar button.
 Handles the floating media edit button.
 
 <API name="useFloatingMediaEditButton">
+<APIParameters>
+  <APIItem name="options.plugin" type="MediaPlugin" required>
+    The exact media plugin for the rendered element.
+  </APIItem>
+</APIParameters>
 <APIReturns type="object">
   <APIItem name="props.onClick" type="() => void">
     Callback function to handle the button click.
@@ -985,32 +1003,30 @@ Parses the URL of an iframe embed.
 
 ## Types
 
-### `TMediaElement`
+### Media element types
 
 ```tsx
-export type TMediaElement = Element & TMediaProps;
-
-export type TMediaProps = {
-  url: string;
-  id?: string;
-  isUpload?: boolean;
-  name?: string;
-  placeholderId?: string;
-  provider?: string;
-  sourceUrl?: string;
-};
+import type {
+  AudioElement,
+  FileElement,
+  ImageElement,
+  MediaEmbedElement,
+  VideoElement,
+} from '@platejs/media';
 ```
 
-`Element.children` stores the caption's direct inline content. Use
+Each alias is derived from its owning plugin schema. `Element.children` stores
+the caption's direct inline content. Use
 `[{ text: '' }]` when the caption is absent.
 
-### `TPlaceholderElement`
+### `PlaceholderElement`
 
 ```tsx
-export interface TPlaceholderElement extends Element {
-  mediaType: string;
-}
+import type { PlaceholderElement } from '@platejs/media';
 ```
+
+`PlaceholderElement` is derived from `BasePlaceholderPlugin` and requires a
+string `mediaType`.
 
 ### `EmbedUrlData`
 

@@ -17,12 +17,7 @@ import {
   Ungroup,
   XIcon,
 } from 'lucide-react';
-import { KEYS } from 'platejs';
-import {
-  type PlateEditor,
-  useEditorPlugin,
-  useEditorSelector,
-} from 'platejs/react';
+import { useEditor, useEditorSelector } from 'platejs/react';
 
 import {
   DropdownMenu,
@@ -38,19 +33,14 @@ import { cn } from '@/lib/utils';
 
 import { ToolbarButton } from './toolbar';
 
-const runTableCommand = (editor: PlateEditor, command: () => void) => {
-  command();
-  editor.api.dom.focus({ retries: 5 });
-};
-
 export function TableToolbarButton(props: DropdownMenuProps) {
   const tableSelected = useEditorSelector((editor) =>
     editor.read.nodes.some({
-      match: { type: KEYS.table },
+      match: { type: editor.plugin(TablePlugin).schema.type },
     })
   );
 
-  const { editor } = useEditorPlugin(TablePlugin);
+  const editor = useEditor();
   const [open, setOpen] = React.useState(false);
   const mergeState = useTableMergeState();
 
@@ -70,6 +60,10 @@ export function TableToolbarButton(props: DropdownMenuProps) {
       <DropdownMenuContent
         className="flex w-[180px] min-w-0 flex-col"
         align="start"
+        onCloseAutoFocus={(event) => {
+          event.preventDefault();
+          editor.api.dom.focus();
+        }}
       >
         <DropdownMenuGroup>
           <DropdownMenuSub>
@@ -95,9 +89,7 @@ export function TableToolbarButton(props: DropdownMenuProps) {
                 className="min-w-[180px]"
                 disabled={!mergeState.canMerge}
                 onSelect={() => {
-                  runTableCommand(editor, () => {
-                    editor.plugin(TablePlugin).update.merge();
-                  });
+                  editor.plugin(TablePlugin).update.merge();
                 }}
               >
                 <Combine />
@@ -107,9 +99,7 @@ export function TableToolbarButton(props: DropdownMenuProps) {
                 className="min-w-[180px]"
                 disabled={!mergeState.canSplit}
                 onSelect={() => {
-                  runTableCommand(editor, () => {
-                    editor.plugin(TablePlugin).update.split();
-                  });
+                  editor.plugin(TablePlugin).update.split();
                 }}
               >
                 <Ungroup />
@@ -131,10 +121,8 @@ export function TableToolbarButton(props: DropdownMenuProps) {
                 className="min-w-[180px]"
                 disabled={!tableSelected}
                 onSelect={() => {
-                  runTableCommand(editor, () => {
-                    editor.plugin(TablePlugin).update.insertRow({
-                      before: true,
-                    });
+                  editor.plugin(TablePlugin).update.insertRow({
+                    before: true,
                   });
                 }}
               >
@@ -145,9 +133,7 @@ export function TableToolbarButton(props: DropdownMenuProps) {
                 className="min-w-[180px]"
                 disabled={!tableSelected}
                 onSelect={() => {
-                  runTableCommand(editor, () => {
-                    editor.plugin(TablePlugin).update.insertRow();
-                  });
+                  editor.plugin(TablePlugin).update.insertRow();
                 }}
               >
                 <ArrowDown />
@@ -157,9 +143,7 @@ export function TableToolbarButton(props: DropdownMenuProps) {
                 className="min-w-[180px]"
                 disabled={!tableSelected}
                 onSelect={() => {
-                  runTableCommand(editor, () => {
-                    editor.plugin(TablePlugin).update.removeRow();
-                  });
+                  editor.plugin(TablePlugin).update.removeRow();
                 }}
               >
                 <XIcon />
@@ -181,10 +165,8 @@ export function TableToolbarButton(props: DropdownMenuProps) {
                 className="min-w-[180px]"
                 disabled={!tableSelected}
                 onSelect={() => {
-                  runTableCommand(editor, () => {
-                    editor.plugin(TablePlugin).update.insertColumn({
-                      before: true,
-                    });
+                  editor.plugin(TablePlugin).update.insertColumn({
+                    before: true,
                   });
                 }}
               >
@@ -195,9 +177,7 @@ export function TableToolbarButton(props: DropdownMenuProps) {
                 className="min-w-[180px]"
                 disabled={!tableSelected}
                 onSelect={() => {
-                  runTableCommand(editor, () => {
-                    editor.plugin(TablePlugin).update.insertColumn();
-                  });
+                  editor.plugin(TablePlugin).update.insertColumn();
                 }}
               >
                 <ArrowRight />
@@ -207,9 +187,7 @@ export function TableToolbarButton(props: DropdownMenuProps) {
                 className="min-w-[180px]"
                 disabled={!tableSelected}
                 onSelect={() => {
-                  runTableCommand(editor, () => {
-                    editor.plugin(TablePlugin).update.removeColumn();
-                  });
+                  editor.plugin(TablePlugin).update.removeColumn();
                 }}
               >
                 <XIcon />
@@ -222,9 +200,7 @@ export function TableToolbarButton(props: DropdownMenuProps) {
             className="min-w-[180px]"
             disabled={!tableSelected}
             onSelect={() => {
-              runTableCommand(editor, () => {
-                editor.plugin(TablePlugin).update.remove();
-              });
+              editor.plugin(TablePlugin).update.remove();
             }}
           >
             <Trash2Icon />
@@ -239,7 +215,7 @@ export function TableToolbarButton(props: DropdownMenuProps) {
 const TABLE_PICKER_DIMENSION = 8;
 
 function TablePicker({ onInsert }: { onInsert: () => void }) {
-  const { editor } = useEditorPlugin(TablePlugin);
+  const editor = useEditor();
   const [activeCell, setActiveCell] = React.useState({
     colIndex: 0,
     rowIndex: 0,
@@ -251,15 +227,13 @@ function TablePicker({ onInsert }: { onInsert: () => void }) {
   };
 
   const insertTable = (rowIndex: number, colIndex: number) => {
-    runTableCommand(editor, () => {
-      editor.plugin(TablePlugin).update.insert(
-        {
-          colCount: colIndex + 1,
-          rowCount: rowIndex + 1,
-        },
-        { select: true }
-      );
-    });
+    editor.plugin(TablePlugin).update.insert(
+      {
+        colCount: colIndex + 1,
+        rowCount: rowIndex + 1,
+      },
+      { select: true }
+    );
     onInsert();
   };
 

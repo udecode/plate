@@ -20,11 +20,14 @@ import { Editor, EditorContainer } from '@/registry/ui/editor';
 
 const TabbableElementPlugin = definePlatePlugin('tabbableElement', {
   schema: { element: { void: 'block' } },
-}).configure({ component: TabbableElement });
+});
 
 export default function TabbableDemo() {
   const editor = usePlateEditor({
-    plugins: [...EditorKit, TabbableElementPlugin],
+    plugins: [
+      ...EditorKit,
+      TabbableElementPlugin.configure({ component: TabbableElement }),
+    ],
     initialValue: tabbableValue,
   });
 
@@ -37,7 +40,10 @@ export default function TabbableDemo() {
   );
 }
 
-export function TabbableElement({ children, ...props }: PlateElementProps) {
+export function TabbableElement({
+  children,
+  ...props
+}: PlateElementProps<typeof TabbableElementPlugin>) {
   const selected = useElementSelected();
   const focused = useEditorFocused();
 

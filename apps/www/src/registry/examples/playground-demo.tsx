@@ -5,7 +5,7 @@ import * as React from 'react';
 import { CopilotPlugin } from '@platejs/ai/react';
 import { IndentPlugin } from '@platejs/indent/react';
 import { ListPlugin } from '@platejs/list/react';
-import { NormalizeTypesPlugin, normalizeStaticValue } from 'platejs';
+import { NormalizeTypesPlugin } from 'platejs';
 import { Plate, usePlateEditor } from 'platejs/react';
 
 import { useLocale } from '@/hooks/useLocale';
@@ -23,10 +23,7 @@ export default function PlaygroundDemo({
   className?: string;
 }) {
   const locale = useLocale();
-  const value = React.useMemo(
-    () => normalizeStaticValue(getI18nValues(locale).playground),
-    [locale]
-  );
+  const value = React.useMemo(() => getI18nValues(locale).playground, [locale]);
 
   const editor = usePlateEditor(
     {

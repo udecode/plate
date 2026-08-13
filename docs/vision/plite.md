@@ -151,6 +151,10 @@ donor checkout as proof after the transplant.
   Plite core naming. Descriptor APIs remain namespaced by `name`.
 - Whole-document replacement should be a transaction write, not public
   `Editor.replace`, `editor.replace`, or `editor.reset` as app-author API.
+- Active transactions expose direct named extension groups such as
+  `tx.writer.method()`. Plite has no `tx.extension(...)` portal. Plate may layer
+  descriptor-aware `tx.plugin(Plugin)` selection without expanding Plite's
+  public surface.
 - `EditorCommit` is the local runtime fact for history, collaboration, React,
   DOM repair, proof, and subscribers.
 - Overlay architecture is split into Decoration, Annotation, and Widget lanes.

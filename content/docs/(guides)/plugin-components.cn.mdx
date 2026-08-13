@@ -20,9 +20,12 @@ description: 学习如何为Plate插件创建和样式化自定义组件。
 ### 元素组件
 
 ```tsx
+import type { BlockquotePlugin } from '@platejs/basic-nodes/react';
 import { type PlateElementProps, PlateElement } from 'platejs/react';
 
-export function BlockquoteElement(props: PlateElementProps) {
+export function BlockquoteElement(
+  props: PlateElementProps<typeof BlockquotePlugin>
+) {
   // props包含attributes, children, element, editor等属性
   // 以及您的插件可能传递的任何自定义属性
   return (
@@ -40,9 +43,10 @@ export function BlockquoteElement(props: PlateElementProps) {
 ### 叶子组件
 
 ```tsx
+import type { CodePlugin } from '@platejs/basic-nodes/react';
 import { type PlateLeafProps, PlateLeaf } from 'platejs/react';
 
-export function CodeLeaf(props: PlateLeafProps) {
+export function CodeLeaf(props: PlateLeafProps<typeof CodePlugin>) {
   // props包含attributes, children, leaf, text, editor等属性
   // 以及您的插件可能传递的任何自定义属性
   return (

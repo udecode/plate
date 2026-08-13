@@ -2,7 +2,7 @@ import type { LeafPosition, Path, Text } from '@platejs/plite';
 
 export type RenderLeafFn = (props: RenderLeafProps) => React.ReactElement<any>;
 
-export type RenderLeafProps<N extends Text = Text> = {
+export type RenderLeafProps<N extends Text = Text, L extends Text = N> = {
   attributes: {
     [key: string]: unknown;
     className?: string;
@@ -10,7 +10,7 @@ export type RenderLeafProps<N extends Text = Text> = {
     style?: React.CSSProperties;
   };
   children: any;
-  leaf: N;
+  leaf: L;
   /** Pre-computed path for static rendering. */
   path?: Path;
   text: N;

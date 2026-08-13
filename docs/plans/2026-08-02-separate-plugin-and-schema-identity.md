@@ -217,9 +217,6 @@ Review fixes:
   factory syntax. Neither belongs in this identity adoption, and returning the
   conventional identity for the requested raw/dynamically erased portal is the
   deliberate JavaScript fallback.
-- Rejected autoreview P1 against the unrelated shared link-preview route: the
-  IPv6 hardening finding is real follow-up work, but that route is outside this
-  identity migration's owner boundary and was not edited for this task.
 
 Error attempts:
 | Error / failed attempt | Count | Next different move | Resolution |

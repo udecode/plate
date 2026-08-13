@@ -17,7 +17,7 @@ export const FootnotePlugin = toPlatePlugin(BaseFootnotePlugin, {
 }).extend(({ plugin }) => ({
   update: ({ tx }) => ({
     focusDefinition: ({ identifier }: { identifier: string }) => {
-      const target = tx[plugin.name].selectDefinition({ identifier });
+      const target = tx.plugin(plugin).selectDefinition({ identifier });
 
       if (!target) return false;
 
@@ -36,7 +36,7 @@ export const FootnotePlugin = toPlatePlugin(BaseFootnotePlugin, {
       identifier: string;
       index?: number;
     }) => {
-      const target = tx[plugin.name].selectReference({ identifier, index });
+      const target = tx.plugin(plugin).selectReference({ identifier, index });
 
       if (!target) return false;
 

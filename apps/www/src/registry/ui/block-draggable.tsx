@@ -2,17 +2,17 @@
 
 import * as React from 'react';
 
-import type { Element as PliteElement } from '@platejs/plite';
+import type { Element as PliteElement, NodeKey } from '@platejs/plite';
 
 import { DndPlugin, useDraggable, useDropLine } from '@platejs/dnd';
 import { ListPlugin } from '@platejs/list/react';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import { GripVertical } from 'lucide-react';
-import { ElementApi, KEYS, NODES } from 'platejs';
+import { PLUGINS, ElementApi } from 'platejs';
 import {
   type PlateEditor,
-  type PlateElementProps,
   type RenderNodeWrapper,
+  type RenderNodeWrapperProps,
   MemoizedChildren,
   useEditor,
   useEditorPlugin,
@@ -30,7 +30,11 @@ import {
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
-const UNDRAGGABLE_PLUGIN_NAMES = [KEYS.column, KEYS.tr, KEYS.td];
+const UNDRAGGABLE_PLUGINS = [
+  PLUGINS.column,
+  PLUGINS.tableRow,
+  PLUGINS.tableCell,
+];
 
 export const BlockDraggable: RenderNodeWrapper = (props) => {
   const { editor, element, path } = props;
@@ -38,32 +42,36 @@ export const BlockDraggable: RenderNodeWrapper = (props) => {
   const enabled = React.useMemo(() => {
     if (editor.read.view.isReadOnly()) return false;
 
-    const isUndraggable = UNDRAGGABLE_PLUGIN_NAMES.some((pluginName) => {
-      const plugin = editor.plugin(pluginName);
+    const isUndraggable = UNDRAGGABLE_PLUGINS.some((plugin) => {
+      const portal = editor.plugin(plugin);
 
-      return (plugin.installed ? plugin.type : pluginName) === element.type;
+      return portal.installed && portal.schema.type === element.type;
     });
 
     if (path.length === 1 && !isUndraggable) {
       return true;
     }
     if (path.length === 3 && !isUndraggable) {
-      const column = editor.plugin(KEYS.column);
-      const block = editor.read.nodes.some({
-        at: path,
-        match: { type: column.installed ? column.type : NODES.column },
-      });
+      const column = editor.plugin(PLUGINS.column);
+      const block =
+        column.installed &&
+        editor.read.nodes.some({
+          at: path,
+          match: { type: column.schema.type },
+        });
 
       if (block) {
         return true;
       }
     }
     if (path.length === 4 && !isUndraggable) {
-      const table = editor.plugin(KEYS.table);
-      const block = editor.read.nodes.some({
-        at: path,
-        match: { type: table.installed ? table.type : NODES.table },
-      });
+      const table = editor.plugin(PLUGINS.table);
+      const block =
+        table.installed &&
+        editor.read.nodes.some({
+          at: path,
+          match: { type: table.schema.type },
+        });
 
       if (block) {
         return true;
@@ -78,7 +86,7 @@ export const BlockDraggable: RenderNodeWrapper = (props) => {
   return (props) => <Draggable {...props} />;
 };
 
-function Draggable(props: PlateElementProps) {
+function Draggable(props: RenderNodeWrapperProps) {
   const { children, editor, element, path } = props;
   const { api } = useEditorPlugin(BlockSelectionPlugin);
   const blockSelectionApi = api;
@@ -87,10 +95,8 @@ function Draggable(props: PlateElementProps) {
     useDraggable({
       element,
       onDropHandler: (_, { dragItem }) => {
-        const id = (dragItem as { id: string[] | string }).id;
-
-        if (blockSelectionApi) {
-          blockSelectionApi.add(id);
+        if (blockSelectionApi && 'key' in dragItem) {
+          blockSelectionApi.add(dragItem.key);
         }
         resetPreview();
       },
@@ -161,6 +167,8 @@ function Draggable(props: PlateElementProps) {
                 variant="ghost"
                 className="-left-0 absolute h-6 w-full p-0"
                 style={{ top: `${dragButtonTop + 3}px` }}
+                aria-label="Drag block"
+                data-plate-block-drag-handle={editor.key(element)}
                 data-plate-prevent-deselect
               >
                 <DragHandle
@@ -190,8 +198,10 @@ function Draggable(props: PlateElementProps) {
         }
       >
         <MemoizedChildren>{children}</MemoizedChildren>
-        <DropLine />
       </div>
+
+      {/* Direct drops can rebind nodeRef while the line state clears. */}
+      <DropLine />
     </div>
   );
 }
@@ -226,6 +236,7 @@ function Gutter({
         className
       )}
       contentEditable={false}
+      data-plate-selectable
     >
       {children}
     </div>
@@ -280,7 +291,13 @@ const DragHandle = React.memo(function DragHandle({
                   );
 
             // If current block is not in selection, use it as the starting point
-            if (!selectionNodes.some(([node]) => node.id === element.id)) {
+            const elementNodeKey = editor.key(element);
+
+            if (
+              !selectionNodes.some(
+                ([node]) => editor.key(node) === elementNodeKey
+              )
+            ) {
               if (!path) return;
               selectionNodes = [[element, path]];
             }
@@ -289,7 +306,7 @@ const DragHandle = React.memo(function DragHandle({
             const blocks = (
               list.installed &&
               selectionNodes.some(
-                ([node]) => typeof node[KEYS.listType] === 'string'
+                ([node]) => typeof node.listStyleType === 'string'
               )
                 ? list.read.expandItemsWithChildren(selectionNodes)
                 : selectionNodes
@@ -308,7 +325,7 @@ const DragHandle = React.memo(function DragHandle({
               .plugin(DndPlugin)
               .store.set({ multiplePreviewRef: previewRef });
 
-            api.set(blocks.map((block) => block.id as string));
+            api.set(blocks.map((block) => editor.key(block)));
           }}
           onMouseEnter={() => {
             if (isDragging) return;
@@ -330,7 +347,13 @@ const DragHandle = React.memo(function DragHandle({
                   );
 
             // If current block is not in selection, use it as the starting point
-            if (!selectedBlocks.some(([node]) => node.id === element.id)) {
+            const elementNodeKey = editor.key(element);
+
+            if (
+              !selectedBlocks.some(
+                ([node]) => editor.key(node) === elementNodeKey
+              )
+            ) {
               if (!path) {
                 setPreviewTop(0);
                 return;
@@ -342,14 +365,14 @@ const DragHandle = React.memo(function DragHandle({
             const processedBlocks =
               list.installed &&
               selectedBlocks.some(
-                ([node]) => typeof node[KEYS.listType] === 'string'
+                ([node]) => typeof node.listStyleType === 'string'
               )
                 ? list.read.expandItemsWithChildren(selectedBlocks)
                 : selectedBlocks;
 
-            const ids = processedBlocks.map((block) => block[0].id as string);
+            const keys = processedBlocks.map(([block]) => editor.key(block));
 
-            if (ids.length > 1 && ids.includes(element.id as string)) {
+            if (keys.length > 1 && keys.includes(elementNodeKey)) {
               const previewTop = calculatePreviewTop(editor, {
                 blocks: processedBlocks.map((block) => block[0]),
                 element,
@@ -379,19 +402,20 @@ const DropLine = React.memo(function DropLine({
 }: React.ComponentProps<'div'>) {
   const { dropLine } = useDropLine();
 
-  if (!dropLine) return null;
-
   return (
     <div
       {...props}
+      aria-hidden
       className={cn(
         'plite-dropLine',
-        'absolute inset-x-0 h-0.5 opacity-100 transition-opacity',
+        'pointer-events-none absolute inset-x-0 h-0.5 transition-opacity',
         'bg-brand/50',
+        dropLine ? 'opacity-100' : 'opacity-0',
         dropLine === 'top' && '-top-px',
         dropLine === 'bottom' && '-bottom-px',
         className
       )}
+      contentEditable={false}
     />
   );
 });
@@ -401,17 +425,14 @@ const createDragPreviewElements = (
   blocks: PliteElement[]
 ): HTMLElement[] => {
   const elements: HTMLElement[] = [];
-  const ids: string[] = [];
+  const keys: NodeKey[] = [];
 
   /**
    * Remove data attributes so the preview is not recognized as Plite content.
    */
   const removeDataAttributes = (element: HTMLElement) => {
     Array.from(element.attributes).forEach((attr) => {
-      if (
-        attr.name.startsWith('data-plite') ||
-        attr.name.startsWith('data-block-id')
-      ) {
+      if (attr.name.startsWith('data-plite')) {
         element.removeAttribute(attr.name);
       }
     });
@@ -460,7 +481,7 @@ const createDragPreviewElements = (
 
     applyScrollCompensation(domNode, newDomNode);
 
-    ids.push(node.id as string);
+    keys.push(editor.key(node));
     const wrapper = document.createElement('div');
     wrapper.append(newDomNode);
     wrapper.style.display = 'flow-root';
@@ -490,7 +511,7 @@ const createDragPreviewElements = (
     resolveElement(node, index);
   });
 
-  editor.plugin(DndPlugin).store.set({ draggingId: ids });
+  editor.plugin(DndPlugin).store.set({ draggingKey: keys });
 
   return elements;
 };

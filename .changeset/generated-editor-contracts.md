@@ -27,7 +27,21 @@ the standard method when the plugin owns additional semantics. Remove redundant
 feature aliases such as `insertDate`, `insertExcalidraw`, `insertPlaceholder`,
 `insertTable`, and `insertToc`.
 
+Generate exact text-block toggle eligibility so closed editors expose
+`editor.update.<name>.toggle()` only for default-constructible compatible
+elements without authored toggle semantics.
+
 Add canonical Plite schema contract serialization and structural diffs. Use
-`plate migrate new <entry> <name>` to create typed application-owned migration
+`plate migrate new <name>` to create typed application-owned migration
 snapshots and a pure `FromValue -> ToValue` scaffold; Plate does not execute the
 migration automatically.
+
+Run `plate generate` with the conventional
+`src/editor/editor-definition.tsx` entry, pass multiple entries for one atomic
+batch, or add `--watch` to reuse one TypeScript project. The CLI is bin-only;
+its JavaScript implementation is not a package API.
+
+Keep compiler scratch in the operating system temp directory and transaction,
+lock, watcher, staging, and recovery state in the project's deterministic
+`node_modules/.cache`. Consumer source contains only the intentional generated
+contracts and needs no Plate-specific ignore rules.

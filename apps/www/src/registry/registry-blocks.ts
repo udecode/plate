@@ -19,13 +19,25 @@ export const registryBlocks: Registry['items'] = [
         path: 'blocks/editor-ai/components/editor/editor-kit.tsx',
         type: 'registry:component',
       },
+      {
+        path: 'blocks/editor-ai/components/editor/editor-definition.tsx',
+        type: 'registry:component',
+      },
+      {
+        path: 'blocks/editor-ai/components/editor/editor.generated.ts',
+        type: 'registry:component',
+      },
+      {
+        path: 'blocks/editor-ai/components/editor/editor.schema.json',
+        target: '@components/editor/editor.schema.json',
+        type: 'registry:file',
+      },
     ],
     name: 'editor-ai',
     registryDependencies: [
       '@plate/copilot-kit',
       '@plate/editor',
       '@plate/media-uploadthing-api',
-      '@plate/plate-types',
       '@plate/settings-dialog',
 
       // editor-kit

@@ -121,20 +121,20 @@ const plugins = [
       remarkPlugins: [remarkMath, remarkGfm, remarkMdx],
     },
   }),
-  CopilotPlugin.extend(({ api }) => ({
+  CopilotPlugin.configure(({ update }) => ({
     initialState: {
       completeOptions: {
         api: '/api/ai/copilot',
         onError: () => {
           // Mock the API response. Remove when you implement the route /api/ai/copilot
-          api.setBlockSuggestion({
+          update.setBlockSuggestion({
             text: stripMarkdown('This is a mock suggestion.'),
           });
         },
         onFinish: (_, completion) => {
           if (completion === '0') return;
 
-          api.setBlockSuggestion({
+          update.setBlockSuggestion({
             text: stripMarkdown(completion),
           });
         },
@@ -221,13 +221,12 @@ Then, set your `OPENAI_API_KEY` in `.env.local`.
 The system prompt defines the AI's role and behavior. Modify the `body.system` property in `completeOptions`:
 
 ```tsx
-CopilotPlugin.extend(({ api }) => ({
+CopilotPlugin.configure({
   initialState: {
     completeOptions: {
       api: '/api/ai/copilot',
       body: {
-        system: {
-          system: `You are an advanced AI writing assistant, similar to VSCode Copilot but for general text. Your task is to predict and generate the next part of the text based on the given context.
+        system: `You are an advanced AI writing assistant, similar to VSCode Copilot but for general text. Your task is to predict and generate the next part of the text based on the given context.
 
 Rules:
 - Continue the text naturally up to the next punctuation mark (., ,, ;, :, ?, or !).
@@ -238,13 +237,12 @@ Rules:
 - CRITICAL: Always end with a punctuation mark.
 - CRITICAL: Avoid starting a new block. Do not use block formatting like >, #, 1., 2., -, etc. The suggestion should continue in the same block as the context.
 - If no context is provided or you can't generate a continuation, return "0" without explanation.`,
-        },
       },
       // ... other options
     },
     // ... other plugin state
   },
-})),
+});
 ```
 
 ### User Prompt
@@ -252,25 +250,25 @@ Rules:
 The user prompt (via `getPrompt`) determines what context is sent to the AI. You can customize it to include more context or format it differently:
 
 ```tsx
-CopilotPlugin.extend(({ api }) => ({
+CopilotPlugin.configure({
   initialState: {
     getPrompt: ({ editor }) => {
-        const contextEntry = editor.api.block({ highest: true });
+      const contextEntry = editor.read.nodes.block({ mode: 'highest' });
 
-        if (!contextEntry) return '';
+      if (!contextEntry) return '';
 
-        const prompt = editor.api.markdown.serialize({
-          value: { children: [contextEntry[0] as Element] },
-        });
+      const prompt = editor.api.markdown.serialize({
+        value: { children: [contextEntry[0]] },
+      });
 
-        return `Continue the text up to the next punctuation mark:
+      return `Continue the text up to the next punctuation mark:
 """
 ${prompt}
 """`;
-      },
+    },
     // ... other options
   },
-})),
+});
 ```
 
 </Steps>
@@ -326,7 +324,7 @@ export async function POST(req: NextRequest) {
 Configure the model in your `CopilotPlugin`:
 
 ```tsx
-CopilotPlugin.extend(({ api }) => ({
+CopilotPlugin.configure({
   initialState: {
     completeOptions: {
       api: '/api/ai/copilot',
@@ -338,7 +336,7 @@ CopilotPlugin.extend(({ api }) => ({
     },
     // ... other options
   },
-})),
+});
 ```
 
 For more AI providers and models, see the [Vercel AI SDK documentation](https://sdk.vercel.ai/providers/ai-sdk-providers).
@@ -348,28 +346,33 @@ For more AI providers and models, see the [Vercel AI SDK documentation](https://
 Control when suggestions are automatically triggered:
 
 ```tsx
-CopilotPlugin.extend(({ api }) => ({
+import { PLUGINS } from 'platejs';
+
+CopilotPlugin.configure({
   initialState: {
     triggerQuery: ({ editor }) => {
       // Only trigger in paragraph blocks
-      const block = editor.api.block();
-      if (!block || block[0].type !== 'p') return false;
+      const block = editor.read.nodes.block();
+      const paragraph = editor.plugin(PLUGINS.paragraph);
+      if (!block || block[0].type !== paragraph.schema.type) return false;
+
       // Standard checks
-      return editor.selection && 
-             !editor.api.isExpanded() && 
-             editor.api.isAtEnd();
+      return (
+        editor.read.selection.isCollapsed() &&
+        editor.read.selection.isAtBlockEnd()
+      );
     },
     autoTriggerQuery: ({ editor }) => {
       // Custom conditions for auto-triggering
-      const block = editor.api.block();
+      const block = editor.read.nodes.block();
       if (!block) return false;
-      const text = editor.api.string(block[0]);
+      const text = editor.read.text.string(block[1]);
       // Trigger after question words
       return /\b(what|how|why|when|where)\s*$/i.test(text);
     },
     // ... other options
   },
-})),
+});
 ```
 
 ### Security Considerations
@@ -487,8 +490,8 @@ Sets suggestion text for a block.
   <APIItem name="text" type="string">
     The suggestion text to set.
   </APIItem>
-  <APIItem name="id" type="string" optional>
-    Target block ID.
+  <APIItem name="id" type="NodeKey" optional>
+    Target block node key.
     - **Default:** Current block
   </APIItem>
 </APIOptions>

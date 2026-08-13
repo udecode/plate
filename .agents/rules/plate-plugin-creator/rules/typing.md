@@ -288,11 +288,11 @@ export const BaseFooPlugin = defineBasePlugin(PLUGINS.foo, {
       },
     }),
   }))
-  .extend(({ plugin }) => ({
+  .extend(() => ({
     update: ({ tx }) => ({
       insertFooPair: (firstId: string, secondId: string) => {
-        tx[plugin.name].insertFoo(firstId);
-        tx[plugin.name].insertFoo(secondId);
+        tx.plugin(BaseFooPlugin).insertFoo(firstId);
+        tx.plugin(BaseFooPlugin).insertFoo(secondId);
       },
     }),
   }));
@@ -322,10 +322,13 @@ the first update through the active transaction. Stage only honest capabilities
 that consumers or later stages should discover; do not publish private
 implementation fragments merely to move them between callbacks.
 
-Inside a later tx stage, call an earlier tx method through the active
-`tx[plugin.name]` group. Do not use `editor.plugin(...).update`,
-`context.update`, or another one-shot update there; it would open a nested
-transaction.
+Inside a later tx stage, call an earlier tx method through
+`tx.plugin(Plugin)`. Generated closed editors may use the direct
+`tx.pluginName` group. Do not use computed `tx[plugin.name]`,
+`tx.extension(...)`, `editor.plugin(...).update`, `context.update`, or another
+one-shot update there; those either erase descriptor typing or open a nested
+transaction. Raw Plite keeps direct named transaction groups and has no
+descriptor portal.
 
 New methods should accept domain inputs such as `value`, `entry`, `at`, or
 operation options. Do not invent function parameters for `editor`, `api`,

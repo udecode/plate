@@ -1,5 +1,4 @@
 'use client';
-import { NODES } from '@platejs/utils';
 
 import * as React from 'react';
 
@@ -450,10 +449,7 @@ export function CommentCreateForm({
   const userInfo = usePluginStore(discussionPlugin, 'currentUser');
   const [commentValue, setCommentValue] = React.useState<Value | undefined>();
   const commentContent = React.useMemo(
-    () =>
-      commentValue
-        ? NodeApi.string({ children: commentValue, type: NODES.p })
-        : '',
+    () => commentValue?.map((node) => NodeApi.string(node)).join('') ?? '',
     [commentValue]
   );
   const commentEditor = useCommentEditor();
@@ -572,7 +568,9 @@ export function CommentCreateForm({
           },
           { at: path, split: true }
         );
-        tx.nodes.unset([getDraftCommentKey()], { at: path });
+        const draftKeys: string[] = [getDraftCommentKey()];
+
+        tx.nodes.unset(draftKeys, { at: path });
       });
     });
   }, [commentValue, commentEditor, discussionId, editor, discussions]);

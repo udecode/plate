@@ -140,10 +140,7 @@ export const useToggleToolbarButton = ({
             .map(([, path]) => editor.key(path)!),
           true
         );
-        editor.update((tx) => {
-          tx.blocks.toggle(toggle.schema.type);
-          tx.selection.collapse();
-        });
+        toggle.update.toggle({ collapse: true });
         editor.api.dom.focus();
       },
       onMouseDown: (event: React.MouseEvent<HTMLButtonElement>) => {

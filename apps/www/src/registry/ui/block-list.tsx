@@ -2,18 +2,13 @@
 
 import React from 'react';
 
-import type { TListElement } from 'platejs';
-
 import { isOrderedList } from '@platejs/list';
 import {
+  type ListPlugin,
   useTodoListElement,
   useTodoListElementState,
 } from '@platejs/list/react';
-import {
-  type PlateElementProps,
-  type RenderNodeWrapper,
-  useEditorReadOnly,
-} from 'platejs/react';
+import { type RenderNodeWrapper, useEditorReadOnly } from 'platejs/react';
 
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
@@ -21,8 +16,8 @@ import { cn } from '@/lib/utils';
 const config: Record<
   string,
   {
-    Li: React.FC<PlateElementProps & { lineBreakBadge?: React.ReactNode }>;
-    Marker: React.FC<PlateElementProps>;
+    Li: React.FC<ListWrapperProps>;
+    Marker: React.FC<ListWrapperProps>;
   }
 > = {
   todo: {
@@ -31,15 +26,26 @@ const config: Record<
   },
 };
 
-export const BlockList: RenderNodeWrapper = (props) => {
-  if (!props.element.listStyleType) return;
-  if (!isOrderedList(props.element)) return;
-
-  return (props) => <List {...props} />;
+type ListWrapper = RenderNodeWrapper<typeof ListPlugin>;
+type ListWrapperProps = Parameters<ListWrapper>[0] & {
+  lineBreakBadge?: React.ReactNode;
+  listStart?: number;
+  listStyleType: string;
 };
 
-function List(props: PlateElementProps & { lineBreakBadge?: React.ReactNode }) {
-  const { listStart, listStyleType } = props.element as TListElement;
+export const BlockList: ListWrapper = (props) => {
+  const { listStart, listStyleType } = props.element;
+
+  if (!listStyleType) return;
+  if (!isOrderedList(props.element)) return;
+
+  return (props) => (
+    <List {...props} listStart={listStart} listStyleType={listStyleType} />
+  );
+};
+
+function List(props: ListWrapperProps) {
+  const { listStart, listStyleType } = props;
   const { Li, Marker } = config[listStyleType] ?? {};
   const List = isOrderedList(props.element) ? 'ol' : 'ul';
 
@@ -62,7 +68,7 @@ function List(props: PlateElementProps & { lineBreakBadge?: React.ReactNode }) {
   );
 }
 
-function TodoMarker(props: PlateElementProps) {
+function TodoMarker(props: ListWrapperProps) {
   const state = useTodoListElementState({ element: props.element });
   const { checkboxProps } = useTodoListElement(state);
   const readOnly = useEditorReadOnly();
@@ -80,15 +86,12 @@ function TodoMarker(props: PlateElementProps) {
   );
 }
 
-function TodoLi(
-  props: PlateElementProps & { lineBreakBadge?: React.ReactNode }
-) {
+function TodoLi(props: ListWrapperProps) {
   return (
     <li
       className={cn(
         'list-none',
-        (props.element.checked as boolean) &&
-          'text-muted-foreground line-through'
+        props.element.checked === true && 'text-muted-foreground line-through'
       )}
     >
       {props.children}

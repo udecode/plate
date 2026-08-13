@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import type { TTagElement } from 'platejs';
+import type { MultiSelectPlugin } from '@platejs/tag/react';
 import type { PlateElementProps } from 'platejs/react';
 
 import Link from 'next/link';
@@ -15,7 +15,7 @@ import {
 
 import { cn } from '@/lib/utils';
 
-export function TagElement(props: PlateElementProps<TTagElement>) {
+export function TagElement(props: PlateElementProps<typeof MultiSelectPlugin>) {
   const { element } = props;
   const selected = useElementSelected();
   const focused = useEditorFocused();

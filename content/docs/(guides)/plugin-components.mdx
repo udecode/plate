@@ -40,12 +40,13 @@ Element components render block, inline, and void element nodes.
 ```tsx title="components/ui/blockquote-node.tsx" showLineNumbers
 'use client';
 
+import type { BlockquotePlugin } from '@platejs/basic-nodes/react';
 import { type PlateElementProps, PlateElement } from 'platejs/react';
 
 export function BlockquoteElement({
   children,
   ...props
-}: PlateElementProps) {
+}: PlateElementProps<typeof BlockquotePlugin>) {
   return (
     <PlateElement
       as="blockquote"
@@ -68,9 +69,13 @@ Leaf components render marked and decorated text ranges.
 ```tsx title="components/ui/code-node.tsx" showLineNumbers
 'use client';
 
+import type { CodePlugin } from '@platejs/basic-nodes/react';
 import { type PlateLeafProps, PlateLeaf } from 'platejs/react';
 
-export function CodeLeaf({ children, ...props }: PlateLeafProps) {
+export function CodeLeaf({
+  children,
+  ...props
+}: PlateLeafProps<typeof CodePlugin>) {
   return (
     <PlateLeaf
       as="code"
@@ -112,7 +117,7 @@ export const plugins = [
 
 ### Component With Consumer Overrides
 
-When the same plugin also needs rules, shortcuts, options, or parser behavior,
+When the same plugin also needs rules, shortcuts, initial state, or input rules,
 put every override in that same terminal `.configure()` call.
 
 ```tsx title="components/editor/plugins.tsx" showLineNumbers
@@ -149,8 +154,8 @@ import { Editor, EditorContainer } from '@/components/ui/editor';
 export function AppEditor() {
   const editor = usePlateEditor({
     components: {
-      [BlockquotePlugin.name]: BlockquoteElement,
-      [CodePlugin.name]: CodeLeaf,
+      blockquote: BlockquoteElement,
+      code: CodeLeaf,
     },
     plugins: [BlockquotePlugin, CodePlugin],
   });
@@ -165,7 +170,8 @@ export function AppEditor() {
 }
 ```
 
-The object keys are plugin names, not file names or component names.
+The object keys are persisted element types or property keys, not plugin names,
+file names, or component names.
 
 ## Render Without a Custom Component
 
@@ -174,14 +180,12 @@ and you only need a different HTML tag.
 
 ```ts title="quote-plugin.ts" showLineNumbers
 import { schema } from 'platejs';
-import { createPlatePlugin } from 'platejs/react';
+import { definePlatePlugin } from 'platejs/react';
 
-export const QuotePlugin = createPlatePlugin({
-  name: 'quote',
+export const QuotePlugin = definePlatePlugin('quote', {
   render: {
     as: 'blockquote',
   },
-  type: 'quote',
   schema: {
     element: { content: schema.content.text({ default: 'text', min: 1 }) },
   },
@@ -198,7 +202,7 @@ rendering plugin nodes, so global CSS can target stable node types when you need
 editor-wide styling.
 
 ```css title="app/globals.css"
-.plite-p {
+.plite-paragraph {
   margin-block: 0.25rem;
 }
 

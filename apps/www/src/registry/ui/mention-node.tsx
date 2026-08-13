@@ -2,11 +2,10 @@
 
 import * as React from 'react';
 
-import type { TComboboxInputElement, TMentionElement } from 'platejs';
 import type { PlateElementProps } from 'platejs/react';
 
-import { MentionPlugin } from '@platejs/mention/react';
-import { IS_APPLE, KEYS } from 'platejs';
+import { type MentionInputPlugin, MentionPlugin } from '@platejs/mention/react';
+import { IS_APPLE } from 'platejs';
 import {
   PlateElement,
   useEditorFocused,
@@ -28,7 +27,7 @@ import {
 } from './inline-combobox';
 
 export function MentionElement(
-  props: PlateElementProps<TMentionElement> & {
+  props: PlateElementProps<typeof MentionPlugin> & {
     prefix?: string;
   }
 ) {
@@ -46,9 +45,9 @@ export function MentionElement(
         inlineSuggestionVariants(),
         !readOnly && 'cursor-pointer',
         selected && focused && 'ring-2 ring-ring',
-        element.children[0][KEYS.bold] === true && 'font-bold',
-        element.children[0][KEYS.italic] === true && 'italic',
-        element.children[0][KEYS.underline] === true && 'underline'
+        element.children[0].bold === true && 'font-bold',
+        element.children[0].italic === true && 'italic',
+        element.children[0].underline === true && 'underline'
       )}
       attributes={{
         ...props.attributes,
@@ -77,7 +76,7 @@ export function MentionElement(
 }
 
 export function MentionInputElement(
-  props: PlateElementProps<TComboboxInputElement>
+  props: PlateElementProps<typeof MentionInputPlugin>
 ) {
   const { editor, element } = props;
   const [search, setSearch] = React.useState('');

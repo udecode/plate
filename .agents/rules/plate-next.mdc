@@ -10,7 +10,7 @@ Handle $ARGUMENTS.
 
 ## Doctrine Version
 
-Current doctrine version: `67`.
+Current doctrine version: `70`.
 
 The machine-readable source is
 `.agents/rules/plate-next/versions.json`. It owns immutable doctrine history and
@@ -403,8 +403,9 @@ editor.plugin(...).api.blockSelection.getNodes(...)` is a regression: it
   cross-node behavior uses its semantic owner operation; structural, atomic,
   genuinely dynamic, or unavoidable dependency-ambiguous writes keep the
   object form. Inference comes from the shallow plugin plus required-dependency
-  graph, never the full EditorKit schema. Reject `tx.plugin`, `tx.properties`,
-  and any second mutation namespace.
+  graph, never the full EditorKit schema. Reject `tx.properties` and any second
+  property-mutation namespace. `tx.plugin(Plugin)` selects an installed
+  plugin's flat transaction capability group.
 - Use `plate-plugin-creator`'s Capability Boundary Protocol as the sole
   plugin-authoring owner. Plate Next audits each contribution into exactly one
   row:
@@ -525,8 +526,11 @@ editor.plugin(...).api.blockSelection.getNodes(...)` is a regression: it
 - Apply the creator's codec, flat-native-field, and active-transaction laws
   directly. In particular, keep independent codecs and native fields in the
   constructor, keep private implementation fragments lexical, read staged API
-  lazily from runtime callback context, and reuse earlier mutations through the
-  active `tx[plugin.name]` group.
+  lazily from runtime callback context, and reuse earlier mutations through
+  `tx.plugin(Plugin)`. Generated closed editors may use the direct
+  `tx.pluginName` group. Never use computed `tx[plugin.name]`,
+  `tx.extension(...)`, or a nested portal one-shot. Raw Plite keeps direct
+  named transaction groups and exposes no descriptor portal.
 - For a Plate-owned custom MDX element codec, bind `schema: { type }` in the
   codec factory and use that resolved type for `from`, the decoded element
   `type`, and the encoded MDX `name`. Fixed MDAST, HTML, and MDX syntax remains
@@ -739,6 +743,12 @@ editor.update.selection.set(...) })` are bugs, not style issues.
   inside the callback from `editor.read.*` / `editor.api.*` instead. Subscribing
   for callback-only data is a perf regression with no user-facing gain and
   caps the file below `100` until fixed or justified as render state.
+- Renderer wrappers and element selectors infer their local schema node from a
+  directly passed plugin descriptor. Use `RenderNodeWrapper<typeof FooPlugin>`,
+  `RenderStaticNodeWrapper<typeof BaseFooPlugin>`, and
+  `useElementSelector(FooPlugin, selector)`. A manual `DefinitionOf`, local
+  node mirror, `Reflect.get`, or cast used only to recover descriptor-owned
+  fields is a Core typing bug, not acceptable consumer code.
 - Do not add local fixture-shape aliases in tests, such as
   `type EditorFixture = { children; selection }`, to hide weak hyperscript
   typing. If many tests need the same JSX/editor fixture shape, repair or
@@ -1059,8 +1069,9 @@ tx.*(); })` wrappers when the direct one-shot method exists. These cap the
   name feature values `key` or `keys`. Keep persisted `element.id` distinct and
   optional through `ElementIdPlugin`; never serialize a `NodeKey`.
 - later tx stages that call an earlier method through a portal one-shot,
-  `context.update`, or `editor.update.*` instead of the active
-  `tx[plugin.name]` group.
+  `context.update`, or `editor.update.*` instead of
+  `tx.plugin(Plugin)` or a generated direct `tx.pluginName` group. Computed
+  `tx[plugin.name]` and `tx.extension(...)` are equally rejected.
 - nested `editor.update.*` calls inside any `editor.update` callback,
   especially `editor.update.withoutNormalizing(() => { editor.update.* })`.
   The owning API should pass `({ tx })`, and the callback must mutate through
@@ -1213,8 +1224,8 @@ Rules:
     `as any`, or local helper types hiding weak owner types;
   - no plugin-owned helper threads editor/runtime plumbing that an earlier
     inferred API/tx stage can own;
-  - staged tx-to-tx reuse stays on the active `tx[plugin.name]` group and has
-    compile/runtime proof;
+  - staged tx-to-tx reuse stays on `tx.plugin(Plugin)` or a generated direct
+    `tx.pluginName` group and has compile/runtime proof;
   - a native runtime callback that consumes staged API has runtime proof for lazy
     `context.api` publication;
   - no legacy compat alias, shim, old command fallback, or duplicate wrapper

@@ -115,7 +115,7 @@ import {
   AIPlugin,
   useChatChunk,
 } from '@platejs/ai/react';
-import { ElementApi, KEYS, PathApi } from 'platejs';
+import { ElementApi, PathApi, PLUGINS } from 'platejs';
 import { usePluginStore } from 'platejs/react';
 
 export const aiChatPlugin = AIChatPlugin.extend({
@@ -156,7 +156,7 @@ export const aiChatPlugin = AIChatPlugin.extend({
             tx.nodes.insert(
               {
                 children: [{ text: '' }],
-                type: editor.plugin(KEYS.aiChat).type,
+                type: editor.plugin(PLUGINS.aiChat).schema.type,
               },
               {
                 at: PathApi.next(selection.focus.path.slice(0, 1)),
@@ -172,7 +172,7 @@ export const aiChatPlugin = AIChatPlugin.extend({
           update.insertChunk(chunk, {
             autoScroll: true,
             textProps: {
-              [editor.plugin(KEYS.ai).type]: true,
+              [editor.plugin(PLUGINS.ai).schema.key]: true,
             },
           });
         }
@@ -404,7 +404,7 @@ Main plugin that powers the AI menu, chat state, and transforms.
     <APIItem name="triggerPreviousCharPattern" type="RegExp" optional>Pattern that must match the character before the trigger. Defaults to `/^\s?$/`.</APIItem>
     <APIItem name="triggerQuery" type="(editor: BaseEditor) => boolean" optional>Return `false` to cancel opening in specific contexts.</APIItem>
     <APIItem name="chat" type="AIChatAdapter" optional>Store the adapter returned by `createAIChatAdapter(useChat(...))` so API calls can access chat state and controls.</APIItem>
-    <APIItem name="chatNodes" type="TIdElement[]" optional>Snapshot of nodes used to diff edit suggestions (managed internally).</APIItem>
+    <APIItem name="chatNodes" type="AIChatNodeSnapshot[]" optional>Node snapshots paired with editor-scoped node keys for diff edit suggestions (managed internally).</APIItem>
     <APIItem name="chatSelection" type="Range | null" optional>Selection captured before submitting a prompt (managed internally).</APIItem>
     <APIItem name="mode" type="'chat' | 'insert'">Controls whether responses stream directly into the document or open a review panel. Defaults to `'insert'`.</APIItem>
     <APIItem name="open" type="boolean" optional>Whether the AI menu is visible. Defaults to `false`.</APIItem>
@@ -498,15 +498,16 @@ Replaces the current selection or block selection with the stored chat preview.
 </APIParameters>
 </API>
 
-### `editor.update.aiChat.removeAnchor(options?)`
+### `editor.plugin(AIChatPlugin).update.remove({ at: [] })`
 
-Removes the temporary anchor node used to position the AI menu.
+Removes every temporary AI Chat anchor without a feature-specific wrapper.
 
-<API name="removeAnchor">
-<APIParameters>
-  <APIItem name="options" type="object" optional>Filters the nodes to remove.</APIItem>
-</APIParameters>
-</API>
+```tsx
+editor
+  .plugin(AIChatPlugin)
+  .update({ history: 'skip' })
+  .remove({ at: [] });
+```
 
 ### `editor.update.ai.insertNodes(nodes, options?)`
 
@@ -632,7 +633,7 @@ aiChat.update.insertChunk(chunk, { autoScroll: true });
 | `aiChat.api` | `deserializeChunk`, `deserializeInlineChunk`, `hide`, `reload`, `reset`, `show`, `stop`, `submit` |
 | `aiChat.read` | `commentRange`, `insertStart`, `markdown`, `node`, `prompt`, `resolvePlaceholders`, `serializeChunk` |
 | `aiChat.store.get` | `lastAssistantMessage` |
-| `aiChat.update` | `accept`, `acceptSuggestions`, `applySuggestions`, `applyTableCellSuggestion`, `insertBelow`, `insertChunk`, `rejectSuggestions`, `removeAnchor`, `replaceSelection` |
+| `aiChat.update` | `accept`, `acceptSuggestions`, `applySuggestions`, `applyTableCellSuggestion`, `insert`, `insertBelow`, `insertChunk`, `rejectSuggestions`, `remove`, `replaceSelection`, `set` |
 
 ### `ai.api.findTextRangeInBlock`
 
@@ -658,44 +659,64 @@ Extend the `aiChatItems` map to add new commands. Each command receives `{ edito
 #### Simple Custom Command
 
 ```tsx
-summarizeInBullets: {
-  icon: <ListIcon />,
-  label: 'Summarize in bullets',
-  value: 'summarizeInBullets',
-  onSelect: ({ editor }) => {
-    void editor.plugin(AIChatPlugin).api.submit('', {
-      prompt: 'Summarize the current selection using bullet points',
-      toolName: 'generate',
-    });
+import { AIChatPlugin } from '@platejs/ai/react';
+import { ListIcon } from 'lucide-react';
+
+export const aiChatItems = {
+  summarizeInBullets: {
+    icon: <ListIcon />,
+    label: 'Summarize in bullets',
+    value: 'summarizeInBullets',
+    onSelect: ({ editor }) => {
+      void editor.plugin(AIChatPlugin).api.submit('', {
+        prompt: 'Summarize the current selection using bullet points',
+        toolName: 'generate',
+      });
+    },
   },
-},
+};
 ```
 
 #### Command with Complex Logic
 
 ```tsx
-generateTOC: {
-  icon: <BookIcon />,
-  label: 'Generate table of contents',
-  value: 'generateTOC',
-  onSelect: ({ editor }) => {
-    const headings = editor.api.nodes({
-      match: (n) => ['h1', 'h2', 'h3'].includes(n.type as string),
-    });
+import { AIChatPlugin } from '@platejs/ai/react';
+import { PLUGINS } from 'platejs';
+import { BookIcon } from 'lucide-react';
 
-    const prompt =
-      headings.length === 0
-        ? 'Create a realistic table of contents for this document'
-        : 'Generate a table of contents that reflects the existing headings';
+export const aiChatItems = {
+  generateTOC: {
+    icon: <BookIcon />,
+    label: 'Generate table of contents',
+    value: 'generateTOC',
+    onSelect: ({ editor }) => {
+      const headingTypes = [PLUGINS.h1, PLUGINS.h2, PLUGINS.h3]
+        .map((name) => editor.plugin(name))
+        .flatMap((plugin) =>
+          plugin.installed ? [plugin.schema.type] : []
+        );
+      const headings = editor.read.nodes.toArray({
+        at: [],
+        match: { type: headingTypes },
+      });
 
-    void editor.plugin(AIChatPlugin).api.submit('', {
-      mode: 'insert',
-      prompt,
-      toolName: 'generate',
-    });
+      const prompt =
+        headings.length === 0
+          ? 'Create a realistic table of contents for this document'
+          : 'Generate a table of contents that reflects the existing headings';
+
+      void editor.plugin(AIChatPlugin).api.submit('', {
+        mode: 'insert',
+        prompt,
+        toolName: 'generate',
+      });
+    },
   },
-},
+};
 ```
+
+The command reads the installed H1-H3 capabilities. If the editor omits all
+three, it uses the fallback prompt instead of assuming persisted type strings.
 
 The menu automatically switches between command and suggestion states:
 

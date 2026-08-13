@@ -1,15 +1,14 @@
 import * as React from 'react';
 
-import type { TLinkElement } from 'platejs';
-import type { StyledPliteElementProps } from 'platejs/static';
+import type { PliteElementProps } from 'platejs/static';
 
-import { type BaseLinkDefinition, BaseLinkPlugin } from '@platejs/link';
+import { BaseLinkPlugin } from '@platejs/link';
 import { PliteElement } from 'platejs/static';
 import { cn } from '@/lib/utils';
 import { inlineSuggestionVariants } from '@/registry/lib/suggestion';
 
 export function LinkElementStatic(
-  props: StyledPliteElementProps<TLinkElement, BaseLinkDefinition, 'a'>
+  props: PliteElementProps<typeof BaseLinkPlugin>
 ) {
   return (
     <PliteElement

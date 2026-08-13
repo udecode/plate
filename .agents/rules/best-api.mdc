@@ -283,7 +283,11 @@ capabilities through descriptor portals such as
 `editor.plugin(FooPlugin)`, `useEditorPlugin(FooPlugin)`, and
 `editor.extension(FooExtension)`. Keep an editor generic only when typed
 constructor/options input or an explicit editor argument correlates that
-generic with the returned value.
+generic with the returned value. A closed generated application passes its
+runtime kit instead: `useEditor(EditorKit)` and `useActiveEditor(EditorKit)`
+infer the exact editor and verify that exact generated contract at runtime.
+Schema-fingerprint equality alone is insufficient because two kits can share a
+document grammar while exposing different capabilities.
 Plite calls its public runtime type `Editor`; Plate keeps `BaseEditor` and
 `PlateEditor` for its two product layers.
 
@@ -341,14 +345,49 @@ Generated schema contracts are content-addressed data, not trusted caches.
 Hash compiled semantic output rather than authoring syntax; readers recompute
 the authoritative structural fingerprint, and restoration compares every
 derived table with the current source contributions before publication.
+Intentional generated outputs may live beside source and be committed. Tool
+scratch files, locks, journals, watcher ownership, staging, and backups must
+never make consumers add product-specific ignore rules. Put compiler-only
+scratch work in the operating system temp directory. Put durable recovery state
+in the project's deterministic `node_modules/.cache`; fail clearly when that
+canonical same-filesystem root is unavailable. Never choose coordination roots
+from process-local environment or transient writability.
+Keep staged replacements
+on the artifact filesystem so atomic rename, crash rollback, cross-process
+locking, and last-good output remain real; a cleaner worktree never justifies
+weakening those laws or renaming private debris to look conventional.
 
 Descriptor-bound React and static component APIs infer the owner's exact local
 schema node from the descriptor. Use `useElement(FooPlugin)`,
 `PlateElementProps<typeof FooPlugin>`, and
-`PliteElementProps<typeof BaseFooPlugin>`; never import `FooElement` only to
-feed it back into one of those APIs. Descriptor-local inference must exclude
-dependency nodes. Keep the bare no-argument element hook and direct `Element`
-generic only for deliberately erased or genuinely schema-agnostic code.
+`PliteElementProps<typeof BaseFooPlugin>` for elements; use
+`PlateLeafProps<typeof FooPlugin>`, `PlateTextProps<typeof FooPlugin>`, and
+their static `Plite*` equivalents for text renderers. Never import a derived
+`FooElement` or `FooText` alias only to feed it back into one of those APIs.
+Descriptor-local inference must exclude dependency nodes. These component prop
+aliases require one descriptor generic; they expose no default, raw `Element`
+or `Text` input, or second context generic. A presentation-only component
+family may use a union of descriptor-owned props; code that forwards the full
+plugin context keeps one exact owner. Deliberately erased or schema-agnostic
+renderer code uses `RenderElementProps`, `RenderLeafProps`,
+`RenderTextProps`, an inferred wrapper callback, or the named wrapper prop
+contract instead. Never make one type parameter switch between plugin
+ownership and raw node shape. When a consumer plugin installs the component
+being typed, use the stable imported owner descriptor rather than the
+self-referential configured value; access consumer-local store/API additions
+through their scoped hooks inside the component.
+An owning leaf descriptor also infers the optional transient fields returned
+by its `decorate` callback. Keep `props.text` schema-only and expose those
+fields only on `props.leaf`. Never recover a known decoration field with
+`Reflect.get`, a cast, or a restated structural leaf type; fix the decorator or
+descriptor carrier instead.
+Wrapper and selector APIs follow the same law. Pass the descriptor directly to
+`RenderNodeWrapper<typeof FooPlugin>`,
+`RenderStaticNodeWrapper<typeof BaseFooPlugin>`, and
+`useElementSelector(FooPlugin, selector)`. Their element and plugin context
+must come from that descriptor. Never extract `DefinitionOf`, restate an
+element type, or cast inside a consumer just to recover fields already owned by
+the plugin schema.
 
 The low-level React bridge is `react({ dom })`: one required object containing
 the exact DOM descriptor it depends on. Keep one explicit erased
@@ -416,7 +455,9 @@ standard:
   cross-node or prefix-family mutation behind its semantic owner operation.
   Keep object mutation for structural fields, atomic multi-property writes,
   genuine dynamic keys, and unavoidable ambiguous dependency fields. Never add
-  `tx.plugin`, `tx.properties`, or a second mutation namespace.
+  `tx.properties` or a second property-mutation namespace. `tx.plugin(Plugin)`
+  selects an installed plugin's flat transaction capability group; it is not a
+  property portal.
 - Keep raw plugin capabilities shallow. Exact recursive application `Value`,
   final schema bindings, mutation maps, and fingerprints belong to committed
   generated EditorKit artifacts, never every `editor.api/read/update` access.
@@ -543,19 +584,31 @@ capabilities through `editor.plugin(Plugin)`. Selectors remain store-owned and
 are evaluated through the scoped store.
 
 Every element plugin receives descriptor-bound `insert`, `set`, and `remove`
-on `editor.plugin(Plugin).update`. A closed generated editor additionally
-projects those methods under its capability name on root and transaction
-updates. Raw editor tuples keep authored root/transaction capabilities exact,
-but do not materialize a schema-wide generic mutation map; doing so makes any
-ordinary editor access expand the entire grammar. The persisted target comes
-from the descriptor `type`; callers never restate it. `insert` builds through
-schema defaults, uses an explicit `at` literally, inserts a block after the
-selected block, inserts an inline at the selection, and does nothing without a
-selection or explicit `at`. `set` and `remove` force the descriptor type and do
-not accept a caller-owned match. An authored same-name method replaces the
-synthesized default when it owns extra semantic behavior. Delete redundant
+on `editor.plugin(Plugin).update`. Default-constructible, schema-compatible
+text-block plugins also receive `toggle`; text blocks with required
+construction properties and structural element plugins expose an authored
+`toggle` only when they own real domain, wrap, conversion, or child semantics. A closed generated
+editor additionally projects those eligible methods under its capability name
+on root and transaction updates. Raw editor tuples keep authored
+root/transaction capabilities exact, but do not materialize a schema-wide
+generic mutation map; doing so makes any ordinary editor access expand the
+entire grammar. The persisted target comes from the descriptor `type`; callers
+never restate it. `insert` builds through schema defaults, uses an explicit
+`at` literally, inserts a block after the selected block, inserts an inline at
+the selection, and does nothing without a selection or explicit `at`. `set`
+and `remove` force the descriptor type and do not accept a caller-owned match.
+Generic text-block `toggle` swaps the selected block discriminator; it does not
+publish structural `wrap` as an option. It may accept one-shot update policy
+such as `collapse`; use the transaction primitive only while composing inside
+an existing transaction. An authored same-name method replaces the synthesized
+default when it owns extra semantic behavior. Delete redundant
 noun aliases such as `insertTable`; retain custom verbs only for distinct jobs
-such as merge, insertColumn, or toggle.
+such as merge, insertColumn, or a structural toggle.
+
+Application schema overrides are a compiler boundary. A raw `defineEditor`
+definition with `schema.overrides` does not promise descriptor-generic
+mutations whose eligibility depends on the final compiled grammar; run
+`plate generate` and consume the generated kit for that exact surface.
 
 Custom element insertion has one signature law:
 `insert(input?, nodeOptions?)`. The first argument contains only the feature's
@@ -569,7 +622,9 @@ The scoped update portal is callable with the same transaction policy as the
 root update: `editor.plugin(Plugin).update(policy).method()`. It delegates to
 exactly one root transaction, preserves rollback and history tags, and returns
 the same inferred scoped methods. A later method inside an active plugin update
-stage reuses `tx[plugin.name]`; it never opens a portal update inside the
+stage reuses `tx.plugin(Plugin).method()`. Generated closed editors may also
+expose the direct `tx.pluginName.method()` group. Never use computed
+`tx[plugin.name]`, `tx.extension(...)`, or a portal one-shot update inside the
 transaction.
 
 ## Public Complexity Budget
@@ -824,10 +879,10 @@ independent contributions into the constructor even when the object is large.
 Treat an exceptional staged chain as a typed capability dependency graph:
 publish the smallest honest read/service in the constructor or an earlier
 stage, then consume the inferred surface from the later builder context. A
-later active update stage
-calls an earlier mutation through that same transaction's plugin group,
-`tx[plugin.name].method(...)`; calling a portal one-shot update would open a
-nested transaction.
+later active update stage calls an earlier mutation through
+`tx.plugin(Plugin).method(...)`. Generated closed editors may use the direct
+`tx.pluginName.method(...)` group. Computed `tx[plugin.name]`,
+`tx.extension(...)`, and a portal one-shot update are rejected.
 
 Plate constructors and justified `.extend()` stages contextually type their
 flat native Plite fields and callback returns. A public identity helper whose

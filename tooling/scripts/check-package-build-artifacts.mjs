@@ -14,6 +14,14 @@ const incompleteReadonlyAliasPattern =
 
 export function getPackageBuildArtifacts(packageJson) {
   const artifacts = new Set();
+  const addArtifact = (target) => {
+    if (!target || target === './package.json') return;
+    if (!target.startsWith('./dist/')) {
+      throw new Error(`Public build target must live in ./dist: ${target}`);
+    }
+
+    artifacts.add(target.slice(2));
+  };
 
   for (const value of Object.values(packageJson.exports ?? {})) {
     const runtimeTargets = readRuntimeTargets(value);
@@ -24,15 +32,16 @@ export function getPackageBuildArtifacts(packageJson) {
         : runtimeTargets.map(toTypesTarget);
 
     for (const target of [...runtimeTargets, ...typesTargets]) {
-      if (!target) continue;
-      if (target === './package.json') continue;
-      if (!target.startsWith('./dist/')) {
-        throw new Error(`Public build target must live in ./dist: ${target}`);
-      }
-
-      artifacts.add(target.slice(2));
+      addArtifact(target);
     }
   }
+
+  const binTargets =
+    typeof packageJson.bin === 'string'
+      ? [packageJson.bin]
+      : Object.values(packageJson.bin ?? {});
+
+  binTargets.forEach(addArtifact);
 
   if (artifacts.size === 0) {
     throw new Error('Package has no public build artifacts.');

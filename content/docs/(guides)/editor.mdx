@@ -3,7 +3,9 @@ title: Editor Configuration
 description: Learn how to configure and customize the Plate editor.
 ---
 
-This guide covers the configuration options for the Plate editor, including basic setup, plugin management, and advanced configuration techniques.
+Create the editor with its initial document and plugin tuple. Configure
+editor-wide runtime policy here; configure feature behavior on its owning
+plugin.
 
 ## Basic Editor Configuration
 
@@ -25,7 +27,7 @@ Set the initial content of the editor:
 const editor = createPlateEditor({
   initialValue: [
     {
-      type: 'p',
+      type: 'paragraph',
       children: [{ text: 'Hello, Plate!' }],
     },
   ],
@@ -120,6 +122,98 @@ const editor = createPlateEditor({
 });
 ```
 
+### Exact Generated Editor Types
+
+Raw plugin arrays keep plugin APIs, reads, updates, stores, and individual
+element shapes inferred. Use a generated editor contract when the application
+also needs one exact recursive `Value` across the complete plugin graph.
+
+Define the closed application editor in one source file:
+
+```tsx title="src/editor/editor-definition.tsx"
+import { H1Plugin } from '@platejs/basic-nodes/react';
+import { TablePlugin } from '@platejs/table/react';
+import { defineEditor, property, schema, target } from 'platejs';
+
+export default defineEditor('app', {
+  plugins: [H1Plugin, TablePlugin] as const,
+  schema: {
+    overrides: [
+      schema.override(H1Plugin, {
+        element: { type: 'headingOne' },
+      }),
+    ],
+    properties: {
+      reviewState: schema.elementProperty(
+        property.enum(['draft', 'approved'] as const),
+        { target: target.element(H1Plugin) }
+      ),
+    },
+  },
+  schemaIdentity: { id: 'app-document', version: 1 },
+});
+```
+
+Only a closed editor definition can override schema relationships. It may
+remap an element type, content, groups, or an existing property's target, and
+it may add application-owned properties. Plugin-owned property keys and value
+laws stay fixed; changing one requires a new field and an explicit migration.
+
+Installed code reads final identities from schema handles:
+
+```ts
+editor.plugin(H1Plugin).schema.type; // 'headingOne'
+EditorKit.schema.properties.reviewState.key; // 'reviewState'
+```
+
+Generate and commit the TypeScript and JSON contracts:
+
+```bash
+pnpm add -D @platejs/cli
+pnpm exec plate generate
+```
+
+`plate generate` reads `src/editor/editor-definition.tsx`. Pass entry paths
+when an app owns several editor definitions. Add `--watch` during development
+or `--check` in CI.
+
+The generated module exports the kit and its exact editor/value types. No
+explicit editor generic is needed:
+
+```tsx title="src/editor/document-editor.tsx"
+import { Plate, usePlateEditor } from 'platejs/react';
+
+import {
+  EditorKit,
+  type Value,
+} from './editor.generated';
+
+export function DocumentEditor({ initialValue }: { initialValue: Value }) {
+  const editor = usePlateEditor({ plugins: EditorKit, initialValue });
+
+  editor.update.h1.insert();
+  editor.update.table.set({ marginLeft: 24 });
+
+  return <Plate editor={editor} />;
+}
+```
+
+Run the same command with `--check` in CI. Plate compares the generated
+fingerprint with the installed runtime schema before publishing the editor, so
+stale contracts fail instead of lying about `Value`.
+
+Schema changes that need stored-document work use an explicit scaffold:
+
+```bash
+pnpm exec plate migrate new add-caption
+```
+
+Pass `--entry <path>` when the definition does not use the standard path.
+
+The scaffold contains typed `FromValue` and `ToValue` snapshots plus the
+structural diff. Application storage or collaboration code decides when and
+how to run the pure migration; Plate never applies it automatically.
+
 ### Max Length
 
 Set the maximum length of the editor:
@@ -142,78 +236,77 @@ const editor = createPlateEditor({
 });
 ```
 
-If defined, you should always pass the `id` as the first argument in any editor retrieval methods.
+Pass the same ID to controller-aware hooks when selecting a specific mounted
+editor, for example `useEditor({ id: 'my-custom-editor-id' })`.
 
-### Node ID
+### Node Identity
 
-Plate includes a built-in system for automatically assigning unique IDs to nodes, which is crucial for certain plugins and for data persistence strategies that rely on stable identifiers.
-
-This feature is enabled by default. You can customize its behavior or disable it entirely through the `nodeId` option.
-
-#### Configuration
-
-To configure Node ID behavior, pass an object to the `nodeId` property when creating your editor:
-
-```ts
-const editor = usePlateEditor({
-  // ... other plugins and options
-  nodeId: {
-    // Function to generate IDs (default: nanoid(10))
-    idCreator: () => uuidv4(),
-
-    // Exclude inline elements from getting IDs (default: true)
-    filterInline: true, 
-
-    // Exclude text nodes from getting IDs (default: true)
-    filterText: true,
-
-    // Reuse source IDs on paste when absent from the target (default: false)
-    reuseId: false,
-
-    // Control initial-value ID assignment (default: 'if-needed')
-    // Use 'always' to fill every missing ID in the initial value.
-    initialValueIds: 'always',
-    // Prevent overriding IDs when inserting nodes with an existing id (default: false)
-    disableInsertOverrides: false,
-
-    // Only allow specific node types to receive IDs (default: all)
-    allow: ['p', 'h1'], 
-
-    // Exclude specific node types from receiving IDs (default: [])
-    exclude: ['code_block'],
-
-    // Custom filter function to determine if a node should get an ID
-    filter: ([node, path]) => {
-      // Example: Only ID on top-level blocks
-      return path.length === 1;
-    },
-  },
-});
-```
-
-<Callout type="note">
-  The `NodeIdPlugin` (which handles this) is part of the core plugins and is automatically included. You only need to specify the `nodeId` option if you want to customize its default behavior.
-</Callout>
-
-#### Disabling Node IDs
-
-If you don't need automatic node IDs, you can disable the feature:
+Every live descendant has an editor-scoped `NodeKey`. Node keys include
+text nodes, survive moves and immutable updates, and disappear when the node is
+removed. They never enter JSON, clipboard slices, history, or collaboration
+payloads. Use them for selection, drag and drop, temporary UI state, and lazy
+path lookup.
 
 ```ts
-const editor = usePlateEditor({
-  // ... other plugins and options
-  nodeId: false, // This will disable the NodeIdPlugin
-});
+const nodeKey = editor.key(element);
+const path = editor.read.nodes.path(nodeKey);
+
+editor.update.nodes.remove({ at: nodeKey });
 ```
 
-By disabling this, certain plugins that rely on node IDs will not function properly. The following plugins require block IDs to work:
+Node keys can target nodes across one editor's document roots. Path lookup is
+root-local: the base editor resolves paths in the main root, while an editor
+view resolves paths in its own root.
 
-- **[Block Selection](/docs/block-selection)** - Needs IDs to track which blocks are selected
-- **[Block Menu](/docs/block-menu)** - Requires IDs to show context menus for specific blocks  
-- **[Drag & Drop](/docs/dnd)** - Uses IDs to identify blocks during drag operations
-- **[Table](/docs/table)** - Relies on IDs for cell selection
-- **[Table of Contents](/docs/toc)** - Needs heading IDs for navigation and scrolling
-- **[Toggle](/docs/toggle)** - Uses IDs to track which toggles are open/closed
+Use `ElementIdPlugin` only when an element needs an ID that survives storage or
+cross-session references. The plugin is opt-in. It assigns persisted string IDs
+to block and inline elements, never text nodes.
+
+```ts
+import { ElementIdPlugin } from "platejs";
+
+const editor = usePlateEditor({
+  plugins: [
+    ElementIdPlugin.configure({
+      initialState: {
+        generateId: () => crypto.randomUUID(),
+      },
+    }),
+  ],
+});
+
+const elementId = editor.plugin(ElementIdPlugin);
+const id = elementId.read.id(element);
+const entry = elementId.read.entry(id);
+```
+
+The default generator is full-length `nanoid()`. Loads and moves preserve valid
+IDs. Copies, splits, duplicates, and pasted copies receive fresh IDs. Explicit
+duplicates are rejected. Exact schema-derived elements expose `element.id`;
+use the plugin read at erased or optionally installed package boundaries.
+
+Use the pure migration helper before loading stored documents that lack IDs.
+It preserves valid strings, fills missing IDs, reports duplicates, and requires
+an explicit policy for legacy numeric IDs.
+
+```ts
+import { migrateElementIds, nanoid } from "platejs";
+
+const result = migrateElementIds(storedValue, {
+  convertNumericId: (id) => `legacy-${id}`,
+  generateId: nanoid,
+  sourceKey: 'legacyElementId',
+});
+
+if (result.duplicates.length > 0) {
+  throw new Error("Resolve duplicate element IDs before loading the document.");
+}
+
+const editor = createPlateEditor({
+  plugins: [ElementIdPlugin],
+  initialValue: result.value,
+});
+```
 
 ### Navigation Feedback
 
@@ -280,8 +373,8 @@ Override default components for plugins:
 const editor = createPlateEditor({
   plugins: [H1Plugin],
   components: {
-    [ParagraphPlugin.name]: CustomParagraphComponent,
-    [H1Plugin.name]: CustomHeadingComponent,
+    paragraph: CustomParagraphComponent,
+    h1: CustomHeadingComponent,
   },
 });
 ```
@@ -308,11 +401,13 @@ A package plugin may need to adapt another installed package without importing
 it or controlling the consumer's editor kit:
 
 ```ts
-const SingleBlockPlugin = createPlatePlugin({
-  name: KEYS.singleBlock,
+import { PLUGINS } from 'platejs';
+import { definePlatePlugin } from 'platejs/react';
+
+const SingleBlockPlugin = definePlatePlugin(PLUGINS.singleBlock, {
   override: {
     plugins: {
-      [KEYS.trailingBlock]: {
+      [PLUGINS.trailingBlock]: {
         enabled: false,
       },
     },
@@ -334,7 +429,7 @@ share a name.
 
 ```ts
 const AppParagraphPlugin = ParagraphPlugin.configure({
-  type: 'paragraph',
+  component: AppParagraphElement,
 });
 
 const editor = createPlateEditor({
@@ -344,72 +439,55 @@ const editor = createPlateEditor({
 
 ## Typed Editor
 
-`createPlateEditor` will automatically infer the types for your editor from the value and the plugins you pass in. For explicit type creation, use the generics:
+`createPlateEditor` derives the document value and plugin APIs from the installed
+plugin tuple. `initialValue` is checked against that schema-derived value.
 
 ### Plugins Type
 
 ```ts
-const editor = createPlateEditor<Value, typeof TablePlugin | typeof LinkPlugin>({
-  plugins: [TablePlugin, LinkPlugin],
+const AppKit = [TablePlugin, LinkPlugin] as const;
+const editor = createPlateEditor({
+  plugins: AppKit,
 });
 
 // Usage
 editor.update((tx) => {
-  tx.insert.tableRow();
+  tx.table.insertRow();
 });
 ```
 
 ### Value Type
 
-For more complex editors, you can define your types in a separate file (e.g., `plate-types.ts`):
+Use `PlateEditor<typeof Kit>` when another module needs the editor type and
+`ValueOf<MyEditor>` when a named value type improves readability. Do not repeat
+the schema as handwritten element interfaces.
 
 ```ts
-import type { Element, Text } from 'platejs';
-import { type PlateEditor, useEditor } from 'platejs/react';
+import type { ValueOf } from 'platejs';
+import type { PlateEditor } from 'platejs/react';
 
-// Define custom element types
-interface ParagraphElement extends Element {
-  align?: 'left' | 'center' | 'right' | 'justify';
-  children: RichText[];
-  type: typeof ParagraphPlugin.name;
-}
+const AppKit = [TablePlugin, LinkPlugin] as const;
 
-interface ImageElement extends Element {
-  children: [{ text: '' }]
-  type: typeof ImagePlugin.name;
-  url: string;
-}
+export type MyEditor = PlateEditor<typeof AppKit>;
+export type MyValue = ValueOf<MyEditor>;
 
-// Define custom text types
-interface FormattedText extends Text {
-  bold?: boolean;
-  italic?: boolean;
-}
-
-export type MyRootBlock = ParagraphElement | ImageElement;
-
-// Define the editor's value type
-export type MyValue = MyRootBlock[];
-
-// Define the custom editor type
-export type MyEditor = PlateEditor<MyValue, typeof TablePlugin | typeof LinkPlugin>;
-
-export const useMyEditor = () => useEditor<MyEditor>();
-
-// Usage
 const value: MyValue = [{
-  type: 'p',
+  type: 'paragraph',
   children: [{ text: 'Hello, Plate!' }],
-}]
+}];
 
-const editorInferred = createPlateEditor({
-  plugins: [TablePlugin, LinkPlugin],
-  initialValue: value,
-});
-
-// or 
-const editorExplicit = createPlateEditor<MyValue, typeof TablePlugin | typeof LinkPlugin>({
-  plugins: [TablePlugin, LinkPlugin],
+const editor = createPlateEditor({
+  plugins: AppKit,
   initialValue: value,
 });
 ```
+
+A closed generated application passes its runtime kit to the context hook:
+
+```ts
+const editor = useEditor(EditorKit);
+```
+
+This infers and verifies the exact generated contract. Without a generated kit,
+call `useEditor()` without a type argument and use `useEditorPlugin(Plugin)` for
+an exact plugin capability.

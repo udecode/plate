@@ -5,16 +5,21 @@ import { useEditorReadOnly } from '@platejs/plite-react';
 import type { PlateEditor } from '../editor/PlateEditor';
 import type { AnyResolvedPlatePlugin } from '../plugin/PlatePlugin';
 
+import type { RenderLeafProps } from '../../lib';
 import { getPluginNodeClass } from '../../lib';
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import {
   getCompiledPlateModelBinding,
   getPlateRuntime,
 } from '../../internal/plugin/compilePlateModel';
-import { type PlateLeafProps, PlateLeaf } from '../components/plate-nodes';
+import { type PlateNodeProps, PlateLeaf } from '../components/plate-nodes';
 import { getRenderNodeProps } from './getRenderNodeProps';
 
-export type RenderLeaf = (props: PlateLeafProps) => React.ReactElement<any>;
+type PlateLeafRenderProps = PlateNodeProps & RenderLeafProps;
+
+export type RenderLeaf = (
+  props: PlateLeafRenderProps
+) => React.ReactElement<any>;
 
 const HARD_AFFINITY_SPACE = String.fromCodePoint(160);
 const HARD_AFFINITY_SPACER_STYLE = {
@@ -42,10 +47,11 @@ const isActiveHardAffinityBoundary = (editor: PlateEditor, text: any) => {
   return match.focus.offset === 0 || match.focus.offset === text.text.length;
 };
 
-const getSimpleLeafAttributes = (props: PlateLeafProps, className?: string) => {
-  const attributes = ((props as any).attributes ??
-    (props.leaf as any).attributes ??
-    {}) as any;
+const getSimpleLeafAttributes = (
+  props: PlateLeafRenderProps,
+  className?: string
+) => {
+  const attributes = props.attributes ?? {};
 
   return {
     ...attributes,

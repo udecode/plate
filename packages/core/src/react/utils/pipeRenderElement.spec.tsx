@@ -180,7 +180,9 @@ describe('pipeRenderElement', () => {
   });
 
   it('keeps element context for custom node components', () => {
-    const CustomElement = (props: PlateElementProps) => {
+    const CustomElement = (
+      props: PlateElementProps<typeof ParagraphPlugin>
+    ) => {
       const path = usePath();
 
       return (

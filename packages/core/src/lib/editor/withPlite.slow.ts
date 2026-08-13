@@ -422,12 +422,63 @@ describe('createPlateEditor', () => {
         initialValue: [{ children: [{ text: 'text' }], type: 'paragraph' }],
       });
 
+      expect(() =>
+        editor.update((tx) => {
+          tx.plugin(TxPlugin).bold();
+
+          throw new Error('rollback');
+        })
+      ).toThrow('rollback');
+      expect(editor.read.children()[0].children[0]).toEqual({ text: 'text' });
+      expect(() =>
+        editor.read((state) =>
+          state.transaction((tx) => tx.plugin(TxPlugin).bold())
+        )
+      ).not.toThrow();
+
+      editor.update((tx) => tx.plugin(TxPlugin).bold());
+      editor.update((tx) => tx.plugin('txPlugin').bold());
       editor.update((tx) => tx.txPlugin.bold());
 
       expect(editor.read.children()[0].children[0]).toMatchObject({
         bold: true,
         text: 'text',
       });
+    });
+
+    it('validates transaction plugin descriptor identity and installation', () => {
+      const TxPlugin = defineBasePlugin('txPlugin', {
+        update: () => ({ run: () => undefined }),
+      });
+      const WrongFamily = defineBasePlugin('txPlugin', {
+        update: () => ({ run: () => undefined }),
+      });
+      const MissingPlugin = defineBasePlugin('missingPlugin', {
+        update: () => ({ run: () => undefined }),
+      });
+      const editor = createBaseEditor({ plugins: [TxPlugin] });
+
+      expect(() => editor.update((tx) => tx.plugin(WrongFamily).run())).toThrow(
+        'Plate plugin "txPlugin" resolves to a different descriptor family.'
+      );
+      expect(() =>
+        editor.update((tx) => tx.plugin(MissingPlugin).run())
+      ).toThrow('Plate plugin "missingPlugin" is not installed.');
+    });
+
+    it('keeps the plugin capability name available through the transaction portal', () => {
+      let calls = 0;
+      const Plugin = defineBasePlugin('plugin', {
+        update: () => ({ run: () => calls++ }),
+      });
+      const editor = createBaseEditor({ plugins: [Plugin] });
+
+      editor.update((tx) => {
+        tx.plugin(Plugin).run();
+        tx.plugin.run();
+      });
+
+      expect(calls).toBe(2);
     });
 
     it('installs plugin dependencies before their dependent', () => {
@@ -1162,7 +1213,7 @@ describe('createPlateEditor', () => {
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     });
-    editor.update.blocks.toggle('custom-paragraph');
+    editor.plugin(CustomParagraphPlugin).update.toggle();
 
     expect(editor.read.children()).toEqual([
       { children: [{ text: 'one' }], type: 'custom-paragraph' },
@@ -1197,7 +1248,7 @@ describe('createPlateEditor', () => {
       ],
     });
 
-    editor.update.blocks.toggle('heading');
+    editor.plugin(HeadingPlugin).update.toggle();
 
     expect(editor.read.children()).toEqual([
       {

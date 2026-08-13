@@ -5,6 +5,7 @@ import * as React from 'react';
 import type { PlateEditor, PlateElementProps } from 'platejs/react';
 
 import { AIChatPlugin } from '@platejs/ai/react';
+import type { SlashInputPlugin } from '@platejs/slash-command/react';
 import {
   CalendarIcon,
   ChevronRightIcon,
@@ -26,7 +27,7 @@ import {
   Table,
   TableOfContentsIcon,
 } from 'lucide-react';
-import { type TComboboxInputElement, KEYS } from 'platejs';
+import { PLUGINS } from 'platejs';
 import { PlateElement } from 'platejs/react';
 
 import {
@@ -78,73 +79,73 @@ const groups: Group[] = [
         icon: <PilcrowIcon />,
         keywords: ['paragraph'],
         label: 'Text',
-        value: KEYS.p,
+        value: PLUGINS.paragraph,
       },
       {
         icon: <Heading1Icon />,
         keywords: ['title', 'h1'],
         label: 'Heading 1',
-        value: KEYS.h1,
+        value: PLUGINS.h1,
       },
       {
         icon: <Heading2Icon />,
         keywords: ['subtitle', 'h2'],
         label: 'Heading 2',
-        value: KEYS.h2,
+        value: PLUGINS.h2,
       },
       {
         icon: <Heading3Icon />,
         keywords: ['subtitle', 'h3'],
         label: 'Heading 3',
-        value: KEYS.h3,
+        value: PLUGINS.h3,
       },
       {
         icon: <ListIcon />,
         keywords: ['unordered', 'ul', '-'],
         label: 'Bulleted list',
-        value: KEYS.ul,
+        value: 'disc',
       },
       {
         icon: <ListOrdered />,
         keywords: ['ordered', 'ol', '1'],
         label: 'Numbered list',
-        value: KEYS.ol,
+        value: 'decimal',
       },
       {
         icon: <Square />,
         keywords: ['checklist', 'task', 'checkbox', '[]'],
         label: 'To-do list',
-        value: KEYS.listTodo,
+        value: 'todo',
       },
       {
         icon: <ChevronRightIcon />,
         keywords: ['collapsible', 'expandable'],
         label: 'Toggle',
-        value: KEYS.toggle,
+        value: PLUGINS.toggle,
       },
       {
         icon: <Code2 />,
         keywords: ['```'],
         label: 'Code Block',
-        value: KEYS.codeBlock,
+        value: PLUGINS.codeBlock,
       },
       {
         icon: <Table />,
         label: 'Table',
-        value: KEYS.table,
+        value: PLUGINS.table,
       },
       {
         icon: <Quote />,
         keywords: ['citation', 'blockquote', 'quote', '>'],
         label: 'Blockquote',
-        value: KEYS.blockquote,
+        value: PLUGINS.blockquote,
       },
       {
         description: 'Insert a highlighted block.',
         icon: <LightbulbIcon />,
         keywords: ['note'],
         label: 'Callout',
-        value: KEYS.callout,
+        value: PLUGINS.callout,
       },
     ].map((item) => ({
       ...item,
@@ -160,7 +161,7 @@ const groups: Group[] = [
         icon: <TableOfContentsIcon />,
         keywords: ['toc'],
         label: 'Table of contents',
-        value: KEYS.toc,
+        value: PLUGINS.toc,
       },
       {
         icon: <Columns3Icon />,
@@ -171,13 +172,13 @@ const groups: Group[] = [
         focusEditor: false,
         icon: <RadicalIcon />,
         label: 'Equation',
-        value: KEYS.equation,
+        value: PLUGINS.equation,
       },
       {
         icon: <PenToolIcon />,
         keywords: ['excalidraw'],
         label: 'Excalidraw',
-        value: KEYS.excalidraw,
+        value: PLUGINS.excalidraw,
       },
       {
         icon: <Code2 />,
@@ -190,7 +191,7 @@ const groups: Group[] = [
           'mermaid',
         ],
         label: 'Code Drawing',
-        value: KEYS.codeDrawing,
+        value: PLUGINS.codeDrawing,
       },
     ].map((item) => ({
       ...item,
@@ -207,7 +208,7 @@ const groups: Group[] = [
         icon: <CalendarIcon />,
         keywords: ['time'],
         label: 'Date',
-        value: KEYS.date,
+        value: PLUGINS.date,
       },
       {
         focusEditor: true,
@@ -220,7 +221,7 @@ const groups: Group[] = [
         focusEditor: false,
         icon: <RadicalIcon />,
         label: 'Inline Equation',
-        value: KEYS.inlineEquation,
+        value: PLUGINS.inlineEquation,
       },
     ].map((item) => ({
       ...item,
@@ -232,7 +233,7 @@ const groups: Group[] = [
 ];
 
 export function SlashInputElement(
-  props: PlateElementProps<TComboboxInputElement>
+  props: PlateElementProps<typeof SlashInputPlugin>
 ) {
   const { editor, element } = props;
 

@@ -77,10 +77,7 @@ describe('BaseBlockquotePlugin', () => {
       type: 'blockquote',
     });
 
-    editor.update.blocks.toggle(
-      editor.plugin(BaseBlockquotePlugin).schema.type,
-      { wrap: true }
-    );
+    editor.plugin(BaseBlockquotePlugin).update.toggle();
 
     expect(editor.read.children()).toMatchObject([
       {

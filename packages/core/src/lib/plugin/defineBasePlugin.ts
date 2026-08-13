@@ -4,6 +4,7 @@ import type {
   BasePluginContext,
   BasePluginDefinitionInput,
   BasePlugin,
+  Decorate,
   EditorShortcut,
   PluginCodecMapDeclaration,
 } from './BasePlugin';
@@ -128,7 +129,6 @@ type BasePluginConstructorPresenceKey =
   | 'commands'
   | 'contributions'
   | 'corrections'
-  | 'decorate'
   | 'editOnly'
   | 'effectTypes'
   | 'facetProviders'
@@ -527,6 +527,7 @@ type BasePluginConstructorRestInput<
   | 'codecs'
   | 'conflicts'
   | 'dependencies'
+  | 'decorate'
   | 'enabled'
   | 'initialState'
   | 'key'
@@ -582,6 +583,7 @@ export function defineBasePlugin<
   >,
   const TApi extends object,
   const TUpdate extends object,
+  const TDecoration extends object,
   const TSchema extends PluginSchemaDeclaration,
   const D extends BasePluginDependencies,
   S extends object = 'initialState' extends TKeys
@@ -620,6 +622,23 @@ export function defineBasePlugin<
     ('initialState' extends TKeys
       ? Readonly<{ initialState: TInitialStateInput }>
       : Readonly<{ initialState?: never }>) &
+    ('decorate' extends TKeys
+      ? Readonly<{
+          decorate: Decorate<
+            NoInfer<
+              BasePluginConstructorCapabilityDefinition<
+                N,
+                TKeys,
+                BasePluginConstructorDependencies<TKeys, D>,
+                S,
+                'schema' extends TKeys ? TSchema : never,
+                TTargetPlugins
+              >
+            >,
+            TDecoration
+          >;
+        }>
+      : Readonly<{ decorate?: never }>) &
     Readonly<{
       api?: (
         context: BasePluginContext<
@@ -735,6 +754,9 @@ export function defineBasePlugin<
       : Readonly<Record<never, never>>) &
     ('update' extends TKeys
       ? Readonly<{ update: TUpdate }>
+      : Readonly<Record<never, never>>) &
+    ('decorate' extends TKeys
+      ? Readonly<{ decorate: TDecoration }>
       : Readonly<Record<never, never>>) &
     ('schema' extends TKeys
       ? Readonly<{

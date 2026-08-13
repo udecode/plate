@@ -10,7 +10,7 @@ import {
 import { Command as CommandPrimitive, useCommandActions } from '@udecode/cmdk';
 import { Fzf } from 'fzf';
 import { PlusIcon } from 'lucide-react';
-import { isHotkey, KEYS, TextApi } from 'platejs';
+import { isHotkey, TextApi } from 'platejs';
 import { Plate, useEditor, usePlateEditor, usePlateValue } from 'platejs/react';
 
 import {
@@ -233,7 +233,7 @@ const createEditorValue = (value?: SelectItem[]) => [
       ...(value?.flatMap((item) => [
         {
           children: [{ text: '' }],
-          type: KEYS.tag,
+          type: 'tag',
           value: item.value,
         },
         {
@@ -241,7 +241,7 @@ const createEditorValue = (value?: SelectItem[]) => [
         },
       ]) ?? []),
     ],
-    type: KEYS.p,
+    type: 'paragraph',
   },
 ];
 

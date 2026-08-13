@@ -21,7 +21,7 @@ Block Menu adds a right-click menu on top of block selection. `BlockMenuPlugin` 
 ## Features
 
 - Right-click block selection.
-- Context menu open state through `openId` and `position`.
+- Context menu open state through `openKey` and `position`.
 - Delete, duplicate, turn-into, indent, outdent, align, and Ask AI actions.
 - Touch-device and read-only guards.
 - Element-level opt in/out with `data-plate-open-context-menu`.
@@ -65,7 +65,7 @@ export const editor = createPlateEditor({
 
 | Surface | Owner | What It Does |
 |---------|-------|--------------|
-| `BlockMenuPlugin` | `@platejs/selection/react` | Stores `openId` and pointer `position`, then exposes menu show/hide APIs. |
+| `BlockMenuPlugin` | `@platejs/selection/react` | Stores `openKey` and pointer `position`, then exposes menu show/hide APIs. |
 | `BlockSelectionPlugin` | `@platejs/selection/react` | Selects the block under the context-menu event and applies actions to selected blocks. |
 | `BlockSelectionKit` | Registry | Enables context-menu selection and filters non-selectable blocks such as columns, code lines, and table cells. |
 | `BlockMenuKit` | Registry | Combines `BlockSelectionKit` with `BlockMenuPlugin.render.aboveEditable`. |
@@ -169,9 +169,9 @@ Force it open from a focused block with `data-plate-open-context-menu="true"` wh
 | Ask AI | Opens `AIChatPlugin` after the menu closes. |
 | Delete | Runs `editor.plugin(BlockSelectionPlugin).update.removeNodes()`. |
 | Duplicate | Runs `editor.plugin(BlockSelectionPlugin).update.duplicate()`. |
-| Turn into | Calls the registry `setBlockType` helper for paragraph, headings, blockquote, and code drawing. |
+| Turn into | Calls the registry `applyBlockAction` helper for paragraph, headings, blockquote, and code drawing. |
 | Indent / Outdent | Calls `blockSelection.setIndent(1)` or `blockSelection.setIndent(-1)`. |
-| Align | Calls `blockSelection.setNodes({ align })`. |
+| Align | Calls `blockSelection.setNodes({ textAlign: align })`. |
 
 The menu focuses block selection after close so keyboard selection remains active.
 
@@ -180,10 +180,10 @@ The menu focuses block selection after close so keyboard selection remains activ
 | API | Package | Use |
 |-----|---------|-----|
 | `BLOCK_CONTEXT_MENU_ID` | `@platejs/selection/react` | Built-in open id for the registry context menu. |
-| `BlockMenuPlugin` | `@platejs/selection/react` | Menu state plugin with `openId` and `position` state. |
-| `editor.api.blockMenu.hide()` | `@platejs/selection/react` | Closes the menu and moves its stored position offscreen. |
-| `editor.api.blockMenu.show(id, position?)` | `@platejs/selection/react` | Opens a menu by id and optionally sets pointer coordinates. |
-| `editor.api.blockMenu.showContextMenu(blockId, position)` | `@platejs/selection/react` | Selects one block by id, then opens the context menu at the pointer coordinates. |
+| `BlockMenuPlugin` | `@platejs/selection/react` | Menu state plugin with `openKey` and `position` state. |
+| `editor.plugin(BlockMenuPlugin).api.hide()` | `@platejs/selection/react` | Closes the menu and moves its stored position offscreen. |
+| `editor.plugin(BlockMenuPlugin).api.show(id, position?)` | `@platejs/selection/react` | Opens a menu by id and optionally sets pointer coordinates. |
+| `editor.plugin(BlockMenuPlugin).api.showContextMenu(blockId, position)` | `@platejs/selection/react` | Selects one block by id, then opens the context menu at the pointer coordinates. |
 | `BlockSelectionPlugin.initialState.enableContextMenu` | `@platejs/selection/react` | Enables block selection from right-click events. |
 | `editor.plugin(BlockSelectionPlugin).api.addOnContextMenu` | `@platejs/selection/react` | Shared right-click handler used by selectable block node props. |
 | `BlockContextMenu` | Registry UI | Default context menu component used by `BlockMenuKit`. |

@@ -263,7 +263,9 @@ export const OverridePlugin = defineBasePlugin('override', {
         const runAction = (action: string | undefined) => {
           let handled = false;
           const transaction = state.transaction((tx) => {
-            handled = tx[plugin.name].executeBreakRuleAction(action, blockPath);
+            handled = tx
+              .plugin(plugin)
+              .executeBreakRuleAction(action, blockPath);
           });
 
           return handled ? transaction : null;
@@ -327,7 +329,7 @@ export const OverridePlugin = defineBasePlugin('override', {
           if (result === false) return false;
 
           return state.transaction.extend(result, (tx) => {
-            tx[plugin.name].resetBlock(
+            tx.plugin(plugin).resetBlock(
               isAtStart ? blockPath : PathApi.next(blockPath)
             );
           });
@@ -346,10 +348,12 @@ export const OverridePlugin = defineBasePlugin('override', {
           if (block && state.points.isEnd(selection.anchor, block[1])) {
             let handled = false;
             const transaction = state.transaction((tx) => {
-              handled = tx[plugin.name].selectAdjacentBlockVoid(
-                state.nodes.next({ at: block[1] }),
-                block
-              );
+              handled = tx
+                .plugin(plugin)
+                .selectAdjacentBlockVoid(
+                  state.nodes.next({ at: block[1] }),
+                  block
+                );
             });
 
             if (handled) return transaction;
@@ -379,10 +383,9 @@ export const OverridePlugin = defineBasePlugin('override', {
 
             let selectedAdjacent = false;
             const selectAdjacent = state.transaction((tx) => {
-              selectedAdjacent = tx[plugin.name].selectAdjacentBlockVoid(
-                previous,
-                [blockNode, blockPath]
-              );
+              selectedAdjacent = tx
+                .plugin(plugin)
+                .selectAdjacentBlockVoid(previous, [blockNode, blockPath]);
             });
 
             if (selectedAdjacent) return selectAdjacent;
@@ -394,10 +397,9 @@ export const OverridePlugin = defineBasePlugin('override', {
             );
             let handledRule = false;
             const ruleTransaction = state.transaction((tx) => {
-              handledRule = tx[plugin.name].executeDeleteRuleAction(
-                rules?.start,
-                blockPath
-              );
+              handledRule = tx
+                .plugin(plugin)
+                .executeDeleteRuleAction(rules?.start, blockPath);
             });
 
             if (handledRule) return ruleTransaction;
@@ -414,10 +416,9 @@ export const OverridePlugin = defineBasePlugin('override', {
             );
             let handledRule = false;
             const ruleTransaction = state.transaction((tx) => {
-              handledRule = tx[plugin.name].executeDeleteRuleAction(
-                rules?.empty,
-                blockPath
-              );
+              handledRule = tx
+                .plugin(plugin)
+                .executeDeleteRuleAction(rules?.empty, blockPath);
             });
 
             if (handledRule) return ruleTransaction;

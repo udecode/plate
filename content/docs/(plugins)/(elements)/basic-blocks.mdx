@@ -71,14 +71,14 @@ Use `BaseBasicBlocksKit` in static or server-safe rendering paths.
 <ComponentSource name="basic-blocks-base-kit" />
 
 ```tsx
-import { createStaticEditor } from 'platejs';
+import { createStaticEditor } from 'platejs/static';
 
 import { BaseBasicBlocksKit } from '@/components/editor/plugins/basic-blocks-base-kit';
 
 const value = [
   {
     children: [{ text: 'Static content' }],
-    type: 'p',
+    type: 'paragraph',
   },
 ];
 

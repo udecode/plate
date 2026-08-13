@@ -5,6 +5,7 @@ import type {
   EditorSchemaElement,
   EditorSchemaExtension,
   EditorSchemaExtensionProvider,
+  EditorToggleBlockOptions,
   EditorNodeUnsetOptions,
   EditorExtensionPortal,
   EditorExtensionReference,
@@ -33,6 +34,7 @@ import type {
   PropertyValueOf,
   PropertyOptionsOf,
   SchemaContentRootContribution,
+  SchemaContent,
   SchemaElement,
   SchemaElementConstructionPropertiesFor,
   SchemaElementFor,
@@ -67,6 +69,7 @@ import type {
   InferUpdate,
   PluginDependencySource,
   PluginReference,
+  PluginSchemaDeclaration,
 } from '../plugin/PluginDefinition';
 import type { InternalPluginDefinitionOf } from '../plugin/pluginDefinitionLookup.internal';
 import type {
@@ -659,7 +662,12 @@ type InstalledSchemaDefinitionsOf<D> =
 type EditorElementMutation = Readonly<{
   construction: object;
   properties: object;
+  toggle?: boolean;
   type: string;
+}>;
+
+type ElementToggleUpdate = Readonly<{
+  toggle: (options?: Omit<EditorToggleBlockOptions<Element>, 'wrap'>) => void;
 }>;
 
 type GeneratedElementUpdate<
@@ -684,7 +692,10 @@ type GeneratedElementUpdate<
           properties: Partial<TMutation['properties']>,
           options?: Omit<NodeSetNodesOptions<Element>, 'match'>
         ) => void;
-      }>
+      }> &
+        (TMutation extends Readonly<{ toggle: true }>
+          ? ElementToggleUpdate
+          : {})
     : {}
   : {};
 
@@ -746,7 +757,26 @@ type DefaultElementUpdate<
                 >,
                 options?: Omit<NodeSetNodesOptions<Element>, 'match'>
               ) => void;
-            }>
+            }> &
+              (TSchemaDefinitions extends InternalEditorApplicationSchemaProvider
+                ? {}
+                : 'toggle' extends keyof InferUpdate<TPlugin>
+                  ? {}
+                  : {} extends SchemaElementConstructionPropertiesFor<
+                        PlateSchemaSourceForInstalledDefinitions<
+                          InstalledSchemaDefinitionsOf<TSchemaDefinitions>
+                        >,
+                        TType
+                      >
+                    ? EditorDefinitionElementSupportsToggle<
+                        SchemaPluginDefinitionForRuntimePlugin<
+                          TSchemaDefinitions,
+                          TPlugin
+                        >
+                      > extends true
+                      ? ElementToggleUpdate
+                      : {}
+                    : {})
           : {}
         : {};
 
@@ -810,6 +840,44 @@ type SchemaContributionElements<TContribution> =
   TContribution extends Readonly<{ elements?: infer TElements }>
     ? Extract<NonNullable<TElements>, Readonly<Record<string, SchemaElement>>>
     : never;
+
+type SchemaElementSupportsToggle<TElement> =
+  TElement extends Readonly<{
+    inline: true;
+  }>
+    ? false
+    : TElement extends Readonly<{
+          void: 'block' | 'inline' | 'markable-inline';
+        }>
+      ? false
+      : TElement extends Readonly<{
+            content: SchemaContent<
+              Readonly<{
+                kind: 'any';
+                rules: readonly [
+                  Readonly<{ kind: 'text' }>,
+                  Readonly<{ group: 'inline'; kind: 'group' }>,
+                ];
+              }>,
+              Readonly<{ default: 'text'; min: 1 }>
+            >;
+          }>
+        ? true
+        : false;
+
+type DirectPluginSchemaElement<D extends AnyBasePluginDefinition> =
+  D extends Readonly<{ schema: infer TSchema }>
+    ? TSchema extends (...args: never[]) => unknown
+      ? never
+      : Extract<TSchema, PluginSchemaDeclaration> extends Readonly<{
+            element: infer TElement extends SchemaElement;
+          }>
+        ? TElement
+        : never
+    : never;
+
+type EditorDefinitionElementSupportsToggle<D extends AnyBasePluginDefinition> =
+  SchemaElementSupportsToggle<DirectPluginSchemaElement<D>>;
 
 type InstalledPluginElementType<C extends AnyBasePluginDefinition> =
   C extends Readonly<{ elementType: infer TElementType extends string }>
@@ -1170,6 +1238,14 @@ type EditorDefinitionElementMutation<D extends AnyBasePluginDefinition> = [
             PlateSchemaSourceForInstalledDefinitions<D>,
             TType
           >;
+          toggle: 'toggle' extends keyof InferUpdate<D>
+            ? false
+            : {} extends SchemaElementConstructionPropertiesFor<
+                  PlateSchemaSourceForInstalledDefinitions<D>,
+                  TType
+                >
+              ? EditorDefinitionElementSupportsToggle<D>
+              : false;
           type: TType;
         }>
       : never
@@ -1214,6 +1290,13 @@ type RawElementPluginGuard<TPlugin> = [
 /** @internal Lazy installed-schema witness for compact editor projections. */
 export interface InternalInstalledSchemaDefinitionsProvider<D> {
   readonly definitions: () => D;
+}
+
+declare const editorApplicationSchemaProvider: unique symbol;
+
+/** @internal Raw editor definitions with application schema need generation for exact mutations. */
+export interface InternalEditorApplicationSchemaProvider {
+  readonly [editorApplicationSchemaProvider]: true;
 }
 
 /** @internal Descriptor-bound mutation projection for raw and generated kits. */
@@ -1428,13 +1511,68 @@ type PlatePluginDependencyExtension<D, S = D> = {
   }>
 >;
 
+type PlateTransactionPluginName<TPlugin> =
+  TPlugin extends PluginReference<infer TName>
+    ? TName
+    : Extract<TPlugin, string>;
+
+type PlateTransactionPluginDefinition<D, TPlugin> =
+  true extends IsBroadPluginDefinition<D>
+    ? OwnInferencePluginDefinition<TPlugin>
+    : Extract<
+        D,
+        {
+          name: PlateTransactionPluginName<TPlugin>;
+        }
+      >;
+
+type PlateTransactionDescriptorPortalResult<TDefinition> =
+  TDefinition extends AnyBasePluginDefinition
+    ? Materialize<
+        PluginRead<TDefinition> & Materialize<PlatePluginUpdate<TDefinition>>
+      >
+    : never;
+
+type PlateTransactionPluginPortalResult<D, S, TPlugin> =
+  PlateTransactionPluginName<TPlugin> extends infer TName extends string
+    ? string extends TName
+      ? object
+      : PlateTransactionPluginDefinition<D, TPlugin> extends infer TDefinition
+        ? [TDefinition] extends [never]
+          ? never
+          : TDefinition extends AnyBasePluginDefinition
+            ? true extends IsBroadPluginDefinition<D>
+              ? PlateTransactionDescriptorPortalResult<TDefinition>
+              : Materialize<
+                  PluginRead<TDefinition> & PluginUpdate<S, TDefinition>
+                >
+            : never
+        : never
+    : never;
+
+type PlateTransactionPluginPortal<D, S = D> = <
+  const TPlugin extends PluginReference | string,
+>(
+  plugin: TPlugin
+) => PlateTransactionPluginPortalResult<D, S, TPlugin>;
+
+type PlateTransactionPluginPortalSurface<
+  D,
+  S = D,
+> = PlateTransactionPluginPortal<D, S> &
+  ([Extract<D, { name: 'plugin' }>] extends [never]
+    ? {}
+    : PlateTransactionPluginPortalResult<D, S, 'plugin'>);
+
 type PlateTransactionExtension<D, S = D> = {
   name: 'plate-transaction';
 } & EditorExtensionTypeProvider<
   EditorExtensionCapabilities<{
     update: MergeCapabilityGroups<
       CoreEditorTransaction,
-      InstalledPluginTransaction<D, S>
+      InstalledPluginTransaction<D, S> & {
+        plugin: PlateTransactionPluginPortalSurface<D, S>;
+      }
     >;
   }>
 >;
@@ -1662,12 +1800,22 @@ type PlatePluginTransactionNodes<D> = Omit<
 type WithPluginWritableNodes<TTransaction, D> = Omit<TTransaction, 'nodes'> &
   Readonly<{ nodes: PlatePluginTransactionNodes<D> }>;
 
+type WithPlateTransactionPluginPortal<TTransaction, D, S = D> = Omit<
+  TTransaction,
+  'plugin'
+> &
+  Readonly<{ plugin: PlateTransactionPluginPortalSurface<D, S> }>;
+
 type PlatePluginTransactionForInstalledDefinitions<
   D,
   S = D,
   V extends Value = Value,
 > = WithPluginWritableNodes<
-  EditorUpdateTransaction<V, readonly [PlateTransactionExtension<D, S>]>,
+  WithPlateTransactionPluginPortal<
+    EditorUpdateTransaction<V, readonly [PlateTransactionExtension<D, S>]>,
+    D,
+    S
+  >,
   D
 >;
 
@@ -1676,7 +1824,11 @@ type PlateEditorTransactionBuilder<
   D,
   S = D,
 > = WithPluginWritableNodes<
-  EditorTransactionSpecBuilder<V, readonly [PlateTransactionExtension<D, S>]>,
+  WithPlateTransactionPluginPortal<
+    EditorTransactionSpecBuilder<V, readonly [PlateTransactionExtension<D, S>]>,
+    D,
+    S
+  >,
   D
 >;
 
@@ -1816,21 +1968,30 @@ export type PlatePluginRead<P extends AnyBasePluginDefinition> = Materialize<
   PluginRead<Extract<OwnInferencePluginDefinition<P>, AnyBasePluginDefinition>>
 >;
 
-type PlatePluginUpdateMethods<P extends AnyBasePluginDefinition> = Materialize<
+type PlatePluginUpdateMethods<
+  P extends AnyBasePluginDefinition,
+  S = P,
+> = Materialize<
   PluginUpdate<
-    InternalEditorMutationProvider<
-      EditorDefinitionMutationsFromDefinitions<
-        Extract<OwnInferencePluginDefinition<P>, AnyBasePluginDefinition>
-      >
-    >,
+    S extends InternalEditorMutationProvider<unknown>
+      ? S
+      : S extends InternalEditorApplicationSchemaProvider
+        ? S
+        : InternalEditorMutationProvider<
+            EditorDefinitionMutationsFromDefinitions<
+              Extract<OwnInferencePluginDefinition<P>, AnyBasePluginDefinition>
+            >
+          >,
     Extract<OwnInferencePluginDefinition<P>, AnyBasePluginDefinition>
   >
 >;
 
 /** One-shot update methods exposed directly by one plugin portal. */
-export type PlatePluginUpdate<P extends AnyBasePluginDefinition> =
-  PlatePluginUpdateMethods<P> &
-    ((policy: EditorUpdatePolicy) => PlatePluginUpdateMethods<P>);
+export type PlatePluginUpdate<
+  P extends AnyBasePluginDefinition,
+  S = P,
+> = PlatePluginUpdateMethods<P, S> &
+  ((policy: EditorUpdatePolicy) => PlatePluginUpdateMethods<P, S>);
 
 export type PlatePluginOwnUpdate<P extends AnyBasePluginDefinition> =
   PliteRuntimeBaseEditor<

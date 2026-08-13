@@ -20,9 +20,12 @@ import { Editor, EditorContainer } from '@/registry/ui/editor';
 
 export const EditableVoidPlugin = definePlatePlugin('editableVoid', {
   schema: { element: { void: 'editable-island' } },
-}).configure({ component: EditableVoidElement });
+});
 
-export function EditableVoidElement({ children, ...props }: PlateElementProps) {
+export function EditableVoidElement({
+  children,
+  ...props
+}: PlateElementProps<typeof EditableVoidPlugin>) {
   const [inputValue, setInputValue] = React.useState('');
 
   const editor = usePlateEditor({
@@ -84,7 +87,10 @@ export function EditableVoidElement({ children, ...props }: PlateElementProps) {
 
 export default function EditableVoidsDemo() {
   const editor = usePlateEditor({
-    plugins: [...EditorKit, EditableVoidPlugin],
+    plugins: [
+      ...EditorKit,
+      EditableVoidPlugin.configure({ component: EditableVoidElement }),
+    ],
     initialValue: editableVoidsValue,
   });
 

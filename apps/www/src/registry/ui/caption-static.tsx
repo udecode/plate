@@ -1,10 +1,18 @@
 import * as React from 'react';
 
-import type { Element, TResizableProps } from 'platejs';
+import type { Element } from 'platejs';
 
 import { NodeApi } from 'platejs';
 
 import { cn } from '@/lib/utils';
+
+export const getMediaTextAlign = (element: object) => {
+  if (!('textAlign' in element)) return 'center';
+
+  const align = element.textAlign;
+
+  return align === 'left' || align === 'right' ? align : 'center';
+};
 
 export function CaptionStatic({
   align = 'center',
@@ -13,7 +21,7 @@ export function CaptionStatic({
   element,
   ...props
 }: React.ComponentProps<'figcaption'> & {
-  align?: TResizableProps['align'];
+  align?: 'center' | 'left' | 'right';
   element: Element;
 }) {
   if (NodeApi.string(element).length === 0) return null;

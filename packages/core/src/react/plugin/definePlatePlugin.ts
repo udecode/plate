@@ -1,4 +1,5 @@
 import type {
+  DecoratedRange,
   EditorExtensionReference,
   EditorUpdateContext,
 } from '@platejs/plite';
@@ -22,6 +23,7 @@ import type {
   PlatePluginContext,
   PlatePluginDefinitionInput,
   PlateShortcutRecord,
+  Decorate,
   UseHooks,
   ValidatedPlateShortcuts,
 } from './PlatePlugin';
@@ -82,6 +84,7 @@ type PlatePluginConstructorRestKey = Exclude<
   | 'api'
   | 'conflicts'
   | 'dependencies'
+  | 'decorate'
   | 'enabled'
   | 'initialState'
   | 'key'
@@ -105,6 +108,7 @@ type PlatePluginConstructorResultInput<
   TRead extends object,
   TSelectors extends PluginSelectors<S>,
   TUpdate extends object,
+  TDecoration extends object,
   TEnabled extends boolean,
   TSchema extends PluginSchemaDeclaration,
   TTargetPlugins extends readonly (PluginReference | string)[],
@@ -114,6 +118,7 @@ type PlatePluginConstructorResultInput<
     | 'api'
     | 'conflicts'
     | 'dependencies'
+    | 'decorate'
     | 'enabled'
     | 'initialState'
     | 'key'
@@ -155,6 +160,9 @@ type PlatePluginConstructorResultInput<
     : Readonly<Record<never, never>>) &
   ('update' extends TKeys
     ? Readonly<{ update: () => TUpdate }>
+    : Readonly<Record<never, never>>) &
+  ('decorate' extends TKeys
+    ? Readonly<{ decorate: () => (DecoratedRange & TDecoration)[] }>
     : Readonly<Record<never, never>>) &
   ('schema' extends TKeys
     ? Readonly<{ schema: TSchema }>
@@ -375,6 +383,7 @@ export function definePlatePlugin<
   TInitialStateInput,
   const TApi extends object = {},
   const TUpdate extends object = {},
+  const TDecoration extends object = {},
   const TSchema extends PluginSchemaDeclaration = never,
   const D extends PlatePluginDependencies = readonly [],
   const TConflicts extends PlatePluginDependencies = readonly [],
@@ -410,6 +419,22 @@ export function definePlatePlugin<
       NoInfer<'schema' extends TKeys ? TSchema : never>,
       TTargetPlugins
     > &
+    ('decorate' extends TKeys
+      ? Readonly<{
+          decorate: Decorate<
+            NoInfer<
+              PlatePluginConstructorContextDefinition<
+                N,
+                PlatePluginConstructorDependencies<TKeys, D>,
+                PlatePluginConstructorState<TKeys, TInitialStateInput>,
+                'schema' extends TKeys ? TSchema : never,
+                TTargetPlugins
+              >
+            >,
+            TDecoration
+          >;
+        }>
+      : Readonly<{ decorate?: never }>) &
     ('initialState' extends TKeys
       ? Readonly<{
           initialState: PlatePluginConstructorInitialStateInput<
@@ -467,6 +492,7 @@ export function definePlatePlugin<
           TRead,
           TSelectors,
           TUpdate,
+          TDecoration,
           TEnabled,
           'schema' extends TKeys ? TSchema : never,
           TTargetPlugins

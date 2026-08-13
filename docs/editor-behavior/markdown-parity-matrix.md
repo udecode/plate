@@ -211,6 +211,8 @@ for the actual implementation order.
 This section only names the backlog families that still exist outside the
 closed major gate.
 
+- async hover-source lifecycle, gated on an approved product surface
+
 ## Related Learnings
 
 - [markdown-blockquotes-must-round-trip-as-container-blocks.md](../solutions/logic-errors/2026-04-01-markdown-blockquotes-must-round-trip-as-container-blocks.md)

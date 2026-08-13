@@ -28,16 +28,16 @@ export function BlockSuggestionCard({
   isLast: boolean;
   suggestion: ResolvedSuggestion;
 }) {
-  const { editor } = useEditorPlugin(SuggestionPlugin);
+  const { update } = useEditorPlugin(SuggestionPlugin);
 
   const userInfo = usePluginStore(discussionPlugin, 'user', suggestion.userId);
 
   const accept = (suggestion: ResolvedSuggestion) => {
-    editor.update.suggestion.accept(suggestion);
+    update.accept(suggestion);
   };
 
   const reject = (suggestion: ResolvedSuggestion) => {
-    editor.update.suggestion.reject(suggestion);
+    update.reject(suggestion);
   };
 
   const [hovering, setHovering] = React.useState(false);
@@ -50,8 +50,8 @@ export function BlockSuggestionCard({
 
   const getRemoveSummaryItems = (text: string) => {
     const items = suggestionText2Array(text).map((item) => {
-      if (item === 'column_group') return 'Column';
-      if (item === 'code_block') return 'Code Block';
+      if (item === 'columnGroup') return 'Column';
+      if (item === 'codeBlock') return 'Code Block';
 
       return item;
     });

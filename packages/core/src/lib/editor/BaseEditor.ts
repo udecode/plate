@@ -16,7 +16,9 @@ import type {
   InternalPliteEditorWithInstalledPlateDefinitions,
   PliteEditorWithPlatePlugins,
   InferEditorRuntimePlugins,
+  InternalEditorApplicationSchemaProvider,
   InternalEditorMutationProvider,
+  InternalInstalledSchemaDefinitionsProvider,
   MergeInstalledPluginDefinitions,
 } from './pluginRuntimeTypes';
 import type {
@@ -50,14 +52,14 @@ type PlateEditorRuntime = {
   };
 };
 
-type PlatePluginRuntime = {
-  plugin: GetBasePluginPortal;
+type PlatePluginRuntime<S> = {
+  plugin: GetBasePluginPortal<S>;
 };
 
-type GetBasePluginPortal = {
+type GetBasePluginPortal<S> = {
   <P extends (AnyBasePlugin | AnyPluginBase) & PluginReference>(
     plugin: P
-  ): BasePluginPortal<InternalPluginDefinitionOf<P>>;
+  ): BasePluginPortal<InternalPluginDefinitionOf<P>, S>;
   (
     plugin: AnyBasePlugin | AnyPluginBase | PluginReference | string
   ): DynamicBasePluginPortal;
@@ -78,14 +80,19 @@ export type InferBaseEditorPlugins<TPlugins> = MergeInstalledPluginDefinitions<
 export type InternalBaseEditorMutationProvider<TPlugins, TRuntime> = [
   GeneratedEditorMutations<TPlugins>,
 ] extends [never]
-  ? TRuntime
+  ? TPlugins extends InternalEditorApplicationSchemaProvider
+    ? InternalInstalledSchemaDefinitionsProvider<TRuntime> &
+        InternalEditorApplicationSchemaProvider
+    : TRuntime
   : InternalEditorMutationProvider<GeneratedEditorMutations<TPlugins>>;
 
 /** @internal Base runtime projected from one authored plugin definition. */
 export type InternalBaseEditorWithPlatePlugins<
   V extends Value,
   P extends AnyBasePluginDefinition,
-> = PliteEditorWithPlatePlugins<V, P> & PlateEditorRuntime & PlatePluginRuntime;
+> = PliteEditorWithPlatePlugins<V, P> &
+  PlateEditorRuntime &
+  PlatePluginRuntime<P>;
 
 export type BaseEditor<TPlugins = never> = [TPlugins] extends [never]
   ? InternalBaseEditorWithInstalledPlugins<
@@ -108,4 +115,4 @@ export type InternalBaseEditorWithInstalledPlugins<
   S = D,
 > = InternalPliteEditorWithInstalledPlateDefinitions<V, D, S> &
   PlateEditorRuntime &
-  PlatePluginRuntime;
+  PlatePluginRuntime<S>;

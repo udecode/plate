@@ -137,6 +137,11 @@ describe('compilePlateModel', () => {
     });
     const element = editor.plugin(ElementPlugin);
 
+    element.update.toggle({ at: [0] });
+    expect(editor.read.children()[0]).toMatchObject({ type: 'callout_node' });
+    element.update.toggle({ at: [0] });
+    expect(editor.read.children()[0]).toMatchObject({ type: 'paragraph' });
+
     element.update.insert({ tone: 'warning' }, { at: [1] });
     expect(editor.read.children()[1]).toEqual({
       children: [{ text: '' }],

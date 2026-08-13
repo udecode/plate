@@ -508,7 +508,7 @@ export const PlaceholderPlugin = toPlatePlugin(BasePlaceholderPlugin, {
         if (ancestor && NodeApi.string(ancestor[0]).length === 0) {
           editor.update((tx) => {
             tx.nodes.remove({ at: ancestor[1] });
-            tx[plugin.name].insertMedia(files, { at: ancestor[1] });
+            tx.plugin(plugin).insertMedia(files, { at: ancestor[1] });
           });
 
           return true;

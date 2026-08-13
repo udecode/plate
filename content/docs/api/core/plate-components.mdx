@@ -92,9 +92,15 @@ export function ReadOnlyEditor() {
 Use `PlateElement`, `PlateLeaf`, and `PlateText` inside plugin components. They merge Plite attributes with your `className`, `style`, and `ref`.
 
 ```tsx title="components/paragraph-element.tsx"
-import { PlateElement, type PlateElementProps } from "platejs/react";
+import {
+  ParagraphPlugin,
+  PlateElement,
+  type PlateElementProps,
+} from "platejs/react";
 
-export function ParagraphElement(props: PlateElementProps) {
+export function ParagraphElement(
+  props: PlateElementProps<typeof ParagraphPlugin>
+) {
   return <PlateElement as="p" className="leading-7" {...props} />;
 }
 ```
@@ -111,16 +117,16 @@ export function QuoteElement(props: PlateElementProps<typeof QuotePlugin>) {
 }
 ```
 
-Reusable component libraries can pass the element type directly instead:
+Low-level renderer infrastructure that has no plugin owner uses the raw render
+contract instead:
 
 ```tsx
-import type { Element } from "platejs";
-import { PlateElement, type PlateElementProps } from "platejs/react";
+import type { Element, RenderElementProps } from "platejs";
 
 export function TypedElement<TElement extends Element>(
-  props: PlateElementProps<TElement>
+  props: RenderElementProps<TElement>
 ) {
-  return <PlateElement {...props} />;
+  return <div {...props.attributes}>{props.children}</div>;
 }
 ```
 
@@ -148,7 +154,7 @@ export function FigureElement({
 
 | Primitive           | Behavior                                                                                                                                                                                                                      |
 | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `PlateElement`      | Adds `data-plite-node="element"`, preserves inline metadata, sets `data-block-id` for mounted block elements with an `id`, exposes typed element-owned content-root slots, and adds directional-affinity spacers when needed. |
+| `PlateElement`      | Adds `data-plite-node="element"`, preserves Plite's `data-plite-node-key`, exposes typed element-owned content-root slots, and adds directional-affinity spacers when needed. |
 | `PlateLeaf`         | Renders a text leaf and adds hard-affinity spacers when needed.                                                                                                                                                               |
 | `PlateText`         | Renders a text node without leaf-decoration matching.                                                                                                                                                                         |
 | `useNodeAttributes` | Merges Plite attributes, refs, class names, and styles for node primitives.                                                                                                                                                   |

@@ -1,10 +1,13 @@
 import * as React from 'react';
 
+import type { BaseHighlightPlugin } from '@platejs/basic-nodes';
 import type { PliteLeafProps } from 'platejs/static';
 
 import { PliteLeaf } from 'platejs/static';
 
-export function HighlightLeafStatic(props: PliteLeafProps) {
+export function HighlightLeafStatic(
+  props: PliteLeafProps<typeof BaseHighlightPlugin>
+) {
   return (
     <PliteLeaf {...props} as="mark" className="bg-highlight/30 text-inherit">
       {props.children}

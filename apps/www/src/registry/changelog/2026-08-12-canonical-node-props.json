@@ -1,0 +1,205 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-12-canonical-node-props",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-12-canonical-node-props.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-12",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "rename",
+  "summary": "Use canonical node renderer props",
+  "targets": [
+    {
+      "name": "ai-node",
+      "files": ["apps/www/src/registry/ui/ai-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "basic-marks-base-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/basic-marks-base-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "blockquote-node",
+      "files": ["apps/www/src/registry/ui/blockquote-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "callout-node",
+      "files": ["apps/www/src/registry/ui/callout-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-block-node",
+      "files": ["apps/www/src/registry/ui/code-block-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-node",
+      "files": ["apps/www/src/registry/ui/code-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editable-voids-demo",
+      "files": ["apps/www/src/registry/examples/editable-voids-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "emoji-node",
+      "files": ["apps/www/src/registry/ui/emoji-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "footnote-node",
+      "files": ["apps/www/src/registry/ui/footnote-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "heading-node",
+      "files": ["apps/www/src/registry/ui/heading-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "highlight-node",
+      "files": ["apps/www/src/registry/ui/highlight-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "hr-node",
+      "files": ["apps/www/src/registry/ui/hr-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "kbd-node",
+      "files": ["apps/www/src/registry/ui/kbd-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "link-node",
+      "files": ["apps/www/src/registry/ui/link-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "link-node-static",
+      "files": ["apps/www/src/registry/ui/link-node-static.tsx"],
+      "definitionFiles": [],
+      "diagnostics": []
+    },
+    {
+      "name": "list-classic-node",
+      "files": ["apps/www/src/registry/ui/list-classic-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "paragraph-node",
+      "files": ["apps/www/src/registry/ui/paragraph-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "search-highlight-node",
+      "files": ["apps/www/src/registry/ui/search-highlight-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "suggestion-node",
+      "files": ["apps/www/src/registry/ui/suggestion-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "tabbable-demo",
+      "files": ["apps/www/src/registry/examples/tabbable-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "toc-node",
+      "files": ["apps/www/src/registry/ui/toc-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "toggle-node",
+      "files": ["apps/www/src/registry/ui/toggle-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "version-history-demo",
+      "files": ["apps/www/src/registry/examples/version-history-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-12-callout-canonical-node-renderer-props-3d5e0c84",
+      "kind": "rename",
+      "summary": "Infer copied renderer props from their plugin descriptors.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "ai-node",
+        "basic-marks-base-kit",
+        "blockquote-node",
+        "callout-node",
+        "code-block-node",
+        "code-node",
+        "editable-voids-demo",
+        "emoji-node",
+        "footnote-node",
+        "heading-node",
+        "highlight-node",
+        "hr-node",
+        "kbd-node",
+        "link-node",
+        "link-node-static",
+        "list-classic-node",
+        "paragraph-node",
+        "search-highlight-node",
+        "suggestion-node",
+        "tabbable-demo",
+        "toc-node",
+        "toggle-node",
+        "version-history-demo"
+      ],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-12",
+          "entry": "2026-08-12-canonical-node-props",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

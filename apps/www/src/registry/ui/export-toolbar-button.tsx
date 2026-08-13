@@ -8,7 +8,7 @@ import { exportToDocx } from '@platejs/docx-io';
 import { MarkdownPlugin } from '@platejs/markdown';
 import { ArrowDownToLineIcon } from 'lucide-react';
 import { createBaseEditor } from 'platejs';
-import { useEditorPlugin } from 'platejs/react';
+import { useEditor } from 'platejs/react';
 import { renderStaticHtml } from 'platejs/static';
 
 import {
@@ -27,7 +27,7 @@ import { ToolbarButton } from './toolbar';
 const siteUrl = 'https://platejs.org';
 
 export function ExportToolbarButton(props: DropdownMenuProps) {
-  const { editor } = useEditorPlugin(MarkdownPlugin);
+  const editor = useEditor();
   const [open, setOpen] = React.useState(false);
 
   const getCanvas = async () => {
@@ -150,7 +150,7 @@ export function ExportToolbarButton(props: DropdownMenuProps) {
   };
 
   const exportToMarkdown = async () => {
-    const md = editor.api.markdown.serialize();
+    const md = editor.plugin(MarkdownPlugin).api.serialize();
     const url = `data:text/markdown;charset=utf-8,${encodeURIComponent(md)}`;
     await downloadFile(url, 'plate.md');
   };

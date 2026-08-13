@@ -34,7 +34,6 @@ import type { HotkeysEvent } from '@udecode/react-hotkeys';
 import type { AnyObject, Nullable } from '@udecode/utils';
 
 import type {
-  PliteElementProps,
   PliteRenderElementProps,
   PliteRenderLeafProps,
   PliteRenderTextProps,
@@ -52,6 +51,7 @@ import type {
   InputRulesDefinition,
 } from '../plugins/input-rules/types';
 import type { MarkdownNodeCodecInput } from './MarkdownNodeCodec';
+import type { ElementWith } from './pluginNodeTypes';
 import type {
   AnyBasePluginDefinition,
   BaseInjectProps,
@@ -64,6 +64,7 @@ import type {
   InferApi,
   InferConflicts,
   InferDependencies,
+  InferPluginDecoration,
   InferPluginStoreState,
   InferRead,
   InferSelectors,
@@ -76,6 +77,7 @@ import type {
   BasePluginDefinition,
   BreakRules,
   DeleteRules,
+  DefinitionOf,
   MergeRules,
   NormalizePluginState,
   NormalizePluginSelectors,
@@ -249,10 +251,12 @@ export type AnyBasePluginContext = Omit<DynamicBasePluginPortal, 'schema'> & {
  * undefined then no ranges are modified. If the function returns an array the
  * returned ranges are merged with the ranges called by other plugins.
  */
-export type Decorate<C extends AnyBasePluginDefinition = BasePluginDefinition> =
-  (
-    ctx: BasePluginContext<C> & { entry: NodeEntry }
-  ) => DecoratedRange[] | undefined;
+export type Decorate<
+  C extends AnyBasePluginDefinition = BasePluginDefinition,
+  TDecoration extends object = InferPluginDecoration<C>,
+> = (
+  ctx: BasePluginContext<C> & { entry: NodeEntry }
+) => (DecoratedRange & TDecoration)[] | undefined;
 
 // -----------------------------------------------------------------------------
 
@@ -927,20 +931,47 @@ export type BasePluginOverride<
   'configure' | 'dependencies' | 'extend' | 'name' | 'override' | 'schema'
 >;
 
-export type RenderStaticNodeWrapper<C extends AnyBasePluginDefinition = any> = (
-  props: RenderStaticNodeWrapperProps<C>
-) => RenderStaticNodeWrapperFunction<C>;
+type RenderStaticNodeWrapperSource = AnyBasePluginDefinition | AnyBasePlugin;
+
+type RenderStaticNodeWrapperDefinition<
+  TSource extends RenderStaticNodeWrapperSource,
+> = 0 extends 1 & TSource
+  ? any
+  : TSource extends AnyBasePluginDefinition
+    ? TSource
+    : Extract<DefinitionOf<TSource>, AnyBasePluginDefinition>;
+
+export type RenderStaticNodeWrapper<
+  TSource extends RenderStaticNodeWrapperSource = any,
+> = {
+  bivarianceHack(
+    props: RenderStaticNodeWrapperProps<TSource>
+  ): RenderStaticNodeWrapperFunction<TSource>;
+}['bivarianceHack'];
 
 export type RenderStaticNodeWrapperFunction<
-  C extends AnyBasePluginDefinition = any,
+  TSource extends RenderStaticNodeWrapperSource = any,
 > =
-  | ((hocProps: PliteRenderElementProps<Element, C>) => React.ReactNode)
+  | {
+      bivarianceHack(
+        hocProps: RenderStaticNodeWrapperProps<TSource>
+      ): React.ReactNode;
+    }['bivarianceHack']
   | null
   | undefined;
 
 export type RenderStaticNodeWrapperProps<
-  C extends AnyBasePluginDefinition = any,
-> = PliteRenderElementProps<Element, C>;
+  TSource extends RenderStaticNodeWrapperSource = any,
+> =
+  RenderStaticNodeWrapperDefinition<TSource> extends infer C extends
+    AnyBasePluginDefinition
+    ? PliteRenderElementProps<
+        0 extends 1 & TSource ? Element : ElementWith<C>,
+        C
+      > & {
+        path: Path;
+      }
+    : never;
 
 export type BasePluginContextEditor<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
@@ -1110,7 +1141,7 @@ type BasePluginAuthorFields<
          * their content will be rendered in sequence.
          */
         belowRootNodes?: (
-          props: PliteElementProps<Element, WithAnyName<C>>
+          props: RenderStaticNodeWrapperProps<WithAnyName<C>>
         ) => React.ReactNode;
         /** Override `data-plite-leaf` element attributes. */
         leafProps?: LeafStaticProps<WithAnyName<C>>;
@@ -1380,6 +1411,7 @@ type BasePluginStageInput<
   TRead extends object,
   TSelectors extends PluginSelectors<InferPluginStoreState<C>>,
   TUpdate extends object,
+  TDecoration extends object,
   TConflictNames extends readonly string[],
   TEnabled extends boolean,
   TTargetPlugins extends readonly (PluginReference | string)[],
@@ -1392,6 +1424,7 @@ type BasePluginStageInput<
   Readonly<{
     api?: (context: BasePluginContext<C>) => TApi;
     conflicts?: BasePluginStageConflictInput<TConflictNames>;
+    decorate?: Decorate<C, TDecoration>;
     enabled?: TEnabled;
     initialState?: S | ((context: BasePluginContext<C>) => S);
     read?: (
@@ -1432,6 +1465,7 @@ type NonCallbackExtension<TExtension> = TExtension extends (
 type BasePluginStageSpecialKey =
   | 'api'
   | 'conflicts'
+  | 'decorate'
   | 'enabled'
   | 'initialState'
   | 'read'
@@ -1453,6 +1487,7 @@ type BasePluginStageContribution<
   TRead extends object,
   TSelectors extends object,
   TUpdate extends object,
+  TDecoration extends object,
   TConflictNames extends readonly string[],
   TEnabled extends boolean,
   TTargetPlugins extends readonly (PluginReference | string)[],
@@ -1473,6 +1508,9 @@ type BasePluginStageContribution<
     : Readonly<Record<never, never>>) &
   ('update' extends TKeys
     ? Readonly<{ update: TUpdate }>
+    : Readonly<Record<never, never>>) &
+  ('decorate' extends TKeys
+    ? Readonly<{ decorate: TDecoration }>
     : Readonly<Record<never, never>>) &
   ('conflicts' extends TKeys
     ? Readonly<{
@@ -1497,6 +1535,7 @@ type BasePluginStageDefinition<
   TRead extends object = {},
   TSelectors extends object = {},
   TUpdate extends object = {},
+  TDecoration extends object = {},
   TConflictNames extends readonly string[] = readonly [],
   TEnabled extends boolean = boolean,
   TTargetPlugins extends readonly (PluginReference | string)[] = readonly [],
@@ -1515,6 +1554,7 @@ type BasePluginStageDefinition<
       PluginSelectorMethods<TSelectors>
     >,
     TUpdate,
+    TDecoration,
     TConflictNames,
     TEnabled,
     TTargetPlugins
@@ -1532,6 +1572,7 @@ type BasePluginStageDefinition<
       PluginSelectorMethods<TSelectors>
     >,
     TUpdate,
+    TDecoration,
     TConflictNames,
     TEnabled,
     TTargetPlugins
@@ -1573,12 +1614,13 @@ export type BasePluginConfiguration<C extends AnyBasePluginDefinition> = Omit<
 
 export type BasePluginPortal<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
+  S = C,
 > = Omit<ResolvedPlatePlugin<C>, keyof PluginPortalContext<C> | 'schema'> &
   Omit<PluginPortalContext<C>, 'read' | 'update'> & {
     /** State-bound reads scoped directly to this plugin. */
     read: PlatePluginRead<C>;
     /** One-shot updates scoped directly to this plugin. */
-    update: PlatePluginUpdate<C>;
+    update: PlatePluginUpdate<C, S>;
   };
 
 export type BasePluginContext<
@@ -1606,6 +1648,7 @@ interface BasePluginMethods<
     const TRead extends object = {},
     const TSelectors extends PluginSelectors<InferPluginStoreState<C>> = {},
     const TUpdate extends object = {},
+    const TDecoration extends object = {},
     const TConflictNames extends readonly string[] = readonly [],
     const TEnabled extends boolean = boolean,
     const TTargetPlugins extends readonly (
@@ -1624,6 +1667,7 @@ interface BasePluginMethods<
       TRead,
       TSelectors,
       TUpdate,
+      TDecoration,
       TConflictNames,
       TEnabled,
       TTargetPlugins,
@@ -1638,6 +1682,7 @@ interface BasePluginMethods<
       TRead,
       TSelectors,
       TUpdate,
+      TDecoration,
       TConflictNames,
       TEnabled,
       TTargetPlugins
@@ -1673,6 +1718,7 @@ interface BasePluginMethods<
     const TRead extends object = {},
     const TSelectors extends PluginSelectors<InferPluginStoreState<C>> = {},
     const TUpdate extends object = {},
+    const TDecoration extends object = {},
     const TConflictNames extends readonly string[] = readonly [],
     const TEnabled extends boolean = boolean,
     const TTargetPlugins extends readonly (
@@ -1689,6 +1735,7 @@ interface BasePluginMethods<
       TRead,
       TSelectors,
       TUpdate,
+      TDecoration,
       TConflictNames,
       TEnabled,
       TTargetPlugins,
@@ -1703,6 +1750,7 @@ interface BasePluginMethods<
       TRead,
       TSelectors,
       TUpdate,
+      TDecoration,
       TConflictNames,
       TEnabled,
       TTargetPlugins

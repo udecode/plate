@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import type { TCalloutElement } from 'platejs';
+import type { BaseCalloutPlugin } from '@platejs/callout';
 import type { PliteElementProps } from 'platejs/static';
 
 import { PliteElement } from 'platejs/static';
@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils';
 export function CalloutElementStatic({
   children,
   ...props
-}: PliteElementProps<TCalloutElement>) {
+}: PliteElementProps<typeof BaseCalloutPlugin>) {
   return (
     <PliteElement
       className={cn('my-1 flex rounded-sm bg-muted p-4 pl-3')}
@@ -43,7 +43,7 @@ export function CalloutElementStatic({
 export function CalloutElementDocx({
   children,
   ...props
-}: PliteElementProps<TCalloutElement>) {
+}: PliteElementProps<typeof BaseCalloutPlugin>) {
   const backgroundColor = props.element.backgroundColor || '#f4f4f5';
   const icon = props.element.icon || '💡';
 

@@ -96,7 +96,7 @@ Plate 用于通过 `editor.plugin(MyPlugin)` 解析描述符的唯一标识符�
   type="(context: PlatePluginContext<D> & { context: EditorUpdateContext; tx: PlatePluginTransaction<D> }) => InferOwnUpdate<D>"
 >
   插件提供的事务命令。通过 `editor.plugin(MyPlugin).update.method()`
-  执行单个命令， 或在 `editor.update((tx) => tx[name].method())`
+  执行单个命令， 或在 `editor.update((tx) => tx.plugin(MyPlugin).method())`
   中组合命令。 `update` 只能使用 factory：从 callback 返回 command
   object，不要声明静态对象。
 </APIItem>
@@ -374,7 +374,7 @@ update method。
 <APISubListItem parent="render" name="belowNodes" type="RenderNodeWrapper<WithAnyName<D>>" optional>
 创建一个函数，在所有其他插件的节点 React 节点下方生成 React 节点，但在它们的子节点上方。
 </APISubListItem>
-<APISubListItem parent="render" name="belowRootNodes" type="(props: PlateElementProps<Element, D>) => React.ReactNode" optional>
+<APISubListItem parent="render" name="belowRootNodes" type="(props: RenderNodeWrapperProps<D>) => React.ReactNode" optional>
 在根元素的直接子元素之后渲染组件。与 `belowNodes` 的不同之处在于它是 `PlateElement` 的直接子元素，而不是包装可能是嵌套的子元素。当需要相对于根元素的组件时很有用。
 </APISubListItem>
 <APISubListItem parent="render" name="leaf" type="NodeComponent" optional>

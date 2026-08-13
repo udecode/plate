@@ -195,7 +195,7 @@ Each property controls a specific scenario:
 **Reset heading on break:**
 
 ```tsx
-import { H1Plugin } from '@platejs/heading/react';
+import { H1Plugin } from '@platejs/basic-nodes/react';
 
 const plugins = [
   // ...otherPlugins,
@@ -272,8 +272,8 @@ const plugins = [
   CodeBlockPlugin.configure({
     rules: {
       delete: { empty: 'reset' },
-      match: ({ editor, rule }) => {
-        return rule === 'delete.empty' && isCodeBlockEmpty(editor);
+      match: ({ read, rule }) => {
+        return rule === 'delete.empty' && read.isEmpty();
       },
     },
   }),
@@ -413,7 +413,8 @@ ParagraphPlugin.configure({
 Only paragraph and heading plugins enable removal by default. Most other plugins use `false`:
 
 ```tsx
-import { H1Plugin, ParagraphPlugin } from 'platejs/react';
+import { H1Plugin } from '@platejs/basic-nodes/react';
+import { ParagraphPlugin } from 'platejs/react';
 
 const plugins = [
   // ...otherPlugins,
@@ -589,8 +590,8 @@ const plugins = [
   CodeBlockPlugin.configure({
     rules: {
       delete: { empty: 'reset' },
-      match: ({ rule, node }) => {
-        return rule === 'delete.empty' && isCodeBlockEmpty(editor);
+      match: ({ read, rule }) => {
+        return rule === 'delete.empty' && read.isEmpty();
       },
     },
   }),
@@ -621,7 +622,7 @@ editor.update((tx) => {
 You can combine different rules for comprehensive block behavior:
 
 ```tsx
-import { H1Plugin } from '@platejs/heading/react';
+import { H1Plugin } from '@platejs/basic-nodes/react';
 
 const plugins = [
   // ...otherPlugins,
@@ -700,7 +701,8 @@ const SingleLinePlugin = defineBasePlugin('singleLine', {
     handle(editorCommands.insertSoftBreak, ({ state }) =>
       state.transaction(() => {})
     ),
-  ],});
+  ],
+});
 ```
 
 This handler consumes hard and soft breaks with an empty transaction. The same command behavior applies to keyboard, programmatic, and test callers.

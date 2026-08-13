@@ -8,10 +8,9 @@ import {
   useEditorChat,
   useLastAssistantMessage,
 } from '@platejs/ai/react';
-import { getTransientCommentKey } from '@platejs/comment';
 import { CommentPlugin } from '@platejs/comment/react';
 import { BlockSelectionPlugin, useIsSelecting } from '@platejs/selection/react';
-import { SUGGESTION_TRANSIENT_KEY } from '@platejs/suggestion';
+import { SuggestionPlugin } from '@platejs/suggestion/react';
 import { Command as CommandPrimitive } from 'cmdk';
 import {
   Album,
@@ -30,14 +29,7 @@ import {
   Wand,
   X,
 } from 'lucide-react';
-import {
-  type NodeEntry,
-  ElementApi,
-  isHotkey,
-  KEYS,
-  NodeApi,
-  TextApi,
-} from 'platejs';
+import { type NodeEntry, ElementApi, isHotkey, NodeApi } from 'platejs';
 import {
   useEditorPlugin,
   useFocusedLast,
@@ -63,7 +55,8 @@ import { cn } from '@/lib/utils';
 import { AIChatEditor } from './ai-chat-editor';
 
 export function AIMenu() {
-  const { api, editor, read } = useEditorPlugin(AIChatPlugin);
+  const editor = useEditor();
+  const { api, read } = useEditorPlugin(AIChatPlugin);
   const mode = usePluginStore(AIChatPlugin, 'mode');
   const toolName = usePluginStore(AIChatPlugin, 'toolName');
 
@@ -145,7 +138,7 @@ export function AIMenu() {
         ElementApi.isElement(ancestor) &&
         !editor.read.nodes.isEmpty(ancestor)
       ) {
-        editor.plugin(BlockSelectionPlugin).api.set(ancestor.id as string);
+        editor.plugin(BlockSelectionPlugin).api.set(editor.key(ancestor));
       }
 
       const domNode = editor.api.dom.resolveDOMNode(ancestor);
@@ -176,14 +169,10 @@ export function AIMenu() {
   React.useEffect(() => {
     if (toolName !== 'edit' || mode !== 'chat' || isLoading) return;
 
-    let anchorNode = editor.read.nodes.find({
-      at: [],
-      reverse: true,
-      match: (n) =>
-        (ElementApi.isElement(n) || TextApi.isText(n)) &&
-        !!n[KEYS.suggestion] &&
-        !!n[SUGGESTION_TRANSIENT_KEY],
-    });
+    let anchorNode = editor
+      .plugin(SuggestionPlugin)
+      .read.nodes({ transient: true })
+      .at(-1);
 
     if (!anchorNode) {
       anchorNode = editor
@@ -669,10 +658,7 @@ export function AILoadingBar() {
 
   const handleComments = (type: 'accept' | 'reject') => {
     if (type === 'accept') {
-      editor.update.nodes.unset([getTransientCommentKey()], {
-        at: [],
-        match: (n) => TextApi.isText(n) && !!n[KEYS.comment],
-      });
+      editor.plugin(CommentPlugin).update.clearTransient();
     }
 
     if (type === 'reject') {

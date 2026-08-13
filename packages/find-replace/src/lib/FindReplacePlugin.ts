@@ -2,8 +2,8 @@ import { type DefinitionOf, defineBasePlugin } from '@platejs/core';
 import {
   ElementApi,
   NodeApi,
+  type DecoratedRange,
   type NodeEntry,
-  type Range,
   type Text,
   TextApi,
   property,
@@ -69,7 +69,10 @@ export const FindReplacePlugin = defineBasePlugin(PLUGINS.searchHighlight, {
       return [];
     }
 
-    const ranges: ({ search: string } & Range & Record<string, unknown>)[] = [];
+    const ranges: (DecoratedRange & {
+      search: string;
+      searchHighlight: boolean;
+    })[] = [];
     let cumulativePosition = 0;
     let matchIndex = 0;
 

@@ -120,16 +120,19 @@ editable and static mark presets.
 
 ## Mark Set
 
-| Mark | Plugin | Key | Render | Notes |
+| Mark | Plugin | Default property | Render | Notes |
 |------|--------|-----|--------|-------|
-| Bold | `BoldPlugin` | `PLUGINS.bold` | `strong` | Deserializes `strong`, `b`, and bold font weight. |
-| Italic | `ItalicPlugin` | `PLUGINS.italic` | `em` | Deserializes `em`, `i`, and italic font style. |
-| Underline | `UnderlinePlugin` | `PLUGINS.underline` | `u` | Deserializes `u` and underline text decoration. |
-| Strikethrough | `StrikethroughPlugin` | `PLUGINS.strikethrough` | `s` | Uses directional selection affinity. |
-| Code | `CodePlugin` | `PLUGINS.code` | `code` | Uses hard selection affinity and skips `pre` HTML parents. |
-| Script | `ScriptPlugin` | `PLUGINS.script` | `sub` or `sup` | Uses one `'sub' | 'sup'` property for both positions. |
-| Highlight | `HighlightPlugin` | `PLUGINS.highlight` | `mark` | Uses directional selection affinity. |
-| Kbd | `KbdPlugin` | `PLUGINS.kbd` | `kbd` | Uses hard selection affinity. |
+| Bold | `BoldPlugin` | `bold` | `strong` | Deserializes `strong`, `b`, and bold font weight. |
+| Italic | `ItalicPlugin` | `italic` | `em` | Deserializes `em`, `i`, and italic font style. |
+| Underline | `UnderlinePlugin` | `underline` | `u` | Deserializes `u` and underline text decoration. |
+| Strikethrough | `StrikethroughPlugin` | `strikethrough` | `s` | Uses directional selection affinity. |
+| Code | `CodePlugin` | `code` | `code` | Uses hard selection affinity and skips `pre` HTML parents. |
+| Script | `ScriptPlugin` | `script` | `sub` or `sup` | Uses one `'sub' | 'sup'` property for both positions. |
+| Highlight | `HighlightPlugin` | `highlight` | `mark` | Uses directional selection affinity. |
+| Kbd | `KbdPlugin` | `kbd` | `kbd` | Uses hard selection affinity. |
+
+`PLUGINS.*` identifies each capability. Reusable code reads its configured
+text property from `editor.plugin(Plugin).schema.key`.
 
 Boolean mark plugins expose `editor.update.<mark>.toggle()`. `ScriptPlugin`
 exposes `editor.update.script.toggle('sub' | 'sup')`.

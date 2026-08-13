@@ -37,17 +37,15 @@ The fastest way to add slash command functionality is with the `SlashKit`, which
 ### Add Kit
 
 ```tsx
-import {
-  PLUGINS,
-  createPlateEditor } from 'platejs/react';
+import { createPlateEditor } from 'platejs/react';
 import { SlashKit } from '@/components/editor/plugins/slash-kit';
 
 const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
-  ...SlashKit,
+    ...SlashKit,
   ],
-  });
+});
 ```
 
 </Steps>
@@ -73,9 +71,9 @@ import { createPlateEditor } from 'platejs/react';
 const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
-  SlashPlugin,
+    SlashPlugin,
   ],
-  });
+});
 ```
 
 ### Configure Plugins
@@ -83,8 +81,11 @@ const editor = createPlateEditor({
 Add a complete `SlashInputPlugin` descriptor beside the owner when you need to replace the dependency's component or configuration.
 
 ```tsx
-import { SlashPlugin,
-  SlashInputPlugin } from '@platejs/slash-command/react';
+import {
+  SlashInputPlugin,
+  SlashPlugin,
+} from '@platejs/slash-command/react';
+import { PLUGINS } from 'platejs';
 import { createPlateEditor } from 'platejs/react';
 import { SlashInputElement } from '@/components/ui/slash-node';
 
@@ -95,12 +96,14 @@ const editor = createPlateEditor({
       initialState: {
         trigger: '/',
         triggerPreviousCharPattern: /^\s?$/,
-        triggerQuery: (editor) =>
-          !editor.read.nodes.some({
-            match: {
-              type: editor.plugin(PLUGINS.codeBlock).schema.type,
-            },
-          }),
+        triggerQuery: (editor) => {
+          const codeBlock = editor.plugin(PLUGINS.codeBlock);
+
+          return (
+            !codeBlock.installed ||
+            !editor.read.nodes.some({ match: { type: codeBlock.schema.type } })
+          );
+        },
       },
     }),
     SlashInputPlugin.configure({ component: SlashInputElement }),

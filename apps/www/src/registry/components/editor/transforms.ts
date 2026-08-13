@@ -1,5 +1,5 @@
 'use client';
-import { NODES } from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 
 import type { PlateEditor } from 'platejs/react';
 import type { Element, NodeEntry, Path } from '@platejs/plite';
@@ -9,7 +9,7 @@ import { BaseCodeDrawingPlugin } from '@platejs/code-drawing';
 import { BaseDatePlugin } from '@platejs/date';
 import { BaseExcalidrawPlugin } from '@platejs/excalidraw';
 import { BaseFootnotePlugin } from '@platejs/footnote';
-import { BaseColumnItemPlugin } from '@platejs/layout';
+import { BaseColumnPlugin } from '@platejs/layout';
 import { LinkPlugin } from '@platejs/link/react';
 import { BaseEquationPlugin, BaseInlineEquationPlugin } from '@platejs/math';
 import { BasePlaceholderPlugin } from '@platejs/media';
@@ -17,31 +17,49 @@ import { insertMediaUrl } from '@platejs/media/react';
 import { BaseSuggestionPlugin } from '@platejs/suggestion';
 import { BaseTablePlugin } from '@platejs/table';
 import { BaseTocPlugin } from '@platejs/toc';
-import { ElementApi, KEYS, PathApi } from 'platejs';
+import { ElementApi, PathApi } from 'platejs';
 
 const ACTION_THREE_COLUMNS = 'action_three_columns';
 const ACTION_FOOTNOTE = 'action_footnote';
+const LIST_ACTIONS = new Set(['decimal', 'disc', 'todo']);
 
 const toggleCodeBlock = (editor: PlateEditor) =>
   editor.plugin(BaseCodeBlockPlugin).update.toggle();
 
 const runFootnoteAction = (editor: PlateEditor) =>
-  editor.plugin(BaseFootnotePlugin).update.insert({ select: true });
+  editor.plugin(BaseFootnotePlugin).update.insert({}, { select: true });
 
 const createBlock = ({
   type,
   ...props
 }: { type: string } & Record<string, unknown>): Element =>
   ({
+    ...props,
     children: [{ text: '' }],
     type,
-    ...props,
   }) as Element;
 
-const createBlockquote = (): Element => ({
-  children: [createBlock({ type: NODES.p })],
-  type: NODES.blockquote,
+const createBlockquote = (editor: PlateEditor): Element => ({
+  children: [
+    createBlock({
+      type: editor.plugin(PLUGINS.paragraph).schema.type,
+    }),
+  ],
+  type: editor.plugin(PLUGINS.blockquote).schema.type,
 });
+
+const getActionType = (editor: PlateEditor, action: string) => {
+  if (LIST_ACTIONS.has(action)) {
+    return action;
+  }
+  if (action === ACTION_THREE_COLUMNS) {
+    return editor.plugin(BaseColumnPlugin).schema.type;
+  }
+
+  const plugin = editor.plugin(action);
+
+  return plugin.schema.type;
+};
 
 const removeEmptySourceAfterInsert = (
   editor: PlateEditor,
@@ -70,12 +88,12 @@ const removeEmptySourceAfterInsert = (
 };
 
 const insertInlineMap: Record<string, (editor: PlateEditor) => void> = {
-  [NODES.date]: (editor) =>
-    editor.plugin(BaseDatePlugin).update.insert({ select: true }),
+  [PLUGINS.date]: (editor) =>
+    editor.plugin(BaseDatePlugin).update.insert({}, { select: true }),
   [ACTION_FOOTNOTE]: runFootnoteAction,
-  [NODES.inlineEquation]: (editor) =>
-    editor.plugin(BaseInlineEquationPlugin).update.insert({ select: true }),
-  [NODES.link]: (editor) => {
+  [PLUGINS.inlineEquation]: (editor) =>
+    editor.plugin(BaseInlineEquationPlugin).update.insert({}, { select: true }),
+  [PLUGINS.link]: (editor) => {
     const link = editor.plugin(LinkPlugin);
 
     link.store.set({ text: editor.read.text.string() });
@@ -101,17 +119,18 @@ export const insertBlock = (
   const [currentNode, path] = block;
   const isCurrentBlockEmpty = editor.read.nodes.isEmpty(currentNode);
   const currentBlockType = getBlockType(currentNode);
-  const isSameBlockType = action === currentBlockType;
+  const actionType = getActionType(editor, action);
+  const isSameBlockType = actionType === currentBlockType;
 
   if (upsert && isCurrentBlockEmpty && isSameBlockType) {
     return;
   }
 
-  if (action === NODES.blockquote) {
+  if (action === PLUGINS.blockquote) {
     const insertPath = PathApi.next(path);
 
     editor.update((tx) => {
-      tx.nodes.insert(createBlockquote(), { at: insertPath });
+      tx.nodes.insert(createBlockquote(editor), { at: insertPath });
 
       if (!isSameBlockType && isCurrentBlockEmpty) {
         editor.plugin(BaseSuggestionPlugin).api.untracked(() => {
@@ -130,52 +149,58 @@ export const insertBlock = (
 
     return;
   }
-  if (action === NODES.codeBlock) {
+  if (action === PLUGINS.codeBlock) {
     editor.plugin(BaseCodeBlockPlugin).update.insert();
 
     return;
   }
-  if (action === NODES.toc) {
+  if (action === PLUGINS.toc) {
     editor
       .plugin(BaseTocPlugin)
-      .update.insert({ at: PathApi.next(path), select: true });
-    removeEmptySourceAfterInsert(editor, NODES.toc, path, currentBlockType);
+      .update.insert({}, { at: PathApi.next(path), select: true });
+    removeEmptySourceAfterInsert(
+      editor,
+      editor.plugin(BaseTocPlugin).schema.type,
+      path,
+      currentBlockType
+    );
 
     return;
   }
-  if (action === NODES.img || action === NODES.mediaEmbed) {
+  if (action === PLUGINS.image || action === PLUGINS.mediaEmbed) {
     void insertMediaUrl(editor, {
       at: PathApi.next(path),
       select: true,
-      type: action,
+      type: actionType,
     }).then(() => {
-      removeEmptySourceAfterInsert(editor, action, path, currentBlockType);
+      removeEmptySourceAfterInsert(editor, actionType, path, currentBlockType);
     });
 
     return;
   }
   if (
-    action === NODES.audio ||
-    action === NODES.file ||
-    action === NODES.video
+    action === PLUGINS.audio ||
+    action === PLUGINS.file ||
+    action === PLUGINS.video
   ) {
     editor
       .plugin(BasePlaceholderPlugin)
-      .update.insert(action, { at: PathApi.next(path), select: true });
+      .update.insert(
+        { mediaType: action },
+        { at: PathApi.next(path), select: true }
+      );
     removeEmptySourceAfterInsert(
       editor,
-      NODES.placeholder,
+      editor.plugin(BasePlaceholderPlugin).schema.type,
       path,
       currentBlockType
     );
     return;
   }
   if (action === ACTION_THREE_COLUMNS) {
-    editor.plugin(BaseColumnItemPlugin).update.insertGroup({
-      at: PathApi.next(path),
-      columns: 3,
-      select: true,
-    });
+    editor
+      .plugin(BaseColumnPlugin)
+      .update.insert({ columns: 3 }, { at: PathApi.next(path), select: true });
 
     if (!isSameBlockType && isCurrentBlockEmpty) {
       editor.plugin(BaseSuggestionPlugin).api.untracked(() => {
@@ -185,7 +210,7 @@ export const insertBlock = (
 
     return;
   }
-  if (action === NODES.table) {
+  if (action === PLUGINS.table) {
     editor.plugin(BaseTablePlugin).update.insert({}, { select: true });
 
     if (!isSameBlockType && isCurrentBlockEmpty) {
@@ -196,8 +221,8 @@ export const insertBlock = (
 
     return;
   }
-  if (action === NODES.callout) {
-    editor.plugin(BaseCalloutPlugin).update.insert({ select: true });
+  if (action === PLUGINS.callout) {
+    editor.plugin(BaseCalloutPlugin).update.insert({}, { select: true });
 
     if (!isSameBlockType && isCurrentBlockEmpty) {
       editor.plugin(BaseSuggestionPlugin).api.untracked(() => {
@@ -207,7 +232,7 @@ export const insertBlock = (
 
     return;
   }
-  if (action === NODES.codeDrawing) {
+  if (action === PLUGINS.codeDrawing) {
     editor.plugin(BaseCodeDrawingPlugin).update.insert({}, { select: true });
 
     if (!isSameBlockType && isCurrentBlockEmpty) {
@@ -218,8 +243,8 @@ export const insertBlock = (
 
     return;
   }
-  if (action === NODES.equation) {
-    editor.plugin(BaseEquationPlugin).update.insert({ select: true });
+  if (action === PLUGINS.equation) {
+    editor.plugin(BaseEquationPlugin).update.insert({}, { select: true });
 
     if (!isSameBlockType && isCurrentBlockEmpty) {
       editor.plugin(BaseSuggestionPlugin).api.untracked(() => {
@@ -229,7 +254,7 @@ export const insertBlock = (
 
     return;
   }
-  if (action === NODES.excalidraw) {
+  if (action === PLUGINS.excalidraw) {
     editor.plugin(BaseExcalidrawPlugin).update.insert({}, { select: true });
 
     if (!isSameBlockType && isCurrentBlockEmpty) {
@@ -242,19 +267,31 @@ export const insertBlock = (
   }
   editor.update((tx) => {
     const insertByAction: Record<string, () => void> = {
-      [KEYS.listTodo]: () =>
+      todo: () =>
         tx.nodes.insert(
-          createBlock({ indent: 1, listStyleType: action, type: NODES.p }),
+          createBlock({
+            indent: 1,
+            listStyleType: action,
+            type: editor.plugin(PLUGINS.paragraph).schema.type,
+          }),
           { select: true }
         ),
-      [KEYS.ol]: () =>
+      decimal: () =>
         tx.nodes.insert(
-          createBlock({ indent: 1, listStyleType: action, type: NODES.p }),
+          createBlock({
+            indent: 1,
+            listStyleType: action,
+            type: editor.plugin(PLUGINS.paragraph).schema.type,
+          }),
           { select: true }
         ),
-      [KEYS.ul]: () =>
+      disc: () =>
         tx.nodes.insert(
-          createBlock({ indent: 1, listStyleType: action, type: NODES.p }),
+          createBlock({
+            indent: 1,
+            listStyleType: action,
+            type: editor.plugin(PLUGINS.paragraph).schema.type,
+          }),
           { select: true }
         ),
     };
@@ -263,7 +300,7 @@ export const insertBlock = (
     if (insert) {
       insert();
     } else {
-      tx.nodes.insert(createBlock({ type: action }), {
+      tx.nodes.insert(createBlock({ type: actionType }), {
         at: PathApi.next(path),
         select: true,
       });
@@ -293,11 +330,11 @@ export const insertInlineElement = (editor: PlateEditor, action: string) => {
 
 const setBlockActionMap: Record<string, (editor: PlateEditor) => void> = {
   [ACTION_THREE_COLUMNS]: (editor) =>
-    editor.plugin(BaseColumnItemPlugin).update.toggle({ columns: 3 }),
-  [NODES.codeBlock]: toggleCodeBlock,
+    editor.plugin(BaseColumnPlugin).update.toggle({ columns: 3 }),
+  [PLUGINS.codeBlock]: toggleCodeBlock,
 };
 
-export const setBlockType = (
+export const applyBlockAction = (
   editor: PlateEditor,
   action: string,
   { at }: { at?: Path } = {}
@@ -308,46 +345,45 @@ export const setBlockType = (
   }
 
   editor.update((tx) => {
+    const actionType = getActionType(editor, action);
     const setEntry = (entry: NodeEntry<Element>) => {
       const [node, path] = entry;
 
-      if ((node as Element & Record<string, unknown>)[KEYS.listType]) {
-        tx.nodes.unset([KEYS.listType, 'indent'], { at: path });
+      if (node.listStyleType) {
+        const properties: string[] = ['listStyleType', 'indent'];
+
+        tx.nodes.unset(properties, { at: path });
       }
-      if (
-        action === KEYS.listTodo ||
-        action === KEYS.ol ||
-        action === KEYS.ul
-      ) {
+      if (action === 'todo' || action === 'decimal' || action === 'disc') {
         tx.nodes.set(
           {
             indent: 1,
             listStyleType: action,
-            type: NODES.p,
+            type: editor.plugin(PLUGINS.paragraph).schema.type,
           },
           { at: path }
         );
 
         return;
       }
-      if (action === NODES.blockquote) {
+      if (action === PLUGINS.blockquote) {
         const isActive =
-          node.type === action ||
+          node.type === actionType ||
           !!tx.nodes.above({
             at: path,
-            match: { type: action },
+            match: { type: actionType },
           });
 
         if (!isActive) {
-          tx.nodes.wrap({ children: [], type: action } as Element, {
+          tx.nodes.wrap({ children: [], type: actionType } as Element, {
             at: path,
           });
         }
 
         return;
       }
-      if (node.type !== action) {
-        tx.nodes.set({ type: action }, { at: path });
+      if (node.type !== actionType) {
+        tx.nodes.set({ type: actionType }, { at: path });
       }
     };
 
@@ -376,14 +412,14 @@ export const setBlockType = (
 };
 
 export const getBlockType = (block: Element) => {
-  if (block[KEYS.listType]) {
-    if (block[KEYS.listType] === KEYS.ol) {
-      return KEYS.ol;
+  if (block.listStyleType) {
+    if (block.listStyleType === 'decimal') {
+      return 'decimal';
     }
-    if (block[KEYS.listType] === KEYS.listTodo) {
-      return KEYS.listTodo;
+    if (block.listStyleType === 'todo') {
+      return 'todo';
     }
-    return KEYS.ul;
+    return 'disc';
   }
 
   return block.type;

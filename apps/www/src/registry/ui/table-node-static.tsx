@@ -1,9 +1,12 @@
 import * as React from 'react';
 
-import type { TTableCellElement, TTableElement } from 'platejs';
 import type { PliteElementProps } from 'platejs/static';
 
-import { BaseTablePlugin } from '@platejs/table';
+import {
+  type BaseTableCellPlugin,
+  BaseTablePlugin,
+  type BaseTableRowPlugin,
+} from '@platejs/table';
 import { PliteElement } from 'platejs/static';
 
 import { cn } from '@/lib/utils';
@@ -11,7 +14,7 @@ import { cn } from '@/lib/utils';
 export function TableElementStatic({
   children,
   ...props
-}: PliteElementProps<TTableElement>) {
+}: PliteElementProps<typeof BaseTablePlugin>) {
   const { disableMarginLeft } = props.editor
     .plugin(BaseTablePlugin)
     .store.get();
@@ -35,7 +38,9 @@ export function TableElementStatic({
   );
 }
 
-export function TableRowElementStatic(props: PliteElementProps) {
+export function TableRowElementStatic(
+  props: PliteElementProps<typeof BaseTableRowPlugin>
+) {
   return (
     <PliteElement {...props} as="tr" className="h-full">
       {props.children}
@@ -43,13 +48,11 @@ export function TableRowElementStatic(props: PliteElementProps) {
   );
 }
 
-export function TableCellElementStatic({
-  isHeader,
-  ...props
-}: PliteElementProps<TTableCellElement> & {
-  isHeader?: boolean;
-}) {
+export function TableCellElementStatic(
+  props: PliteElementProps<typeof BaseTableCellPlugin>
+) {
   const { editor, element } = props;
+  const isHeader = element.header === true;
   const table = editor.plugin(BaseTablePlugin);
 
   const { minHeight, width } = table.read.getCellSize({ element });
@@ -94,10 +97,4 @@ export function TableCellElementStatic({
       </div>
     </PliteElement>
   );
-}
-
-export function TableCellHeaderElementStatic(
-  props: PliteElementProps<TTableCellElement>
-) {
-  return <TableCellElementStatic {...props} isHeader />;
 }

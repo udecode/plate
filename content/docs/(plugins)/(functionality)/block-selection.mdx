@@ -94,20 +94,40 @@ For example, to exclude code lines, columns, and table cells:
 
 ```tsx
 import { BlockSelectionPlugin } from '@platejs/selection/react';
+import { PLUGINS } from 'platejs';
 
-BlockSelectionPlugin.configure({
-  initialState: {
-    isSelectable: (element, path) => {
-      if (['code_line', 'column', 'td'].includes(element.type)) {
-        return false;
-      }
-      // Exclude blocks inside table rows
-      if (editor.api.block({ above: true, at: path, match: { type: 'tr' } })) {
-        return false;
-      }
-      return true;
+BlockSelectionPlugin.configure(({ editor }) => {
+  const excludedTypes = [
+    PLUGINS.codeLine,
+    PLUGINS.column,
+    PLUGINS.tableCell,
+  ]
+    .map((name) => editor.plugin(name))
+    .flatMap((plugin) =>
+      plugin.installed ? [plugin.schema.type] : []
+    );
+  const tableRow = editor.plugin(PLUGINS.tableRow);
+
+  return {
+    initialState: {
+      isSelectable: (element, path) => {
+        if (excludedTypes.includes(element.type)) {
+          return false;
+        }
+        // Exclude blocks inside table rows.
+        if (
+          tableRow.installed &&
+          editor.read.nodes.above({
+            at: path,
+            match: { type: tableRow.schema.type },
+          })
+        ) {
+          return false;
+        }
+        return true;
+      },
     },
-  },
+  };
 });
 ```
 
@@ -233,12 +253,12 @@ Plugin for block selection functionality.
     Options for querying nodes during block selection.
     - **Default:** `{ maxLevel: 1 }`
   </APIItem>
-  <APIItem name="selectedIds" type="Set<string>" optional>
-    A set of IDs for the currently selected blocks.
+  <APIItem name="selectedKeys" type="Set<NodeKey>" optional>
+    A set of node keys for the currently selected blocks.
     - **Default:** `new Set()`
   </APIItem>
-  <APIItem name="anchorId" type="string | null" optional>
-    (Internal) The ID of the anchor block in the current selection. Used for shift-based selection.
+  <APIItem name="anchorKey" type="NodeKey | null" optional>
+    (Internal) The node key of the anchor block in the current selection. Used for shift-based selection.
     - **Default:** `null`
   </APIItem>
   <APIItem name="isSelectable" type="(element: Element, path: Path) => boolean" optional>
@@ -250,30 +270,30 @@ Plugin for block selection functionality.
 
 ## API
 
-### `editor.plugin(BlockSelectionPlugin).api.add(id)`
+### `editor.plugin(BlockSelectionPlugin).api.add(key)`
 
 Adds one or more blocks to the selection.
 
 <API name="editor.plugin(BlockSelectionPlugin).api.add">
   <APIParameters>
-    <APIItem name="id" type="string | string[]">
-      The ID(s) of the block(s) to be selected.
+    <APIItem name="key" type="NodeKey | NodeKey[]">
+      The node key(s) of the block(s) to be selected.
     </APIItem>
   </APIParameters>
 </API>
 
 ### `editor.plugin(BlockSelectionPlugin).api.clear()`
 
-Resets the set of selected IDs to an empty set.
+Resets the set of selected node keys to an empty set.
 
-### `editor.plugin(BlockSelectionPlugin).api.delete(id)`
+### `editor.plugin(BlockSelectionPlugin).api.delete(key)`
 
 Removes one or more blocks from the selection.
 
 <API name="editor.plugin(BlockSelectionPlugin).api.delete">
   <APIParameters>
-    <APIItem name="id" type="string | string[]">
-      The ID(s) of the block(s) to remove from selection.
+    <APIItem name="key" type="NodeKey | NodeKey[]">
+      The node key(s) of the block(s) to remove from selection.
     </APIItem>
   </APIParameters>
 </API>
@@ -309,14 +329,14 @@ Gets the selected blocks in the editor.
 </APIReturns>
 </API>
 
-### `editor.plugin(BlockSelectionPlugin).store.get('has', id)`
+### `editor.plugin(BlockSelectionPlugin).store.get('has', key)`
 
 Checks if one or more blocks are selected.
 
 <API name="editor.plugin(BlockSelectionPlugin).store.get">
   <APIParameters>
-    <APIItem name="id" type="string | string[]">
-      The ID(s) of the block(s) to check.
+    <APIItem name="key" type="NodeKey | NodeKey[]">
+      The node key(s) of the block(s) to check.
     </APIItem>
   </APIParameters>
   <APIReturns>
@@ -367,14 +387,14 @@ When moving up:
 
 Selects all selectable blocks in the editor.
 
-### `editor.plugin(BlockSelectionPlugin).api.set(id)`
+### `editor.plugin(BlockSelectionPlugin).api.set(key)`
 
 Sets the selection to one or more blocks, clearing any existing selection.
 
 <API name="editor.plugin(BlockSelectionPlugin).api.set">
   <APIParameters>
-    <APIItem name="id" type="string | string[]">
-      The ID(s) of the block(s) to be selected.
+    <APIItem name="key" type="NodeKey | NodeKey[]">
+      The node key(s) of the block(s) to be selected.
     </APIItem>
   </APIParameters>
 </API>
@@ -416,7 +436,7 @@ Removes the selected nodes from the editor.
 
 Selects the nodes returned by
 `editor.plugin(BlockSelectionPlugin).read.getNodes()` in the editor and resets
-selected IDs.
+selected node keys.
 
 ### `editor.plugin(BlockSelectionPlugin).update.setNodes`
 

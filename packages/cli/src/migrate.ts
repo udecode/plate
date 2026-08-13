@@ -26,6 +26,7 @@ export type EditorMigrationArtifacts = Readonly<{
   directory: string;
   manifestPath: string;
   migrationPath: string;
+  paths: readonly string[];
 }>;
 
 const sha256 = (value: string) =>
@@ -187,5 +188,11 @@ export const createEditorMigration = async (
     { content: migration, path: migrationPath },
   ]);
 
-  return Object.freeze({ diff, directory, manifestPath, migrationPath });
+  return Object.freeze({
+    diff,
+    directory,
+    manifestPath,
+    migrationPath,
+    paths: Object.freeze(paths),
+  });
 };

@@ -2,16 +2,17 @@ import React from 'react';
 
 import { toPlatePlugin } from '@platejs/core/react';
 
-import { BaseListPlugin, isOrderedList, type ListElement } from '../lib';
+import { BaseListPlugin, isOrderedList } from '../lib';
 
 /** Enables support for indented lists with React-specific features. */
 export const ListPlugin = toPlatePlugin(BaseListPlugin, {
   render: {
     belowNodes: (props) => {
-      if (!props.element.listStyleType) return;
+      const { listStart, listStyleType } = props.element;
+
+      if (!listStyleType) return;
 
       return (props) => {
-        const { listStart, listStyleType } = props.element as ListElement;
         const List = isOrderedList(props.element) ? 'ol' : 'ul';
 
         return (

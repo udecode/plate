@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 
-import { normalizeStaticValue } from 'platejs';
 import { Plate, usePlateEditor } from 'platejs/react';
 
 import { EditorKit } from '@/registry/blocks/editor-ai/components/editor/editor-kit';
@@ -27,7 +26,7 @@ export function PlateEditor() {
 }
 
 const value = {
-  children: normalizeStaticValue([
+  children: [
     {
       children: [{ text: 'Welcome to the Plate Playground!' }],
       type: 'h1',
@@ -356,7 +355,8 @@ const value = {
                   type: 'paragraph',
                 },
               ],
-              type: 'tableCellHeader',
+              header: true,
+              type: 'tableCell',
             },
             {
               children: [
@@ -365,7 +365,8 @@ const value = {
                   type: 'paragraph',
                 },
               ],
-              type: 'tableCellHeader',
+              header: true,
+              type: 'tableCell',
             },
             {
               children: [
@@ -374,7 +375,8 @@ const value = {
                   type: 'paragraph',
                 },
               ],
-              type: 'tableCellHeader',
+              header: true,
+              type: 'tableCell',
             },
           ],
           type: 'tableRow',
@@ -641,5 +643,5 @@ const value = {
       children: [{ text: '' }],
       type: 'paragraph',
     },
-  ]),
+  ],
 };

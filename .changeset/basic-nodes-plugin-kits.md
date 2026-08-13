@@ -21,6 +21,9 @@ const plugins = [H1Plugin, H2Plugin];
 
 Replace `SubscriptPlugin` and `SuperscriptPlugin` with `ScriptPlugin`. Toggle
 the requested position with `editor.update.script.toggle('sub' | 'sup')`.
+Toggle headings through their generic text-block commands. Toggle blockquotes
+through `editor.update.blockquote.toggle()`, which owns wrap and unwrap
+semantics.
 
 Add the versioned migration plugin while loading persisted pre-v54 text marks:
 

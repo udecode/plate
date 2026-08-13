@@ -4,15 +4,20 @@ import * as React from 'react';
 
 import type { PlateElementProps } from 'platejs/react';
 
-import { useToggleButton, useToggleButtonState } from '@platejs/toggle/react';
+import {
+  type TogglePlugin,
+  useToggleButton,
+  useToggleButtonState,
+} from '@platejs/toggle/react';
 import { ChevronRight } from 'lucide-react';
-import { PlateElement } from 'platejs/react';
+import { PlateElement, useEditor } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
 
-export function ToggleElement(props: PlateElementProps) {
+export function ToggleElement(props: PlateElementProps<typeof TogglePlugin>) {
+  const editor = useEditor();
   const element = props.element;
-  const state = useToggleButtonState(element.id as string);
+  const state = useToggleButtonState(editor.key(element));
   const { buttonProps, open } = useToggleButton(state);
 
   return (

@@ -84,18 +84,18 @@ Configure the `IndentPlugin` and `TogglePlugin` with proper targeting and compon
 ```tsx
 import { IndentPlugin } from '@platejs/indent/react';
 import { TogglePlugin } from '@platejs/toggle/react';
-import { KEYS } from 'platejs';
-import { createPlateEditor, ParagraphPlugin } from 'platejs/react';
+import { PLUGINS } from 'platejs';
+import { createPlateEditor } from 'platejs/react';
 import { ToggleElement } from '@/components/ui/toggle-node';
 
 const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
     IndentPlugin.configure({
-      targetPluginNames: [
-        ...KEYS.heading,
-        ParagraphPlugin.name,
-        TogglePlugin.name,
+      targetPlugins: [
+        PLUGINS.h1, PLUGINS.h2, PLUGINS.h3, PLUGINS.h4, PLUGINS.h5, PLUGINS.h6,
+        PLUGINS.paragraph,
+        PLUGINS.toggle,
       ],
     }),
     TogglePlugin.configure({ component: ToggleElement }),
@@ -104,7 +104,7 @@ const editor = createPlateEditor({
 ```
 
 - `component`: Assigns [`ToggleElement`](/docs/components/toggle-node) to render toggle elements.
-- `IndentPlugin.targetPluginNames`: Configures which element plugin names support indentation, including toggles.
+- `IndentPlugin.targetPlugins`: Configures which element plugin names support indentation, including toggles.
 
 ### Add Toolbar Button
 
@@ -118,7 +118,7 @@ You can add this item to the [Turn Into Toolbar Button](/docs/toolbar#turn-into-
 {
   icon: <ChevronRightIcon />,
   label: 'Toggle list',
-  value: KEYS.toggle,
+  value: PLUGINS.toggle,
 }
 ```
 
@@ -130,7 +130,7 @@ You can add this item to the [Insert Toolbar Button](/docs/toolbar#insert-toolba
 {
   icon: <ChevronRightIcon />,
   label: 'Toggle list',
-  value: KEYS.toggle,
+  value: PLUGINS.toggle,
 }
 ```
 
@@ -144,33 +144,33 @@ Plugin for managing toggle functionality.
 
 <API name="TogglePlugin">
 <APIOptions type="object">
-  <APIItem name="openIds" type="Set<string>" optional>
-    Set of open toggle IDs.
+  <APIItem name="openKeys" type="Set<NodeKey>" optional>
+    Set of open toggle node keys.
     - **Default:** `new Set()`
   </APIItem>
-  <APIItem name="isOpen" type="(toggleId: string) => boolean" optional>
+  <APIItem name="isOpen" type="(toggleKey: NodeKey) => boolean" optional>
     Function to check if toggle is open.
-    - **Default:** `(id) => openIds.has(id)`
+    - **Default:** `(key) => openKeys.has(key)`
   </APIItem>
-  <APIItem name="someClosed" type="(toggleIds: string[]) => boolean" optional>
+  <APIItem name="someClosed" type="(toggleKeys: NodeKey[]) => boolean" optional>
     Function to check if any toggles are closed.
-    - **Default:** `(ids) => ids.some(id => !isOpen(id))`
+    - **Default:** `(keys) => keys.some(key => !isOpen(key))`
   </APIItem>
 </APIOptions>
 </API>
 
 ## API
 
-### `editor.api.toggle.toggleIds`
+### `editor.plugin(TogglePlugin).api.toggleKeys`
 
 Toggles the open state of specified toggles.
 
-<API name="editor.api.toggle.toggleIds">
+<API name="editor.plugin(TogglePlugin).api.toggleKeys">
 Toggle open state of toggles.
 
 <APIParameters>
-  <APIItem name="ids" type="string[]">
-    Array of element IDs to toggle.
+  <APIItem name="keys" type="NodeKey[]">
+    Node keys of the toggle elements.
   </APIItem>
   <APIItem name="force" type="boolean | null" optional>
     Force toggle state:
@@ -232,14 +232,14 @@ Hook for getting toggle button state.
 Get toggle button state.
 
 <APIParameters>
-  <APIItem name="toggleId" type="string">
-    Toggle element ID.
+  <APIItem name="toggleKey" type="NodeKey">
+    Toggle element node key.
   </APIItem>
 </APIParameters>
 
 <APIReturns type="object">
-  <APIItem name="toggleId" type="string">
-    Toggle element ID.
+  <APIItem name="toggleKey" type="NodeKey">
+    Toggle element node key.
   </APIItem>
   <APIItem name="open" type="boolean">
     Whether toggle is expanded.
@@ -255,8 +255,8 @@ Hook for handling toggle button behavior.
 Handle toggle button behavior.
 
 <APIParameters>
-  <APIItem name="toggleId" type="string">
-    Toggle element ID.
+  <APIItem name="toggleKey" type="NodeKey">
+    Toggle element node key.
   </APIItem>
   <APIItem name="open" type="boolean">
     Whether toggle is expanded.
@@ -264,8 +264,8 @@ Handle toggle button behavior.
 </APIParameters>
 
 <APIReturns type="object">
-  <APIItem name="toggleId" type="string">
-    Toggle element ID.
+  <APIItem name="toggleKey" type="NodeKey">
+    Toggle element node key.
   </APIItem>
   <APIItem name="open" type="boolean">
     Whether toggle is expanded.

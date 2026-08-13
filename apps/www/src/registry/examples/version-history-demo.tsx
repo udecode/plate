@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 
+import type { PropertyJsonValue } from '@platejs/plite';
 import {
   type DiffIntent,
   type DiffUpdate,
@@ -10,7 +11,7 @@ import {
 } from '@platejs/diff';
 import { property, schema } from 'platejs';
 import { cloneDeep } from 'lodash';
-import { type Value, defineBasePlugin } from 'platejs';
+import type { Value } from 'platejs';
 import {
   type PlateElementProps,
   type PlateLeafProps,
@@ -22,7 +23,6 @@ import {
   PlateElement,
   PlateLeaf,
   definePlatePlugin,
-  toPlatePlugin,
   useElementSelected,
   usePlateEditor,
 } from 'platejs/react';
@@ -48,6 +48,48 @@ const diffIntentColors: Record<DiffIntent['type'], string> = {
   delete: 'bg-red-200',
   insert: 'bg-green-200',
   update: 'bg-blue-200',
+};
+
+type JsonDiffIntent =
+  | Exclude<DiffIntent, DiffUpdate>
+  | (Omit<DiffUpdate, 'newProperties' | 'properties'> & {
+      newProperties: Readonly<Record<string, PropertyJsonValue>>;
+      properties: Readonly<Record<string, PropertyJsonValue>>;
+    });
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null;
+
+const isPropertyJsonValue = (value: unknown): value is PropertyJsonValue => {
+  if (
+    value === null ||
+    typeof value === 'boolean' ||
+    typeof value === 'string'
+  ) {
+    return true;
+  }
+  if (typeof value === 'number') return Number.isFinite(value);
+  if (Array.isArray(value)) return value.every(isPropertyJsonValue);
+
+  return isRecord(value) && Object.values(value).every(isPropertyJsonValue);
+};
+
+const isJsonRecord = (
+  value: unknown
+): value is Readonly<Record<string, PropertyJsonValue>> =>
+  isRecord(value) && Object.values(value).every(isPropertyJsonValue);
+
+const isDiffIntent = (value: unknown): value is JsonDiffIntent => {
+  if (!isRecord(value)) return false;
+
+  const { type } = value;
+
+  if (type === 'delete' || type === 'insert') return true;
+  if (type !== 'update') return false;
+
+  const { newProperties, properties } = value;
+
+  return isJsonRecord(newProperties) && isJsonRecord(properties);
 };
 
 const describeUpdate = ({ newProperties, properties }: DiffUpdate) => {
@@ -92,13 +134,19 @@ const describeUpdate = ({ newProperties, properties }: DiffUpdate) => {
   return descriptionParts.join('\n');
 };
 
-const InlineElement = ({ children, ...props }: PlateElementProps) => (
+const InlineElement = ({
+  children,
+  ...props
+}: PlateElementProps<typeof InlinePlugin>) => (
   <PlateElement {...props} as="span" className="rounded-sm bg-slate-200/50 p-1">
     {children}
   </PlateElement>
 );
 
-const InlineVoidElement = ({ children, ...props }: PlateElementProps) => {
+const InlineVoidElement = ({
+  children,
+  ...props
+}: PlateElementProps<typeof InlineVoidPlugin>) => {
   const selected = useElementSelected();
 
   return (
@@ -117,21 +165,30 @@ const InlineVoidElement = ({ children, ...props }: PlateElementProps) => {
   );
 };
 
-const DiffPlugin = toPlatePlugin(
-  defineBasePlugin('diff', {
-    schema: {
-      mark: property.boolean({ default: false, omitDefault: true }),
+const DiffPlugin = definePlatePlugin('diff', {
+  schema: {
+    mark: property.boolean({ default: false, omitDefault: true }),
+    properties: {
+      diffIntent: schema.textProperty(
+        property.json({
+          validate: isDiffIntent,
+          validationVersion: 1,
+        })
+      ),
     },
-  }).extend(excludeDiffFragment()),
-  {
-    component: DiffLeaf,
+  },
+})
+  .extend(excludeDiffFragment())
+  .extend({
     render: {
       aboveNodes:
         () =>
         ({ children, editor, element }) => {
           if (!element.diff) return children;
 
-          const diffIntent = element.diffIntent as DiffIntent;
+          const { diffIntent } = element;
+
+          if (!isDiffIntent(diffIntent)) return children;
 
           const label = (
             {
@@ -160,11 +217,12 @@ const DiffPlugin = toPlatePlugin(
           );
         },
     },
-  }
-);
+  });
 
-function DiffLeaf({ children, ...props }: PlateLeafProps) {
-  const diffIntent = props.leaf.diffIntent as DiffIntent;
+function DiffLeaf({ children, ...props }: PlateLeafProps<typeof DiffPlugin>) {
+  const { diffIntent } = props.leaf;
+
+  if (!diffIntent) return <PlateLeaf {...props}>{children}</PlateLeaf>;
 
   return (
     <PlateLeaf
@@ -221,7 +279,10 @@ const basePlugins = [
   InlineVoidPlugin.configure({ component: InlineVoidElement }),
 ];
 
-const diffPlugins = [...basePlugins, DiffPlugin];
+const diffPlugins = [
+  ...basePlugins,
+  DiffPlugin.configure({ component: DiffLeaf }),
+];
 
 function VersionHistoryPlate<E extends PlateEditor>(
   props: Omit<PlateProps<E>, 'children'>

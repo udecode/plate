@@ -613,7 +613,7 @@ export const BaseLinkPlugin = defineBasePlugin('link', {
         }
 
         const prefix = state.transaction((tx) => {
-          tx[plugin.name].exitEnd();
+          tx.plugin(plugin).exitEnd();
         });
 
         return next.after(prefix);

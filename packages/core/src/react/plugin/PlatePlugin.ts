@@ -11,6 +11,7 @@ import type {
   EditorUpdateContext,
   Element,
   NodeEntry,
+  Path,
   Text,
   Value,
 } from '@platejs/plite';
@@ -38,6 +39,7 @@ import type {
   BasePluginDefinitionInput,
   BaseTransformOptions,
   ConfiguredPluginDescriptor,
+  DefinitionOf,
   DefinePluginCodecs,
   EditOnlyConfig,
   GetInjectNodePropsOptions,
@@ -45,6 +47,7 @@ import type {
   InferApi,
   InferConflicts,
   InferDependencies,
+  InferPluginDecoration,
   InferPluginStoreState,
   InferPlugins,
   InferRuntimePlugins,
@@ -66,6 +69,8 @@ import type {
   PluginSelectorMethods,
   PluginSelectors,
   PluginShortcutInput,
+  RenderElementProps,
+  RenderLeafProps,
   WithAnyName,
 } from '../../lib';
 import type {
@@ -73,13 +78,14 @@ import type {
   InferPluginSchema,
   InferPluginSchemaContribution,
 } from '../../lib/plugin/pluginSchemaModel.internal';
-import type { PlateElementProps, PlateLeafProps } from '../components';
+import type { PlateNodeProps } from '../components';
 import type {
   InternalPlateEditorWithInstalledPlugins,
   PlateEditor,
 } from '../editor/PlateEditor';
 import type { DOMHandlers } from './DOMHandlers';
 import type { MergePluginDefinitions } from '../../lib/plugin/pluginDefinitionMerge.internal';
+import type { ElementWith } from '../../lib/plugin/pluginNodeTypes';
 import type {
   BasePluginDependencyDescriptors,
   BasePluginInstalledCapabilityWitness,
@@ -151,12 +157,13 @@ export type DynamicPlatePluginPortal = Omit<AnyPlatePluginPortal, 'schema'> & {
 
 export type PlatePluginPortal<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
+  S = C,
 > = Omit<ResolvedPlatePlugin<C>, keyof PluginPortalContext<C> | 'schema'> &
   Omit<PluginPortalContext<C>, 'read' | 'update'> & {
     /** State-bound reads scoped directly to this plugin. */
     read: PlatePluginRead<C>;
     /** One-shot updates scoped directly to this plugin. */
-    update: PlatePluginUpdate<C>;
+    update: PlatePluginUpdate<C, S>;
   };
 
 /** Type-erased React authoring context used while compiling callbacks. */
@@ -183,10 +190,12 @@ type PlatePluginContextEditor<C extends AnyBasePluginDefinition> =
     InferPlugins<readonly [C]>
   >;
 
-export type Decorate<C extends AnyBasePluginDefinition = BasePluginDefinition> =
-  (
-    context: PlatePluginContext<C> & { entry: NodeEntry }
-  ) => DecoratedRange[] | undefined;
+export type Decorate<
+  C extends AnyBasePluginDefinition = BasePluginDefinition,
+  TDecoration extends object = InferPluginDecoration<C>,
+> = (
+  context: PlatePluginContext<C> & { entry: NodeEntry }
+) => (DecoratedRange & TDecoration)[] | undefined;
 
 export type InjectNodeProps<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
@@ -209,19 +218,31 @@ export type InjectNodeProps<
 
 export type LeafNodeProps<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
-> = ((props: PlateLeafProps<Text, C>) => AnyObject | undefined) | AnyObject;
+> =
+  | ((
+      props: PlateNodeProps<C> &
+        RenderLeafProps<Text, Text & Partial<InferPluginDecoration<NoInfer<C>>>>
+    ) => AnyObject | undefined)
+  | AnyObject;
 
 export type NodeProps<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
 > =
   | ((
-      props: PlateElementProps<Element, C> & PlateLeafProps<Text, C>
+      props: PlateNodeProps<C> &
+        RenderElementProps<ElementWith<C>> &
+        RenderLeafProps<Text, Text & Partial<InferPluginDecoration<NoInfer<C>>>>
     ) => AnyObject | undefined)
   | AnyObject;
 
 export type TextNodeProps<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
-> = ((props: PlateLeafProps<Text, C>) => AnyObject | undefined) | AnyObject;
+> =
+  | ((
+      props: PlateNodeProps<C> &
+        RenderLeafProps<Text, Text & Partial<InferPluginDecoration<NoInfer<C>>>>
+    ) => AnyObject | undefined)
+  | AnyObject;
 
 export type TransformInitialValue<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
@@ -260,16 +281,43 @@ export type PlatePluginOn<
   }
 >;
 
-export type RenderNodeWrapper<C extends AnyBasePluginDefinition = never> = (
-  props: RenderNodeWrapperProps<C>
-) => RenderNodeWrapperFunction;
+type RenderNodeWrapperSource = AnyBasePluginDefinition | AnyBasePlugin;
 
-export type RenderNodeWrapperFunction =
-  | ((elementProps: PlateElementProps) => React.ReactNode)
+type RenderNodeWrapperDefinition<TSource extends RenderNodeWrapperSource> = [
+  TSource,
+] extends [never]
+  ? never
+  : TSource extends AnyBasePluginDefinition
+    ? TSource
+    : Extract<DefinitionOf<TSource>, AnyBasePluginDefinition>;
+
+export type RenderNodeWrapper<TSource extends RenderNodeWrapperSource = never> =
+  {
+    bivarianceHack(
+      props: RenderNodeWrapperProps<TSource>
+    ): RenderNodeWrapperFunction<TSource>;
+  }['bivarianceHack'];
+
+export type RenderNodeWrapperFunction<
+  TSource extends RenderNodeWrapperSource = never,
+> =
+  | {
+      bivarianceHack(
+        elementProps: RenderNodeWrapperProps<TSource>
+      ): React.ReactNode;
+    }['bivarianceHack']
   | undefined;
 
-export type RenderNodeWrapperProps<C extends AnyBasePluginDefinition = never> =
-  PlateElementProps<Element, C>;
+export type RenderNodeWrapperProps<
+  TSource extends RenderNodeWrapperSource = never,
+> =
+  RenderNodeWrapperDefinition<TSource> extends infer C extends
+    AnyBasePluginDefinition
+    ? PlateNodeProps<C> &
+        RenderElementProps<
+          [TSource] extends [never] ? Element : ElementWith<NoInfer<C>>
+        > & { path: Path }
+    : never;
 
 type PlateReactRenderFields<C extends AnyBasePluginDefinition> = {
   aboveNodes?: RenderNodeWrapper<WithAnyName<C>>;
@@ -279,7 +327,7 @@ type PlateReactRenderFields<C extends AnyBasePluginDefinition> = {
   beforeEditable?: EditableSiblingComponent;
   belowNodes?: RenderNodeWrapper<WithAnyName<C>>;
   belowRootNodes?: (
-    props: PlateElementProps<Element, WithAnyName<C>>
+    props: RenderNodeWrapperProps<WithAnyName<C>>
   ) => React.ReactNode;
   leafProps?: LeafNodeProps<WithAnyName<C>>;
   nodeProps?: NodeProps<WithAnyName<C>>;
@@ -436,6 +484,7 @@ type PlatePluginStageInput<
   TRead extends object,
   TSelectors extends PluginSelectors<InferPluginStoreState<C>>,
   TUpdate extends object,
+  TDecoration extends object,
   TConflictNames extends readonly string[],
   TEnabled extends boolean,
   TTargetPlugins extends readonly (PluginReference | string)[],
@@ -448,6 +497,7 @@ type PlatePluginStageInput<
   Readonly<{
     api?: (context: PlatePluginContext<C>) => TApi;
     conflicts?: PlatePluginStageConflictInput<TConflictNames>;
+    decorate?: Decorate<C, TDecoration>;
     enabled?: TEnabled;
     initialState?: S | ((context: PlatePluginContext<C>) => S);
     read?: (
@@ -604,6 +654,7 @@ export interface PlatePlugin<
 type PlatePluginStageSpecialKey =
   | 'api'
   | 'conflicts'
+  | 'decorate'
   | 'enabled'
   | 'initialState'
   | 'read'
@@ -625,6 +676,7 @@ type PlatePluginStageContribution<
   TRead extends object,
   TSelectors extends object,
   TUpdate extends object,
+  TDecoration extends object,
   TConflictNames extends readonly string[],
   TEnabled extends boolean,
   TTargetPlugins extends readonly (PluginReference | string)[],
@@ -645,6 +697,9 @@ type PlatePluginStageContribution<
     : Readonly<Record<never, never>>) &
   ('update' extends TKeys
     ? Readonly<{ update: TUpdate }>
+    : Readonly<Record<never, never>>) &
+  ('decorate' extends TKeys
+    ? Readonly<{ decorate: TDecoration }>
     : Readonly<Record<never, never>>) &
   ('conflicts' extends TKeys
     ? Readonly<{
@@ -669,6 +724,7 @@ type PlatePluginStageDefinition<
   TRead extends object = {},
   TSelectors extends object = {},
   TUpdate extends object = {},
+  TDecoration extends object = {},
   TConflictNames extends readonly string[] = readonly [],
   TEnabled extends boolean = boolean,
   TTargetPlugins extends readonly (PluginReference | string)[] = readonly [],
@@ -687,6 +743,7 @@ type PlatePluginStageDefinition<
       PluginSelectorMethods<TSelectors>
     >,
     TUpdate,
+    TDecoration,
     TConflictNames,
     TEnabled,
     TTargetPlugins
@@ -704,6 +761,7 @@ type PlatePluginStageDefinition<
       PluginSelectorMethods<TSelectors>
     >,
     TUpdate,
+    TDecoration,
     TConflictNames,
     TEnabled,
     TTargetPlugins
@@ -742,6 +800,7 @@ interface PlatePluginMethods<
     const TRead extends object = {},
     const TSelectors extends PluginSelectors<InferPluginStoreState<C>> = {},
     const TUpdate extends object = {},
+    const TDecoration extends object = {},
     const TConflictNames extends readonly string[] = readonly [],
     const TEnabled extends boolean = boolean,
     const TTargetPlugins extends readonly (
@@ -760,6 +819,7 @@ interface PlatePluginMethods<
       TRead,
       TSelectors,
       TUpdate,
+      TDecoration,
       TConflictNames,
       TEnabled,
       TTargetPlugins,
@@ -774,6 +834,7 @@ interface PlatePluginMethods<
       TRead,
       TSelectors,
       TUpdate,
+      TDecoration,
       TConflictNames,
       TEnabled,
       TTargetPlugins
@@ -809,6 +870,7 @@ interface PlatePluginMethods<
     const TRead extends object = {},
     const TSelectors extends PluginSelectors<InferPluginStoreState<C>> = {},
     const TUpdate extends object = {},
+    const TDecoration extends object = {},
     const TConflictNames extends readonly string[] = readonly [],
     const TEnabled extends boolean = boolean,
     const TTargetPlugins extends readonly (
@@ -825,6 +887,7 @@ interface PlatePluginMethods<
       TRead,
       TSelectors,
       TUpdate,
+      TDecoration,
       TConflictNames,
       TEnabled,
       TTargetPlugins,
@@ -839,6 +902,7 @@ interface PlatePluginMethods<
       TRead,
       TSelectors,
       TUpdate,
+      TDecoration,
       TConflictNames,
       TEnabled,
       TTargetPlugins

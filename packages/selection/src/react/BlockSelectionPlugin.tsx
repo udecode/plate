@@ -766,7 +766,7 @@ export const BlockSelectionPlugin = definePlatePlugin(PLUGINS.blockSelection, {
       },
     },
     update: ({ context: updateContext, tx }) => {
-      const getSelectedBlocks = () => tx[plugin.name].getNodes();
+      const getSelectedBlocks = () => tx.plugin(plugin).getNodes();
 
       return {
         duplicate: () => {

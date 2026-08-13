@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import type { TAudioElement } from 'platejs';
+import type { BaseAudioPlugin } from '@platejs/media';
 import type { PliteElementProps } from 'platejs/static';
 
 import { PliteElement } from 'platejs/static';
@@ -9,7 +9,9 @@ import { cn } from '@/lib/utils';
 
 import { CaptionStatic } from './caption-static';
 
-export function AudioElementStatic(props: PliteElementProps<TAudioElement>) {
+export function AudioElementStatic(
+  props: PliteElementProps<typeof BaseAudioPlugin>
+) {
   return (
     <PliteElement {...props} className="mb-1">
       <figure className="group relative cursor-default">

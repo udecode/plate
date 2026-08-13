@@ -1,10 +1,28 @@
-import type { DefinitionOf } from '@platejs/core';
-import { definePlatePlugin, type RenderNodeWrapper } from '@platejs/core/react';
+import { defineBasePlugin, type RenderStaticNodeWrapper } from '@platejs/core';
+import { property } from '@platejs/plite';
+import {
+  definePlatePlugin,
+  type RenderNodeWrapper,
+  useElementSelector,
+} from '@platejs/core/react';
+
+const BaseWrapperBoundaryPlugin = defineBasePlugin('baseWrapperBoundary', {
+  schema: {
+    element: {
+      properties: { staticTone: property.string() },
+    },
+  },
+});
 
 const WrapperBoundaryPlugin = definePlatePlugin('wrapperBoundary', {
   api: () => ({
     value: () => 'exact' as const,
   }),
+  schema: {
+    element: {
+      properties: { wrapperTone: property.string() },
+    },
+  },
 });
 
 const broadWrapper: RenderNodeWrapper =
@@ -12,16 +30,28 @@ const broadWrapper: RenderNodeWrapper =
   () =>
     element.type;
 
+const exactStaticWrapper: RenderStaticNodeWrapper<
+  typeof BaseWrapperBoundaryPlugin
+> = ({ element }) => {
+  const exactTone: string | undefined = element.staticTone;
+
+  void exactTone;
+
+  return;
+};
+
 WrapperBoundaryPlugin.configure({
   render: {
     belowNodes: broadWrapper,
   },
 });
 
-const exactWrapper: RenderNodeWrapper<
-  DefinitionOf<typeof WrapperBoundaryPlugin>
-> = ({ editor }) => {
+const exactWrapper: RenderNodeWrapper<typeof WrapperBoundaryPlugin> = ({
+  editor,
+  element,
+}) => {
   const exactValue: 'exact' = editor.api.wrapperBoundary.value();
+  const exactTone: string | undefined = element.wrapperTone;
 
   // @ts-expect-error Exact wrapper contexts reject absent capability members.
   editor.api.wrapperBoundary.missing();
@@ -29,9 +59,15 @@ const exactWrapper: RenderNodeWrapper<
   editor.api.missingPlugin.run();
 
   void exactValue;
+  void exactTone;
 
   return;
 };
+
+const selectedTone = useElementSelector(
+  WrapperBoundaryPlugin,
+  ([element]) => element.wrapperTone
+);
 
 const UnrelatedWrapperPlugin = definePlatePlugin('unrelatedWrapper', {});
 
@@ -43,3 +79,5 @@ UnrelatedWrapperPlugin.configure({
 });
 
 void exactWrapper;
+void exactStaticWrapper;
+void selectedTone;

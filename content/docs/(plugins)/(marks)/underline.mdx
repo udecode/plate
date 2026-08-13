@@ -18,7 +18,7 @@ Underline applies the `underline` leaf mark to selected text. `UnderlinePlugin` 
 
 ## Features
 
-- `PLUGINS.underline` leaf mark.
+- Boolean `underline` leaf property owned by the `PLUGINS.underline` capability.
 - Default `⌘U` / `Ctrl+U` shortcut.
 - HTML deserialization from `u` and underline text decoration.
 - `<u>` rendering by default.
@@ -33,7 +33,7 @@ Underline applies the `underline` leaf mark to selected text. `UnderlinePlugin` 
 
 ### Add Basic Marks
 
-`BasicMarksKit` includes `UnderlinePlugin`, the underscore input rule, and the standard toolbar buttons that use `PLUGINS.underline`.
+`BasicMarksKit` includes `UnderlinePlugin`, the underscore input rule, and the standard toolbar buttons that use the plugin descriptor.
 
 <ComponentSource name="basic-marks-kit" />
 
@@ -49,16 +49,17 @@ export const editor = createPlateEditor({
 
 ### Add A Toolbar Button
 
-Use `MarkToolbarButton` with `PLUGINS.underline`.
+Pass `UnderlinePlugin` to `MarkToolbarButton` so the button uses the configured mark key.
 
 ```tsx
 import { UnderlineIcon } from 'lucide-react';
+import { UnderlinePlugin } from '@platejs/basic-nodes/react';
 
 import { MarkToolbarButton } from '@/components/ui/mark-toolbar-button';
 
 export function UnderlineToolbarButton() {
   return (
-    <MarkToolbarButton nodeType={PLUGINS.underline} tooltip="Underline (⌘+U)">
+    <MarkToolbarButton plugin={UnderlinePlugin} tooltip="Underline (⌘+U)">
       <UnderlineIcon />
     </MarkToolbarButton>
   );
@@ -113,9 +114,9 @@ The package owns the mark. The registry owns toolbar placement and icon choice.
 
 | Behavior | Source |
 |----------|--------|
-| Mark key | `PLUGINS.underline` |
+| Mark key | `editor.plugin(UnderlinePlugin).schema.key` (default: `underline`) |
 | Mark declaration | `schema.mark: property.boolean({ default: false, omitDefault: true })` |
-| Toggle command | `tx.underline.toggle()` calls `tx.marks.toggle(type)`. |
+| Toggle command | `tx.underline.toggle()` toggles the resolved schema key. |
 | Shortcut | `UnderlinePlugin` registers `mod+u`. |
 | HTML tags | `u` |
 | HTML styles | `text-decoration: underline` |

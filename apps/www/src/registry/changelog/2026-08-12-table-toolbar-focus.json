@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-12-table-toolbar-focus",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-12-table-toolbar-focus.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-12",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Restore editor focus after table commands",
+  "targets": [
+    {
+      "name": "table-toolbar-button",
+      "files": ["apps/www/src/registry/ui/table-toolbar-button.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-12-table-toolbar-restore-editor-focus-after-81f6b85c",
+      "kind": "fix",
+      "summary": "Restore editor focus when the table menu closes.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["table-toolbar-button"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-12",
+          "entry": "2026-08-12-table-toolbar-focus",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

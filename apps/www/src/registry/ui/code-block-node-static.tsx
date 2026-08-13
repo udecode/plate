@@ -1,6 +1,9 @@
 import * as React from 'react';
 
-import type { TCodeBlockElement } from 'platejs';
+import type {
+  BaseCodeBlockPlugin,
+  BaseCodeLinePlugin,
+} from '@platejs/code-block';
 
 import {
   type PliteElementProps,
@@ -9,7 +12,9 @@ import {
   PliteLeaf,
 } from 'platejs/static';
 
-type CodeBlockElementStaticProps = PliteElementProps<TCodeBlockElement> & {
+type CodeBlockElementStaticProps = PliteElementProps<
+  typeof BaseCodeBlockPlugin
+> & {
   showLanguageLabel?: boolean;
 };
 
@@ -145,7 +150,9 @@ export function CodeBlockElementStatic({
   );
 }
 
-export function CodeLineElementStatic(props: PliteElementProps) {
+export function CodeLineElementStatic(
+  props: PliteElementProps<typeof BaseCodeLinePlugin>
+) {
   return <PliteElement {...props} />;
 }
 
@@ -161,7 +168,7 @@ export function CodeSyntaxLeafStatic(props: PliteLeafProps) {
  */
 
 export function CodeBlockElementDocx(
-  props: PliteElementProps<TCodeBlockElement>
+  props: PliteElementProps<typeof BaseCodeBlockPlugin>
 ) {
   return (
     <PliteElement {...props}>
@@ -179,7 +186,9 @@ export function CodeBlockElementDocx(
   );
 }
 
-export function CodeLineElementDocx(props: PliteElementProps) {
+export function CodeLineElementDocx(
+  props: PliteElementProps<typeof BaseCodeLinePlugin>
+) {
   return (
     <PliteElement
       {...props}

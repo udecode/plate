@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import type { PliteElementProps } from 'platejs/static';
-import { type Heading, BaseTocPlugin } from '@platejs/toc';
+import { BaseTocPlugin, type Heading } from '@platejs/toc';
 import { cva } from 'class-variance-authority';
 import type { BaseEditor } from 'platejs';
 import { PliteElement } from 'platejs/static';
@@ -21,7 +21,9 @@ const headingItemVariants = cva(
   }
 );
 
-export function TocElementStatic(props: PliteElementProps) {
+export function TocElementStatic(
+  props: PliteElementProps<typeof BaseTocPlugin>
+) {
   const { editor } = props;
   const headingList = getHeadingList(editor);
 
@@ -61,7 +63,7 @@ const getHeadingList = (editor?: BaseEditor) => {
  * DOCX-compatible TOC component.
  * Renders TOC items as anchor links for proper Word internal navigation.
  */
-export function TocElementDocx(props: PliteElementProps) {
+export function TocElementDocx(props: PliteElementProps<typeof BaseTocPlugin>) {
   const { editor } = props;
   const headingList = getHeadingList(editor);
 

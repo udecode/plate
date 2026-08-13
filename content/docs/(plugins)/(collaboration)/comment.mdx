@@ -125,7 +125,7 @@ export const commentPlugin = toPlatePlugin(BaseCommentPlugin, {
               break;
             }
 
-            const id = api.nodeId(commentsEntry[0]);
+            const id = api.id(commentsEntry[0]);
             store.set({ activeId: id ?? null });
             isSet = true;
             break;
@@ -156,35 +156,33 @@ Extend the `setDraft` transaction command for enhanced functionality:
 export const commentPlugin = toPlatePlugin(BaseCommentPlugin, {
   initialState,
 })
-  .extend(({ editor, store, type }) => ({
+  .extend(({ schema, store }) => ({
     update: ({ tx }) => ({
-        setDraft: (options = {}) => {
-          const commentingBlock =
-            editor.selection?.focus.path.slice(0, 1) ?? null;
+      setDraft: (options = {}) => {
+        const commentingBlock =
+          tx.selection()?.focus.path.slice(0, 1) ?? null;
 
-          if (editor.api.isCollapsed()) {
-            const blockEntry = editor.api.block();
+        if (tx.selection.isCollapsed()) {
+          const blockEntry = tx.nodes.block();
 
-            if (blockEntry) {
-              tx.selection.set(blockEntry[1]);
-            }
+          if (blockEntry) {
+            tx.selection.set(blockEntry[1]);
           }
+        }
 
-          tx.nodes.set(
-            {
-              [getDraftCommentKey()]: true,
-              [type]: true,
-            },
-            { match: TextApi.isText, split: true, ...options }
-          );
+        tx.nodes.set(
+          {
+            [getDraftCommentKey()]: true,
+            [schema.key]: true,
+          },
+          { match: TextApi.isText, split: true, ...options }
+        );
 
-          tx.selection.collapse();
-          store.set({
-            activeId: getDraftCommentKey(),
-            commentingBlock,
-          });
-        },
-      }),
+        tx.selection.collapse();
+        store.set({ activeId: getDraftCommentKey() });
+        store.set({ commentingBlock });
+      },
+    }),
   }))
   .configure({
     component: CommentLeaf,
@@ -288,18 +286,18 @@ Gets a comment node entry.
   >
     Options for finding the node.
   </APIOptions>
-  <APIReturns type="NodeEntry<TCommentText> | undefined">
+  <APIReturns type="NodeEntry<CommentText> | undefined">
     The comment node entry if found.
   </APIReturns>
 </API>
 
-### `editor.api.comment.nodeId`
+### `editor.api.comment.id`
 
 Gets the ID of a comment from a leaf node.
 
-<API name="editor.api.comment.nodeId">
+<API name="editor.api.comment.id">
   <APIParameters>
-    <APIItem name="leaf" type="TCommentText">
+    <APIItem name="leaf" type="CommentText">
       The comment leaf node.
     </APIItem>
   </APIParameters>
@@ -317,7 +315,7 @@ Gets all comment node entries matching the options.
   >
     Options for finding the nodes.
   </APIOptions>
-  <APIReturns type="NodeEntry<TCommentText>[]">
+  <APIReturns type="NodeEntry<CommentText>[]">
     Array of comment node entries.
   </APIReturns>
 </API>
@@ -370,7 +368,7 @@ Gets the count of non-draft comments in a comment node.
 
 <API name="getCommentCount">
   <APIParameters>
-    <APIItem name="node" type="TCommentText">
+    <APIItem name="node" type="CommentText">
       The comment node.
     </APIItem>
   </APIParameters>
@@ -409,7 +407,7 @@ Returns an array of comment keys present in the given node.
 
 <API name="getCommentKeys">
   <APIParameters>
-    <APIItem name="node" type="TCommentText">
+    <APIItem name="node" type="CommentText">
       The node to check for comment keys.
     </APIItem>
   </APIParameters>
@@ -457,11 +455,11 @@ Checks if a given node is a comment with the specified ID.
 
 ## Types
 
-### `TCommentText`
+### `CommentText`
 
 Text nodes that can contain comments.
 
-<API name="TCommentText">
+<API name="CommentText">
   <APIAttributes>
     <APIItem name="comment" type="boolean" optional>
       Whether this text node contains comments.

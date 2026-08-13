@@ -7,7 +7,7 @@ import {
   getDateDisplayLabel,
   parseCanonicalDateValue,
 } from '@platejs/date';
-import type { TDateElement } from 'platejs';
+import type { DatePlugin } from '@platejs/date/react';
 import type { PlateElementProps } from 'platejs/react';
 
 import { PlateElement, useEditorReadOnly } from 'platejs/react';
@@ -21,7 +21,7 @@ import {
 import { cn } from '@/lib/utils';
 import { inlineSuggestionVariants } from '@/registry/lib/suggestion';
 
-export function DateElement(props: PlateElementProps<TDateElement>) {
+export function DateElement(props: PlateElementProps<typeof DatePlugin>) {
   const { editor, element } = props;
   const readOnly = useEditorReadOnly();
 

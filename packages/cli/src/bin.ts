@@ -1,21 +1,29 @@
 #!/usr/bin/env node
 
-import { spawn } from 'node:child_process';
+import { createRequire } from 'node:module';
+import { relative } from 'node:path';
 
 import { Command } from 'commander';
 
-import { generateEditor } from './generate';
+import { generateEditors } from './generate';
 import { createEditorMigration } from './migrate';
-import { watchEditor } from './watch';
+import { watchEditors } from './watch';
+
+const DEFAULT_ENTRY = 'src/editor/editor-definition.tsx';
+const packageJson = createRequire(import.meta.url)('../package.json') as {
+  version: string;
+};
+const displayPath = (path: string) => relative(process.cwd(), path) || '.';
 
 const program = new Command()
   .name('plate')
+  .version(packageJson.version)
   .description('Generate exact Plate editor schema contracts.');
 
 program
   .command('generate')
   .description('Generate one or more closed editor contracts.')
-  .argument('<entries...>', 'defineEditor entry files')
+  .argument('[entries...]', 'defineEditor entry files', [DEFAULT_ENTRY])
   .option('--check', 'fail when committed artifacts are stale')
   .option('--watch', 'regenerate when an entry dependency changes')
   .action(
@@ -27,51 +35,65 @@ program
         throw new Error('plate generate cannot combine --check and --watch.');
       }
       if (options.watch) {
-        await Promise.all(entries.map((entry) => watchEditor(entry)));
-        await new Promise(() => {});
+        let exitCode: number | undefined;
+        let resolveSignal!: () => void;
+        const signal = new Promise<void>((resolve) => {
+          resolveSignal = resolve;
+        });
+        const stop = (code: number) => {
+          if (exitCode !== undefined) return;
+          exitCode = code;
+          resolveSignal();
+        };
+        const onInterrupt = () => stop(130);
+        const onTerminate = () => stop(143);
+        const controller = new AbortController();
 
-        return;
-      }
-      if (entries.length > 1) {
-        for (const entry of entries) {
-          await new Promise<void>((resolve, reject) => {
-            const child = spawn(
-              process.execPath,
-              [
-                process.argv[1]!,
-                'generate',
-                ...(options.check ? ['--check'] : []),
-                entry,
-              ],
-              { stdio: 'inherit' }
-            );
+        process.on('SIGINT', onInterrupt);
+        process.on('SIGTERM', onTerminate);
+        signal.then(() => {
+          controller.abort(new Error('Plate watch stopped during startup.'));
+        });
+        let watcher: Awaited<ReturnType<typeof watchEditors>> | undefined;
 
-            child.once('error', reject);
-            child.once('exit', (code, signal) => {
-              if (code === 0) resolve();
-              else {
-                reject(
-                  new Error(
-                    signal
-                      ? `plate generate stopped by ${signal}.`
-                      : `plate generate failed for ${entry} with exit code ${code}.`
-                  )
-                );
-              }
-            });
-          });
+        try {
+          watcher = await watchEditors(
+            entries,
+            process.cwd(),
+            controller.signal
+          );
+          await signal;
+        } catch (error) {
+          if (!controller.signal.aborted) throw error;
+        } finally {
+          process.off('SIGINT', onInterrupt);
+          process.off('SIGTERM', onTerminate);
+          await watcher?.close();
         }
+        process.exitCode = exitCode;
 
         return;
       }
+      const startedAt = performance.now();
+      const results = await generateEditors(entries, { check: options.check });
+      const elapsed = ((performance.now() - startedAt) / 1000).toFixed(2);
+      const generated = results.filter(
+        ({ status }) => status === 'generated'
+      ).length;
+      const verb = options.check
+        ? 'Checked'
+        : generated === 0
+          ? 'Up to date'
+          : 'Generated';
 
-      for (const entry of entries) {
-        const result = await generateEditor(entry, { check: options.check });
-
+      process.stdout.write(
+        `${verb} ${results.length} editor${results.length === 1 ? '' : 's'} in ${elapsed}s\n`
+      );
+      results.forEach(({ schemaPath, typesPath }) => {
         process.stdout.write(
-          `${options.check ? 'Checked' : 'Generated'} ${result.typesPath}\n`
+          `  ${displayPath(typesPath)}\n  ${displayPath(schemaPath)}\n`
         );
-      }
+      });
     }
   );
 
@@ -79,12 +101,17 @@ program
   .command('migrate')
   .description('Scaffold an explicit typed editor schema migration.')
   .command('new')
-  .argument('<entry>', 'defineEditor entry file')
   .argument('<name>', 'lowercase kebab-case migration name')
-  .action(async (entry: string, name: string) => {
-    const result = await createEditorMigration(entry, name);
+  .option('--entry <path>', 'defineEditor entry file', DEFAULT_ENTRY)
+  .action(async (name: string, options: Readonly<{ entry: string }>) => {
+    const result = await createEditorMigration(options.entry, name);
 
-    process.stdout.write(`Created ${result.migrationPath}\n`);
+    process.stdout.write(
+      `Created migration ${displayPath(result.directory)}\n`
+    );
+    result.paths.forEach((path) => {
+      process.stdout.write(`  ${displayPath(path)}\n`);
+    });
   });
 
 program.parseAsync().catch((error) => {

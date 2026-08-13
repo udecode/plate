@@ -2,21 +2,20 @@
 
 import * as React from 'react';
 
-import type { TResolvedSuggestion } from '@platejs/suggestion';
+import type { ResolvedSuggestion as BaseResolvedSuggestion } from '@platejs/suggestion';
 import type { PlateEditor } from 'platejs/react';
-import type { Element, Node, NodeEntry, Path, Text } from '@platejs/plite';
+import type {
+  EditorCommit,
+  Element,
+  Node,
+  NodeEntry,
+  Path,
+  Text,
+} from '@platejs/plite';
 
 import { BaseCommentPlugin } from '@platejs/comment';
 import { BaseSuggestionPlugin } from '@platejs/suggestion';
-import {
-  type TCommentText,
-  ElementApi,
-  KEYS,
-  NodeApi,
-  NODES,
-  PathApi,
-  TextApi,
-} from 'platejs';
+import { ElementApi, NodeApi, PLUGINS, PathApi, TextApi } from 'platejs';
 import type { NormalizePluginState } from '@platejs/core/internal';
 import {
   useEditor,
@@ -30,13 +29,13 @@ import {
 } from '@/registry/components/editor/plugins/discussion-kit';
 import type { TComment } from '@/registry/ui/comment';
 
-export interface ResolvedSuggestion extends TResolvedSuggestion {
+export interface ResolvedSuggestion extends BaseResolvedSuggestion {
   comments: TComment[];
 }
 
 export const BLOCK_SUGGESTION_TOKEN = '__block__';
 
-type BlockDiscussionEntry = NodeEntry<TCommentText | Element>;
+type BlockDiscussionEntry = NodeEntry<Element | Text>;
 type DiscussionSnapshot = NormalizePluginState<TDiscussion>;
 type SuggestionEntry = NodeEntry<Element | Text>;
 
@@ -48,7 +47,8 @@ type BlockDiscussionIndex = {
 type BuildBlockDiscussionIndexOptions = {
   entries: readonly BlockDiscussionEntry[];
   discussions: readonly DiscussionSnapshot[];
-  getCommentId: (node: TCommentText) => string | undefined;
+  getCommentId: (node: Text) => string | undefined;
+  getBlockLabel?: (node: Element) => string;
   getSuggestionData: (node: Node) =>
     | {
         createdAt: Date | number | string;
@@ -68,6 +68,7 @@ type BuildBlockDiscussionIndexOptions = {
   }>;
   getSuggestionId: (node: Node) => string | undefined;
   getSuggestionKey: (id: string) => string;
+  isInlineEquation?: (node: Element) => boolean;
   isBlockSuggestion: (node: Node) => boolean;
 };
 
@@ -86,34 +87,50 @@ const getCommentApi = (editor: PlateEditor) =>
 const getSuggestionApi = (editor: PlateEditor) =>
   editor.plugin(BaseSuggestionPlugin).api;
 
-const TYPE_TEXT_MAP: Record<string, (node?: Element) => string> = {
-  [NODES.audio]: () => 'Audio',
-  [NODES.blockquote]: () => 'Blockquote',
-  [NODES.callout]: () => 'Callout',
-  [NODES.codeBlock]: () => 'Code Block',
-  [NODES.column]: () => 'Column',
-  [NODES.equation]: () => 'Equation',
-  [NODES.file]: () => 'File',
-  [NODES.h1]: () => 'Heading 1',
-  [NODES.h2]: () => 'Heading 2',
-  [NODES.h3]: () => 'Heading 3',
-  [NODES.h4]: () => 'Heading 4',
-  [NODES.h5]: () => 'Heading 5',
-  [NODES.h6]: () => 'Heading 6',
-  [NODES.hr]: () => 'Horizontal Rule',
-  [NODES.img]: () => 'Image',
-  [NODES.mediaEmbed]: () => 'Media',
-  [NODES.p]: (node) => {
-    if (node?.[KEYS.listType] === KEYS.listTodo) return 'Todo List';
-    if (node?.[KEYS.listType] === KEYS.ol) return 'Ordered List';
-    if (node?.[KEYS.listType] === KEYS.ul) return 'List';
+export const shouldRefreshBlockDiscussionIndex = (change?: EditorCommit) => {
+  if (!change) return true;
+  if (
+    change.changed.hasAny('properties') ||
+    change.changed.hasAny('structure') ||
+    change.changed.hasAny('replace') ||
+    change.changed.hasAny('root-order')
+  ) {
+    return true;
+  }
+  if (!change.changed.hasAny('text')) return false;
 
-    return 'Paragraph';
-  },
-  [NODES.table]: () => 'Table',
-  [NODES.toc]: () => 'Table of Contents',
-  [NODES.toggle]: () => 'Toggle',
-  [NODES.video]: () => 'Video',
+  const getSnapshotNode = (path: Path) => {
+    let children: readonly Node[] = change.after.children;
+    let node: Node | undefined;
+
+    for (const index of path) {
+      node = children[index];
+      if (!node) return;
+      children = ElementApi.isElement(node) ? node.children : [];
+    }
+
+    return node;
+  };
+
+  return change.changed.paths().some((path) => {
+    for (let depth = path.length; depth > 0; depth--) {
+      const node = getSnapshotNode(path.slice(0, depth));
+
+      if (!node) continue;
+      if (
+        Object.keys(node).some(
+          (key) => key.startsWith('comment_') || key.startsWith('suggestion_')
+        )
+      ) {
+        return true;
+      }
+      if (ElementApi.isElement(node) && typeof node.suggestion === 'object') {
+        return true;
+      }
+    }
+
+    return false;
+  });
 };
 
 const appendByKey = <T>(map: Map<string, T[]>, key: string, value: T) => {
@@ -159,9 +176,6 @@ const getSuggestionIds = (
   return [];
 };
 
-const suggestionTypeText = (node: Element) =>
-  (TYPE_TEXT_MAP[node.type] ?? (() => node.type))(node);
-
 const formatSuggestionDateText = (date: string) => {
   const elementDate = new Date(date);
 
@@ -190,7 +204,10 @@ const formatSuggestionDateText = (date: string) => {
   });
 };
 
-const getInlineSuggestionElementText = (node: Element) => {
+const getInlineSuggestionElementText = (
+  node: Element,
+  isInlineEquation: (node: Element) => boolean
+) => {
   if (typeof node.value === 'string' && node.value.length > 0) {
     return node.value;
   }
@@ -199,13 +216,14 @@ const getInlineSuggestionElementText = (node: Element) => {
     return formatSuggestionDateText(node.date);
   }
 
+  const { texExpression } = node;
+
   if (
-    node.type === NODES.inlineEquation &&
-    typeof (node as Element & { texExpression?: unknown }).texExpression ===
-      'string' &&
-    (node as Element & { texExpression: string }).texExpression.length > 0
+    isInlineEquation(node) &&
+    typeof texExpression === 'string' &&
+    texExpression.length > 0
   ) {
-    return (node as Element & { texExpression: string }).texExpression;
+    return texExpression;
   }
 
   const nodeText = NodeApi.string(node);
@@ -220,17 +238,23 @@ const toResolvedSuggestion = ({
   entries,
   getSuggestionData,
   getSuggestionDataList,
+  getBlockLabel,
   getSuggestionKey,
   id,
   isBlockSuggestion,
+  isInlineEquation,
 }: {
   discussionsById: Map<string, TDiscussion>;
   entries: SuggestionEntry[];
   getSuggestionData: BuildBlockDiscussionIndexOptions['getSuggestionData'];
   getSuggestionDataList: BuildBlockDiscussionIndexOptions['getSuggestionDataList'];
+  getBlockLabel?: BuildBlockDiscussionIndexOptions['getBlockLabel'];
   getSuggestionKey: BuildBlockDiscussionIndexOptions['getSuggestionKey'];
   id: string;
   isBlockSuggestion: BuildBlockDiscussionIndexOptions['isBlockSuggestion'];
+  isInlineEquation: NonNullable<
+    BuildBlockDiscussionIndexOptions['isInlineEquation']
+  >;
 }): ResolvedSuggestion | null => {
   const sortedEntries = [...entries].sort(([, path1], [, path2]) =>
     PathApi.isChild(path1, path2) ? -1 : 1
@@ -275,7 +299,10 @@ const toResolvedSuggestion = ({
 
     if (suggestionData?.id !== id) return;
 
-    const inlineSuggestionText = getInlineSuggestionElementText(node);
+    const inlineSuggestionText = getInlineSuggestionElementText(
+      node,
+      isInlineEquation
+    );
 
     if (inlineSuggestionText) {
       if (suggestionData.type === 'insert') {
@@ -298,7 +325,7 @@ const toResolvedSuggestion = ({
 
     const nextText = suggestionData.isLineBreak
       ? BLOCK_SUGGESTION_TOKEN
-      : `${BLOCK_SUGGESTION_TOKEN}${suggestionTypeText(node)}`;
+      : `${BLOCK_SUGGESTION_TOKEN}${getBlockLabel?.(node) ?? node.type}`;
 
     if (suggestionData.type === 'insert') {
       newText += nextText;
@@ -373,12 +400,14 @@ const toResolvedSuggestion = ({
 export const buildBlockDiscussionIndex = ({
   discussions,
   entries,
+  getBlockLabel,
   getCommentId,
   getSuggestionData,
   getSuggestionDataList,
   getSuggestionId,
   getSuggestionKey,
   isBlockSuggestion,
+  isInlineEquation = () => false,
 }: BuildBlockDiscussionIndexOptions): BlockDiscussionIndex => {
   const materializedDiscussions = discussions.map(
     (discussion) => structuredClone(discussion) as TDiscussion
@@ -446,9 +475,11 @@ export const buildBlockDiscussionIndex = ({
       entries: suggestionEntries,
       getSuggestionData,
       getSuggestionDataList,
+      getBlockLabel,
       getSuggestionKey,
       id: suggestionId,
       isBlockSuggestion,
+      isInlineEquation,
     });
 
     if (!resolvedSuggestion) return;
@@ -479,20 +510,68 @@ const getDiscussionIndex = (
 
   const commentApi = getCommentApi(editor);
   const suggestionApi = getSuggestionApi(editor);
+  const blockLabels = new Map<string, string>();
+
+  (
+    [
+      [PLUGINS.audio, 'Audio'],
+      [PLUGINS.blockquote, 'Blockquote'],
+      [PLUGINS.callout, 'Callout'],
+      [PLUGINS.codeBlock, 'Code Block'],
+      [PLUGINS.column, 'Column'],
+      [PLUGINS.equation, 'Equation'],
+      [PLUGINS.file, 'File'],
+      [PLUGINS.h1, 'Heading 1'],
+      [PLUGINS.h2, 'Heading 2'],
+      [PLUGINS.h3, 'Heading 3'],
+      [PLUGINS.h4, 'Heading 4'],
+      [PLUGINS.h5, 'Heading 5'],
+      [PLUGINS.h6, 'Heading 6'],
+      [PLUGINS.horizontalRule, 'Horizontal Rule'],
+      [PLUGINS.image, 'Image'],
+      [PLUGINS.mediaEmbed, 'Media'],
+      [PLUGINS.table, 'Table'],
+      [PLUGINS.toc, 'Table of Contents'],
+      [PLUGINS.toggle, 'Toggle'],
+      [PLUGINS.video, 'Video'],
+    ] as const
+  ).forEach(([plugin, label]) => {
+    const portal = editor.plugin(plugin);
+
+    if (portal.installed) blockLabels.set(portal.schema.type, label);
+  });
+  const paragraph = editor.plugin(PLUGINS.paragraph);
+  const paragraphType = paragraph.installed ? paragraph.schema.type : null;
+  const inlineEquation = editor.plugin(PLUGINS.inlineEquation);
+  const inlineEquationType = inlineEquation.installed
+    ? inlineEquation.schema.type
+    : null;
 
   const index = buildBlockDiscussionIndex({
     discussions,
-    entries: editor.read.nodes.toArray<TCommentText | Element>({
+    entries: editor.read.nodes.toArray<Element | Text>({
       at: [],
       mode: 'all',
     }),
-    getCommentId: (node) => commentApi.nodeId(node),
+    getBlockLabel: (node) => {
+      if (node.type === paragraphType) {
+        if (node.listStyleType === 'todo') return 'Todo List';
+        if (node.listStyleType === 'decimal') return 'Ordered List';
+        if (node.listStyleType === 'disc') return 'List';
+
+        return 'Paragraph';
+      }
+
+      return blockLabels.get(node.type) ?? node.type;
+    },
+    getCommentId: (node) => commentApi.id(node),
     getSuggestionData: (node) => suggestionApi.suggestionData(node),
     getSuggestionDataList: (node) => suggestionApi.dataList(node),
-    getSuggestionId: (node) => suggestionApi.nodeId(node),
+    getSuggestionId: (node) => suggestionApi.id(node),
     getSuggestionKey: (id) => suggestionApi.key(id),
     isBlockSuggestion: (node) =>
       ElementApi.isElement(node) && suggestionApi.isBlockSuggestion(node),
+    isInlineEquation: (node) => node.type === inlineEquationType,
   });
 
   discussionIndexCache.set(editor, { discussions, index, version });
@@ -503,9 +582,19 @@ const getDiscussionIndex = (
 export const useBlockDiscussionItems = (blockPath: Path) => {
   const editor = useEditor();
   const discussions = usePluginStore(discussionPlugin, 'discussions');
+  const indexVersionRef = React.useRef(editor.read.runtime.snapshot().version);
   const version = useEditorRuntimeState(
     editor,
-    (state) => state.runtime.snapshot().version
+    (state) => {
+      const commit = state.lastCommit();
+
+      if (shouldRefreshBlockDiscussionIndex(commit ?? undefined)) {
+        indexVersionRef.current = state.runtime.snapshot().version;
+      }
+
+      return indexVersionRef.current;
+    },
+    { shouldUpdate: shouldRefreshBlockDiscussionIndex }
   );
 
   return React.useMemo(() => {

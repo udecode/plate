@@ -2,11 +2,12 @@
 
 import * as React from 'react';
 
+import type { CodePlugin } from '@platejs/basic-nodes/react';
 import type { PlateLeafProps } from 'platejs/react';
 
 import { PlateLeaf } from 'platejs/react';
 
-export function CodeLeaf(props: PlateLeafProps) {
+export function CodeLeaf(props: PlateLeafProps<typeof CodePlugin>) {
   return (
     <PlateLeaf
       {...props}

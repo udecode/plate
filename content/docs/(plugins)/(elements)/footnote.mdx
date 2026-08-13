@@ -91,10 +91,10 @@ const editor = createPlateEditor({
 
 ### Insert a Footnote
 
-Call `tx.insert.footnote` at the current selection. It inserts the reference, creates a matching definition at the end of the document, and moves the caret into the definition body so the reader can start writing:
+Call `tx.footnote.insert` at the current selection. It inserts the reference, creates a matching definition at the end of the document, and moves the caret into the definition body so the reader can start writing:
 
 ```tsx
-editor.update((tx) => tx.insert.footnote());
+editor.update((tx) => tx.footnote.insert());
 ```
 
 When the selection is expanded, the expanded fragment seeds the definition body so you can select text and "footnote-ify" it in one shot.
@@ -102,7 +102,7 @@ When the selection is expanded, the expanded fragment seeds the definition body 
 Pass `focusDefinition: false` when the reference should stay inline (for example, inside a larger template):
 
 ```tsx
-editor.update((tx) => tx.insert.footnote({ focusDefinition: false }));
+editor.update((tx) => tx.footnote.insert({ focusDefinition: false }));
 ```
 
 Pass `identifier` to reuse an existing identifier; the transform skips creating a duplicate definition when one already exists.
@@ -305,7 +305,7 @@ List every identifier that has at least one definition, in document order.
 
 ### `editor.read.footnote.nextId`
 
-Compute the next free numeric identifier. Used by `tx.insert.footnote` when the caller doesn't supply one.
+Compute the next free numeric identifier. Used by `tx.footnote.insert` when the caller doesn't supply one.
 
 <API name="nextId">
 <APIReturns>
@@ -405,15 +405,18 @@ When the selection is expanded, the expanded fragment seeds the new definition b
 
 <API name="insert">
 <APIParameters>
-  <APIItem name="identifier" type="string" optional>
-    Reuse an existing identifier. Defaults to `editor.read.footnote.nextId()`.
+  <APIItem name="input" type="object" optional>
+    <APISubList>
+      <APISubListItem parent="input" name="identifier" type="string" optional>
+        Reuse an existing identifier. Defaults to `editor.read.footnote.nextId()`.
+      </APISubListItem>
+      <APISubListItem parent="input" name="focusDefinition" type="boolean" optional>
+        Focus the definition body after insertion. Pass `false` to keep the caret inline after the reference.
+      </APISubListItem>
+    </APISubList>
   </APIItem>
-  <APIItem name="focusDefinition" type="boolean" optional>
-    Focus the definition body after insertion. Pass `false` to keep the caret inline after the reference.
-    - **Default:** `true`
-  </APIItem>
-  <APIItem name="...options" type="object" optional>
-    Standard insert-nodes options (`at`, `select`, etc.) forwarded to the reference insert.
+  <APIItem name="options" type="NodeInsertNodesOptions" optional>
+    Standard reference insertion options such as `at` and `select`.
   </APIItem>
 </APIParameters>
 </API>

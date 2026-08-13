@@ -2,7 +2,7 @@
 
 import type { TabbablePluginState } from '@platejs/tabbable';
 import { TabbablePlugin } from '@platejs/tabbable/react';
-import { ElementApi, KEYS } from 'platejs';
+import { PLUGINS, ElementApi } from 'platejs';
 
 export type TabbableKitPluginState = Pick<TabbablePluginState, 'query'>;
 
@@ -10,7 +10,7 @@ export const TabbableKit = [
   TabbablePlugin.extend({
     override: {
       plugins: {
-        [KEYS.indent]: {
+        [PLUGINS.indent]: {
           shortcuts: {
             tab: null,
             untab: null,
@@ -28,17 +28,21 @@ export const TabbableKit = [
           return false;
         }
 
+        const blockingTypes = [
+          PLUGINS.codeBlock,
+          PLUGINS.listItem,
+          PLUGINS.todoList,
+          PLUGINS.table,
+        ].flatMap((name) => {
+          const plugin = editor.plugin(name);
+
+          return plugin.installed ? [plugin.schema.type] : [];
+        });
+
         return !editor.read.nodes.some({
           match: (n) =>
             !!(
-              (ElementApi.isElement(n) &&
-                [KEYS.codeBlock, KEYS.li, KEYS.listTodoClassic, KEYS.table]
-                  .map((name) => {
-                    const plugin = editor.plugin(name);
-
-                    return plugin.installed ? plugin.type : name;
-                  })
-                  .includes(n.type)) ||
+              (ElementApi.isElement(n) && blockingTypes.includes(n.type)) ||
               (ElementApi.isElement(n) && n.listStyleType)
             ),
         });

@@ -2,20 +2,53 @@ import React from 'react';
 import type { Element, NodeEntry } from '@platejs/plite';
 
 import { useElementStoreContext } from './useElementStore';
+import type {
+  PlateElementDescriptor,
+  PlateElementForDescriptor,
+} from './useElement';
 
 type UseElementSelectorOptions<T> = {
-  name?: string;
   equalityFn?: (a: T, b: T) => boolean;
+  /** Low-level provider scope. Prefer passing a plugin descriptor. */
+  scope?: string;
 };
 
-export const useElementSelector = <T>(
-  selector: <N extends Element>(state: NodeEntry<N>, prev?: T) => T,
-  {
-    name,
-    equalityFn = (a: T, b: T) => a === b,
-  }: UseElementSelectorOptions<T> = {}
-): T => {
-  const context = useElementStoreContext(name);
+type ElementSelector<N extends Element, T> = (
+  state: NodeEntry<N>,
+  prev?: T
+) => T;
+
+export function useElementSelector<T>(
+  selector: ElementSelector<Element, T>,
+  options?: UseElementSelectorOptions<T>
+): T;
+export function useElementSelector<
+  const TPlugin extends PlateElementDescriptor,
+  T,
+>(
+  plugin: TPlugin,
+  selector: ElementSelector<PlateElementForDescriptor<TPlugin>, T>,
+  options?: Omit<UseElementSelectorOptions<T>, 'scope'>
+): T;
+export function useElementSelector<T>(
+  pluginOrSelector: PlateElementDescriptor | ElementSelector<Element, T>,
+  selectorOrOptions?:
+    | ElementSelector<Element, T>
+    | UseElementSelectorOptions<T>,
+  pluginOptions: Omit<UseElementSelectorOptions<T>, 'scope'> = {}
+): T {
+  const plugin =
+    typeof pluginOrSelector === 'function' ? undefined : pluginOrSelector;
+  const selector = (
+    typeof pluginOrSelector === 'function'
+      ? pluginOrSelector
+      : selectorOrOptions
+  ) as ElementSelector<Element, T>;
+  const options = (
+    typeof pluginOrSelector === 'function' ? selectorOrOptions : pluginOptions
+  ) as UseElementSelectorOptions<T> | undefined;
+  const equalityFn = options?.equalityFn ?? ((a: T, b: T) => a === b);
+  const context = useElementStoreContext(plugin?.name ?? options?.scope);
   const cacheRef = React.useRef<{
     entry: NodeEntry<any> | null;
     hasValue: boolean;
@@ -78,4 +111,4 @@ export const useElementSelector = <T>(
   }, [context, equalityFn, selector]);
 
   return React.useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
-};
+}

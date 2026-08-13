@@ -87,7 +87,7 @@ import {
 export function ParagraphElement({
   children,
   ...props
-}: PlateElementProps) {
+}: PlateElementProps<typeof ParagraphPlugin>) {
   return (
     <PlateElement className="m-0 px-0 py-1" {...props}>
       {children}

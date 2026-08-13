@@ -64,16 +64,13 @@ const createTable = (rows: number, cols: number): TableElement => ({
               type: 'paragraph',
             },
           ],
-          id: `cell-${rowIndex}-${colIndex}`,
           type: 'tableCell',
         })
       ),
-      id: `row-${rowIndex}`,
       type: 'tableRow',
     })
   ),
   colSizes: Array.from({ length: cols }, () => 100),
-  id: 'table-perf',
   type: 'table',
 });
 

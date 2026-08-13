@@ -710,10 +710,10 @@ function PeerControls({
   editor: DemoEditor;
   peer: DemoPeer;
 }) {
-  const undoDepth = useEditorSelector<number, DemoEditor>(
+  const undoDepth = useEditorSelector(
     (currentEditor) => currentEditor.read.history.undos().length
   );
-  const redoDepth = useEditorSelector<number, DemoEditor>(
+  const redoDepth = useEditorSelector(
     (currentEditor) => currentEditor.read.history.redos().length
   );
 

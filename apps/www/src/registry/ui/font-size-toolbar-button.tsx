@@ -7,7 +7,7 @@ import type { Element } from 'platejs';
 import { toUnitLess } from '@platejs/basic-styles';
 import { FontSizePlugin } from '@platejs/basic-styles/react';
 import { Minus, Plus } from 'lucide-react';
-import { useEditorPlugin, useEditorSelector } from 'platejs/react';
+import { useEditor, useEditorSelector } from 'platejs/react';
 
 import {
   Popover,
@@ -46,10 +46,10 @@ const FONT_SIZES = [
 export function FontSizeToolbarButton() {
   const [inputValue, setInputValue] = React.useState(DEFAULT_FONT_SIZE);
   const [isFocused, setIsFocused] = React.useState(false);
-  const { editor, type } = useEditorPlugin(FontSizePlugin);
+  const editor = useEditor();
 
   const cursorFontSize = useEditorSelector((editor) => {
-    const fontSize = editor.read.marks()?.[type];
+    const fontSize = editor.plugin(FontSizePlugin).read.value();
 
     if (fontSize) {
       return toUnitLess(fontSize as string);
@@ -134,6 +134,7 @@ export function FontSizeToolbarButton() {
               )}
               onClick={() => {
                 editor.plugin(FontSizePlugin).update.set(`${size}px`);
+                editor.api.dom.focus();
                 setIsFocused(false);
               }}
               data-highlighted={size === displayValue}

@@ -18,6 +18,10 @@ common doctrine after the lane is selected.
 - Conventions are API surface: names, flags, config keys, persisted fields,
   output shapes, docs examples, and workflow keywords must be intentional,
   stable, and worth their long-term compatibility cost.
+- Commit intentional generated outputs. Keep tool-private scratch, locks,
+  journals, staging, and recovery data out of tracked source without requiring
+  product-specific ignore rules; use OS temp storage for disposable compiler
+  work and the project's deterministic `node_modules/.cache` for durable state.
 - Public API design starts from ideal call sites. Current implementation,
   compatibility, machinery, ecosystem precedent, and accepted plans inform
   adoption; they do not define the target. Quality does not mean maximum

@@ -1,12 +1,15 @@
 import * as React from 'react';
 
-import type { TFootnoteElement } from '@platejs/footnote';
+import type {
+  BaseFootnoteDefinitionPlugin,
+  BaseFootnotePlugin,
+} from '@platejs/footnote';
 import type { PliteElementProps } from 'platejs/static';
 
 import { PliteElement } from 'platejs/static';
 
 export function FootnoteReferenceElementStatic(
-  props: PliteElementProps<TFootnoteElement>
+  props: PliteElementProps<typeof BaseFootnotePlugin>
 ) {
   const { element } = props;
 
@@ -22,7 +25,7 @@ export function FootnoteReferenceElementStatic(
 }
 
 export function FootnoteDefinitionElementStatic(
-  props: PliteElementProps<TFootnoteElement>
+  props: PliteElementProps<typeof BaseFootnoteDefinitionPlugin>
 ) {
   const { element } = props;
 

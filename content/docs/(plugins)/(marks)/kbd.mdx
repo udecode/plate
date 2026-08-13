@@ -18,7 +18,7 @@ Keyboard Input applies the `kbd` leaf mark to selected text. Use it for shortcut
 
 ## Features
 
-- `PLUGINS.kbd` leaf mark.
+- Boolean `kbd` leaf property owned by the `PLUGINS.kbd` capability.
 - Hard selection affinity.
 - HTML deserialization from `kbd`.
 - `<kbd>` rendering by default.
@@ -105,7 +105,7 @@ export const kbdPlugin = KbdPlugin.configure({ component: KbdLeaf });
 | `KbdLeaf` | Registry UI | Styled client `<kbd>` leaf using `PlateLeaf`. |
 | `KbdLeafStatic` | Registry UI | Static rendering version using `PliteLeaf`. |
 | `BasicMarksKit` | Registry | Adds `KbdPlugin.configure({ component: KbdLeaf })`. |
-| `MoreToolbarButton` | Registry UI | Calls `tx.marks.toggle(PLUGINS.kbd)` from the More menu. |
+| `MoreToolbarButton` | Registry UI | Calls `editor.plugin(KbdPlugin).update.toggle()` from the More menu. |
 
 The package owns the mark. The registry owns keycap styling and toolbar placement.
 
@@ -113,14 +113,14 @@ The package owns the mark. The registry owns keycap styling and toolbar placemen
 
 | Behavior | Source |
 |----------|--------|
-| Mark key | `PLUGINS.kbd` |
+| Mark key | `editor.plugin(KbdPlugin).schema.key` (default: `kbd`) |
 | Mark declaration | `schema.mark: property.boolean({ default: false, omitDefault: true })` |
-| Toggle command | `tx.kbd.toggle()` calls `tx.marks.toggle(type)`. |
+| Toggle command | `tx.kbd.toggle()` toggles the resolved schema key. |
 | Selection affinity | `hard` |
 | HTML tags | `kbd` |
 | Render output | `kbd` |
 | Kit component | `KbdLeaf` |
-| Registry toolbar | `MoreToolbarButton` toggles `PLUGINS.kbd`. |
+| Registry toolbar | `MoreToolbarButton` toggles through `KbdPlugin`. |
 
 ## API Reference
 

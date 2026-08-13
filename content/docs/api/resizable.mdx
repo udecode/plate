@@ -31,20 +31,21 @@ provider width for captions and use `Resizable` plus left/right handles around
 the media body.
 
 ```tsx title="Resizable media element"
-import type { ImageElement } from 'platejs';
 import type { PlateElementProps } from 'platejs/react';
 
+import { ImagePlugin } from '@platejs/media/react';
 import {
   Resizable,
   ResizableProvider,
   ResizeHandle,
   useResizableValue,
 } from '@platejs/resizable';
-import { PlateElement, withHOC } from 'platejs/react';
+import { PlateElement, useEditorPlugin, withHOC } from 'platejs/react';
 
 export const ImageElement = withHOC(
   ResizableProvider,
-  function ImageElement(props: PlateElementProps<ImageElement>) {
+  function ImageElement(props: PlateElementProps<typeof ImagePlugin>) {
+    const { update } = useEditorPlugin(ImagePlugin);
     const width = useResizableValue('width');
 
     return (
@@ -56,9 +57,7 @@ export const ImageElement = withHOC(
               maxWidth: '100%',
               minWidth: 120,
               onResizeEnd: (width) =>
-                editor.plugin(ImagePlugin).update.set({ width }, {
-                  at: props.element,
-                }),
+                update.set({ width }, { at: props.element }),
               width: props.element.width,
             }}
           >

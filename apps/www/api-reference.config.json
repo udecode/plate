@@ -685,6 +685,7 @@
             "setEditorSelection",
             "setEditorSnapshotInputTransform",
             "setEditorTargetRuntime",
+            "setEditorTransactionViewTransform",
             "setNodes",
             "setPoint",
             "setSelection",

@@ -2,11 +2,7 @@
 
 import * as React from 'react';
 
-import type {
-  CodeDrawingType,
-  TCodeDrawingElement,
-  ViewMode,
-} from '@platejs/code-drawing';
+import type { CodeDrawingType, ViewMode } from '@platejs/code-drawing';
 import {
   VIEW_MODE,
   DEFAULT_MIN_HEIGHT,
@@ -17,6 +13,7 @@ import {
   downloadImage,
   DOWNLOAD_FILENAME,
 } from '@platejs/code-drawing';
+import { CodeDrawingPlugin } from '@platejs/code-drawing/react';
 import type { PlateElementProps } from 'platejs/react';
 import {
   PlateElement,
@@ -93,7 +90,11 @@ function createDebouncedCodeDrawingRenderer(
   );
 }
 
-function useCodeDrawingElement({ element }: { element: TCodeDrawingElement }) {
+function useCodeDrawingElement({
+  element,
+}: {
+  element: PlateElementProps<typeof CodeDrawingPlugin>['element'];
+}) {
   const editor = useEditor();
   const readOnly = useEditorReadOnly();
   const path = usePath();
@@ -131,7 +132,7 @@ function useCodeDrawingElement({ element }: { element: TCodeDrawingElement }) {
 }
 
 export function CodeDrawingElement(
-  props: PlateElementProps<TCodeDrawingElement>
+  props: PlateElementProps<typeof CodeDrawingPlugin>
 ) {
   const { children } = props;
   const isMobile = useIsMobile();
@@ -139,7 +140,7 @@ export function CodeDrawingElement(
   const readOnly = useEditorReadOnly();
   const selected = useElementSelected();
   const isFocusedLast = useFocusedLast();
-  const element = useElement<TCodeDrawingElement>();
+  const element = useElement(CodeDrawingPlugin);
   const path = usePath();
   const { removeNode, image, loading } = useCodeDrawingElement({ element });
 

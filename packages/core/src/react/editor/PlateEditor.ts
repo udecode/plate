@@ -11,7 +11,9 @@ import type {
   CorePlugins,
   InferPlugins,
   InferEditorRuntimePlugins,
+  InternalEditorApplicationSchemaProvider,
   InternalEditorMutationProvider,
+  InternalInstalledSchemaDefinitionsProvider,
   InternalBaseEditorWithInstalledPlugins,
   MergeInstalledPluginDefinitions,
   PluginReference,
@@ -41,13 +43,13 @@ type InternalPlateEditorBase<V extends Value, D, S> = Omit<
   'plugin'
 >;
 
-type InternalPlatePluginPortal = {
+type InternalPlatePluginPortal<S> = {
   <TPlugin extends (AnyResolvedPlatePlugin | AnyPlatePlugin) & PluginReference>(
     plugin: TPlugin
-  ): PlatePluginPortal<InternalPluginDefinitionOf<TPlugin>>;
+  ): PlatePluginPortal<InternalPluginDefinitionOf<TPlugin>, S>;
   <TPlugin extends (AnyBasePlugin | AnyPluginBase) & PluginReference>(
     plugin: TPlugin
-  ): BasePluginPortal<InternalPluginDefinitionOf<TPlugin>>;
+  ): BasePluginPortal<InternalPluginDefinitionOf<TPlugin>, S>;
   (
     plugin: AnyBasePlugin | AnyPluginBase | PluginReference | string
   ): DynamicPlatePluginPortal;
@@ -99,7 +101,10 @@ export type InferPlateEditorSchemaPlugins<TPlugins> =
 export type InternalPlateEditorMutationProvider<TPlugins, TRuntime> = [
   GeneratedEditorMutations<TPlugins>,
 ] extends [never]
-  ? TRuntime
+  ? TPlugins extends InternalEditorApplicationSchemaProvider
+    ? InternalInstalledSchemaDefinitionsProvider<TRuntime> &
+        InternalEditorApplicationSchemaProvider
+    : TRuntime
   : InternalEditorMutationProvider<GeneratedEditorMutations<TPlugins>>;
 
 /** @internal React editor whose plugin definition union is already lowered. */
@@ -113,7 +118,7 @@ export type InternalPlateEditorWithInstalledPlugins<
       ReactEditor<V>['api'];
     extension: InternalBaseEditorWithInstalledPlugins<V, D, S>['extension'] &
       ReactEditor<V>['extension'];
-    plugin: InternalPlatePluginPortal;
+    plugin: InternalPlatePluginPortal<S>;
     read: InternalBaseEditorWithInstalledPlugins<V, D, S>['read'] &
       ReactEditor<V>['read'];
     update: InternalBaseEditorWithInstalledPlugins<V, D, S>['update'] &

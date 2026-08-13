@@ -18,7 +18,7 @@ import {
   ImageIcon,
   LinkIcon,
 } from 'lucide-react';
-import { isUrl, KEYS } from 'platejs';
+import { PLUGINS, isUrl } from 'platejs';
 import { useEditor } from 'platejs/react';
 import { toast } from 'sonner';
 import { useFilePicker } from 'use-file-picker';
@@ -57,25 +57,25 @@ const MEDIA_CONFIG: Record<
     tooltip: string;
   }
 > = {
-  [KEYS.audio]: {
+  [PLUGINS.audio]: {
     accept: ['audio/*'],
     icon: <AudioLinesIcon className="size-4" />,
     title: 'Insert Audio',
     tooltip: 'Audio',
   },
-  [KEYS.file]: {
+  [PLUGINS.file]: {
     accept: ['*'],
     icon: <FileUpIcon className="size-4" />,
     title: 'Insert File',
     tooltip: 'File',
   },
-  [KEYS.img]: {
+  [PLUGINS.image]: {
     accept: ['image/*'],
     icon: <ImageIcon className="size-4" />,
     title: 'Insert Image',
     tooltip: 'Image',
   },
-  [KEYS.video]: {
+  [PLUGINS.video]: {
     accept: ['video/*'],
     icon: <FilmIcon className="size-4" />,
     title: 'Insert Video',
@@ -110,8 +110,8 @@ export function MediaToolbarButton({
   plugin,
   ...props
 }: DropdownMenuProps & { plugin: MediaPlugin }) {
-  const nodeType = plugin.name;
-  const currentConfig = MEDIA_CONFIG[nodeType];
+  const pluginName = plugin.name;
+  const currentConfig = MEDIA_CONFIG[pluginName];
 
   const editor = useEditor();
   const [open, setOpen] = React.useState(false);
@@ -207,7 +207,7 @@ function MediaUrlDialogContent({
 
     setOpen(false);
     const input = {
-      name: plugin.name === KEYS.file ? url.split('/').pop() : undefined,
+      name: plugin.name === PLUGINS.file ? url.split('/').pop() : undefined,
       url,
     };
 

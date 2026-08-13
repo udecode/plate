@@ -531,6 +531,7 @@ const internalBridgeRuntimeExportExpectations = {
     'setEditorSelection',
     'setEditorSnapshotInputTransform',
     'setEditorTargetRuntime',
+    'setEditorTransactionViewTransform',
     'setNodes',
     'setPoint',
     'setSelection',

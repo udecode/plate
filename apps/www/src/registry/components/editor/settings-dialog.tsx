@@ -41,7 +41,7 @@ import {
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 
-import { aiChatPlugin } from './plugins/ai-kit';
+import { AIChatTransportPlugin } from './use-chat';
 
 type Model = {
   label: string;
@@ -231,10 +231,10 @@ export function SettingsDialog() {
     e.preventDefault();
 
     // Update AI chat options
-    const chatOptions =
-      editor.plugin(aiChatPlugin).store.get().chatOptions ?? {};
+    const chatStore = editor.plugin(AIChatTransportPlugin).store;
+    const chatOptions = chatStore.get().chatOptions ?? {};
 
-    editor.plugin(aiChatPlugin).store.set({
+    chatStore.set({
       chatOptions: {
         ...chatOptions,
         body: {

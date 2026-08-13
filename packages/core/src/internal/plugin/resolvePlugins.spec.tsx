@@ -1,6 +1,6 @@
 import React from 'react';
 import { property, schema } from '@platejs/plite';
-import { createBaseEditor } from '../../lib/editor';
+import { createBaseEditor, defineEditor } from '../../lib/editor';
 import type { AnyBasePlugin } from '../../lib/plugin/BasePlugin';
 
 import { defineBasePlugin } from '../../lib/plugin/defineBasePlugin';
@@ -305,6 +305,142 @@ describe('resolvePlugins', () => {
     );
 
     expect(toggle).toHaveBeenCalledTimes(1);
+  });
+
+  it('routes a keys-only text-block shortcut to its generic toggle', () => {
+    const TextBlockPlugin = defineBasePlugin('shortcutTextBlock', {
+      schema: { element: schema.element.textBlock() },
+    }).extend({
+      shortcuts: { toggle: { keys: 'mod+k' } },
+    });
+    const editor = createBaseEditor({
+      initialValue: [{ children: [{ text: 'text' }], type: 'paragraph' }],
+      plugins: [TextBlockPlugin],
+    });
+    editor.update.selection.set({ offset: 0, path: [0, 0] });
+
+    getPlateRuntime(editor).shortcuts['shortcutTextBlock.toggle']?.handler?.(
+      {} as any
+    );
+
+    expect(editor.read.children()[0]).toMatchObject({
+      type: 'shortcutTextBlock',
+    });
+  });
+
+  it('does not invent a generic toggle for structural elements', () => {
+    const StructuralPlugin = defineBasePlugin('shortcutStructural', {
+      schema: { element: { void: 'block' } },
+    });
+    const editor = createBaseEditor({ plugins: [StructuralPlugin] });
+
+    expect(editor.plugin(StructuralPlugin).update).not.toHaveProperty('toggle');
+    expect(() =>
+      createBaseEditor({
+        plugins: [
+          StructuralPlugin.extend({
+            shortcuts: { toggle: { keys: 'mod+k' } } as any,
+          }),
+        ],
+      })
+    ).toThrow(
+      'Plate shortcut "shortcutStructural.toggle" does not match a public update or API command.'
+    );
+  });
+
+  it('does not invent a generic toggle for text blocks with required construction properties', () => {
+    const RequiredPlugin = defineBasePlugin('shortcutRequiredTextBlock', {
+      schema: {
+        element: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          properties: { tone: property.string({ required: true }) },
+        },
+      },
+    });
+    const editor = createBaseEditor({ plugins: [RequiredPlugin] });
+
+    expect(editor.plugin(RequiredPlugin).update).not.toHaveProperty('toggle');
+    expect(() =>
+      createBaseEditor({
+        plugins: [
+          RequiredPlugin.extend({
+            shortcuts: { toggle: { keys: 'mod+k' } } as any,
+          }),
+        ],
+      })
+    ).toThrow(
+      'Plate shortcut "shortcutRequiredTextBlock.toggle" does not match a public update or API command.'
+    );
+  });
+
+  it('does not invent a generic toggle for nested-only text blocks', () => {
+    const NestedTextBlockPlugin = defineBasePlugin('nestedTextBlock', {
+      schema: {
+        element: {
+          blockContent: false,
+          content: schema.content.text({ default: 'text', min: 1 }),
+        },
+      },
+    });
+    const editor = createBaseEditor({ plugins: [NestedTextBlockPlugin] });
+
+    expect(editor.plugin(NestedTextBlockPlugin).update).not.toHaveProperty(
+      'toggle'
+    );
+  });
+
+  it('does not infer the text-block capability from arbitrary text content', () => {
+    const TextContentPlugin = defineBasePlugin('shortcutTextContent', {
+      schema: {
+        element: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+        },
+      },
+    });
+    const editor = createBaseEditor({ plugins: [TextContentPlugin] });
+
+    expect(editor.plugin(TextContentPlugin).update).not.toHaveProperty(
+      'toggle'
+    );
+  });
+
+  it('keeps authored text-block toggle semantics instead of synthesizing the generic command', () => {
+    const toggle = mock();
+    const Plugin = defineBasePlugin('shortcutAuthoredTextBlock', {
+      schema: { element: schema.element.textBlock() },
+      shortcuts: { toggle: { keys: 'mod+k' } },
+      update: () => ({ toggle }),
+    });
+    const editor = createBaseEditor({ plugins: [Plugin] });
+
+    getPlateRuntime(editor).shortcuts[
+      'shortcutAuthoredTextBlock.toggle'
+    ]?.handler?.({} as any);
+
+    expect(toggle).toHaveBeenCalledTimes(1);
+  });
+
+  it('uses the final application schema when publishing generic toggles', () => {
+    const ChildPlugin = defineBasePlugin('overriddenTextBlockChild', {
+      schema: { element: schema.element.textBlock() },
+    });
+    const TextBlockPlugin = defineBasePlugin('overriddenTextBlock', {
+      schema: { element: schema.element.textBlock() },
+    }).extend({ shortcuts: { toggle: { keys: 'mod+k' } } });
+    const definition = defineEditor('overriddenTextBlockEditor', {
+      plugins: [ChildPlugin, TextBlockPlugin],
+      schema: {
+        overrides: [
+          schema.override(TextBlockPlugin, {
+            element: { content: schema.content.element(ChildPlugin) },
+          }),
+        ],
+      },
+    });
+
+    expect(() => createBaseEditor({ plugins: definition.plugins })).toThrow(
+      'Plate shortcut "overriddenTextBlock.toggle" does not match a public update or API command.'
+    );
   });
 
   it('creates a shortcut handler from a configured owner update', () => {

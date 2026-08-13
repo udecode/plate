@@ -12,11 +12,7 @@ export const BaseTogglePlugin = defineBasePlugin(PLUGINS.toggle, {
     openKeys: new Set(),
     toggleIndex: new Map(),
   }),
-  schema: {
-    element: {
-      content: schema.content.text({ default: 'text', min: 1 }),
-    },
-  },
+  schema: { element: schema.element.textBlock() },
 }).extend(({ store, schema: { type } }) => ({
   api: () => ({
     toggleKeys: (keys: NodeKey[], force: boolean | null = null) => {

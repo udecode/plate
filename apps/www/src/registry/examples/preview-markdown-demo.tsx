@@ -2,9 +2,15 @@
 
 import * as React from 'react';
 
-import type { DecoratedRange, Text } from '@platejs/plite';
-import { type RenderLeafProps, defineBasePlugin, TextApi } from 'platejs';
-import { Plate, usePlateEditor } from 'platejs/react';
+import type { DecoratedRange } from '@platejs/plite';
+import { property, TextApi } from 'platejs';
+import {
+  type PlateLeafProps,
+  definePlatePlugin,
+  Plate,
+  PlateLeaf,
+  usePlateEditor,
+} from 'platejs/react';
 import Prism, { type TokenStream } from 'prismjs';
 
 import { cn } from '@/lib/utils';
@@ -14,26 +20,67 @@ import { Editor, EditorContainer } from '@/registry/ui/editor';
 
 import 'prismjs/components/prism-markdown.js';
 
-function PreviewLeaf({
-  attributes,
-  children,
-  leaf,
-}: RenderLeafProps<
-  {
-    blockquote?: boolean;
-    bold?: boolean;
-    code?: boolean;
-    hr?: boolean;
-    italic?: boolean;
-    list?: boolean;
-    title?: boolean;
-  } & Text
->) {
-  const { blockquote, bold, code, hr, italic, list, title } = leaf;
+const PreviewMarkdownPlugin = definePlatePlugin('previewMarkdown', {
+  schema: {
+    mark: property.boolean({ default: false, omitDefault: true }),
+  },
+  decorate: ({ entry: [node, path] }) => {
+    if (!TextApi.isText(node)) return [];
+
+    const getLength = (token: TokenStream): number => {
+      if (typeof token === 'string') return token.length;
+      if (Array.isArray(token)) {
+        return token.reduce((length, child) => length + getLength(child), 0);
+      }
+      if (typeof token.content === 'string') return token.content.length;
+
+      return getLength(token.content);
+    };
+    const ranges: (DecoratedRange & {
+      blockquote?: boolean;
+      bold?: boolean;
+      code?: boolean;
+      hr?: boolean;
+      italic?: boolean;
+      list?: boolean;
+      previewMarkdown: boolean;
+      title?: boolean;
+    })[] = [];
+    const tokens = Prism.tokenize(node.text, Prism.languages.markdown);
+    let start = 0;
+
+    for (const token of tokens) {
+      const length = getLength(token);
+      const end = start + length;
+
+      if (typeof token !== 'string') {
+        ranges.push({
+          anchor: { offset: start, path },
+          blockquote: token.type === 'blockquote' || undefined,
+          bold: token.type === 'bold' || undefined,
+          code: token.type === 'code' || undefined,
+          focus: { offset: end, path },
+          hr: token.type === 'hr' || undefined,
+          italic: token.type === 'italic' || undefined,
+          list: token.type === 'list' || undefined,
+          previewMarkdown: true,
+          title: token.type === 'title' || undefined,
+        });
+      }
+
+      start = end;
+    }
+
+    return ranges;
+  },
+});
+
+function PreviewLeaf(props: PlateLeafProps<typeof PreviewMarkdownPlugin>) {
+  const { blockquote, bold, code, hr, italic, list, title } = props.leaf;
 
   return (
-    <span
-      {...attributes}
+    <PlateLeaf
+      {...props}
       className={cn(
         bold && 'font-bold',
         italic && 'italic',
@@ -44,58 +91,18 @@ function PreviewLeaf({
           'inline-block border-[#ddd] border-l-2 pl-2.5 text-[#aaa] italic',
         code && 'bg-[#eee] p-[3px] font-mono'
       )}
-    >
-      {children}
-    </span>
+    />
   );
 }
+
+const PreviewMarkdownKit = PreviewMarkdownPlugin.configure({
+  component: PreviewLeaf,
+});
 
 export default function PreviewMdDemo() {
   const editor = usePlateEditor(
     {
-      plugins: [
-        ...BasicNodesKit,
-        defineBasePlugin('previewMarkdown', {
-          decorate: ({ entry: [node, path] }) => {
-            if (!TextApi.isText(node)) return [];
-
-            const getLength = (token: TokenStream): number => {
-              if (typeof token === 'string') return token.length;
-              if (Array.isArray(token)) {
-                return token.reduce(
-                  (length, child) => length + getLength(child),
-                  0
-                );
-              }
-              if (typeof token.content === 'string') {
-                return token.content.length;
-              }
-
-              return getLength(token.content);
-            };
-            const ranges: DecoratedRange[] = [];
-            const tokens = Prism.tokenize(node.text, Prism.languages.markdown);
-            let start = 0;
-
-            for (const token of tokens) {
-              const length = getLength(token);
-              const end = start + length;
-
-              if (typeof token !== 'string') {
-                ranges.push({
-                  anchor: { offset: start, path },
-                  focus: { offset: end, path },
-                  [token.type]: true,
-                });
-              }
-
-              start = end;
-            }
-
-            return ranges;
-          },
-        }),
-      ],
+      plugins: [...BasicNodesKit, PreviewMarkdownKit],
       initialValue: previewMdValue,
     },
     []
@@ -104,7 +111,7 @@ export default function PreviewMdDemo() {
   return (
     <Plate editor={editor}>
       <EditorContainer>
-        <Editor renderLeaf={PreviewLeaf} />
+        <Editor />
       </EditorContainer>
     </Plate>
   );

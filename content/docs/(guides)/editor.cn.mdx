@@ -186,8 +186,12 @@ EditorKit.schema.properties.reviewState.key; // 'reviewState'
 
 ```bash
 pnpm add -D @platejs/cli
-pnpm exec plate generate src/editor/editor-definition.tsx
+pnpm exec plate generate
 ```
+
+`plate generate` 会读取 `src/editor/editor-definition.tsx`。一个应用有多个
+editor definition 时，直接传入各个 entry path。开发时使用 `--watch`，CI 中使用
+`--check`。
 
 生成模块会导出 kit 及其精确的 editor/value 类型，无需显式 editor 泛型：
 
@@ -215,8 +219,10 @@ export function DocumentEditor({ initialValue }: { initialValue: Value }) {
 需要处理已存储文档的 schema 变更使用显式 scaffold：
 
 ```bash
-pnpm exec plate migrate new src/editor/editor-definition.tsx add-caption
+pnpm exec plate migrate new add-caption
 ```
+
+definition 不在标准路径时，传入 `--entry <path>`。
 
 scaffold 包含带类型的 `FromValue`、`ToValue` 快照和结构 diff。应用的存储或协作
 代码决定何时以及如何运行这个纯迁移；Plate 不会自动应用它。
@@ -446,5 +452,11 @@ const editor = createPlateEditor({
 });
 ```
 
-React 组件调用不带类型参数的 `useEditor()`。组件需要精确的插件能力时，使用
-`useEditorPlugin(Plugin)`。
+封闭的生成式应用会将运行时 kit 传给上下文 hook：
+
+```ts
+const editor = useEditor(EditorKit);
+```
+
+这会推断并验证精确的生成契约。没有生成式 kit 时，调用不带类型参数的
+`useEditor()`；组件需要精确的插件能力时，使用 `useEditorPlugin(Plugin)`。

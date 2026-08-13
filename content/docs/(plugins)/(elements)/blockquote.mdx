@@ -75,7 +75,8 @@ const editor = createPlateEditor({
 
 ### Configure Plugin
 
-You can configure the `BlockquotePlugin` with options such as a specific rendering component or custom keyboard shortcuts.
+Configure `BlockquotePlugin` with the component and shortcut used by your app.
+The `toggle` shortcut dispatches the plugin's structural toggle command.
 
 ```tsx
 import { BlockquotePlugin } from '@platejs/basic-nodes/react';
@@ -87,25 +88,27 @@ const editor = createPlateEditor({
     // ...otherPlugins,
     BlockquotePlugin.configure({
       component: BlockquoteElement,
-      shortcuts: { toggle: { keys: 'mod+shift+.' } },
+      shortcuts: { toggle: { keys: 'mod+shift+period' } },
     }),
   ],
 });
 ```
 
 - `.configure({ component })`: Assigns [`BlockquoteElement`](/docs/components/blockquote-node) to render blockquote elements.
-- `shortcuts.toggle`: Defines a keyboard [shortcut](/docs/plugin-shortcuts) to toggle blockquote formatting.
+- `shortcuts.toggle`: Dispatches `editor.plugin(BlockquotePlugin).update.toggle()`.
 
 ### Turn Into Toolbar Button
 
 You can add blockquote to the [Turn Into Toolbar Button](/docs/toolbar#turn-into-toolbar-button) to toggle blockquotes:
 
 ```tsx
-{
+import { PLUGINS } from 'platejs';
+
+const turnIntoItem = {
   icon: <QuoteIcon />,
   label: 'Quote',
-  value: KEYS.blockquote,
-}
+  value: PLUGINS.blockquote,
+};
 ```
 
 ### Insert Toolbar Button
@@ -113,11 +116,13 @@ You can add blockquote to the [Turn Into Toolbar Button](/docs/toolbar#turn-into
 You can add blockquote to the [Insert Toolbar Button](/docs/toolbar#insert-toolbar-button) to insert blockquotes:
 
 ```tsx
-{
+import { PLUGINS } from 'platejs';
+
+const insertItem = {
   icon: <QuoteIcon />,
   label: 'Quote',
-  value: KEYS.blockquote,
-}
+  value: PLUGINS.blockquote,
+};
 ```
 
 </Steps>
@@ -130,6 +135,10 @@ Plugin for blockquote container elements. Renders as `<blockquote>` HTML element
 
 ## Transforms
 
-### `tx.blockquote.toggle`
+### `editor.plugin(BlockquotePlugin).update.toggle()`
 
 Wraps the current block or selection in a blockquote. If the selection is already inside a blockquote, it unwraps the quoted blocks.
+
+```tsx
+editor.plugin(BlockquotePlugin).update.toggle();
+```

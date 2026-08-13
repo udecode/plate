@@ -12,6 +12,7 @@ import {
 
 const directPackageDirectories = [
   'browser',
+  'cli',
   'core',
   'plite',
   'plite-dom',
@@ -54,6 +55,16 @@ test('rejects public artifacts outside dist', () => {
         exports: { '.': './src/index.js' },
       }),
     /must live in \.\/dist/u
+  );
+});
+
+test('accepts a bin-only public package', () => {
+  assert.deepEqual(
+    getPackageBuildArtifacts({
+      bin: { plate: './dist/bin.js' },
+      exports: { './package.json': './package.json' },
+    }),
+    ['dist/bin.js']
   );
 });
 

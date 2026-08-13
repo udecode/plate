@@ -2,12 +2,17 @@
 
 import * as React from 'react';
 
-import { BaseFootnotePlugin, type TFootnoteElement } from '@platejs/footnote';
+import {
+  type FootnoteDefinitionPlugin,
+  type FootnoteInputPlugin,
+  FootnotePlugin,
+} from '@platejs/footnote/react';
 import { PathApi, type Path } from 'platejs';
 import type { PlateEditor, PlateElementProps } from 'platejs/react';
 
 import {
   PlateElement,
+  useEditor,
   useEditorPlugin,
   useEditorSelector,
   useEditorFocused,
@@ -45,7 +50,7 @@ import {
 const NUMERIC_FOOTNOTE_QUERY = /^\d+$/;
 
 const getNavigationAttributes = (
-  attributes: PlateElementProps<TFootnoteElement>['attributes'],
+  attributes: PlateElementProps<typeof FootnotePlugin>['attributes'],
   navigationHighlight: ReturnType<typeof useNavigationHighlight>
 ) => ({
   ...attributes,
@@ -96,11 +101,11 @@ const getReferenceContextLabel = (
 };
 
 export function FootnoteReferenceElement(
-  props: PlateElementProps<TFootnoteElement>
+  props: PlateElementProps<typeof FootnotePlugin>
 ) {
   const { element, path } = props;
-  const { editor } = useEditorPlugin(BaseFootnotePlugin);
-  const footnoteApi = editor.read.footnote;
+  const { read: footnoteApi, update: footnoteUpdate } =
+    useEditorPlugin(FootnotePlugin);
   const identifier = element.identifier ?? '';
   const [hoverOpen, setHoverOpen] = React.useState(false);
   const focused = useEditorFocused();
@@ -165,12 +170,12 @@ export function FootnoteReferenceElement(
                 event.preventDefault();
                 event.stopPropagation();
                 if (isResolved) {
-                  editor.update.footnote.focusDefinition({ identifier });
+                  footnoteUpdate.focusDefinition({ identifier });
 
                   return;
                 }
 
-                editor.update.footnote.createDefinition({ identifier });
+                footnoteUpdate.createDefinition({ identifier });
               }
             }}
           >
@@ -201,7 +206,7 @@ export function FootnoteReferenceElement(
                   onMouseDown={(event) => {
                     event.preventDefault();
                     event.stopPropagation();
-                    editor.update.footnote.createDefinition({ identifier });
+                    footnoteUpdate.createDefinition({ identifier });
                     setHoverOpen(false);
                   }}
                 >
@@ -217,11 +222,12 @@ export function FootnoteReferenceElement(
 }
 
 export function FootnoteDefinitionElement(
-  props: PlateElementProps<TFootnoteElement>
+  props: PlateElementProps<typeof FootnoteDefinitionPlugin>
 ) {
   const { element, path } = props;
-  const { editor } = useEditorPlugin(BaseFootnotePlugin);
-  const footnoteApi = editor.read.footnote;
+  const editor = useEditor();
+  const { read: footnoteApi, update: footnoteUpdate } =
+    useEditorPlugin(FootnotePlugin);
   const identifier = element.identifier ?? '';
   const definitionState = useEditorSelector(() => {
     const isDuplicateDefinition =
@@ -297,7 +303,7 @@ export function FootnoteDefinitionElement(
                     return;
                   }
 
-                  editor.update.footnote.focusReference({ identifier });
+                  footnoteUpdate.focusReference({ identifier });
                 }}
               >
                 {identifier}
@@ -323,7 +329,7 @@ export function FootnoteDefinitionElement(
                             onMouseDown={(event) => event.preventDefault()}
                             onSelect={() => {
                               setReferencePickerOpen(false);
-                              editor.update.footnote.focusReference({
+                              footnoteUpdate.focusReference({
                                 identifier,
                                 index: item.index,
                               });
@@ -363,7 +369,7 @@ export function FootnoteDefinitionElement(
                 onMouseDown={(event) => {
                   event.preventDefault();
                   event.stopPropagation();
-                  editor.update.footnote.normalizeDuplicateDefinition({
+                  footnoteUpdate.normalizeDuplicateDefinition({
                     identifier: duplicateReplacementIdentifier,
                     path,
                   });
@@ -380,10 +386,12 @@ export function FootnoteDefinitionElement(
   );
 }
 
-export function FootnoteInputElement(props: PlateElementProps) {
+export function FootnoteInputElement(
+  props: PlateElementProps<typeof FootnoteInputPlugin>
+) {
   const { element } = props;
-  const { editor } = useEditorPlugin(BaseFootnotePlugin);
-  const footnoteApi = editor.read.footnote;
+  const { read: footnoteApi, update: footnoteUpdate } =
+    useEditorPlugin(FootnotePlugin);
   const [search, setSearch] = React.useState('');
 
   const identifiers = footnoteApi.identifiers?.() ?? [];
@@ -406,29 +414,13 @@ export function FootnoteInputElement(props: PlateElementProps) {
 
   const insertSelectedFootnote = React.useCallback(
     (identifier: string) => {
-      const selection = editor.read.selection();
-      const before = selection
-        ? editor.read.points.before(selection)
-        : undefined;
-      const range =
-        before && selection
-          ? editor.read.ranges.get(before, selection)
-          : undefined;
-      const shouldDeleteTrigger =
-        !!range && editor.read.text.string(range) === '[';
-
-      editor.update((tx) => {
-        if (shouldDeleteTrigger) {
-          tx.text.deleteBackward({ unit: 'character' });
-        }
-
-        tx.footnote.insert({
-          focusDefinition: false,
-          identifier,
-        });
+      footnoteUpdate.insert({
+        focusDefinition: false,
+        identifier,
+        trigger: '[',
       });
     },
-    [editor]
+    [footnoteUpdate]
   );
 
   return (

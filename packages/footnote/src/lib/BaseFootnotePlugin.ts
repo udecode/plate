@@ -353,13 +353,13 @@ export const BaseFootnotePlugin = defineBasePlugin('footnote', {
 
         if (!entry || entry[0].type !== definitionType) return false;
         if (!entry[0].identifier) return false;
-        if (!tx[plugin.name].isDuplicateDefinition({ path })) return false;
+        if (!tx.plugin(plugin).isDuplicateDefinition({ path })) return false;
 
-        const nextIdentifier = identifier ?? tx[plugin.name].nextId();
+        const nextIdentifier = identifier ?? tx.plugin(plugin).nextId();
 
         if (
           nextIdentifier !== entry[0].identifier &&
-          tx[plugin.name].definition({ identifier: nextIdentifier })
+          tx.plugin(plugin).definition({ identifier: nextIdentifier })
         ) {
           return false;
         }
@@ -369,7 +369,7 @@ export const BaseFootnotePlugin = defineBasePlugin('footnote', {
         return nextIdentifier;
       };
       const selectDefinition = ({ identifier }: { identifier: string }) => {
-        const definition = tx[plugin.name].definition({ identifier });
+        const definition = tx.plugin(plugin).definition({ identifier });
 
         if (!definition) return false;
 
@@ -388,7 +388,7 @@ export const BaseFootnotePlugin = defineBasePlugin('footnote', {
         identifier: string;
         index?: number;
       }) => {
-        const reference = tx[plugin.name].references({ identifier })[index];
+        const reference = tx.plugin(plugin).references({ identifier })[index];
 
         if (!reference) return false;
 
@@ -420,7 +420,7 @@ export const BaseFootnotePlugin = defineBasePlugin('footnote', {
           );
         }
 
-        const existingDefinition = tx[plugin.name].definition({
+        const existingDefinition = tx.plugin(plugin).definition({
           identifier,
         });
 
@@ -497,7 +497,7 @@ export const BaseFootnotePlugin = defineBasePlugin('footnote', {
           }
         }
 
-        const nextIdentifier = identifier ?? tx[plugin.name].nextId();
+        const nextIdentifier = identifier ?? tx.plugin(plugin).nextId();
         const fragment =
           selection && tx.selection.isExpanded()
             ? tx.fragment({ at: selection })

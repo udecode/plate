@@ -3,8 +3,7 @@ import { defineDirectPackageConfig } from '../../tooling/config/direct-package.c
 export default defineDirectPackageConfig({
   entry: {
     bin: 'src/bin.ts',
-    'compile-worker': 'src/compile-worker.ts',
-    index: 'src/index.ts',
+    'evaluation-worker': 'src/evaluation-worker.ts',
   },
   platform: 'node',
 });

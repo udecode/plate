@@ -31,14 +31,13 @@ docs:
 
 ### Installation
 
-The fastest way to add table functionality is with the `TableKit`, which includes pre-configured `TablePlugin`, `TableRowPlugin`, `TableCellPlugin`, and `TableCellHeaderPlugin` with their [Plate UI](/docs/installation/plate-ui) components.
+The fastest way to add table functionality is with the `TableKit`, which includes pre-configured `TablePlugin`, `TableRowPlugin`, and `TableCellPlugin` descriptors with their [Plate UI](/docs/installation/plate-ui) components.
 
 <ComponentSource name="table-kit" />
 
 - [`TableElement`](/docs/components/table-node): Renders table containers.
 - [`TableRowElement`](/docs/components/table-node): Renders table rows.
-- [`TableCellElement`](/docs/components/table-node): Renders table cells.
-- [`TableCellHeaderElement`](/docs/components/table-node): Renders table header cells.
+- [`TableCellElement`](/docs/components/table-node): Renders `tableCell` nodes as `<td>` or `<th>` from the node's `header` property.
 
 ### Add Kit
 
@@ -72,7 +71,7 @@ npm install @platejs/table
 
 Include `TablePlugin` in your Plate plugins array when creating the editor.
 
-`TablePlugin` installs `TableRowPlugin`, `TableCellPlugin`, and `TableCellHeaderPlugin` as required structural dependencies.
+`TablePlugin` installs `TableRowPlugin` and `TableCellPlugin` as required structural dependencies.
 
 ```tsx
 import { TablePlugin } from '@platejs/table/react';
@@ -92,7 +91,6 @@ Configure the table owner and add complete row or cell descriptors when you need
 
 ```tsx
 import {
-  TableCellHeaderPlugin,
   TableCellPlugin,
   TablePlugin,
   TableRowPlugin,
@@ -100,7 +98,6 @@ import {
 import { createPlateEditor } from 'platejs/react';
 import {
   TableCellElement,
-  TableCellHeaderElement,
   TableElement,
   TableRowElement,
 } from '@/components/ui/table-node';
@@ -118,13 +115,12 @@ const editor = createPlateEditor({
     }),
     TableRowPlugin.configure({ component: TableRowElement }),
     TableCellPlugin.configure({ component: TableCellElement }),
-    TableCellHeaderPlugin.configure({ component: TableCellHeaderElement }),
   ],
 });
 ```
 
 - `.configure({ component })`: Assigns [`TableElement`](/docs/components/table-node) to render table containers.
-- `component`: Assigns components for table rows, cells, and header cells.
+- `component`: Assigns components for table rows and cells. `TableCellElement` reads `element.header` to render header cells.
 - `initialState.initialTableWidth`: Sets the initial width for new tables.
 - `initialState.disableMerge`: Disables cell merging functionality.
 - `initialState.minColumnWidth`: Sets the minimum width for table columns.
@@ -147,7 +143,7 @@ You can add this item to the [Insert Toolbar Button](/docs/toolbar#insert-toolba
 {
   icon: <TableIcon />,
   label: 'Table',
-  value: KEYS.table,
+  value: PLUGINS.table,
 }
 ```
 
@@ -161,7 +157,7 @@ You can add this item to the [Insert Toolbar Button](/docs/toolbar#insert-toolba
 
 ### TablePlugin
 
-Owns the table schema and behavior. Requires the row, cell, and header-cell plugins.
+Owns the table schema and behavior. Requires the row and cell plugins.
 
 <API name="TablePlugin">
 <APIOptions>
@@ -193,11 +189,7 @@ Required structural plugin for table rows. Add it directly only to replace its d
 
 ### TableCellPlugin
 
-Required structural plugin for table cells. Add it directly only to replace its default configuration or component.
-
-### TableCellHeaderPlugin
-
-Required structural plugin for table header cells. Add it directly only to replace its default configuration or component.
+Required structural plugin for all table cells. Header cells use the same `tableCell` type with `header: true`; add the plugin directly only to replace its default configuration or component.
 
 ## API
 
@@ -243,13 +235,13 @@ Creates an empty cell node for a table.
 <APIItem name="header" type="boolean" optional>
 Specify `true` if the cell is a header cell.
 </APIItem>
-<APIItem name="row" type="TTableRowElement" optional>
+<APIItem name="row" type="TableRowElement" optional>
 The row element. If `header` is not specified, it will determine if the cell is a header cell based on the row's children.
 </APIItem>
 <APIItem name="children" type="Descendant[]" optional>
 The children of the new cell node.
 
-- **Default:** `[{ children: [{ text: '' }], type: editor.plugin(KEYS.p).type }]`
+- **Default:** `[{ children: [{ text: '' }], type: editor.plugin(PLUGINS.paragraph).schema.type }]`
 
 </APIItem>
 </APIOptions>
@@ -295,10 +287,10 @@ Gets the border styles for a table cell, handling special cases for first row an
 
 <API name="getCellBorders">
 <APIOptions>
-<APIItem name="element" type="TTableCellElement">
+<APIItem name="element" type="TableCellElement">
 The table cell element to get the border styles for.
 </APIItem>
-<APIItem name="defaultBorder" type="Required<TTableCellElementBorder>" optional>
+<APIItem name="defaultBorder" type="Required<TableCellBorder>" optional>
 The default border style to use when cell borders are not defined.
 <APISubList>
 <APISubListItem parent="defaultBorder" name="color" type="string">
@@ -321,16 +313,16 @@ The default border style to use when cell borders are not defined.
   <APIItem type="BorderStylesDefault">
     An object containing:
     <APISubList>
-      <APISubListItem parent="return" name="bottom" type="Required<TTableCellElementBorder>">
+      <APISubListItem parent="return" name="bottom" type="Required<TableCellBorder>">
         The bottom border style.
       </APISubListItem>
-      <APISubListItem parent="return" name="right" type="Required<TTableCellElementBorder>">
+      <APISubListItem parent="return" name="right" type="Required<TableCellBorder>">
         The right border style.
       </APISubListItem>
-      <APISubListItem parent="return" name="left" type="Required<TTableCellElementBorder>" optional>
+      <APISubListItem parent="return" name="left" type="Required<TableCellBorder>" optional>
         The left border style. Only present for cells in the first column.
       </APISubListItem>
-      <APISubListItem parent="return" name="top" type="Required<TTableCellElementBorder>" optional>
+      <APISubListItem parent="return" name="top" type="Required<TableCellBorder>" optional>
         The top border style. Only present for cells in the first row.
       </APISubListItem>
     </APISubList>
@@ -364,7 +356,7 @@ Gets the width and minimum height of a table cell, taking into account column sp
 
 <API name="getCellSize">
 <APIOptions>
-<APIItem name="element" type="TTableCellElement">
+<APIItem name="element" type="TableCellElement">
 The table cell element to get the size for.
 </APIItem>
 <APIItem name="colSizes" type="number[]" optional>
@@ -394,7 +386,7 @@ Gets the column span of a table cell.
 
 <API name="getColSpan">
 <APIParameters>
-<APIItem name="element" type="TTableCellElement">
+<APIItem name="element" type="TableCellElement">
 The table cell element to get the column span for.
 </APIItem>
 </APIParameters>
@@ -413,7 +405,7 @@ Gets the row span of a table cell.
 
 <API name="getRowSpan">
 <APIParameters>
-  <APIItem name="element" type="TTableCellElement">
+  <APIItem name="element" type="TableCellElement">
     The table cell element to get the row span for.
   </APIItem>
 </APIParameters>
@@ -423,20 +415,6 @@ Gets the row span of a table cell.
     The number of rows this cell spans.
     - **Default:** `1`
   </APIItem>
-</APIReturns>
-</API>
-
-### editor.api.table.getCellTypes
-
-Get the plugin cell types.
-
-<API name="getCellTypes">
-<APIReturns>
-
-<APIItem type="string[]">
-  An array of element types for table cells (td and th) in the editor.
-</APIItem>
-
 </APIReturns>
 </API>
 
@@ -508,23 +486,21 @@ The number of columns in the table.
 </APIItem>
 </APIReturns>
 </API>
-### editor.read.table.getColumnIndex
+### editor.read.table.getCellIndices
 
-Gets the column index of a cell node within a table.
+Gets the row and column indices of a cell.
 
-<API name="getColumnIndex">
+<API name="getCellIndices">
 <APIParameters>
-  <APIItem name="cellNode" type="Element">
-    The cell node for which to retrieve the column index.
+  <APIItem name="cell" type="Element">
+    The table cell.
   </APIItem>
 </APIParameters>
 
 <APIReturns>
-<APIItem type="number">
-
-The column index of the cell node.
-
-</APIItem>
+  <APIItem type="{ col: number; row: number }">
+    The cell coordinates.
+  </APIItem>
 </APIReturns>
 </API>
 
@@ -537,7 +513,7 @@ Gets the table, row, and cell node entries based on the current selection or a s
 <APIItem name="at" type="Location | null" optional>
 The location where the table cell is located.
 
-- **Default:** `editor.selection`
+- **Default:** `editor.read.selection()`
 </APIItem>
 </APIOptions>
 
@@ -595,44 +571,25 @@ The format of the output.
 </APIReturns>
 </API>
 
-### editor.read.table.getRowIndex
+### editor.read.table.getAdjacentCell
 
-Gets the row index of a cell node within a table.
+Gets a cell relative to the current cell.
 
-<API name="getRowIndex">
-<APIParameters>
-  <APIItem name="cellNode" type="Element">
-    The cell node for which to retrieve the row index.
-  </APIItem>
-</APIParameters>
-
-<APIReturns>
-<APIItem type="number">
-
-The row index of the cell node.
-
-</APIItem>
-</APIReturns>
-</API>
-
-### editor.read.table.getTopCell
-
-Gets the cell above the current cell in the table.
-
-<API name="getTopCell">
-<APIParameters>
+<API name="getAdjacentCell">
+<APIOptions>
   <APIItem name="at" type="Path" optional>
-    The path to the current cell. If not provided, the function will search for
-    the current cell in the editor.
+    The current cell path. Defaults to the current selection.
   </APIItem>
-</APIParameters>
+  <APIItem name="deltaCol" type="number" optional>
+    The column offset.
+  </APIItem>
+  <APIItem name="deltaRow" type="number" optional>
+    The row offset.
+  </APIItem>
+</APIOptions>
 
 <APIReturns>
-<APIItem type="ElementEntry | undefined">
-
-The cell node entry.
-
-</APIItem>
+  <APIItem type="ElementEntry | undefined">The adjacent cell entry.</APIItem>
 </APIReturns>
 </API>
 ### editor.read.table.isBorderHidden
@@ -841,17 +798,17 @@ Options for locating the table.
 </APIParameters>
 </API>
 
-### `editor.plugin(TablePlugin).update.setMarginLeft`
+### `editor.plugin(TablePlugin).update.set`
 
-Sets the margin left of a table.
+Sets typed table properties such as `marginLeft` through the descriptor-bound element update.
 
-<API name="setMarginLeft">
+<API name="set">
 <APIParameters>
-<APIItem name="value" type="{ marginLeft: number }">
-The left margin to apply.
+<APIItem name="properties" type="Partial&lt;TableElement&gt;">
+The table properties to apply, such as `{ marginLeft: 24 }`.
 </APIItem>
-<APIItem name="options" type="TableFindOptions" optional>
-Options for locating the table.
+<APIItem name="options" type="Omit&lt;NodeSetNodesOptions&lt;Element&gt;, 'match'&gt;" optional>
+Generic node options. The table type matcher comes from `TablePlugin`.
 </APIItem>
 </APIParameters>
 </API>
@@ -1083,16 +1040,16 @@ A hook that returns the border styles for a table cell.
   <APIItem type="BorderStylesDefault">
     An object containing the border styles for the cell:
     <APISubList>
-      <APISubListItem parent="return" name="bottom" type="Required<TTableCellElementBorder>">
+      <APISubListItem parent="return" name="bottom" type="Required<TableCellBorder>">
         The bottom border style.
       </APISubListItem>
-      <APISubListItem parent="return" name="right" type="Required<TTableCellElementBorder>">
+      <APISubListItem parent="return" name="right" type="Required<TableCellBorder>">
         The right border style.
       </APISubListItem>
-      <APISubListItem parent="return" name="left" type="Required<TTableCellElementBorder>" optional>
+      <APISubListItem parent="return" name="left" type="Required<TableCellBorder>" optional>
         The left border style. Only present for cells in the first column.
       </APISubListItem>
-      <APISubListItem parent="return" name="top" type="Required<TTableCellElementBorder>" optional>
+      <APISubListItem parent="return" name="top" type="Required<TableCellBorder>" optional>
         The top border style. Only present for cells in the first row.
       </APISubListItem>
     </APISubList>

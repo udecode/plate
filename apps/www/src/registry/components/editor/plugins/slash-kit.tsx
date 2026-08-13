@@ -13,7 +13,7 @@ export const SlashKit = [
 
         return !editor.read.nodes.some({
           match: {
-            type: codeBlock.type,
+            type: codeBlock.schema.type,
           },
         });
       },

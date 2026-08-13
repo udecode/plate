@@ -423,13 +423,28 @@ describe('Plate', () => {
   });
 
   describe('User-defined attributes', () => {
-    const ParagraphElement = ({ attributes, children }: PlateElementProps) => (
+    const ParagraphElement = ({
+      attributes,
+      children,
+    }: PlateElementProps<typeof ParagraphPlugin>) => (
       <p {...attributes} data-testid="paragraph">
         {children}
       </p>
     );
 
-    const BoldLeaf = ({ attributes, children }: PlateLeafProps) => (
+    const BoldPlugin = definePlatePlugin('bold', {
+      schema: {
+        mark: property.boolean({ default: false, omitDefault: true }),
+        properties: {
+          attributes: schema.textProperty(property.json()),
+        },
+      },
+    });
+
+    const BoldLeaf = ({
+      attributes,
+      children,
+    }: PlateLeafProps<typeof BoldPlugin>) => (
       <strong {...attributes} data-testid="bold">
         {children}
       </strong>
@@ -471,7 +486,7 @@ describe('Plate', () => {
       });
 
     const getBoldPlugin = (projectAttributes: boolean) =>
-      definePlatePlugin('bold', {
+      BoldPlugin.configure({
         component: BoldLeaf,
         render: {
           nodeProps: projectAttributes
@@ -488,12 +503,6 @@ describe('Plate', () => {
                   : {};
               }
             : undefined,
-        },
-        schema: {
-          mark: property.boolean({ default: false, omitDefault: true }),
-          properties: {
-            attributes: schema.textProperty(property.json()),
-          },
         },
       });
 

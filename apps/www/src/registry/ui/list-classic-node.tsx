@@ -5,6 +5,10 @@ import * as React from 'react';
 import type { PlateElementProps } from 'platejs/react';
 
 import {
+  type BulletedListPlugin,
+  type ListItemPlugin,
+  type NumberedListPlugin,
+  type TaskListPlugin,
   useTodoListElement,
   useTodoListElementState,
 } from '@platejs/list-classic/react';
@@ -26,7 +30,8 @@ const listVariants = cva('m-0 py-1 ps-6', {
 export function ListElement({
   variant,
   ...props
-}: PlateElementProps & VariantProps<typeof listVariants>) {
+}: PlateElementProps<typeof BulletedListPlugin> &
+  VariantProps<typeof listVariants>) {
   return (
     <PlateElement
       as={variant!}
@@ -38,15 +43,29 @@ export function ListElement({
   );
 }
 
-export function BulletedListElement(props: PlateElementProps) {
+export function BulletedListElement(
+  props: PlateElementProps<typeof BulletedListPlugin>
+) {
   return <ListElement variant="ul" {...props} />;
 }
 
-export function NumberedListElement(props: PlateElementProps) {
-  return <ListElement variant="ol" {...props} />;
+export function NumberedListElement(
+  props: PlateElementProps<typeof NumberedListPlugin>
+) {
+  return (
+    <PlateElement
+      as="ol"
+      className={listVariants({ variant: 'ol' })}
+      {...props}
+    >
+      {props.children}
+    </PlateElement>
+  );
 }
 
-export function TaskListElement(props: PlateElementProps) {
+export function TaskListElement(
+  props: PlateElementProps<typeof TaskListPlugin>
+) {
   return (
     <PlateElement as="ul" className="m-0 list-none! py-1 ps-6" {...props}>
       {props.children}
@@ -54,7 +73,9 @@ export function TaskListElement(props: PlateElementProps) {
   );
 }
 
-export function ListItemElement(props: PlateElementProps) {
+export function ListItemElement(
+  props: PlateElementProps<typeof ListItemPlugin>
+) {
   const isTaskList = 'checked' in props.element;
 
   if (isTaskList) {
@@ -64,7 +85,9 @@ export function ListItemElement(props: PlateElementProps) {
   return <BaseListItemElement {...props} />;
 }
 
-export function BaseListItemElement(props: PlateElementProps) {
+export function BaseListItemElement(
+  props: PlateElementProps<typeof ListItemPlugin>
+) {
   return (
     <PlateElement as="li" {...props}>
       {props.children}
@@ -72,7 +95,9 @@ export function BaseListItemElement(props: PlateElementProps) {
   );
 }
 
-export function TaskListItemElement(props: PlateElementProps) {
+export function TaskListItemElement(
+  props: PlateElementProps<typeof ListItemPlugin>
+) {
   const { element } = props;
   const state = useTodoListElementState({ element });
   const { checkboxProps } = useTodoListElement(state);

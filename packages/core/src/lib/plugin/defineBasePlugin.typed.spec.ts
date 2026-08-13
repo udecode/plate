@@ -59,6 +59,19 @@ const assertTypedSchemaContributions = () => {
   const image = editor.read.schema.create(ImagePlugin);
   void image;
 
+  const NestedTextBlockPlugin = defineBasePlugin('typedNestedTextBlock', {
+    schema: {
+      element: {
+        blockContent: false,
+        content: schema.content.text({ default: 'text', min: 1 }),
+      },
+    },
+  });
+  const nestedEditor = createBaseEditor({ plugins: [NestedTextBlockPlugin] });
+  const nestedUpdate = nestedEditor.plugin(NestedTextBlockPlugin).update;
+
+  false satisfies 'toggle' extends keyof typeof nestedUpdate ? true : false;
+
   // @ts-expect-error structural content roots cannot depend on root context
   const invalidContentRootTarget: SchemaElementTarget = target.root();
   void invalidContentRootTarget;

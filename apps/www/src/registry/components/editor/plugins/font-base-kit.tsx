@@ -4,10 +4,10 @@ import {
   BaseFontFamilyPlugin,
   BaseFontSizePlugin,
 } from '@platejs/basic-styles';
-import { BaseParagraphPlugin } from 'platejs';
+import { PLUGINS } from '@platejs/utils';
 
 const options = {
-  targetPlugins: [BaseParagraphPlugin],
+  targetPlugins: [PLUGINS.paragraph],
 };
 
 export const BaseFontKit = [

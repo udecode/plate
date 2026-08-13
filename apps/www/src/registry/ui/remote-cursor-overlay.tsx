@@ -9,9 +9,79 @@ type CursorData = {
   color?: unknown;
   name?: unknown;
 };
+type ContainerOffset = {
+  left: number;
+  scrollLeft: number;
+  scrollTop: number;
+  top: number;
+};
 
 const FALLBACK_COLORS = ['#7C3AED', '#0891B2', '#DB2777', '#4F46E5'];
 const HEX_COLOR = /^#[\dA-Fa-f]{6}$/;
+const containerOffsetCache = new WeakMap<object, ContainerOffset>();
+
+const readContainerOffset = (
+  container: HTMLElement | null
+): ContainerOffset | null => {
+  if (!container) return null;
+
+  const rect = container.getBoundingClientRect();
+  const previous = containerOffsetCache.get(container);
+
+  if (
+    previous?.left === rect.left &&
+    previous.top === rect.top &&
+    previous.scrollLeft === container.scrollLeft &&
+    previous.scrollTop === container.scrollTop
+  ) {
+    return previous;
+  }
+
+  const next = {
+    left: rect.left,
+    scrollLeft: container.scrollLeft,
+    scrollTop: container.scrollTop,
+    top: rect.top,
+  };
+
+  containerOffsetCache.set(container, next);
+
+  return next;
+};
+
+const useContainerOffset = (
+  container: HTMLElement | null,
+  revision: readonly unknown[]
+) => {
+  // useSyncExternalStore requires stable subscription and snapshot functions.
+  const subscribe = React.useCallback(
+    (onStoreChange: () => void) => {
+      if (!container) return () => {};
+
+      container.addEventListener?.('scroll', onStoreChange, { passive: true });
+      window.addEventListener('resize', onStoreChange);
+      const resizeObserver =
+        typeof ResizeObserver === 'undefined'
+          ? null
+          : new ResizeObserver(onStoreChange);
+      resizeObserver?.observe(container);
+
+      return () => {
+        container.removeEventListener?.('scroll', onStoreChange);
+        window.removeEventListener('resize', onStoreChange);
+        resizeObserver?.disconnect();
+      };
+    },
+    [container]
+  );
+  const getSnapshot = React.useCallback(() => {
+    void revision;
+
+    return readContainerOffset(container);
+  }, [container, revision]);
+
+  return React.useSyncExternalStore(subscribe, getSnapshot, () => null);
+};
 
 const cursorColor = (clientId: number, data: CursorData | undefined) =>
   typeof data?.color === 'string' && HEX_COLOR.test(data.color)
@@ -36,31 +106,9 @@ export function RemoteCursorOverlay() {
   const editor = useEditor();
   const [positions] = useYjsRemoteCursorOverlayPositions<CursorData>(editor);
   const container = useEditorScrollElement(editor);
-  const [containerOffset, setContainerOffset] = React.useState<{
-    left: number;
-    scrollLeft: number;
-    scrollTop: number;
-    top: number;
-  } | null>(null);
+  const containerOffset = useContainerOffset(container, positions);
 
-  React.useLayoutEffect(() => {
-    if (!container) {
-      setContainerOffset(null);
-
-      return;
-    }
-
-    const rect = container.getBoundingClientRect();
-
-    setContainerOffset({
-      left: rect.left,
-      scrollLeft: container.scrollLeft,
-      scrollTop: container.scrollTop,
-      top: rect.top,
-    });
-  }, [container, positions]);
-
-  if (!containerOffset) return null;
+  if (!container || !containerOffset) return null;
 
   return (
     <div

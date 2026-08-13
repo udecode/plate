@@ -25,11 +25,6 @@
     "plate": "./dist/bin.js"
   },
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "default": "./dist/index.js"
-    },
     "./package.json": "./package.json"
   },
   "files": [
@@ -42,6 +37,7 @@
     "lint": "plate-pkg p:lint",
     "lint:fix": "plate-pkg p:lint:fix",
     "test": "bun test test",
+    "test:performance": "bun test/performance.ts",
     "typecheck": "tsc --project tsconfig.json --noEmit"
   },
   "dependencies": {
@@ -50,7 +46,8 @@
     "chokidar": "4.0.3",
     "commander": "14.0.1",
     "esbuild": "0.25.12",
-    "typescript": "6.0.2"
+    "get-tsconfig": "5.0.0-beta.5",
+    "typescript": "7.0.2"
   },
   "devDependencies": {
     "@plate/scripts": "workspace:*",

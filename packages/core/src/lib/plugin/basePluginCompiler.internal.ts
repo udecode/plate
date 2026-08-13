@@ -1,4 +1,5 @@
 import type {
+  DecoratedRange,
   EditorExtensionReference,
   EditorSchemaExtension,
   EditorSchemaExtensionProvider,
@@ -288,6 +289,21 @@ type InputUpdate<TInput> = TInput extends { update: infer TUpdate }
   ? ObjectResult<TUpdate>
   : {};
 
+type DecorationPayload<TRange> = [TRange] extends [never]
+  ? {}
+  : TRange extends DecoratedRange
+    ? Omit<TRange, keyof DecoratedRange>
+    : {};
+
+type InputDecoration<TInput> = TInput extends { decorate: infer TDecorate }
+  ? Exclude<
+      FactoryResult<TDecorate>,
+      undefined
+    > extends readonly (infer TRange)[]
+    ? DecorationPayload<TRange>
+    : {}
+  : {};
+
 type InputSelectors<TInput> = TInput extends {
   selectors: infer TSelectors extends object;
 }
@@ -343,7 +359,6 @@ type InputEnabled<TInput> = TInput extends {
 type BasePluginPresenceField =
   | BaseNativePresenceKey
   | 'codecs'
-  | 'decorate'
   | 'editOnly'
   | 'inject'
   | 'inputRules'
@@ -361,29 +376,31 @@ type NormalizedBasePluginField<TInput, TKey extends keyof TInput> = TKey extends
   ? TInput[TKey]
   : TKey extends 'api'
     ? InputApi<TInput>
-    : TKey extends 'conflicts'
-      ? InputConflicts<TInput>
-      : TKey extends 'dependencies'
-        ? InputDependencies<TInput>
-        : TKey extends 'enabled'
-          ? InputEnabled<TInput>
-          : TKey extends 'targetPlugins'
-            ? TInput[TKey] extends readonly (PluginReference | string)[]
-              ? TInput[TKey]
-              : readonly (PluginReference | string)[]
-            : TKey extends 'read'
-              ? InputRead<TInput>
-              : TKey extends 'update'
-                ? InputUpdate<TInput>
-                : TKey extends 'initialState'
-                  ? InputInitialState<TInput>
-                  : TKey extends 'selectors'
-                    ? InputSelectors<TInput>
-                    : TKey extends 'schema'
-                      ? InputSchema<TInput>
-                      : TKey extends BasePluginPresenceField
-                        ? true
-                        : never;
+    : TKey extends 'decorate'
+      ? InputDecoration<TInput>
+      : TKey extends 'conflicts'
+        ? InputConflicts<TInput>
+        : TKey extends 'dependencies'
+          ? InputDependencies<TInput>
+          : TKey extends 'enabled'
+            ? InputEnabled<TInput>
+            : TKey extends 'targetPlugins'
+              ? TInput[TKey] extends readonly (PluginReference | string)[]
+                ? TInput[TKey]
+                : readonly (PluginReference | string)[]
+              : TKey extends 'read'
+                ? InputRead<TInput>
+                : TKey extends 'update'
+                  ? InputUpdate<TInput>
+                  : TKey extends 'initialState'
+                    ? InputInitialState<TInput>
+                    : TKey extends 'selectors'
+                      ? InputSelectors<TInput>
+                      : TKey extends 'schema'
+                        ? InputSchema<TInput>
+                        : TKey extends BasePluginPresenceField
+                          ? true
+                          : never;
 
 export type NormalizeBasePluginInput<
   TInput,

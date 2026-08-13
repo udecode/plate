@@ -2,7 +2,7 @@
 
 import type { BasePluginOverride, TrailingBlockDefinition } from 'platejs';
 
-import { KEYS, TextApi } from 'platejs';
+import { PLUGINS, TextApi } from 'platejs';
 import { BaseSuggestionPlugin } from '@platejs/suggestion';
 import { SuggestionPlugin } from '@platejs/suggestion/react';
 
@@ -18,10 +18,10 @@ import {
 } from './discussion-kit';
 
 const INLINE_SUGGESTION_RENDER_TARGETS = [
-  KEYS.date,
-  KEYS.inlineEquation,
-  KEYS.link,
-  KEYS.mention,
+  PLUGINS.date,
+  PLUGINS.inlineEquation,
+  PLUGINS.link,
+  PLUGINS.mention,
 ];
 
 export type SuggestionKitPluginState = {
@@ -38,7 +38,7 @@ export const suggestionPlugin = SuggestionPlugin.extend(({ api, editor }) => ({
   ),
   override: {
     plugins: {
-      [KEYS.trailingBlock]: {
+      [PLUGINS.trailingBlock]: {
         initialState: {
           insert: (insert) => {
             api.untracked(insert);
@@ -51,9 +51,9 @@ export const suggestionPlugin = SuggestionPlugin.extend(({ api, editor }) => ({
   component: SuggestionLeaf,
   on: {
     // unset active suggestion when clicking outside of suggestion
-    click: ({ api, event, read, store, type }) => {
+    click: ({ api, event, name, read, store }) => {
       const markTarget = getDiscussionClickTarget({
-        selector: `.plite-${type}`,
+        selector: `.plite-${name}`,
         target: event.target,
       });
       const blockTarget = markTarget
@@ -72,9 +72,7 @@ export const suggestionPlugin = SuggestionPlugin.extend(({ api, editor }) => ({
       });
 
       store.set({
-        activeId: suggestionEntry
-          ? (api.nodeId(suggestionEntry[0]) ?? null)
-          : null,
+        activeId: suggestionEntry ? (api.id(suggestionEntry[0]) ?? null) : null,
       });
     },
   },
@@ -112,7 +110,7 @@ export const suggestionPlugin = SuggestionPlugin.extend(({ api, editor }) => ({
     belowNodes: SuggestionLineBreak,
     belowRootNodes: VoidRemoveSuggestionOverlay,
   },
-  targetPluginNames: INLINE_SUGGESTION_RENDER_TARGETS,
+  targetPlugins: INLINE_SUGGESTION_RENDER_TARGETS,
 });
 
 export const SuggestionKit = [suggestionPlugin];

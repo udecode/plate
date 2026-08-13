@@ -3,6 +3,7 @@ import React from 'react';
 import { useEditorReadOnly } from '@platejs/plite-react';
 
 import type { AnyBasePlugin } from '../../lib';
+import type { RenderTextProps } from '../../lib';
 import type { PlateEditor } from '../editor/PlateEditor';
 
 import { getPluginNodeClass } from '../../lib';
@@ -11,12 +12,19 @@ import {
   getCompiledPlateModelBinding,
   getPlateRuntime,
 } from '../../internal/plugin/compilePlateModel';
-import { type PlateTextProps, PlateText } from '../components/plate-nodes';
+import { type PlateNodeProps, PlateText } from '../components/plate-nodes';
 import { getRenderNodeProps } from './getRenderNodeProps';
 
-export type RenderText = (props: PlateTextProps) => React.ReactElement<any>;
+type PlateTextRenderProps = PlateNodeProps & RenderTextProps;
 
-const getSimpleTextAttributes = (props: PlateTextProps, className?: string) => {
+export type RenderText = (
+  props: PlateTextRenderProps
+) => React.ReactElement<any>;
+
+const getSimpleTextAttributes = (
+  props: PlateTextRenderProps,
+  className?: string
+) => {
   const attributes = (props.attributes ?? {}) as any;
 
   return {

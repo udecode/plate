@@ -42,23 +42,15 @@ describe('toggle hooks', () => {
         `./useToggle?toolbar=${Math.random().toString(36).slice(2)}`
       );
     const toggle = mock();
-    const collapse = mock();
     const focus = mock();
     const toggleKeys = mock();
-    const update = mock(
-      (
-        callback: (tx: {
-          blocks: { toggle: typeof toggle };
-          selection: { collapse: typeof collapse };
-        }) => void
-      ) => callback({ blocks: { toggle }, selection: { collapse } })
-    );
     const editor = {
       api: { dom: { focus } },
       plugin: () => ({
         api: { toggleKeys },
         name: 'toggle',
         schema: { type: 'toggle' },
+        update: { toggle },
       }),
       read: {
         nodes: {
@@ -67,7 +59,6 @@ describe('toggle hooks', () => {
         },
       },
       key: () => toggleKey,
-      update,
     };
 
     useEditorSelectorMock.mockReturnValue(true);
@@ -83,8 +74,7 @@ describe('toggle hooks', () => {
 
     expect(result.current.props.pressed).toBe(true);
     expect(toggleKeys).toHaveBeenCalledWith([toggleKey], true);
-    expect(toggle).toHaveBeenCalledWith('toggle');
-    expect(collapse).toHaveBeenCalled();
+    expect(toggle).toHaveBeenCalledWith({ collapse: true });
     expect(focus).toHaveBeenCalled();
   });
 

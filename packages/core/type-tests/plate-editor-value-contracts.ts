@@ -86,6 +86,8 @@ const QuotePlugin = definePlatePlugin('quote', {
   schema: { element: schema.element.textBlock() },
 });
 
+QuotePlugin.extend({ shortcuts: { toggle: { keys: 'mod+shift+q' } } });
+
 const CalloutPlugin = definePlatePlugin('calloutCapability', {
   schema: {
     element: {
@@ -141,11 +143,13 @@ const GeneratedEditorPlugins = bindGeneratedEditor(editorDefinition, {
       paragraph: {
         construction: { align: 'left' | 'right' };
         properties: { align: 'left' | 'right' };
+        toggle: true;
         type: 'paragraph';
       };
       quote: {
         construction: {};
         properties: {};
+        toggle: true;
         type: 'quote';
       };
     }
@@ -194,6 +198,8 @@ const isDense: boolean = plateEditor
   .store.get('isDense');
 
 plateEditor.update((tx) => {
+  tx.plugin(ConfiguredLayoutPlugin).setDensity(1);
+  tx.plugin('layout').setDensity(2);
   tx.layout.setDensity(1);
   tx.paragraph.set({ align: 'right' });
   tx.quote.remove();
@@ -201,15 +207,82 @@ plateEditor.update((tx) => {
   tx.toolbar.setCompact();
 });
 plateEditor.update.paragraph.insert({ align: 'left' });
+plateEditor.update.paragraph.toggle();
 plateEditor.update.quote.insert();
+plateEditor.update.quote.toggle({ at: [0] });
 plateEditor.plugin(QuotePlugin).update.set({});
+plateEditor.plugin(QuotePlugin).update.toggle();
 
 const rawElementEditor = createPlateEditor({ plugins: [CalloutPlugin] });
 const rawCallout = rawElementEditor.plugin(CalloutPlugin);
+const BooleanMarkPlugin = definePlatePlugin('booleanMark', {
+  schema: { mark: property.boolean({ default: false, omitDefault: true }) },
+});
+declare const broadPlateEditor: PlateEditor;
 
 rawCallout.update.insert({ tone: 'warning' });
 rawCallout.update.set({ tone: 'info' });
 rawCallout.update.remove();
+// @ts-expect-error required-construction text blocks have no generic toggle
+rawCallout.update.toggle({ at: [0] });
+broadPlateEditor.update((tx) => {
+  tx.plugin(LayoutPlugin).setDensity(1);
+  tx.plugin(BooleanMarkPlugin).toggle();
+});
+
+const VoidPlugin = definePlatePlugin('voidCapability', {
+  schema: { element: { void: 'block' } },
+});
+
+VoidPlugin.extend({
+  shortcuts: {
+    // @ts-expect-error structural elements have no generic toggle command
+    toggle: { keys: 'mod+shift+v' },
+  },
+});
+const voidPortal = createPlateEditor({ plugins: [VoidPlugin] }).plugin(
+  VoidPlugin
+);
+
+// @ts-expect-error void elements do not expose a generic block toggle
+voidPortal.update.toggle();
+
+const TextContentPlugin = definePlatePlugin('textContentCapability', {
+  schema: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+    },
+  },
+});
+const textContentPortal = createPlateEditor({
+  plugins: [TextContentPlugin],
+}).plugin(TextContentPlugin);
+
+// @ts-expect-error generic toggle requires schema.element.textBlock()
+textContentPortal.update.toggle();
+
+const OverriddenTextBlockPlugin = definePlatePlugin('overriddenTextBlock', {
+  schema: { element: schema.element.textBlock() },
+});
+const StructuralChildPlugin = definePlatePlugin('structuralChild', {
+  schema: { element: schema.element.textBlock() },
+});
+const overriddenDefinition = defineEditor('overriddenRawEditor', {
+  plugins: [OverriddenTextBlockPlugin, StructuralChildPlugin],
+  schema: {
+    overrides: [
+      schema.override(OverriddenTextBlockPlugin, {
+        element: { content: schema.content.element(StructuralChildPlugin) },
+      }),
+    ],
+  },
+});
+const overriddenPortal = createPlateEditor({
+  plugins: overriddenDefinition.plugins,
+}).plugin(OverriddenTextBlockPlugin);
+
+// @ts-expect-error application overrides require generated mutation contracts
+overriddenPortal.update.toggle();
 
 expectBodyValue(bodyValue);
 
@@ -236,6 +309,11 @@ plateEditor.update((tx) => {
 plateEditor.update((tx) => {
   // @ts-expect-error invalid merged toolbar tx argument
   tx.toolbar.setCompact(true);
+});
+
+plateEditor.update((tx) => {
+  // @ts-expect-error uninstalled plugin names have no transaction capability
+  tx.plugin('missingPlugin').run();
 });
 
 // @ts-expect-error required element construction property is missing

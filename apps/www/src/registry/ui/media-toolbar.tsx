@@ -85,6 +85,7 @@ export function MediaToolbar({
           <div className="box-content flex items-center">
             <FloatingMediaPrimitive.EditButton
               className={buttonVariants({ size: 'sm', variant: 'ghost' })}
+              options={{ plugin }}
             >
               Edit link
             </FloatingMediaPrimitive.EditButton>

@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import type { TCodeDrawingElement } from '@platejs/code-drawing';
+import type { BaseCodeDrawingPlugin } from '@platejs/code-drawing';
 import type { PliteElementProps } from 'platejs/static';
 
 import { cn } from '@/lib/utils';
@@ -9,7 +9,7 @@ import { PliteElement } from 'platejs/static';
 export function CodeDrawingElementStatic({
   children,
   ...props
-}: PliteElementProps<TCodeDrawingElement>) {
+}: PliteElementProps<typeof BaseCodeDrawingPlugin>) {
   return (
     <PliteElement className="my-4 flex w-full items-stretch" {...props}>
       <div className={cn('flex w-full flex-col md:flex-row')}>

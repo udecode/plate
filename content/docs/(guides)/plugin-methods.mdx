@@ -20,7 +20,7 @@ contribution:
 | Field | Owns |
 | --- | --- |
 | `initialState` | The seed for this plugin's editor-local store. |
-| `api` | Factory for immutable plugin-scoped services and queries. |
+| `api` | Factory for immutable plugin-scoped services. |
 | `read` | Snapshot or transaction-local reads. |
 | `selectors` | Pure state-first derivations, including React subscriptions. |
 | `update` | Transaction-bound plugin mutations. |
@@ -50,7 +50,8 @@ export const CounterPlugin = definePlatePlugin('counter', {
   }),
   initialState: {
     value: 0,
-  } satisfies CounterPluginState,  selectors: {
+  } satisfies CounterPluginState,
+  selectors: {
     doubled: (state, factor: number) => state.value * factor,
     isEven: (state) => state.value % 2 === 0,
   },
@@ -89,14 +90,14 @@ Inside a later update contribution, reuse an earlier update through the active
 transaction group:
 
 ```ts
-.extend(({ plugin }) => ({
+export const CounterPairPlugin = CounterPlugin.extend(() => ({
   update: ({ tx }) => ({
     insertPair: () => {
-      tx[plugin.name].insertLabel();
-      tx[plugin.name].insertLabel();
+      tx.plugin(CounterPlugin).insertLabel();
+      tx.plugin(CounterPlugin).insertLabel();
     },
   }),
-}))
+}));
 ```
 
 Calling a portal one-shot update there would open a nested transaction.
@@ -115,7 +116,8 @@ export const SingleLinePlugin = defineBasePlugin('singleLine', {
     handle(editorCommands.insertBreak, ({ state }) =>
       state.transaction(() => {})
     ),
-  ],});
+  ],
+});
 ```
 
 Native callbacks receive only their Plite capability context. When one needs
@@ -127,7 +129,8 @@ new helper parameter:
 import { defineBasePlugin, editorCommands } from 'platejs';
 
 export const TriggerPlugin = defineBasePlugin('trigger', {
-  initialState: { enabled: true },}).extend(({ store }) => ({
+  initialState: { enabled: true },
+}).extend(({ store }) => ({
   commands: ({ handle }) => [
     handle(editorCommands.insertBreak, ({ state }) => {
       if (!store.get('enabled')) return false;
@@ -163,7 +166,8 @@ export const RecordsPlugin = defineBasePlugin('records', {
         decode: ({ data }) => ContentSlice.fromJSON(JSON.parse(data)),
         encode: ({ slice }) => JSON.stringify(slice),
       },
-    }),});
+    }),
+});
 ```
 
 Use document scope only when the format represents the complete document.
@@ -201,14 +205,11 @@ Use `.configure()` once, where an app or registry installs a plugin, to change
 fields already declared by the author.
 
 ```tsx title="plugins.tsx" showLineNumbers
-import { H1Plugin } from '@platejs/basic-nodes/react';
+import { LinkPlugin } from '@platejs/link/react';
 
-export const AppH1Plugin = H1Plugin.configure({
+export const AppLinkPlugin = LinkPlugin.configure({
   initialState: {
-    levels: [1, 2],
-  },
-  shortcuts: {
-    toggle: { keys: 'mod+alt+1' },
+    allowedSchemes: ['http', 'https', 'mailto'],
   },
 });
 ```
@@ -227,12 +228,11 @@ type CellPluginState = {
   padding: number;
 };
 
-const initialState: CellPluginState = {
-  padding: 12,
-};
-
 const CellPlugin = definePlatePlugin('cell', {
-  initialState,});
+  initialState: {
+    padding: 12,
+  } satisfies CellPluginState,
+});
 
 const GridPlugin = definePlatePlugin('grid', {
   dependencies: [CellPlugin],

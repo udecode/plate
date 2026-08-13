@@ -1,6 +1,6 @@
 'use client';
 
-import { AIChatPlugin } from '@platejs/ai/react';
+import { AIChatPlugin, type AIPlugin } from '@platejs/ai/react';
 import {
   type PlateElementProps,
   type PlateTextProps,
@@ -11,7 +11,7 @@ import {
 
 import { cn } from '@/lib/utils';
 
-export function AILeaf(props: PlateTextProps) {
+export function AILeaf(props: PlateTextProps<typeof AIPlugin>) {
   const streaming = usePluginStore(AIChatPlugin, 'streaming');
   const streamingLeaf = props.editor
     .plugin(AIChatPlugin)
@@ -33,7 +33,7 @@ export function AILeaf(props: PlateTextProps) {
   );
 }
 
-export function AIAnchorElement(props: PlateElementProps) {
+export function AIAnchorElement(props: PlateElementProps<typeof AIChatPlugin>) {
   return (
     <PlateElement {...props}>
       <div className="h-[0.1px]" />

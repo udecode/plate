@@ -1,15 +1,18 @@
 import * as React from 'react';
 
-import type { RenderStaticNodeWrapper, TListElement } from 'platejs';
+import type { RenderStaticNodeWrapper } from 'platejs';
 
-import { isOrderedList } from '@platejs/list';
+import { type BaseListPlugin, isOrderedList } from '@platejs/list';
 import { CheckIcon } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 
-type BlockListProps = Parameters<
-  NonNullable<ReturnType<RenderStaticNodeWrapper>>
->[0];
+type ListWrapper = RenderStaticNodeWrapper<typeof BaseListPlugin>;
+type BlockListProps = Parameters<NonNullable<ReturnType<ListWrapper>>>[0] & {
+  indent?: number;
+  listStart?: number;
+  listStyleType: string;
+};
 
 const config: Record<
   string,
@@ -24,17 +27,24 @@ const config: Record<
   },
 };
 
-export const BlockListStatic: RenderStaticNodeWrapper = (props) => {
-  if (!props.element.listStyleType) return;
+export const BlockListStatic: ListWrapper = (props) => {
+  const { indent, listStart, listStyleType } = props.element;
+
+  if (!listStyleType) return;
   if (!isOrderedList(props.element)) return;
 
-  return (props) => <List {...props} />;
+  return (props) => (
+    <List
+      {...props}
+      indent={typeof indent === 'number' ? indent : undefined}
+      listStart={listStart}
+      listStyleType={listStyleType}
+    />
+  );
 };
 
 function List(props: BlockListProps) {
-  const { indent, listStart, listStyleType } = props.element as TListElement & {
-    indent?: number;
-  };
+  const { indent, listStart, listStyleType } = props;
   const { Li, Marker } = config[listStyleType] ?? {};
   const List = isOrderedList(props.element) ? 'ol' : 'ul';
 
@@ -54,7 +64,7 @@ function List(props: BlockListProps) {
 }
 
 function TodoMarkerStatic(props: BlockListProps) {
-  const checked = props.element.checked as boolean;
+  const checked = props.element.checked === true;
 
   return (
     <div contentEditable={false}>
@@ -79,8 +89,7 @@ function TodoLiStatic(props: BlockListProps) {
     <li
       className={cn(
         'list-none',
-        (props.element.checked as boolean) &&
-          'text-muted-foreground line-through'
+        props.element.checked === true && 'text-muted-foreground line-through'
       )}
     >
       {props.children}

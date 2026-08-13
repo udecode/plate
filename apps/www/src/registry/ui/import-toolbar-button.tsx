@@ -8,7 +8,7 @@ import { DocxIOPlugin } from '@platejs/docx-io';
 import { MarkdownPlugin } from '@platejs/markdown';
 import { ArrowUpToLineIcon } from 'lucide-react';
 import { HtmlPlugin } from 'platejs';
-import { useEditorPlugin } from 'platejs/react';
+import { useEditor } from 'platejs/react';
 import { getEditorDOMFromHtmlString } from 'platejs/static';
 import { useFilePicker } from 'use-file-picker';
 
@@ -23,9 +23,9 @@ import {
 import { ToolbarButton } from './toolbar';
 
 export function ImportToolbarButton(props: DropdownMenuProps) {
-  const { editor } = useEditorPlugin(MarkdownPlugin);
+  const editor = useEditor();
   const [open, setOpen] = React.useState(false);
-  const markdownApi = editor.api.markdown;
+  const markdownApi = editor.plugin(MarkdownPlugin).api;
 
   const { openFilePicker: openMdFilePicker } = useFilePicker({
     accept: ['.md', '.mdx'],

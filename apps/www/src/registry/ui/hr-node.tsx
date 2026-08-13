@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 
+import type { HorizontalRulePlugin } from '@platejs/basic-nodes/react';
 import type { PlateElementProps } from 'platejs/react';
 
 import {
@@ -13,7 +14,9 @@ import {
 
 import { cn } from '@/lib/utils';
 
-export function HrElement(props: PlateElementProps) {
+export function HrElement(
+  props: PlateElementProps<typeof HorizontalRulePlugin>
+) {
   const readOnly = useEditorReadOnly();
   const selected = useElementSelected();
   const focused = useEditorFocused();

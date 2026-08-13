@@ -246,10 +246,9 @@ export const BaseTaskListPlugin = defineBasePlugin(PLUGINS.taskList, {
 
 export const BaseTodoListPlugin = defineBasePlugin(PLUGINS.todoList, {
   schema: {
-    element: {
-      content: schema.content.text({ default: 'text', min: 1 }),
+    element: schema.element.textBlock({
       properties: { checked: property.boolean({ default: false }) },
-    },
+    }),
   },
   initialState: todoListInitialState,
 }).extend(({ store, schema: { type } }) => ({

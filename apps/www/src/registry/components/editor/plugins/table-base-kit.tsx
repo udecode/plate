@@ -1,5 +1,4 @@
 import {
-  BaseTableCellHeaderPlugin,
   BaseTableCellPlugin,
   BaseTablePlugin,
   BaseTableRowPlugin,
@@ -7,7 +6,6 @@ import {
 
 import {
   TableCellElementStatic,
-  TableCellHeaderElementStatic,
   TableElementStatic,
   TableRowElementStatic,
 } from '@/registry/ui/table-node-static';
@@ -19,8 +17,5 @@ export const BaseTableKit = [
   }),
   BaseTableCellPlugin.configure({
     component: TableCellElementStatic,
-  }),
-  BaseTableCellHeaderPlugin.configure({
-    component: TableCellHeaderElementStatic,
   }),
 ];

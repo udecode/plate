@@ -339,6 +339,24 @@ describe('feature toolbar plugin portals', () => {
     expect(focusMock).toHaveBeenCalledTimes(1);
   });
 
+  it('restores editor focus after picking a font size', async () => {
+    currentPluginName = 'fontSize';
+    currentEditor.read.marks = () => ({ fontSize: '16px' });
+    pluginMock.mockReturnValue({
+      read: { value: () => '16px' },
+      update: { set: setMock },
+    });
+    const { FontSizeToolbarButton } = await import(
+      `./font-size-toolbar-button?focus=${Math.random().toString(36).slice(2)}`
+    );
+    const view = render(<FontSizeToolbarButton />);
+
+    fireEvent.click(view.getByRole('button', { name: '10' }));
+
+    expect(setMock).toHaveBeenCalledWith('10px');
+    expect(focusMock).toHaveBeenCalledTimes(1);
+  });
+
   it('uses caller colors without traversing a 5,000-block document', async () => {
     currentEditor.read.marks = () => ({});
     currentEditor.read.children = () =>

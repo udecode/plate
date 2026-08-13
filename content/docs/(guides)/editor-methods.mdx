@@ -24,7 +24,7 @@ import { Button } from '@/components/ui/button';
 export function BoldButton() {
   const editor = useEditor();
   const hasSelection = useEditorSelector((editor) =>
-    Boolean(editor.selection)
+    Boolean(editor.read.selection())
   );
 
   return (
@@ -62,7 +62,7 @@ editor.update((tx) => {
 
 ```tsx title="components/selection-state.tsx"
 const isSelectionExpanded = useEditorSelector(
-  (editor) => editor.api.isExpanded()
+  (editor) => editor.read.selection.isExpanded()
 );
 ```
 
@@ -115,19 +115,21 @@ Components that require an editor should use `useEditor()` and fail fast.
 
 ## Editor API and Commands
 
-Use `editor.api` for queries, DOM services, and host helpers. Use
-`editor.update` for operations that change the document, selection, history, or
-plugin state.
+Use `editor.read` for snapshot-bound queries, `editor.api` for DOM, host, and
+plugin services, and `editor.update` for operations that change the document,
+selection, history, or plugin state.
 
 ```ts title="editor-methods.ts" showLineNumbers
-const selectedText = editor.selection
-  ? editor.api.string(editor.selection)
-  : '';
+import { BoldPlugin } from '@platejs/basic-nodes/react';
 
-const currentBlock = editor.api.block();
+const selection = editor.read.selection();
+const selectedText = selection ? editor.read.text.string(selection) : '';
 
-if (selectedText && !editor.api.hasMark('bold')) {
-  editor.update((tx) => tx.marks.toggle('bold'));
+const currentBlock = editor.read.nodes.block();
+const bold = editor.plugin(BoldPlugin);
+
+if (selectedText && !bold.read.isActive()) {
+  bold.update.toggle();
 }
 
 editor.update((tx) => {
@@ -140,7 +142,8 @@ editor.update((tx) => {
 
 | Surface | Examples | Use for |
 | --- | --- | --- |
-| `editor.api` | `string`, `block`, `hasMark`, `isExpanded`, `dom.focus` | Reading editor state, checking selection, DOM/runtime services. |
+| `editor.read` | `text.string`, `nodes.block`, `marks`, `selection.isExpanded` | Reading the current immutable editor state. |
+| `editor.api` | `dom.focus` and plugin-owned service groups | DOM/runtime services and non-mutating feature APIs. |
 | `editor.update` | `tx.nodes.insert`, `tx.nodes.set`, `tx.marks.toggle`, `tx.selection.set` | Mutating document or editor state. |
 
 ## Plugin Methods

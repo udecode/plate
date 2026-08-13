@@ -89,33 +89,18 @@ import { H1Element, H2Element, H3Element } from '@/components/ui/heading-node';
 const editor = createPlateEditor({
   plugins: [
     // ...其他插件,
-    H1Plugin.configure(({ editor, schema }) => ({
+    H1Plugin.configure({
       component: H1Element,
-      shortcuts: {
-        toggle: {
-          keys: 'mod+alt+1',
-          handler: () => editor.update.blocks.toggle(schema.type),
-        },
-      },
-    })),
-    H2Plugin.configure(({ editor, schema }) => ({
+      shortcuts: { toggle: { keys: 'mod+alt+1' } },
+    }),
+    H2Plugin.configure({
       component: H2Element,
-      shortcuts: {
-        toggle: {
-          keys: 'mod+alt+2',
-          handler: () => editor.update.blocks.toggle(schema.type),
-        },
-      },
-    })),
-    H3Plugin.configure(({ editor, schema }) => ({
+      shortcuts: { toggle: { keys: 'mod+alt+2' } },
+    }),
+    H3Plugin.configure({
       component: H3Element,
-      shortcuts: {
-        toggle: {
-          keys: 'mod+alt+3',
-          handler: () => editor.update.blocks.toggle(schema.type),
-        },
-      },
-    })),
+      shortcuts: { toggle: { keys: 'mod+alt+3' } },
+    }),
     // 类似地配置 H4Plugin、H5Plugin、H6Plugin
   ],
 });
@@ -211,10 +196,10 @@ const editor = createPlateEditor({
 
 ## 转换
 
-### `editor.update.blocks.toggle(type)`
+### `editor.plugin(H1Plugin).update.toggle()`
 
-使用标题插件解析出的 `schema.type` 切换所选块：
+使用标题插件的通用更新命令切换所选块：
 
 ```tsx
-editor.update.blocks.toggle(editor.plugin(H1Plugin).schema.type);
+editor.plugin(H1Plugin).update.toggle();
 ```

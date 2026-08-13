@@ -4,14 +4,13 @@ import * as React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
-import { ScriptPlugin } from '@platejs/basic-nodes/react';
+import { KbdPlugin, ScriptPlugin } from '@platejs/basic-nodes/react';
 import {
   KeyboardIcon,
   MoreHorizontalIcon,
   SubscriptIcon,
   SuperscriptIcon,
 } from 'lucide-react';
-import { KEYS } from 'platejs';
 import { useEditor } from 'platejs/react';
 
 import {
@@ -44,7 +43,7 @@ export function MoreToolbarButton(props: DropdownMenuProps) {
           <DropdownMenuItem
             onSelect={() => {
               editor.update((tx) => {
-                tx.marks.toggle(KEYS.kbd);
+                tx.plugin(KbdPlugin).toggle();
                 tx.selection.collapse({ edge: 'end' });
               });
               editor.api.dom.focus();

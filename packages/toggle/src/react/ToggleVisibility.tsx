@@ -2,9 +2,13 @@ import React from 'react';
 
 import { type PlateElementProps, useEditor } from '@platejs/core/react';
 
+import type { BaseTogglePlugin } from '../lib/BaseTogglePlugin';
 import { useIsVisible } from './useToggle';
 
-export function ToggleVisibility({ children, element }: PlateElementProps) {
+export function ToggleVisibility({
+  children,
+  element,
+}: PlateElementProps<typeof BaseTogglePlugin>) {
   const editor = useEditor();
   const isVisible = useIsVisible(editor.key(element));
 

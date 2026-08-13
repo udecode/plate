@@ -84,6 +84,11 @@ and registry wiring.
   `editor.api`, node types, schema properties, or caught access errors. Do not
   add local wrapper helpers around either path.
 - If a node renderer forwards to `PlateElement` or `SlateElement`, keep the full incoming `props` object intact. Read from `props`, but do not destructure away `editor`, `element`, or other required fields and then spread only a partial object into the renderer.
+- Type every plugin-bound renderer from its stable owner descriptor:
+  `PlateElementProps<typeof FooPlugin>` / `PlateLeafProps<typeof FooPlugin>`
+  for live renderers and the matching `Plite*Props<typeof BaseFooPlugin>` for
+  static renderers. Do not feed a derived node alias back into renderer props.
+  Keep bare props only for deliberately schema-agnostic shared wrappers.
 - Keep helpers inline when used once.
 - Split kits only where the kit itself owns different static/base and live
   renderers or behavior. Share runtime-neutral policy kits across both

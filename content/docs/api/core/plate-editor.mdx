@@ -55,7 +55,7 @@ The editor is still a Plite editor. Plate adds typed plugin access, DOM services
       Runtime DOM state owned by the editor instance.
     </APIItem>
     <APIItem name="runtime" type="PlateEditor['runtime']">
-      Public Plate runtime identity and lifecycle state. Compiled plugin
+      Public Plate runtime-instance and lifecycle state. Compiled plugin
       registries stay private to Plate.
     </APIItem>
   </APIAttributes>
@@ -78,8 +78,9 @@ React and DOM runtime state is read through Plite runtime APIs. Plate exposes on
 
 ## Plugin Access
 
-Use `editor.api.<name>` for installed plugin queries and services on a
-concrete editor. Pass the descriptor to `editor.plugin(plugin)` when generic
+Use `editor.api.<name>` for installed plugin services on a concrete editor.
+Use `editor.read.<name>` for snapshot-bound plugin queries. Pass the descriptor to
+`editor.plugin(plugin)` when generic
 code needs the exact plugin API, update commands, name, or store. The
 root and scoped API paths reference the same immutable object.
 
@@ -296,7 +297,7 @@ Some core behavior is exposed by routing browser/editor events into the Plite tr
 | Plite change events    | Emits committed node and text change contexts through Plate `on.nodeChange` and `on.textChange`.                                                                                                                       |
 | Plite React runtime    | Handles editable keyboard, composition, focus, read-only, DOM selection export, and decoration refresh behavior.                                                                                                       |
 | `HtmlPlugin`           | Registers the `text/html` parser path and owns HTML element conversion through `editor.api.html.deserialize`.                                                                                                          |
-| `BaseParagraphPlugin`  | Registers the default paragraph element under name `p` and maps HTML `<p>` elements, excluding code-font paragraphs.                                                                                                   |
+| `BaseParagraphPlugin`  | Registers the default paragraph element under name `paragraph` and maps HTML `<p>` elements, excluding code-font paragraphs.                                                                                           |
 
 ## Type Helpers
 

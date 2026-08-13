@@ -78,7 +78,7 @@ const stagedTableExtension = BaseTablePlugin.extend(({ api }) => ({
 })).extend(({ plugin }) => ({
   update: ({ tx }) => ({
     hideLeftBorder: () => {
-      tx[plugin.name].setBorderSize(0, { border: 'left' });
+      tx.plugin(plugin).setBorderSize(0, { border: 'left' });
 
       const selection = tx.selection();
       const tableSelection = tx.table.getSelection();

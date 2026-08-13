@@ -6,10 +6,10 @@ import {
   FontFamilyPlugin,
   FontSizePlugin,
 } from '@platejs/basic-styles/react';
-import { ParagraphPlugin } from 'platejs/react';
+import { PLUGINS } from '@platejs/utils';
 
 const options = {
-  targetPlugins: [ParagraphPlugin],
+  targetPlugins: [PLUGINS.paragraph],
 };
 
 export const FontKit = [

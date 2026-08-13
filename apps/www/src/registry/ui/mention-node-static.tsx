@@ -1,16 +1,14 @@
 import * as React from 'react';
 
-import type { TMentionElement } from 'platejs';
+import type { BaseMentionPlugin } from '@platejs/mention';
 import type { PliteElementProps } from 'platejs/static';
-
-import { KEYS } from 'platejs';
 import { PliteElement } from 'platejs/static';
 
 import { cn } from '@/lib/utils';
 import { inlineSuggestionVariants } from '@/registry/lib/suggestion';
 
 export function MentionElementStatic(
-  props: PliteElementProps<TMentionElement> & {
+  props: PliteElementProps<typeof BaseMentionPlugin> & {
     prefix?: string;
   }
 ) {
@@ -24,9 +22,9 @@ export function MentionElementStatic(
       className={cn(
         'inline-block rounded-md bg-muted px-1.5 py-0.5 align-baseline font-medium text-sm',
         inlineSuggestionVariants(),
-        element.children[0][KEYS.bold] === true && 'font-bold',
-        element.children[0][KEYS.italic] === true && 'italic',
-        element.children[0][KEYS.underline] === true && 'underline'
+        element.children[0].bold === true && 'font-bold',
+        element.children[0].italic === true && 'italic',
+        element.children[0].underline === true && 'underline'
       )}
       attributes={{
         ...props.attributes,

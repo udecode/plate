@@ -77,6 +77,7 @@ export type PlateModelPublication = Readonly<{
     Record<string, Readonly<Record<string, unknown>> | undefined>
   >;
   components: Readonly<NodeComponents>;
+  genericElementToggles: readonly string[];
   identity: PlateSchemaIdentity | null;
   inputRules: PlateRuntime['inputRules'];
   model: CompiledPlateModel;
@@ -85,6 +86,7 @@ export type PlateModelPublication = Readonly<{
   plugins: Readonly<Record<string, AnyBasePlugin>>;
   shortcutTable: PlateRuntime['shortcutTable'];
   shortcuts: PlateRuntime['shortcuts'];
+  updateMethods: PlateRuntime['updateMethods'];
 }>;
 
 const PLATE_BLOCK_CONTENT_SCHEMA_GROUP = 'plate:block-content';

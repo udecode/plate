@@ -2,6 +2,102 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-08-12-canonical-node-props",
+      "href": "/registry/changelog/2026-08-12-canonical-node-props.json",
+      "status": "draft",
+      "kind": "rename",
+      "summary": "Use canonical node renderer props",
+      "change": {
+        "type": "source",
+        "date": "2026-08-12",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "ai-node",
+        "basic-marks-base-kit",
+        "blockquote-node",
+        "callout-node",
+        "code-block-node",
+        "code-node",
+        "editable-voids-demo",
+        "emoji-node",
+        "footnote-node",
+        "heading-node",
+        "highlight-node",
+        "hr-node",
+        "kbd-node",
+        "link-node",
+        "link-node-static",
+        "list-classic-node",
+        "paragraph-node",
+        "search-highlight-node",
+        "suggestion-node",
+        "tabbable-demo",
+        "toc-node",
+        "toggle-node",
+        "version-history-demo"
+      ],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-08-12-fix-font-size-selection-highlight",
+      "href": "/registry/changelog/2026-08-12-fix-font-size-selection-highlight.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep font-size selection highlighting aligned",
+      "change": {
+        "type": "source",
+        "date": "2026-08-12",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["font-size-toolbar-button"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-08-12-more-toolbar-plugin-transaction",
+      "href": "/registry/changelog/2026-08-12-more-toolbar-plugin-transaction.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Use the typed keyboard plugin transaction",
+      "change": {
+        "type": "source",
+        "date": "2026-08-12",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["more-toolbar-button"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-08-12-table-toolbar-focus",
+      "href": "/registry/changelog/2026-08-12-table-toolbar-focus.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Restore editor focus after table commands",
+      "change": {
+        "type": "source",
+        "date": "2026-08-12",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["table-toolbar-button"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-08-06-fix-block-selection-drag",
       "href": "/registry/changelog/2026-08-06-fix-block-selection-drag.json",
       "status": "draft",

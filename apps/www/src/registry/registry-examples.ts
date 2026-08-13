@@ -7,6 +7,19 @@ export const examples: Registry['items'] = [
     files: [
       { path: 'examples/copilot-demo.tsx', type: 'registry:example' },
       {
+        path: 'examples/copilot-editor-definition.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'examples/copilot-editor.generated.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'examples/copilot-editor.schema.json',
+        target: 'examples/copilot-editor.schema.json',
+        type: 'registry:file',
+      },
+      {
         path: 'examples/values/copilot-value.tsx',
         type: 'registry:example',
       },
@@ -167,6 +180,19 @@ export const examples: Registry['items'] = [
       {
         path: 'examples/markdown-streaming-demo.tsx',
         type: 'registry:example',
+      },
+      {
+        path: 'examples/copilot-editor-definition.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'examples/copilot-editor.generated.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'examples/copilot-editor.schema.json',
+        target: 'examples/copilot-editor.schema.json',
+        type: 'registry:file',
       },
     ],
     name: 'markdown-streaming-demo',

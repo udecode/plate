@@ -55,15 +55,15 @@ There is no dedicated trailing-block UI. The plugin is a normalizer.
 Use `type` when the trailing block should be something other than the default paragraph.
 
 ```tsx
-import {
-  TrailingBlockPlugin,
-} from 'platejs';
+import { PLUGINS, TrailingBlockPlugin } from 'platejs';
 
-export const trailingBlockPlugin = TrailingBlockPlugin.configure({
-  initialState: {
-    type: 'paragraph',
-  },
-});
+export const trailingBlockPlugin = TrailingBlockPlugin.configure(
+  ({ editor }) => ({
+    initialState: {
+      type: editor.plugin(PLUGINS.paragraph).schema.type,
+    },
+  })
+);
 ```
 
 The default is already `editor.plugin(PLUGINS.paragraph).schema.type`, so most editors can use the plugin directly.
@@ -73,19 +73,23 @@ The default is already `editor.plugin(PLUGINS.paragraph).schema.type`, so most e
 Use `match` to limit insertion based on the current last block.
 
 ```tsx
-import { TrailingBlockPlugin } from 'platejs';
+import { H1Plugin } from '@platejs/basic-nodes/react';
+import { PLUGINS, TrailingBlockPlugin } from 'platejs';
 
-export const trailingBlockPlugin = TrailingBlockPlugin.configure({
-  initialState: {
-    match: { type: 'h1' },
-    type: 'paragraph',
-  },
-});
+export const trailingBlockPlugins = [
+  H1Plugin,
+  TrailingBlockPlugin.configure(({ editor }) => ({
+    initialState: {
+      match: { type: editor.plugin(PLUGINS.h1).schema.type },
+      type: editor.plugin(PLUGINS.paragraph).schema.type,
+    },
+  })),
+] as const;
 ```
 
-With that configuration, a trailing paragraph is inserted when the last block
-is an H1. Without `match`, any last block whose type differs from the trailing
-type can trigger insertion.
+Install the referenced H1 capability beside the configured plugin. A trailing
+paragraph is then inserted when the last block is an H1. Without `match`, any
+last block whose type differs from the trailing type can trigger insertion.
 
 ## Nested Level
 

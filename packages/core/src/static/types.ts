@@ -5,7 +5,10 @@ import type {
   AnyBasePluginContext,
   BasePluginContext,
 } from '../lib/plugin/BasePlugin';
-import type { BasePluginDefinition } from '../lib/plugin/PluginDefinition';
+import type {
+  BasePluginDefinition,
+  InferPluginDecoration,
+} from '../lib/plugin/PluginDefinition';
 import type { RenderElementProps } from '../lib/types/RenderElementProps';
 import type { RenderLeafProps } from '../lib/types/RenderLeafProps';
 import type { RenderTextProps } from '../lib/types/RenderTextProps';
@@ -22,7 +25,8 @@ export type PliteRenderElementProps<
 export type PliteRenderLeafProps<
   N extends Text = Text,
   C extends BasePluginDefinition = BasePluginDefinition,
-> = PliteRenderNodeProps<C> & RenderLeafProps<N>;
+> = PliteRenderNodeProps<C> &
+  RenderLeafProps<N, N & Partial<InferPluginDecoration<NoInfer<C>>>>;
 
 type ErasedBasePluginContext = AnyBasePluginContext;
 

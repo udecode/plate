@@ -49,6 +49,9 @@
   dependency APIs through `editor.extension(descriptor).api`
 - Apply a root transaction policy to one descriptor-owned update through
   `editor.extension(descriptor).update(policy).method()`
+- Let host layers project additional transaction-view capabilities through
+  `@platejs/plite/internal` without expanding raw Plite's public transaction
+  API
 - Keep root Plite dependency references shallow and non-generic as
   `{ name, enabled? }`. Plate plugin references carry the same sole `name`
   identity. Keep name-keyed capability/provider inference under

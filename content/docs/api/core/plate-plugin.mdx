@@ -101,7 +101,7 @@ Plugin descriptors or dynamic names targeted by the plugin's schema contribution
 >
   Transaction commands provided by the plugin. Call one through
   `editor.plugin(MyPlugin).update.method()` or compose it inside
-  `editor.update((tx) => tx[name].method())`. `update` is factory-only:
+  `editor.update((tx) => tx.plugin(MyPlugin).method())`. `update` is factory-only:
   return the command object from the callback instead of declaring a static
   object.
 </APIItem>
@@ -239,6 +239,10 @@ portals do not expose that map. Behavior and aggregate-property portals omit
 `schema`.
 Boolean text properties use
 `property.boolean({ default: false, omitDefault: true })`.
+Inside `update`, `tx.nodes.set(props, options)` accepts a typed property patch,
+while `unset(key, options)` removes exact properties. Aliases use the exact
+authored property handle's key in a computed patch. Prefix families and
+cross-node behavior use semantic update methods.
 </APIItem>
 
 <APIItem name="rules" type="object">
@@ -309,7 +313,9 @@ Action when Backspace is pressed and the block is empty. See [Plugin Rules](/doc
 <APISubListItem parent="rules" name="match" type="MatchRules" optional>
 Function to determine if this plugin's rules should apply to a node. Used to override behavior based on node properties beyond just type matching.
 
-**Default:** `name === node.type`
+No implicit capability-name or schema-identity match is applied. Without this
+callback, Plate uses the rules owned by the plugin compiled for the element's
+persisted type.
 
 **Example:** `matchRules: ({ node }) => Boolean(node.listStyleType)`
 
@@ -383,7 +389,7 @@ Renders a component before the Editable component.
 <APISubListItem parent="render" name="belowNodes" type="RenderNodeWrapper<WithAnyName<D>>" optional>
 Create a function that generates a React node below all other plugins' node React node, but above their children.
 </APISubListItem>
-<APISubListItem parent="render" name="belowRootNodes" type="(props: PlateElementProps<Element, D>) => React.ReactNode" optional>
+<APISubListItem parent="render" name="belowRootNodes" type="(props: RenderNodeWrapperProps<D>) => React.ReactNode" optional>
 Renders a component after the direct children of the root element. This differs from `belowNodes` in that it's the direct child of `PlateElement` rather than wrapping the children that could be nested. This is useful when you need components relative to the root element.
 </APISubListItem>
 <APISubListItem parent="render" name="leaf" type="NodeComponent" optional>
@@ -561,7 +567,7 @@ remains the final override.
 
 ```ts
 H1Plugin.configure({
-  shortcuts: { toggle: { keys: "mod+alt+1" } },
+  rules: { break: { empty: 'reset' } },
 });
 ```
 
@@ -636,7 +642,7 @@ descriptor's inferred definition.
 
 <API name="GenericTypes">
   <APIAttributes>
-    <APIItem name="D" type="BasePluginDefinition | BasePluginDefinition">
+    <APIItem name="D" type="BasePluginDefinition">
       The inferred definition contract, including `name`, `initialState`, `api`,
       `read`, `update`, selectors, dependencies, and schema inference.
     </APIItem>

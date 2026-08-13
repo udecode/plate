@@ -10,14 +10,9 @@ import {
   SelectionApi,
   type Element,
   type Path,
-  type TResizableProps,
+  type RenderElementProps,
 } from 'platejs';
-import {
-  type PlateElementProps,
-  useEditor,
-  useEditorSelector,
-  useElement,
-} from 'platejs/react';
+import { useEditor, useEditorSelector, useElement } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -59,10 +54,10 @@ export function Caption({
   ...props
 }: React.ComponentProps<'figcaption'> & {
   active: boolean;
-  align?: TResizableProps['align'];
+  align?: 'center' | 'left' | 'right';
   element: Element;
   placeholder?: string;
-  slots: PlateElementProps['slots'];
+  slots: RenderElementProps['slots'];
 }) {
   const width = useResizableValue('width');
   const empty = NodeApi.string(element).length === 0;

@@ -246,13 +246,13 @@ Plugin for list item content.
 
 ## Transforms
 
-### `tx.ul.toggle()`
+### `tx.bulletedList.toggle()`
 
 Toggles a bulleted list (ul).
 
 Example Shortcut: `Mod+Alt+5`
 
-### `tx.ol.toggle()`
+### `tx.numberedList.toggle()`
 
 Toggles an ordered list (ol).
 
@@ -295,7 +295,7 @@ Returns the nearest `li` and `ul`/`ol` wrapping node entries for a given path (`
 <APIOptions type="object">
   <APIItem name="at" type="Location | null" optional>
     Location to get entries from.
-    - **Default:** `editor.selection`
+    - **Default:** `editor.read.selection()`
   </APIItem>
 </APIOptions>
 
@@ -312,7 +312,7 @@ Searches upward for root list element.
 <APIParameters>
   <APIItem name="at" type="Path | Range | Point | null" optional>
     Location to start search from.
-    - **Default:** `editor.selection`
+    - **Default:** `editor.read.selection()`
   </APIItem>
 </APIParameters>
 
@@ -441,9 +441,9 @@ A behavior hook for a list toolbar button.
   <APIItem name="pressed" type="boolean">
     Button pressed state.
   </APIItem>
-  <APIItem name="nodeType" type="string">
-    List node type.
-    - **Default:** `BulletedListPlugin.name`
+  <APIItem name="plugin" type="PluginReference | string">
+    List plugin descriptor or capability name.
+    - **Default:** `PLUGINS.bulletedList`
   </APIItem>
 </APIState>
 

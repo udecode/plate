@@ -1,5 +1,5 @@
 'use client';
-import { NODES } from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 
 import type { Element, NodeEntry, Path } from '@platejs/plite';
 import type { PlateEditor } from 'platejs/react';
@@ -7,7 +7,7 @@ import { BaseCalloutPlugin } from '@platejs/callout';
 import { BaseCodeBlockPlugin } from '@platejs/code-block';
 import { BaseDatePlugin } from '@platejs/date';
 import { BaseFootnotePlugin } from '@platejs/footnote';
-import { BaseColumnItemPlugin } from '@platejs/layout';
+import { BaseColumnPlugin } from '@platejs/layout';
 import { LinkPlugin } from '@platejs/link/react';
 import { BaseListPlugin } from '@platejs/list-classic';
 import { BaseEquationPlugin, BaseInlineEquationPlugin } from '@platejs/math';
@@ -16,7 +16,7 @@ import { insertMediaUrl } from '@platejs/media/react';
 import { BaseSuggestionPlugin } from '@platejs/suggestion';
 import { BaseTablePlugin } from '@platejs/table';
 import { BaseTocPlugin } from '@platejs/toc';
-import { ElementApi, KEYS, PathApi } from 'platejs';
+import { ElementApi, PathApi } from 'platejs';
 
 const ACTION_THREE_COLUMNS = 'action_three_columns';
 const ACTION_FOOTNOTE = 'action_footnote';
@@ -30,7 +30,17 @@ const createBlock = ({ type }: { type: string }): Element => ({
 });
 
 const runFootnoteAction = (editor: PlateEditor) =>
-  editor.plugin(BaseFootnotePlugin).update.insert({ select: true });
+  editor.plugin(BaseFootnotePlugin).update.insert({}, { select: true });
+
+const getActionType = (editor: PlateEditor, action: string) => {
+  if (action === ACTION_THREE_COLUMNS) {
+    return editor.plugin(BaseColumnPlugin).schema.type;
+  }
+
+  const plugin = editor.plugin(action);
+
+  return plugin.schema.type;
+};
 
 const removeEmptySourceAfterInsert = (
   editor: PlateEditor,
@@ -59,12 +69,12 @@ const removeEmptySourceAfterInsert = (
 };
 
 const insertInlineMap: Record<string, (editor: PlateEditor) => void> = {
-  [NODES.date]: (editor) =>
-    editor.plugin(BaseDatePlugin).update.insert({ select: true }),
+  [PLUGINS.date]: (editor) =>
+    editor.plugin(BaseDatePlugin).update.insert({}, { select: true }),
   [ACTION_FOOTNOTE]: runFootnoteAction,
-  [NODES.inlineEquation]: (editor) =>
-    editor.plugin(BaseInlineEquationPlugin).update.insert({ select: true }),
-  [NODES.link]: (editor) => {
+  [PLUGINS.inlineEquation]: (editor) =>
+    editor.plugin(BaseInlineEquationPlugin).update.insert({}, { select: true }),
+  [PLUGINS.link]: (editor) => {
     const link = editor.plugin(LinkPlugin);
 
     link.store.set({ text: editor.read.text.string() });
@@ -80,51 +90,60 @@ export const insertBlock = (editor: PlateEditor, action: string) => {
   const [currentNode, path] = block;
   const isCurrentBlockEmpty = editor.read.nodes.isEmpty(currentNode);
   const currentBlockType = getBlockType(currentNode);
+  const actionType = getActionType(editor, action);
 
-  if (action === NODES.codeBlock) {
+  if (action === PLUGINS.codeBlock) {
     editor.plugin(BaseCodeBlockPlugin).update.insert();
 
     return;
   }
-  if (action === NODES.toc) {
+  if (action === PLUGINS.toc) {
     editor
       .plugin(BaseTocPlugin)
-      .update.insert({ at: PathApi.next(path), select: true });
-    removeEmptySourceAfterInsert(editor, NODES.toc, path, currentBlockType);
+      .update.insert({}, { at: PathApi.next(path), select: true });
+    removeEmptySourceAfterInsert(
+      editor,
+      editor.plugin(BaseTocPlugin).schema.type,
+      path,
+      currentBlockType
+    );
 
     return;
   }
-  if (action === NODES.img || action === NODES.mediaEmbed) {
+  if (action === PLUGINS.image || action === PLUGINS.mediaEmbed) {
     void insertMediaUrl(editor, {
       at: PathApi.next(path),
       select: true,
-      type: action,
+      type: actionType,
     }).then(() => {
-      removeEmptySourceAfterInsert(editor, action, path, currentBlockType);
+      removeEmptySourceAfterInsert(editor, actionType, path, currentBlockType);
     });
 
     return;
   }
   if (
-    action === NODES.audio ||
-    action === NODES.file ||
-    action === NODES.video
+    action === PLUGINS.audio ||
+    action === PLUGINS.file ||
+    action === PLUGINS.video
   ) {
     editor
       .plugin(BasePlaceholderPlugin)
-      .update.insert(action, { at: PathApi.next(path), select: true });
+      .update.insert(
+        { mediaType: action },
+        { at: PathApi.next(path), select: true }
+      );
     removeEmptySourceAfterInsert(
       editor,
-      NODES.placeholder,
+      editor.plugin(BasePlaceholderPlugin).schema.type,
       path,
       currentBlockType
     );
     return;
   }
-  if (action === NODES.table) {
+  if (action === PLUGINS.table) {
     editor.plugin(BaseTablePlugin).update.insert({}, { select: true });
 
-    if (currentBlockType !== action && isCurrentBlockEmpty) {
+    if (currentBlockType !== actionType && isCurrentBlockEmpty) {
       editor.plugin(BaseSuggestionPlugin).api.untracked(() => {
         editor.update({ history: 'merge' }).nodes.remove({ at: path });
       });
@@ -133,13 +152,11 @@ export const insertBlock = (editor: PlateEditor, action: string) => {
     return;
   }
   if (action === ACTION_THREE_COLUMNS) {
-    editor.plugin(BaseColumnItemPlugin).update.insertGroup({
-      at: PathApi.next(path),
-      columns: 3,
-      select: true,
-    });
+    editor
+      .plugin(BaseColumnPlugin)
+      .update.insert({ columns: 3 }, { at: PathApi.next(path), select: true });
 
-    if (currentBlockType !== action && isCurrentBlockEmpty) {
+    if (currentBlockType !== actionType && isCurrentBlockEmpty) {
       editor.plugin(BaseSuggestionPlugin).api.untracked(() => {
         editor.update({ history: 'merge' }).nodes.remove({ at: path });
       });
@@ -147,10 +164,10 @@ export const insertBlock = (editor: PlateEditor, action: string) => {
 
     return;
   }
-  if (action === NODES.callout) {
-    editor.plugin(BaseCalloutPlugin).update.insert({ select: true });
+  if (action === PLUGINS.callout) {
+    editor.plugin(BaseCalloutPlugin).update.insert({}, { select: true });
 
-    if (currentBlockType !== action && isCurrentBlockEmpty) {
+    if (currentBlockType !== actionType && isCurrentBlockEmpty) {
       editor.plugin(BaseSuggestionPlugin).api.untracked(() => {
         editor.update({ history: 'merge' }).nodes.remove({ at: path });
       });
@@ -158,10 +175,10 @@ export const insertBlock = (editor: PlateEditor, action: string) => {
 
     return;
   }
-  if (action === NODES.equation) {
-    editor.plugin(BaseEquationPlugin).update.insert({ select: true });
+  if (action === PLUGINS.equation) {
+    editor.plugin(BaseEquationPlugin).update.insert({}, { select: true });
 
-    if (currentBlockType !== action && isCurrentBlockEmpty) {
+    if (currentBlockType !== actionType && isCurrentBlockEmpty) {
       editor.plugin(BaseSuggestionPlugin).api.untracked(() => {
         editor.update({ history: 'merge' }).nodes.remove({ at: path });
       });
@@ -170,12 +187,12 @@ export const insertBlock = (editor: PlateEditor, action: string) => {
     return;
   }
   editor.update((tx) => {
-    tx.nodes.insert(createBlock({ type: action }), {
+    tx.nodes.insert(createBlock({ type: actionType }), {
       at: PathApi.next(path),
       select: true,
     });
 
-    if (currentBlockType !== action && isCurrentBlockEmpty) {
+    if (currentBlockType !== actionType && isCurrentBlockEmpty) {
       const source = tx.nodes.get(path);
 
       if (
@@ -199,23 +216,23 @@ export const insertInlineElement = (editor: PlateEditor, action: string) => {
 
 const setBlockMap: Record<string, (editor: PlateEditor) => void> = {
   [ACTION_THREE_COLUMNS]: (editor) =>
-    editor.plugin(BaseColumnItemPlugin).update.toggle({ columns: 3 }),
-  [NODES.codeBlock]: toggleCodeBlock,
-  [NODES.olClassic]: (editor) =>
-    editor
-      .plugin(BaseListPlugin)
-      .update.toggle({ type: editor.plugin(KEYS.olClassic).type }),
-  [NODES.taskList]: (editor) =>
-    editor
-      .plugin(BaseListPlugin)
-      .update.toggle({ type: editor.plugin(KEYS.taskList).type }),
-  [NODES.ulClassic]: (editor) =>
-    editor
-      .plugin(BaseListPlugin)
-      .update.toggle({ type: editor.plugin(KEYS.ulClassic).type }),
+    editor.plugin(BaseColumnPlugin).update.toggle({ columns: 3 }),
+  [PLUGINS.codeBlock]: toggleCodeBlock,
+  [PLUGINS.numberedList]: (editor) =>
+    editor.plugin(BaseListPlugin).update.toggle({
+      type: editor.plugin(PLUGINS.numberedList).schema.type,
+    }),
+  [PLUGINS.taskList]: (editor) =>
+    editor.plugin(BaseListPlugin).update.toggle({
+      type: editor.plugin(PLUGINS.taskList).schema.type,
+    }),
+  [PLUGINS.bulletedList]: (editor) =>
+    editor.plugin(BaseListPlugin).update.toggle({
+      type: editor.plugin(PLUGINS.bulletedList).schema.type,
+    }),
 };
 
-export const setBlockType = (
+export const applyBlockAction = (
   editor: PlateEditor,
   action: string,
   { at }: { at?: Path } = {}
@@ -226,11 +243,12 @@ export const setBlockType = (
   }
 
   editor.update((tx) => {
+    const actionType = getActionType(editor, action);
     const setEntry = (entry: NodeEntry<Element>) => {
       const [node, path] = entry;
 
-      if (node.type !== action) {
-        tx.nodes.set({ type: action }, { at: path });
+      if (node.type !== actionType) {
+        tx.nodes.set({ type: actionType }, { at: path });
       }
     };
 

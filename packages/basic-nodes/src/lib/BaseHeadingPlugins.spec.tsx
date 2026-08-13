@@ -164,12 +164,12 @@ describe('base heading plugins', () => {
       initialValue: [{ children: [{ text: 'text' }], type: 'paragraph' }],
     });
 
-    h1.update.blocks.toggle(h1.plugin(BaseH1Plugin).schema.type);
-    h2.update.blocks.toggle(h2.plugin(BaseH2Plugin).schema.type);
-    h3.update.blocks.toggle(h3.plugin(BaseH3Plugin).schema.type);
-    h4.update.blocks.toggle(h4.plugin(BaseH4Plugin).schema.type);
-    h5.update.blocks.toggle(h5.plugin(BaseH5Plugin).schema.type);
-    h6.update.blocks.toggle(h6.plugin(BaseH6Plugin).schema.type);
+    h1.plugin(BaseH1Plugin).update.toggle();
+    h2.plugin(BaseH2Plugin).update.toggle();
+    h3.plugin(BaseH3Plugin).update.toggle();
+    h4.plugin(BaseH4Plugin).update.toggle();
+    h5.plugin(BaseH5Plugin).update.toggle();
+    h6.plugin(BaseH6Plugin).update.toggle();
 
     expect(h1.read.children()[0]).toMatchObject({ type: 'h1' });
     expect(h2.read.children()[0]).toMatchObject({ type: 'h2' });

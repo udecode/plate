@@ -138,14 +138,16 @@ import { schema } from 'platejs';
 import { definePlatePlugin } from 'platejs/react';
 
 export const QuoteItemPlugin = definePlatePlugin('quoteItem', {
-  type: 'quote_item',
   rules: {
     delete: {
       start: 'lift',
     },
   },
   schema: {
-    element: { content: schema.content.text({ default: 'text', min: 1 }) },
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      type: 'quote_item',
+    },
   },
 });
 ```

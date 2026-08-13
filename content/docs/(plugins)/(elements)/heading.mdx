@@ -21,7 +21,7 @@ Heading adds six block element types, `h1` through `h6`, for document structure.
 - Block `h1` through `h6` elements.
 - Individual `H1Plugin` through `H6Plugin` exports.
 - Registry `BasicBlocksKit` and `BaseBasicBlocksKit` presets include all six levels.
-- Bound `tx.h1.toggle()` through `tx.h6.toggle()` commands.
+- Generic `editor.plugin(H1Plugin).update.toggle()` through `editor.plugin(H6Plugin).update.toggle()` commands.
 - `# ` through `###### ` input rules with `HeadingRules.markdown()`.
 - `mod+alt+1` through `mod+alt+6` shortcuts in the registry kit.
 - Editable and static registry heading components.
@@ -223,7 +223,7 @@ All heading levels share the same base behavior.
 
 | Behavior | Source |
 |----------|--------|
-| Toggle command | Each base plugin binds `tx.<level>.toggle()` to a block-type transaction. |
+| Toggle command | Text-block plugins expose `editor.plugin(Plugin).update.toggle()`, and same-name shortcuts call it automatically. |
 | Enter split | Base rules set `break.splitReset: true`; the registry kit also resets an empty heading on break. |
 | Backspace at start | Base rules set `delete.start: 'reset'`. |
 | Empty merge | Base rules set `merge.removeEmpty: true`. |
@@ -242,7 +242,8 @@ All heading levels share the same base behavior.
 | `##### ` | H5 |
 | `###### ` | H6 |
 
-The registry kit also binds `mod+alt+1` through `mod+alt+6` to the matching toggle transform.
+The registry kit binds `mod+alt+1` through `mod+alt+6` to the matching generic
+toggle command.
 
 ## Registry UI
 
@@ -277,4 +278,4 @@ Serialization uses the node type to choose Markdown depth. For example, `type: '
 | `HeadingRules.markdown()` | `@platejs/basic-nodes` | Creates the `# ` through `###### ` block-start input rules. |
 | `H1Plugin` through `H6Plugin` | `@platejs/basic-nodes/react` | React heading level plugins. |
 | `BasicBlocksKit` | `@/components/editor/plugins/basic-blocks-kit` | App-owned React preset containing the basic block family, including H1-H6. |
-| `tx.h1.toggle()` through `tx.h6.toggle()` | plugin-bound commands | Toggle selected blocks to the matching heading level. |
+| `editor.plugin(H1Plugin).update.toggle()` through `editor.plugin(H6Plugin).update.toggle()` | `@platejs/core` plugin updates | Toggle selected blocks to the matching heading type. |

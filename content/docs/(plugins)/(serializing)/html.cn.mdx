@@ -148,10 +148,13 @@ async function getFullHtmlDocument() {
 
 ```tsx title="components/ui/paragraph-node-static.tsx"
 import React from 'react';
+import type { BaseParagraphPlugin } from 'platejs';
 import type { PliteElementProps } from 'platejs/static';
 
 // 示例静态段落组件
-export function ParagraphElementStatic(props: PliteElementProps) {
+export function ParagraphElementStatic(
+  props: PliteElementProps<typeof BaseParagraphPlugin>
+) {
   return (
     <PliteElement {...props} className={cn('m-0 px-0 py-1')}>
       {props.children}

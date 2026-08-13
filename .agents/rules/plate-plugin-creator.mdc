@@ -397,8 +397,9 @@ Use the current owner's exact `schema.properties.<localId>` handle for an alias
 or local ambiguity, and a semantic owner operation for prefix families or
 cross-node behavior. Keep object mutation for structural changes, atomic
 multi-property writes, true dynamic keys, and unavoidable dependency
-ambiguity. Do not invent `tx.plugin`, `tx.properties`, or another mutation
-portal.
+ambiguity. Do not invent `tx.properties` or another property-mutation portal.
+`tx.plugin(Plugin)` selects the installed plugin's flat transaction capability
+group; it is not a property portal.
 
 State and native extension mechanics:
 
@@ -526,9 +527,13 @@ transitive coincidence is not an installation contract.
   required dependents consume the same capability through their inferred
   editor or scoped portal.
 - Inside a later tx method, reuse an earlier staged mutation through the same
-  active transaction: `tx[plugin.name].method(...)`. Do not call
+  active transaction: `tx.plugin(FooPlugin).method(...)`. Generated closed
+  editors may use `tx.foo.method(...)` directly. Do not use computed
+  `tx[plugin.name]`, `tx.extension(...)`,
   `editor.plugin(FooPlugin).update.method(...)`, `context.update`, or another
-  one-shot update from the active tx; that reopens a transaction.
+  one-shot update from the active tx; those either erase descriptor typing or
+  reopen a transaction. This descriptor-aware portal belongs to Plate. Raw
+  Plite keeps direct named transaction groups and exposes no `tx.extension(...)`.
 - A flat native runtime callback may be assembled before plugin API
   publication. When it needs a staged API, keep the typed callback context and
   read `context.api` at invocation time. Do not eagerly destructure `api`

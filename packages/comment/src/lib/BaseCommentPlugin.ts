@@ -169,12 +169,12 @@ export const BaseCommentPlugin = defineBasePlugin(PLUGINS.comment, {
     return {
       update: ({ tx }) => ({
         clearTransient: () => {
-          for (const [, path] of tx[plugin.name].nodes({ transient: true })) {
+          for (const [, path] of tx.plugin(plugin).nodes({ transient: true })) {
             tx.nodes.unset(properties.transientComment, { at: path });
           }
         },
         removeMark: () => {
-          const nodeEntry = tx[plugin.name].node();
+          const nodeEntry = tx.plugin(plugin).node();
 
           if (!nodeEntry) return;
 
@@ -200,7 +200,7 @@ export const BaseCommentPlugin = defineBasePlugin(PLUGINS.comment, {
           id?: string;
           transient?: boolean;
         }) => {
-          for (const [node, path] of tx[plugin.name].nodes({
+          for (const [node, path] of tx.plugin(plugin).nodes({
             id,
             at: [],
             transient,

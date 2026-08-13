@@ -1,5 +1,5 @@
 'use client';
-import { NODES } from '@platejs/utils';
+import { PLUGINS } from '@platejs/utils';
 
 import {
   type HTMLAttributes,
@@ -17,17 +17,15 @@ import {
   PlayIcon,
   RotateCcwIcon,
 } from 'lucide-react';
-import { type Value, KEYS } from 'platejs';
 import { Plate, usePlateEditor, usePlateViewEditor } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { EditorKit } from '@/registry/components/editor/editor-kit';
-import { CopilotKit } from '@/registry/components/editor/plugins/copilot-kit';
 import { MarkdownJoiner } from '@/registry/lib/markdown-joiner-transform';
 import { Editor, EditorContainer, EditorView } from '@/registry/ui/editor';
 
 import { BaseEditorKit } from '../components/editor/editor-base-kit';
+import { EditorKit } from './copilot-editor.generated';
 
 const CAPITALIZE_REGEX = /([A-Z])/g;
 const FIRST_CHAR_REGEX = /^./;
@@ -314,8 +312,8 @@ export default function MarkdownStreamingDemo() {
 
   const editor = usePlateEditor(
     {
-      plugins: [...CopilotKit, ...EditorKit],
-      initialValue: [{ children: [{ text: '' }], type: NODES.p }] as Value,
+      plugins: EditorKit,
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     },
     []
   );
@@ -361,7 +359,7 @@ export default function MarkdownStreamingDemo() {
 
       aiChat.update.insertChunk(chunk.chunk, {
         textProps: {
-          [editor.plugin(KEYS.ai).type]: true,
+          [editor.plugin(PLUGINS.ai).schema.key]: true,
         },
       });
 
@@ -441,7 +439,7 @@ export default function MarkdownStreamingDemo() {
       for (const chunk of transformedCurrentChunks.slice(0, targetIndex)) {
         aiChat.update.insertChunk(chunk.chunk, {
           textProps: {
-            [editor.plugin(KEYS.ai).type]: true,
+            [editor.plugin(PLUGINS.ai).schema.key]: true,
           },
         });
       }

@@ -67,26 +67,29 @@ const editor = createPlateEditor({
 
 ```tsx
 import { TabbablePlugin } from '@platejs/tabbable/react';
+import { PLUGINS } from 'platejs';
 import { createPlateEditor } from 'platejs/react';
-import { KEYS } from 'platejs';
 
 const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
-    TabbablePlugin.configure({
-      initialState: {
-        query: (event) => {
-          // Disable when in lists or code blocks
-          const inList = editor.read.nodes.some({ match: { type: KEYS.li } });
-          const inCodeBlock = editor.read.nodes.some({
-            match: { type: editor.plugin(KEYS.codeBlock).type },
-          });
-          return !inList && !inCodeBlock;
+    TabbablePlugin.configure(({ editor }) => {
+      const listItem = editor.plugin(PLUGINS.listItem);
+      const codeBlock = editor.plugin(PLUGINS.codeBlock);
+      const blockedTypes = [listItem, codeBlock].flatMap((plugin) =>
+        plugin.installed ? [plugin.schema.type] : []
+      );
+
+      return {
+        initialState: {
+          query: () =>
+            blockedTypes.length === 0 ||
+            !editor.read.nodes.some({ match: { type: blockedTypes } }),
+          globalEventListener: true,
+          isTabbable: (tabbableEntry) =>
+            editor.read.schema.isVoid(tabbableEntry.slateNode),
         },
-        globalEventListener: true,
-        isTabbable: (tabbableEntry) =>
-          editor.read.schema.isVoid(tabbableEntry.slateNode),
-      },
+      };
     }),
   ],
 });
@@ -111,13 +114,23 @@ The Tabbable plugin may cause issues with other plugins that handle the `Tab` ke
 Use the `query` option to disable the Tabbable plugin when the `Tab` key should be handled by another plugin:
 
 ```tsx
-query: (event) => {
-  const inList = editor.read.nodes.some({ match: { type: KEYS.li } });
-  const inCodeBlock = editor.read.nodes.some({
-    match: { type: editor.plugin(KEYS.codeBlock).type },
-  });
-  return !inList && !inCodeBlock;
-},
+TabbablePlugin.configure(({ editor }) => {
+  const listItem = editor.plugin(PLUGINS.listItem);
+  const codeBlock = editor.plugin(PLUGINS.codeBlock);
+  const blockedTypes = [listItem, codeBlock].flatMap((plugin) =>
+    plugin.installed ? [plugin.schema.type] : []
+  );
+
+  return {
+    initialState: {
+      query: () =>
+        blockedTypes.length === 0 ||
+        !editor.read.nodes.some({
+          match: { type: blockedTypes },
+        }),
+    },
+  };
+});
 ```
 
 Alternatively, if you're using the Indent plugin, you can enable the Tabbable plugin only when a specific type of node is selected, such as voids:
@@ -155,8 +168,12 @@ For example, if the DOM element appears when a link is selected, the `slateNode`
 ```tsx
 // Add buttons inside .my-popover to the list of tabbables
 globalEventListener: true,
-insertTabbableEntries: (event) => {
-  const [selectedNode, selectedNodePath] = editor.api.node(editor.selection);
+insertTabbableEntries: () => {
+  const selectedEntry = editor.read.nodes.above();
+
+  if (!selectedEntry) return [];
+
+  const [selectedNode, selectedNodePath] = selectedEntry;
 
   return [
     ...document.querySelectorAll('.my-popover > button'),

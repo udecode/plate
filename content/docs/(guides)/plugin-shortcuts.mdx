@@ -68,12 +68,15 @@ Pressing `Mod+Shift+S` runs `editor.update((tx) => tx.signature.insertSignature(
 When only the matching API method exists, Plate infers the API route.
 
 ```tsx title="plugins/inspect-plugin.tsx" showLineNumbers
+import { DebugPlugin } from 'platejs';
 import { Key, definePlatePlugin } from 'platejs/react';
 
 export const InspectPlugin = definePlatePlugin('inspect', {
   api: ({ editor }) => ({
     logText: () => {
-      editor.api.debug.info('Editor text', editor.api.string([]));
+      editor
+        .plugin(DebugPlugin)
+        .api.info('Editor text', undefined, editor.read.text.string([]));
     },
   }),
 })
@@ -87,14 +90,12 @@ export const InspectPlugin = definePlatePlugin('inspect', {
 ```
 
 Pressing `Mod+Alt+L` calls
-`editor.api.inspect.logText()`.
+`editor.plugin(InspectPlugin).api.logText()`.
 
 <Callout type="info" title="Disambiguate collisions">
   If an update method and API method share a name, set `target: 'update'` or
   `target: 'api'`. Plate never changes route silently when a second method is
-  added. Each plugin has one API group; `editor.api.inspect` and
-  `editor.plugin(InspectPlugin).api` are two typed access paths to that same
-  immutable object.
+  added. Call plugin-owned APIs through `editor.plugin(Plugin).api`.
 </Callout>
 
 ## Custom Handlers
@@ -104,6 +105,7 @@ or work that should not live as a plugin API or update method. Do not set
 `target` on a handler shortcut.
 
 ```tsx title="plugins/draft-plugin.tsx" showLineNumbers
+import { DebugPlugin } from 'platejs';
 import { Key, definePlatePlugin } from 'platejs/react';
 
 export const DraftPlugin = definePlatePlugin('draft', {
@@ -111,11 +113,11 @@ export const DraftPlugin = definePlatePlugin('draft', {
     saveDraft: {
       keys: [[Key.Mod, 's']],
       handler: ({ editor }) => {
-        const text = editor.api.string([]);
+        const text = editor.read.text.string([]);
 
         if (text.trim().length === 0) return false;
 
-        editor.api.debug.info('Draft text', text);
+        editor.plugin(DebugPlugin).api.info('Draft text', undefined, text);
 
         return true;
       },
@@ -226,6 +228,7 @@ declaration order. The first handled route wins.
 `createPlateEditor({ shortcuts })` attaches shortcuts to the root plugin. Use it for editor-wide commands that do not belong to one feature plugin.
 
 ```tsx title="editor.ts" showLineNumbers
+import { DebugPlugin } from 'platejs';
 import { createPlateEditor } from 'platejs/react';
 
 export const editor = createPlateEditor({
@@ -233,9 +236,15 @@ export const editor = createPlateEditor({
     reportWordCount: {
       keys: 'mod+shift+w',
       handler: ({ editor }) => {
-        const words = editor.api.string([]).trim().split(/\s+/).filter(Boolean);
+        const words = editor.read.text
+          .string([])
+          .trim()
+          .split(/\s+/)
+          .filter(Boolean);
 
-        editor.api.debug.info('Word count', words.length);
+        editor
+          .plugin(DebugPlugin)
+          .api.info('Word count', undefined, words.length);
 
         return true;
       },
@@ -253,7 +262,7 @@ Internally this becomes a root shortcut, so plugin-owned shortcuts are still the
 | `BoldPlugin` | `toggle` | `Mod+B` |
 | `ItalicPlugin` | `toggle` | `Mod+I` |
 | `UnderlinePlugin` | `toggle` | `Mod+U` |
-| `ParagraphPlugin` | `toggleParagraph` | `Mod+Alt+0`, `Mod+Shift+0` |
+| `ParagraphPlugin` | `toggle` | `Mod+Alt+0`, `Mod+Shift+0` |
 | `CopilotPlugin` | `accept` | `Tab` |
 | `CopilotPlugin` | `reject` | `Escape` |
 

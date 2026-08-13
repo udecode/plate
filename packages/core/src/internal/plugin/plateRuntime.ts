@@ -50,6 +50,7 @@ type PublishedEditorShortcut = Readonly<
 
 export type PlateRuntime = Readonly<{
   components: Readonly<NodeComponents>;
+  genericElementToggles: readonly string[];
   inputRules: ResolvedInputRulesMeta;
   pluginCache: PlatePluginCache;
   pluginList: readonly AnyBasePlugin[];
@@ -58,6 +59,7 @@ export type PlateRuntime = Readonly<{
   shortcuts: Readonly<
     Record<string, PublishedEditorShortcut | null | undefined>
   >;
+  updateMethods: Readonly<Record<string, readonly string[] | undefined>>;
 }>;
 
 const CANDIDATE_PLATE_RUNTIMES = new WeakMap<object, PlateRuntime>();

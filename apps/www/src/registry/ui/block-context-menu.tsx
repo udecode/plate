@@ -7,8 +7,9 @@ import {
   BlockMenuPlugin,
   BlockSelectionPlugin,
 } from '@platejs/selection/react';
-import { NODES } from 'platejs';
+import { PLUGINS } from 'platejs';
 import {
+  useEditor,
   useEditorPlugin,
   useEditorReadOnly,
   usePluginStore,
@@ -24,18 +25,19 @@ import {
   ContextMenuSubTrigger,
   ContextMenuTrigger,
 } from '@/components/ui/context-menu';
-import { setBlockType } from '@/registry/components/editor/transforms';
+import { applyBlockAction } from '@/registry/components/editor/transforms';
 import { useIsTouchDevice } from '@/registry/hooks/use-is-touch-device';
 
 type Value = 'askAI' | null;
 
 export function BlockContextMenu({ children }: { children: React.ReactNode }) {
-  const { api, editor } = useEditorPlugin(BlockMenuPlugin);
+  const editor = useEditor();
+  const { api } = useEditorPlugin(BlockMenuPlugin);
   const [value, setValue] = React.useState<Value>(null);
   const isTouch = useIsTouchDevice();
   const readOnly = useEditorReadOnly();
-  const openId = usePluginStore(BlockMenuPlugin, 'openId');
-  const isOpen = openId === BLOCK_CONTEXT_MENU_ID;
+  const openKey = usePluginStore(BlockMenuPlugin, 'openKey');
+  const isOpen = openKey === BLOCK_CONTEXT_MENU_ID;
 
   const handleTurnInto = React.useCallback(
     (action: string) => {
@@ -43,7 +45,7 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
         .plugin(BlockSelectionPlugin)
         .read.getNodes()
         .forEach(([, path]) => {
-          setBlockType(editor, action, { at: path });
+          applyBlockAction(editor, action, { at: path });
         });
     },
     [editor]
@@ -51,7 +53,7 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
 
   const handleAlign = React.useCallback(
     (align: 'center' | 'left' | 'right') => {
-      editor.plugin(BlockSelectionPlugin).update.setNodes({ align });
+      editor.plugin(BlockSelectionPlugin).update.setNodes({ textAlign: align });
     },
     [editor]
   );
@@ -131,26 +133,28 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
             <ContextMenuSub>
               <ContextMenuSubTrigger>Turn into</ContextMenuSubTrigger>
               <ContextMenuSubContent className="w-48">
-                <ContextMenuItem onClick={() => handleTurnInto(NODES.p)}>
+                <ContextMenuItem
+                  onClick={() => handleTurnInto(PLUGINS.paragraph)}
+                >
                   Paragraph
                 </ContextMenuItem>
 
-                <ContextMenuItem onClick={() => handleTurnInto(NODES.h1)}>
+                <ContextMenuItem onClick={() => handleTurnInto(PLUGINS.h1)}>
                   Heading 1
                 </ContextMenuItem>
-                <ContextMenuItem onClick={() => handleTurnInto(NODES.h2)}>
+                <ContextMenuItem onClick={() => handleTurnInto(PLUGINS.h2)}>
                   Heading 2
                 </ContextMenuItem>
-                <ContextMenuItem onClick={() => handleTurnInto(NODES.h3)}>
+                <ContextMenuItem onClick={() => handleTurnInto(PLUGINS.h3)}>
                   Heading 3
                 </ContextMenuItem>
                 <ContextMenuItem
-                  onClick={() => handleTurnInto(NODES.blockquote)}
+                  onClick={() => handleTurnInto(PLUGINS.blockquote)}
                 >
                   Blockquote
                 </ContextMenuItem>
                 <ContextMenuItem
-                  onClick={() => handleTurnInto(NODES.codeDrawing)}
+                  onClick={() => handleTurnInto(PLUGINS.codeDrawing)}
                 >
                   Code Drawing
                 </ContextMenuItem>

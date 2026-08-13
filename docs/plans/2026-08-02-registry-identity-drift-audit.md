@@ -369,7 +369,7 @@ Completion Gates:
 | Related scoped sweep | yes | Five guarded classes were audited across 4,220 source/docs files. |
 | Package/API proof | yes | www typecheck passed 57/57 tasks; focused tests passed 11/11. |
 | Source audit | yes | Checker passed 4,220 files and its focused suite passed 58/58. |
-| Extracted-file inventory | yes | One untracked link-preview route is unrelated and untouched. |
+| Extracted-file inventory | yes | No unrelated extracted source remains in this packet. |
 | Autoreview | yes | Final review returned no findings with 0.9 confidence. |
 | Final lint/check | yes | Targeted Biome and scoped diff check passed. |
 | Agent source / generated sync | no | No source doctrine changed, so no generated skill sync is required. |
@@ -430,9 +430,8 @@ Packet ledger:
 | Generated registry output | CI | reject local edit | AGENTS forbids build:registry | CI regeneration |
 
 Extracted file ledger:
-| Path | Bucket | Decision | Proof |
-|------|--------|----------|-------|
-| apps/www/src/registry/app/api/link-preview/route.ts | outside active packet | untouched | unrelated untracked source found by scoped inventory |
+
+- None.
 
 Out-of-scope package drift:
 - None reported by the final proof commands.

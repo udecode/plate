@@ -57,10 +57,10 @@ type CodeHighlightRuntime = {
       lowlight: Lowlight;
     }
   ) => {
-    decorations: Map<Element, DecoratedRange[]>;
+    decorations: Map<Element, CodeBlockDecoration[]>;
     warning?: CodeHighlightWarning;
   };
-  lineDecorations: WeakMap<Element, DecoratedRange[]>;
+  lineDecorations: WeakMap<Element, CodeBlockDecoration[]>;
 };
 const codeHighlightRuntimes = new WeakMap<object, CodeHighlightRuntime>();
 type CodeBlockUpdateFor<TCodeBlock extends Element> = {
@@ -1193,7 +1193,7 @@ const baseCodeHighlightPluginWithRuntime: BasePlugin<BaseCodeHighlightPluginDefi
       lowlight.registerAlias('python', stablePythonAliases);
       patchedLowlights.add(lowlight);
     };
-    const lineDecorations = new WeakMap<Element, DecoratedRange[]>();
+    const lineDecorations = new WeakMap<Element, CodeBlockDecoration[]>();
     const parseNodes = (
       nodes: HighlightNode[],
       className: string[] = []
@@ -1240,7 +1240,7 @@ const baseCodeHighlightPluginWithRuntime: BasePlugin<BaseCodeHighlightPluginDefi
       [block, blockPath],
       { defaultLanguage, lowlight }
     ) => {
-      const decorations = new Map<Element, DecoratedRange[]>();
+      const decorations = new Map<Element, CodeBlockDecoration[]>();
       const text = block.children
         .map((line) => NodeApi.string(line))
         .join('\n');
@@ -1291,7 +1291,7 @@ const baseCodeHighlightPluginWithRuntime: BasePlugin<BaseCodeHighlightPluginDefi
 
         if (!ElementApi.isElement(element)) continue;
 
-        const values: DecoratedRange[] = [];
+        const values: CodeBlockDecoration[] = [];
         let start = 0;
 
         decorations.set(element, values);

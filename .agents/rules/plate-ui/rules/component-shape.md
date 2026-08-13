@@ -37,7 +37,7 @@ incoming `props` object intact and destructure from it locally:
 **Correct:**
 
 ```tsx
-export function MyElement(props: PlateElementProps<TNode>) {
+export function MyElement(props: PlateElementProps<typeof MyPlugin>) {
   const { editor, element } = props;
 
   return <PlateElement {...props} />;
@@ -51,7 +51,7 @@ export function MyElement({
   editor,
   element,
   ...props
-}: PlateElementProps<TNode>) {
+}: PlateElementProps<typeof MyPlugin>) {
   return <PlateElement {...props} />;
 }
 ```

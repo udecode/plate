@@ -193,10 +193,10 @@ export default function MyEditorPage() {
     <Plate editor={editor}>
       <FixedToolbar className="flex justify-start gap-1 rounded-t-lg">
         {/* Element Toolbar Buttons */}
-        <ToolbarButton onClick={() => editor.update((tx) => tx.h1.toggle())}>H1</ToolbarButton>
-        <ToolbarButton onClick={() => editor.update((tx) => tx.h2.toggle())}>H2</ToolbarButton>
-        <ToolbarButton onClick={() => editor.update((tx) => tx.h3.toggle())}>H3</ToolbarButton>
-        <ToolbarButton onClick={() => editor.update((tx) => tx.blockquote.toggle())}>Quote</ToolbarButton>
+        <ToolbarButton onClick={() => editor.plugin(H1Plugin).update.toggle()}>H1</ToolbarButton>
+        <ToolbarButton onClick={() => editor.plugin(H2Plugin).update.toggle()}>H2</ToolbarButton>
+        <ToolbarButton onClick={() => editor.plugin(H3Plugin).update.toggle()}>H3</ToolbarButton>
+        <ToolbarButton onClick={() => editor.plugin(BlockquotePlugin).update.toggle()}>Quote</ToolbarButton>
         {/* Mark Toolbar Buttons */}
         <MarkToolbarButton nodeType="bold" tooltip="Bold (⌘+B)">B</MarkToolbarButton>
         <MarkToolbarButton nodeType="italic" tooltip="Italic (⌘+I)">I</MarkToolbarButton>
@@ -302,10 +302,10 @@ export default function MyEditorPage() {
       }}
     >
       <FixedToolbar className="flex justify-start gap-1 rounded-t-lg">
-        <ToolbarButton onClick={() => editor.update((tx) => tx.h1.toggle())}>H1</ToolbarButton>
-        <ToolbarButton onClick={() => editor.update((tx) => tx.h2.toggle())}>H2</ToolbarButton>
-        <ToolbarButton onClick={() => editor.update((tx) => tx.h3.toggle())}>H3</ToolbarButton>
-        <ToolbarButton onClick={() => editor.update((tx) => tx.blockquote.toggle())}>Quote</ToolbarButton>
+        <ToolbarButton onClick={() => editor.plugin(H1Plugin).update.toggle()}>H1</ToolbarButton>
+        <ToolbarButton onClick={() => editor.plugin(H2Plugin).update.toggle()}>H2</ToolbarButton>
+        <ToolbarButton onClick={() => editor.plugin(H3Plugin).update.toggle()}>H3</ToolbarButton>
+        <ToolbarButton onClick={() => editor.plugin(BlockquotePlugin).update.toggle()}>Quote</ToolbarButton>
         <MarkToolbarButton nodeType="bold" tooltip="Bold (⌘+B)">B</MarkToolbarButton>
         <MarkToolbarButton nodeType="italic" tooltip="Italic (⌘+I)">I</MarkToolbarButton>
         <MarkToolbarButton nodeType="underline" tooltip="Underline (⌘+U)">U</MarkToolbarButton>

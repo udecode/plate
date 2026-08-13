@@ -1,17 +1,13 @@
 import * as React from 'react';
 
-import type { Element as PliteElement } from '@platejs/plite';
-
 import { cva } from 'class-variance-authority';
-import type { TSuggestionText } from 'platejs';
+import type { ElementWith, RenderStaticNodeWrapperProps } from 'platejs';
 import type { PliteLeafProps } from 'platejs/static';
 
 import { BaseSuggestionPlugin } from '@platejs/suggestion';
 import { PliteLeaf } from 'platejs/static';
 
 import { cn } from '@/lib/utils';
-
-type StaticSuggestionEditor = PliteLeafProps<TSuggestionText>['editor'];
 
 export const voidRemoveSuggestionClass =
   'relative overflow-hidden before:pointer-events-none before:absolute before:top-1/2 before:left-1/2 before:z-20 before:flex before:size-10 before:-translate-x-1/2 before:-translate-y-1/2 before:items-center before:justify-center before:rounded-full before:bg-red-500/90 before:text-2xl before:font-semibold before:text-white before:shadow-lg before:content-["X"] after:pointer-events-none after:absolute after:inset-0 after:z-10 after:rounded-[inherit] after:border after:border-red-300/80 after:bg-zinc-950/35 after:content-[""]';
@@ -43,20 +39,16 @@ export const voidRemoveSuggestionVariants = cva('', {
   },
 });
 
-export function isStaticVoidRemoveSuggestion(element: PliteElement) {
-  return (
-    (element as PliteElement & { suggestion?: { type?: string } }).suggestion
-      ?.type === 'remove'
-  );
+export function isStaticVoidRemoveSuggestion(
+  element: ElementWith<typeof BaseSuggestionPlugin>
+) {
+  return element.suggestion?.type === 'remove';
 }
 
 export function VoidRemoveSuggestionOverlayStatic({
   editor,
   element,
-}: {
-  editor: StaticSuggestionEditor;
-  element: PliteElement;
-}) {
+}: RenderStaticNodeWrapperProps<typeof BaseSuggestionPlugin>) {
   const active =
     editor.read.schema.isVoid(element) &&
     !editor.read.schema.isInline(element) &&
@@ -73,7 +65,9 @@ export function VoidRemoveSuggestionOverlayStatic({
   );
 }
 
-export function SuggestionLeafStatic(props: PliteLeafProps<TSuggestionText>) {
+export function SuggestionLeafStatic(
+  props: PliteLeafProps<typeof BaseSuggestionPlugin>
+) {
   const { editor, leaf } = props;
 
   const suggestionApi = editor.plugin(BaseSuggestionPlugin).api;

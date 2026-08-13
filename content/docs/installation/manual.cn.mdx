@@ -136,7 +136,7 @@ export default function App() {
 
 <ComponentPreview name="installation-next-02-marks-demo" height="200px" />
 
-您需要自行实现工具栏来应用这些标记。例如切换加粗效果：`editor.update((tx) => tx.bold.toggle())`。
+您需要自行实现工具栏来应用这些标记。例如切换加粗效果：`editor.update.bold.toggle()`。
 
 ### 添加基础元素
 
@@ -183,19 +183,19 @@ const initialValue: Value = [
 ];
 
 // 定义元素组件
-function H1Element(props: PlateElementProps) {
+function H1Element(props: PlateElementProps<typeof H1Plugin>) {
   return <PlateElement as="h1" {...props} />;
 }
 
-function H2Element(props: PlateElementProps) {
+function H2Element(props: PlateElementProps<typeof H2Plugin>) {
   return <PlateElement as="h2" {...props} />;
 }
 
-function H3Element(props: PlateElementProps) {
+function H3Element(props: PlateElementProps<typeof H3Plugin>) {
   return <PlateElement as="h3" {...props} />;
 }
 
-function BlockquoteElement(props: PlateElementProps) {
+function BlockquoteElement(props: PlateElementProps<typeof BlockquotePlugin>) {
   return (
     <PlateElement
       as="blockquote"
@@ -286,19 +286,19 @@ const initialValue: Value = [
 ];
 
 // 定义元素组件
-function H1Element(props: PlateElementProps) {
+function H1Element(props: PlateElementProps<typeof H1Plugin>) {
   return <PlateElement as="h1" {...props} />;
 }
 
-function H2Element(props: PlateElementProps) {
+function H2Element(props: PlateElementProps<typeof H2Plugin>) {
   return <PlateElement as="h2" {...props} />;
 }
 
-function H3Element(props: PlateElementProps) {
+function H3Element(props: PlateElementProps<typeof H3Plugin>) {
   return <PlateElement as="h3" {...props} />;
 }
 
-function BlockquoteElement(props: PlateElementProps) {
+function BlockquoteElement(props: PlateElementProps<typeof BlockquotePlugin>) {
   return (
     <PlateElement
       as="blockquote"
@@ -391,7 +391,7 @@ export default function App() {
     *   如需快速使用预制组件，考虑使用[Plate UI](/docs/installation/plate-ui)
     *   或继续使用CSS、CSS-in-JS库或您偏好的样式解决方案手动设置样式
 *   **[添加插件](/docs/plugins):** Plate拥有丰富的插件生态（如表单、提及、图片、列表等）。安装对应包（如`@platejs/table`）并添加到`plugins`数组
-*   **[构建工具栏](/docs/toolbar):** 创建使用[编辑器转换](/docs/transforms)应用格式的工具栏按钮组件（如`editor.update((tx) => tx.bold.toggle())`、`editor.update((tx) => tx.h.toggle())`）。您也可以结合[编辑器API](/docs/api)使用编辑器状态
+*   **[构建工具栏](/docs/toolbar):** 创建使用[编辑器转换](/docs/transforms)应用格式的工具栏按钮组件（如`editor.update.bold.toggle()`、`editor.plugin(H1Plugin).update.toggle()`）。您也可以结合[编辑器API](/docs/api)使用编辑器状态
 *   **深入学习：**
     *   [编辑器配置](/docs/editor)
     *   [插件配置](/docs/plugin)

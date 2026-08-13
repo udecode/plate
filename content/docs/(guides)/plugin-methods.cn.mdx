@@ -83,11 +83,11 @@ editor.plugin(CounterPlugin).update.insertLabel();
 后续 update 贡献通过活动事务组复用前一个 update：
 
 ```ts
-.extend(({ plugin }) => ({
+.extend(() => ({
   update: ({ tx }) => ({
     insertPair: () => {
-      tx[plugin.name].insertLabel();
-      tx[plugin.name].insertLabel();
+      tx.plugin(CounterPlugin).insertLabel();
+      tx.plugin(CounterPlugin).insertLabel();
     },
   }),
 }))

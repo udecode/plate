@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import type { PlateElementProps, RenderNodeWrapper } from 'platejs/react';
+import type { RenderNodeWrapper, RenderNodeWrapperProps } from 'platejs/react';
 
 import { getDraftCommentKey } from '@platejs/comment';
 import { SUGGESTION_TRANSIENT_KEY } from '@platejs/suggestion';
@@ -38,7 +38,7 @@ export const BlockDiscussion: RenderNodeWrapper = (_props) => (props) => (
   <BlockCommentContent {...props} />
 );
 
-const BlockCommentContent = ({ children }: PlateElementProps) => {
+const BlockCommentContent = ({ children }: RenderNodeWrapperProps) => {
   const editor = useEditor();
   const { api: commentsApi, read: commentsRead } =
     useEditorPlugin(commentPlugin);
@@ -103,7 +103,7 @@ const BlockCommentContent = ({ children }: PlateElementProps) => {
 
     if (activeSuggestion) {
       activeNode = suggestionNodes.find(
-        ([node]) => suggestionApi.nodeId(node) === activeSuggestion.suggestionId
+        ([node]) => suggestionApi.id(node) === activeSuggestion.suggestionId
       );
     }
 
@@ -112,7 +112,7 @@ const BlockCommentContent = ({ children }: PlateElementProps) => {
         activeNode = draftCommentNode;
       } else {
         activeNode = commentNodes.find(
-          ([node]) => commentsApi.nodeId(node) === activeCommentId
+          ([node]) => commentsApi.id(node) === activeCommentId
         );
       }
     }

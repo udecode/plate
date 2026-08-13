@@ -121,5 +121,18 @@ describe('Plate registry editor files', () => {
         }),
       ])
     );
+    expect(itemsByName.get('markdown-streaming-demo')?.files).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          path: 'examples/copilot-editor-definition.tsx',
+        }),
+        expect.objectContaining({
+          path: 'examples/copilot-editor.generated.ts',
+        }),
+        expect.objectContaining({
+          path: 'examples/copilot-editor.schema.json',
+        }),
+      ])
+    );
   });
 });

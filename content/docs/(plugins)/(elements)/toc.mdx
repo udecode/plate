@@ -120,7 +120,7 @@ You can add this item to the [Insert Toolbar Button](/docs/toolbar#insert-toolba
 {
   icon: <TableOfContentsIcon />,
   label: 'Table of contents',
-  value: KEYS.toc,
+  value: PLUGINS.toc,
 }
 ```
 
@@ -176,14 +176,25 @@ Plugin for generating table of contents.
 
 ## Transforms
 
-### `editor.update.toc.insert`
+### `editor.plugin(BaseTocPlugin).update.insert`
 
 Insert table of contents element.
 
-<API name="editor.update.toc.insert">
-<APIOptions type="object<BaseEditor>">
-    Node insertion options.
-</APIOptions>
+```ts
+import { BaseTocPlugin } from '@platejs/toc';
+
+editor.plugin(BaseTocPlugin).update.insert();
+```
+
+<API name="editor.plugin(BaseTocPlugin).update.insert">
+<APIParameters>
+  <APIItem name="props" type="NodeProps<ElementOf<typeof BaseTocPlugin>>" optional>
+    Initial table-of-contents element properties.
+  </APIItem>
+  <APIItem name="options" type="NodeInsertNodesOptions" optional>
+    Standard node insertion options such as `at` and `select`.
+  </APIItem>
+</APIParameters>
 </API>
 
 ## Hooks

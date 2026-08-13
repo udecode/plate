@@ -10,8 +10,10 @@ import {
 } from '@platejs/selection/react';
 import { resizeLengthClampStatic } from '@platejs/resizable';
 import {
+  type TableCellPlugin,
   TablePlugin,
   TableProvider,
+  TableRowPlugin,
   roundCellSizeToStep,
   useCellIndices,
   useOverrideColSize,
@@ -39,14 +41,7 @@ import {
   Trash2Icon,
   XIcon,
 } from 'lucide-react';
-import {
-  type Path,
-  type TTableCellElement,
-  type TTableElement,
-  type TTableRowElement,
-  KEYS,
-  PathApi,
-} from 'platejs';
+import { type Path, PathApi } from 'platejs';
 import {
   type PlateEditor,
   type PlateElementProps,
@@ -138,9 +133,11 @@ const TABLE_DEFAULT_COLUMN_WIDTH = 120;
 const TABLE_DEFERRED_COLUMN_RESIZE_CELL_COUNT = 1200;
 const TABLE_MULTI_SELECTION_TOOLBAR_DELAY_MS = 150;
 
-const getTablePlugin = (editor: PlateEditor) => editor.plugin(TablePlugin);
+const getTablePlugin = (editor: Pick<PlateEditor, 'plugin'>) =>
+  editor.plugin(TablePlugin);
 
-const getTableRead = (editor: PlateEditor) => editor.plugin(TablePlugin).read;
+const getTableRead = (editor: Pick<PlateEditor, 'plugin'>) =>
+  editor.plugin(TablePlugin).read;
 
 const TableResizeContext = React.createContext<TableResizeContextValue | null>(
   null
@@ -175,7 +172,8 @@ function useTableResizeController({
   tableRef: React.RefObject<HTMLTableElement | null>;
   wrapperRef: React.RefObject<HTMLDivElement | null>;
 }) {
-  const { editor, store } = useEditorPlugin(TablePlugin);
+  const editor = useEditor();
+  const { store } = useEditorPlugin(TablePlugin);
   const { disableMarginLeft = false, minColumnWidth = 0 } = store.get();
   const colSizes = useTableColSizes({
     disableOverrides: true,
@@ -351,7 +349,7 @@ function useTableResizeController({
 
   const commitMarginLeft = React.useCallback(
     (nextMarginLeft: number) => {
-      getTablePlugin(editor).update.setMarginLeft(
+      getTablePlugin(editor).update.set(
         { marginLeft: nextMarginLeft },
         { at: tablePath }
       );
@@ -622,7 +620,7 @@ export const TableElement = withHOC(
   function TableElement({
     children,
     ...props
-  }: PlateElementProps<TTableElement>) {
+  }: PlateElementProps<typeof TablePlugin>) {
     const { api } = useEditorPlugin(TablePlugin);
     const readOnly = useEditorReadOnly();
     const isSelectionAreaVisible = usePluginStore(
@@ -638,26 +636,24 @@ export const TableElement = withHOC(
     const deferColumnResize =
       (colSizes?.length ?? 0) * (props.element.children?.length ?? 0) >
       TABLE_DEFERRED_COLUMN_RESIZE_CELL_COUNT;
-    const tablePath = useElementSelector(([, path]) => path, {
-      name: KEYS.table,
-    });
+    const tablePath = useElementSelector(TablePlugin, ([, path]) => path);
     const tableRef = React.useRef<HTMLTableElement>(null);
     const wrapperRef = React.useRef<HTMLDivElement>(null);
-    const dragCellId = useEditorSelector((editor) => {
+    const tableNodeKey = props.editor.key(props.element);
+    const dragCellKey = useEditorSelector((editor) => {
       const view = getTableRead(editor).getSelection();
 
       if (
         !view?.complete ||
         view.grid.problems.length > 0 ||
-        typeof view.table.id !== 'string' ||
-        view.table.id !== props.element.id ||
+        view.tableKey !== tableNodeKey ||
         view.anchors.length <= 1 ||
-        view.cellIds.length !== view.anchors.length
+        view.cellKeys.length !== view.anchors.length
       ) {
         return null;
       }
 
-      return view.cellIds[0] ?? null;
+      return view.cellKeys[0] ?? null;
     });
     const [dragHandleHost, setDragHandleHost] =
       React.useState<HTMLElement | null>(null);
@@ -665,20 +661,20 @@ export const TableElement = withHOC(
     React.useLayoutEffect(() => {
       let nextHost: HTMLElement | null = null;
 
-      if (dragCellId) {
-        const escapedCellId = globalThis.CSS?.escape
-          ? globalThis.CSS.escape(dragCellId)
-          : dragCellId.replaceAll('"', '\\"');
+      if (dragCellKey) {
+        const escapedCellKey = globalThis.CSS?.escape
+          ? globalThis.CSS.escape(dragCellKey)
+          : dragCellKey.replaceAll('"', '\\"');
         nextHost =
           tableRef.current?.querySelector<HTMLElement>(
-            `[data-table-cell-id="${escapedCellId}"]`
+            `[data-table-cell-key="${escapedCellKey}"]`
           ) ?? null;
       }
 
       setDragHandleHost((currentHost) =>
         currentHost === nextHost ? currentHost : nextHost
       );
-    }, [dragCellId, props.element]);
+    }, [dragCellKey, props.element]);
     const resizeController = useTableResizeController({
       controlColumnWidth,
       deferColumnResize,
@@ -710,7 +706,7 @@ export const TableElement = withHOC(
       [controlColumnWidth, resolvedColSizes]
     );
 
-    const isSelectingTable = useBlockSelected(props.element.id as string);
+    const isSelectingTable = useBlockSelected(tableNodeKey);
 
     const content = (
       <PlateElement
@@ -793,7 +789,7 @@ export const TableElement = withHOC(
                   aria-label="Move selected cells"
                   className="-translate-y-1/2 absolute top-1/2 left-6 z-40 flex h-6 w-4 cursor-grab items-center justify-center rounded-sm border bg-background text-muted-foreground shadow-sm active:cursor-grabbing"
                   contentEditable={false}
-                  data-table-cell-drag-for={dragCellId}
+                  data-table-cell-drag-for={dragCellKey}
                   data-table-cell-drag-handle="true"
                   draggable
                   type="button"
@@ -827,7 +823,7 @@ function TableFloatingToolbar({
   ...props
 }: React.ComponentProps<typeof PopoverContent>) {
   const selectedCellCount = useEditorSelector(
-    (editor) => getTableRead(editor).getSelectedCellIds()?.length ?? 0
+    (editor) => getTableRead(editor).getSelectedCellKeys()?.length ?? 0
   );
   const selected = useElementSelected();
   const collapsedInside = useEditorSelector(
@@ -875,7 +871,7 @@ function DelayedExpandedSelectionTableFloatingToolbarContent(
 function ExpandedSelectionTableFloatingToolbarContent(
   props: React.ComponentProps<typeof PopoverContent>
 ) {
-  const { editor } = useEditorPlugin(TablePlugin);
+  const editor = useEditor();
   const { canMerge, canSplit } = useTableMergeState();
 
   if (!canMerge && !canSplit) return null;
@@ -898,8 +894,8 @@ function ExpandedSelectionTableFloatingToolbarContent(
 function CollapsedTableFloatingToolbarContent(
   props: React.ComponentProps<typeof PopoverContent>
 ) {
-  const { editor } = useEditorPlugin(TablePlugin);
-  const element = useElement<TTableElement>();
+  const editor = useEditor();
+  const element = useElement(TablePlugin);
   const { props: buttonProps } = useRemoveNodeButton({ element });
   const { canSplit } = useTableMergeState();
 
@@ -1222,18 +1218,14 @@ function ColorDropdownMenu({
 export function TableRowElement({
   children,
   ...props
-}: PlateElementProps<TTableRowElement>) {
+}: PlateElementProps<typeof TableRowPlugin>) {
   const { element } = props;
   const readOnly = useEditorReadOnly();
-  const rowIndex = useElementSelector(([, path]) => path.at(-1) as number, {
-    name: KEYS.tr,
-  });
-  const rowSize = useElementSelector(
-    ([node]) => (node as TTableRowElement).size,
-    {
-      name: KEYS.tr,
-    }
+  const rowIndex = useElementSelector(
+    TableRowPlugin,
+    ([, path]) => path.at(-1)!
   );
+  const rowSize = useElementSelector(TableRowPlugin, ([node]) => node.size);
   const rowSizeOverrides = useTableValue('rowSizeOverrides');
   const rowMinHeight = rowSizeOverrides.get?.(rowIndex) ?? rowSize;
   const isSelectionAreaVisible = usePluginStore(
@@ -1251,24 +1243,20 @@ export function TableRowElement({
         PathApi.parent(dropEntry[1])
       ),
     onDropHandler: (editor, { dragItem }) => {
-      if ('id' in dragItem) {
-        const id = Array.isArray(dragItem.id) ? dragItem.id[0] : dragItem.id;
+      if (!('key' in dragItem)) return;
+      const key = Array.isArray(dragItem.key) ? dragItem.key[0] : dragItem.key;
 
-        if (id) {
-          const path = editor.read.nodes.find({
-            at: [],
-            match: { id },
-          })?.[1];
+      if (key) {
+        const path = editor.read.nodes.path(key);
 
-          if (!path) return;
+        if (!path) return;
 
-          const range = editor.read.ranges.get(path);
+        const range = editor.read.ranges.get(path);
 
-          if (!range) return;
+        if (!range) return;
 
-          editor.update.selection.set(range);
-          editor.api.dom.focus();
-        }
+        editor.update.selection.set(range);
+        editor.api.dom.focus();
       }
     },
   });
@@ -1300,8 +1288,10 @@ export function TableRowElement({
   );
 }
 
-function useTableCellPresentation(element: TTableCellElement) {
-  const { editor } = useEditorPlugin(TablePlugin);
+function useTableCellPresentation(
+  element: PlateElementProps<typeof TableCellPlugin>['element']
+) {
+  const editor = useEditor();
   const api = editor.plugin(TablePlugin).api;
   const borders = useTableCellBorders({ element });
   const { col, row } = useCellIndices();
@@ -1320,7 +1310,7 @@ function useTableCellPresentation(element: TTableCellElement) {
 
 function RowDragHandle({ dragRef }: { dragRef: React.Ref<HTMLButtonElement> }) {
   const editor = useEditor();
-  const element = useElement<TTableRowElement>();
+  const element = useElement(TableRowPlugin);
 
   return (
     <Button
@@ -1361,23 +1351,22 @@ function RowDropLine() {
   );
 }
 
-export function TableCellElement({
-  isHeader,
-  ...props
-}: PlateElementProps<TTableCellElement> & {
-  isHeader?: boolean;
-}) {
+export function TableCellElement(
+  props: PlateElementProps<typeof TableCellPlugin>
+) {
+  const editor = useEditor();
   const readOnly = useEditorReadOnly();
   const element = props.element;
+  const isHeader = element.header === true;
 
-  const tableId = useElementSelector(([node]) => node.id as string, {
-    name: KEYS.table,
-  });
-  const rowId = useElementSelector(([node]) => node.id as string, {
-    name: KEYS.tr,
-  });
-  const isSelectingTable = useBlockSelected(tableId);
-  const isSelectingRow = useBlockSelected(rowId) || isSelectingTable;
+  const tableKey = useElementSelector(TablePlugin, ([node]) =>
+    editor.key(node)
+  );
+  const rowKey = useElementSelector(TableRowPlugin, ([node]) =>
+    editor.key(node)
+  );
+  const isSelectingTable = useBlockSelected(tableKey);
+  const isSelectingRow = useBlockSelected(rowKey) || isSelectingTable;
   const isSelectionAreaVisible = usePluginStore(
     BlockSelectionPlugin,
     'isSelectionAreaVisible'
@@ -1411,7 +1400,7 @@ export function TableCellElement({
       attributes={{
         ...props.attributes,
         colSpan,
-        'data-table-cell-id': element.id,
+        'data-table-cell-key': editor.key(element),
         rowSpan,
       }}
     >
@@ -1435,12 +1424,6 @@ export function TableCellElement({
       )}
     </PlateElement>
   );
-}
-
-export function TableCellHeaderElement(
-  props: React.ComponentProps<typeof TableCellElement>
-) {
-  return <TableCellElement {...props} isHeader />;
 }
 
 const TableCellResizeControls = React.memo(function TableCellResizeControls({

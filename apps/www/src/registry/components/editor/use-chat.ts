@@ -1,5 +1,4 @@
 'use client';
-import { NODES } from '@platejs/utils';
 
 /* eslint-disable react-hooks/refs -- Fake stream abort control is imperative transport state. */
 
@@ -12,18 +11,35 @@ import { getCommentKey, getTransientCommentKey } from '@platejs/comment';
 import { MarkdownPlugin } from '@platejs/markdown';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import { TablePlugin } from '@platejs/table/react';
-import { type Range, type Value, NodeApi, TextApi } from '@platejs/plite';
-import { type UIMessage, DefaultChatTransport } from 'ai';
-import { KEYS, nanoid } from 'platejs';
 import {
-  type PlateEditor,
-  useEditorPlugin,
-  usePluginStore,
-} from 'platejs/react';
-
-import { aiChatPlugin } from '@/registry/components/editor/plugins/ai-kit';
+  type Element,
+  type Range,
+  type Value,
+  ElementApi,
+  NodeApi,
+  TextApi,
+} from '@platejs/plite';
+import { type UIMessage, DefaultChatTransport } from 'ai';
+import { ElementIdPlugin, PLUGINS, nanoid } from 'platejs';
+import { type PlateEditor, useEditor, usePluginStore } from 'platejs/react';
 
 import { discussionPlugin } from './plugins/discussion-kit';
+
+export type AIChatTransportPluginState = {
+  chatOptions: {
+    api: string;
+    body: Record<string, unknown>;
+  };
+};
+
+export const AIChatTransportPlugin = AIChatPlugin.extend({
+  initialState: {
+    chatOptions: {
+      api: '/api/ai/command',
+      body: {},
+    },
+  } satisfies AIChatTransportPluginState,
+});
 
 export type ToolName = 'comment' | 'edit' | 'generate';
 
@@ -71,12 +87,6 @@ const getSelectedTableCells = (editor: PlateEditor): unknown[] => {
   return Array.isArray(selectedCells) ? selectedCells : [];
 };
 
-const hasStringId = (value: unknown): value is { id: string } =>
-  typeof value === 'object' &&
-  value !== null &&
-  'id' in value &&
-  typeof value.id === 'string';
-
 function createChatTransport({
   api,
   abortControllerRef,
@@ -90,7 +100,7 @@ function createChatTransport({
     api,
     // Mock the API response. Remove it when you implement the route /api/ai/command
     fetch: (async (input, init) => {
-      const bodyOptions = editor.plugin(aiChatPlugin).store.get()
+      const bodyOptions = editor.plugin(AIChatTransportPlugin).store.get()
         .chatOptions?.body;
 
       const initBody = JSON.parse(init?.body as string) as ChatRequestBody;
@@ -146,7 +156,7 @@ function createChatTransport({
                 const rootIndex = anchorPath[0];
                 const rootNode = children[rootIndex];
 
-                if (rootNode?.type === 'table') {
+                if (rootNode?.type === editor.plugin(TablePlugin).schema.type) {
                   // Cell path is at index 2 (table -> row -> cell)
                   const anchorCellPath = anchorPath.slice(0, 3).join(',');
                   const focusCellPath = focusPath?.slice(0, 3).join(',');
@@ -190,9 +200,9 @@ function createChatTransport({
 }
 
 export const useChat = () => {
-  const { editor } = useEditorPlugin(MarkdownPlugin);
-  const markdownApi = editor.api.markdown;
-  const options = usePluginStore(aiChatPlugin, 'chatOptions');
+  const editor = useEditor();
+  const markdownApi = editor.plugin(MarkdownPlugin).api;
+  const options = usePluginStore(AIChatTransportPlugin, 'chatOptions');
 
   // remove when you implement the route /api/ai/command
   const abortControllerRef = React.useRef<AbortController | null>(null);
@@ -266,7 +276,9 @@ export const useChat = () => {
         // Create a new comment
         const newComment = {
           id: nanoid(),
-          contentRich: [{ children: [{ text: aiComment.comment }], type: 'p' }],
+          contentRich: [
+            { children: [{ text: aiComment.comment }], type: 'paragraph' },
+          ],
           createdAt: new Date(),
           discussionId,
           isEdited: false,
@@ -297,7 +309,7 @@ export const useChat = () => {
           {
             [getCommentKey(newDiscussion.id)]: true,
             [getTransientCommentKey()]: true,
-            [KEYS.comment]: true,
+            [editor.plugin(PLUGINS.comment).schema.key]: true,
           },
           {
             at: range,
@@ -1388,7 +1400,7 @@ const mdxChunks = [
     },
     // {
     //  delay,
-    //   texts: '<column_group layout="[50,50]">\n',
+    //   texts: '<columnGroup layout="[50,50]">\n',
     // },
     // {
     //  delay,
@@ -1416,7 +1428,7 @@ const mdxChunks = [
     // },
     // {
     //  delay,
-    //   texts: '</column_group>\n\n',
+    //   texts: '</columnGroup>\n\n',
     // },
     {
       delay,
@@ -1640,9 +1652,11 @@ const createCommentChunks = (editor: PlateEditor) => {
       return [
         {
           delay: faker.number.int({ max: 500, min: 200 }),
-          texts: `{"id":"${nanoid()}","data":{"comment":{"blockId":"${
-            block.id
-          }","comment":"${faker.lorem.sentence()}","content":"${content}"},"status":"${
+          texts: `{"id":"${nanoid()}","data":{"comment":{"blockId":"${editor
+            .plugin(ElementIdPlugin)
+            .read.id(
+              block
+            )}","comment":"${faker.lorem.sentence()}","content":"${content}"},"status":"${
             i === indexes.length - 1 ? 'finished' : 'streaming'
           }"},"type":"data-comment"}`,
         },
@@ -1663,25 +1677,28 @@ const createTableCellChunks = (editor: PlateEditor) => {
   const selectedCells = getSelectedTableCells(editor);
 
   // If no cells selected, try to get cells from current selection
-  let cellIds: string[] = [];
+  let cellElementIds: string[] = [];
+  const elementId = editor.plugin(ElementIdPlugin);
 
   if (selectedCells.length > 0) {
-    cellIds = selectedCells.filter(hasStringId).map((cell) => cell.id);
+    cellElementIds = selectedCells.flatMap((cell) =>
+      ElementApi.isElement(cell) ? [elementId.read.id(cell)] : []
+    );
   } else {
     // Try to find table cells in current selection
     const cells = editor.read((state) => [
-      ...state.nodes.entries({
+      ...state.nodes.entries<Element>({
         at: state.selection() ?? undefined,
-        match: { type: [NODES.td, NODES.th] },
+        match: {
+          type: editor.plugin(PLUGINS.tableCell).schema.type,
+        },
       }),
     ]);
-    cellIds = cells.flatMap(([node]) =>
-      typeof node.id === 'string' ? [node.id] : []
-    );
+    cellElementIds = cells.map(([node]) => elementId.read.id(node));
   }
 
   // If still no cells, return empty chunks
-  if (cellIds.length === 0) {
+  if (cellElementIds.length === 0) {
     return [
       [{ delay: 50, texts: '{"data":"edit","type":"data-toolName"}' }],
       [
@@ -1694,11 +1711,11 @@ const createTableCellChunks = (editor: PlateEditor) => {
   }
 
   // Generate mock content for each cell
-  const chunks = cellIds.map((cellId, i) => [
+  const chunks = cellElementIds.map((cellId, i) => [
     {
       delay: faker.number.int({ max: 300, min: 100 }),
       texts: `{"id":"${nanoid()}","data":{"cellUpdate":{"id":"${cellId}","content":"${faker.lorem.sentence()}"},"status":"${
-        i === cellIds.length - 1 ? 'finished' : 'streaming'
+        i === cellElementIds.length - 1 ? 'finished' : 'streaming'
       }"},"type":"data-table"}`,
     },
   ]);

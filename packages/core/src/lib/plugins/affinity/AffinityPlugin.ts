@@ -262,7 +262,7 @@ export const AffinityPlugin = defineBasePlugin('affinity', {
             const affinity =
               startText && startText.length > 1 ? 'backward' : 'forward';
 
-            tx[plugin.name].setSelection(edgeNodes, affinity);
+            tx.plugin(plugin).setSelection(edgeNodes, affinity);
           }
         });
       }),
@@ -330,7 +330,7 @@ export const AffinityPlugin = defineBasePlugin('affinity', {
                 (reverse ? 'forward' : 'backward')
             ) {
               return state.transaction((tx) => {
-                tx[plugin.name].setSelection(
+                tx.plugin(plugin).setSelection(
                   preEdgeNodes,
                   reverse ? 'backward' : 'forward'
                 );
@@ -355,7 +355,7 @@ export const AffinityPlugin = defineBasePlugin('affinity', {
               isNodesAffinity(postEdgeNodes, 'directional') &&
               !hasElement(postEdgeNodes)
             ) {
-              tx[plugin.name].setSelection(
+              tx.plugin(plugin).setSelection(
                 postEdgeNodes,
                 reverse ? 'forward' : 'backward'
               );

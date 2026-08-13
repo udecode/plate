@@ -179,11 +179,13 @@ For the runtime model, see [Plugin Input Rules](/docs/plugin-input-rules).
 You can add this item to the [Turn Into Toolbar Button](/docs/toolbar#turn-into-toolbar-button) to convert blocks into code blocks:
 
 ```tsx
-{
+import { PLUGINS } from 'platejs';
+
+const turnIntoItem = {
   icon: <FileCodeIcon />,
   label: 'Code',
-  value: KEYS.codeBlock,
-}
+  value: PLUGINS.codeBlock,
+};
 ```
 
 ### Insert Toolbar Button
@@ -191,11 +193,13 @@ You can add this item to the [Turn Into Toolbar Button](/docs/toolbar#turn-into-
 You can add this item to the [Insert Toolbar Button](/docs/toolbar#insert-toolbar-button) to insert code block elements:
 
 ```tsx
-{
+import { PLUGINS } from 'platejs';
+
+const insertItem = {
   icon: <FileCodeIcon />,
   label: 'Code',
-  value: KEYS.codeBlock,
-}
+  value: PLUGINS.codeBlock,
+};
 ```
 
 </Steps>
@@ -208,7 +212,7 @@ Owns the code-block schema, editing behavior, input rules, shortcuts, and comman
 
 ### `CodeHighlightPlugin`
 
-Owns the `code_syntax` mark, Lowlight decoration pipeline, and highlighted token rendering. Include or omit this descriptor as one ordinary plugin-array entry.
+Owns the `codeSyntax` mark, Lowlight decoration pipeline, and highlighted token rendering. Include or omit this descriptor as one ordinary plugin-array entry.
 
 <API name="CodeHighlightPlugin">
 <APIOptions>

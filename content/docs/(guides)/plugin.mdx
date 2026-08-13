@@ -3,7 +3,9 @@ title: Plugin Configuration
 description: How to configure and customize Plate plugins.
 ---
 
-Plate plugins are highly configurable, allowing you to customize their behavior to suit your needs. This guide will walk you through the most common configuration options and how to use them.
+Plate plugins own one capability: schema, behavior, state, services, reads,
+updates, rendering, or a deliberate combination of them. Define independent
+fields at creation and use terminal configuration only for app-owned values.
 
 - [Getting Started: Components](/docs/installation#components) - Instructions for adding plugins to your editor
 - [PlatePlugin API](/docs/api/core/plate-plugin) - The complete API reference for creating plugins
@@ -15,9 +17,7 @@ Plate plugins are highly configurable, allowing you to customize their behavior 
 The most basic plugin configuration requires only a `name`:
 
 ```ts
-const MyPlugin = createPlatePlugin({
-  name: "minimal",
-});
+const MyPlugin = definePlatePlugin("minimal", {});
 ```
 
 While this plugin doesn't do anything yet, it's a starting point for more complex configurations.
@@ -36,8 +36,8 @@ const ConfiguredPlugin = MyPlugin.configure({
 
 ## Schema Plugins
 
-Schema plugins declare document types at the top level and model behavior under
-`schema`. React rendering stays under `render`.
+Schema plugins declare persisted document identity and structure under
+`schema`. React components stay on the plugin root.
 
 ### Elements
 
@@ -46,11 +46,9 @@ Declare a new element with `schema.element`:
 ```ts
 import { schema } from "platejs";
 
-const ParagraphPlugin = createPlatePlugin({
-  name: "p",
-  type: "p",
+const NoticePlugin = definePlatePlugin("noticeFeature", {
   schema: {
-    element: { content: schema.content.text({ default: "text", min: 1 }) },
+    element: { ...schema.element.textBlock(), type: "notice" },
   },
 });
 ```
@@ -60,13 +58,12 @@ You can associate a component with your element. See [Plugin Components](/docs/p
 ```ts
 import { schema } from "platejs";
 
-const ParagraphPlugin = createPlatePlugin({
-  name: "p",
-  type: "p",
+const NoticePlugin = definePlatePlugin("noticeFeature", {
+  component: NoticeElement,
   schema: {
-    element: { content: schema.content.text({ default: "text", min: 1 }) },
+    element: { ...schema.element.textBlock(), type: "notice" },
   },
-}).configure({ component: ParagraphElement });
+});
 ```
 
 ### Inline, Void, and Text Properties
@@ -77,9 +74,7 @@ with a property descriptor under `schema.mark`:
 ```ts
 import { property, schema } from "platejs";
 
-const LinkPlugin = createPlatePlugin({
-  name: "link",
-  type: "a",
+const CustomLinkPlugin = definePlatePlugin("customLink", {
   schema: {
     element: {
       content: schema.content.text({ default: "text", min: 1 }),
@@ -88,14 +83,11 @@ const LinkPlugin = createPlatePlugin({
   },
 });
 
-const ImagePlugin = createPlatePlugin({
-  name: "image",
-  type: "img",
+const CustomImagePlugin = definePlatePlugin("customImage", {
   schema: { element: { void: "block" } },
 });
 
-const BoldPlugin = createPlatePlugin({
-  name: "bold",
+const CustomBoldPlugin = definePlatePlugin("customBold", {
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
@@ -114,7 +106,7 @@ The `rules` property allows you to configure common editing behaviors like break
 For example, you can define what happens when a user presses `Enter` in an empty heading, or `Backspace` at the start of a blockquote.
 
 ```ts
-import { H1Plugin } from "@platejs/heading/react";
+import { H1Plugin } from "@platejs/basic-nodes/react";
 
 H1Plugin.configure({
   rules: {
@@ -135,7 +127,7 @@ Child names do not repeat the `on` prefix. Lifecycle handlers use names such as
 and `click`.
 
 ```ts showLineNumbers
-const ExamplePlugin = createPlatePlugin({
+const ExamplePlugin = definePlatePlugin("example", {
   on: {
     commit: ({ editor, snapshot }) => {
       console.info(editor, snapshot.children);
@@ -144,18 +136,17 @@ const ExamplePlugin = createPlatePlugin({
       console.info(`You pressed ${event.key}`);
     },
   },
-  name: "example",
 });
 ```
 
 ### Inject Props
 
-You may want to inject a class name or CSS property into any node having a certain property. For example, the following plugin sets the `textAlign` CSS property on paragraphs with an `align` property.
+You may want to inject a class name or CSS property into any node having a certain property. For example, the following plugin sets the `textAlign` CSS property on paragraphs with a `textAlign` property.
 
 ```ts showLineNumbers
-import { KEYS, property, target } from "platejs";
+import { PLUGINS, property, schema, target } from "platejs";
 
-const TextAlignPlugin = createPlatePlugin({
+const TextAlignPlugin = definePlatePlugin("textAlign", {
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       "text/html": {
@@ -178,53 +169,61 @@ const TextAlignPlugin = createPlatePlugin({
       validNodeValues: ["start", "left", "center", "right", "end", "justify"],
     },
   },
-  name: "align",
-  schema: ({ own, plugins, targetPluginNames }) => ({
-    properties: [
-      own.elementProperty(property.string(), {
-        target: target.types(plugins.elementTypesByName(targetPluginNames)),
+  schema: ({ targetElementTypes }) => ({
+    properties: {
+      textAlign: schema.elementProperty(property.string(), {
+        target: target.types(targetElementTypes),
         typeChange: "preserve-if-allowed",
       }),
-    ],
+    },
   }),
-  targetPluginNames: [KEYS.p],
+  targetPlugins: [PLUGINS.paragraph],
+  update: ({ tx }) => ({
+    set: (value: string) => tx.nodes.set({ textAlign: value }),
+  }),
 });
 ```
 
 `inject.nodeProps` owns rendering, while the constructor's `codecs` callback
 binds the bidirectional HTML claim to this plugin's schema. `defineCodecs`
 keeps `value` inferred from the property declaration. Both paths use the
-plugin's resolved `type`, so terminal `.configure({ type })` changes the stored
-property without duplicating the plugin name in the codec.
+author callback's compiled `schema.properties.textAlign` handle. Consumers use
+typed node fields or the plugin's semantic capabilities instead of reading that
+property map. Its `name` identifies only the capability namespace.
+`.configure()` and `.extend()` do not change schema identity. A closed
+`defineEditor()` may remap an element type or relationship; plugin-owned
+property keys remain fixed. A plugin update passes one atomic property patch,
+so every key and value comes from the plugin's shallow schema contract. An
+alias uses the exact author handle key as a computed object key.
 
 A paragraph node affected by the plugin looks like this:
 
 ```ts showLineNumbers {3}
-{
-  type: 'p',
-  align: 'right',
+const paragraph = {
+  type: 'paragraph',
+  textAlign: 'right',
   children: [{ text: 'This paragraph is aligned to the right!' }],
-}
+};
 ```
 
 ### Add APIs and Transaction Commands
 
-Put plugin reads and services under `api`, and document mutations under
-`update`. Constructor callbacks receive the plugin context.
+Put state-bound queries under `read`, immutable services under `api`, and
+document mutations under `update`. Constructor callbacks receive plugin
+context.
 
 ```ts
 export type CustomPluginState = {
   prefix: string;
 };
 
-const CustomPlugin = createPlatePlugin({
+const CustomPlugin = definePlatePlugin("custom", {
   api: ({ store }) => ({
     getPrefix: () => store.get("prefix"),
   }),
   initialState: {
     prefix: "Note: ",
   } satisfies CustomPluginState,
-  name: "custom",
   update: ({ store, tx }) => ({
     insertPrefix: () => {
       tx.text.insert(store.get("prefix"));
@@ -233,7 +232,8 @@ const CustomPlugin = createPlatePlugin({
 });
 ```
 
-After the plugin resolves, concrete editors infer its reads on the root API and one-shot writes use the name-scoped update helper:
+After the plugin resolves, concrete editors infer its services on the root API
+and one-shot writes use the name-scoped update helper:
 
 ```ts
 editor.api.custom.getPrefix();
@@ -251,15 +251,15 @@ Plate plugins declare Plite capabilities directly at the plugin root. Use
 `validate` without a second wrapper.
 
 ```ts showLineNumbers
-import { createPlatePlugin, defineStateField } from "platejs";
+import { defineStateField } from "platejs";
+import { definePlatePlugin } from "platejs/react";
 
 const enabledField = defineStateField({
   initial: false,
   key: "customState.enabled",
 });
 
-const CustomStatePlugin = createPlatePlugin({
-  name: "customState",
+const CustomStatePlugin = definePlatePlugin("customState", {
   stateFields: [enabledField],
   read: ({ state }) => ({
     enabled: () => state.getField(enabledField),
@@ -279,7 +279,7 @@ const CustomStatePlugin = createPlatePlugin({
 </Callout>
 
 An independently reusable standalone Plite descriptor uses
-`defineEditorExtension` from `@platejs/plite`. See
+`defineExtension` from `@platejs/plite`. See
 [Plugin Methods](/docs/plugin-methods#install-plite-capabilities).
 
 ## Advanced Plugin Configuration
@@ -293,13 +293,10 @@ type MyPluginState = {
   count: number;
 };
 
-const initialState: MyPluginState = {
-  count: 0,
-};
-
-const MyPlugin = createPlatePlugin({
-  initialState,
-  name: "myPlugin",
+const MyPlugin = definePlatePlugin("myPlugin", {
+  initialState: {
+    count: 0,
+  } satisfies MyPluginState,
   on: {
     click: ({ store }) => {
       store.set({ count: 1 });
@@ -339,8 +336,7 @@ See more in [Plugin Context](/docs/plugin-context) and [Editor Methods](/docs/ed
 Declare required plugins with their plugin objects. Plate installs the dependency graph recursively, deduplicates plugins by name, and loads dependencies before their dependents.
 
 ```ts
-const MyPlugin = createPlatePlugin({
-  name: "myPlugin",
+const MyPlugin = definePlatePlugin("myPlugin", {
   dependencies: [ParagraphPlugin, ListPlugin],
 });
 ```
@@ -350,8 +346,7 @@ const MyPlugin = createPlatePlugin({
 The `enabled` property allows you to conditionally enable or disable a plugin:
 
 ```ts
-const MyPlugin = createPlatePlugin({
-  name: "myPlugin",
+const MyPlugin = definePlatePlugin("myPlugin", {
   enabled: true, // or false to disable
 });
 ```
@@ -362,8 +357,7 @@ Keep optional capabilities as ordinary plugins in the consumer's plugin array.
 When an enhancement needs a host, the enhancement depends on the host:
 
 ```ts
-const CodeHighlightPlugin = createPlatePlugin({
-  name: "codeHighlight",
+const CodeHighlightPlugin = definePlatePlugin("codeHighlight", {
   dependencies: [CodeBlockPlugin],
 });
 
@@ -388,63 +382,68 @@ global priority.
 
 ### HTML Input Hooks
 
-Use the flat hooks under `parsers.html` to decide whether a plugin participates
+Use hooks on the plugin's `'text/html'` codec to decide whether it participates
 in an HTML input, transform the source string, or transform the decoded
 fragment.
 
 ```ts
-const HtmlCleanupPlugin = createPlatePlugin({
-  name: "htmlCleanup",
-  parsers: {
-    html: {
-      query: ({ data, format }) =>
-        format === "text/html" && data.includes("<!--StartFragment-->"),
-      transformData: ({ data }) =>
-        data.replaceAll(/<!--(?:Start|End)Fragment-->/g, ""),
-    },
-  },
+const HtmlCleanupPlugin = definePlatePlugin("htmlCleanup", {
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      "text/html": {
+        query: ({ data, source }) =>
+          source.types.includes("text/html") &&
+          data.includes("<!--StartFragment-->"),
+        transformData: ({ data }) =>
+          data.replaceAll(/<!--(?:Start|End)Fragment-->/g, ""),
+      },
+    }),
 });
 ```
 
-`query`, `transformData`, and `transformFragment` are siblings under
-`parsers.html`. Node-level HTML conversion remains separate from these
+`query`, `transformData`, and `transformFragment` are siblings on the
+`'text/html'` codec. Node-level HTML conversion remains separate from these
 whole-input hooks.
 
 ## Typed Plugins
 
-`createPlatePlugin` infers one exact definition from the author object. Keep
+`definePlatePlugin` infers one exact definition from the author object. Keep
 state contracts explicit with a typed `initialState` value or `satisfies`;
 do not pass caller generics to the factory.
 
-### Using createPlatePlugin
+### Using definePlatePlugin
 
 The inferred definition carries the plugin name, state, API, reads, and updates:
 
 ```ts
-export type CodeBlockPluginState = {
+import { property, schema } from "platejs";
+import { definePlatePlugin } from "platejs/react";
+
+export type SnippetPluginState = {
   language: string;
   syntax: boolean;
   syntaxPopularFirst: boolean;
 };
 
-const initialState: CodeBlockPluginState = {
-  language: "typescript",
-  syntax: true,
-  syntaxPopularFirst: false,
-};
-
-export const CodeBlockPlugin = createPlatePlugin({
+export const SnippetPlugin = definePlatePlugin("snippet", {
   api: ({ store }) => ({
     getLanguage: () => store.get("language"),
     getSyntaxState: () => store.get("syntax"),
   }),
-  initialState,
-  name: "codeBlock",
-  type: "code_block",
-  update: ({ store, tx }) => ({
-    insertCodeBlock: () => {
+  initialState: {
+    language: "typescript",
+    syntax: true,
+    syntaxPopularFirst: false,
+  } satisfies SnippetPluginState,
+  schema: {
+    element: schema.element.textBlock({
+      properties: { language: property.string() },
+    }),
+  },
+  update: ({ schema: { type }, store, tx }) => ({
+    insertCurrentLanguage: () => {
       tx.nodes.insert({
-        type: "code_block",
+        type,
         language: store.get("language"),
         children: [{ text: "" }],
       });
@@ -459,21 +458,21 @@ When using typed plugins, you get full type checking and autocompletion ✨
 
 ```ts
 const editor = createPlateEditor({
-  plugins: [CodeBlockPlugin],
+  plugins: [SnippetPlugin],
 });
 
 // Type-safe access to state
-const state = editor.plugin(CodeBlockPlugin).store.get();
+const state = editor.plugin(SnippetPlugin).store.get();
 state.language;
 state.syntax;
 state.syntaxPopularFirst;
 
 // Type-safe API
-editor.api.codeBlock.getSyntaxState();
-editor.api.codeBlock.getLanguage();
+editor.api.snippet.getSyntaxState();
+editor.api.snippet.getLanguage();
 
 // Type-safe updates
-editor.update.codeBlock.insertCodeBlock();
+editor.update.snippet.insertCurrentLanguage();
 ```
 
 ## See also

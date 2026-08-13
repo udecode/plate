@@ -42,4 +42,4 @@ export const BaseEditorKit = [
   ...BaseCommentKit,
   ...BaseSuggestionKit,
   ...MarkdownKit,
-];
+] as const;

@@ -75,7 +75,7 @@ $$
 
 Multi-column layout features enable richer page designs and content layouts.
 
-<column_group layout="[50,50]">
+<columnGroup layout="[50,50]">
 <column width="50%">
 left
 </column>
@@ -83,16 +83,16 @@ left
   <column width="50%">
     right
   </column>
-</column_group>
+</columnGroup>
 
 PDF embedding makes document referencing simple and intuitive.
 <file name="sample.pdf" src="https://s26.q4cdn.com/900411403/files/doc_downloads/test.pdf" width="80%" isUpload="true" />
 
 Audio players can be embedded directly into documents, supporting online audio resources.
-<audio align="center" src="https://samplelib.com/lib/preview/mp3/sample-3s.mp3" width="80%" />
+<audio textAlign="center" src="https://samplelib.com/lib/preview/mp3/sample-3s.mp3" width="80%" />
 
 Video playback features support embedding various online video resources, enriching document content.
-<video align="center" src="https://videos.pexels.com/video-files/6769791/6769791-uhd_2560_1440_24fps.mp4" width="80%" isUpload="true" />
+<video textAlign="center" src="https://videos.pexels.com/video-files/6769791/6769791-uhd_2560_1440_24fps.mp4" width="80%" isUpload="true" />
 
 :smile: :heart:
 `;
@@ -103,7 +103,7 @@ export default function MarkdownDemo() {
 
   const markdownEditor = usePlateEditor({
     plugins: [],
-    initialValue: [{ children: [{ text: markdownValue }], type: 'p' }],
+    initialValue: [{ children: [{ text: markdownValue }], type: 'paragraph' }],
   });
 
   const editor = usePlateEditor(

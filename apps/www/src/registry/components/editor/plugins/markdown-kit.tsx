@@ -1,20 +1,33 @@
 import { MarkdownPlugin, remarkMdx, remarkMention } from '@platejs/markdown';
-import { KEYS } from 'platejs';
 import remarkEmoji from 'remark-emoji';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
+import { PLUGINS } from 'platejs';
 
 export const MarkdownKit = [
-  MarkdownPlugin.configure({
-    initialState: {
-      plainMarks: [KEYS.suggestion, KEYS.comment],
-      remarkPlugins: [
-        remarkMath,
-        remarkGfm,
-        remarkEmoji,
-        remarkMdx,
-        remarkMention,
-      ],
-    },
+  MarkdownPlugin.configure(({ editor }) => {
+    const comment = editor.plugin(PLUGINS.comment);
+    const suggestion = editor.plugin(PLUGINS.suggestion);
+    const plainMarks: string[] = [];
+
+    if (suggestion.installed) {
+      plainMarks.push(suggestion.schema.key);
+    }
+    if (comment.installed) {
+      plainMarks.push(comment.schema.key);
+    }
+
+    return {
+      initialState: {
+        plainMarks,
+        remarkPlugins: [
+          remarkMath,
+          remarkGfm,
+          remarkEmoji,
+          remarkMdx,
+          remarkMention,
+        ],
+      },
+    };
   }),
 ];

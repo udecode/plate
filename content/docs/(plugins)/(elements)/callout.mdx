@@ -113,15 +113,23 @@ Callout element plugin.
 
 Insert a callout element into the editor.
 
-<API name="callout">
-<APIOptions type="object">
+<API name="editor.plugin(BaseCalloutPlugin).update.insert">
+<APIParameters>
+<APIItem name="props" type="NodeProps<CalloutElement>" optional>
   <APIItem name="variant" type="string" optional>
     The variant of the callout to insert.
   </APIItem>
-  <APIItem name="...options" type="object<V>">
-    Other insertion options.
+  <APIItem name="icon" type="string" optional>
+    The callout icon. Defaults to `💡`.
   </APIItem>
-</APIOptions>
+  <APIItem name="backgroundColor" type="string" optional>
+    The callout background color.
+  </APIItem>
+</APIItem>
+<APIItem name="options" type="NodeInsertNodesOptions" optional>
+  Standard insertion options such as `at` and `select`.
+</APIItem>
+</APIParameters>
 </API>
 
 ## Hooks
@@ -171,16 +179,16 @@ Manage the emoji picker functionality for callouts.
 
 ## Types
 
-### `TCalloutElement`
+### `CalloutElement`
 
 ```typescript
-interface TCalloutElement extends Element {
-  variant?: string;
-  icon?: string;
-}
+import type { CalloutElement } from '@platejs/callout';
 ```
 
-<API name="TCalloutElement">
+`CalloutElement` is derived from `BaseCalloutPlugin`. Its schema exposes
+optional `backgroundColor`, `icon`, and `variant` properties.
+
+<API name="CalloutElement">
 <APIAttributes>
   <APIItem name="variant" type="string" optional>
     The variant of the callout.

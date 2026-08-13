@@ -2,11 +2,11 @@
 
 import * as React from 'react';
 
-import type { TColumnElement, TColumnGroupElement } from 'platejs';
 import type { PlateElementProps } from 'platejs/react';
 
 import { useDraggable, useDropLine } from '@platejs/dnd';
-import { BaseColumnItemPlugin } from '@platejs/layout';
+import { BaseColumnItemPlugin, BaseColumnPlugin } from '@platejs/layout';
+import { type ColumnItemPlugin, ColumnPlugin } from '@platejs/layout/react';
 import { ResizableProvider } from '@platejs/resizable';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import { useComposedRef } from '@udecode/cn';
@@ -43,7 +43,8 @@ import { cn } from '@/lib/utils';
 
 export const ColumnElement = withHOC(
   ResizableProvider,
-  function ColumnElement(props: PlateElementProps<TColumnElement>) {
+  function ColumnElement(props: PlateElementProps<typeof ColumnItemPlugin>) {
+    const editor = useEditor();
     const { width } = props.element;
     const readOnly = useEditorReadOnly();
     const isSelectionAreaVisible = usePluginStore(
@@ -54,7 +55,7 @@ export const ColumnElement = withHOC(
     const { isDragging, nodeRef, previewRef, handleRef } = useDraggable({
       element: props.element,
       orientation: 'horizontal',
-      type: 'column',
+      type: editor.plugin(BaseColumnItemPlugin).schema.type,
       canDropNode: ({ dragEntry, dropEntry }) =>
         PathApi.equals(
           PathApi.parent(dragEntry[1]),
@@ -141,7 +142,7 @@ function DropLine() {
 }
 
 export function ColumnGroupElement(
-  props: PlateElementProps<TColumnGroupElement>
+  props: PlateElementProps<typeof ColumnPlugin>
 ) {
   return (
     <PlateElement className="mb-2" {...props}>
@@ -155,7 +156,7 @@ export function ColumnGroupElement(
 function ColumnFloatingToolbar({ children }: React.PropsWithChildren) {
   const editor = useEditor();
   const readOnly = useEditorReadOnly();
-  const element = useElement<TColumnGroupElement>();
+  const element = useElement(ColumnPlugin);
   const { props: buttonProps } = useRemoveNodeButton({ element });
   const selected = useElementSelected();
   const isCollapsed = useEditorSelector((editor) =>
@@ -166,7 +167,7 @@ function ColumnFloatingToolbar({ children }: React.PropsWithChildren) {
   const open = isFocusedLast && !readOnly && selected && isCollapsed;
 
   const onColumnChange = (widths: string[]) => {
-    editor.plugin(BaseColumnItemPlugin).update.set({
+    editor.plugin(BaseColumnPlugin).update.setColumns({
       at: element,
       widths,
     });

@@ -1,17 +1,22 @@
 import * as React from 'react';
 
-import type { TMediaEmbedElement, TResizableProps } from 'platejs';
 import type { PliteElementProps } from 'platejs/static';
 
-import { parseMediaUrl, parseTwitterUrl, parseVideoUrl } from '@platejs/media';
+import {
+  type BaseMediaEmbedPlugin,
+  parseMediaUrl,
+  parseTwitterUrl,
+  parseVideoUrl,
+} from '@platejs/media';
 import { PliteElement } from 'platejs/static';
 
-import { CaptionStatic } from './caption-static';
+import { CaptionStatic, getMediaTextAlign } from './caption-static';
 
 export function MediaEmbedElementStatic(
-  props: PliteElementProps<TMediaEmbedElement & TResizableProps>
+  props: PliteElementProps<typeof BaseMediaEmbedPlugin>
 ) {
-  const { align = 'center', url, width } = props.element;
+  const { url, width } = props.element;
+  const textAlign = getMediaTextAlign(props.element);
   const embed = parseMediaUrl(url, {
     urlParsers: [parseTwitterUrl, parseVideoUrl],
   });
@@ -20,7 +25,7 @@ export function MediaEmbedElementStatic(
     <PliteElement className="py-2.5" {...props}>
       <figure
         className="group relative m-0 inline-block max-w-full cursor-default"
-        style={{ textAlign: align, width }}
+        style={{ textAlign, width }}
       >
         {embed?.provider === 'twitter' ? (
           <a
@@ -38,7 +43,7 @@ export function MediaEmbedElementStatic(
             allowFullScreen
           />
         ) : null}
-        <CaptionStatic align={align} element={props.element}>
+        <CaptionStatic align={textAlign} element={props.element}>
           {props.children}
         </CaptionStatic>
       </figure>

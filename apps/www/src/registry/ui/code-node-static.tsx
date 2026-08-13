@@ -1,10 +1,11 @@
 import * as React from 'react';
 
+import type { BaseCodePlugin } from '@platejs/basic-nodes';
 import type { PliteLeafProps } from 'platejs/static';
 
 import { PliteLeaf } from 'platejs/static';
 
-export function CodeLeafStatic(props: PliteLeafProps) {
+export function CodeLeafStatic(props: PliteLeafProps<typeof BaseCodePlugin>) {
   return (
     <PliteLeaf
       {...props}

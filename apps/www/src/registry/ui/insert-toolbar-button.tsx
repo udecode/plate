@@ -29,7 +29,7 @@ import {
   TableIcon,
   TableOfContentsIcon,
 } from 'lucide-react';
-import { KEYS } from 'platejs';
+import { PLUGINS } from 'platejs';
 import { type PlateEditor, useEditor } from 'platejs/react';
 
 import {
@@ -65,42 +65,42 @@ const groups: Group[] = [
       {
         icon: <PilcrowIcon />,
         label: 'Paragraph',
-        value: KEYS.p,
+        value: PLUGINS.paragraph,
       },
       {
         icon: <Heading1Icon />,
         label: 'Heading 1',
-        value: 'h1',
+        value: PLUGINS.h1,
       },
       {
         icon: <Heading2Icon />,
         label: 'Heading 2',
-        value: 'h2',
+        value: PLUGINS.h2,
       },
       {
         icon: <Heading3Icon />,
         label: 'Heading 3',
-        value: 'h3',
+        value: PLUGINS.h3,
       },
       {
         icon: <TableIcon />,
         label: 'Table',
-        value: KEYS.table,
+        value: PLUGINS.table,
       },
       {
         icon: <FileCodeIcon />,
         label: 'Code',
-        value: KEYS.codeBlock,
+        value: PLUGINS.codeBlock,
       },
       {
         icon: <QuoteIcon />,
         label: 'Quote',
-        value: KEYS.blockquote,
+        value: PLUGINS.blockquote,
       },
       {
         icon: <MinusIcon />,
         label: 'Divider',
-        value: KEYS.hr,
+        value: PLUGINS.horizontalRule,
       },
     ].map((item) => ({
       ...item,
@@ -115,22 +115,22 @@ const groups: Group[] = [
       {
         icon: <ListIcon />,
         label: 'Bulleted list',
-        value: KEYS.ul,
+        value: 'disc',
       },
       {
         icon: <ListOrderedIcon />,
         label: 'Numbered list',
-        value: KEYS.ol,
+        value: 'decimal',
       },
       {
         icon: <SquareIcon />,
         label: 'To-do list',
-        value: KEYS.listTodo,
+        value: 'todo',
       },
       {
         icon: <ChevronRightIcon />,
         label: 'Toggle list',
-        value: KEYS.toggle,
+        value: PLUGINS.toggle,
       },
     ].map((item) => ({
       ...item,
@@ -145,12 +145,12 @@ const groups: Group[] = [
       {
         icon: <ImageIcon />,
         label: 'Image',
-        value: KEYS.img,
+        value: PLUGINS.image,
       },
       {
         icon: <FilmIcon />,
         label: 'Embed',
-        value: KEYS.mediaEmbed,
+        value: PLUGINS.mediaEmbed,
       },
     ].map((item) => ({
       ...item,
@@ -165,7 +165,7 @@ const groups: Group[] = [
       {
         icon: <TableOfContentsIcon />,
         label: 'Table of contents',
-        value: KEYS.toc,
+        value: PLUGINS.toc,
       },
       {
         icon: <Columns3Icon />,
@@ -176,17 +176,17 @@ const groups: Group[] = [
         focusEditor: false,
         icon: <RadicalIcon />,
         label: 'Equation',
-        value: KEYS.equation,
+        value: PLUGINS.equation,
       },
       {
         icon: <PenToolIcon />,
         label: 'Excalidraw',
-        value: KEYS.excalidraw,
+        value: PLUGINS.excalidraw,
       },
       {
         icon: <Code2 />,
         label: 'Code Drawing',
-        value: KEYS.codeDrawing,
+        value: PLUGINS.codeDrawing,
       },
     ].map((item) => ({
       ...item,
@@ -201,13 +201,13 @@ const groups: Group[] = [
       {
         icon: <Link2Icon />,
         label: 'Link',
-        value: KEYS.link,
+        value: PLUGINS.link,
       },
       {
         focusEditor: true,
         icon: <CalendarIcon />,
         label: 'Date',
-        value: KEYS.date,
+        value: PLUGINS.date,
       },
       {
         focusEditor: true,
@@ -219,7 +219,7 @@ const groups: Group[] = [
         focusEditor: false,
         icon: <RadicalIcon />,
         label: 'Inline Equation',
-        value: KEYS.inlineEquation,
+        value: PLUGINS.inlineEquation,
       },
     ].map((item) => ({
       ...item,

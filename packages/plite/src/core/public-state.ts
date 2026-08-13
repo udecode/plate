@@ -379,6 +379,10 @@ const SNAPSHOT_INPUT_TRANSFORMS = new WeakMap<
   Editor,
   (input: SnapshotInput) => SnapshotInput
 >();
+const TRANSACTION_VIEW_TRANSFORMS = new WeakMap<
+  Editor,
+  (transaction: Record<string, unknown>) => void
+>();
 
 /** @internal Install one host-owned transform before external snapshot fitting. */
 export const setEditorSnapshotInputTransform = (
@@ -401,6 +405,31 @@ export const setEditorSnapshotInputTransform = (
       SNAPSHOT_INPUT_TRANSFORMS.set(owner, previous);
     } else {
       SNAPSHOT_INPUT_TRANSFORMS.delete(owner);
+    }
+  };
+};
+
+/** @internal Install one host-owned projection before a transaction view freezes. */
+export const setEditorTransactionViewTransform = (
+  editor: Editor,
+  transform: ((transaction: Record<string, unknown>) => void) | undefined
+) => {
+  const owner = getEditorRuntimeOwner(editor);
+  const previous = TRANSACTION_VIEW_TRANSFORMS.get(owner);
+
+  if (transform) {
+    TRANSACTION_VIEW_TRANSFORMS.set(owner, transform);
+  } else {
+    TRANSACTION_VIEW_TRANSFORMS.delete(owner);
+  }
+
+  return () => {
+    if (TRANSACTION_VIEW_TRANSFORMS.get(owner) !== transform) return;
+
+    if (previous) {
+      TRANSACTION_VIEW_TRANSFORMS.set(owner, previous);
+    } else {
+      TRANSACTION_VIEW_TRANSFORMS.delete(owner);
     }
   };
 };
@@ -4123,6 +4152,10 @@ const getUpdateView = <
       new WeakMap()
     );
   }
+
+  TRANSACTION_VIEW_TRANSFORMS.get(getEditorRuntimeOwner(editor))?.(
+    txExtensionRecord
+  );
 
   const view = Object.freeze(txRecord) as EditorUpdateTransaction<
     V,

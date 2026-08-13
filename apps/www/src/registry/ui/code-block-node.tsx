@@ -3,8 +3,13 @@
 import * as React from 'react';
 
 import { BaseCodeBlockPlugin } from '@platejs/code-block';
+import {
+  CodeBlockPlugin,
+  type CodeHighlightPlugin,
+  type CodeLinePlugin,
+} from '@platejs/code-block/react';
 import { BracesIcon, Check, CheckIcon, CopyIcon } from 'lucide-react';
-import { type TCodeBlockElement, type TCodeSyntaxLeaf, NodeApi } from 'platejs';
+import { NodeApi } from 'platejs';
 import {
   type PlateElementProps,
   type PlateLeafProps,
@@ -29,7 +34,7 @@ import {
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 
-type CodeBlockElementProps = PlateElementProps<TCodeBlockElement> & {
+type CodeBlockElementProps = PlateElementProps<typeof CodeBlockPlugin> & {
   showLanguageLabel?: boolean;
 };
 
@@ -192,7 +197,7 @@ function CodeBlockCombobox({
   const [open, setOpen] = React.useState(false);
   const readOnly = useEditorReadOnly();
   const editor = useEditor();
-  const element = useElement<TCodeBlockElement>();
+  const element = useElement(CodeBlockPlugin);
   const value = element.lang || 'plaintext';
   const [searchValue, setSearchValue] = React.useState('');
 
@@ -246,10 +251,13 @@ function CodeBlockCombobox({
                   className="cursor-pointer"
                   value={language.value}
                   onSelect={(value) => {
-                    editor.update.nodes.set<TCodeBlockElement>(
-                      { lang: value },
-                      { at: element }
-                    );
+                    const path = editor.read.nodes.path(element);
+
+                    if (!path) return;
+
+                    editor
+                      .plugin(BaseCodeBlockPlugin)
+                      .update.set({ lang: value }, { at: path });
                     setSearchValue(value);
                     setOpen(false);
                   }}
@@ -317,12 +325,14 @@ function CopyButton({
   );
 }
 
-export function CodeLineElement(props: PlateElementProps) {
+export function CodeLineElement(
+  props: PlateElementProps<typeof CodeLinePlugin>
+) {
   return <PlateElement {...props} />;
 }
 
-export function CodeSyntaxLeaf(props: PlateLeafProps<TCodeSyntaxLeaf>) {
-  const tokenClassName = props.leaf.className as string;
-
-  return <PlateLeaf className={tokenClassName} {...props} />;
+export function CodeSyntaxLeaf(
+  props: PlateLeafProps<typeof CodeHighlightPlugin>
+) {
+  return <PlateLeaf className={props.leaf.className} {...props} />;
 }

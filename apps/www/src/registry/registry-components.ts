@@ -165,24 +165,4 @@ export const registryComponents: Registry['items'] = [
     name: 'transforms-classic',
     type: 'registry:component',
   },
-  {
-    dependencies: [
-      '@platejs/basic-styles',
-      '@platejs/comment',
-      '@platejs/excalidraw',
-      '@platejs/link',
-      '@platejs/media',
-      '@platejs/mention',
-      '@platejs/table',
-      '@platejs/toggle',
-    ],
-    files: [
-      {
-        path: 'components/editor/plate-types.ts',
-        type: 'registry:component',
-      },
-    ],
-    name: 'plate-types',
-    type: 'registry:component',
-  },
 ];

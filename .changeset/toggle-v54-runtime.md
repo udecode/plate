@@ -14,6 +14,7 @@ Own toggle behavior through the plugin portal:
 - `editor.plugin(TogglePlugin).read.lastEnclosedEntry(toggleKey)`
 - `editor.plugin(TogglePlugin).store.get('enclosingKeys', elementKey)`
 - `editor.plugin(TogglePlugin).store.get('isClosed', elementKey)`
+- `editor.plugin(TogglePlugin).update.toggle({ collapse: true })`
 
 Remove the standalone toggle query and transform exports. Check whether the
 selection contains a toggle with `editor.read.nodes.some` and the installed
@@ -23,3 +24,5 @@ Rendering is owned by `TogglePlugin`; `renderToggleAboveNodes` is not exported.
 
 Export the toggle button, toolbar button, visibility, and plugin lifecycle
 hooks from the colocated `useToggle` family.
+
+Infer `ToggleVisibility` renderer props from `BaseTogglePlugin`.

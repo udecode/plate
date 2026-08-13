@@ -37,6 +37,18 @@ Call the scoped update portal with a transaction policy when an operation needs
 tagged history or another root update policy:
 `editor.plugin(Plugin).update(policy).method()`. The scoped call opens one root
 transaction and preserves its rollback and history behavior.
+Compose plugin commands inside an active transaction through
+`tx.plugin(Plugin).method()`. Generated editors retain direct
+`tx.pluginName.method()` groups. Raw Plite keeps direct extension groups and
+does not expose a descriptor transaction portal.
+
+Give default-constructible, schema-compatible text-block descriptors a standard
+`toggle` update. Text blocks with required construction properties author their
+own domain-aware command when needed.
+Configure same-name keyboard shortcuts with keys only; Plate dispatches the
+plugin update automatically. Structural plugins keep authored toggle commands
+for wrapping, conversion, or child mutations. Rename the paragraph shortcut
+from `toggleParagraph` to `toggle`.
 
 Contextually infer callbacks for contract-declared explicit transaction groups
 and plugin extension command transactions.
@@ -246,12 +258,28 @@ Make `useEditor()` strict and `useActiveEditor()` nullable. Resolve rendered
 elements and paths through descriptor-aware `useElement(FooPlugin)`,
 `useOptionalElement(FooPlugin)`, `usePath`, and `useOptionalPath` hooks. Infer
 component elements with `PlateElementProps<typeof FooPlugin>` and static/RSC
-elements with `PliteElementProps<typeof BaseFooPlugin>`. Remove unchecked
-type-only `useElement<FooElement>()` and `useOptionalElement<FooElement>()`
-calls.
-Context editor hooks are non-generic. Resolve exact plugin capabilities through
-`editor.plugin(FooPlugin)` or `useEditorPlugin(FooPlugin)`, and let selector
-hooks infer only their selected result.
+elements with `PliteElementProps<typeof BaseFooPlugin>`. Infer live and static
+text and leaf component props from the same plugin descriptors with
+`PlateTextProps`, `PlateLeafProps`, `PliteTextProps`, and `PliteLeafProps`.
+Pass exactly one required plugin descriptor to these component prop aliases.
+Leaf props include optional transient fields inferred from the owning plugin's
+`decorate` callback; text props remain persisted-schema-only.
+Pass plugin descriptors directly to wrapper and element-selector contracts:
+`RenderNodeWrapper<typeof FooPlugin>`,
+`RenderStaticNodeWrapper<typeof BaseFooPlugin>`, and
+`useElementSelector(FooPlugin, selector)` infer their element and plugin
+context without a manual `DefinitionOf` extraction.
+Use `RenderElementProps`, `RenderTextProps`, and `RenderLeafProps` for
+schema-agnostic renderer infrastructure.
+Remove the parallel `StyledPlate*Props` and `StyledPlite*Props` aliases; pass
+polymorphic HTML props directly to the matching node primitive.
+Remove unchecked type-only `useElement<FooElement>()` and
+`useOptionalElement<FooElement>()` calls.
+Context editor hooks reject caller-only generics. A closed generated application
+uses `useEditor(EditorKit)` or `useActiveEditor(EditorKit)` to infer and
+runtime-verify its exact contract. Otherwise resolve exact plugin capabilities
+through `editor.plugin(FooPlugin)` or `useEditorPlugin(FooPlugin)`, and let
+selector hooks infer only their selected result.
 
 Render static HTML through `renderStaticHtml` from `platejs/static`.
 

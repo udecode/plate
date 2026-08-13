@@ -14,6 +14,7 @@ import type {
 
 import type { PlateSchemaIdentity } from './BaseEditor';
 import type { BasePluginInput } from './pluginRuntimeTypes';
+import type { InternalEditorApplicationSchemaProvider } from './pluginRuntimeTypes';
 
 declare const generatedEditorSchema: unique symbol;
 
@@ -86,8 +87,8 @@ export type GeneratedEditorContract<
 }>;
 
 export type GeneratedEditorKit<
-  TPlugins extends readonly BasePluginInput[],
-  TTypes extends AnyGeneratedEditorTypes,
+  TPlugins extends readonly BasePluginInput[] = readonly BasePluginInput[],
+  TTypes extends AnyGeneratedEditorTypes = AnyGeneratedEditorTypes,
 > = TPlugins &
   EditorNodeTypeProvider<() => TTypes['element'], () => TTypes['text']> &
   EditorValueTypeProvider<() => TTypes['value']> &
@@ -117,26 +118,47 @@ const generatedEditorContracts = new WeakMap<
   object,
   RuntimeGeneratedEditorContract
 >();
+const installedGeneratedEditorContracts = new WeakMap<
+  object,
+  RuntimeGeneratedEditorContract
+>();
 const editorDefinitions = new WeakMap<object, RuntimeEditorDefinition>();
 
 /** Define one closed application editor for deterministic schema generation. */
 export const defineEditor = <
   const TName extends string,
-  const TPlugins extends readonly BasePluginInput[],
+  const TDefinition extends EditorDefinitionInput,
 >(
   name: TName,
-  definition: EditorDefinitionInput<TPlugins>
-): EditorDefinition<TName, TPlugins> => {
+  definition: TDefinition
+): EditorDefinition<
+  TName,
+  TDefinition['plugins'] &
+    ('schema' extends keyof TDefinition
+      ? InternalEditorApplicationSchemaProvider
+      : {})
+> => {
   if (name.length === 0) {
     throw new Error('Editor definition name must not be empty.');
   }
 
-  const plugins = Object.freeze([...definition.plugins]) as unknown as TPlugins;
+  const plugins = Object.freeze([
+    ...definition.plugins,
+  ]) as unknown as TDefinition['plugins'] &
+    ('schema' extends keyof TDefinition
+      ? InternalEditorApplicationSchemaProvider
+      : {});
   const result = Object.freeze({
     ...definition,
     name,
     plugins,
-  });
+  }) as EditorDefinition<
+    TName,
+    TDefinition['plugins'] &
+      ('schema' extends keyof TDefinition
+        ? InternalEditorApplicationSchemaProvider
+        : {})
+  >;
 
   editorDefinitions.set(
     plugins,
@@ -214,6 +236,26 @@ export const getGeneratedEditorContract = (
   typeof plugins === 'object' && plugins !== null
     ? generatedEditorContracts.get(plugins)
     : undefined;
+
+/** @internal Exact generated contract installed on a live editor. */
+export const getInstalledGeneratedEditorContract = (
+  editor: unknown
+): RuntimeGeneratedEditorContract | undefined =>
+  typeof editor === 'object' && editor !== null
+    ? installedGeneratedEditorContracts.get(editor)
+    : undefined;
+
+/** @internal Bind or clear the generated contract installed on a live editor. */
+export const setInstalledGeneratedEditorContract = (
+  editor: object,
+  contract: RuntimeGeneratedEditorContract | undefined
+): void => {
+  if (contract) {
+    installedGeneratedEditorContracts.set(editor, contract);
+  } else {
+    installedGeneratedEditorContracts.delete(editor);
+  }
+};
 
 /** @internal Closed editor metadata available before and after generation. */
 export const getRuntimeEditorDefinition = (

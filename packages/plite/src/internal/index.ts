@@ -213,6 +213,7 @@ export {
   setEditorMaxLength,
   setEditorReadOnly,
   setEditorSnapshotInputTransform,
+  setEditorTransactionViewTransform,
   setCurrentMarks as setEditorMarks,
   setCurrentSelection as setEditorSelection,
   setTargetRuntime as setEditorTargetRuntime,

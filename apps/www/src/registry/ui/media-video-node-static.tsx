@@ -1,20 +1,21 @@
 import * as React from 'react';
 
-import type { TResizableProps, TVideoElement } from 'platejs';
+import type { BaseVideoPlugin } from '@platejs/media';
 import type { PliteElementProps } from 'platejs/static';
 
 import { PliteElement } from 'platejs/static';
 
-import { CaptionStatic } from './caption-static';
+import { CaptionStatic, getMediaTextAlign } from './caption-static';
 
 export function VideoElementStatic(
-  props: PliteElementProps<TVideoElement & TResizableProps>
+  props: PliteElementProps<typeof BaseVideoPlugin>
 ) {
-  const { align = 'center', url, width } = props.element;
+  const { url, width } = props.element;
+  const textAlign = getMediaTextAlign(props.element);
 
   return (
     <PliteElement className="py-2.5" {...props}>
-      <div style={{ textAlign: align }}>
+      <div style={{ textAlign }}>
         <figure
           className="group relative m-0 inline-block cursor-default"
           style={{ width }}
@@ -26,7 +27,7 @@ export function VideoElementStatic(
               controls
             />
           </div>
-          <CaptionStatic align={align} element={props.element}>
+          <CaptionStatic align={textAlign} element={props.element}>
             {props.children}
           </CaptionStatic>
         </figure>

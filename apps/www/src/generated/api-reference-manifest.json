@@ -8638,6 +8638,18 @@
           "source": "packages/plite/src/core/target-runtime.ts",
           "typeParameters": []
         },
+        "@platejs/plite/internal:setEditorTransactionViewTransform": {
+          "aliases": [],
+          "documentation": "",
+          "entrypoint": "@platejs/plite/internal",
+          "kind": "const",
+          "name": "setEditorTransactionViewTransform",
+          "route": null,
+          "runtime": true,
+          "signature": "setEditorTransactionViewTransform: (editor: AnyEditor, transform: ((transaction: Record<string, unknown>) => void) | undefined) => () => void",
+          "source": "packages/plite/src/core/public-state.ts",
+          "typeParameters": []
+        },
         "@platejs/plite/internal:setNodes": {
           "aliases": [],
           "documentation": "",

@@ -82,6 +82,12 @@
       "sourceType": "github",
       "skillPath": "skills/video-transcripts/SKILL.md",
       "computedHash": "dfce0b8ea81350223ee9967acbad18eb589e17aebf91e87e94b07dfaa86db471"
+    },
+    "walkthrough": {
+      "source": "udecode/dotai",
+      "sourceType": "github",
+      "skillPath": "skills/walkthrough/SKILL.md",
+      "computedHash": "e38720add017b62d832888e5cebaf16c0c497692694ac97568d7fb32aa72e3e1"
     }
   }
 }

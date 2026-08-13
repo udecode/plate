@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-12-fix-font-size-selection-highlight",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-12-fix-font-size-selection-highlight.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-12",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Keep font-size selection highlighting aligned",
+  "targets": [
+    {
+      "name": "font-size-toolbar-button",
+      "files": ["apps/www/src/registry/ui/font-size-toolbar-button.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-12-font-size-toolbar-fix-selection-highlighting-0415264b",
+      "kind": "fix",
+      "summary": "Keep selection highlighting aligned after changing font size.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["font-size-toolbar-button"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-12",
+          "entry": "2026-08-12-fix-font-size-selection-highlight",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}
