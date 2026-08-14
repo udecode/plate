@@ -136,5 +136,12 @@ describe('validateUrl', () => {
       expect(validateUrl(editor, '#heading1')).toBe(true);
       expect(validateUrl(editor, '##heading2')).toBe(true);
     });
+
+    it('does not validate paths or anchors containing whitespace', () => {
+      const editor = createTestEditor();
+      expect(validateUrl(editor, '/usr/local/bin some text')).toBe(false);
+      expect(validateUrl(editor, '#anchor with spaces')).toBe(false);
+      expect(validateUrl(editor, '#!/bin/sh\necho hi')).toBe(false);
+    });
   });
 });
