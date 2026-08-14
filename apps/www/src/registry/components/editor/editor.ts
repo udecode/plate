@@ -1,9 +1,6 @@
-'use client';
-
 import { CsvPlugin } from '@platejs/csv';
 import { DocxIOPlugin } from '@platejs/docx-io';
-import { type InferPlugins, TrailingBlockPlugin, type Value } from 'platejs';
-import { type PlateEditor, useEditor as usePlateEditor } from 'platejs/react';
+import { TrailingBlockPlugin } from 'platejs';
 
 import { AIKit } from './plugins/ai-kit';
 import { AlignKit } from './plugins/align-kit';
@@ -14,7 +11,6 @@ import { BlockMenuKit } from './plugins/block-menu-kit';
 import { BlockPlaceholderKit } from './plugins/block-placeholder-kit';
 import { CalloutKit } from './plugins/callout-kit';
 import { CodeBlockKit } from './plugins/code-block-kit';
-import { CodeDrawingKit } from './plugins/code-drawing-kit';
 import { ColumnKit } from './plugins/column-kit';
 import { CommentKit } from './plugins/comment-kit';
 import { CursorOverlayKit } from './plugins/cursor-overlay-kit';
@@ -23,7 +19,6 @@ import { DiscussionKit } from './plugins/discussion-kit';
 import { DndKit } from './plugins/dnd-kit';
 import { DocxKit } from './plugins/docx-kit';
 import { EmojiKit } from './plugins/emoji-kit';
-import { ExcalidrawKit } from './plugins/excalidraw-kit';
 import { ExitBreakKit } from './plugins/exit-break-kit';
 import { FixedToolbarKit } from './plugins/fixed-toolbar-kit';
 import { FloatingToolbarKit } from './plugins/floating-toolbar-kit';
@@ -49,8 +44,6 @@ export const EditorKit = [
   // Elements
   ...BasicBlocksKit,
   ...CodeBlockKit,
-  ...CodeDrawingKit,
-  ...ExcalidrawKit,
   ...TableKit,
   ...ToggleKit,
   ...TocKit,
@@ -96,8 +89,4 @@ export const EditorKit = [
   ...BlockPlaceholderKit,
   ...FixedToolbarKit,
   ...FloatingToolbarKit,
-];
-
-export type MyEditor = PlateEditor<Value, InferPlugins<typeof EditorKit>>;
-
-export const useEditor = () => usePlateEditor<MyEditor>();
+] as const;

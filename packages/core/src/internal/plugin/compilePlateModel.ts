@@ -16,8 +16,11 @@ import {
   getSchemaElementSourceReference,
 } from '@platejs/plite/internal';
 
-import type { BaseEditor, PlateSchemaIdentity } from '../../lib/editor';
-import type { EditorApplicationSchema } from '../../lib/editor/defineEditor';
+import type { BaseEditor } from '../../lib/editor';
+import type {
+  EditorApplicationSchema,
+  EditorSchemaIdentity,
+} from '../../lib/editor/editorApplicationSchema';
 import type {
   AnyBasePluginDefinition,
   AnyBasePlugin,
@@ -78,7 +81,7 @@ export type PlateModelPublication = Readonly<{
   >;
   components: Readonly<NodeComponents>;
   genericElementToggles: readonly string[];
-  identity: PlateSchemaIdentity | null;
+  identity: EditorSchemaIdentity | null;
   inputRules: PlateRuntime['inputRules'];
   model: CompiledPlateModel;
   pluginCache: PlateRuntime['pluginCache'];

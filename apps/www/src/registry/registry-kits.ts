@@ -131,7 +131,7 @@ export const registryBaseKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/excalidraw', '@excalidraw/excalidraw'],
+    dependencies: ['@platejs/excalidraw'],
     files: [
       {
         path: 'components/editor/plugins/excalidraw-kit.tsx',
@@ -143,7 +143,7 @@ export const registryBaseKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/basic-styles'],
+    dependencies: ['@platejs/basic-styles', '@platejs/utils'],
     files: [
       {
         path: 'components/editor/plugins/font-base-kit.tsx',
@@ -224,7 +224,6 @@ export const registryBaseKits: Registry['items'] = [
     ],
     name: 'media-base-kit',
     registryDependencies: [
-      '@plate/caption',
       '@plate/media-audio-node',
       '@plate/media-embed-node',
       '@plate/media-file-node',
@@ -302,7 +301,6 @@ export const registryBaseKits: Registry['items'] = [
     ],
     name: 'editor-base-kit',
     registryDependencies: [
-      '@plate/editor',
       '@plate/align-base-kit',
       '@plate/basic-blocks-base-kit',
       '@plate/basic-marks-base-kit',
@@ -346,6 +344,7 @@ export const registryKits: Registry['items'] = [
       '@plate/ai-node',
       '@plate/ai-toolbar-button',
       '@plate/ai-api',
+      '@plate/use-chat',
     ],
     type: 'registry:component',
   },
@@ -362,7 +361,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/code-block', '@platejs/list-classic'],
+    dependencies: [],
     files: [
       {
         path: 'components/editor/plugins/autoformat-classic-kit.tsx',
@@ -371,13 +370,14 @@ export const registryKits: Registry['items'] = [
     ],
     name: 'autoformat-classic-kit',
     registryDependencies: [
+      '@plate/autoformat-kit',
       '@plate/list-classic-node',
       '@plate/list-classic-toolbar-button',
     ],
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/code-block', '@platejs/list'],
+    dependencies: [],
     files: [
       {
         path: 'components/editor/plugins/autoformat-kit.tsx',
@@ -460,7 +460,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/selection'],
+    dependencies: ['@platejs/ai', '@platejs/selection'],
     files: [
       {
         path: 'components/editor/plugins/block-selection-kit.tsx',
@@ -536,7 +536,12 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/ai', '@platejs/markdown', '@faker-js/faker'],
+    dependencies: [
+      '@faker-js/faker',
+      '@platejs/ai',
+      '@platejs/markdown',
+      '@platejs/plite',
+    ],
     files: [
       {
         path: 'components/editor/plugins/copilot-kit.tsx',
@@ -625,18 +630,16 @@ export const registryKits: Registry['items'] = [
       '@plate/code-block-node',
       '@plate/column-node',
       '@plate/equation-node',
+      '@plate/heading-node',
       '@plate/toc-node',
     ],
     type: 'registry:component',
   },
   {
+    dependencies: ['@platejs/csv'],
     files: [
       {
-        path: 'components/editor/editor-kit.tsx',
-        type: 'registry:component',
-      },
-      {
-        path: 'components/editor/editor-definition.tsx',
+        path: 'components/editor/editor.ts',
         type: 'registry:component',
       },
       {
@@ -654,12 +657,12 @@ export const registryKits: Registry['items'] = [
       '@plate/ai-kit',
       '@plate/align-kit',
       '@plate/autoformat-kit',
-      '@plate/basic-nodes-kit',
+      '@plate/basic-blocks-kit',
+      '@plate/basic-marks-kit',
       '@plate/block-menu-kit',
       '@plate/block-placeholder-kit',
       '@plate/callout-kit',
       '@plate/code-block-kit',
-      '@plate/code-drawing-kit',
       '@plate/column-kit',
       '@plate/comment-kit',
       '@plate/cursor-overlay-kit',
@@ -668,7 +671,6 @@ export const registryKits: Registry['items'] = [
       '@plate/dnd-kit',
       '@plate/docx-kit',
       '@plate/emoji-kit',
-      '@plate/excalidraw-kit',
       '@plate/exit-break-kit',
       '@plate/fixed-toolbar-kit',
       '@plate/floating-toolbar-kit',
@@ -785,7 +787,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/basic-styles'],
+    dependencies: ['@platejs/basic-styles', '@platejs/utils'],
     files: [
       {
         path: 'components/editor/plugins/font-kit.tsx',

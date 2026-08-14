@@ -2,6 +2,14 @@
 
 import * as React from 'react';
 
+import type {
+  H1Plugin,
+  H2Plugin,
+  H3Plugin,
+  H4Plugin,
+  H5Plugin,
+  H6Plugin,
+} from '@platejs/basic-nodes/react';
 import type { PlateElementProps } from 'platejs/react';
 
 import { type VariantProps, cva } from 'class-variance-authority';
@@ -23,13 +31,26 @@ const headingVariants = cva(
   }
 );
 
+type HeadingVariant = NonNullable<
+  VariantProps<typeof headingVariants>['variant']
+>;
+
+type HeadingElementProps = (
+  | PlateElementProps<typeof H1Plugin>
+  | PlateElementProps<typeof H2Plugin>
+  | PlateElementProps<typeof H3Plugin>
+  | PlateElementProps<typeof H4Plugin>
+  | PlateElementProps<typeof H5Plugin>
+  | PlateElementProps<typeof H6Plugin>
+) & { variant?: HeadingVariant };
+
 export function HeadingElement({
   variant = 'h1',
   ...props
-}: PlateElementProps & VariantProps<typeof headingVariants>) {
+}: HeadingElementProps) {
   return (
     <PlateElement
-      as={variant!}
+      as={variant}
       className={headingVariants({ variant })}
       {...props}
     >
@@ -38,26 +59,26 @@ export function HeadingElement({
   );
 }
 
-export function H1Element(props: PlateElementProps) {
+export function H1Element(props: PlateElementProps<typeof H1Plugin>) {
   return <HeadingElement variant="h1" {...props} />;
 }
 
-export function H2Element(props: PlateElementProps) {
+export function H2Element(props: PlateElementProps<typeof H2Plugin>) {
   return <HeadingElement variant="h2" {...props} />;
 }
 
-export function H3Element(props: PlateElementProps) {
+export function H3Element(props: PlateElementProps<typeof H3Plugin>) {
   return <HeadingElement variant="h3" {...props} />;
 }
 
-export function H4Element(props: PlateElementProps) {
+export function H4Element(props: PlateElementProps<typeof H4Plugin>) {
   return <HeadingElement variant="h4" {...props} />;
 }
 
-export function H5Element(props: PlateElementProps) {
+export function H5Element(props: PlateElementProps<typeof H5Plugin>) {
   return <HeadingElement variant="h5" {...props} />;
 }
 
-export function H6Element(props: PlateElementProps) {
+export function H6Element(props: PlateElementProps<typeof H6Plugin>) {
   return <HeadingElement variant="h6" {...props} />;
 }

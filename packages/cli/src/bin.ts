@@ -9,7 +9,7 @@ import { generateEditors } from './generate';
 import { createEditorMigration } from './migrate';
 import { watchEditors } from './watch';
 
-const DEFAULT_ENTRY = 'src/editor/editor-definition.tsx';
+const DEFAULT_ENTRY = 'src/editor.ts';
 const packageJson = createRequire(import.meta.url)('../package.json') as {
   version: string;
 };
@@ -22,8 +22,8 @@ const program = new Command()
 
 program
   .command('generate')
-  .description('Generate one or more closed editor contracts.')
-  .argument('[entries...]', 'defineEditor entry files', [DEFAULT_ENTRY])
+  .description('Generate one or more exact editor contracts.')
+  .argument('[entries...]', 'editor module files', [DEFAULT_ENTRY])
   .option('--check', 'fail when committed artifacts are stale')
   .option('--watch', 'regenerate when an entry dependency changes')
   .action(
@@ -102,7 +102,7 @@ program
   .description('Scaffold an explicit typed editor schema migration.')
   .command('new')
   .argument('<name>', 'lowercase kebab-case migration name')
-  .option('--entry <path>', 'defineEditor entry file', DEFAULT_ENTRY)
+  .option('--entry <path>', 'editor module file', DEFAULT_ENTRY)
   .action(async (name: string, options: Readonly<{ entry: string }>) => {
     const result = await createEditorMigration(options.entry, name);
 

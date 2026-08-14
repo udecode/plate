@@ -9,7 +9,7 @@ import remarkEmoji from 'remark-emoji';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
-import { EditorKit } from '@/registry/components/editor/editor-kit';
+import { EditorKit } from '@/registry/components/editor/editor';
 import { useDebounce } from '@/registry/hooks/use-debounce';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
 

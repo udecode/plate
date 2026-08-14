@@ -8,9 +8,9 @@ if (!bundlePath || !resultPath) {
 }
 
 try {
-  const definition = (await import(pathToFileURL(bundlePath).href)).default;
+  const editor = (await import(pathToFileURL(bundlePath).href)).default;
 
-  writeFileSync(resultPath, JSON.stringify(definition));
+  writeFileSync(resultPath, JSON.stringify(editor));
   process.exit(0);
 } catch (error) {
   process.stderr.write(

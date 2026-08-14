@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "latestVersion": 70,
+  "latestVersion": 74,
   "versions": [
     {
       "version": 0,
@@ -833,6 +833,52 @@
         "Pass plugin descriptors directly to RenderNodeWrapper, RenderStaticNodeWrapper, and useElementSelector instead of extracting DefinitionOf or restating node types.",
         "Remove consumer Reflect.get calls, casts, and structural mirrors used only to recover descriptor-owned schema or decoration fields.",
         "Prove direct descriptor inference without recursive type expansion, focused renderer and selector behavior, generated skill parity, and zero unjustified consumer escapes."
+      ]
+    },
+    {
+      "version": 71,
+      "date": "2026-08-13",
+      "doctrineFingerprint": "sha256:e8af3cde42cb1a4db16d730e9e4d3c12f086cc15cc9d9699db9ec66fc0366fcb",
+      "summary": "Copied registry UI stays application-agnostic while generated editor bindings remain owned by the editor host, app source, and explicitly dependent examples.",
+      "migrationChecks": [
+        "Reject host editor types, editor.generated, editor-definition, and root plugin namespace imports from independently installable registry UI.",
+        "Allow generated bindings only in the editor host, app-owned source, and examples whose registry metadata explicitly depends on editor-kit.",
+        "Keep editor-kit as registry packaging rather than a runtime API noun, preserve explicit teaching configuration after inherited application plugins, and prove generated resource parity."
+      ]
+    },
+    {
+      "version": 72,
+      "date": "2026-08-14",
+      "doctrineFingerprint": "sha256:1bb058044bdc854369bc8c13fc075a348f9037aba373f1ee1dd1daefdbeff8e9",
+      "summary": "Plate skills separate durable API doctrine, package plugin mechanics, copied registry UI, and optional application codegen.",
+      "migrationChecks": [
+        "Reject application definition, schema-lineage, generated-editor, and app-composition policy from feature package plugin owners.",
+        "Keep copied registry UI generic; allow examples that explicitly depend on editor-kit to import only the host-owned ordinary plugin composition.",
+        "Treat codegen as optional advanced static typing and schema tooling, never as a runtime plugin owner, hook argument, or ordinary plugin/UI documentation requirement.",
+        "Prove Plate responsibility routing, generated skill/resource parity, and the final doctrine fingerprint."
+      ]
+    },
+    {
+      "version": 73,
+      "date": "2026-08-14",
+      "doctrineFingerprint": "sha256:3ad6debcf50121614a735b42d464f9d6f089683b58676f00a9b9793419df876d",
+      "summary": "Reusable API changes automatically repair owning doctrine and every affected Plate worker skill before closeout.",
+      "migrationChecks": [
+        "Run best-api repair in the same task whenever a reusable public API or canonical plugin/registry pattern changes; never wait for another user prompt.",
+        "Audit and repair only worker skills that teach or enforce the changed contract, including package, registry, docs, planning, and migration owners where applicable.",
+        "Regenerate skill mirrors, prove source/mirror parity, audit rejected call shapes from rules and generated teaching, and never mass-attest packages for a doctrine-only bump."
+      ]
+    },
+    {
+      "version": 74,
+      "date": "2026-08-14",
+      "doctrineFingerprint": "sha256:ebad5a5430b61bacc8346b7ff781f79e647a4df6d8e3e493301821a7162ac24c",
+      "summary": "Authored editor modules own runtime plugins and schema while optional generated modules expose type-only static contracts.",
+      "migrationChecks": [
+        "Use editor.ts with named plugins and optional schema exports as the sole application runtime owner.",
+        "Reject public defineEditor, bindGeneratedEditor, generated runtime plugin kits, schemaIdentity, and generated modules passed to hooks or constructors.",
+        "Allow generated Editor, Value, schema handles, mutations, and fingerprints only at explicit static boundaries, with plate generate --check as the staleness gate.",
+        "Keep copied registry UI host-agnostic; only editor hosts and explicitly dependent examples may import authored application plugins."
       ]
     }
   ],

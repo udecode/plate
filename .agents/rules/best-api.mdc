@@ -283,11 +283,12 @@ capabilities through descriptor portals such as
 `editor.plugin(FooPlugin)`, `useEditorPlugin(FooPlugin)`, and
 `editor.extension(FooExtension)`. Keep an editor generic only when typed
 constructor/options input or an explicit editor argument correlates that
-generic with the returned value. A closed generated application passes its
-runtime kit instead: `useEditor(EditorKit)` and `useActiveEditor(EditorKit)`
-infer the exact editor and verify that exact generated contract at runtime.
-Schema-fingerprint equality alone is insufficient because two kits can share a
-document grammar while exposing different capabilities.
+generic with the returned value. Do not pass an authored plugin tuple,
+feature kit, or generated contract to `useEditor()` or `useActiveEditor()` as a
+typing assertion. Optional generated `Editor` and `Value` types belong at
+explicit static boundaries such as exported function parameters, stored
+document contracts, and compile-time assertions; runtime editor construction
+still owns capability inference and verification.
 Plite calls its public runtime type `Editor`; Plate keeps `BaseEditor` and
 `PlateEditor` for its two product layers.
 
@@ -320,16 +321,26 @@ document values from authored root, element-content, text/property placement,
 default/requiredness, named-root, recursion, and open-world declarations; Plate
 lowers its installed plugin graph into that compiler once. Raw plugin tuples
 infer lightweight runtime capabilities and descriptor-local element shapes,
-but their editor-wide `Value` is deliberately broad. One closed application
-definition uses `defineEditor(name, definition)` plus `plate generate` to emit
-the exact named recursive `Value`, element/text/root types, mutation map, and
-structural fingerprint. Consumers import the generated `EditorKit`, `Editor`,
-and `Value` without an explicit editor generic. Do not recursively carry the
-complete application grammar through every `editor.api`, `editor.read`, or
+but their editor-wide `Value` is deliberately broad. The ordinary application
+module exports one human-named readonly plugin kit, usually `EditorKit`, and,
+when needed, one human-named schema, usually `EditorSchema`; runtime setup maps
+those values directly to the `plugins` and `schema` editor options. No public
+`defineEditor(name, ...)` wrapper or generated plugin-array kit sits in that
+path.
+
+`plate generate` is an optional advanced compiler. It discovers exactly one
+exported nominal Plate plugin tuple and zero or one application schema by
+validated runtime shape; export identifiers are never compiler API. It reads
+that authored module and may emit exact recursive `Value`, `Editor`, element/text/root,
+mutation, schema, and structural-fingerprint artifacts. Generated output is a
+static type/schema boundary, never the runtime plugin owner, a hook argument,
+or the default documentation path. Do not recursively carry the complete
+application grammar through every `editor.api`, `editor.read`, or
 `editor.update` access, add a size heuristic or depth cliff, or claim exact
-cross-plugin schema composition on a raw tuple. Generated artifacts are
-committed, checked for staleness, and fail closed before editor publication
-when the runtime fingerprint differs. Keep explicit
+cross-plugin schema composition on a raw tuple. When generated artifacts are
+used, commit them and run `plate generate --check` in CI. Runtime construction
+still consumes the authored `plugins` and optional `schema`; generated output
+never validates, wraps, or replaces those values. Keep explicit
 `createEditor<ExternalValue>` only for genuinely schema-less or externally
 owned raw Plite data. Do not add a second Core value accumulator, central node
 map, handwritten feature AST mirror, compatibility alias, or synonym
@@ -436,9 +447,9 @@ standard:
   and may use `schema.properties.<localId>` only for additional declared
   properties. Never add universal plugin `.type` / `.key`, derive a persisted
   identity from `plugin.name`, or expose compiler property maps to consumers.
-- Feature plugins own authored schema law. Only a closed
-  `defineEditor(name, definition)` may override final element type, content,
-  groups, or an existing property's target, and may add app-owned properties.
+- Feature plugins own authored schema law. Only the consuming application's
+  final schema may override element type, content, groups, or an existing
+  property's target, and may add app-owned properties.
   `.extend()` and `.configure()` never change schema. Plugin-owned property
   keys and value laws are immutable; a persisted rename is a new field plus a
   migration.
@@ -449,7 +460,7 @@ standard:
   the literal-key form: `tx.nodes.set('lineHeight', value, options)` or
   `tx.nodes.unset('lineHeight', options)`. Infer that key and value from the
   current plugin plus its required dependencies through a shallow capability
-  graph; never pull the complete EditorKit grammar into ordinary updates.
+  graph; never pull the complete application grammar into ordinary updates.
 - Use an exact `schema.properties.<localId>` handle when a property is aliased
   or otherwise cannot be named uniquely in the local capability graph. Put a
   cross-node or prefix-family mutation behind its semantic owner operation.
@@ -459,8 +470,9 @@ standard:
   selects an installed plugin's flat transaction capability group; it is not a
   property portal.
 - Keep raw plugin capabilities shallow. Exact recursive application `Value`,
-  final schema bindings, mutation maps, and fingerprints belong to committed
-  generated EditorKit artifacts, never every `editor.api/read/update` access.
+  final schema bindings, mutation maps, and fingerprints may belong to
+  committed opt-in generated artifacts, never every
+  `editor.api/read/update` access.
 
 - A complete schema declares `root: SchemaContent` directly. Named `roots`
   map names directly to `SchemaContent`; a `{ content }` wrapper earns nothing.
@@ -473,9 +485,10 @@ standard:
 - Property meaning belongs to placement. Use `role: "metadata"` on
   `elementProperty` or `textProperty`; do not put significance on the value
   descriptor.
-- Plate creation uses `schemaIdentity` for lineage. Plate schema elements use
-  `blockContent` for normal-flow membership. Neither name pretends to own raw
-  Plite grammar.
+- Application schema lineage uses `id` and `version` inside the single
+  app-owned `schema` object. Do not duplicate lineage in a top-level
+  `schemaIdentity` option or a generator-only definition. Plate schema
+  elements use `blockContent` for normal-flow membership.
 - Runtime verbs are `schema.create`, `schema.assertDocument`,
   `schema.assertFragment`, and `schema.isMarkableVoid`. Assertions accept
   `unknown` and narrow it.
@@ -521,17 +534,21 @@ resolve that node from any root in the same editor.
 
 A `NodeKey` covers elements and text, stays stable through moves and immutable
 updates, and dies when the logical node is removed. It is scoped to one editor
-runtime and never enters schema, JSON, clipboard, history serialization,
-collaboration payloads, Markdown, HTML, or databases. Paths remain structural
-addresses; anchors remain live positions. Pure detached transaction-spec
-builders may consume an existing key as a node target but do not publish `key`
-or allocate transaction-live identity.
+runtime. A key from another editor must fail closed even when both editors use
+the same public `editor.id` or allocate the same local ordinal. Runtime
+ownership is private and must not derive from caller-configurable `editor.id`.
+The key's string representation is opaque. It never enters schema, JSON,
+clipboard, history serialization, collaboration payloads, Markdown, HTML, or
+databases. Paths remain structural addresses; anchors remain live positions.
+Pure detached transaction-spec builders may consume an existing key as a node
+target but do not publish `key` or allocate transaction-live identity.
 
 Name every feature field that stores this value `key` or `keys`: for example
 `selectedKeys`, `draggingKey`, `cellKeys`, and `openKeys`. Reserve `id` for an
 actual persisted or external identity. DOM bindings for live nodes use
 `data-plite-node-key`; feature-owned DOM attributes carrying node keys follow
-the same vocabulary.
+the same vocabulary. Hydration may use a deterministic editor-local render
+token, but mounted DOM lookup must publish the full owning runtime key.
 
 Persisted element identity is a separate optional Plate capability owned by
 `ElementIdPlugin`. Its canonical schema property is `id`, its default generator
@@ -540,6 +557,21 @@ schema-derived element code reads `element.id`; erased or optionally installed
 package code uses `editor.plugin(ElementIdPlugin).read`. Migrations may read a
 legacy `sourceKey`, but runtime schema configuration never aliases or renames a
 plugin-authored property key. Persisted IDs apply to elements, not text.
+
+At the persistence boundary, convert a live key directly with
+`editor.plugin(ElementIdPlugin).read.id(key)`. Do not retrieve the node merely
+to read its persisted ID. Missing or deleted keys return `undefined`; exact
+element input keeps the strict non-empty ID contract. Live TOC, outline,
+selection, drag/drop, and navigation state use `NodeKey` and must not install
+`ElementIdPlugin`. One-shot exports such as DOCX derive export-local references
+from runtime keys. Serialized identity such as Markdown block-ID round trips
+uses `ElementIdPlugin`. A copied registry may install it explicitly as product
+policy, but no unrelated feature dependency may install it transitively.
+
+Request-local protocols use small explicit refs such as `b1` or `c1` mapped to
+`NodeKey` inside the originating editor. Do not install `ElementIdPlugin` just
+to correlate one request and response. Use a persisted ID only when the
+reference must survive editor destruction, reload, storage, or another client.
 
 Plate plugin runtime values have one channel: defaults in `initialState`,
 descriptor overrides through `.configure({ initialState })`, builder access
@@ -554,16 +586,16 @@ still be named `options`; this rule owns plugin declaration/runtime state.
 
 Choose the capability by semantics, not by which callback is easiest to type:
 
-| Field                 | Public job                                                                                                                | Rejection test                                                                 |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| `initialState`        | defaults for mutable editor-local plugin state                                                                            | the value is not state or needs a second configuration channel                 |
-| `store`               | live state reads, writes, subscriptions, and selector evaluation                                                          | the value is document state or a schema rebuild is expected                    |
-| `selectors`           | pure projections of readonly store state plus domain arguments                                                            | it reads the editor/document, mutates, performs I/O, or writes the store       |
-| `api`                 | stable plugin services not bound to a supplied document snapshot or active tx                                             | it mutates the document or is really a snapshot query                          |
-| `read`                | pure, replayable queries over supplied document state                                                                     | it mutates, performs I/O, writes plugin state, or depends on ambient live state |
-| `update`              | document reads and mutations through the active transaction                                                               | it opens a nested one-shot update or owns unrelated I/O                        |
-| native Plite fields   | genuine editor-wide substrate through flat fields such as `commands`, `corrections`, `contributions`, `on`, and `activate` | it merely republishes plugin-scoped state, API, reads, or updates               |
-| `codecs`              | format encode/decode declarations                                                                                          | it owns runtime service or mutation behavior                                   |
+| Field               | Public job                                                                                                                 | Rejection test                                                                  |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `initialState`      | defaults for mutable editor-local plugin state                                                                             | the value is not state or needs a second configuration channel                  |
+| `store`             | live state reads, writes, subscriptions, and selector evaluation                                                           | the value is document state or a schema rebuild is expected                     |
+| `selectors`         | pure projections of readonly store state plus domain arguments                                                             | it reads the editor/document, mutates, performs I/O, or writes the store        |
+| `api`               | stable plugin services not bound to a supplied document snapshot or active tx                                              | it mutates the document or is really a snapshot query                           |
+| `read`              | pure, replayable queries over supplied document state                                                                      | it mutates, performs I/O, writes plugin state, or depends on ambient live state |
+| `update`            | document reads and mutations through the active transaction                                                                | it opens a nested one-shot update or owns unrelated I/O                         |
+| native Plite fields | genuine editor-wide substrate through flat fields such as `commands`, `corrections`, `contributions`, `on`, and `activate` | it merely republishes plugin-scoped state, API, reads, or updates               |
+| `codecs`            | format encode/decode declarations                                                                                          | it owns runtime service or mutation behavior                                    |
 
 `api` being immutable describes publication of the method object, not method
 purity. A non-document service may have external or store effects; document
@@ -587,9 +619,9 @@ Every element plugin receives descriptor-bound `insert`, `set`, and `remove`
 on `editor.plugin(Plugin).update`. Default-constructible, schema-compatible
 text-block plugins also receive `toggle`; text blocks with required
 construction properties and structural element plugins expose an authored
-`toggle` only when they own real domain, wrap, conversion, or child semantics. A closed generated
-editor additionally projects those eligible methods under its capability name
-on root and transaction updates. Raw editor tuples keep authored
+`toggle` only when they own real domain, wrap, conversion, or child semantics.
+An opt-in generated `Editor` type may additionally project eligible methods
+under each capability name on root and transaction updates. Raw editor tuples keep authored
 root/transaction capabilities exact, but do not materialize a schema-wide
 generic mutation map; doing so makes any ordinary editor access expand the
 entire grammar. The persisted target comes from the descriptor `type`; callers
@@ -605,10 +637,10 @@ default when it owns extra semantic behavior. Delete redundant
 noun aliases such as `insertTable`; retain custom verbs only for distinct jobs
 such as merge, insertColumn, or a structural toggle.
 
-Application schema overrides are a compiler boundary. A raw `defineEditor`
-definition with `schema.overrides` does not promise descriptor-generic
-mutations whose eligibility depends on the final compiled grammar; run
-`plate generate` and consume the generated kit for that exact surface.
+Application schema overrides are a compiler boundary. Ordinary runtime tuples
+do not promise descriptor-generic mutations whose eligibility depends on the
+final compiled grammar; opt into `plate generate` and consume its generated
+types when that exact static surface materially helps.
 
 Custom element insertion has one signature law:
 `insert(input?, nodeOptions?)`. The first argument contains only the feature's
@@ -653,17 +685,27 @@ Reject:
 Internal complexity may be justified when it keeps the public surface smaller
 and preserves real runtime, safety, or performance laws.
 
+Apply a supported-domain gate before accepting that complexity. A reviewer
+edge case does not expand the product contract. Name the current user job, the
+documented input domain, the complete owner path that can accept and process
+the input, and the absolute material impact. Do not make one helper stack-safe,
+cycle-safe, or otherwise extremal when adjacent validation, construction,
+serialization, storage, or callers cannot carry that guarantee end-to-end.
+Without that evidence, keep the normal path simple and delete tests that imply
+the isolated guarantee. Relative benchmark percentages do not outweigh
+negligible absolute cost or permanent machinery by themselves.
+
 ## Behavior Promotion
 
 Do not infer public composition boundaries from callbacks, events, native
 extension fields, or files. First classify the behavior:
 
-| Class                    | Test                                                                     | Default shape                                        |
-| ------------------------ | ------------------------------------------------------------------------ | ---------------------------------------------------- |
-| invariant                | omission makes the owner invalid, unsafe, or semantically incomplete     | keep inline in the owning plugin or runtime          |
+| Class                    | Test                                                                     | Default shape                                                               |
+| ------------------------ | ------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
+| invariant                | omission makes the owner invalid, unsafe, or semantically incomplete     | keep inline in the owning plugin or runtime                                 |
 | parameter                | callers want the same capability with different data or thresholds       | declare a named `*PluginState`, type its defaults, and use the scoped store |
-| substitutable capability | omission or replacement leaves a complete editor with a defined fallback | promote to an ordinary plugin or extension candidate |
-| product policy           | the choice belongs to one app or kit rather than the framework default   | keep it app-owned and inline unless reused           |
+| substitutable capability | omission or replacement leaves a complete editor with a defined fallback | promote to an ordinary plugin or extension candidate                        |
+| product policy           | the choice belongs to one app or kit rather than the framework default   | keep it app-owned and inline unless reused                                  |
 
 Non-universal behavior is not automatically a plugin. Universal behavior may
 still deserve a replaceable owner when legitimate products implement it
@@ -685,6 +727,14 @@ For Plate plugin relationships, classify ownership before choosing a field:
   depends on the host rather than the host bundling the enhancement;
 - app and registry-owned readonly plugin arrays group complete defaults,
   presets, and product policy.
+
+Copied registry source may directly import an optional feature package when
+that behavior belongs to the importing component or kit. Declare the package
+and registry dependencies honestly, and guard optional plugin portal access
+when absence is valid. Do not create a cross-editor `*Integrations` file or a
+bag of terminal `.configure()` calls just to invert dependencies or make the
+registry graph look cleaner. Extraction must own a coherent capability or
+break a real runtime cycle; otherwise colocation wins.
 
 Do not add a second plugin-descriptor relationship for optional defaults or
 encode optionality with wrappers such as `{ optional: Plugin }`. Optionality is
@@ -898,8 +948,9 @@ Author codecs through the constructor callback that supplies their inference
 context:
 
 ```ts
-defineBasePlugin('example', {
-  codecs: ({ defineCodecs }) => defineCodecs(map),})
+defineBasePlugin("example", {
+  codecs: ({ defineCodecs }) => defineCodecs(map),
+});
 ```
 
 `defineCodecs(map)` owns self and product codecs.
@@ -1126,21 +1177,33 @@ Run `best-api repair` when any of these occurs:
 
 - the user corrects an API recommendation in a reusable way;
 - an accepted design establishes or rejects a reusable public API principle;
+- an implementation changes, removes, renames, or reinterprets a reusable
+  public API or its canonical authoring/consumer pattern;
 - repeated reviews expose a missing or contradictory heuristic;
 - a builder, portal, extension model, or routing change makes this skill stale.
 
 In an explicitly read-only or review-only request, report the exact repair
 instead of writing it. Otherwise repair it in the same authorized workflow.
+This is an automatic closeout subtask of the API change. Do not wait for the
+user to invoke `best-api repair` separately, and do not call the API migration
+complete while an owning or dependent skill still teaches the rejected shape.
 
 Repair the smallest durable ownership chain:
 
 1. update `.agents/rules/best-api.mdc`;
 2. update only the relevant `VISION.md` / `docs/vision/**` doctrine when the
    correction is durable taste rather than procedure;
-3. remove duplicated or contradictory wording from worker skills and link this
-   owner instead;
-4. run `pnpm install` to regenerate skills;
-5. when the trigger, rubric, output, or routing changed, run
+3. audit the affected execution and teaching owners, including `plate-plan`,
+   `plite-plan`, `plate-plugin-creator`, `plate-ui`, `docs-creator`, and
+   `plate-next` when their scope intersects the changed API; update only skills
+   that teach or enforce the changed contract, remove contradictions, and link
+   this owner instead of copying the full doctrine;
+4. bump any versioned doctrine whose source set changed; never forge package
+   attestations merely because the doctrine advanced;
+5. run `pnpm install` to regenerate skills and their owned resources;
+6. source-audit both rule owners and generated mirrors for the rejected names,
+   examples, and call shapes;
+7. when the trigger, rubric, output, or routing changed, run
    `agent-native-reviewer` and forward-test the affected action on a real API
    without seeding the expected answer.
 

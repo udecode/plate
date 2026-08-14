@@ -1,8 +1,4 @@
-import {
-  createBaseEditor,
-  defineBasePlugin,
-  defineEditor,
-} from '@platejs/core';
+import { createBaseEditor, defineBasePlugin } from '@platejs/core';
 import {
   type Value,
   createEditor,
@@ -245,7 +241,8 @@ describe('MediaV54MigrationPlugin', () => {
   });
 
   it('does not remigrate a legacy spelling owned by a current media type', () => {
-    const definition = defineEditor('mediaLegacyTypeCollision', {
+    const editor = createBaseEditor({
+      editor: createEditor<Value>(),
       plugins: [MediaV54MigrationPlugin, BaseImagePlugin, BaseMediaEmbedPlugin],
       schema: {
         overrides: [
@@ -257,10 +254,6 @@ describe('MediaV54MigrationPlugin', () => {
           }),
         ],
       },
-    });
-    const editor = createBaseEditor({
-      editor: createEditor<Value>(),
-      plugins: definition.plugins,
       initialValue: [
         {
           caption: [{ text: 'Image caption' }],

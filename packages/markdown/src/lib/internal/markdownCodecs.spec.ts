@@ -2,7 +2,6 @@ import {
   BaseParagraphPlugin,
   createBaseEditor,
   defineBasePlugin,
-  defineEditor,
 } from '@platejs/core';
 import { property, schema } from '@platejs/plite';
 
@@ -127,7 +126,7 @@ describe('Markdown node codec compiler', () => {
         },
       },
     });
-    const definition = defineEditor('customMarkdownCodec', {
+    const editor = createBaseEditor({
       plugins: [
         BaseParagraphPlugin,
         CustomPlugin,
@@ -146,7 +145,6 @@ describe('Markdown node codec compiler', () => {
         ],
       },
     });
-    const editor = createBaseEditor({ plugins: definition.plugins });
     const markdown = '<customElement label="Round trip" />';
     const document = editor.api.markdown.deserialize(markdown);
 

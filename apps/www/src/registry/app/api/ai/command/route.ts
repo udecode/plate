@@ -2,6 +2,7 @@ import type {
   ChatMessage,
   ToolName,
 } from '@/registry/components/editor/use-chat';
+import type { AIChatRequestRefs } from '@platejs/ai/react';
 import type { NextRequest } from 'next/server';
 
 import { createGateway } from '@ai-sdk/gateway';
@@ -17,7 +18,7 @@ import {
 } from 'ai';
 import { NextResponse } from 'next/server';
 import type { MarkdownEditor } from '@platejs/markdown';
-import { createBaseEditor, nanoid } from 'platejs';
+import { type Selection, type Value, createBaseEditor, nanoid } from 'platejs';
 import { z } from 'zod';
 
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
@@ -31,10 +32,22 @@ import {
   getGeneratePrompt,
 } from './prompt';
 
+const toolNameSchema = z.enum(['comment', 'edit', 'generate']);
+
 export async function POST(req: NextRequest) {
   const { apiKey: key, ctx, messages: messagesRaw, model } = await req.json();
 
-  const { children, selection, toolName: toolNameParam } = ctx;
+  const {
+    children,
+    refs,
+    selection,
+    toolName: toolNameParam,
+  }: {
+    children: Value;
+    refs: AIChatRequestRefs;
+    selection: Selection | null;
+    toolName: ToolName | null;
+  } = ctx;
 
   const editor = createBaseEditor({
     plugins: BaseEditorKit,
@@ -68,23 +81,24 @@ export async function POST(req: NextRequest) {
             messages: messagesRaw,
           });
 
-          const enumOptions = isSelecting
+          const enumOptions: ToolName[] = isSelecting
             ? ['generate', 'edit', 'comment']
             : ['generate', 'comment'];
           const modelId = model || 'google/gemini-2.5-flash';
 
-          const { output: AIToolName } = await generateText({
+          const { output } = await generateText({
             model: gatewayProvider(modelId),
             output: Output.choice({ options: enumOptions }),
             prompt,
           });
+          const selectedToolName = toolNameSchema.parse(output);
 
           writer.write({
-            data: AIToolName as ToolName,
+            data: selectedToolName,
             type: 'data-toolName',
           });
 
-          toolName = AIToolName;
+          toolName = selectedToolName;
         }
 
         const stream = streamText({
@@ -96,11 +110,13 @@ export async function POST(req: NextRequest) {
             comment: getCommentTool(editor, {
               messagesRaw,
               model: gatewayProvider(model || 'google/gemini-2.5-flash'),
+              refs: refs.blocks,
               writer,
             }),
             table: getTableTool(editor, {
               messagesRaw,
               model: gatewayProvider(model || 'google/gemini-2.5-flash'),
+              refs: refs.tableCells,
               writer,
             }),
           },
@@ -116,6 +132,7 @@ export async function POST(req: NextRequest) {
               const [editPrompt, editType] = getEditPrompt(editor, {
                 isSelecting,
                 messages: messagesRaw,
+                tableCellRefs: refs.tableCells,
               });
 
               // Table editing uses the table tool
@@ -182,10 +199,12 @@ const getCommentTool = (
   {
     messagesRaw,
     model,
+    refs,
     writer,
   }: {
     messagesRaw: ChatMessage[];
     model: LanguageModel;
+    refs: AIChatRequestRefs['blocks'];
     writer: UIMessageStreamWriter<ChatMessage>;
   }
 ) =>
@@ -195,10 +214,10 @@ const getCommentTool = (
     strict: true,
     execute: async () => {
       const commentSchema = z.object({
-        blockId: z
+        blockRef: z
           .string()
           .describe(
-            'The id of the starting block. If the comment spans multiple blocks, use the id of the first block.'
+            'The request-local reference of the starting block. If the comment spans multiple blocks, use the reference of the first block.'
           ),
         comment: z
           .string()
@@ -215,6 +234,7 @@ const getCommentTool = (
         output: Output.array({ element: commentSchema }),
         prompt: getCommentPrompt(editor, {
           messages: messagesRaw,
+          refs,
         }),
       });
 
@@ -254,10 +274,12 @@ const getTableTool = (
   {
     messagesRaw,
     model,
+    refs,
     writer,
   }: {
     messagesRaw: ChatMessage[];
     model: LanguageModel;
+    refs: AIChatRequestRefs['tableCells'];
     writer: UIMessageStreamWriter<ChatMessage>;
   }
 ) =>
@@ -272,13 +294,15 @@ const getTableTool = (
           .describe(
             String.raw`The new content for the cell. Can contain multiple paragraphs separated by \n\n.`
           ),
-        id: z.string().describe('The id of the table cell to update.'),
+        ref: z
+          .string()
+          .describe('The request-local reference of the table cell to update.'),
       });
 
       const { partialOutputStream } = streamText({
         model,
         output: Output.array({ element: cellUpdateSchema }),
-        prompt: buildEditTableMultiCellPrompt(editor, messagesRaw),
+        prompt: buildEditTableMultiCellPrompt(editor, messagesRaw, refs),
       });
 
       let lastLength = 0;

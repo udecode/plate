@@ -707,8 +707,9 @@ type SchemaPluginDefinitionForRuntimePlugin<TSchemaDefinitions, D> =
 type DefaultElementUpdate<
   TSchemaDefinitions,
   TPlugin extends AnyBasePluginDefinition,
-> =
-  TSchemaDefinitions extends InternalEditorMutationProvider<infer TMutations>
+> = TSchemaDefinitions extends InternalEditorApplicationSchemaProvider
+  ? {}
+  : TSchemaDefinitions extends InternalEditorMutationProvider<infer TMutations>
     ? GeneratedElementUpdate<TMutations, TPlugin>
     : [ElementPluginDefinition<TPlugin>] extends [never]
       ? {}
@@ -758,25 +759,23 @@ type DefaultElementUpdate<
                 options?: Omit<NodeSetNodesOptions<Element>, 'match'>
               ) => void;
             }> &
-              (TSchemaDefinitions extends InternalEditorApplicationSchemaProvider
+              ('toggle' extends keyof InferUpdate<TPlugin>
                 ? {}
-                : 'toggle' extends keyof InferUpdate<TPlugin>
-                  ? {}
-                  : {} extends SchemaElementConstructionPropertiesFor<
-                        PlateSchemaSourceForInstalledDefinitions<
-                          InstalledSchemaDefinitionsOf<TSchemaDefinitions>
-                        >,
-                        TType
+                : {} extends SchemaElementConstructionPropertiesFor<
+                      PlateSchemaSourceForInstalledDefinitions<
+                        InstalledSchemaDefinitionsOf<TSchemaDefinitions>
+                      >,
+                      TType
+                    >
+                  ? EditorDefinitionElementSupportsToggle<
+                      SchemaPluginDefinitionForRuntimePlugin<
+                        TSchemaDefinitions,
+                        TPlugin
                       >
-                    ? EditorDefinitionElementSupportsToggle<
-                        SchemaPluginDefinitionForRuntimePlugin<
-                          TSchemaDefinitions,
-                          TPlugin
-                        >
-                      > extends true
-                      ? ElementToggleUpdate
-                      : {}
-                    : {})
+                    > extends true
+                    ? ElementToggleUpdate
+                    : {}
+                  : {})
           : {}
         : {};
 
@@ -843,27 +842,38 @@ type SchemaContributionElements<TContribution> =
 
 type SchemaElementSupportsToggle<TElement> =
   TElement extends Readonly<{
-    inline: true;
+    blockContent: false;
   }>
     ? false
     : TElement extends Readonly<{
-          void: 'block' | 'inline' | 'markable-inline';
+          inline: true;
         }>
       ? false
       : TElement extends Readonly<{
-            content: SchemaContent<
-              Readonly<{
-                kind: 'any';
-                rules: readonly [
-                  Readonly<{ kind: 'text' }>,
-                  Readonly<{ group: 'inline'; kind: 'group' }>,
-                ];
-              }>,
-              Readonly<{ default: 'text'; min: 1 }>
-            >;
+            void: 'block' | 'inline' | 'markable-inline';
           }>
-        ? true
-        : false;
+        ? false
+        : TElement extends Readonly<{
+              content: SchemaContent<
+                Readonly<{
+                  kind: 'any';
+                  rules: readonly [
+                    Readonly<{ kind: 'text' }>,
+                    Readonly<{ group: 'inline'; kind: 'group' }>,
+                  ];
+                }>,
+                Readonly<{ default: 'text'; min: 1 }>
+              >;
+            }>
+          ? true
+          : TElement extends Readonly<{
+                content: SchemaContent<
+                  Readonly<{ kind: 'text' }>,
+                  Readonly<{ default: 'text'; min: 1 }>
+                >;
+              }>
+            ? true
+            : false;
 
 type DirectPluginSchemaElement<D extends AnyBasePluginDefinition> =
   D extends Readonly<{ schema: infer TSchema }>
@@ -1277,9 +1287,24 @@ type DescriptorPluginDefinition<P> = Extract<
   AnyBasePluginDefinition
 >;
 
-type RawEditorMutationForPlugin<TPlugin> = EditorDefinitionElementMutation<
-  DescriptorPluginDefinition<TPlugin>
->;
+type RawEditorMutationForPlugin<TPlugin> =
+  TPlugin extends AnyBasePluginDefinition
+    ? EditorDefinitionElementMutation<TPlugin>
+    : EditorDefinitionElementMutation<DescriptorPluginDefinition<TPlugin>>;
+
+type RawEditorMutationsForPlugin<TPlugin> = [
+  RawEditorMutationForPlugin<TPlugin>,
+] extends [never]
+  ? Readonly<Record<never, never>>
+  : (
+        TPlugin extends AnyBasePluginDefinition
+          ? TPlugin
+          : DescriptorPluginDefinition<TPlugin>
+      ) extends infer TDefinition extends AnyBasePluginDefinition
+    ? Readonly<{
+        [TName in TDefinition['name']]: RawEditorMutationForPlugin<TPlugin>;
+      }>
+    : Readonly<Record<never, never>>;
 
 type RawElementPluginGuard<TPlugin> = [
   RawEditorMutationForPlugin<TPlugin>,
@@ -1294,10 +1319,28 @@ export interface InternalInstalledSchemaDefinitionsProvider<D> {
 
 declare const editorApplicationSchemaProvider: unique symbol;
 
-/** @internal Raw editor definitions with application schema need generation for exact mutations. */
+/** @internal Application schema policy needs generated mutations for exact generic commands. */
 export interface InternalEditorApplicationSchemaProvider {
   readonly [editorApplicationSchemaProvider]: true;
 }
+
+type ApplicationSchemaMemberHasPolicy<TSchema> = TSchema extends undefined
+  ? false
+  : 'overrides' extends keyof TSchema
+    ? true
+    : 'properties' extends keyof TSchema
+      ? true
+      : false;
+
+type HasApplicationSchemaPolicy<TSchema> =
+  true extends ApplicationSchemaMemberHasPolicy<TSchema> ? true : false;
+
+/** @internal Keep raw generic commands conservative when application policy can rewrite them. */
+export type InternalInstalledSchemaMutationProvider<D, TSchema> =
+  InternalInstalledSchemaDefinitionsProvider<D> &
+    (HasApplicationSchemaPolicy<TSchema> extends true
+      ? InternalEditorApplicationSchemaProvider
+      : {});
 
 /** @internal Descriptor-bound mutation projection for raw and generated kits. */
 export interface InternalEditorMutationProvider<TMutations> {
@@ -1977,11 +2020,7 @@ type PlatePluginUpdateMethods<
       ? S
       : S extends InternalEditorApplicationSchemaProvider
         ? S
-        : InternalEditorMutationProvider<
-            EditorDefinitionMutationsFromDefinitions<
-              Extract<OwnInferencePluginDefinition<P>, AnyBasePluginDefinition>
-            >
-          >,
+        : InternalEditorMutationProvider<RawEditorMutationsForPlugin<P>>,
     Extract<OwnInferencePluginDefinition<P>, AnyBasePluginDefinition>
   >
 >;

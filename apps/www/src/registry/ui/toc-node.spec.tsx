@@ -47,10 +47,10 @@ describe('toc node rendering', () => {
 
   it('marks only the active heading row as current', async () => {
     useTocElementStateMock.mockReturnValue({
-      activeContentId: 'benefits',
+      activeContentKey: 'benefits',
       headingList: [
-        { depth: 1, id: 'intro', title: 'Intro' },
-        { depth: 2, id: 'benefits', title: 'Benefits' },
+        { depth: 1, key: 'intro', title: 'Intro' },
+        { depth: 2, key: 'benefits', title: 'Benefits' },
       ],
     });
     useTocElementMock.mockReturnValue({

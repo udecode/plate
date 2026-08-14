@@ -2,6 +2,7 @@ import * as React from 'react';
 
 import type {
   BaseCodeBlockPlugin,
+  BaseCodeHighlightPlugin,
   BaseCodeLinePlugin,
 } from '@platejs/code-block';
 
@@ -156,10 +157,10 @@ export function CodeLineElementStatic(
   return <PliteElement {...props} />;
 }
 
-export function CodeSyntaxLeafStatic(props: PliteLeafProps) {
-  const tokenClassName = props.leaf.className as string;
-
-  return <PliteLeaf className={tokenClassName} {...props} />;
+export function CodeSyntaxLeafStatic(
+  props: PliteLeafProps<typeof BaseCodeHighlightPlugin>
+) {
+  return <PliteLeaf className={props.leaf.className} {...props} />;
 }
 
 /**
@@ -245,8 +246,10 @@ const preserveSpaces = (text: string): string => {
   return text.replace(/ /g, '\u00A0');
 };
 
-export function CodeSyntaxLeafDocx(props: PliteLeafProps) {
-  const tokenClassName = props.leaf.className as string;
+export function CodeSyntaxLeafDocx(
+  props: PliteLeafProps<typeof BaseCodeHighlightPlugin>
+) {
+  const tokenClassName = props.leaf.className;
 
   // Extract color from className
   let color: string | undefined;
@@ -269,8 +272,7 @@ export function CodeSyntaxLeafDocx(props: PliteLeafProps) {
   }
 
   // Get the text content and preserve spaces
-  const text = props.leaf.text as string;
-  const preservedText = preserveSpaces(text);
+  const preservedText = preserveSpaces(props.leaf.text);
 
   return (
     <span

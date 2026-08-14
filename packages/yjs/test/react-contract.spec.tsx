@@ -168,7 +168,7 @@ describe('@platejs/yjs react contract', () => {
           initialState: { clientId: 'a', provider },
         }),
       ],
-      schemaIdentity: { id: 'plate:yjs-react-contract', version: 1 },
+      schema: { id: 'plate:yjs-react-contract', version: 1 },
     });
 
     const ProviderProbe = (): React.ReactElement => {

@@ -410,6 +410,21 @@ export const ElementIdPlugin = defineBasePlugin('elementId', {
 
         return ids;
       };
+      function id(element: Element): string;
+      function id(key: NodeKey): string | undefined;
+      function id(target: Element | NodeKey): string | undefined {
+        if (typeof target === 'string') {
+          if (!state.nodes.get(target)) return;
+          ensureRuntimeIndex();
+
+          return nodeKeys.get(target);
+        }
+
+        return assertElementId(
+          state.schema.getProperty(target, idProperty),
+          'Element ID'
+        );
+      }
 
       return {
         entry(id: string): ElementIdEntry | undefined {
@@ -431,12 +446,7 @@ export const ElementIdPlugin = defineBasePlugin('elementId', {
               })
             : undefined;
         },
-        id(element: Element): string {
-          return assertElementId(
-            state.schema.getProperty(element, idProperty),
-            'Element ID'
-          );
-        },
+        id,
       };
     },
     transformInitialValue({ store, value }) {

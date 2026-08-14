@@ -2,23 +2,10 @@ import type { Registry } from 'shadcn/schema';
 
 export const examples: Registry['items'] = [
   {
-    dependencies: ['@platejs/ai', '@platejs/markdown'],
+    dependencies: ['@platejs/test-utils'],
     description: 'Renders AI ghost text suggestions at the cursor position.',
     files: [
       { path: 'examples/copilot-demo.tsx', type: 'registry:example' },
-      {
-        path: 'examples/copilot-editor-definition.tsx',
-        type: 'registry:example',
-      },
-      {
-        path: 'examples/copilot-editor.generated.ts',
-        type: 'registry:example',
-      },
-      {
-        path: 'examples/copilot-editor.schema.json',
-        target: 'examples/copilot-editor.schema.json',
-        type: 'registry:file',
-      },
       {
         path: 'examples/values/copilot-value.tsx',
         type: 'registry:example',
@@ -33,11 +20,14 @@ export const examples: Registry['items'] = [
       ],
     },
     name: 'copilot-demo',
-    registryDependencies: ['@plate/copilot-kit', '@plate/editor-kit'],
+    registryDependencies: [
+      '@plate/copilot-kit',
+      '@plate/editor',
+      '@plate/editor-kit',
+    ],
     type: 'registry:example',
   },
   {
-    dependencies: ['@platejs/tag'],
     description: 'A form with a select editor component for managing labels.',
     files: [
       {
@@ -69,7 +59,7 @@ export const examples: Registry['items'] = [
     type: 'registry:example',
   },
   {
-    dependencies: ['@faker-js/faker'],
+    dependencies: ['@faker-js/faker', 'slate', 'slate-react'],
     files: [
       {
         path: 'examples/huge-document-demo.tsx',
@@ -85,6 +75,7 @@ export const examples: Registry['items'] = [
     type: 'registry:example',
   },
   {
+    dependencies: ['@platejs/test-utils'],
     files: [
       {
         path: 'examples/hundreds-editors-demo.tsx',
@@ -100,11 +91,7 @@ export const examples: Registry['items'] = [
     type: 'registry:example',
   },
   {
-    dependencies: [
-      '@platejs/basic-nodes',
-      '@platejs/basic-nodes',
-      '@platejs/media',
-    ],
+    dependencies: ['@platejs/test-utils'],
     files: [
       {
         path: 'examples/multiple-editors-demo.tsx',
@@ -126,6 +113,7 @@ export const examples: Registry['items'] = [
     name: 'multiple-editors-demo',
     registryDependencies: [
       'separator',
+      '@plate/align-kit',
       '@plate/basic-nodes-kit',
       '@plate/media-kit',
       '@plate/editor',
@@ -135,7 +123,7 @@ export const examples: Registry['items'] = [
     type: 'registry:example',
   },
   {
-    dependencies: ['@platejs/basic-nodes', '@platejs/diff', 'lodash'],
+    dependencies: ['@platejs/diff', '@platejs/plite', 'lodash'],
     files: [
       {
         path: 'examples/version-history-demo.tsx',
@@ -143,11 +131,11 @@ export const examples: Registry['items'] = [
       },
     ],
     name: 'version-history-demo',
-    registryDependencies: ['button'],
+    registryDependencies: ['button', '@plate/basic-marks-kit'],
     type: 'registry:example',
   },
   {
-    dependencies: ['prismjs'],
+    dependencies: ['@platejs/plite', '@platejs/test-utils', 'prismjs'],
     files: [
       {
         path: 'examples/preview-markdown-demo.tsx',
@@ -171,33 +159,26 @@ export const examples: Registry['items'] = [
       },
     ],
     name: 'markdown-to-plite-demo',
-    registryDependencies: ['@plate/editor-kit', '@plate/use-debounce'],
+    registryDependencies: [
+      '@plate/editor',
+      '@plate/editor-kit',
+      '@plate/use-debounce',
+    ],
     type: 'registry:example',
   },
   {
-    dependencies: [],
+    dependencies: ['@platejs/utils'],
     files: [
       {
         path: 'examples/markdown-streaming-demo.tsx',
         type: 'registry:example',
       },
-      {
-        path: 'examples/copilot-editor-definition.tsx',
-        type: 'registry:example',
-      },
-      {
-        path: 'examples/copilot-editor.generated.ts',
-        type: 'registry:example',
-      },
-      {
-        path: 'examples/copilot-editor.schema.json',
-        target: 'examples/copilot-editor.schema.json',
-        type: 'registry:file',
-      },
     ],
     name: 'markdown-streaming-demo',
     registryDependencies: [
-      '@plate/copilot-kit',
+      'button',
+      '@plate/editor',
+      '@plate/editor-base-kit',
       '@plate/editor-kit',
       '@plate/markdown-joiner-transform',
     ],
@@ -226,7 +207,7 @@ export const examples: Registry['items'] = [
     type: 'registry:example',
   },
   {
-    dependencies: ['@platejs/basic-nodes', '@platejs/basic-nodes'],
+    dependencies: ['@platejs/basic-nodes'],
     files: [
       {
         path: 'examples/installation-next-04-value-demo.tsx',
@@ -237,15 +218,15 @@ export const examples: Registry['items'] = [
     registryDependencies: [
       '@plate/editor',
       '@plate/fixed-toolbar',
+      '@plate/toolbar',
       '@plate/mark-toolbar-button',
       '@plate/heading-node',
-      '@plate/paragraph-node',
       '@plate/blockquote-node',
     ],
     type: 'registry:example',
   },
   {
-    dependencies: ['@platejs/tabbable'],
+    dependencies: ['@platejs/tabbable', '@platejs/test-utils'],
     files: [
       { path: 'examples/tabbable-demo.tsx', type: 'registry:example' },
       {
@@ -254,7 +235,7 @@ export const examples: Registry['items'] = [
       },
     ],
     name: 'tabbable-demo',
-    registryDependencies: ['@plate/editor-kit'],
+    registryDependencies: ['@plate/editor', '@plate/editor-kit'],
     type: 'registry:example',
   },
 ];
@@ -262,7 +243,7 @@ export const examples: Registry['items'] = [
 export const demoExamples: Registry['items'] = (
   [
     {
-      dependencies: ['@platejs/table'],
+      dependencies: ['@platejs/table', '@platejs/test-utils'],
       files: [
         {
           path: 'examples/table-nomerge-demo.tsx',
@@ -278,6 +259,7 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      dependencies: ['@platejs/test-utils'],
       description: 'A drawing component powered by Excalidraw.',
       files: [
         {
@@ -303,6 +285,7 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      dependencies: ['@platejs/test-utils'],
       description:
         'Create diagrams from code using PlantUML, Graphviz, Flowchart, or Mermaid.',
       files: [
@@ -338,11 +321,17 @@ export const demoExamples: Registry['items'] = (
         },
       ],
       name: 'single-block-demo',
-      registryDependencies: ['@plate/basic-blocks-kit'],
+      registryDependencies: [
+        'checkbox',
+        'label',
+        '@plate/basic-blocks-kit',
+        '@plate/editor',
+      ],
       title: 'Single Block',
       type: 'registry:example',
     },
     {
+      dependencies: ['@platejs/test-utils'],
       files: [
         {
           path: 'examples/editable-voids-demo.tsx',
@@ -363,6 +352,7 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      dependencies: ['@platejs/test-utils'],
       description: 'List creation and formatting.',
       files: [
         { path: 'examples/list-classic-demo.tsx', type: 'registry:example' },
@@ -376,13 +366,14 @@ export const demoExamples: Registry['items'] = (
         '@plate/editor-kit',
         '@plate/autoformat-classic-kit',
         '@plate/fixed-toolbar-classic-kit',
+        '@plate/floating-toolbar-classic-kit',
         '@plate/list-classic-kit',
         '@plate/editor',
       ],
       type: 'registry:example',
     },
     {
-      dependencies: ['@platejs/find-replace'],
+      dependencies: ['@platejs/find-replace', '@platejs/test-utils'],
       description: 'Find and replace functionality in text.',
       files: [
         {
@@ -404,6 +395,7 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      dependencies: ['@platejs/test-utils'],
       description:
         'AI menu with commands, streaming responses in a preview or directly into the editor.',
       files: [
@@ -431,6 +423,7 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      dependencies: ['@platejs/test-utils'],
       description: 'Text alignment controls for blocks.',
       files: [
         { path: 'examples/demo.tsx', type: 'registry:example' },
@@ -444,6 +437,7 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      dependencies: ['@platejs/test-utils'],
       description: 'Apply formatting automatically using shortcodes.',
       files: [
         { path: 'examples/demo.tsx', type: 'registry:example' },
@@ -458,6 +452,7 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      dependencies: ['@platejs/test-utils'],
       description:
         'Basic block elements like headings, quotes, and code blocks.',
       files: [
@@ -486,6 +481,7 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      dependencies: ['@platejs/test-utils'],
       description:
         'Basic text formatting marks like bold, italic, and underline.',
       files: [
@@ -508,6 +504,7 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      dependencies: ['@platejs/test-utils'],
       description: 'Basic block elements and text marks.',
       files: [
         { path: 'examples/demo.tsx', type: 'registry:example' },
@@ -538,6 +535,7 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      dependencies: ['@platejs/test-utils'],
       description: 'Block-level context menu with formatting options.',
       files: [
         { path: 'examples/demo.tsx', type: 'registry:example' },
@@ -559,6 +557,7 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      dependencies: ['@platejs/test-utils'],
       description: 'Visual block selection with keyboard support.',
       files: [
         { path: 'examples/demo.tsx', type: 'registry:example' },
@@ -572,6 +571,7 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      dependencies: ['@platejs/test-utils'],
       description: 'Column layout.',
       files: [
         { path: 'examples/demo.tsx', type: 'registry:example' },
@@ -593,6 +593,7 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      dependencies: ['@platejs/test-utils'],
       description: 'Display code with syntax highlighting.',
       files: [
         { path: 'examples/demo.tsx', type: 'registry:example' },
@@ -614,6 +615,7 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      dependencies: ['@platejs/test-utils'],
       description: 'Display callouts with different variants and icons.',
       files: [
         { path: 'examples/demo.tsx', type: 'registry:example' },
@@ -662,6 +664,7 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      dependencies: ['@platejs/test-utils'],
       description: 'Visual indicator for cursor position within the editor.',
       files: [
         { path: 'examples/demo.tsx', type: 'registry:example' },
@@ -676,6 +679,7 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      dependencies: ['@platejs/test-utils'],
       description: 'Inline date elements with calendar selection interface.',
       files: [
         { path: 'examples/demo.tsx', type: 'registry:example' },
@@ -697,6 +701,7 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      dependencies: ['@platejs/test-utils'],
       description:
         'GFM footnote references and definitions as dedicated editor nodes.',
       files: [
@@ -720,6 +725,7 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      dependencies: ['@platejs/test-utils'],
       description:
         'Implements draggable functionality for editor blocks, including drag handles and drop indicators.',
       files: [
@@ -743,6 +749,7 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      dependencies: ['@platejs/test-utils'],
       description: 'Emoji insertion via toolbar or colon-triggered combobox.',
       files: [
         { path: 'examples/demo.tsx', type: 'registry:example' },
@@ -764,6 +771,7 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      dependencies: ['@platejs/test-utils'],
       description: 'LaTeX equations with inline and block formats.',
       files: [
         { path: 'examples/demo.tsx', type: 'registry:example' },
@@ -789,6 +797,7 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      dependencies: ['@platejs/test-utils'],
       description: 'Exit a large block using a shortcut.',
       files: [
         { path: 'examples/demo.tsx', type: 'registry:example' },
@@ -798,7 +807,11 @@ export const demoExamples: Registry['items'] = (
         },
       ],
       name: 'exit-break-demo',
-      registryDependencies: ['@plate/exit-break-kit', '@plate/editor-kit'],
+      registryDependencies: [
+        '@plate/exit-break-kit',
+        '@plate/editor-kit',
+        '@plate/table-demo',
+      ],
       title: 'Exit Break',
       type: 'registry:example',
     },
@@ -822,6 +835,7 @@ export const demoExamples: Registry['items'] = (
     //   type: 'registry:example',
     // },
     {
+      dependencies: ['@platejs/test-utils'],
       description:
         'Floating toolbar with text formatting and AI assistance options.',
       files: [
@@ -844,6 +858,7 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      dependencies: ['@platejs/test-utils'],
       description: 'Color picker for text and background colors.',
       files: [
         { path: 'examples/demo.tsx', type: 'registry:example' },
@@ -857,6 +872,7 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      dependencies: ['@platejs/test-utils'],
       //
       //   description: 'Customize text indentation.',
       //   docs: [
@@ -878,6 +894,7 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      dependencies: ['@platejs/test-utils'],
       description: 'Turn any block into a list item.',
       files: [
         { path: 'examples/demo.tsx', type: 'registry:example' },
@@ -903,6 +920,7 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      dependencies: ['@platejs/test-utils'],
       description: 'Line height adjustment controls.',
       files: [
         { path: 'examples/demo.tsx', type: 'registry:example' },
@@ -916,6 +934,7 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      dependencies: ['@platejs/test-utils'],
       description: 'Hyperlinks with toolbar insertion and URL pasting support.',
       files: [
         { path: 'examples/demo.tsx', type: 'registry:example' },
@@ -941,6 +960,7 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      dependencies: ['@platejs/test-utils'],
       description: 'Media embedding and management.',
       files: [
         { path: 'examples/demo.tsx', type: 'registry:example' },
@@ -963,6 +983,7 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      dependencies: ['@platejs/test-utils'],
       description: 'Mention functionality for referencing users or entities.',
       files: [
         { path: 'examples/demo.tsx', type: 'registry:example' },
@@ -997,6 +1018,7 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      dependencies: ['@platejs/test-utils'],
       description: 'Copy paste from CSV to Plate.',
       files: [
         { path: 'examples/demo.tsx', type: 'registry:example' },
@@ -1011,6 +1033,7 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      dependencies: ['@platejs/test-utils'],
       description: 'Copy paste from DOCX to Plate.',
       files: [
         { path: 'examples/demo.tsx', type: 'registry:example' },
@@ -1025,6 +1048,7 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      dependencies: ['@platejs/test-utils'],
       description: 'Copy paste from HTML to Plate.',
       files: [
         { path: 'examples/demo.tsx', type: 'registry:example' },
@@ -1039,6 +1063,7 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      dependencies: ['@platejs/test-utils'],
       description: 'Copy paste from Markdown to Plate.',
       files: [
         { path: 'examples/demo.tsx', type: 'registry:example' },
@@ -1053,6 +1078,7 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      dependencies: ['@platejs/test-utils'],
       description:
         'Slash command menu for quick insertion of various content types.',
       files: [
@@ -1075,6 +1101,7 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      dependencies: ['@platejs/test-utils'],
       description:
         'Use plugin rules to customize the common editing behaviors.',
       files: [
@@ -1090,6 +1117,7 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      dependencies: ['@platejs/test-utils'],
       description:
         'Customizable tables with resizable columns and row merging options.',
       files: [
@@ -1116,6 +1144,7 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      dependencies: ['@platejs/test-utils'],
       description: 'Dynamic TOC with in-document element for easy navigation.',
       files: [
         { path: 'examples/demo.tsx', type: 'registry:example' },
@@ -1162,11 +1191,7 @@ export const internalExamples: Registry['items'] = (
     {
       files: [{ path: 'examples/demo.tsx', type: 'registry:example' }],
       name: 'playground-demo',
-      registryDependencies: [
-        '@plate/editor-kit',
-        '@plate/copilot-kit',
-        '@plate/excalidraw-kit',
-      ],
+      registryDependencies: ['@plate/editor-kit', '@plate/excalidraw-kit'],
       type: 'registry:example',
     },
     {
@@ -1217,7 +1242,7 @@ export const internalExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
-      dependencies: ['@platejs/basic-nodes', '@platejs/basic-nodes'],
+      dependencies: ['@platejs/basic-nodes'],
       files: [
         {
           path: 'examples/installation-next-03-elements-demo.tsx',
@@ -1230,7 +1255,6 @@ export const internalExamples: Registry['items'] = (
         '@plate/fixed-toolbar',
         '@plate/mark-toolbar-button',
         '@plate/heading-node',
-        '@plate/paragraph-node',
         '@plate/blockquote-node',
       ],
       type: 'registry:example',

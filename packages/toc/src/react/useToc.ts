@@ -11,7 +11,7 @@ import {
   useEditorSelector,
   usePluginStore,
 } from '@platejs/core/react';
-import type { Path } from '@platejs/plite';
+import type { NodeKey } from '@platejs/plite';
 
 import type { Heading } from '../lib';
 
@@ -32,19 +32,18 @@ export type UseContentController = {
 };
 
 export type TocElementState = {
-  activeContentId: string;
+  activeContentKey: NodeKey | null;
   editor: PlateEditor;
   headingList: Heading[];
   onContentScroll: (
     element: HTMLElement,
-    id: string,
-    behavior?: ScrollBehavior,
-    path?: Path
+    key: NodeKey,
+    behavior?: ScrollBehavior
   ) => void;
 };
 
 export type TocSideBarState = {
-  activeContentId: string;
+  activeContentKey: NodeKey | null;
   editor: PlateEditor;
   headingList: Heading[];
   mouseInToc: boolean;
@@ -70,11 +69,12 @@ export const useContentObserver = ({
   const headingElementsRef = React.useRef<
     Record<string, IntersectionObserverEntry>
   >({});
+  const headingKeysRef = React.useRef(new WeakMap<Element, NodeKey>());
   const editor = useEditor();
   const headingList = useEditorSelector((editor) =>
     editor.plugin(TocPlugin).read.headings()
   );
-  const [activeId, setActiveId] = React.useState('');
+  const [activeKey, setActiveKey] = React.useState<NodeKey | null>(null);
 
   React.useEffect(() => {
     const observer = new IntersectionObserver(
@@ -82,7 +82,9 @@ export const useContentObserver = ({
         if (!isObserve) return;
 
         headingElementsRef.current = headings.reduce((map, heading) => {
-          map[heading.target.id] = heading;
+          const key = headingKeysRef.current.get(heading.target);
+
+          if (key) map[key] = heading;
 
           return map;
         }, headingElementsRef.current);
@@ -91,7 +93,7 @@ export const useContentObserver = ({
           (key) => headingElementsRef.current[key].isIntersecting
         );
 
-        if (firstVisible) setActiveId(firstVisible);
+        if (firstVisible) setActiveKey(firstVisible as NodeKey);
         headingElementsRef.current = {};
       },
       {
@@ -100,14 +102,17 @@ export const useContentObserver = ({
       }
     );
 
-    headingList.forEach(({ path }) => {
-      const node = editor.read.nodes.get(path)?.[0];
+    headingList.forEach(({ key }) => {
+      const node = editor.read.nodes.get(key)?.[0];
 
       if (!node) return;
 
       const element = editor.api.dom.resolveDOMNode(node);
 
-      if (element) observer.observe(element);
+      if (element) {
+        headingKeysRef.current.set(element, key);
+        observer.observe(element);
+      }
     });
 
     return () => {
@@ -123,7 +128,7 @@ export const useContentObserver = ({
     status,
   ]);
 
-  return { activeId };
+  return { activeKey };
 };
 
 export const useContentController = ({
@@ -144,7 +149,7 @@ export const useContentController = ({
         : window
       : undefined;
   const [status, setStatus] = React.useState(0);
-  const { activeId } = useContentObserver({
+  const { activeKey } = useContentObserver({
     editorContent: container,
     isObserve,
     isScroll: isScrollable,
@@ -152,25 +157,25 @@ export const useContentController = ({
     status,
   });
   const [selectedContent, setSelectedContent] = React.useState<{
-    id: string;
-    observedId: string;
+    key: NodeKey;
+    observedKey: NodeKey | null;
   }>();
-  const activeContentId =
-    selectedContent?.observedId === activeId ? selectedContent.id : activeId;
+  const activeContentKey =
+    selectedContent?.observedKey === activeKey
+      ? selectedContent.key
+      : activeKey;
 
   const onContentScroll = React.useCallback(
     ({
       behavior = 'instant',
       el,
-      id,
-      path,
+      key,
     }: {
       behavior?: ScrollBehavior;
       el: HTMLElement;
-      id: string;
-      path?: Path;
+      key: NodeKey;
     }) => {
-      setSelectedContent({ id, observedId: activeId });
+      setSelectedContent({ key, observedKey: activeKey });
 
       const root = isScrollable ? container : document.body;
 
@@ -190,6 +195,8 @@ export const useContentController = ({
         }
       }
 
+      const path = editor.read.nodes.path(key);
+
       if (path) {
         navigation.update.flashTarget({
           target: {
@@ -200,7 +207,7 @@ export const useContentController = ({
       }
     },
     [
-      activeId,
+      activeKey,
       container,
       editor,
       isScrollable,
@@ -224,15 +231,15 @@ export const useContentController = ({
     };
   }, [isObserve, scrollContainer]);
 
-  return { activeContentId, onContentScroll };
+  return { activeContentKey, onContentScroll };
 };
 
 export const useTocObserver = ({
-  activeId,
+  activeKey,
   isObserve,
   tocRef,
 }: {
-  activeId: string;
+  activeKey: NodeKey | null;
   isObserve: boolean;
   tocRef: React.RefObject<HTMLElement | null>;
 }) => {
@@ -273,22 +280,22 @@ export const useTocObserver = ({
     return () => {
       observer.disconnect();
     };
-  }, [tocRef, activeId, isObserve]);
+  }, [tocRef, activeKey, isObserve]);
 
   return { offset, visible };
 };
 
 export const useTocController = ({
-  activeId,
+  activeKey,
   isObserve,
   tocRef,
 }: {
-  activeId: string;
+  activeKey: NodeKey | null;
   isObserve: boolean;
   tocRef: React.RefObject<HTMLElement | null>;
 }) => {
   const { offset, visible } = useTocObserver({
-    activeId,
+    activeKey,
     isObserve,
     tocRef,
   });
@@ -313,7 +320,7 @@ export const useTocElementState = (): TocElementState => {
     editor.plugin(TocPlugin).read.headings()
   );
   const container = useEditorScrollElement(editor);
-  const { activeContentId, onContentScroll } = useContentController({
+  const { activeContentKey, onContentScroll } = useContentController({
     container,
     isObserve: true,
     rootMargin: '0px 0px 0px 0px',
@@ -321,19 +328,14 @@ export const useTocElementState = (): TocElementState => {
     topOffset,
   });
   const onHeadingScroll = React.useCallback(
-    (
-      el: HTMLElement,
-      id: string,
-      behavior: ScrollBehavior = 'instant',
-      path?: Path
-    ) => {
-      onContentScroll({ behavior, el, id, path });
+    (el: HTMLElement, key: NodeKey, behavior: ScrollBehavior = 'instant') => {
+      onContentScroll({ behavior, el, key });
     },
     [onContentScroll]
   );
 
   return {
-    activeContentId,
+    activeContentKey,
     editor,
     headingList,
     onContentScroll: onHeadingScroll,
@@ -352,13 +354,13 @@ export const useTocElement = ({
     ) => {
       event.preventDefault();
 
-      const node = editor.read.nodes.get(item.path)?.[0];
+      const node = editor.read.nodes.get(item.key)?.[0];
 
       if (!node) return;
 
       const element = editor.api.dom.resolveDOMNode(node);
 
-      if (element) onContentScroll(element, item.id, behavior, item.path);
+      if (element) onContentScroll(element, item.key, behavior);
     },
   },
 });
@@ -376,7 +378,7 @@ export const useTocSideBarState = ({
   const tocRef = React.useRef<HTMLElement>(null);
   const [mouseInToc, setMouseInToc] = React.useState(false);
   const isObserve = open && !mouseInToc;
-  const { activeContentId, onContentScroll } = useContentController({
+  const { activeContentKey, onContentScroll } = useContentController({
     container,
     isObserve,
     rootMargin,
@@ -384,13 +386,13 @@ export const useTocSideBarState = ({
   });
 
   useTocController({
-    activeId: activeContentId,
+    activeKey: activeContentKey,
     isObserve,
     tocRef,
   });
 
   return {
-    activeContentId,
+    activeContentKey,
     editor,
     headingList,
     mouseInToc,
@@ -417,7 +419,7 @@ export const useTocSideBar = ({
     ) => {
       event.preventDefault();
 
-      const node = editor.read.nodes.get(item.path)?.[0];
+      const node = editor.read.nodes.get(item.key)?.[0];
 
       if (!node) return;
 
@@ -427,8 +429,7 @@ export const useTocSideBar = ({
         onContentScroll({
           behavior,
           el: element,
-          id: item.id,
-          path: item.path,
+          key: item.key,
         });
       }
     },

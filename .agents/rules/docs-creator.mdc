@@ -332,7 +332,7 @@ least one useful inbound link from the owning neighborhood.
 - Use direct `root`/named-root content, omitted closed defaults,
   `schema.element.textBlock()` for ordinary editable blocks,
   validator-backed narrow `property.json()`, placement-owned
-  `role: "metadata"`, Plate `schemaIdentity`, and runtime
+  `role: "metadata"`, app-owned schema `id`/`version`, and runtime
   `create`/`assertDocument`/`assertFragment`/`isMarkableVoid`. Plate callers
   pass plugin descriptors directly to schema APIs; only raw Plite schemas use
   `schema.handle.*`.
@@ -342,9 +342,13 @@ least one useful inbound link from the owning neighborhood.
   aggregate-property portals omit `schema`; normal consumers use semantic
   plugin methods or typed nodes. Never teach universal plugin `.type` / `.key`,
   consumer `schema.properties`, optional identity access, or name fallbacks.
-- Document application schema overrides only on closed `defineEditor()`
-  definitions. Property keys and value laws remain feature-owned; persisted
-  renames require a new field and an explicit migration.
+- Ordinary application examples export one human-named readonly plugin kit,
+  usually `EditorKit`, and, when needed, one human-named schema, usually
+  `EditorSchema`; map them directly to the `plugins` and `schema` editor
+  options. On advanced compiler pages, teach that `plate generate` discovers
+  their validated runtime shapes rather than fixed export identifiers.
+  Property keys and value laws remain feature-owned; persisted renames require
+  a new field and an explicit migration.
 - `showLineNumbers` + `{n-m}` highlights on snippets longer than ~15 lines.
 - `title="filename.tsx"` when file context matters.
 

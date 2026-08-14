@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { createBaseEditor, defineEditor } from '@platejs/core';
+import { createBaseEditor } from '@platejs/core';
 import { type Element, schema } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
 
@@ -133,7 +133,7 @@ describe('BaseMentionPlugin', () => {
   });
 
   it('creates transient inputs with the configured schema type', () => {
-    const definition = defineEditor('customMentionInput', {
+    const editor = createBaseEditor({
       plugins: [BaseMentionPlugin],
       schema: {
         overrides: [
@@ -143,7 +143,6 @@ describe('BaseMentionPlugin', () => {
         ],
       },
     });
-    const editor = createBaseEditor({ plugins: definition.plugins });
 
     expect(
       editor.plugin(BaseMentionPlugin).store.get('createComboboxInput')('@')

@@ -542,7 +542,7 @@ describe('footnote node rendering', () => {
     });
   });
 
-  it('renders a compact definition row instead of the old editor-definition chrome', async () => {
+  it('renders a compact definition row instead of the old editor chrome', async () => {
     const { FootnoteDefinitionElement } = await import(
       `./footnote-node?test=${Math.random().toString(36).slice(2)}`
     );

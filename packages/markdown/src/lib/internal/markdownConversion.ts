@@ -39,7 +39,10 @@ import {
   materializeRemarkPlugins,
 } from '../utils/getRemarkPluginsWithoutMdx';
 import type { DeserializeMdOptions, SerializeMdOptions } from '../types';
-import type { MarkdownSerializeDocumentValue } from './markdownDocument';
+import {
+  MarkdownBlockIdError,
+  type MarkdownSerializeDocumentValue,
+} from './markdownDocument';
 import {
   type CompiledMarkdownCodecs,
   compileMarkdownCodecs,
@@ -137,6 +140,7 @@ export const getMergedOptionsDeserialize = (
       ...options?.rules,
     },
     compiledCodecs: runtime.codecs,
+    ...(runtime.elementId ? { elementIds: true } : {}),
     ruleOverrides: options?.rules ?? undefined,
     splitLineBreaks: options?.splitLineBreaks,
   };
@@ -242,6 +246,8 @@ export const deserializeMdWithRuntime = (
     output = markdownToSlateNodesWithRuntime(runtime, data, options);
   } catch (error) {
     options?.onError?.(error as Error);
+
+    if (error instanceof MarkdownBlockIdError) throw error;
 
     if (!options?.withoutMdx) {
       output = markdownToSlateNodesSafelyWithRuntime(runtime, data, options);

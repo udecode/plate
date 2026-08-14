@@ -51,7 +51,7 @@ const editor = createPlateEditor({
 
 ### Schema 身份
 
-Plate 根据已安装插件编译文档 schema。普通编辑器省略 `schemaIdentity` 即可。
+Plate 根据已安装插件编译文档 schema。普通编辑器省略 `schema` 即可。
 `editor.read.schema.identity()` 返回带有精确编译指纹的派生身份：
 
 ```ts
@@ -63,14 +63,14 @@ editor.read.schema.identity();
 // { kind: 'derived', fingerprint: '...' }
 ```
 
-当文档用于持久化、历史序列化、schema 迁移或协作节点协商时，传入
-`schemaIdentity: { id, version }`。这会创建命名谱系，而指纹仍只取决于编译后的
-schema：
+当文档用于持久化、历史序列化、schema 迁移或协作节点协商时，把 `id` 和
+`version` 放进 `schema`。同一对象负责应用级 schema 覆盖和命名谱系，指纹仍只
+取决于编译后的 schema：
 
 ```ts
 const editor = createPlateEditor({
   plugins: [H1Plugin],
-  schemaIdentity: { id: 'acme-document', version: 3 },
+  schema: { id: 'acme-document', version: 3 },
 });
 
 editor.read.schema.identity();
@@ -145,33 +145,36 @@ const editor = createPlateEditor({
 原始插件数组会推断插件 API、read、update、store 和单个元素结构。当应用还需要
 整个插件图对应的精确递归 `Value` 时，使用生成的编辑器 contract。
 
-在一个源文件中定义封闭的应用编辑器：
+在一个源文件中导出运行时输入：
 
-```tsx title="src/editor/editor-definition.tsx"
+```ts title="src/editor.ts"
 import { H1Plugin } from '@platejs/basic-nodes/react';
 import { TablePlugin } from '@platejs/table/react';
-import { defineEditor, property, schema, target } from 'platejs';
+import { property, schema as s, target } from 'platejs';
 
-export default defineEditor('app', {
-  plugins: [H1Plugin, TablePlugin] as const,
-  schema: {
-    overrides: [
-      schema.override(H1Plugin, {
-        element: { type: 'headingOne' },
-      }),
-    ],
-    properties: {
-      reviewState: schema.elementProperty(
-        property.enum(['draft', 'approved'] as const),
-        { target: target.element(H1Plugin) }
-      ),
-    },
+export const EditorKit = [H1Plugin, TablePlugin] as const;
+
+export const EditorSchema = {
+  id: 'app-document',
+  version: 1,
+  overrides: [
+    s.override(H1Plugin, {
+      element: { type: 'headingOne' },
+    }),
+  ],
+  properties: {
+    reviewState: s.elementProperty(
+      property.enum(['draft', 'approved'] as const),
+      { target: target.element(H1Plugin) }
+    ),
   },
-  schemaIdentity: { id: 'app-document', version: 1 },
-});
+} as const;
 ```
 
-只有闭合的 editor definition 可以覆盖 schema 关系。它可以重映射 element type、
+`plate generate` 会根据验证后的运行时 shape 识别唯一导出的 Plate 插件 tuple 和
+可选应用 schema。导出名称由应用拥有，不属于编译器 contract。
+
+编辑器级 `schema` 可以覆盖 schema 关系。它可以重映射 element type、
 content、groups 或现有 property 的 target，也可以添加应用拥有的 property。插件拥有的
 property key 和 value law 保持固定；更改它们需要新字段和显式 migration。
 
@@ -179,7 +182,7 @@ property key 和 value law 保持固定；更改它们需要新字段和显式 m
 
 ```ts
 editor.plugin(H1Plugin).schema.type; // 'headingOne'
-EditorKit.schema.properties.reviewState.key; // 'reviewState'
+generatedSchema.properties.reviewState.key; // 'reviewState'
 ```
 
 生成并提交 TypeScript 和 JSON contract：
@@ -189,32 +192,48 @@ pnpm add -D @platejs/cli
 pnpm exec plate generate
 ```
 
-`plate generate` 会读取 `src/editor/editor-definition.tsx`。一个应用有多个
-editor definition 时，直接传入各个 entry path。开发时使用 `--watch`，CI 中使用
+`plate generate` 会读取 `src/editor.ts`。一个应用有多个 editor module 时，直接
+传入各个 entry path。开发时使用 `--watch`，CI 中使用
 `--check`。
 
-生成模块会导出 kit 及其精确的 editor/value 类型，无需显式 editor 泛型：
+生成模块会导出精确的 editor/value 类型、静态 schema handle 和指纹。它不负责
+运行时插件组合：
 
 ```tsx title="src/editor/document-editor.tsx"
 import { Plate, usePlateEditor } from 'platejs/react';
 
 import {
-  EditorKit,
+  schema as generatedSchema,
+  type Editor,
   type Value,
 } from './editor.generated';
+import { EditorKit, EditorSchema } from './editor';
 
-export function DocumentEditor({ initialValue }: { initialValue: Value }) {
-  const editor = usePlateEditor({ plugins: EditorKit, initialValue });
-
+export function prepareDocument(editor: Editor) {
   editor.update.h1.insert();
   editor.update.table.set({ marginLeft: 24 });
+}
+
+export function DocumentEditor({ initialValue }: { initialValue: Value }) {
+  const editor = usePlateEditor({
+    plugins: EditorKit,
+    schema: EditorSchema,
+    initialValue,
+  });
+
+  generatedSchema.properties.reviewState.key;
 
   return <Plate editor={editor} />;
 }
+
+export type DocumentEditorInstance = Editor;
 ```
 
-在 CI 中使用同一命令并加上 `--check`。Plate 会在发布 editor 前比较生成指纹和
-已安装的运行时 schema；过期 contract 会直接失败，而不会提供错误的 `Value`。
+生成的 `Value` 和 `Editor` 只用于存储、协作和导出应用类型等静态边界。运行时
+constructor 和 hook 直接使用手写的 `EditorKit` 和 `EditorSchema`。
+
+在 CI 中使用同一命令并加上 `--check`。该命令重新编译 editor module，并在已提交
+的生成产物过期时失败。
 
 需要处理已存储文档的 schema 变更使用显式 scaffold：
 
@@ -222,7 +241,7 @@ export function DocumentEditor({ initialValue }: { initialValue: Value }) {
 pnpm exec plate migrate new add-caption
 ```
 
-definition 不在标准路径时，传入 `--entry <path>`。
+editor module 不在标准路径时，传入 `--entry <path>`。
 
 scaffold 包含带类型的 `FromValue`、`ToValue` 快照和结构 diff。应用的存储或协作
 代码决定何时以及如何运行这个纯迁移；Plate 不会自动应用它。
@@ -286,8 +305,9 @@ const editor = usePlateEditor({
 });
 
 const elementId = editor.plugin(ElementIdPlugin);
-const id = elementId.read.id(element);
-const entry = elementId.read.entry(id);
+const key = editor.key(element);
+const id = elementId.read.id(key);
+const entry = id ? elementId.read.entry(id) : undefined;
 ```
 
 默认生成器是完整长度的 `nanoid()`。加载和移动保留有效 ID；复制、拆分、重复和
@@ -452,11 +472,12 @@ const editor = createPlateEditor({
 });
 ```
 
-封闭的生成式应用会将运行时 kit 传给上下文 hook：
+组件从 context 读取当前 editor，无需重复 plugin tuple：
 
 ```ts
-const editor = useEditor(EditorKit);
+const editor = useEditor();
+const table = useEditorPlugin(TablePlugin);
 ```
 
-这会推断并验证精确的生成契约。没有生成式 kit 时，调用不带类型参数的
-`useEditor()`；组件需要精确的插件能力时，使用 `useEditorPlugin(Plugin)`。
+组件需要精确插件能力时使用 `useEditorPlugin(Plugin)`。生成的应用类型只留在
+显式静态边界。

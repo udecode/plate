@@ -510,8 +510,9 @@ const editor = createPlateEditor({
 });
 
 const elementId = editor.plugin(ElementIdPlugin);
-const id = elementId.read.id(element);
-const entry = elementId.read.entry(id);
+const key = editor.key(element);
+const id = elementId.read.id(key);
+const entry = id ? elementId.read.entry(id) : undefined;
 ```
 
 通过 `initialState.generateId` 替换默认的完整长度 `nanoid()` 生成器。已存储输入

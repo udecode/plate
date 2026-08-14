@@ -221,6 +221,15 @@ Check ownership, API/DX, unopinionated substrate, performance bounds,
 determinism, browser/model agreement, class-level coverage, and deletable
 machinery. Breaking cost does not justify preserving a bad unreleased shape.
 
+Run a supported-domain gate before keeping robustness machinery or accepting a
+review finding. The finding must serve the authorized invariant inside an
+input domain that the complete owning path can validate, construct, process,
+and serialize when those stages apply. A theoretical or synthetic extremal
+case does not expand the product contract. Reject the finding, simplify the
+patch, and remove any misleading test when only one helper can satisfy the new
+guarantee. Record the real user job and absolute impact before trading lasting
+complexity for a relative benchmark or isolated hardening claim.
+
 ### 6. Verify
 
 Run focused proof first. Choose the lane; do not run both packs by habit.
@@ -267,8 +276,10 @@ For non-trivial diffs:
 1. Load `.agents/skills/autoreview/SKILL.md` for the P2 review contract.
 2. Review the actual current-checkout diff with a strict file boundary and
    `--max-priority P2`. Use P3 only when explicitly requested.
-3. Reject stale, out-of-scope, or non-matching findings.
-4. Fix valid findings.
+3. Reject stale, out-of-scope, non-matching, or unsupported-domain findings.
+   Review is advisory and cannot silently add a product requirement.
+4. Fix valid findings only after the supported-domain and architecture-pressure
+   gates pass.
 5. Rerun focused proof and P2 autoreview until no accepted actionable findings
    remain.
 

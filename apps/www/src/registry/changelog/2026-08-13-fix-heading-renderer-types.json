@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-13-fix-heading-renderer-types",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-13-fix-heading-renderer-types.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-13",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Fix heading renderer prop types",
+  "targets": [
+    {
+      "name": "heading-node",
+      "files": ["apps/www/src/registry/ui/heading-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-13-heading-fix-renderer-prop-types-ea9115f1",
+      "kind": "fix",
+      "summary": "Fix heading renderer prop types across H1-H6 components.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["heading-node"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-13",
+          "entry": "2026-08-13-fix-heading-renderer-types",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -9,7 +9,7 @@ import {
   BaseH6Plugin,
   HeadingRules,
 } from './BaseHeadingPlugins';
-import { createBaseEditor, defineEditor } from '@platejs/core';
+import { createBaseEditor } from '@platejs/core';
 import { getPlateRuntime } from '@platejs/core/internal';
 import { schema, SelectionApi } from '@platejs/plite';
 import { jsxt } from '@platejs/test-utils';
@@ -182,18 +182,16 @@ describe('base heading plugins', () => {
 
 describe('heading input rules', () => {
   it('keeps markdown depth bound to the heading capability when its persisted type changes', () => {
-    const definition = defineEditor('customHeadingType', {
-      plugins: [
-        BaseH2Plugin.configure({ inputRules: [HeadingRules.markdown()] }),
+    const plugins = [
+      BaseH2Plugin.configure({ inputRules: [HeadingRules.markdown()] }),
+    ] as const;
+    const applicationSchema = {
+      overrides: [
+        schema.override(BaseH2Plugin, {
+          element: { type: 'sectionHeading' },
+        }),
       ],
-      schema: {
-        overrides: [
-          schema.override(BaseH2Plugin, {
-            element: { type: 'sectionHeading' },
-          }),
-        ],
-      },
-    });
+    } as const;
     const input = (
       <editor>
         <hp>
@@ -204,7 +202,8 @@ describe('heading input rules', () => {
       </editor>
     );
     const editor = createBaseEditor({
-      plugins: definition.plugins,
+      plugins,
+      schema: applicationSchema,
       selection: input.selection,
       initialValue: input.children,
     });

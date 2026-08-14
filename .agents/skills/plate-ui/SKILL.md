@@ -1,5 +1,5 @@
 ---
-description: Build new shadcn-style components for Plate's registry and editor surfaces. Use when authoring or refactoring registry UI/components, deciding what belongs in packages vs app-local component files, creating base/live kits and registry wiring, or applying React Compiler, Effects, accessibility, polymorphism, data-slot, data-state, and composable-component rules to Plate UI work.
+description: Build or refactor Plate registry UI with open-code ownership, copied-item boundaries, kit wiring, React discipline, and browser proof.
 name: plate-ui
 metadata:
   skiller:
@@ -20,7 +20,21 @@ and registry wiring.
 - `apps/www/src/registry/ui` — live component and node renderers
 - `apps/www/src/registry/components/editor/plugins` — base/live kit wiring
 - `apps/www/src/registry/registry-*.ts` — registry metadata and dependencies
-- `packages/*` — durable transforms, queries, controllers, and public hooks
+- `packages/*` — upstream semantic owners; package edits route to
+  `plate-plugin-creator`
+
+## Routing Gate
+
+| Owner                  | Scope                                                                |
+| ---------------------- | -------------------------------------------------------------------- |
+| `vision` / `best-api`  | durable doctrine and reusable public call shape                      |
+| `plate-plugin-creator` | package plugin mechanics and package proof                           |
+| `plate-ui`             | copied registry UI, app-local composition, wiring, and browser proof |
+| `docs-creator`         | current-state public teaching                                        |
+
+Continue here only when the component or copied registry item is the owner.
+Stop at the package boundary; do not use this skill to redesign plugin builders,
+schema law, or application typing.
 
 ## Principles
 
@@ -35,11 +49,15 @@ and registry wiring.
    deprecation.
 8. **Examples teach the install shape.** Do not remove an explicit feature
    plugin, kit, renderer binding, or dependency merely because an aggregate
-   EditorKit also includes it. Deliberate repetition can make copied code and
-   feature ownership transparent. Terminal configurations of the same authored
-   plugin compose in source order, so append the explicit configuration after
-   EditorKit and let its defined values win. Unrelated plugins and divergent
-   authoring branches cannot share a name.
+   application editor installed by the `editor-kit` registry item also includes
+   it. Deliberate repetition can make copied code and feature ownership
+   transparent. Terminal configurations of the same authored plugin compose in
+   source order, so append the explicit configuration after the inherited
+   application plugins and let its defined values win. Unrelated plugins and
+   divergent authoring branches cannot share a name.
+9. **Application typing is not UI architecture.** Registry items consume
+   ordinary plugin arrays and editor APIs; copied UI never owns its host's
+   application contract.
 
 ## Critical Rules
 
@@ -59,10 +77,16 @@ and registry wiring.
 - Package cleanup must not paste a package-owned transform, query, navigation
   controller, or other semantic algorithm into registry JSX. Keep or publish
   the durable package owner unless the behavior genuinely becomes UI-specific.
-- Keep each independently installable registry item self-contained. Duplicate
-  short presentation JSX, labels, or menu rows across items instead of adding a
-  shared registry file/dependency. Extract only for an independently useful
-  registry item or real behavior owner.
+- Registry metadata must declare every package and copied-registry dependency
+  used by an item. Optional cross-feature dependencies are valid when the
+  behavior belongs in that item and remains safe when the plugin is absent.
+- Colocate integration behavior with the component or kit it modifies. Do not
+  extract a miscellaneous integration file or terminal configuration array
+  merely to invert dependencies, make a graph look pure, or keep optional
+  package imports out of their real owner.
+- Extract only an independently useful registry capability, a durable behavior
+  owner, or the smallest descriptor boundary needed to break a real runtime
+  cycle. Never trade obvious source ownership for dependency-graph aesthetics.
 - For sibling live/static registry renderers, duplicate presentation lookup data
   and tiny label helpers in each renderer instead of creating a third shared
   registry file. Extract only when the shared code owns real behavior beyond
@@ -79,10 +103,15 @@ and registry wiring.
 - Keep `usePath()` only when a descendant must rerender or resynchronize as its
   element moves and no path prop is already available. Account for that
   dependency in the repeated-unit subscription budget.
-- Prefer direct `editor.api.<name>` / `editor.update.<group>` in concrete
-  host-owned app code with a complete inferred kit. Copied registry UI is
-  generic by definition: never import its host editor type or use root plugin
-  namespaces there. Use `editor.plugin(plugin)` or `useEditorPlugin(plugin)`.
+- Prefer direct `editor.api.<name>` / `editor.update.<group>` when concrete
+  host-owned app code infers that surface from its local editor construction.
+  Copied registry UI is generic by definition: never import its host editor
+  type, authored `editor.ts`, or generated module, and never use root plugin namespaces
+  there. Use the core `useEditor()` plus
+  `editor.plugin(plugin)`, or use `useEditorPlugin(plugin)`. A registry example
+  whose metadata explicitly depends on `editor-kit` may import the host's
+  ordinary plugin composition, but copied UI may not. The `editor-kit` name is
+  registry packaging, never an application runtime API noun.
   For an optional descriptor, check `editor.plugin(plugin).installed` before
   accessing its portal. Do not infer optional availability from root
   `editor.api`, node types, schema properties, or caught access errors. Do not
@@ -120,14 +149,18 @@ and registry wiring.
 
 - Update `registry-kits.ts`, `registry-ui.ts`, and `registry-examples.ts` together.
 - Add explicit `registryDependencies` for every shared UI/style dependency.
+- After source ownership is correct, declare every surviving direct runtime
+  package and registry dependency. Metadata mirrors source; it never grants a
+  generic host permission to require an optional feature.
 - If a component depends on shared CSS vars like highlight tokens, add the style registry dep.
 - Examples should depend on kits plus any extra styles/components they introduce.
 - Treat registry examples as teaching/install surfaces, not optimized host-app
   presets. Preserve explicit feature configuration when the example metadata
   names that feature kit or the source intentionally demonstrates its binding,
-  even if EditorKit installs the same descriptor transitively. Append a terminal
-  configuration of that authored plugin after EditorKit so earlier fields
-  survive and the explicit later configuration wins.
+  even if the application editor installed by `editor-kit` contains the same
+  descriptor. Append a terminal configuration of that authored plugin after
+  the inherited application plugins so earlier fields survive and the explicit
+  later configuration wins.
 - Do not create, modernize, polish, or parity-sync `*-classic` registry
   variants, including `list-classic`. Touch an existing classic surface only
   for a user-facing regression, security/release blocker, or an explicitly
@@ -154,6 +187,13 @@ Renderer-specific UI state usually stays app-local; cross-platform semantic
 contracts are stronger package candidates. This is ownership pressure, not a
 frozen public API answer. Use `best-api design/review` before introducing,
 moving, or breaking a reusable component/hook surface.
+
+If the accepted registry/component work changes a reusable API or canonical
+consumer pattern, run `best-api repair` in the same task. Repair this skill only
+where it teaches the affected pattern, regenerate its mirror, and audit copied
+examples for the rejected call shape. Do not ship a local registry workaround
+while package doctrine says something else, and do not wait for a later cleanup
+prompt.
 
 ## Extraction Test
 
@@ -255,7 +295,9 @@ const { dialogTitle, menuItems, onOpenChange, popoverOpen } =
      run the generator, and run the registry changelog check
    - not user-visible: record `N/A: <reason>`
 10. If package exports changed, run `pnpm brl`.
-11. Verify the smallest honest surface:
+11. If the work changed a reusable API or canonical consumer pattern, run the
+    automatic `best-api repair` chain before closeout.
+12. Verify the smallest honest surface:
 
 - component spec for UI-only changes
 - package build/typecheck when package code changed

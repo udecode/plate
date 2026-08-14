@@ -18,6 +18,9 @@ docs:
 - Active section tracking for the current heading while you scroll
 - Keyboard-accessible heading navigation with `Enter` and `Space`
 
+TOC tracks headings with editor-scoped `NodeKey` values. It does not require
+persisted element IDs or install `ElementIdPlugin`.
+
 </PackageInfo>
 
 ## Kit Usage
@@ -205,13 +208,13 @@ Manage TOC element state.
 
 <API name="useTocElementState">
 <APIReturns>
-  <APIItem name="activeContentId" type="string">
-    Active heading ID for the current document position.
+  <APIItem name="activeContentKey" type="NodeKey | null">
+    Active heading key for the current document position.
   </APIItem>
   <APIItem name="headingList" type="Heading[]">
     Document headings array.
   </APIItem>
-  <APIItem name="onContentScroll" type="(el: HTMLElement, id: string, behavior: ScrollBehavior) => void">
+  <APIItem name="onContentScroll" type="(el: HTMLElement, key: NodeKey, behavior?: ScrollBehavior) => void">
     Heading scroll handler.
   </APIItem>
 </APIReturns>
@@ -224,7 +227,7 @@ Handle TOC element interactions.
 <API name="useTocElement">
 
 <APIParameters>
-  <APIItem name="onContentScroll" type="(el: HTMLElement, id: string, behavior: ScrollBehavior) => void">
+  <APIItem name="onContentScroll" type="(el: HTMLElement, key: NodeKey, behavior?: ScrollBehavior) => void">
     Scroll handler from useTocElementState.
   </APIItem>
 </APIParameters>
@@ -262,8 +265,8 @@ Manage TOC sidebar state.
 </APIParameters>
 
 <APIReturns>
-  <APIItem name="activeContentId" type="string">
-    Active section ID.
+  <APIItem name="activeContentKey" type="NodeKey | null">
+    Active section key.
   </APIItem>
   <APIItem name="headingList" type="Heading[]">
     Document headings.
@@ -274,16 +277,13 @@ Manage TOC sidebar state.
   <APIItem name="open" type="boolean">
     Sidebar open state.
   </APIItem>
-  <APIItem name="setIsObserve" type="React.Dispatch<React.SetStateAction<boolean>>">
-    Set observation state.
-  </APIItem>
   <APIItem name="setMouseInToc" type="React.Dispatch<React.SetStateAction<boolean>>">
     Set mouse over state.
   </APIItem>
   <APIItem name="tocRef" type="React.RefObject<HTMLElement>">
     TOC element ref.
   </APIItem>
-  <APIItem name="onContentScroll" type="(options: { id: string; behavior?: ScrollBehavior; el: HTMLElement }) => void">
+  <APIItem name="onContentScroll" type="(options: { key: NodeKey; behavior?: ScrollBehavior; el: HTMLElement }) => void">
     Content scroll handler.
   </APIItem>
 </APIReturns>
@@ -301,16 +301,13 @@ This hook provides props and handlers for the TOC sidebar component.
   <APIItem name="open" type="boolean">
     Sidebar open state.
   </APIItem>
-  <APIItem name="setIsObserve" type="React.Dispatch<React.SetStateAction<boolean>>">
-    Set observation state.
-  </APIItem>
   <APIItem name="setMouseInToc" type="React.Dispatch<React.SetStateAction<boolean>>">
     Set mouse over state.
   </APIItem>
   <APIItem name="tocRef" type="React.RefObject<HTMLElement>">
     TOC element ref.
   </APIItem>
-  <APIItem name="onContentScroll" type="(options: { id: string; behavior?: ScrollBehavior; el: HTMLElement }) => void">
+  <APIItem name="onContentScroll" type="(options: { key: NodeKey; behavior?: ScrollBehavior; el: HTMLElement }) => void">
     Content scroll handler.
   </APIItem>
 </APIParameters>

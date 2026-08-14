@@ -48,6 +48,13 @@ and owns Plate/Plite boundaries, adoption, execution slices, and proof. If a
 plan discovers a better call shape, run the `best-api` lens inside the same
 plan and repair the target before continuing.
 
+An accepted API change carries its doctrine repair with it. Add the affected
+Vision and worker-skill owners to the adoption ledger, then run
+`best-api repair` during execution without waiting for another prompt. A plan
+cannot be ready or complete while `plate-plugin-creator`, `plate-ui`,
+`docs-creator`, `plate-next`, or another affected worker still teaches the
+rejected shape.
+
 - Plite owns the editor model, operations, reads, updates, transactions,
   selection primitives, DOM/runtime substrate, history, replay, and browser
   proof infrastructure.
@@ -145,7 +152,7 @@ evidence requires it. External editor inventory and comparison belong to
 Use one concept-level decision ledger:
 
 | Surface | Current | Target | Owner | Reason | Adoption | Proof | Risk | Verdict |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| ------- | ------- | ------ | ----- | ------ | -------- | ----- | ---- | ------- |
 
 Verdicts: `keep`, `cut`, `rearchitect`, `rename`, `move`, `bridge`, `defer`, or
 `gate`.
@@ -215,8 +222,12 @@ After explicit acceptance:
 4. Hard-cut rejected surfaces and sweep callers, exports, tests, docs, and
    examples. Leave no compatibility path unless the accepted ledger contains a
    time-bounded private bridge.
-5. Run the applicable root `AGENTS.md` gates and applicable review skills.
-6. Update the plan with actual evidence and hand off the result.
+5. Run `best-api repair` when the implementation changed a reusable public API:
+   update the owning doctrine, repair only affected worker skills, bump
+   versioned doctrine when required, regenerate mirrors, and audit stale
+   teaching.
+6. Run the applicable root `AGENTS.md` gates and applicable review skills.
+7. Update the plan with actual evidence and hand off the result.
 
 ## Handoff
 

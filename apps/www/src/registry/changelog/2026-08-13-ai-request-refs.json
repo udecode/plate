@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-13-ai-request-refs",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-13-ai-request-refs.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-13",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Use request-local AI node references",
+  "targets": [
+    {
+      "name": "ai-api",
+      "files": [],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for ai-api."
+        }
+      ]
+    },
+    {
+      "name": "ai-kit",
+      "files": ["apps/www/src/registry/components/editor/plugins/ai-kit.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "use-chat",
+      "files": ["apps/www/src/registry/components/editor/use-chat.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-13-ai-api-request-local-node-references-4bd6fdf3",
+      "kind": "behavior",
+      "summary": "Correlate comments and table-cell edits with request-local refs instead of persisted element IDs.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["ai-api", "ai-kit", "use-chat"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-13",
+          "entry": "2026-08-13-ai-request-refs",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

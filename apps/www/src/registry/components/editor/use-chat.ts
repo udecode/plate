@@ -6,7 +6,11 @@ import * as React from 'react';
 
 import { type UseChatHelpers, useChat as useBaseChat } from '@ai-sdk/react';
 import { faker } from '@faker-js/faker';
-import { AIChatPlugin, createAIChatAdapter } from '@platejs/ai/react';
+import {
+  AIChatPlugin,
+  type AIChatRequestRefs,
+  createAIChatAdapter,
+} from '@platejs/ai/react';
 import { getCommentKey, getTransientCommentKey } from '@platejs/comment';
 import { MarkdownPlugin } from '@platejs/markdown';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
@@ -20,7 +24,7 @@ import {
   TextApi,
 } from '@platejs/plite';
 import { type UIMessage, DefaultChatTransport } from 'ai';
-import { ElementIdPlugin, PLUGINS, nanoid } from 'platejs';
+import { PLUGINS, nanoid } from 'platejs';
 import { type PlateEditor, useEditor, usePluginStore } from 'platejs/react';
 
 import { discussionPlugin } from './plugins/discussion-kit';
@@ -45,7 +49,7 @@ export type ToolName = 'comment' | 'edit' | 'generate';
 
 export type TComment = {
   comment: {
-    blockId: string;
+    blockRef: string;
     comment: string;
     content: string;
   } | null;
@@ -55,7 +59,7 @@ export type TComment = {
 export type TTableCellUpdate = {
   cellUpdate: {
     content: string;
-    id: string;
+    ref: string;
   } | null;
   status: 'finished' | 'streaming';
 };
@@ -74,6 +78,7 @@ type ChatRequestBody = {
   messages: ChatMessage[];
   ctx?: {
     children?: Value;
+    refs?: AIChatRequestRefs;
     selection?: Range;
   };
   [key: string]: unknown;
@@ -1636,6 +1641,10 @@ const createCommentChunks = (editor: PlateEditor) => {
   }
 
   const indexes = Array.from(result).sort((a, b) => a - b);
+  const refs = editor.plugin(AIChatPlugin).store.get('_blockRefs');
+  const refsByKey = new Map(
+    Object.entries(refs).map(([ref, { key }]) => [key, ref])
+  );
 
   const chunks = indexes
     .map((index, i) => {
@@ -1643,6 +1652,9 @@ const createCommentChunks = (editor: PlateEditor) => {
       if (!block) {
         return [];
       }
+      const blockRef = refsByKey.get(editor.key(block));
+
+      if (!blockRef) return [];
 
       const blockString = NodeApi.string(block);
       const endIndex = blockString.indexOf('.');
@@ -1652,11 +1664,7 @@ const createCommentChunks = (editor: PlateEditor) => {
       return [
         {
           delay: faker.number.int({ max: 500, min: 200 }),
-          texts: `{"id":"${nanoid()}","data":{"comment":{"blockId":"${editor
-            .plugin(ElementIdPlugin)
-            .read.id(
-              block
-            )}","comment":"${faker.lorem.sentence()}","content":"${content}"},"status":"${
+          texts: `{"id":"${nanoid()}","data":{"comment":{"blockRef":"${blockRef}","comment":"${faker.lorem.sentence()}","content":"${content}"},"status":"${
             i === indexes.length - 1 ? 'finished' : 'streaming'
           }"},"type":"data-comment"}`,
         },
@@ -1677,12 +1685,19 @@ const createTableCellChunks = (editor: PlateEditor) => {
   const selectedCells = getSelectedTableCells(editor);
 
   // If no cells selected, try to get cells from current selection
-  let cellElementIds: string[] = [];
-  const elementId = editor.plugin(ElementIdPlugin);
+  let cellRefs: string[] = [];
+  const refs = editor.plugin(AIChatPlugin).store.get('_tableCellRefs');
+  const refsByKey = new Map(
+    Object.entries(refs).map(([ref, { key }]) => [key, ref])
+  );
 
   if (selectedCells.length > 0) {
-    cellElementIds = selectedCells.flatMap((cell) =>
-      ElementApi.isElement(cell) ? [elementId.read.id(cell)] : []
+    cellRefs = selectedCells.flatMap((cell) =>
+      ElementApi.isElement(cell)
+        ? [refsByKey.get(editor.key(cell))].filter(
+            (ref): ref is string => ref !== undefined
+          )
+        : []
     );
   } else {
     // Try to find table cells in current selection
@@ -1694,11 +1709,15 @@ const createTableCellChunks = (editor: PlateEditor) => {
         },
       }),
     ]);
-    cellElementIds = cells.map(([node]) => elementId.read.id(node));
+    cellRefs = cells.flatMap(([node]) => {
+      const ref = refsByKey.get(editor.key(node));
+
+      return ref ? [ref] : [];
+    });
   }
 
   // If still no cells, return empty chunks
-  if (cellElementIds.length === 0) {
+  if (cellRefs.length === 0) {
     return [
       [{ delay: 50, texts: '{"data":"edit","type":"data-toolName"}' }],
       [
@@ -1711,11 +1730,11 @@ const createTableCellChunks = (editor: PlateEditor) => {
   }
 
   // Generate mock content for each cell
-  const chunks = cellElementIds.map((cellId, i) => [
+  const chunks = cellRefs.map((cellRef, i) => [
     {
       delay: faker.number.int({ max: 300, min: 100 }),
-      texts: `{"id":"${nanoid()}","data":{"cellUpdate":{"id":"${cellId}","content":"${faker.lorem.sentence()}"},"status":"${
-        i === cellElementIds.length - 1 ? 'finished' : 'streaming'
+      texts: `{"id":"${nanoid()}","data":{"cellUpdate":{"ref":"${cellRef}","content":"${faker.lorem.sentence()}"},"status":"${
+        i === cellRefs.length - 1 ? 'finished' : 'streaming'
       }"},"type":"data-table"}`,
     },
   ]);

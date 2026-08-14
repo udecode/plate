@@ -1,9 +1,5 @@
 import type { Emoji } from '@emoji-mart/data';
-import {
-  createBaseEditor,
-  defineBasePlugin,
-  defineEditor,
-} from '@platejs/core';
+import { createBaseEditor, defineBasePlugin } from '@platejs/core';
 import { property, schema } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
 
@@ -92,7 +88,7 @@ describe('BaseEmojiPlugin', () => {
   });
 
   it('creates transient inputs with the configured schema type', () => {
-    const definition = defineEditor('customEmojiInput', {
+    const editor = createBaseEditor({
       plugins: [BaseEmojiPlugin],
       schema: {
         overrides: [
@@ -102,7 +98,6 @@ describe('BaseEmojiPlugin', () => {
         ],
       },
     });
-    const editor = createBaseEditor({ plugins: definition.plugins });
 
     expect(
       editor.plugin(BaseEmojiPlugin).store.get('createComboboxInput')(':')

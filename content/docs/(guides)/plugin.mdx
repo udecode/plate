@@ -190,9 +190,10 @@ keeps `value` inferred from the property declaration. Both paths use the
 author callback's compiled `schema.properties.textAlign` handle. Consumers use
 typed node fields or the plugin's semantic capabilities instead of reading that
 property map. Its `name` identifies only the capability namespace.
-`.configure()` and `.extend()` do not change schema identity. A closed
-`defineEditor()` may remap an element type or relationship; plugin-owned
-property keys remain fixed. A plugin update passes one atomic property patch,
+`.configure()` and `.extend()` do not change schema identity. The `schema`
+passed to `createPlateEditor` or `usePlateEditor` may remap an element type or
+relationship; plugin-owned property keys remain fixed. A plugin update passes
+one atomic property patch,
 so every key and value comes from the plugin's shallow schema contract. An
 alias uses the exact author handle key as a computed object key.
 

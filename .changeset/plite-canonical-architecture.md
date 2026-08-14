@@ -20,9 +20,11 @@
 - Give every live descendant, including text, an editor-scoped `NodeKey`.
   Read it with `editor.key(nodeOrLocation)`, resolve it with
   `editor.read.nodes.path(nodeKey)`, and pass it to generic `NodeTarget`
-  reads and updates. Node keys are unique across one editor's roots, while
-  path lookup stays scoped to the current editor or view root. Node keys never
-  enter values, slices, history, or collaboration payloads.
+  reads and updates. Node keys are unique across one editor's roots and carry
+  private runtime ownership, so a key from another editor fails closed even
+  when public editor IDs and local allocation order match. Path lookup stays
+  scoped to the current editor or view root. Node keys never enter values,
+  slices, history, or collaboration payloads.
 - Preserve exact `property.*` descriptor inference in packed declarations and
   reject declaration artifacts whose generic `Readonly` arguments were erased.
 - Store pending insertion marks only on collapsed text selections and preserve earlier writes across composed commands

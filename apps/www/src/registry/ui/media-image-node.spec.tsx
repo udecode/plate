@@ -1,16 +1,18 @@
 import * as React from 'react';
 
 import * as actualCoreReact from '@platejs/core/react';
+import * as actualDnd from '@platejs/dnd';
 import * as actualMediaReact from '@platejs/media/react';
 import { render } from '@testing-library/react';
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
 const selectionMock = mock();
-const useDraggableMock = mock();
 const useEditorSelectorMock = mock();
 const useMediaStateMock = mock();
+const useDraggableMock = mock();
 
 mock.module('@platejs/dnd', () => ({
+  ...actualDnd,
   useDraggable: useDraggableMock,
 }));
 
@@ -71,15 +73,12 @@ mock.module('./resize-handle', () => ({
 describe('ImageElement', () => {
   beforeEach(() => {
     selectionMock.mockReset();
-    useDraggableMock.mockReset();
     useEditorSelectorMock.mockReset();
     useMediaStateMock.mockReset();
+    useDraggableMock.mockReset();
 
     selectionMock.mockReturnValue(null);
-    useDraggableMock.mockReturnValue({
-      handleRef: undefined,
-      isDragging: false,
-    });
+    useDraggableMock.mockReturnValue({});
     useEditorSelectorMock.mockImplementation(
       (selector: (editor: unknown) => unknown) =>
         selector({ read: { selection: selectionMock } })

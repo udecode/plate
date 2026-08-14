@@ -1,0 +1,145 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-14-author-editor-runtime",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-14-author-editor-runtime.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-14",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Keep optional editor features explicit",
+  "targets": [
+    {
+      "name": "editor-kit",
+      "files": [],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for editor-kit."
+        }
+      ]
+    },
+    {
+      "name": "editor-ai",
+      "files": [],
+      "definitionFiles": ["apps/www/src/registry/registry-blocks.ts"],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for editor-ai."
+        }
+      ]
+    },
+    {
+      "name": "copilot-demo",
+      "files": ["apps/www/src/registry/examples/copilot-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "markdown-streaming-demo",
+      "files": ["apps/www/src/registry/examples/markdown-streaming-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "playground-demo",
+      "files": ["apps/www/src/registry/examples/playground-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-drawing-demo",
+      "files": ["apps/www/src/registry/examples/code-drawing-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "excalidraw-demo",
+      "files": ["apps/www/src/registry/examples/excalidraw-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-14-editor-use-authored-runtime-inputs-2d78f04b",
+      "kind": "wiring",
+      "summary": "Reuse the primary editor composition directly, compose Copilot only in its demo, and install `ElementIdPlugin` only when persisted IDs are required.",
+      "details": [],
+      "migrationNotes": [
+        "Import the primary editor composition directly outside the Copilot demo. Append CopilotKit only in copilot-demo.",
+        "Install ElementIdPlugin explicitly when persisted element IDs or Markdown withBlockId are required.",
+        "Install CodeDrawingPlugin or ExcalidrawPlugin explicitly in editors that use those specialized nodes.",
+        "Remove schema: EditorSchema from copied editor setup. Add an application-owned schema id and version only for persisted schema lineage, migrations, history serialization, or collaboration."
+      ],
+      "targets": [
+        "editor-kit",
+        "editor-ai",
+        "copilot-demo",
+        "markdown-streaming-demo",
+        "playground-demo"
+      ],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-14",
+          "entry": "2026-08-14-author-editor-runtime",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-08-14-author-editor-runtime-2",
+      "kind": "behavior",
+      "summary": "Keep code drawing and Excalidraw explicit in the demos that use them.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "editor-kit",
+        "code-drawing-demo",
+        "excalidraw-demo",
+        "playground-demo"
+      ],
+      "source": {
+        "line": 13,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-08-14",
+          "entry": "2026-08-14-author-editor-runtime",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-08-14-author-editor-runtime-3",
+      "kind": "behavior",
+      "summary": "Derive schema identity from the installed plugin composition instead of publishing application lineage from copied registry code.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["editor-kit"],
+      "source": {
+        "line": 14,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-08-14",
+          "entry": "2026-08-14-author-editor-runtime",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

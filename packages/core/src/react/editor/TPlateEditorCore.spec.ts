@@ -56,7 +56,7 @@ describe('PlateEditor core package', () => {
     const baseEditor = createBaseEditor();
     const editor = createPlateEditor();
     const named = createBaseEditor({
-      schemaIdentity: { id: 'persisted-document', version: 7 },
+      schema: { id: 'persisted-document', version: 7 },
     });
 
     expect(baseEditor.read.schema.identity()?.kind).toBe('derived');

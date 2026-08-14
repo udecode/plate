@@ -3,15 +3,34 @@ import { createBaseEditor, type Range, type Value } from 'platejs';
 
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
 
-const createTestEditor = (value: Value) =>
-  createBaseEditor({
-    plugins: [...BaseEditorKit, AIChatPlugin],
-    initialValue: value,
+const createTestEditor = (value: Value) => {
+  const refByFixtureId: Record<string, string> = {};
+  const initialValue = value.map((node, index) => {
+    const { id, ...element } = node as typeof node & { id?: unknown };
+
+    if (typeof id === 'string') refByFixtureId[id] = `b${index + 1}`;
+
+    return element;
   });
+  const editor = createBaseEditor({
+    plugins: [...BaseEditorKit, AIChatPlugin],
+    initialValue,
+  });
+  editor.plugin(AIChatPlugin).store.set({
+    _blockRefs: Object.fromEntries(
+      initialValue.map((_node, index) => [
+        `b${index + 1}`,
+        { key: editor.key([index])! },
+      ])
+    ),
+  });
+
+  return { editor, refByFixtureId };
+};
 
 describe('AIChatPlugin read.commentRange', () => {
   it('apply the AI review to the editor', () => {
-    const editor = createTestEditor([
+    const { editor, refByFixtureId } = createTestEditor([
       {
         id: 'gYBjGfssdm',
         children: [
@@ -388,34 +407,34 @@ describe('AIChatPlugin read.commentRange', () => {
 
     const comments = [
       {
-        blockId: 'gYBjGfssdm',
+        blockRef: refByFixtureId.gYBjGfssdm!,
         comment:
           'This is the introductory header for the Plate Playground, setting the stage for the content that follows.',
         content: '# Welcome to the Plate Playground!',
       },
       {
-        blockId: '5zZ8_hM53b',
+        blockRef: refByFixtureId['5zZ8_hM53b']!,
         comment:
           'This sentence introduces the technologies used to build the rich-text editor, Plite and React.',
         content:
           'Experience a modern rich-text editor built with [Plite](https://platejs.org/docs/plite) and [React](https://reactjs.org).',
       },
       {
-        blockId: 'GznILN9jX7',
+        blockRef: refByFixtureId.GznILN9jX7!,
         comment:
           'This section describes the collaborative editing features, including suggestions and comments, highlighting the ability to annotate and discuss changes.',
         content:
           '## Collaborative Editing\n\nReview and refine content seamlessly. Use [<suggestion>suggestions</suggestion>](/docs/suggestion) <suggestion>like this added text</suggestion> or to <suggestion>mark text for removal</suggestion>. Discuss changes using [<comment>comments</comment>](/docs/comment) <comment>on many text segments</comment>. You can even have <comment><suggestion>overlapping</suggestion></comment> annotations!',
       },
       {
-        blockId: 'll9QY8QwZe',
+        blockRef: refByFixtureId.ll9QY8QwZe!,
         comment:
           'This section highlights the AI-powered editing capabilities, including content generation and text editing features, accessible via keyboard shortcuts.',
         content:
           '## AI-Powered Editing\n\nBoost your productivity with integrated [AI SDK](/docs/ai). Press <kbd>⌘+J</kbd> or <kbd>Space</kbd> in an empty line to:\n\n* Generate content (continue writing, summarize, explain)\n* Edit existing text (improve, fix grammar, change tone)',
       },
       {
-        blockId: 'Iu6xPiuKMv',
+        blockRef: refByFixtureId.Iu6xPiuKMv!,
         comment:
           'This section explains the rich content editing features, including structuring content with headings and lists, applying text marks, and using autoformatting for Markdown-like shortcuts.',
         content:

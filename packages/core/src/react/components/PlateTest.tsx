@@ -18,7 +18,7 @@ type PlateTestEditorOptions = CreatePlateEditorOptions<
 >;
 
 type PlateTestBaseProps = Omit<PlateProps, 'children' | 'editor'> &
-  Omit<PlateTestEditorOptions, 'editor' | 'schemaIdentity'> & {
+  Omit<PlateTestEditorOptions, 'editor' | 'schema'> & {
     children?: React.ReactNode;
     editableProps?: PlateContentProps;
     variant?: 'comment' | 'wordProcessor';
@@ -29,18 +29,21 @@ type PlateTestRawEditorProps<
   TExtensions extends readonly unknown[],
 > = PlateTestBaseProps & {
   editor?: Editor<V, TExtensions> | null;
-  schemaIdentity: PlateTestEditorOptions['schemaIdentity'];
+  schema: NonNullable<PlateTestEditorOptions['schema']> & {
+    id: string;
+    version: number;
+  };
 };
 
 type PlateTestPlateEditorProps<E extends PlateEditorReference> =
   PlateTestBaseProps & {
     editor: E;
-    schemaIdentity?: never;
+    schema?: never;
   };
 
 type PlateTestImplementationProps = PlateTestBaseProps & {
   editor?: Editor | PlateEditor | null;
-  schemaIdentity?: PlateTestEditorOptions['schemaIdentity'];
+  schema?: PlateTestEditorOptions['schema'];
 };
 
 const isPlateEditor = (editor: Editor | PlateEditor): editor is PlateEditor =>
@@ -60,22 +63,22 @@ export function PlateTest({
   variant = 'wordProcessor',
   ...props
 }: PlateTestImplementationProps) {
-  const { editor: providedEditor, schemaIdentity, ...editorOptions } = props;
+  const { editor: providedEditor, schema, ...editorOptions } = props;
   let editor: PlateEditor;
 
   if (providedEditor && isPlateEditor(providedEditor)) {
     editor = providedEditor;
   } else {
-    if (!schemaIdentity) {
+    if (!schema?.id || typeof schema.version !== 'number') {
       throw new TypeError(
-        'PlateTest requires schemaIdentity to create an editor'
+        'PlateTest requires schema lineage to create an editor'
       );
     }
 
     editor = createPlateEditor({
       ...editorOptions,
       editor: providedEditor ?? undefined,
-      schemaIdentity,
+      schema,
       shouldNormalizeEditor,
     });
   }

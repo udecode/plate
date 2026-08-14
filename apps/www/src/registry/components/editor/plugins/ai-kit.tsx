@@ -8,25 +8,10 @@ import { usePluginStore } from 'platejs/react';
 import { AILoadingBar, AIMenu } from '@/registry/ui/ai-menu';
 import { AIAnchorElement, AILeaf } from '@/registry/ui/ai-node';
 
-import { useChat } from '../use-chat';
+import { AIChatTransportPlugin, useChat } from '../use-chat';
 import { CursorOverlayKit } from './cursor-overlay-kit';
 
-export type AIChatKitPluginState = {
-  chatOptions: {
-    api: string;
-    body: Record<string, unknown>;
-  };
-};
-
-const initialState: AIChatKitPluginState = {
-  chatOptions: {
-    api: '/api/ai/command',
-    body: {},
-  },
-};
-
-export const aiChatPlugin = AIChatPlugin.extend({
-  initialState,
+export const aiChatPlugin = AIChatTransportPlugin.extend({
   render: {
     afterContainer: AILoadingBar,
     afterEditable: AIMenu,
@@ -58,7 +43,7 @@ export const aiChatPlugin = AIChatPlugin.extend({
           editor.update({ history: 'skip' }).nodes.insert(
             {
               children: [{ text: '' }],
-              type: editor.plugin(PLUGINS.aiChat).type,
+              type: editor.plugin(PLUGINS.aiChat).schema.type,
             },
             {
               at: PathApi.next(selection.focus.path.slice(0, 1)),
@@ -73,7 +58,7 @@ export const aiChatPlugin = AIChatPlugin.extend({
           editor.plugin(AIChatPlugin).update.insertChunk(chunk, {
             autoScroll: true,
             textProps: {
-              [editor.plugin(PLUGINS.ai).key]: true,
+              [editor.plugin(PLUGINS.ai).schema.key]: true,
             },
           });
         }

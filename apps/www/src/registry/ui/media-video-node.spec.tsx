@@ -1,19 +1,21 @@
 import * as React from 'react';
 
 import * as actualCoreReact from '@platejs/core/react';
+import * as actualDnd from '@platejs/dnd';
 import * as actualMedia from '@platejs/media';
 import * as actualMediaReact from '@platejs/media/react';
 import { render } from '@testing-library/react';
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
-const useDraggableMock = mock();
 const parseTwitterUrlMock = mock();
 const parseVideoUrlMock = mock();
 const useMediaStateMock = mock();
 const useResizableValueMock = mock();
 const useEditorMountedMock = mock();
+const useDraggableMock = mock();
 
 mock.module('@platejs/dnd', () => ({
+  ...actualDnd,
   useDraggable: useDraggableMock,
 }));
 
@@ -86,19 +88,16 @@ describe('VideoElement', () => {
   } as any;
 
   beforeEach(() => {
-    useDraggableMock.mockReset();
     parseTwitterUrlMock.mockReset();
     parseVideoUrlMock.mockReset();
     useMediaStateMock.mockReset();
     useResizableValueMock.mockReset();
     useEditorMountedMock.mockReset();
+    useDraggableMock.mockReset();
 
-    useDraggableMock.mockReturnValue({
-      handleRef: undefined,
-      isDragging: false,
-    });
     useResizableValueMock.mockReturnValue('100%');
     useEditorMountedMock.mockReturnValue(true);
+    useDraggableMock.mockReturnValue({});
   });
 
   afterAll(() => {

@@ -17,6 +17,7 @@ export {
   getEditorMaxLength,
   getEditorRuntime,
   getEditorRuntimeOwner,
+  getNodeKeyDOMValue,
   getEditorSelectionRoot,
   failInvariant,
   hasCommandHandler,

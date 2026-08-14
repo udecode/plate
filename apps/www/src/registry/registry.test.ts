@@ -62,10 +62,6 @@ describe('Plate registry editor files', () => {
           path: 'blocks/editor-ai/components/editor/plate-editor.tsx',
           target: '@components/editor/plate-editor.tsx',
         }),
-        expect.objectContaining({
-          path: 'blocks/editor-ai/components/editor/editor-kit.tsx',
-          target: '@components/editor/editor-kit.tsx',
-        }),
       ])
     );
     expect(editorBasic?.files).toEqual(
@@ -78,61 +74,76 @@ describe('Plate registry editor files', () => {
     );
   });
 
-  it('ships every generated editor contract from its registry owner', () => {
+  it('ships the generated editor contract only from the primary editor owner', () => {
     const itemsByName = new Map(items.map((item) => [item.name, item]));
 
     expect(itemsByName.has('plate-types')).toBe(false);
-    expect(itemsByName.get('editor-kit')?.files).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          target: '@components/editor/editor-definition.tsx',
-        }),
-        expect.objectContaining({
-          target: '@components/editor/editor.generated.ts',
-        }),
-        expect.objectContaining({
-          target: '@components/editor/editor.schema.json',
-        }),
-      ])
+
+    const generatedEditorContracts = items.flatMap((item) =>
+      (item.files ?? [])
+        .filter((file) =>
+          /editor\.(?:generated\.ts|schema\.json)$/.test(file.path)
+        )
+        .map((file) => ({
+          item: item.name,
+          path: file.path,
+          target: file.target,
+        }))
     );
-    expect(itemsByName.get('editor-ai')?.files).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          target: '@components/editor/editor-definition.tsx',
-        }),
-        expect.objectContaining({
-          target: '@components/editor/editor.generated.ts',
-        }),
-        expect.objectContaining({
-          target: '@components/editor/editor.schema.json',
-        }),
-      ])
+
+    expect(generatedEditorContracts).toEqual([
+      {
+        item: 'editor-kit',
+        path: 'components/editor/editor.generated.ts',
+        target: '@components/editor/editor.generated.ts',
+      },
+      {
+        item: 'editor-kit',
+        path: 'components/editor/editor.schema.json',
+        target: '@components/editor/editor.schema.json',
+      },
+    ]);
+  });
+
+  it('reuses the primary editor from derived registry items', () => {
+    const itemsByName = new Map(items.map((item) => [item.name, item]));
+
+    expect(
+      itemsByName.get('editor-ai')?.files?.map((file) => file.path)
+    ).toEqual([
+      'blocks/editor-ai/page.tsx',
+      'blocks/editor-ai/components/editor/plate-editor.tsx',
+    ]);
+    expect(
+      itemsByName.get('copilot-demo')?.files?.map((file) => file.path)
+    ).toEqual([
+      'examples/copilot-demo.tsx',
+      'examples/values/copilot-value.tsx',
+    ]);
+    expect(
+      itemsByName
+        .get('markdown-streaming-demo')
+        ?.files?.map((file) => file.path)
+    ).toEqual(['examples/markdown-streaming-demo.tsx']);
+
+    for (const name of ['editor-ai', 'markdown-streaming-demo']) {
+      expect(itemsByName.get(name)?.registryDependencies).toEqual(
+        expect.arrayContaining(['@plate/editor-kit'])
+      );
+      expect(itemsByName.get(name)?.registryDependencies).not.toContain(
+        '@plate/copilot-kit'
+      );
+    }
+
+    expect(itemsByName.get('copilot-demo')?.registryDependencies).toEqual(
+      expect.arrayContaining(['@plate/editor-kit', '@plate/copilot-kit'])
     );
-    expect(itemsByName.get('copilot-demo')?.files).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          path: 'examples/copilot-editor-definition.tsx',
-        }),
-        expect.objectContaining({
-          path: 'examples/copilot-editor.generated.ts',
-        }),
-        expect.objectContaining({
-          path: 'examples/copilot-editor.schema.json',
-        }),
-      ])
-    );
-    expect(itemsByName.get('markdown-streaming-demo')?.files).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          path: 'examples/copilot-editor-definition.tsx',
-        }),
-        expect.objectContaining({
-          path: 'examples/copilot-editor.generated.ts',
-        }),
-        expect.objectContaining({
-          path: 'examples/copilot-editor.schema.json',
-        }),
-      ])
-    );
+    expect(
+      items
+        .filter((item) =>
+          item.registryDependencies?.includes('@plate/copilot-kit')
+        )
+        .map((item) => item.name)
+    ).toEqual(['copilot-demo']);
   });
 });

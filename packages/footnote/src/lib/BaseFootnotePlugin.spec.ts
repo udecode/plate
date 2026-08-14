@@ -1,8 +1,4 @@
-import {
-  createBaseEditor,
-  defineBasePlugin,
-  defineEditor,
-} from '@platejs/core';
+import { createBaseEditor, defineBasePlugin } from '@platejs/core';
 import {
   BaseFootnoteDefinitionPlugin,
   BaseFootnoteInputPlugin,
@@ -82,7 +78,7 @@ describe('BaseFootnotePlugins', () => {
   });
 
   it('creates transient inputs with the configured schema type', () => {
-    const definition = defineEditor('customFootnoteInput', {
+    const editor = createBaseEditor({
       plugins: [BaseFootnotePlugin],
       schema: {
         overrides: [
@@ -92,7 +88,6 @@ describe('BaseFootnotePlugins', () => {
         ],
       },
     });
-    const editor = createBaseEditor({ plugins: definition.plugins });
 
     expect(
       editor.plugin(BaseFootnotePlugin).store.get('createComboboxInput')('^')

@@ -1,5 +1,5 @@
 ---
-description: Build or refactor Plate plugins with semantic base-first architecture, owner-first colocation, inferred types, initial-state/store configuration, scoped APIs and transactions, and honest React boundaries. Use when choosing defineBasePlugin vs definePlatePlugin, shaping plugin packages, merging helpers/components/hooks/tests into durable owners, or defining plugin APIs, update groups, state, dependencies, parsers, normalizers, and Plite extensions.
+description: Build or refactor Plate package plugins with owner-first colocation, inference, scoped capabilities, React families, and package proof.
 ---
 
 # Plate Plugin Creator
@@ -23,27 +23,34 @@ Before authoring or refactoring a plugin, read:
 1. [creation-flow.md](./rules/creation-flow.md) for semantic and file ownership;
 2. [typing.md](./rules/typing.md) for inference and public contracts.
 
-This owner contains the canonical state/store, API, transaction, dependency,
-Plite-primitive, React, and component-binding laws below. Do not read a second
-composition rule.
+These references contain package implementation mechanics. Vision and
+`best-api` own reusable API doctrine; this skill applies the settled shape and
+does not re-decide it.
 
 Use [plugin-authoring-audit.md](./references/plugin-authoring-audit.md) only
 for current repo examples. Core builders and type tests outrank precedent.
 
 ## Routing Gate
 
-| Owner                       | Scope                                                    |
-| --------------------------- | -------------------------------------------------------- |
-| `vision`                    | durable doctrine, Plate/Plite ownership, perf law        |
-| `best-api`                  | reusable call shape, naming, composition identity, DX/AX |
-| `plate-plan` / `plite-plan` | runtime/adoption boundary and proof plan                 |
+| Owner                       | Scope                                                     |
+| --------------------------- | --------------------------------------------------------- |
+| `vision`                    | durable doctrine, Plate/Plite ownership, perf law         |
+| `best-api`                  | reusable call shape, naming, composition identity, DX/AX  |
+| `plate-plan` / `plite-plan` | runtime/adoption boundary and proof plan                  |
 | `patch`                     | one local behavior bug or regression repair/proof closure |
-| `plate-plugin-creator`      | implementation mechanics and owner-first topology        |
+| `plate-plugin-creator`      | implementation mechanics and owner-first topology         |
+| `plate-ui`                  | copied registry UI and app-local composition              |
 
 Continue here when the public target is already clear. Stop for `best-api` when
 the work invents or materially changes a reusable public shape. For a local
 regression, keep `patch` as workflow owner and use this skill only as the Plate
 plugin implementation law.
+
+Applying a settled API and changing that API are different jobs. If package
+work changes, removes, renames, or reinterprets the reusable plugin-authoring
+contract, run `best-api repair` in the same task, then repair this skill's own
+rules/examples before package closeout. Do not defer the skill update until a
+later migration pass or wait for the user to notice the drift.
 
 ## Semantic Layer
 
@@ -57,14 +64,13 @@ plugin implementation law.
   does not. A static/base kit declares or terminally replaces a server-safe
   component without importing a Plate React entrypoint.
 - A static/base kit binds the Base descriptor to a static renderer module,
-  never a live/client node component. In the registry, prefer the owning
-  `*-static` component module.
+  never a live/client node component.
 - Use `definePlatePlugin` directly only for a real React/Plate-native plugin.
 - Pure grouping of complete plugins belongs in an app or registry kit array,
   never a package bundle plugin.
 - Keep a plugin base-only when no React layer has an independent job.
-- Use the flat shared `PLUGINS` map for shipped capability identities and
-  copied registry plugin references. Element `type` and property `key` are
+- Use the flat shared `PLUGINS` map for shipped capability identities. Element
+  `type` and property `key` are
   separate persisted schema identities. They default to `name` when omitted,
   but runtime AST work resolves `.type`/`.key` and copied/static document data
   uses explicit persisted literals. Additional document properties stay
@@ -140,6 +146,9 @@ authoring branches compatible. Same-name descriptors across independently
 optional app or registry kits still require a membership decision: do not make
 one optional kit install another merely to adapt it. Route that fork to
 `best-api`; `plate-next` owns the package/kit adoption audit.
+
+For copied app/registry source, stop here and follow `plate-ui`; this skill does
+not own copied-item colocation, dependency metadata, or browser proof.
 
 ## Inference Law
 
@@ -323,16 +332,16 @@ Classify every contribution before choosing a plugin field. This is the
 canonical Plate plugin capability protocol; migration skills audit it instead
 of defining another model.
 
-| Field               | Owns                                                                                                                                            | Hard boundary                                                                  |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| `initialState`      | default mutable state for each editor instance                                                                                                   | declaration input, not a live accessor                                         |
-| `store`             | live editor-local state through `get`, `set`, and `subscribe`                                                                                    | not document state; updates do not rebuild schema                              |
-| `selectors`         | pure named projections of readonly store state plus domain arguments                                                                             | no editor/document reads, mutation, I/O, or store writes                       |
-| `api`               | stable plugin services not bound to a supplied document snapshot or active transaction                                                           | immutable publication does not make its methods pure; never mutate the document |
-| `read`              | pure queries over the supplied document snapshot/state                                                                                           | replayable for the same state and arguments; no mutation, I/O, or store writes |
-| `update`            | document mutation and transaction-local reads through the active `tx`                                                                            | no nested one-shot update and no unrelated I/O                                 |
-| native Plite fields | genuine editor-wide substrate through flat `readMiddleware`, commands, corrections, declarations, contributions, events, activation, and validation | not an escape hatch for plugin-scoped state, reads, services, or updates       |
-| `codecs`            | format encode/decode declarations                                                                                                                 | not runtime service or mutation ownership                                      |
+| Field               | Owns                                                                                                                                                | Hard boundary                                                                   |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `initialState`      | default mutable state for each editor instance                                                                                                      | declaration input, not a live accessor                                          |
+| `store`             | live editor-local state through `get`, `set`, and `subscribe`                                                                                       | not document state; updates do not rebuild schema                               |
+| `selectors`         | pure named projections of readonly store state plus domain arguments                                                                                | no editor/document reads, mutation, I/O, or store writes                        |
+| `api`               | stable plugin services not bound to a supplied document snapshot or active transaction                                                              | immutable publication does not make its methods pure; never mutate the document |
+| `read`              | pure queries over the supplied document snapshot/state                                                                                              | replayable for the same state and arguments; no mutation, I/O, or store writes  |
+| `update`            | document mutation and transaction-local reads through the active `tx`                                                                               | no nested one-shot update and no unrelated I/O                                  |
+| native Plite fields | genuine editor-wide substrate through flat `readMiddleware`, commands, corrections, declarations, contributions, events, activation, and validation | not an escape hatch for plugin-scoped state, reads, services, or updates        |
+| `codecs`            | format encode/decode declarations                                                                                                                   | not runtime service or mutation ownership                                       |
 
 Choose in this order:
 
@@ -348,11 +357,11 @@ Choose in this order:
 
 Authoring stages have one equally strict protocol:
 
-| Stage                                         | Owns                                                                                                  |
-| --------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `defineBasePlugin()` / `definePlatePlugin()`  | identity, schema, dependencies, default state, and every independent declaration or context callback |
-| `.extend()`                                   | imported/prebuilt plugin adaptation, a shared factory unavailable to the constructor, or a real earlier-capability type dependency |
-| `.configure()`                                | terminal overrides of existing fields; never schema replacement or type widening                    |
+| Stage                                        | Owns                                                                                                                               |
+| -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `defineBasePlugin()` / `definePlatePlugin()` | identity, schema, dependencies, default state, and every independent declaration or context callback                               |
+| `.extend()`                                  | imported/prebuilt plugin adaptation, a shared factory unavailable to the constructor, or a real earlier-capability type dependency |
+| `.configure()`                               | terminal overrides of existing fields; never schema replacement or type widening                                                   |
 
 Context access alone never justifies `.extend()`. Merge independent
 contributions into the constructor. Repeat `.extend()` only when the later
@@ -611,15 +620,16 @@ Schema authoring follows the Plite owner exactly:
   predicate plus `validationVersion`.
 - Put `role: "metadata"` on an element/text property placement for bookkeeping
   values; do not add meaning to the reusable value descriptor.
-- Plate editor creation uses `schemaIdentity`; Plate element declarations use
-  `blockContent` for normal-flow membership.
+- Plate element declarations use `blockContent` for normal-flow membership.
+  Application schema lineage and final grammar composition belong to the app
+  owner under Plate Vision, not to a feature package.
 - A plugin may contribute several keyed properties. Domain code keeps direct
   node access; generic plugin code destructures the exact property handle from
   callback `schema`. Consumers use typed nodes or semantic plugin capabilities;
   normalized property maps are not part of the plugin portal.
-- Only a closed `defineEditor(name, definition)` may remap final element type,
-  content, groups, or property targets and add app-owned properties. Property
-  keys and value laws stay owned by the feature plugin.
+- Do not author application-level schema overrides in a feature package.
+  Property keys and value laws stay owned by the feature plugin; route final
+  grammar composition and app-owned properties to the application owner.
 - Use `schema.create`, `schema.assertDocument`, `schema.assertFragment`, and
   `schema.isMarkableVoid`. Assertion inputs are `unknown` and narrow after
   success.
@@ -695,7 +705,7 @@ Schema authoring follows the Plite owner exactly:
 
 ## Workflow
 
-1. Read the three required rule files.
+1. Read the two required rule files.
 2. Decide the semantic layer and durable production, React-family, and test
    owners before creating files.
 3. Search current Core builders/type tests and the closest clean package
@@ -719,6 +729,10 @@ Schema authoring follows the Plite owner exactly:
    plugin annotations, empty config aliases, top-level plugin `config`,
    parameter-threaded `editor` / `api` / `read` / `tx` helpers, and one-use
    file taxonomies.
+9. When this packet changed a reusable public API or canonical plugin pattern,
+   run `best-api repair`, update only affected worker rules, bump Plate Next
+   doctrine when its source set changed, regenerate mirrors, and prove the old
+   teaching is gone before closeout.
 
 ## Do Not Copy
 

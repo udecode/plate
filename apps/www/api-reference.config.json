@@ -607,6 +607,7 @@
             "getInternalDocumentChangeRootKeys",
             "getLastCommit",
             "getNodeKey",
+            "getNodeKeyDOMValue",
             "getPathByNodeKey",
             "getRangeRoot",
             "getSchemaElementSourceReference",

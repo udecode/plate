@@ -1,4 +1,4 @@
-import { createBaseEditor, defineEditor } from '@platejs/core';
+import { createBaseEditor } from '@platejs/core';
 import { schema } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
 
@@ -61,7 +61,7 @@ describe('BaseSlashPlugin', () => {
   });
 
   it('creates transient inputs with the configured schema type', () => {
-    const definition = defineEditor('customSlashInput', {
+    const editor = createBaseEditor({
       plugins: [BaseSlashPlugin],
       schema: {
         overrides: [
@@ -71,7 +71,6 @@ describe('BaseSlashPlugin', () => {
         ],
       },
     });
-    const editor = createBaseEditor({ plugins: definition.plugins });
 
     expect(
       editor.plugin(BaseSlashPlugin).store.get('createComboboxInput')('/')

@@ -6,7 +6,10 @@ import type { Node as UnistNode } from 'unist';
 import type { MdRootContent } from '../mdast';
 import type { DeserializeMdContext, MdDecoration } from '../types';
 
-import { serializeUnknownMdxNode } from '../internal/markdownDocument';
+import {
+  MarkdownBlockIdError,
+  serializeUnknownMdxNode,
+} from '../internal/markdownDocument';
 import { runMarkdownDecodeCodecs } from '../internal/markdownCodecs';
 import { mdastToRule } from '../types';
 
@@ -46,6 +49,50 @@ export const buildSlateNode = (
   if (isMdxJsxNode(mdastNode)) {
     const source = mdastNode.name;
     const type = source ? mdastToRule(source) : null;
+
+    if (
+      mdastNode.type === 'mdxJsxFlowElement' &&
+      source === 'block' &&
+      !options.elementIds
+    ) {
+      throw new MarkdownBlockIdError(
+        'Markdown block identity requires ElementIdPlugin in the editor.'
+      );
+    }
+    if (
+      mdastNode.type === 'mdxJsxFlowElement' &&
+      source === 'block' &&
+      options.elementIds
+    ) {
+      const id = mdastNode.attributes.find(
+        (attribute) =>
+          attribute.type === 'mdxJsxAttribute' && attribute.name === 'id'
+      )?.value;
+
+      if (typeof id !== 'string' || id.length === 0) {
+        throw new MarkdownBlockIdError(
+          'Markdown block identity requires a non-empty id.'
+        );
+      }
+      const children = convertNodesDeserialize(
+        mdastNode.children,
+        deco,
+        options
+      );
+
+      if (children.length !== 1 || !('children' in children[0]!)) {
+        throw new MarkdownBlockIdError(
+          'Markdown block identity must wrap exactly one block element.'
+        );
+      }
+
+      return [
+        {
+          ...children[0],
+          id,
+        },
+      ];
+    }
 
     if (type) {
       const hasCompiledSource =

@@ -326,9 +326,7 @@ type PlateReactRenderFields<C extends AnyBasePluginDefinition> = {
   beforeContainer?: EditableSiblingComponent;
   beforeEditable?: EditableSiblingComponent;
   belowNodes?: RenderNodeWrapper<WithAnyName<C>>;
-  belowRootNodes?: (
-    props: RenderNodeWrapperProps<WithAnyName<C>>
-  ) => React.ReactNode;
+  belowRootNodes?: (props: RenderNodeWrapperProps<C>) => React.ReactNode;
   leafProps?: LeafNodeProps<WithAnyName<C>>;
   nodeProps?: NodeProps<WithAnyName<C>>;
   textProps?: TextNodeProps<WithAnyName<C>>;

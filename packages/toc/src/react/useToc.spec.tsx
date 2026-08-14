@@ -57,7 +57,8 @@ const createEditor = (element = document.createElement('h2')) => ({
   },
   read: {
     nodes: {
-      get: mock(() => [{ id: 'h1' }, [0]]),
+      get: mock(() => [{ type: 'h1' }, [0]]),
+      path: mock(() => [0]),
     },
   },
   update: {
@@ -104,13 +105,12 @@ describe('useToc hook family', () => {
     });
   });
 
-  it('observes headings and promotes the first visible id', async () => {
+  it('observes headings and promotes the first visible runtime key', async () => {
     const heading = document.createElement('h2');
-    heading.id = 'h1';
     const editor = createEditor(heading);
 
     useEditorMock.mockReturnValue(editor);
-    useEditorSelectorMock.mockReturnValue([{ id: 'h1', path: [0] }]);
+    useEditorSelectorMock.mockReturnValue([{ key: 'h1' }]);
 
     const { useContentObserver } = await import(
       `./useToc?content-observer=${Math.random().toString(36).slice(2)}`
@@ -144,7 +144,7 @@ describe('useToc hook family', () => {
       );
     });
 
-    expect(result.current.activeId).toBe('h1');
+    expect(result.current.activeKey).toBe('h1');
   });
 
   it('scrolls content and flashes its editor target', async () => {
@@ -174,12 +174,11 @@ describe('useToc hook family', () => {
     act(() => {
       result.current.onContentScroll({
         el: heading,
-        id: 'h1',
-        path: [0],
+        key: 'h1',
       });
     });
 
-    expect(result.current.activeContentId).toBe('h1');
+    expect(result.current.activeContentKey).toBe('h1');
     expect(container.scrollTo).toHaveBeenCalledWith({
       behavior: 'instant',
       top: 35,
@@ -205,7 +204,7 @@ describe('useToc hook family', () => {
     );
     const { result } = renderHook(() =>
       useTocObserver({
-        activeId: 'a',
+        activeKey: 'a',
         isObserve: true,
         tocRef: { current: root },
       })
@@ -246,7 +245,7 @@ describe('useToc hook family', () => {
 
     renderHook(() =>
       useTocController({
-        activeId: 'a',
+        activeKey: 'a',
         isObserve: true,
         tocRef: { current: root },
       })
@@ -293,8 +292,7 @@ describe('useToc hook family', () => {
     useEditorSelectorMock.mockReturnValue([
       {
         depth: 1,
-        id: 'h1',
-        path: [0],
+        key: 'h1',
         title: 'Heading',
         type: 'h1',
       },
@@ -343,8 +341,7 @@ describe('useToc hook family', () => {
     useEditorSelectorMock.mockReturnValue([
       {
         depth: 1,
-        id: 'h1',
-        path: [0],
+        key: 'h1',
         title: 'Heading',
         type: 'h1',
       },

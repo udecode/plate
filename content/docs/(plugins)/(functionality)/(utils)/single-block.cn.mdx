@@ -51,10 +51,10 @@ export const editor = createPlateEditor({
 import { SingleBlockPlugin } from "platejs";
 import { createPlateEditor } from "platejs/react";
 
-import { EditorKit } from "@/components/editor/editor-kit";
+import { plugins as editorPlugins } from "@/components/editor/editor";
 
 export const editor = createPlateEditor({
-  plugins: [...EditorKit, SingleBlockPlugin],
+  plugins: [...editorPlugins, SingleBlockPlugin],
 });
 ```
 

@@ -3,7 +3,7 @@ import { getEditorExtensionRegistry } from '@platejs/plite/internal';
 
 import type { PluginReference } from '../../lib/plugin';
 
-import { createBaseEditor, defineEditor } from '../../lib/editor';
+import { createBaseEditor } from '../../lib/editor';
 import { defineBasePlugin } from '../../lib/plugin';
 import { BaseParagraphPlugin } from '../../lib/plugins';
 import { definePlatePlugin } from '../../react/plugin';
@@ -901,7 +901,7 @@ describe('compilePlateModel', () => {
       },
       targetPlugins: [HeadingPlugin],
     });
-    const definition = defineEditor('applicationTargetEditor', {
+    const editor = createBaseEditor({
       plugins: [HeadingPlugin, PropertyPlugin],
       schema: {
         overrides: [
@@ -911,7 +911,6 @@ describe('compilePlateModel', () => {
         ],
       },
     });
-    const editor = createBaseEditor({ plugins: definition.plugins });
 
     expect(resolvedTargetTypes).toEqual(['persistedApplicationHeading']);
     expect(

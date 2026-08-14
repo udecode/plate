@@ -4,7 +4,7 @@ import * as React from 'react';
 
 import { Plate, usePlateEditor } from 'platejs/react';
 
-import { EditorKit } from '@/registry/blocks/editor-ai/components/editor/editor-kit';
+import { EditorKit } from '@/registry/components/editor/editor';
 import { SettingsDialog } from '@/registry/components/editor/settings-dialog';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
 

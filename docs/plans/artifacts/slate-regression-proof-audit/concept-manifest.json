@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 4,
+  "kind": "slate-plite-regression-proof",
+  "generatedAt": "2026-08-14T11:21:25.836091Z",
+  "authority": {
+    "slateHead": "ec793483ada7f7e21ebc82c2b3aa9ea674605ce3",
+    "slateBranch": "main",
+    "slateUpstream": "origin/main",
+    "testInventoryFiles": 1136,
+    "issuePrDeltaRows": 54
+  },
+  "policy": {
+    "target": "Regression-proof architecture only: test ownership, changed upstream behavior, and proof boundaries.",
+    "atomicity": "One row per decision-atomic regression mechanism or provenance boundary.",
+    "legacyTruth": "The old 1120-file fork audit is immutable provenance, not an upstream cursor."
+  },
+  "concepts": [
+    { "id": "SLATE-FIXTURE-001", "origin": "reference" },
+    { "id": "SLATE-DECORATION-001", "origin": "shared" },
+    { "id": "SLATE-SELECTED-001", "origin": "shared" },
+    { "id": "SLATE-GRAPHEME-001", "origin": "shared" },
+    { "id": "SLATE-DOM-RESOLVE-001", "origin": "shared" },
+    { "id": "SLATE-DEEP-ARRAY-001", "origin": "reference" },
+    { "id": "PLITE-HISTORY-001", "origin": "Plite" },
+    { "id": "PLITE-COMMAND-001", "origin": "Plite" },
+    { "id": "SLATE-NODE-UNSET-001", "origin": "shared" },
+    { "id": "SLATE-BATCHING-001", "origin": "shared" },
+    { "id": "SLATE-SELECTION-ORIGIN-001", "origin": "shared" },
+    { "id": "SLATE-HYPERSCRIPT-REF-001", "origin": "reference" },
+    { "id": "SLATE-NATIVE-NOOP-001", "origin": "reference" },
+    { "id": "SLATE-MOBILE-IME-001", "origin": "reference" },
+    { "id": "SLATE-ANDROID-IME-001", "origin": "reference" },
+    { "id": "SLATE-PROVENANCE-001", "origin": "shared" }
+  ],
+  "priorCandidates": [
+    {
+      "id": "LEGACY-SLATE-1120",
+      "conceptIds": ["SLATE-PROVENANCE-001"],
+      "evidence": "docs/plans/artifacts/slate-regression-proof-audit/audit-report.md#legacy-audit-recovery"
+    }
+  ]
+}

@@ -8,7 +8,10 @@ import React, {
 } from 'react';
 
 import { ElementContext, ElementPathContext, NodeKeyContext } from '../context';
-import { usePliteNodeRef } from '../hooks/use-plite-node-ref';
+import {
+  usePliteNodeKeyDOMValue,
+  usePliteNodeRef,
+} from '../hooks/use-plite-node-ref';
 import { recordPliteReactRender } from '../render-profiler';
 import { getPliteElementShellAttributes } from '../shell-runtime';
 
@@ -61,6 +64,7 @@ export const PliteElement = ({
   const path = useContext(ElementPathContext);
   const pliteNode = useContext(ElementContext);
   const nodeKey = useContext(NodeKeyContext);
+  const nodeKeyDOMValue = usePliteNodeKeyDOMValue(nodeKey);
   const boundRef = usePliteNodeRef(nodeKey, { path, pliteNode });
 
   recordPliteReactRender({ id, kind: 'element', nodeKey });
@@ -78,7 +82,7 @@ export const PliteElement = ({
       {...domProps}
       className={className}
       data-plite-path={path ? path.join(',') : undefined}
-      data-plite-node-key={nodeKey ?? undefined}
+      data-plite-node-key={nodeKeyDOMValue}
       {...getPliteElementShellAttributes({ isInline, isVoid })}
       id={id}
       ref={combinedRef}

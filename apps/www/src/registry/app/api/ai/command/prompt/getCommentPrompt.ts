@@ -1,26 +1,53 @@
 import type { ChatMessage } from '@/registry/components/editor/use-chat';
+import type { AIChatRequestRefs } from '@platejs/ai/react';
 import type { MarkdownEditor } from '@platejs/markdown';
 
+import { ElementApi } from 'platejs';
 import dedent from 'dedent';
 
 import {
   buildStructuredPrompt,
   formatTextFromMessages,
   getLastUserInstruction,
-  serializePromptBlocks,
 } from '../utils';
+
+const blockRefPattern = /^b[1-9]\d*$/;
 
 export function getCommentPrompt(
   editor: MarkdownEditor,
   {
     messages,
+    refs,
   }: {
     messages: ChatMessage[];
+    refs: AIChatRequestRefs['blocks'];
   }
 ) {
-  const selectingMarkdown = serializePromptBlocks(editor, {
-    withBlockId: true,
-  });
+  const selectingMarkdown = refs
+    .map(({ path, ref }) => {
+      if (!blockRefPattern.test(ref)) {
+        throw new Error(`Invalid AI block reference: ${ref}`);
+      }
+
+      const entry = editor.read.nodes.get(path);
+
+      if (
+        !entry ||
+        !ElementApi.isElement(entry[0]) ||
+        !editor.read.schema.isBlock(entry[0])
+      ) {
+        throw new Error(
+          `AI block reference ${ref} does not resolve to a block.`
+        );
+      }
+
+      const markdown = editor.api.markdown
+        .serialize({ value: { children: [entry[0]] } })
+        .trim();
+
+      return `<block ref="${ref}">${markdown}</block>`;
+    })
+    .join('\n');
 
   return buildStructuredPrompt({
     context: selectingMarkdown,
@@ -32,13 +59,13 @@ export function getCommentPrompt(
         </instruction>
 
         <context>
-        <block id="1">AI systems are transforming modern workplaces by automating routine tasks.</block>
+        <block ref="b1">AI systems are transforming modern workplaces by automating routine tasks.</block>
         </context>
 
         <output>
         [
           {
-            "blockId": "1",
+            "blockRef": "b1",
             "content": "AI systems are transforming modern workplaces",
             "comments": "Clarify what types of systems or provide examples."
           }
@@ -53,18 +80,18 @@ export function getCommentPrompt(
         </instruction>
 
         <context>
-        <block id="2">AI models can automate customer support. However, they may misinterpret user intent if training data is biased.</block>
+        <block ref="b1">AI models can automate customer support. However, they may misinterpret user intent if training data is biased.</block>
         </context>
 
         <output>
         [
           {
-            "blockId": "2",
+            "blockRef": "b1",
             "content": "AI models can automate customer support.",
             "comments": "Consider mentioning limitations or scope of automation."
           },
           {
-            "blockId": "2",
+            "blockRef": "b1",
             "content": "they may misinterpret user intent if training data is biased",
             "comments": "Good point—expand on how bias can be detected or reduced."
           }
@@ -79,14 +106,14 @@ export function getCommentPrompt(
         </instruction>
 
         <context>
-        <block id="3">This policy aims to regulate AI-generated media.</block>
-        <block id="4">Developers must disclose when content is synthetically produced.</block>
+        <block ref="b1">This policy aims to regulate AI-generated media.</block>
+        <block ref="b2">Developers must disclose when content is synthetically produced.</block>
         </context>
 
         <output>
         [
           {
-            "blockId": "3",
+            "blockRef": "b1",
             "content": "This policy aims to regulate AI-generated media.\\n\\nDevelopers must disclose when content is synthetically produced.",
             "comments": "You could combine these ideas into a single, clearer statement on transparency."
           }
@@ -101,13 +128,13 @@ export function getCommentPrompt(
         </instruction>
 
         <context>
-        <block id="5">AI can <Selection>replace human creativity</Selection> in design tasks.</block>
+        <block ref="b1">AI can <Selection>replace human creativity</Selection> in design tasks.</block>
         </context>
 
         <output>
         [
           {
-            "blockId": "5",
+            "blockRef": "b1",
             "content": "replace human creativity",
             "comments": "Overstated claim—suggest using 'assist' instead of 'replace'."
           }
@@ -122,7 +149,7 @@ export function getCommentPrompt(
         </instruction>
 
         <context>
-        <block id="6">
+        <block ref="b1">
         <Selection>
         AI tools are valuable for summarizing information and generating drafts.
         Still, human review remains essential to ensure accuracy and ethical use.
@@ -133,12 +160,12 @@ export function getCommentPrompt(
         <output>
         [
           {
-            "blockId": "6",
+            "blockRef": "b1",
             "content": "AI tools are valuable for summarizing information and generating drafts.",
             "comments": "Solid statement—consider adding specific examples of tools."
           },
           {
-            "blockId": "6",
+            "blockRef": "b1",
             "content": "human review remains essential to ensure accuracy and ethical use",
             "comments": "Good caution—explain briefly why ethics require human oversight."
           }
@@ -149,7 +176,7 @@ export function getCommentPrompt(
     history: formatTextFromMessages(messages),
     instruction: getLastUserInstruction(messages),
     rules: dedent`
-      - IMPORTANT: If a comment spans multiple blocks, use the id of the **first** block.
+      - IMPORTANT: If a comment spans multiple blocks, use the ref of the **first** block.
       - The **content** field must be an exact verbatim substring copied from the <context> (no paraphrasing). Do not include <block> tags, but retain other MDX tags.
       - IMPORTANT: The **content** field must be flexible:
         - It can cover one full block, only part of a block, or multiple blocks.
@@ -162,13 +189,13 @@ export function getCommentPrompt(
     `,
     task: dedent`
       You are a document review assistant.
-      You will receive an MDX document wrapped in <block id="..."> content </block> tags.
+      You will receive an MDX document wrapped in <block ref="..."> content </block> tags.
       <Selection> is the text highlighted by the user.
 
       Your task:
       - Read the content of all blocks and provide comments.
       - For each comment, generate a JSON object:
-        - blockId: the id of the block being commented on.
+        - blockRef: the request-local reference of the block being commented on.
         - content: the original document fragment that needs commenting.
         - comments: a brief comment or explanation for that fragment.
     `,

@@ -54,7 +54,7 @@ For a comprehensive list of plugins that support HTML string deserialization, re
 
 ### Schema Identity
 
-Plate compiles the document schema from the installed plugins. Omit `schemaIdentity`
+Plate compiles the document schema from the installed plugins. Omit `schema`
 for ordinary editors. `editor.read.schema.identity()` returns a derived
 identity with the exact compiled fingerprint:
 
@@ -67,15 +67,15 @@ editor.read.schema.identity();
 // { kind: 'derived', fingerprint: '...' }
 ```
 
-Pass `schemaIdentity: { id, version }` when a document participates in durable
+Put `id` and `version` in `schema` when a document participates in durable
 persistence, history serialization, schema migration, or collaboration peer
-negotiation. That creates a named lineage while keeping the fingerprint tied
-only to the compiled schema:
+negotiation. The same object owns application schema overrides and named
+lineage. The fingerprint remains tied only to the compiled schema:
 
 ```ts
 const editor = createPlateEditor({
   plugins: [H1Plugin],
-  schemaIdentity: { id: 'acme-document', version: 3 },
+  schema: { id: 'acme-document', version: 3 },
 });
 
 editor.read.schema.identity();
@@ -128,33 +128,37 @@ Raw plugin arrays keep plugin APIs, reads, updates, stores, and individual
 element shapes inferred. Use a generated editor contract when the application
 also needs one exact recursive `Value` across the complete plugin graph.
 
-Define the closed application editor in one source file:
+Export the runtime inputs from one source file:
 
-```tsx title="src/editor/editor-definition.tsx"
+```ts title="src/editor.ts"
 import { H1Plugin } from '@platejs/basic-nodes/react';
 import { TablePlugin } from '@platejs/table/react';
-import { defineEditor, property, schema, target } from 'platejs';
+import { property, schema as s, target } from 'platejs';
 
-export default defineEditor('app', {
-  plugins: [H1Plugin, TablePlugin] as const,
-  schema: {
-    overrides: [
-      schema.override(H1Plugin, {
-        element: { type: 'headingOne' },
-      }),
-    ],
-    properties: {
-      reviewState: schema.elementProperty(
-        property.enum(['draft', 'approved'] as const),
-        { target: target.element(H1Plugin) }
-      ),
-    },
+export const EditorKit = [H1Plugin, TablePlugin] as const;
+
+export const EditorSchema = {
+  id: 'app-document',
+  version: 1,
+  overrides: [
+    s.override(H1Plugin, {
+      element: { type: 'headingOne' },
+    }),
+  ],
+  properties: {
+    reviewState: s.elementProperty(
+      property.enum(['draft', 'approved'] as const),
+      { target: target.element(H1Plugin) }
+    ),
   },
-  schemaIdentity: { id: 'app-document', version: 1 },
-});
+} as const;
 ```
 
-Only a closed editor definition can override schema relationships. It may
+`plate generate` finds the single exported Plate plugin tuple and optional
+application schema by their validated runtime shapes. Their export names belong
+to your app, not the compiler contract.
+
+The editor-level `schema` may
 remap an element type, content, groups, or an existing property's target, and
 it may add application-owned properties. Plugin-owned property keys and value
 laws stay fixed; changing one requires a new field and an explicit migration.
@@ -163,7 +167,7 @@ Installed code reads final identities from schema handles:
 
 ```ts
 editor.plugin(H1Plugin).schema.type; // 'headingOne'
-EditorKit.schema.properties.reviewState.key; // 'reviewState'
+generatedSchema.properties.reviewState.key; // 'reviewState'
 ```
 
 Generate and commit the TypeScript and JSON contracts:
@@ -173,34 +177,49 @@ pnpm add -D @platejs/cli
 pnpm exec plate generate
 ```
 
-`plate generate` reads `src/editor/editor-definition.tsx`. Pass entry paths
-when an app owns several editor definitions. Add `--watch` during development
+`plate generate` reads `src/editor.ts`. Pass entry paths when an app owns
+several editor modules. Add `--watch` during development
 or `--check` in CI.
 
-The generated module exports the kit and its exact editor/value types. No
-explicit editor generic is needed:
+The generated module exports exact editor/value types, static schema handles,
+and a fingerprint. It does not own runtime plugin composition:
 
 ```tsx title="src/editor/document-editor.tsx"
 import { Plate, usePlateEditor } from 'platejs/react';
 
 import {
-  EditorKit,
+  schema as generatedSchema,
+  type Editor,
   type Value,
 } from './editor.generated';
+import { EditorKit, EditorSchema } from './editor';
 
-export function DocumentEditor({ initialValue }: { initialValue: Value }) {
-  const editor = usePlateEditor({ plugins: EditorKit, initialValue });
-
+export function prepareDocument(editor: Editor) {
   editor.update.h1.insert();
   editor.update.table.set({ marginLeft: 24 });
+}
+
+export function DocumentEditor({ initialValue }: { initialValue: Value }) {
+  const editor = usePlateEditor({
+    plugins: EditorKit,
+    schema: EditorSchema,
+    initialValue,
+  });
+
+  generatedSchema.properties.reviewState.key;
 
   return <Plate editor={editor} />;
 }
+
+export type DocumentEditorInstance = Editor;
 ```
 
-Run the same command with `--check` in CI. Plate compares the generated
-fingerprint with the installed runtime schema before publishing the editor, so
-stale contracts fail instead of lying about `Value`.
+Use generated `Value` and `Editor` only at static boundaries such as storage,
+collaboration, and exported application types. Runtime constructors and hooks
+consume the authored `EditorKit` and `EditorSchema` directly.
+
+Run the same command with `--check` in CI. It recompiles the authored module
+and fails when committed generated artifacts are stale.
 
 Schema changes that need stored-document work use an explicit scaffold:
 
@@ -208,7 +227,7 @@ Schema changes that need stored-document work use an explicit scaffold:
 pnpm exec plate migrate new add-caption
 ```
 
-Pass `--entry <path>` when the definition does not use the standard path.
+Pass `--entry <path>` when the editor module does not use the standard path.
 
 The scaffold contains typed `FromValue` and `ToValue` snapshots plus the
 structural diff. Application storage or collaboration code decides when and
@@ -276,8 +295,9 @@ const editor = usePlateEditor({
 });
 
 const elementId = editor.plugin(ElementIdPlugin);
-const id = elementId.read.id(element);
-const entry = elementId.read.entry(id);
+const key = editor.key(element);
+const id = elementId.read.id(key);
+const entry = id ? elementId.read.entry(id) : undefined;
 ```
 
 The default generator is full-length `nanoid()`. Loads and moves preserve valid
@@ -482,12 +502,13 @@ const editor = createPlateEditor({
 });
 ```
 
-A closed generated application passes its runtime kit to the context hook:
+A component reads the current editor from context without repeating its plugin
+tuple:
 
 ```ts
-const editor = useEditor(EditorKit);
+const editor = useEditor();
+const table = useEditorPlugin(TablePlugin);
 ```
 
-This infers and verifies the exact generated contract. Without a generated kit,
-call `useEditor()` without a type argument and use `useEditorPlugin(Plugin)` for
-an exact plugin capability.
+Use `useEditorPlugin(Plugin)` when the component needs an exact plugin
+capability. Generated application types stay at explicit static boundaries.

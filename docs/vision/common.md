@@ -28,6 +28,11 @@ common doctrine after the lane is selected.
   capability, abstraction, generality, symmetry, or rubric score. `best-api`
   owns the smallest materially justified concrete design/review step before
   layer planning.
+- Robustness claims must match the owner's end-to-end supported input domain.
+  A reviewer finding does not create a product requirement. Do not make one
+  helper support an extremal input that adjacent validation, construction,
+  serialization, storage, or callers cannot carry; prefer the simpler normal
+  path and remove tests that imply the isolated guarantee.
 - Do not hide latency behind debounce, delayed repair, or benchmark tricks.
 - Do not call browser/editor behavior correct from model-only proof.
 - Do not call perf closed from rerender/locality evidence alone.

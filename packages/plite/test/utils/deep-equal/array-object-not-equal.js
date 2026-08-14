@@ -1,4 +1,4 @@
-import { isDeepEqual } from '../../../src/utils/deep-equal';
+import { TextApi } from '@platejs/plite';
 
 export const input = {
   emptyArray: {
@@ -12,8 +12,8 @@ export const input = {
 };
 
 export const test = ({ emptyArray, indexedArray }) => [
-  isDeepEqual(emptyArray.objectA, emptyArray.objectB),
-  isDeepEqual(indexedArray.objectA, indexedArray.objectB),
+  TextApi.equals(emptyArray.objectA, emptyArray.objectB),
+  TextApi.equals(indexedArray.objectA, indexedArray.objectB),
 ];
 
 export const output = [false, false];

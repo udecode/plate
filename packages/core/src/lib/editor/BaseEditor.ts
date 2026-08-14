@@ -16,15 +16,14 @@ import type {
   InternalPliteEditorWithInstalledPlateDefinitions,
   PliteEditorWithPlatePlugins,
   InferEditorRuntimePlugins,
-  InternalEditorApplicationSchemaProvider,
   InternalEditorMutationProvider,
-  InternalInstalledSchemaDefinitionsProvider,
+  InternalInstalledSchemaMutationProvider,
   MergeInstalledPluginDefinitions,
 } from './pluginRuntimeTypes';
 import type {
   GeneratedEditorMutations,
   GeneratedEditorValue,
-} from './defineEditor';
+} from '../../internal/editor/generatedEditorTypes';
 import type { CorePlugins } from '../plugins/getCorePlugins';
 
 export type {
@@ -34,11 +33,6 @@ export type {
   InferRuntimePlugins,
   MergeInstalledPluginDefinitions,
 } from './pluginRuntimeTypes';
-
-export type PlateSchemaIdentity = Readonly<{
-  id: string;
-  version: number;
-}>;
 
 type PlateEditorRuntime = {
   runtime: {
@@ -77,13 +71,12 @@ export type InferBaseEditorPlugins<TPlugins> = MergeInstalledPluginDefinitions<
   InferEditorRuntimePlugins<NormalizeBasePluginInput<TPlugins>>
 >;
 
-export type InternalBaseEditorMutationProvider<TPlugins, TRuntime> = [
-  GeneratedEditorMutations<TPlugins>,
-] extends [never]
-  ? TPlugins extends InternalEditorApplicationSchemaProvider
-    ? InternalInstalledSchemaDefinitionsProvider<TRuntime> &
-        InternalEditorApplicationSchemaProvider
-    : TRuntime
+export type InternalBaseEditorMutationProvider<
+  TPlugins,
+  TRuntime,
+  TSchema = undefined,
+> = [GeneratedEditorMutations<TPlugins>] extends [never]
+  ? InternalInstalledSchemaMutationProvider<TRuntime, TSchema>
   : InternalEditorMutationProvider<GeneratedEditorMutations<TPlugins>>;
 
 /** @internal Base runtime projected from one authored plugin definition. */
@@ -94,7 +87,9 @@ export type InternalBaseEditorWithPlatePlugins<
   PlateEditorRuntime &
   PlatePluginRuntime<P>;
 
-export type BaseEditor<TPlugins = never> = [TPlugins] extends [never]
+export type BaseEditor<TPlugins = never, TSchema = undefined> = [
+  TPlugins,
+] extends [never]
   ? InternalBaseEditorWithInstalledPlugins<
       any,
       AnyBasePluginDefinition,
@@ -104,7 +99,7 @@ export type BaseEditor<TPlugins = never> = [TPlugins] extends [never]
     ? InternalBaseEditorWithInstalledPlugins<
         GeneratedEditorValue<TPlugins>,
         D,
-        InternalBaseEditorMutationProvider<TPlugins, D>
+        InternalBaseEditorMutationProvider<TPlugins, D, TSchema>
       >
     : never;
 

@@ -127,8 +127,8 @@ Use paired names:
 
 ## Annotate Without Rewriting
 
-Inspect each source image first. Use `imagegen`, or the repo-approved image
-editor, to add only:
+Inspect each source image first. Use a deterministic local image editor, such
+as Sharp with SVG overlays, to add only:
 
 - numbered target outlines on the product surface;
 - matching numbered explanations in one fixed side rail outside the product;
@@ -172,6 +172,9 @@ Never add, remove, rewrite, beautify, or simulate product content. Compare the
 annotated result with the original. If product text, values, layout, or state
 changed, discard it and regenerate. The original is proof. The annotation is
 explanation.
+
+Never use generative image editing for walkthrough annotations. It can alter
+the product evidence instead of merely explaining it.
 
 ## Protect Sensitive Data
 

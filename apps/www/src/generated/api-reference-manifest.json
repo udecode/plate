@@ -7612,6 +7612,18 @@
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
+        "@platejs/plite/internal:getNodeKeyDOMValue": {
+          "aliases": [],
+          "documentation": "",
+          "entrypoint": "@platejs/plite/internal",
+          "kind": "const",
+          "name": "getNodeKeyDOMValue",
+          "route": null,
+          "runtime": true,
+          "signature": "getNodeKeyDOMValue: (nodeKey: NodeKey) => string",
+          "source": "packages/plite/src/utils/node-keys.ts",
+          "typeParameters": []
+        },
         "@platejs/plite/internal:getPathByNodeKey": {
           "aliases": [],
           "documentation": "",

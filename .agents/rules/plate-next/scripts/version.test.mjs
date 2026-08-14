@@ -98,6 +98,9 @@ test('reads the visible doctrine version and fingerprints doctrine sources', () 
   mkdirSync(join(root, '.agents/rules/plate-ui/rules'), {
     recursive: true,
   });
+  mkdirSync(join(root, '.agents/rules/plate-ui/references'), {
+    recursive: true,
+  });
   mkdirSync(join(root, '.agents/rules/plate-next/scripts'), {
     recursive: true,
   });
@@ -127,8 +130,16 @@ test('reads the visible doctrine version and fingerprints doctrine sources', () 
   );
   writeFileSync(join(root, '.agents/rules/plate-ui.mdc'), 'ui doctrine\n');
   writeFileSync(
+    join(root, '.agents/rules/plate-ui/references/component-audit.md'),
+    'component audit\n'
+  );
+  writeFileSync(
     join(root, '.agents/rules/plate-ui/rules/component-shape.md'),
     'component shape\n'
+  );
+  writeFileSync(
+    join(root, '.agents/rules/plate-ui/rules/registry.md'),
+    'registry wiring\n'
   );
   writeFileSync(
     join(root, '.agents/rules/plate-next/scripts/sync-resources.mjs'),
@@ -180,7 +191,9 @@ test('requires exact generated doctrine resources', () => {
     ],
     ['plate-plugin-creator/rules/creation-flow.md', 'creation flow\n'],
     ['plate-plugin-creator/rules/typing.md', 'typing law\n'],
+    ['plate-ui/references/component-audit.md', 'component audit\n'],
     ['plate-ui/rules/component-shape.md', 'component shape\n'],
+    ['plate-ui/rules/registry.md', 'registry wiring\n'],
   ];
 
   for (const [path, value] of pairs) {
@@ -209,6 +222,17 @@ test('requires exact generated doctrine resources', () => {
   writeFileSync(
     join(root, '.agents/skills/plate-ui/rules/component-shape.md'),
     'stale component shape\n'
+  );
+
+  assert.equal(haveMatchingRequiredResources(root), false);
+
+  writeFileSync(
+    join(root, '.agents/skills/plate-ui/rules/component-shape.md'),
+    'component shape\n'
+  );
+  writeFileSync(
+    join(root, '.agents/skills/plate-ui/references/component-audit.md'),
+    'stale component audit\n'
   );
 
   assert.equal(haveMatchingRequiredResources(root), false);

@@ -1,5 +1,4 @@
 import { type Range, RangeApi } from '..';
-import { isDeepEqual } from '../utils/deep-equal';
 import { isObject } from '../utils/is-object';
 import type { BaseEditor, EditorNodeTypeProvider } from './editor';
 import type { Element } from './element';
@@ -132,6 +131,45 @@ export interface TextInterface {
   ) => { leaf: Text; position?: LeafPosition }[];
 }
 
+const getOwnValue = (object: Record<PropertyKey, unknown>, key: string) =>
+  Object.hasOwn(object, key) ? object[key] : undefined;
+
+const isTextValueEqual = (value: unknown, other: unknown): boolean => {
+  if (value === other) return true;
+
+  if (Array.isArray(value)) {
+    if (!Array.isArray(other) || value.length !== other.length) return false;
+
+    for (let index = 0; index < value.length; index++) {
+      if (!isTextValueEqual(value[index], other[index])) return false;
+    }
+
+    return true;
+  }
+
+  if (!isObject(value) || !isObject(other) || Array.isArray(other))
+    return false;
+
+  for (const key in value) {
+    if (!Object.hasOwn(value, key)) continue;
+
+    const item = value[key];
+    const another = getOwnValue(other, key);
+
+    if (item === another) continue;
+    if (!isTextValueEqual(item, another)) return false;
+  }
+
+  for (const key in other) {
+    if (!Object.hasOwn(other, key)) continue;
+    if (getOwnValue(value, key) === undefined && other[key] !== undefined) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
 // eslint-disable-next-line no-redeclare
 export const TextApi: Readonly<TextInterface> = Object.freeze({
   equals(text: Text, another: Text, options: TextEqualsOptions = {}): boolean {
@@ -143,7 +181,7 @@ export const TextApi: Readonly<TextInterface> = Object.freeze({
       return rest;
     }
 
-    return isDeepEqual(
+    return isTextValueEqual(
       loose ? omitText(text) : text,
       loose ? omitText(another) : another
     );

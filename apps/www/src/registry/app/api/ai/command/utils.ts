@@ -280,10 +280,7 @@ export const isMultiBlocks = (editor: BaseEditor) =>
     );
   });
 
-export const serializePromptBlocks = (
-  editor: MarkdownEditor,
-  { withBlockId = false }: { withBlockId?: boolean } = {}
-) => {
+export const serializePromptBlocks = (editor: MarkdownEditor) => {
   const blocks = editor.read.nodes
     .toArray<Element>({
       match: (node) =>
@@ -294,7 +291,6 @@ export const serializePromptBlocks = (
 
   return editor.api.markdown.serialize({
     value: { children: blocks },
-    withBlockId,
   });
 };
 

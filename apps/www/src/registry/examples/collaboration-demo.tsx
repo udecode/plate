@@ -469,7 +469,7 @@ const createPeerEditor = (
     id: `collaboration-demo-${provider.peer.id}-${schemaVersion}`,
     initialValue: cloneInitialValue(),
     plugins,
-    schemaIdentity: {
+    schema: {
       id: SCHEMA.id,
       version: schemaVersion,
     },
@@ -518,7 +518,7 @@ const testSchemaJoin = (room: DemoRoom, version: number) => {
       id: `collaboration-demo-schema-probe-${version}`,
       initialValue: cloneInitialValue(),
       plugins,
-      schemaIdentity: { id: SCHEMA.id, version },
+      schema: { id: SCHEMA.id, version },
     });
 
     editor.update.yjs.connect();

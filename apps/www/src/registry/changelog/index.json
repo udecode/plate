@@ -2,6 +2,194 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-08-14-author-editor-runtime",
+      "href": "/registry/changelog/2026-08-14-author-editor-runtime.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Keep optional editor features explicit",
+      "change": {
+        "type": "source",
+        "date": "2026-08-14",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "editor-kit",
+        "editor-ai",
+        "copilot-demo",
+        "markdown-streaming-demo",
+        "playground-demo",
+        "code-drawing-demo",
+        "excalidraw-demo"
+      ],
+      "entries": 3,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-08-13-ai-request-refs",
+      "href": "/registry/changelog/2026-08-13-ai-request-refs.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Use request-local AI node references",
+      "change": {
+        "type": "source",
+        "date": "2026-08-13",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["ai-api", "ai-kit", "use-chat"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-08-13-fix-heading-renderer-types",
+      "href": "/registry/changelog/2026-08-13-fix-heading-renderer-types.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Fix heading renderer prop types",
+      "change": {
+        "type": "source",
+        "date": "2026-08-13",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["heading-node"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-08-13-fix-registry-install-dependencies",
+      "href": "/registry/changelog/2026-08-13-fix-registry-install-dependencies.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Fix registry install dependencies",
+      "change": {
+        "type": "source",
+        "date": "2026-08-13",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "ai-api",
+        "ai-kit",
+        "ai-menu",
+        "ai-node",
+        "autoformat-classic-kit",
+        "autoformat-kit",
+        "block-context-menu",
+        "block-discussion",
+        "block-draggable",
+        "block-selection",
+        "block-selection-kit",
+        "block-suggestion",
+        "blockquote-node",
+        "callout-node",
+        "code-block-node",
+        "code-drawing-node",
+        "code-node",
+        "column-node",
+        "comment-node",
+        "comment-toolbar-button",
+        "copilot-demo",
+        "copilot-kit",
+        "cursor-overlay",
+        "date-node",
+        "docx-export-kit",
+        "editor-ai",
+        "editor-base-kit",
+        "editor-basic",
+        "editor-kit",
+        "emoji-node",
+        "emoji-toolbar-button",
+        "equation-node",
+        "excalidraw-kit",
+        "excalidraw-node",
+        "export-toolbar-button",
+        "fixed-toolbar-classic-buttons",
+        "floating-toolbar",
+        "font-base-kit",
+        "font-color-toolbar-button",
+        "font-kit",
+        "heading-node",
+        "highlight-node",
+        "hr-node",
+        "huge-document-demo",
+        "hundreds-editors-demo",
+        "import-toolbar-button",
+        "inline-combobox",
+        "installation-next-demo",
+        "kbd-node",
+        "link-toolbar",
+        "list-toolbar-button",
+        "markdown-streaming-demo",
+        "markdown-to-plite-demo",
+        "media-audio-node",
+        "media-base-kit",
+        "media-embed-node",
+        "media-file-node",
+        "media-image-node",
+        "media-toolbar",
+        "media-video-node",
+        "mode-toolbar-button",
+        "more-toolbar-button",
+        "multiple-editors-demo",
+        "plate-to-html",
+        "preview-markdown-demo",
+        "resize-handle",
+        "search-highlight-node",
+        "select-editor",
+        "select-editor-demo",
+        "settings-dialog",
+        "slash-node",
+        "suggestion-node",
+        "tabbable-demo",
+        "table-node",
+        "tag-node",
+        "toc-node",
+        "transforms",
+        "transforms-classic",
+        "turn-into-toolbar-button",
+        "turn-into-toolbar-classic-button",
+        "use-chat",
+        "version-history-demo"
+      ],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-08-13-use-runtime-keys-for-toc-docx",
+      "href": "/registry/changelog/2026-08-13-use-runtime-keys-for-toc-docx.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Use runtime keys for TOC and DOCX navigation",
+      "change": {
+        "type": "source",
+        "date": "2026-08-13",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "docx-export-kit",
+        "heading-node-static",
+        "toc-node",
+        "toc-node-static",
+        "editor-kit",
+        "editor-ai"
+      ],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
       "id": "2026-08-12-canonical-node-props",
       "href": "/registry/changelog/2026-08-12-canonical-node-props.json",
       "status": "draft",

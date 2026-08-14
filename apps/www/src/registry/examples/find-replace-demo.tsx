@@ -12,7 +12,7 @@ import {
 } from 'platejs/react';
 
 import { Input } from '@/components/ui/input';
-import { EditorKit } from '@/registry/components/editor/editor-kit';
+import { EditorKit } from '@/registry/components/editor/editor';
 import { findReplaceValue } from '@/registry/examples/values/find-replace-value';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
 import { FixedToolbar } from '@/registry/ui/fixed-toolbar';

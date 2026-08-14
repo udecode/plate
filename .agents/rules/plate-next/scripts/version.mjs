@@ -14,7 +14,9 @@ const doctrinePaths = [
   '.agents/rules/plate-plugin-creator/rules/creation-flow.md',
   '.agents/rules/plate-plugin-creator/rules/typing.md',
   '.agents/rules/plate-ui.mdc',
+  '.agents/rules/plate-ui/references/component-audit.md',
   '.agents/rules/plate-ui/rules/component-shape.md',
+  '.agents/rules/plate-ui/rules/registry.md',
   '.agents/rules/plate-next/scripts/sync-resources.mjs',
   'docs/plans/templates/plate-next.md',
 ];
@@ -32,8 +34,16 @@ const requiredGeneratedResources = [
     '.agents/skills/plate-plugin-creator/rules/typing.md',
   ],
   [
+    '.agents/rules/plate-ui/references/component-audit.md',
+    '.agents/skills/plate-ui/references/component-audit.md',
+  ],
+  [
     '.agents/rules/plate-ui/rules/component-shape.md',
     '.agents/skills/plate-ui/rules/component-shape.md',
+  ],
+  [
+    '.agents/rules/plate-ui/rules/registry.md',
+    '.agents/skills/plate-ui/rules/registry.md',
   ],
 ];
 const requiredGeneratedSkills = [
@@ -667,7 +677,9 @@ const printStatus = ({ json, registry, statuses }) => {
 
   for (const entry of statuses) {
     console.log(
-      `${entry.status.toUpperCase().padEnd(7)} packages/${entry.slug} v${entry.appliedVersion} fingerprint=${entry.fingerprintState} (${entry.reason})`
+      `${entry.status.toUpperCase().padEnd(7)} packages/${entry.slug} v${
+        entry.appliedVersion
+      } fingerprint=${entry.fingerprintState} (${entry.reason})`
     );
   }
 };

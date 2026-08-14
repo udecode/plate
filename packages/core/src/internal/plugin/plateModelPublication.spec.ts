@@ -293,7 +293,7 @@ describe('Plate model publication', () => {
       id: 'plate-test:core:internal-plugin-identity-snapshot',
       version: 1,
     };
-    const editor = createBaseEditor({ schemaIdentity: identity });
+    const editor = createBaseEditor({ schema: identity });
 
     identity.id = 'mutated';
     identity.version = 2;

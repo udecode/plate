@@ -61,6 +61,24 @@ These rules apply to user-facing technical prose: docs, commit messages, PR desc
 
 Use those skills when relevant:
 
+Plate work follows one responsibility chain. Do not merge these owners or copy
+their doctrine into each other:
+
+| Question                                                                      | Owner                                       |
+| ----------------------------------------------------------------------------- | ------------------------------------------- |
+| durable Plate/Plite architecture and accepted API law                         | root `VISION.md` and `docs/vision/plate.md` |
+| ideal reusable public call shape and API debt ranking                         | `best-api`                                  |
+| accepted API adoption, boundary, and proof plan                               | `plate-plan`                                |
+| package plugin implementation, colocation, inference, and package proof       | `plate-plugin-creator`                      |
+| copied registry UI, app-local composition, registry wiring, and browser proof | `plate-ui`                                  |
+| current-state public teaching                                                 | `docs-creator`                              |
+| migration/adoption audit against the latest doctrine                          | `plate-next`                                |
+
+The CLI/schema generator is optional advanced tooling. Ordinary editor setup,
+plugin authoring, registry UI, and public docs must not require generated
+application contracts. Vision and `best-api` own that API law; worker skills
+only apply it inside their layer.
+
 Primary user-facing entrypoints:
 
 - `auto` as the ergonomic Plate/Plite front door: route public GitHub queue
@@ -207,9 +225,14 @@ Skill ownership:
 - Repo-local skills must be repo-specific. Generic shared workflows belong in global skills or the synced dotai owner.
 - Never create a wrapper skill that only renames an existing owner. Patch, merge, or delete overlap instead.
 - New local skill topology needs a recurring local workflow, a named owner gap, and a first validation command that does not depend on cloud-only infrastructure.
-- A reusable API correction must run `best-api repair`: update the source rule,
-  the smallest relevant Vision owner, remove contradictory worker wording, and
-  regenerate skills with `pnpm install`.
+- Any task that changes, removes, renames, or reinterprets a reusable public
+  API automatically runs `best-api repair` before closeout. Do not wait for a
+  second user prompt. Update the source rule, update the smallest relevant
+  Vision owner only when durable taste changed, audit every affected worker
+  skill for stale teaching, bump versioned doctrine when its source set
+  changed, regenerate skills with `pnpm install`, and prove source/mirror
+  parity plus zero stale examples for the changed contract. A read-only task
+  reports the exact required repair instead of writing it.
 - Do not keep repo-local helper skills whose only job is quick status,
   continuation, or a renamed mode of another owner. Put that behavior into the
   owning supervisor, template, or mode.

@@ -433,7 +433,7 @@ slice，并在需要时回退到这些外部格式。
     </APIItem>
     <APIItem name="withBlockId" type="boolean" optional>
       将 `ElementIdPlugin` 的 ID 序列化为 `<block id="...">内容</block>`。
-      编辑器必须安装 `ElementIdPlugin`，并且会遵循插件编译后的属性键。
+      编辑器必须安装 `ElementIdPlugin`；反序列化会恢复每个 wrapper 的持久化 ID。
       **默认值**：`false`
     </APIItem>
   </APIOptions>

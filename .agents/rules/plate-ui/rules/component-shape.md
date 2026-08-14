@@ -65,7 +65,7 @@ That drops required renderer props from the passthrough object.
 Prefer the repo’s direct patterns:
 
 ```tsx
-// Host-owned app code outside copied registry UI.
+// Host-owned app code inferred from its local editor construction.
 const api = editor.api.comment;
 const update = editor.update.comment;
 ```
@@ -90,9 +90,15 @@ if (comment.installed) {
 ```
 
 Registry UI remains generic even when its current host has a complete inferred
-kit. Do not import an app-specific editor type there, cast a root `editor.api`
-namespace, infer availability from node/schema internals, or catch a
-missing-portal error.
+application contract. Do not import an app-specific editor type or
+application-definition module there, cast a root
+`editor.api` namespace, infer availability from node/schema internals, or catch
+a missing-portal error. Use the core `useEditor()` plus descriptor portals.
+
+A registry example whose metadata explicitly depends on `editor-kit` may
+import the host's ordinary plugin composition. Independently copied UI may
+not. The `editor-kit` name describes copied registry packaging; it is not an
+application runtime API or application type owner.
 
 Do **not** invent local wrappers like:
 

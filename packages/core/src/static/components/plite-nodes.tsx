@@ -109,7 +109,15 @@ type PliteElementComponentProps<
   N extends Element = Element,
   C extends AnyBasePluginDefinition = BasePluginDefinition,
   T extends keyof HTMLElementTagNameMap = 'div',
-> = PliteElementRenderProps<N, C> & PliteHTMLProps<C, T>;
+> = RenderElementProps<N> &
+  Pick<PliteNodeProps<C>, 'ref'> & {
+    attributes: React.PropsWithoutRef<React.JSX.IntrinsicElements[T]> &
+      UnknownObject;
+    as?: T;
+    className?: string;
+    path: Path;
+    style?: React.CSSProperties;
+  };
 
 export const PliteElement = React.forwardRef<
   HTMLDivElement,
@@ -132,13 +140,18 @@ export const PliteElement = React.forwardRef<
       {children}
     </Tag>
   );
-}) as <
-  N extends Element = Element,
-  C extends AnyBasePluginDefinition = BasePluginDefinition,
-  T extends keyof HTMLElementTagNameMap = 'div',
->(
-  props: PliteElementComponentProps<N, C, T>
-) => React.ReactElement;
+}) as {
+  <
+    N extends Element = Element,
+    C extends AnyBasePluginDefinition = BasePluginDefinition,
+    T extends keyof HTMLElementTagNameMap = 'div',
+  >(
+    props: PliteElementComponentProps<N, C, T>
+  ): React.ReactElement;
+  <T extends keyof HTMLElementTagNameMap = 'div'>(
+    props: PliteElementComponentProps<Element, never, T>
+  ): React.ReactElement;
+};
 
 type PliteTextRenderProps<
   N extends Text = Text,

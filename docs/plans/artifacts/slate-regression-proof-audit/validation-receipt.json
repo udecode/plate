@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "validatedAt": "2026-08-14T12:34:41Z",
+  "authority": {
+    "slateHead": "ec793483ada7f7e21ebc82c2b3aa9ea674605ce3",
+    "testHarvestFiles": 1136,
+    "testIdentities": 1254,
+    "issuePrDeltaRows": 54
+  },
+  "strictMatrix": {
+    "concepts": 16,
+    "rows": 16,
+    "material": 1,
+    "integrityErrors": 0,
+    "command": "node .agents/rules/editor-audit/scripts/validate-concept-matrix.mjs --manifest docs/plans/artifacts/slate-regression-proof-audit/concept-manifest.json --ledger docs/plans/artifacts/slate-regression-proof-audit/concept-matrix.md"
+  },
+  "trackerLedger": {
+    "total": 54,
+    "issues": 7,
+    "pullRequests": 47,
+    "createdAfterBaseline": 33,
+    "materiallyUpdatedAfterBaseline": 21,
+    "unchecked": 0,
+    "command": "node docs/editor-issue-harvester/slate/full/classify-delta.mjs"
+  },
+  "planningHandoff": {
+    "relevantRows": 23,
+    "keepLocal": 12,
+    "rejectReference": 1,
+    "acceptedPackets": 1,
+    "evidenceBackedDefers": 9,
+    "invalidSkips": 31,
+    "unownedRows": 0,
+    "acceptedPacketIds": ["EQ-P1"],
+    "files": {
+      "handoff": "docs/plans/artifacts/slate-regression-proof-audit/planning-handoff.md",
+      "materialDossiers": "docs/plans/artifacts/slate-regression-proof-audit/material-dossiers.md",
+      "publicApiReview": "docs/plans/artifacts/slate-regression-proof-audit/public-api-review.md"
+    }
+  },
+  "transactionBenchmark": {
+    "result": "passed",
+    "artifactVersion": 5,
+    "iterations": 200,
+    "blocks": 8,
+    "mixedBatchMedianRatio": 0.7142857142857143,
+    "mixedBatchP95Ratio": 0.8284023668639053,
+    "thresholds": {
+      "medianRatioMax": 1,
+      "p95RatioMax": 1.25
+    },
+    "batchedPublicationCount": 1,
+    "separatePublicationCount": 5,
+    "snapshotParity": true,
+    "command": "PLITE_TRANSACTION_EXECUTION_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/transaction-execution.mjs"
+  },
+  "bestApi": {
+    "reviewedThreads": [6003, 6083, 6091],
+    "acceptedPublicChanges": 0,
+    "verdicts": {
+      "6003": "defer-until-atomic",
+      "6083": "reject-nullable-set-keep-explicit-unset",
+      "6091": "reject-editor-augmentation-keep-semantic-commands"
+    }
+  },
+  "focusedProof": [
+    {
+      "surface": "DOM resolver",
+      "result": "1 passed",
+      "command": "pnpm --filter @platejs/plite-dom exec bun test --preload ../../config/plite-source-test-setup.ts ./test/bridge.ts --test-name-pattern 'resolves recoverable DOM bridge gaps'"
+    },
+    {
+      "surface": "selected element removal",
+      "result": "10 passed",
+      "command": "pnpm --filter @platejs/plite-react test -- use-element-selected.test.tsx"
+    },
+    {
+      "surface": "selection origin",
+      "result": "2 passed",
+      "command": "pnpm --filter @platejs/plite-react exec bun test --preload ../../config/plite-source-test-setup.ts ./test/selection-controller-contract.ts --test-name-pattern 'DOM selectionchange import|model-owned collapsed'"
+    },
+    {
+      "surface": "Unicode grapheme",
+      "result": "17 passed",
+      "command": "pnpm --filter @platejs/plite exec bun test --preload ../../config/plite-source-test-setup.ts ./test/text-units-contract.ts"
+    },
+    {
+      "surface": "History rollback",
+      "result": "1 passed",
+      "command": "pnpm --filter @platejs/plite-history exec bun test --preload ../../config/plite-source-test-setup.ts ./test/history-contract.ts --test-name-pattern 'discards the redo branch'"
+    },
+    {
+      "surface": "semantic commands",
+      "result": "44 passed",
+      "command": "pnpm --filter @platejs/plite test -- command-spec.test.ts"
+    },
+    {
+      "surface": "transaction-owned node set and unset",
+      "result": "2 passed",
+      "command": "pnpm --filter @platejs/plite exec bun test --preload ../../config/plite-source-test-setup.ts ./test/primitive-method-runtime-contract.ts --test-name-pattern 'setNodes uses|unsetNodes uses'"
+    },
+    {
+      "surface": "async decorations browser",
+      "result": "4 passed in Chromium",
+      "command": "pnpm --filter plite test:plite-browser:chromium tests/plite-browser/donor/examples/decorations-async.test.ts"
+    }
+  ]
+}

@@ -1,19 +1,7 @@
 /** @platejs-curated-entrypoint */
 
 export type { BaseEditor } from './lib/editor/BaseEditor';
-export {
-  bindGeneratedEditor,
-  defineEditor,
-  type EditorApplicationSchema,
-  type EditorDefinition,
-  type EditorDefinitionInput,
-  type GeneratedEditorContract,
-  type GeneratedEditorKit,
-  type GeneratedEditorMutations,
-  type GeneratedEditorSchema,
-  type GeneratedEditorTypes,
-  type GeneratedEditorValue,
-} from './lib/editor/defineEditor';
+export type { EditorApplicationSchema } from './lib/editor/editorApplicationSchema';
 export type {
   BasePluginInput,
   PlatePluginOwnUpdate,

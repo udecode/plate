@@ -3,7 +3,6 @@
 import React from 'react';
 
 import { renderHook } from '@testing-library/react';
-import { defineEditor } from '@platejs/core';
 import { Plate } from '@platejs/core/react';
 import { schema } from '@platejs/plite';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
@@ -89,22 +88,21 @@ describe('useTableMergeState', () => {
         </htable>
       </editor>
     ) as TestEditor;
-    const definition = defineEditor('customTableMergeState', {
-      plugins: [
-        TablePlugin.configure({
-          initialState: { disableMerge: false },
+    const plugins = [
+      TablePlugin.configure({
+        initialState: { disableMerge: false },
+      }),
+    ] as const;
+    const applicationSchema = {
+      overrides: [
+        schema.override(TablePlugin, {
+          element: { type: 'customTable' },
         }),
       ],
-      schema: {
-        overrides: [
-          schema.override(TablePlugin, {
-            element: { type: 'customTable' },
-          }),
-        ],
-      },
-    });
+    } as const;
     const editor = createTestTableEditor({
-      plugins: definition.plugins,
+      plugins,
+      schema: applicationSchema,
       selection: input.selection,
       initialValue: input.children.map((node, index) =>
         index === 0 ? { ...node, type: 'customTable' } : node

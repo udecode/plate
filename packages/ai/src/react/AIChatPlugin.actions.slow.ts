@@ -104,7 +104,7 @@ describe('ai chat action utils', () => {
 
     editor
       .plugin(AIChatPlugin)
-      .update.applyTableCellSuggestion({ content: 'ai', id: 'c1' });
+      .update.applyTableCellSuggestion({ content: 'ai', ref: 'c1' });
 
     expect(
       editor.read.nodes.some({

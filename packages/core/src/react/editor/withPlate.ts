@@ -8,16 +8,14 @@ import type {
   InternalPlateEditorWithInstalledPlugins,
   PlateEditor,
 } from './PlateEditor';
-import {
-  type GeneratedEditorValue,
-  inheritGeneratedEditorContract,
-} from '../../lib/editor/defineEditor';
+import type { GeneratedEditorValue } from '../../internal/editor/generatedEditorTypes';
 import type { NavigationFeedbackPluginState } from '../plugins/navigation-feedback/types';
 
 import {
   type BaseEditorOptions,
   type BasePluginInput,
   type CreateBaseEditorOptions,
+  type EditorApplicationSchema,
   type EditorValueInput,
   createBaseEditor,
 } from '../../lib';
@@ -44,7 +42,10 @@ export type { InferPlateEditorPlugins } from './PlateEditor';
 type PlateEditorOptions<
   V extends Value = Value,
   TPlugins extends readonly unknown[] = readonly PlatePluginInput[],
-> = Omit<BaseEditorOptions, 'id' | 'plugins'> &
+  TSchema extends EditorApplicationSchema | undefined =
+    | EditorApplicationSchema
+    | undefined,
+> = Omit<BaseEditorOptions, 'id' | 'plugins' | 'schema'> &
   Omit<
     Partial<
       Pick<
@@ -85,22 +86,30 @@ type PlateEditorOptions<
     //   >;
     // };
     initialValue?:
-      | ((context: { editor: PlateEditor<TPlugins> }) => EditorValueInput<V>)
+      | ((context: {
+          editor: PlateEditor<TPlugins, TSchema>;
+        }) => EditorValueInput<V>)
       | EditorValueInput<V>;
     plugins?: TPlugins;
+    schema?: TSchema;
   };
 
 const applyPlateEditor = <
   const TPlugins extends readonly BasePluginInput[] = readonly [],
+  const TSchema extends EditorApplicationSchema | undefined = undefined,
   E extends Editor = Editor,
   V extends Value = E extends Editor<infer T, infer _TExtensions> ? T : Value,
 >(
   e: E,
-  options: PlateEditorOptions<V, TPlugins>
+  options: PlateEditorOptions<V, TPlugins, TSchema>
 ): InternalPlateEditorWithInstalledPlugins<
   V,
   InferPlateEditorPlugins<TPlugins>,
-  InferPlateEditorSchemaPlugins<TPlugins>
+  InternalPlateEditorMutationProvider<
+    TPlugins,
+    InferPlateEditorSchemaPlugins<TPlugins>,
+    TSchema
+  >
 > => {
   const { navigationFeedback, plugins = [], readOnly, ...rest } = options;
   const combinedPlugins = [
@@ -108,28 +117,36 @@ const applyPlateEditor = <
     ...plugins,
   ];
 
-  inheritGeneratedEditorContract(plugins, combinedPlugins);
-
   const editor = createBaseEditor({
     editor: e,
     readOnly,
     ...rest,
     plugins: combinedPlugins,
-  } as unknown as CreateBaseEditorOptions<readonly BasePluginInput[]> & {
+  } as unknown as CreateBaseEditorOptions<
+    readonly BasePluginInput[],
+    TSchema
+  > & {
     plugins: readonly BasePluginInput[];
   });
 
   return editor as unknown as InternalPlateEditorWithInstalledPlugins<
     V,
     InferPlateEditorPlugins<TPlugins>,
-    InferPlateEditorSchemaPlugins<TPlugins>
+    InternalPlateEditorMutationProvider<
+      TPlugins,
+      InferPlateEditorSchemaPlugins<TPlugins>,
+      TSchema
+    >
   >;
 };
 
 type CreatePlateEditorOptionsForValue<
   V extends Value,
   TPlugins extends readonly unknown[],
-> = Partial<Omit<PlateEditorOptions<V, NoInfer<TPlugins>>, 'plugins'>> & {
+  TSchema extends EditorApplicationSchema | undefined,
+> = Partial<
+  Omit<PlateEditorOptions<V, NoInfer<TPlugins>, TSchema>, 'plugins'>
+> & {
   /** Stable logical identity for the created editor. */
   id?: string;
   /**
@@ -143,7 +160,10 @@ type CreatePlateEditorOptionsForValue<
 
 export type CreatePlateEditorOptions<
   TPlugins extends readonly unknown[] = readonly PlatePluginInput[],
-> = CreatePlateEditorOptionsForValue<Value, TPlugins>;
+  TSchema extends EditorApplicationSchema | undefined =
+    | EditorApplicationSchema
+    | undefined,
+> = CreatePlateEditorOptionsForValue<Value, TPlugins, TSchema>;
 
 /**
  * Creates a Plate editor (React version).
@@ -175,7 +195,7 @@ export type CreatePlateEditorOptions<
  *
  * // Name the schema only when persisted or collaborative state needs lineage.
  * const persistedEditor = createPlateEditor({
- *   schemaIdentity: { id: 'acme-document', version: 1 },
+ *   schema: { id: 'acme-document', version: 1 },
  * });
  * ```
  *
@@ -185,13 +205,17 @@ export type CreatePlateEditorOptions<
 export function createPlateEditor<
   const TPlugins extends
     readonly BasePluginInput[] = readonly PlateCorePlugin[],
->(options: CreatePlateEditorOptions<TPlugins>): PlateEditor<TPlugins>;
+  const TSchema extends EditorApplicationSchema | undefined = undefined,
+>(
+  options: CreatePlateEditorOptions<TPlugins, TSchema>
+): PlateEditor<TPlugins, TSchema>;
 export function createPlateEditor<
   const TEditor,
   const TPlugins extends readonly BasePluginInput[] = readonly [],
+  const TSchema extends EditorApplicationSchema | undefined = undefined,
 >(
   options: Omit<
-    CreatePlateEditorOptions<TPlugins>,
+    CreatePlateEditorOptions<TPlugins, TSchema>,
     'editor' | 'initialValue'
   > & {
     editor: TEditor extends Editor<infer _V, infer _TExtensions>
@@ -199,7 +223,8 @@ export function createPlateEditor<
       : never;
     initialValue?: CreatePlateEditorOptionsForValue<
       TEditor extends Editor<infer V, infer _TExtensions> ? V : never,
-      TPlugins
+      TPlugins,
+      TSchema
     >['initialValue'];
   }
 ): ProjectInjectedEditor<
@@ -209,19 +234,23 @@ export function createPlateEditor<
     InferPlateEditorPlugins<TPlugins>,
     InternalPlateEditorMutationProvider<
       TPlugins,
-      InferPlateEditorPlugins<TPlugins>
+      InferPlateEditorPlugins<TPlugins>,
+      TSchema
     >
   >
 >;
 
-export function createPlateEditor(
-  options?: CreatePlateEditorOptions<readonly []>
-): PlateEditor<readonly []>;
+export function createPlateEditor<
+  const TSchema extends EditorApplicationSchema | undefined = undefined,
+>(
+  options?: CreatePlateEditorOptions<readonly [], TSchema>
+): PlateEditor<readonly [], TSchema>;
 
 export function createPlateEditor(options: unknown = {}): unknown {
   const resolvedOptions = options as CreatePlateEditorOptionsForValue<
     Value,
-    readonly BasePluginInput[]
+    readonly BasePluginInput[],
+    EditorApplicationSchema | undefined
   >;
   const { editor, id, ...plateEditorOptions } = resolvedOptions;
   const baseEditor =
@@ -234,6 +263,10 @@ export function createPlateEditor(options: unknown = {}): unknown {
 
   return applyPlateEditor(
     baseEditor,
-    plateEditorOptions as PlateEditorOptions<Value, readonly BasePluginInput[]>
+    plateEditorOptions as PlateEditorOptions<
+      Value,
+      readonly BasePluginInput[],
+      EditorApplicationSchema | undefined
+    >
   ) as unknown as PlateEditor;
 }

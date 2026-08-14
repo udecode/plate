@@ -57,10 +57,10 @@ package remains correct even when it cannot control the consumer's broad kit:
 import { SingleBlockPlugin } from "platejs";
 import { createPlateEditor } from "platejs/react";
 
-import { EditorKit } from "@/components/editor/editor-kit";
+import { plugins as editorPlugins } from "@/components/editor/editor";
 
 export const editor = createPlateEditor({
-  plugins: [...EditorKit, SingleBlockPlugin],
+  plugins: [...editorPlugins, SingleBlockPlugin],
 });
 ```
 
@@ -116,7 +116,7 @@ import {
 } from "platejs";
 
 const plugins = [
-  ...EditorKit,
+  ...editorPlugins,
   isSingleBlock ? SingleBlockPlugin : SingleLinePlugin,
 ];
 ```

@@ -92,6 +92,8 @@ export type MarkdownConversionContext = Readonly<{
 /** Prepared Markdown deserialization context supplied to conversion rules. */
 export type DeserializeMdContext = Readonly<DeserializeMdOptions> &
   MarkdownConversionContext & {
+    /** Whether the optional ElementIdPlugin owns persisted block identity. */
+    elementIds?: boolean;
     /** @internal Compiled feature-owned Markdown node codecs. */
     compiledCodecs?: import('./internal/markdownCodecs').CompiledMarkdownCodecs;
     /** @internal Operation or configured rules that override compiled codecs. */

@@ -20,6 +20,7 @@ export type { TxReadMethod } from '../core/tx-only';
 export { failInvariant } from './fail-invariant';
 
 export { getEditorCommitSnapshot } from '../core/commit';
+export { getNodeKeyDOMValue } from '../utils/node-keys';
 
 export {
   above,

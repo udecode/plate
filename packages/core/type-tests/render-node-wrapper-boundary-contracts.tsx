@@ -1,8 +1,13 @@
-import { defineBasePlugin, type RenderStaticNodeWrapper } from '@platejs/core';
+import {
+  defineBasePlugin,
+  type RenderStaticNodeWrapper,
+  type RenderStaticNodeWrapperProps,
+} from '@platejs/core';
 import { property } from '@platejs/plite';
 import {
   definePlatePlugin,
   type RenderNodeWrapper,
+  type RenderNodeWrapperProps,
   useElementSelector,
 } from '@platejs/core/react';
 
@@ -13,6 +18,8 @@ const BaseWrapperBoundaryPlugin = defineBasePlugin('baseWrapperBoundary', {
     },
   },
 });
+
+const BaseUnrelatedWrapperPlugin = defineBasePlugin('baseUnrelatedWrapper', {});
 
 const WrapperBoundaryPlugin = definePlatePlugin('wrapperBoundary', {
   api: () => ({
@@ -40,6 +47,34 @@ const exactStaticWrapper: RenderStaticNodeWrapper<
   return;
 };
 
+const exactStaticRootNode = ({
+  editor,
+  element,
+}: RenderStaticNodeWrapperProps<typeof BaseWrapperBoundaryPlugin>) => {
+  const exactName: 'baseWrapperBoundary' = editor.plugin(
+    BaseWrapperBoundaryPlugin
+  ).name;
+  const exactTone: string | undefined = element.staticTone;
+
+  void exactName;
+  void exactTone;
+
+  return null;
+};
+
+BaseWrapperBoundaryPlugin.configure({
+  render: {
+    belowRootNodes: exactStaticRootNode,
+  },
+});
+
+BaseUnrelatedWrapperPlugin.configure({
+  render: {
+    // @ts-expect-error Exact static root callbacks cannot attach to unrelated plugins.
+    belowRootNodes: exactStaticRootNode,
+  },
+});
+
 WrapperBoundaryPlugin.configure({
   render: {
     belowNodes: broadWrapper,
@@ -64,6 +99,25 @@ const exactWrapper: RenderNodeWrapper<typeof WrapperBoundaryPlugin> = ({
   return;
 };
 
+const exactRootNode = ({
+  editor,
+  element,
+}: RenderNodeWrapperProps<typeof WrapperBoundaryPlugin>) => {
+  const exactValue: 'exact' = editor.api.wrapperBoundary.value();
+  const exactTone: string | undefined = element.wrapperTone;
+
+  void exactValue;
+  void exactTone;
+
+  return null;
+};
+
+WrapperBoundaryPlugin.configure({
+  render: {
+    belowRootNodes: exactRootNode,
+  },
+});
+
 const selectedTone = useElementSelector(
   WrapperBoundaryPlugin,
   ([element]) => element.wrapperTone
@@ -75,9 +129,13 @@ UnrelatedWrapperPlugin.configure({
   render: {
     // @ts-expect-error Exact wrappers cannot attach to unrelated plugins.
     belowNodes: exactWrapper,
+    // @ts-expect-error Exact root callbacks cannot attach to unrelated plugins.
+    belowRootNodes: exactRootNode,
   },
 });
 
 void exactWrapper;
+void exactRootNode;
 void exactStaticWrapper;
+void exactStaticRootNode;
 void selectedTone;

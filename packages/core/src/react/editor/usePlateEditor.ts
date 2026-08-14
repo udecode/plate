@@ -1,7 +1,7 @@
 import React from 'react';
 
 import type { PlateEditor } from './PlateEditor';
-import type { BasePluginInput } from '../../lib';
+import type { BasePluginInput, EditorApplicationSchema } from '../../lib';
 
 import { type CreatePlateEditorOptions, createPlateEditor } from './withPlate';
 
@@ -11,8 +11,10 @@ type UsePlateEditorReturn<TEnabled, TEditor> = TEnabled extends false
     ? TEditor
     : TEditor | null;
 
-type UsePlateEditorResult<TPlugins extends readonly BasePluginInput[]> =
-  PlateEditor<TPlugins>;
+type UsePlateEditorResult<
+  TPlugins extends readonly BasePluginInput[],
+  TSchema,
+> = PlateEditor<TPlugins, TSchema>;
 
 /**
  * Creates a memoized Plate editor for React components.
@@ -40,7 +42,7 @@ type UsePlateEditorResult<TPlugins extends readonly BasePluginInput[]> =
  *
  * // Name the schema only when persisted or collaborative state needs lineage.
  * const persistedEditor = usePlateEditor({
- *   schemaIdentity: { id: 'acme-document', version: 1 },
+ *   schema: { id: 'acme-document', version: 1 },
  * });
  * ```
  *
@@ -52,11 +54,14 @@ type UsePlateEditorResult<TPlugins extends readonly BasePluginInput[]> =
  */
 export function usePlateEditor<
   const TPlugins extends readonly BasePluginInput[] = readonly [],
+  const TSchema extends EditorApplicationSchema | undefined = undefined,
   TEnabled extends boolean | undefined = undefined,
 >(
-  options: CreatePlateEditorOptions<TPlugins> & { enabled?: TEnabled } = {},
+  options: CreatePlateEditorOptions<TPlugins, TSchema> & {
+    enabled?: TEnabled;
+  } = {},
   deps: React.DependencyList = []
-): UsePlateEditorReturn<TEnabled, UsePlateEditorResult<TPlugins>> {
+): UsePlateEditorReturn<TEnabled, UsePlateEditorResult<TPlugins, TSchema>> {
   const { enabled, ...editorOptions } = options;
 
   return React.useMemo(
@@ -67,5 +72,5 @@ export function usePlateEditor<
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [editorOptions.id, enabled, ...deps]
-  ) as UsePlateEditorReturn<TEnabled, UsePlateEditorResult<TPlugins>>;
+  ) as UsePlateEditorReturn<TEnabled, UsePlateEditorResult<TPlugins, TSchema>>;
 }

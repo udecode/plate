@@ -37,6 +37,8 @@ shell components outside a `<Plite>` root.
 - Install the default DOM descriptor when `createReactEditor()` is called
   directly; keep `react({ dom })` as the low-level custom DOM composition
   surface
+- Hydrate separate server and client editor runtimes with deterministic local
+  node tokens, then publish full runtime-owned keys after mounting
 - Route keyboard default-action ownership through the DOM host-facts selector
 - Expose transaction announcements through one `aria-live` region per logical
   editor

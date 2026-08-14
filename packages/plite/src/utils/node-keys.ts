@@ -3,7 +3,9 @@ import type { AnyEditor as Editor } from '../interfaces/editor';
 
 const NODE_OWNERS = new WeakMap<object, Editor>();
 const NODE_KEYS = new WeakMap<object, WeakMap<Editor, NodeKey>>();
+const NODE_KEY_SCOPES = new WeakMap<Editor, string>();
 const NEXT_NODE_KEY = new WeakMap<Editor, number>();
+let nextNodeKeyScope = 0;
 let nextPreparedNodeKeyOrdinal = 0;
 
 export type PreparedNodeKeyRange = Readonly<{
@@ -11,10 +13,30 @@ export type PreparedNodeKeyRange = Readonly<{
   to: number;
 }>;
 
+const getNodeKeyScope = (editor: Editor) => {
+  const existing = NODE_KEY_SCOPES.get(editor);
+
+  if (existing) return existing;
+  const scope = `r${(nextNodeKeyScope++).toString(36)}`;
+
+  NODE_KEY_SCOPES.set(editor, scope);
+  return scope;
+};
+
+const getLiveNodeKeyPrefix = (editor: Editor) => `${getNodeKeyScope(editor)}:n`;
+
 const allocateNodeKey = (editor: Editor): NodeKey => {
   const next = NEXT_NODE_KEY.get(editor) ?? 0;
   NEXT_NODE_KEY.set(editor, next + 1);
-  return `n${next}` as NodeKey;
+  return `${getLiveNodeKeyPrefix(editor)}${next}` as NodeKey;
+};
+
+/** @internal Return the deterministic editor-local token rendered during SSR. */
+export const getNodeKeyDOMValue = (nodeKey: NodeKey): string => {
+  if (!nodeKey.startsWith('r')) return nodeKey;
+  const separator = nodeKey.indexOf(':n', 1);
+
+  return separator > 1 ? nodeKey.slice(separator + 1) : nodeKey;
 };
 
 const getNodeKeys = (node: object) => {
@@ -83,8 +105,10 @@ export const preparedNodeKeyOffset = (
 };
 
 const advanceNextNodeKey = (editor: Editor, nodeKey: NodeKey) => {
-  if (!nodeKey.startsWith('n')) return;
-  const numericPart = Number.parseInt(nodeKey.slice(1), 10);
+  const prefix = getLiveNodeKeyPrefix(editor);
+
+  if (!nodeKey.startsWith(prefix)) return;
+  const numericPart = Number.parseInt(nodeKey.slice(prefix.length), 10);
   const next = NEXT_NODE_KEY.get(editor) ?? 0;
 
   if (Number.isFinite(numericPart) && numericPart >= next) {
@@ -114,6 +138,14 @@ export const getOrCreateNodeKey = (node: object, owner?: Editor): NodeKey => {
 };
 
 export const setNodeKey = (node: object, editor: Editor, nodeKey: NodeKey) => {
+  if (
+    nodeKey.startsWith('r') &&
+    !nodeKey.startsWith(getLiveNodeKeyPrefix(editor))
+  ) {
+    throw new Error(
+      'Cannot assign a node key owned by another editor runtime.'
+    );
+  }
   NODE_OWNERS.set(node, editor);
   getNodeKeys(node).set(editor, nodeKey);
   advanceNextNodeKey(editor, nodeKey);

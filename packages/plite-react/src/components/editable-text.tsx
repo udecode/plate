@@ -22,7 +22,10 @@ import {
   type EditorTextSelectorContext,
   useMountedTextRenderSelector,
 } from '../hooks/use-node-selector';
-import { usePliteNodeRef } from '../hooks/use-plite-node-ref';
+import {
+  usePliteNodeKeyDOMValue,
+  usePliteNodeRef,
+} from '../hooks/use-plite-node-ref';
 import { usePliteProjectionEntries } from '../hooks/use-plite-projection-entries';
 import type { PliteProjectionSlice } from '../projection-store';
 import { hasVisiblePliteViewSelectionDecoration } from '../view-selection-decoration';
@@ -182,7 +185,7 @@ export type RenderTextProps = {
     'data-plite-dom-sync-reason'?: DOMTextSyncOptOutReason;
     'data-plite-path'?: string;
     'data-plite-projected-dom-sync'?: true;
-    'data-plite-node-key'?: NodeKey;
+    'data-plite-node-key'?: string;
     ref?: Ref<HTMLSpanElement>;
   };
   children: ReactNode;
@@ -376,6 +379,7 @@ const RenderEditableText = <T,>({
   const editableRoot = useContext(PliteEditableRootContext);
   const contentRootOwner = useContext(PliteContentRootOwnerContext);
   const textSync = useContext(PliteDOMTextSyncContext);
+  const nodeKeyDOMValue = usePliteNodeKeyDOMValue(nodeKey ?? null);
   const hasText = resolvedText.length > 0;
   const domTextSync = getDOMTextSyncCapability({
     hasText,
@@ -416,7 +420,7 @@ const RenderEditableText = <T,>({
     'data-plite-projected-dom-sync': projectedDOMTextSync
       ? (true as const)
       : undefined,
-    'data-plite-node-key': nodeKey ?? undefined,
+    'data-plite-node-key': nodeKeyDOMValue,
     ref: textRef,
   };
   const placeholderAttributes = {

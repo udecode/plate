@@ -203,45 +203,41 @@ describe('BaseTocPlugin', () => {
 });
 
 describe('BaseTocPlugin.read.headings', () => {
-  it('returns titled headings with depth, path, and id', () => {
+  it('returns titled headings with depth and runtime key without persisted ids', () => {
     const editor = createBaseEditor({
       plugins: [BaseTocPlugin, ...TestHeadingPlugins],
       initialValue: [
         {
           children: [{ text: 'Title' }],
-          id: 'a',
           type: 'h1',
         },
         {
           children: [{ text: '' }],
-          id: 'skip-empty',
           type: 'h2',
         },
         {
           children: [{ text: 'Body' }],
-          id: 'skip-paragraph',
           type: 'paragraph',
         },
         {
           children: [{ text: 'Section' }],
-          id: 'b',
           type: 'h3',
         },
       ],
     });
 
-    expect(editor.plugin(BaseTocPlugin).read.headings()).toEqual([
+    const headings = editor.plugin(BaseTocPlugin).read.headings();
+
+    expect(headings).toEqual([
       {
         depth: 1,
-        id: 'a',
-        path: [0],
+        key: editor.key([0])!,
         title: 'Title',
         type: 'h1',
       },
       {
         depth: 3,
-        id: 'b',
-        path: [3],
+        key: editor.key([3])!,
         title: 'Section',
         type: 'h3',
       },
@@ -249,15 +245,20 @@ describe('BaseTocPlugin.read.headings', () => {
   });
 
   it('uses the configured queryHeading override when present', () => {
-    const queryHeading = mock(() => [
-      {
-        depth: 9,
-        id: 'custom',
-        path: [42],
-        title: 'Custom',
-        type: 'custom-heading',
-      },
-    ]);
+    const queryHeading = mock((state) => {
+      const key = state.key([0]);
+
+      return key
+        ? [
+            {
+              depth: 9,
+              key,
+              title: 'Custom',
+              type: 'custom-heading',
+            },
+          ]
+        : [];
+    });
     const editor = createBaseEditor({
       plugins: [
         BaseTocPlugin.configure({ initialState: { queryHeading } }),
@@ -266,7 +267,6 @@ describe('BaseTocPlugin.read.headings', () => {
       initialValue: [
         {
           children: [{ text: 'Ignored' }],
-          id: 'a',
           type: 'h1',
         },
       ],
@@ -275,8 +275,7 @@ describe('BaseTocPlugin.read.headings', () => {
     expect(editor.plugin(BaseTocPlugin).read.headings()).toEqual([
       {
         depth: 9,
-        id: 'custom',
-        path: [42],
+        key: editor.key([0])!,
         title: 'Custom',
         type: 'custom-heading',
       },
@@ -286,23 +285,28 @@ describe('BaseTocPlugin.read.headings', () => {
     );
   });
 
-  it('reads canonical heading ids', () => {
+  it('keeps heading identity stable when its path changes', () => {
     const editor = createBaseEditor({
       plugins: [BaseTocPlugin, ...TestHeadingPlugins],
       initialValue: [
         {
           children: [{ text: 'Title' }],
-          id: 'heading-1',
           type: 'h1',
         },
       ],
     });
 
+    const key = editor.key([0])!;
+
+    editor.update.nodes.insert(
+      { children: [{ text: 'Before' }], type: 'paragraph' },
+      { at: [0] }
+    );
+
     expect(editor.plugin(BaseTocPlugin).read.headings()).toEqual([
       {
         depth: 1,
-        id: 'heading-1',
-        path: [0],
+        key,
         title: 'Title',
         type: 'h1',
       },

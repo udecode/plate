@@ -11,6 +11,8 @@ import type { Node as UnistNode } from 'unist';
 
 import type { MarkdownConversionContext } from '../types';
 
+export class MarkdownBlockIdError extends Error {}
+
 export type MarkdownSerializeDocumentValue = {
   children: readonly Descendant[];
   roots?: Readonly<Record<string, Value>>;

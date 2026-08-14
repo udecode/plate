@@ -10,7 +10,9 @@ indexes them across every document root, and never assigns IDs to text nodes.
 Use `migrateElementIds` before editor creation to fill missing IDs, report
 duplicates, and canonicalize a legacy property through `sourceKey`. Use editor-scoped
 `NodeKey` for live node targeting, selection, drag and drop, and temporary UI
-state; node keys cover text nodes and never enter serialized data.
+state; node keys cover text nodes and never enter serialized data. Convert a
+known runtime key at a persistence boundary through
+`editor.plugin(ElementIdPlugin).read.id(key)`.
 
 Infer plugin-local node-property patches from the current plugin plus its
 required dependencies through a shallow capability graph. Use
@@ -275,11 +277,11 @@ Remove the parallel `StyledPlate*Props` and `StyledPlite*Props` aliases; pass
 polymorphic HTML props directly to the matching node primitive.
 Remove unchecked type-only `useElement<FooElement>()` and
 `useOptionalElement<FooElement>()` calls.
-Context editor hooks reject caller-only generics. A closed generated application
-uses `useEditor(EditorKit)` or `useActiveEditor(EditorKit)` to infer and
-runtime-verify its exact contract. Otherwise resolve exact plugin capabilities
-through `editor.plugin(FooPlugin)` or `useEditorPlugin(FooPlugin)`, and let
-selector hooks infer only their selected result.
+Context editor hooks reject caller-only generics and accept no plugin tuple or
+generated contract. Use `useEditor()` or nullable `useActiveEditor()` for the
+mounted editor, resolve exact plugin capabilities through
+`editor.plugin(FooPlugin)` or `useEditorPlugin(FooPlugin)`, and keep optional
+generated `Editor` and `Value` types at explicit static boundaries.
 
 Render static HTML through `renderStaticHtml` from `platejs/static`.
 

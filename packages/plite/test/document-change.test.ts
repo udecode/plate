@@ -40,7 +40,12 @@ import {
   getSnapshotIndexMappingStats,
   mapSnapshotIndexThroughChange,
 } from '../src/core/snapshot-index';
-import { getNodeKeyForNode, seedNodeKeys } from '../src/utils/node-keys';
+import {
+  getNodeKeyDOMValue,
+  getNodeKeyForNode,
+  seedNodeKeys,
+  setNodeKey,
+} from '../src/utils/node-keys';
 import {
   createTestDocumentChange,
   getTestDocumentRootChange,
@@ -952,10 +957,39 @@ describe('JSON document change algebra', () => {
 
       assert(index.keyAt([...firstPath]));
 
-      return index.entries();
+      return index
+        .entries()
+        .map(([nodeKey, path]) => [getNodeKeyDOMValue(nodeKey), path]);
     };
 
     assert.deepEqual(inspect([0, 0]), inspect([2, 0]));
+  });
+
+  it('keeps live node keys owned by one editor runtime', () => {
+    const firstOwner = { id: 'shared' } as Editor;
+    const secondOwner = { id: 'shared' } as Editor;
+    const firstChildren = asJsonNodes([
+      paragraph('first'),
+    ]) as unknown as readonly Descendant[];
+    const secondChildren = asJsonNodes([
+      paragraph('second'),
+    ]) as unknown as readonly Descendant[];
+    const firstIndex = buildSnapshotIndex(firstOwner, firstChildren);
+    const secondIndex = buildSnapshotIndex(secondOwner, secondChildren);
+    const firstKey = firstIndex.keyAt([0]);
+    const secondKey = secondIndex.keyAt([0]);
+
+    assert(firstKey);
+    assert(secondKey);
+    assert.notEqual(firstKey, secondKey);
+    assert.deepEqual(firstIndex.pathOf(firstKey), [0]);
+    assert.equal(secondIndex.pathOf(firstKey), null);
+    assert.deepEqual(secondIndex.pathOf(secondKey), [0]);
+    assert.throws(
+      () => setNodeKey(secondChildren[0]!, secondOwner, firstKey),
+      /another editor runtime/
+    );
+    assert.equal(firstIndex.pathOf(secondKey), null);
   });
 
   it('keeps prepared structural slices token-free through runtime publication', () => {
@@ -1151,7 +1185,10 @@ describe('JSON document change algebra', () => {
         assert.deepEqual(mapped.pathOf(nodeKey), path);
       });
 
-      return entries;
+      return entries.map(([nodeKey, path]) => [
+        getNodeKeyDOMValue(nodeKey),
+        path,
+      ]);
     };
 
     const canonical = inspect('entries');

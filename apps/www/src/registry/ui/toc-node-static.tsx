@@ -33,7 +33,7 @@ export function TocElementStatic(
         {headingList.length > 0 ? (
           headingList.map((item: Heading) => (
             <Button
-              key={item.title}
+              key={item.key}
               variant="ghost"
               className={headingItemVariants({
                 depth: item.depth as 1 | 2 | 3,
@@ -84,14 +84,14 @@ export function TocElementDocx(props: PliteElementProps<typeof BaseTocPlugin>) {
         {headingList.length > 0 ? (
           headingList.map((item: Heading) => (
             <p
-              key={item.id}
+              key={item.key}
               style={{
                 margin: '4pt 0',
                 paddingLeft: depthIndent[item.depth] || '0',
               }}
             >
               <a
-                href={`#${item.id}`}
+                href={`#plate_${item.key.replaceAll(/[^A-Za-z0-9_]/g, '_')}`}
                 style={{
                   color: '#0066cc',
                   textDecoration: 'underline',

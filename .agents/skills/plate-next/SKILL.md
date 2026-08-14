@@ -14,7 +14,7 @@ Handle $ARGUMENTS.
 
 ## Doctrine Version
 
-Current doctrine version: `70`.
+Current doctrine version: `74`.
 
 The machine-readable source is
 `.agents/rules/plate-next/versions.json`. It owns immutable doctrine history and
@@ -47,7 +47,8 @@ Version law:
   `.agents/rules/plate-plugin-creator.mdc`, and
   the required `plate-plugin-creator` creation-flow, typing, and authoring-audit
   adjuncts under `.agents/rules/plate-plugin-creator/`, plus the Plate UI rule,
-  its component-shape adjunct, the shared resource sync owner, and
+  its component-shape, registry, and component-audit adjuncts, the shared
+  resource sync owner, and
   `docs/plans/templates/plate-next.md`. `validate` fails when any source
   changes without a version bump. Treat any edit to those doctrine surfaces as
   a bump; generated mirror regeneration is not a bump.
@@ -407,7 +408,7 @@ editor.plugin(...).api.blockSelection.getNodes(...)` is a regression: it
   cross-node behavior uses its semantic owner operation; structural, atomic,
   genuinely dynamic, or unavoidable dependency-ambiguous writes keep the
   object form. Inference comes from the shallow plugin plus required-dependency
-  graph, never the full EditorKit schema. Reject `tx.properties` and any second
+  graph, never the full application grammar. Reject `tx.properties` and any second
   property-mutation namespace. `tx.plugin(Plugin)` selects an installed
   plugin's flat transaction capability group.
 - Use `plate-plugin-creator`'s Capability Boundary Protocol as the sole
@@ -422,9 +423,9 @@ editor.plugin(...).api.blockSelection.getNodes(...)` is a regression: it
   - `update`: document mutation through the active transaction;
   - flat native Plite fields: genuine editor-wide substrate;
   - `codecs`: format declarations.
-  Reject document reads hidden in `api`, document mutations outside `update`,
-  impure selectors/reads, plugin-scoped behavior smuggled into native fields,
-  and any contribution with no honest row.
+    Reject document reads hidden in `api`, document mutations outside `update`,
+    impure selectors/reads, plugin-scoped behavior smuggled into native fields,
+    and any contribution with no honest row.
 - Enforce the creator's state mechanics without restating another model:
   every state-owning production descriptor has a named `*PluginState`, exported
   with an exported descriptor; owner defaults use a typed constant or explicit
@@ -470,14 +471,14 @@ editor.plugin(...).api.blockSelection.getNodes(...)` is a regression: it
   target-only, both, and explicit-target-configuration behavior.
 - Registry examples are teaching and copied-install surfaces, not optimized
   app presets. Do not delete an explicit feature plugin, kit, renderer binding,
-  or dependency merely because an aggregate EditorKit already installs the
-  same descriptor. When registry metadata names the feature kit or the example
-  intentionally demonstrates its binding, preserve that declaration and use
-  `plate-ui` as the registry owner. Append a terminal configuration of the same
-  authored plugin directly after EditorKit; ordered composition preserves
-  earlier fields and lets the explicit later values win. Filter only when the
-  entries are unrelated, represent divergent authoring branches, or membership
-  itself must change.
+  or dependency merely because the inherited application plugin array already
+  installs the same descriptor. When registry metadata names the feature kit or
+  the example intentionally demonstrates its binding, preserve that declaration
+  and use `plate-ui` as the registry owner. Append a terminal configuration of
+  the same authored plugin after the inherited plugins; ordered composition
+  preserves earlier fields and lets the explicit later values win. Filter only
+  when the entries are unrelated, represent divergent authoring branches, or
+  membership itself must change.
 - There is no line-count ceiling. Do not split a coherent owner because the
   file is large, crosses a readability threshold, or looks tidier as a folder.
   One large owner is cheaper for humans and agents than a graph of one-use
@@ -906,6 +907,14 @@ After any code/template/API correction:
 6. Record the sweep query, match count, patched count, deferred count, and
    remaining risk before handoff.
 
+When the correction changes, removes, renames, or reinterprets a reusable
+public API or canonical plugin/registry pattern, run `best-api repair`
+automatically in the same task. Repair every affected worker rule, bump this
+doctrine when its fingerprinted source set changes, regenerate mirrors, then
+rerun the scoped correction sweep against the repaired doctrine before package
+attestation. Never wait for a separate skill-repair prompt or attest a package
+against rules that still teach the rejected shape.
+
 This is narrower than a full Core sweep. It is mandatory after a correction,
 even for one-by-one review, but it is not permission to update unrelated
 packages, docs, examples, or generated surfaces.
@@ -960,21 +969,23 @@ Plate Next means:
   validator-backed narrow JSON properties, placement-owned
   `role: "metadata"`, `schema.create`, assertion boundaries, and
   `schema.isMarkableVoid`.
-- Plate creation calls the lineage option `schemaIdentity`; Plate element
-  membership is `blockContent`. Plate schema queries accept plugin descriptors
-  directly and do not expose `schema.handle(Plugin)`.
+- Application schema lineage uses `id` and `version` inside the single
+  app-owned `schema` object. Plate element membership is `blockContent`. Plate
+  schema queries accept plugin descriptors directly and do not expose
+  `schema.handle(Plugin)`.
 - Plugin `name` is capability identity only. Persisted identity is published
-  through compiled element and property handles. Only a closed
-  `defineEditor(name, definition)` may override final element type, content,
-  groups, or property targets and add app-owned properties; `.extend()` and
-  `.configure()` cannot, and plugin-owned property keys/value laws stay fixed.
+  through compiled element and property handles. Only the consuming
+  application's final schema may override element type, content, groups, or
+  property targets and add app-owned properties; `.extend()` and `.configure()`
+  cannot, and plugin-owned property keys/value laws stay fixed.
 - Descriptor-aware schema builders publish normalized plugin names in their
   structural output, retain nominal descriptors only as private metadata, and
   validate descriptor family against the installed owner before applying the
   policy. Same-name structural objects are not interchangeable descriptors.
 - Raw plugin runtime capabilities stay shallow. Exact recursive `Value`, final
-  handles, mutation maps, and schema fingerprints live in generated EditorKit
-  artifacts so ordinary editor API access remains finite.
+  handles, mutation maps, and schema fingerprints may live in opt-in generated
+  artifacts so ordinary editor API access remains finite. Generated output
+  never owns the runtime plugin array or ordinary editor setup.
 - Generated schema contracts are content-addressed data, not trusted caches.
   Fingerprints hash compiled semantic output rather than authoring syntax;
   readers recompute authoritative structure, and restoration compares every

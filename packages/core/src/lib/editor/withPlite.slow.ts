@@ -1,16 +1,13 @@
 import {
-  createEditorSchemaContract,
   createEditor,
   property,
   schema,
   target,
   type Value,
 } from '@platejs/plite';
-import { getCompiledEditorSchema } from '@platejs/plite/internal';
 import { NavigationFeedbackPlugin, ParagraphPlugin } from '../../react';
 import {
   getCompiledPlateContainerTypes,
-  getPlateModelPublication,
   getPlateRuntime,
 } from '../../internal/plugin/compilePlateModel';
 import { getPlateCorePlugins } from '../../react/editor/getPlateCorePlugins';
@@ -19,14 +16,8 @@ import { definePlatePlugin } from '../../react/plugin/definePlatePlugin';
 import { EventEditorPlugin } from '../../react/plugins/event-editor/EventEditorPlugin';
 import { InputRulesPlugin } from '../plugins/input-rules/InputRulesPlugin';
 import {
-  bindGeneratedEditor,
-  defineEditor,
-  type GeneratedEditorTypes,
-} from './defineEditor';
-import {
   AffinityPlugin,
   type BaseEditor,
-  type BasePluginInput,
   defineBasePlugin,
   createBaseEditor,
   DebugPlugin,
@@ -75,36 +66,29 @@ const TextBlockElement = {
 };
 
 describe('createPlateEditor', () => {
-  describe('generated editor contracts', () => {
-    const compileContract = (plugins: readonly BasePluginInput[]) => {
-      const editor = createBaseEditor({ plugins, skipInitialization: true });
-      const compiled = getCompiledEditorSchema(editor);
-
-      return createEditorSchemaContract(compiled);
-    };
-
-    it('accepts the exact generated fingerprint and publishes its schema identity', () => {
+  describe('application schema', () => {
+    it('publishes declared schema lineage', () => {
       const CalloutPlugin = defineBasePlugin('generatedCallout', {
         schema: { element: schema.element.textBlock() },
       });
-      const definition = defineEditor('generatedContract', {
+      const editor = createBaseEditor({
         plugins: [CalloutPlugin],
-        schemaIdentity: { id: 'generated-document', version: 4 },
+        schema: { id: 'generated-document', version: 4 },
       });
-      const schemaContract = compileContract(definition.plugins);
-      const EditorKit = bindGeneratedEditor(definition, {
-        bindings: { plugins: {}, properties: {} },
-        fingerprint: schemaContract.fingerprint,
-        schema: schemaContract,
-        types: undefined as unknown as GeneratedEditorTypes,
-      });
-      const editor = createBaseEditor({ plugins: EditorKit });
 
       expect(editor.read.schema.identity()).toMatchObject({
-        fingerprint: schemaContract.fingerprint,
+        fingerprint: expect.any(String),
         id: 'generated-document',
         version: 4,
       });
+    });
+
+    it('rejects incomplete schema lineage at runtime', () => {
+      expect(() =>
+        createBaseEditor({
+          schema: { id: 'incomplete-document' } as never,
+        })
+      ).toThrow('Editor schema lineage requires both id and version.');
     });
 
     it('applies closed editor schema overrides before generation and publication', () => {
@@ -126,7 +110,7 @@ describe('createPlateEditor', () => {
           },
         },
       });
-      const definition = defineEditor('applicationOverride', {
+      const editor = createBaseEditor({
         plugins: [CardPlugin, MetadataPlugin],
         schema: {
           overrides: [
@@ -146,9 +130,6 @@ describe('createPlateEditor', () => {
             ),
           },
         },
-      });
-      const editor = createBaseEditor({
-        plugins: definition.plugins,
         skipInitialization: true,
       });
       const card = editor.read.schema.create(CardPlugin);
@@ -185,16 +166,13 @@ describe('createPlateEditor', () => {
         { target: target.elements([CardPlugin, PanelPlugin]) }
       );
       const reviewStateHandle = schema.handle.property(reviewState);
-      const definition = defineEditor('applicationMultiTarget', {
+      const editor = createBaseEditor({
         plugins: [CardPlugin, PanelPlugin],
         schema: {
           properties: {
             reviewState,
           },
         },
-      });
-      const editor = createBaseEditor({
-        plugins: definition.plugins,
         skipInitialization: true,
       });
       const card = editor.read.schema.create(CardPlugin);
@@ -215,19 +193,23 @@ describe('createPlateEditor', () => {
       const ForeignPlugin = defineBasePlugin('applicationFamily', {
         schema: { element: TextBlockElement },
       });
-      const overrideDefinition = defineEditor('applicationOverrideFamily', {
-        plugins: [InstalledPlugin],
-        schema: {
-          overrides: [
-            schema.override(ForeignPlugin, {
-              element: { type: 'application_family' },
-            }),
-          ],
-        },
-      });
-      const relationshipDefinition = defineEditor(
-        'applicationRelationshipFamily',
-        {
+      expect(() =>
+        createBaseEditor({
+          plugins: [InstalledPlugin],
+          schema: {
+            overrides: [
+              schema.override(ForeignPlugin, {
+                element: { type: 'application_family' },
+              }),
+            ],
+          },
+          skipInitialization: true,
+        })
+      ).toThrow(
+        'Editor schema override descriptor "applicationFamily" does not match the installed plugin family.'
+      );
+      expect(() =>
+        createBaseEditor({
           plugins: [InstalledPlugin],
           schema: {
             properties: {
@@ -236,59 +218,11 @@ describe('createPlateEditor', () => {
               }),
             },
           },
-        }
-      );
-
-      expect(() =>
-        createBaseEditor({
-          plugins: overrideDefinition.plugins,
-          skipInitialization: true,
-        })
-      ).toThrow(
-        'Editor schema override descriptor "applicationFamily" does not match the installed plugin family.'
-      );
-      expect(() =>
-        createBaseEditor({
-          plugins: relationshipDefinition.plugins,
           skipInitialization: true,
         })
       ).toThrow(
         'Editor schema relationship descriptor "applicationFamily" does not match the installed plugin family.'
       );
-    });
-
-    it('rejects a stale generated fingerprint before initialization or publication', () => {
-      let initialValueTransforms = 0;
-      const ExpectedPlugin = defineBasePlugin('generatedExpected', {
-        schema: { element: schema.element.textBlock() },
-        transformInitialValue: ({ value }) => {
-          initialValueTransforms++;
-
-          return value;
-        },
-      });
-      const OtherPlugin = defineBasePlugin('generatedOther', {
-        schema: { element: schema.element.textBlock() },
-      });
-      const definition = defineEditor('staleGeneratedContract', {
-        plugins: [ExpectedPlugin],
-      });
-      const staleSchema = compileContract([OtherPlugin]);
-      const StaleEditorKit = bindGeneratedEditor(definition, {
-        bindings: { plugins: {}, properties: {} },
-        fingerprint: staleSchema.fingerprint,
-        schema: staleSchema,
-        types: undefined as unknown as GeneratedEditorTypes,
-      });
-      const rawEditor = createEditor();
-      const schemaBefore = rawEditor.read.schema.identity();
-
-      expect(() =>
-        createBaseEditor({ editor: rawEditor, plugins: StaleEditorKit })
-      ).toThrow('Generated editor schema is stale');
-      expect(initialValueTransforms).toBe(0);
-      expect(getPlateModelPublication(rawEditor as BaseEditor)).toBeUndefined();
-      expect(rawEditor.read.schema.identity()).toEqual(schemaBefore);
     });
   });
 
@@ -653,7 +587,7 @@ describe('createPlateEditor', () => {
       const editor = createPlateEditor({
         editor: createEditor(),
         plugins: [RowPlugin, CellPlugin, TonePlugin],
-        schemaIdentity: { id: 'plate-core-test', version: 4 },
+        schema: { id: 'plate-core-test', version: 4 },
         initialValue: [
           {
             children: [

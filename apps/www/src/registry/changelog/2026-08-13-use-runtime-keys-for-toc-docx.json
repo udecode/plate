@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-13-use-runtime-keys-for-toc-docx",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-13-use-runtime-keys-for-toc-docx.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-13",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Use runtime keys for TOC and DOCX navigation",
+  "targets": [
+    {
+      "name": "docx-export-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/docx-export-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "heading-node-static",
+      "files": ["apps/www/src/registry/ui/heading-node-static.tsx"],
+      "definitionFiles": [],
+      "diagnostics": []
+    },
+    {
+      "name": "toc-node",
+      "files": ["apps/www/src/registry/ui/toc-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "toc-node-static",
+      "files": ["apps/www/src/registry/ui/toc-node-static.tsx"],
+      "definitionFiles": [],
+      "diagnostics": []
+    },
+    {
+      "name": "editor-kit",
+      "files": [],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for editor-kit."
+        }
+      ]
+    },
+    {
+      "name": "editor-ai",
+      "files": [],
+      "definitionFiles": ["apps/www/src/registry/registry-blocks.ts"],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for editor-ai."
+        }
+      ]
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-13-docx-export-runtime-keys-toc-navigation-c582a2f0",
+      "kind": "behavior",
+      "summary": "Build live TOC navigation and DOCX-local bookmarks from runtime node keys.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "docx-export-kit",
+        "heading-node-static",
+        "toc-node",
+        "toc-node-static"
+      ],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-13",
+          "entry": "2026-08-13-use-runtime-keys-for-toc-docx",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-08-13-explicit-element-id-product-policy-6d624b13",
+      "kind": "wiring",
+      "summary": "Install persisted element IDs explicitly as editor product policy.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["editor-kit", "editor-ai"],
+      "source": {
+        "line": 14,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-08-13",
+          "entry": "2026-08-13-use-runtime-keys-for-toc-docx",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

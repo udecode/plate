@@ -65,8 +65,12 @@ import type {
   InternalBaseEditorMutationProvider,
   InternalBaseEditorWithInstalledPlugins,
   MergeInstalledPluginDefinitions,
-  PlateSchemaIdentity,
 } from './BaseEditor';
+import {
+  type EditorApplicationSchema,
+  type EditorSchemaIdentity,
+  getEditorSchemaIdentity,
+} from './editorApplicationSchema';
 
 import {
   collectPlatePluginSourceCandidates,
@@ -79,13 +83,6 @@ import {
   snapshotPlatePluginSources,
 } from '../../internal/plugin/resolvePlugins';
 import { transformInitialValue } from '../../internal/plugin/pipeTransformInitialValue';
-import {
-  getGeneratedEditorContract,
-  getRuntimeEditorDefinition,
-  setInstalledGeneratedEditorContract,
-  type RuntimeEditorDefinition,
-  type RuntimeGeneratedEditorContract,
-} from './defineEditor';
 
 type ProjectInjectedEditor<TEditor, TProjection> = Omit<
   TEditor,
@@ -215,10 +212,9 @@ const initializeBaseEditor = <V extends Value>(
 
 const createPlateSchemaExtensions = (
   editor: BaseEditor,
-  identityOptions: PlateSchemaIdentity | undefined,
+  identityOptions: EditorSchemaIdentity | undefined,
   model: ReturnType<typeof compilePlateModel>,
   pluginList: readonly AnyBasePlugin[],
-  generatedContract?: RuntimeGeneratedEditorContract,
   applicationSchema?: ReturnType<typeof compileEditorApplicationSchema>,
   applicationName?: string
 ) => {
@@ -249,10 +245,9 @@ const createPlateSchemaExtensions = (
     }
   );
   const applicationSchemaExtension = applicationSchema
-    ? defineExtension(
-        `schema:application:${generatedContract?.definitionName ?? applicationName ?? 'editor'}`,
-        { schema: applicationSchema }
-      )
+    ? defineExtension(`schema:application:${applicationName ?? 'editor'}`, {
+        schema: applicationSchema,
+      })
     : undefined;
   let publication: ReturnType<typeof createPlateModelPublication> | undefined;
 
@@ -263,14 +258,6 @@ const createPlateSchemaExtensions = (
       if (!compiledSchema) {
         throw new Error(
           'Generated editor validation requires a compiled schema.'
-        );
-      }
-      if (
-        generatedContract &&
-        compiledSchema.identity.fingerprint !== generatedContract.fingerprint
-      ) {
-        throw new Error(
-          `Generated editor schema is stale: expected "${generatedContract.fingerprint}" but compiled "${compiledSchema.identity.fingerprint}". Run plate generate.`
         );
       }
       const { apiByPlugin, shortcutApiByPlugin } =
@@ -301,17 +288,15 @@ const createPlateSchemaExtensions = (
 
 const createPlateConfiguration = (
   editor: BaseEditor,
-  identity: PlateSchemaIdentity | undefined,
+  identity: EditorSchemaIdentity | undefined,
   pluginList: readonly AnyBasePlugin[],
-  generatedContract?: RuntimeGeneratedEditorContract,
-  editorDefinition?: RuntimeEditorDefinition
+  schema?: EditorApplicationSchema
 ) =>
   withCompiledPlatePluginCandidate(editor, pluginList, () => {
     const authoredModel = compilePlateModel(editor);
-    const policy = generatedContract?.schemaPolicy ?? editorDefinition?.schema;
     const applicationSchema = compileEditorApplicationSchema(
       authoredModel,
-      policy
+      schema
     );
     const model = applyEditorApplicationSchema(
       authoredModel,
@@ -322,9 +307,8 @@ const createPlateConfiguration = (
       identity,
       model,
       pluginList,
-      generatedContract,
       applicationSchema,
-      editorDefinition?.name
+      schema?.id
     );
     return Object.freeze({
       extensions: Object.freeze([
@@ -480,10 +464,9 @@ const installPlateExtensionPortal = (editor: BaseEditor) => {
 
 const installPlateEditorExtensions = (
   editor: BaseEditor,
-  identity: PlateSchemaIdentity | undefined,
+  identity: EditorSchemaIdentity | undefined,
   initialize?: (tx: EditorTransactionSpecBuilder) => void,
-  generatedContract?: RuntimeGeneratedEditorContract,
-  editorDefinition?: RuntimeEditorDefinition
+  schema?: EditorApplicationSchema
 ) => {
   const previousBindings = getPlateRuntimeExtensionBindings(editor);
   const restoreExtensionPortal = installPlateExtensionPortal(editor);
@@ -494,8 +477,7 @@ const installPlateEditorExtensions = (
       editor,
       identity,
       getPlateRuntime(editor).pluginList,
-      generatedContract,
-      editorDefinition
+      schema
     );
 
     withCompiledPlateModelCandidate(editor, configuration.model, () =>
@@ -567,11 +549,8 @@ export type BaseEditorOptions<
    * @default false
    */
   readOnly?: boolean;
-  /**
-   * Application-owned lineage for History, Yjs, and schema migrations.
-   * Omit it for a schema identified only by its compiled semantics.
-   */
-  schemaIdentity?: PlateSchemaIdentity;
+  /** Application-owned schema policy and optional persisted lineage. */
+  schema?: EditorApplicationSchema;
   /**
    * Initial selection state for the editor. Defines where the cursor should be
    * positioned when the editor loads.
@@ -657,19 +636,14 @@ const applyBaseEditor = <
     maxLength,
     plugins = [],
     readOnly,
-    schemaIdentity,
+    schema,
     selection,
     shouldNormalizeEditor,
     skipInitialization,
     userId,
     ...pluginConfig
   } = options;
-  const generatedContract = getGeneratedEditorContract(plugins);
-  const editorDefinition = getRuntimeEditorDefinition(plugins);
-  const effectiveSchemaIdentity =
-    schemaIdentity ??
-    generatedContract?.schemaIdentity ??
-    editorDefinition?.schemaIdentity;
+  const identity = getEditorSchemaIdentity(schema);
   const editor = e as unknown as BaseEditor;
 
   editor.runtime = editor.runtime ?? ({} as BaseEditor['runtime']);
@@ -721,8 +695,7 @@ const applyBaseEditor = <
     user: plugins,
   });
   const publicationBeforeExtension = getPlateModelPublication(editor);
-  const applicationPolicy =
-    generatedContract?.schemaPolicy ?? editorDefinition?.schema;
+  const applicationPolicy = schema;
   let restoreSnapshotInputTransform: (() => void) | undefined;
   let restoreTransactionViewTransform: (() => void) | undefined;
 
@@ -835,10 +808,10 @@ const applyBaseEditor = <
       () =>
         installPlateEditorExtensions(
           editor,
-          effectiveSchemaIdentity
+          identity
             ? Object.freeze({
-                id: effectiveSchemaIdentity.id,
-                version: effectiveSchemaIdentity.version,
+                id: identity.id,
+                version: identity.version,
               })
             : undefined,
           skipInitialization
@@ -861,12 +834,9 @@ const applyBaseEditor = <
                   selection,
                   shouldNormalizeEditor,
                 }),
-          generatedContract,
-          editorDefinition
+          schema
         )
     );
-
-    setInstalledGeneratedEditorContract(editor, generatedContract);
 
     return editor as unknown as InternalBaseEditorWithInstalledPlugins<
       V,
@@ -887,7 +857,12 @@ const applyBaseEditor = <
 type CreateBaseEditorOptionsForValue<
   V extends Value,
   P extends readonly unknown[] = readonly CreateBaseEditorPluginInput[],
-> = Partial<Omit<ApplyBaseEditorOptions<V, BasePluginInput>, 'plugins'>> & {
+  TSchema extends EditorApplicationSchema | undefined =
+    | EditorApplicationSchema
+    | undefined,
+> = Partial<
+  Omit<ApplyBaseEditorOptions<V, BasePluginInput>, 'plugins' | 'schema'>
+> & {
   /** Stable logical identity for the created editor. */
   id?: string;
   /**
@@ -901,11 +876,15 @@ type CreateBaseEditorOptionsForValue<
    * functionality and define custom behavior.
    */
   plugins?: P;
+  schema?: TSchema;
 };
 
 export type CreateBaseEditorOptions<
   P extends readonly unknown[] = readonly CreateBaseEditorPluginInput[],
-> = CreateBaseEditorOptionsForValue<Value, P>;
+  TSchema extends EditorApplicationSchema | undefined =
+    | EditorApplicationSchema
+    | undefined,
+> = CreateBaseEditorOptionsForValue<Value, P, TSchema>;
 
 type CreateBaseEditorPluginInput<
   _C extends AnyBasePluginDefinition = AnyBasePluginDefinition,
@@ -947,7 +926,7 @@ type InferCreateBaseEditorPlugins<P extends readonly unknown[]> =
  *
  * // Name the schema only when persisted or collaborative state needs lineage.
  * const persistedEditor = createBaseEditor({
- *   schemaIdentity: { id: 'acme-document', version: 1 },
+ *   schema: { id: 'acme-document', version: 1 },
  * });
  * ```
  *
@@ -956,12 +935,19 @@ type InferCreateBaseEditorPlugins<P extends readonly unknown[]> =
  */
 export function createBaseEditor<
   const P extends readonly unknown[] = readonly [],
->(options: CreateBaseEditorOptions<P> & { plugins: P }): BaseEditor<P>;
+  const TSchema extends EditorApplicationSchema | undefined = undefined,
+>(
+  options: CreateBaseEditorOptions<P, TSchema> & { plugins: P }
+): BaseEditor<P, TSchema>;
 export function createBaseEditor<
   const TEditor,
   const P extends readonly unknown[] = readonly [],
+  const TSchema extends EditorApplicationSchema | undefined = undefined,
 >(
-  options: Omit<CreateBaseEditorOptions<P>, 'editor' | 'initialValue'> & {
+  options: Omit<
+    CreateBaseEditorOptions<P, TSchema>,
+    'editor' | 'initialValue'
+  > & {
     editor: TEditor extends Editor<infer _V, infer _TExtensions>
       ? TEditor
       : never;
@@ -975,19 +961,26 @@ export function createBaseEditor<
   InternalBaseEditorWithInstalledPlugins<
     TEditor extends Editor<infer V, infer _TExtensions> ? V : never,
     InferCreateBaseEditorPlugins<P>,
-    InternalBaseEditorMutationProvider<P, InferCreateBaseEditorPlugins<P>>
+    InternalBaseEditorMutationProvider<
+      P,
+      InferCreateBaseEditorPlugins<P>,
+      TSchema
+    >
   >
 >;
-export function createBaseEditor(
-  options?: CreateBaseEditorOptions<readonly []>
-): BaseEditor<readonly []>;
+export function createBaseEditor<
+  const TSchema extends EditorApplicationSchema | undefined = undefined,
+>(
+  options?: CreateBaseEditorOptions<readonly [], TSchema>
+): BaseEditor<readonly [], TSchema>;
 export function createBaseEditor({
   editor,
   id,
   ...options
 }: CreateBaseEditorOptionsForValue<
   Value,
-  readonly BasePluginInput[]
+  readonly BasePluginInput[],
+  EditorApplicationSchema | undefined
 > = {}): unknown {
   const baseEditor =
     editor ??

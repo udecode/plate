@@ -90,10 +90,11 @@ type CompiledApplicationProperty = Readonly<{
   localId: string;
 }>;
 
-type CompiledDefinition = Readonly<{
+type CompiledEditor = Readonly<{
+  applicationName: string;
   applicationProperties: readonly CompiledApplicationProperty[];
   bindings: readonly CompiledPluginBinding[];
-  name: string;
+  pluginExportName: string;
   schema: EditorSchemaContract;
 }>;
 
@@ -112,8 +113,7 @@ type MaterializedProperties = Readonly<{
 const ANY_PATH_PATTERN = /.*/;
 const CAMEL_BOUNDARY_PATTERN = /([a-z\d])([A-Z])/g;
 const CSS_PATH_PATTERN = /\.css$/;
-const DEFINITION_SUFFIX_PATTERN = /(?:[.-]definition)$/;
-const EDITOR_DEFINITION_PATTERN = /^plate:editor-definition$/;
+const EDITOR_ENTRY_PATTERN = /^plate:editor$/;
 const LEADING_DIGIT_PATTERN = /^\d/;
 const NON_IDENTIFIER_PATTERN = /[^A-Z_a-z\d]+/;
 const NODE_MODULES_PATH_PATTERN = /(^|[\\/])node_modules([\\/]|$)/;
@@ -146,7 +146,7 @@ const SOURCE_RESOLUTION_EXTENSIONS = [
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
-const bundleDefinition = async (
+const bundleEditor = async (
   entryPath: string,
   dependencies: Set<string>,
   silent = false,
@@ -173,9 +173,9 @@ const bundleDefinition = async (
     platform: 'node',
     plugins: [
       {
-        name: 'plate-editor-definition',
+        name: 'plate-editor-entry',
         setup(context) {
-          context.onResolve({ filter: EDITOR_DEFINITION_PATTERN }, () => ({
+          context.onResolve({ filter: EDITOR_ENTRY_PATTERN }, () => ({
             path: entryPath,
           }));
         },
@@ -245,22 +245,113 @@ const bundleDefinition = async (
     ],
     sourcemap: false,
     stdin: {
-      contents: `import definition from 'plate:editor-definition';
+      contents: `import * as editorModule from 'plate:editor';
 import { createBaseEditor } from '@platejs/core';
-import { getPlateRuntime } from '@platejs/core/internal';
+import {
+  compileEditorApplicationSchema,
+  getPlateRuntime,
+  isNominalPluginDescriptor,
+} from '@platejs/core/internal';
 import { createEditorSchemaContract } from '@platejs/plite';
-import { getCompiledEditorSchema } from '@platejs/plite/internal';
+import {
+  compileEditorSchemaContributions,
+  getCompiledEditorSchema,
+} from '@platejs/plite/internal';
 
-const editor = createBaseEditor({
-  plugins: definition.plugins,
-  schemaIdentity: definition.schemaIdentity,
-  skipInitialization: true,
+const entryLabel = ${JSON.stringify(`Plate editor entry "${entryPath}"`)};
+const exports = Object.entries(editorModule);
+const formatCandidates = (candidates) =>
+  candidates.length === 0
+    ? ''
+    : ' candidates (' + candidates.map(([name]) => name).join(', ') + ')';
+const pluginCandidates = exports.filter(([, value]) =>
+  Array.isArray(value) &&
+  value.length > 0 &&
+  value.every(isNominalPluginDescriptor)
+);
+
+if (pluginCandidates.length !== 1) {
+  throw new TypeError(
+    entryLabel +
+      ' must export exactly one Plate plugin tuple; found ' +
+      pluginCandidates.length +
+      formatCandidates(pluginCandidates) +
+      '.'
+  );
+}
+const [pluginExportName, plugins] = pluginCandidates[0];
+const baseEditor = createBaseEditor({ plugins, skipInitialization: true });
+const baseRuntime = getPlateRuntime(baseEditor);
+const schemaFields = new Set(['id', 'overrides', 'properties', 'version']);
+const looksLikeApplicationSchema = (value) => {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    return false;
+  }
+  const keys = Object.keys(value);
+
+  if (
+    keys.length === 0 ||
+    keys.some((key) => !schemaFields.has(key)) ||
+    ((value.id === undefined) !== (value.version === undefined)) ||
+    (value.id !== undefined &&
+      (typeof value.id !== 'string' ||
+        value.id.length === 0 ||
+        typeof value.version !== 'number')) ||
+    (value.overrides !== undefined && !Array.isArray(value.overrides)) ||
+    (value.properties !== undefined &&
+      (typeof value.properties !== 'object' ||
+        value.properties === null ||
+        Array.isArray(value.properties)))
+  ) {
+    return false;
+  }
+
+  return true;
+};
+const schemaCandidates = exports.flatMap(([name, value]) => {
+  if (!looksLikeApplicationSchema(value)) return [];
+
+  try {
+    compileEditorSchemaContributions([
+      {
+        contribution: baseRuntime.model.contribution,
+        extensionName: 'plate:plugins',
+      },
+      {
+        contribution: compileEditorApplicationSchema(baseRuntime.model, value),
+        extensionName: 'plate:application',
+      },
+    ]);
+
+    return [[name, value]];
+  } catch {
+    return [];
+  }
 });
-const runtime = getPlateRuntime(editor);
+
+if (schemaCandidates.length > 1) {
+  throw new TypeError(
+    entryLabel +
+      ' must export at most one Plate application schema; found ' +
+      schemaCandidates.length +
+      formatCandidates(schemaCandidates) +
+      '.'
+  );
+}
+const applicationSchema = schemaCandidates[0]?.[1];
+const editor = applicationSchema
+  ? createBaseEditor({
+      plugins,
+      schema: applicationSchema,
+      skipInitialization: true,
+    })
+  : baseEditor;
+const runtime = applicationSchema ? getPlateRuntime(editor) : baseRuntime;
 const schema = createEditorSchemaContract(getCompiledEditorSchema(editor));
 
 export default {
-  applicationProperties: Object.entries(definition.schema?.properties ?? {}).map(
+  applicationName: applicationSchema?.id ?? 'editor',
+  applicationProperties: Object.entries(applicationSchema?.properties ?? {}).map(
     ([localId, property]) => ({
       key: property.key ?? localId,
       localId,
@@ -274,7 +365,7 @@ export default {
     name: binding.name,
     ...(binding.elementType ? { type: binding.elementType } : {}),
   })),
-  name: definition.name,
+  pluginExportName,
   schema,
 };
 `,
@@ -296,11 +387,7 @@ const evaluationWorkerPath = fileURLToPath(
   )
 );
 
-const evaluateDefinition = (
-  bundlePath: string,
-  resultPath: string,
-  cwd: string
-) =>
+const evaluateEditor = (bundlePath: string, resultPath: string, cwd: string) =>
   new Promise<void>((resolvePromise, reject) => {
     execFile(
       process.execPath,
@@ -316,21 +403,21 @@ const evaluateDefinition = (
         reject(
           new Error(
             stderr.trim() ||
-              `Plate could not evaluate the bundled editor definition: ${error.message}`
+              `Plate could not evaluate the bundled editor entry: ${error.message}`
           )
         );
       }
     );
   });
 
-const readDefinition = async (
+const readEditor = async (
   entryPath: string,
   cwd: string
 ): Promise<
-  Readonly<{ definition: CompiledDefinition; sourceFiles: readonly string[] }>
+  Readonly<{ editor: CompiledEditor; sourceFiles: readonly string[] }>
 > => {
   const dependencies = new Set<string>();
-  const result = await bundleDefinition(
+  const result = await bundleEditor(
     entryPath,
     dependencies,
     false,
@@ -340,13 +427,13 @@ const readDefinition = async (
 
   if (!output) throw new Error(`Plate could not bundle "${entryPath}".`);
   const outputDirectory = mkdtempSync(compilerDirectoryPrefix(entryPath));
-  const outputPath = join(outputDirectory, 'definition.mjs');
-  const resultPath = join(outputDirectory, 'definition.json');
+  const outputPath = join(outputDirectory, 'editor.mjs');
+  const resultPath = join(outputDirectory, 'editor.json');
   let imported: unknown;
 
   try {
     writeDurableFile(outputPath, output.text);
-    await evaluateDefinition(outputPath, resultPath, cwd);
+    await evaluateEditor(outputPath, resultPath, cwd);
     imported = JSON.parse(readFileSync(resultPath, 'utf8'));
   } finally {
     rmSync(outputDirectory, { force: true, recursive: true });
@@ -354,19 +441,21 @@ const readDefinition = async (
 
   if (
     !isRecord(imported) ||
-    typeof imported.name !== 'string' ||
-    imported.name.length === 0 ||
+    typeof imported.applicationName !== 'string' ||
+    imported.applicationName.length === 0 ||
     !Array.isArray(imported.bindings) ||
     !Array.isArray(imported.applicationProperties) ||
+    typeof imported.pluginExportName !== 'string' ||
+    imported.pluginExportName.length === 0 ||
     !isRecord(imported.schema)
   ) {
     throw new Error(
-      `Plate editor entry "${entryPath}" must default-export defineEditor(name, { plugins }).`
+      `Plate editor entry "${entryPath}" did not produce a valid compiled editor contract.`
     );
   }
 
   return Object.freeze({
-    definition: imported as CompiledDefinition,
+    editor: imported as CompiledEditor,
     sourceFiles: Object.freeze(
       [...dependencies].filter((path) => !NODE_MODULES_PATH_PATTERN.test(path))
     ),
@@ -483,7 +572,7 @@ export const discoverEditorWatchFiles = async (
   const missingDependencies = new Set<string>();
 
   try {
-    await bundleDefinition(entryPath, dependencies, true);
+    await bundleEditor(entryPath, dependencies, true);
   } catch (error) {
     if (isRecord(error) && Array.isArray(error.errors)) {
       error.errors.forEach((item) => {
@@ -529,6 +618,7 @@ type MaterializationRequest = Readonly<{
   bindings: readonly ElementBinding[];
   owners: readonly string[];
   generatedPaths: ReadonlySet<string>;
+  pluginExportName: string;
   schema: EditorSchemaContract;
 }>;
 
@@ -563,7 +653,14 @@ const materializePropertyGroups = async (
 
   try {
     prepared = requests.map(
-      ({ bindings, entryPath, generatedPaths, owners, schema }) => {
+      ({
+        bindings,
+        entryPath,
+        generatedPaths,
+        owners,
+        pluginExportName,
+        schema,
+      }) => {
         const helperPath = session.helperPath(entryPath);
 
         helperPaths.push(helperPath);
@@ -595,8 +692,7 @@ const materializePropertyGroups = async (
           }
           let groupKey = 'text';
           let aliasName = '__PlateText';
-          let source =
-            'InternalEditorDefinitionTextProperties<typeof definition.plugins>';
+          let source = 'InternalEditorDefinitionTextProperties<__PlatePlugins>';
 
           if (property.placement === 'element') {
             const hasIdentityCollision = schema.properties.byId.some(
@@ -619,11 +715,11 @@ const materializePropertyGroups = async (
 
               groupKey = `element:${binding.name}`;
               aliasName = `__PlateElement${bindingIndex}`;
-              source = `InternalEditorDefinitionElementProperties<typeof definition.plugins, ${JSON.stringify(binding.name)}>`;
+              source = `InternalEditorDefinitionElementProperties<__PlatePlugins, ${JSON.stringify(binding.name)}>`;
             } else {
               groupKey = `owner:${property.owner}`;
               aliasName = `__PlateOwner${owners.indexOf(property.owner)}`;
-              source = `InternalEditorDefinitionOwnedElementProperties<typeof definition.plugins, ${JSON.stringify(property.owner)}>`;
+              source = `InternalEditorDefinitionOwnedElementProperties<__PlatePlugins, ${JSON.stringify(property.owner)}>`;
             }
           }
           const group = groupMap.get(groupKey) ?? {
@@ -639,17 +735,17 @@ const materializePropertyGroups = async (
         const aliases = bindings
           .map(
             (binding, index) =>
-              `type __PlateElement${index} = InternalEditorDefinitionElementProperties<typeof definition.plugins, ${JSON.stringify(binding.name)}>;`
+              `type __PlateElement${index} = InternalEditorDefinitionElementProperties<__PlatePlugins, ${JSON.stringify(binding.name)}>;`
           )
           .join('\n');
         const ownerAliases = owners
           .map(
             (owner, index) =>
-              `type __PlateOwner${index} = InternalEditorDefinitionOwnedElementProperties<typeof definition.plugins, ${JSON.stringify(owner)}>;`
+              `type __PlateOwner${index} = InternalEditorDefinitionOwnedElementProperties<__PlatePlugins, ${JSON.stringify(owner)}>;`
           )
           .join('\n');
-        const aliasSource = `${aliases}\n${ownerAliases}\ntype __PlateText = InternalEditorDefinitionTextProperties<typeof definition.plugins>;`;
-        const helper = `import definition from ${JSON.stringify(entryImport)};\nimport type { InternalEditorDefinitionElementProperties, InternalEditorDefinitionOwnedElementProperties, InternalEditorDefinitionTextProperties } from '@platejs/core/internal';\n${aliasSource}\n`;
+        const aliasSource = `type __PlatePlugins = (typeof EditorModule)[${JSON.stringify(pluginExportName)}];\n${aliases}\n${ownerAliases}\ntype __PlateText = InternalEditorDefinitionTextProperties<__PlatePlugins>;`;
+        const helper = `import type * as EditorModule from ${JSON.stringify(entryImport)};\nimport type { InternalEditorDefinitionElementProperties, InternalEditorDefinitionOwnedElementProperties, InternalEditorDefinitionTextProperties } from '@platejs/core/internal';\n${aliasSource}\n`;
         const propertyNamesByAlias = new Map(
           groups.map((group) => [
             group.aliasName,
@@ -767,6 +863,11 @@ const renderProperties = (properties: TypeProperties, indent: string) =>
     )
     .join('\n');
 
+const renderExactReadonlyRecord = (fields: string, closingIndent = '') =>
+  fields
+    ? `Readonly<{\n${fields}\n${closingIndent}}>`
+    : 'Readonly<Record<PropertyKey, never>>';
+
 const propertyTypeFromContract = (
   descriptor: ContractPropertyDescriptor
 ): Readonly<{ optional: boolean; type: string }> => {
@@ -864,7 +965,7 @@ const generatedHeader = (entryPath: string) => {
     .replaceAll('*/', '*\\/');
   const argument = portableShellArgument(source);
   const command =
-    source === 'src/editor/editor-definition.tsx'
+    source === 'src/editor.ts'
       ? 'pnpm exec plate generate'
       : argument
         ? `pnpm exec plate generate -- ${argument}`
@@ -876,13 +977,13 @@ const generatedHeader = (entryPath: string) => {
 const renderGeneratedTypes = (
   entryPath: string,
   typesPath: string,
-  schemaPath: string,
+  pluginExportName: string,
   schema: EditorSchemaContract,
   bindings: readonly ElementBinding[],
   properties: MaterializedProperties,
   compiledBindings: readonly CompiledPluginBinding[],
   applicationProperties: readonly CompiledApplicationProperty[],
-  definitionName: string
+  applicationName: string
 ) => {
   const bindingByType = new Map(
     bindings.map((binding) => [binding.type, binding])
@@ -925,7 +1026,7 @@ const renderGeneratedTypes = (
 
     return `Object.freeze({ id: ${JSON.stringify(property.id)}, key: ${renderPropertyKeyValue(property.key)}, kind: 'schema-property' as const, placement: ${JSON.stringify(property.placement)} })`;
   };
-  const applicationOwner = `schema:application:${definitionName}`;
+  const applicationOwner = `schema:application:${applicationName}`;
   const resolvedApplicationProperties = applicationProperties.map(
     ({ key, localId }) => {
       const matches = schema.properties.byId.filter(
@@ -1078,7 +1179,7 @@ const renderGeneratedTypes = (
           ? '\n    readonly toggle: true;'
           : '';
 
-      return `  readonly ${propertyName(binding.name)}: Readonly<{\n    readonly construction: Readonly<{${construction ? `\n${construction}\n    ` : ''}}>;\n    readonly properties: Readonly<{${persisted ? `\n${persisted}\n    ` : ''}}>;${toggle}\n    readonly type: ${JSON.stringify(binding.type)};\n  }>;`;
+      return `  readonly ${propertyName(binding.name)}: Readonly<{\n    readonly construction: ${renderExactReadonlyRecord(construction, '    ')};\n    readonly properties: ${renderExactReadonlyRecord(persisted, '    ')};${toggle}\n    readonly type: ${JSON.stringify(binding.type)};\n  }>;`;
     })
     .join('\n');
   const textFields = renderProperties(resolvedTextProperties, '  ');
@@ -1089,33 +1190,31 @@ const renderGeneratedTypes = (
   );
   const elementUnion =
     bindings.map(({ typeName }) => typeName).join(' | ') || 'Element';
-  const definitionImport = relativeImport(typesPath, entryPath);
-  const schemaImport = relativeImport(typesPath, schemaPath);
+  const editorImport = relativeImport(typesPath, entryPath);
   const coreTypeImports = [
-    'EditorSchemaContract',
     'Element',
+    'GeneratedEditorTypeProvider',
     // Plugin bindings emit only invariant type/key identities. Application
     // properties are the sole generated SchemaPropertyHandle surface.
     ...(schemaApplicationTypeFields ? ['SchemaPropertyHandle'] : []),
     'Text',
   ].join(', ');
 
-  return `${generatedHeader(entryPath)}\nimport type { ${coreTypeImports} } from 'platejs';\nimport { bindGeneratedEditor, type GeneratedEditorContract, type GeneratedEditorTypes } from 'platejs';\nimport type { PlateEditor } from 'platejs/react';\n\nimport definition from ${JSON.stringify(definitionImport)};\nimport schemaContract from ${JSON.stringify(schemaImport)};\n\nexport interface EditorText extends Text {\n  readonly text: string;${textFields ? `\n${textFields}` : ''}\n}\n\n${elementDeclarations}\n\nexport type EditorElement = ${elementUnion};\nexport type Value = ${rootType};\nexport type Schema = Readonly<{\n  readonly plugins: Readonly<{${schemaPluginTypeFields ? `\n${schemaPluginTypeFields}\n  ` : ''}}>;\n  readonly properties: Readonly<{${schemaApplicationTypeFields ? `\n${schemaApplicationTypeFields}\n  ` : ''}}>;\n}>;\nexport type Mutations = Readonly<{\n${mutationDeclarations}\n}>;\ntype Types = GeneratedEditorTypes<Value, EditorElement, EditorText, Schema, Mutations>;\n\nconst schemaBindings = Object.freeze({\n  plugins: Object.freeze({${schemaPluginValueFields ? `\n${schemaPluginValueFields}\n  ` : ''}}),\n  properties: Object.freeze({${schemaApplicationValueFields ? `\n${schemaApplicationValueFields}\n  ` : ''}}),\n}) satisfies Schema;\n\nconst contract = {\n  bindings: schemaBindings,\n  fingerprint: ${JSON.stringify(schema.fingerprint)},\n  schema: schemaContract as unknown as EditorSchemaContract,\n  types: undefined as unknown as Types,\n} satisfies GeneratedEditorContract<Types>;\n\nexport const EditorKit = bindGeneratedEditor(definition, contract);\nexport type Editor = PlateEditor<typeof EditorKit>;\n`;
+  return `${generatedHeader(entryPath)}\nimport type { ${coreTypeImports} } from 'platejs';\nimport type { PlateEditor } from 'platejs/react';\n\nimport type * as EditorModule from ${JSON.stringify(editorImport)};\n\nexport interface EditorText extends Text {\n  readonly text: string;${textFields ? `\n${textFields}` : ''}\n}\n\n${elementDeclarations}\n\nexport type EditorElement = ${elementUnion};\nexport type Value = ${rootType};\nexport type Schema = Readonly<{\n  readonly plugins: ${renderExactReadonlyRecord(schemaPluginTypeFields, '  ')};\n  readonly properties: ${renderExactReadonlyRecord(schemaApplicationTypeFields, '  ')};\n}>;\nexport type Mutations = ${renderExactReadonlyRecord(mutationDeclarations)};\ntype Types = Readonly<{\n  element: EditorElement;\n  mutations: Mutations;\n  schema: Schema;\n  text: EditorText;\n  value: Value;\n}>;\n\nexport const schema = Object.freeze({\n  plugins: Object.freeze({${schemaPluginValueFields ? `\n${schemaPluginValueFields}\n  ` : ''}}),\n  properties: Object.freeze({${schemaApplicationValueFields ? `\n${schemaApplicationValueFields}\n  ` : ''}}),\n}) satisfies Schema;\n\nexport const fingerprint = ${JSON.stringify(schema.fingerprint)};\n\ntype EditorPlugins = (typeof EditorModule)[${JSON.stringify(pluginExportName)}] & GeneratedEditorTypeProvider<Types>;\n\nexport type Editor = PlateEditor<EditorPlugins>;\n`;
 };
 
 const outputPaths = (entryPath: string) => {
   const extension = extname(entryPath);
   const base = basename(entryPath, extension);
-  const stem = base.replace(DEFINITION_SUFFIX_PATTERN, '') || base;
   const directory = dirname(entryPath);
 
   return {
-    schemaPath: join(directory, `${stem}.schema.json`),
-    typesPath: join(directory, `${stem}.generated.ts`),
+    schemaPath: join(directory, `${base}.schema.json`),
+    typesPath: join(directory, `${base}.generated.ts`),
   };
 };
 
-/** @internal Generated artifact paths owned by one editor definition. */
+/** @internal Generated artifact paths owned by one editor module. */
 export const editorArtifactPaths = (entryPath: string) =>
   Object.freeze(Object.values(outputPaths(resolve(entryPath))));
 
@@ -1782,7 +1881,7 @@ export const resolveEditorEntryPaths = (
   ];
 
   if (entryPaths.length === 0) {
-    throw new Error('Plate requires at least one editor definition.');
+    throw new Error('Plate requires at least one editor module.');
   }
   entryPaths.forEach((entryPath) => {
     if (!existsSync(entryPath) || !statSync(entryPath).isFile()) {
@@ -1797,7 +1896,7 @@ export const resolveEditorEntryPaths = (
 
       if (owner) {
         throw new Error(
-          `Plate editor definitions produce the same generated artifact: ${owner} and ${entryPath} -> ${outputPath}`
+          `Plate editor modules produce the same generated artifact: ${owner} and ${entryPath} -> ${outputPath}`
         );
       }
       outputOwners.set(outputPath, entryPath);
@@ -1807,7 +1906,7 @@ export const resolveEditorEntryPaths = (
   return Object.freeze(entryPaths);
 };
 
-/** @internal Compile definitions without mutating generated artifacts. */
+/** @internal Compile editors without mutating generated artifacts. */
 export const compileEditors = async (
   entries: readonly string[],
   options: Pick<GenerateEditorOptions, 'cwd'> = {},
@@ -1815,14 +1914,14 @@ export const compileEditors = async (
 ): Promise<readonly CompiledEditorArtifacts[]> => {
   const cwd = resolve(options.cwd ?? process.cwd());
   const entryPaths = resolveEditorEntryPaths(entries, cwd);
-  const definitions = await Promise.all(
-    entryPaths.map((entryPath) => readDefinition(entryPath, cwd))
+  const editors = await Promise.all(
+    entryPaths.map((entryPath) => readEditor(entryPath, cwd))
   );
-  const prepared = definitions.map(
-    ({ definition, sourceFiles: bundleSourceFiles }, index) => {
+  const prepared = editors.map(
+    ({ editor, sourceFiles: bundleSourceFiles }, index) => {
       const entryPath = entryPaths[index]!;
-      const schema = definition.schema;
-      const bindings = createBindings(definition.bindings, schema);
+      const schema = editor.schema;
+      const bindings = createBindings(editor.bindings, schema);
       const owners = [
         ...new Set(schema.properties.byId.map(({ owner }) => owner)),
       ].sort();
@@ -1831,7 +1930,7 @@ export const compileEditors = async (
       return {
         bindings,
         bundleSourceFiles,
-        definition,
+        editor,
         entryPath,
         owners,
         schema,
@@ -1842,11 +1941,20 @@ export const compileEditors = async (
   );
   const materialized = await materializePropertyGroups(
     prepared.map(
-      ({ bindings, entryPath, owners, schema, schemaPath, typesPath }) => ({
+      ({
+        bindings,
+        editor,
+        entryPath,
+        owners,
+        schema,
+        schemaPath,
+        typesPath,
+      }) => ({
         bindings,
         entryPath,
         generatedPaths: new Set([schemaPath, typesPath]),
         owners,
+        pluginExportName: editor.pluginExportName,
         schema,
       })
     ),
@@ -1872,13 +1980,13 @@ export const compileEditors = async (
       const typesSource = renderGeneratedTypes(
         current.entryPath,
         current.typesPath,
-        current.schemaPath,
+        current.editor.pluginExportName,
         current.schema,
         current.bindings,
         properties,
-        current.definition.bindings,
-        current.definition.applicationProperties,
-        current.definition.name
+        current.editor.bindings,
+        current.editor.applicationProperties,
+        current.editor.applicationName
       );
 
       return Object.freeze({
@@ -1901,7 +2009,7 @@ export const compileEditors = async (
   );
 };
 
-/** @internal Compile one definition without mutating generated artifacts. */
+/** @internal Compile one editor without mutating generated artifacts. */
 export const compileEditor = async (
   entry: string,
   options: Pick<GenerateEditorOptions, 'cwd'> = {}

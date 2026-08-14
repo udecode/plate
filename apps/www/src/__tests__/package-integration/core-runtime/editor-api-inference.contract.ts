@@ -1,8 +1,8 @@
-import type { MyEditor } from '@/registry/components/editor/editor-kit';
+import type { Editor } from '@/registry/components/editor/editor.generated';
 
 type Assert<T extends true> = T;
 type AssertNever<T extends never> = T;
-type EditorApiKeys = keyof MyEditor['api'];
+type EditorApiKeys = keyof Editor['api'];
 type ExpectedEditorApiKeys =
   | 'ai'
   | 'aiChat'
@@ -41,20 +41,20 @@ type _SerializedLinkTypeIsNotAnApiKey = AssertNever<
   Extract<'a', EditorApiKeys>
 >;
 type _TableApiKeepsItsMethods = Assert<
-  'getColumnCount' extends keyof MyEditor['api']['table'] ? true : false
+  'getColumnCount' extends keyof Editor['api']['table'] ? true : false
 >;
 type _LinkApiKeepsItsMethods = Assert<
-  'validateUrl' extends keyof MyEditor['api']['link'] ? true : false
+  'validateUrl' extends keyof Editor['api']['link'] ? true : false
 >;
 type _CsvApiKeepsItsMethods = Assert<
-  'deserialize' extends keyof MyEditor['api']['csv'] ? true : false
+  'deserialize' extends keyof Editor['api']['csv'] ? true : false
 >;
 type _MediaApiKeepsItsMethods = Assert<
-  'normalizeUrl' extends keyof MyEditor['api']['image'] ? true : false
+  'normalizeUrl' extends keyof Editor['api']['image'] ? true : false
 >;
 type _DomApiKeepsClipboardMethods = Assert<
-  'insertData' extends keyof MyEditor['api']['dom']['clipboard'] ? true : false
+  'insertData' extends keyof Editor['api']['dom']['clipboard'] ? true : false
 >;
 type _SuggestionApiKeepsItsMethods = Assert<
-  'untracked' extends keyof MyEditor['api']['suggestion'] ? true : false
+  'untracked' extends keyof Editor['api']['suggestion'] ? true : false
 >;

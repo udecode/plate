@@ -180,7 +180,10 @@ Add only what the scope triggers:
   fail-closed, record that physical receipts are deferred, and do not block an
   unrelated source or API handoff on unavailable hardware.
 - Benchmarks: include only when claiming performance or choosing a hot-path
-  architecture.
+  architecture. Extremal proof must stay inside an end-to-end supported input
+  domain; one helper does not earn permanent machinery for a limit that
+  adjacent validation, construction, serialization, storage, or callers cannot
+  carry.
 - Docs, behavior law, migration, release, or collaboration rows: include only
   when those owners change.
 

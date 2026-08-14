@@ -7,18 +7,12 @@ import {
   type ValueOf,
 } from '@platejs/plite';
 import {
-  bindGeneratedEditor,
-  defineEditor,
-  type GeneratedEditorContract,
-  type GeneratedEditorSchema,
-  type GeneratedEditorTypes,
-} from '@platejs/core';
-import {
   createPlateEditor,
   definePlatePlugin,
   type PlateEditor,
 } from '@platejs/core/react';
 import type { InferPlateEditorPlugins } from '../src/react/editor/PlateEditor';
+import type { GeneratedEditorTypeProvider } from '../src/internal/editor/generatedEditorTypes';
 
 type LayoutVariant = 'compact' | 'full';
 type EditorSummary = `${LayoutVariant}:@`;
@@ -125,21 +119,10 @@ interface QuoteElement extends Element {
 type BodyElement = ParagraphElement | QuoteElement;
 type GeneratedBodyValue = readonly (ParagraphElement | QuoteElement)[];
 
-const editorDefinition = defineEditor('contractEditor', {
-  plugins: EditorPlugins,
-});
-const GeneratedEditorPlugins = bindGeneratedEditor(editorDefinition, {
-  bindings: { plugins: {}, properties: {} },
-  fingerprint: 'fnv1a64:contract',
-  schema: {},
-  types: undefined,
-} as unknown as GeneratedEditorContract<
-  GeneratedEditorTypes<
-    GeneratedBodyValue,
-    BodyElement,
-    BodyText,
-    GeneratedEditorSchema,
-    {
+type GeneratedEditorPlugins = typeof EditorPlugins &
+  GeneratedEditorTypeProvider<{
+    element: BodyElement;
+    mutations: {
       paragraph: {
         construction: { align: 'left' | 'right' };
         properties: { align: 'left' | 'right' };
@@ -152,15 +135,18 @@ const GeneratedEditorPlugins = bindGeneratedEditor(editorDefinition, {
         toggle: true;
         type: 'quote';
       };
-    }
-  >
->);
+    };
+    schema: { plugins: {}; properties: {} };
+    text: BodyText;
+    value: GeneratedBodyValue;
+  }>;
 
 type EditorPluginNames = InferPlateEditorPlugins<typeof EditorPlugins>['name'];
 const exactEditorPluginNames: string extends EditorPluginNames ? true : false =
   false;
 
-type BodyValue = ValueOf<PlateEditor<typeof GeneratedEditorPlugins>>;
+type GeneratedEditor = PlateEditor<GeneratedEditorPlugins>;
+type BodyValue = ValueOf<GeneratedEditor>;
 type RawBodyValue = ValueOf<PlateEditor<typeof EditorPlugins>>;
 
 const initialValue = [
@@ -176,9 +162,10 @@ const initialValue = [
 ] satisfies BodyValue;
 
 const plateEditor = createPlateEditor({
-  plugins: GeneratedEditorPlugins,
+  plugins: EditorPlugins,
   initialValue,
 });
+const exactEditor = plateEditor as unknown as GeneratedEditor;
 
 const rawValueStaysBroad: RawBodyValue = [
   { children: [{ text: 'raw' }], type: 'applicationNode' },
@@ -187,17 +174,17 @@ const rawValueStaysBroad: RawBodyValue = [
 const expectBodyValue = (value: BodyValue) => value;
 
 const bodyValue: BodyValue = initialValue;
-const _runtimeValue = plateEditor.read.children();
-const layoutVariant: LayoutVariant = plateEditor.api.layout.getVariant();
-const mentionTrigger: '@' = plateEditor.api.mention.getTrigger();
+const _runtimeValue = exactEditor.read.children();
+const layoutVariant: LayoutVariant = exactEditor.api.layout.getVariant();
+const mentionTrigger: '@' = exactEditor.api.mention.getTrigger();
 const editorSummary: EditorSummary =
-  `${plateEditor.api.layout.getVariant()}:${plateEditor.api.mention.getTrigger()}` as const;
-const toolbarDescription: 'toolbar' = plateEditor.api.toolbar.describeToolbar();
-const isDense: boolean = plateEditor
+  `${exactEditor.api.layout.getVariant()}:${exactEditor.api.mention.getTrigger()}` as const;
+const toolbarDescription: 'toolbar' = exactEditor.api.toolbar.describeToolbar();
+const isDense: boolean = exactEditor
   .plugin(ConfiguredLayoutPlugin)
   .store.get('isDense');
 
-plateEditor.update((tx) => {
+exactEditor.update((tx) => {
   tx.plugin(ConfiguredLayoutPlugin).setDensity(1);
   tx.plugin('layout').setDensity(2);
   tx.layout.setDensity(1);
@@ -206,12 +193,12 @@ plateEditor.update((tx) => {
   tx.layout.setDensity(2);
   tx.toolbar.setCompact();
 });
-plateEditor.update.paragraph.insert({ align: 'left' });
-plateEditor.update.paragraph.toggle();
-plateEditor.update.quote.insert();
-plateEditor.update.quote.toggle({ at: [0] });
-plateEditor.plugin(QuotePlugin).update.set({});
-plateEditor.plugin(QuotePlugin).update.toggle();
+exactEditor.update.paragraph.insert({ align: 'left' });
+exactEditor.update.paragraph.toggle();
+exactEditor.update.quote.insert();
+exactEditor.update.quote.toggle({ at: [0] });
+exactEditor.plugin(QuotePlugin).update.set({});
+exactEditor.plugin(QuotePlugin).update.toggle();
 
 const rawElementEditor = createPlateEditor({ plugins: [CalloutPlugin] });
 const rawCallout = rawElementEditor.plugin(CalloutPlugin);
@@ -258,8 +245,13 @@ const textContentPortal = createPlateEditor({
   plugins: [TextContentPlugin],
 }).plugin(TextContentPlugin);
 
-// @ts-expect-error generic toggle requires schema.element.textBlock()
 textContentPortal.update.toggle();
+createPlateEditor({
+  plugins: [TextContentPlugin],
+  schema: { id: 'identity-only', version: 1 },
+})
+  .plugin(TextContentPlugin)
+  .update.toggle();
 
 const OverriddenTextBlockPlugin = definePlatePlugin('overriddenTextBlock', {
   schema: { element: schema.element.textBlock() },
@@ -267,8 +259,26 @@ const OverriddenTextBlockPlugin = definePlatePlugin('overriddenTextBlock', {
 const StructuralChildPlugin = definePlatePlugin('structuralChild', {
   schema: { element: schema.element.textBlock() },
 });
-const overriddenDefinition = defineEditor('overriddenRawEditor', {
-  plugins: [OverriddenTextBlockPlugin, StructuralChildPlugin],
+const overriddenPlugins = [
+  OverriddenTextBlockPlugin,
+  StructuralChildPlugin,
+] as const;
+type OverriddenGeneratedPlugins = typeof overriddenPlugins &
+  GeneratedEditorTypeProvider<{
+    element: Element;
+    mutations: {
+      overriddenTextBlock: {
+        construction: {};
+        properties: {};
+        type: 'overriddenTextBlock';
+      };
+    };
+    schema: { plugins: {}; properties: {} };
+    text: Text;
+    value: readonly Element[];
+  }>;
+const rawOverriddenEditor = createPlateEditor({
+  plugins: overriddenPlugins,
   schema: {
     overrides: [
       schema.override(OverriddenTextBlockPlugin, {
@@ -277,9 +287,39 @@ const overriddenDefinition = defineEditor('overriddenRawEditor', {
     ],
   },
 });
-const overriddenPortal = createPlateEditor({
-  plugins: overriddenDefinition.plugins,
-}).plugin(OverriddenTextBlockPlugin);
+const rawOverriddenPortal = rawOverriddenEditor.plugin(
+  OverriddenTextBlockPlugin
+);
+
+// @ts-expect-error application policy needs a generated contract for generic mutations
+rawOverriddenPortal.update.toggle();
+// @ts-expect-error application policy needs generated construction properties
+rawOverriddenPortal.update.insert();
+
+declare const useApplicationPolicy: boolean;
+const conditionalPolicyEditor = createPlateEditor({
+  plugins: overriddenPlugins,
+  schema: useApplicationPolicy
+    ? { id: 'conditional-policy', version: 1 }
+    : {
+        id: 'conditional-policy',
+        overrides: [
+          schema.override(OverriddenTextBlockPlugin, {
+            element: {
+              content: schema.content.element(StructuralChildPlugin),
+            },
+          }),
+        ],
+        version: 1,
+      },
+});
+
+// @ts-expect-error any policy-bearing schema branch requires generated mutations
+conditionalPolicyEditor.plugin(OverriddenTextBlockPlugin).update.toggle();
+
+const overriddenEditor =
+  rawOverriddenEditor as unknown as PlateEditor<OverriddenGeneratedPlugins>;
+const overriddenPortal = overriddenEditor.plugin(OverriddenTextBlockPlugin);
 
 // @ts-expect-error application overrides require generated mutation contracts
 overriddenPortal.update.toggle();
@@ -301,17 +341,17 @@ LayoutPlugin.configure({
   },
 });
 
-plateEditor.update((tx) => {
+exactEditor.update((tx) => {
   // @ts-expect-error invalid merged tx argument
   tx.layout.setDensity(3);
 });
 
-plateEditor.update((tx) => {
+exactEditor.update((tx) => {
   // @ts-expect-error invalid merged toolbar tx argument
   tx.toolbar.setCompact(true);
 });
 
-plateEditor.update((tx) => {
+exactEditor.update((tx) => {
   // @ts-expect-error uninstalled plugin names have no transaction capability
   tx.plugin('missingPlugin').run();
 });
@@ -330,10 +370,10 @@ rawCallout.update.remove({
 });
 
 // @ts-expect-error invalid selector arguments
-plateEditor.plugin(ConfiguredLayoutPlugin).store.get('isDense', true);
+exactEditor.plugin(ConfiguredLayoutPlugin).store.get('isDense', true);
 
 // @ts-expect-error invalid merged editor api
-plateEditor.api.toolbar.describeToolbar('extra');
+exactEditor.api.toolbar.describeToolbar('extra');
 
 const invalidBodyValue: BodyValue = [
   {

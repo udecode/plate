@@ -71,8 +71,12 @@ describe('ElementIdPlugin', () => {
     const link = paragraph.children[1];
 
     const paragraphId = editor.plugin(ElementIdPlugin).read.id(paragraph);
+    const paragraphKey = editor.key(paragraph);
 
     expect(paragraphId).toMatch(/^element-/);
+    expect(editor.plugin(ElementIdPlugin).read.id(paragraphKey)).toBe(
+      paragraphId
+    );
     expect(ElementApi.isElement(link)).toBe(true);
     if (!ElementApi.isElement(link)) return;
     const linkId = editor.plugin(ElementIdPlugin).read.id(link);
@@ -85,6 +89,26 @@ describe('ElementIdPlugin', () => {
       path: [0, 1],
       root: 'main',
     });
+  });
+
+  it('resolves persisted ids from live keys without a caller node lookup', () => {
+    const editor = createBaseEditor({
+      initialValue: [
+        { children: [{ text: 'source' }], id: 'source', type: 'paragraph' },
+      ],
+      plugins: [ElementIdPlugin],
+    });
+    const key = editor.key([0]);
+
+    if (!key) throw new Error('Expected a live element key');
+
+    expect(editor.plugin(ElementIdPlugin).read.id(key)).toBe('source');
+
+    editor.update((tx) => {
+      tx.nodes.remove({ at: key });
+    });
+
+    expect(editor.plugin(ElementIdPlugin).read.id(key)).toBeUndefined();
   });
 
   it('regenerates copied element ids and rejects explicit duplicates', () => {

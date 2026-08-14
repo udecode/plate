@@ -35,12 +35,7 @@ import {
   schema,
   TextApi,
 } from '@platejs/plite';
-import {
-  type DefinitionOf,
-  type ElementIdEntry,
-  ElementIdPlugin,
-  type PlatePluginReadState,
-} from '@platejs/core';
+import type { DefinitionOf, PlatePluginReadState } from '@platejs/core';
 import { type PlateEditor, definePlatePlugin } from '@platejs/core/react';
 import { PLUGINS } from '@platejs/utils';
 
@@ -51,9 +46,19 @@ export type AIMode = 'chat' | 'insert';
 export type AIToolName = 'comment' | 'edit' | 'generate' | null;
 
 type TComment = {
-  blockId: string;
+  blockRef: string;
   comment: string;
   content: string;
+};
+
+export type AIChatRequestNodeRef = {
+  path: Path;
+  ref: string;
+};
+
+export type AIChatRequestRefs = {
+  blocks: AIChatRequestNodeRef[];
+  tableCells: AIChatRequestNodeRef[];
 };
 
 export type AIChatAdapter = {
@@ -93,7 +98,7 @@ export type EditorPrompt =
 
 export type TableCellUpdate = {
   content: string;
-  id: string;
+  ref: string;
 };
 
 export type AIChatNodeSnapshot = {
@@ -105,6 +110,7 @@ export type AIChatNodeSnapshot = {
 export type AIChatPluginState = {
   _blockChunks: string;
   _blockPath: Path | null;
+  _blockRefs: Record<string, Readonly<{ key: NodeKey; root?: NamedRootKey }>>;
   _mdxName: string | null;
   _replaceNodeKeys: NodeKey[];
   _tableCellRefs: Record<
@@ -125,14 +131,7 @@ export type AIChatPluginState = {
   >;
 } & TriggerComboboxPluginState;
 
-type MarkdownType =
-  | 'block'
-  | 'blockSelection'
-  | 'blockSelectionWithBlockId'
-  | 'blockWithBlockId'
-  | 'editor'
-  | 'editorWithBlockId'
-  | 'tableCellWithId';
+type MarkdownType = 'block' | 'blockSelection' | 'editor' | 'tableCellWithRef';
 
 type StreamInsertOptions = {
   autoScroll?: boolean;
@@ -160,6 +159,7 @@ type AIChatPromptState = Pick<AIChatPluginReadState, 'blockSelection'>;
 const initialState: AIChatPluginState = {
   _blockChunks: '',
   _blockPath: null,
+  _blockRefs: {},
   _mdxName: null,
   _replaceNodeKeys: [],
   _tableCellRefs: {},
@@ -189,7 +189,6 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
     const codeBlock = editor.plugin(PLUGINS.codeBlock);
     const columnGroup = editor.plugin(PLUGINS.columnGroup);
     const equation = editor.plugin(PLUGINS.equation);
-    const elementId = editor.plugin(ElementIdPlugin);
     const paragraph = editor.plugin(PLUGINS.paragraph);
     const ai = editor.plugin(BaseAIPlugin);
     const suggestionKey = editor.plugin(SuggestionPlugin).schema.key;
@@ -689,6 +688,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
 
       if (chat?.messages.length) chat.clear();
       context.store.set({
+        _blockRefs: {},
         _replaceNodeKeys: [],
         _tableCellRefs: {},
         chatNodes: [],
@@ -739,13 +739,12 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
     ) => {
       context.store.set({ _tableCellRefs: {} });
 
-      if (type === 'editor' || type === 'editorWithBlockId') {
+      if (type === 'editor') {
         return editor.api.markdown.serialize({
           value: state.value(),
-          withBlockId: type === 'editorWithBlockId',
         });
       }
-      if (type === 'block' || type === 'blockWithBlockId') {
+      if (type === 'block') {
         const blocks = state.nodes
           .toArray<Element>({
             match: (node) =>
@@ -756,10 +755,9 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
 
         return editor.api.markdown.serialize({
           value: { children: blocks },
-          withBlockId: type === 'blockWithBlockId',
         });
       }
-      if (type === 'blockSelection' || type === 'blockSelectionWithBlockId') {
+      if (type === 'blockSelection') {
         const fragment = state.fragment();
         const value: Element[] =
           fragment.length === 1 && ElementApi.isElement(fragment[0])
@@ -779,10 +777,9 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
 
         return editor.api.markdown.serialize({
           value: { children: value },
-          withBlockId: type === 'blockSelectionWithBlockId',
         });
       }
-      if (type !== 'tableCellWithId') return '';
+      if (type !== 'tableCellWithRef') return '';
 
       if (!tablePlugin.installed) return '';
 
@@ -805,7 +802,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
       const [table, tablePath] = tableEntry;
 
       const refs: AIChatPluginState['_tableCellRefs'] = {};
-      const selectedCells: Array<{ cell: Element; id: string }> = [];
+      const selectedCells: Array<{ cell: Element; ref: string }> = [];
       const rows = table.children.map((row, rowIndex) => {
         if (
           !ElementApi.isElement(row) ||
@@ -825,12 +822,12 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
           const nodeKey = tableKey([...tablePath, rowIndex, cellIndex]);
 
           if (nodeKey && selectedNodeKeys.has(nodeKey)) {
-            const id = `c${selectedCells.length + 1}`;
+            const ref = `c${selectedCells.length + 1}`;
 
-            refs[id] = { key: nodeKey, ...(root ? { root } : {}) };
-            selectedCells.push({ cell, id });
+            refs[ref] = { key: nodeKey, ...(root ? { root } : {}) };
+            selectedCells.push({ cell, ref });
 
-            return `<CellRef id="${id}" />`;
+            return `<CellRef ref="${ref}" />`;
           }
 
           return cell.children
@@ -853,7 +850,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
           : markdown;
       });
       const cellBlocks = selectedCells
-        .map(({ cell, id }) => {
+        .map(({ cell, ref }) => {
           if (
             !cell.children.every((node): node is Element =>
               ElementApi.isElement(node)
@@ -862,7 +859,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
             throw new Error('Table cells must contain block elements.');
           }
 
-          return `<Cell id="${id}">\n${editor.api.markdown
+          return `<Cell ref="${ref}">\n${editor.api.markdown
             .serialize({ value: { children: cell.children } })
             .trim()}\n</Cell>`;
         })
@@ -871,6 +868,68 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
       context.store.set({ _tableCellRefs: refs });
 
       return `${rows.join('\n')}\n\n${cellBlocks}`;
+    };
+    const getRequestContext = (at: Range | null) => {
+      const root =
+        editor.read.view.root() ??
+        at?.anchor.root ??
+        at?.focus.root ??
+        editor.read.selection.root();
+      const requestEditor = root ? createEditorView(editor, { root }) : editor;
+      const requestAt = at
+        ? {
+            ...at,
+            anchor: { offset: at.anchor.offset, path: at.anchor.path },
+            focus: { offset: at.focus.offset, path: at.focus.path },
+          }
+        : null;
+      const blockRefs: AIChatPluginState['_blockRefs'] = {};
+      const blocks = requestEditor.read.nodes
+        .toArray<Element>({
+          at: requestAt ?? [],
+          match: (node) =>
+            ElementApi.isElement(node) &&
+            requestEditor.read.schema.isBlock(node),
+          mode: 'lowest',
+        })
+        .flatMap(([, path], index) => {
+          const key = requestEditor.key(path);
+
+          if (!key) return [];
+
+          const ref = `b${index + 1}`;
+
+          blockRefs[ref] = { key, ...(root ? { root } : {}) };
+
+          return [{ path: [...path], ref }];
+        });
+      const tableCellRefs: AIChatPluginState['_tableCellRefs'] = {};
+      const tableCells = tablePlugin.installed
+        ? tablePlugin.read
+            .getGridAbove({ format: 'cell' })
+            .flatMap(([, path], index) => {
+              const key = requestEditor.key(path);
+
+              if (!key) return [];
+
+              const ref = `c${index + 1}`;
+
+              tableCellRefs[ref] = { key, ...(root ? { root } : {}) };
+
+              return [{ path: [...path], ref }];
+            })
+        : [];
+
+      context.store.set({
+        _blockRefs: blockRefs,
+        _tableCellRefs: tableCellRefs,
+      });
+
+      return {
+        children: [...requestEditor.read.children()],
+        refs: { blocks, tableCells } satisfies AIChatRequestRefs,
+        selection: requestAt,
+      };
     };
     const getPrompt = (
       state: AIChatPromptState,
@@ -928,8 +987,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
           void chat?.regenerate({
             body: {
               ctx: {
-                children: editor.read.children(),
-                selection: selection ?? null,
+                ...getRequestContext(selection ?? null),
                 toolName,
               },
             },
@@ -1009,8 +1067,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
           void chat?.sendMessage(promptText, {
             body: {
               ctx: {
-                children: [...editor.read.children()],
-                selection: selection ?? null,
+                ...getRequestContext(selection ?? null),
                 toolName: nextToolName,
               },
             },
@@ -1020,29 +1077,34 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
       }),
       read: ({ state }) => ({
         commentRange: (comment: TComment) => {
-          if (!elementId.installed) return;
+          const blockRefs = context.store.get('_blockRefs');
+          const blockRef = Object.hasOwn(blockRefs, comment.blockRef)
+            ? blockRefs[comment.blockRef]
+            : undefined;
+
+          if (!blockRef) return;
+
+          const blockEditor = blockRef.root
+            ? createEditorView(editor, { root: blockRef.root })
+            : editor;
+          const firstBlock = blockEditor.read.nodes.get<Element>(blockRef.key);
+
+          if (!firstBlock) return;
 
           const nodes = editor.api.markdown.deserialize(
             comment.content
           ).children;
-          let firstBlock: ElementIdEntry | undefined;
           const ranges: Range[] = [];
 
           nodes.forEach((node, index) => {
-            if (index === 0) {
-              firstBlock = elementId.read.entry(comment.blockId);
-            }
-            const firstEntry = firstBlock;
-            const block = firstEntry
-              ? index === 0
-                ? ([firstEntry.node, firstEntry.path] as NodeEntry<Element>)
-                : (firstEntry.root === 'main'
-                    ? editor
-                    : createEditorView(editor, { root: firstEntry.root })
-                  ).read.nodes.get<Element>([firstEntry.path[0]! + index])
-              : undefined;
+            const block =
+              index === 0
+                ? firstBlock
+                : blockEditor.read.nodes.get<Element>([
+                    firstBlock[1][0]! + index,
+                  ]);
 
-            if (!block || !firstEntry) return;
+            if (!block) return;
 
             const localRange = context.editor
               .plugin(BaseAIPlugin)
@@ -1051,10 +1113,10 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
                 findText: NodeApi.string(node),
               });
             const range =
-              localRange && firstEntry.root !== 'main'
+              localRange && blockRef.root
                 ? {
-                    anchor: { ...localRange.anchor, root: firstEntry.root },
-                    focus: { ...localRange.focus, root: firstEntry.root },
+                    anchor: { ...localRange.anchor, root: blockRef.root },
+                    focus: { ...localRange.focus, root: blockRef.root },
                   }
                 : localRange;
 
@@ -1111,13 +1173,10 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
         ) => {
           let result = text.split('{prompt}').join(prompt ?? '');
           const placeholders: Record<string, MarkdownType> = {
-            '{blockSelectionWithBlockId}': 'blockSelectionWithBlockId',
             '{blockSelection}': 'blockSelection',
-            '{blockWithBlockId}': 'blockWithBlockId',
             '{block}': 'block',
-            '{editorWithBlockId}': 'editorWithBlockId',
             '{editor}': 'editor',
-            '{tableCellWithId}': 'tableCellWithId',
+            '{tableCellWithRef}': 'tableCellWithRef',
           };
 
           Object.entries(placeholders).forEach(([placeholder, type]) => {
@@ -1497,19 +1556,22 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
             context.store.set({ _replaceNodeKeys: replacementKeys });
           });
         };
-        const applyTableCellSuggestion = ({ content, id }: TableCellUpdate) => {
+        const applyTableCellSuggestion = ({
+          content,
+          ref,
+        }: TableCellUpdate) => {
           const refs = context.store.get('_tableCellRefs');
-          const ref = Object.hasOwn(refs, id) ? refs[id] : undefined;
-          const entry = ref ? tx.nodes.get<Element>(ref.key) : undefined;
+          const target = Object.hasOwn(refs, ref) ? refs[ref] : undefined;
+          const entry = target ? tx.nodes.get<Element>(target.key) : undefined;
 
-          if (!ref || !entry) {
+          if (!target || !entry) {
             console.warn('Table cell reference not found');
 
             return;
           }
 
           const [cell, path] = entry;
-          const children = ref.root ? tx.root(ref.root) : tx.children();
+          const children = target.root ? tx.root(target.root) : tx.children();
           const rootedCell = NodeApi.get({ children, type: '' }, path);
 
           if (rootedCell !== cell) {
@@ -1535,7 +1597,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
           );
 
           tx.ai.markBatch();
-          tx.nodes.replaceChildren(next, { at: ref.key });
+          tx.nodes.replaceChildren(next, { at: target.key });
         };
         const getSelectedBlocks = () => {
           const selectedKeys = editor

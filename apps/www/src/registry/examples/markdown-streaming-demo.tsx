@@ -21,11 +21,11 @@ import { Plate, usePlateEditor, usePlateViewEditor } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { EditorKit } from '@/registry/components/editor/editor';
 import { MarkdownJoiner } from '@/registry/lib/markdown-joiner-transform';
 import { Editor, EditorContainer, EditorView } from '@/registry/ui/editor';
 
 import { BaseEditorKit } from '../components/editor/editor-base-kit';
-import { EditorKit } from './copilot-editor.generated';
 
 const CAPITALIZE_REGEX = /([A-Z])/g;
 const FIRST_CHAR_REGEX = /^./;

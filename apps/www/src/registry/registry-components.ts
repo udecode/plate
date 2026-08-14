@@ -4,7 +4,16 @@ import { registryKits } from './registry-kits';
 
 const registryApi: Registry['items'] = [
   {
-    dependencies: ['@ai-sdk/react@3', 'ai@6', 'dedent@1.0.0'],
+    dependencies: [
+      '@ai-sdk/gateway',
+      '@platejs/ai',
+      '@platejs/markdown',
+      '@platejs/table',
+      '@platejs/utils',
+      'ai@6',
+      'dedent@1.0.0',
+      'zod',
+    ],
     files: [
       {
         path: 'app/api/ai/command/route.ts',
@@ -55,7 +64,9 @@ const registryApi: Registry['items'] = [
     name: 'ai-api',
     registryDependencies: [
       '@plate/copilot-api',
+      '@plate/editor-base-kit',
       '@plate/markdown-joiner-transform',
+      '@plate/use-chat',
     ],
     type: 'registry:file',
   },
@@ -106,11 +117,22 @@ export const registryComponents: Registry['items'] = [
       'dialog',
       'input',
       'popover',
+      '@plate/use-chat',
     ],
     type: 'registry:component',
   },
   {
-    dependencies: ['@ai-sdk/react@3', '@faker-js/faker'],
+    dependencies: [
+      '@ai-sdk/react@3',
+      '@faker-js/faker',
+      '@platejs/ai',
+      '@platejs/comment',
+      '@platejs/markdown',
+      '@platejs/plite',
+      '@platejs/selection',
+      '@platejs/table',
+      'ai@6',
+    ],
     files: [
       {
         path: 'components/editor/use-chat.ts',
@@ -118,7 +140,7 @@ export const registryComponents: Registry['items'] = [
       },
     ],
     name: 'use-chat',
-    registryDependencies: ['@plate/ai-kit'],
+    registryDependencies: ['@plate/discussion-kit'],
     type: 'registry:component',
   },
   {
@@ -128,12 +150,16 @@ export const registryComponents: Registry['items'] = [
       '@platejs/code-drawing',
       '@platejs/date',
       '@platejs/excalidraw',
-      '@platejs/toc',
+      '@platejs/footnote',
       '@platejs/layout',
       '@platejs/link',
       '@platejs/math',
       '@platejs/media',
+      '@platejs/plite',
+      '@platejs/suggestion',
       '@platejs/table',
+      '@platejs/toc',
+      '@platejs/utils',
     ],
     files: [
       {
@@ -149,12 +175,17 @@ export const registryComponents: Registry['items'] = [
       '@platejs/callout',
       '@platejs/code-block',
       '@platejs/date',
+      '@platejs/footnote',
       '@platejs/layout',
       '@platejs/link',
       '@platejs/list-classic',
       '@platejs/math',
       '@platejs/media',
+      '@platejs/plite',
+      '@platejs/suggestion',
       '@platejs/table',
+      '@platejs/toc',
+      '@platejs/utils',
     ],
     files: [
       {

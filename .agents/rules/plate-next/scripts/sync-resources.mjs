@@ -20,8 +20,16 @@ const resourcePairs = [
     '.agents/skills/plate-plugin-creator/rules/typing.md',
   ],
   [
+    '.agents/rules/plate-ui/references/component-audit.md',
+    '.agents/skills/plate-ui/references/component-audit.md',
+  ],
+  [
     '.agents/rules/plate-ui/rules/component-shape.md',
     '.agents/skills/plate-ui/rules/component-shape.md',
+  ],
+  [
+    '.agents/rules/plate-ui/rules/registry.md',
+    '.agents/skills/plate-ui/rules/registry.md',
   ],
 ];
 const check = process.argv.slice(2).includes('--check');

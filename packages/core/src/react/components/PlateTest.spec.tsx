@@ -20,7 +20,7 @@ describe('PlateTest', () => {
         rendered = render(
           <PlateTest
             editor={editor}
-            schemaIdentity={{
+            schema={{
               id: 'plate-test:core:react-components-platetest:editor-1',
               version: 1,
             }}
@@ -44,3 +44,12 @@ describe('PlateTest', () => {
     ).toBe(true);
   });
 });
+
+const assertPlateTestSchemaContract = () => {
+  const editor = createReactEditor();
+
+  // @ts-expect-error raw editors require persisted schema lineage
+  return <PlateTest editor={editor} schema={{ overrides: [] }} />;
+};
+
+void assertPlateTestSchemaContract;

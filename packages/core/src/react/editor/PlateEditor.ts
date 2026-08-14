@@ -11,9 +11,8 @@ import type {
   CorePlugins,
   InferPlugins,
   InferEditorRuntimePlugins,
-  InternalEditorApplicationSchemaProvider,
   InternalEditorMutationProvider,
-  InternalInstalledSchemaDefinitionsProvider,
+  InternalInstalledSchemaMutationProvider,
   InternalBaseEditorWithInstalledPlugins,
   MergeInstalledPluginDefinitions,
   PluginReference,
@@ -21,7 +20,7 @@ import type {
 import type {
   GeneratedEditorMutations,
   GeneratedEditorValue,
-} from '../../lib/editor/defineEditor';
+} from '../../internal/editor/generatedEditorTypes';
 import type { InternalPluginDefinitionOf } from '../../lib/plugin/pluginDefinitionLookup.internal';
 import type {
   AnyResolvedPlatePlugin,
@@ -98,13 +97,12 @@ export type InferPlateEditorSchemaPlugins<TPlugins> =
         InferPlugins<NormalizePlatePluginInput<TPlugins>>
       >;
 
-export type InternalPlateEditorMutationProvider<TPlugins, TRuntime> = [
-  GeneratedEditorMutations<TPlugins>,
-] extends [never]
-  ? TPlugins extends InternalEditorApplicationSchemaProvider
-    ? InternalInstalledSchemaDefinitionsProvider<TRuntime> &
-        InternalEditorApplicationSchemaProvider
-    : TRuntime
+export type InternalPlateEditorMutationProvider<
+  TPlugins,
+  TRuntime,
+  TSchema = undefined,
+> = [GeneratedEditorMutations<TPlugins>] extends [never]
+  ? InternalInstalledSchemaMutationProvider<TRuntime, TSchema>
   : InternalEditorMutationProvider<GeneratedEditorMutations<TPlugins>>;
 
 /** @internal React editor whose plugin definition union is already lowered. */
@@ -126,7 +124,9 @@ export type InternalPlateEditorWithInstalledPlugins<
   };
 
 /** Plate editor inferred directly from its public plugin tuple. */
-export type PlateEditor<TPlugins = never> = [TPlugins] extends [never]
+export type PlateEditor<TPlugins = never, TSchema = undefined> = [
+  TPlugins,
+] extends [never]
   ? InternalPlateEditorWithInstalledPlugins<
       any,
       AnyBasePluginDefinition,
@@ -136,6 +136,6 @@ export type PlateEditor<TPlugins = never> = [TPlugins] extends [never]
     ? InternalPlateEditorWithInstalledPlugins<
         GeneratedEditorValue<TPlugins>,
         D,
-        InternalPlateEditorMutationProvider<TPlugins, D>
+        InternalPlateEditorMutationProvider<TPlugins, D, TSchema>
       >
     : never;

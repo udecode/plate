@@ -101,11 +101,12 @@ export const AppParagraphPlugin = ParagraphPlugin.configure({ component: Paragra
 If an existing document uses a different persisted type, remap that element in
 the closed editor schema. Plugin configuration cannot rewrite schema identity.
 
-```tsx title="components/editor/paragraph-plugin.tsx" showLineNumbers
-import { defineEditor, schema } from 'platejs';
+```tsx title="components/editor/document-editor.tsx" showLineNumbers
+import { schema } from 'platejs';
+import { createPlateEditor } from 'platejs/react';
 
-export default defineEditor('app', {
-  plugins: [AppParagraphPlugin] as const,
+const editor = createPlateEditor({
+  plugins: [AppParagraphPlugin],
   schema: {
     overrides: [
       schema.override(AppParagraphPlugin, {

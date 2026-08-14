@@ -1141,7 +1141,7 @@ type BasePluginAuthorFields<
          * their content will be rendered in sequence.
          */
         belowRootNodes?: (
-          props: RenderStaticNodeWrapperProps<WithAnyName<C>>
+          props: RenderStaticNodeWrapperProps<C>
         ) => React.ReactNode;
         /** Override `data-plite-leaf` element attributes. */
         leafProps?: LeafStaticProps<WithAnyName<C>>;

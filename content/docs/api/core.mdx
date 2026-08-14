@@ -589,8 +589,9 @@ const editor = createPlateEditor({
 });
 
 const elementId = editor.plugin(ElementIdPlugin);
-const id = elementId.read.id(element);
-const entry = elementId.read.entry(id);
+const key = editor.key(element);
+const id = elementId.read.id(key);
+const entry = id ? elementId.read.entry(id) : undefined;
 ```
 
 Configure `initialState.generateId` to replace the default full-length

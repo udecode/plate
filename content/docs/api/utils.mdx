@@ -91,16 +91,13 @@ export function getImageUrl(element: ImageElement) {
 ```
 
 Use `ElementOf<typeof Plugin>` for one descriptor-owned element shape and
-`ValueOf<MyEditor>` for the complete installed document vocabulary.
+`ValueOf<Editor>` for the complete installed document vocabulary.
 
 ```ts title="Derive an editor value"
 import type { ValueOf } from 'platejs';
-import type { PlateEditor } from 'platejs/react';
+import type { Editor } from '@/components/editor/editor.generated';
 
-import { EditorKit } from '@/components/editor/editor-kit';
-
-type MyEditor = PlateEditor<typeof EditorKit>;
-type MyValue = ValueOf<MyEditor>;
+type MyValue = ValueOf<Editor>;
 ```
 
 ## Utility Plugins And Kits

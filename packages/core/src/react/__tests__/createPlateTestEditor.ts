@@ -75,10 +75,7 @@ export const createPlateTestEditor = async <
     strict: _strict = false,
     testID = 'plite-content-editable',
   } = buildTestHarnessOptions;
-  const editor = createPlateEditor({
-    ...options,
-    schemaIdentity: options.schemaIdentity,
-  });
+  const editor = createPlateEditor(options);
   const plateProps = {
     ...componentProps,
     editor,

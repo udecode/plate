@@ -1,16 +1,11 @@
-import {
-  type DefinitionOf,
-  defineBasePlugin,
-  ElementIdPlugin,
-} from '@platejs/core';
-import type { EditorStateView, Element, Path } from '@platejs/plite';
+import { type DefinitionOf, defineBasePlugin } from '@platejs/core';
+import type { EditorStateView, Element, NodeKey } from '@platejs/plite';
 import { ElementApi, NodeApi } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
 
 export type Heading = {
   depth: number;
-  id: string;
-  path: Path;
+  key: NodeKey;
   title: string;
   type: string;
 };
@@ -43,7 +38,6 @@ export const BaseTocPlugin = defineBasePlugin(PLUGINS.toc, {
     isScroll: true,
     topOffset: 80,
   }),
-  dependencies: [ElementIdPlugin],
   schema: {
     element: {
       void: 'block',
@@ -64,7 +58,7 @@ export const BaseTocPlugin = defineBasePlugin(PLUGINS.toc, {
           .map(([plugin, depth]) => [plugin.schema.type, depth] as const)
       );
 
-      for (const [node, path] of state.nodes.entries<Element>({
+      for (const [node] of state.nodes.entries<Element>({
         at: [],
         match: (node) =>
           ElementApi.isElement(node) &&
@@ -76,8 +70,7 @@ export const BaseTocPlugin = defineBasePlugin(PLUGINS.toc, {
         if (title) {
           headings.push({
             depth: headingDepthByType.get(node.type)!,
-            id: editor.plugin(ElementIdPlugin).read.id(node),
-            path,
+            key: state.key(node),
             title,
             type: node.type,
           });

@@ -1,8 +1,4 @@
-import {
-  BaseParagraphPlugin,
-  defineBasePlugin,
-  defineEditor,
-} from '@platejs/core';
+import { BaseParagraphPlugin, defineBasePlugin } from '@platejs/core';
 import { createPlateEditor } from '@platejs/core/react';
 import { MarkdownPlugin } from '@platejs/markdown';
 import { NodeApi, property, schema } from '@platejs/plite';
@@ -13,64 +9,63 @@ import { AI_PREVIEW_KEY } from '../lib/BaseAIPlugin';
 import { AIChatPlugin } from './AIChatPlugin';
 
 const createEditor = (paragraphType = 'paragraph') => {
-  const definition = defineEditor('aiChatStreaming', {
-    plugins: [
-      BaseParagraphPlugin,
-      defineBasePlugin(PLUGINS.codeBlock, {
-        codecs: ({ defineCodecs }) =>
-          defineCodecs({
-            'text/markdown': {
-              kind: 'node',
-              encode: ({ node }) => ({
-                lang: node.lang,
-                type: 'code',
-                value: node.children
-                  .map((child) => NodeApi.string(child))
-                  .join('\n'),
-              }),
-            },
-          }),
-        schema: {
-          element: {
-            content: schema.content.open(),
-            properties: { lang: property.string() },
+  const plugins = [
+    BaseParagraphPlugin,
+    defineBasePlugin(PLUGINS.codeBlock, {
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/markdown': {
+            kind: 'node',
+            encode: ({ node }) => ({
+              lang: node.lang,
+              type: 'code',
+              value: node.children
+                .map((child) => NodeApi.string(child))
+                .join('\n'),
+            }),
           },
-        },
-      }),
-      defineBasePlugin(PLUGINS.equation, {
-        codecs: ({ defineCodecs }) =>
-          defineCodecs({
-            'text/markdown': {
-              kind: 'node',
-              encode: ({ node }) => ({
-                type: 'math',
-                value: node.texExpression ?? '',
-              }),
-            },
-          }),
-        schema: {
-          element: {
-            properties: { texExpression: property.string() },
-            void: 'block',
-          },
-        },
-      }),
-      MarkdownPlugin.configure({
-        initialState: { remarkPlugins: [remarkMath] },
-      }),
-      AIChatPlugin,
-    ],
-    schema: {
-      overrides: [
-        schema.override(BaseParagraphPlugin, {
-          element: { type: paragraphType },
         }),
-      ],
-    },
-  });
+      schema: {
+        element: {
+          content: schema.content.open(),
+          properties: { lang: property.string() },
+        },
+      },
+    }),
+    defineBasePlugin(PLUGINS.equation, {
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/markdown': {
+            kind: 'node',
+            encode: ({ node }) => ({
+              type: 'math',
+              value: node.texExpression ?? '',
+            }),
+          },
+        }),
+      schema: {
+        element: {
+          properties: { texExpression: property.string() },
+          void: 'block',
+        },
+      },
+    }),
+    MarkdownPlugin.configure({
+      initialState: { remarkPlugins: [remarkMath] },
+    }),
+    AIChatPlugin,
+  ] as const;
+  const applicationSchema = {
+    overrides: [
+      schema.override(BaseParagraphPlugin, {
+        element: { type: paragraphType },
+      }),
+    ],
+  } as const;
 
   return createPlateEditor({
-    plugins: definition.plugins,
+    plugins,
+    schema: applicationSchema,
     selection: {
       kind: 'text',
       anchor: { offset: 0, path: [0, 0] },

@@ -14,7 +14,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { EditorKit } from '@/registry/components/editor/editor-kit';
+import { EditorKit } from '@/registry/components/editor/editor';
 import { editableVoidsValue } from '@/registry/examples/values/editable-voids-value';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
 

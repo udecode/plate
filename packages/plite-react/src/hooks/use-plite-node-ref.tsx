@@ -1,4 +1,4 @@
-import { useCallback, useContext, useRef } from 'react';
+import { useCallback, useContext, useRef, useSyncExternalStore } from 'react';
 import type {
   Descendant,
   Editor as PliteEditor,
@@ -18,6 +18,7 @@ import { EditorContext } from '../context';
 import {
   type Editor,
   getEditorRuntimeOwner,
+  getNodeKeyDOMValue,
   getPathByNodeKey as editorGetPathByNodeKey,
   hasPath as editorHasPath,
 } from '../editable/runtime-editor-api';
@@ -42,6 +43,7 @@ const EDITOR_TO_TEXT_RENDER_REVISIONS = new WeakMap<
   Map<NodeKey, number>
 >();
 const ELEMENT_TO_PATH = new WeakMap<HTMLElement, Path>();
+const subscribeToHydration = () => () => {};
 
 const pathKey = (path: readonly number[]) => path.join('.');
 
@@ -794,4 +796,17 @@ export const usePliteNodeRef = (
     },
     [bindNode]
   );
+};
+
+/** @internal Publish hydration-safe local tokens only until React mounts. */
+export const usePliteNodeKeyDOMValue = (nodeKey: NodeKey | null) => {
+  const isMounted = useSyncExternalStore(
+    subscribeToHydration,
+    () => true,
+    () => false
+  );
+
+  if (!nodeKey) return;
+
+  return isMounted ? nodeKey : getNodeKeyDOMValue(nodeKey);
 };

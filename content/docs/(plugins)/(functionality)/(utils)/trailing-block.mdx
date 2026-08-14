@@ -8,7 +8,7 @@ docs:
     title: Forced Layout
 ---
 
-Trailing Block inserts a required block when the last node at a target level is missing or has the wrong type. `EditorKit` includes `TrailingBlockPlugin` so full Plate editors always end with a paragraph. Single-block and single-line editors disable it because they intentionally keep one root block.
+Trailing Block inserts a required block when the last node at a target level is missing or has the wrong type. The standard registry editor plugins include `TrailingBlockPlugin` so full Plate editors always end with a paragraph. Single-block and single-line editors disable it because they intentionally keep one root block.
 
 <PackageInfo>
 
@@ -19,7 +19,7 @@ Trailing Block inserts a required block when the last node at a target level is 
 - Root or nested target level.
 - Optional last-node matching through `initialState.match`.
 - Custom insertion wrapper through `initialState.insert`.
-- Built into `EditorKit`.
+- Included in the standard registry editor plugins.
 
 </PackageInfo>
 
@@ -45,7 +45,7 @@ export const editor = createPlateEditor({
 | `TrailingBlockPlugin` | `platejs` / `@platejs/utils` | Owns the correction that checks and inserts the trailing block. |
 | `tx.nodes.last([], { level })` | Plite transaction | Finds the last node at the configured depth. |
 | `NodeApi.matches(...)` | `@platejs/plite` | Applies the optional last-node match. |
-| `EditorKit` | Registry | Adds `TrailingBlockPlugin` after editing plugins. |
+| `editor.ts` plugins | Registry | Add `TrailingBlockPlugin` after editing plugins. |
 | `SuggestionKit` | Registry | Weakly adapts an installed trailing block without installing it. |
 
 There is no dedicated trailing-block UI. The plugin is a normalizer.

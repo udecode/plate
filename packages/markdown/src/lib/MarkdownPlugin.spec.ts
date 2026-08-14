@@ -1,11 +1,13 @@
 import {
   type BaseEditorOptions,
   type BasePluginInput,
+  BaseParagraphPlugin,
   createBaseEditor as createTypedBaseEditor,
   ElementIdPlugin,
 } from '@platejs/core';
 import { BaseBoldPlugin } from '@platejs/basic-nodes';
 import { BaseFontColorPlugin } from '@platejs/basic-styles';
+import { BaseListPlugin } from '@platejs/list';
 import {
   ContentSlice,
   createEditor as createPliteEditor,
@@ -205,7 +207,7 @@ describe('MarkdownPlugin', () => {
     });
   });
 
-  it('serializes canonical persisted element ids', () => {
+  it('round-trips canonical persisted element ids', () => {
     const editor = createBaseEditor({
       plugins: [
         ElementIdPlugin,
@@ -222,9 +224,72 @@ describe('MarkdownPlugin', () => {
       ],
     });
 
-    expect(editor.api.markdown.serialize({ withBlockId: true })).toContain(
-      '<block id="block-1">'
-    );
+    const markdown = editor.api.markdown.serialize({ withBlockId: true });
+
+    expect(markdown).toContain('<block id="block-1">');
+    expect(editor.api.markdown.deserialize(markdown)).toEqual({
+      children: [
+        {
+          children: [{ text: 'Hello' }],
+          id: 'block-1',
+          type: 'paragraph',
+        },
+      ],
+    });
+  });
+
+  it('round-trips persisted ids for flat list blocks', () => {
+    const editor = createBaseEditor({
+      plugins: [
+        BaseParagraphPlugin,
+        BaseListPlugin,
+        ElementIdPlugin,
+        MarkdownPlugin.configure({
+          initialState: { remarkPlugins: [remarkMdx] },
+        }),
+      ],
+      initialValue: [
+        {
+          children: [{ text: 'First' }],
+          id: 'list-1',
+          indent: 1,
+          listStyleType: 'disc',
+          type: 'paragraph',
+        },
+        {
+          children: [{ text: 'Second' }],
+          id: 'list-2',
+          indent: 1,
+          listStyleType: 'disc',
+          type: 'paragraph',
+        },
+      ],
+    });
+
+    const markdown = editor.api.markdown.serialize({ withBlockId: true });
+
+    expect(markdown).toContain('<block id="list-1">');
+    expect(markdown).toContain('<block id="list-2">');
+    expect(editor.api.markdown.deserialize(markdown).children).toEqual([
+      expect.objectContaining({ id: 'list-1' }),
+      expect.objectContaining({ id: 'list-2' }),
+    ]);
+  });
+
+  it('rejects persisted block wrappers without ElementIdPlugin', () => {
+    const editor = createBaseEditor({
+      plugins: [
+        MarkdownPlugin.configure({
+          initialState: { remarkPlugins: [remarkMdx] },
+        }),
+      ],
+    });
+
+    expect(() =>
+      editor.api.markdown.deserialize(
+        '<block id="block-1">\n\nHello\n\n</block>'
+      )
+    ).toThrow('requires ElementIdPlugin');
   });
 
   it('applies one-operation overrides by installed feature name', () => {

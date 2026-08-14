@@ -6,7 +6,7 @@ import { IndentPlugin } from '@platejs/indent/react';
 import { ListPlugin as BlockListPlugin } from '@platejs/list/react';
 import { Plate, usePlateEditor } from 'platejs/react';
 
-import { EditorKit } from '@/registry/components/editor/editor-kit';
+import { EditorKit } from '@/registry/components/editor/editor';
 import { AutoformatKit } from '@/registry/components/editor/plugins/autoformat-classic-kit';
 import { FixedToolbarKit } from '@/registry/components/editor/plugins/fixed-toolbar-classic-kit';
 import { FixedToolbarPlugin } from '@/registry/components/editor/plugins/fixed-toolbar-kit';

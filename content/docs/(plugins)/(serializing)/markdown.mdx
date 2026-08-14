@@ -464,7 +464,7 @@ Converts an `EditorDocumentValue` into a Markdown string.
     <APIItem name="withBlockId" type="boolean" optional>
       Serializes IDs from `ElementIdPlugin` as
       `<block id="...">content</block>`. The editor must install
-      `ElementIdPlugin`. The plugin's compiled property key is respected.
+      `ElementIdPlugin`. Deserialization restores each wrapper's persisted ID.
       - **Default:** `false`
     </APIItem>
   </APIOptions>

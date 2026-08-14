@@ -43,7 +43,7 @@ describe('BaseYjsPlugin', () => {
           },
         }),
       ],
-      schemaIdentity: TestSchema,
+      schema: TestSchema,
     });
 
     assert.equal(
@@ -73,7 +73,7 @@ describe('BaseYjsPlugin', () => {
           },
         }),
       ],
-      schemaIdentity: TestSchema,
+      schema: TestSchema,
     });
 
     assert.equal(
@@ -102,7 +102,7 @@ describe('BaseYjsPlugin', () => {
           },
         }),
       ],
-      schemaIdentity: TestSchema,
+      schema: TestSchema,
     });
 
     editor.update.yjs.disconnect();
@@ -132,7 +132,7 @@ describe('BaseYjsPlugin', () => {
           },
         }),
       ],
-      schemaIdentity: TestSchema,
+      schema: TestSchema,
     });
 
     editor.update.selection.set({

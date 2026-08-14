@@ -73,12 +73,15 @@
     },
     {
       "name": "editor-kit",
-      "files": [
-        "apps/www/src/registry/blocks/editor-ai/components/editor/editor-kit.tsx",
-        "apps/www/src/registry/components/editor/editor-kit.tsx"
-      ],
+      "files": [],
       "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for editor-kit."
+        }
+      ]
     },
     {
       "name": "block-context-menu",

@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'bun:test';
 
 import { jsxt, type TestEditor } from '@platejs/test-utils';
-import { BaseParagraphPlugin, ElementIdPlugin } from '@platejs/core';
+import { BaseParagraphPlugin } from '@platejs/core';
 import { MarkdownPlugin } from '@platejs/markdown';
 import {
   BaseTableCellPlugin,
@@ -21,7 +21,6 @@ const createTestEditor = async (input: TestEditor) => {
     editor: createEditor<Value>(),
     plugins: [
       BaseParagraphPlugin,
-      ElementIdPlugin,
       BaseTablePlugin,
       BaseTableRowPlugin,
       BaseTableCellPlugin,
@@ -76,19 +75,19 @@ describe('AIChatPlugin read.resolvePlaceholders', () => {
     );
   });
 
-  it('replaces the tableCellWithId placeholder using the table markdown path', async () => {
+  it('replaces the tableCellWithRef placeholder using the table markdown path', async () => {
     const input = (
       <editor>
-        <htable id="t1">
-          <htr id="t1_r1">
-            <htd id="t1_r1_c1">
+        <htable>
+          <htr>
+            <htd>
               <hp>
                 <anchor />
                 Content
                 <focus />
               </hp>
             </htd>
-            <htd id="t1_r1_c2">
+            <htd>
               <hp>Other</hp>
             </htd>
           </htr>
@@ -97,15 +96,17 @@ describe('AIChatPlugin read.resolvePlaceholders', () => {
     ) as TestEditor;
     const aiChat = await createTestEditor(input);
     const expectedTable = aiChat.read.markdown({
-      type: 'tableCellWithId',
+      type: 'tableCellWithRef',
     });
 
-    const result = aiChat.read.resolvePlaceholders('Table:\n{tableCellWithId}');
-    const nodeKey = /<CellRef id="([^"]+)" \/>/.exec(result)?.[1];
+    const result = aiChat.read.resolvePlaceholders(
+      'Table:\n{tableCellWithRef}'
+    );
+    const nodeKey = /<CellRef ref="([^"]+)" \/>/.exec(result)?.[1];
 
     expect(result).toBe(`Table:\n${expectedTable}`);
     expect(nodeKey).toBeDefined();
-    expect(result).toContain(`<Cell id="${nodeKey}">\nContent\n</Cell>`);
+    expect(result).toContain(`<Cell ref="${nodeKey}">\nContent\n</Cell>`);
   });
 
   it('leaves strings without placeholders unchanged', async () => {

@@ -71,13 +71,18 @@ Copy:
 - `useEditorPlugin(plugin)` when the whole file is plugin-centric
 - `editor.plugin(plugin).api` / `editor.plugin(plugin).update` when that is
   simpler and the descriptor is required
-- `editor.plugin(plugin).installed` before any other portal access when the
-  descriptor is optional
+- `editor.plugin(plugin).installed` before capability or descriptor access when
+  the descriptor is optional; `.type`/`.key` remain safe conventional identity
+  reads when uninstalled
 
-Registry UI is generic by definition, even when its current host has a complete
-inferred kit. Do not copy a host editor type or root
-`editor.api.<pluginName>` access into it. Root plugin APIs belong to host-owned
-code; registry code gets inference from the descriptor portal.
+Registry UI is generic by definition, even when its current host uses optional
+generated application types. Do not copy a host editor type, `editor.generated`
+import, authored `editor.ts` import, or root `editor.api.<name>` access into it.
+Root plugin APIs belong to host-owned code; registry code gets inference from
+the descriptor portal. The editor host and examples whose registry metadata
+explicitly depends on `editor-kit` may import the authored `plugins` from
+`editor.ts`. Generated `Editor` and `Value` imports are type-only static
+boundaries; generated modules never supply runtime plugins.
 
 ## Registry wiring reminders
 

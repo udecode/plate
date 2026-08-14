@@ -2,6 +2,30 @@
   "version": 1,
   "audits": [
     {
+      "id": "slate-regression-proof-2026-08-14",
+      "artifactVersion": 2,
+      "target": "regression-proof",
+      "artifact": "docs/plans/artifacts/slate-regression-proof-audit/audit-report.md",
+      "references": [
+        {
+          "repoKey": "github.com/ianstormtaylor/slate",
+          "source": "https://github.com/ianstormtaylor/slate.git",
+          "localPath": "../slate-audit",
+          "branch": "main",
+          "upstream": "origin/main",
+          "auditedCommit": "ec793483ada7f7e21ebc82c2b3aa9ea674605ce3",
+          "auditedAt": "2026-08-14T12:34:41Z",
+          "testHarvestCommit": "ec793483ada7f7e21ebc82c2b3aa9ea674605ce3",
+          "issueHarvestCheckedAt": "2026-08-14T11:21:25.836091Z",
+          "issueLedger": "docs/editor-issue-harvester/slate/full/issue-closure-ledger.md",
+          "conceptManifest": "docs/plans/artifacts/slate-regression-proof-audit/concept-manifest.json",
+          "conceptMatrix": "docs/plans/artifacts/slate-regression-proof-audit/concept-matrix.md",
+          "conceptMatrixValidatedAt": "2026-08-14T12:34:41Z"
+        }
+      ],
+      "validationReceipt": "docs/plans/artifacts/slate-regression-proof-audit/validation-receipt.json"
+    },
+    {
       "id": "node-identity-final-2026-08-07",
       "artifactVersion": 1,
       "target": "node-identity",

@@ -45,6 +45,20 @@ const exportNodesToDocx = async (nodes: PliteNode[]): Promise<Buffer> => {
 };
 
 describe('docx roundtrip', () => {
+  it('pairs TOC links with export-local heading bookmarks without persisted ids', async () => {
+    const html = await renderStaticHtml(
+      createTestEditor([
+        { children: [{ text: '' }], type: 'toc' },
+        { children: [{ text: 'Introduction' }], type: 'h1' },
+      ])
+    );
+    const document = new DOMParser().parseFromString(html, 'text/html');
+    const href = document.querySelector('a')?.getAttribute('href');
+
+    expect(href).toMatch(/^#plate_/);
+    expect(document.querySelector(href!)).not.toBeNull();
+  });
+
   it.each([
     'headers',
     'block_quotes',

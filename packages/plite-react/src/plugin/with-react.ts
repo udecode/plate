@@ -178,5 +178,5 @@ export function createReactEditor<
   return createEditor({
     ...editorOptions,
     extensions: editorExtensions,
-  }) as ReactEditor<V, TExtensions>;
+  }) as unknown as ReactEditor<V, TExtensions>;
 }

@@ -1,6 +1,6 @@
 import React from 'react';
 import { property, schema } from '@platejs/plite';
-import { createBaseEditor, defineEditor } from '../../lib/editor';
+import { createBaseEditor } from '../../lib/editor';
 import type { AnyBasePlugin } from '../../lib/plugin/BasePlugin';
 
 import { defineBasePlugin } from '../../lib/plugin/defineBasePlugin';
@@ -427,18 +427,18 @@ describe('resolvePlugins', () => {
     const TextBlockPlugin = defineBasePlugin('overriddenTextBlock', {
       schema: { element: schema.element.textBlock() },
     }).extend({ shortcuts: { toggle: { keys: 'mod+k' } } });
-    const definition = defineEditor('overriddenTextBlockEditor', {
-      plugins: [ChildPlugin, TextBlockPlugin],
-      schema: {
-        overrides: [
-          schema.override(TextBlockPlugin, {
-            element: { content: schema.content.element(ChildPlugin) },
-          }),
-        ],
-      },
-    });
-
-    expect(() => createBaseEditor({ plugins: definition.plugins })).toThrow(
+    expect(() =>
+      createBaseEditor({
+        plugins: [ChildPlugin, TextBlockPlugin],
+        schema: {
+          overrides: [
+            schema.override(TextBlockPlugin, {
+              element: { content: schema.content.element(ChildPlugin) },
+            }),
+          ],
+        },
+      })
+    ).toThrow(
       'Plate shortcut "overriddenTextBlock.toggle" does not match a public update or API command.'
     );
   });

@@ -2,9 +2,9 @@
 "@platejs/markdown": major
 ---
 
-Resolve `withBlockId` through `ElementIdPlugin` and its compiled physical
-property key. Serialization rejects the option when persisted element identity
-is not installed.
+Resolve `withBlockId` through `ElementIdPlugin`. Serialization rejects the
+option when persisted element identity is not installed, and deserialization
+restores persisted IDs from block wrappers.
 
 Export `MarkdownPluginState` as the complete mutable state contract for
 `MarkdownPlugin`.

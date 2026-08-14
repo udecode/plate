@@ -16,6 +16,7 @@ export type {
   InternalEditorDefinitionOwnedElementProperties,
   InternalEditorDefinitionTextProperties,
 } from '../lib/editor/pluginRuntimeTypes';
+export type { GeneratedEditorTypeProvider } from './editor/generatedEditorTypes';
 export { createPluginContext } from '../lib/plugin/createPluginContext.internal';
 export * from '../lib/plugins/html/htmlDom';
 export {
@@ -24,11 +25,13 @@ export {
   prepareHtmlRegistry,
 } from '../lib/plugins/html/HtmlPlugin';
 export {
+  compileEditorApplicationSchema,
   getCompiledPlateContainerTypes,
   getCompiledPlatePlugin,
   getPlateRuntime,
   getResolvedPluginTargetTypes,
 } from './plugin/compilePlateModel';
+export { isNominalPluginDescriptor } from './utils/mergePlugins';
 export {
   getPlateNodeCodecContributions,
   type PlateNodeCodecContribution,

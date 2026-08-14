@@ -17,6 +17,9 @@ docs:
 - 平滑滚动至标题位置
 - 滚动时跟踪当前活动标题
 
+TOC 使用 editor 作用域内的 `NodeKey` 跟踪标题。它不需要持久化元素 ID，
+也不会安装 `ElementIdPlugin`。
+
 </PackageInfo>
 
 ## 套件使用
@@ -199,13 +202,13 @@ editor.plugin(BaseTocPlugin).update.insert();
 
 <API name="useTocElementState">
 <APIReturns>
-  <APIItem name="activeContentId" type="string">
-    当前文档位置对应的活动标题 ID
+  <APIItem name="activeContentKey" type="NodeKey | null">
+    当前文档位置对应的活动标题 key
   </APIItem>
   <APIItem name="headingList" type="Heading[]">
     文档标题数组
   </APIItem>
-  <APIItem name="onContentScroll" type="(el: HTMLElement, id: string, behavior: ScrollBehavior) => void">
+  <APIItem name="onContentScroll" type="(el: HTMLElement, key: NodeKey, behavior?: ScrollBehavior) => void">
     标题滚动处理器
   </APIItem>
 </APIReturns>
@@ -218,7 +221,7 @@ editor.plugin(BaseTocPlugin).update.insert();
 <API name="useTocElement">
 
 <APIParameters>
-  <APIItem name="onContentScroll" type="(el: HTMLElement, id: string, behavior: ScrollBehavior) => void">
+  <APIItem name="onContentScroll" type="(el: HTMLElement, key: NodeKey, behavior?: ScrollBehavior) => void">
     来自 useTocElementState 的滚动处理器
   </APIItem>
 </APIParameters>
@@ -256,8 +259,8 @@ editor.plugin(BaseTocPlugin).update.insert();
 </APIParameters>
 
 <APIReturns>
-  <APIItem name="activeContentId" type="string">
-    当前活动区块 ID
+  <APIItem name="activeContentKey" type="NodeKey | null">
+    当前活动区块 key
   </APIItem>
   <APIItem name="headingList" type="Heading[]">
     文档标题列表
@@ -268,16 +271,13 @@ editor.plugin(BaseTocPlugin).update.insert();
   <APIItem name="open" type="boolean">
     侧边栏展开状态
   </APIItem>
-  <APIItem name="setIsObserve" type="React.Dispatch<React.SetStateAction<boolean>>">
-    设置观察状态
-  </APIItem>
   <APIItem name="setMouseInToc" type="React.Dispatch<React.SetStateAction<boolean>>">
     设置鼠标悬停状态
   </APIItem>
   <APIItem name="tocRef" type="React.RefObject<HTMLElement>">
     TOC 元素引用
   </APIItem>
-  <APIItem name="onContentScroll" type="(options: { id: string; behavior?: ScrollBehavior; el: HTMLElement }) => void">
+  <APIItem name="onContentScroll" type="(options: { key: NodeKey; behavior?: ScrollBehavior; el: HTMLElement }) => void">
     内容滚动处理器
   </APIItem>
 </APIReturns>
@@ -295,16 +295,13 @@ editor.plugin(BaseTocPlugin).update.insert();
   <APIItem name="open" type="boolean">
     侧边栏展开状态
   </APIItem>
-  <APIItem name="setIsObserve" type="React.Dispatch<React.SetStateAction<boolean>>">
-    设置观察状态
-  </APIItem>
   <APIItem name="setMouseInToc" type="React.Dispatch<React.SetStateAction<boolean>>">
     设置鼠标悬停状态
   </APIItem>
   <APIItem name="tocRef" type="React.RefObject<HTMLElement>">
     TOC 元素引用
   </APIItem>
-  <APIItem name="onContentScroll" type="(options: { id: string; behavior?: ScrollBehavior; el: HTMLElement }) => void">
+  <APIItem name="onContentScroll" type="(options: { key: NodeKey; behavior?: ScrollBehavior; el: HTMLElement }) => void">
     内容滚动处理器
   </APIItem>
 </APIParameters>

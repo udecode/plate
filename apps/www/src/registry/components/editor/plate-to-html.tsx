@@ -7,7 +7,7 @@ import type { InitialValue } from 'platejs';
 import { Plate, usePlateEditor, usePlateViewEditor } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
-import { EditorKit } from '@/registry/components/editor/editor-kit';
+import { EditorKit } from '@/registry/components/editor/editor';
 import { Editor, EditorView } from '@/registry/ui/editor';
 
 import { BaseEditorKit } from './editor-base-kit';

@@ -1,6 +1,13 @@
 import * as React from 'react';
 
-import { ElementIdPlugin } from 'platejs';
+import type {
+  BaseH1Plugin,
+  BaseH2Plugin,
+  BaseH3Plugin,
+  BaseH4Plugin,
+  BaseH5Plugin,
+  BaseH6Plugin,
+} from '@platejs/basic-nodes';
 import type { PliteElementProps } from 'platejs/static';
 
 import { type VariantProps, cva } from 'class-variance-authority';
@@ -19,56 +26,92 @@ const headingVariants = cva('relative mb-1', {
   },
 });
 
+type HeadingVariant = NonNullable<
+  VariantProps<typeof headingVariants>['variant']
+>;
+
+type HeadingElementStaticProps = (
+  | PliteElementProps<typeof BaseH1Plugin>
+  | PliteElementProps<typeof BaseH2Plugin>
+  | PliteElementProps<typeof BaseH3Plugin>
+  | PliteElementProps<typeof BaseH4Plugin>
+  | PliteElementProps<typeof BaseH5Plugin>
+  | PliteElementProps<typeof BaseH6Plugin>
+) & { variant?: HeadingVariant };
+
 export function HeadingElementStatic({
   variant = 'h1',
   ...props
-}: PliteElementProps & VariantProps<typeof headingVariants>) {
-  const elementId = props.editor.plugin(ElementIdPlugin);
-  const id = elementId.installed ? elementId.read.id(props.element) : undefined;
-
+}: HeadingElementStaticProps) {
   return (
     <PliteElement
-      as={variant!}
+      as={variant}
       className={headingVariants({ variant })}
       {...props}
     >
-      {/* Bookmark anchor for DOCX TOC internal links */}
-      {id && <span id={id} />}
       {props.children}
     </PliteElement>
   );
 }
 
-export function H1ElementStatic(props: PliteElementProps) {
+function HeadingElementDocx({
+  variant = 'h1',
+  ...props
+}: HeadingElementStaticProps) {
+  const key = props.editor.key(props.path);
+
+  return (
+    <HeadingElementStatic variant={variant} {...props}>
+      {key && <span id={`plate_${key.replaceAll(/[^A-Za-z0-9_]/g, '_')}`} />}
+      {props.children}
+    </HeadingElementStatic>
+  );
+}
+
+export function H1ElementStatic(props: PliteElementProps<typeof BaseH1Plugin>) {
   return <HeadingElementStatic variant="h1" {...props} />;
 }
 
-export function H2ElementStatic(
-  props: React.ComponentProps<typeof HeadingElementStatic>
-) {
+export function H2ElementStatic(props: PliteElementProps<typeof BaseH2Plugin>) {
   return <HeadingElementStatic variant="h2" {...props} />;
 }
 
-export function H3ElementStatic(
-  props: React.ComponentProps<typeof HeadingElementStatic>
-) {
+export function H3ElementStatic(props: PliteElementProps<typeof BaseH3Plugin>) {
   return <HeadingElementStatic variant="h3" {...props} />;
 }
 
-export function H4ElementStatic(
-  props: React.ComponentProps<typeof HeadingElementStatic>
-) {
+export function H4ElementStatic(props: PliteElementProps<typeof BaseH4Plugin>) {
   return <HeadingElementStatic variant="h4" {...props} />;
 }
 
-export function H5ElementStatic(
-  props: React.ComponentProps<typeof HeadingElementStatic>
-) {
+export function H5ElementStatic(props: PliteElementProps<typeof BaseH5Plugin>) {
   return <HeadingElementStatic variant="h5" {...props} />;
 }
 
-export function H6ElementStatic(
-  props: React.ComponentProps<typeof HeadingElementStatic>
-) {
+export function H6ElementStatic(props: PliteElementProps<typeof BaseH6Plugin>) {
   return <HeadingElementStatic variant="h6" {...props} />;
+}
+
+export function H1ElementDocx(props: PliteElementProps<typeof BaseH1Plugin>) {
+  return <HeadingElementDocx variant="h1" {...props} />;
+}
+
+export function H2ElementDocx(props: PliteElementProps<typeof BaseH2Plugin>) {
+  return <HeadingElementDocx variant="h2" {...props} />;
+}
+
+export function H3ElementDocx(props: PliteElementProps<typeof BaseH3Plugin>) {
+  return <HeadingElementDocx variant="h3" {...props} />;
+}
+
+export function H4ElementDocx(props: PliteElementProps<typeof BaseH4Plugin>) {
+  return <HeadingElementDocx variant="h4" {...props} />;
+}
+
+export function H5ElementDocx(props: PliteElementProps<typeof BaseH5Plugin>) {
+  return <HeadingElementDocx variant="h5" {...props} />;
+}
+
+export function H6ElementDocx(props: PliteElementProps<typeof BaseH6Plugin>) {
+  return <HeadingElementDocx variant="h6" {...props} />;
 }

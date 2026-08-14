@@ -1,4 +1,5 @@
 import type { ChatMessage } from '@/registry/components/editor/use-chat';
+import type { AIChatRequestRefs } from '@platejs/ai/react';
 import type { MarkdownEditor } from '@platejs/markdown';
 
 import dedent from 'dedent';
@@ -221,14 +222,25 @@ function buildEditSelectionPrompt(
 
 export function getEditPrompt(
   editor: MarkdownEditor,
-  { isSelecting, messages }: { isSelecting: boolean; messages: ChatMessage[] }
+  {
+    isSelecting,
+    messages,
+    tableCellRefs,
+  }: {
+    isSelecting: boolean;
+    messages: ChatMessage[];
+    tableCellRefs: AIChatRequestRefs['tableCells'];
+  }
 ): [string, 'table' | 'multi-block' | 'selection'] {
   if (!isSelecting)
     throw new Error('Edit tool is only available when selecting');
 
   // Handle selection inside table cell
   if (isSelectionInTable(editor) && !isSingleCellSelection(editor)) {
-    return [buildEditTableMultiCellPrompt(editor, messages), 'table'];
+    return [
+      buildEditTableMultiCellPrompt(editor, messages, tableCellRefs),
+      'table',
+    ];
   }
   // Handle multi-block selection
   if (isMultiBlocks(editor)) {

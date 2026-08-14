@@ -14,6 +14,7 @@ import type {
   RenderElementProps,
   RenderLeafProps,
   RenderTextProps,
+  SelectionRules,
 } from '../../lib';
 import type { InternalPluginDefinitionOf } from '../../lib/plugin/pluginDefinitionLookup.internal';
 import type { AnyPlatePluginContext, PlatePluginContext } from '../plugin';
@@ -120,9 +121,20 @@ type PlateElementComponentProps<
   N extends Element = Element,
   C extends AnyBasePluginDefinition = never,
   T extends keyof HTMLElementTagNameMap = 'div',
-> = PlateElementRenderProps<N, C> &
-  PlateHTMLProps<C, T> & {
+> = RenderElementProps<N> &
+  Pick<PlateNodeProps<C>, 'ref'> & {
+    attributes: React.PropsWithoutRef<React.JSX.IntrinsicElements[T]> &
+      UnknownObject;
+    as?: T;
+    className?: string;
     insetProp?: boolean;
+    path: Path;
+    plugin?: {
+      rules: {
+        selection?: SelectionRules;
+      };
+    };
+    style?: React.CSSProperties;
   };
 
 export const PlateElement = React.forwardRef(function PlateElement(
@@ -151,13 +163,18 @@ export const PlateElement = React.forwardRef(function PlateElement(
       {children}
     </PlateElementBody>
   );
-}) as unknown as <
-  N extends Element = Element,
-  C extends AnyBasePluginDefinition = never,
-  T extends keyof HTMLElementTagNameMap = 'div',
->(
-  props: PlateElementComponentProps<N, C, T>
-) => React.ReactElement;
+}) as unknown as {
+  <
+    N extends Element = Element,
+    C extends AnyBasePluginDefinition = never,
+    T extends keyof HTMLElementTagNameMap = 'div',
+  >(
+    props: PlateElementComponentProps<N, C, T>
+  ): React.ReactElement;
+  <T extends keyof HTMLElementTagNameMap = 'div'>(
+    props: PlateElementComponentProps<Element, never, T>
+  ): React.ReactElement;
+};
 
 function PlateElementBody({
   attributes,

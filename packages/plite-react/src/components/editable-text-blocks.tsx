@@ -72,6 +72,7 @@ import { useMountedNodeRenderSelector } from '../hooks/use-node-selector';
 import { usePliteContentRoot } from '../hooks/use-plite-content-root';
 import {
   getDOMTextRenderRevision,
+  usePliteNodeKeyDOMValue,
   usePliteNodeRef,
 } from '../hooks/use-plite-node-ref';
 import { useRequiredPliteRuntimeContext } from '../hooks/use-plite-runtime';
@@ -544,7 +545,7 @@ export type RenderElementProps<
         'data-plite-inline'?: true;
         'data-plite-node': 'element';
         'data-plite-path': string;
-        'data-plite-node-key': NodeKey;
+        'data-plite-node-key': string;
         'data-plite-void'?: true;
         ref: React.RefCallback<HTMLElement>;
       };
@@ -729,6 +730,7 @@ const EditableDescendantNodeInner = <T, TElement extends PliteElementNode>({
   nodeKey: NodeKey;
 }) => {
   const editor = useEditor();
+  const nodeKeyDOMValue = usePliteNodeKeyDOMValue(nodeKey);
 
   const binding = useMountedNodeRenderSelector(
     ({ editor: editorValue, node, path }) =>
@@ -798,7 +800,7 @@ const EditableDescendantNodeInner = <T, TElement extends PliteElementNode>({
     'data-plite-inline': inline ? (true as const) : undefined,
     'data-plite-node': 'element' as const,
     'data-plite-path': path.join(','),
-    'data-plite-node-key': nodeKey,
+    'data-plite-node-key': nodeKeyDOMValue,
     'data-plite-void': voidNode ? (true as const) : undefined,
     ref: bindNodeRef as React.RefCallback<HTMLElement>,
   };

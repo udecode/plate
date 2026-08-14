@@ -55,7 +55,8 @@ const expectOnlyFixtureFiles = (
   paths: readonly string[] = []
 ) => {
   const allowed = new Set([
-    'editor-definition.ts',
+    'editor.ts',
+    'editor.tsx',
     'tsconfig.json',
     ...paths.map((path) => basename(path)),
   ]);
@@ -110,17 +111,17 @@ const createFixture = (
   applicationProperties = true
 ) => {
   const directory = mkdtempSync(join(packageRoot, 'tmp-cli-test-'));
-  const entryPath = join(directory, `editor-definition.${tsx ? 'tsx' : 'ts'}`);
-  const entry = `import { defineBasePlugin, defineEditor } from '../../core/src/index';
-import { property, schema, target } from '../../plite/src/index';
+  const entryPath = join(directory, `editor.${tsx ? 'tsx' : 'ts'}`);
+  const entry = `import { defineBasePlugin } from '../../core/src/index';
+import { property, schema as s, target } from '../../plite/src/index';
 
 const CalloutPlugin = defineBasePlugin('calloutCapability', {
   schema: {
     element: {
       content: ${
         recursiveElement
-          ? "schema.content.type('callout_node')"
-          : "schema.content.text({ default: 'text', min: 1 })"
+          ? "s.content.type('callout_node')"
+          : "s.content.text({ default: 'text', min: 1 })"
       },
       properties: {
         ${recursiveJson ? 'raw: property.json(),' : ''}
@@ -140,38 +141,42 @@ const CalloutPlugin = defineBasePlugin('calloutCapability', {
 const AlignPlugin = defineBasePlugin('align', {
   schema: {
     properties: {
-      align: schema.elementProperty(
+      align: s.elementProperty(
         property.enum(['left', 'right'] as const),
         { target: target.element(CalloutPlugin) }
       ),
-      reviewById: schema.textProperty(
-        schema.key.prefix('review_'),
+      reviewById: s.textProperty(
+        s.key.prefix('review_'),
         property.boolean()
       ),
     },
   },
 });
 
-export default defineEditor('fixture', {
-  plugins: [CalloutPlugin, AlignPlugin],
+export const EditorKit = [CalloutPlugin, AlignPlugin] as const;
+export const EditorSchema = {
+  id: 'fixture-document',
+  version: 2,
   ${
     applicationProperties
-      ? `schema: {
-    properties: {
-      reviewFlags: schema.textProperty(
-        schema.key.prefix('reviewFlag_'),
+      ? `properties: {
+      reviewFlags: s.textProperty(
+        s.key.prefix('reviewFlag_'),
         property.boolean()
       ),
-      reviewState: schema.elementProperty(
+      reviewState: s.elementProperty(
         property.enum(['draft', 'approved'] as const),
         { target: target.element(CalloutPlugin) }
       ),
-    },
-  },`
+    },`
       : ''
   }
-  schemaIdentity: { id: 'fixture-document', version: 2 },
-});
+} as const;
+export const labels = ['fixture'] as const;
+export const cache = { properties: { retries: 3 } } as const;
+export const empty = [] as const;
+export const metadata = { id: 'fixture', title: 'Fixture' } as const;
+export const settings = { theme: 'dark' } as const;
 ${tsx ? 'export const FixtureComponent = () => <div />;\n' : ''}`;
   const tsconfig = {
     extends: resolve(repoRoot, 'tooling/config/tsconfig.base.json'),
@@ -213,6 +218,95 @@ afterEach(() => {
 });
 
 describe('plate generate', () => {
+  it('rejects editor modules without a discoverable plugin tuple', async () => {
+    const { entryPath } = createFixture();
+
+    writeFileSync(entryPath, 'export default [] as const;');
+
+    await expect(generateEditor(entryPath)).rejects.toThrow(
+      'must export exactly one Plate plugin tuple; found 0'
+    );
+  });
+
+  it('rejects ambiguous plugin tuples', async () => {
+    const { entryPath } = createFixture();
+
+    writeFileSync(
+      entryPath,
+      `${readFileSync(entryPath, 'utf8')}\nexport const AlternateKit = EditorKit;\n`
+    );
+
+    await expect(generateEditor(entryPath)).rejects.toThrow(
+      'must export exactly one Plate plugin tuple; found 2 candidates'
+    );
+  });
+
+  it('discovers a default-exported plugin tuple by shape', async () => {
+    const { entryPath } = createFixture();
+
+    writeFileSync(
+      entryPath,
+      `${readFileSync(entryPath, 'utf8').replace(
+        'export const EditorKit =',
+        'const EditorKit ='
+      )}\nexport default EditorKit;\n`
+    );
+
+    const generated = await generateEditor(entryPath);
+
+    expect(readFileSync(generated.typesPath, 'utf8')).toContain(
+      'type EditorPlugins = (typeof EditorModule)["default"] &'
+    );
+  });
+
+  it('rejects ambiguous application schemas', async () => {
+    const { entryPath } = createFixture();
+
+    writeFileSync(
+      entryPath,
+      `${readFileSync(entryPath, 'utf8')}\nexport const AlternateSchema = EditorSchema;\n`
+    );
+
+    await expect(generateEditor(entryPath)).rejects.toThrow(
+      'must export at most one Plate application schema; found 2 candidates'
+    );
+  });
+
+  it('discovers a default-exported application schema by shape', async () => {
+    const { entryPath } = createFixture();
+
+    writeFileSync(
+      entryPath,
+      `${readFileSync(entryPath, 'utf8').replace(
+        'export const EditorSchema =',
+        'const EditorSchema ='
+      )}\nexport default EditorSchema;\n`
+    );
+
+    const generated = await generateEditor(entryPath);
+
+    expect(readFileSync(generated.typesPath, 'utf8')).toContain(
+      'readonly reviewState:'
+    );
+  });
+
+  it('ignores unrelated exports when no application schema is exported', async () => {
+    const { entryPath } = createFixture();
+
+    writeFileSync(
+      entryPath,
+      readFileSync(entryPath, 'utf8').replace(
+        /export const EditorSchema = \{[\s\S]*?\n\} as const;\n/,
+        ''
+      )
+    );
+
+    const generated = await generateEditor(entryPath);
+
+    expect(existsSync(generated.schemaPath)).toBe(true);
+    expect(existsSync(generated.typesPath)).toBe(true);
+  });
+
   it('emits deterministic concrete types and checks committed artifacts', async () => {
     const { directory, entryPath } = createFixture();
     const session = new NativeTypeScriptSession(packageRoot);
@@ -229,6 +323,12 @@ describe('plate generate', () => {
     expect(readFileSync(second.typesPath, 'utf8')).toBe(firstTypes);
     expect(readFileSync(second.schemaPath, 'utf8')).toBe(firstSchema);
     expect(firstTypes).toContain('export interface CalloutCapabilityElement');
+    expect(firstTypes).toContain(
+      'import type * as EditorModule from "./editor";'
+    );
+    expect(firstTypes).toContain(
+      'type EditorPlugins = (typeof EditorModule)["EditorKit"] &'
+    );
     expect(firstTypes).toContain('readonly type: "callout_node"');
     const calloutMutation = firstTypes.match(
       /readonly calloutCapability: Readonly<\{[\s\S]*?\n {2}\}>;/
@@ -250,7 +350,7 @@ describe('plate generate', () => {
       'readonly align: Readonly<{ readonly key: "align"; }>'
     );
     expect(firstTypes).not.toContain('review_');
-    expect(firstTypes).toContain('bindings: schemaBindings');
+    expect(firstTypes).toContain('export const schema = Object.freeze');
     expect(firstTypes).toContain(
       'readonly payload?: { readonly id: string; readonly tags: readonly ("a" | "b")[]; }'
     );
@@ -265,7 +365,7 @@ describe('plate generate', () => {
 
     writeFileSync(
       join(directory, 'contract.ts'),
-      `import { EditorKit, type Value } from './editor.generated';
+      `import { schema, type Value } from './editor.generated';
 
 const valid: Value = [{
   children: [{ text: 'ok' }],
@@ -284,10 +384,10 @@ const invalid: Value = [{
 
 void valid;
 void invalid;
-EditorKit.schema.plugins.calloutCapability.type satisfies 'callout_node';
-EditorKit.schema.plugins.align.key satisfies 'align';
-EditorKit.schema.properties.reviewState.key satisfies 'reviewState';
-EditorKit.schema.properties.reviewFlags.key.prefix satisfies 'reviewFlag_';
+schema.plugins.calloutCapability.type satisfies 'callout_node';
+schema.plugins.align.key satisfies 'align';
+schema.properties.reviewState.key satisfies 'reviewState';
+schema.properties.reviewFlags.key.prefix satisfies 'reviewFlag_';
 `
     );
     writeFileSync(first.typesPath, firstTypes);
@@ -307,7 +407,7 @@ EditorKit.schema.properties.reviewFlags.key.prefix satisfies 'reviewFlag_';
     >;
 
     delete config.include;
-    config.files = ['./editor-definition.ts'];
+    config.files = ['./editor.ts'];
     writeFileSync(configPath, JSON.stringify(config));
 
     const generated = await generateEditor(entryPath);
@@ -341,13 +441,13 @@ EditorKit.schema.properties.reviewFlags.key.prefix satisfies 'reviewFlag_';
     temporaryDirectories.push(...directories);
     const generated = await Promise.all(
       directories.map(async (directory) => {
-        const entryPath = join(directory, "src/editor's*/editor-definition.ts");
+        const entryPath = join(directory, "src/editor's*/editor.ts");
 
         mkdirSync(dirname(entryPath), { recursive: true });
         writeFileSync(entryPath, standaloneSource);
         writeFileSync(join(directory, 'tsconfig.json'), JSON.stringify(config));
 
-        return generateEditor("src/editor's*/editor-definition.ts", {
+        return generateEditor("src/editor's*/editor.ts", {
           cwd: directory,
         });
       })
@@ -357,10 +457,10 @@ EditorKit.schema.properties.reviewFlags.key.prefix satisfies 'reviewFlag_';
 
     expect(first).toBe(second);
     expect(first).toStartWith(
-      "/* Generated by @platejs/cli from src/editor's*\\/editor-definition.ts."
+      "/* Generated by @platejs/cli from src/editor's*\\/editor.ts."
     );
     expect(first).toContain(
-      'Regenerate with: pnpm exec plate generate -- "src/editor\'s*/editor-definition.ts"'
+      'Regenerate with: pnpm exec plate generate -- "src/editor\'s*/editor.ts"'
     );
   }, 60_000);
 
@@ -375,8 +475,8 @@ EditorKit.schema.properties.reviewFlags.key.prefix satisfies 'reviewFlag_';
       entryPath,
       readFileSync(entryPath, 'utf8')
         .replace(
-          "import { defineBasePlugin, defineEditor } from '../../core/src/index';",
-          "import { readFileSync } from 'node:fs';\nimport { dirname } from 'node:path';\nimport { fileURLToPath } from 'node:url';\nimport { defineBasePlugin, defineEditor } from '../../core/src/index';"
+          "import { defineBasePlugin } from '../../core/src/index';",
+          "import { readFileSync } from 'node:fs';\nimport { dirname } from 'node:path';\nimport { fileURLToPath } from 'node:url';\nimport { defineBasePlugin } from '../../core/src/index';"
         )
         .replace(
           "const CalloutPlugin = defineBasePlugin('calloutCapability', {",
@@ -431,7 +531,7 @@ const CalloutPlugin = defineBasePlugin('calloutCapability', {`
 
   it('preserves the generation cwd during evaluation', async () => {
     const { directory, entryPath } = createFixture();
-    const nestedEntryPath = join(directory, 'src/editor/editor-definition.ts');
+    const nestedEntryPath = join(directory, 'src/editor/editor.ts');
 
     mkdirSync(dirname(nestedEntryPath), { recursive: true });
     writeFileSync(join(directory, 'element-type.txt'), 'cwd_relative_callout');
@@ -439,8 +539,8 @@ const CalloutPlugin = defineBasePlugin('calloutCapability', {`
       nestedEntryPath,
       readFileSync(entryPath, 'utf8')
         .replace(
-          "import { defineBasePlugin, defineEditor } from '../../core/src/index';",
-          "import { readFileSync } from 'node:fs';\nimport { defineBasePlugin, defineEditor } from '../../../../core/src/index';"
+          "import { defineBasePlugin } from '../../core/src/index';",
+          "import { readFileSync } from 'node:fs';\nimport { defineBasePlugin } from '../../../../core/src/index';"
         )
         .replace(
           "from '../../plite/src/index'",
@@ -453,7 +553,7 @@ const CalloutPlugin = defineBasePlugin('calloutCapability', {`
         .replace("type: 'callout_node'", 'type: elementType')
     );
 
-    const generated = await generateEditor('src/editor/editor-definition.ts', {
+    const generated = await generateEditor('src/editor/editor.ts', {
       cwd: directory,
     });
 
@@ -557,7 +657,7 @@ const CalloutPlugin = defineBasePlugin('calloutCapability', {`
 
   it('rejects entries that own the same output paths', async () => {
     const { directory, entryPath } = createFixture();
-    const collidingEntry = join(directory, 'editor.definition.ts');
+    const collidingEntry = join(directory, 'editor.tsx');
 
     writeFileSync(collidingEntry, readFileSync(entryPath, 'utf8'));
 
@@ -577,19 +677,28 @@ const CalloutPlugin = defineBasePlugin('calloutCapability', {`
         `const ImagePlugin = defineBasePlugin('image', { schema: { element: { void: 'block' } } });\n\nconst AlignPlugin = defineBasePlugin('align', {`
       )
       .replace(
-        'plugins: [CalloutPlugin, AlignPlugin],',
-        'plugins: [CalloutPlugin, ImagePlugin, AlignPlugin],'
+        'export const EditorKit = [CalloutPlugin, AlignPlugin] as const;',
+        'export const EditorKit = [CalloutPlugin, ImagePlugin, AlignPlugin] as const;'
       );
 
     writeFileSync(entryPath, entry);
     const result = await generateEditor(entryPath);
     const generated = readFileSync(result.typesPath, 'utf8');
-    const imageMutation = generated.match(
+    const mutationMap = generated.match(
+      /export type Mutations = Readonly<\{([\s\S]*?)\n\}>;/
+    )?.[1];
+    const imageMutation = mutationMap?.match(
       /readonly image: Readonly<\{[\s\S]*?\n {2}\}>;/
     )?.[0];
 
     expect(imageMutation).toBeDefined();
     expect(imageMutation).not.toContain('readonly toggle: true');
+    expect(imageMutation).toContain(
+      'readonly construction: Readonly<Record<PropertyKey, never>>'
+    );
+    expect(imageMutation).toContain(
+      'readonly properties: Readonly<Record<PropertyKey, never>>'
+    );
     expect(generated).not.toContain('SchemaPropertyHandle');
     const configPath = join(directory, 'tsconfig.json');
     const config = JSON.parse(readFileSync(configPath, 'utf8')) as {
@@ -598,7 +707,26 @@ const CalloutPlugin = defineBasePlugin('calloutCapability', {`
 
     config.compilerOptions.noUnusedLocals = true;
     writeFileSync(configPath, JSON.stringify(config));
-    await expectTypeScriptFilesCompile(configPath, [result.typesPath]);
+    const contractPath = join(directory, 'contract.ts');
+
+    writeFileSync(
+      contractPath,
+      `import type { Mutations, Schema } from './editor.generated';
+
+const emptyConstruction: Mutations['image']['construction'] = {};
+const emptyProperties: Schema['properties'] = {};
+// @ts-expect-error generated empty construction rejects arbitrary fields
+const invalidConstruction: Mutations['image']['construction'] = { extra: true };
+// @ts-expect-error generated empty property maps reject primitives
+const invalidProperties: Schema['properties'] = 'invalid';
+
+void emptyConstruction;
+void emptyProperties;
+void invalidConstruction;
+void invalidProperties;
+`
+    );
+    await expectTypeScriptFilesCompile(configPath, [contractPath]);
   }, 60_000);
 
   it('emits generic toggle only for default-constructible text blocks without authored toggle semantics', async () => {
@@ -606,20 +734,20 @@ const CalloutPlugin = defineBasePlugin('calloutCapability', {`
     const entry = readFileSync(entryPath, 'utf8')
       .replace(
         "const AlignPlugin = defineBasePlugin('align', {",
-        `const HeadingPlugin = defineBasePlugin('heading', { schema: { element: schema.element.textBlock() } });
+        `const HeadingPlugin = defineBasePlugin('heading', { schema: { element: s.element.textBlock() } });
 const NestedPlugin = defineBasePlugin('nested', {
-  schema: { element: { blockContent: false, content: schema.content.text({ default: 'text', min: 1 }) } },
+  schema: { element: { blockContent: false, content: s.content.text({ default: 'text', min: 1 }) } },
 });
 const QuotePlugin = defineBasePlugin('quote', {
-  schema: { element: schema.element.textBlock() },
+  schema: { element: s.element.textBlock() },
   update: () => ({ toggle: () => undefined }),
 });
 
 const AlignPlugin = defineBasePlugin('align', {`
       )
       .replace(
-        'plugins: [CalloutPlugin, AlignPlugin],',
-        'plugins: [CalloutPlugin, HeadingPlugin, NestedPlugin, QuotePlugin, AlignPlugin],'
+        'export const EditorKit = [CalloutPlugin, AlignPlugin] as const;',
+        'export const EditorKit = [CalloutPlugin, HeadingPlugin, NestedPlugin, QuotePlugin, AlignPlugin] as const;'
       );
 
     writeFileSync(entryPath, entry);
@@ -953,7 +1081,7 @@ ${readFileSync(entryPath, 'utf8').replace(
     }
   }, 60_000);
 
-  it('recovers when the editor definition is recreated', async () => {
+  it('recovers when the editor module is recreated', async () => {
     const { entryPath } = createFixture();
     const originalEntry = readFileSync(entryPath, 'utf8');
     const previousStderrWrite = process.stderr.write;
@@ -1037,8 +1165,8 @@ ${readFileSync(entryPath, 'utf8').replace(
       entryPath,
       readFileSync(entryPath, 'utf8')
         .replace(
-          "import { property, schema, target } from '../../plite/src/index';",
-          "import { property, schema, target } from '../../plite/src/index';\nimport type { Payload } from './invalid-type-payload';"
+          "import { property, schema as s, target } from '../../plite/src/index';",
+          "import { property, schema as s, target } from '../../plite/src/index';\nimport type { Payload } from './invalid-type-payload';"
         )
         .replace(
           "value is { id: string; tags: readonly ('a' | 'b')[] }",
@@ -1085,8 +1213,8 @@ ${readFileSync(entryPath, 'utf8').replace(
       entryPath,
       readFileSync(entryPath, 'utf8')
         .replace(
-          "import { property, schema, target } from '../../plite/src/index';",
-          "import { property, schema, target } from '../../plite/src/index';\nimport type { Payload } from './substituted-payload.js';"
+          "import { property, schema as s, target } from '../../plite/src/index';",
+          "import { property, schema as s, target } from '../../plite/src/index';\nimport type { Payload } from './substituted-payload.js';"
         )
         .replace(
           "value is { id: string; tags: readonly ('a' | 'b')[] }",
@@ -1144,8 +1272,8 @@ ${readFileSync(entryPath, 'utf8').replace(
       entryPath,
       readFileSync(entryPath, 'utf8')
         .replace(
-          "import { property, schema, target } from '../../plite/src/index';",
-          "import { property, schema, target } from '../../plite/src/index';\nimport type { Payload } from './types';"
+          "import { property, schema as s, target } from '../../plite/src/index';",
+          "import { property, schema as s, target } from '../../plite/src/index';\nimport type { Payload } from './types';"
         )
         .replace(
           "value is { id: string; tags: readonly ('a' | 'b')[] }",
@@ -1213,8 +1341,8 @@ ${readFileSync(entryPath, 'utf8').replace(
       entryPath,
       readFileSync(entryPath, 'utf8')
         .replace(
-          "import { property, schema, target } from '../../plite/src/index';",
-          "import { property, schema, target } from '../../plite/src/index';\nimport type { Payload } from '@app/payload';"
+          "import { property, schema as s, target } from '../../plite/src/index';",
+          "import { property, schema as s, target } from '../../plite/src/index';\nimport type { Payload } from '@app/payload';"
         )
         .replace(
           "value is { id: string; tags: readonly ('a' | 'b')[] }",
@@ -1279,8 +1407,8 @@ ${readFileSync(entryPath, 'utf8').replace(
       entryPath,
       readFileSync(entryPath, 'utf8')
         .replace(
-          "import { property, schema, target } from '../../plite/src/index';",
-          `import { property, schema, target } from '../../plite/src/index';\nimport type { Payload } from '${modelImport.startsWith('.') ? modelImport : `./${modelImport}`}';`
+          "import { property, schema as s, target } from '../../plite/src/index';",
+          `import { property, schema as s, target } from '../../plite/src/index';\nimport type { Payload } from '${modelImport.startsWith('.') ? modelImport : `./${modelImport}`}';`
         )
         .replace(
           "value is { id: string; tags: readonly ('a' | 'b')[] }",
@@ -1341,8 +1469,8 @@ ${readFileSync(entryPath, 'utf8').replace(
       entryPath,
       readFileSync(entryPath, 'utf8')
         .replace(
-          "import { property, schema, target } from '../../plite/src/index';",
-          "import { property, schema, target } from '../../plite/src/index';\nimport type { Payload } from '@app/payload';"
+          "import { property, schema as s, target } from '../../plite/src/index';",
+          "import { property, schema as s, target } from '../../plite/src/index';\nimport type { Payload } from '@app/payload';"
         )
         .replace(
           "value is { id: string; tags: readonly ('a' | 'b')[] }",
@@ -1416,8 +1544,8 @@ ${readFileSync(entryPath, 'utf8').replace(
       entryPath,
       readFileSync(entryPath, 'utf8')
         .replace(
-          "import { property, schema, target } from '../../plite/src/index';",
-          "import { property, schema, target } from '../../plite/src/index';\nimport type { Payload } from '@app/payload';"
+          "import { property, schema as s, target } from '../../plite/src/index';",
+          "import { property, schema as s, target } from '../../plite/src/index';\nimport type { Payload } from '@app/payload';"
         )
         .replace(
           "value is { id: string; tags: readonly ('a' | 'b')[] }",
@@ -1466,8 +1594,8 @@ ${readFileSync(entryPath, 'utf8').replace(
       entryPath,
       readFileSync(entryPath, 'utf8')
         .replace(
-          "import { property, schema, target } from '../../plite/src/index';",
-          "import { property, schema, target } from '../../plite/src/index';\nimport type { Payload } from './payload';"
+          "import { property, schema as s, target } from '../../plite/src/index';",
+          "import { property, schema as s, target } from '../../plite/src/index';\nimport type { Payload } from './payload';"
         )
         .replace(
           "value is { id: string; tags: readonly ('a' | 'b')[] }",
@@ -1514,8 +1642,8 @@ ${readFileSync(entryPath, 'utf8').replace(
       entryPath,
       readFileSync(entryPath, 'utf8')
         .replace(
-          "import { property, schema, target } from '../../plite/src/index';",
-          "import { property, schema, target } from '../../plite/src/index';\nimport type { Payload } from '@fixture/payload';"
+          "import { property, schema as s, target } from '../../plite/src/index';",
+          "import { property, schema as s, target } from '../../plite/src/index';\nimport type { Payload } from '@fixture/payload';"
         )
         .replace(
           "value is { id: string; tags: readonly ('a' | 'b')[] }",
@@ -1553,8 +1681,8 @@ ${readFileSync(entryPath, 'utf8').replace(
       entryPath,
       readFileSync(entryPath, 'utf8')
         .replace(
-          "import { property, schema, target } from '../../plite/src/index';",
-          "import { property, schema, target } from '../../plite/src/index';\nimport { Payload } from './ordinary-payload';"
+          "import { property, schema as s, target } from '../../plite/src/index';",
+          "import { property, schema as s, target } from '../../plite/src/index';\nimport { Payload } from './ordinary-payload';"
         )
         .replace(
           "value is { id: string; tags: readonly ('a' | 'b')[] }",
@@ -1605,8 +1733,8 @@ ${readFileSync(entryPath, 'utf8').replace(
       entryPath,
       readFileSync(entryPath, 'utf8')
         .replace(
-          "import { property, schema, target } from '../../plite/src/index';",
-          "import { property, schema, target } from '../../plite/src/index';\nimport type Payload = require('./import-equals-payload');"
+          "import { property, schema as s, target } from '../../plite/src/index';",
+          "import { property, schema as s, target } from '../../plite/src/index';\nimport type Payload = require('./import-equals-payload');"
         )
         .replace(
           /payload: property\.json\(\{[\s\S]*?validationVersion: 1,\n {8}\}\),/,
@@ -1814,7 +1942,7 @@ ${readFileSync(entryPath, 'utf8').replace(
     const first = createFixture();
     const second = createFixture();
     const watcher = await watchEditors([first.entryPath, second.entryPath]);
-    const collidingEntry = join(first.directory, 'editor.definition.ts');
+    const collidingEntry = join(first.directory, 'editor.tsx');
 
     try {
       await expect(
@@ -1959,7 +2087,7 @@ ${readFileSync(entryPath, 'utf8').replace(
     expect(
       readdirSync(directory).every((name) =>
         [
-          'editor-definition.ts',
+          'editor.ts',
           'editor.generated.ts',
           'editor.schema.json',
           'tsconfig.json',
@@ -2032,8 +2160,8 @@ ${readFileSync(entryPath, 'utf8').replace(
   it('canonicalizes symlink aliases before deriving artifact identities', () => {
     const directory = mkdtempSync(join(tmpdir(), 'plate-cli-realpath-'));
     const alias = `${directory}-alias`;
-    const entryPath = join(directory, 'editor-definition.ts');
-    const aliasEntryPath = join(alias, 'editor-definition.ts');
+    const entryPath = join(directory, 'editor.ts');
+    const aliasEntryPath = join(alias, 'editor.ts');
     const artifactPath = join(directory, 'editor.generated.ts');
     const aliasArtifactPath = join(alias, 'editor.generated.ts');
 

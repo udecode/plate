@@ -19,8 +19,8 @@ import type {
   BasePluginInput,
   BasePlugins,
   NodeComponents,
-  PlateSchemaIdentity,
 } from '../../lib';
+import type { EditorSchemaIdentity } from '../../lib/editor/editorApplicationSchema';
 
 import { createPluginContext } from '../../lib/plugin/createPluginContext.internal';
 import {
@@ -701,7 +701,7 @@ const publishCompiledSchemaHandles = (
 /** Compile the Plate runtime projection published by the schema extension. */
 export const createPlateModelPublication = (
   editor: BaseEditor,
-  identity: PlateSchemaIdentity | null,
+  identity: EditorSchemaIdentity | null,
   model: CompiledPlateModel,
   pluginList: readonly AnyBasePlugin[],
   schemaApi: EditorStateSchemaApi,

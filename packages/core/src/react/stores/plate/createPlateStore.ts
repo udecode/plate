@@ -20,11 +20,6 @@ import type { PlateStoreEditor, PlateStoreState } from './PlateStore';
 import { createAtomStore } from '../../libs';
 import { createPlateEditor, type PlateEditor } from '../../editor';
 import {
-  type GeneratedEditorKit,
-  getGeneratedEditorContract,
-  getInstalledGeneratedEditorContract,
-} from '../../../lib/editor/defineEditor';
-import {
   usePlateControllerExists,
   usePlateControllerStore,
 } from '../plate-controller';
@@ -211,68 +206,26 @@ const useInternalEditor = (id?: string): PlateEditorWithStore => {
   return editor;
 };
 
-const resolveEditorHookInput = (
-  input: GeneratedEditorKit | UseEditorOptions | undefined,
-  options: UseEditorOptions
-): { kit?: GeneratedEditorKit; options: UseEditorOptions } => {
-  if (Array.isArray(input)) {
-    return { kit: input as GeneratedEditorKit, options };
-  }
-
-  return { options: (input as UseEditorOptions | undefined) ?? {} };
-};
-
-const assertGeneratedEditorContract = (
-  editor: PlateEditor,
-  kit: GeneratedEditorKit
-) => {
-  const expected = getGeneratedEditorContract(kit);
-
-  if (!expected || getInstalledGeneratedEditorContract(editor) !== expected) {
-    throw new Error(
-      'The active editor was not created with the generated EditorKit passed to this hook.'
-    );
-  }
-};
-
 /** Get the mounted editor, throwing while no matching editor is active. */
-export function useEditor<const TKit extends GeneratedEditorKit>(
-  kit: TKit,
-  options?: UseEditorOptions
-): PlateEditorWithStore<PlateEditor<TKit>>;
-export function useEditor(options?: UseEditorOptions): PlateEditorWithStore;
 export function useEditor(
-  input?: GeneratedEditorKit | UseEditorOptions,
-  hookOptions: UseEditorOptions = {}
+  options: UseEditorOptions = {}
 ): PlateEditorWithStore {
-  const { kit, options } = resolveEditorHookInput(input, hookOptions);
   const editor = useInternalEditor(options.id);
 
   if (fallbackEditors.has(editor)) {
     throw new Error('useEditor() requires an active Plate editor.');
   }
-  if (kit) assertGeneratedEditorContract(editor, kit);
 
   return editor;
 }
 
 /** Get the active editor, or `null` while its controller has no editor. */
-export function useActiveEditor<const TKit extends GeneratedEditorKit>(
-  kit: TKit,
-  options?: UseEditorOptions
-): PlateEditorWithStore<PlateEditor<TKit>> | null;
 export function useActiveEditor(
-  options?: UseEditorOptions
-): PlateEditorWithStore | null;
-export function useActiveEditor(
-  input?: GeneratedEditorKit | UseEditorOptions,
-  hookOptions: UseEditorOptions = {}
+  options: UseEditorOptions = {}
 ): PlateEditorWithStore | null {
-  const { kit, options } = resolveEditorHookInput(input, hookOptions);
   const editor = useInternalEditor(options.id);
 
   if (fallbackEditors.has(editor)) return null;
-  if (kit) assertGeneratedEditorContract(editor, kit);
 
   return editor;
 }

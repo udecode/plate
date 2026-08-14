@@ -4,6 +4,7 @@ export {
   createBaseEditor,
   type DefinitionOf,
 } from '@platejs/core';
+export type { GeneratedEditorTypeProvider } from '@platejs/core/internal';
 
 export * from '@platejs/plite';
 

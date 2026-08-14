@@ -39,8 +39,8 @@ Registry examples are copied documentation and installation surfaces, not
 optimized host-app presets.
 
 Do not remove an explicit feature plugin, kit, renderer binding, or dependency
-merely because an aggregate `EditorKit` also includes it. Keep the explicit
-declaration when:
+merely because the application editor installed by the `editor-kit` registry
+item also includes it. Keep the explicit declaration when:
 
 - the example's `registryDependencies` names that feature kit;
 - the example exists to teach that feature's installation or component
@@ -52,11 +52,15 @@ order. When the aggregate already contains that plugin, append the explicit
 configuration so earlier fields survive and its later defined values win:
 
 ```tsx
-plugins: [
-  ...EditorKit,
-  FeaturePlugin.configure({ component: FeatureElement }),
-]
+plugins: [...plugins, FeaturePlugin.configure({ component: FeatureElement })];
 ```
+
+The example may import that host-owned plugin array only when its registry
+metadata explicitly depends on `editor-kit`. Other independently installable
+registry items stay generic: use core editor hooks and descriptor portals,
+never host editor types, application-definition modules, or root plugin
+namespaces. `editor-kit` is the registry item name, not an application runtime
+API or application type owner.
 
 Do not use this for unrelated plugins or divergent authoring branches that
 merely share a name; Core rejects those collisions.
@@ -75,7 +79,7 @@ If a component uses shared CSS vars or style-only registry items, declare them.
 **Incorrect:**
 
 ```ts
-registryDependencies: ['editor-kit']
+registryDependencies: ["editor-kit"];
 ```
 
 when the example also depends on a shared style token.
@@ -83,5 +87,5 @@ when the example also depends on a shared style token.
 **Correct:**
 
 ```ts
-registryDependencies: ['editor-kit', 'highlight-style']
+registryDependencies: ["editor-kit", "highlight-style"];
 ```

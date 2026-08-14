@@ -81,11 +81,11 @@ Current priorities:
   contract, while selector hooks infer only their selected result. Exact
   feature capabilities come from descriptor portals. Keep an editor generic
   only when typed constructor/options input or an explicit editor argument
-  correlates it with the result. A closed generated application uses
-  `useEditor(EditorKit)` or `useActiveEditor(EditorKit)` so the runtime kit both
-  infers and verifies the exact editor contract; matching schema fingerprints
-  do not prove matching capabilities. Plite's runtime type is `Editor`; Plate
-  owns `BaseEditor` and `PlateEditor`.
+  correlates it with the result. Do not pass an application definition, plugin
+  kit, or generated contract to `useEditor()` or `useActiveEditor()` as a type
+  assertion. Optional generated types belong at explicit static boundaries;
+  runtime construction owns capability inference and verification. Plite's
+  runtime type is `Editor`; Plate owns `BaseEditor` and `PlateEditor`.
 - Raw `PluginReference` carries nominal identity only; it has no definition
   generic or private witness. Concrete Base and Plate descriptors own the
   single invariant definition witness. Plite's root
@@ -126,13 +126,17 @@ Current priorities:
   canonical lowered Plite definition. That aliasing is not a public export or
   authoring concept.
 - Raw plugin tuples infer lightweight runtime capabilities and
-  descriptor-local node shapes while keeping editor-wide `Value` broad. A
-  closed application definition uses `defineEditor(name, definition)` and
-  generated, committed contracts for exact recursive `Value`, concrete schema
-  types, mutations, and runtime fingerprint verification. Do not make ordinary
-  `editor.api`, `editor.read`, or `editor.update` access recursively evaluate
-  the complete application grammar, and do not introduce size heuristics or
-  depth-limited precision.
+  descriptor-local node shapes while keeping editor-wide `Value` broad. The
+  ordinary application module exports one human-named readonly plugin kit and,
+  when needed, one human-named schema; `usePlateEditor` or `createPlateEditor`
+  maps them to its `plugins` and `schema` options. `plate generate` discovers
+  the unique exported plugin tuple and optional application schema by validated
+  runtime shape, never fixed identifiers. It may emit committed exact `Editor`,
+  `Value`, schema, mutation, and fingerprint artifacts. It never emits the
+  runtime plugin owner or becomes the ordinary docs path. Do not make ordinary `editor.api`,
+  `editor.read`, or `editor.update` access recursively evaluate the complete
+  application grammar, and do not introduce size heuristics or depth-limited
+  precision.
 - Plugin-bound React and static component APIs infer the owner's exact local
   schema node from its descriptor: `useElement(FooPlugin)`,
   `PlateElementProps<typeof FooPlugin>`, and
@@ -166,6 +170,15 @@ Current priorities:
   belongs to `ElementIdPlugin` under the canonical schema property `id`.
   Exact generated nodes read `element.id`; generic package boundaries use the
   installed plugin portal. Runtime keys never leak into persisted content.
+  One-request protocols expose small refs mapped to local `NodeKey` values;
+  they install persisted IDs only when references must survive reload,
+  storage, editor destruction, or another client.
+  Convert a live key at that boundary with
+  `editor.plugin(ElementIdPlugin).read.id(key)`; do not retrieve the node first.
+  Live navigation and TOC state use keys, while one-shot formats such as DOCX
+  derive export-local references. Serialized Markdown block identity uses the
+  optional plugin. Registries install it explicitly as product policy, never
+  transitively through an unrelated feature.
 - Low-level React composition is `react({ dom })`: one required object with the
   exact DOM descriptor. Keep one explicit erased implementation boundary only
   for the TypeScript 7 invariant-union reduction limit.
@@ -303,8 +316,9 @@ Current priorities:
   `editor.plugin(Plugin).update`. Default-constructible, schema-compatible text
   blocks also get `toggle`; text blocks with required construction properties
   and structural plugins author `toggle` only for real domain, wrap,
-  conversion, or child semantics. Closed generated editors additionally expose eligible
-  methods under the capability name on root and transaction updates. Raw
+  conversion, or child semantics. An opt-in generated `Editor` type may
+  additionally expose eligible methods under the capability name on root and
+  transaction updates. Raw
   tuples keep authored root/transaction methods exact without materializing a
   schema-wide generic mutation map. These methods target the descriptor's
   persisted `type`; callers do not restate identity or `match`. Generic
@@ -314,9 +328,9 @@ Current priorities:
   replaces the synthesized default only when it adds real semantics.
   Delete noun aliases such as `insertTable`; keep distinct verbs such as
   `insertColumn` and `merge`.
-- Application schema overrides are a compiler boundary. Raw `defineEditor`
-  definitions do not expose descriptor-generic mutations whose eligibility
-  depends on the final grammar; generated kits own that exact surface.
+- Application schema overrides are a compiler boundary. Ordinary runtime
+  tuples do not expose descriptor-generic mutations whose eligibility depends
+  on the final grammar; opt-in generated types may own that exact surface.
 - Custom element insertion is `insert(input?, nodeOptions?)`: domain data
   first, generic placement and selection second. Do not merge `at`, `select`,
   or other node options into feature input, and do not export compiler-ferry
@@ -472,10 +486,11 @@ Current priorities:
 - Keep feature-package React roots flat by default. A nested component/hook
   directory earns its keep only as a real public subsystem with multiple
   cross-family owners, not as taxonomy or a response to file size.
-- Treat each independently installable registry item as a source-distribution
-  owner. Keep its copied UI self-contained. Short repeated presentation JSX is
-  cheaper than another shared registry file/dependency; extract only for an
-  independently useful registry item or real behavior owner.
+- Treat each registry item as a source-distribution owner. Colocate integration
+  behavior with the component or kit it modifies, even when that requires an
+  explicit optional package or registry dependency. Never create a shared
+  integration grab bag for dependency-graph aesthetics; extract only a coherent
+  capability, durable behavior owner, or real runtime-cycle boundary.
 - Registry surfaces dedicated to `*-classic`, including `list-classic`, are
   maintenance-only pending deprecation. Do not add parity work, new variants,
   shared abstractions, polish, demos, adoption, or API investment. Touch them
@@ -514,7 +529,7 @@ Owner map:
 | Concern                                              | Owner                                   |
 | ---------------------------------------------------- | --------------------------------------- |
 | public GitHub issue/PR/security queue control plane  | `maintainer`                            |
-| local Plate/Plite behavior-bug or regression repair | `patch`                                 |
+| local Plate/Plite behavior-bug or regression repair  | `patch`                                 |
 | internal Plate/Plite long quality loops              | `auto`                                  |
 | post-merge/current-tree until-clean closure          | `autoclosure`                           |
 | reusable architecture doctrine                       | root `VISION.md` and `docs/vision/*.md` |
@@ -530,6 +545,7 @@ Owner map:
 | app-local sugar                                      | local app/kits                          |
 | public docs shape                                    | `docs-creator`                          |
 | UI/component registry shape                          | `plate-ui`                              |
+| Plate Next migration/adoption audit                  | `plate-next`                            |
 
 ## Matcher Extraction Heuristic
 
@@ -588,8 +604,15 @@ should not contort around provider churn or hype-cycle abstractions.
 Plate is code-first by design. Users should see plugin definitions, editor
 schema, serialization boundaries, and component ownership up front.
 
-Improve onboarding through templates, docs, CLI, and registry flows. Do not add
-convenience wrappers that hide critical editor decisions from users.
+The ordinary path is runtime-first: export one app-owned plugin kit and optional
+schema, then map them directly to the `plugins` and `schema` editor options.
+That schema owns its `id` and `version`; do not duplicate lineage in
+`schemaIdentity` or a generator-only definition. The CLI/schema generator is
+optional advanced tooling for exact static contracts and artifacts. It
+discovers the unique exported plugin tuple and optional schema by validated
+runtime shape rather than fixed export names; it is not required editor setup
+or first-class public teaching. Improve onboarding through templates, docs,
+and registry flows without hiding critical editor decisions.
 
 ## What We Will Not Merge For Now
 
