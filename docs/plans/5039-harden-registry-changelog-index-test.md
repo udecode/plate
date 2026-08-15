@@ -80,9 +80,9 @@ Blocked condition:
 Task state:
 - task_type: test-quality refactor on existing PR
 - task_complexity: normal, measurable follow-up
-- current_phase: PR sync and remote verification
+- current_phase: closeout
 - current_phase_status: complete
-- next_phase: PR sync and remote verification
+- next_phase: goal closure
 - goal_status: active
 
 Current verdict:
@@ -192,7 +192,7 @@ Work Checklist:
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
-| Named verification threshold | pending | Run the command, proof, source audit, or artifact check named in this plan | Local threshold passes; final GitHub CI pending |
+| Named verification threshold | yes | Run the command, proof, source audit, or artifact check named in this plan | Mutation proof, focused/full local checks, autoreview, and PR CI pass |
 | Pre-solution issue challenge verdict | yes | Record reporter claim, suggested fix, repro verdict, validity verdict, durable boundary, and hard-stop/pivot decision before implementation | Valid; mutation proved inventory coupling and the split test boundary is durable |
 | Repro escalation ladder | yes | For bug/behavior claims, record test/source-level, Playwright, Browser, and screenshot/visual-proof outcomes or N/A/blocker reasons before `not reproduced` | Focused mutation red/green complete; browser/visual levels N/A |
 | Bug reproduced before fix | yes | Record failing test/repro or N/A with reason | Valid temporary entry failed 15/16 at `24 !== 23` before refactor |
@@ -212,15 +212,15 @@ Completion Gates:
 | Agent-native review for agent/tooling changes | no | For `.agents/**`, `.claude/**`, `.codex/**`, skills, hooks, commands, prompts, or user-action tooling, load `.agents/skills/agent-native-reviewer/SKILL.md` and close accepted/actionable findings, or record N/A | N/A: no agent/tooling action surface changed |
 | Local install corruption suspected | no | Run `pnpm run reinstall` once, rerun the exact failing command, or record N/A | N/A: no corruption signal; all checks passed |
 | Autoreview for non-trivial implementation changes | yes | Load `.agents/skills/autoreview/SKILL.md`; use dirty local `--mode local`, branch/PR `--mode branch --base <base>`, or committed slice `--mode commit --commit <ref>` until no accepted/actionable findings, or record N/A for docs-only/trivial/no local patch | Local autoreview clean, no findings, patch correct at 0.86 confidence |
-| PR create or update | pending | Run `check` before PR work and sync PR body to the task-style final handoff | pending |
-| Task-style PR body verified | pending | Verify the PR body with `gh pr view --json body`; it must preserve auto-release blocks when applicable, must not include a current-PR self-link, and must use the kitcn PR #270 emoji format: `🐛 Fixes ...`, `🟢 95-100% confidence`, `Phase / 🧪 Tests / 🌐 Browser` table, and bold emoji Outcome/Caveat/Design/Verified sections | pending |
-| PR proof image hosting | pending | If PR body needs browser proof, replace local image paths with hosted GitHub URLs or record N/A | pending |
-| Tracker sync-back | pending | Post concise issue/Linear sync after PR exists, or record N/A/blocker | pending |
-| Final handoff contract | pending | Fill the final handoff fields below with exact PR/issue/confidence/tests/browser/outcome/caveats/design/verification content or N/A reason | pending |
+| PR create or update | yes | Run `check` before PR work and sync PR body to the task-style final handoff | Commit `2cad7474e9` pushed; PR #5096 body synced after passing `bun check` |
+| Task-style PR body verified | yes | Verify the PR body with `gh pr view --json body`; it must preserve auto-release blocks when applicable, must not include a current-PR self-link, and must use the kitcn PR #270 emoji format: `🐛 Fixes ...`, `🟢 95-100% confidence`, `Phase / 🧪 Tests / 🌐 Browser` table, and bold emoji Outcome/Caveat/Design/Verified sections | `gh pr view 5096 --json body` confirms the auto-release block, required table/sections, and no self-link |
+| PR proof image hosting | no | If PR body needs browser proof, replace local image paths with hosted GitHub URLs or record N/A | N/A: no browser or visual proof applies |
+| Tracker sync-back | no | Post concise issue/Linear sync after PR exists, or record N/A/blocker | N/A: PR body links #5039 and is the requested existing tracker surface; no separate comment needed |
+| Final handoff contract | yes | Fill the final handoff fields below with exact PR/issue/confidence/tests/browser/outcome/caveats/design/verification content or N/A reason | Filled below with PR, confidence, tests, browser waiver, outcome, caveat, design, and verification |
 | Final lint | yes | Run `pnpm lint:fix` or scoped equivalent | 3,285 files checked; no fixes |
 | Output budget discipline | yes | Verify no unbounded high-volume command output was streamed, or record the accidental output and recovery | Exact reads and capped command output only |
 | Timed checkpoint | no | If duration was requested, keep improving until elapsed, then finish the current loop cleanly; otherwise N/A | N/A: no duration requested |
-| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/5039-harden-registry-changelog-index-test.md` | pending |
+| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/5039-harden-registry-changelog-index-test.md` | Pass |
 
 Phase / pass table:
 | Phase | Status | Evidence | Next |
@@ -228,8 +228,8 @@ Phase / pass table:
 | Intake and source read | complete | generator, test, README, history, and ownership read | implementation |
 | Implementation | complete | inventory literals removed; synthetic contract plus live conservation retained | verification |
 | Verification | complete | mutation red/green, 17 focused tests, generator check, lint, full `bun check`, and autoreview pass | PR sync |
-| PR / tracker sync | in_progress | local checkout verified | push and final CI |
-| Closeout | pending | | final response |
+| PR / tracker sync | complete | commit `2cad7474e9`; body verified; required checks green; PR mergeable | closeout |
+| Closeout | complete | final ledger populated; local and current-head remote gates green | checker, final ledger push, and final-head verification |
 
 Findings:
 - `parseRegistryChangelogEntryFiles` sorts `.mdx` paths; the index builder sorts
@@ -258,7 +258,7 @@ Review fixes:
 Error attempts:
 | Error / failed attempt | Count | Next different move | Resolution |
 |------------------------|-------|---------------------|------------|
-| None yet | 0 | | |
+| PR CI slowest-test guard sampled unrelated `BlockPlaceholderPlugin.spec.tsx` at 192 ms over the 180 ms file threshold | 1 | Rerun the failed CI job before changing unrelated coverage | Rerun passed in 7m; treat the isolated sample as CI timing noise |
 
 Verification evidence:
 - Before fix, one valid temporary entry made the focused suite fail 15/16 at
@@ -272,23 +272,26 @@ Verification evidence:
   slow tests, and slowest-test guard passed.
 - `.agents/skills/autoreview/scripts/autoreview --mode local
   --stream-engine-output`: clean, no accepted/actionable findings.
+- PR CI run `31875829305`, final attempt: pass in 7m; all required checks green.
+- `gh pr view 5096 --json url,headRefOid,mergeable,body,statusCheckRollup`:
+  head `2cad7474e9`, mergeable, required task body verified.
 
 Final handoff contract:
-- PR line: pending
-- Issue / tracker line: pending
-- Confidence line: pending
+- PR line: https://github.com/udecode/plate/pull/5096 updated at `2cad7474e9`
+- Issue / tracker line: PR body retains `🐛 Fixes #5039`; no separate sync required
+- Confidence line: 95-100%; mutation red/green plus local and remote full checks
 - Flow table:
-  - Reproduced: tests pending, browser pending
-  - Verified: tests pending, browser pending
-- Browser check: pending
-- Outcome: pending
-- Caveat: pending
+  - Reproduced: valid extra entry failed 15/16 at `24 !== 23`; browser N/A
+  - Verified: same mutation and final focused suite passed 17/17; browser N/A
+- Browser check: N/A: deterministic Node test tooling only
+- Outcome: live registry coverage accepts legitimate inventory growth while preserving ordering, href, grouping, and conservation coverage
+- Caveat: first PR CI attempt hit an unrelated one-off 192 ms slowest-test threshold; rerun passed without code changes
 - Design:
-  - Chosen boundary: pending
-  - Why not quick patch: pending
-  - Why not broader change: pending
-- Verified: pending
-- PR body verified: pending
+  - Chosen boundary: synthetic exact-contract test plus live conservation integration
+  - Why not quick patch: updating literal inventory would preserve the maintenance trap
+  - Why not broader change: generator and generated artifacts were already correct; `--check` owns projection currency
+- Verified: focused test, mutation proof, generator check, lint, full `bun check`, autoreview, and GitHub CI
+- PR body verified: yes; auto-release preserved, required task format present, no self-link
 
 Task-style PR body contract:
 - Preserve any existing `<!-- auto-release:start -->` block. If a changeset is
@@ -311,25 +314,27 @@ Task-style PR body contract:
   of that output.
 
 Final handoff / sync:
-- PR: pending
-- Issue / tracker: pending
-- Browser proof: pending
-- Caveats: pending
+- PR: https://github.com/udecode/plate/pull/5096 at `2cad7474e9`, mergeable, required checks green
+- Issue / tracker: #5039 linked by the PR body; no separate tracker comment
+- Browser proof: N/A: no browser surface
+- Caveats: one unrelated CI timing sample passed on rerun; no unrelated test was moved
 
 Timeline:
 - 2026-08-15T08:53:28.128Z Task goal plan created.
 - 2026-08-15 Valid temporary entry reproduced the brittle `24 !== 23` failure.
 - 2026-08-15 Replaced live inventory literals with behavioral invariants and a synthetic index contract; mutation and focused suites passed.
 - 2026-08-15 Full `bun check` and dirty-local autoreview passed.
+- 2026-08-15 Commit `2cad7474e9` pushed and PR #5096 task body verified.
+- 2026-08-15 Required PR checks passed; isolated slowest-test timing miss passed on rerun without code changes.
 
 Reboot status:
 | Question | Answer |
 |----------|--------|
-| Where am I? | Focused verification complete |
-| Where am I going? | Full check, autoreview, PR sync, and final CI |
+| Where am I? | Final ledger closeout |
+| Where am I going? | Goal checker, final ledger push, and final-head CI verification |
 | What is the goal? | Stable behavioral coverage without live inventory golden assertions |
 | What have I learned? | See Findings |
-| What have I done? | Mutation red/green proof, test refactor, generator check, and lint |
+| What have I done? | Mutation red/green proof, test refactor, full local verification, PR sync, and remote CI |
 
 Open risks:
 - Risk: derived expected values could become tautological. Mitigation: exact
