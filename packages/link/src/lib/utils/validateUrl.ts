@@ -2,24 +2,30 @@ import { type SlateEditor, isUrl as defaultIsUrl, sanitizeUrl } from 'platejs';
 
 import { BaseLinkPlugin } from '../BaseLinkPlugin';
 
-// Markdown headings have a space after the # symbols
-const MARKDOWN_HEADING_PATTERN = /^#{1,6}\s+/;
+const WHITESPACE_PATTERN = /\s/;
 
 export const validateUrl = (editor: SlateEditor, url: string): boolean => {
   const { allowedSchemes, dangerouslySkipSanitization, isUrl } =
     editor.getOptions(BaseLinkPlugin);
   const customIsUrl = isUrl && isUrl !== defaultIsUrl ? isUrl : undefined;
 
+  // Internal links and anchors are the only urls accepted without a scheme, and
+  // a url reference cannot contain unescaped whitespace. This rejects markdown
+  // headings like `# heading` and multi-line text starting with `#` or `/`.
+  if (
+    (url.startsWith('/') || url.startsWith('#')) &&
+    WHITESPACE_PATTERN.test(url)
+  ) {
+    return false;
+  }
+
   // Allow internal links starting with /
   if (url.startsWith('/') && !url.startsWith('//')) {
     return customIsUrl ? customIsUrl(url) : true;
   }
 
-  // For strings starting with #, check if it's a markdown heading
+  // Allow anchor links starting with #
   if (url.startsWith('#')) {
-    if (MARKDOWN_HEADING_PATTERN.test(url)) {
-      return false; // This is a markdown heading, not a valid link
-    }
     return customIsUrl ? customIsUrl(url) : true;
   }
 

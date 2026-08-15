@@ -574,7 +574,53 @@ test('does not guess release dependencies for source-only change units', () => {
   );
 });
 
-test('current entry files generate registry changelog indexes', () => {
+test('sorts registry changelog indexes and groups targets', () => {
+  const createOutput = ({ date, id, targets }) => ({
+    entry: {
+      change: { commits: [], date, type: 'source' },
+      diagnostics: [],
+      entries: [{}],
+      id,
+      kind: 'fix',
+      release: { status: 'unresolved' },
+      status: 'draft',
+      summary: id,
+      targets: targets.map((name) => ({ name })),
+    },
+  });
+  const older = createOutput({
+    date: '2026-06-14',
+    id: 'older-entry',
+    targets: ['editor', 'column-node'],
+  });
+  const newer = createOutput({
+    date: '2026-06-15',
+    id: 'newer-entry',
+    targets: ['editor'],
+  });
+
+  const { components, index } = buildRegistryChangelogIndexes([older, newer]);
+
+  assert.deepEqual(
+    index.events.map(({ href, id }) => ({ href, id })),
+    [
+      {
+        href: '/registry/changelog/newer-entry.json',
+        id: 'newer-entry',
+      },
+      {
+        href: '/registry/changelog/older-entry.json',
+        id: 'older-entry',
+      },
+    ]
+  );
+  assert.deepEqual(components.components, {
+    'column-node': ['older-entry'],
+    editor: ['newer-entry', 'older-entry'],
+  });
+});
+
+test('current entry files are preserved in registry changelog indexes', () => {
   const sources = parseRegistryChangelogEntryFiles(
     'apps/www/src/registry/changelog/entries'
   );
@@ -594,45 +640,24 @@ test('current entry files generate registry changelog indexes', () => {
     ],
   });
   const { components, index } = buildRegistryChangelogIndexes(outputs);
+  const sourceIds = sources.map(({ id }) => id).sort();
+  const outputIds = outputs.map(({ entry }) => entry.id).sort();
+  const indexIds = index.events.map(({ id }) => id).sort();
+  const expectedComponentEntries = outputs
+    .flatMap(({ entry }) =>
+      entry.targets.map(({ name }) => `${name}:${entry.id}`)
+    )
+    .sort();
+  const componentEntries = Object.entries(components.components)
+    .flatMap(([name, ids]) => ids.map((id) => `${name}:${id}`))
+    .sort();
 
-  assert.equal(sources.length, 22);
-  assert.equal(outputs.length, 22);
-  assert.deepEqual(
-    index.events.slice(0, 4).map((event) => event.id),
-    [
-      '2026-06-28-ai-sdk-v7',
-      '2026-06-15-editor-fix-preserved-space-wrapping',
-      '2026-06-14-fix-shadcn-editor-kit-install-paths',
-      '2026-06-13-show-code-block-language-labels-read-only-mode',
-    ]
-  );
-  assert.equal(
-    index.events[0].href,
-    '/registry/changelog/2026-06-28-ai-sdk-v7.json'
-  );
-  assert.equal(
-    index.events[1].href,
-    '/registry/changelog/2026-06-15-editor-fix-preserved-space-wrapping.json'
-  );
-  assert.equal(
-    index.events[2].href,
-    '/registry/changelog/2026-06-14-fix-shadcn-editor-kit-install-paths.json'
-  );
-  assert.equal(
-    components.components.editor[0],
-    '2026-06-15-editor-fix-preserved-space-wrapping'
-  );
-  assert.deepEqual(components.components['editor-static'], [
-    '2026-06-15-editor-fix-preserved-space-wrapping',
-  ]);
-  assert.deepEqual(components.components['column-node'], [
-    '2026-06-10-attach-column-drop-target-ref',
-    '2026-01-20-add-docx-file-import-word-export-support',
-    '2025-11-20-biome-ultracite',
-    '2025-10-17-fix-react-decouple',
-  ]);
-  assert.deepEqual(components.components['editor-base-kit'], [
-    '2026-06-14-fix-shadcn-editor-kit-install-paths',
-    '2026-04-23-redesign-blockquotes-container-blocks',
-  ]);
+  assert.ok(sources.length > 0);
+  assert.deepEqual(outputIds, sourceIds);
+  assert.deepEqual(indexIds, sourceIds);
+  assert.deepEqual(componentEntries, expectedComponentEntries);
+
+  for (const event of index.events) {
+    assert.equal(event.href, `/registry/changelog/${event.id}.json`);
+  }
 });

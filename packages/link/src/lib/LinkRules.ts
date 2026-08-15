@@ -234,6 +234,10 @@ export const LinkRules = {
                   context.editor.getOptions(BaseLinkPlugin);
                 const url = getUrlHref?.(context.text) ?? context.text;
 
+                // Relative paths and fragments are valid link targets, but
+                // pasted plain text like `#!/bin/sh` or `/usr/local/bin` is
+                // indistinguishable from them, so never autolink them on paste.
+                if (url.startsWith('/') || url.startsWith('#')) return;
                 if (!validateUrl(context.editor, url)) return;
 
                 return {

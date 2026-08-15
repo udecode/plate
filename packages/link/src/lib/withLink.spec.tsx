@@ -3,7 +3,7 @@
 import type { SlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor, defineInputRule } from 'platejs';
+import { createSlateEditor, defineInputRule, KEYS } from 'platejs';
 
 import { BaseLinkPlugin } from './BaseLinkPlugin';
 import { LinkRules } from './LinkRules';
@@ -122,6 +122,30 @@ describe('withLink', () => {
           </editor>
         ).children
       );
+    });
+
+    it('does not autolink pasted text starting with # or /', () => {
+      for (const text of ['#!/bin/sh', '/usr/local/bin', '#hashtag']) {
+        const input = (
+          <editor>
+            <hp>
+              <cursor />
+            </hp>
+          </editor>
+        ) as any as SlateEditor;
+
+        const editor = createLinkEditor(input, {
+          inputRules: autolinkRules,
+        });
+        editor.tf.insertData(createClipboardData(text));
+
+        expect(
+          editor.api.some({
+            at: [],
+            match: { type: editor.getType(KEYS.link) },
+          })
+        ).toBe(false);
+      }
     });
 
     it('keeps pasted urls literal inside markdown link source entry by default', () => {
