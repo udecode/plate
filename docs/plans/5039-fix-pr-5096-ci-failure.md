@@ -83,9 +83,9 @@ Blocked condition:
 Task state:
 - task_type: CI bug fix on an existing PR
 - task_complexity: normal, non-trivial, measurable
-- current_phase: PR sync and remote verification
-- current_phase_status: in_progress
-- next_phase: push and wait for green GitHub CI
+- current_phase: closeout
+- current_phase_status: complete
+- next_phase: final handoff
 - goal_status: active
 
 Current verdict:
@@ -198,35 +198,35 @@ Work Checklist:
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
-| Named verification threshold | pending | Run the command, proof, source audit, or artifact check named in this plan | pending |
-| Pre-solution issue challenge verdict | pending | Record reporter claim, suggested fix, repro verdict, validity verdict, durable boundary, and hard-stop/pivot decision before implementation | pending |
-| Repro escalation ladder | pending | For bug/behavior claims, record test/source-level, Playwright, Browser, and screenshot/visual-proof outcomes or N/A/blocker reasons before `not reproduced` | pending |
-| Bug reproduced before fix | pending | Record failing test/repro or N/A with reason | pending |
-| Targeted behavior verification | pending | Run focused test/proof for changed behavior or record N/A | pending |
-| TypeScript or typed config changed | pending | Run relevant typecheck | pending |
-| Package exports or file layout changed | pending | Run `pnpm brl` before final verification and keep generated barrel updates | pending |
-| Package manifests, lockfile, or install graph changed | pending | Run `pnpm install` and relevant package checks | pending |
-| Agent rules or skills changed | pending | Run `pnpm install` and verify generated skill sync | pending |
-| Workspace authority proof | pending | Run verification in the owning repo/package/app/route/tool and record cwd; do not count the wrong workspace as proof | pending |
-| Browser surface changed | pending | Capture Browser Use proof or record explicit waiver/blocker | pending |
-| Browser final proof | pending | Attach screenshot or exact browser verification caveat when browser proof applies | pending |
-| CI-controlled template output changed | pending | Restore generated template output or record why it is intentionally kept | pending |
-| Package behavior or public API changed | pending | Add a changeset or record why no changeset applies | pending |
-| User-visible registry output changed | pending | Use the registry-changelog pack: add/update `apps/www/src/registry/changelog/entries/*.mdx`, run `node tooling/scripts/generate-ui-changelog-entries.mjs --write`, run `node tooling/scripts/generate-ui-changelog-entries.mjs --check`, or record N/A | pending |
-| Docs or content changed | pending | For docs-heavy work, use `--template docs`; for supporting public docs/content/API/example changes, load `docs-creator` and close the docs pack; for typo/link-only edits, record the explicit reason and proportional proof | pending |
-| High-risk mini gate | pending | For public API/runtime/package-boundary/browser/agent-action/command-contract changes, record realistic failure mode, proof plan, and why the chosen boundary is right; otherwise N/A | pending |
-| Agent-native review for agent/tooling changes | pending | For `.agents/**`, `.claude/**`, `.codex/**`, skills, hooks, commands, prompts, or user-action tooling, load `.agents/skills/agent-native-reviewer/SKILL.md` and close accepted/actionable findings, or record N/A | pending |
-| Local install corruption suspected | pending | Run `pnpm run reinstall` once, rerun the exact failing command, or record N/A | pending |
-| Autoreview for non-trivial implementation changes | pending | Load `.agents/skills/autoreview/SKILL.md`; use dirty local `--mode local`, branch/PR `--mode branch --base <base>`, or committed slice `--mode commit --commit <ref>` until no accepted/actionable findings, or record N/A for docs-only/trivial/no local patch | pending |
-| PR create or update | pending | Run `check` before PR work and sync PR body to the task-style final handoff | pending |
-| Task-style PR body verified | pending | Verify the PR body with `gh pr view --json body`; it must preserve auto-release blocks when applicable, must not include a current-PR self-link, and must use the kitcn PR #270 emoji format: `🐛 Fixes ...`, `🟢 95-100% confidence`, `Phase / 🧪 Tests / 🌐 Browser` table, and bold emoji Outcome/Caveat/Design/Verified sections | pending |
-| PR proof image hosting | pending | If PR body needs browser proof, replace local image paths with hosted GitHub URLs or record N/A | pending |
-| Tracker sync-back | pending | Post concise issue/Linear sync after PR exists, or record N/A/blocker | pending |
-| Final handoff contract | pending | Fill the final handoff fields below with exact PR/issue/confidence/tests/browser/outcome/caveats/design/verification content or N/A reason | pending |
-| Final lint | pending | Run `pnpm lint:fix` or scoped equivalent | pending |
-| Output budget discipline | pending | Verify no unbounded high-volume command output was streamed, or record the accidental output and recovery | pending |
-| Timed checkpoint | pending | If duration was requested, keep improving until elapsed, then finish the current loop cleanly; otherwise N/A | pending |
-| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/5039-fix-pr-5096-ci-failure.md` | pending |
+| Named verification threshold | yes | Run the command, proof, source audit, or artifact check named in this plan | Local owners, full `bun check`, and GitHub CI run 31874582857 pass |
+| Pre-solution issue challenge verdict | yes | Record reporter claim, suggested fix, repro verdict, validity verdict, durable boundary, and hard-stop/pivot decision before implementation | Recorded above before edits: valid CI follow-up; fixture owner is the durable boundary |
+| Repro escalation ladder | yes | For bug/behavior claims, record test/source-level, Playwright, Browser, and screenshot/visual-proof outcomes or N/A/blocker reasons before `not reproduced` | Exact test reproduced; browser and visual levels are N/A for a test-fixture failure |
+| Bug reproduced before fix | yes | Record failing test/repro or N/A with reason | 15 pass, 1 fail with exact `23 !== 22` before fix |
+| Targeted behavior verification | yes | Run focused test/proof for changed behavior or record N/A | Registry fixture 16/16 and Link 85/85 pass |
+| TypeScript or typed config changed | no | Run relevant typecheck | N/A: no typed source changed; Link package typecheck still passed as proportional PR proof |
+| Package exports or file layout changed | no | Run `pnpm brl` before final verification and keep generated barrel updates | N/A: no exported files changed; CI barrel generation and drift detection passed |
+| Package manifests, lockfile, or install graph changed | no | Run `pnpm install` and relevant package checks | N/A: no manifest or lockfile changes |
+| Agent rules or skills changed | no | Run `pnpm install` and verify generated skill sync | N/A: no agent rule or skill changes |
+| Workspace authority proof | yes | Run verification in the owning repo/package/app/route/tool and record cwd; do not count the wrong workspace as proof | All local commands ran in `/Users/zbeyens/git/plate`; remote proof ran on `udecode/plate` PR #5096 |
+| Browser surface changed | no | Capture Browser Use proof or record explicit waiver/blocker | N/A: no UI or browser-owned surface changed in this CI repair |
+| Browser final proof | no | Attach screenshot or exact browser verification caveat when browser proof applies | N/A: executable package and CI proof own this follow-up |
+| CI-controlled template output changed | no | Restore generated template output or record why it is intentionally kept | N/A: no `templates/**` output changed |
+| Package behavior or public API changed | yes | Add a changeset or record why no changeset applies | Existing `.changeset/link-no-autolink-relative-paste.md` covers the inherited Link behavior change; follow-up adds no package behavior |
+| User-visible registry output changed | no | Use the registry-changelog pack: add/update `apps/www/src/registry/changelog/entries/*.mdx`, run `node tooling/scripts/generate-ui-changelog-entries.mjs --write`, run `node tooling/scripts/generate-ui-changelog-entries.mjs --check`, or record N/A | N/A: fixture-only repair; generator `--check` confirms all 23 projections current |
+| Docs or content changed | yes | For docs-heavy work, use `--template docs`; for supporting public docs/content/API/example changes, load `docs-creator` and close the docs pack; for typo/link-only edits, record the explicit reason and proportional proof | Internal required goal ledger only; no user-facing docs, content, API, or example change |
+| High-risk mini gate | yes | For public API/runtime/package-boundary/browser/agent-action/command-contract changes, record realistic failure mode, proof plan, and why the chosen boundary is right; otherwise N/A | Link paste failure mode and 85-test proof recorded; follow-up stays fixture-only |
+| Agent-native review for agent/tooling changes | no | For `.agents/**`, `.claude/**`, `.codex/**`, skills, hooks, commands, prompts, or user-action tooling, load `.agents/skills/agent-native-reviewer/SKILL.md` and close accepted/actionable findings, or record N/A | N/A: no agent or user-action tooling changes |
+| Local install corruption suspected | no | Run `pnpm run reinstall` once, rerun the exact failing command, or record N/A | N/A: exact CI failure reproduced deterministically and disappeared with the fixture fix |
+| Autoreview for non-trivial implementation changes | yes | Load `.agents/skills/autoreview/SKILL.md`; use dirty local `--mode local`, branch/PR `--mode branch --base <base>`, or committed slice `--mode commit --commit <ref>` until no accepted/actionable findings, or record N/A for docs-only/trivial/no local patch | Local autoreview clean, patch correct at 0.90 confidence |
+| PR create or update | yes | Run `check` before PR work and sync PR body to the task-style final handoff | `bun check` passed before commit; commit `8bf587ade1` pushed and body updated |
+| Task-style PR body verified | yes | Verify the PR body with `gh pr view --json body`; it must preserve auto-release blocks when applicable, must not include a current-PR self-link, and must use the kitcn PR #270 emoji format: `🐛 Fixes ...`, `🟢 95-100% confidence`, `Phase / 🧪 Tests / 🌐 Browser` table, and bold emoji Outcome/Caveat/Design/Verified sections | `gh pr view 5096 --json body` confirms preserved auto-release block and all required task sections |
+| PR proof image hosting | no | If PR body needs browser proof, replace local image paths with hosted GitHub URLs or record N/A | N/A: no browser or image proof applies |
+| Tracker sync-back | yes | Post concise issue/Linear sync after PR exists, or record N/A/blocker | Existing PR body links `Fixes #5039` and carries the verified outcome; separate issue comment is redundant |
+| Final handoff contract | yes | Fill the final handoff fields below with exact PR/issue/confidence/tests/browser/outcome/caveats/design/verification content or N/A reason | Filled below |
+| Final lint | yes | Run `pnpm lint:fix` or scoped equivalent | `pnpm lint:fix` passed with no fixes |
+| Output budget discipline | yes | Verify no unbounded high-volume command output was streamed, or record the accidental output and recovery | One broad solution scan exceeded useful output; recovered with two exact files and capped every later command |
+| Timed checkpoint | no | If duration was requested, keep improving until elapsed, then finish the current loop cleanly; otherwise N/A | N/A: no duration requested |
+| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/5039-fix-pr-5096-ci-failure.md` | Exact checker passes after this closure update |
 
 Phase / pass table:
 | Phase | Status | Evidence | Next |
@@ -234,8 +234,8 @@ Phase / pass table:
 | Intake and source read | complete | PR metadata, comments, diff, and failed logs read | implementation |
 | Implementation | complete | stale count/order/href fixture updated | verification |
 | Verification | complete | focused owners and full `bun check` green; autoreview clean | closeout |
-| PR / tracker sync | in_progress | local branch ready to commit | final response |
-| Closeout | pending | | final response |
+| PR / tracker sync | complete | commit `8bf587ade1` pushed; body verified; CI run 31874582857 green | final response |
+| Closeout | complete | all completion gates resolved | final response |
 
 Findings:
 - PR #5096 is open, mergeable, and allows maintainer edits; head is
@@ -287,21 +287,21 @@ Verification evidence:
   --stream-engine-output` -> clean, no accepted/actionable findings.
 
 Final handoff contract:
-- PR line: pending
-- Issue / tracker line: pending
-- Confidence line: pending
+- PR line: PR #5096 updated at commit `8bf587ade1`; mergeable with green checks.
+- Issue / tracker line: PR body retains `🐛 Fixes #5039`; no separate tracker sync needed.
+- Confidence line: 95-100%; exact failure reproduced, owner fixed, local and remote closure green.
 - Flow table:
-  - Reproduced: tests pending, browser pending
-  - Verified: tests pending, browser pending
-- Browser check: pending
-- Outcome: pending
-- Caveat: pending
+  - Reproduced: registry fixture failed `23 !== 22` locally and in PR/current-main CI; browser N/A.
+  - Verified: focused owners, full local check, and GitHub CI pass; browser N/A.
+- Browser check: N/A: no browser-owned change in the CI repair.
+- Outcome: stale registry fixture recognizes all 23 entries and PR CI is green.
+- Caveat: failure was inherited from current main and unrelated to the Link diff.
 - Design:
-  - Chosen boundary: pending
-  - Why not quick patch: pending
-  - Why not broader change: pending
-- Verified: pending
-- PR body verified: pending
+  - Chosen boundary: registry changelog integration fixture.
+  - Why not quick patch: this is the direct owner fix, retaining the meaningful explicit-count audit.
+  - Why not broader change: Link runtime and CI workflow are correct and unrelated to the stale expectation.
+- Verified: registry 16/16, Link 85/85, package typecheck, lint, generator check, full `bun check`, autoreview, and GitHub CI.
+- PR body verified: yes, via `gh pr view 5096 --json body`.
 
 Task-style PR body contract:
 - Preserve any existing `<!-- auto-release:start -->` block. If a changeset is
@@ -324,10 +324,10 @@ Task-style PR body contract:
   of that output.
 
 Final handoff / sync:
-- PR: pending
-- Issue / tracker: pending
-- Browser proof: pending
-- Caveats: pending
+- PR: https://github.com/udecode/plate/pull/5096 at `8bf587ade1`.
+- Issue / tracker: `Fixes #5039` preserved in the PR body.
+- Browser proof: N/A: no browser-owned follow-up change.
+- Caveats: CI failure originated on current main after PR #5058; no known remaining blocker.
 
 Timeline:
 - 2026-08-15T08:21:21.151Z Task goal plan created.
@@ -337,6 +337,7 @@ Timeline:
 - 2026-08-15 Reproduced locally, traced the missed update to PR #5058 commit `8abee2ba6d`, and patched the fixture owner.
 - 2026-08-15 Focused registry test and generator projection check passed after the fix.
 - 2026-08-15 Link tests, package typecheck, lint, full `bun check`, and local autoreview passed.
+- 2026-08-15 Commit `8bf587ade1` pushed, PR body verified, fork runs approved, changeset policy passed, and CI run 31874582857 completed green.
 
 Reboot status:
 | Question | Answer |
@@ -348,6 +349,5 @@ Reboot status:
 | What have I done? | Reproduced the exact CI failure, patched its stale fixture, and passed local closure checks |
 
 Open risks:
-- The fix is unrelated to Link behavior but required to unbreak both `main` and
-  this PR. Final risk is limited to other `bun check` failures hidden behind the
-  first failing assertion.
+- None known. The previously hidden full `bun check` path completed locally and
+  in GitHub CI after the fixture repair.
