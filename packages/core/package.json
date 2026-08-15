@@ -61,7 +61,7 @@
     "nanoid": "^5.1.5",
     "optics-ts": "2.4.1",
     "react-compiler-runtime": "^1.0.0",
-    "slate": "0.126.1",
+    "slate": "0.126.2",
     "slate-dom": "0.126.0",
     "slate-hyperscript": "0.125.0",
     "slate-react": "0.126.0",
