@@ -14,6 +14,7 @@ import {
 import {
   getCompiledSchemaPropertyId,
   getSchemaElementSourceReference,
+  preserveCompiledSchemaPropertyIdentity,
 } from '@platejs/plite/internal';
 
 import type { BaseEditor } from '../../lib/editor';
@@ -1404,14 +1405,23 @@ export const compileEditorApplicationSchema = (
   }
 
   const properties = Object.entries(policy.properties ?? {}).map(
-    ([localId, property]) =>
-      Object.freeze({
+    ([localId, property]) => {
+      const authored = Object.freeze({
         ...property,
-        ...('target' in property && property.target
-          ? { target: lowerApplicationTarget(model, property.target) }
-          : {}),
         ...('key' in property ? {} : { key: localId }),
-      }) as SchemaProperty
+      }) as SchemaProperty;
+      const lowered = {
+        ...authored,
+        ...(authored.target
+          ? { target: lowerApplicationTarget(model, authored.target) }
+          : {}),
+      } as SchemaProperty;
+
+      return getCompiledSchemaPropertyId(lowered) ===
+        getCompiledSchemaPropertyId(authored)
+        ? Object.freeze(lowered)
+        : preserveCompiledSchemaPropertyIdentity(lowered, authored);
+    }
   );
 
   return Object.freeze({

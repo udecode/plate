@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-08-15-compose-docx-export-kit",
+      "href": "/registry/changelog/2026-08-15-compose-docx-export-kit.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Compose DOCX export renderers through plugins",
+      "change": {
+        "type": "source",
+        "date": "2026-08-15",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["docx-export-kit", "export-toolbar-button"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-08-14-author-editor-runtime",
       "href": "/registry/changelog/2026-08-14-author-editor-runtime.json",
       "status": "draft",

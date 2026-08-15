@@ -13,9 +13,7 @@ const createEditor = () =>
       anchor: { offset: 4, path: [0, 0] },
       focus: { offset: 4, path: [0, 0] },
     },
-    initialValue: [
-      { children: [{ text: 'one ' }], id: 'b1', type: 'paragraph' },
-    ],
+    initialValue: [{ children: [{ text: 'one ' }], type: 'paragraph' }],
   });
 
 describe('CopilotPlugin triggerSuggestion', () => {
@@ -44,9 +42,7 @@ describe('CopilotPlugin triggerSuggestion', () => {
         anchor: { offset: 4, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       },
-      initialValue: [
-        { children: [{ text: 'one ' }], id: 'b1', type: 'paragraph' },
-      ],
+      initialValue: [{ children: [{ text: 'one ' }], type: 'paragraph' }],
     });
 
     editor.plugin(CopilotPlugin).store.set({ isLoading: true });

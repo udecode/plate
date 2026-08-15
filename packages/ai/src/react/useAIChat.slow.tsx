@@ -157,8 +157,8 @@ import {
           AIChatPlugin,
         ],
         initialValue: [
-          { children: [{ text: 'one' }], id: 'b1', type: 'paragraph' },
-          { children: [{ text: 'two' }], id: 'b2', type: 'paragraph' },
+          { children: [{ text: 'one' }], type: 'paragraph' },
+          { children: [{ text: 'two' }], type: 'paragraph' },
         ],
       });
       const selectedKey = editor.key([0])!;
@@ -181,7 +181,7 @@ import {
       );
 
       expect(onOpenBlockSelection).toHaveBeenCalledWith([
-        [{ children: [{ text: 'one' }], id: 'b1', type: 'paragraph' }, [0]],
+        [{ children: [{ text: 'one' }], type: 'paragraph' }, [0]],
       ]);
       expect(onOpenCursor).not.toHaveBeenCalled();
       expect(onOpenSelection).not.toHaveBeenCalled();

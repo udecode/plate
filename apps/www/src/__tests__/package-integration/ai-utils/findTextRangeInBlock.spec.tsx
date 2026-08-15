@@ -37,7 +37,6 @@ describe('findTextRangeInBlock', () => {
   it('find text in a simple nested inline node', () => {
     const editor = createTestEditor([
       {
-        id: '231asasd',
         children: [
           { text: 'a' },
           {
@@ -64,7 +63,6 @@ describe('findTextRangeInBlock', () => {
   it('find text spanning multiple styled nodes', () => {
     const editor = createTestEditor([
       {
-        id: 'gYBjGfssdm',
         children: [
           { text: 'This is a tes1texst' },
           { bold: true, text: 't' },
@@ -91,7 +89,6 @@ describe('findTextRangeInBlock', () => {
   it('fallback to prefix when full text not found', () => {
     const editor = createTestEditor([
       {
-        id: 'block1',
         children: [{ text: 'This is a tes' }],
         type: 'paragraph',
       },
@@ -112,7 +109,6 @@ describe('findTextRangeInBlock', () => {
   it('returns null when neither full nor prefix found', () => {
     const editor = createTestEditor([
       {
-        id: 'block2',
         children: [{ text: 'abc' }],
         type: 'paragraph',
       },
@@ -129,7 +125,6 @@ describe('findTextRangeInBlock', () => {
   it('correctly match text spanning multiple nodes with minor spacing differences', () => {
     const editor = createTestEditor([
       {
-        id: '-WVMecrPDQ',
         children: [
           { text: 'Structure your content with ' },
           {
@@ -198,7 +193,6 @@ describe('findTextRangeInBlock', () => {
   it('does not match text spanning multiple nodes when there are significant differences', () => {
     const editor = createTestEditor([
       {
-        id: '-WVMecrPDQ',
         children: [
           { text: 'Structure your content with ' },
           {

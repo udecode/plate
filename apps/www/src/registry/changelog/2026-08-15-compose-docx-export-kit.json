@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-15-compose-docx-export-kit",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-15-compose-docx-export-kit.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-15",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Compose DOCX export renderers through plugins",
+  "targets": [
+    {
+      "name": "docx-export-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/docx-export-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "export-toolbar-button",
+      "files": ["apps/www/src/registry/ui/export-toolbar-button.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-15-docx-export-compose-renderers-through-plugins-a6f9dff4",
+      "kind": "wiring",
+      "summary": "Compose DOCX renderers through target plugins. Install `DocxIOPlugin` explicitly in the live editor when using its scoped import or export API.",
+      "details": [],
+      "migrationNotes": [
+        "Install DocxIOPlugin explicitly in the live editor when using its scoped import or export API."
+      ],
+      "targets": ["docx-export-kit", "export-toolbar-button"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-15",
+          "entry": "2026-08-15-compose-docx-export-kit",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

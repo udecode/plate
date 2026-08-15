@@ -35,6 +35,9 @@
   and removals as `nodes.unset(key, options)`. Use exact schema-property handle
   keys as computed object keys for aliases. Prefix handles cannot address one
   property.
+- Keep forced correction targets distinct by draft path before runtime node
+  keys are published, so initialization repairs every matching node inside the
+  same atomic bootstrap spec without emitting a commit.
 - Add schema property copy policy and generated construction/canonical
   presence. Plugin-authored property keys are invariant; closed applications
   may retarget a property but cannot alias its storage key.

@@ -158,6 +158,7 @@ describe('AIMenu slow contracts', () => {
           resolveDOMNode: toDOMNodeMock,
         },
       },
+      key: () => 'block',
       plugin: () => ({ api: { set: setBlockSelectionMock } }),
       read: {
         nodes: {

@@ -87,6 +87,29 @@ describe('definePlatePlugin', () => {
     expect(resolved.on.keyDown).toBe(keyDown);
   });
 
+  it('keeps event editor capabilities shallow while preserving dependency schema portals', () => {
+    const dependency = definePlatePlugin('handlerDependency', {
+      schema: {
+        element: {
+          ...schema.element.textBlock(),
+          type: 'handlerDependencyElement',
+        },
+      },
+    });
+    const plugin = definePlatePlugin('handlerOwner', {
+      dependencies: [dependency],
+      on: {
+        cut: ({ editor }) => {
+          editor.update.fragment.delete();
+
+          return editor.plugin(dependency).schema.type.length > 0;
+        },
+      },
+    });
+
+    expect(plugin.name).toBe('handlerOwner');
+  });
+
   it('does not publish resolved element identity when the React plugin is absent', () => {
     const plugin = definePlatePlugin('elementOwner', {
       schema: {

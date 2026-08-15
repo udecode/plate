@@ -8318,6 +8318,18 @@
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
+        "@platejs/plite/internal:preserveCompiledSchemaPropertyIdentity": {
+          "aliases": [],
+          "documentation": "",
+          "entrypoint": "@platejs/plite/internal",
+          "kind": "const",
+          "name": "preserveCompiledSchemaPropertyIdentity",
+          "route": null,
+          "runtime": true,
+          "signature": "preserveCompiledSchemaPropertyIdentity: <TProperty extends Readonly<{\n  key: SchemaPropertyKey;\n  placement: 'element' | 'text';\n  target?: SchemaTarget | null;\n}>>(property: TProperty, authored: TProperty) => TProperty",
+          "source": "packages/plite/src/core/schema-compiler.ts",
+          "typeParameters": []
+        },
         "@platejs/plite/internal:previous": {
           "aliases": [],
           "documentation": "",

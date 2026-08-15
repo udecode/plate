@@ -5,6 +5,7 @@ import path from 'node:path';
 
 import type { Node as PliteNode } from '@platejs/plite';
 
+import { BaseCodeHighlightPlugin } from '@platejs/code-block';
 import { DocxIOPlugin, htmlToDocxBlob } from '@platejs/docx-io';
 import { jsx } from '@platejs/test-utils';
 import { createBaseEditor, type Value } from 'platejs';
@@ -12,12 +13,13 @@ import { renderStaticHtml } from 'platejs/static';
 
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
 import { DocxExportKit } from '@/registry/components/editor/plugins/docx-export-kit';
+import { CodeSyntaxLeafDocx } from '@/registry/ui/code-block-node-static';
 
 jsx;
 
 const createTestEditor = (value?: Value) =>
   createBaseEditor({
-    plugins: [...BaseEditorKit, ...DocxExportKit],
+    plugins: [...BaseEditorKit, DocxIOPlugin, ...DocxExportKit],
     initialValue: value,
   });
 
@@ -45,6 +47,15 @@ const exportNodesToDocx = async (nodes: PliteNode[]): Promise<Buffer> => {
 };
 
 describe('docx roundtrip', () => {
+  it('keeps existing plugin state when DOCX renderers override components', () => {
+    const codeSyntax = createTestEditor().plugin(BaseCodeHighlightPlugin);
+
+    expect(codeSyntax.initialState.lowlight?.registered('typescript')).toBe(
+      true
+    );
+    expect(codeSyntax.render.node).toBe(CodeSyntaxLeafDocx);
+  });
+
   it('pairs TOC links with export-local heading bookmarks without persisted ids', async () => {
     const html = await renderStaticHtml(
       createTestEditor([

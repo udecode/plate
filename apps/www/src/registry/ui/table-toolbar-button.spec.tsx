@@ -1,5 +1,6 @@
 import * as React from 'react';
 
+import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 import * as actualTableReact from '@platejs/table/react';
 import * as actualCoreReact from '@platejs/core/react';
 import { fireEvent, render } from '@testing-library/react';

@@ -6,6 +6,7 @@ import {
   SelectionApi,
   type TransactionSpec,
 } from '@platejs/plite';
+import { getNodeKeyDOMValue } from '@platejs/plite/internal';
 import { applyTransactionSpec } from '../src/core/public-state';
 
 const createTextEditor = (text = 'ab') =>
@@ -100,8 +101,14 @@ describe('native transaction spec contract', () => {
       });
     }
 
-    assert.equal(withDiscardedSpec.key([1]), control.key([1]));
-    assert.equal(withDiscardedSpec.key([1, 0]), control.key([1, 0]));
+    assert.equal(
+      getNodeKeyDOMValue(withDiscardedSpec.key([1])!),
+      getNodeKeyDOMValue(control.key([1])!)
+    );
+    assert.equal(
+      getNodeKeyDOMValue(withDiscardedSpec.key([1, 0])!),
+      getNodeKeyDOMValue(control.key([1, 0])!)
+    );
   });
 
   it('keeps a prepared spec reusable after its first application rolls back', () => {

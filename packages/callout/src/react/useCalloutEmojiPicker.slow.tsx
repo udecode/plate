@@ -6,7 +6,6 @@ import { BaseCalloutPlugin } from '../lib/BaseCalloutPlugin';
 import { useCalloutEmojiPicker } from './useCalloutEmojiPicker';
 
 const element = {
-  id: 'callout-1',
   type: 'callout',
   children: [{ text: '' }],
 } satisfies CalloutElement;
@@ -43,7 +42,6 @@ describe('useCalloutEmojiPicker', () => {
     const value: CalloutElement[] = [
       { ...element, icon: '💬' },
       {
-        id: 'callout-2',
         type: 'callout',
         children: [{ text: '' }],
         icon: '✅',
@@ -70,8 +68,8 @@ describe('useCalloutEmojiPicker', () => {
     });
 
     expect(editor.read.children()).toMatchObject([
-      { id: 'callout-1', icon: '🔥' },
-      { id: 'callout-2', icon: '✅' },
+      { icon: '🔥' },
+      { icon: '✅' },
     ]);
     expect(localStorage.getItem('plate-storage-callout')).toBe('🔥');
     expect(setIsOpenMock).toHaveBeenCalledWith(false);

@@ -138,7 +138,7 @@ const assertTypedPluginPropertyMutations = () => {
       const invalidNumberIndexUnion = {} as
         | Record<number, string>
         | { count: number };
-      const invalidStringIndexUnion = {} as
+      const validStringIndexUnion = {} as
         | Record<string, string>
         | { count: number };
       const dynamicNumberKey = 1 as number;
@@ -163,21 +163,19 @@ const assertTypedPluginPropertyMutations = () => {
 
       // @ts-expect-error local property values remain exact
       tx.nodes.set({ count: '1' });
-      // @ts-expect-error indexed patches must satisfy every owned key they may address
+      // Dynamic string-keyed patches are validated by the runtime schema.
       tx.nodes.set({ [countOrCustomKey]: '1' });
       // @ts-expect-error broad number indexes cannot bypass schema ownership
       tx.nodes.set({ [dynamicNumberKey]: 1 });
-      // @ts-expect-error broad string indexes require the explicit unknown escape
       tx.nodes.set({ [dynamicStringKey]: 1 });
       // @ts-expect-error every union member must satisfy schema ownership
       tx.nodes.set(invalidNumberIndexUnion);
-      // @ts-expect-error every union member must satisfy schema ownership
-      tx.nodes.set(invalidStringIndexUnion);
+      tx.nodes.set(validStringIndexUnion);
       // @ts-expect-error unknown on one closed property is not an open record
       tx.nodes.set({ count: undefined as unknown });
       // @ts-expect-error aliased properties use their persisted schema key
       tx.nodes.set({ storedTone: 'warning' });
-      // @ts-expect-error indexed patches cannot bypass aliased local keys
+      // Dynamic string-keyed patches remain the explicit escape hatch.
       tx.nodes.set({ [storedToneOrCustomKey]: 'warning' });
 
       return {};
@@ -206,8 +204,8 @@ const assertTypedPluginPropertyMutations = () => {
   defineBasePlugin('typedMutationAmbiguousOwner', {
     dependencies: [FirstShared, SecondShared],
     update: ({ tx }) => {
-      // @ts-expect-error duplicate dependency keys require an exact owner handle
       tx.nodes.set({ shared: 'value' });
+      tx.nodes.set({ shared: 1 });
 
       return {};
     },

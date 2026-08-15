@@ -109,12 +109,13 @@ the smallest portable public type. If declaration emit names
 Never publish a package-local `BaseEditor<typeof Plugin>` alias, reconstructed
 factory options/rule interface, annotation, or cast to hide that leak.
 
-TS7056 permits one narrow private declaration bridge only after the direct
-inferred chain is proven to fail declaration emit. Retain the minimum exact
-source/final stage pair, mark both `@plate-plugin-declaration-stage`, annotate
-only the private final stage, and export one unannotated alias. Keep the stages
-and definition carrier out of barrels, record them as exceptions in the source
-audit, and delete them when direct emit succeeds.
+TS7056 never earns a package-local declaration bridge. Preserve the direct
+inferred export, compact the honest dependency source, and route any remaining
+failure to the owning Core generic or declaration boundary. Do not add
+`@plate-plugin-declaration-stage`, a private definition carrier, an annotated
+staging alias, a widened dependency, a cast, or a public subset type. Existing
+marked stages are transitional debt with a direct-build deletion gate and block
+current-doctrine package attestation until removed.
 
 ## Capability Boundaries
 

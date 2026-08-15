@@ -8,7 +8,7 @@ import { createTestEditor } from './createTestEditor';
 
 jsx;
 
-const editor = createTestEditor();
+const editor = createTestEditor({ elementIds: true });
 
 describe('wrapWithBlockId', () => {
   describe('unit tests', () => {
@@ -67,7 +67,7 @@ describe('wrapWithBlockId', () => {
       expect(result).toMatchSnapshot();
     });
 
-    it('does not wrap nodes without IDs', () => {
+    it('rejects nodes without IDs', () => {
       const slateNodes = [
         {
           children: [{ text: 'No ID here' }],
@@ -75,12 +75,12 @@ describe('wrapWithBlockId', () => {
         },
       ];
 
-      const result = editor.api.markdown.serialize({
-        value: { children: slateNodes },
-        withBlockId: true,
-      });
-
-      expect(result).toMatchSnapshot();
+      expect(() =>
+        editor.api.markdown.serialize({
+          value: { children: slateNodes },
+          withBlockId: true,
+        })
+      ).toThrow('Element ID must be a non-empty string.');
     });
 
     it('handle complex nested structures', () => {

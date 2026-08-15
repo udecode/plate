@@ -77,7 +77,6 @@ import type {
   BasePluginDefinition,
   BreakRules,
   DeleteRules,
-  DefinitionOf,
   MergeRules,
   NormalizePluginState,
   NormalizePluginSelectors,
@@ -939,7 +938,7 @@ type RenderStaticNodeWrapperDefinition<
   ? any
   : TSource extends AnyBasePluginDefinition
     ? TSource
-    : Extract<DefinitionOf<TSource>, AnyBasePluginDefinition>;
+    : Extract<InternalPluginDefinitionOf<TSource>, AnyBasePluginDefinition>;
 
 export type RenderStaticNodeWrapper<
   TSource extends RenderStaticNodeWrapperSource = any,
@@ -966,7 +965,7 @@ export type RenderStaticNodeWrapperProps<
   RenderStaticNodeWrapperDefinition<TSource> extends infer C extends
     AnyBasePluginDefinition
     ? PliteRenderElementProps<
-        0 extends 1 & TSource ? Element : ElementWith<C>,
+        0 extends 1 & TSource ? Element : ElementWith<WithAnyName<C>>,
         C
       > & {
         path: Path;

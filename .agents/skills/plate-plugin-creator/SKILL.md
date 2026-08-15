@@ -252,16 +252,15 @@ dependency graphs must not leak into declarations. `DefinitionOf<>` may expose
 the definition; `PluginConfig`, `__config`, accumulator tuples, and public
 witness fields may not.
 
-TS7056 is a declaration-boundary failure, not permission to widen a plugin.
-Keep the public descriptor inferred. Compact dependency-source carriers at the
-Core owner; only when a genuinely large plugin still cannot emit, split the
-minimum private stages, derive their exact types through documented internal
-declaration carriers, and mark every retained source/final stage
-`@plate-plugin-declaration-stage`. The private final stage may carry the exact
-annotation that TS7056 requires; the public export remains an unannotated alias.
-Require a captured failing direct declaration build, keep the pair out of
-barrels, count it explicitly in topology audits, and delete it when direct emit
-works. Do not export the staging constants or their internal definition types.
+TS7056 is an owner-level declaration defect, not a package authoring pattern.
+Keep the direct inferred export as the only target. Compact the package's
+honest dependency source, then stop and route the remaining failure to the
+owning Core generic or declaration boundary. Never add another
+`@plate-plugin-declaration-stage`, private definition carrier, annotated
+staging alias, widened dependency, cast, or public subset type. An existing
+marked stage is transitional debt: record its direct-build deletion gate and
+do not attest the package against current doctrine until the owner repair
+removes it.
 
 When an update or API needs the element/text shape inferred by the constructor,
 put that capability in a direct `.extend(({ plugin }) => ...)` stage and derive
@@ -402,17 +401,17 @@ widens the exact definition, `.configure()` is terminal and non-widening, and
 `toPlatePlugin()` is the exact live Base-to-React adapter. Factories replace
 cloning; never add `clone()` or another copy verb.
 
-Inside `update`, write one uniquely owned, unaliased property with
-`tx.nodes.set('property', value, options)` and remove it with
-`tx.nodes.unset('property', options)`. The literal key and value are inferred
-from the current plugin plus required dependencies through a shallow graph.
-Use the current owner's exact `schema.properties.<localId>` handle for an alias
-or local ambiguity, and a semantic owner operation for prefix families or
-cross-node behavior. Keep object mutation for structural changes, atomic
-multi-property writes, true dynamic keys, and unavoidable dependency
-ambiguity. Do not invent `tx.properties` or another property-mutation portal.
-`tx.plugin(Plugin)` selects the installed plugin's flat transaction capability
-group; it is not a property portal.
+Inside `update`, use one object-patch law:
+`tx.nodes.set({ property: value }, options)`. Owned keys and values are inferred
+from the current plugin plus required dependencies through a shallow graph;
+duplicate persisted keys infer their value union. For an aliased property, use
+its persisted key in the patch: `{ [schema.properties.localId.key]: value }`.
+Remove properties with a typed key or exact handle through `tx.nodes.unset`.
+Dynamic string-keyed patches are the explicit runtime-schema escape hatch.
+Use a semantic owner operation for prefix families or cross-node behavior. Do
+not restore scalar `set(key, value)`, invent `tx.properties`, or add another
+property-mutation portal. `tx.plugin(Plugin)` selects the installed plugin's
+flat transaction capability group; it is not a property portal.
 
 State and native extension mechanics:
 

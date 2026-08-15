@@ -1005,7 +1005,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
         };
 
         inlineEntries.forEach(([, path]) => {
-          tx.nodes.set<SuggestionTextContract>(props, {
+          tx.nodes.set(props, {
             ...nodeOptions,
             at: path,
             match: (node) =>

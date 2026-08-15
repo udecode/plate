@@ -84,12 +84,14 @@ describe('Plate model publication', () => {
 
   it('rolls back failed initialization and retries on the same raw editor', () => {
     let correctionRuns = 0;
+    const correctionPaths: number[][] = [];
     let shouldThrow = true;
     const Correction = defineExtension('retryableBootstrap', {
       corrections: [
         {
-          correct() {
+          correct({ entry }) {
             correctionRuns++;
+            correctionPaths.push([...entry[1]]);
             if (shouldThrow) throw new Error('bootstrap correction failed');
           },
           event: 'content',
@@ -136,6 +138,7 @@ describe('Plate model publication', () => {
     ).toBeUndefined();
 
     shouldThrow = false;
+    correctionPaths.length = 0;
     const editor = createBaseEditor({
       editor: raw,
       initialValue: [{ children: [{ text: 'after' }], type: 'paragraph' }],
@@ -147,6 +150,7 @@ describe('Plate model publication', () => {
     expect(editor.read.children()).toEqual([
       { children: [{ text: 'after' }], type: 'paragraph' },
     ]);
+    expect(correctionPaths).toEqual([[0], [0, 0]]);
     expect(editor.read.lastCommit()).toBeNull();
     expect(getPlateModelPublication(editor)).toBeDefined();
     expect(

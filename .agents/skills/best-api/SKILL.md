@@ -99,6 +99,32 @@ Never silently downgrade the target because the current implementation already
 contains a registry, profile, lifecycle, builder, compatibility alias, or
 accepted plan. Say when those should be deleted, hidden, or redesigned.
 
+### Long-Term Target Gate
+
+Implementation difficulty never gets a vote in the API verdict. A compiler
+limit, declaration-emitter failure, compatibility burden, release deadline,
+existing workaround, or accepted implementation plan may change sequencing;
+it never changes which public shape wins.
+
+When the ideal call site is blocked:
+
+1. Keep the direct long-term call site as the recommendation.
+2. Trace the blocker to its owning generic, compiler boundary, runtime layer,
+   or package contract and name the durable repair there.
+3. Reject new casts, annotations, aliases, wrappers, markers, internal
+   carriers, generated facades, or parallel APIs whose only job is to avoid
+   that owner repair.
+4. If an existing containment must remain while another owner is repaired,
+   label it temporary debt with a deletion proof. It is not the selected API,
+   completion evidence, or a current-doctrine attestation.
+5. Route adoption and implementation to the owning plan or package skill. A
+   `best-api` design decision may finish once the durable target and owner are
+   unambiguous; the affected API migration remains open until that target is
+   real.
+
+Do not call a workaround "pragmatic" and quietly make it architecture. If the
+durable fix is large, report the real blast radius and still choose it.
+
 ## Bounded Exhaustiveness Gate
 
 When the question touches colocation, inlining, helper survival, file topology,
@@ -460,19 +486,19 @@ standard:
 - Keep ordinary domain access direct (`node.indent`, `cell.header`). Use
   `SchemaElementHandle` and `SchemaPropertyHandle` for generic construction,
   matching, codecs, inspection, and typed property reads.
-- Inside a plugin `update`, mutate one uniquely owned, unaliased property with
-  the literal-key form: `tx.nodes.set('lineHeight', value, options)` or
-  `tx.nodes.unset('lineHeight', options)`. Infer that key and value from the
-  current plugin plus its required dependencies through a shallow capability
-  graph; never pull the complete application grammar into ordinary updates.
-- Use an exact `schema.properties.<localId>` handle when a property is aliased
-  or otherwise cannot be named uniquely in the local capability graph. Put a
-  cross-node or prefix-family mutation behind its semantic owner operation.
-  Keep object mutation for structural fields, atomic multi-property writes,
-  genuine dynamic keys, and unavoidable ambiguous dependency fields. Never add
-  `tx.properties` or a second property-mutation namespace. `tx.plugin(Plugin)`
-  selects an installed plugin's flat transaction capability group; it is not a
-  property portal.
+- Inside a plugin `update`, use one object-patch law for node properties:
+  `tx.nodes.set({ lineHeight: value }, options)`. Infer owned keys and values
+  from the current plugin plus its required dependencies through a shallow
+  capability graph; duplicate persisted keys infer the union of every declared
+  value. Never pull the complete application grammar into ordinary updates.
+- Use the persisted key from `schema.properties.<localId>` when an authored
+  property is aliased: `tx.nodes.set({ [property.key]: value }, options)`.
+  Remove properties with a typed key or exact handle through `tx.nodes.unset`.
+  Dynamic string-keyed object patches are the explicit runtime-schema escape
+  hatch. Put prefix-family and cross-node behavior behind semantic owner
+  operations. Never add scalar `set(key, value)`, `tx.properties`, or another
+  property-mutation namespace. `tx.plugin(Plugin)` selects an installed
+  plugin's flat transaction capability group; it is not a property portal.
 - Keep raw plugin capabilities shallow. Exact recursive application `Value`,
   final schema bindings, mutation maps, and fingerprints may belong to
   committed opt-in generated artifacts, never every
@@ -1057,17 +1083,16 @@ capability interface is justified only when independently implemented or
 substituted capabilities are a real user job and the interface has its own
 semantic owner.
 
-For TS7056 at a package declaration boundary, keep the exported descriptor
-inferred. Compact recursive dependency sources in Core first. If one genuinely
-large owner still exceeds declaration emit, split only the necessary private
-builder stages, recover their exact definitions through the documented
-`@platejs/core/internal` or React-internal declaration carriers, and mark the
-retained private source and final stages `@plate-plugin-declaration-stage`.
-Annotate only the exact private final stage and expose one unannotated public
-alias. This exception requires a captured direct-build TS7056 failure, no
-barrel export, an explicit topology-audit count, and a deletion gate tied to
-successful direct declaration emit. Never annotate the exported plugin, widen
-its dependencies, cast it, or publish a capability-subset type.
+For TS7056 at a package declaration boundary, the only acceptable target is the
+direct inferred exported descriptor. Treat the failure as an owning generic or
+declaration-boundary defect: compact the package's honest dependency source,
+then repair Core's inferred graph or declaration carrier until direct emit
+passes. Never introduce another `@plate-plugin-declaration-stage`, private
+definition carrier, annotated staging alias, widened dependency, cast, or
+capability-subset type as the answer. Existing marked stages are transitional
+debt only: keep their exact removal gate tied to a direct declaration build,
+rank the owner repair, and do not call the package or API architecture complete
+while they remain.
 
 Schema-derived public AST types come from the final exported descriptor. When a
 later stage needs that shape, derive a private local `ElementOf<typeof plugin>`
@@ -1131,6 +1156,8 @@ Ask:
 - Does the API remain coherent after three plausible future additions?
 - Can an agent find the canonical path from types, JSDoc, and one example?
 - What should be deleted if this target is accepted?
+- Am I selecting a workaround because the durable owner repair is harder? If
+  so, keep the long-term target and route the real repair instead.
 
 Do not preserve a weaker proposal because it is more elaborate, more generic,
 more observable, or already documented.

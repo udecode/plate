@@ -1,6 +1,5 @@
 export type { InternalPlateEditorWithInstalledPlugins } from '../editor/PlateEditor';
 export { createPluginContext } from '../plugin/createPluginContext.internal';
-export type { InternalPlateDependencyAdapterDefinition } from '../plugin/toPlatePlugin';
 export * from '../components/EditorRefEffect';
 export * from '../components/PlateControllerEffect';
 export * from '../libs/index';

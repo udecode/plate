@@ -48,7 +48,11 @@ import {
   BaseTableRowPlugin,
 } from '@platejs/table';
 import { BaseTocPlugin } from '@platejs/toc';
-import { BaseParagraphPlugin, createBaseEditor } from 'platejs';
+import {
+  BaseParagraphPlugin,
+  createBaseEditor,
+  ElementIdPlugin,
+} from 'platejs';
 import remarkEmoji from 'remark-emoji';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -114,5 +118,7 @@ const testPlugins = [
   markdownPlugin,
 ] as const;
 
-export const createTestEditor = () =>
-  createBaseEditor({ plugins: testPlugins });
+export const createTestEditor = ({ elementIds = false } = {}) =>
+  createBaseEditor({
+    plugins: [...(elementIds ? [ElementIdPlugin] : []), ...testPlugins],
+  });

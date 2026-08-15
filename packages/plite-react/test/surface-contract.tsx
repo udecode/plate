@@ -1591,7 +1591,7 @@ describe('plite-react surface contract', () => {
     }
 
     expect(docs).toContain("type: 'virtualized'");
-    expect(docs).toContain("'data-plite-node-key': NodeKey");
+    expect(docs).toContain("'data-plite-node-key': string");
     expect(docs).toContain('isInline: boolean');
     expect(docs).toContain('slots: EditableElementSlots');
   });

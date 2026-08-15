@@ -289,7 +289,7 @@ const intentionalProductionExtendStageChains = new Map([
   ],
   [
     'packages/code-block/src/lib/BaseCodeBlockPlugin.ts',
-    [[['update']], [['commands', 'contributions']], [['corrections', 'on']]],
+    [[['update'], ['commands', 'contributions']], [['corrections', 'on']]],
   ],
   [
     'packages/comment/src/lib/BaseCommentPlugin.ts',
@@ -5011,17 +5011,24 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       );
     }
 
+    const isMarkedPluginDeclarationStage =
+      node.type === 'VariableDeclarator' &&
+      node.id?.type === 'Identifier' &&
+      hasPrecedingMarker(source, node, intentionalPluginDeclarationStageMarker);
+
+    if (isMarkedPluginDeclarationStage) {
+      report(
+        node,
+        'new plugin declaration stages are forbidden; repair the owning generic or declaration boundary'
+      );
+    }
+
     if (
       node.type === 'VariableDeclarator' &&
       node.id?.type === 'Identifier' &&
       privatePluginBuilderScaffoldNamePattern.test(node.id.name) &&
       isProductionPluginAuthoringFile(file) &&
       isPluginDescriptorBuilderChain(node.init) &&
-      !hasPrecedingMarker(
-        source,
-        node,
-        intentionalPluginDeclarationStageMarker
-      ) &&
       !ancestors.some((ancestor) => ancestor.type === 'ExportNamedDeclaration')
     ) {
       const escapedName = node.id.name.replaceAll(
@@ -5040,6 +5047,25 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
           'one-use private plugin descriptor scaffolding; export the complete builder chain directly'
         );
       }
+    }
+
+    if (
+      node.type === 'TSTypeReference' &&
+      node.typeName?.type === 'Identifier' &&
+      (node.typeName.name === 'ElementOf' || node.typeName.name === 'TextOf') &&
+      (node.typeParameters?.params ?? node.typeArguments?.params)?.some(
+        (parameter) =>
+          parameter.type === 'TSTypeQuery' &&
+          parameter.exprName?.type === 'Identifier' &&
+          parameter.exprName.name === 'editor'
+      ) &&
+      isProductionPluginAuthoringFile(file) &&
+      packagePluginSourcePattern.test(file)
+    ) {
+      report(
+        node,
+        `${node.typeName.name}<typeof editor> captures the entire installed editor in an inferred plugin declaration; use the owning descriptor or the honest broad Element/Text domain`
+      );
     }
 
     if (

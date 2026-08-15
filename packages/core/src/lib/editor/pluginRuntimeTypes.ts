@@ -1641,34 +1641,7 @@ type ExactUnaliasedWritableEntry<TEntry> =
     ? TEntry & Readonly<{ key: TKey }>
     : never;
 
-type WritableEntriesForKey<TEntries, TKey extends string> =
-  TEntries extends Readonly<{ key: infer TEntryKey extends string }>
-    ? TKey extends TEntryKey
-      ? TEntryKey extends TKey
-        ? TEntries
-        : never
-      : never
-    : never;
-
-type IsUnion<TValue, TWhole = TValue> = TValue extends unknown
-  ? [TWhole] extends [TValue]
-    ? false
-    : true
-  : never;
-
-type UniqueWritablePropertyEntry<
-  TAllEntries,
-  TEntry = ExactUnaliasedWritableEntry<TAllEntries>,
-> =
-  TEntry extends Readonly<{ key: infer TKey extends string }>
-    ? true extends IsUnion<
-        WritableEntriesForKey<ExactUnaliasedWritableEntry<TAllEntries>, TKey>
-      >
-      ? never
-      : TEntry
-    : never;
-
-type PluginWritablePropertyEntry<D> = UniqueWritablePropertyEntry<
+type PluginWritablePropertyEntry<D> = ExactUnaliasedWritableEntry<
   WritablePropertyEntries<D>
 >;
 
@@ -1684,19 +1657,7 @@ type ExactWritablePropertyEntry<TEntry> =
     ? TEntry & Readonly<{ key: TKey }>
     : never;
 
-type UniqueExactWritablePropertyEntry<
-  TAllEntries,
-  TEntry = ExactWritablePropertyEntry<TAllEntries>,
-> =
-  TEntry extends Readonly<{ key: infer TKey extends string }>
-    ? true extends IsUnion<
-        WritableEntriesForKey<ExactWritablePropertyEntry<TAllEntries>, TKey>
-      >
-      ? never
-      : TEntry
-    : never;
-
-type PluginExactWritablePropertyEntry<D> = UniqueExactWritablePropertyEntry<
+type PluginExactWritablePropertyEntry<D> = ExactWritablePropertyEntry<
   WritablePropertyEntries<D>
 >;
 
@@ -1724,15 +1685,6 @@ type PluginWritablePropertyPatchValue<D, TKey extends string> =
   | PluginExactWritablePropertyValue<D, TKey>
   | undefined;
 
-type PluginAmbiguousWritablePropertyKey<D> = Exclude<
-  ExactWritablePropertyEntry<WritablePropertyEntries<D>> extends infer TEntry
-    ? TEntry extends Readonly<{ key: infer TKey extends string }>
-      ? TKey
-      : never
-    : never,
-  PluginExactWritablePropertyKey<D>
->;
-
 type PluginAliasedLocalPropertyKey<D> =
   WritablePropertyEntries<D> extends infer TEntry
     ? TEntry extends Readonly<{
@@ -1743,9 +1695,7 @@ type PluginAliasedLocalPropertyKey<D> =
       : never
     : never;
 
-type PluginForbiddenWritablePropertyKey<D> =
-  | PluginAmbiguousWritablePropertyKey<D>
-  | PluginAliasedLocalPropertyKey<D>;
+type PluginForbiddenWritablePropertyKey<D> = PluginAliasedLocalPropertyKey<D>;
 
 type InvalidPluginWritablePropertyKey<D, TProps> =
   | Extract<PluginForbiddenWritablePropertyKey<D>, keyof TProps>
@@ -1759,9 +1709,7 @@ type InvalidPluginWritablePropertyKey<D, TProps> =
     }[Extract<PluginExactWritablePropertyKey<D>, keyof TProps>];
 
 type IsOpenPluginWritablePropertyPatch<TProps> = string extends keyof TProps
-  ? unknown extends TProps[Extract<keyof TProps, string>]
-    ? true
-    : false
+  ? true
   : false;
 
 type HasRejectedPluginWritablePropertyIndex<TProps> =

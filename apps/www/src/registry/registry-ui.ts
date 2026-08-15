@@ -1487,7 +1487,7 @@ export const uiNodes: Registry['items'] = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['@platejs/media'],
+    dependencies: ['@platejs/media', '@platejs/suggestion'],
     description:
       'A file attachment component with download capability and caption.',
     files: [

@@ -19,7 +19,7 @@ const createCurrentKitEditor = ({
   value: any;
 }) =>
   createBaseEditor({
-    plugins: [...plugins, ...AutoformatKit],
+    plugins: [BaseCodeBlockPlugin, ...plugins, ...AutoformatKit],
     selection,
     initialValue: value,
   } as any);
@@ -107,7 +107,6 @@ describe('AutoformatKit current contract', () => {
     ) as any;
 
     const editor = createCurrentKitEditor({
-      plugins: [BaseCodeBlockPlugin],
       value: input,
     });
 

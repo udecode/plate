@@ -8,6 +8,7 @@ import {
   definePlatePlugin,
   type RenderNodeWrapper,
   type RenderNodeWrapperProps,
+  toPlatePlugin,
   useElementSelector,
 } from '@platejs/core/react';
 
@@ -20,6 +21,25 @@ const BaseWrapperBoundaryPlugin = defineBasePlugin('baseWrapperBoundary', {
 });
 
 const BaseUnrelatedWrapperPlugin = defineBasePlugin('baseUnrelatedWrapper', {});
+
+const BaseWrapperDependencyPlugin = defineBasePlugin('baseWrapperDependency', {
+  update: () => ({
+    run: () => true as const,
+  }),
+});
+
+const BaseAdaptedWrapperPlugin = defineBasePlugin('adaptedWrapper', {
+  dependencies: [BaseWrapperDependencyPlugin],
+  schema: {
+    element: {
+      properties: { adaptedTone: property.string() },
+    },
+  },
+});
+
+const AdaptedWrapperPlugin = toPlatePlugin(BaseAdaptedWrapperPlugin, {
+  component: () => null,
+});
 
 const WrapperBoundaryPlugin = definePlatePlugin('wrapperBoundary', {
   api: () => ({
@@ -81,6 +101,25 @@ WrapperBoundaryPlugin.configure({
   },
 });
 
+const adaptedWrapper: RenderNodeWrapper<typeof AdaptedWrapperPlugin> = ({
+  editor,
+  element,
+}) => {
+  const adaptedTone: string | undefined = element.adaptedTone;
+  const dependencyResult: true = editor.update.baseWrapperDependency.run();
+
+  void adaptedTone;
+  void dependencyResult;
+
+  return;
+};
+
+AdaptedWrapperPlugin.configure({
+  render: {
+    belowNodes: adaptedWrapper,
+  },
+});
+
 const exactWrapper: RenderNodeWrapper<typeof WrapperBoundaryPlugin> = ({
   editor,
   element,
@@ -135,6 +174,7 @@ UnrelatedWrapperPlugin.configure({
 });
 
 void exactWrapper;
+void adaptedWrapper;
 void exactRootNode;
 void exactStaticWrapper;
 void exactStaticRootNode;

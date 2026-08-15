@@ -48,3 +48,5 @@
 - Compile merge, selectability, and slice-export policy into typed Plite read
   middleware, and selection projection into `selectionKinds`
 - Avoid reevaluating published plugin schema factories during plugin access
+- Fix `PlateElement` and `PliteElement` composition across descriptor-owned
+  component families

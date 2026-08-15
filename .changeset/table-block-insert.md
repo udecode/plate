@@ -22,6 +22,8 @@ them when clearing cells, and leave same-cell text drags native.
 Name live selection identity `cellKeys` and `tableKey`. Read selected live
 targets with `getSelectedCellKeys`, `getSelectedTableKeys`, and
 `getCellIndicesByKey`; persisted table element IDs remain ordinary schema data.
+Cache table-selection projections by the stable snapshot index rather than a
+short-lived read facade, including named-root editor views.
 
 **Migration:** Replace direct table helper imports with the matching scoped
 capability:

@@ -100,10 +100,13 @@ Current priorities:
   AST and operation-option aliases derive only from the final descriptor.
   Never widen exact node-operation generics or publish compiler-ferry types to
   make declaration emit succeed.
-- A proven TS7056 ceiling may retain the minimum exact private source/final
-  declaration-stage pair. Mark both stages, annotate only the private final
-  stage, expose an unannotated public alias, keep every carrier out of barrels,
-  and delete the exception when direct declaration emit succeeds.
+- TS7056 never changes the plugin API target: export one direct inferred
+  descriptor. Do not add declaration-stage markers, private definition
+  carriers, annotated staging aliases, widened dependencies, casts, or public
+  subset types to contain the failure. Repair the owning generic or declaration
+  boundary. Existing marked stages are transitional debt, block current-doctrine
+  attestation, and remain only until a direct declaration build proves their
+  deletion.
 - Property-only plugins remain separate from element identity. Derive their
   element/text capabilities with `ElementWith` / `TextWith`, including authored
   aliases, prefixes, defaults, and exact value domains. Recursive algorithms
@@ -196,13 +199,13 @@ Current priorities:
 - Descriptor-aware schema calls identify schema elements and groups. Document
   property reads use typed property handles or semantic plugin APIs, never a
   one-property descriptor shortcut.
-- Plugin-local property writes stay on `tx.nodes`: unique unaliased properties
-  use typed literal key/value overloads; aliases and local ambiguity use exact
-  property handles; prefix families and cross-node behavior use semantic owner
-  operations; structural, atomic, dynamic, and unavoidable dependency-ambiguous
-  writes keep the object form. The inference graph is shallow and never drags
-  the complete application grammar into routine capabilities. Plate adds no
-  second property-mutation portal.
+- Plugin-local property writes stay on one `tx.nodes.set({ ...props }, options)`
+  object-patch law. Owned property names and values infer from the shallow
+  plugin and required-dependency graph; duplicate persisted names infer their
+  value union. Aliases use their authored persisted key, and `unset` accepts a
+  typed key or exact handle. Dynamic string-keyed patches defer to runtime
+  schema validation. Prefix families and cross-node behavior use semantic owner
+  operations. Plate adds no scalar set overload or second mutation portal.
 - All lifecycle and host/DOM events use one root `on` family with prefixless
   names such as `commit`, `keyDown`, `paste`, `nodeChange`, `textChange`, and
   capture variants. Do not expose a second `handlers` bucket. Private runtime
@@ -470,10 +473,11 @@ Current priorities:
   public capability interface needs a real independent implementation or
   substitution job and its own semantic owner.
 - Keep dependency sources compact and exact so package declaration emit does
-  not serialize installed graphs. A remaining TS7056 boundary may use the
-  minimum private, exact, explicitly marked declaration stages through
-  documented internal type carriers. The exported plugin stays inferred; no
-  public subset interface, cast, widened dependency, or annotation replaces it.
+  not serialize installed graphs. A remaining TS7056 failure belongs to the
+  owning generic or declaration boundary; it never earns a new package-local
+  staging API. Existing exact stages may keep a broken build green while that
+  owner repair is active, but they are tracked debt rather than accepted
+  architecture and must be deleted before current-doctrine attestation.
 - React files follow durable families rather than individual symbols or
   implementation kinds. Keep a component family in one `<Family>.tsx` file
   with its subcomponents, variants, render helpers, and component-local

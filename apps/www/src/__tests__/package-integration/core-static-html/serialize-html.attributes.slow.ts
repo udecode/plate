@@ -45,7 +45,7 @@ describe('core static renderStaticHtml attributes', () => {
     });
 
     expect(html).toEqual(
-      '<div data-plite-editor="true" data-plite-node="value"><div data-plite-node="element" style="position:relative"><span data-plite-node="text" data-plite-test="text"><em data-plite-test="true"><span data-plite-leaf="true" data-plite-test="leaf"><strong><span data-plite-string="true">Right Aligned Heading</span></strong></span></em></span><span data-plite-node="text" data-plite-test="text"><em data-plite-test="true"><span data-plite-leaf="true" data-plite-test="leaf"><span data-plite-string="true">Right Aligned Heading</span></span></em></span></div></div>'
+      '<div data-plite-editor="true" data-plite-node="value"><div data-plite-node="element" data-plite-path="0" data-plite-root="main" style="position:relative"><span data-plite-node="text" data-plite-test="text"><em data-plite-test="true"><span data-plite-leaf="true" data-plite-test="leaf"><strong><span data-plite-string="true">Right Aligned Heading</span></strong></span></em></span><span data-plite-node="text" data-plite-test="text"><em data-plite-test="true"><span data-plite-leaf="true" data-plite-test="leaf"><span data-plite-string="true">Right Aligned Heading</span></span></em></span></div></div>'
     );
   });
 });

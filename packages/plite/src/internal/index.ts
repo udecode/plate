@@ -143,6 +143,7 @@ export {
   getCompiledSchemaPropertyId,
   getCompiledPropertyMergeStrategy,
   matchesCompiledSchemaTarget,
+  preserveCompiledSchemaPropertyIdentity,
   readEditorSchemaIdentity,
   resolveCompiledSchemaProperty,
   type CompiledEditorSchema,

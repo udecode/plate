@@ -62,10 +62,11 @@ const comparePaths = (left: Path, right: Path) =>
 const targetKey = (
   root: string,
   nodeKey: NodeKey | null,
+  path: Path,
   event: EditorCorrectionEvent,
   correctionId: string
 ) =>
-  `${root}\u0000${nodeKey ?? ROOT_NODE_KEY}\u0000${event}\u0000${correctionId}`;
+  `${root}\u0000${nodeKey ?? `${ROOT_NODE_KEY}:${path.join(',')}`}\u0000${event}\u0000${correctionId}`;
 
 const fingerprintValue = (value: unknown) => {
   let left = 0x81_1c_9d_c5;
@@ -199,7 +200,7 @@ export const correctDocument = (
         for (const indexed of corrections.get(event)!) {
           if (!matchesEditorCorrection(entry, indexed.correction)) continue;
 
-          const key = targetKey(root, nodeKey, event, indexed.id);
+          const key = targetKey(root, nodeKey, path, event, indexed.id);
           const target: CorrectionTarget = {
             correction: indexed.correction,
             correctionId: indexed.id,

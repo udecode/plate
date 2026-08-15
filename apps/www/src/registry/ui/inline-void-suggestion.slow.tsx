@@ -5,6 +5,7 @@ import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 import type { DateElement } from '@platejs/date';
 import type { LinkElement } from '@platejs/link';
 import type { EquationElement } from '@platejs/math';
+import * as actualMathReact from '@platejs/math/react';
 import type { MentionElement } from '@platejs/mention';
 import type { PlateEditor } from 'platejs/react';
 
@@ -66,6 +67,7 @@ mock.module('platejs/react', () => ({
 }));
 
 mock.module('@platejs/math/react', () => ({
+  ...actualMathReact,
   useEquationElement: useEquationElementMock,
   useEquationInput: () => ({}),
 }));

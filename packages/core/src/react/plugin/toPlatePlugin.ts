@@ -100,19 +100,6 @@ type AdaptedBasePluginDefinition<
       ? Pick<C, 'dependencies'>
       : Readonly<Record<never, never>>);
 
-/** @internal Exact definition for a declaration-emission dependency adapter. */
-export type InternalPlateDependencyAdapterDefinition<
-  C extends AnyBasePluginDefinition,
-  TDependencies extends readonly (EditorExtensionReference | PluginReference)[],
-> = AdaptedBasePluginDefinition<
-  C,
-  NormalizePlatePluginAdapterWithDependencies<
-    PlateAdapterObjectWithoutDependencies<NoInfer<C>>,
-    C['name'],
-    TDependencies
-  >
->;
-
 type PluginRecord = Record<PropertyKey, unknown>;
 
 const isObjectRecord = (value: unknown): value is PluginRecord =>

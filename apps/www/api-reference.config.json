@@ -659,6 +659,7 @@
             "path",
             "point",
             "positions",
+            "preserveCompiledSchemaPropertyIdentity",
             "previous",
             "projectRange",
             "projectRangeInSnapshot",

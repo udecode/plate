@@ -1,6 +1,18 @@
 {
   "schemaVersion": 1,
   "components": {
+    "docx-export-kit": [
+      "2026-08-15-compose-docx-export-kit",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-08-13-use-runtime-keys-for-toc-docx",
+      "2026-01-20-add-docx-file-import-word-export-support"
+    ],
+    "export-toolbar-button": [
+      "2026-08-15-compose-docx-export-kit",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-01-20-add-docx-file-import-word-export-support",
+      "2025-10-17-fix-react-decouple"
+    ],
     "editor-kit": [
       "2026-08-14-author-editor-runtime",
       "2026-08-13-fix-registry-install-dependencies",
@@ -196,11 +208,6 @@
       "2026-01-20-add-docx-file-import-word-export-support",
       "2025-10-17-fix-react-decouple"
     ],
-    "docx-export-kit": [
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-08-13-use-runtime-keys-for-toc-docx",
-      "2026-01-20-add-docx-file-import-word-export-support"
-    ],
     "editor-base-kit": [
       "2026-08-13-fix-registry-install-dependencies",
       "2026-07-24-compose-markdown-footnotes",
@@ -235,11 +242,6 @@
       "2026-08-13-fix-registry-install-dependencies",
       "2026-08-04-infer-node-props-from-plugins",
       "2026-04-29-codex-fix-discussion-suggestion-regressions"
-    ],
-    "export-toolbar-button": [
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-01-20-add-docx-file-import-word-export-support",
-      "2025-10-17-fix-react-decouple"
     ],
     "fixed-toolbar-classic-buttons": [
       "2026-08-13-fix-registry-install-dependencies"

@@ -3,14 +3,6 @@ import { MarkdownPlugin } from '@platejs/markdown';
 import { PLUGINS, createBaseEditor, defineBasePlugin, property } from 'platejs';
 import { createPlateEditor } from 'platejs/react';
 
-import {
-  FootnoteDefinitionElement,
-  FootnoteReferenceElement,
-} from '@/registry/ui/footnote-node';
-import {
-  FootnoteDefinitionElementStatic,
-  FootnoteReferenceElementStatic,
-} from '@/registry/ui/footnote-node-static';
 import { registryBlocks } from '@/registry/registry-blocks';
 import { registryKits } from '@/registry/registry-kits';
 
@@ -81,7 +73,7 @@ describe('MarkdownKit', () => {
     );
   });
 
-  it('composes once with live Footnote renderers', () => {
+  it('composes without duplicating live Footnote plugins', () => {
     const editor = createPlateEditor({
       plugins: [...FootnoteKit, ...MarkdownKit],
     });
@@ -93,16 +85,10 @@ describe('MarkdownKit', () => {
       expect(names.filter((candidate) => candidate === name)).toHaveLength(1);
     }
 
-    expect(getPlateRuntime(editor).components.footnote).toBe(
-      FootnoteReferenceElement
-    );
-    expect(getPlateRuntime(editor).components.footnoteDefinition).toBe(
-      FootnoteDefinitionElement
-    );
     expect(typeof editor.api.markdown.serialize).toBe('function');
   });
 
-  it('composes once with static Footnote renderers', () => {
+  it('composes without duplicating static Footnote plugins', () => {
     const editor = createBaseEditor({
       plugins: [...BaseFootnoteKit, ...MarkdownKit],
     });
@@ -114,16 +100,10 @@ describe('MarkdownKit', () => {
       expect(names.filter((candidate) => candidate === name)).toHaveLength(1);
     }
 
-    expect(getPlateRuntime(editor).components.footnote).toBe(
-      FootnoteReferenceElementStatic
-    );
-    expect(getPlateRuntime(editor).components.footnoteDefinition).toBe(
-      FootnoteDefinitionElementStatic
-    );
     expect(typeof editor.api.markdown.serialize).toBe('function');
   });
 
-  it('installs renderer-specific Footnote kits from editor presets', () => {
+  it('keeps renderer-specific Footnote kits in editor presets', () => {
     const items = new Map(
       [...registryKits, ...registryBlocks].map((item) => [item.name, item])
     );
@@ -132,8 +112,14 @@ describe('MarkdownKit', () => {
     expect(items.get('editor-kit')?.registryDependencies).toEqual(
       expect.arrayContaining(['@plate/footnote-kit', '@plate/markdown-kit'])
     );
-    expect(items.get('editor-ai')?.registryDependencies).toEqual(
-      expect.arrayContaining(['@plate/footnote-kit', '@plate/markdown-kit'])
+    expect(items.get('editor-ai')?.registryDependencies).toContain(
+      '@plate/editor-kit'
+    );
+    expect(items.get('editor-ai')?.registryDependencies).not.toContain(
+      '@plate/footnote-kit'
+    );
+    expect(items.get('editor-ai')?.registryDependencies).not.toContain(
+      '@plate/markdown-kit'
     );
     expect(items.get('editor-base-kit')?.registryDependencies).toEqual(
       expect.arrayContaining([

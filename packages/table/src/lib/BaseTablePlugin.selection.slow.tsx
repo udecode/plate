@@ -960,6 +960,71 @@ describe('table selection slow contracts', () => {
       tableType: editor.plugin(BaseTablePlugin).schema.type,
     });
 
+    it('isolates cached selection views by root snapshot index', () => {
+      const root = 'table-selection-cache-root';
+      const editor = createTestTableEditor({
+        plugins: [BaseTablePlugin, RootHolderPlugin],
+        initialValue: {
+          children: [
+            {
+              childRoots: { body: root },
+              children: [{ text: '' }],
+              type: 'rootHolder',
+            },
+            createTable('main'),
+          ],
+          roots: { [root]: [createTable('root')] },
+        },
+      });
+      const rootEditor = createEditorView(editor, {
+        root,
+      }) as unknown as typeof editor;
+      const selectionTypes = getSelectionTypes(editor);
+      const readMain = () =>
+        editor.read((state) => readTableSelection(state, selectionTypes));
+      const readRoot = () =>
+        rootEditor.read((state) => readTableSelection(state, selectionTypes));
+      const mainAnchor = editor.read.points.start([1, 0, 0]);
+      const mainFocus = editor.read.points.end([1, 1, 1]);
+
+      assert(mainAnchor);
+      assert(mainFocus);
+
+      expect(editor.read.runtime.snapshot().index).not.toBe(
+        rootEditor.read.runtime.snapshot().index
+      );
+
+      editor.update.selection.set({ anchor: mainAnchor, focus: mainFocus });
+
+      const mainView = readMain();
+
+      assert(mainView);
+      expect(mainView.root).toBeUndefined();
+      expect(readRoot()).toBeNull();
+      expect(readMain()).toBe(mainView);
+
+      const rootAnchor = rootEditor.read.points.start([0, 0, 0]);
+      const rootFocus = rootEditor.read.points.end([0, 1, 1]);
+
+      assert(rootAnchor);
+      assert(rootFocus);
+
+      rootEditor.update.selection.set({ anchor: rootAnchor, focus: rootFocus });
+
+      const rootView = readRoot();
+
+      assert(rootView);
+      expect(rootView.root).toBe(root);
+      const mainReadOfRoot = readMain();
+
+      assert(mainReadOfRoot);
+      expect(mainReadOfRoot.root).toBe(root);
+      expect(mainReadOfRoot).not.toBe(mainView);
+      expect(mainReadOfRoot).not.toBe(rootView);
+      expect(readRoot()).toBe(rootView);
+      expect(rootView).not.toBe(mainView);
+    });
+
     it('resolves explicit cell geometry by identity across named roots', () => {
       const root = 'table-selection-bounds-root';
       const rootTable = {
@@ -1275,7 +1340,7 @@ describe('table selection slow contracts', () => {
         expect(afterHotRead.cacheHitCount - beforeHotRead.cacheHitCount).toBe(
           1
         );
-        expect(view?.anchors.map(({ key }) => key)).toEqual([
+        expect(view?.anchors.map(({ cell }) => getFixtureId(cell))).toEqual([
           'root-00',
           'root-01',
           'root-10',

@@ -197,11 +197,14 @@ describe('BlockPlaceholderPlugin', () => {
     const CustomMetadataPlugin = defineBasePlugin('customMetadata', {
       schema: {
         properties: {
-          dataTestId: schema.elementProperty(property.string(), {
-            key: 'data-test-id',
-            role: 'metadata',
-            target: target.element(ParagraphWithComponentPlugin),
-          }),
+          dataTestId: schema.elementProperty(
+            'data-test-id',
+            property.string(),
+            {
+              role: 'metadata',
+              target: target.element(ParagraphWithComponentPlugin),
+            }
+          ),
         },
       },
     });

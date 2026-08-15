@@ -1,18 +1,3 @@
-/**
- * Editor kit optimized for DOCX export.
- *
- * Uses DOCX-specific static components for elements that require specialized
- * markup or inline styles instead of Tailwind classes:
- * - Code blocks: Need inline syntax highlighting colors and line breaks
- * - Columns: Need table layout instead of flexbox
- * - Equations: Need inline font styling (KaTeX doesn't work in DOCX)
- * - Callouts: Need table layout for icon + content
- * - Headings: Need bookmark anchors for TOC links
- * - TOC: Need anchor links with proper paragraph breaks
- *
- * Tables use base version with juice CSS inlining.
- */
-
 import { CalloutElementDocx } from '@/registry/ui/callout-node-static';
 import {
   CodeBlockElementDocx,
@@ -36,8 +21,23 @@ import {
   H6ElementDocx,
 } from '@/registry/ui/heading-node-static';
 import { TocElementDocx } from '@/registry/ui/toc-node-static';
-import { DocxIOPlugin } from '@platejs/docx-io';
-import { PLUGINS } from 'platejs';
+import {
+  BaseH1Plugin,
+  BaseH2Plugin,
+  BaseH3Plugin,
+  BaseH4Plugin,
+  BaseH5Plugin,
+  BaseH6Plugin,
+} from '@platejs/basic-nodes';
+import { BaseCalloutPlugin } from '@platejs/callout';
+import {
+  BaseCodeBlockPlugin,
+  BaseCodeHighlightPlugin,
+  BaseCodeLinePlugin,
+} from '@platejs/code-block';
+import { BaseColumnItemPlugin, BaseColumnPlugin } from '@platejs/layout';
+import { BaseEquationPlugin, BaseInlineEquationPlugin } from '@platejs/math';
+import { BaseTocPlugin } from '@platejs/toc';
 
 /**
  * Editor kit for DOCX export.
@@ -54,25 +54,49 @@ import { PLUGINS } from 'platejs';
  * Tables use base version with juice CSS inlining.
  */
 export const DocxExportKit = [
-  DocxIOPlugin.configure({
-    override: {
-      components: {
-        [PLUGINS.codeBlock]: CodeBlockElementDocx,
-        [PLUGINS.codeLine]: CodeLineElementDocx,
-        [PLUGINS.codeSyntax]: CodeSyntaxLeafDocx,
-        [PLUGINS.column]: ColumnElementDocx,
-        [PLUGINS.columnGroup]: ColumnGroupElementDocx,
-        [PLUGINS.equation]: EquationElementDocx,
-        [PLUGINS.inlineEquation]: InlineEquationElementDocx,
-        [PLUGINS.callout]: CalloutElementDocx,
-        [PLUGINS.h1]: H1ElementDocx,
-        [PLUGINS.h2]: H2ElementDocx,
-        [PLUGINS.h3]: H3ElementDocx,
-        [PLUGINS.h4]: H4ElementDocx,
-        [PLUGINS.h5]: H5ElementDocx,
-        [PLUGINS.h6]: H6ElementDocx,
-        [PLUGINS.toc]: TocElementDocx,
-      },
-    },
+  BaseCodeBlockPlugin.configure({
+    component: CodeBlockElementDocx,
+  }),
+  BaseCodeLinePlugin.configure({
+    component: CodeLineElementDocx,
+  }),
+  BaseCodeHighlightPlugin.configure({
+    component: CodeSyntaxLeafDocx,
+  }),
+  BaseColumnItemPlugin.configure({
+    component: ColumnElementDocx,
+  }),
+  BaseColumnPlugin.configure({
+    component: ColumnGroupElementDocx,
+  }),
+  BaseEquationPlugin.configure({
+    component: EquationElementDocx,
+  }),
+  BaseInlineEquationPlugin.configure({
+    component: InlineEquationElementDocx,
+  }),
+  BaseCalloutPlugin.configure({
+    component: CalloutElementDocx,
+  }),
+  BaseH1Plugin.configure({
+    component: H1ElementDocx,
+  }),
+  BaseH2Plugin.configure({
+    component: H2ElementDocx,
+  }),
+  BaseH3Plugin.configure({
+    component: H3ElementDocx,
+  }),
+  BaseH4Plugin.configure({
+    component: H4ElementDocx,
+  }),
+  BaseH5Plugin.configure({
+    component: H5ElementDocx,
+  }),
+  BaseH6Plugin.configure({
+    component: H6ElementDocx,
+  }),
+  BaseTocPlugin.configure({
+    component: TocElementDocx,
   }),
 ];

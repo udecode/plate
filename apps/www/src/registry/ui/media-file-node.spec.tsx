@@ -1,5 +1,6 @@
 import * as React from 'react';
 
+import * as actualMediaReact from '@platejs/media/react';
 import * as actualResizable from '@platejs/resizable';
 import { render } from '@testing-library/react';
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
@@ -7,6 +8,7 @@ import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 const useMediaStateMock = mock();
 
 mock.module('@platejs/media/react', () => ({
+  ...actualMediaReact,
   useMediaState: (...args: any[]) => useMediaStateMock(...args),
 }));
 

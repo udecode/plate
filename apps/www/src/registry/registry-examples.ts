@@ -1191,7 +1191,11 @@ export const internalExamples: Registry['items'] = (
     {
       files: [{ path: 'examples/demo.tsx', type: 'registry:example' }],
       name: 'playground-demo',
-      registryDependencies: ['@plate/editor-kit', '@plate/excalidraw-kit'],
+      registryDependencies: [
+        '@plate/code-drawing-kit',
+        '@plate/editor-kit',
+        '@plate/excalidraw-kit',
+      ],
       type: 'registry:example',
     },
     {

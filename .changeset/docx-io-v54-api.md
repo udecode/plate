@@ -8,7 +8,7 @@ download as the standalone `downloadDocx` browser service.
 ```tsx
 const docx = editor.plugin(DocxIOPlugin);
 const blob = await docx.api.toBlob(editor.read.children(), {
-  editorPlugins: EditorKit,
+  editorPlugins: [...BaseEditorKit, ...DocxExportKit],
   editorStaticComponent: EditorStatic,
 });
 
@@ -16,6 +16,10 @@ downloadDocx(blob, 'document');
 
 const imported = await docx.api.import(arrayBuffer);
 ```
+
+Pass export-specific target plugin configurations through `editorPlugins`.
+`DocxExportKit` composes its DOCX renderers with `BaseEditorKit` without
+changing the live editor.
 
 Use `Margins` and `DocumentOptions` for HTML-to-DOCX options. Remove the
 `DocumentMargins`, `HtmlToDocxOptions`, `DocxExportPlugin`,

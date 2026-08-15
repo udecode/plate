@@ -582,7 +582,6 @@ describe('Plate', () => {
     it('uses the renderer fallback for a schema-declared element type', () => {
       const initialValueWithUnknownType: Value = [
         {
-          id: '1',
           children: [
             {
               text: 'This content is of an unknown type and should not crash the editor.',

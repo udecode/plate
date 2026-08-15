@@ -617,7 +617,14 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/docx-io'],
+    dependencies: [
+      '@platejs/basic-nodes',
+      '@platejs/callout',
+      '@platejs/code-block',
+      '@platejs/layout',
+      '@platejs/math',
+      '@platejs/toc',
+    ],
     files: [
       {
         path: 'components/editor/plugins/docx-export-kit.tsx',

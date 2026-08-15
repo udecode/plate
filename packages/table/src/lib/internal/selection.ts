@@ -207,7 +207,7 @@ export const readTableSelection = <V extends Value>(
     cacheable && at === undefined
       ? `${tableType}\u0000${expansion}\u0000${cellTypes.join('\u0000')}`
       : null;
-  const cached = cacheKey ? selectionViewCache.get(state) : undefined;
+  const cached = cacheKey ? selectionViewCache.get(snapshot.index) : undefined;
 
   if (cached?.key === cacheKey && cached.version === snapshot.version) {
     cacheHitCount++;
@@ -224,7 +224,7 @@ export const readTableSelection = <V extends Value>(
   const publish = (view: TableSelectionView | null) => {
     if (cacheKey) {
       selectionViewCache.set(
-        state,
+        snapshot.index,
         Object.freeze({ key: cacheKey, version: snapshot.version, view })
       );
     }

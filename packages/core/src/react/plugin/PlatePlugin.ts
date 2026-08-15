@@ -39,7 +39,6 @@ import type {
   BasePluginDefinitionInput,
   BaseTransformOptions,
   ConfiguredPluginDescriptor,
-  DefinitionOf,
   DefinePluginCodecs,
   EditOnlyConfig,
   GetInjectNodePropsOptions,
@@ -49,7 +48,6 @@ import type {
   InferDependencies,
   InferPluginDecoration,
   InferPluginStoreState,
-  InferPlugins,
   InferRuntimePlugins,
   InferRead,
   InferSelectors,
@@ -73,6 +71,7 @@ import type {
   RenderLeafProps,
   WithAnyName,
 } from '../../lib';
+import type { InternalPluginDefinitionOf } from '../../lib/plugin/pluginDefinitionLookup.internal';
 import type {
   InferPluginNodeTypeProvider,
   InferPluginSchema,
@@ -187,7 +186,7 @@ type PlatePluginContextEditor<C extends AnyBasePluginDefinition> =
   InternalPlateEditorWithInstalledPlugins<
     Value,
     InferRuntimePlugins<readonly [C]>,
-    InferPlugins<readonly [C]>
+    InferRuntimePlugins<readonly [C]>
   >;
 
 export type Decorate<
@@ -289,7 +288,7 @@ type RenderNodeWrapperDefinition<TSource extends RenderNodeWrapperSource> = [
   ? never
   : TSource extends AnyBasePluginDefinition
     ? TSource
-    : Extract<DefinitionOf<TSource>, AnyBasePluginDefinition>;
+    : Extract<InternalPluginDefinitionOf<TSource>, AnyBasePluginDefinition>;
 
 export type RenderNodeWrapper<TSource extends RenderNodeWrapperSource = never> =
   {
@@ -315,17 +314,19 @@ export type RenderNodeWrapperProps<
     AnyBasePluginDefinition
     ? PlateNodeProps<C> &
         RenderElementProps<
-          [TSource] extends [never] ? Element : ElementWith<NoInfer<C>>
+          [TSource] extends [never]
+            ? Element
+            : ElementWith<NoInfer<WithAnyName<C>>>
         > & { path: Path }
     : never;
 
 type PlateReactRenderFields<C extends AnyBasePluginDefinition> = {
-  aboveNodes?: RenderNodeWrapper<WithAnyName<C>>;
+  aboveNodes?: RenderNodeWrapper<C>;
   afterContainer?: EditableSiblingComponent;
   afterEditable?: EditableSiblingComponent;
   beforeContainer?: EditableSiblingComponent;
   beforeEditable?: EditableSiblingComponent;
-  belowNodes?: RenderNodeWrapper<WithAnyName<C>>;
+  belowNodes?: RenderNodeWrapper<C>;
   belowRootNodes?: (props: RenderNodeWrapperProps<C>) => React.ReactNode;
   leafProps?: LeafNodeProps<WithAnyName<C>>;
   nodeProps?: NodeProps<WithAnyName<C>>;

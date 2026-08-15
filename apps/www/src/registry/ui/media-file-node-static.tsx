@@ -1,9 +1,9 @@
 import * as React from 'react';
 
-import type { TFileElement } from 'platejs';
-import type { TSuggestionData } from 'platejs';
+import type { SuggestionData } from '@platejs/suggestion';
 import type { PliteElementProps } from 'platejs/static';
 
+import type { BaseFilePlugin } from '@platejs/media';
 import { FileUp } from 'lucide-react';
 import { PliteElement } from 'platejs/static';
 
@@ -11,11 +11,13 @@ import { cn } from '@/lib/utils';
 
 import { CaptionStatic } from './caption-static';
 
-export function FileElementStatic(props: PliteElementProps<TFileElement>) {
+export function FileElementStatic(
+  props: PliteElementProps<typeof BaseFilePlugin>
+) {
   const { name, url } = props.element;
   const suggestionData = (
-    props.element as TFileElement & {
-      suggestion?: TSuggestionData;
+    props.element as typeof props.element & {
+      suggestion?: SuggestionData;
     }
   ).suggestion;
   const isRemoveSuggestion = suggestionData?.type === 'remove';

@@ -1534,6 +1534,7 @@ type PropertyOverridePatch = Readonly<{
 }>;
 
 const overriddenPropertyIds = new WeakMap<object, string>();
+const compiledSchemaPropertyIdentity = Symbol('schema.property.identity');
 
 const prepareEditorSchemaRecords = (
   records: readonly EditorSchemaContributionRecord[]
@@ -2891,8 +2892,14 @@ export const getCompiledSchemaPropertyId = (
     placement: 'element' | 'text';
     target?: SchemaTarget | null;
   }>
-) => {
-  const overridden = overriddenPropertyIds.get(declaration as object);
+): string => {
+  const reflected = Reflect.get(
+    declaration as object,
+    compiledSchemaPropertyIdentity
+  );
+  const overridden =
+    overriddenPropertyIds.get(declaration as object) ??
+    (typeof reflected === 'string' ? reflected : undefined);
 
   if (overridden) return overridden;
   const selector =
@@ -2903,6 +2910,26 @@ export const getCompiledSchemaPropertyId = (
   return `${declaration.placement}:${propertyKeyLabel(declaration.key)}@${hashSchemaIdentityString(
     `${selector}\u0000${canonicalTarget(declaration.target ?? null)}`
   )}`;
+};
+
+/** @internal Preserve one authored property's semantic identity after lowering. */
+export const preserveCompiledSchemaPropertyIdentity = <
+  TProperty extends Readonly<{
+    key: SchemaPropertyKey;
+    placement: 'element' | 'text';
+    target?: SchemaTarget | null;
+  }>,
+>(
+  property: TProperty,
+  authored: TProperty
+): TProperty => {
+  const preserved = { ...property };
+
+  Object.defineProperty(preserved, compiledSchemaPropertyIdentity, {
+    value: getCompiledSchemaPropertyId(authored),
+  });
+
+  return Object.freeze(preserved) as TProperty;
 };
 
 const propertySelectorsOverlap = (
@@ -3766,7 +3793,9 @@ const compileEditorSchemaInternal = (
       source
     );
     const role = 'value' in raw ? raw.role : 'content';
-    const semanticId = overriddenPropertyIds.get(raw);
+    const semanticId =
+      overriddenPropertyIds.get(raw) ??
+      Reflect.get(raw as object, compiledSchemaPropertyIdentity);
     const rawCopy = lifecycle.copy;
 
     if (rawCopy !== undefined && rawCopy !== 'drop' && rawCopy !== 'preserve') {
@@ -4322,11 +4351,7 @@ const collectRuntimePropertyDescriptors = (
       record.contribution.properties ?? []
     ).entries()) {
       descriptors.set(
-        getCompiledSchemaPropertyId({
-          key: property.key,
-          placement: property.placement,
-          target: property.target ?? null,
-        }),
+        getCompiledSchemaPropertyId(property),
         Object.freeze({
           descriptor: property.value,
           source: {

@@ -96,6 +96,12 @@ mock.module('platejs/react', () => ({
   PlateElement: PlateElementMock,
   toPlatePlugin: (plugin: unknown) => plugin,
   useEditor: () => lastPluginEditor ?? withPluginEditor({}),
+  useEditorPlugin: () => ({
+    api: lastPluginEditor?.api ?? {},
+    editor: lastPluginEditor ?? withPluginEditor({}),
+    read: lastPluginEditor?.read?.footnote ?? {},
+    update: lastPluginEditor?.update?.footnote ?? {},
+  }),
   useEditorSelection: () => selection,
   useEditorSelector: (selector: any) => {
     const activePluginEditor = lastPluginEditor;
@@ -993,10 +999,11 @@ describe('footnote node rendering', () => {
 
     fireEvent.click(buttons[0]!);
 
-    expect(deleteBackward).toHaveBeenCalledWith({ unit: 'character' });
+    expect(deleteBackward).not.toHaveBeenCalled();
     expect(insertFootnote).toHaveBeenCalledWith({
       focusDefinition: false,
       identifier: '3',
+      trigger: '[',
     });
   });
 });

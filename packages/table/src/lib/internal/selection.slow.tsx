@@ -65,6 +65,9 @@ const getSelectionTypes = (editor: ReturnType<typeof createEditor>) => ({
   tableType: editor.plugin(BaseTablePlugin).schema.type,
 });
 
+const getFixtureIds = (anchors: readonly { cell: unknown }[]) =>
+  anchors.map(({ cell }) => (cell as TableCellElementWithId).id);
+
 const readSelection = (
   editor: ReturnType<typeof createEditor>,
   expansion: 'endpoint-union' | 'span-closure' = 'span-closure'
@@ -224,7 +227,7 @@ describe('readTableSelection', () => {
       minCol: 1,
       minRow: 0,
     });
-    expect(endpointUnion.anchors.map(({ key }) => key)).toEqual([
+    expect(getFixtureIds(endpointUnion.anchors)).toEqual([
       'start',
       'a2',
       'wide',
@@ -236,7 +239,7 @@ describe('readTableSelection', () => {
       minCol: 0,
       minRow: 0,
     });
-    expect(spanClosure.anchors.map(({ key }) => key)).toEqual([
+    expect(getFixtureIds(spanClosure.anchors)).toEqual([
       'a0',
       'start',
       'a2',
@@ -284,7 +287,7 @@ describe('readTableSelection', () => {
     ) as TestEditor;
     const view = readSelection(createEditor(input));
 
-    expect(view?.anchors.map(({ key }) => key)).toEqual([
+    expect(view && getFixtureIds(view.anchors)).toEqual([
       '1,1',
       '2,1',
       '3,1',
@@ -339,7 +342,7 @@ describe('readTableSelection', () => {
     ) as TestEditor;
     const view = readSelection(createEditor(input));
 
-    expect(view?.anchors.map(({ key }) => key)).toEqual(['1,1', '2,1', '1,2']);
+    expect(view && getFixtureIds(view.anchors)).toEqual(['1,1', '2,1', '1,2']);
   });
 
   it('matches the donor rowspan closure oracle', () => {
@@ -384,7 +387,7 @@ describe('readTableSelection', () => {
     ) as TestEditor;
     const view = readSelection(createEditor(input));
 
-    expect(view?.anchors.map(({ key }) => key)).toEqual([
+    expect(view && getFixtureIds(view.anchors)).toEqual([
       '1,1',
       '2,1',
       '1,2',
@@ -462,8 +465,8 @@ describe('readTableSelection', () => {
     assert(backwardView);
 
     expect(backwardView.bounds).toEqual(forwardView.bounds);
-    expect(backwardView.anchors.map(({ key }) => key)).toEqual(
-      forwardView.anchors.map(({ key }) => key)
+    expect(getFixtureIds(backwardView.anchors)).toEqual(
+      getFixtureIds(forwardView.anchors)
     );
     expect(new Set(forwardView.anchors).size).toBe(forwardView.anchors.length);
     expect(forwardView.anchor.key).toBe(forwardEditor.key([0, 0, 0])!);
@@ -518,7 +521,7 @@ describe('readTableSelection', () => {
     ) as TestEditor;
     const view = readExpandedSelection(createEditor(input), 'bottom');
 
-    expect(view?.anchors.map(({ key }) => key)).toEqual([
+    expect(view && getFixtureIds(view.anchors)).toEqual([
       '1,1',
       '2,1',
       '3,1',
@@ -568,7 +571,7 @@ describe('readTableSelection', () => {
     ) as TestEditor;
     const view = readExpandedSelection(createEditor(input), 'top');
 
-    expect(view?.anchors.map(({ key }) => key)).toEqual([
+    expect(view && getFixtureIds(view.anchors)).toEqual([
       '1,1',
       '1,2',
       '2,2',
@@ -618,7 +621,7 @@ describe('readTableSelection', () => {
     ) as TestEditor;
     const view = readExpandedSelection(createEditor(input), 'right');
 
-    expect(view?.anchors.map(({ key }) => key)).toEqual([
+    expect(view && getFixtureIds(view.anchors)).toEqual([
       '1,1',
       '2,1',
       '1,2',
@@ -663,17 +666,17 @@ describe('readTableSelection', () => {
 
     expect(
       getTableSelectionNeighbor(view.context, view.anchor, 'below')?.key
-    ).toBe(editor.key([0, 1, 0])!);
+    ).toBe(editor.key([0, 2, 0])!);
     expect(
       getTableSelectionNeighbor(view.context, view.anchor, 'right')?.key
     ).toBe(editor.key([0, 0, 1])!);
     expect(
       getTableSelectionNeighbor(
         view.context,
-        view.context.grid.byKey.get(editor.key([0, 1, 1])!)!,
+        view.context.grid.byKey.get(editor.key([0, 2, 1])!)!,
         'above'
       )?.key
-    ).toBe(editor.key([0, 0, 2])!);
+    ).toBe(editor.key([0, 1, 0])!);
   });
 
   it('matches generated span-grid navigation in every direction', () => {
@@ -758,8 +761,8 @@ describe('readTableSelection', () => {
             beforeProjection.projectionSlotCount
         ).toBe(selectedSlotCount * 4);
         expect(backward.bounds).toEqual(forward.bounds);
-        expect(backward.anchors.map(({ key }) => key)).toEqual(
-          forward.anchors.map(({ key }) => key)
+        expect(getFixtureIds(backward.anchors)).toEqual(
+          getFixtureIds(forward.anchors)
         );
         expect(new Set(forward.anchors).size).toBe(forward.anchors.length);
 
@@ -854,7 +857,7 @@ describe('readTableSelection', () => {
                 )
             ).flat();
 
-            expect(view.anchors.map(({ key }) => key)).toEqual(expectedIds);
+            expect(getFixtureIds(view.anchors)).toEqual(expectedIds);
             expect(view.bounds).toEqual({
               maxCol,
               maxRow,
@@ -999,7 +1002,7 @@ describe('readTableSelection', () => {
     assert(next);
     expect(next).not.toBe(cold);
     expect(next.version).toBeGreaterThan(cold.version);
-    expect(next.anchors.map(({ key }) => key)).toEqual(['r0c0', 'r0c1']);
+    expect(getFixtureIds(next.anchors)).toEqual(['r0c0', 'r0c1']);
     expect(cold.anchors).toHaveLength(size * size);
   });
 });

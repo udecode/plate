@@ -656,6 +656,7 @@ export const playgroundValue: EditorDocumentValue = {
       children: [
         { text: 'This is a callout block for important information.' },
       ],
+      icon: '💡',
       type: 'callout',
       variant: 'info',
     },

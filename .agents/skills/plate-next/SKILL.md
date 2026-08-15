@@ -14,7 +14,7 @@ Handle $ARGUMENTS.
 
 ## Doctrine Version
 
-Current doctrine version: `74`.
+Current doctrine version: `76`.
 
 The machine-readable source is
 `.agents/rules/plate-next/versions.json`. It owns immutable doctrine history and
@@ -292,15 +292,13 @@ editor.plugin(...).api.blockSelection.getNodes(...)` is a regression: it
   boundary; do not annotate package exports with `BaseEditor<typeof Plugin>`,
   rebuild callback option types, cast the result, or export an internal editor
   carrier.
-- Treat TS7056 as the sole one-use descriptor exception. First prove that the
-  fully direct inferred export passes source typecheck but fails declaration
-  emit with TS7056 after smaller structural/editor/compiler carriers are
-  removed. Then keep only the exact private source and final declaration
-  stages required to name the type, mark every such constant
-  `@plate-plugin-declaration-stage`, annotate only the private final stage, and
-  export one unannotated alias. Neither the stages nor their definition types
-  may be barrel-exported. Record the exception count in the topology audit and
-  delete the pair when a future compiler can emit the direct chain.
+- Treat TS7056 as an owning generic or declaration-boundary defect. The only
+  accepted package target is one direct inferred export. Never add another
+  `@plate-plugin-declaration-stage`, private definition carrier, annotated
+  staging alias, widened dependency, cast, or public subset type. Existing
+  marked stages are transitional debt: report their exact count, preserve the
+  direct-build deletion gate, route the owner repair, and keep the package
+  stale until direct declaration emit passes without them.
 - Do not create `PluginConfig` aliases or pass a parallel config generic to a
   factory. Let `defineBasePlugin` infer its exact definition from the author
   object. Keep explicit state, API, update, or domain types only for real
@@ -402,15 +400,15 @@ editor.plugin(...).api.blockSelection.getNodes(...)` is a regression: it
 - Descriptor-aware schema queries are identity operations only. Read document
   properties through typed property handles or semantic plugin APIs; reject
   the arbitrary one-property-descriptor shortcut.
-- Audit plugin updates toward one mutation law: a unique unaliased property
-  uses `tx.nodes.set('property', value, options)` / `unset`; an alias or local
-  ambiguity uses the exact authored property handle; a prefix family or
-  cross-node behavior uses its semantic owner operation; structural, atomic,
-  genuinely dynamic, or unavoidable dependency-ambiguous writes keep the
-  object form. Inference comes from the shallow plugin plus required-dependency
-  graph, never the full application grammar. Reject `tx.properties` and any second
-  property-mutation namespace. `tx.plugin(Plugin)` selects an installed
-  plugin's flat transaction capability group.
+- Audit plugin updates toward one object-patch law:
+  `tx.nodes.set({ property: value }, options)`. Owned keys and values infer from
+  the shallow plugin plus required-dependency graph; duplicate persisted keys
+  infer their value union. Aliases use their authored persisted key in the
+  object patch. `tx.nodes.unset` accepts a typed key or exact handle. Dynamic
+  string-keyed patches are the runtime-schema escape hatch; prefix families and
+  cross-node behavior use semantic owner operations. Reject scalar
+  `set(key, value)`, `tx.properties`, and any second mutation namespace.
+  `tx.plugin(Plugin)` selects an installed plugin's flat transaction group.
 - Use `plate-plugin-creator`'s Capability Boundary Protocol as the sole
   plugin-authoring owner. Plate Next audits each contribution into exactly one
   row:

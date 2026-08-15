@@ -1269,20 +1269,52 @@ test('rejects unaudited extend stages through local descriptor bindings', () => 
     ),
     false
   );
-  assert.equal(
+  const newDeclarationStageIssues = auditPlateSchemaSource(
+    `
+      /** @plate-plugin-declaration-stage TS7056 */
+      const ExamplePluginBase = defineBasePlugin('example', { });
+      export const ExamplePlugin = ExamplePluginBase.extend(() => ({
+        api: () => ({}),
+      }));
+    `,
+    'packages/example/src/ExamplePlugin.ts'
+  );
+
+  assert.match(
+    newDeclarationStageIssues.find((issue) =>
+      issue.reason.includes('new plugin declaration stages')
+    )?.reason ?? '',
+    /repair the owning generic or declaration boundary/
+  );
+
+  assert.match(
     auditPlateSchemaSource(
       `
         /** @plate-plugin-declaration-stage TS7056 */
-        const ExamplePluginBase = defineBasePlugin('example', { });
-        export const ExamplePlugin = ExamplePluginBase.extend(() => ({
+        const baseCodeBlockPluginWithUpdate = defineBasePlugin('codeBlock', { });
+        export const ExamplePlugin = baseCodeBlockPluginWithUpdate.extend(() => ({
           api: () => ({}),
         }));
       `,
-      'packages/example/src/ExamplePlugin.ts'
-    ).some((issue) =>
-      issue.reason.includes('one-use private plugin descriptor scaffolding')
-    ),
-    false
+      'packages/code-block/src/lib/BaseCodeBlockPlugin.ts'
+    ).find((issue) => issue.reason.includes('new plugin declaration stages'))
+      ?.reason ?? '',
+    /repair the owning generic or declaration boundary/
+  );
+
+  assert.match(
+    auditPlateSchemaSource(
+      `
+        export const BaseExamplePlugin = defineBasePlugin('example', {
+          read: ({ editor }) => ({
+            entry: <N extends ElementOf<typeof editor> = Element>() => undefined as N | undefined,
+          }),
+        });
+      `,
+      'packages/example/src/BaseExamplePlugin.ts'
+    ).find((issue) => issue.reason.includes('entire installed editor'))
+      ?.reason ?? '',
+    /owning descriptor or the honest broad Element\/Text domain/
   );
 });
 
@@ -1499,17 +1531,16 @@ test('keeps locally created descriptor identity lexical', () => {
 
 test('allows only exact audited production extend stages at their owner path', () => {
   const exact = `
-    const code = defineBasePlugin('code', { });
-    code.extend({ update: () => ({}) });
-    code.extend({
-      commands: () => [],
-      contributions: [],
-    });
-    const highlight = defineBasePlugin('highlight', { });
-    highlight.extend({
-      corrections: [],
-      on: {},
-    });
+    defineBasePlugin('code', { })
+      .extend({ update: () => ({}) })
+      .extend({
+        commands: () => [],
+        contributions: [],
+      });
+    defineBasePlugin('highlight', { }).extend({
+        corrections: [],
+        on: {},
+      });
   `;
   const owner = 'packages/code-block/src/lib/BaseCodeBlockPlugin.ts';
 
@@ -1518,6 +1549,7 @@ test('allows only exact audited production extend stages at their owner path', (
     auditPlateSchemaSource(
       `
         defineBasePlugin('code', { })
+          .extend({ update: () => ({}) })
           .extend({ commands: () => [], contributions: [] });
         defineBasePlugin('highlight', { })
           .extend(() => ({ api: () => ({}) }));
@@ -1549,7 +1581,7 @@ test('allows only exact audited production extend stages at their owner path', (
   assert.match(
     auditPlateSchemaSource(`defineBasePlugin('code', { })`, owner).at(-1)
       ?.reason ?? '',
-    /expects exact 3 audited chains but found 0/
+    /expects exact 2 audited chains but found 0/
   );
 
   assert.match(

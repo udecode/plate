@@ -6,7 +6,11 @@ import type {
 } from '../__tests__/tableTestTypes';
 
 import { createDetachedTableContext } from './context';
-import { compileTableGrid, readTableGridCompilerMetrics } from './grid';
+import {
+  compileTableGrid,
+  readTableGridCompilerMetrics,
+  TABLE_CELL_OPERATION_KEY,
+} from './grid';
 import { planTableMutation, type TableCellFactory } from './mutation';
 
 const TABLE_GRID_BUDGETS = {
@@ -48,17 +52,30 @@ const createCell: TableCellFactory = ({ col, row }) => ({
   type: 'tableCell',
 });
 
+const withOperationKey = <T extends TableCellElementWithId>(
+  cell: T,
+  key: string
+): T => {
+  Object.defineProperty(cell, TABLE_CELL_OPERATION_KEY, { value: key });
+
+  return cell;
+};
+
 const createDenseTable = (size: number): TableElementWithId => ({
   children: Array.from(
     { length: size },
     (_, row): TableRowElementWithId => ({
       children: Array.from(
         { length: size },
-        (_, col): TableCellElementWithId => ({
-          children: [{ text: `${row}:${col}` }],
-          id: `cell-${row}-${col}`,
-          type: 'tableCell',
-        })
+        (_, col): TableCellElementWithId =>
+          withOperationKey(
+            {
+              children: [{ text: `${row}:${col}` }],
+              id: `cell-${row}-${col}`,
+              type: 'tableCell',
+            },
+            `cell-${row}-${col}`
+          )
       ),
       id: `row-${row}`,
       type: 'tableRow',
@@ -73,12 +90,15 @@ const createSparseTable = (size: number): TableElementWithId => ({
     { length: size },
     (_, row): TableRowElementWithId => ({
       children: [
-        {
-          children: [{ text: `${row}` }],
-          colSpan: size,
-          id: `cell-${row}-0`,
-          type: 'tableCell',
-        },
+        withOperationKey(
+          {
+            children: [{ text: `${row}` }],
+            colSpan: size,
+            id: `cell-${row}-0`,
+            type: 'tableCell',
+          },
+          `cell-${row}-0`
+        ),
       ],
       id: `row-${row}`,
       type: 'tableRow',

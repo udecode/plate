@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "latestVersion": 74,
+  "latestVersion": 76,
   "versions": [
     {
       "version": 0,
@@ -879,6 +879,28 @@
         "Reject public defineEditor, bindGeneratedEditor, generated runtime plugin kits, schemaIdentity, and generated modules passed to hooks or constructors.",
         "Allow generated Editor, Value, schema handles, mutations, and fingerprints only at explicit static boundaries, with plate generate --check as the staleness gate.",
         "Keep copied registry UI host-agnostic; only editor hosts and explicitly dependent examples may import authored application plugins."
+      ]
+    },
+    {
+      "version": 75,
+      "date": "2026-08-14",
+      "doctrineFingerprint": "sha256:b1563ae6209d8dd859d947f4eb611022ff72913fde8c1678a2dfa7246b6a9a59",
+      "summary": "Plugin node property mutations use one inferred object-patch law with runtime validation for dynamic keys.",
+      "migrationChecks": [
+        "Replace scalar tx.nodes.set(key, value, options) teaching and calls with tx.nodes.set({ key: value }, options).",
+        "Infer object-patch keys and values from the shallow plugin dependency graph, union duplicate persisted-key values, and keep dynamic string-keyed patches as the runtime-schema escape hatch.",
+        "Use authored persisted keys for aliases, keep typed key or handle removal on tx.nodes.unset, and reject a second property-mutation namespace."
+      ]
+    },
+    {
+      "version": 76,
+      "date": "2026-08-15",
+      "doctrineFingerprint": "sha256:5fd4ebf669f05fc80e4b498d733490b72e6067e395a8743527fb752947d7917c",
+      "summary": "Compiler limits never redefine the plugin API target; new declaration-stage workarounds are forbidden and existing stages remain explicit debt.",
+      "migrationChecks": [
+        "Keep one direct inferred plugin export as the only accepted target and route TS7056 to the owning generic or declaration boundary.",
+        "Reject new @plate-plugin-declaration-stage markers, private definition carriers, annotated staging aliases, widened dependencies, casts, and public subset types.",
+        "Treat existing marked stages as transitional debt that blocks current-doctrine attestation until direct declaration emit passes without them."
       ]
     }
   ],

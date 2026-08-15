@@ -10,6 +10,7 @@ import { Plate, usePlateEditor } from 'platejs/react';
 import { useLocale } from '@/hooks/useLocale';
 import { getI18nValues } from '@/i18n/getI18nValues';
 import { EditorKit } from '@/registry/components/editor/editor';
+import { CodeDrawingKit } from '@/registry/components/editor/plugins/code-drawing-kit';
 import { ExcalidrawKit } from '@/registry/components/editor/plugins/excalidraw-kit';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
 
@@ -27,6 +28,7 @@ export default function PlaygroundDemo({
     {
       plugins: [
         ...EditorKit,
+        ...CodeDrawingKit,
         ...ExcalidrawKit,
         ...(id === 'listClassic'
           ? [

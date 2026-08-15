@@ -76,6 +76,29 @@ const ToolbarPlugin = definePlatePlugin('toolbar', {
   }),
 });
 
+const SharedPropertyPlugin = definePlatePlugin('sharedProperty', {
+  schema: {
+    mark: property.boolean({ default: false, omitDefault: true }),
+    properties: {
+      blockValue: schema.elementProperty('sharedProperty', property.string(), {
+        target: target.type('paragraph'),
+      }),
+    },
+  },
+  update: ({ tx }) => ({
+    setBoolean: () => tx.nodes.set({ sharedProperty: true }),
+    setDynamic: (properties: Readonly<Record<string, string>>) =>
+      tx.nodes.set(properties),
+    setString: () => tx.nodes.set({ sharedProperty: 'value' }),
+    setWrongValue: () => {
+      // @ts-expect-error one persisted key may have several declared placements, but its value must match one of them
+      tx.nodes.set({ sharedProperty: 42 });
+    },
+  }),
+});
+
+void SharedPropertyPlugin;
+
 const QuotePlugin = definePlatePlugin('quote', {
   schema: { element: schema.element.textBlock() },
 });
