@@ -63,6 +63,7 @@ Boundaries:
 - Source of truth: user instruction, current registry generator/test, entry
   README, and PR #5096 check state.
 - Allowed edit scope: `tooling/scripts/generate-ui-changelog-entries.test.mjs`,
+  the repeatedly over-threshold `BlockPlaceholderPlugin` test classification,
   this goal ledger, and PR #5096 body/branch.
 - Browser surface: N/A: deterministic Node test tooling only.
 - Tracker sync: update and verify existing PR #5096; no separate issue comment.
@@ -80,9 +81,9 @@ Blocked condition:
 Task state:
 - task_type: test-quality refactor on existing PR
 - task_complexity: normal, measurable follow-up
-- current_phase: closeout
-- current_phase_status: complete
-- next_phase: goal closure
+- current_phase: CI stabilization
+- current_phase_status: in_progress
+- next_phase: final verification
 - goal_status: active
 
 Current verdict:
@@ -192,7 +193,7 @@ Work Checklist:
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
-| Named verification threshold | yes | Run the command, proof, source audit, or artifact check named in this plan | Mutation proof, focused/full local checks, autoreview, and PR CI pass |
+| Named verification threshold | pending | Run the command, proof, source audit, or artifact check named in this plan | Registry threshold passes; final-head CI exposed a repeated unrelated fast-lane threshold offender now being reclassified |
 | Pre-solution issue challenge verdict | yes | Record reporter claim, suggested fix, repro verdict, validity verdict, durable boundary, and hard-stop/pivot decision before implementation | Valid; mutation proved inventory coupling and the split test boundary is durable |
 | Repro escalation ladder | yes | For bug/behavior claims, record test/source-level, Playwright, Browser, and screenshot/visual-proof outcomes or N/A/blocker reasons before `not reproduced` | Focused mutation red/green complete; browser/visual levels N/A |
 | Bug reproduced before fix | yes | Record failing test/repro or N/A with reason | Valid temporary entry failed 15/16 at `24 !== 23` before refactor |
@@ -228,8 +229,8 @@ Phase / pass table:
 | Intake and source read | complete | generator, test, README, history, and ownership read | implementation |
 | Implementation | complete | inventory literals removed; synthetic contract plus live conservation retained | verification |
 | Verification | complete | mutation red/green, 17 focused tests, generator check, lint, full `bun check`, and autoreview pass | PR sync |
-| PR / tracker sync | complete | commit `2cad7474e9`; body verified; required checks green; PR mergeable | closeout |
-| Closeout | complete | final ledger populated; local and current-head remote gates green | checker, final ledger push, and final-head verification |
+| PR / tracker sync | in_progress | registry fix and body synced; final-head CI needs the repeated slow-file classification fix | verify and push classification fix |
+| Closeout | pending | previous closure commit exposed repeat CI timing evidence | final-head verification |
 
 Findings:
 - `parseRegistryChangelogEntryFiles` sorts `.mdx` paths; the index builder sorts
@@ -251,14 +252,18 @@ Implementation notes:
 - Replaced the live repository golden state with source/output/index ID equality,
   exact target-to-event association equality, derived hrefs, and a non-empty
   guard so the integration cannot pass vacuously.
+- Reclassified the React-heavy `BlockPlaceholderPlugin` spec as `*.slow.tsx`
+  after two independent CI samples exceeded the fast-suite file threshold.
 
 Review fixes:
 - Autoreview accepted no findings; patch judged correct at 0.86 confidence.
+- Final lane-classification autoreview accepted no findings; unchanged coverage
+  correctly moves from the fast glob to the slow glob at 0.91 confidence.
 
 Error attempts:
 | Error / failed attempt | Count | Next different move | Resolution |
 |------------------------|-------|---------------------|------------|
-| PR CI slowest-test guard sampled unrelated `BlockPlaceholderPlugin.spec.tsx` at 192 ms over the 180 ms file threshold | 1 | Rerun the failed CI job before changing unrelated coverage | Rerun passed in 7m; treat the isolated sample as CI timing noise |
+| PR CI slowest-test guard sampled unrelated `BlockPlaceholderPlugin.spec.tsx` over the 180 ms file threshold | 2 | First rerun before changing unrelated coverage; after recurrence, follow the guard and move the repeat offender to `*.slow.tsx` | One attempt passed; later final-head CI reproduced at 186 ms after the earlier 192 ms failure, proving unstable fast-lane classification |
 
 Verification evidence:
 - Before fix, one valid temporary entry made the focused suite fail 15/16 at
@@ -275,6 +280,12 @@ Verification evidence:
 - PR CI run `31875829305`, final attempt: pass in 7m; all required checks green.
 - `gh pr view 5096 --json url,headRefOid,mergeable,body,statusCheckRollup`:
   head `2cad7474e9`, mergeable, required task body verified.
+- `pnpm test:slow -- packages/utils/src/react/plugins/BlockPlaceholderPlugin.slow.tsx --rerun-each 3`:
+  27/27 pass; unchanged assertions run through the slow harness.
+- `pnpm test:slowest -- --top 25`: 3,455 fast tests pass; no file or test
+  exceeds the local threshold after reclassification.
+- Final local `bun check`: exit 0; 54-package build/typecheck, 3,455 fast
+  tests, 352 slow tests, and slowest-test guard pass.
 
 Final handoff contract:
 - PR line: https://github.com/udecode/plate/pull/5096 updated at `2cad7474e9`
@@ -326,12 +337,13 @@ Timeline:
 - 2026-08-15 Full `bun check` and dirty-local autoreview passed.
 - 2026-08-15 Commit `2cad7474e9` pushed and PR #5096 task body verified.
 - 2026-08-15 Required PR checks passed; isolated slowest-test timing miss passed on rerun without code changes.
+- 2026-08-15 Final ledger head reproduced the same slowest-test offender at 186 ms; moved the repeat offender to the slow lane required by the guard.
 
 Reboot status:
 | Question | Answer |
 |----------|--------|
-| Where am I? | Final ledger closeout |
-| Where am I going? | Goal checker, final ledger push, and final-head CI verification |
+| Where am I? | CI stabilization after repeated fast-lane threshold evidence |
+| Where am I going? | Slow-lane proof, full check, review, push, and final-head CI |
 | What is the goal? | Stable behavioral coverage without live inventory golden assertions |
 | What have I learned? | See Findings |
 | What have I done? | Mutation red/green proof, test refactor, full local verification, PR sync, and remote CI |
