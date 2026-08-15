@@ -1,5 +1,11 @@
 # @platejs/link
 
+## 53.3.5
+
+### Patch Changes
+
+- [#5096](https://github.com/udecode/plate/pull/5096) by [@NoiceHax](https://github.com/NoiceHax) – Fix pasted plain text starting with `#` or `/` (e.g. `#!/bin/sh`) being autolinked
+
 ## 53.3.1
 
 ### Patch Changes
