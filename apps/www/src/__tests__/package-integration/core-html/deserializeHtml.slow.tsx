@@ -31,7 +31,7 @@ describe('when collapseWhitespace is false', () => {
   const html = '<blockquote>test \n code</blockquote>';
   const element = getHtmlDocument(html).body.innerHTML;
 
-  const expectedOutput = [{ text: 'test \n code' }];
+  const expectedOutput = [{ children: [{ text: 'test \n code' }], type: 'p' }];
 
   it('preserves line breaks', () => {
     const convertedDocumentFragment = deserializeHtml(createSlateEditor(), {
@@ -49,11 +49,13 @@ describe('when element is a div', () => {
 
   const output = (
     <fragment>
-      <htext>test</htext>
+      <hp>
+        <htext>test</htext>
+      </hp>
     </fragment>
   ) as any;
 
-  it('returns a text fragment', () => {
+  it('wraps the text in the default block', () => {
     expect(
       deserializeHtml(createSlateEditor(), {
         element,
@@ -90,11 +92,13 @@ describe('when html is a text without tags', () => {
 
   const output = (
     <fragment>
-      <htext>test</htext>
+      <hp>
+        <htext>test</htext>
+      </hp>
     </fragment>
   ) as any;
 
-  it('returns a text fragment', () => {
+  it('wraps the text in the default block', () => {
     expect(
       deserializeHtml(createSlateEditor(), {
         element,

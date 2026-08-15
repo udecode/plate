@@ -8,14 +8,18 @@ import { normalizeDescendantsToDocumentFragment } from './index';
 jsxt;
 
 describe('normalizeDescendantsToDocumentFragment()', () => {
-  it('returns a blank text node when descendants are empty', () => {
+  it('returns a blank default block when descendants are empty', () => {
     const editor = createSlateEditor();
 
     expect(
       normalizeDescendantsToDocumentFragment(editor, {
         descendants: [],
       })
-    ).toEqual([<htext />]);
+    ).toEqual([
+      <hp>
+        <htext />
+      </hp>,
+    ]);
   });
 
   it.each([
@@ -56,11 +60,21 @@ describe('normalizeDescendantsToDocumentFragment()', () => {
   it.each([
     {
       input: [<htext>text node</htext>, <htext>another text node</htext>],
-      output: [<htext>text node</htext>, <htext>another text node</htext>],
+      output: [
+        <hp>
+          <htext>text node</htext>
+          <htext>another text node</htext>
+        </hp>,
+      ],
     },
     {
       input: [<ha>inline element</ha>, <htext>text node</htext>],
-      output: [<ha>inline element</ha>, <htext>text node</htext>],
+      output: [
+        <hp>
+          <ha>inline element</ha>
+          <htext>text node</htext>
+        </hp>,
+      ],
     },
     {
       input: [<hp>block</hp>, <hp>another block</hp>, <htext>text node</htext>],
@@ -109,7 +123,7 @@ describe('normalizeDescendantsToDocumentFragment()', () => {
         </hp>,
       ],
     },
-  ])('wraps inline blocks and text nodes when they have a sibling block', ({
+  ])('wraps inline blocks and text nodes at the root or next to a sibling block', ({
     input,
     output,
   }: any) => {
@@ -126,11 +140,21 @@ describe('normalizeDescendantsToDocumentFragment()', () => {
   it.each([
     {
       input: [<htext>text node</htext>, <htext>another text node</htext>],
-      output: [<htext>text node</htext>, <htext>another text node</htext>],
+      output: [
+        <hblockquote>
+          <htext>text node</htext>
+          <htext>another text node</htext>
+        </hblockquote>,
+      ],
     },
     {
       input: [<ha>inline element</ha>, <htext>text node</htext>],
-      output: [<ha>inline element</ha>, <htext>text node</htext>],
+      output: [
+        <hblockquote>
+          <ha>inline element</ha>
+          <htext>text node</htext>
+        </hblockquote>,
+      ],
     },
     {
       input: [<hp>block</hp>, <hp>another block</hp>, <htext>text node</htext>],
@@ -183,7 +207,7 @@ describe('normalizeDescendantsToDocumentFragment()', () => {
         </hp>,
       ],
     },
-  ])('wraps inline blocks and text nodes with the default element when they have a sibling block', ({
+  ])('wraps inline blocks and text nodes with the default element at the root or next to a sibling block', ({
     input,
     output,
   }: any) => {

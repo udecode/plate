@@ -36,17 +36,22 @@ const hasDifferentChildNodes = (
 /**
  * Handles 3rd constraint: "Block nodes can only contain other blocks, or inline
  * and text nodes."
+ *
+ * At the root, inline and text nodes are always wrapped in the default block,
+ * since the document root can only contain blocks.
  */
 const normalizeDifferentNodeTypes = (
   descendants: Descendant[],
   isInline: (node: Descendant) => boolean,
-  makeDefaultBlock: () => Descendant
+  makeDefaultBlock: () => Descendant,
+  forceWrapInline: boolean
 ): Descendant[] => {
-  const hasDifferentNodes = hasDifferentChildNodes(descendants, isInline);
+  const shouldWrapInlines =
+    forceWrapInline || hasDifferentChildNodes(descendants, isInline);
 
   const { fragment } = descendants.reduce(
     (memo, node) => {
-      if (hasDifferentNodes && isInline(node)) {
+      if (shouldWrapInlines && isInline(node)) {
         let block = memo.precedingBlock;
 
         if (!block) {
@@ -87,7 +92,8 @@ const normalizeEmptyChildren = (descendants: Descendant[]): Descendant[] => {
 const normalize = (
   descendants: Descendant[],
   isInline: (node: Descendant) => boolean,
-  makeDefaultBlock: () => Descendant
+  makeDefaultBlock: () => Descendant,
+  isRoot: boolean
 ): Descendant[] => {
   // biome-ignore lint/style/noParameterAssign: Sequential transformation pipeline pattern
   descendants = normalizeEmptyChildren(descendants);
@@ -95,7 +101,8 @@ const normalize = (
   descendants = normalizeDifferentNodeTypes(
     descendants,
     isInline,
-    makeDefaultBlock
+    makeDefaultBlock,
+    isRoot
   );
 
   // biome-ignore lint/style/noParameterAssign: Sequential transformation pipeline pattern
@@ -106,7 +113,8 @@ const normalize = (
         children: normalize(
           node.children as Descendant[],
           isInline,
-          makeDefaultBlock
+          makeDefaultBlock,
+          false
         ),
       };
     }
@@ -129,5 +137,5 @@ export const normalizeDescendantsToDocumentFragment = (
   const defaultType = editor.getType(defaultElementPlugin.key);
   const makeDefaultBlock = makeBlockLazy(defaultType);
 
-  return normalize(descendants, isInline, makeDefaultBlock as any);
+  return normalize(descendants, isInline, makeDefaultBlock as any, true);
 };
