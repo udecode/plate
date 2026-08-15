@@ -81,9 +81,9 @@ Blocked condition:
 Task state:
 - task_type: test-quality refactor on existing PR
 - task_complexity: normal, measurable follow-up
-- current_phase: CI stabilization
-- current_phase_status: in_progress
-- next_phase: final verification
+- current_phase: closeout
+- current_phase_status: complete
+- next_phase: goal closure
 - goal_status: active
 
 Current verdict:
@@ -193,7 +193,7 @@ Work Checklist:
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
-| Named verification threshold | pending | Run the command, proof, source audit, or artifact check named in this plan | Registry threshold passes; final-head CI exposed a repeated unrelated fast-lane threshold offender now being reclassified |
+| Named verification threshold | yes | Run the command, proof, source audit, or artifact check named in this plan | Mutation proof, focused/full local checks, autoreview, slow-lane proof, and code-head PR CI pass |
 | Pre-solution issue challenge verdict | yes | Record reporter claim, suggested fix, repro verdict, validity verdict, durable boundary, and hard-stop/pivot decision before implementation | Valid; mutation proved inventory coupling and the split test boundary is durable |
 | Repro escalation ladder | yes | For bug/behavior claims, record test/source-level, Playwright, Browser, and screenshot/visual-proof outcomes or N/A/blocker reasons before `not reproduced` | Focused mutation red/green complete; browser/visual levels N/A |
 | Bug reproduced before fix | yes | Record failing test/repro or N/A with reason | Valid temporary entry failed 15/16 at `24 !== 23` before refactor |
@@ -229,8 +229,8 @@ Phase / pass table:
 | Intake and source read | complete | generator, test, README, history, and ownership read | implementation |
 | Implementation | complete | inventory literals removed; synthetic contract plus live conservation retained | verification |
 | Verification | complete | mutation red/green, 17 focused tests, generator check, lint, full `bun check`, and autoreview pass | PR sync |
-| PR / tracker sync | in_progress | registry fix and body synced; final-head CI needs the repeated slow-file classification fix | verify and push classification fix |
-| Closeout | pending | previous closure commit exposed repeat CI timing evidence | final-head verification |
+| PR / tracker sync | complete | code head `4c6d8e9b8d`; body verified; required checks green; PR mergeable | closeout |
+| Closeout | complete | repeated CI offender reclassified with local and remote proof | final ledger push and goal closure |
 
 Findings:
 - `parseRegistryChangelogEntryFiles` sorts `.mdx` paths; the index builder sorts
@@ -286,9 +286,11 @@ Verification evidence:
   exceeds the local threshold after reclassification.
 - Final local `bun check`: exit 0; 54-package build/typecheck, 3,455 fast
   tests, 352 slow tests, and slowest-test guard pass.
+- PR CI run `31877053635`: pass in 6m52s on code head `4c6d8e9b8d`;
+  changeset policy passes and PR remains mergeable.
 
 Final handoff contract:
-- PR line: https://github.com/udecode/plate/pull/5096 updated at `2cad7474e9`
+- PR line: https://github.com/udecode/plate/pull/5096 updated at code head `4c6d8e9b8d`
 - Issue / tracker line: PR body retains `🐛 Fixes #5039`; no separate sync required
 - Confidence line: 95-100%; mutation red/green plus local and remote full checks
 - Flow table:
@@ -296,7 +298,7 @@ Final handoff contract:
   - Verified: same mutation and final focused suite passed 17/17; browser N/A
 - Browser check: N/A: deterministic Node test tooling only
 - Outcome: live registry coverage accepts legitimate inventory growth while preserving ordering, href, grouping, and conservation coverage
-- Caveat: first PR CI attempt hit an unrelated one-off 192 ms slowest-test threshold; rerun passed without code changes
+- Caveat: the unrelated placeholder spec exceeded the fast-file threshold twice; its assertions are unchanged and now run in the slow lane
 - Design:
   - Chosen boundary: synthetic exact-contract test plus live conservation integration
   - Why not quick patch: updating literal inventory would preserve the maintenance trap
@@ -325,10 +327,10 @@ Task-style PR body contract:
   of that output.
 
 Final handoff / sync:
-- PR: https://github.com/udecode/plate/pull/5096 at `2cad7474e9`, mergeable, required checks green
+- PR: https://github.com/udecode/plate/pull/5096 at code head `4c6d8e9b8d`, mergeable, required checks green
 - Issue / tracker: #5039 linked by the PR body; no separate tracker comment
 - Browser proof: N/A: no browser surface
-- Caveats: one unrelated CI timing sample passed on rerun; no unrelated test was moved
+- Caveats: no behavior was cut; one repeat threshold offender moved intact to the slow lane
 
 Timeline:
 - 2026-08-15T08:53:28.128Z Task goal plan created.
@@ -338,12 +340,13 @@ Timeline:
 - 2026-08-15 Commit `2cad7474e9` pushed and PR #5096 task body verified.
 - 2026-08-15 Required PR checks passed; isolated slowest-test timing miss passed on rerun without code changes.
 - 2026-08-15 Final ledger head reproduced the same slowest-test offender at 186 ms; moved the repeat offender to the slow lane required by the guard.
+- 2026-08-15 Code head `4c6d8e9b8d` passed all required PR checks, including CI in 6m52s.
 
 Reboot status:
 | Question | Answer |
 |----------|--------|
-| Where am I? | CI stabilization after repeated fast-lane threshold evidence |
-| Where am I going? | Slow-lane proof, full check, review, push, and final-head CI |
+| Where am I? | Final ledger closeout after green code-head CI |
+| Where am I going? | Ledger checker, docs-only push, final-head verification, and goal closure |
 | What is the goal? | Stable behavioral coverage without live inventory golden assertions |
 | What have I learned? | See Findings |
 | What have I done? | Mutation red/green proof, test refactor, full local verification, PR sync, and remote CI |
