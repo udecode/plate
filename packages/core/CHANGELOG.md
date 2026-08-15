@@ -1,5 +1,11 @@
 # @platejs/core
 
+## 53.3.6
+
+### Patch Changes
+
+- [#5098](https://github.com/udecode/plate/pull/5098) by [@NoiceHax](https://github.com/NoiceHax) – Fix `editor.api.html.deserialize` returning unwrapped text nodes at the root for inline-only HTML
+
 ## 53.3.5
 
 ## 53.3.4
