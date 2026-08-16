@@ -1264,7 +1264,10 @@ import {
         inline && TextApi.isText(inline)
           ? suggestionApi.inlineData(inline)
           : undefined;
-      const blockSuggestion = block?.suggestion;
+      const blockSuggestion =
+        block && ElementApi.isElement(block)
+          ? suggestionApi.suggestionData(block)
+          : undefined;
 
       expect(fragment[0]).toHaveProperty(suggestionApi.key('other-user'));
       expect(inlineData).toMatchObject({

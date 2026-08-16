@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { BaseTablePlugin } from './BaseTablePlugin';
+import { BaseTableCellPlugin, BaseTablePlugin } from './BaseTablePlugin';
 import {
   createTestTableEditor,
   getTestTablePlugins,
@@ -527,7 +527,9 @@ describe('table presentation slow contracts', () => {
       editor: ReturnType<typeof createEditorInstance>,
       path: number[]
     ) => {
-      const entry = editor.read.nodes.get<TableCellElement>(path);
+      const entry = editor.read.nodes.get(path, {
+        type: BaseTableCellPlugin,
+      });
       assert(entry);
 
       return entry[0];
@@ -821,7 +823,9 @@ describe('table presentation slow contracts', () => {
       editor: ReturnType<typeof createEditor>,
       path: number[]
     ) => {
-      const entry = editor.read.nodes.get<TableCellElement>(path);
+      const entry = editor.read.nodes.get(path, {
+        type: BaseTableCellPlugin,
+      });
       assert(entry);
 
       return entry[0];
@@ -831,7 +835,8 @@ describe('table presentation slow contracts', () => {
       editor: ReturnType<typeof createEditor>,
       path: number[],
       borders: TableCellElement['borders']
-    ) => editor.update.nodes.set<TableCellElement>({ borders }, { at: path });
+    ) =>
+      editor.plugin(BaseTableCellPlugin).update.set({ borders }, { at: path });
 
     const visible = { size: 1 };
     const hidden = { size: 0 };

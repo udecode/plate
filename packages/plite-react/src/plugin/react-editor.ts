@@ -12,7 +12,7 @@ import type { ReactApi } from './with-react';
 
 export interface ReactRuntimeEditor<
   V extends Value = Value,
-  TExtensions extends readonly unknown[] = readonly [],
+  TExtensions extends readonly unknown[] = any,
 > extends DOMEditor<V, TExtensions> {
   api: DOMEditor<V, TExtensions>['api'] & {
     dom: DOMApi & { clipboard: DOMClipboardApi };
@@ -26,7 +26,7 @@ export const ReactEditor: ReactEditorInterface = DOMEditor;
 
 export const toReactRuntimeEditor = <
   V extends Value = Value,
-  TExtensions extends readonly unknown[] = readonly [],
+  TExtensions extends readonly unknown[] = any,
 >(
   editor: DOMEditor<V, TExtensions>
 ): ReactRuntimeEditor<V, TExtensions> =>

@@ -101,7 +101,7 @@ const editor = createPlateEditor({
 
           return (
             !codeBlock.installed ||
-            !editor.read.nodes.some({ match: { type: codeBlock.schema.type } })
+            !editor.read.nodes.some({ type: codeBlock.schema.type })
           );
         },
       },

@@ -1,7 +1,12 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { type Element, ElementApi, schema } from '@platejs/plite';
+import {
+  type Element,
+  ElementApi,
+  type NodeEntry,
+  schema,
+} from '@platejs/plite';
 
 import { createBaseEditor } from '../../editor';
 import { defineBasePlugin } from '../../plugin';
@@ -124,9 +129,11 @@ describe('ElementIdPlugin', () => {
     });
 
     editor.update((tx) => {
-      const entry = tx.nodes.get<Element>([0]);
+      const entry = tx.nodes.get([0]);
 
-      if (entry) tx.nodes.duplicate([entry]);
+      if (entry && ElementApi.isElement(entry[0])) {
+        tx.nodes.duplicate([entry as NodeEntry<Element>]);
+      }
     });
     const copiedId = editor.read.children()[1]?.id;
 

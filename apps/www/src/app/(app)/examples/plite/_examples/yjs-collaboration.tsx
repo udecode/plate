@@ -9,6 +9,7 @@ import {
   type Descendant,
   type ElementIn,
   type Editor,
+  type EditorExtensionSlotValue,
   type EditorSchemaIdentity,
   type EditorUpdateTransaction,
   type EditorValueFromExtensions,
@@ -143,7 +144,14 @@ type CollaborationText = TextIn<CollaborationValue>;
 const HistoryExtension = history();
 type YjsEditor = ReactEditor<
   CollaborationValue,
-  readonly [typeof HistoryExtension, ReturnType<typeof yjs>]
+  readonly [
+    typeof HistoryExtension,
+    EditorExtensionSlotValue<
+      'yjs-collaboration-schema',
+      ReturnType<typeof createCollaborationSchema>
+    >,
+    ReturnType<typeof yjs>,
+  ]
 >;
 
 const syncPeerHistoryDepths = (peer: ExamplePeer, editor: YjsEditor) => {

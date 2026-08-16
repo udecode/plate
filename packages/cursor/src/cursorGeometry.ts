@@ -1,11 +1,5 @@
-import {
-  type Range,
-  type Value,
-  PathApi,
-  RangeApi,
-  TextApi,
-} from '@platejs/plite';
-import type { DOMEditor } from '@platejs/plite-dom';
+import type { PlateEditor } from '@platejs/core/react';
+import { type Range, PathApi, RangeApi, TextApi } from '@platejs/plite';
 import type { UnknownObject } from '@udecode/utils';
 
 import type {
@@ -61,11 +55,8 @@ export const getCursorOverlayState = <
   });
 };
 
-export const getSelectionRects = <
-  V extends Value,
-  TExtensions extends readonly unknown[],
->(
-  editor: DOMEditor<V, TExtensions>,
+export const getSelectionRects = (
+  editor: PlateEditor,
   {
     range,
     xOffset,

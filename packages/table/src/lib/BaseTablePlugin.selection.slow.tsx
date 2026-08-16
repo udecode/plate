@@ -2,8 +2,12 @@
 
 import assert from 'node:assert/strict';
 
-import { BaseTableCellPlugin, BaseTablePlugin } from './BaseTablePlugin';
-import type { TableDefinition } from './BaseTablePlugin';
+import {
+  BaseTableCellPlugin,
+  BaseTablePlugin,
+  BaseTableRowPlugin,
+} from './BaseTablePlugin';
+import type { TableCellSelection, TableDefinition } from './BaseTablePlugin';
 import { defineBasePlugin } from '@platejs/core';
 import {
   createEditorView,
@@ -12,10 +16,10 @@ import {
   target,
   TextApi,
 } from '@platejs/plite';
-import type { Element, Text } from '@platejs/plite';
+import type { Element } from '@platejs/plite';
+import type { Selection } from '@platejs/plite';
 import { jsxt } from '@platejs/test-utils';
 import type { TestEditor } from '@platejs/test-utils';
-import type { TableCellElement } from './BaseTablePlugin';
 
 import { createTestTableEditor } from './__tests__/getTestTablePlugins';
 
@@ -23,6 +27,12 @@ import {
   readTableSelection,
   readTableSelectionViewMetrics,
 } from './internal/selection';
+
+const assertTableCellSelection: (
+  selection: Selection
+) => asserts selection is TableCellSelection = (selection) => {
+  assert(selection?.kind === 'table-cell');
+};
 
 describe('table selection slow contracts', () => {
   const getFixtureId = (node: Element) =>
@@ -310,7 +320,7 @@ describe('table selection slow contracts', () => {
           const editor = createTableEditor(input);
           editor.update.marks.remove('bold');
 
-          const texts = editor.read.nodes.toArray<Text>({
+          const texts = editor.read.nodes.toArray({
             match: (node) => TextApi.isText(node),
           });
 
@@ -356,10 +366,7 @@ describe('table selection slow contracts', () => {
           ) as TestEditor;
 
           const editor = createTableEditor(input);
-          editor.update.nodes.set(
-            { align: 'center' },
-            { match: { type: 'paragraph' } }
-          );
+          editor.update.nodes.set({ align: 'center' }, { type: 'paragraph' });
 
           expect(editor.read.children()).toEqual(
             (
@@ -471,7 +478,7 @@ describe('table selection slow contracts', () => {
 
           const editor = createTableEditor(input);
           editor.update.nodes.unset(['align', 'indent'], {
-            match: { type: 'paragraph' },
+            type: 'paragraph',
           });
 
           expect(editor.read.children()).toEqual(
@@ -1080,7 +1087,9 @@ describe('table selection slow contracts', () => {
       }) as unknown as typeof editor;
       const mainAnchor = editor.read.points.start([1, 0, 0]);
       const mainFocus = editor.read.points.end([1, 0, 1]);
-      const target = rootEditor.read.nodes.get<TableCellElement>([0, 1, 0]);
+      const target = rootEditor.read.nodes.get([0, 1, 0], {
+        type: BaseTableCellPlugin,
+      });
 
       assert(mainAnchor);
       assert(mainFocus);
@@ -1135,7 +1144,7 @@ describe('table selection slow contracts', () => {
         const selection = editor.read.selection();
         const expectedIds = ids.filter((_, index) => index !== removedIndex);
 
-        assert(selection?.kind === 'table-cell');
+        assertTableCellSelection(selection);
         expect(selection.cells).toHaveLength(expectedIds.length);
         expect(
           new Set(
@@ -1253,9 +1262,15 @@ describe('table selection slow contracts', () => {
       expect(rootSelectionView.selection).toBe(rootRange);
       expect(baseSelectionView.selection).toBe(rootRange);
 
-      const upperLeft = rootEditor.read.nodes.get([0, 0, 0]);
-      const upperRight = rootEditor.read.nodes.get([0, 0, 1]);
-      const upperRow = rootEditor.read.nodes.get([0, 0]);
+      const upperLeft = rootEditor.read.nodes.get([0, 0, 0], {
+        type: BaseTableCellPlugin,
+      });
+      const upperRight = rootEditor.read.nodes.get([0, 0, 1], {
+        type: BaseTableCellPlugin,
+      });
+      const upperRow = rootEditor.read.nodes.get([0, 0], {
+        type: BaseTableRowPlugin,
+      });
       const upperLeftPoint = rootEditor.read.points.start([0, 0, 0]);
       const upperRightPoint = rootEditor.read.points.start([0, 0, 1]);
       const lowerRightPoint = rootEditor.read.points.start([0, 1, 1]);
@@ -1305,7 +1320,7 @@ describe('table selection slow contracts', () => {
       const assertMappedSelection = (tableIndex: number) => {
         const selection = rootEditor.read.selection();
 
-        assert(selection?.kind === 'table-cell');
+        assertTableCellSelection(selection);
         expect(selection.cells).toHaveLength(4);
         expect(
           selection.cells.map(({ anchor: cellAnchor }) => cellAnchor.root)

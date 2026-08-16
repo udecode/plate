@@ -5,6 +5,7 @@ export type {
   EditorCommandContext,
   EditorExtensionDependencyReferenceFor,
   EditorExtensionTypeLambda,
+  EditorGenericMethod,
   InternalEditorExtensionDependencyReference,
   InternalEditorExtensionInstalledCapabilitiesOf,
   InternalEditorExtensionTypeProviderOf,
@@ -216,6 +217,7 @@ export {
   setEditorReadOnly,
   setEditorSnapshotInputTransform,
   setEditorTransactionViewTransform,
+  setEditorStateViewTransform,
   setCurrentMarks as setEditorMarks,
   setCurrentSelection as setEditorSelection,
   setTargetRuntime as setEditorTargetRuntime,
@@ -224,6 +226,7 @@ export {
   withEditorUpdateRootScope,
 } from '../core/public-state';
 export { projectRangeInSnapshot } from '../range-projection';
+export { mapSemanticUpdateMethodArguments } from '../core/semantic-update-method';
 export {
   assertSelectionSupported,
   decodeEditorSelection,

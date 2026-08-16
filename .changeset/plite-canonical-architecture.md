@@ -29,8 +29,20 @@
   reject declaration artifacts whose generic `Readonly` arguments were erased.
 - Store pending insertion marks only on collapsed text selections and preserve earlier writes across composed commands
 - Delete the exact selected node when Backspace or Delete targets a serializable `NodeSelection`, then place a text selection at the nearest surviving sibling
-- Let extensions register serializable selection kinds with validation, mapping, range enumeration, replacement, and DOM projection hooks
+- Let extensions register serializable selection kinds with validation,
+  mapping, range enumeration, replacement, and DOM projection hooks. Infer
+  custom selection payloads only from the descriptors installed on each
+  concrete editor, and keep the complete payload invariant even when two
+  descriptors reuse the same `kind`; no global selection-kind augmentation
+  exists.
+- Default bare public editor, read, update, transaction, and view types to the
+  core-only extension tuple. Use the explicit internal `AnyEditor` boundary
+  when runtime infrastructure intentionally erases installed capabilities.
 - Publish one-shot `editor.read.*` and `editor.update.*` APIs with callback forms for grouped work
+- Infer update callback transactions exclusively from the editor's installed
+  extensions, infer command dispatch from the command descriptor, and return
+  `unknown` when a schema property is addressed by a raw string instead of a
+  typed property handle
 - Type node-property mutations as atomic `nodes.set(props, options)` patches
   and removals as `nodes.unset(key, options)`. Use exact schema-property handle
   keys as computed object keys for aliases. Prefix handles cannot address one
@@ -44,7 +56,13 @@
 - Name installed extension namespace projections
   `EditorInstalledReadGroups` and `EditorInstalledUpdateGroups`
 - Keep state-backed read methods available inside active and speculative transactions without exposing them as one-shot editor updates
-- Add document replacement, block-relative insertion, live location targets, property matchers, and explicit selection predicates
+- Add document replacement, block-relative insertion, live location targets,
+  structural type selectors, function-only node predicates, and explicit
+  selection predicates
+- Infer node read and mutation targets from `type` selectors or type-guard
+  `match` predicates. Remove caller-selected node result generics and shallow
+  object matchers. Keep `at` independent from the selected node type, and put
+  insertion split-target selection under `split: { type, match }`.
 - Replace the complete serializable document solely through `tx.value.replace({ children, roots, meta, selection })`; remove omitted roots, reset omitted persisted meta, and clear omitted selection
 - Add explicit document repair and mutually exclusive mark toggles
 - Declare mutually exclusive property groups in schema so toggles,
@@ -86,8 +104,10 @@
   descriptors reject.
 - Return the public `Editor` directly from `createEditor()`. Create root-scoped
   views with `createEditorView(editor, options)` and add live capabilities with
-  `editor.install(extension)`; no public runtime wrapper or live `.extend()`
-  API exists.
+  `editor.install(extension)`; layered editors retain their complete caller
+  capabilities through root-scoped views, while raw Plite editors infer their
+  installed extension tuple. No public runtime wrapper or live `.extend()` API
+  exists.
 - Expose `EditorExtensionTypeProvider` as the public value-sensitive capability
   bridge and keep higher-kinded encoding, normalized installed capabilities,
   and transitive dependency expansion under `@platejs/plite/internal`
@@ -131,4 +151,6 @@ transaction APIs. Replace `defineExtension({ name, ...definition })` with
 `createEditorView(editor, options)` with the editor itself, and replace live
 `editor.extend(extension)` with `editor.install(extension)`. Register state
 fields through a nominal extension's `stateFields` collection instead of
-passing field handles as extensions.
+passing field handles as extensions. Replace calls such as
+`nodes.find<Foo>({ match: { type: 'foo' } })` with
+`nodes.find({ type: fooHandle, match: (foo, path) => ... })`.

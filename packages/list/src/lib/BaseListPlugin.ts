@@ -109,7 +109,7 @@ export type OutdentListOptions = {
 
 export type ToggleListOptions = {
   at?: Location;
-  getSiblingListOptions?: GetSiblingListOptions<Element>;
+  getSiblingListOptions?: GetSiblingListOptions;
   listRestart?: number;
   listRestartPolite?: number;
   listStyleType: ListStyleType | (string & {});
@@ -123,7 +123,7 @@ export const ULIST_STYLE_TYPES = [
   ListStyleType.DisclosureClosed,
 ] as const;
 
-export type GetSiblingListOptions<N extends Element = Element> = {
+export type GetSiblingListOptions = {
   breakOnEqIndentNeqListStyleType?: boolean;
   breakOnListRestart?: boolean;
   breakOnLowerIndent?: boolean;
@@ -134,11 +134,11 @@ export type GetSiblingListOptions<N extends Element = Element> = {
   getNextEntry?: (
     entry: NodeEntry<Element>,
     state: Pick<EditorCoreStateView, 'nodes'>
-  ) => NodeEntry<N> | undefined;
+  ) => NodeEntry<Element> | undefined;
   getPreviousEntry?: (
     entry: NodeEntry<Element>,
     state: Pick<EditorCoreStateView, 'nodes'>
-  ) => NodeEntry<N> | undefined;
+  ) => NodeEntry<Element> | undefined;
   /** Query to break lookup. */
   eqIndent?: boolean;
   /** Query to validate lookup. If false, check the next sibling. */
@@ -170,7 +170,7 @@ const isListItem = (node: Element) => node.listStyleType != null;
  */
 
 export type BaseListPluginState = {
-  getSiblingListOptions?: GetSiblingListOptions<Element>;
+  getSiblingListOptions?: GetSiblingListOptions;
 };
 
 export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
@@ -539,8 +539,8 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
         );
       };
       const getSequenceSiblingOptions = (
-        options?: Partial<GetSiblingListOptions<Element>>
-      ): Partial<GetSiblingListOptions<Element>> => {
+        options?: Partial<GetSiblingListOptions>
+      ): Partial<GetSiblingListOptions> => {
         const { breakQuery, query, ...rest } = options ?? {};
 
         return {
@@ -561,7 +561,7 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
       };
     },
     read: ({ state }) => {
-      const getSibling = <N extends Element = Element>(
+      const getSibling = (
         [node, path]: NodeEntry<Element>,
         {
           breakOnEqIndentNeqListStyleType = true,
@@ -572,8 +572,8 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
           getNextEntry,
           getPreviousEntry,
           query,
-        }: GetSiblingListOptions<N>
-      ): NodeEntry<N> | undefined => {
+        }: GetSiblingListOptions
+      ): NodeEntry<Element> | undefined => {
         const getSiblingEntry = getNextEntry ?? getPreviousEntry;
 
         if (!getSiblingEntry) return;
@@ -615,14 +615,16 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
 
       return {
         /** Get the next indent-list item. */
-        getNext: <N extends Element = Element>(
+        getNext: (
           entry: NodeEntry<Element>,
-          options?: Partial<GetSiblingListOptions<N>>
-        ): NodeEntry<N> | undefined =>
+          options?: Partial<GetSiblingListOptions>
+        ): NodeEntry<Element> | undefined =>
           getSibling(entry, {
             getNextEntry: ([, currentPath]) => {
               const nextPath = PathApi.next(currentPath);
-              const nextNode = state.nodes.get<N>(nextPath)?.[0];
+              const nextNode = state.nodes.get(nextPath, {
+                match: ElementApi.isElement,
+              })?.[0];
 
               if (!nextNode) return;
 
@@ -632,15 +634,17 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
             getPreviousEntry: undefined,
           }),
         /** Get the previous indent-list item. */
-        getPrevious: <N extends Element = Element>(
+        getPrevious: (
           entry: NodeEntry<Element>,
-          options?: Partial<GetSiblingListOptions<N>>
-        ): NodeEntry<N> | undefined =>
+          options?: Partial<GetSiblingListOptions>
+        ): NodeEntry<Element> | undefined =>
           getSibling(entry, {
             getPreviousEntry: ([, currentPath]) => {
               if (!PathApi.hasPrevious(currentPath)) return;
               const previousPath = PathApi.previous(currentPath);
-              const previousNode = state.nodes.get<N>(previousPath)?.[0];
+              const previousNode = state.nodes.get(previousPath, {
+                match: ElementApi.isElement,
+              })?.[0];
 
               if (!previousNode) return;
 
@@ -649,14 +653,14 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
             ...options,
             getNextEntry: undefined,
           }),
-        expandItemsWithChildren: <N extends Element = Element>(
-          entries: readonly NodeEntry<N>[]
-        ) => {
-          const expandedEntries: NodeEntry<N>[] = [];
+        expandItemsWithChildren: (entries: readonly NodeEntry<Element>[]) => {
+          const expandedEntries: NodeEntry<Element>[] = [];
           const processedKeys = new Set<NodeKey>();
 
           entries.forEach(([, path]) => {
-            const liveEntry = state.nodes.get<N>(path);
+            const liveEntry = state.nodes.get(path, {
+              match: ElementApi.isElement,
+            });
 
             if (!liveEntry) return;
             const [node] = liveEntry;
@@ -677,7 +681,9 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
 
             while (true) {
               const nextPath = PathApi.next(currentPath);
-              const nextNode = state.nodes.get<N>(nextPath)?.[0];
+              const nextNode = state.nodes.get(nextPath, {
+                match: ElementApi.isElement,
+              })?.[0];
 
               if (!nextNode) break;
               const nextIndent = nextNode.indent;
@@ -775,9 +781,9 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
           ...options.getSiblingListOptions,
         };
         const match = getInjectMatch(editor, plugin);
-        const entries = tx.nodes.toArray<Element>({
+        const entries = tx.nodes.toArray({
           at,
-          match: (node, path) =>
+          match: (node, path): node is Element =>
             ElementApi.isElement(node) &&
             tx.schema.isBlock(node) &&
             match(node, path),
@@ -958,9 +964,9 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
         const isRestart = !!listRestart;
         if (setList && restartValue) {
           const [targetNode, targetPath] = entries[0];
-          const entry = tx.nodes.above<Element>({
+          const entry = tx.nodes.above({
             at: targetPath,
-            match: (candidate) =>
+            match: (candidate): candidate is Element =>
               ElementApi.isElement(candidate) &&
               candidate.listStyleType !== undefined,
           }) ?? [
@@ -1085,7 +1091,7 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
       commands: ({ around, handle }) => [
         handle(editorCommands.delete, ({ input, state }) => {
           if (input.direction !== 'backward') return false;
-          const nodeEntry = state.nodes.block<Element>();
+          const nodeEntry = state.nodes.block();
           const selection = state.selection();
           const blockStart = nodeEntry
             ? state.points.start(nodeEntry[1])
@@ -1115,7 +1121,7 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
           });
         }),
         around(editorCommands.insertBreak, ({ state, next }) => {
-          const nodeEntry = state.nodes.block<Element>();
+          const nodeEntry = state.nodes.block();
           const selection = state.selection();
           if (
             !nodeEntry ||
@@ -1136,7 +1142,9 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
           if (inserted === false) return false;
           return state.transaction.extend(inserted, (tx) => {
             const nextPath = PathApi.next(nodeEntry[1]);
-            const nextNode = tx.nodes.get<Element>(nextPath)?.[0];
+            const nextNode = tx.nodes.get(nextPath, {
+              match: ElementApi.isElement,
+            })?.[0];
             const staleRestartKeys = [
               'listRestart',
               'listRestartPolite',
@@ -1149,7 +1157,7 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
           });
         }),
         around(editorCommands.insertBreak, ({ state, next }) => {
-          const nodeEntry = state.nodes.block<Element>();
+          const nodeEntry = state.nodes.block();
           if (!nodeEntry) return false;
           const [node, path] = nodeEntry;
           const selection = state.selection();
@@ -1164,7 +1172,7 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
           const result = next();
           if (result === false) return false;
           return state.transaction.extend(result, (tx) => {
-            const newEntry = tx.nodes.above<Element>();
+            const newEntry = tx.nodes.above();
             if (newEntry) {
               tx.nodes.set(
                 { checked: false },
@@ -1324,13 +1332,15 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
                       ? paths.map((path) => [...path])
                       : [[]];
                   for (const path of changedPaths) {
-                    const nodeEntry = tx.nodes.get(path);
+                    const nodeEntry = tx.nodes.get(path, {
+                      match: ElementApi.isElement,
+                    });
                     let entry =
                       nodeEntry && ElementApi.isElement(nodeEntry[0])
                         ? ([nodeEntry[0], nodeEntry[1]] as NodeEntry<Element>)
                         : undefined;
                     if (!entry || !isListItem(entry[0])) {
-                      entry = tx.nodes.find<Element>({
+                      entry = tx.nodes.find({
                         at: path,
                         match: (node): node is Element =>
                           ElementApi.isElement(node) && isListItem(node),
@@ -1359,7 +1369,7 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
                           }
                         );
                       }
-                      entry = tx.list.getNext<Element>(entry, {
+                      entry = tx.list.getNext(entry, {
                         ...getSiblingListOptions,
                         breakOnEqIndentNeqListStyleType: false,
                         breakOnLowerIndent: false,
@@ -1390,7 +1400,9 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
                     );
                   if (!isSplit) continue;
                   const path: Path = [index];
-                  const node = tx.nodes.get<Element>(path)?.[0];
+                  const node = tx.nodes.get(path, {
+                    match: ElementApi.isElement,
+                  })?.[0];
                   const staleRestartKeys = [
                     'listRestart',
                     'listRestartPolite',
@@ -1408,7 +1420,9 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
                  */
                 for (const index of sortedInsertedIndices) {
                   const path: Path = [index];
-                  const entry = tx.nodes.get<Element>(path);
+                  const entry = tx.nodes.get(path, {
+                    match: ElementApi.isElement,
+                  });
                   const listStyleType = entry?.[0].listStyleType;
                   if (
                     !entry ||
@@ -1417,7 +1431,7 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
                   ) {
                     continue;
                   }
-                  const previousEntry = tx.list.getPrevious<Element>(entry, {
+                  const previousEntry = tx.list.getPrevious(entry, {
                     breakOnEqIndentNeqListStyleType: false,
                     eqIndent: false,
                   });
@@ -1440,7 +1454,9 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
                   (left, right) => left - right
                 )) {
                   const affectedPath: Path = [index];
-                  let entry = tx.nodes.get<Element>(affectedPath);
+                  let entry = tx.nodes.get(affectedPath, {
+                    match: ElementApi.isElement,
+                  });
                   if (entry && !isListItem(entry[0])) {
                     const [affectedNode] = entry;
                     const staleListKeys = [
@@ -1457,7 +1473,9 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
                     }
                   }
                   if (!entry || !isListItem(entry[0])) {
-                    entry = tx.nodes.get<Element>(PathApi.next(affectedPath));
+                    entry = tx.nodes.get(PathApi.next(affectedPath), {
+                      match: ElementApi.isElement,
+                    });
                   }
                   if (entry) {
                     const firstEntry = entry;
@@ -1471,16 +1489,15 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
                     let previousPath = firstEntry[1];
                     let minimumIndent = Number.POSITIVE_INFINITY;
                     const [firstNode] = firstEntry;
-                    let previousStyleEntry = tx.list.getPrevious<Element>(
-                      firstEntry,
-                      {
-                        breakOnEqIndentNeqListStyleType: false,
-                        eqIndent: false,
-                      }
-                    );
+                    let previousStyleEntry = tx.list.getPrevious(firstEntry, {
+                      breakOnEqIndentNeqListStyleType: false,
+                      eqIndent: false,
+                    });
                     while (PathApi.hasPrevious(previousPath)) {
                       previousPath = PathApi.previous(previousPath);
-                      const previousEntry = tx.nodes.get<Element>(previousPath);
+                      const previousEntry = tx.nodes.get(previousPath, {
+                        match: ElementApi.isElement,
+                      });
                       if (!previousEntry) break;
                       const previousIndent = Number(previousEntry[0].indent);
                       if (!Number.isFinite(previousIndent)) break;
@@ -1556,7 +1573,9 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
                       }
                       if (!isListItem(node)) {
                         previousStyleEntry = currentEntry;
-                        suffixEntry = tx.nodes.get<Element>(PathApi.next(path));
+                        suffixEntry = tx.nodes.get(PathApi.next(path), {
+                          match: ElementApi.isElement,
+                        });
                         continue;
                       }
                       const key = getSequenceKey(node);
@@ -1607,7 +1626,9 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
                         indent,
                       });
                       previousStyleEntry = currentEntry;
-                      suffixEntry = tx.nodes.get<Element>(PathApi.next(path));
+                      suffixEntry = tx.nodes.get(PathApi.next(path), {
+                        match: ElementApi.isElement,
+                      });
                     }
                   }
                 }
@@ -1672,9 +1693,7 @@ export const BulletedListRules = {
       if (!codeBlock.installed) return true;
 
       return !tx.nodes.some({
-        match: {
-          type: [codeBlock.schema.type],
-        },
+        type: [codeBlock.schema.type],
       });
     },
     trigger: ' ',
@@ -1702,9 +1721,7 @@ export const OrderedListRules = {
       if (!codeBlock.installed) return true;
 
       return !tx.nodes.some({
-        match: {
-          type: [codeBlock.schema.type],
-        },
+        type: [codeBlock.schema.type],
       });
     },
     trigger: ' ',
@@ -1735,9 +1752,7 @@ export const TaskListRules = {
       if (!codeBlock.installed) return true;
 
       return !tx.nodes.some({
-        match: {
-          type: [codeBlock.schema.type],
-        },
+        type: [codeBlock.schema.type],
       });
     },
     trigger: ' ',

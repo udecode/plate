@@ -98,10 +98,9 @@ BlockSelectionPlugin.configure({
       }
       // 排除表格行内的块
       if (
-        editor.api.block({
-          above: true,
+        editor.read.nodes.above({
           at: path,
-          match: { type: 'tableRow' },
+          type: 'tableRow',
         })
       ) {
         return false;

@@ -1,7 +1,7 @@
 import {
   type Descendant,
-  type Element as PliteElement,
   createEditorView,
+  type Editor,
   ElementApi,
   NodeApi,
 } from '@platejs/plite';
@@ -40,11 +40,14 @@ export const getSelectedDomFragment = (editor: BaseEditor): Descendant[] => {
       return;
     }
     const block = (
-      root === MAIN_ROOT_KEY ? editor : createEditorView(editor, { root })
-    ).read.nodes.get<PliteElement>(path);
+      root === MAIN_ROOT_KEY
+        ? editor
+        : createEditorView(editor as unknown as Editor, { root })
+    ).read.nodes.get(path);
 
     // prevent inline elements like link and table cells.
-    if (!block || block[1].length !== 1) return;
+    if (!block || !ElementApi.isElement(block[0]) || block[1].length !== 1)
+      return;
 
     /**
      * If the selection don't cover the all first or last block, we need

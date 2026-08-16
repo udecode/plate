@@ -1,10 +1,5 @@
-import type {
-  EditorStateView,
-  Element,
-  NodeEntry,
-  Path,
-  Value,
-} from '@platejs/plite';
+import type { EditorStateView, Element, NodeEntry, Path } from '@platejs/plite';
+import { ElementApi } from '@platejs/plite';
 import type { TableCellElement } from '../BaseTablePlugin';
 
 import { compileTableGrid, type TableGrid, type TableGridAnchor } from './grid';
@@ -69,13 +64,14 @@ export const createDetachedTableContext = (
   tablePath: Path = []
 ): TableContext => createContext(table, tablePath, compileTableGrid(table));
 
-export const createTableContext = <V extends Value>(
-  state: Pick<EditorStateView<V>, 'key' | 'nodes'>,
+export const createTableContext = (
+  state: Pick<EditorStateView, 'key' | 'nodes'>,
   tablePath: Path,
   root?: string
 ): TableContext | null => {
-  const table = state.nodes.get<Element>(
-    root ? { offset: 0, path: tablePath, root } : tablePath
+  const table = state.nodes.get(
+    root ? { offset: 0, path: tablePath, root } : tablePath,
+    { match: ElementApi.isElement }
   )?.[0];
 
   if (!table) return null;

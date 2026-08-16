@@ -5,6 +5,7 @@ export type { EditorApplicationSchema } from './lib/editor/editorApplicationSche
 export type {
   BasePluginInput,
   PlatePluginOwnUpdate,
+  PlateNodeInsertOptions,
   PlatePluginUpdate,
   PlatePluginReadState,
   PlatePluginState,

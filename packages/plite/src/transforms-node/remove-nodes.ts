@@ -17,13 +17,17 @@ import {
   isBlock as editorIsBlock,
   unhangRange as editorUnhangRange,
 } from '../interfaces/editor';
-import type { NodeMutationMethods } from '../interfaces/transforms/node';
+import type { AnyEditor as Editor } from '../interfaces/editor';
+import type {
+  NodeMutationMethods,
+  NodeRemoveNodesOptions,
+} from '../interfaces/transforms/node';
 import { matchPath } from '../utils/match-path';
 import { normalizeNodeMatch } from '../utils/node-match';
 
-export const removeNodes: NodeMutationMethods['removeNodes'] = (
-  editor,
-  options = {}
+export const removeNodes = ((
+  editor: Editor,
+  options: NodeRemoveNodesOptions = {}
 ) => {
   if (
     options.at !== undefined &&
@@ -34,7 +38,7 @@ export const removeNodes: NodeMutationMethods['removeNodes'] = (
     const at = options.at;
     const [node] = getNode(editor, at);
     const pathMatch =
-      normalizeNodeMatch(options.match) ?? matchPath(editor, at);
+      normalizeNodeMatch(options.type, options.match) ?? matchPath(editor, at);
 
     if (pathMatch(node, at)) {
       applyBuiltDocumentChange(editor, (builder, root) =>
@@ -47,7 +51,7 @@ export const removeNodes: NodeMutationMethods['removeNodes'] = (
 
   runEditorTransaction(editor, (tx) => {
     const { hanging = false, voids = false, mode = 'lowest' } = options;
-    let match = normalizeNodeMatch(options.match);
+    let match = normalizeNodeMatch(options.type, options.match);
     let at: Location | Span | null | undefined = tx.resolveTarget({
       at: options.at,
     });
@@ -96,7 +100,7 @@ export const removeNodes: NodeMutationMethods['removeNodes'] = (
     const selectionAnchor = SelectionApi.isText(selection)
       ? editor.anchor(selection, { deletion: 'nearest' })
       : null;
-    const depths = getNodes(editor, { at, match, mode, voids });
+    const depths = getNodes(editor as never, { at, match, mode, voids });
     const pathAnchors = Array.from(depths, ([, path]) =>
       editor.anchor(path, {
         association: 'forward',
@@ -120,4 +124,4 @@ export const removeNodes: NodeMutationMethods['removeNodes'] = (
       tx.setSelection(resolved ? { ...selection, ...resolved } : null);
     }
   });
-};
+}) as NodeMutationMethods['removeNodes'];

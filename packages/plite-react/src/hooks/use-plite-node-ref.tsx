@@ -5,6 +5,7 @@ import type {
   Path,
   NodeKey,
 } from '@platejs/plite';
+import { NodeApi } from '@platejs/plite';
 import {
   EDITOR_TO_KEY_TO_ELEMENT,
   ELEMENT_TO_NODE,
@@ -663,9 +664,11 @@ const bindPliteNodeElement = ({
     return null;
   }
 
-  const livePliteNode = editor.read(
-    (state) => state.nodes.get<Descendant>(path)?.[0]
-  );
+  const livePliteNode = editor.read((state) => {
+    const candidate = state.nodes.get(path)?.[0];
+
+    return candidate && NodeApi.isDescendant(candidate) ? candidate : undefined;
+  });
   const pliteNode =
     providedPliteNode === livePliteNode ? providedPliteNode : livePliteNode;
 

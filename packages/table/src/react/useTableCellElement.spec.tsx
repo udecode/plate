@@ -19,7 +19,11 @@ import React from 'react';
 
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 
-import { BaseTablePlugin } from '../lib/BaseTablePlugin';
+import {
+  BaseTableCellPlugin,
+  BaseTablePlugin,
+  BaseTableRowPlugin,
+} from '../lib/BaseTablePlugin';
 import {
   createTestTableEditor,
   getTestTablePlugins,
@@ -365,7 +369,9 @@ describe('TablePlugin.update.toggleBorders integration', () => {
     ) as TestEditor;
 
     const editor = createTableEditor(input);
-    const entry = editor.read.nodes.get<TableCellElement>([0, 1, 1]);
+    const entry = editor.read.nodes.get([0, 1, 1], {
+      type: BaseTableCellPlugin,
+    });
     assert(entry);
     const [target] = entry;
 
@@ -464,11 +470,15 @@ describe('useTableCellSize', () => {
       initialValue: [table],
       plugins: [TablePlugin],
     });
-    const installedTable = editor.read.nodes.get<TableElement>([0])![0];
-    const installedRow = editor.read.nodes.get<TableRowElement>([0, 0])![0];
-    const installedElement = editor.read.nodes.get<TableCellElement>([
-      0, 0, 0,
-    ])![0];
+    const installedTable = editor.read.nodes.get([0], {
+      type: BaseTablePlugin,
+    })![0];
+    const installedRow = editor.read.nodes.get([0, 0], {
+      type: BaseTableRowPlugin,
+    })![0];
+    const installedElement = editor.read.nodes.get([0, 0, 0], {
+      type: BaseTableCellPlugin,
+    })![0];
     const PlateWithChildren = Plate as React.ComponentType<
       Omit<React.ComponentProps<typeof Plate>, 'children'>
     >;

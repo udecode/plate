@@ -1,5 +1,6 @@
 import {
   type Descendant,
+  type EditorSelection,
   type Element,
   type Selection,
   type Text,
@@ -21,7 +22,7 @@ export {
 
 export type TestEditorFixture = {
   children: Element[];
-  selection?: Selection;
+  selection?: Selection<EditorSelection>;
 };
 
 export type TestEditor = TestEditorFixture;

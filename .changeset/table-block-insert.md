@@ -18,6 +18,9 @@ the intended rows and cells after earlier edits.
 
 Represent multi-cell pointer drags as structural table selections, preserve
 them when clearing cells, and leave same-cell text drags native.
+Publish that table-cell payload through `BaseTablePlugin.selectionKinds` as
+the single runtime and type contract. Editors infer table-cell reads and writes
+only when the Table plugin is installed.
 
 Name live selection identity `cellKeys` and `tableKey`. Read selected live
 targets with `getSelectedCellKeys`, `getSelectedTableKeys`, and

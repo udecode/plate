@@ -142,9 +142,9 @@ export const BlockSelectionPlugin = definePlatePlugin(PLUGINS.blockSelection, {
       const selectedKeys = store.get('selectedKeys');
       const nodes = selectedKeys?.size
         ? [
-            ...state.nodes.toArray<Element>({
+            ...state.nodes.toArray({
               at: [],
-              match: (node) =>
+              match: (node): node is Element =>
                 ElementApi.isElement(node) &&
                 selectedKeys.has(state.key(node)!),
             }),
@@ -165,7 +165,9 @@ export const BlockSelectionPlugin = definePlatePlugin(PLUGINS.blockSelection, {
             return;
           }
 
-          const tableEntry = state.nodes.get<Element>(PathApi.parent(path));
+          const tableEntry = state.nodes.get(PathApi.parent(path), {
+            match: ElementApi.isElement,
+          });
 
           if (!tableEntry) return;
 
@@ -192,7 +194,10 @@ export const BlockSelectionPlugin = definePlatePlugin(PLUGINS.blockSelection, {
       }
 
       if (nodes.length === 0 && options?.selectionFallback) {
-        return state.nodes.toArray<Element>({ mode: 'highest' });
+        return state.nodes.toArray({
+          match: ElementApi.isElement,
+          mode: 'highest',
+        });
       }
 
       return nodes;
@@ -279,7 +284,9 @@ export const BlockSelectionPlugin = definePlatePlugin(PLUGINS.blockSelection, {
         if (!enableContextMenu) return;
 
         if (editor.read.selection()?.focus && disabledWhenFocused) {
-          const nodeEntry = editor.read.nodes.above<Element>();
+          const nodeEntry = editor.read.nodes.above({
+            match: ElementApi.isElement,
+          });
           const elementPath = editor.read.nodes.path(element);
 
           if (
@@ -325,10 +332,10 @@ export const BlockSelectionPlugin = definePlatePlugin(PLUGINS.blockSelection, {
 
         if (direction === 'up') {
           const [, topPath] = blocks[0]!;
-          const previous = editor.read.nodes.previous<Element>({
+          const previous = editor.read.nodes.previous({
             at: topPath,
             from: 'parent',
-            match: (node, path) =>
+            match: (node, path): node is Element =>
               ElementApi.isElement(node) && isSelectable(node, path),
           });
           const key = editor.key(previous?.[0] ?? blocks[0]![0]);
@@ -340,10 +347,10 @@ export const BlockSelectionPlugin = definePlatePlugin(PLUGINS.blockSelection, {
         }
 
         const [, bottomPath] = blocks.at(-1)!;
-        const next = editor.read.nodes.next<Element>({
+        const next = editor.read.nodes.next({
           at: bottomPath,
           from: 'child',
-          match: (node, path) =>
+          match: (node, path): node is Element =>
             ElementApi.isElement(node) && isSelectable(node, path),
         });
         const key = editor.key(next?.[0] ?? blocks.at(-1)![0]);
@@ -414,7 +421,7 @@ export const BlockSelectionPlugin = definePlatePlugin(PLUGINS.blockSelection, {
             const below = editor.read.nodes.next({
               at: bottomPath,
               mode: 'highest',
-              match: (node, path) =>
+              match: (node, path): node is Element =>
                 ElementApi.isElement(node) &&
                 isSelectable(node, path) &&
                 !PathApi.isAncestor(path, bottomPath),
@@ -428,10 +435,10 @@ export const BlockSelectionPlugin = definePlatePlugin(PLUGINS.blockSelection, {
             if (topKey && topKey !== anchorKey) selectedKeys.delete(topKey);
           }
         } else if (anchorIsBottom) {
-          const above = editor.read.nodes.previous<Element>({
+          const above = editor.read.nodes.previous({
             at: topPath,
             from: 'parent',
-            match: (node, path) =>
+            match: (node, path): node is Element =>
               ElementApi.isElement(node) && isSelectable(node, path),
           });
 
@@ -442,7 +449,9 @@ export const BlockSelectionPlugin = definePlatePlugin(PLUGINS.blockSelection, {
 
           if (PathApi.isAncestor(above[1], topPath)) {
             selectedKeys.forEach((key) => {
-              const entry = editor.read.nodes.get(key);
+              const entry = editor.read.nodes.get(key, {
+                match: ElementApi.isElement,
+              });
 
               if (entry && PathApi.isDescendant(entry[1], above[1])) {
                 selectedKeys.delete(key);
@@ -593,10 +602,11 @@ export const BlockSelectionPlugin = definePlatePlugin(PLUGINS.blockSelection, {
       set,
       selectAll: () => {
         const keys = editor.read.nodes
-          .toArray<Element>({
+          .toArray({
             at: [],
             mode: 'highest',
-            match: (n, p) => ElementApi.isElement(n) && isSelectable(n, p),
+            match: (node, path): node is Element =>
+              ElementApi.isElement(node) && isSelectable(node, path),
           })
           .flatMap(([node]) => {
             const key = editor.key(node);
@@ -616,7 +626,11 @@ export const BlockSelectionPlugin = definePlatePlugin(PLUGINS.blockSelection, {
             if (commit.before.index.pathOf(nodeKey)) continue;
 
             const path = commit.after.index.pathOf(nodeKey);
-            const node = path ? editor.read.nodes.get(path)?.[0] : undefined;
+            const node = path
+              ? editor.read.nodes.get(path, {
+                  match: ElementApi.isElement,
+                })?.[0]
+              : undefined;
 
             if (node && editor.read.schema.isBlock(node)) {
               keys.add(nodeKey);

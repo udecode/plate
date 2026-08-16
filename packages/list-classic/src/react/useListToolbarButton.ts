@@ -1,11 +1,10 @@
-import { PLUGINS } from '@platejs/utils';
 import type { PluginReference } from '@platejs/core';
 import { useEditor, useEditorSelector } from '@platejs/core/react';
 
-import { ListPlugin } from './ListPlugin';
+import { BulletedListPlugin, ListPlugin } from './ListPlugin';
 
 export const useListToolbarButtonState = ({
-  plugin = PLUGINS.bulletedList as string,
+  plugin = BulletedListPlugin,
 }: {
   plugin?: PluginReference | string;
 } = {}) => {
@@ -13,7 +12,10 @@ export const useListToolbarButtonState = ({
     (editor) =>
       !!editor.read.selection() &&
       editor.read.nodes.some({
-        match: { type: editor.plugin(plugin).schema.type },
+        type:
+          typeof plugin === 'string'
+            ? editor.plugin(plugin).schema.type
+            : plugin,
       })
   );
 

@@ -7,13 +7,11 @@ import type {
   MouseEvent as ReactMouseEvent,
 } from 'react';
 import {
-  type Editor,
   type Range,
   RangeApi,
   type RootKey,
   SelectionApi,
 } from '@platejs/plite';
-import { toInternalRoot } from './runtime-editor-api';
 import { Hotkeys } from '@platejs/plite-dom';
 import { DOMRootRuntime } from '@platejs/plite-dom/internal';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
@@ -46,6 +44,7 @@ import {
   readLiveSelection,
   readRuntimeSelection,
 } from './runtime-selection-state';
+import { type AnyEditor, toInternalRoot } from './runtime-editor-api';
 
 export type EditableBrowserEventFamily =
   | 'beforeinput'
@@ -402,7 +401,7 @@ export type EditableInputKernelDecision = {
 
 export type EditableEditingKernel = {
   dispatchBrowserEvent: (event: EditableBrowserEvent) => EditableKernelResult;
-  editor: Editor;
+  editor: AnyEditor;
   state: EditableKernelState;
 };
 
@@ -446,18 +445,18 @@ export const getEditableSelectionChangeOwnership = ({
   });
 
 export const getEditableKernelTrace = (
-  editor: Editor
+  editor: AnyEditor
 ): readonly EditableKernelTraceEntry[] =>
   DOMRootRuntime.resolveInputRuntime(
     editor
   ).getTrace<EditableKernelTraceEntry>();
 
-export const clearEditableKernelTrace = (editor: Editor) => {
+export const clearEditableKernelTrace = (editor: AnyEditor) => {
   DOMRootRuntime.resolveInputRuntime(editor).clearTrace();
 };
 
 export const getCurrentEditableEventFrame = (
-  editor: Editor
+  editor: AnyEditor
 ): EditableEventFrame | null =>
   DOMRootRuntime.resolveInputRuntime(editor).currentFrame<
     InputIntent,
@@ -465,7 +464,7 @@ export const getCurrentEditableEventFrame = (
   >();
 
 export const beginEditableEventFrame = (
-  editor: Editor,
+  editor: AnyEditor,
   input: EditableEventFrameInput
 ): EditableEventFrame => {
   const inputRuntime = DOMRootRuntime.resolveInputRuntime(editor);
@@ -488,7 +487,7 @@ export const beginEditableEventFrame = (
 };
 
 export const endEditableEventFrame = (
-  editor: Editor
+  editor: AnyEditor
 ): EditableEventFrame | null =>
   DOMRootRuntime.resolveInputRuntime(editor).endFrame<
     InputIntent,
@@ -499,7 +498,7 @@ export const recordEditableKernelTrace = ({
   editor,
   trace,
 }: {
-  editor: Editor;
+  editor: AnyEditor;
   trace: EditableKernelTraceInput;
 }) => {
   const entry = createEditableKernelTraceEntry({ editor, trace });
@@ -612,7 +611,7 @@ export const createEditableKernelTraceEntry = ({
   editor,
   trace,
 }: {
-  editor: Editor;
+  editor: AnyEditor;
   trace: EditableKernelTraceInput;
 }): EditableKernelTraceEntry => {
   const frame = getCurrentEditableEventFrame(editor);
@@ -673,7 +672,7 @@ export const createEditableKernelResult = ({
   handled,
   trace,
 }: {
-  editor: Editor;
+  editor: AnyEditor;
   handled: boolean;
   trace: EditableKernelTraceInput;
 }): EditableKernelResult => {

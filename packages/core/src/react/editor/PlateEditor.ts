@@ -1,5 +1,5 @@
 import type { Value } from '@platejs/plite';
-import type { ReactEditor } from '@platejs/plite-react';
+import type { ReactApi } from '@platejs/plite-react';
 
 import type {
   AnyBasePlugin,
@@ -17,6 +17,7 @@ import type {
   MergeInstalledPluginDefinitions,
   PluginReference,
 } from '../../lib';
+import type { CoreEditorApi } from '../../lib/editor/coreEditorCapabilityDefinition.internal';
 import type {
   GeneratedEditorMutations,
   GeneratedEditorValue,
@@ -113,14 +114,10 @@ export type InternalPlateEditorWithInstalledPlugins<
 > = PlateEditorReference &
   InternalPlateEditorBase<V, D, S> & {
     readonly api: InternalBaseEditorWithInstalledPlugins<V, D, S>['api'] &
-      ReactEditor<V>['api'];
-    extension: InternalBaseEditorWithInstalledPlugins<V, D, S>['extension'] &
-      ReactEditor<V>['extension'];
+      CoreEditorApi<V> & {
+        react: ReactApi;
+      };
     plugin: InternalPlatePluginPortal<S>;
-    read: InternalBaseEditorWithInstalledPlugins<V, D, S>['read'] &
-      ReactEditor<V>['read'];
-    update: InternalBaseEditorWithInstalledPlugins<V, D, S>['update'] &
-      ReactEditor<V>['update'];
   };
 
 /** Plate editor inferred directly from its public plugin tuple. */

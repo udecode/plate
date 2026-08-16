@@ -297,9 +297,11 @@ export const uiComponents: Registry['items'] = [
   {
     dependencies: [
       '@platejs/dnd',
+      '@platejs/layout',
       '@platejs/list',
       '@platejs/plite',
       '@platejs/selection',
+      '@platejs/table',
     ],
     description: 'A block wrapper with a drag handle for moving editor blocks.',
     files: [{ path: 'ui/block-draggable.tsx', type: 'registry:ui' }],

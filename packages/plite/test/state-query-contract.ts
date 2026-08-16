@@ -4,9 +4,11 @@ import { describe, it } from 'node:test';
 import {
   createEditor,
   createEditorView,
+  ElementApi,
   type Element,
-  type Text,
+  TextApi,
 } from '@platejs/plite';
+import { parent as staticParent } from '@platejs/plite/internal';
 
 const paragraph = (text: string): Element => ({
   type: 'paragraph',
@@ -206,12 +208,10 @@ describe('state query contract', () => {
     const editor = createEditor({
       initialValue: [paragraph('one'), paragraph('two')],
     });
-    const firstEntry = editor.read((state) => state.nodes.get<Element>([0]));
-    const firstTextEntry = editor.read((state) =>
-      state.nodes.get<Text>([0, 0])
-    );
-    assert(firstEntry);
-    assert(firstTextEntry);
+    const firstEntry = editor.read((state) => state.nodes.get([0]));
+    const firstTextEntry = editor.read((state) => state.nodes.get([0, 0]));
+    assert(firstEntry && ElementApi.isElement(firstEntry[0]));
+    assert(firstTextEntry && TextApi.isText(firstTextEntry[0]));
     const [first] = firstEntry;
     const [firstText] = firstTextEntry;
 
@@ -233,10 +233,10 @@ describe('state query contract', () => {
 
   it('uses element and text targets across lifecycle reads', () => {
     const editor = createEditor({ initialValue: [paragraph('one')] });
-    const elementEntry = editor.read.nodes.get<Element>([0]);
-    const textEntry = editor.read.nodes.get<Text>([0, 0]);
-    assert(elementEntry);
-    assert(textEntry);
+    const elementEntry = editor.read.nodes.get([0]);
+    const textEntry = editor.read.nodes.get([0, 0]);
+    assert(elementEntry && ElementApi.isElement(elementEntry[0]));
+    assert(textEntry && TextApi.isText(textEntry[0]));
     const [element] = elementEntry;
     const [text] = textEntry;
 
@@ -257,9 +257,9 @@ describe('state query contract', () => {
     ]);
     assert.equal(editor.read.text.string(element), 'one');
     assert.deepEqual(
-      editor.read.nodes.toArray<Element>({
+      editor.read.nodes.toArray({
         at: element,
-        match: { type: 'paragraph' },
+        type: 'paragraph',
       }),
       [[element, [0]]]
     );
@@ -267,8 +267,8 @@ describe('state query contract', () => {
 
   it('invalidates removed node targets without scanning the tree', () => {
     const editor = createEditor({ initialValue: [paragraph('one')] });
-    const entry = editor.read.nodes.get<Element>([0]);
-    assert(entry);
+    const entry = editor.read.nodes.get([0]);
+    assert(entry && ElementApi.isElement(entry[0]));
     const [element] = entry;
 
     editor.update.nodes.remove({ at: element });
@@ -288,10 +288,8 @@ describe('state query contract', () => {
       },
     });
     const headerEditor = createEditorView(runtime, { root: 'header' });
-    const headerEntry = headerEditor.read((state) =>
-      state.nodes.get<Element>([0])
-    );
-    assert(headerEntry);
+    const headerEntry = headerEditor.read((state) => state.nodes.get([0]));
+    assert(headerEntry && ElementApi.isElement(headerEntry[0]));
     const [headerNode] = headerEntry;
 
     assert.deepEqual(
@@ -348,22 +346,31 @@ describe('state query contract', () => {
 
     assert.deepEqual(
       editor.read.nodes
-        .toArray<Element>({ at: [], match: { type: 'quote' } })
+        .toArray({ at: [], type: 'quote' })
         .map(([node]) => node.type),
       ['quote']
     );
     assert.deepEqual(
       editor.read.nodes
-        .toArray<Element>({ at: [], match: { type: ['paragraph', 'image'] } })
+        .toArray({ at: [], type: ['paragraph', 'image'] })
         .map(([node]) => node.type),
       ['paragraph', 'image']
     );
+    assert.equal(editor.read.nodes.find({ at: [], type: [] }), undefined);
+    assert.deepEqual(editor.read.nodes.above({ at: [1, 0], type: 'quote' }), [
+      { type: 'quote', children: [{ text: 'two' }] },
+      [1],
+    ]);
+    assert.deepEqual(editor.read.nodes.above({ at: [1, 0], mode: 'highest' }), [
+      editor,
+      [],
+    ]);
     assert.equal(
-      editor.read.nodes.find<Element>({ at: [], match: { type: [] } }),
+      editor.read.nodes.above({ at: [1, 0], type: 'image' }),
       undefined
     );
     assert.deepEqual(
-      editor.read.nodes.find<Element>({
+      editor.read.nodes.find({
         at: [],
         match: (node): node is Element & { url: string } =>
           'url' in node && typeof node.url === 'string',
@@ -424,6 +431,19 @@ describe('state query contract', () => {
     );
     assert.equal(
       editor.read((state) => state.nodes.parent([])),
+      undefined
+    );
+    assert.deepEqual(staticParent(editor, [9])[1], []);
+    assert.throws(
+      () => staticParent(editor, []),
+      /Cannot get the parent path of the root path/
+    );
+    assert.throws(
+      () => staticParent(editor, [], { type: 'paragraph' }),
+      /Cannot get the parent path of the root path/
+    );
+    assert.equal(
+      editor.read((state) => state.nodes.parent([9], { type: 'paragraph' })),
       undefined
     );
     assert.equal(

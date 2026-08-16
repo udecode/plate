@@ -672,7 +672,7 @@ Inserts one headless placeholder for an image, video, audio, or file.
     The resolved persisted media type created after upload, such as
     `editor.plugin(ImagePlugin).schema.type`.
   </APIItem>
-  <APIItem name="options" type="NodeInsertNodesOptions<PlaceholderElement>" optional>
+  <APIItem name="options" type="PlateNodeInsertOptions" optional>
     Exact-path and selection options.
   </APIItem>
 </APIParameters>
@@ -687,12 +687,12 @@ Inserts an image element into the editor.
   <APIItem name="url" type="string">
     The image URL.
   </APIItem>
-  <APIItem name="options" type="NodeInsertNodesOptions<ImageElement>" optional>
+  <APIItem name="options" type="PlateNodeInsertOptions" optional>
     Exact-path and selection options.
   </APIItem>
 </APIParameters>
 
-<APIOptions type="NodeInsertNodesOptions<ImageElement>">
+<APIOptions type="PlateNodeInsertOptions">
   <APIItem name="at" type="Location" optional>
     Exact insertion target. When omitted, the image is inserted after the
     selected block.
@@ -712,12 +712,12 @@ Transforms and normalizes a URL, then inserts a media embed.
   <APIItem name="url" type="string">
     A media URL or embed snippet.
   </APIItem>
-  <APIItem name="options" type="NodeInsertNodesOptions<MediaEmbedElement>" optional>
+  <APIItem name="options" type="PlateNodeInsertOptions" optional>
     Exact-path and selection options.
   </APIItem>
 </APIParameters>
 
-<APIOptions type="NodeInsertNodesOptions<MediaEmbedElement>">
+<APIOptions type="PlateNodeInsertOptions">
   <APIItem name="at" type="Location" optional>
     Exact insertion target. When omitted, the current selection is required.
   </APIItem>

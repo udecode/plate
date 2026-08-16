@@ -2,6 +2,7 @@ import {
   type Descendant,
   createEditorView,
   type EditorDocumentValue,
+  type Editor,
   type EditorSnapshot,
   type EditorStateView,
   type Element,
@@ -283,7 +284,7 @@ export const ElementIdPlugin = defineBasePlugin('elementId', {
         root,
         root === MAIN_ROOT_KEY
           ? state.runtime.snapshot()
-          : createEditorView(context.editor, {
+          : createEditorView(context.editor as unknown as Editor, {
               root,
             }).read.runtime.snapshot()
       );

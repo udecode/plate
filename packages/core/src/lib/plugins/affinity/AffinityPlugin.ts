@@ -9,6 +9,7 @@ import {
   NodeApi,
   PathApi,
   RangeApi,
+  TextApi,
 } from '@platejs/plite';
 import { findEditorDOMRootRuntime } from '@platejs/plite-dom/internal';
 import isEqual from 'lodash/isEqual.js';
@@ -120,13 +121,17 @@ export const AffinityPlugin = defineBasePlugin('affinity', {
         : undefined;
     const isAffinityInlineElement =
       parentAffinity === 'hard' || parentAffinity === 'directional';
-    const currentNode = state.nodes.get<Element | Text>(cursor.path)?.[0];
+    const currentNode = state.nodes.get(cursor.path)?.[0];
 
-    if (!isAffinityInlineElement && !currentNode) return null;
+    if (
+      !isAffinityInlineElement &&
+      (!currentNode || !NodeApi.isDescendant(currentNode))
+    )
+      return null;
 
     const nodeEntry: NodeEntry<Element | Text> = isAffinityInlineElement
       ? [parent!, PathApi.parent(cursor.path)]
-      : [currentNode!, cursor.path];
+      : [currentNode as Element | Text, cursor.path];
 
     if (
       edge === 'start' &&
@@ -140,7 +145,11 @@ export const AffinityPlugin = defineBasePlugin('affinity', {
       edge === 'end'
         ? PathApi.next(nodeEntry[1])
         : PathApi.previous(nodeEntry[1]);
-    const siblingNode = state.nodes.get<Text>(siblingPath)?.[0];
+    const siblingCandidate = state.nodes.get(siblingPath)?.[0];
+    const siblingNode =
+      siblingCandidate && TextApi.isText(siblingCandidate)
+        ? siblingCandidate
+        : undefined;
     const siblingEntry: NodeEntry<Text> | null = siblingNode
       ? [siblingNode, siblingPath]
       : null;
@@ -273,7 +282,11 @@ export const AffinityPlugin = defineBasePlugin('affinity', {
           if (!selection || RangeApi.isExpanded(selection)) return;
 
           const textPath = selection.focus.path;
-          const textNode = state.nodes.get<Text>(textPath)?.[0];
+          const textCandidate = state.nodes.get(textPath)?.[0];
+          const textNode =
+            textCandidate && TextApi.isText(textCandidate)
+              ? textCandidate
+              : undefined;
 
           if (!textNode) return;
 
@@ -292,9 +305,13 @@ export const AffinityPlugin = defineBasePlugin('affinity', {
           }
 
           const nextPoint = state.points.after(textPath);
-          const nextTextNode = nextPoint
-            ? (state.nodes.get<Text>(nextPoint.path)?.[0] ?? null)
-            : null;
+          const nextCandidate = nextPoint
+            ? state.nodes.get(nextPoint.path)?.[0]
+            : undefined;
+          const nextTextNode =
+            nextCandidate && TextApi.isText(nextCandidate)
+              ? nextCandidate
+              : null;
           const marksToRemove = outwardMarks.filter(
             (markKey) => textNode[markKey] && !nextTextNode?.[markKey]
           );

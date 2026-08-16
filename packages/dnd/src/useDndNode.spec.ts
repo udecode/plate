@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
 
 import { renderHook } from '@testing-library/react';
-import { type Element, NodeApi, type NodeKey } from '@platejs/plite';
+import {
+  type Element,
+  ElementApi,
+  NodeApi,
+  type NodeKey,
+} from '@platejs/plite';
 import type { DropTargetHookSpec, DropTargetMonitor } from 'react-dnd';
 import * as actualReactDnd from 'react-dnd';
 
@@ -35,7 +40,9 @@ const { DRAG_ITEM_BLOCK, getHoverDirection, useDropNode } = await import(
 );
 
 const getElement = (editor: PlateEditor, path: number[]) => {
-  const entry = editor.read.nodes.get<Element>(path);
+  const entry = editor.read.nodes.get(path, {
+    match: ElementApi.isElement,
+  });
 
   assert(entry);
 

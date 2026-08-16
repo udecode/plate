@@ -221,12 +221,12 @@ const createPlainTextInlineSlice = <V extends Value>(
   text: string,
   activeMarks: EditorMarks | null
 ): ContentSlice<V> | null => {
-  const inlineSpine = Array.from(
-    state.nodes.levels<HostSliceElement<V>>({
-      at: start,
-      match: (node) => NodeApi.isElement(node),
-    })
-  )
+  const inlineSpine = Array.from(state.nodes.levels({ at: start }))
+    .flatMap(([node, path]) =>
+      NodeApi.isElement(node)
+        ? ([[node as HostSliceElement<V>, path]] as const)
+        : []
+    )
     .filter(
       ([, path]) =>
         path.length > blockPath.length &&
@@ -289,7 +289,7 @@ const createDefaultPlainTextHostCodec = <V extends Value>() =>
         return null;
       }
 
-      const blockMatch = state.nodes.block<HostSliceElement<V>>({ at: start });
+      const blockMatch = state.nodes.block({ at: start });
 
       if (!blockMatch) return null;
 

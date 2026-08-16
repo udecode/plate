@@ -85,7 +85,7 @@ if (type === KEYS.blockquote) {
     node.type === type ||
     !!tx.nodes.above({
       at: path,
-      match: { type },
+      type,
     });
 
   if (!isActive) {

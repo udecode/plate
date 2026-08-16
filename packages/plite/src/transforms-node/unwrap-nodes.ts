@@ -20,13 +20,17 @@ import {
 import type { AnyEditor as Editor } from '../interfaces/editor';
 import { type Path, PathApi } from '../interfaces/path';
 import type { Point } from '../interfaces/point';
-import type { NodeMutationMethods } from '../interfaces/transforms/node';
+import type {
+  NodeMutationMethods,
+  NodeUnwrapNodesOptions,
+} from '../interfaces/transforms/node';
 import { select } from '../transforms-selection/select';
 import { liftNodes } from './lift-nodes';
 import { mergeNodes } from './merge-nodes';
 import { moveNodes } from './move-nodes';
 import { removeNodes } from './remove-nodes';
 import { matchPath } from '../utils/match-path';
+import { normalizeNodeMatch } from '../utils/node-match';
 
 const getChildren = (editor: Editor, node: Ancestor): readonly Descendant[] =>
   NodeApi.isEditor(node) ? editorGetChildren(editor) : node.children;
@@ -85,9 +89,9 @@ const mergeAdjacentTextRuns = (editor: Editor) => {
   });
 };
 
-export const unwrapNodes: NodeMutationMethods['unwrapNodes'] = (
-  editor,
-  options = {}
+export const unwrapNodes = ((
+  editor: Editor,
+  options: NodeUnwrapNodesOptions = {}
 ) => {
   const unwrapNodeAtPath = (path: Path) => {
     const [node] = getNode(editor, path);
@@ -124,7 +128,7 @@ export const unwrapNodes: NodeMutationMethods['unwrapNodes'] = (
     const mode = options.mode ?? 'lowest';
     const split = options.split ?? false;
     const voids = options.voids ?? false;
-    let { match } = options;
+    let match = normalizeNodeMatch(options.type, options.match);
 
     if (!target) {
       return;
@@ -280,4 +284,4 @@ export const unwrapNodes: NodeMutationMethods['unwrapNodes'] = (
 
     mergeAdjacentTextRuns(editor);
   });
-};
+}) as NodeMutationMethods['unwrapNodes'];

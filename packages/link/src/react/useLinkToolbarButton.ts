@@ -1,17 +1,9 @@
-import {
-  useEditor,
-  useEditorPlugin,
-  useEditorSelector,
-} from '@platejs/core/react';
-import type { LinkElement } from '../lib/BaseLinkPlugin';
+import { useEditor, useEditorSelector } from '@platejs/core/react';
 
 import { LinkPlugin } from './LinkPlugin';
 import { useFloatingLinkActions } from './useFloatingLink';
 
 export const useLinkToolbarButtonState = () => {
-  const {
-    schema: { type },
-  } = useEditorPlugin(LinkPlugin);
   const pressed = useEditorSelector((editor) => {
     const selection = editor.read.selection();
 
@@ -19,7 +11,7 @@ export const useLinkToolbarButtonState = () => {
       !!selection &&
       editor.read.nodes.some({
         at: selection,
-        match: { type },
+        type: LinkPlugin,
       })
     );
   });
@@ -33,9 +25,6 @@ export const useLinkToolbarButton = (
   state: ReturnType<typeof useLinkToolbarButtonState>
 ) => {
   const editor = useEditor();
-  const {
-    schema: { type },
-  } = useEditorPlugin(LinkPlugin);
   const { trigger } = useFloatingLinkActions();
 
   return {
@@ -47,9 +36,9 @@ export const useLinkToolbarButton = (
 
           if (!selection) return;
 
-          const node = editor.read.nodes.find<LinkElement>({
+          const node = editor.read.nodes.find({
             at: selection,
-            match: { type },
+            type: LinkPlugin,
           });
 
           if (!node) return;

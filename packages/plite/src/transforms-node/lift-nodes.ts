@@ -11,18 +11,22 @@ import {
 } from '../interfaces/editor';
 import type { AnyEditor as Editor } from '../interfaces/editor';
 import { type Path, PathApi } from '../interfaces/path';
-import type { NodeMutationMethods } from '../interfaces/transforms/node';
+import type {
+  NodeLiftNodesOptions,
+  NodeMutationMethods,
+} from '../interfaces/transforms/node';
 import { deselect, select } from '../transforms-selection';
 import { moveNodes } from './move-nodes';
 import { removeNodes } from './remove-nodes';
 import { matchPath } from '../utils/match-path';
+import { normalizeNodeMatch } from '../utils/node-match';
 
 const getChildren = (editor: Editor, node: Ancestor) =>
   NodeApi.isEditor(node) ? editorGetChildren(editor) : node.children;
 
-export const liftNodes: NodeMutationMethods['liftNodes'] = (
-  editor,
-  options = {}
+export const liftNodes = ((
+  editor: Editor,
+  options: NodeLiftNodesOptions = {}
 ) => {
   const liftNodeAtPath = (path: Path) => {
     const [node] = getNode(editor, path);
@@ -92,7 +96,7 @@ export const liftNodes: NodeMutationMethods['liftNodes'] = (
     const selectionBefore = tx.getModelSelection();
     const mode = options.mode ?? 'lowest';
     const voids = options.voids ?? false;
-    let { match } = options;
+    let match = normalizeNodeMatch(options.type, options.match);
 
     if (!target) {
       return;
@@ -105,7 +109,11 @@ export const liftNodes: NodeMutationMethods['liftNodes'] = (
           : (node) => NodeApi.isElement(node) && editorIsBlock(editor, node);
       }
 
-      if (LocationApi.isPath(target) && options.match == null) {
+      if (
+        LocationApi.isPath(target) &&
+        options.match == null &&
+        options.type == null
+      ) {
         liftNodeAtPath(target);
 
         if (selectionBefore == null) {
@@ -176,4 +184,4 @@ export const liftNodes: NodeMutationMethods['liftNodes'] = (
       focus: mapPoint(end),
     });
   });
-};
+}) as NodeMutationMethods['liftNodes'];

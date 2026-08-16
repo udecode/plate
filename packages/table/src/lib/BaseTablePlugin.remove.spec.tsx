@@ -6,7 +6,7 @@ import {
 } from './__tests__/getTestTablePlugins';
 import { jsxt } from '@platejs/test-utils';
 import type { TestEditor } from '@platejs/test-utils';
-import type { TableElement } from './BaseTablePlugin';
+import { BaseTablePlugin } from './BaseTablePlugin';
 import assert from 'node:assert/strict';
 
 describe('table removal', () => {
@@ -390,7 +390,7 @@ describe('table removal', () => {
 
     expect(editor.read.text.string([0])).toBe('1222');
     expect(
-      editor.read.nodes.toArray({ at: [], match: { type: 'tableCell' } })
+      editor.read.nodes.toArray({ at: [], type: 'tableCell' })
     ).toHaveLength(2);
   });
 
@@ -444,7 +444,7 @@ describe('table removal', () => {
 
         expect(editor.read.text.string([0])).toBe('2122');
         expect(
-          editor.read.nodes.toArray({ at: [], match: { type: 'tableRow' } })
+          editor.read.nodes.toArray({ at: [], type: 'tableRow' })
         ).toHaveLength(1);
       });
 
@@ -473,7 +473,7 @@ describe('table removal', () => {
 
         editor.update.table.removeRow();
 
-        const entry = editor.read.nodes.get<TableElement>([0]);
+        const entry = editor.read.nodes.get([0], { type: BaseTablePlugin });
         assert(entry);
         expect(entry[0].children).toHaveLength(1);
         expect(editor.read.text.string([0, 0, 0])).toBe('11');

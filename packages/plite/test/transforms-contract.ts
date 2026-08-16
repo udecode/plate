@@ -16,7 +16,6 @@ import {
   type Descendant,
   type Element,
   type Editor,
-  type Node,
   NodeApi,
   type NodeEntry,
   type Path,
@@ -36,17 +35,99 @@ const paragraph = (text: string): Element => ({
   children: [{ text }],
 });
 
-const getNodeEntry = <T extends Node>(
+const getNodeEntry = <T extends Descendant>(
   editor: Editor<any, any>,
-  path: Path
+  path: Path,
+  match: (node: Descendant) => node is T
 ): NodeEntry<T> => {
-  const entry = editor.read.nodes.get<T>(path);
+  const entry = editor.read.nodes.get(path, {
+    match: (node): node is T => NodeApi.isDescendant(node) && match(node),
+  });
   assert(entry);
 
   return entry;
 };
 
 describe('plite transforms contract', () => {
+  it('honors type selectors across every node transform', () => {
+    {
+      const editor = createEditor({
+        initialValue: [{ type: 'container', children: [paragraph('one')] }],
+      });
+      const before = editor.read.children();
+
+      editor.update((tx) => {
+        tx.nodes.lift({ at: [0, 0], type: 'missing' });
+      });
+
+      assert.deepEqual(editor.read.children(), before);
+    }
+
+    {
+      const editor = createEditor({
+        initialValue: [paragraph('one'), paragraph('two')],
+      });
+      const before = editor.read.children();
+
+      editor.update((tx) => {
+        tx.nodes.merge({ at: [1], type: 'missing' });
+      });
+
+      assert.deepEqual(editor.read.children(), before);
+    }
+
+    {
+      const editor = createEditor({
+        initialValue: [paragraph('one'), paragraph('two')],
+      });
+      const before = editor.read.children();
+
+      editor.update((tx) => {
+        tx.nodes.move({ at: [0], to: [2], type: 'missing' });
+      });
+
+      assert.deepEqual(editor.read.children(), before);
+    }
+
+    {
+      const editor = createEditor({ initialValue: [paragraph('one')] });
+      const before = editor.read.children();
+
+      editor.update((tx) => {
+        tx.nodes.split({ at: [0], position: 0, type: 'missing' });
+      });
+
+      assert.deepEqual(editor.read.children(), before);
+    }
+
+    {
+      const editor = createEditor({
+        initialValue: [{ type: 'container', children: [paragraph('one')] }],
+      });
+      const before = editor.read.children();
+
+      editor.update((tx) => {
+        tx.nodes.unwrap({ at: [0], type: 'missing' });
+      });
+
+      assert.deepEqual(editor.read.children(), before);
+    }
+
+    {
+      const editor = createEditor({ initialValue: [paragraph('one')] });
+      const before = editor.read.children();
+
+      editor.update((tx) => {
+        tx.nodes.wrap(
+          { type: 'quote', children: [] },
+          { at: [0], type: 'missing' }
+        );
+      });
+
+      assert.deepEqual(editor.read.children(), before);
+    }
+  });
+
   it('moveNodes is a no-op when the source and destination paths are equal', () => {
     const editor = createEditor();
 
@@ -198,9 +279,9 @@ describe('plite transforms contract', () => {
     });
 
     editor.update((tx) => {
-      const entry = tx.nodes.get<Element>([0]);
-      assert(entry);
-      tx.nodes.duplicate([entry]);
+      const entry = tx.nodes.get([0]);
+      assert(entry && NodeApi.isElement(entry[0]));
+      tx.nodes.duplicate([entry as NodeEntry<Element>]);
     });
 
     assert.deepEqual(editorGetSnapshot(editor).children, [
@@ -223,8 +304,8 @@ describe('plite transforms contract', () => {
 
     assert.deepEqual(
       editor.read.ranges.fromEntries([
-        getNodeEntry<Element>(editor, [0]),
-        getNodeEntry<Element>(editor, [1]),
+        getNodeEntry(editor, [0], NodeApi.isElement),
+        getNodeEntry(editor, [1], NodeApi.isElement),
       ]),
       {
         anchor: { path: [0, 0], offset: 0 },
@@ -274,7 +355,7 @@ describe('plite transforms contract', () => {
       type: 'paragraph',
       children: [{ text: 'inserted' }],
     };
-    const [target] = getNodeEntry<Element>(editor, [2]);
+    const [target] = getNodeEntry(editor, [2], NodeApi.isElement);
 
     editor.update.blocks.insertAfter(inserted);
     editor.update.blocks.insertAfter(
@@ -651,7 +732,10 @@ describe('plite transforms contract', () => {
     });
 
     editor.update((tx) => {
-      tx.nodes.set<Element>({ type: 'heading-one' }, { at: [0] });
+      tx.nodes.set(
+        { type: 'heading-one' },
+        { at: [0], match: NodeApi.isElement }
+      );
     });
 
     assert.deepEqual(editorGetSnapshot(editor).children, [
@@ -677,11 +761,13 @@ describe('plite transforms contract', () => {
         },
       ],
     });
-    const [element] = getNodeEntry<CalloutElement>(editor, [0]);
-    const [text] = getNodeEntry<CalloutElement['children'][number]>(
+    const [element] = getNodeEntry(
       editor,
-      [0, 0]
+      [0],
+      (node): node is CalloutElement =>
+        NodeApi.isElement(node) && node.type === 'callout'
     );
+    const [text] = getNodeEntry(editor, [0, 0], TextApi.isText);
 
     editor.update.nodes.set({ icon: 'warning' }, { at: element });
     editor.update.nodes.set({ bold: true }, { at: text });
@@ -700,8 +786,8 @@ describe('plite transforms contract', () => {
     const foreignEditor = createEditor({
       initialValue: [paragraph('foreign')],
     });
-    const [element] = getNodeEntry<Element>(editor, [0]);
-    const [foreign] = getNodeEntry<Element>(foreignEditor, [0]);
+    const [element] = getNodeEntry(editor, [0], NodeApi.isElement);
+    const [foreign] = getNodeEntry(foreignEditor, [0], NodeApi.isElement);
     const detached = paragraph('detached');
 
     editor.update.nodes.replaceChildren([{ text: 'two' }], { at: element });
@@ -717,8 +803,8 @@ describe('plite transforms contract', () => {
       },
     });
     const header = createEditorView(runtime, { root: 'header' });
-    const [bodyNode] = getNodeEntry<Element>(runtime, [0]);
-    const [headerNode] = getNodeEntry<Element>(header, [0]);
+    const [bodyNode] = getNodeEntry(runtime, [0], NodeApi.isElement);
+    const [headerNode] = getNodeEntry(header, [0], NodeApi.isElement);
     const headerKey = header.key(headerNode);
 
     header.update.nodes.replaceChildren([{ text: 'next' }], {
@@ -770,7 +856,7 @@ describe('plite transforms contract', () => {
     const editor = createEditor({
       initialValue: [paragraph('one'), paragraph('two')],
     });
-    const [first] = getNodeEntry<Element>(editor, [0]);
+    const [first] = getNodeEntry(editor, [0], NodeApi.isElement);
 
     editor.update.nodes.set({ tone: 'quiet' }, { at: first });
     editor.update.nodes.move({ at: first, to: [2] });
@@ -803,7 +889,7 @@ describe('plite transforms contract', () => {
     const foreignEditor = createEditor({
       initialValue: [paragraph('foreign')],
     });
-    const [foreign] = getNodeEntry<Element>(foreignEditor, [0]);
+    const [foreign] = getNodeEntry(foreignEditor, [0], NodeApi.isElement);
     const detached = paragraph('detached');
 
     editor.update.nodes.set({ tone: 'wrong' }, { at: foreign });
@@ -818,8 +904,8 @@ describe('plite transforms contract', () => {
       },
     });
     const header = createEditorView(runtime, { root: 'header' });
-    const [bodyNode] = getNodeEntry<Element>(runtime, [0]);
-    const [headerNode] = getNodeEntry<Element>(header, [0]);
+    const [bodyNode] = getNodeEntry(runtime, [0], NodeApi.isElement);
+    const [headerNode] = getNodeEntry(header, [0], NodeApi.isElement);
 
     runtime.update.nodes.set({ tone: 'wrong' }, { at: headerNode });
     header.update.nodes.set({ tone: 'wrong' }, { at: bodyNode });
@@ -839,7 +925,7 @@ describe('plite transforms contract', () => {
 
     editor.update.nodes.set(
       { selected: true },
-      { at: [], match: { type: ['paragraph', 'quote'] } }
+      { at: [], type: ['paragraph', 'quote'] }
     );
 
     assert.deepEqual(editor.read.children(), [
@@ -864,7 +950,10 @@ describe('plite transforms contract', () => {
     });
 
     editor.update((tx) => {
-      tx.nodes.set<Element>({ type: 'heading-three' }, { at: [0] });
+      tx.nodes.set(
+        { type: 'heading-three' },
+        { at: [0], match: NodeApi.isElement }
+      );
     });
 
     assert.deepEqual(editorGetSnapshot(editor).children, [
@@ -1168,6 +1257,61 @@ describe('plite transforms contract', () => {
     assert.throws(() => {
       editorSplitNodes(editor, { at: [], position: 0 });
     }, /Cannot split the editor root/);
+  });
+
+  it('splitNodes preserves selector-free explicit inline path splits', () => {
+    const editor = createEditor();
+
+    editor.install(
+      defineTestSchema('split-inline-path', {
+        inline: { inline: true },
+      })
+    );
+    editorReplace(editor, {
+      children: [
+        {
+          type: 'block',
+          children: [
+            { text: '' },
+            {
+              type: 'inline',
+              children: [{ bold: true, text: 'one' }, { text: 'two' }],
+            },
+            { text: '' },
+          ],
+        } as Descendant,
+      ],
+      selection: null,
+    });
+
+    editor.update((tx) => {
+      tx.nodes.split({ at: [0, 1], position: 1 });
+    });
+
+    assert.equal(
+      editor.read.nodes.toArray({ at: [], type: 'inline' }).length,
+      2
+    );
+  });
+
+  it('splitNodes resolves an ancestor selector from a text path position', () => {
+    const editor = createEditor({ initialValue: [paragraph('one')] });
+
+    editor.update((tx) => {
+      tx.nodes.split({ at: [0, 0], position: 1, type: 'paragraph' });
+    });
+
+    assert.deepEqual(editor.read.children(), [paragraph('o'), paragraph('ne')]);
+  });
+
+  it('splitNodes forces an ancestor split at a text path boundary', () => {
+    const editor = createEditor({ initialValue: [paragraph('one')] });
+
+    editor.update((tx) => {
+      tx.nodes.split({ at: [0, 0], position: 0, type: 'paragraph' });
+    });
+
+    assert.deepEqual(editor.read.children(), [paragraph(''), paragraph('one')]);
   });
 
   it('insertNodes rejects the editor root as an insertion target', () => {

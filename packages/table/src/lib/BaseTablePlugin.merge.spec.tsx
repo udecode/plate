@@ -8,7 +8,7 @@ import {
 import { NodeApi } from '@platejs/plite';
 import { jsxt } from '@platejs/test-utils';
 import type { TestEditor } from '@platejs/test-utils';
-import type { TableElement, TableRowElement } from './BaseTablePlugin';
+import type { TableRowElement } from './BaseTablePlugin';
 import assert from 'node:assert/strict';
 
 describe('table merge', () => {
@@ -78,7 +78,7 @@ describe('table merge', () => {
 
       editor.update.table.removeRow();
 
-      const table = editor.read.nodes.get<TableElement>([0]);
+      const table = editor.read.nodes.get([0], { type: BaseTablePlugin });
       assert(table);
 
       expect(table[0].children).toHaveLength(1);
@@ -233,7 +233,7 @@ describe('table merge', () => {
 
         editor.update.table.insertColumn({ at: [0], select: true });
 
-        const entry = editor.read.nodes.get<TableElement>([0]);
+        const entry = editor.read.nodes.get([0], { type: BaseTablePlugin });
         assert(entry);
         const [table] = entry;
         const rows = table.children as TableRowElement[];
@@ -340,7 +340,7 @@ describe('table merge', () => {
 
         editor.update.table.insertRow({ at: [0], select: true });
 
-        const entry = editor.read.nodes.get<TableElement>([0]);
+        const entry = editor.read.nodes.get([0], { type: BaseTablePlugin });
         assert(entry);
         expect(entry[0].children).toHaveLength(3);
       });

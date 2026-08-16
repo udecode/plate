@@ -1,5 +1,9 @@
-import type { Editor as EditorType } from '@platejs/plite';
-import { inheritEditorExtensionRegistry as inheritEditorExtensionRegistryCore } from '@platejs/plite/internal';
+import {
+  type AnyEditor as EditorType,
+  inheritEditorExtensionRegistry as inheritEditorExtensionRegistryCore,
+} from '@platejs/plite/internal';
+
+export type { AnyEditor } from '@platejs/plite/internal';
 
 export {
   areEditorJsonValuesEqual,

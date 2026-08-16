@@ -31,8 +31,8 @@ In practice, a selection spanning multiple code lines only changed the first one
 The implementation queried nodes using the code-block type instead of the code-line type:
 
 ```ts
-const _codeLines = editor.api.nodes<TElement>({
-  match: { type },
+const _codeLines = editor.read.nodes.toArray({
+  type,
 });
 ```
 
@@ -46,8 +46,8 @@ Query explicit code-line entries first:
 
 ```ts
 const codeLineType = editor.plugin('code_line').type;
-const _codeLines = editor.api.nodes<TElement>({
-  match: { type: codeLineType },
+const _codeLines = editor.read.nodes.toArray({
+  type: codeLineType,
 });
 ```
 

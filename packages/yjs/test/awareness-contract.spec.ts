@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import type { Descendant, Range } from '@platejs/plite';
+import type { YjsCursorDataSchema } from '../src/core';
 
 import {
   clearYjsTrace,
@@ -37,12 +38,13 @@ const selection = (
   focus: { path, offset },
 });
 
-const createAwarePeer = (): AwarePeer => {
+const createAwarePeer = (cursorData?: YjsCursorDataSchema): AwarePeer => {
   const awareness = new FakeAwareness(2);
   const peer = createYjsPeer({
     awareness,
     children: initialValue(),
     clientId: 'b',
+    cursorData,
     numericClientId: 2,
   });
 
@@ -114,6 +116,36 @@ describe('@platejs/yjs awareness contract', () => {
       { clientId: 101, selection: range },
       { clientId: 102, selection: range },
     ]);
+  });
+
+  it('validates cursor data at the extension boundary', () => {
+    const cursorData: YjsCursorDataSchema<{ readonly name: string }> = {
+      validate: (value): value is { readonly name: string } =>
+        typeof value === 'object' &&
+        value !== null &&
+        'name' in value &&
+        typeof value.name === 'string',
+    };
+    const { awareness, peer } = createAwarePeer(cursorData);
+    const range = selection([1, 0], 3);
+
+    runYjsUpdate(peer, (yjs) => {
+      yjs.sendSelection(range);
+      awareness.setRemoteState(101, {
+        data: { color: 'tomato' },
+        selection: awareness.getLocalState()?.selection,
+      });
+    });
+
+    assert.deepEqual(getYjsRemoteCursors(peer), [
+      { clientId: 101, selection: range },
+    ]);
+    assert.throws(
+      () => runYjsUpdate(peer, (yjs) => yjs.sendCursorData({ color: 'red' })),
+      /cursor data does not match its configured schema/
+    );
+
+    peer.cleanup();
   });
 
   it('auto-publishes local selection-only commits', () => {

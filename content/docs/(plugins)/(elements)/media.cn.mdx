@@ -663,7 +663,7 @@ enum UploadErrorCode {
     上传完成后创建的媒体节点类型，例如 `PLUGINS.image`、`PLUGINS.video`、
     `PLUGINS.audio` 或 `PLUGINS.file`。
   </APIItem>
-  <APIItem name="options" type="NodeInsertNodesOptions<PlaceholderElement>" optional>
+  <APIItem name="options" type="PlateNodeInsertOptions" optional>
     精确路径和选区选项。
   </APIItem>
 </APIParameters>
@@ -678,12 +678,12 @@ enum UploadErrorCode {
   <APIItem name="url" type="string">
     图片 URL。
   </APIItem>
-  <APIItem name="options" type="NodeInsertNodesOptions<ImageElement>" optional>
+  <APIItem name="options" type="PlateNodeInsertOptions" optional>
     精确路径和选区选项。
   </APIItem>
 </APIParameters>
 
-<APIOptions type="NodeInsertNodesOptions<ImageElement>">
+<APIOptions type="PlateNodeInsertOptions">
   <APIItem name="at" type="Location" optional>
     精确插入目标。省略时插入到选中的块之后。
   </APIItem>
@@ -702,12 +702,12 @@ enum UploadErrorCode {
   <APIItem name="url" type="string">
     媒体 URL 或嵌入代码。
   </APIItem>
-  <APIItem name="options" type="NodeInsertNodesOptions<MediaEmbedElement>" optional>
+  <APIItem name="options" type="PlateNodeInsertOptions" optional>
     精确路径和选区选项。
   </APIItem>
 </APIParameters>
 
-<APIOptions type="NodeInsertNodesOptions<MediaEmbedElement>">
+<APIOptions type="PlateNodeInsertOptions">
   <APIItem name="at" type="Location" optional>
     精确插入目标。省略时必须存在当前选区。
   </APIItem>

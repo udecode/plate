@@ -19,7 +19,7 @@ export function* levels<T extends Node>(
     reverse = false,
     voids = false,
   } = options;
-  const match = normalizeNodeMatch(options.match) ?? (() => true);
+  const match = normalizeNodeMatch(options.type, options.match) ?? (() => true);
 
   if (!at) {
     return;

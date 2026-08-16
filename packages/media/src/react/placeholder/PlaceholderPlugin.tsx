@@ -1,37 +1,22 @@
-import type { DefinitionOf, PluginReference } from '@platejs/core';
+import type {
+  DefinitionOf,
+  PlateNodeInsertOptions,
+  PluginReference,
+} from '@platejs/core';
 import { toPlatePlugin } from '@platejs/core/react';
 import { createAtomStore } from '@platejs/core/react/internal';
-import {
-  type NodeInsertNodesOptions,
-  NodeApi,
-  type Path,
-  PathApi,
-  type NodeKey,
-} from '@platejs/plite';
+import { NodeApi, type Path, PathApi, type NodeKey } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
 
 import type {
   AlignedMediaInsertInput,
-  AudioElement,
-  FileElement,
   ImageInsertInput,
   MediaInsertInput,
   ProviderMediaInsertInput,
-  VideoElement,
 } from '../../lib/BaseMediaPlugin';
-import type { ImageElement } from '../../lib/image/BaseImagePlugin';
-import {
-  BasePlaceholderPlugin,
-  type PlaceholderElement,
-} from '../../lib/placeholder/BasePlaceholderPlugin';
+import { BasePlaceholderPlugin } from '../../lib/placeholder/BasePlaceholderPlugin';
 import { AudioPlugin, FilePlugin, ImagePlugin, VideoPlugin } from '../plugins';
 import { lookup } from './internal/mimeTypes';
-
-type PlaceholderMediaElement =
-  | AudioElement
-  | FileElement
-  | ImageElement
-  | VideoElement;
 
 const fileSizePattern = /^(\d+)(\.\d+)?\s*(B|KB|MB|GB)$/i;
 
@@ -118,10 +103,9 @@ export type UploadError =
 
 export type UploadConfig = Partial<Record<AllowedFileType, MediaItemConfig>>;
 
-export type InsertMediaOptions = Omit<
-  NodeInsertNodesOptions<PlaceholderElement>,
-  'at'
-> & { at?: Path };
+export type InsertMediaOptions = Omit<PlateNodeInsertOptions, 'at'> & {
+  at?: Path;
+};
 
 export type PlaceholderPluginState = {
   disableEmptyPlaceholder: boolean;
@@ -414,7 +398,7 @@ export const PlaceholderPlugin = toPlatePlugin(BasePlaceholderPlugin, {
         if (insertedUploads.length > 0) {
           afterCommit(({ editor }) => {
             for (const [nodeKey, file] of insertedUploads) {
-              const entry = editor.read.nodes.get<PlaceholderElement>(nodeKey);
+              const entry = editor.read.nodes.get(nodeKey);
 
               if (
                 entry &&
@@ -439,10 +423,7 @@ export const PlaceholderPlugin = toPlatePlugin(BasePlaceholderPlugin, {
         {
           at,
           ...options
-        }: Omit<
-          NodeInsertNodesOptions<PlaceholderMediaElement>,
-          'at' | 'match'
-        > & {
+        }: Omit<PlateNodeInsertOptions, 'at'> & {
           at: Path;
         }
       ) => {

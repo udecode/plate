@@ -4,8 +4,17 @@ import {
   levels as editorLevels,
   path as editorPath,
 } from '../interfaces/editor';
-import type { EditorStaticApi } from '../interfaces/editor';
-import { NodeApi } from '../interfaces/node';
+import type {
+  AnyEditor,
+  EditorAboveOptions,
+  EditorStaticApi,
+} from '../interfaces/editor';
+import {
+  type Ancestor,
+  type Node,
+  NodeApi,
+  type NodeMatch,
+} from '../interfaces/node';
 import { type Path, PathApi } from '../interfaces/path';
 
 const assertNumericPath = (path: Path) => {
@@ -16,12 +25,16 @@ const assertNumericPath = (path: Path) => {
   }
 };
 
-export const above: EditorStaticApi['above'] = (editor, options = {}) => {
+export const above = ((
+  editor: AnyEditor,
+  options: EditorAboveOptions<Ancestor> = {}
+) => {
   const {
     voids = false,
     mode = 'lowest',
     at = editorGetSnapshot(editor).selection,
     match,
+    type,
   } = options;
 
   if (!at) {
@@ -52,8 +65,9 @@ export const above: EditorStaticApi['above'] = (editor, options = {}) => {
   const [firstMatch] = editorLevels(editor, {
     at: path,
     voids,
-    match,
+    match: match as NodeMatch<Node> | undefined,
     reverse,
+    type,
   });
   return firstMatch; // if nothing matches this returns undefined
-};
+}) as EditorStaticApi['above'];

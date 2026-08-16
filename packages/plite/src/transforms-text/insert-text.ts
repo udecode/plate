@@ -46,7 +46,7 @@ import { deleteText } from './delete-text';
 import { isFullDocumentRange } from './full-document-range';
 
 const createFullDocumentTextReplacement = (
-  editor: Editor,
+  editor: Editor<any, any>,
   text: string,
   marks: TextMarks | null = null
 ) => {
@@ -306,7 +306,7 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
             }
 
             insertNodes(
-              editor,
+              editor as Editor,
               { text, ...normalizedReplacementMarks },
               {
                 at: nextAt,
@@ -376,7 +376,7 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
           }
 
           insertNodes(
-            editor,
+            editor as Editor,
             { text, ...(marks ?? {}) },
             { at, select: !explicitAtPreservesNullSelection, voids }
           );

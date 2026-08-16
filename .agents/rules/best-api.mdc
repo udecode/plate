@@ -204,6 +204,29 @@ Inference is a hard constraint, not a permanent excuse for exposing compiler
 taxonomy. Once the surviving authoring path proves exact parity, remove the
 redundant public verb rather than keeping both paths.
 
+### Caller Generic Honesty Gate
+
+A public generic must be determined by a typed input, an installed descriptor,
+or a runtime validator owned by that descriptor. A type parameter that appears
+only in the return type or lets the caller claim capabilities is a cast wearing
+API syntax.
+
+- Root update callbacks receive exactly the transaction capabilities installed
+  on the editor. Never let `editor.update<TTx>` manufacture another group.
+- Command dispatch infers its command and input from the command descriptor.
+  Reject incompatible commands through the descriptor contract, not an
+  explicit `command<TCommand>` call.
+- External data such as collaborative cursor metadata is `unknown` until one
+  installed descriptor validates it. The validator and inferred value type are
+  one contract; do not expose method- or hook-level result generics.
+- A typed schema property handle infers its value. A raw persisted string
+  returns `unknown` and must be narrowed; a caller-selected property-result
+  type is an assertion, not schema inference.
+
+Apply the same test to selectors, stores, codecs, and host adapters: if changing
+only a type argument can change what the caller believes without changing a
+checked value, delete that generic and repair the owner.
+
 Prefer deep public interfaces: callers learn a small stable surface while the
 owner contains the honest implementation complexity. If examples, tests, or
 normal customization must punch through that surface into internals, the
@@ -249,6 +272,33 @@ stay in that family. Do not retain a second `handlers` bucket. `schema`,
   `initialState` and the scoped store.
 - Low-level registration slots name the descriptors they contain:
   `stateFields`, `effectTypes`, `facetProviders`, and `selectionKinds`.
+- A custom selection kind is one installed descriptor capability. Its
+  `selectionKinds` entry owns the payload type, codec, validator, mapping, and
+  behavior once; concrete editor reads and updates infer that payload only when
+  the descriptor is installed. Never add an ambient module augmentation,
+  global selection-kind map, side-effect type import, or open custom-selection
+  fallback as a second source of truth.
+- Keep concrete editor read/update callbacks contravariant. Bivariant callback
+  parameters let explicit annotations manufacture uninstalled capabilities.
+  Preserve exact tuples with a type-only invariant witness, erase them only at
+  named internal runtime boundaries, and keep direct `update.selection`
+  mutation-only.
+- Default every public editor capability generic to the core-only
+  `readonly []` tuple. A bare `Editor`, `BaseEditor`, read surface, or update
+  surface must never expose arbitrary uninstalled groups through `any`; use the
+  explicit internal `AnyEditor` boundary when runtime code genuinely erases
+  the installed tuple.
+- Project each installed extension graph exactly once. A layered editor such
+  as Plate must not re-intersect whole `ReactEditor` or `DOMEditor`
+  `read`/`update` surfaces after those extensions are already installed; that
+  duplicates capability truth and forces TypeScript through recursive callback
+  comparisons. Add only a genuinely missing shallow capability at its owner.
+- Generic editor helpers must preserve the caller's layered editor type or
+  accept the smallest structural capability they actually consume. Never infer
+  one provider and reconstruct an entire raw `Editor`, `ReactEditor`, or
+  `DOMEditor`; that discards sibling capabilities and reopens recursive
+  whole-editor comparisons. Erase only inside a named runtime implementation,
+  after the public call signature has preserved exact inference.
 - Publication-dependent activation work is `afterPublish`; cleanup remains
   activation-owned. Do not hide activation behind a vague lifecycle bucket.
 - `validate` checks the assembled descriptor/editor context; it never receives
@@ -524,6 +574,18 @@ standard:
 - Descriptor-aware schema queries are identity operations only. Read document
   properties through typed property handles or a semantic plugin API; never
   interpret an arbitrary one-property descriptor as a property query.
+- Node traversal separates structural selection from computed conditions. Use
+  `type: FooPlugin` in Plate or a persisted string/schema handle in Plite, then
+  add function-only `match: (node, path) => ...` when needed. Arrays of `type`
+  selectors infer unions; a type-guard `match` may infer without `type`. Never
+  expose caller-selected result generics, object matcher DSLs, descriptor-first
+  overloads, or plugin-scoped copies of generic traversal. The traversal
+  target (`at`) is independent from the selected node type.
+- Apply that selector grammar to node reads, transforms, selection queries,
+  corrections, and their static mirrors. An insert operation puts the selector
+  for its split ancestor under `split: { type, match }`; it does not pretend
+  that selector describes the inserted node. `NodeApi.matches` remains
+  predicate-only because it already receives the concrete node.
 - Compiler/provider witnesses stay internal. Public definitions expose authored
   schema, never normalized compiler carriers.
 - Static value inference preserves legal primary/named roots and each

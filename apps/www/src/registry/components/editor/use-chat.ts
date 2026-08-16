@@ -14,9 +14,9 @@ import {
 import { getCommentKey, getTransientCommentKey } from '@platejs/comment';
 import { MarkdownPlugin } from '@platejs/markdown';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
+import { BaseTableCellPlugin } from '@platejs/table';
 import { TablePlugin } from '@platejs/table/react';
 import {
-  type Element,
   type Range,
   type Value,
   ElementApi,
@@ -1702,11 +1702,9 @@ const createTableCellChunks = (editor: PlateEditor) => {
   } else {
     // Try to find table cells in current selection
     const cells = editor.read((state) => [
-      ...state.nodes.entries<Element>({
+      ...state.nodes.entries({
         at: state.selection() ?? undefined,
-        match: {
-          type: editor.plugin(PLUGINS.tableCell).schema.type,
-        },
+        type: BaseTableCellPlugin,
       }),
     ]);
     cellRefs = cells.flatMap(([node]) => {

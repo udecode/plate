@@ -8,9 +8,9 @@ import {
   type Point,
   type Range,
   RangeApi,
-  type Editor as EditorType,
 } from '@platejs/plite';
 import {
+  type AnyEditor as EditorType,
   above as editorAbove,
   hasInternalDocumentChangeRoot,
   hasPath as editorHasPath,
@@ -205,7 +205,11 @@ export function normalizePoint(
 
   while (offset > leaf.text.length) {
     const entry = editorNext(editor, { at: path, match: NodeApi.isText });
-    if (!entry || !PathApi.isDescendant(entry[1], parentBlock[1])) {
+    if (
+      !entry ||
+      !NodeApi.isText(entry[0]) ||
+      !PathApi.isDescendant(entry[1], parentBlock[1])
+    ) {
       return null;
     }
 

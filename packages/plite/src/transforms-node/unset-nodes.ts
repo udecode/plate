@@ -1,10 +1,14 @@
-import type { NodeMutationMethods } from '../interfaces/transforms/node';
+import type { AnyEditor as Editor } from '../interfaces/editor';
+import type {
+  NodeMutationMethods,
+  NodeUnsetNodesOptions,
+} from '../interfaces/transforms/node';
 import { setNodes } from './set-nodes';
 
-export const unsetNodes: NodeMutationMethods['unsetNodes'] = (
-  editor,
-  props,
-  options = {}
+export const unsetNodes = ((
+  editor: Editor,
+  props: string | readonly string[],
+  options: NodeUnsetNodesOptions = {}
 ) => {
   const targetProps = Array.isArray(props) ? props : [props];
 
@@ -15,4 +19,4 @@ export const unsetNodes: NodeMutationMethods['unsetNodes'] = (
   }
 
   setNodes(editor, obj, options);
-};
+}) as NodeMutationMethods['unsetNodes'];

@@ -1,6 +1,9 @@
 import { useCallback } from 'react';
-import type { Editor, EditorStateView, ValueOf } from '@platejs/plite';
-import { subscribeEditorViewState } from '../editable/runtime-editor-api';
+import type { EditorStateView, ValueOf } from '@platejs/plite';
+import {
+  type AnyEditor,
+  subscribeEditorViewState,
+} from '../editable/runtime-editor-api';
 
 import { useGenericSelector } from './use-generic-selector';
 import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
@@ -17,10 +20,7 @@ const refEquality = <T>(a: T | null, b: T) => a === b;
  *
  * View state covers editable facts such as read-only, focus, and composition.
  */
-export function useEditorViewState<
-  T,
-  TEditor extends Editor<any> = Editor<any>,
->(
+export function useEditorViewState<T, TEditor extends AnyEditor = AnyEditor>(
   editor: TEditor,
   selector: (view: EditorStateView<ValueOf<TEditor>>['view']) => T,
   { equalityFn = refEquality }: EditorViewStateSelectorOptions<T> = {}

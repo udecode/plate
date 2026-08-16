@@ -1,10 +1,11 @@
-import { type Value, RangeApi } from '@platejs/plite';
+import { type Node, type Value, RangeApi } from '@platejs/plite';
 import { getSelection } from '@platejs/plite-dom';
 import { IS_FOCUSED } from '@platejs/plite-dom/internal';
 
 import { readModelSelectionDOMPreference } from '../editable/model-selection-dom-preference';
 import { getMountedEditableDOMRuntime } from '../editable/editable-dom-runtime';
 import {
+  type Editor,
   getSelectionPrimaryRange,
   setEditorFocused,
 } from '../editable/runtime-editor-api';
@@ -23,19 +24,22 @@ const syncPreferredModelSelectionToDOM = <
   element: HTMLElement
 ) => {
   try {
-    const selection = readRuntimeSelection(editor);
+    const selection = readRuntimeSelection(editor as unknown as Editor);
 
     if (!selection) {
       return false;
     }
 
-    const projectedSelection = getSelectionPrimaryRange(editor, selection);
+    const projectedSelection = getSelectionPrimaryRange(
+      editor as unknown as Editor,
+      selection
+    );
 
     if (!projectedSelection) {
       const root = element.getRootNode() as Document | ShadowRoot;
 
-      IS_FOCUSED.set(editor, true);
-      setEditorFocused(editor, true);
+      IS_FOCUSED.set(editor as unknown as Editor, true);
+      setEditorFocused(editor as unknown as Editor, true);
       element.focus({ preventScroll: true });
       getSelection(root)?.removeAllRanges();
       return true;
@@ -59,8 +63,8 @@ const syncPreferredModelSelectionToDOM = <
       return false;
     }
 
-    IS_FOCUSED.set(editor, true);
-    setEditorFocused(editor, true);
+    IS_FOCUSED.set(editor as unknown as Editor, true);
+    setEditorFocused(editor as unknown as Editor, true);
     element.focus({ preventScroll: true });
 
     if (RangeApi.isBackward(projectedSelection)) {
@@ -94,7 +98,7 @@ export const focusPliteEditable = <
   let element: HTMLElement | null = null;
 
   try {
-    element = editor.api.dom.assertDOMNode(editor);
+    element = editor.api.dom.assertDOMNode(editor as unknown as Node);
   } catch {
     // The DOM editor focus path still handles unmounted or dirty node maps.
   }
@@ -103,8 +107,8 @@ export const focusPliteEditable = <
 
   if (viewSelection && !isPliteViewSelectionCollapsed(viewSelection)) {
     if (element) {
-      IS_FOCUSED.set(editor, true);
-      setEditorFocused(editor, true);
+      IS_FOCUSED.set(editor as unknown as Editor, true);
+      setEditorFocused(editor as unknown as Editor, true);
       element.focus({ preventScroll: true });
     }
 

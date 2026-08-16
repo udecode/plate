@@ -253,9 +253,9 @@ export const applyBlockAction = (
     };
 
     if (at) {
-      const entry = tx.nodes.find<Element>({
+      const entry = tx.nodes.find({
         at,
-        match: (node) => ElementApi.isElement(node),
+        match: (node): node is Element => ElementApi.isElement(node),
       });
 
       if (entry) {
@@ -265,8 +265,9 @@ export const applyBlockAction = (
     }
 
     tx.nodes
-      .toArray<Element>({
-        match: (node) => ElementApi.isElement(node) && tx.schema.isBlock(node),
+      .toArray({
+        match: (node): node is Element =>
+          ElementApi.isElement(node) && tx.schema.isBlock(node),
         mode: 'lowest',
       })
       .forEach((entry) => {

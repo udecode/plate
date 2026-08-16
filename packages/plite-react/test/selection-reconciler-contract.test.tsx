@@ -40,12 +40,6 @@ type ProjectedTableCellSelection = Range &
     kind: 'projected-table-cell';
   }>;
 
-declare module '@platejs/plite' {
-  interface EditorSelectionKindMap {
-    'projected-table-cell': ProjectedTableCellSelection;
-  }
-}
-
 const isProjectedTableCellSelection = (
   selection: unknown
 ): selection is ProjectedTableCellSelection =>

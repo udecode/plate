@@ -6,7 +6,7 @@ import {
   useEditorSelector,
   usePluginStore,
 } from '@platejs/core/react';
-import { type Element, ElementApi, type NodeKey } from '@platejs/plite';
+import { ElementApi, type NodeKey } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
 
 import { BaseTogglePlugin } from '../lib/BaseTogglePlugin';
@@ -111,7 +111,7 @@ export const useToggleToolbarButtonState = () => {
       !!selection &&
       editor.read.nodes.some({
         at: selection,
-        match: { type: editor.plugin(BaseTogglePlugin).schema.type },
+        type: BaseTogglePlugin,
       })
     );
   });
@@ -132,7 +132,7 @@ export const useToggleToolbarButton = ({
 
         toggle.api.toggleKeys(
           editor.read.nodes
-            .toArray<Element>({
+            .toArray({
               match: (node) =>
                 ElementApi.isElement(node) && editor.read.nodes.isBlock(node),
               mode: 'lowest',

@@ -261,8 +261,13 @@ export function createPlateEditor(options: unknown = {}): unknown {
       readOnly: resolvedOptions.readOnly,
     });
 
-  return applyPlateEditor(
-    baseEditor,
+  return applyPlateEditor<
+    readonly BasePluginInput[],
+    EditorApplicationSchema | undefined,
+    Editor<Value, any>,
+    Value
+  >(
+    baseEditor as Editor<Value, any>,
     plateEditorOptions as PlateEditorOptions<
       Value,
       readonly BasePluginInput[],

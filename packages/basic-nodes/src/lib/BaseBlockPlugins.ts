@@ -4,7 +4,7 @@ import {
   createRuleFactory,
   type MarkdownDecodeContext,
 } from '@platejs/core';
-import { type Element, ElementApi, PathApi } from '@platejs/plite';
+import { ElementApi, PathApi } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
 
 const thematicBreakDashRe = /^(--|—)$/;
@@ -20,9 +20,7 @@ export const BlockquoteRules = {
       if (!codeBlock.installed) return true;
 
       return !editor.read.nodes.some({
-        match: {
-          type: codeBlock.schema.type,
-        },
+        type: codeBlock.schema.type,
       });
     },
     match: ({ marker }) => marker,
@@ -126,7 +124,7 @@ export const BaseBlockquotePlugin = defineBasePlugin(PLUGINS.blockquote, {
     delete: {
       start: 'lift',
     },
-    match: ({ editor, node, path, rule, schema: { type } }) => {
+    match: ({ editor, node, path, plugin, rule, schema: { type } }) => {
       if (!['break.empty', 'delete.start'].includes(rule)) return false;
       if (!path) return false;
       if (!ElementApi.isElement(node)) return false;
@@ -136,7 +134,7 @@ export const BaseBlockquotePlugin = defineBasePlugin(PLUGINS.blockquote, {
         !node.listStyleType &&
         !!editor.read.nodes.above({
           at: path,
-          match: { type },
+          type: plugin,
         });
 
       if (rule === 'delete.start') {
@@ -164,12 +162,12 @@ export const BaseBlockquotePlugin = defineBasePlugin(PLUGINS.blockquote, {
   shortcuts: {
     untab: { keys: 'shift+tab' },
   },
-  update: ({ editor, tx, schema: { type } }) => ({
+  update: ({ editor, plugin, tx, schema: { type } }) => ({
     toggle: () => tx.blocks.toggle(type, { wrap: true }),
     untab: () => {
       const paragraphType = editor.plugin(PLUGINS.paragraph).schema.type;
       const blocks = [
-        ...tx.nodes.toArray<Element>({
+        ...tx.nodes.toArray({
           at: tx.selection() ?? undefined,
           match: (node, path) =>
             ElementApi.isElement(node) &&
@@ -178,7 +176,7 @@ export const BaseBlockquotePlugin = defineBasePlugin(PLUGINS.blockquote, {
             !node.listStyleType &&
             !!tx.nodes.above({
               at: path,
-              match: { type },
+              type: plugin,
             }),
           mode: 'lowest',
         }),

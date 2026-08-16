@@ -613,7 +613,7 @@ const CodeBlockPlugin = definePlatePlugin('codeBlock', {
   },
   update: ({ tx, type }) => ({
     unwrap() {
-      tx.nodes.unwrap({ match: { type } });
+      tx.nodes.unwrap({ type });
     },
   }),
 });

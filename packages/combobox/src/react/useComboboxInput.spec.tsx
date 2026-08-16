@@ -2,7 +2,7 @@ import { act, renderHook } from '@testing-library/react';
 import type React from 'react';
 
 import * as actualCoreReact from '@platejs/core/react';
-import { type Element, ElementApi } from '@platejs/plite';
+import { ElementApi } from '@platejs/plite';
 
 const useEditorMock = mock();
 const useElementMock = mock();
@@ -56,7 +56,7 @@ describe('combobox input hooks', () => {
         { children: [{ text: 'after' }], type: 'paragraph' },
       ],
     });
-    const element = editor.read.nodes.get<Element>([0, 1])?.[0];
+    const element = editor.read.nodes.get([0, 1])?.[0];
 
     if (!element || !ElementApi.isElement(element)) {
       throw new TypeError('Expected a live combobox input element');
@@ -80,9 +80,7 @@ describe('combobox input hooks', () => {
     expect(editor.read.children()).toHaveLength(2);
     expect(editor.read.text.string([0])).toBe('');
     expect(editor.read.text.string([1])).toBe('after');
-    expect(editor.read.nodes.some({ match: { type: 'mentionInput' } })).toBe(
-      false
-    );
+    expect(editor.read.nodes.some({ type: 'mentionInput' })).toBe(false);
     expect(onCancelInput).toHaveBeenCalledWith('blur');
   });
 
@@ -111,7 +109,7 @@ describe('combobox input hooks', () => {
         { children: [{ text: 'after' }], type: 'paragraph' },
       ],
     });
-    const element = editor.read.nodes.get<Element>([0, 1])?.[0];
+    const element = editor.read.nodes.get([0, 1])?.[0];
 
     if (!element || !ElementApi.isElement(element)) {
       throw new TypeError('Expected a live combobox input element');
@@ -138,9 +136,7 @@ describe('combobox input hooks', () => {
     expect(editor.read.children()).toHaveLength(2);
     expect(editor.read.text.string([0])).toBe('');
     expect(editor.read.text.string([1])).toBe('after');
-    expect(editor.read.nodes.some({ match: { type: 'mentionInput' } })).toBe(
-      false
-    );
+    expect(editor.read.nodes.some({ type: 'mentionInput' })).toBe(false);
     expect(onCancelInput).toHaveBeenCalledWith(cause);
   });
 

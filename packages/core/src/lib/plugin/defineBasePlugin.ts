@@ -19,7 +19,9 @@ import type {
 } from './PluginDefinition';
 import type {
   EditorExtensionReference,
+  EditorSelectionSpec,
   EditorUpdateContext,
+  SelectionValue,
 } from '@platejs/plite';
 
 import { isFunction } from '../../internal/utils/isFunction';
@@ -139,7 +141,6 @@ type BasePluginConstructorPresenceKey =
   | 'readMiddleware'
   | 'render'
   | 'rules'
-  | 'selectionKinds'
   | 'stateFields'
   | 'transformInitialValue'
   | 'useHooks'
@@ -534,6 +535,7 @@ type BasePluginConstructorRestInput<
   | 'name'
   | 'read'
   | 'schema'
+  | 'selectionKinds'
   | 'selectors'
   | 'shortcuts'
   | 'targetPlugins'
@@ -573,6 +575,13 @@ type BasePluginConstructorCapabilityDefinition<
     ? Readonly<{ schema: TSchema }>
     : Readonly<Record<never, never>>);
 
+type BasePluginConstructorSelection<
+  TSelectionKinds extends readonly EditorSelectionSpec<any>[],
+> =
+  TSelectionKinds[number] extends EditorSelectionSpec<infer TSelection>
+    ? Extract<TSelection, SelectionValue>
+    : never;
+
 export function defineBasePlugin<
   const N extends string,
   const TKeys extends BasePluginConstructorKey,
@@ -595,6 +604,8 @@ export function defineBasePlugin<
     | string
   )[] = readonly [],
   const TRead extends object = {},
+  const TSelectionKinds extends
+    readonly EditorSelectionSpec<any>[] = readonly [],
   const TSelectors extends PluginSelectors<S> = {},
   const TEnabled extends boolean = boolean,
   const TShortcuts extends BasePluginShortcutRecord = {},
@@ -700,6 +711,7 @@ export function defineBasePlugin<
           >;
         }
       ) => TRead;
+      selectionKinds?: TSelectionKinds;
       selectors?: TSelectors & PluginSelectors<NoInfer<S>>;
       shortcuts?: TShortcuts;
       targetPlugins?: TTargetPlugins;
@@ -743,6 +755,11 @@ export function defineBasePlugin<
       : Readonly<Record<never, never>>) &
     ('read' extends TKeys
       ? Readonly<{ read: TRead }>
+      : Readonly<Record<never, never>>) &
+    ('selectionKinds' extends TKeys
+      ? Readonly<{
+          selectionKinds: BasePluginConstructorSelection<TSelectionKinds>;
+        }>
       : Readonly<Record<never, never>>) &
     ('selectors' extends TKeys
       ? Readonly<{

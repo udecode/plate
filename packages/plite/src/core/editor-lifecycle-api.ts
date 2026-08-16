@@ -2,15 +2,16 @@ import type {
   AnyEditor as Editor,
   EditorCommand,
   EditorCommandDispatch,
+  EditorCoreStateView,
   EditorCoreUpdateMethods,
   EditorRead,
-  EditorReadMethods,
   EditorStateView,
   EditorUpdate,
   EditorUpdateContext,
   EditorUpdateMethods,
   EditorUpdatePolicy,
   EditorUpdateTransaction,
+  SelectionValue,
   Value,
 } from '../interfaces';
 import { isTxOnlyMethod, isTxReadMethod } from './tx-only';
@@ -183,12 +184,13 @@ export const createEditorReadApi = <
 >(
   runRead: RunEditorRead<V, TExtensions>
 ): EditorRead<V, TExtensions> => {
+  type RuntimeReadMethods = Omit<EditorCoreStateView<V, SelectionValue>, 'key'>;
   const read = (<T>(fn: (state: EditorStateView<V, TExtensions>) => T): T =>
     runRead(fn)) as EditorRead<V, TExtensions>;
 
-  const createGroup = <TGroup extends keyof EditorReadMethods<V>>(
+  const createGroup = <TGroup extends keyof RuntimeReadMethods>(
     groupName: TGroup
-  ): EditorReadMethods<V>[TGroup] =>
+  ): RuntimeReadMethods[TGroup] =>
     new Proxy(
       {},
       {
@@ -214,11 +216,11 @@ export const createEditorReadApi = <
             });
         },
       }
-    ) as EditorReadMethods<V>[TGroup];
+    ) as RuntimeReadMethods[TGroup];
 
-  const createCallableGroup = <TGroup extends keyof EditorReadMethods<V>>(
+  const createCallableGroup = <TGroup extends keyof RuntimeReadMethods>(
     groupName: TGroup
-  ): EditorReadMethods<V>[TGroup] =>
+  ): RuntimeReadMethods[TGroup] =>
     new Proxy(() => {}, {
       apply(_target, _thisArg, args) {
         return read((state) => {
@@ -254,41 +256,41 @@ export const createEditorReadApi = <
             return method(...args);
           });
       },
-    }) as EditorReadMethods<V>[TGroup];
+    }) as RuntimeReadMethods[TGroup];
 
   const methods = {
     children: ((...args) =>
       read((state) =>
         state.children(...args)
-      )) as EditorReadMethods<V>['children'],
+      )) as RuntimeReadMethods['children'],
     facet: ((...args) =>
-      read((state) => state.facet(...args))) as EditorReadMethods<V>['facet'],
+      read((state) => state.facet(...args))) as RuntimeReadMethods['facet'],
     fragment: createCallableGroup('fragment'),
     getField: ((...args) =>
       read((state) =>
         state.getField(...args)
-      )) as EditorReadMethods<V>['getField'],
+      )) as RuntimeReadMethods['getField'],
     lastCommit: ((...args) =>
       read((state) =>
         state.lastCommit(...args)
-      )) as EditorReadMethods<V>['lastCommit'],
+      )) as RuntimeReadMethods['lastCommit'],
     marks: createCallableGroup('marks'),
     meta: ((...args) =>
-      read((state) => state.meta(...args))) as EditorReadMethods<V>['meta'],
+      read((state) => state.meta(...args))) as RuntimeReadMethods['meta'],
     nodes: createGroup('nodes'),
     points: createGroup('points'),
     ranges: createGroup('ranges'),
     root: ((...args) =>
-      read((state) => state.root(...args))) as EditorReadMethods<V>['root'],
+      read((state) => state.root(...args))) as RuntimeReadMethods['root'],
     runtime: createGroup('runtime'),
     schema: createGroup('schema'),
     selection: createCallableGroup('selection'),
     slice: createGroup('slice'),
     text: createGroup('text'),
     value: ((...args) =>
-      read((state) => state.value(...args))) as EditorReadMethods<V>['value'],
+      read((state) => state.value(...args))) as RuntimeReadMethods['value'],
     view: createGroup('view'),
-  } satisfies EditorReadMethods<V>;
+  } satisfies RuntimeReadMethods;
 
   const readApi = Object.assign(read, methods);
 

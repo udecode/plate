@@ -114,9 +114,10 @@ const createSelectionTestEditor = (initialValue: Value) =>
 type SelectionTestEditor = ReturnType<typeof createSelectionTestEditor>;
 
 const nodeKey = (editor: BaseEditor, id: string): NodeKey => {
-  const entry = editor.read.nodes.find<Element>({
+  const entry = editor.read.nodes.find({
     at: [],
-    match: (node) => ElementApi.isElement(node) && node.id === id,
+    match: (node): node is Element =>
+      ElementApi.isElement(node) && node.id === id,
   });
 
   if (!entry) throw new Error(`Missing test element ${id}.`);
@@ -135,7 +136,9 @@ const nodeKeySet = (editor: BaseEditor, ids: readonly string[]) =>
 
 const persistedIds = (editor: BaseEditor, keys: Iterable<NodeKey>) =>
   [...keys].map((key) => {
-    const entry = editor.read.nodes.get<Element>(key);
+    const entry = editor.read.nodes.get(key, {
+      match: ElementApi.isElement,
+    });
 
     if (!entry) throw new Error(`Missing test node key ${key}.`);
 
@@ -2104,9 +2107,9 @@ describe('api.copy', () => {
       PliteDOM,
       'writeDOMRangeData'
     ).mockImplementation((editor, data, range) => {
-      const entry = editor.read.nodes.get(range.anchor.path.slice(0, 1)) as
-        | NodeEntry<Element>
-        | undefined;
+      const entry = editor.read.nodes.get(range.anchor.path.slice(0, 1), {
+        match: ElementApi.isElement,
+      });
       const text = entry ? NodeApi.string(entry[0]) : '';
 
       data.setData('text/plain', text);

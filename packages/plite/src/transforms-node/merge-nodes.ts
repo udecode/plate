@@ -17,16 +17,36 @@ import {
   shouldMergeNodesRemovePrevNode as editorShouldMergeNodesRemovePrevNode,
   unhangRange as editorUnhangRange,
 } from '../interfaces/editor';
-import type { AnyEditor as Editor } from '../interfaces/editor';
+import type {
+  AnyEditor as Editor,
+  EditorAboveOptions,
+  EditorLevelsOptions,
+  EditorPreviousOptions,
+} from '../interfaces/editor';
 import { type Ancestor, type Node, NodeApi } from '../interfaces/node';
 import { type Path, PathApi } from '../interfaces/path';
 import { RangeApi } from '../interfaces/range';
-import type { NodeMutationMethods } from '../interfaces/transforms/node';
+import type {
+  NodeMergeNodesOptions,
+  NodeMutationMethods,
+} from '../interfaces/transforms/node';
 import { select } from '../transforms-selection/select';
 import { deleteText } from '../transforms-text/delete-text';
+import { normalizeNodeMatch } from '../utils/node-match';
 import { moveNodes } from './move-nodes';
 import { removeNodes } from './remove-nodes';
 import { formatDebugValue } from '../utils/format-debug-value';
+
+const readAbove = (editor: Editor, options?: EditorAboveOptions<Ancestor>) =>
+  editorAbove(editor, options) as readonly [Ancestor, Path] | undefined;
+const readLevels = (editor: Editor, options?: EditorLevelsOptions<Node>) =>
+  editorLevels(editor, options) as Generator<
+    readonly [Node, Path],
+    void,
+    undefined
+  >;
+const readPrevious = (editor: Editor, options?: EditorPreviousOptions<Node>) =>
+  editorPrevious(editor, options) as readonly [Node, Path] | undefined;
 
 const getChildren = (editor: Editor, node: Ancestor) =>
   NodeApi.isEditor(node) ? editorGetChildren(editor) : node.children;
@@ -73,12 +93,12 @@ const hasSingleChildNest = (editor: Editor, node: Node): boolean =>
       getChildren(editor, node).length === 1 &&
       hasSingleChildNest(editor, getChildren(editor, node)[0]!)));
 
-export const mergeNodes: NodeMutationMethods['mergeNodes'] = (
-  editor,
-  options = {}
+export const mergeNodes = ((
+  editor: Editor,
+  options: NodeMergeNodesOptions = {}
 ) => {
   runEditorTransaction(editor, (tx) => {
-    let { match } = options;
+    let match = normalizeNodeMatch(options.type, options.match);
     let at = tx.resolveTarget({ at: options.at });
     const { hanging = false, voids = false, mode = 'lowest' } = options;
 
@@ -129,7 +149,7 @@ export const mergeNodes: NodeMutationMethods['mergeNodes'] = (
         : null;
     const prev = previousPath
       ? getNode(editor, previousPath)
-      : editorPrevious(editor, { at, match, voids, mode });
+      : readPrevious(editor, { at, match, voids, mode });
 
     if (!current || !prev) {
       return;
@@ -149,13 +169,13 @@ export const mergeNodes: NodeMutationMethods['mergeNodes'] = (
     const newPath = PathApi.next(prevPath);
     const commonPath = PathApi.common(path, prevPath);
     const isPreviousSibling = PathApi.isSibling(path, prevPath);
-    const levels = Array.from(editorLevels(editor, { at: path }), ([n]) => n)
+    const levels = Array.from(readLevels(editor, { at: path }), ([n]) => n)
       .slice(commonPath.length)
       .slice(0, -1);
 
     // Determine if the merge will leave an ancestor of the path empty as a
     // result, in which case we'll want to remove it after merging.
-    const emptyAncestor = editorAbove(editor, {
+    const emptyAncestor = readAbove(editor, {
       at: path,
       mode: 'highest',
       match: (n) => levels.includes(n) && hasSingleChildNest(editor, n),
@@ -204,4 +224,4 @@ export const mergeNodes: NodeMutationMethods['mergeNodes'] = (
 
     emptyAnchor?.release();
   });
-};
+}) as NodeMutationMethods['mergeNodes'];

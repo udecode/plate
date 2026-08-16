@@ -55,7 +55,7 @@ There is no dedicated trailing-block UI. The plugin is a normalizer.
 Use `type` when the trailing block should be something other than the default paragraph.
 
 ```tsx
-import { PLUGINS, TrailingBlockPlugin } from 'platejs';
+import { ElementApi, PLUGINS, TrailingBlockPlugin } from 'platejs';
 
 export const trailingBlockPlugin = TrailingBlockPlugin.configure(
   ({ editor }) => ({
@@ -80,7 +80,9 @@ export const trailingBlockPlugins = [
   H1Plugin,
   TrailingBlockPlugin.configure(({ editor }) => ({
     initialState: {
-      match: { type: editor.plugin(PLUGINS.h1).schema.type },
+      match: (node) =>
+        ElementApi.isElement(node) &&
+        node.type === editor.plugin(PLUGINS.h1).schema.type,
       type: editor.plugin(PLUGINS.paragraph).schema.type,
     },
   })),

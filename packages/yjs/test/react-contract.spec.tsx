@@ -58,11 +58,6 @@ const selection = (
   focus: { path, offset: offset + 2 },
 });
 
-type CursorData = {
-  readonly color: string;
-  readonly name: string;
-};
-
 type LabelDecorationData = {
   readonly clientId: number;
   readonly label: string;
@@ -201,16 +196,14 @@ describe('@platejs/yjs react contract', () => {
 
     setEditorFocused(peer.editor, true);
 
-    let source: PliteDecorationSource<
-      YjsRemoteCursorDecorationData<CursorData>
-    > | null = null;
+    let source: PliteDecorationSource<YjsRemoteCursorDecorationData> | null =
+      null;
     let lastRefreshRequiresDOMSelectionExport: boolean | null = null;
 
     const DecorationProbe = ({
       editor,
     }: EditorProbeProps): React.ReactElement | null => {
-      const cursorSource =
-        useYjsRemoteCursorDecorationSource<CursorData>(editor);
+      const cursorSource = useYjsRemoteCursorDecorationSource(editor);
 
       useEffect(() => {
         source = cursorSource;
@@ -262,10 +255,7 @@ describe('@platejs/yjs react contract', () => {
       editor,
     }: EditorProbeProps): React.ReactElement | null => {
       const [label, updateLabel] = React.useState('Ada');
-      const cursorSource = useYjsRemoteCursorDecorationSource<
-        CursorData,
-        LabelDecorationData
-      >(editor, {
+      const cursorSource = useYjsRemoteCursorDecorationSource(editor, {
         decorate: (cursor) => ({ clientId: cursor.clientId, label }),
         revision: label,
       });
@@ -442,10 +432,7 @@ describe('@platejs/yjs react contract', () => {
 
     const OverlayProbe = ({ editor }: EditorProbeProps): React.ReactElement => {
       const [label, updateLabel] = React.useState('Ada');
-      const [positions] = useYjsRemoteCursorOverlayPositions<
-        { color: string; name: string },
-        { label: string }
-      >(editor, {
+      const [positions] = useYjsRemoteCursorOverlayPositions(editor, {
         data: () => ({ label }),
         revision: label,
       });
@@ -489,10 +476,7 @@ describe('@platejs/yjs react contract', () => {
 
     const OverlayProbe = ({ editor }: EditorProbeProps): React.ReactElement => {
       const [label, updateLabel] = React.useState('Ada');
-      const [positions] = useYjsRemoteCursorOverlayPositions<
-        { color: string; name: string },
-        { cursor: { clientId: number; label: string } }
-      >(editor, {
+      const [positions] = useYjsRemoteCursorOverlayPositions(editor, {
         data: (cursor) => ({
           cursor: { clientId: cursor.clientId, label },
         }),
@@ -537,12 +521,13 @@ describe('@platejs/yjs react contract', () => {
     setEditorDomApi(peer.editor, { resolveRangeRect: () => null });
 
     const OverlayProbe = ({ editor }: EditorProbeProps): React.ReactElement => {
-      const [positions] = useYjsRemoteCursorOverlayPositions<
-        { color: string; name: string },
-        { cursor: { clientId: number; label: string } }
-      >(editor, {
+      const [positions] = useYjsRemoteCursorOverlayPositions(editor, {
         data: (cursor) => ({
-          cursor: { clientId: cursor.clientId, label: cursor.data.name },
+          cursor: {
+            clientId: cursor.clientId,
+            label:
+              typeof cursor.data?.name === 'string' ? cursor.data.name : '',
+          },
         }),
       });
 

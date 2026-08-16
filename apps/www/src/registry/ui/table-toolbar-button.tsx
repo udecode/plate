@@ -36,7 +36,7 @@ import { ToolbarButton } from './toolbar';
 export function TableToolbarButton(props: DropdownMenuProps) {
   const tableSelected = useEditorSelector((editor) =>
     editor.read.nodes.some({
-      match: { type: editor.plugin(TablePlugin).schema.type },
+      type: TablePlugin,
     })
   );
 

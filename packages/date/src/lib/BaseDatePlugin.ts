@@ -1,5 +1,5 @@
-import { defineBasePlugin } from '@platejs/core';
-import type { ElementOf, NodeInsertNodesOptions, Text } from '@platejs/plite';
+import { defineBasePlugin, type PlateNodeInsertOptions } from '@platejs/core';
+import type { ElementOf } from '@platejs/plite';
 import { property } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
 
@@ -57,29 +57,25 @@ export const BaseDatePlugin = defineBasePlugin(PLUGINS.date, {
       void: 'inline',
     },
   },
-}).extend(({ plugin, schema: { type } }) => {
-  type DateNode = ElementOf<typeof plugin>;
-
-  return {
-    update: ({ tx }) => ({
-      insert: (
-        { date }: { date?: string } = {},
-        options: NodeInsertNodesOptions<DateNode | Text> = {}
-      ) => {
-        tx.nodes.insert(
-          [
-            {
-              children: [{ text: '' }],
-              ...normalizeDateValue(date ?? new Date()),
-              type,
-            },
-            { text: ' ' },
-          ],
-          options
-        );
-      },
-    }),
-  };
-});
+}).extend(({ schema: { type } }) => ({
+  update: ({ tx }) => ({
+    insert: (
+      { date }: { date?: string } = {},
+      options: PlateNodeInsertOptions = {}
+    ) => {
+      tx.nodes.insert(
+        [
+          {
+            children: [{ text: '' }],
+            ...normalizeDateValue(date ?? new Date()),
+            type,
+          },
+          { text: ' ' },
+        ],
+        options
+      );
+    },
+  }),
+}));
 
 export type DateElement = ElementOf<typeof BaseDatePlugin>;

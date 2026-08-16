@@ -15,10 +15,12 @@ import {
   getCompiledEditorSchemaFromApi,
   initializeEditorExtensions,
   MAIN_ROOT_KEY,
+  mapSemanticUpdateMethodArguments,
   repairEditorValue,
   setEditorMaxLength,
   setEditorReadOnly,
   setEditorSnapshotInputTransform,
+  setEditorStateViewTransform,
   setEditorTransactionViewTransform,
 } from '@platejs/plite/internal';
 
@@ -31,6 +33,8 @@ import {
   compileEditorApplicationSchema,
   compilePlateModel,
   createPlateBlockContent,
+  getCompiledPlateModelBinding,
+  getCompiledPlatePlugin,
   getPlateModelPublication,
   getPlateRuntime,
   withEditorApplicationSchemaCandidate,
@@ -122,6 +126,186 @@ const isBasePluginDescriptor = (value: unknown): value is AnyBasePlugin =>
     (method) => typeof Reflect.get(value, method) === 'function'
   );
 
+const resolvePlateSchemaDescriptor = (
+  editor: BaseEditor,
+  descriptor: PlateSchemaDescriptor,
+  requireElement: boolean
+) => {
+  if (!isNominalPluginReference(descriptor)) {
+    throw new Error('Plate schema received an invalid plugin descriptor.');
+  }
+  const plugin = getCompiledPlatePlugin(editor, descriptor.name);
+  const binding = getCompiledPlateModelBinding(editor, descriptor);
+
+  if (!plugin || !binding) {
+    throw new Error(
+      `Plate schema descriptor "${descriptor.name}" is not installed.`
+    );
+  }
+  if (getPluginSchemaFamily(descriptor) !== getPluginSchemaFamily(plugin)) {
+    throw new Error(
+      `Plate schema descriptor "${descriptor.name}" does not match the installed plugin family.`
+    );
+  }
+  if (requireElement && !binding.elementType) {
+    throw new Error(
+      `Plate plugin "${descriptor.name}" does not declare schema.element.`
+    );
+  }
+
+  return { binding, plugin };
+};
+
+const lowerPlateNodeType = (editor: BaseEditor, type: unknown): unknown => {
+  if (Array.isArray(type)) {
+    return type.map((item) => lowerPlateNodeType(editor, item));
+  }
+  if (!hasPlateSchemaDescriptorShape(type)) return type;
+
+  return resolvePlateSchemaDescriptor(editor, type, true).binding.elementType!;
+};
+
+const lowerPlateNodeOptions = (
+  editor: BaseEditor,
+  options: unknown
+): unknown => {
+  if (typeof options !== 'object' || options === null) return options;
+
+  const record = options as Record<string, unknown>;
+  let changed = false;
+  const next = { ...record };
+
+  if ('type' in record) {
+    next.type = lowerPlateNodeType(editor, record.type);
+    changed = next.type !== record.type;
+  }
+  for (const key of ['someOptions', 'split'] as const) {
+    if (!(key in record)) continue;
+    const lowered = lowerPlateNodeOptions(editor, record[key]);
+
+    if (lowered !== record[key]) {
+      next[key] = lowered;
+      changed = true;
+    }
+  }
+
+  return changed ? next : options;
+};
+
+const createPlateNodeOptionsProxy = (
+  editor: BaseEditor,
+  target: object,
+  optionIndexes: Readonly<Record<string, number>>
+) => {
+  const methodCache = new Map<PropertyKey, unknown>();
+
+  return new Proxy(
+    typeof target === 'function'
+      ? (...args: unknown[]) => Reflect.apply(target, target, args)
+      : {},
+    {
+      get(source, key) {
+        const sourceDescriptor = Reflect.getOwnPropertyDescriptor(source, key);
+
+        if (
+          sourceDescriptor &&
+          !sourceDescriptor.configurable &&
+          'value' in sourceDescriptor &&
+          !sourceDescriptor.writable
+        ) {
+          return sourceDescriptor.value;
+        }
+
+        const value = Reflect.get(target, key, target);
+        const optionIndex =
+          typeof key === 'string' ? optionIndexes[key] : undefined;
+
+        if (typeof value !== 'function' || optionIndex === undefined) {
+          return value;
+        }
+
+        const cached = methodCache.get(key);
+
+        if (cached) return cached;
+
+        const mapped = mapSemanticUpdateMethodArguments(value, (input) => {
+          const args = [...input];
+
+          args[optionIndex] = lowerPlateNodeOptions(editor, args[optionIndex]);
+
+          return args;
+        });
+
+        methodCache.set(key, mapped);
+
+        return mapped;
+      },
+      getOwnPropertyDescriptor(source, key) {
+        const sourceDescriptor = Reflect.getOwnPropertyDescriptor(source, key);
+
+        if (sourceDescriptor && !sourceDescriptor.configurable) {
+          return sourceDescriptor;
+        }
+        const descriptor = Reflect.getOwnPropertyDescriptor(target, key);
+
+        return descriptor ? { ...descriptor, configurable: true } : undefined;
+      },
+      has(_source, key) {
+        return Reflect.has(target, key);
+      },
+      ownKeys(source) {
+        return [
+          ...new Set([...Reflect.ownKeys(source), ...Reflect.ownKeys(target)]),
+        ];
+      },
+    }
+  );
+};
+
+const STATE_NODE_OPTION_INDEXES = Object.freeze({
+  above: 0,
+  block: 0,
+  entries: 0,
+  find: 0,
+  get: 1,
+  levels: 0,
+  next: 0,
+  parent: 1,
+  previous: 0,
+  some: 0,
+  toArray: 0,
+});
+
+const TRANSACTION_NODE_OPTION_INDEXES = Object.freeze({
+  ...STATE_NODE_OPTION_INDEXES,
+  duplicate: 1,
+  insert: 1,
+  lift: 0,
+  merge: 0,
+  move: 0,
+  remove: 0,
+  set: 1,
+  split: 0,
+  unset: 1,
+  unwrap: 0,
+  wrap: 1,
+});
+
+const BLOCK_OPTION_INDEXES = Object.freeze({
+  duplicate: 0,
+  insertAfter: 1,
+  lift: 0,
+  reset: 1,
+  toggle: 1,
+});
+
+const SELECTION_OPTION_INDEXES = Object.freeze({
+  isAcrossBlocks: 0,
+  isAtBlockEnd: 0,
+  isAtBlockStart: 0,
+  isWithinBlock: 0,
+});
+
 export type EditorValueInput<V extends Value> =
   | EditorDocumentValue<V>
   | Readonly<V>
@@ -169,7 +353,7 @@ const normalizeBaseInitialValue = <V extends Value>(
 
 const initializeBaseEditor = <V extends Value>(
   editor: BaseEditor,
-  tx: EditorTransactionSpecBuilder,
+  tx: EditorTransactionSpecBuilder<Value, any>,
   {
     autoSelect,
     initialValue,
@@ -236,7 +420,12 @@ const createPlateSchemaExtensions = (
     editor,
     model,
     () => {
-      const runtime = createPlateRuntimeExtensions(editor, pluginList, model);
+      const runtime = createPlateRuntimeExtensions(
+        editor,
+        pluginList,
+        model,
+        (type) => lowerPlateNodeType(editor, type)
+      );
 
       return {
         codecExtension: compilePlateCodecs(editor, model, pluginList),
@@ -324,46 +513,7 @@ const installPlateModelAccessors = (editor: BaseEditor) => {
     editor.read,
     'schema'
   );
-  const getPublication = () => {
-    const publication = getPlateModelPublication(editor);
-
-    if (!publication) {
-      throw new Error('Plate model is not installed.');
-    }
-
-    return publication;
-  };
-
   const rawSchema = editor.read.schema;
-  const resolveDescriptor = (
-    descriptor: PlateSchemaDescriptor,
-    requireElement: boolean
-  ) => {
-    if (!isNominalPluginReference(descriptor)) {
-      throw new Error('Plate schema received an invalid plugin descriptor.');
-    }
-    const publication = getPublication();
-    const plugin = publication.plugins[descriptor.name];
-    const binding = publication.model.byName[descriptor.name];
-
-    if (!plugin || !binding) {
-      throw new Error(
-        `Plate schema descriptor "${descriptor.name}" is not installed.`
-      );
-    }
-    if (getPluginSchemaFamily(descriptor) !== getPluginSchemaFamily(plugin)) {
-      throw new Error(
-        `Plate schema descriptor "${descriptor.name}" does not match the installed plugin family.`
-      );
-    }
-    if (requireElement && !binding.elementType) {
-      throw new Error(
-        `Plate plugin "${descriptor.name}" does not declare schema.element.`
-      );
-    }
-
-    return { binding, plugin };
-  };
   const schemaFacade = new Proxy(rawSchema, {
     get(target, key, receiver) {
       if (key === 'create') {
@@ -377,7 +527,11 @@ const installPlateModelAccessors = (editor: BaseEditor) => {
               properties
             );
           }
-          const { binding } = resolveDescriptor(descriptor, true);
+          const { binding } = resolvePlateSchemaDescriptor(
+            editor,
+            descriptor,
+            true
+          );
 
           return rawSchema.create(binding.elementType!, properties);
         };
@@ -389,10 +543,12 @@ const installPlateModelAccessors = (editor: BaseEditor) => {
         ) =>
           rawSchema.allowsElementType(
             hasPlateSchemaDescriptorShape(parent)
-              ? resolveDescriptor(parent, true).binding.elementType!
+              ? resolvePlateSchemaDescriptor(editor, parent, true).binding
+                  .elementType!
               : parent,
             hasPlateSchemaDescriptorShape(child)
-              ? resolveDescriptor(child, true).binding.elementType!
+              ? resolvePlateSchemaDescriptor(editor, child, true).binding
+                  .elementType!
               : child
           );
       }
@@ -401,7 +557,11 @@ const installPlateModelAccessors = (editor: BaseEditor) => {
           if (!hasPlateSchemaDescriptorShape(descriptor)) {
             return rawSchema.element(descriptor);
           }
-          const { binding } = resolveDescriptor(descriptor, true);
+          const { binding } = resolvePlateSchemaDescriptor(
+            editor,
+            descriptor,
+            true
+          );
 
           return rawSchema.element(binding.elementType!);
         };
@@ -410,7 +570,8 @@ const installPlateModelAccessors = (editor: BaseEditor) => {
         return (descriptor: PlateSchemaDescriptor | string, group: string) =>
           rawSchema.isElementTypeInGroup(
             hasPlateSchemaDescriptorShape(descriptor)
-              ? resolveDescriptor(descriptor, true).binding.elementType!
+              ? resolvePlateSchemaDescriptor(editor, descriptor, true).binding
+                  .elementType!
               : descriptor,
             group
           );
@@ -465,7 +626,7 @@ const installPlateExtensionPortal = (editor: BaseEditor) => {
 const installPlateEditorExtensions = (
   editor: BaseEditor,
   identity: EditorSchemaIdentity | undefined,
-  initialize?: (tx: EditorTransactionSpecBuilder) => void,
+  initialize?: (tx: EditorTransactionSpecBuilder<Value, any>) => void,
   schema?: EditorApplicationSchema
 ) => {
   const previousBindings = getPlateRuntimeExtensionBindings(editor);
@@ -481,7 +642,7 @@ const installPlateEditorExtensions = (
     );
 
     withCompiledPlateModelCandidate(editor, configuration.model, () =>
-      initializeEditorExtensions<Editor>(editor, configuration.extensions, {
+      initializeEditorExtensions<AnyEditor>(editor, configuration.extensions, {
         initialize: initialize
           ? (tx) => {
               restoreModelAccessors = installPlateModelAccessors(editor);
@@ -697,6 +858,7 @@ const applyBaseEditor = <
   const publicationBeforeExtension = getPlateModelPublication(editor);
   const applicationPolicy = schema;
   let restoreSnapshotInputTransform: (() => void) | undefined;
+  let restoreStateViewTransform: (() => void) | undefined;
   let restoreTransactionViewTransform: (() => void) | undefined;
 
   try {
@@ -706,9 +868,46 @@ const applyBaseEditor = <
       collectPlatePluginSourceCandidates(sourcePlugins),
       () => resolvePlugins(editor, sourcePlugins)
     );
+    restoreStateViewTransform = setEditorStateViewTransform(editor, (state) => {
+      for (const [key, optionIndexes] of [
+        ['nodes', STATE_NODE_OPTION_INDEXES],
+        ['selection', SELECTION_OPTION_INDEXES],
+      ] as const) {
+        const group = state[key];
+
+        if (
+          (typeof group === 'object' && group !== null) ||
+          typeof group === 'function'
+        ) {
+          state[key] = createPlateNodeOptionsProxy(
+            editor,
+            group,
+            optionIndexes
+          );
+        }
+      }
+    });
     restoreTransactionViewTransform = setEditorTransactionViewTransform(
       editor,
       (transaction) => {
+        for (const [key, optionIndexes] of [
+          ['blocks', BLOCK_OPTION_INDEXES],
+          ['nodes', TRANSACTION_NODE_OPTION_INDEXES],
+          ['selection', SELECTION_OPTION_INDEXES],
+        ] as const) {
+          const group = transaction[key];
+
+          if (
+            (typeof group === 'object' && group !== null) ||
+            typeof group === 'function'
+          ) {
+            transaction[key] = createPlateNodeOptionsProxy(
+              editor,
+              group,
+              optionIndexes
+            );
+          }
+        }
         const bindings = getPlateRuntimeExtensionBindings(editor);
         const groups = new Map<string, unknown>();
 
@@ -845,6 +1044,7 @@ const applyBaseEditor = <
     >;
   } catch (error) {
     restoreSnapshotInputTransform?.();
+    restoreStateViewTransform?.();
     restoreTransactionViewTransform?.();
     if (!publicationBeforeExtension) clearPlateModelPublication(editor);
     clearPluginStores(editor);

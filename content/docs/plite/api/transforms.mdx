@@ -38,6 +38,7 @@ across most node methods:
 ```typescript
 type NodeSelectorOptions = {
   at?: NodeTarget;
+  type?: NodeTypeSelector;
   match?: NodeMatch<Node>;
   mode?: "highest" | "lowest" | "all";
   voids?: boolean;
@@ -46,8 +47,9 @@ type NodeSelectorOptions = {
 
 - `at?: NodeTarget`: An explicit location or live descendant to change. When omitted inside
   `editor.update(...)`, selection-sensitive methods use the transaction target.
-- `match?: NodeMatch<Node>`: A predicate or shallow property object that filters
-  which nodes are changed. Array property values mean one-of.
+- `type?: NodeTypeSelector`: Select one structural type or any type in an array.
+- `match?: NodeMatch<Node>`: A predicate that adds computed conditions. The
+  selected `type` determines the predicate's node type.
 - `mode?: 'highest' | 'lowest'`: Controls which matching node level is used.
   Methods documented with `mode?: 'highest' | 'lowest' | 'all'` also accept
   `all`.
@@ -61,10 +63,11 @@ Use node methods from `tx.nodes`.
 
 Insert nodes at `options.at` or the transaction target.
 
-Options: `at`, `match`, `mode`, `hanging`, `select`, `voids`.
+Options: `at`, `mode`, `hanging`, `select`, `split`, `voids`.
 
 - `hanging?: boolean`: Preserve hanging range edges.
 - `select?: boolean`: Select the inserted nodes.
+- `split?: { type?, match? }`: Select which ancestor to split before insertion.
 
 ```javascript
 editor.update((tx) => {
@@ -76,19 +79,19 @@ editor.update((tx) => {
 
 Remove nodes at `options.at` or the transaction target.
 
-Options: `at`, `match`, `mode`, `hanging`, `voids`.
+Options: `at`, `type`, `match`, `mode`, `hanging`, `voids`.
 
 #### `tx.nodes.merge(options?)`
 
 Merge a node with the previous node at the same depth.
 
-Options: `at`, `match`, `mode`, `hanging`, `voids`.
+Options: `at`, `type`, `match`, `mode`, `hanging`, `voids`.
 
 #### `tx.nodes.split(options?)`
 
 Split nodes at a location.
 
-Options: `at`, `match`, `mode`, `always`, `height`, `position`, `voids`.
+Options: `at`, `type`, `match`, `mode`, `always`, `height`, `position`, `voids`.
 
 - `always?: boolean`: Split even when the target is already at an edge.
 - `height?: number`: Split at an ancestor height.
@@ -98,13 +101,13 @@ Options: `at`, `match`, `mode`, `always`, `height`, `position`, `voids`.
 
 Wrap matching nodes in `element`.
 
-Options: `at`, `match`, `mode`, `split`, `voids`.
+Options: `at`, `type`, `match`, `mode`, `split`, `voids`.
 
 #### `tx.nodes.unwrap(options?)`
 
 Unwrap matching nodes.
 
-Options: `at`, `match`, `mode`, `split`, `voids`.
+Options: `at`, `type`, `match`, `mode`, `split`, `voids`.
 
 #### `tx.nodes.set(props, options?)`
 
@@ -114,7 +117,7 @@ Set properties on matching nodes.
 tx.nodes.set(props: Partial<Node>, options?);
 ```
 
-Options: `at`, `match`, `mode`, `hanging`, `split`, `voids`, `compare`,
+Options: `at`, `type`, `match`, `mode`, `hanging`, `split`, `voids`, `compare`,
 `merge`.
 
 - `compare?: PropsCompare`: Decide whether a property should be written.
@@ -151,19 +154,19 @@ tx.nodes.unset(key | key[], options?);
 tx.nodes.unset(propertyHandle, options?);
 ```
 
-Options: `at`, `match`, `mode`, `hanging`, `split`, `voids`.
+Options: `at`, `type`, `match`, `mode`, `hanging`, `split`, `voids`.
 
 #### `tx.nodes.lift(options?)`
 
 Lift matching nodes upward in the document tree.
 
-Options: `at`, `match`, `mode`, `voids`.
+Options: `at`, `type`, `match`, `mode`, `voids`.
 
 #### `tx.nodes.move(options)`
 
 Move nodes from `options.at` to `options.to`.
 
-Options: `at`, `match`, `mode`, `to`, `voids`.
+Options: `at`, `type`, `match`, `mode`, `to`, `voids`.
 
 - `to: Path`: Destination path for the moved nodes.
 

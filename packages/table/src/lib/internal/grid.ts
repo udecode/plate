@@ -1,4 +1,9 @@
-import type { EditorStateView, Element, Path, Value } from '@platejs/plite';
+import {
+  ElementApi,
+  type EditorStateView,
+  type Element,
+  type Path,
+} from '@platejs/plite';
 import type { TableCellElement, TableRowElement } from '../BaseTablePlugin';
 
 import { getColSpan, getRowSpan } from './codec';
@@ -255,8 +260,8 @@ const compileTableElement = (
   return grid;
 };
 
-export function compileTableGrid<V extends Value>(
-  state: Pick<EditorStateView<V>, 'key' | 'nodes'>,
+export function compileTableGrid(
+  state: Pick<EditorStateView, 'key' | 'nodes'>,
   tablePath: Path,
   root?: string
 ): TableGrid;
@@ -268,8 +273,9 @@ export function compileTableGrid(
 ): TableGrid {
   if (tablePath !== undefined) {
     const state = stateOrTable as Pick<EditorStateView, 'key' | 'nodes'>;
-    const table = state.nodes.get<Element>(
-      root ? { offset: 0, path: tablePath, root } : tablePath
+    const table = state.nodes.get(
+      root ? { offset: 0, path: tablePath, root } : tablePath,
+      { match: ElementApi.isElement }
     )?.[0];
 
     if (!table) {

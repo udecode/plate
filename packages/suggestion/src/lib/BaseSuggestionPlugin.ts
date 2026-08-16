@@ -714,13 +714,13 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
   .extend(({ api, store, schema: { key } }) => ({
     read: ({ state }) => {
       function node(
-        options: EditorNodesOptions<Node> & {
+        options: Omit<EditorNodesOptions<Node>, 'type'> & {
           id?: string;
           isText: true;
         }
       ): NodeEntry<SuggestionTextContract> | undefined;
       function node(
-        options?: EditorNodesOptions<Node> & {
+        options?: Omit<EditorNodesOptions<Node>, 'type'> & {
           id?: string;
           isText?: boolean;
         }
@@ -728,17 +728,22 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
         | NodeEntry<SuggestionElementContract | SuggestionTextContract>
         | undefined;
       function node(
-        options: EditorNodesOptions<Node> & {
+        options: Omit<EditorNodesOptions<Node>, 'type'> & {
           id?: string;
           isText?: boolean;
         } = {}
       ) {
-        const { id, isText, ...rest } = options;
+        const { id, isText, match, ...rest } = options;
 
-        return state.nodes.find<
-          SuggestionElementContract | SuggestionTextContract
-        >({
-          match: (candidate) => {
+        return state.nodes.find({
+          ...rest,
+          match: (
+            candidate,
+            path
+          ): candidate is
+            | SuggestionElementContract
+            | SuggestionTextContract => {
+            if (match && !match(candidate, path)) return false;
             if (!Reflect.get(candidate, key)) return false;
             if (isText && !TextApi.isText(candidate)) return false;
             if (!id) return true;
@@ -750,7 +755,6 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
               api.isBlockSuggestion(candidate) && candidate.suggestion.id === id
             );
           },
-          ...rest,
         });
       }
       const findIdentity = ({
@@ -761,15 +765,15 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
         type: 'insert' | 'remove' | 'update';
       }): SuggestionIdentity | undefined => {
         const getTextEntry = (location: Location) =>
-          state.nodes.find<SuggestionTextContract>({
+          state.nodes.find({
             at: location,
-            match: (candidate) =>
+            match: (candidate): candidate is SuggestionTextContract =>
               TextApi.isText(candidate) && Boolean(Reflect.get(candidate, key)),
           });
         const getInlineEntry = (point: Point) =>
-          state.nodes.above<Element>({
+          state.nodes.above({
             at: point,
-            match: (candidate) =>
+            match: (candidate): candidate is Element =>
               ElementApi.isElement(candidate) &&
               state.schema.isInline(candidate) &&
               Boolean(api.id(candidate)),
@@ -802,10 +806,14 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
             const block = state.nodes.block({ at: start });
 
             if (!entry && block && state.points.isStart(start, block[1])) {
-              const lineBreak = state.nodes.above<SuggestionElementContract>({
+              const lineBreak = state.nodes.above({
                 at: previousPoint ?? start,
+                match: ElementApi.isElement,
               });
-              const identity = lineBreak?.[0].suggestion;
+              const identity =
+                lineBreak && api.isBlockSuggestion(lineBreak[0])
+                  ? lineBreak[0].suggestion
+                  : undefined;
 
               if (
                 identity?.isLineBreak &&
@@ -856,9 +864,13 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
             .map(({ id, userId }): SuggestionDescription => {
               const suggestionKey = api.key(id);
               const nodes = state.nodes
-                .toArray<SuggestionTextContract>({
+                .toArray({
                   at: [],
-                  match: (candidate) =>
+                  match: (
+                    candidate
+                  ): candidate is SuggestionTextContract &
+                    SuggestionTextProperties =>
+                    TextApi.isText(candidate) &&
                     Boolean(Reflect.get(candidate, suggestionKey)),
                 })
                 .map(([candidate]) => candidate);
@@ -915,12 +927,16 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
         node,
         nodeEntries: (
           suggestionId: string,
-          { at = [], ...options }: EditorNodesOptions<Node> = {}
+          {
+            at = [],
+            ...options
+          }: Omit<EditorNodesOptions<Descendant>, 'type'> = {}
         ) =>
-          state.nodes.toArray<SuggestionTextContract>({
+          state.nodes.toArray({
             at,
             ...options,
-            match: (candidate, path) =>
+            match: (candidate, path): candidate is Descendant =>
+              (ElementApi.isElement(candidate) || TextApi.isText(candidate)) &&
               Boolean(Reflect.get(candidate, api.key(suggestionId))) &&
               (!options.match ||
                 NodeApi.matches(candidate, options.match, path)),
@@ -928,12 +944,15 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
         nodes: ({
           transient,
           ...options
-        }: EditorNodesOptions<Node> & { transient?: boolean } = {}) =>
-          state.nodes.toArray<Element | SuggestionTextContract>({
+        }: Omit<EditorNodesOptions<Descendant>, 'type'> & {
+          transient?: boolean;
+        } = {}) =>
+          state.nodes.toArray({
             ...options,
             at: options.at ?? [],
             mode: 'all',
-            match: (candidate) =>
+            match: (candidate): candidate is Descendant =>
+              (ElementApi.isElement(candidate) || TextApi.isText(candidate)) &&
               Boolean(Reflect.get(candidate, key)) &&
               (!transient ||
                 Boolean(Reflect.get(candidate, SUGGESTION_TRANSIENT_KEY))),
@@ -1035,7 +1054,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
         if (currentUserId === null) return;
 
         const getInlineEntryAt = (point: Point) =>
-          tx.nodes.above<Element>({
+          tx.nodes.above({
             at: point,
             match: (node) =>
               ElementApi.isElement(node) && tx.schema.isInline(node),
@@ -1051,7 +1070,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
           const adjacentPath = reverse
             ? PathApi.previous(point.path)
             : PathApi.next(point.path);
-          const entry = tx.nodes.get<Element>(adjacentPath);
+          const entry = tx.nodes.get(adjacentPath);
 
           if (
             entry &&
@@ -1610,9 +1629,9 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
           });
 
           tx.nodes
-            .toArray<Text>({
+            .toArray({
               at: [],
-              match: (node) =>
+              match: (node): node is SuggestionTextContract =>
                 TextApi.isText(node) &&
                 api
                   .dataList(node)
@@ -1810,7 +1829,12 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
             return false;
           }
 
-          const nodes = state.nodes.toArray<Element | Text>(input.options);
+          const nodes = state.nodes
+            .toArray(input.options)
+            .filter(
+              (entry): entry is NodeEntry<Element | Text> =>
+                ElementApi.isElement(entry[0]) || TextApi.isText(entry[0])
+            );
           const slashInput = editor.plugin(PLUGINS.slashInput);
 
           if (
@@ -1884,9 +1908,13 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
 
           if (store.get().isSuggesting && context.api.isTracking(tags)) {
             if (reverse) {
-              const node = state.nodes.above<SuggestionElementContract>();
+              const node = state.nodes.above();
+              const suggestion =
+                node && context.api.isBlockSuggestion(node[0])
+                  ? node[0].suggestion
+                  : undefined;
 
-              if (node?.[0].suggestion && !node[0].suggestion.isLineBreak) {
+              if (suggestion && !suggestion.isLineBreak) {
                 return next();
               }
             }
@@ -1949,7 +1977,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
           }
 
           const selection = state.selection();
-          const above = state.nodes.above<Element>();
+          const above = state.nodes.above({ match: ElementApi.isElement });
 
           if (!selection || !above) return state.transaction(() => {});
 
@@ -1994,9 +2022,13 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
             return false;
           }
 
-          const node = state.nodes.above<SuggestionElementContract>();
+          const node = state.nodes.above();
+          const suggestion =
+            node && context.api.isBlockSuggestion(node[0])
+              ? node[0].suggestion
+              : undefined;
 
-          if (node?.[0].suggestion && !node[0].suggestion.isLineBreak) {
+          if (suggestion && !suggestion.isLineBreak) {
             return false;
           }
 

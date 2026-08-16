@@ -1,8 +1,10 @@
 import type {
   DecoratedRange,
   EditorExtensionReference,
+  EditorSelectionSpec,
   EditorSchemaExtension,
   EditorSchemaExtensionProvider,
+  SelectionValue,
 } from '@platejs/plite';
 import type {
   EditorExtensionDependencyReferenceFor,
@@ -19,6 +21,7 @@ import type {
   InferDependencies,
   InferEnabled,
   InferRead,
+  InferSelection,
   InferTargetPlugins,
   InferUpdate,
   NormalizePluginState,
@@ -81,6 +84,7 @@ type InstalledBasePluginCapability<
   DefinitionField<C, 'api', InferApi<C>> &
   DefinitionField<C, 'enabled', InferEnabled<C>> &
   DefinitionField<C, 'read', InferRead<C>> &
+  DefinitionField<C, 'selectionKinds', InferSelection<C>> &
   InstalledBasePluginSchemaCapability<C> &
   DefinitionField<C, 'targetPlugins', InferTargetPlugins<C>> &
   DefinitionField<C, 'update', InferUpdate<C>> &
@@ -172,6 +176,7 @@ type CompactBasePluginDependencyDefinition<C extends AnyBasePluginDefinition> =
     DefinitionField<C, 'api', InferApi<C>> &
     DefinitionField<C, 'enabled', InferEnabled<C>> &
     DefinitionField<C, 'read', InferRead<C>> &
+    DefinitionField<C, 'selectionKinds', InferSelection<C>> &
     DefinitionField<
       C,
       'schema',
@@ -230,7 +235,6 @@ type BaseNativePresenceKey =
   | 'facetProviders'
   | 'on'
   | 'readMiddleware'
-  | 'selectionKinds'
   | 'stateFields'
   | 'validate';
 
@@ -255,6 +259,7 @@ export type LowerBasePlugin<C extends AnyBasePluginDefinition> = Readonly<{
   DefinitionField<C, 'schema', InferExactPluginSchemaContribution<C>> &
   DefinitionField<C, 'api', InferApi<C>> &
   DefinitionField<C, 'read', InferRead<C>> &
+  DefinitionField<C, 'selectionKinds', InferSelection<C>> &
   DefinitionField<C, 'update', InferUpdate<C>> &
   LowerNativeFields<C>;
 
@@ -284,6 +289,12 @@ type InputApi<TInput> = TInput extends { api: infer TApi }
 type InputRead<TInput> = TInput extends { read: infer TRead }
   ? ObjectResult<TRead>
   : {};
+
+type InputSelection<TInput> = TInput extends {
+  selectionKinds: readonly EditorSelectionSpec<infer TSelection>[];
+}
+  ? Extract<TSelection, SelectionValue>
+  : never;
 
 type InputUpdate<TInput> = TInput extends { update: infer TUpdate }
   ? ObjectResult<TUpdate>
@@ -390,17 +401,19 @@ type NormalizedBasePluginField<TInput, TKey extends keyof TInput> = TKey extends
                 : readonly (PluginReference | string)[]
               : TKey extends 'read'
                 ? InputRead<TInput>
-                : TKey extends 'update'
-                  ? InputUpdate<TInput>
-                  : TKey extends 'initialState'
-                    ? InputInitialState<TInput>
-                    : TKey extends 'selectors'
-                      ? InputSelectors<TInput>
-                      : TKey extends 'schema'
-                        ? InputSchema<TInput>
-                        : TKey extends BasePluginPresenceField
-                          ? true
-                          : never;
+                : TKey extends 'selectionKinds'
+                  ? InputSelection<TInput>
+                  : TKey extends 'update'
+                    ? InputUpdate<TInput>
+                    : TKey extends 'initialState'
+                      ? InputInitialState<TInput>
+                      : TKey extends 'selectors'
+                        ? InputSelectors<TInput>
+                        : TKey extends 'schema'
+                          ? InputSchema<TInput>
+                          : TKey extends BasePluginPresenceField
+                            ? true
+                            : never;
 
 export type NormalizeBasePluginInput<
   TInput,

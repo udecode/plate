@@ -1292,7 +1292,7 @@ describe('removeNodes when editor.plugin(SuggestionPlugin).store.get().isSuggest
 
     editor.update.nodes.remove({
       at: [],
-      match: { type: 'paragraph' },
+      type: 'paragraph',
     });
 
     const firstSuggestion = (editor.read.children()[0] as any).suggestion;
@@ -1322,7 +1322,7 @@ describe('removeNodes when editor.plugin(SuggestionPlugin).store.get().isSuggest
 
     editor.update.nodes.remove({
       at: [],
-      match: { type: 'slashInput' },
+      type: 'slashInput',
     });
 
     expect(editor.read.children()).toHaveLength(1);

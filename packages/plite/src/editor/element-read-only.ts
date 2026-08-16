@@ -3,6 +3,7 @@ import {
   isElementReadOnly as editorIsElementReadOnly,
 } from '../interfaces/editor';
 import type { EditorStaticApi } from '../interfaces/editor';
+import type { Element } from '../interfaces/element';
 import { NodeApi } from '../interfaces/node';
 
 export const elementReadOnly: EditorStaticApi['elementReadOnly'] = (
@@ -11,5 +12,6 @@ export const elementReadOnly: EditorStaticApi['elementReadOnly'] = (
 ) =>
   editorAbove(editor, {
     ...options,
-    match: (n) => NodeApi.isElement(n) && editorIsElementReadOnly(editor, n),
+    match: (n): n is Element =>
+      NodeApi.isElement(n) && editorIsElementReadOnly(editor, n),
   });

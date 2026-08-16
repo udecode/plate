@@ -15,6 +15,7 @@ import {
 import { type PlateEditor, useEditor, useElement } from '@platejs/core/react';
 import {
   type Element,
+  ElementApi,
   type NodeEntry,
   type Path,
   PathApi,
@@ -373,7 +374,9 @@ const useDomDragNode = (
       document.body.classList.add('dragging');
 
       const itemValue = typeof item === 'function' ? item(monitor) : item;
-      const element = editor.read.nodes.get<Element>(elementKey)?.[0];
+      const element = editor.read.nodes.get(elementKey, {
+        match: ElementApi.isElement,
+      })?.[0];
 
       if (!element) return null;
 
@@ -492,7 +495,11 @@ const useDomDropNode = (
           }
 
           const entries = draggedKeys
-            .map((draggedKey) => editor.read.nodes.get<Element>(draggedKey))
+            .map((draggedKey) =>
+              editor.read.nodes.get(draggedKey, {
+                match: ElementApi.isElement,
+              })
+            )
             .filter((entry): entry is NodeEntry<Element> => !!entry)
             .toSorted(([, a], [, b]) => PathApi.compare(a, b));
           const insertAfter = direction === 'bottom' || direction === 'right';
@@ -545,7 +552,11 @@ const useDomDropNode = (
           ? [dragItem.key]
           : [];
       const entries = draggedKeys
-        .map((draggedKey) => sourceEditor.read.nodes.get<Element>(draggedKey))
+        .map((draggedKey) =>
+          sourceEditor.read.nodes.get(draggedKey, {
+            match: ElementApi.isElement,
+          })
+        )
         .filter((entry): entry is NodeEntry<Element> => !!entry);
       const elements = entries
         .toSorted(([, a], [, b]) => PathApi.compare(a, b))
@@ -614,7 +625,9 @@ const useDomDropNode = (
           }
 
           store.set({
-            dropTarget: editor.read.nodes.get(previousPath)
+            dropTarget: editor.read.nodes.get(previousPath, {
+              match: ElementApi.isElement,
+            })
               ? {
                   key: editor.key(previousPath),
                   line: 'bottom',

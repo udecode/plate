@@ -1,5 +1,5 @@
 import { BaseParagraphPlugin, defineBasePlugin } from '@platejs/core';
-import { PathApi, type Element, type Node, type Path } from '@platejs/plite';
+import { ElementApi, PathApi, type Node, type Path } from '@platejs/plite';
 
 import { PLUGINS } from '../plate-keys';
 
@@ -33,10 +33,11 @@ export const ExitBreakPlugin = defineBasePlugin(PLUGINS.exitBreak, {
           if (match && !match(node, path)) return false;
           if (path.length === 1) return true;
 
-          const parent = tx.nodes.parent<Element>(path);
+          const parent = tx.nodes.parent(path);
 
           return (
             !!parent &&
+            ElementApi.isElement(parent[0]) &&
             tx.schema.allowsElementType(parent[0].type, paragraphType)
           );
         },

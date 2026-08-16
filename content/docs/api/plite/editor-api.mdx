@@ -92,15 +92,16 @@ target an existing key but do not allocate keys.
 
 ## Matching Nodes
 
-Node queries accept predicates or shallow property objects.
+Node queries use `type` for structural selection and `match` for an optional
+predicate.
 
 ```ts
 const callout = editor.read.nodes.find({
-  match: { type: "callout" },
+  type: "callout",
 });
 
 const structural = editor.read.nodes.toArray({
-  match: { type: ["table", "table_cell"] },
+  type: ["table", "table_cell"],
 });
 
 const blocks = editor.read.nodes.toArray({
@@ -109,8 +110,8 @@ const blocks = editor.read.nodes.toArray({
 });
 ```
 
-Property values use exact equality. An array means one-of. Use predicates for
-computed policy and TypeScript narrowing.
+An array selects any listed type. Use predicates for computed policy and
+TypeScript narrowing.
 
 ## Selection Queries
 
@@ -120,7 +121,7 @@ Selection checks are explicit methods, not boolean query flags.
 const isCollapsed = editor.read.selection.isCollapsed();
 const spansBlocks = editor.read.selection.isAcrossBlocks();
 const startsHeading = editor.read.selection.isAtBlockStart({
-  match: { type: "heading" },
+  type: "heading",
 });
 const containsFirstBlock = editor.read.selection.contains([0]);
 const intersectsCallout = editor.read.selection.intersects(calloutElement);

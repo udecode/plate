@@ -243,6 +243,10 @@ Plate 插件直接在插件根级声明 Plite 能力。使用 `readMiddleware`�
 `selectionKinds`、`contributions`、`on`、`activate` 和 `validate`，
 不再添加第二层 wrapper。
 
+`selectionKinds` 同时也是完整的类型注册。只有安装该插件的具体 editor 才会
+推断自定义 selection 的读取和写入；不要添加 module augmentation 或
+side-effect type import。
+
 ```ts showLineNumbers
 import { defineStateField } from "platejs";
 import { definePlatePlugin } from "platejs/react";

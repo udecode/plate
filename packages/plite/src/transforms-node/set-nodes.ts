@@ -7,7 +7,7 @@ import { getEditorSchema } from '../core/editor-runtime';
 import { node as editorNode } from '../editor/node';
 import { nodes as getNodes } from '../editor/nodes';
 import { end as editorEnd } from '../editor/end';
-import { LocationApi } from '../interfaces';
+import { type Location, LocationApi } from '../interfaces';
 import {
   isBlock as editorIsBlock,
   isEnd as editorIsEnd,
@@ -18,11 +18,18 @@ import {
   unhangRange as editorUnhangRange,
 } from '../interfaces/editor';
 import type { AnyEditor as Editor, Value } from '../interfaces/editor';
-import type { NodeMatchPredicate } from '../interfaces/node';
+import type {
+  Ancestor,
+  NodeEntry,
+  NodeMatchPredicate,
+} from '../interfaces/node';
 import { type Node, NodeApi } from '../interfaces/node';
 import { type Path, PathApi } from '../interfaces/path';
 import { type Range, RangeApi } from '../interfaces/range';
-import type { NodeMutationMethods } from '../interfaces/transforms/node';
+import type {
+  NodeMutationMethods,
+  NodeSetNodesOptions,
+} from '../interfaces/transforms/node';
 import { select } from '../transforms-selection/select';
 import { splitNodes } from './split-nodes';
 import { normalizeNodeMatch } from '../utils/node-match';
@@ -38,6 +45,9 @@ const NON_SETTABLE_NODE_PROPERTIES = [
   'text',
   ...Object.getOwnPropertyNames(Object.prototype),
 ];
+
+const getParentEntry = (editor: unknown, at: Location) =>
+  editorParent(editor as Editor, at) as NodeEntry<Ancestor>;
 
 const trimSplitRangeEndAtTextStart = <
   V extends Value,
@@ -75,10 +85,10 @@ const trimSplitRangeEndAtTextStart = <
     : trimmedRange;
 };
 
-export const setNodes: NodeMutationMethods['setNodes'] = (
-  editor,
+export const setNodes = ((
+  editor: Editor,
   props: Partial<Node>,
-  options = {}
+  options: NodeSetNodesOptions = {}
 ) => {
   runEditorTransaction(editor, (tx) => {
     const {
@@ -92,7 +102,7 @@ export const setNodes: NodeMutationMethods['setNodes'] = (
       split: optionSplit = false,
       voids: optionVoids = false,
     } = options;
-    let match = normalizeNodeMatch(optionMatch);
+    let match = normalizeNodeMatch(options.type, optionMatch);
     let at = optionAt === undefined ? tx.resolveTarget() : optionAt;
     let compare = optionCompare;
     const merge = optionMerge;
@@ -131,7 +141,7 @@ export const setNodes: NodeMutationMethods['setNodes'] = (
           return false;
         }
 
-        const [parentNode] = editorParent(editor, path);
+        const [parentNode] = getParentEntry(editor, path);
 
         if (!NodeApi.isElement(parentNode)) {
           return false;
@@ -152,7 +162,7 @@ export const setNodes: NodeMutationMethods['setNodes'] = (
         const [selectedNode, selectedPath] = editorNode(editor, at);
 
         if (marksMatch(selectedNode, selectedPath)) {
-          const [parentNode] = editorParent(editor, selectedPath);
+          const [parentNode] = getParentEntry(editor, selectedPath);
           markAcceptingVoidSelected =
             NodeApi.isElement(parentNode) &&
             getEditorSchema(editor).isMarkableVoid(parentNode);
@@ -227,7 +237,7 @@ export const setNodes: NodeMutationMethods['setNodes'] = (
 
     const updates: SetNodeUpdate[] = [];
 
-    for (const [node, path] of getNodes(editor, {
+    for (const [node, path] of getNodes(editor as never, {
       at,
       match,
       mode,
@@ -341,4 +351,4 @@ export const setNodes: NodeMutationMethods['setNodes'] = (
       );
     }
   });
-};
+}) as NodeMutationMethods['setNodes'];

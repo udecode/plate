@@ -7,7 +7,6 @@ import type {
   Value,
 } from '../interfaces';
 import { ElementApi, NodeApi, RangeApi, TextApi } from '../interfaces';
-import type { NodeInsertNodesOptions } from '../interfaces/transforms/node';
 import { ContentSlice as ContentSliceValue } from './content-slice';
 import { getEditorMaxLength } from './public-state';
 
@@ -141,7 +140,7 @@ export const limitNodeInsert = <
 >(
   editor: Editor<V>,
   nodes: TNode | readonly TNode[],
-  options: NodeInsertNodesOptions<TNode> | undefined
+  options: { at?: Location } | undefined
 ) => {
   const isList = Array.isArray(nodes);
   const input = (isList ? nodes : [nodes]) as readonly DescendantIn<V>[];

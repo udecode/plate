@@ -2,15 +2,9 @@ import type React from 'react';
 
 import type { ClientRectObject } from '@floating-ui/core';
 import type { VirtualElement } from '@floating-ui/react';
+import type { PlateEditor } from '@platejs/core/react';
 
-import {
-  type Location,
-  PathApi,
-  type Range,
-  RangeApi,
-  type Value,
-} from '@platejs/plite';
-import type { DOMEditor } from '@platejs/plite-dom';
+import { type Location, PathApi, type Range, RangeApi } from '@platejs/plite';
 
 export type VirtualRef = React.RefObject<Pick<
   HTMLElement,
@@ -76,11 +70,8 @@ export const createVirtualElement = (): VirtualElement => ({
 });
 
 /** Get the bounding client rect for an editor range. */
-export const getRangeBoundingClientRect = <
-  V extends Value,
-  TExtensions extends readonly unknown[],
->(
-  editor: DOMEditor<V, TExtensions>,
+export const getRangeBoundingClientRect = (
+  editor: PlateEditor,
   at: Range | null
 ): ClientRectObject => {
   if (!at) return getDefaultBoundingClientRect();
@@ -92,11 +83,8 @@ export const getRangeBoundingClientRect = <
 };
 
 /** Get the bounding client rect for the expanded editor selection. */
-export const getSelectionBoundingClientRect = <
-  V extends Value,
-  TExtensions extends readonly unknown[],
->(
-  editor: DOMEditor<V, TExtensions>
+export const getSelectionBoundingClientRect = (
+  editor: PlateEditor
 ): ClientRectObject => {
   const selection = editor.read.selection();
 
@@ -118,11 +106,8 @@ export const getDOMSelectionBoundingClientRect = (): ClientRectObject => {
   return domSelection.getRangeAt(0).getBoundingClientRect();
 };
 
-export const getBoundingClientRect = <
-  V extends Value,
-  TExtensions extends readonly unknown[],
->(
-  editor: DOMEditor<V, TExtensions>,
+export const getBoundingClientRect = (
+  editor: PlateEditor,
   at?: Location | Location[]
 ): DOMRect | undefined => {
   const atRanges: Range[] = (() => {
@@ -151,11 +136,8 @@ export const getBoundingClientRect = <
   return mergeClientRects(clientRects);
 };
 
-export const createVirtualRef = <
-  V extends Value,
-  TExtensions extends readonly unknown[],
->(
-  editor: DOMEditor<V, TExtensions>,
+export const createVirtualRef = (
+  editor: PlateEditor,
   at?: Location | Location[],
   {
     fallbackRect,

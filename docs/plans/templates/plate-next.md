@@ -183,12 +183,11 @@ Constraints:
   the `NodeTarget` / `at` value or use `editor.read.nodes.path(node)` only when
   a `Path` is required. Do not rediscover it with a type/ID query. Handle an
   unresolved public path instead of asserting it.
-- Property matcher law: exact shallow equality uses property objects such as
-  `match: { type }`, `match: { id }`, and array-valued one-of matchers.
-  Property matchers intentionally ignore `text` and `children`; content and
-  structure checks remain predicates. Predicates also remain for computed
-  schema policy, path-dependent logic, truthiness semantics, or consumed type
-  narrowing.
+- Node selector law: use `type: FooPlugin` in Plate and a persisted string or
+  schema handle in raw Plite. Arrays infer a selected union. `match` is
+  function-only and adds property, content, path, or type-guard conditions.
+  Never use object matchers or caller-selected node result generics. Insert
+  split-target selection belongs under `split: { type, match }`.
 - Flat node-query aliases are forbidden: no `editor.api.findPath`,
   `editor.api.some`, `read.nodes.pathOf`, Plate wrappers, or implicit type/ID
   scans. Use `editor.read.nodes.path`, `editor.read.nodes.some`, and direct

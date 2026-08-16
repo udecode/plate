@@ -22,6 +22,7 @@ import './interfaces-contract';
 import './invariant-contract';
 import './leaf-lifecycle-contract';
 import './node-match-contract';
+import './node-query-inference-contract';
 import './primitive-method-runtime-contract';
 import './public-surface-contract';
 import './query-contract';

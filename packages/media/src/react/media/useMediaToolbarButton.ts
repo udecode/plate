@@ -1,23 +1,13 @@
-import type { BaseEditor } from '@platejs/core';
+import type { BaseEditor, PlateNodeInsertOptions } from '@platejs/core';
 import { useEditor } from '@platejs/core/react';
-import { type NodeInsertNodesOptions, PathApi } from '@platejs/plite';
+import { PathApi } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
 
-import {
-  BaseImagePlugin,
-  type ImageElement,
-} from '../../lib/image/BaseImagePlugin';
-import {
-  BaseMediaEmbedPlugin,
-  type MediaEmbedElement,
-} from '../../lib/media-embed/BaseMediaEmbedPlugin';
+import { BaseImagePlugin } from '../../lib/image/BaseImagePlugin';
+import { BaseMediaEmbedPlugin } from '../../lib/media-embed/BaseMediaEmbedPlugin';
 import type { MediaInsertInput } from '../../lib/BaseMediaPlugin';
 
-export interface InsertMediaUrlOptions
-  extends Omit<
-    NodeInsertNodesOptions<ImageElement | MediaEmbedElement>,
-    'match'
-  > {
+export interface InsertMediaUrlOptions extends PlateNodeInsertOptions {
   /** Resolve a URL without showing the default browser prompt. */
   getUrl?: () => Promise<string>;
   /** Initial caption content compiled into the media element's children. */

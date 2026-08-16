@@ -7,6 +7,7 @@ import type {
   EditorSnapshot,
   EditorUpdateTransaction,
   JsonEditorValue,
+  Value,
 } from '@platejs/plite';
 import { DocumentChange } from '@platejs/plite';
 import {
@@ -54,6 +55,7 @@ import {
   createYjsProviderLifecycleAdapter,
   type YjsProviderLifecycleAdapter,
 } from './provider-lifecycle-adapter';
+import { isRecord } from './record';
 import {
   type PreparedYjsSharedEffects,
   YjsSharedEffectLog,
@@ -69,6 +71,7 @@ import type {
   YjsAwarenessLike,
   YjsExtensionOptions,
   YjsProviderLike,
+  YjsRemoteCursorData,
   YjsState,
   YjsTraceEntry,
   YjsTx,
@@ -112,10 +115,12 @@ const asDescendants = (
   children: JsonEditorValue['children']
 ): readonly Descendant[] => children as unknown as readonly Descendant[];
 
-export class YjsController {
+export class YjsController<
+  TCursorData extends YjsRemoteCursorData = YjsRemoteCursorData,
+> {
   private readonly autoSendSelection: boolean;
   private readonly awareness?: YjsAwarenessLike;
-  private readonly awarenessAdapter: YjsAwarenessAdapter;
+  private readonly awarenessAdapter: YjsAwarenessAdapter<TCursorData>;
   private readonly awarenessDataField: string;
   private readonly awarenessObserver: (event: YjsAwarenessChange) => void;
   private readonly awarenessSelectionField: string;
@@ -260,7 +265,7 @@ export class YjsController {
         this.createRootBinding(root, yRoot, Object.freeze([]))
       );
     }
-    this.awarenessAdapter = createYjsAwarenessAdapter({
+    this.awarenessAdapter = createYjsAwarenessAdapter<TCursorData>({
       awareness: this.awareness,
       awarenessDataField: this.awarenessDataField,
       awarenessSelectionField: this.awarenessSelectionField,
@@ -272,6 +277,7 @@ export class YjsController {
       editor: this.editor,
       isConnected: () => this.providerLifecycle.connected(),
       rootFor: (root) => this.rootFor(root),
+      validateCursorData: options.cursorData?.validate ?? isRecord,
     });
     this.observer = (events, transaction) => {
       if (this.shouldIgnoreRemoteTransaction(transaction)) return;
@@ -690,7 +696,7 @@ export class YjsController {
     }
   }
 
-  handleTransactionChange(tx: EditorUpdateTransaction): void {
+  handleTransactionChange(tx: EditorUpdateTransaction<Value, any>): void {
     if (this.shouldRejectUnsafeProviderCommit()) {
       tx.tags.add('history-skip');
     }
@@ -874,7 +880,7 @@ export class YjsController {
     );
   }
 
-  state(): YjsState {
+  state(): YjsState<TCursorData> {
     return {
       awarenessRevision: () => this.awarenessRevision,
       clientId: () => this.clientId,
@@ -894,7 +900,7 @@ export class YjsController {
     };
   }
 
-  tx(): YjsTx {
+  tx(): YjsTx<TCursorData> {
     return {
       clearSelection: () => {
         this.awarenessAdapter.clearSelection();

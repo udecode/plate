@@ -95,7 +95,10 @@ describe('planTableMutation', () => {
     const input = table([[cell('a')]]);
     const result = planTableMutation(context(input, [3]), {
       kind: 'insert-table',
-      options: { select: true },
+      options: {
+        select: true,
+        split: { type: 'paragraph' },
+      },
     });
 
     expect(result).toMatchObject({
@@ -104,6 +107,9 @@ describe('planTableMutation', () => {
         {
           kind: 'insert-node',
           node: input,
+          options: {
+            split: { type: 'paragraph' },
+          },
           path: [3],
         },
       ],

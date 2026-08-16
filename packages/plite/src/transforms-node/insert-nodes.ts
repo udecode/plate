@@ -10,12 +10,15 @@ import {
   type Descendant,
   type Location,
   LocationApi,
+  type Node,
   NodeApi,
+  type NodeTypeSelector,
   type Path,
   PathApi,
   RangeApi,
 } from '../interfaces';
 import {
+  type AnyEditor,
   isBlock as editorIsBlock,
   isEnd as editorIsEnd,
   isInline as editorIsInline,
@@ -23,22 +26,27 @@ import {
   unhangRange as editorUnhangRange,
   void as editorVoid,
 } from '../interfaces/editor';
-import type { NodeMutationMethods } from '../interfaces/transforms/node';
+import type {
+  NodeInsertNodesOptions,
+  NodeMutationMethods,
+} from '../interfaces/transforms/node';
 import { getDefaultInsertLocation } from '../utils';
+import { normalizeNodeMatch } from '../utils/node-match';
 import { getNodeKeyForNode, seedNodeKeys } from '../utils/node-keys';
 import { select as selectSelection } from '../transforms-selection/select';
 import { deleteText } from '../transforms-text/delete-text';
 import { splitNodes } from './split-nodes';
 
-export const insertNodes: NodeMutationMethods<any>['insertNodes'] = (
-  editor,
-  nodes,
-  options = {}
+const insertNodesRuntime = (
+  editor: AnyEditor,
+  nodes: Descendant | readonly Descendant[],
+  options: NodeInsertNodesOptions<Node, NodeTypeSelector | undefined> = {}
 ) => {
   runEditorTransaction(editor, (tx) => {
     const { hanging = false, voids = false, mode = 'lowest' } = options;
     let at: Location | undefined = options.at;
-    let { match, select } = options;
+    let { select } = options;
+    let match = normalizeNodeMatch(options.split?.type, options.split?.match);
 
     const nextNodes = (
       Array.isArray(nodes) ? nodes : [nodes]
@@ -183,3 +191,6 @@ export const insertNodes: NodeMutationMethods<any>['insertNodes'] = (
     }
   });
 };
+
+export const insertNodes =
+  insertNodesRuntime as NodeMutationMethods<any>['insertNodes'];

@@ -119,7 +119,7 @@ BlockSelectionPlugin.configure(({ editor }) => {
           tableRow.installed &&
           editor.read.nodes.above({
             at: path,
-            match: { type: tableRow.schema.type },
+            type: tableRow.schema.type,
           })
         ) {
           return false;

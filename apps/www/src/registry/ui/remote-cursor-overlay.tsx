@@ -104,7 +104,7 @@ const pointsEqual = (
 
 export function RemoteCursorOverlay() {
   const editor = useEditor();
-  const [positions] = useYjsRemoteCursorOverlayPositions<CursorData>(editor);
+  const [positions] = useYjsRemoteCursorOverlayPositions(editor);
   const container = useEditorScrollElement(editor);
   const containerOffset = useContainerOffset(container, positions);
 

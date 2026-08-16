@@ -60,18 +60,20 @@ export const getInjectMatch = <E extends BaseEditor>(
         return false;
       }
       if (excludeBelowPlugins) {
-        const excludeTypes = excludeBelowPlugins.flatMap((target) => {
-          const portal = editor.plugin(target);
+        const installedExcludePlugins = excludeBelowPlugins.flatMap(
+          (target) => {
+            const portal = editor.plugin(target);
 
-          if (!portal.installed) return [];
+            if (!portal.installed) return [];
 
-          return [portal.schema.type];
-        });
+            return [typeof target === 'string' ? portal.schema.type : target];
+          }
+        );
         const isBelow =
-          excludeTypes.length > 0 &&
+          installedExcludePlugins.length > 0 &&
           editor.read.nodes.above({
             at: path,
-            match: { type: excludeTypes },
+            type: installedExcludePlugins,
           });
 
         if (isBelow) return false;

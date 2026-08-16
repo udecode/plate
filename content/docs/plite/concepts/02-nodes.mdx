@@ -106,22 +106,21 @@ change, but the document model is still text nodes inside elements.
 
 ## Finding Nodes
 
-Use namespaced node reads for tree queries. A `match` can be a predicate or a
-shallow property object.
+Use namespaced node reads for tree queries. `type` selects structural node
+types. `match` adds a predicate.
 
 ```ts
 const callout = editor.read.nodes.find({
-  match: { type: "callout" },
+  type: "callout",
 });
 
 const tableNode = editor.read.nodes.find({
-  match: { type: ["table", "table_cell"] },
+  type: ["table", "table_cell"],
 });
 ```
 
-Scalar properties use exact equality. Array matcher values mean one-of. Use a
-predicate when the condition is computed or when it should narrow the returned
-node type.
+An array selects any listed type. Use a predicate when the condition is
+computed or when it should narrow the returned node type.
 
 When component code already owns a text or element node, pass that node to a
 public `at` option instead of resolving its path first. See

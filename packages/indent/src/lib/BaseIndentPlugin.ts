@@ -68,7 +68,7 @@ export const BaseIndentPlugin = defineBasePlugin(PLUGINS.indent, {
       },
     },
   },
-  update: ({ editor, plugin, tx }) => {
+  update: ({ editor, plugin, schema: pluginSchema, tx }) => {
     const change = ({
       nodes,
       offset = 1,
@@ -76,17 +76,21 @@ export const BaseIndentPlugin = defineBasePlugin(PLUGINS.indent, {
       unsetNodeProps = [],
     }: IndentChangeOptions = {}) => {
       const { match, mode = 'lowest', ...nodeOptions } = nodes ?? {};
-      const entries = tx.nodes.toArray<Element>({
+      const entries = tx.nodes.toArray({
         ...nodeOptions,
         mode,
-        match: (node, path) =>
+        match: (node, path): node is Element =>
           ElementApi.isElement(node) &&
           tx.nodes.isBlock(node) &&
           (!match || match(node, path)),
       });
 
       for (const [node, path] of entries) {
-        const currentIndent = Number(node.indent ?? 0);
+        if (!ElementApi.isElement(node)) continue;
+
+        const currentIndent = Number(
+          tx.schema.getProperty(node, pluginSchema.properties.indent) ?? 0
+        );
         const nextIndent = currentIndent + offset;
         const props = setNodeProps?.({ indent: nextIndent }) ?? {};
 

@@ -145,6 +145,7 @@ export const registryComponents: Registry['items'] = [
   },
   {
     dependencies: [
+      '@platejs/basic-nodes',
       '@platejs/callout',
       '@platejs/code-block',
       '@platejs/code-drawing',

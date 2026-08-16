@@ -23,6 +23,7 @@ import { getEditorYjsState, getEditorYjsTx } from '../../src/core/editor-yjs';
 import { yjs } from '../../src/core/extension';
 import type {
   YjsAwarenessLike,
+  YjsCursorDataSchema,
   YjsProviderLike,
   YjsProviderStatus,
   YjsRemoteCursor,
@@ -46,6 +47,7 @@ export type CreateYjsPeerOptions = {
   awareness?: YjsAwarenessLike;
   children: readonly Descendant[];
   clientId: string;
+  cursorData?: YjsCursorDataSchema;
   numericClientId?: number;
   provider?: YjsProviderLike;
   roots?: Readonly<Record<string, readonly Descendant[]>>;
@@ -73,6 +75,7 @@ export const createYjsPeerWithEditor = <TEditor extends TestEditor>(
     children,
     awareness,
     clientId,
+    cursorData,
     numericClientId,
     provider,
     roots,
@@ -100,6 +103,7 @@ export const createYjsPeerWithEditor = <TEditor extends TestEditor>(
     yjs({
       awareness,
       clientId,
+      ...(cursorData === undefined ? {} : { cursorData }),
       doc,
       provider,
       rootName: '@platejs/plite',
@@ -269,12 +273,10 @@ export const assertCanonicalYjsTrace = (
   }
 };
 
-export const getYjsRemoteCursors = <
-  TCursorData extends YjsRemoteCursorData = YjsRemoteCursorData,
->(
+export const getYjsRemoteCursors = (
   peer: Peer
-): readonly YjsRemoteCursor<TCursorData>[] =>
-  getYjsState(peer).remoteCursors<TCursorData>();
+): readonly YjsRemoteCursor<YjsRemoteCursorData>[] =>
+  getYjsState(peer).remoteCursors();
 
 export const getYjsAwarenessRevision = (peer: Peer): number =>
   getYjsState(peer).awarenessRevision();

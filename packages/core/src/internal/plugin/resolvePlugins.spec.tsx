@@ -1,5 +1,5 @@
 import React from 'react';
-import { property, schema } from '@platejs/plite';
+import { editorCommands, property, schema } from '@platejs/plite';
 import { createBaseEditor } from '../../lib/editor';
 import type { AnyBasePlugin } from '../../lib/plugin/BasePlugin';
 
@@ -78,6 +78,113 @@ describe('resolvePlugins', () => {
 
     expect(editor.plugin(Plugin).api.dependencyType()).toBe(
       'persistedSchemaDependency'
+    );
+  });
+
+  it('lowers node query descriptors through the final application schema', () => {
+    const LinkPlugin = defineBasePlugin('descriptorQueryLink', {
+      schema: {
+        element: {
+          ...schema.element.textBlock(),
+          properties: { url: property.string() },
+        },
+      },
+    });
+    const MarkPlugin = defineBasePlugin('descriptorQueryMark', {
+      schema: { mark: property.boolean() },
+    });
+    let correctionVisits = 0;
+    let setCommandCalls = 0;
+    const CorrectionPlugin = defineBasePlugin('descriptorQueryCorrection', {
+      commands: ({ around }) => [
+        around(editorCommands.setNodes, ({ next }) => {
+          setCommandCalls++;
+
+          return next();
+        }),
+      ],
+      corrections: [
+        {
+          correct: () => {
+            correctionVisits++;
+          },
+          event: 'properties',
+          query: { type: LinkPlugin },
+        },
+      ],
+      dependencies: [LinkPlugin],
+    });
+    const editor = createBaseEditor({
+      initialValue: [
+        {
+          children: [{ text: 'Plate' }],
+          type: 'persistedDescriptorQueryLink',
+          url: '/docs',
+        },
+      ],
+      plugins: [CorrectionPlugin, MarkPlugin],
+      schema: {
+        overrides: [
+          schema.override(LinkPlugin, {
+            element: { type: 'persistedDescriptorQueryLink' },
+          }),
+        ],
+      },
+    });
+
+    expect(editor.plugin(LinkPlugin).schema.type).toBe(
+      'persistedDescriptorQueryLink'
+    );
+    expect(
+      editor.read.nodes.find({ at: [], type: 'persistedDescriptorQueryLink' })
+    ).toBeDefined();
+    expect(
+      editor.read.nodes.find({
+        at: [],
+        match: (link) => link.url === '/docs',
+        type: LinkPlugin,
+      })
+    ).toEqual([
+      expect.objectContaining({
+        type: 'persistedDescriptorQueryLink',
+        url: '/docs',
+      }),
+      [0],
+    ]);
+    expect(editor.read.nodes.get([0], { type: LinkPlugin })?.[0]).toMatchObject(
+      {
+        type: 'persistedDescriptorQueryLink',
+        url: '/docs',
+      }
+    );
+    expect(
+      editor.read.nodes.parent([0, 0], { type: LinkPlugin })?.[0]
+    ).toMatchObject({
+      type: 'persistedDescriptorQueryLink',
+      url: '/docs',
+    });
+
+    setCommandCalls = 0;
+    editor.update((tx) => {
+      expect(tx.nodes.find({ at: [], type: LinkPlugin })?.[1]).toEqual([0]);
+    });
+    editor.update.nodes.set({ url: '/next' }, { at: [], type: LinkPlugin });
+
+    expect(
+      editor.read.nodes.find({ at: [], type: LinkPlugin })?.[0]
+    ).toMatchObject({
+      type: 'persistedDescriptorQueryLink',
+      url: '/next',
+    });
+    expect(setCommandCalls).toBe(1);
+    expect(correctionVisits).toBeGreaterThan(0);
+    expect(() =>
+      editor.read.nodes.find({
+        at: [],
+        type: MarkPlugin as unknown as typeof LinkPlugin,
+      })
+    ).toThrow(
+      'Plate plugin "descriptorQueryMark" does not declare schema.element.'
     );
   });
 

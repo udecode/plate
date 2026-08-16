@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createBaseEditor } from '@platejs/core';
-import { type Element, schema } from '@platejs/plite';
+import { ElementApi, schema } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
 
 import { BaseMentionInputPlugin, BaseMentionPlugin } from './BaseMentionPlugin';
@@ -64,7 +64,9 @@ describe('BaseMentionPlugin', () => {
 
     editor.update.mention.insert({ key: 'u1', value: 'Ada' });
 
-    const entry = editor.read.nodes.get<Element>([0]);
+    const entry = editor.read.nodes.get([0], {
+      match: ElementApi.isElement,
+    });
     assert(entry);
     const children = entry[0].children;
 
@@ -194,7 +196,9 @@ describe('BaseMentionPlugin', () => {
 
     editor.plugin(MentionPlugin).update.insert({ key: 'u1', value: 'Ada' });
 
-    const entry = editor.read.nodes.get<Element>([0]);
+    const entry = editor.read.nodes.get([0], {
+      match: ElementApi.isElement,
+    });
     assert(entry);
     const children = entry[0].children;
 
@@ -228,7 +232,9 @@ describe('BaseMentionPlugin', () => {
 
     editor.plugin(MentionPlugin).update.insert({ key: 'u1', value: 'Ada' });
 
-    const entry = editor.read.nodes.get<Element>([0]);
+    const entry = editor.read.nodes.get([0], {
+      match: ElementApi.isElement,
+    });
     assert(entry);
 
     expect(entry[0].children).toMatchObject([

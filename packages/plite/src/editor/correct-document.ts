@@ -292,7 +292,7 @@ export const correctDocument = (
         pending.set(key, { ...target, path: retainedPath });
       }
     };
-    const handleTransactionChange: EditorTransactionChangeHandler = ({
+    const handleTransactionChange: EditorTransactionChangeHandler<Editor> = ({
       change,
       changed,
     }) => {

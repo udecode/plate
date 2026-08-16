@@ -59,7 +59,7 @@ export const getNativeTextInputUpdateTags = (
 
 export const updateNativeTextInput = (
   editor: Editor,
-  update: (tx: EditorUpdateTransaction) => void,
+  update: (tx: EditorUpdateTransaction<any, any>) => void,
   options: { merge?: boolean } = {}
 ) => {
   const tags = profileEditableMutationDuration(

@@ -183,7 +183,7 @@ const editor = createPlateEditor({
       initialState: {
         triggerQuery: (editor) => {
           // 在代码块中禁用
-          return !editor.read.nodes.some({ match: { type: 'codeBlock' } });
+          return !editor.read.nodes.some({ type: 'codeBlock' });
         },
       },
     }),

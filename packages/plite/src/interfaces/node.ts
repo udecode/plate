@@ -21,6 +21,7 @@ import {
   type ElementOf,
 } from './element';
 import type { TextOf } from './text';
+import type { SchemaElementHandle } from './schema';
 
 /**
  * The `Node` union type represents all of the different types of nodes that
@@ -74,19 +75,18 @@ export type NodeProps<N = Node> = N extends { children: unknown }
     ? Omit<N, 'text'>
     : Omit<N, 'getChildren'>;
 
-export type NodeMatchPredicate<T extends Node> =
+export type NodeMatchPredicate<T extends Node = Node> =
   | ((node: Node, path: Path) => node is T)
   | ((node: Node, path: Path) => boolean);
 
-type NodeMatchProps<T extends Node> = T extends unknown
-  ? Partial<{
-      [K in keyof NodeProps<T>]: NodeProps<T>[K] | readonly NodeProps<T>[K][];
-    }>
-  : never;
+/** Additional conditions applied after structural node selection. */
+export type NodeMatch<T extends Node = Node> = (node: T, path: Path) => boolean;
 
-export type NodeMatch<T extends Node> =
-  | NodeMatchPredicate<T>
-  | NodeMatchProps<T>;
+/** One or more persisted element identities used for structural selection. */
+export type NodeTypeSelector =
+  | SchemaElementHandle<object, string>
+  | string
+  | readonly (SchemaElementHandle<object, string> | string)[];
 
 export interface NodeHasPropsOptions {
   ignore?: (key: string, value: unknown, node: Node) => boolean;
@@ -344,7 +344,7 @@ export interface NodeInterface {
     options?: NodeLevelsOptions
   ) => Generator<NodeEntry, void, undefined>;
 
-  /** Check a node against a predicate or shallow property matcher. */
+  /** Check a node against a predicate. */
   matches: {
     <T extends Node>(
       node: Node,
@@ -621,19 +621,7 @@ function matchesNode(
   match: NodeMatch<Node>,
   path: Path = []
 ): boolean {
-  if (typeof match === 'function') {
-    return match(node, path);
-  }
-
-  return Object.entries(match).every(([key, expected]) => {
-    if (key === 'children' || key === 'text') return true;
-
-    const actual = (node as unknown as Record<string, unknown>)[key];
-
-    return Array.isArray(expected)
-      ? expected.includes(actual)
-      : actual === expected;
-  });
+  return match(node, path);
 }
 
 export const NodeApi: Readonly<NodeInterface> = Object.freeze({

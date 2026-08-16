@@ -116,6 +116,15 @@ schema law, or application typing.
   accessing its portal. Do not infer optional availability from root
   `editor.api`, node types, schema properties, or caught access errors. Do not
   add local wrapper helpers around either path.
+- Copied registry structural selectors pass their imported package descriptor
+  directly: `type: FooPlugin` or descriptor arrays. Never resolve
+  `editor.plugin(FooPlugin).schema.type`, a `PLUGINS.*` portal, or a local
+  `schema.type` merely to call a descriptor-aware node, selection, correction,
+  or insertion API. Import the stable package descriptor when the registry
+  item already depends on that feature. Persisted strings remain correct only
+  for AST construction/comparison, serialization or external data, genuinely
+  dynamic actions, and optional plugins whose descriptor is intentionally not
+  a dependency.
 - If a node renderer forwards to `PlateElement` or `SlateElement`, keep the full incoming `props` object intact. Read from `props`, but do not destructure away `editor`, `element`, or other required fields and then spread only a partial object into the renderer.
 - Type every plugin-bound renderer from its stable owner descriptor:
   `PlateElementProps<typeof FooPlugin>` / `PlateLeafProps<typeof FooPlugin>`

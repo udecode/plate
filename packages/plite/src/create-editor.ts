@@ -71,7 +71,6 @@ import {
 } from './core/public-root';
 import type {
   AnyEditor,
-  BaseEditor,
   CreateEditorOptions,
   DescendantIn,
   Descendant,
@@ -87,8 +86,10 @@ import type {
   EditorUpdateContext,
   EditorUpdateTransaction,
   EditorValueFromExtensions,
+  ExtensionsOf,
   SchemaExtensionsOf,
   Location,
+  ValueOf,
   Value,
 } from './interfaces';
 import type { InternalEditorUpdateOptions } from './core/update-policy';
@@ -163,13 +164,14 @@ const resolveApiCapability = (capabilities: unknown[]) => {
   return capabilities.at(-1);
 };
 
-const publishInitialEditorExtensions = <TEditor extends Editor>(
+const publishInitialEditorExtensions = <TEditor extends AnyEditor>(
   editor: TEditor,
   input: EditorExtensionInput,
   explicitInitialDocument: boolean,
   initialize?: (
     transaction: EditorTransactionSpecBuilder<
-      TEditor extends Editor<infer V> ? V : Value
+      ValueOf<TEditor>,
+      ExtensionsOf<TEditor>
     >
   ) => void
 ) => {
@@ -294,7 +296,8 @@ export const initializeEditorExtensions = <TEditor extends AnyEditor>(
   options: Readonly<{
     initialize?: (
       transaction: EditorTransactionSpecBuilder<
-        TEditor extends BaseEditor<infer V, any> ? V : Value
+        ValueOf<TEditor>,
+        ExtensionsOf<TEditor>
       >
     ) => void;
   }> = {}
@@ -415,8 +418,10 @@ const createEditorImplementation = <
     getSnapshot: () => getSnapshot(editor) as EditorSnapshot<V>,
   } satisfies InternalEditorSnapshotRuntime<V>;
 
+  const runtimeBoundaryEditor = () => editor as unknown as Editor<V, any>;
+
   const transactionRuntime = {
-    read: (fn) => readEditor(editor, fn),
+    read: (fn) => readEditor(runtimeBoundaryEditor(), fn),
     runCommand: createCommandDispatch(() => editor),
     subscribe: (listener) => subscribe(editor, listener),
     subscribeCommit: (listener) => subscribeCommit(editor, listener),
@@ -424,19 +429,11 @@ const createEditorImplementation = <
       subscribeSource(editor, source, listener),
     update: (
       fn: (
-        transaction: EditorUpdateTransaction<V>,
-        context: EditorUpdateContext<Editor<V>>
+        transaction: EditorUpdateTransaction<V, any>,
+        context: EditorUpdateContext<Editor<V, any>>
       ) => void,
       options?: InternalEditorUpdateOptions
-    ) =>
-      updateEditor(
-        editor,
-        fn as (
-          transaction: EditorUpdateTransaction<V>,
-          context: EditorUpdateContext<Editor<V>>
-        ) => void,
-        options
-      ),
+    ) => updateEditor(runtimeBoundaryEditor(), fn, options),
   } satisfies InternalEditorTransactionRuntime<V>;
 
   const anchorApi: EditorAnchorApi = (value, anchorOptions) => {
@@ -547,8 +544,8 @@ const createEditorImplementation = <
       updateEditor(
         editor,
         fn as (
-          transaction: EditorUpdateTransaction<V>,
-          context: EditorUpdateContext<Editor<V>>
+          transaction: EditorUpdateTransaction<V, TExtensions>,
+          context: EditorUpdateContext<Editor<V, TExtensions>>
         ) => void,
         { tags: policy.tags }
       ),

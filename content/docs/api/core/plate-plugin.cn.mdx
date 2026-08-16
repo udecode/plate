@@ -446,7 +446,8 @@ update method。
 </APIItem>
 
 <APIItem name="selectionKinds" type="readonly EditorSelectionSpec[]">
-  自定义 selection codec 和行为。
+  已安装的自定义 selection payload、codec 和行为。具体 editor 的读取和更新会
+  从已安装的插件 descriptor 推断每个 payload；不需要 module augmentation。
 </APIItem>
 
 <APIItem name="contributions" type="readonly EditorExtensionContribution[]">

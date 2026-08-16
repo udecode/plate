@@ -5,10 +5,16 @@ import * as React from 'react';
 import type { Element as PliteElement, NodeKey } from '@platejs/plite';
 
 import { DndPlugin, useDraggable, useDropLine } from '@platejs/dnd';
+import { BaseColumnItemPlugin } from '@platejs/layout';
 import { ListPlugin } from '@platejs/list/react';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
+import {
+  BaseTableCellPlugin,
+  BaseTablePlugin,
+  BaseTableRowPlugin,
+} from '@platejs/table';
 import { GripVertical } from 'lucide-react';
-import { PLUGINS, ElementApi } from 'platejs';
+import { ElementApi } from 'platejs';
 import {
   type PlateEditor,
   type RenderNodeWrapper,
@@ -31,9 +37,9 @@ import {
 import { cn } from '@/lib/utils';
 
 const UNDRAGGABLE_PLUGINS = [
-  PLUGINS.column,
-  PLUGINS.tableRow,
-  PLUGINS.tableCell,
+  BaseColumnItemPlugin,
+  BaseTableRowPlugin,
+  BaseTableCellPlugin,
 ];
 
 export const BlockDraggable: RenderNodeWrapper = (props) => {
@@ -52,12 +58,12 @@ export const BlockDraggable: RenderNodeWrapper = (props) => {
       return true;
     }
     if (path.length === 3 && !isUndraggable) {
-      const column = editor.plugin(PLUGINS.column);
+      const column = editor.plugin(BaseColumnItemPlugin);
       const block =
         column.installed &&
         editor.read.nodes.some({
           at: path,
-          match: { type: column.schema.type },
+          type: BaseColumnItemPlugin,
         });
 
       if (block) {
@@ -65,12 +71,12 @@ export const BlockDraggable: RenderNodeWrapper = (props) => {
       }
     }
     if (path.length === 4 && !isUndraggable) {
-      const table = editor.plugin(PLUGINS.table);
+      const table = editor.plugin(BaseTablePlugin);
       const block =
         table.installed &&
         editor.read.nodes.some({
           at: path,
-          match: { type: table.schema.type },
+          type: BaseTablePlugin,
         });
 
       if (block) {
@@ -282,8 +288,8 @@ const DragHandle = React.memo(function DragHandle({
               blockSelection.length > 0
                 ? blockSelection
                 : editor.read((state) =>
-                    state.nodes.toArray<PliteElement>({
-                      match: (node) =>
+                    state.nodes.toArray({
+                      match: (node): node is PliteElement =>
                         ElementApi.isElement(node) &&
                         state.schema.isBlock(node),
                       mode: 'highest',
@@ -338,8 +344,8 @@ const DragHandle = React.memo(function DragHandle({
               blockSelection.length > 0
                 ? blockSelection
                 : editor.read((state) =>
-                    state.nodes.toArray<PliteElement>({
-                      match: (node) =>
+                    state.nodes.toArray({
+                      match: (node): node is PliteElement =>
                         ElementApi.isElement(node) &&
                         state.schema.isBlock(node),
                       mode: 'highest',

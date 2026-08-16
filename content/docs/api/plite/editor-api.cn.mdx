@@ -80,20 +80,19 @@ base editor 的路径输入指向 main root；view 的路径输入指向该 view
 
 ## 节点匹配
 
-节点查询接受谓词或浅层属性对象。
+节点查询使用 `type` 进行结构选择，并使用可选的 `match` 谓词添加条件。
 
 ```ts
 const callout = editor.read.nodes.find({
-  match: { type: "callout" },
+  type: "callout",
 });
 
 const structural = editor.read.nodes.toArray({
-  match: { type: ["table", "table_cell"] },
+  type: ["table", "table_cell"],
 });
 ```
 
-属性使用严格相等比较。数组表示任选其一。计算策略和 TypeScript 类型缩窄
-使用谓词。
+数组选择任一列出的类型。计算策略和 TypeScript 类型缩窄使用谓词。
 
 ## 选区查询
 
@@ -103,7 +102,7 @@ const structural = editor.read.nodes.toArray({
 const isCollapsed = editor.read.selection.isCollapsed();
 const spansBlocks = editor.read.selection.isAcrossBlocks();
 const startsHeading = editor.read.selection.isAtBlockStart({
-  match: { type: "heading" },
+  type: "heading",
 });
 const containsFirstBlock = editor.read.selection.contains([0]);
 ```

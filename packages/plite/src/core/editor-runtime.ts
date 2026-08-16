@@ -5,12 +5,12 @@ import type {
   Location,
   Node,
   NodeEntry,
+  NodeTypeSelector,
   Path,
   Point,
   Text,
 } from '../interfaces';
 import type {
-  BaseEditor,
   AnyEditor as Editor,
   EditorAboveOptions,
   EditorCommit,
@@ -24,6 +24,7 @@ import type {
   EditorLeafOptions,
   EditorLevelsOptions,
   EditorNextOptions,
+  EditorParentOptions,
   EditorPointOptions,
   EditorPreviousOptions,
   EditorSnapshot,
@@ -69,7 +70,6 @@ export type InternalEditorReadRuntime = RuntimeMethods<
   | 'isEnd'
   | 'isStart'
   | 'last'
-  | 'parent'
   | 'path'
   | 'positions'
   | 'projectRange'
@@ -89,6 +89,18 @@ export type InternalEditorReadRuntime = RuntimeMethods<
   next: <T extends Descendant>(
     options?: EditorNextOptions<T>
   ) => NodeEntry<T> | undefined;
+  parent: {
+    (
+      at: Location,
+      options: EditorParentOptions<Ancestor> & {
+        type: NodeTypeSelector;
+      }
+    ): NodeEntry<Ancestor> | undefined;
+    (
+      at: Location,
+      options?: EditorParentOptions<Ancestor, undefined>
+    ): NodeEntry<Ancestor>;
+  };
   point: (at: Location, options?: EditorPointOptions) => Point;
   previous: <T extends Node>(
     options?: EditorPreviousOptions<T>
@@ -106,8 +118,8 @@ export type InternalEditorSnapshotRuntime<V extends Value = Value> = {
 };
 
 export type InternalEditorTransactionRuntime<V extends Value = Value> = {
-  read: <T>(fn: (state: EditorStateView<V>) => T) => T;
-  runCommand: EditorCommandDispatch<Editor<V>>;
+  read: <T>(fn: (state: EditorStateView<V, any>) => T) => T;
+  runCommand: EditorCommandDispatch<Editor<V, any>>;
   subscribe: (listener: SnapshotListener<V>) => () => void;
   subscribeCommit: (listener: EditorCommitListener<V>) => () => void;
   subscribeSource: (
@@ -116,8 +128,8 @@ export type InternalEditorTransactionRuntime<V extends Value = Value> = {
   ) => () => void;
   update: (
     fn: (
-      transaction: EditorUpdateTransaction<V>,
-      context: EditorUpdateContext<Editor<V>>
+      transaction: EditorUpdateTransaction<V, any>,
+      context: EditorUpdateContext<Editor<V, any>>
     ) => void,
     options?: InternalEditorUpdateOptions
   ) => void;
@@ -188,10 +200,14 @@ export const getEditorRuntime = <V extends Value = Value>(
   return runtime as unknown as InternalEditorRuntime<V>;
 };
 
-export const getEditorRuntimeOwner = <TEditor extends BaseEditor<any, any>>(
-  editor: TEditor
-): Editor =>
-  EDITOR_RUNTIME_OWNER.get(editor as Editor) ?? (editor as unknown as Editor);
+type EditorRuntimeCarrier = Readonly<{
+  id: string;
+  read: object;
+  update: object;
+}>;
+
+export const getEditorRuntimeOwner = (editor: EditorRuntimeCarrier): Editor =>
+  EDITOR_RUNTIME_OWNER.get(editor as Editor) ?? (editor as Editor);
 
 export const getEditorRuntimeRoot = (editor: Editor): RootKey =>
   EDITOR_RUNTIME_ROOT.get(editor) ?? 'main';

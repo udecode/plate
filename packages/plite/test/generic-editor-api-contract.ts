@@ -4,7 +4,6 @@ import {
   type EditorCommit,
   type EditorMarksOf,
   type EditorReplaceChildrenOptions,
-  type ElementOf,
   type NodeTarget,
   type NodeKey,
   type TextOf,
@@ -53,7 +52,7 @@ const invalidNodeKey: NodeKey = 'n0';
 editor.update.nodes.remove({ at: 'block-1' });
 
 editor.update((tx) => {
-  tx.nodes.set<ElementOf<typeof editor>>({ type: 'quote' });
+  tx.nodes.set({ type: 'quote' }, { type: 'paragraph' });
   tx.marks.add('bold' satisfies keyof EditorMarksOf<typeof editor>, true);
   tx.text.insert('typed');
 });

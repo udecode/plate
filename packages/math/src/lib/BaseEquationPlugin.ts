@@ -5,23 +5,24 @@ import {
   defineBasePlugin,
   createRuleFactory,
   matchDelimitedInline,
+  type PlateNodeInsertOptions,
 } from '@platejs/core';
-import {
-  type ElementOf,
-  type NodeInsertNodesOptions,
-  property,
-} from '@platejs/plite';
+import { type ElementOf, property } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
 import katex, { type KatexOptions } from 'katex';
 
 const INLINE_EQUATION_BOUNDARY_RE = /[\s([{'"`]/;
 const INLINE_EQUATION_FOLLOW_RE = /[\s)\]}:;,.!?'"`]/;
 
-const getMathExcludedTypes = (editor: BaseEditor) =>
-  [PLUGINS.codeBlock, PLUGINS.equation, PLUGINS.inlineEquation]
-    .map((name) => editor.plugin(name))
-    .filter((plugin) => plugin.installed)
-    .map((plugin) => plugin.schema.type);
+const getMathExcludedSelectors = (editor: BaseEditor) => {
+  const codeBlock = editor.plugin(PLUGINS.codeBlock);
+
+  return [
+    ...(codeBlock.installed ? [codeBlock.schema.type] : []),
+    BaseEquationPlugin,
+    BaseInlineEquationPlugin,
+  ];
+};
 
 export const BaseEquationPlugin = defineBasePlugin(PLUGINS.equation, {
   codecs: ({ defineCodecs, schema: { type } }) =>
@@ -76,27 +77,23 @@ export const BaseInlineEquationPlugin = defineBasePlugin(
       },
     },
   }
-).extend(({ plugin, schema: { type } }) => {
-  type InlineEquation = ElementOf<typeof plugin>;
-
-  return {
-    update: ({ tx }) => ({
-      insert: (
-        { texExpression }: { texExpression?: string } = {},
-        options: NodeInsertNodesOptions<InlineEquation> = {}
-      ) => {
-        tx.nodes.insert(
-          {
-            children: [{ text: '' }],
-            texExpression: texExpression ?? tx.text.string(),
-            type,
-          },
-          options
-        );
-      },
-    }),
-  };
-});
+).extend(({ schema: { type } }) => ({
+  update: ({ tx }) => ({
+    insert: (
+      { texExpression }: { texExpression?: string } = {},
+      options: PlateNodeInsertOptions = {}
+    ) => {
+      tx.nodes.insert(
+        {
+          children: [{ text: '' }],
+          texExpression: texExpression ?? tx.text.string(),
+          type,
+        },
+        options
+      );
+    },
+  }),
+}));
 
 export type BlockEquationElement = ElementOf<typeof BaseEquationPlugin>;
 export type InlineEquationElement = ElementOf<typeof BaseInlineEquationPlugin>;
@@ -193,7 +190,7 @@ export const MathRules = (() => {
           rule.enabled = (context) =>
             (enabled?.(context) ?? true) &&
             !context.editor.read.nodes.some({
-              match: { type: getMathExcludedTypes(context.editor) },
+              type: getMathExcludedSelectors(context.editor),
             });
         }
 
@@ -203,7 +200,7 @@ export const MathRules = (() => {
           rule.enabled = (context) =>
             (enabled?.(context) ?? true) &&
             !context.editor.read.nodes.some({
-              match: { type: getMathExcludedTypes(context.editor) },
+              type: getMathExcludedSelectors(context.editor),
             });
         }
 
@@ -217,7 +214,7 @@ export const MathRules = (() => {
       rule.enabled = (context) =>
         (enabled?.(context) ?? true) &&
         !context.editor.read.nodes.some({
-          match: { type: getMathExcludedTypes(context.editor) },
+          type: getMathExcludedSelectors(context.editor),
         });
 
       return rule;

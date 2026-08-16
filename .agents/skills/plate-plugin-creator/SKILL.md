@@ -439,6 +439,29 @@ State and native extension mechanics:
   `conflicts`, `readMiddleware`, `commands`, `corrections`, `stateFields`,
   `effectTypes`, `facetProviders`, `selectionKinds`, `contributions`, `on`,
   `activate`, and `validate`. Never recreate a nested `extension` object.
+- Declare each custom selection payload exactly once through `selectionKinds`.
+  Installed plugin inference must make the payload available to selection reads
+  and updates; never pair it with `declare module`, an ambient selection map, a
+  side-effect type import, or a broad custom-kind escape hatch. If a later
+  `read` or `update` stage consumes that payload type, an earlier dedicated
+  `.extend({ selectionKinds })` stage is a real staged-capability dependency.
+- Public read/update callbacks stay contravariant so an explicit annotation
+  cannot manufacture an uninstalled plugin capability. Do not repair
+  assignability with callback bivariance; keep any erasure at a named internal
+  runtime boundary. Direct `update.selection` exposes mutations only.
+- Bare public editor types default to the core-only `readonly []` extension
+  tuple. Never make package code compile by defaulting `Editor`, `BaseEditor`,
+  or their read/update surfaces to `any`; only named internal `AnyEditor`
+  boundaries may erase installed capabilities.
+- Treat the installed plugin/extension graph as the single editor capability
+  projection. Never repair a package type by intersecting a whole
+  `ReactEditor`, `DOMEditor`, or sibling layered editor back onto Plate; fix the
+  missing owner field or use an explicit erased internal boundary.
+- Type reusable editor helpers from the minimal `read`, `update`, `api`, or
+  subscription capabilities they consume. If a helper returns a view of its
+  input editor, preserve the full caller type through a layered overload. Never
+  infer one state/provider witness and rebuild a raw `Editor`, `ReactEditor`, or
+  `DOMEditor` around it; keep any erasure inside the runtime implementation.
 - Clipboard ingress is not a plugin field. Add `clipboardHandler(...)` directly
   to `contributions`. `clipboardHandler(handler)` is the sole form; the owning
   extension or Plate stage contextually infers the handler transaction from
@@ -659,9 +682,23 @@ Schema authoring follows the Plite owner exactly:
 - Pass a live node directly to `NodeTarget`/`at` when available. Resolve a path
   only when the path is the result.
 - Do not rediscover a live node by scanning for its `type` and `id`.
-- Use shallow property matchers for exact metadata. Keep predicates for
-  computed policy, path-dependent logic, content/structure, truthiness, or
-  narrowing consumed by the caller.
+- Every descriptor-aware Plate structural selector uses the exact descriptor
+  whenever one exists: `type: FooPlugin`, `type: plugin` inside the owning
+  author callback, or an array of descriptors. Do not eagerly resolve
+  `schema.type`, call `editor.plugin(...).schema.type`, pass a capability name,
+  or thread a resolved `type` through a helper merely to feed a selector. This
+  applies to node reads/transforms, selection queries, corrections, and nested
+  insertion selectors such as `split.type`. Keep persisted strings or schema
+  handles only for raw Plite, AST construction and comparisons, codecs or
+  external formats, deliberate fixtures, genuinely dynamic runtime input, or
+  a generic boundary with no descriptor. At a mixed
+  `PluginReference | string` capability boundary, pass descriptors through but
+  resolve string capability names through their installed portal before using
+  them as selectors; a capability name is not a persisted node type. Keep
+  `match` function-only for
+  property checks, computed policy, path-dependent logic, content/structure,
+  truthiness, or a type guard. Never select a node-query result with a caller
+  generic.
 - Use boolean queries for boolean questions; do not materialize entries merely
   to test existence.
 - Treat unresolved public reads as optional in package source. Do not add

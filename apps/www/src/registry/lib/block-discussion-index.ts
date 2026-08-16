@@ -549,8 +549,10 @@ const getDiscussionIndex = (
 
   const index = buildBlockDiscussionIndex({
     discussions,
-    entries: editor.read.nodes.toArray<Element | Text>({
+    entries: editor.read.nodes.toArray({
       at: [],
+      match: (node): node is Element | Text =>
+        ElementApi.isElement(node) || TextApi.isText(node),
       mode: 'all',
     }),
     getBlockLabel: (node) => {

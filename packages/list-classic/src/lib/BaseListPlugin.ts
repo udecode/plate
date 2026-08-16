@@ -251,7 +251,7 @@ export const BaseTodoListPlugin = defineBasePlugin(PLUGINS.todoList, {
     }),
   },
   initialState: todoListInitialState,
-}).extend(({ store, schema: { type } }) => ({
+}).extend(({ plugin, store, schema: { type } }) => ({
   commands: ({ around }) => [
     around(editorCommands.insertBreak, ({ state, next }) => {
       let handled = false;
@@ -259,9 +259,9 @@ export const BaseTodoListPlugin = defineBasePlugin(PLUGINS.todoList, {
         const selection = tx.selection();
 
         if (!selection) return;
-        const todoEntry = tx.nodes.above<Element>({
+        const todoEntry = tx.nodes.above({
           at: selection,
-          match: { type },
+          type: plugin,
         });
 
         if (!todoEntry) return;
@@ -380,7 +380,6 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
       }: {
         at?: Location | null;
       } = {}): { list: ElementEntry; listItem: ElementEntry } | undefined => {
-        const liType = editor.plugin(PLUGINS.listItem).schema.type;
         const location = at === undefined ? state.selection() : at;
 
         let _at: Path;
@@ -393,21 +392,19 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
           _at = location as Path;
         }
         if (_at) {
-          const node = state.nodes.get<Element>(_at);
+          const listItem = state.nodes.above({
+            at: _at,
+            type: BaseListItemPlugin,
+          });
 
-          if (node) {
-            const listItem = state.nodes.above<Element>({
-              at: _at,
-              match: { type: liType },
+          if (listItem) {
+            const list = state.nodes.parent(listItem[1], {
+              match: ElementApi.isElement,
             });
 
-            if (listItem) {
-              const list = state.nodes.parent<Element>(listItem[1]);
+            if (!list || !api.getListTypes().includes(list[0].type)) return;
 
-              if (!list || !api.getListTypes().includes(list[0].type)) return;
-
-              return { list, listItem };
-            }
+            return { list, listItem };
           }
         }
       };
@@ -420,11 +417,13 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
 
         if (!location) return;
 
-        const parentList = state.nodes.above<Element>({
+        const parentList = state.nodes.above({
           at: location,
-          match: {
-            type: api.getListTypes(),
-          },
+          type: [
+            BaseNumberedListPlugin,
+            BaseBulletedListPlugin,
+            BaseTaskListPlugin,
+          ],
         });
 
         if (parentList) {
@@ -436,7 +435,9 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
 
       /** Is the list nested, i.e. its parent is a list item. */
       const isListNested = (listPath: Path) => {
-        const listParentNode = state.nodes.parent<Element>(listPath)?.[0];
+        const listParentNode = state.nodes.parent(listPath, {
+          match: ElementApi.isElement,
+        })?.[0];
 
         return (
           listParentNode?.type === editor.plugin(PLUGINS.listItem).schema.type
@@ -466,11 +467,9 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
 
           if (listItemIndex === undefined) return;
 
-          const liParent = tx.nodes.above<Element>({
+          const liParent = tx.nodes.above({
             at: listPath,
-            match: {
-              type: editor.plugin(PLUGINS.listItem).schema.type,
-            },
+            type: BaseListItemPlugin,
           });
 
           if (!liParent) {
@@ -483,7 +482,9 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
             }
 
             const condA = api.hasListChild(liNode);
-            const listParent = tx.nodes.parent<Element>(liPath);
+            const listParent = tx.nodes.parent(liPath, {
+              match: ElementApi.isElement,
+            });
             const condB =
               !!listParent && listItemIndex < listParent[0].children.length - 1;
 
@@ -498,7 +499,9 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
               );
             }
             if (condA) {
-              const toListNode = tx.nodes.get<Element>(toListPath)?.[0];
+              const toListNode = tx.nodes.get(toListPath, {
+                match: ElementApi.isElement,
+              })?.[0];
 
               if (!toListNode) return;
 
@@ -510,7 +513,9 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
             }
             // If there is siblings li, move them to the new list
             if (condB) {
-              const toListNode = tx.nodes.get<Element>(toListPath)?.[0];
+              const toListNode = tx.nodes.get(toListPath, {
+                match: ElementApi.isElement,
+              })?.[0];
 
               if (!toListNode) return;
 
@@ -534,7 +539,9 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
           const toListPath = liPath.concat([1]);
 
           // If li has next siblings, we need to move them.
-          const listParent = tx.nodes.parent<Element>(liPath);
+          const listParent = tx.nodes.parent(liPath, {
+            match: ElementApi.isElement,
+          });
 
           if (listParent && listItemIndex < listParent[0].children.length - 1) {
             // If li has no sublist, insert one.
@@ -548,7 +555,9 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
               );
             }
 
-            const toListNode = tx.nodes.get<Element>(toListPath)?.[0];
+            const toListNode = tx.nodes.get(toListPath, {
+              match: ElementApi.isElement,
+            })?.[0];
 
             if (!toListNode) return;
 
@@ -563,7 +572,8 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
 
           const movedUpLiPath = PathApi.next(liParentPath);
           const removeSourceList =
-            tx.nodes.get<Element>(listPath)?.[0].children.length === 1;
+            tx.nodes.get(listPath, { match: ElementApi.isElement })?.[0]
+              .children.length === 1;
 
           // Move li one level up: next to the li parent.
           tx.nodes.move({
@@ -651,7 +661,9 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
         }
         if (!to) return;
 
-        const fromListNode = tx.nodes.get<Element>(fromListPath)?.[0];
+        const fromListNode = tx.nodes.get(fromListPath, {
+          match: ElementApi.isElement,
+        })?.[0];
 
         if (!fromListNode) return;
 
@@ -756,7 +768,9 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
               start ? 0 : toListItemSublist[0].children.length
             );
           } else {
-            const fromList = tx.nodes.parent<Element>(fromListItem[1]);
+            const fromList = tx.nodes.parent(fromListItem[1], {
+              match: ElementApi.isElement,
+            });
 
             if (!fromList) return false;
 
@@ -797,7 +811,9 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
          * 5. Remove tempLi
          */
         if (previousLiPath) {
-          const previousLi = tx.nodes.get<Element>(previousLiPath);
+          const previousLi = tx.nodes.get(previousLiPath, {
+            match: ElementApi.isElement,
+          });
 
           if (!previousLi) return;
 
@@ -820,7 +836,9 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
             { at: tempLiPath }
           );
 
-          const tempLi = tx.nodes.get<Element>(tempLiPath);
+          const tempLi = tx.nodes.get(tempLiPath, {
+            match: ElementApi.isElement,
+          });
 
           if (!tempLi) return;
 
@@ -843,8 +861,12 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
           if (!currentTempLiPath) return;
 
           tempLiPath = currentTempLiPath;
-          const currentTempLi = tx.nodes.get<Element>(tempLiPath);
-          const currentPreviousLi = tx.nodes.get<Element>(previousLiPath);
+          const currentTempLi = tx.nodes.get(tempLiPath, {
+            match: ElementApi.isElement,
+          });
+          const currentPreviousLi = tx.nodes.get(previousLiPath, {
+            match: ElementApi.isElement,
+          });
 
           if (!currentTempLi || !currentPreviousLi) return;
 
@@ -876,19 +898,23 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
         const selection = tx.selection();
         const selectedListItem =
           !at && selection && tx.selection.isCollapsed()
-            ? tx.nodes.above<Element>({
+            ? tx.nodes.above({
                 at: selection.focus,
-                match: {
-                  type: editor.plugin(PLUGINS.listItem).schema.type,
-                },
+                type: BaseListItemPlugin,
                 mode: 'lowest',
               })
             : undefined;
 
         if (selection && selectedListItem && selectedListItem[1].at(-1) === 0) {
-          const list = tx.nodes.parent<Element>(selectedListItem[1]);
-          const content = tx.nodes.get<Element>([...selectedListItem[1], 0]);
-          const sublist = tx.nodes.get<Element>([...selectedListItem[1], 1]);
+          const list = tx.nodes.parent(selectedListItem[1], {
+            match: ElementApi.isElement,
+          });
+          const content = tx.nodes.get([...selectedListItem[1], 0], {
+            match: ElementApi.isElement,
+          });
+          const sublist = tx.nodes.get([...selectedListItem[1], 1], {
+            match: ElementApi.isElement,
+          });
 
           if (list && content && sublist && list[0].children.length > 1) {
             const paragraph = {
@@ -919,7 +945,11 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
           if (
             tx.nodes.above({
               at,
-              match: { type: api.getListTypes() },
+              type: [
+                BaseNumberedListPlugin,
+                BaseBulletedListPlugin,
+                BaseTaskListPlugin,
+              ],
             })
           ) {
             return true;
@@ -932,7 +962,9 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
               selection.anchor.path,
               selection.focus.path
             );
-            const commonNode = tx.nodes.get(commonPath);
+            const commonNode = tx.nodes.get(commonPath, {
+              match: ElementApi.isElement,
+            });
 
             if (
               commonNode &&
@@ -948,11 +980,9 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
 
         const unwrap = () => {
           const contentRefs = Array.from(
-            tx.nodes.entries<Element>({
+            tx.nodes.entries({
               at,
-              match: {
-                type: editor.plugin(PLUGINS.listItemContent).schema.type,
-              },
+              type: BaseListItemContentPlugin,
               mode: 'all',
             }),
             ([, path]) =>
@@ -965,17 +995,17 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
           do {
             tx.nodes.unwrap({
               at,
-              match: {
-                type: editor.plugin(PLUGINS.listItem).schema.type,
-              },
+              type: BaseListItemPlugin,
               split: true,
             });
 
             tx.nodes.unwrap({
               at,
-              match: {
-                type: api.getListTypes(),
-              },
+              type: [
+                BaseNumberedListPlugin,
+                BaseBulletedListPlugin,
+                BaseTaskListPlugin,
+              ],
               split: true,
             });
           } while (ancestorListTypeCheck());
@@ -985,8 +1015,10 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
 
             if (!path) continue;
 
-            const entry = tx.nodes.get<Element>(path);
-            const parent = tx.nodes.parent<Element>(path);
+            const entry = tx.nodes.get(path, { match: ElementApi.isElement });
+            const parent = tx.nodes.parent(path, {
+              match: ElementApi.isElement,
+            });
 
             if (
               entry?.[0].type ===
@@ -1026,7 +1058,9 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
 
           if (!previousListItemPath) return false;
 
-          const previousSiblingItem = tx.nodes.get(previousListItemPath);
+          const previousSiblingItem = tx.nodes.get(previousListItemPath, {
+            match: ElementApi.isElement,
+          });
 
           if (!previousSiblingItem) return false;
 
@@ -1055,11 +1089,9 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
           return true;
         };
         const lics = Array.from(
-          tx.nodes.entries<Element>({
+          tx.nodes.entries({
             at,
-            match: {
-              type: editor.plugin(PLUGINS.listItemContent).schema.type,
-            },
+            type: BaseListItemContentPlugin,
           })
         );
 
@@ -1089,9 +1121,11 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
 
           if (!contentPath) continue;
 
-          const listItem = tx.nodes.parent<Element>(contentPath);
+          const listItem = tx.nodes.parent(contentPath, {
+            match: ElementApi.isElement,
+          });
           const parentList = listItem
-            ? tx.nodes.parent<Element>(listItem[1])
+            ? tx.nodes.parent(listItem[1], { match: ElementApi.isElement })
             : undefined;
 
           if (!listItem || !parentList) continue;
@@ -1140,9 +1174,7 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
         if (
           !tx.nodes.some({
             at,
-            match: {
-              type: editor.plugin(PLUGINS.listItem).schema.type,
-            },
+            type: BaseListItemPlugin,
           })
         ) {
           return false;
@@ -1205,7 +1237,8 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
             const isTaskListItem = (node: Node, path: Path) =>
               ElementApi.isElement(node) &&
               node.type === listItemType &&
-              tx.nodes.parent<Element>(path)?.[0].type === taskListType;
+              tx.nodes.parent(path, { match: ElementApi.isElement })?.[0]
+                .type === taskListType;
 
             if (options.type !== taskListType) {
               tx.nodes.unset('checked', {
@@ -1219,7 +1252,11 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
               { type: options.type },
               {
                 at,
-                match: { type: api.getListTypes() },
+                type: [
+                  BaseNumberedListPlugin,
+                  BaseBulletedListPlugin,
+                  BaseTaskListPlugin,
+                ],
                 mode: 'all',
               }
             );
@@ -1271,13 +1308,11 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
 
             const nodes = Array.from(
               tx.nodes.entries({
-                match: {
-                  type: editor.plugin(PLUGINS.paragraph).schema.type,
-                },
+                type: editor.plugin(PLUGINS.paragraph).schema.type,
               })
             );
             const blockAbove = tx.nodes.block({
-              match: { type: validLiChildrenTypes },
+              type: validLiChildrenTypes,
             });
 
             if (blockAbove) {
@@ -1326,12 +1361,20 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
           ) {
             const startList = tx.nodes.find({
               at: RangeApi.start(selection),
-              match: { type: api.getListTypes() },
+              type: [
+                BaseNumberedListPlugin,
+                BaseBulletedListPlugin,
+                BaseTaskListPlugin,
+              ],
               mode: 'lowest',
             });
             const endList = tx.nodes.find({
               at: RangeApi.end(selection),
-              match: { type: api.getListTypes() },
+              type: [
+                BaseNumberedListPlugin,
+                BaseBulletedListPlugin,
+                BaseTaskListPlugin,
+              ],
               mode: 'lowest',
             });
 
@@ -1354,7 +1397,10 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
 
           const rootPathLength = commonEntry[1].length;
           const nodes = Array.from(
-            tx.nodes.entries<Element>({ mode: 'all' })
+            tx.nodes.entries({
+              match: ElementApi.isElement,
+              mode: 'all',
+            })
           ).filter(([, path]) => path.length === rootPathLength + 1);
 
           for (const [node, path] of nodes) {
@@ -1414,9 +1460,7 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
             }
 
             const listItem = tx.nodes.above({
-              match: {
-                type: editor.plugin(PLUGINS.listItem).schema.type,
-              },
+              type: BaseListItemPlugin,
             });
 
             if (listItem && tx.text.string(listItem[1]) === '') {
@@ -1433,14 +1477,16 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
 
             const liType = editor.plugin(PLUGINS.listItem).schema.type;
             const licType = editor.plugin(PLUGINS.listItemContent).schema.type;
-            const licEntry = tx.nodes.above<Element>({
-              match: { type: licType },
+            const licEntry = tx.nodes.above({
+              type: BaseListItemContentPlugin,
             });
 
             if (!licEntry) return;
 
             const [, contentPath] = licEntry;
-            const listItemEntry = tx.nodes.parent<Element>(contentPath);
+            const listItemEntry = tx.nodes.parent(contentPath, {
+              match: ElementApi.isElement,
+            });
 
             if (!listItemEntry) return;
 
@@ -1541,9 +1587,7 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
             if (
               !res ||
               !tx.selection.isAtBlockStart({
-                match: {
-                  type: editor.plugin(PLUGINS.listItem).schema.type,
-                },
+                type: BaseListItemPlugin,
               })
             ) {
               return;
@@ -1555,10 +1599,16 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
               !PathApi.hasPrevious(listItem[1]) &&
               tx.listClassic.isListNested(list[1])
             ) {
-              const parentListItem = tx.nodes.parent<Element>(list[1]);
-              const currentContent = tx.nodes.get<Element>([...listItem[1], 0]);
+              const parentListItem = tx.nodes.parent(list[1], {
+                match: ElementApi.isElement,
+              });
+              const currentContent = tx.nodes.get([...listItem[1], 0], {
+                match: ElementApi.isElement,
+              });
               const parentContent = parentListItem
-                ? tx.nodes.get<Element>([...parentListItem[1], 0])
+                ? tx.nodes.get([...parentListItem[1], 0], {
+                    match: ElementApi.isElement,
+                  })
                 : undefined;
 
               if (parentListItem && currentContent && parentContent) {
@@ -1626,13 +1676,18 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
             }
 
             if (PathApi.hasPrevious(listItem[1])) {
-              const previousListItem = tx.nodes.get<Element>(
-                PathApi.previous(listItem[1])
+              const previousListItem = tx.nodes.get(
+                PathApi.previous(listItem[1]),
+                { match: ElementApi.isElement }
               );
               const previousContent = previousListItem
-                ? tx.nodes.get<Element>([...previousListItem[1], 0])
+                ? tx.nodes.get([...previousListItem[1], 0], {
+                    match: ElementApi.isElement,
+                  })
                 : undefined;
-              const currentContent = tx.nodes.get<Element>([...listItem[1], 0]);
+              const currentContent = tx.nodes.get([...listItem[1], 0], {
+                match: ElementApi.isElement,
+              });
 
               if (previousContent && currentContent) {
                 const children = [
@@ -1769,25 +1824,29 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
                 tx.nodes.replaceChildren(children, { at: to[1] });
               };
 
-              const currentContent = tx.nodes.get<Element>([...listItem[1], 0]);
-              const currentSublist = tx.nodes.get<Element>([...listItem[1], 1]);
+              const currentContent = tx.nodes.get([...listItem[1], 0], {
+                match: ElementApi.isElement,
+              });
+              const currentSublist = tx.nodes.get([...listItem[1], 1], {
+                match: ElementApi.isElement,
+              });
 
               if (currentContent && currentSublist) {
-                const firstChild = tx.nodes.get<Element>([
-                  ...currentSublist[1],
-                  0,
-                ]);
+                const firstChild = tx.nodes.get([...currentSublist[1], 0], {
+                  match: ElementApi.isElement,
+                });
                 const firstChildContent = firstChild
-                  ? tx.nodes.get<Element>([...firstChild[1], 0])
+                  ? tx.nodes.get([...firstChild[1], 0], {
+                      match: ElementApi.isElement,
+                    })
                   : undefined;
 
                 if (firstChild && firstChildContent) {
                   mergeContent(firstChildContent[0], currentContent);
 
-                  const childSublist = tx.nodes.get<Element>([
-                    ...firstChild[1],
-                    1,
-                  ]);
+                  const childSublist = tx.nodes.get([...firstChild[1], 1], {
+                    match: ElementApi.isElement,
+                  });
                   const replacements = [
                     ...(childSublist?.[0].children ?? []).flatMap((child) =>
                       ElementApi.isElement(child) ? [child] : []
@@ -1819,10 +1878,14 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
                     })
                   : undefined;
                 const nextContent = nextItem
-                  ? tx.nodes.get<Element>([...nextItem.listItem[1], 0])
+                  ? tx.nodes.get([...nextItem.listItem[1], 0], {
+                      match: ElementApi.isElement,
+                    })
                   : undefined;
                 const nextSublist = nextItem
-                  ? tx.nodes.get<Element>([...nextItem.listItem[1], 1])
+                  ? tx.nodes.get([...nextItem.listItem[1], 1], {
+                      match: ElementApi.isElement,
+                    })
                   : undefined;
 
                 if (
@@ -1874,8 +1937,9 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
                     const isNodeLi =
                       ElementApi.isElement(node) && node.type === liType;
                     const isSiblingOfNodeLi =
-                      tx.nodes.get<Element>(PathApi.next(path))?.[0].type ===
-                      liType;
+                      tx.nodes.get(PathApi.next(path), {
+                        match: ElementApi.isElement,
+                      })?.[0].type === liType;
 
                     return isNodeLi && isSiblingOfNodeLi;
                   },
@@ -1914,15 +1978,16 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
                   return false;
                 }
 
-                const siblingListItem = tx.nodes.get<Element>(
-                  PathApi.next(liWithSiblings)
+                const siblingListItem = tx.nodes.get(
+                  PathApi.next(liWithSiblings),
+                  { match: ElementApi.isElement }
                 );
 
                 if (!siblingListItem) return false;
 
-                const siblingList = tx.nodes.parent<Element>(
-                  siblingListItem[1]
-                );
+                const siblingList = tx.nodes.parent(siblingListItem[1], {
+                  match: ElementApi.isElement,
+                });
 
                 if (
                   siblingList &&
@@ -1939,16 +2004,16 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
               }
 
               // if it has children
-              const nestedList = tx.nodes.get<Element>(
-                PathApi.next([...listItem[1], 0])
+              const nestedList = tx.nodes.get(
+                PathApi.next([...listItem[1], 0]),
+                { match: ElementApi.isElement }
               );
 
               if (!nestedList) return false;
 
-              const nestedListItem = tx.nodes.get<Element>([
-                ...nestedList[1],
-                0,
-              ]);
+              const nestedListItem = tx.nodes.get([...nestedList[1], 0], {
+                match: ElementApi.isElement,
+              });
 
               if (!nestedListItem) return false;
 
@@ -2001,9 +2066,9 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
             },
             state: Pick<EditorStateView, 'nodes'>
           ): Path | undefined => {
-            const list = state.nodes.above<Element>({
+            const list = state.nodes.above({
               at: liPath,
-              match: { type: context.api.getListTypes() },
+              type: context.api.getListTypes(),
             });
 
             if (!list) return;
@@ -2014,9 +2079,7 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
               if (listNode.children.length < 2) {
                 const liParent = state.nodes.above({
                   at: listPath,
-                  match: {
-                    type: editor.plugin(PLUGINS.listItem).schema.type,
-                  },
+                  type: editor.plugin(PLUGINS.listItem).schema.type,
                 });
 
                 if (liParent) {
@@ -2041,9 +2104,7 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
             return start
               ? state.nodes.above({
                   at: start,
-                  match: {
-                    type: editor.plugin(PLUGINS.listItem).schema.type,
-                  },
+                  type: editor.plugin(PLUGINS.listItem).schema.type,
                 })
               : undefined;
           };
@@ -2061,9 +2122,7 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
                 !state.selection.isAcrossBlocks({ at: selection }) ||
                 !state.nodes.some({
                   at: selection,
-                  match: {
-                    type: editor.plugin(PLUGINS.listItem).schema.type,
-                  },
+                  type: editor.plugin(PLUGINS.listItem).schema.type,
                 })
               ) {
                 return false;
@@ -2071,11 +2130,9 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
 
               const end = state.points.end(selection);
               const liEnd = end
-                ? state.nodes.above<Element>({
+                ? state.nodes.above({
                     at: end,
-                    match: {
-                      type: editor.plugin(PLUGINS.listItem).schema.type,
-                    },
+                    type: editor.plugin(PLUGINS.listItem).schema.type,
                   })
                 : undefined;
               const liStartBeforeDelete = getLiStart(selection, state);
@@ -2083,11 +2140,13 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
               if (!liStartBeforeDelete || !liEnd) return false;
 
               if (PathApi.isAncestor(liStartBeforeDelete[1], liEnd[1])) {
-                const startContent = state.nodes.get<Element>([
-                  ...liStartBeforeDelete[1],
-                  0,
-                ]);
-                const endContent = state.nodes.get<Element>([...liEnd[1], 0]);
+                const startContent = state.nodes.get(
+                  [...liStartBeforeDelete[1], 0],
+                  { match: ElementApi.isElement }
+                );
+                const endContent = state.nodes.get([...liEnd[1], 0], {
+                  match: ElementApi.isElement,
+                });
 
                 if (startContent && endContent) {
                   const children = [
@@ -2150,7 +2209,7 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
 
                 const liStart = getLiStart(nextSelection, tx);
                 const listStart = liStart
-                  ? tx.nodes.parent(liStart[1])
+                  ? tx.nodes.parent(liStart[1], { match: ElementApi.isElement })
                   : undefined;
                 const deletePath = getHighestEmptyList(
                   {
@@ -2419,9 +2478,9 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
               const insertionPoint = selection
                 ? RangeApi.edges(selection)[0]
                 : undefined;
-              const liEntry = state.nodes.above<Element>({
+              const liEntry = state.nodes.above({
                 at: insertionPoint,
-                match: { type: listItemType },
+                type: BaseListItemPlugin,
                 mode: 'lowest',
               });
 
@@ -2434,18 +2493,20 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
                 context.api.isListRoot(fragment[0])
               ) {
                 const [start, end] = RangeApi.edges(selection);
-                const startLi = state.nodes.above<Element>({
+                const startLi = state.nodes.above({
                   at: start,
-                  match: { type: listItemType },
+                  type: BaseListItemPlugin,
                   mode: 'lowest',
                 });
-                const endLi = state.nodes.above<Element>({
+                const endLi = state.nodes.above({
                   at: end,
-                  match: { type: listItemType },
+                  type: BaseListItemPlugin,
                   mode: 'lowest',
                 });
                 const startList = startLi
-                  ? state.nodes.parent<Element>(startLi[1])
+                  ? state.nodes.parent(startLi[1], {
+                      match: ElementApi.isElement,
+                    })
                   : undefined;
                 const startIndex = startLi?.[1].at(-1);
                 const endIndex = endLi?.[1].at(-1);
@@ -2507,9 +2568,9 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
                 }
               }
 
-              const licEntry = state.nodes.above<Element>({
+              const licEntry = state.nodes.above({
                 at: insertionPoint,
-                match: { type: listItemContentType },
+                type: BaseListItemContentPlugin,
                 mode: 'lowest',
               });
 
@@ -2551,14 +2612,18 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
               if (delegated === false) return false;
 
               return state.transaction.extend(delegated, (tx) => {
-                const nextLiEntry = tx.nodes.get<Element>(liEntry[1]);
+                const nextLiEntry = tx.nodes.get(liEntry[1], {
+                  match: ElementApi.isElement,
+                });
 
                 if (!nextLiEntry) return;
 
                 const [, liPath] = nextLiEntry;
 
                 if (sublists.length > 0) {
-                  const li = tx.nodes.get<Element>(liPath)?.[0];
+                  const li = tx.nodes.get(liPath, {
+                    match: ElementApi.isElement,
+                  })?.[0];
                   const currentSublist = li?.children[1];
 
                   if (ElementApi.isElement(currentSublist)) {
@@ -2611,7 +2676,9 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
 
             if (listTypes.includes(node.type)) {
               const nextPath = PathApi.next(path);
-              const nextNode = tx.nodes.get<Element>(nextPath);
+              const nextNode = tx.nodes.get(nextPath, {
+                match: ElementApi.isElement,
+              });
 
               if (nextNode?.[0].type === node.type) {
                 mergeAdjacentList(nextNode, [node, path]);
@@ -2619,9 +2686,9 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
               }
 
               if (PathApi.hasPrevious(path)) {
-                const previousNode = tx.nodes.get<Element>(
-                  PathApi.previous(path)
-                );
+                const previousNode = tx.nodes.get(PathApi.previous(path), {
+                  match: ElementApi.isElement,
+                });
 
                 if (previousNode?.[0].type === node.type) {
                   mergeAdjacentList([node, path], previousNode);
@@ -2651,9 +2718,7 @@ export const BulletedListRules = {
       if (!codeBlock.installed) return true;
 
       return !tx.nodes.some({
-        match: {
-          type: [codeBlock.schema.type],
-        },
+        type: [codeBlock.schema.type],
       });
     },
     trigger: ' ',
@@ -2679,9 +2744,7 @@ export const OrderedListRules = {
       if (!codeBlock.installed) return true;
 
       return !tx.nodes.some({
-        match: {
-          type: [codeBlock.schema.type],
-        },
+        type: [codeBlock.schema.type],
       });
     },
     trigger: ' ',
@@ -2707,9 +2770,7 @@ export const TaskListRules = {
       if (!codeBlock.installed) return true;
 
       return !tx.nodes.some({
-        match: {
-          type: [codeBlock.schema.type],
-        },
+        type: [codeBlock.schema.type],
       });
     },
     trigger: ' ',

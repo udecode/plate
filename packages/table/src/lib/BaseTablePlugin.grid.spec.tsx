@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { BaseTablePlugin } from './BaseTablePlugin';
+import { BaseTableCellPlugin, BaseTablePlugin } from './BaseTablePlugin';
 import {
   createTestTableEditor,
   getTestTablePlugins,
@@ -113,7 +113,9 @@ describe('table grid queries', () => {
         plugins: getTestTablePlugins(),
         initialValue: value,
       });
-      const entry = editor.read.nodes.get<TableCellElement>([0, 0, 1]);
+      const entry = editor.read.nodes.get([0, 0, 1], {
+        type: BaseTableCellPlugin,
+      });
       assert(entry);
       const [cell] = entry;
       const id = editor.key(cell);
@@ -162,7 +164,9 @@ describe('table grid queries', () => {
       });
 
     const getCell = (editor: ReturnType<typeof createTableEditor>) => {
-      const entry = editor.read.nodes.get<TableCellElement>([0, 0, 1]);
+      const entry = editor.read.nodes.get([0, 0, 1], {
+        type: BaseTableCellPlugin,
+      });
       assert(entry);
 
       return entry[0];
@@ -355,7 +359,9 @@ describe('table grid queries', () => {
         ) as TestEditor;
 
         const editor = createTableEditor(input);
-        const entry = editor.read.nodes.get<TableCellElement>([0, 1, 0]);
+        const entry = editor.read.nodes.get([0, 1, 0], {
+          type: BaseTableCellPlugin,
+        });
         assert(entry);
         const [cellNode] = entry;
 

@@ -2,11 +2,7 @@ import type { ChatMessage } from '@/registry/components/editor/use-chat';
 import type { AIChatRequestRefs } from '@platejs/ai/react';
 import type { MarkdownEditor } from '@platejs/markdown';
 
-import {
-  BaseTablePlugin,
-  type TableCellElement,
-  type TableElement,
-} from '@platejs/table';
+import { BaseTablePlugin, type TableCellElement } from '@platejs/table';
 import { ElementApi } from 'platejs';
 import dedent from 'dedent';
 
@@ -23,8 +19,8 @@ export function buildEditTableMultiCellPrompt(
   messages: ChatMessage[],
   refs: AIChatRequestRefs['tableCells']
 ): string {
-  const tableEntry = editor.read.nodes.block<TableElement>({
-    match: { type: editor.plugin(BaseTablePlugin).schema.type },
+  const tableEntry = editor.read.nodes.block({
+    type: BaseTablePlugin,
   });
   const table = tableEntry?.[0];
   const tablePath = tableEntry?.[1];

@@ -101,7 +101,7 @@ location other than the current selection.
 ```javascript
 const startsHeading = editor.read.selection.isAtBlockStart({
   at: point,
-  match: { type: "heading" },
+  type: "heading",
 });
 ```
 
@@ -157,17 +157,18 @@ the editor root, so nodes from another editor or another root do not resolve.
 Strict static helpers keep their non-optional contracts and treat a missing
 result as an internal invariant failure.
 
-Node queries accept predicates and shallow property objects.
+Node queries use `type` for structural selection and `match` for an optional
+predicate.
 
 ```typescript
-const callout = editor.read.nodes.find({ match: { type: "callout" } });
+const callout = editor.read.nodes.find({ type: "callout" });
 const tableNode = editor.read.nodes.find({
-  match: { type: ["table", "table_cell"] },
+  type: ["table", "table_cell"],
 });
 ```
 
-Property values use exact equality. An array means one-of. Use predicates for
-computed schema policy and static type narrowing.
+An array selects any listed type. Add `match: (node, path) => ...` for computed
+conditions and static type narrowing.
 
 ## Updating state
 

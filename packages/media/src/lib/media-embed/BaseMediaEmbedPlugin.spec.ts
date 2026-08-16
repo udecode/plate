@@ -256,7 +256,9 @@ describe('BaseMediaEmbedPlugin', () => {
         },
       ],
     });
-    const element = editor.read.nodes.get<MediaEmbedElement>([0])?.[0];
+    const element = editor.read.nodes.get([0], {
+      type: BaseMediaEmbedPlugin,
+    })?.[0];
 
     assert(element);
     expect(
@@ -283,7 +285,9 @@ describe('BaseMediaEmbedPlugin', () => {
         },
       ],
     });
-    const element = editor.read.nodes.get<MediaEmbedElement>([0])?.[0];
+    const element = editor.read.nodes.get([0], {
+      type: BaseMediaEmbedPlugin,
+    })?.[0];
 
     assert(element);
     expect(
@@ -312,7 +316,9 @@ describe('BaseMediaEmbedPlugin', () => {
         },
       ],
     });
-    const element = editor.read.nodes.get<MediaEmbedElement>([0])?.[0];
+    const element = editor.read.nodes.get([0], {
+      type: BaseMediaEmbedPlugin,
+    })?.[0];
 
     assert(element);
     expect(
@@ -340,7 +346,9 @@ describe('BaseMediaEmbedPlugin', () => {
         },
       ],
     });
-    const element = editor.read.nodes.get<MediaEmbedElement>([0])?.[0];
+    const element = editor.read.nodes.get([0], {
+      type: BaseMediaEmbedPlugin,
+    })?.[0];
 
     assert(element);
     expect(

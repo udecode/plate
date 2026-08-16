@@ -62,7 +62,7 @@ feature code.
 const inOneText = editor.read.selection.isWithinText();
 const acrossBlocks = editor.read.selection.isAcrossBlocks();
 const atHeadingStart = editor.read.selection.isAtBlockStart({
-  match: { type: "heading" },
+  type: "heading",
 });
 const intersectsIntro = editor.read.selection.intersects([0]);
 const containsRange = editor.read.selection.contains(range);
@@ -70,8 +70,9 @@ const atWordEnd = editor.read.points.isWordEnd(point);
 ```
 
 `isWithinBlock`, `isAcrossBlocks`, `isAtBlockStart`, and `isAtBlockEnd` accept
-`at` and `match` options. Omit `at` to inspect the current selection. These
-queries return `false` when the target or current selection does not resolve.
+`at`, `type`, and `match` options. Omit `at` to inspect the current selection.
+These queries return `false` when the target or current selection does not
+resolve.
 
 Use [Locations](03-locations) for `Path`, `Point`, `Range`, and anchors. Use [Transforms](04-transforms#selection) for transaction selection helpers.
 

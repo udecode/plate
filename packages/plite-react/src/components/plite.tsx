@@ -8,6 +8,7 @@ import React, {
 import ReactDOM from 'react-dom';
 import {
   createEditorView,
+  type Editor,
   type EditorCommit,
   type EditorCommitContext,
   type EditorSnapshot,
@@ -56,11 +57,7 @@ import {
   useOptionalPliteRuntimeContext,
 } from '../hooks/use-plite-runtime';
 import { useRuntimeFocusState } from '../hooks/use-runtime-focus-state';
-import {
-  ReactEditor,
-  type ReactRuntimeEditor,
-  toReactRuntimeEditor,
-} from '../plugin/react-editor';
+import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import type {
   ReactEditorContextValue,
   ReactEditor as ReactEditorType,
@@ -399,6 +396,7 @@ type PliteSingleEditorProps<
 const usePliteChangeCallbacks = <
   V extends Value,
   TExtensions extends readonly unknown[],
+  TRuntimeExtensions extends readonly unknown[],
 >({
   editor,
   onCommit,
@@ -406,7 +404,7 @@ const usePliteChangeCallbacks = <
   onValueChange,
   root,
 }: {
-  editor: ReactRuntimeEditor<V, TExtensions>;
+  editor: ReactRuntimeEditor<V, TRuntimeExtensions>;
   onCommit?: (context: PliteCommitContext<V, TExtensions>) => void;
   onSelectionChange?: (
     context: PliteSelectionChangeContext<V, TExtensions>
@@ -529,11 +527,11 @@ const PliteSingleEditor = <
     readOnly = false,
   } = props;
 
-  if (!isEditor(editor)) {
+  if (!isEditor(editor as unknown)) {
     throw new Error('[Plite] editor is invalid!');
   }
 
-  const reactEditor = toReactRuntimeEditor(editor);
+  const reactEditor = editor as unknown as ReactRuntimeEditor<V, TExtensions>;
   const { selectorContext, onChange: handleSelectorChange } =
     useEditorSelectorContext();
   const {
@@ -601,12 +599,12 @@ const PliteSingleEditor = <
       if (!activeViewEditorsRef.current.has(root)) {
         activeViewEditorsRef.current.set(root, viewEditor);
       }
-      rootViewEditors.add(viewEditor);
+      rootViewEditors.add(viewEditor as unknown as Editor);
       EDITOR_TO_ROOT_VIEW_EDITORS.set(editor, rootViewEditors);
 
       return () => {
         viewEditors.delete(viewEditor);
-        rootViewEditors.delete(viewEditor);
+        rootViewEditors.delete(viewEditor as unknown as Editor);
         const owner = contentRootOwnersRef.current.get(viewEditor);
 
         contentRootOwnersRef.current.delete(viewEditor);
@@ -736,13 +734,17 @@ const PliteSingleEditor = <
       let didSyncEveryView = changedTextNodeKeys.length > 0;
 
       for (const viewEditor of viewEditors) {
-        const textSync = syncChangedTextToDOM(viewEditor, changedTextNodeKeys);
+        const runtimeEditor = viewEditor as unknown as Editor;
+        const textSync = syncChangedTextToDOM(
+          runtimeEditor,
+          changedTextNodeKeys
+        );
 
         if (textSync.syncedTextCount < textSync.changedTextCount) {
           didSyncEveryView = false;
         }
         if (changedPathNodeKeys.length > 0) {
-          syncPliteNodePathBindingsToDOM(viewEditor, changedPathNodeKeys);
+          syncPliteNodePathBindingsToDOM(runtimeEditor, changedPathNodeKeys);
         }
       }
 
@@ -765,11 +767,13 @@ const PliteSingleEditor = <
           : (callback: () => void) => callback();
 
       maybeBatchUpdates(() => {
+        const runtimeEditor = reactEditor as unknown as Editor;
+
         profileRuntimeDuration('focused-state', () => {
           refreshFocused();
         });
         const textSync = profileRuntimeDuration('dom-text-sync', () =>
-          syncChangedTextToDOM(reactEditor, commit.changed.nodeKeys('text'))
+          syncChangedTextToDOM(runtimeEditor, commit.changed.nodeKeys('text'))
         );
         const rootTextSync = profileRuntimeDuration('dom-root-text-sync', () =>
           syncMountedRootChangesToDOM(commit)
@@ -778,7 +782,7 @@ const PliteSingleEditor = <
 
         if (mainPathNodeKeys.length > 0) {
           profileRuntimeDuration('dom-path-sync', () =>
-            syncPliteNodePathBindingsToDOM(reactEditor, mainPathNodeKeys)
+            syncPliteNodePathBindingsToDOM(runtimeEditor, mainPathNodeKeys)
           );
         }
         const hasUnsyncedTextChange =

@@ -738,7 +738,11 @@ export function createAndroidInputManager({
           at: start.path,
           match: NodeApi.isText,
         });
-        if (next && PathApi.equals(next[1], end.path)) {
+        if (
+          next &&
+          NodeApi.isText(next[0]) &&
+          PathApi.equals(next[1], end.path)
+        ) {
           // when deleting a linebreak, targetRange will span across the break (ie start in the node before and end in the node after)
           // if the node before is empty, this will look like a hanging range and get unhung later--which will take the break we want to remove out of the range
           // so to avoid this we collapse the target range to default to single character deletion

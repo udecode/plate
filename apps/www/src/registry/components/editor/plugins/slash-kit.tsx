@@ -12,9 +12,7 @@ export const SlashKit = [
         const codeBlock = editor.plugin(PLUGINS.codeBlock);
 
         return !editor.read.nodes.some({
-          match: {
-            type: codeBlock.schema.type,
-          },
+          type: codeBlock.schema.type,
         });
       },
     },

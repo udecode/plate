@@ -377,7 +377,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: [],
+    dependencies: ['@platejs/code-block'],
     files: [
       {
         path: 'components/editor/plugins/autoformat-kit.tsx',

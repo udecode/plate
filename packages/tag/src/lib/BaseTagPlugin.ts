@@ -1,10 +1,5 @@
-import { defineBasePlugin } from '@platejs/core';
-import {
-  type ElementOf,
-  type NodeInsertNodesOptions,
-  type Text,
-  property,
-} from '@platejs/plite';
+import { defineBasePlugin, type PlateNodeInsertOptions } from '@platejs/core';
+import { type ElementOf, property } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
 
 export type TagItem = { url?: string; value: string };
@@ -20,40 +15,33 @@ export const BaseTagPlugin = defineBasePlugin(PLUGINS.tag, {
     },
   },
 })
-  .extend(({ plugin }) => {
-    type TagElement = ElementOf<typeof plugin>;
-
-    return {
-      read: ({ state, schema: { type } }) => ({
-        getSelectedItems: () =>
-          Array.from(
-            state.nodes.entries<TagElement>({
-              at: [],
-              match: { type },
-            })
-          ).map(([node]) => ({ value: node.value })),
-      }),
-      update: ({ tx, schema: { type } }) => ({
-        insert: (
-          props: TagItem,
-          options?: NodeInsertNodesOptions<TagElement | Text>
-        ) => {
-          tx.nodes.insert(
-            [
-              {
-                children: [{ text: '' }],
-                type,
-                ...(props.url === undefined ? {} : { url: props.url }),
-                value: props.value,
-              },
-              { text: '' },
-            ],
-            options
-          );
-        },
-      }),
-    };
-  })
+  .extend(({ plugin }) => ({
+    read: ({ state }) => ({
+      getSelectedItems: () =>
+        Array.from(
+          state.nodes.entries({
+            at: [],
+            type: plugin,
+          })
+        ).map(([node]) => ({ value: node.value })),
+    }),
+    update: ({ tx, schema: { type } }) => ({
+      insert: (props: TagItem, options?: PlateNodeInsertOptions) => {
+        tx.nodes.insert(
+          [
+            {
+              children: [{ text: '' }],
+              type,
+              ...(props.url === undefined ? {} : { url: props.url }),
+              value: props.value,
+            },
+            { text: '' },
+          ],
+          options
+        );
+      },
+    }),
+  }))
   .extend(({ plugin }) => ({
     read: ({ state }) => ({
       isEqual: (tags: readonly TagItem[] = []) => {

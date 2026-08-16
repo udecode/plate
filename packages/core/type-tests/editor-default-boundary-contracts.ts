@@ -84,8 +84,8 @@ type ExactPlateProps = PlateProps<ExactInternalPlateEditor>;
 declare const exactPlateProps: ExactPlateProps;
 declare const plateEditorWithStore: PlateEditorWithStore;
 declare const defaultUseEditorReturn: ReturnType<typeof useEditor>;
-const broadDOMEditor: DOMEditor = plateEditorWithStore;
-const broadReactEditor: ReactEditor = plateEditorWithStore;
+const broadDOMEditor: DOMEditor<any, any> = plateEditorWithStore;
+const broadReactEditor: ReactEditor<any, any> = plateEditorWithStore;
 const broadUseEditorReturn: PlateEditorWithStore = defaultUseEditorReturn;
 
 // @ts-expect-error Default Plate editors expose Core API groups only.

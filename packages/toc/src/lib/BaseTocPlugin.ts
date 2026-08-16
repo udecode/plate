@@ -1,6 +1,6 @@
 import { type DefinitionOf, defineBasePlugin } from '@platejs/core';
-import type { EditorStateView, Element, NodeKey } from '@platejs/plite';
-import { ElementApi, NodeApi } from '@platejs/plite';
+import type { EditorStateView, NodeKey } from '@platejs/plite';
+import { NodeApi } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
 
 export type Heading = {
@@ -58,12 +58,9 @@ export const BaseTocPlugin = defineBasePlugin(PLUGINS.toc, {
           .map(([plugin, depth]) => [plugin.schema.type, depth] as const)
       );
 
-      for (const [node] of state.nodes.entries<Element>({
+      for (const [node] of state.nodes.entries({
         at: [],
-        match: (node) =>
-          ElementApi.isElement(node) &&
-          typeof node.type === 'string' &&
-          headingDepthByType.has(node.type),
+        type: [...headingDepthByType.keys()],
       })) {
         const title = NodeApi.string(node);
 

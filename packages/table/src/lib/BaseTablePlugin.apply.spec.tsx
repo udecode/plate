@@ -3,7 +3,6 @@
 import assert from 'node:assert/strict';
 import { ElementIdPlugin } from '@platejs/core';
 import { DocumentChange } from '@platejs/plite';
-import type { TableCellElement, TableElement } from './BaseTablePlugin';
 import { BaseYjsPlugin } from '@platejs/yjs';
 
 import { jsxt, type TestEditor } from '@platejs/test-utils';
@@ -13,7 +12,7 @@ import {
   getTestTablePlugins,
 } from './__tests__/getTestTablePlugins';
 import type { TableElementWithId } from './__tests__/tableTestTypes';
-import { BaseTablePlugin } from './BaseTablePlugin';
+import { BaseTableCellPlugin, BaseTablePlugin } from './BaseTablePlugin';
 import { compileTableGrid } from './internal/grid';
 
 jsxt;
@@ -252,7 +251,9 @@ describe('BaseTablePlugin apply', () => {
     ).toEqual({ col: 1, row: 0 });
     editor.update.table.removeColumn();
 
-    const nextKeep = editor.read.nodes.get<TableCellElement>([0, 0, 0]);
+    const nextKeep = editor.read.nodes.get([0, 0, 0], {
+      type: BaseTableCellPlugin,
+    });
     assert(nextKeep);
     expect(
       editor.plugin(BaseTablePlugin).read.getCellIndices(nextKeep[0])
@@ -303,7 +304,9 @@ describe('BaseTablePlugin apply', () => {
     expect(change.primaryClassification).toBeNull();
     replay.update((tx) => tx.changes.apply(change));
 
-    const nextKeep = replay.read.nodes.get<TableCellElement>([0, 0, 0]);
+    const nextKeep = replay.read.nodes.get([0, 0, 0], {
+      type: BaseTableCellPlugin,
+    });
     assert(nextKeep);
     expect(
       replay.plugin(BaseTablePlugin).read.getCellIndices(nextKeep[0])
@@ -355,7 +358,7 @@ describe('BaseTablePlugin apply', () => {
 
     expect(editor.read.history.undos()).toHaveLength(1);
     expect(
-      editor.read.nodes.get<TableCellElement>([0, 0, 0])?.[0]
+      editor.read.nodes.get([0, 0, 0], { type: BaseTableCellPlugin })?.[0]
     ).toMatchObject({
       colSpan: 2,
       id: 'a',
@@ -371,7 +374,7 @@ describe('BaseTablePlugin apply', () => {
 
     expect(editor.read.history.undos()).toHaveLength(1);
     expect(
-      editor.read.nodes.get<TableCellElement>([0, 0, 0])?.[0]
+      editor.read.nodes.get([0, 0, 0], { type: BaseTableCellPlugin })?.[0]
     ).toMatchObject({
       colSpan: 2,
       id: 'a',
@@ -410,7 +413,7 @@ describe('BaseTablePlugin apply', () => {
 
     editor.update((tx) => tx.nodes.remove({ at: [0, 1, 1] }));
 
-    const repaired = editor.read.nodes.get<TableElement>([0])?.[0];
+    const repaired = editor.read.nodes.get([0], { type: BaseTablePlugin })?.[0];
     assert(repaired);
 
     const repairedGrid = editor.read((state) => compileTableGrid(state, [0]));
@@ -431,7 +434,7 @@ describe('BaseTablePlugin apply', () => {
 
     assert.deepEqual(editor.read.children(), repairedChildren);
     assert.deepEqual(editor.read.selection(), repairedSelection);
-    expect(editor.read.nodes.get<TableCellElement>([0, 1, 1])).toBeDefined();
+    expect(editor.read.nodes.get([0, 1, 1])).toBeDefined();
   });
 
   it('publishes one Yjs update and replays the complete table plan', () => {
@@ -468,6 +471,6 @@ describe('BaseTablePlugin apply', () => {
 
     expect(updateCount).toBe(1);
     assert.deepEqual(replay.read.children(), source.read.children());
-    expect(replay.read.nodes.get<TableCellElement>([0, 0, 1])).toBeDefined();
+    expect(replay.read.nodes.get([0, 0, 1])).toBeDefined();
   });
 });

@@ -1,6 +1,7 @@
 import type {
   ContentSlice as ContentSliceValue,
   AnyEditor as Editor,
+  EditorStateView,
   Value,
 } from '../interfaces/editor';
 import { ElementApi } from '../interfaces/element';
@@ -43,7 +44,7 @@ export const getContentSlice = <V extends Value>(
     : null;
   const fullRootContent = selectedNode
     ? null
-    : editor.read((state) => {
+    : editor.read((state: EditorStateView<V, any>) => {
         const [start, end] = RangeApi.edges(selection);
         const rootStart = state.points.start([]);
         const rootEnd = state.points.end([]);
@@ -64,7 +65,9 @@ export const getContentSlice = <V extends Value>(
           fullRootContent ?? NodeApi.fragment(editor, selection),
           root
         );
-  const document = editor.read((state) => state.value());
+  const document = editor.read((state: EditorStateView<V, any>) =>
+    state.value()
+  );
   const roots: Record<string, readonly Descendant[]> = {};
   const visitedRoots = new Set<string>();
   const collect = (children: readonly Descendant[]) => {
@@ -73,7 +76,7 @@ export const getContentSlice = <V extends Value>(
 
       for (const root of Object.values(
         editor.read.schema.getElementContentRoots(node)
-      )) {
+      ) as string[]) {
         if (visitedRoots.has(root)) continue;
         const rootContent = document.roots?.[root];
 

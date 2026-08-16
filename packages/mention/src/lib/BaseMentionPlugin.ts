@@ -2,12 +2,12 @@ import {
   triggerCombobox,
   type TriggerComboboxPluginState,
 } from '@platejs/combobox';
-import { type DefinitionOf, defineBasePlugin } from '@platejs/core';
 import {
-  type ElementOf,
-  type NodeInsertNodesOptions,
-  property,
-} from '@platejs/plite';
+  type DefinitionOf,
+  defineBasePlugin,
+  type PlateNodeInsertOptions,
+} from '@platejs/core';
+import { type ElementOf, property } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
 
 const TRIGGER_PREVIOUS_CHAR_PATTERN = /^\s?$/;
@@ -117,45 +117,41 @@ export const BaseMentionPlugin = defineBasePlugin(PLUGINS.mention, {
         kind: 'node',
       },
     }),
-  update: ({ plugin, store, tx, schema: { type } }) => {
-    type Mention = ElementOf<typeof plugin>;
+  update: ({ store, tx, schema: { type } }) => ({
+    insert: (
+      { key, value }: { value: string; key?: string },
+      options: PlateNodeInsertOptions = {}
+    ) => {
+      const selection = options.at === undefined ? tx.selection() : undefined;
+      const blockPath = selection ? tx.nodes.block()?.[1] : undefined;
+      const insertSpaceAfter =
+        store.get().insertSpaceAfterMention &&
+        blockPath &&
+        selection &&
+        tx.points.isEnd(selection.anchor, blockPath);
+      const mention = {
+        key,
+        children: [{ text: '' }],
+        type,
+        value,
+      };
 
-    return {
-      insert: (
-        { key, value }: { value: string; key?: string },
-        options: NodeInsertNodesOptions<Mention> = {}
-      ) => {
-        const selection = options.at === undefined ? tx.selection() : undefined;
-        const blockPath = selection ? tx.nodes.block()?.[1] : undefined;
-        const insertSpaceAfter =
-          store.get().insertSpaceAfterMention &&
-          blockPath &&
-          selection &&
-          tx.points.isEnd(selection.anchor, blockPath);
-        const mention = {
-          key,
-          children: [{ text: '' }],
-          type,
-          value,
-        };
+      tx.nodes.insert(
+        insertSpaceAfter ? [mention, { text: ' ' }] : mention,
+        options
+      );
 
-        tx.nodes.insert(
-          insertSpaceAfter ? [mention, { text: ' ' }] : mention,
-          options
-        );
+      if (options.at !== undefined || options.select) return;
 
-        if (options.at !== undefined || options.select) return;
+      if (insertSpaceAfter && blockPath) {
+        const at = tx.points.end(blockPath);
 
-        if (insertSpaceAfter && blockPath) {
-          const at = tx.points.end(blockPath);
-
-          if (at) tx.selection.set(at);
-        } else {
-          tx.selection.move({ unit: 'offset' });
-        }
-      },
-    };
-  },
+        if (at) tx.selection.set(at);
+      } else {
+        tx.selection.move({ unit: 'offset' });
+      }
+    },
+  }),
 }).extend(({ editor, store, schema: { type } }) => ({
   commands: (context) =>
     triggerCombobox(context, {

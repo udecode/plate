@@ -251,6 +251,10 @@ Plate plugins declare Plite capabilities directly at the plugin root. Use
 `facetProviders`, `selectionKinds`, `contributions`, `on`, `activate`, and
 `validate` without a second wrapper.
 
+`selectionKinds` is also the complete type registration. Concrete editors
+infer custom selection reads and writes only when that plugin is installed;
+do not add module augmentation or a side-effect type import.
+
 ```ts showLineNumbers
 import { defineStateField } from "platejs";
 import { definePlatePlugin } from "platejs/react";

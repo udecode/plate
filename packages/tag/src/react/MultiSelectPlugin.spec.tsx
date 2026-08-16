@@ -1,6 +1,5 @@
 import { createPlateEditor } from '@platejs/core/react';
 import { TextApi } from '@platejs/plite';
-import type { TagElement } from '../lib';
 
 import { MultiSelectPlugin } from './MultiSelectPlugin';
 
@@ -32,9 +31,9 @@ describe('MultiSelectPlugin', () => {
     editor.plugin(MultiSelectPlugin).update.insert({ value: 'Select Editor' });
     expect(
       Array.from(
-        editor.read.nodes.entries<TagElement>({
+        editor.read.nodes.entries({
           at: [],
-          match: { type },
+          type,
         })
       ).map(([node]) => node.value)
     ).toEqual(['Editor', 'Select Editor']);
@@ -73,9 +72,9 @@ describe('MultiSelectPlugin', () => {
     editor.update.text.deleteBackward({ unit: 'character' });
     expect(
       Array.from(
-        editor.read.nodes.entries<TagElement>({
+        editor.read.nodes.entries({
           at: [],
-          match: { type },
+          type,
         })
       ).map(([node]) => node.value)
     ).toEqual(['alpha']);
@@ -108,9 +107,9 @@ describe('MultiSelectPlugin', () => {
 
     const children = editor.read.children()[0].children;
     const tags = Array.from(
-      editor.read.nodes.entries<TagElement>({
+      editor.read.nodes.entries({
         at: [],
-        match: { type },
+        type,
       })
     ).map(([node]) => node);
     const nonEmptyTexts = children.filter(

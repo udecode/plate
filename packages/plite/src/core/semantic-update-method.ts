@@ -30,3 +30,21 @@ export const defineSemanticUpdateMethod = <TMethod extends UpdateMethod>(
 export const getSemanticUpdateLowering = (
   method: UpdateMethod
 ): SemanticUpdateLowering | undefined => SEMANTIC_UPDATE_METHODS.get(method);
+
+/** @internal Map one update method's arguments without bypassing its command lowering. */
+export const mapSemanticUpdateMethodArguments = <TMethod extends UpdateMethod>(
+  method: TMethod,
+  mapArguments: (args: readonly unknown[]) => readonly unknown[]
+): TMethod => {
+  const mapped = ((...args: unknown[]) =>
+    Reflect.apply(method, undefined, mapArguments(args))) as TMethod;
+  const lower = getSemanticUpdateLowering(method);
+
+  if (lower) {
+    SEMANTIC_UPDATE_METHODS.set(mapped, (dispatch, args) =>
+      lower(dispatch, mapArguments(args), method)
+    );
+  }
+
+  return mapped;
+};

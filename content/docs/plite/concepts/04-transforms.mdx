@@ -252,13 +252,14 @@ editor.update((tx) => {
 
 ## The `match` Option
 
-Node methods accept a predicate or a shallow property object to restrict which
-nodes are changed.
+Node methods accept an independent structural `type` selector and optional
+`match` predicate.
 
 ```javascript
 editor.update((tx) => {
   tx.nodes.move({
     at: [2],
+    type: "callout",
     match: (node, path) => path.length === 2,
     to: [5],
   });
@@ -268,21 +269,20 @@ editor.update((tx) => {
 The `match` function can examine the node, the path, or surrounding structure
 through transaction read helpers.
 
-Use property objects for exact fields and one-of sets.
+Use `type` for exact structural identity and arrays of structural identities.
 
 ```javascript
 const callout = editor.read.nodes.find({
-  match: { type: "callout" },
+  type: "callout",
 });
 
 const tableNode = editor.read.nodes.find({
-  match: { type: ["table", "table_cell"] },
+  type: ["table", "table_cell"],
 });
 ```
 
-Property matching is shallow. Scalar values use exact equality; array values
-mean one-of. Use a predicate for computed policies such as block, text, or empty
-checks, and whenever TypeScript should narrow the matched node.
+Use a predicate for computed policies such as block, text, or empty checks, and
+whenever TypeScript should narrow the matched node.
 
 ## Normalization
 

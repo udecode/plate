@@ -61,7 +61,9 @@ const historyAvailabilityEquality = (
 const nullableRootKeyEquality = (a: RootKey | null, b: RootKey | null) =>
   a === b;
 
-const selectSelectionRoot = (state: EditorStateView): RootKey | null => {
+const selectSelectionRoot = (
+  state: EditorStateView<any, any>
+): RootKey | null => {
   const selection = state.selection();
 
   if (!selection) {
@@ -74,7 +76,7 @@ const selectSelectionRoot = (state: EditorStateView): RootKey | null => {
 };
 
 const selectLastCommitSingleChangedRoot = (
-  state: EditorStateView
+  state: EditorStateView<any, any>
 ): RootKey | null => {
   const commit = state.lastCommit();
   const roots = new Set<RootKey>([
@@ -89,7 +91,7 @@ const selectLastCommitSingleChangedRoot = (
 const createHistoryRootSelector = () => {
   let lastRoot: RootKey = MAIN_ROOT_KEY;
 
-  return (state: EditorStateView): RootKey => {
+  return (state: EditorStateView<any, any>): RootKey => {
     const selectionRoot = selectSelectionRoot(state);
 
     if (selectionRoot) {

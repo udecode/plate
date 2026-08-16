@@ -1,18 +1,12 @@
 import { toPlatePlugin } from '@platejs/core/react';
-import {
-  editorCommands,
-  ElementApi,
-  PathApi,
-  TextApi,
-  type Text,
-} from '@platejs/plite';
+import { editorCommands, ElementApi, PathApi, TextApi } from '@platejs/plite';
 import type { TagElement } from '../lib/BaseTagPlugin';
 
 import { BaseTagPlugin } from '../lib';
 
 export const MultiSelectPlugin = toPlatePlugin(
   BaseTagPlugin,
-  ({ editor, schema: { type } }) => ({
+  ({ editor, plugin, schema: { type } }) => ({
     commands: ({ around }) => [
       around(editorCommands.delete, ({ input, state, next }) => {
         if (input.direction !== 'backward') return false;
@@ -22,7 +16,7 @@ export const MultiSelectPlugin = toPlatePlugin(
         if (result === false) return false;
 
         return state.transaction.extend(result, (tx) => {
-          if (tx.nodes.some({ match: { type } })) {
+          if (tx.nodes.some({ type: plugin })) {
             tx.selection.move();
           }
         });
@@ -34,13 +28,12 @@ export const MultiSelectPlugin = toPlatePlugin(
 
         editor.update({ tags: 'multi-select-cleanup' }, (tx) => {
           const selection = tx.selection();
-          const removeAllText =
-            !selection || tx.nodes.some({ match: { type } });
+          const removeAllText = !selection || tx.nodes.some({ type: plugin });
           const selectedPaths = removeAllText
             ? null
             : new Set(
                 Array.from(
-                  tx.nodes.entries<Text>({
+                  tx.nodes.entries({
                     at: selection,
                     match: TextApi.isText,
                   })
@@ -63,10 +56,10 @@ export const MultiSelectPlugin = toPlatePlugin(
         correct({ entry: [node, path], tx }) {
           if (
             ElementApi.isElementType<TagElement>(node, type) &&
-            tx.nodes.some<TagElement>({
+            tx.nodes.some({
               at: [],
+              type: plugin,
               match: (candidate, candidatePath) =>
-                ElementApi.isElementType<TagElement>(candidate, type) &&
                 candidate.value === node.value &&
                 !PathApi.equals(candidatePath, path),
             })

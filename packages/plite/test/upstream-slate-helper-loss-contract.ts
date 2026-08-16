@@ -490,7 +490,7 @@ describe('old Slate helper behavior through current Plite APIs', () => {
       nestedChild: (
         state.nodes.next({ at: [1, 0], from: 'child' })?.[0] as Text | undefined
       )?.text,
-      textPath: state.nodes.next<Text>({
+      textPath: state.nodes.next({
         at: [0],
         match: NodeApi.isText,
       })?.[1],
@@ -545,7 +545,7 @@ describe('old Slate helper behavior through current Plite APIs', () => {
         })?.[0] as Element | undefined
       )?.id,
       firstSibling: state.nodes.previous({ at: [0], sibling: true }),
-      textPath: state.nodes.previous<Text>({
+      textPath: state.nodes.previous({
         at: [1],
         match: NodeApi.isText,
       })?.[1],

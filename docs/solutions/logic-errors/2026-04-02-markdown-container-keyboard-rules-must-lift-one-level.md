@@ -65,7 +65,7 @@ purpose:
 
 ```ts
 const blocks = tx.nodes
-  .toArray<Element>({
+  .toArray({
     at: tx.selection() ?? undefined,
     match: (node, path) =>
       ElementApi.isElement(node) &&

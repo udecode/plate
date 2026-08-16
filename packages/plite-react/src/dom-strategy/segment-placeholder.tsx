@@ -7,6 +7,7 @@ import type {
   NodeKey,
   Editor as EditorType,
 } from '@platejs/plite';
+import { NodeApi } from '@platejs/plite';
 import type {
   DOMCoverageReason,
   DOMCoverageSelectionPolicy,
@@ -202,7 +203,13 @@ export const DOMStrategySegmentPlaceholder = React.memo(
 
           const node =
             (readRuntimeNode(editorValue, path) as Descendant | undefined) ??
-            editorValue.read((state) => state.nodes.get<Descendant>(path)?.[0]);
+            editorValue.read((state) => {
+              const candidate = state.nodes.get(path)?.[0];
+
+              return candidate && NodeApi.isDescendant(candidate)
+                ? candidate
+                : undefined;
+            });
 
           if (!node) {
             return;

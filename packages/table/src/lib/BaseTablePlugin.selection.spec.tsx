@@ -1,14 +1,50 @@
 /** @jsx jsxt */
 
-import { BaseTablePlugin } from './BaseTablePlugin';
+import { BaseTableCellPlugin, BaseTablePlugin } from './BaseTablePlugin';
 import {
   createTestTableEditor,
   getTestTablePlugins,
 } from './__tests__/getTestTablePlugins';
+import { createPlateEditor } from '@platejs/core/react';
 import { jsx, jsxt } from '@platejs/test-utils';
 import type { TestEditor } from '@platejs/test-utils';
-import type { TableCellElement, TableElement } from './BaseTablePlugin';
+import type { TableElement } from './BaseTablePlugin';
+import type { Range } from '@platejs/plite';
 import assert from 'node:assert/strict';
+
+const assertTableSelectionInference = () => {
+  const range = {
+    anchor: { offset: 0, path: [0, 0] },
+    focus: { offset: 0, path: [0, 0] },
+  } satisfies Range;
+  const tableSelection = {
+    ...range,
+    cells: [range],
+    kind: 'table-cell' as const,
+  };
+  const tableEditor = createPlateEditor({ plugins: [BaseTablePlugin] });
+  const selection = tableEditor.read.selection();
+
+  if (selection && selection.kind === 'table-cell') {
+    const cells: readonly Range[] = selection.cells;
+
+    void cells;
+  }
+
+  tableEditor.update((tx) => tx.selection.set(tableSelection));
+
+  // @ts-expect-error Direct update selection exposes mutations, not queries.
+  tableEditor.update.selection();
+
+  const plainEditor = createPlateEditor();
+
+  plainEditor.update((tx) => {
+    // @ts-expect-error Table selection is unavailable without BaseTablePlugin.
+    tx.selection.set(tableSelection);
+  });
+};
+
+void assertTableSelectionInference;
 
 describe('table selection', () => {
   {
@@ -64,7 +100,9 @@ describe('table selection', () => {
       editor: ReturnType<typeof createEditor>,
       path: number[]
     ) => {
-      const entry = editor.read.nodes.get<TableCellElement>(path);
+      const entry = editor.read.nodes.get(path, {
+        type: BaseTableCellPlugin,
+      });
       assert(entry);
 
       return entry[0];

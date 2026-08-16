@@ -59,6 +59,40 @@ editor.update((tx) => {
 });
 ```
 
+Give collaborator metadata one runtime validator when the app needs an exact
+cursor shape. The installed extension carries that type through state, updates,
+and React hooks; reads never take a caller-selected generic.
+
+```tsx
+type CursorData = {
+  color: string;
+  name: string;
+};
+
+const YjsExtension = yjs({
+  cursorData: {
+    validate: (value): value is CursorData =>
+      typeof value === "object" &&
+      value !== null &&
+      "color" in value &&
+      typeof value.color === "string" &&
+      "name" in value &&
+      typeof value.name === "string",
+  },
+  doc,
+});
+
+const editor = createEditor({
+  extensions: [YjsExtension] as const,
+  initialValue,
+});
+
+const cursors = editor.read((state) => state.yjs.remoteCursors());
+```
+
+Invalid remote metadata is omitted from the cursor while its selection remains
+available. Invalid local metadata is rejected before it reaches awareness.
+
 ## Schema Identity
 
 Each collaboration document records one non-null compiled schema identity for

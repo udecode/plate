@@ -15,7 +15,6 @@ import {
   usePluginStore,
 } from '@platejs/core/react';
 import type { Selection } from '@platejs/plite';
-import type { LinkElement } from '../lib/BaseLinkPlugin';
 import { useHotkeys } from '@udecode/react-hotkeys';
 import { useComposedRef, useOnClickOutside } from '@udecode/react-utils';
 
@@ -41,12 +40,7 @@ export type FloatingLinkEditState = {
 
 export const useFloatingLinkActions = () => {
   const editor = useEditor();
-  const {
-    api,
-    store,
-    update,
-    schema: { type },
-  } = useEditorPlugin(LinkPlugin);
+  const { api, store, update } = useEditorPlugin(LinkPlugin);
 
   const submit = React.useCallback(() => {
     if (!editor.read.selection()) return;
@@ -79,9 +73,9 @@ export const useFloatingLinkActions = () => {
 
     if (!selection) return;
 
-    const entry = editor.read.nodes.above<LinkElement>({
+    const entry = editor.read.nodes.above({
       at: selection,
-      match: { type },
+      type: LinkPlugin,
     });
 
     if (!entry) return;
@@ -97,7 +91,7 @@ export const useFloatingLinkActions = () => {
     });
 
     return true;
-  }, [editor, store, type]);
+  }, [editor, store]);
 
   const triggerInsert = React.useCallback(
     ({ focused }: FloatingLinkTriggerOptions = {}) => {
@@ -107,14 +101,14 @@ export const useFloatingLinkActions = () => {
       const selection = editor.read.selection();
 
       if (!selection) return;
-      if (editor.read.nodes.some({ at: selection, match: { type } })) return;
+      if (editor.read.nodes.some({ at: selection, type: LinkPlugin })) return;
 
       store.set({ text: editor.read.text.string() });
       api.show('insert', editor.id);
 
       return true;
     },
-    [api, editor, store, type]
+    [api, editor, store]
   );
 
   const trigger = React.useCallback(
@@ -295,9 +289,6 @@ export const useFloatingLinkEditState = ({
   floatingOptions,
 }: LinkFloatingToolbarState = {}): FloatingLinkEditState => {
   const editor = useEditor();
-  const {
-    schema: { type },
-  } = useEditorPlugin(LinkPlugin);
   const triggerFloatingLinkHotkeys = usePluginStore(
     LinkPlugin,
     'triggerFloatingLinkHotkeys'
@@ -310,7 +301,7 @@ export const useFloatingLinkEditState = ({
 
   const getBoundingClientRect = React.useCallback(() => {
     const entry = editor.read.nodes.above({
-      match: { type },
+      type: LinkPlugin,
     });
 
     if (entry) {
@@ -326,7 +317,7 @@ export const useFloatingLinkEditState = ({
     }
 
     return getDOMSelectionBoundingClientRect();
-  }, [editor, type]);
+  }, [editor]);
 
   const isOpen = open && mode === 'edit' && editor.read.selection.isCollapsed();
 
@@ -364,12 +355,7 @@ export const useFloatingLinkEdit = ({
   triggerFloatingLinkHotkeys,
   versionEditor,
 }: ReturnType<typeof useFloatingLinkEditState>): FloatingLinkEditProps => {
-  const {
-    api,
-    store,
-    update,
-    schema: { type },
-  } = useEditorPlugin(LinkPlugin);
+  const { api, store, update } = useEditorPlugin(LinkPlugin);
   const { triggerEdit } = useFloatingLinkActions();
 
   React.useEffect(() => {
@@ -380,7 +366,7 @@ export const useFloatingLinkEdit = ({
       editor.read.selection.isCollapsed() &&
       editor.read.nodes.some({
         at: selection,
-        match: { type },
+        type: LinkPlugin,
       })
     ) {
       api.show('edit', editor.id);

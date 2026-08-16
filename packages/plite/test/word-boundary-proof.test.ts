@@ -6,8 +6,10 @@ import {
   createEditor,
   defineEditorSchema,
   type Descendant,
+  type Editor,
   type EditorExtensionReference,
   type Element,
+  type Value,
   schema,
 } from '@platejs/plite';
 import { getCharacterDistance } from '../src/text-units';
@@ -109,7 +111,7 @@ const offsetsFromDistances = (
   ];
 };
 
-const getCollapsedPoint = (editor: ReturnType<typeof createEditor>): Point => {
+const getCollapsedPoint = (editor: Editor<Value, any>): Point => {
   const selection = editor.read((state) => state.selection());
 
   assert.ok(selection);
@@ -120,7 +122,7 @@ const getCollapsedPoint = (editor: ReturnType<typeof createEditor>): Point => {
 };
 
 const assertMovementSequence = (
-  editor: ReturnType<typeof createEditor>,
+  editor: Editor<Value, any>,
   expected: readonly Point[],
   reverse: boolean
 ) => {

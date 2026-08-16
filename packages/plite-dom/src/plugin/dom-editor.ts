@@ -121,7 +121,7 @@ const ROOT_TO_FOCUS_REQUEST_OWNER = new WeakMap<
 /** Core editor accepted by the DOM bridge before its API is installed. */
 export type DOMEditor<
   V extends Value = Value,
-  TExtensions extends readonly unknown[] = readonly [],
+  TExtensions extends readonly unknown[] = any,
 > = EditorType<V, TExtensions>;
 
 export interface DOMApi {
@@ -1492,11 +1492,9 @@ export const DOMEditor: DOMEditorInterface = {
   },
 
   resolveDOMPoint: (editor, point) => {
-    const entry = editor.read((state) =>
-      state.nodes.get<Descendant>(point.path)
-    );
+    const entry = editor.read((state) => state.nodes.get(point.path));
 
-    if (!entry) return null;
+    if (!entry || !NodeApi.isDescendant(entry[0])) return null;
 
     const resolvedPoint = editorVoid(editor, { at: point })
       ? { path: point.path, offset: 0 }
@@ -1788,9 +1786,13 @@ export const DOMEditor: DOMEditorInterface = {
         : null;
 
     if (mountedPath) {
-      const mountedNode = editor.read(
-        (state) => state.nodes.get<Descendant>(mountedPath)?.[0]
-      );
+      const mountedNode = editor.read((state) => {
+        const candidate = state.nodes.get(mountedPath)?.[0];
+
+        return candidate && NodeApi.isDescendant(candidate)
+          ? candidate
+          : undefined;
+      });
 
       if (!mountedNode) return null;
       if (mountedNode === node) return node;

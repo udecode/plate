@@ -1,9 +1,9 @@
 import {
   type EditorCommit,
-  type EditorSelection,
   type Range,
   RangeApi,
   type Selection,
+  type SelectionValue,
 } from '@platejs/plite';
 import type { EditableInputController } from './input-state';
 import { setEditableModelSelectionPreference } from './selection-controller';
@@ -123,7 +123,7 @@ export const subscribeSelectionOnlyDOMExport = ({
   syncDOMSelectionToEditor,
 }: {
   addSelectorEventListener: AddSelectorEventListener;
-  getDOMSelectionProjection?: (selection: EditorSelection) => Range | null;
+  getDOMSelectionProjection?: (selection: SelectionValue) => Range | null;
   getModelSelection?: () => Selection;
   inputController: EditableInputController;
   scheduleDOMExport: ScheduleDOMExport;

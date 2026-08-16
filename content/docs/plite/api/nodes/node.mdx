@@ -178,13 +178,10 @@ Check if a node is a `Text` object.
 
 #### `NodeApi.matches(node: Node, match: NodeMatch<Node>, path?: Path) => boolean`
 
-Check a node with a predicate or shallow property matcher. Array property values
-match any listed value. Predicates receive the node's path and preserve type
-narrowing.
+Check a node with a predicate. The predicate receives the node's path and
+preserves type narrowing.
 
 ```typescript
-NodeApi.matches(node, { type: ["heading", "paragraph"] })
-
 NodeApi.matches(node, (candidate, path) => {
   return path.length === 1 && ElementApi.isElement(candidate)
 }, path)

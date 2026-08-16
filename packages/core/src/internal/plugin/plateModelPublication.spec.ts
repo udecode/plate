@@ -3,6 +3,7 @@ import {
   createEditorView,
   defineCommand,
   defineExtension,
+  type Editor,
   type TransactionSpec,
 } from '@platejs/plite';
 import {
@@ -231,7 +232,9 @@ describe('Plate model publication', () => {
       initialState: { enabled: true },
     });
     const editor = createBaseEditor({ plugins: [Plugin] });
-    const view = createEditorView(editor) as unknown as BaseEditor;
+    const view = createEditorView(
+      editor as unknown as Editor
+    ) as unknown as BaseEditor;
     const other = createBaseEditor({ plugins: [Plugin] });
 
     expect(view).not.toBe(editor);

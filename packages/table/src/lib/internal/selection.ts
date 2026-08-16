@@ -7,7 +7,6 @@ import type {
   Path,
   Range,
   NodeKey,
-  Value,
 } from '@platejs/plite';
 import { ElementApi, PathApi, PointApi, RangeApi } from '@platejs/plite';
 import type { TableCellElement } from '../BaseTablePlugin';
@@ -189,9 +188,9 @@ const getAnchorsWithinBounds = (
   return { anchors, complete };
 };
 
-export const readTableSelection = <V extends Value>(
+export const readTableSelection = (
   state: Pick<
-    EditorStateView<V>,
+    EditorStateView<any, any>,
     'key' | 'nodes' | 'ranges' | 'runtime' | 'selection' | 'view'
   >,
   {
@@ -252,7 +251,7 @@ export const readTableSelection = <V extends Value>(
     root === undefined ? point : { ...point, root };
 
   const readCell = (point: Range['anchor']) =>
-    state.nodes.above<TableCellElement>({
+    state.nodes.above({
       at: inRoot(point),
       match: isCell,
     });
@@ -262,9 +261,9 @@ export const readTableSelection = <V extends Value>(
   if (!anchorEntry || !focusEntry) return publish(null);
 
   const readTable = (point: Range['anchor']) =>
-    state.nodes.above<Element>({
+    state.nodes.above({
       at: inRoot(point),
-      match: (node) => ElementApi.isElement(node) && node.type === tableType,
+      type: tableType,
     });
   const anchorTableEntry = readTable(selection.anchor);
   const focusTableEntry = readTable(selection.focus);

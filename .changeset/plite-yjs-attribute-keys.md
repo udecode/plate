@@ -27,3 +27,10 @@ Synchronize primary children and named roots as one document, preserve
 root-qualified awareness selections, and group multi-root commits into one Yjs
 transaction. Preserve shared character identity across compatible text
 replacements so remote positions survive canonical history replay.
+
+Declare collaborative cursor metadata with `yjs({ cursorData: { validate } })`.
+Infer cursor state and React hook results from that installed descriptor, omit
+invalid remote metadata, and reject invalid local metadata before publishing it.
+React cursor overlay hooks preserve exact raw-editor extension-tuple inference
+and infer layered editors from their state-view provider without rebuilding a
+raw React editor.

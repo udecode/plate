@@ -16,7 +16,7 @@ export const CodeBlockRules = {
     block: BaseParagraphPlugin,
     enabled: ({ editor }) =>
       !editor.read.nodes.some({
-        match: { type: editor.plugin(BaseCodeBlockPlugin).schema.type },
+        type: BaseCodeBlockPlugin,
       }),
     priority: 100,
     apply: ({ editor, tx }, match) => {

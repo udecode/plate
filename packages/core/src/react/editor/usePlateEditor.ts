@@ -68,7 +68,7 @@ export function usePlateEditor<
     () => {
       if (enabled === false) return null;
 
-      return createPlateEditor(editorOptions);
+      return createPlateEditor<TPlugins, TSchema>(editorOptions);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [editorOptions.id, enabled, ...deps]

@@ -942,7 +942,7 @@ describe('plite-history contract', () => {
     const rootEditor = createEditorView(editor, { root: 'portal:1' });
 
     write(editor, (tx) => {
-      const entry = tx.nodes.get<Element>([0]);
+      const entry = tx.nodes.get([0]);
 
       assert(entry);
       tx.nodes.duplicate([entry]);
@@ -1585,7 +1585,7 @@ describe('plite-history contract', () => {
     const before = getVisibleState(editor);
 
     write(editor, (tx) => {
-      tx.nodes.set<Element>({ type: 'quote' }, { at: [0] });
+      tx.nodes.set({ type: 'quote' }, { at: [0], type: 'paragraph' });
     });
 
     assert.deepEqual(editorGetSnapshot(editor).children, [
@@ -1622,10 +1622,10 @@ describe('plite-history contract', () => {
     const before = getVisibleState(editor);
 
     write(editor, (tx) => {
-      tx.nodes.set<Element>({ status: 'review' }, { at: [0] });
+      tx.nodes.set({ status: 'review' }, { at: [0], type: 'paragraph' });
     });
     write(editor, (tx) => {
-      tx.nodes.set<Element>({ status: 'published' }, { at: [0] });
+      tx.nodes.set({ status: 'published' }, { at: [0], type: 'paragraph' });
     });
 
     assert.equal(getHistory(editor).undos.length, 1);

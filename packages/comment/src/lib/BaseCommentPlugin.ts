@@ -91,21 +91,21 @@ export const BaseCommentPlugin = defineBasePlugin(PLUGINS.comment, {
       }),
       read: ({ schema: { key }, state }) => ({
         has: ({ id }: { id: string }) =>
-          state.nodes.some<CommentText>({
+          state.nodes.some({
             at: [],
             match: (node) => isCommentText(node) && isCommentNodeById(node, id),
           }),
         node: (
-          options: EditorNodesOptions<CommentText> & {
+          options: Omit<EditorNodesOptions<CommentText>, 'match' | 'type'> & {
             id?: string;
             isDraft?: boolean;
           } = {}
         ) => {
           const { id, isDraft, ...rest } = options;
 
-          return state.nodes.find<CommentText>({
+          return state.nodes.find({
             ...rest,
-            match: (node) => {
+            match: (node): node is CommentText => {
               if (!isCommentText(node)) return false;
               if (isDraft) {
                 return !!node[key] && !!node[getDraftCommentKey()];
@@ -116,7 +116,7 @@ export const BaseCommentPlugin = defineBasePlugin(PLUGINS.comment, {
           });
         },
         nodes: (
-          options: EditorNodesOptions<CommentText> & {
+          options: Omit<EditorNodesOptions<CommentText>, 'match' | 'type'> & {
             id?: string;
             isDraft?: boolean;
             transient?: boolean;
@@ -124,9 +124,9 @@ export const BaseCommentPlugin = defineBasePlugin(PLUGINS.comment, {
         ) => {
           const { id, isDraft, transient, ...rest } = options;
 
-          return state.nodes.toArray<CommentText>({
+          return state.nodes.toArray({
             ...rest,
-            match: (node) => {
+            match: (node): node is CommentText => {
               if (!isCommentText(node)) return false;
               if (isDraft) {
                 return !!node[key] && !!node[getDraftCommentKey()];

@@ -1,8 +1,8 @@
+import type { PlateNodeInsertOptions } from '@platejs/core';
 import type {
   Descendant,
   EditorCoreUpdateTransaction,
   Element,
-  NodeInsertNodesOptions,
   Path,
   Range,
   Text,
@@ -21,6 +21,17 @@ import {
 } from './grid';
 
 type MutableDescendant = MutableElement | Text;
+type TableMutationTransaction = Omit<
+  Pick<EditorCoreUpdateTransaction, 'nodes' | 'selection'>,
+  'nodes'
+> & {
+  nodes: Omit<EditorCoreUpdateTransaction['nodes'], 'insert'> & {
+    insert: <TNode extends Descendant>(
+      nodes: TNode | readonly TNode[],
+      options?: PlateNodeInsertOptions
+    ) => void;
+  };
+};
 type MutableElement = {
   children: MutableDescendant[];
   type: string;
@@ -68,7 +79,7 @@ export type TableOperation =
   | Readonly<{
       kind: 'insert-node';
       node: Element;
-      options?: Omit<NodeInsertNodesOptions, 'at' | 'select'>;
+      options?: Omit<PlateNodeInsertOptions, 'at' | 'select'>;
       path: Path;
     }>
   | Readonly<{
@@ -147,7 +158,7 @@ type InsertRowIntent = TableTarget &
 
 type InsertTableIntent = Readonly<{
   kind: 'insert-table';
-  options?: NodeInsertNodesOptions<Element>;
+  options?: PlateNodeInsertOptions;
 }>;
 
 type RemoveColumnIntent = TableTarget &
@@ -206,7 +217,7 @@ type MutableOperation =
   | {
       kind: 'insert-node';
       node: Element;
-      options?: Omit<NodeInsertNodesOptions, 'at' | 'select'>;
+      options?: Omit<PlateNodeInsertOptions, 'at' | 'select'>;
       path: Path;
     }
   | {
@@ -675,8 +686,8 @@ const planInsertTable = (
           ...(options.hanging === undefined
             ? {}
             : { hanging: options.hanging }),
-          ...(options.match === undefined ? {} : { match: options.match }),
           ...(options.mode === undefined ? {} : { mode: options.mode }),
+          ...(options.split === undefined ? {} : { split: options.split }),
           ...(options.voids === undefined ? {} : { voids: options.voids }),
         },
         path: freezePath(context.tablePath),
@@ -1383,7 +1394,7 @@ export const applyTableMutationPlanToTable = (
 ): Element | null => applyOperations(table, tablePath, plan.operations);
 
 export const applyTableMutationPlan = (
-  tx: Pick<EditorCoreUpdateTransaction, 'nodes' | 'selection'>,
+  tx: TableMutationTransaction,
   plan: TableMutationPlan
 ) => {
   for (const operation of plan.operations) {

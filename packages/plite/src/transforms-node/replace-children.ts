@@ -8,6 +8,7 @@ import {
   type Descendant,
   ElementApi,
   type ElementOrTextIn,
+  type AnyEditor,
   type Editor,
   type Node,
   NodeApi,
@@ -18,7 +19,7 @@ import {
 import type { NodeReplaceChildrenOptions } from '../interfaces/transforms/node';
 
 const getParentChildren = <V extends Value>(
-  editor: Editor<V>,
+  editor: AnyEditor<V>,
   at: NodeReplaceChildrenOptions['at']
 ): readonly Node[] => {
   if (at.length === 0) {

@@ -826,10 +826,13 @@ const targetElement = editor.read.schema.create(TargetPlugin, {
   'first-property': 'center',
 });
 const targetType: 'schemaTarget' = targetElement.type;
-const configuredProperty: string | undefined = editor.read.schema.getProperty(
+const configuredProperty = editor.read.schema.getProperty(
   targetElement,
   'configured-property'
 );
+const unknownConfiguredProperty: unknown = configuredProperty;
+// @ts-expect-error Dynamic property names return unknown.
+const typedConfiguredProperty: string | undefined = configuredProperty;
 const configuredSchemaProperty: EditorSchemaProperty | null =
   editor.read.schema.property({
     key: 'configured-property',
@@ -879,17 +882,27 @@ const exactMigratedElementIdValue: ExactNodeIdValue = migrateElementIds(
   exactNodeIdValue,
   { generateId: () => 'element-id' }
 ).value;
-const elementIdProperty: PropertyJsonValue | undefined =
-  elementIdEditor.read.schema.getProperty<PropertyJsonValue>(
-    targetElement,
-    'id'
-  );
+const elementIdProperty = elementIdEditor.read.schema.getProperty(
+  targetElement,
+  'id'
+);
+const unknownElementIdProperty: unknown = elementIdProperty;
+// @ts-expect-error Raw property names cannot select their own result type.
+const typedElementIdProperty: PropertyJsonValue | undefined = elementIdProperty;
+const semanticElementIdProperty: string | undefined = elementIdEditor
+  .plugin(ElementIdPlugin)
+  .read.id(targetElement);
 editor.read.schema.element(TargetPlugin);
 void configuredSchemaProperty;
+void typedConfiguredProperty;
+void unknownConfiguredProperty;
 void elementSchemaProperty;
 void handledElementSchemaProperty;
 void markSchemaProperty;
 void elementIdProperty;
+void unknownElementIdProperty;
+void semanticElementIdProperty;
+void typedElementIdProperty;
 void exactMigratedElementIdValue;
 void migratedElementIdValue;
 editor.read.schema.create(TargetPlugin, { 'first-property': 42 });

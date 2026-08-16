@@ -10,7 +10,7 @@ Handle $ARGUMENTS.
 
 ## Doctrine Version
 
-Current doctrine version: `76`.
+Current doctrine version: `85`.
 
 The machine-readable source is
 `.agents/rules/plate-next/versions.json`. It owns immutable doctrine history and
@@ -324,6 +324,12 @@ editor.plugin(...).api.blockSelection.getNodes(...)` is a regression: it
   consumers carry their concrete editor or descriptor generic instead of
   manufacturing installed groups with `any`. Plite's public runtime type is
   `Editor`; Plate keeps `BaseEditor` and `PlateEditor`.
+- Audit every public generic for a typed source. Installed descriptors own
+  update capabilities and validated external data; command descriptors own
+  command inputs; typed schema handles own property values. Hard-cut caller
+  generics that can forge a transaction group or choose a read result. Raw
+  property strings and unvalidated remote metadata remain `unknown` until a
+  runtime owner narrows them.
 - Raw `PluginReference` is nominal and carries only plugin identity; it has no
   definition generic or private witness. Concrete Base and Plate descriptors
   carry the single invariant definition witness. Plite's root
@@ -627,8 +633,8 @@ editor.plugin(...).api.blockSelection.getNodes(...)` is a regression: it
   Use callback form only when grouping multiple reads/writes under one
   snapshot/transaction, sharing intermediate state, branching/looping, or
   calling behavior that has no direct one-shot API yet.
-- Prefer Plite's live node targets and shallow property matchers over migrated
-  query boilerplate. If code already has a live descendant, pass it directly
+- Prefer Plite's live node targets and inferred structural selectors over
+  migrated query boilerplate. If code already has a live descendant, pass it directly
   to an `at` option or another `NodeTarget` parameter. Resolve
   `editor.read.nodes.path(node)` only when a `Path` is the actual result. Never
   rediscover that node with `read.nodes.find` by matching its `type` and `id`.
@@ -639,13 +645,13 @@ editor.plugin(...).api.blockSelection.getNodes(...)` is a regression: it
   Use an incoming renderer `path` prop when render output depends on it, and
   keep `usePath()` only when a descendant must react to path changes. Every
   newly introduced `usePath()` in migrated code requires that classification.
-- Use `match: { type }`, `match: { id }`, or an array-valued one-of matcher for
-  shallow exact node metadata checks. Property matchers intentionally ignore
-  `text` and `children`; content and structure checks stay predicates. Keep a
-  predicate for computed schema policy, path-dependent logic, truthiness
-  semantics, or static narrowing that the caller consumes. Do not write
-  `ElementApi.isElement(node) && node.type === type` when the owning API accepts
-  a property matcher.
+- Use `type: FooPlugin` for Plate element selection and a persisted string or
+  schema handle in raw Plite. Arrays select a union. `match` is function-only
+  and adds computed schema policy, property checks, path-dependent logic, or a
+  type guard. Never write `match: { type }`, `match: { id }`, or a caller result
+  generic such as `nodes.find<FooElement>()`. Keep `at` independent from the
+  selected result. Insert split-target selection belongs under
+  `split: { type, match }`.
 - Flat compatibility lookups are forbidden: migrate `editor.api.findPath(node)`
   to `editor.read.nodes.path(node)` and `editor.api.some(options)` to
   `editor.read.nodes.some(options)`. Do not re-add aliases, Plate wrappers, or
@@ -908,6 +914,28 @@ doctrine when its fingerprinted source set changes, regenerate mirrors, then
 rerun the scoped correction sweep against the repaired doctrine before package
 attestation. Never wait for a separate skill-repair prompt or attest a package
 against rules that still teach the rejected shape.
+
+Custom selections follow installed capability truth. A plugin declares the
+payload, codec, validator, mapping, and behavior once through
+`selectionKinds`; concrete editor reads and updates infer that payload only
+when the plugin is installed. Cut every ambient module augmentation, global
+selection-kind map, side-effect type import, duplicate registration, and open
+custom-kind fallback. Keep a separate earlier `.extend({ selectionKinds })`
+stage only when later stages genuinely consume the inferred selection type.
+Concrete editor read/update callbacks stay contravariant; callback bivariance
+must not let annotations manufacture uninstalled capabilities. Keep exact
+tuples invariant, erase only at named internal runtime boundaries, and keep
+direct `update.selection` mutation-only. Public editor capability generics
+default to the core-only `readonly []` tuple; a bare `Editor` or `BaseEditor`
+must not expose arbitrary groups through `any`. Reserve `AnyEditor` for named
+internal runtime erasure. Project installed extension capabilities once; never
+re-intersect whole React/DOM editor read or update surfaces onto Plate after
+their extensions are already installed.
+Generic helpers follow the same law: accept only the structural capabilities
+they consume, or preserve a layered caller type when returning a view. Never
+infer one provider and reconstruct a whole raw editor around it. Keep deliberate
+erasure behind a named runtime implementation after the public signature has
+preserved exact inference.
 
 This is narrower than a full Core sweep. It is mandatory after a correction,
 even for one-by-one review, but it is not permission to update unrelated

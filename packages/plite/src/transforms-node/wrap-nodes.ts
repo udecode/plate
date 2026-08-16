@@ -4,7 +4,13 @@ import {
   runEditorTransaction,
 } from '../core/public-state';
 import { nodes as getNodes } from '../editor/nodes';
-import { LocationApi, NodeApi, type Point, RangeApi } from '../interfaces';
+import {
+  type Element,
+  LocationApi,
+  NodeApi,
+  type Point,
+  RangeApi,
+} from '../interfaces';
 import {
   above as editorAbove,
   after as editorAfter,
@@ -14,25 +20,31 @@ import {
   leaf as editorLeaf,
   range as editorRange,
 } from '../interfaces/editor';
+import type { AnyEditor as Editor } from '../interfaces/editor';
 import { PathApi } from '../interfaces/path';
-import type { NodeMutationMethods } from '../interfaces/transforms/node';
+import type {
+  NodeMutationMethods,
+  NodeWrapNodesOptions,
+} from '../interfaces/transforms/node';
 import { select } from '../transforms-selection/select';
 import { matchPath } from '../utils/match-path';
+import { normalizeNodeMatch } from '../utils/node-match';
 import { insertNodes } from './insert-nodes';
 import { moveNodes } from './move-nodes';
 import { splitNodes } from './split-nodes';
 
-export const wrapNodes: NodeMutationMethods['wrapNodes'] = (
-  editor,
-  element,
-  options = {}
+export const wrapNodes = ((
+  editor: Editor,
+  element: Element,
+  options: NodeWrapNodesOptions = {}
 ) => {
   runEditorTransaction(editor, (tx) => {
     let target = tx.resolveTarget({ at: options.at });
     const mode = options.mode ?? 'lowest';
     const split = options.split ?? false;
     const voids = options.voids ?? false;
-    let { match } = options;
+    const hasExplicitSelector = options.match != null || options.type != null;
+    let match = normalizeNodeMatch(options.type, options.match);
     const wrapper = {
       ...element,
       children: [],
@@ -55,10 +67,12 @@ export const wrapNodes: NodeMutationMethods['wrapNodes'] = (
       }
     }
 
-    if (LocationApi.isPath(target) && options.match == null && !split) {
+    if (LocationApi.isPath(target) && !hasExplicitSelector && !split) {
       if (target.length === 0) return;
 
       const node = NodeApi.get(editor, target);
+      if (!NodeApi.isDescendant(node)) return;
+
       const parentPath = PathApi.parent(target);
       const index = target.at(-1)!;
 
@@ -258,4 +272,4 @@ export const wrapNodes: NodeMutationMethods['wrapNodes'] = (
       select(editor, nextSelection);
     }
   });
-};
+}) as NodeMutationMethods['wrapNodes'];

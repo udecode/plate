@@ -162,6 +162,36 @@ describe('getInjectMatch', () => {
     ).toBe(false);
   });
 
+  it('resolves string exclusions through configured schema types', () => {
+    const AliasedQuotePlugin = defineBasePlugin('aliasedQuote', {
+      schema: {
+        element: {
+          content: schema.content.group('block'),
+          type: 'persistedQuote',
+        },
+      },
+    });
+    const plugin = defineBasePlugin('stringFilter', {
+      inject: {
+        excludeBelowPlugins: ['aliasedQuote'],
+      },
+    });
+    const editor = createBaseEditor({
+      plugins: [ParagraphPlugin, AliasedQuotePlugin, plugin],
+      initialValue: [
+        {
+          children: [{ children: [{ text: 'nested' }], type: 'paragraph' }],
+          type: 'persistedQuote',
+        },
+      ],
+    });
+    const match = getInjectMatch(editor, editor.plugin(plugin));
+
+    expect(
+      match({ children: [{ text: 'leaf' }], type: 'paragraph' } as any, [0, 0])
+    ).toBe(false);
+  });
+
   it('does not collapse exact exclusions to a same-name plugin family', () => {
     const ForeignQuotePlugin = defineBasePlugin('quote', {});
     const plugin = defineBasePlugin('familyFilter', {

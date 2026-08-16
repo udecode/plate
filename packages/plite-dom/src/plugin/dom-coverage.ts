@@ -763,7 +763,10 @@ export const DOMCoverage = {
     editor: DOMEditorType<any>,
     point: Point
   ): DOMCoverageDOMPointResult {
-    const boundary = DOMCoverage.getBoundaryForPoint(editor, point);
+    const boundary = DOMCoverage.getBoundaryForPoint(
+      editor as unknown as EditorType,
+      point
+    );
 
     if (boundary) {
       return {
@@ -784,7 +787,10 @@ export const DOMCoverage = {
     editor: DOMEditorType<any>,
     range: PliteRange
   ): DOMCoverageDOMRangeResult {
-    const boundaries = DOMCoverage.getBoundariesForRange(editor, range);
+    const boundaries = DOMCoverage.getBoundariesForRange(
+      editor as unknown as EditorType,
+      range
+    );
 
     if (boundaries.length > 0) {
       return {

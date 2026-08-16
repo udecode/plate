@@ -1278,9 +1278,6 @@ importers:
       '@platejs/plite':
         specifier: workspace:^
         version: link:../plite
-      '@platejs/plite-dom':
-        specifier: workspace:^
-        version: link:../plite-dom
       '@udecode/react-utils':
         specifier: workspace:^
         version: link:../udecode/react-utils
@@ -1521,9 +1518,6 @@ importers:
       '@platejs/plite':
         specifier: workspace:^
         version: link:../plite
-      '@platejs/plite-dom':
-        specifier: workspace:^
-        version: link:../plite-dom
       '@platejs/plite-react':
         specifier: workspace:^
         version: link:../plite-react

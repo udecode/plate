@@ -34,6 +34,12 @@ Publish every installed non-empty plugin API under its inferred plugin name on
 `editor.api`, while retaining `editor.plugin(FooPlugin).api` as the exact
 generic portal. Both paths reference the same immutable API object. Reject
 plugin-name collisions with explicit editor API namespaces.
+Infer Plate node queries and transforms from plugin descriptors passed through
+the independent `type` option. Resolve descriptors through final application
+schema overrides, keep `match` function-only for additional conditions, and
+remove caller-selected node result generics. Replace
+`nodes.find<LinkElement>({ match: { type: linkType } })` with
+`nodes.find({ type: LinkPlugin, match: (link, path) => ... })`.
 Expose `editor.plugin(Plugin).installed` for optional package integrations.
 Call the scoped update portal with a transaction policy when an operation needs
 tagged history or another root update policy:
@@ -54,12 +60,22 @@ from `toggleParagraph` to `toggle`.
 
 Contextually infer callbacks for contract-declared explicit transaction groups
 and plugin extension command transactions.
+Infer every root and scoped update callback from the editor's installed plugin
+graph; callers cannot augment the transaction contract with a type argument.
 Keep each input-rule factory's exact editor and rule-family contracts, infer
 only explicitly declared consumer options, and publish portable declarations
 while normalizing heterogeneous descriptor storage through an unknown-context
 rule reference.
 Infer callback-created plugin state from its return type without erasing
 constructor `read`, `update`, or other inferred capabilities.
+
+Preserve exact custom selection payloads from installed Plate plugin
+descriptors across editor reads, transactions, and direct updates. Declare a
+custom selection once through `selectionKinds`; editors without that plugin do
+not accept its payload.
+Project installed DOM, React, and plugin capabilities once through the Plate
+plugin graph. Do not intersect complete DOM or React editor read/update
+surfaces back onto the resulting Plate editor.
 
 Infer one exact definition for each Base and React plugin. Remove
 the `PluginConfig` family, including `AnyPluginConfig`, `SlatePluginConfig`,

@@ -28,12 +28,6 @@ type CellSelection = Range &
     kind: 'cell';
   }>;
 
-declare module '@platejs/plite' {
-  interface EditorSelectionKindMap {
-    cell: CellSelection;
-  }
-}
-
 const paragraph = (text: string): Element => ({
   type: 'paragraph',
   children: [{ text }],

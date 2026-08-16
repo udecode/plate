@@ -2,8 +2,6 @@
 
 import * as React from 'react';
 
-import type { LinkElement } from '@platejs/link';
-
 import {
   type UseVirtualFloatingOptions,
   flip,
@@ -174,8 +172,8 @@ function LinkOpenButton() {
 
   const attributes = React.useMemo(
     () => {
-      const entry = editor.read.nodes.find<LinkElement>({
-        match: { type: editor.plugin(LinkPlugin).schema.type },
+      const entry = editor.read.nodes.find({
+        type: LinkPlugin,
       });
       if (!entry) {
         return {};

@@ -49,7 +49,9 @@ export const TrailingBlockPlugin = defineBasePlugin(PLUGINS.trailingBlock, {
         if (
           !lastChildNode ||
           (lastChildType !== type &&
-            (!match || NodeApi.matches(lastChildNode, match, lastChild[1])))
+            (!match ||
+              (NodeApi.isDescendant(lastChildNode) &&
+                NodeApi.matches(lastChildNode, match, lastChild[1]))))
         ) {
           const at = lastChild ? PathApi.next(lastChild[1]) : [0];
           const insertDefault = () => {

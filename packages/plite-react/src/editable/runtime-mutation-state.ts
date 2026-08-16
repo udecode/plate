@@ -1,10 +1,13 @@
-import type { Editor, EditorMarks, EditorTargetRuntime } from '@platejs/plite';
-import { getActiveEditorTransaction } from '@platejs/plite/internal';
+import type { EditorMarks, EditorTargetRuntime } from '@platejs/plite';
+import {
+  type AnyEditor,
+  getActiveEditorTransaction,
+} from '@platejs/plite/internal';
 import { setEditorMarks, setEditorTargetRuntime } from './runtime-editor-api';
 
 export const writeRuntimeSelection = (
-  editor: Editor,
-  target: Parameters<Editor['update']['selection']['set']>[0]
+  editor: AnyEditor,
+  target: Parameters<AnyEditor['update']['selection']['set']>[0]
 ) => {
   const transaction = getActiveEditorTransaction(editor);
 
@@ -18,14 +21,14 @@ export const writeRuntimeSelection = (
 };
 
 export const writeRuntimeMarks = (
-  editor: Editor,
+  editor: AnyEditor,
   marks: EditorMarks | null
 ) => {
   setEditorMarks(editor, marks);
 };
 
 export const writeTargetRuntime = (
-  editor: Editor,
+  editor: AnyEditor,
   targetRuntime: EditorTargetRuntime | null
 ) => {
   setEditorTargetRuntime(editor, targetRuntime);

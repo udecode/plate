@@ -231,7 +231,7 @@ export function useActiveEditor(
 }
 
 /** Get the editor selection (deeply memoized). */
-export const useEditorSelection = (id?: string) => {
+export const useEditorSelection = (id?: string): Selection => {
   const editor = useInternalEditor(id);
 
   return useEditorRuntimeState(editor, (state) => state.selection(), {

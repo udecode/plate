@@ -7,6 +7,7 @@ import { getEditorCommitSnapshot } from './core/commit';
 import {
   getEditorRuntime,
   getEditorRuntimeOwner,
+  type InternalEditorReadRuntime,
   type InternalEditorRuntime,
   setEditorRuntime,
 } from './core/editor-runtime';
@@ -42,11 +43,13 @@ import type {
   EditorCommitContext,
   EditorExtensionReference,
   EditorKeyApi,
+  EditorParentOptions,
   EditorSelectionBlockOptions,
   EditorSelectionTargetOptions,
   EditorSnapshot,
   EditorStateSliceApi,
   EditorStateView,
+  EditorStateViewProvider,
   EditorStateViewApi,
   EditorTransactionSpecBuilder,
   EditorUpdateContext,
@@ -60,7 +63,10 @@ import type {
   SnapshotInput,
   Value,
 } from './interfaces/editor';
+import type { Location } from './interfaces/location';
+import type { Ancestor, NodeEntry } from './interfaces/node';
 import { RangeApi } from './interfaces/range';
+import type { ElementIn, ElementOrTextIn } from './interfaces/element';
 import type { SchemaPropertyHandle } from './interfaces/schema';
 import type { NodeUnsetNodesOptions } from './interfaces/transforms/node';
 import { withImplicitRangeRoot } from './internal/root-location';
@@ -77,8 +83,29 @@ type ViewState = {
   root: RootKey;
 };
 
+type LayeredEditorView<TEditor> = Omit<TEditor, 'blur' | 'focus' | 'root'> &
+  Pick<EditorView, 'blur' | 'focus' | 'root'>;
+
+type CreateEditorView = {
+  <
+    const TEditor extends EditorStateViewProvider<() => unknown>,
+    const TRoot extends RootKey = RootKey,
+  >(
+    sourceEditor: TEditor,
+    options?: EditorViewOptions<TRoot>
+  ): LayeredEditorView<TEditor>;
+  <
+    V extends Value,
+    TExtensions extends readonly unknown[] = readonly [],
+    const TRoot extends RootKey = RootKey,
+  >(
+    sourceEditor: Editor<V, TExtensions>,
+    options?: EditorViewOptions<TRoot>
+  ): EditorView<V, TExtensions>;
+};
+
 type ViewStateTransformInput<V extends Value> = Pick<
-  EditorStateView<V>,
+  EditorStateView<V, any>,
   | 'fragment'
   | 'key'
   | 'marks'
@@ -94,7 +121,7 @@ type ViewStateTransformInput<V extends Value> = Pick<
   children: () => readonly unknown[];
   slice: Pick<EditorStateSliceApi<V>, 'get'> &
     Partial<Pick<EditorStateSliceApi<V>, 'export' | 'fit' | 'fitContent'>>;
-  transaction?: EditorStateView<V>['transaction'];
+  transaction?: EditorStateView<V, any>['transaction'];
 };
 
 const createViewApi = (state: ViewState): EditorStateViewApi =>
@@ -339,7 +366,7 @@ const withViewState = <V extends Value, T extends ViewStateTransformInput<V>>(
     : undefined;
   const transaction = state.transaction
     ? Object.assign(
-        (fn: (transaction: EditorTransactionSpecBuilder<V>) => void) =>
+        (fn: (transaction: EditorTransactionSpecBuilder<V, any>) => void) =>
           runRootTransform(editor, viewState, () =>
             state.transaction!((tx) =>
               fn(withViewSpecTransaction(editor, tx, viewState))
@@ -347,8 +374,10 @@ const withViewState = <V extends Value, T extends ViewStateTransformInput<V>>(
           ),
         {
           extend: (
-            base: Parameters<EditorStateView<V>['transaction']['extend']>[0],
-            fn: (transaction: EditorTransactionSpecBuilder<V>) => void
+            base: Parameters<
+              EditorStateView<V, any>['transaction']['extend']
+            >[0],
+            fn: (transaction: EditorTransactionSpecBuilder<V, any>) => void
           ) =>
             runRootTransform(editor, viewState, () =>
               state.transaction!.extend(base, (tx) =>
@@ -432,23 +461,23 @@ const withViewState = <V extends Value, T extends ViewStateTransformInput<V>>(
 
 function withViewSpecTransaction<V extends Value>(
   editor: Editor,
-  transaction: EditorTransactionSpecBuilder<V>,
+  transaction: EditorTransactionSpecBuilder<V, any>,
   viewState: ViewState
-): EditorTransactionSpecBuilder<V> {
+): EditorTransactionSpecBuilder<V, any> {
   return withViewTransaction(
     editor,
-    transaction as EditorUpdateTransaction<V>,
+    transaction as EditorUpdateTransaction<V, any>,
     viewState
-  ) as EditorTransactionSpecBuilder<V>;
+  ) as EditorTransactionSpecBuilder<V, any>;
 }
 
 const withViewTransaction = <V extends Value>(
   editor: Editor,
-  transaction: EditorUpdateTransaction<V>,
+  transaction: EditorUpdateTransaction<V, any>,
   viewState: ViewState,
   getViewEditor?: () => Editor<V> | null
-): EditorUpdateTransaction<V> => {
-  const state = withViewState<V, EditorUpdateTransaction<V>>(
+): EditorUpdateTransaction<V, any> => {
+  const state = withViewState<V, EditorUpdateTransaction<V, any>>(
     editor,
     transaction,
     viewState
@@ -526,26 +555,29 @@ const withViewTransaction = <V extends Value>(
               getEditorRuntime(viewEditor),
               [definition, input]
             );
-          }) as EditorUpdateTransaction<V>['command'],
+          }) as EditorUpdateTransaction<V, any>['command'],
         }
       : {}),
     anchor: (value, anchorOptions) =>
       runRootTransform(editor, viewState, () =>
         transaction.anchor(value, anchorOptions)
       ),
-    blocks: Object.freeze<EditorUpdateTransaction<V>['blocks']>({
-      duplicate: (options) =>
+    blocks: Object.freeze<EditorUpdateTransaction<V, any>['blocks']>({
+      duplicate: ((options?: { at?: NodeTarget }) =>
         runImplicitSelectionMutation(options, () =>
-          transaction.blocks.duplicate(options)
-        ),
-      insertAfter: (nodes, options) =>
+          transaction.blocks.duplicate(options as never)
+        )) as EditorUpdateTransaction<V, any>['blocks']['duplicate'],
+      insertAfter: (
+        nodes: ElementIn<V> | readonly ElementIn<V>[],
+        options?: { at?: NodeTarget }
+      ) =>
         runImplicitSelectionMutation(options, () =>
-          transaction.blocks.insertAfter(nodes, options)
+          transaction.blocks.insertAfter(nodes, options as never)
         ),
-      lift: (options) =>
+      lift: ((options?: { at?: NodeTarget }) =>
         runImplicitSelectionMutation(options, () =>
-          transaction.blocks.lift(options)
-        ),
+          transaction.blocks.lift(options as never)
+        )) as EditorUpdateTransaction<V, any>['blocks']['lift'],
       reset: (props, options) =>
         runImplicitSelectionMutation(options, () =>
           transaction.blocks.reset(props, options)
@@ -590,32 +622,35 @@ const withViewTransaction = <V extends Value>(
           runSelectionMutation(() => transaction.marks.toggle(key, value)),
       }) satisfies typeof transaction.marks
     ),
-    nodes: Object.freeze<EditorUpdateTransaction<V>['nodes']>({
+    nodes: Object.freeze<EditorUpdateTransaction<V, any>['nodes']>({
       ...state.nodes,
       duplicate: (entries, options) =>
         runRootTransform(editor, viewState, () =>
           transaction.nodes.duplicate(entries, options)
         ),
-      insert: (nodes, options) =>
+      insert: ((
+        nodes: ElementOrTextIn<V> | readonly ElementOrTextIn<V>[],
+        options?: { at?: NodeTarget }
+      ) =>
         runImplicitSelectionMutation(options, () =>
-          transaction.nodes.insert(nodes, options)
-        ),
-      lift: (options) =>
+          transaction.nodes.insert(nodes, options as never)
+        )) as EditorUpdateTransaction<V, any>['nodes']['insert'],
+      lift: ((options?: { at?: NodeTarget }) =>
         runImplicitSelectionMutation(options, () =>
-          transaction.nodes.lift(options)
-        ),
-      merge: (options) =>
+          transaction.nodes.lift(options as never)
+        )) as EditorUpdateTransaction<V, any>['nodes']['lift'],
+      merge: ((options?: { at?: NodeTarget }) =>
         runImplicitSelectionMutation(options, () =>
-          transaction.nodes.merge(options)
-        ),
-      move: (options) =>
+          transaction.nodes.merge(options as never)
+        )) as EditorUpdateTransaction<V, any>['nodes']['merge'],
+      move: ((options: { at?: NodeTarget }) =>
         runImplicitSelectionMutation(options, () =>
-          transaction.nodes.move(options)
-        ),
-      remove: (options) =>
+          transaction.nodes.move(options as never)
+        )) as EditorUpdateTransaction<V, any>['nodes']['move'],
+      remove: ((options?: { at?: NodeTarget }) =>
         runImplicitSelectionMutation(options, () =>
-          transaction.nodes.remove(options)
-        ),
+          transaction.nodes.remove(options as never)
+        )) as EditorUpdateTransaction<V, any>['nodes']['remove'],
       replace: (nodes, options) =>
         runImplicitSelectionMutation({ at: options.at }, () =>
           transaction.nodes.replace(nodes, options)
@@ -628,10 +663,10 @@ const withViewTransaction = <V extends Value>(
         runImplicitSelectionMutation(args[1], () =>
           transaction.nodes.set(...args)
         )) as typeof transaction.nodes.set,
-      split: (options) =>
+      split: ((options?: { at?: NodeTarget }) =>
         runImplicitSelectionMutation(options, () =>
-          transaction.nodes.split(options)
-        ),
+          transaction.nodes.split(options as never)
+        )) as EditorUpdateTransaction<V, any>['nodes']['split'],
       unset: ((
         props: string | readonly string[] | SchemaPropertyHandle,
         options?: NodeUnsetNodesOptions
@@ -644,14 +679,14 @@ const withViewTransaction = <V extends Value>(
             ) => void
           )(props, options)
         )) as typeof transaction.nodes.unset,
-      unwrap: (options) =>
+      unwrap: ((options?: { at?: NodeTarget }) =>
         runImplicitSelectionMutation(options, () =>
-          transaction.nodes.unwrap(options)
-        ),
-      wrap: (element, options) =>
+          transaction.nodes.unwrap(options as never)
+        )) as EditorUpdateTransaction<V, any>['nodes']['unwrap'],
+      wrap: ((element: ElementIn<V>, options?: { at?: NodeTarget }) =>
         runImplicitSelectionMutation(options, () =>
-          transaction.nodes.wrap(element, options)
-        ),
+          transaction.nodes.wrap(element, options as never)
+        )) as EditorUpdateTransaction<V, any>['nodes']['wrap'],
     }),
     selection: Object.freeze(
       Object.assign(() => state.selection(), {
@@ -734,7 +769,7 @@ const withViewTransaction = <V extends Value>(
         replace: replaceValue,
       })
     ),
-  }) as EditorUpdateTransaction<V>;
+  }) as EditorUpdateTransaction<V, any>;
 
   return viewTransaction;
 };
@@ -825,8 +860,15 @@ const createViewRuntime = <V extends Value>(
       withRootGenerator(editor, viewState, () => baseRuntime.levels(...args)),
     next: (...args) =>
       withRootRead(editor, viewState, () => baseRuntime.next(...args)),
-    parent: (...args) =>
-      withRootRead(editor, viewState, () => baseRuntime.parent(...args)),
+    parent: ((at: Location, options?: EditorParentOptions) =>
+      withRootRead(editor, viewState, () =>
+        (
+          baseRuntime.parent as (
+            at: Location,
+            options?: EditorParentOptions
+          ) => NodeEntry<Ancestor> | undefined
+        )(at, options)
+      )) as InternalEditorReadRuntime['parent'],
     path: (...args) =>
       withRootRead(editor, viewState, () => baseRuntime.path(...args)),
     point: (...args) =>
@@ -844,11 +886,11 @@ const createViewRuntime = <V extends Value>(
     read: (fn) =>
       baseRuntime.read((state) =>
         fn(
-          withViewState<V, EditorStateView<V>>(
+          withViewState<V, EditorStateView<V, any>>(
             editor,
             state,
             viewState
-          ) as EditorStateView<V>
+          ) as EditorStateView<V, any>
         )
       ),
     runCommand: createCommandDispatch(() => {
@@ -950,7 +992,7 @@ const createViewRuntime = <V extends Value>(
   });
 
 /** Create a root-scoped editor view from an existing editor. */
-export const createEditorView = <
+const createEditorViewRuntime = <
   V extends Value,
   TExtensions extends readonly unknown[] = readonly [],
   const TRoot extends RootKey = RootKey,
@@ -983,8 +1025,8 @@ export const createEditorView = <
 
       viewRuntime.update(
         fn as (
-          transaction: EditorUpdateTransaction<V>,
-          context: EditorUpdateContext<Editor<V>>
+          transaction: EditorUpdateTransaction<V, any>,
+          context: EditorUpdateContext<Editor<V, any>>
         ) => void,
         { tags: policy.tags }
       );
@@ -1067,3 +1109,6 @@ export const createEditorView = <
   ) as Pick<Editor<V, TExtensions>, 'api' | 'extension'>;
   return Object.freeze(view);
 };
+
+/** Create a root-scoped editor view while preserving layered capabilities. */
+export const createEditorView = createEditorViewRuntime as CreateEditorView;

@@ -150,7 +150,7 @@ type _ValueKeepsNodes = Assert<
 type _ValueKeepsAncestors = Assert<
   Equal<
     AncestorIn<CustomValue>,
-    Editor<CustomValue> | ParagraphElement | QuoteElement
+    Editor<CustomValue, any> | ParagraphElement | QuoteElement
   >
 >;
 type _ChildOfParagraph = Assert<Equal<ChildOf<ParagraphElement>, CustomText>>;

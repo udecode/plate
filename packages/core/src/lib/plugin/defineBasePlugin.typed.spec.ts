@@ -13,6 +13,7 @@ import { createRuleFactory } from '../plugins/input-rules/createRuleFactory';
 import type { BasePluginOverride } from './BasePlugin';
 import { defineBasePlugin } from './defineBasePlugin';
 import type { DefinitionOf, NodeComponent } from './PluginDefinition';
+import type { PlateNodeInsertOptions } from '../editor/pluginRuntimeTypes';
 
 const assertTypedSchemaContributions = () => {
   defineBasePlugin('validSchema', {
@@ -102,6 +103,116 @@ const assertTypedSchemaContributions = () => {
 };
 
 void assertTypedSchemaContributions;
+
+const assertTypedNodeQueries = () => {
+  const LinkPlugin = defineBasePlugin('typedQueryLink', {
+    schema: {
+      element: {
+        ...schema.element.textBlock(),
+        properties: {
+          url: property.string(),
+        },
+        type: 'typed_query_link',
+      },
+    },
+  });
+  const MentionPlugin = defineBasePlugin('typedQueryMention', {
+    schema: {
+      element: {
+        properties: {
+          userId: property.string(),
+        },
+        void: 'inline',
+      },
+    },
+  });
+  const BoldPlugin = defineBasePlugin('typedQueryBold', {
+    schema: { mark: property.boolean() },
+  });
+  const editor = createBaseEditor({
+    plugins: [LinkPlugin, MentionPlugin, BoldPlugin],
+  });
+  const storedInsertOptions: PlateNodeInsertOptions = {
+    split: { type: LinkPlugin },
+  };
+
+  const link = editor.read.nodes.find({
+    match: (node, path) => {
+      node.url satisfies string | undefined;
+      path satisfies readonly number[];
+
+      return node.url === '/docs';
+    },
+    type: LinkPlugin,
+  });
+
+  if (link) {
+    link[0].url satisfies string | undefined;
+    link[0].type satisfies 'typed_query_link';
+  }
+
+  const linkAtPath = editor.read.nodes.get([0], { type: LinkPlugin });
+
+  if (linkAtPath) {
+    linkAtPath[0].url satisfies string | undefined;
+    linkAtPath[0].type satisfies 'typed_query_link';
+  }
+
+  const parentLink = editor.read.nodes.parent([0, 0], { type: LinkPlugin });
+
+  if (parentLink) {
+    parentLink[0].url satisfies string | undefined;
+    parentLink[0].type satisfies 'typed_query_link';
+  }
+
+  const linkOrMention = editor.read.nodes.find({
+    type: [LinkPlugin, MentionPlugin],
+  });
+
+  if (linkOrMention?.[0].type === 'typed_query_link') {
+    linkOrMention[0].url satisfies string | undefined;
+  } else if (linkOrMention) {
+    linkOrMention[0].userId satisfies string | undefined;
+  }
+
+  editor.read((state) => {
+    state.nodes.find({ type: LinkPlugin })?.[0].url satisfies
+      | string
+      | undefined;
+  });
+
+  editor.update((tx) => {
+    tx.nodes.remove({
+      match: (node) => node.url === '/docs',
+      type: LinkPlugin,
+    });
+    tx.nodes.set({ url: '/next' }, { type: LinkPlugin });
+    tx.nodes.insert(
+      { children: [{ text: '' }], type: 'typed_query_link', url: '/next' },
+      { split: { type: LinkPlugin } }
+    );
+    tx.nodes.insert(
+      { children: [{ text: '' }], type: 'typed_query_link', url: '/next' },
+      storedInsertOptions
+    );
+  });
+  editor.update.nodes.set({ url: '/next' }, { type: LinkPlugin });
+
+  editor.read.nodes.find({
+    // @ts-expect-error match is function-only
+    match: { type: 'typed_query_link' },
+  });
+  editor.read.nodes.find<import('@platejs/plite').Element>({
+    // @ts-expect-error callers cannot select an unchecked output generic
+    type: LinkPlugin,
+  });
+  editor.read.nodes.find({
+    // @ts-expect-error marks are not element selectors
+    type: BoldPlugin,
+  });
+};
+
+void assertTypedNodeQueries;
 
 const assertTypedPluginPropertyMutations = () => {
   const Dependency = defineBasePlugin('typedMutationDependency', {

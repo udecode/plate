@@ -398,9 +398,9 @@ const createEditingEditor = ({
 const findLink = (
   editor: ReturnType<typeof createEditingEditor>
 ): LinkElement | undefined =>
-  editor.read.nodes.find<LinkElement>({
+  editor.read.nodes.find({
     at: [],
-    match: { type: 'link' },
+    type: BaseLinkPlugin,
   })?.[0];
 
 describe('editor.update.link.upsert', () => {
@@ -762,9 +762,7 @@ describe('editor.update.link.upsertText', () => {
       url: 'https://example.com',
     });
 
-    expect(
-      editor.read.nodes.find({ match: { type: 'link' } })?.[0]
-    ).toMatchObject({
+    expect(editor.read.nodes.find({ type: 'link' })?.[0]).toMatchObject({
       children: [{ bold: true, text: 'new value' }],
       type: 'link',
     });

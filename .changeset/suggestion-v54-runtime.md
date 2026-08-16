@@ -11,6 +11,8 @@ mutable state contracts for the headless and React suggestion descriptors.
 Move suggestion queries and mutations to `BaseSuggestionPlugin` and the
 installed editor API, and register suggestion marks and metadata in compiled
 schemas with versioned inline validation.
+Infer `nodes()` and `nodeEntries()` results as descendant entries rather than
+exposing the editor root through the broad `Node` union.
 
 **Migration:** Read pure value helpers from `editor.api.suggestion`, snapshot
 queries from `editor.read.suggestion`, and mutations from

@@ -84,7 +84,7 @@ const editor = createPlateEditor({
         initialState: {
           query: () =>
             blockedTypes.length === 0 ||
-            !editor.read.nodes.some({ match: { type: blockedTypes } }),
+            !editor.read.nodes.some({ type: blockedTypes }),
           globalEventListener: true,
           isTabbable: (tabbableEntry) =>
             editor.read.schema.isVoid(tabbableEntry.slateNode),
@@ -126,7 +126,7 @@ TabbablePlugin.configure(({ editor }) => {
       query: () =>
         blockedTypes.length === 0 ||
         !editor.read.nodes.some({
-          match: { type: blockedTypes },
+          type: blockedTypes,
         }),
     },
   };

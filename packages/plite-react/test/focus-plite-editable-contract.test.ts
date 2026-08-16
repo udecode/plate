@@ -38,12 +38,6 @@ type FocusProjectionSelection = Range &
     modelOnly: boolean;
   }>;
 
-declare module '@platejs/plite' {
-  interface EditorSelectionKindMap {
-    'focus-projection': FocusProjectionSelection;
-  }
-}
-
 const isFocusProjectionSelection = (
   selection: unknown
 ): selection is FocusProjectionSelection =>

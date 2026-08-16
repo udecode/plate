@@ -245,8 +245,9 @@ hand-edited.
 
 ## Exclusions
 
-- Ordinary domain/result narrowing such as `state.nodes.get<TElement>()`,
-  `Map<K, V>`, React component generics, and generic Plite runtime owners.
+- Input-correlated generics such as `Map<K, V>`, React component generics, and
+  generic Plite runtime owners. Node query results are inferred from `type` or
+  a type-guard `match`; callers do not select them with a type argument.
 - Constructor hooks such as `usePlateEditor<MyEditor>()`, where typed inputs
   create the returned editor. Context retrieval through `useEditor()` is not a
   type boundary and accepts no editor refinement.

@@ -125,9 +125,9 @@ Also teach `findSuggestionProps` to reuse remove metadata from adjacent inline s
 
 ```ts
 const getInlineElementEntry = (point: Point) =>
-  state.nodes.above<Element>({
+  state.nodes.above({
     at: point,
-    match: (node) =>
+    match: (node): node is Element =>
       ElementApi.isElement(node) &&
       state.schema.isInline(node) &&
       !!api.nodeId(node),

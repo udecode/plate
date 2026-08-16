@@ -5,21 +5,28 @@ import {
   last as editorLast,
   parent as editorParent,
 } from '../interfaces/editor';
-import type { EditorStaticApi } from '../interfaces/editor';
+import type {
+  AnyEditor,
+  EditorNextOptions,
+  EditorStaticApi,
+} from '../interfaces/editor';
 import { LocationApi, type Span } from '../interfaces/location';
-import { NodeApi } from '../interfaces/node';
+import { type Descendant, NodeApi } from '../interfaces/node';
 import { PathApi } from '../interfaces/path';
 import { normalizeNodeMatch } from '../utils/node-match';
 import { nodes } from './nodes';
 
-export const next: EditorStaticApi['next'] = (editor, options = {}) => {
+export const next = ((
+  editor: AnyEditor,
+  options: EditorNextOptions<Descendant> = {}
+) => {
   const {
     from = 'after',
     mode = from === 'child' ? 'all' : 'lowest',
     voids = false,
   } = options;
   const { at = editorGetSnapshot(editor).selection } = options;
-  let match = normalizeNodeMatch(options.match);
+  let match = normalizeNodeMatch(options.type, options.match);
 
   if (!at) {
     return;
@@ -78,5 +85,5 @@ export const next: EditorStaticApi['next'] = (editor, options = {}) => {
   }
 
   const [next] = nodes(editor, { at: span, match, mode, voids });
-  return next;
-};
+  return next as never;
+}) as EditorStaticApi['next'];

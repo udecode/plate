@@ -1,9 +1,9 @@
 import {
-  type BasePlugin,
   type BasePluginContext,
   type BasePluginDefinition,
   defineBasePlugin,
   type ElementWith,
+  type PlateNodeInsertOptions,
   type PlatePluginTransaction,
 } from '@platejs/core';
 import {
@@ -11,7 +11,6 @@ import {
   type Element,
   type ElementOf,
   type EditorUpdateContext,
-  type NodeInsertNodesOptions,
   property,
   schema,
   type SchemaElement,
@@ -86,13 +85,10 @@ type MediaInsertInputForPlugin<K extends string> =
 type MediaElementPluginDefinition = BasePluginDefinition &
   Readonly<{ schema: Readonly<{ element: SchemaElement }> }>;
 
-type MediaPluginDescriptor<C extends MediaElementPluginDefinition> =
-  BasePlugin<C>;
-
 type MediaPluginUpdate<C extends MediaElementPluginDefinition> = {
   insert: (
     input: MediaInsertInputForPlugin<C['name']>,
-    options?: NodeInsertNodesOptions<ElementOf<MediaPluginDescriptor<C>>>
+    options?: PlateNodeInsertOptions
   ) => boolean;
   setUrl: (input: { element: Element; url: string }) => boolean;
 };
@@ -113,7 +109,7 @@ type MediaPluginExtension = {
   ) => {
     insert: (
       input: MediaInsertInput,
-      options?: NodeInsertNodesOptions<Element>
+      options?: PlateNodeInsertOptions
     ) => boolean;
     setUrl: (input: { element: Element; url: string }) => boolean;
   };

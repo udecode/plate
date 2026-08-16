@@ -9,7 +9,7 @@ import { ElementProvider } from '@platejs/core/react/internal';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 import { PLUGINS } from '@platejs/utils';
 
-import type { TableElement } from '../lib/BaseTablePlugin';
+import { BaseTablePlugin, type TableElement } from '../lib/BaseTablePlugin';
 import { createTestTableEditor } from '../lib/__tests__/getTestTablePlugins';
 import { TablePlugin } from './TablePlugin';
 import { useTableColSizes, useTableSelectionDom } from './useTableElement';
@@ -41,7 +41,9 @@ describe('useTableElement family', () => {
       ],
       plugins: [TablePlugin],
     });
-    const installedTable = editor.read.nodes.get<TableElement>([1])![0];
+    const installedTable = editor.read.nodes.get([1], {
+      type: BaseTablePlugin,
+    })![0];
     const PlateWithChildren = Plate as React.ComponentType<
       Omit<React.ComponentProps<typeof Plate>, 'children'>
     >;

@@ -135,6 +135,7 @@ interface ParagraphElement extends Element {
 }
 
 interface QuoteElement extends Element {
+  citation?: string;
   children: readonly BodyText[];
   type: 'quote';
 }
@@ -154,7 +155,7 @@ type GeneratedEditorPlugins = typeof EditorPlugins &
       };
       quote: {
         construction: {};
-        properties: {};
+        properties: { citation?: string };
         toggle: true;
         type: 'quote';
       };
@@ -213,15 +214,62 @@ exactEditor.update((tx) => {
   tx.layout.setDensity(1);
   tx.paragraph.set({ align: 'right' });
   tx.quote.remove();
+  tx.quote.insert(
+    {},
+    {
+      split: {
+        match: (node) => {
+          const citation: string | undefined = node.citation;
+
+          return citation !== undefined;
+        },
+        type: QuotePlugin,
+      },
+    }
+  );
   tx.layout.setDensity(2);
   tx.toolbar.setCompact();
+  tx.nodes.remove({
+    match: (node) => {
+      const citation: string | undefined = node.citation;
+
+      return citation === 'obsolete';
+    },
+    type: QuotePlugin,
+  });
 });
 exactEditor.update.paragraph.insert({ align: 'left' });
 exactEditor.update.paragraph.toggle();
 exactEditor.update.quote.insert();
+exactEditor.update.quote.insert(
+  {},
+  {
+    split: {
+      match: (node) => {
+        const citation: string | undefined = node.citation;
+
+        return citation !== undefined;
+      },
+      type: QuotePlugin,
+    },
+  }
+);
 exactEditor.update.quote.toggle({ at: [0] });
 exactEditor.plugin(QuotePlugin).update.set({});
 exactEditor.plugin(QuotePlugin).update.toggle();
+exactEditor.update.nodes.set(
+  { citation: 'source' },
+  {
+    match: (node) => {
+      const citation: string | undefined = node.citation;
+
+      return citation !== 'ignored';
+    },
+    type: QuotePlugin,
+  }
+);
+// @ts-expect-error direct plugin selection uses final generated properties
+exactEditor.update.nodes.set({ citation: 42 }, { type: QuotePlugin });
 
 const rawElementEditor = createPlateEditor({ plugins: [CalloutPlugin] });
 const rawCallout = rawElementEditor.plugin(CalloutPlugin);
@@ -229,6 +277,25 @@ const BooleanMarkPlugin = definePlatePlugin('booleanMark', {
   schema: { mark: property.boolean({ default: false, omitDefault: true }) },
 });
 declare const broadPlateEditor: PlateEditor;
+
+exactEditor.update.quote.insert(
+  {},
+  {
+    split: {
+      // @ts-expect-error mark-only plugins are not structural split selectors
+      type: BooleanMarkPlugin,
+    },
+  }
+);
+exactEditor.update.quote.insert(
+  {},
+  {
+    split: {
+      // @ts-expect-error selector arrays cannot contain a mark-only plugin
+      type: [QuotePlugin, BooleanMarkPlugin] as const,
+    },
+  }
+);
 
 rawCallout.update.insert({ tone: 'warning' });
 rawCallout.update.set({ tone: 'info' });
@@ -239,6 +306,8 @@ broadPlateEditor.update((tx) => {
   tx.plugin(LayoutPlugin).setDensity(1);
   tx.plugin(BooleanMarkPlugin).toggle();
 });
+// @ts-expect-error mark-only plugins are not structural node selectors
+broadPlateEditor.update.nodes.remove({ type: BooleanMarkPlugin });
 
 const VoidPlugin = definePlatePlugin('voidCapability', {
   schema: { element: { void: 'block' } },
@@ -389,7 +458,7 @@ rawCallout.update.insert({
 
 rawCallout.update.remove({
   // @ts-expect-error plugin-bound mutations do not accept another match
-  match: { type: 'paragraph' },
+  type: 'paragraph',
 });
 
 // @ts-expect-error invalid selector arguments

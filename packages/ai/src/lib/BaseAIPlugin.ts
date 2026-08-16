@@ -267,7 +267,7 @@ export const BaseAIPlugin = defineBasePlugin(PLUGINS.ai, {
 
       tx.nodes.remove({
         at: [],
-        match: { type: aiChat.schema.type },
+        type: aiChat.schema.type,
       });
 
       tx.setField(aiPreviewField, null);

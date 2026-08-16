@@ -23,7 +23,7 @@ title: 尾部块
 ### 添加插件
 
 ```tsx
-import { TrailingBlockPlugin } from 'platejs';
+import { ElementApi, TrailingBlockPlugin } from 'platejs';
 import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
@@ -48,7 +48,8 @@ const editor = createPlateEditor({
     TrailingBlockPlugin.configure({
       initialState: {
         type: 'paragraph', // 段落块
-        match: { type: 'blockquote' },
+        match: (node) =>
+          ElementApi.isElement(node) && node.type === 'blockquote',
       },
     }),
   ],

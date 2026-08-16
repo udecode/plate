@@ -9,6 +9,8 @@ import {
   defineStateField,
   type Descendant,
   type ElementIn,
+  NodeApi,
+  type NodeEntry,
   schema,
   type ValueOf,
   valueCodecs,
@@ -134,10 +136,12 @@ describe('element-owned root lifecycle', () => {
     assert.deepEqual(editor.read.root('exclusive:1'), [paragraph('caption')]);
 
     editor.update((tx) => {
-      const entry = tx.nodes.get<ElementIn<ValueOf<typeof editor>>>([0]);
+      const entry = tx.nodes.get([0]);
 
-      assert(entry);
-      tx.nodes.duplicate([entry]);
+      assert(entry && NodeApi.isElement(entry[0]));
+      tx.nodes.duplicate([
+        entry as NodeEntry<ElementIn<ValueOf<typeof editor>>>,
+      ]);
     });
 
     assert.deepEqual(
@@ -178,11 +182,19 @@ describe('element-owned root lifecycle', () => {
     );
 
     editor.update((tx) => {
-      const first = tx.nodes.get<ElementIn<ValueOf<typeof editor>>>([0]);
-      const second = tx.nodes.get<ElementIn<ValueOf<typeof editor>>>([1]);
+      const first = tx.nodes.get([0]);
+      const second = tx.nodes.get([1]);
 
-      assert(first && second);
-      tx.nodes.duplicate([first, second]);
+      assert(
+        first &&
+          second &&
+          NodeApi.isElement(first[0]) &&
+          NodeApi.isElement(second[0])
+      );
+      tx.nodes.duplicate([
+        first as NodeEntry<ElementIn<ValueOf<typeof editor>>>,
+        second as NodeEntry<ElementIn<ValueOf<typeof editor>>>,
+      ]);
     });
 
     assert.deepEqual(editor.read.children(), [

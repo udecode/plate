@@ -2,7 +2,6 @@ import type {
   Descendant,
   Path,
   NodeKey,
-  Editor as EditorType,
   Element as PliteElementNode,
   Text as PliteTextNode,
 } from '@platejs/plite';
@@ -14,6 +13,7 @@ import {
   isInline as editorIsInline,
   isVoid as editorIsVoid,
 } from '../editable/runtime-editor-api';
+import type { AnyEditor as EditorType } from '../editable/runtime-editor-api';
 import { getDOMTextRenderRevision } from '../hooks/use-plite-node-ref';
 
 const EMPTY_RUNTIME_IDS = Object.freeze([]) as readonly NodeKey[];

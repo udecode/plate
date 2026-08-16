@@ -7,7 +7,7 @@ import {
 } from '@platejs/plite';
 import { createDataTransfer } from '@platejs/test-utils';
 import type { BaseLinkDefinition } from './BaseLinkPlugin';
-import { BaseLinkPlugin, type LinkElement } from './BaseLinkPlugin';
+import { BaseLinkPlugin } from './BaseLinkPlugin';
 import { LinkRules } from './BaseLinkPlugin';
 
 const BaseCodeLinePlugin = defineBasePlugin('codeLine', {
@@ -73,9 +73,9 @@ const paste = (editor: ReturnType<typeof createEditor>, text: string) => {
 };
 
 const findLink = (editor: ReturnType<typeof createEditor>) =>
-  editor.read.nodes.find<LinkElement>({
+  editor.read.nodes.find({
     at: [],
-    match: { type: 'link' },
+    type: 'link',
   })?.[0];
 
 describe('LinkRules', () => {
@@ -316,9 +316,9 @@ describe('LinkRules', () => {
     editor.update.text.insert(')');
 
     expect(
-      editor.read.nodes.find<LinkElement>({
+      editor.read.nodes.find({
         at: [1],
-        match: { type: 'link' },
+        type: 'link',
       })?.[0]
     ).toMatchObject({
       children: [{ text: 'Example' }],

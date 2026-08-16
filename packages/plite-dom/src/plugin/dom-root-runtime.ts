@@ -1,4 +1,4 @@
-import type { Editor } from '@platejs/plite';
+import type { AnyEditor } from '@platejs/plite/internal';
 
 import {
   DOMIntegrityObserver,
@@ -45,7 +45,7 @@ export type DOMRootRuntimeOptions<TRoot extends HTMLElement> = Omit<
 > &
   DOMRootRuntimeLifecycle<TRoot> & {
     adapter: object;
-    editor: Editor;
+    editor: AnyEditor;
     testRootFacts?: DOMRootFactOverrides;
   };
 
@@ -64,15 +64,15 @@ const DOM_ROOT_RUNTIME_BY_ROOT = new WeakMap<
   DOMRootRuntime<HTMLElement>
 >();
 const DOM_ROOT_RUNTIMES_BY_EDITOR = new WeakMap<
-  Editor,
+  AnyEditor,
   Set<DOMRootRuntime<HTMLElement>>
 >();
 const ACTIVE_DOM_ROOT_RUNTIME_BY_EDITOR = new WeakMap<
-  Editor,
+  AnyEditor,
   DOMRootRuntime<HTMLElement>
 >();
 const DETACHED_DOM_INPUT_RUNTIME_BY_EDITOR = new WeakMap<
-  Editor,
+  AnyEditor,
   DOMInputRuntime
 >();
 const ELEMENT_NODE = 1;
@@ -155,7 +155,7 @@ const isRuntimeRootActive = (runtime: DOMRootRuntime<HTMLElement>) => {
 
 /** Resolve the focused private root runtime for an editor. */
 export const findEditorDOMRootRuntime = (
-  editor: Editor
+  editor: AnyEditor
 ): DOMRootRuntime<HTMLElement> | null => {
   const activeRuntime = ACTIVE_DOM_ROOT_RUNTIME_BY_EDITOR.get(editor);
 
@@ -196,7 +196,7 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
       getRoot: () => 'main',
     });
 
-  static readonly resolveInputRuntime = (editor: Editor) => {
+  static readonly resolveInputRuntime = (editor: AnyEditor) => {
     const mountedRuntime = findEditorDOMRootRuntime(editor);
 
     if (mountedRuntime) return mountedRuntime.domInputRuntime;
@@ -243,7 +243,7 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
 
   private readonly disposables = new Map<string, () => void>();
 
-  private readonly editor: Editor;
+  private readonly editor: AnyEditor;
 
   private readonly lifecycle: DOMRootRuntimeLifecycle<TRoot>;
 

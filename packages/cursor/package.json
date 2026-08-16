@@ -53,7 +53,6 @@
   "dependencies": {
     "@platejs/core": "workspace:^",
     "@platejs/plite": "workspace:^",
-    "@platejs/plite-dom": "workspace:^",
     "@udecode/react-utils": "workspace:^",
     "@udecode/utils": "workspace:^",
     "react-compiler-runtime": "^1.0.0"

@@ -9,17 +9,19 @@ import {
   getChildren as editorGetChildren,
   isBlock as editorIsBlock,
 } from '../interfaces/editor';
+import type { AnyEditor as Editor } from '../interfaces/editor';
 import { type Path, PathApi } from '../interfaces/path';
-import type { NodeMutationMethods } from '../interfaces/transforms/node';
+import type {
+  NodeMoveNodesOptions,
+  NodeMutationMethods,
+} from '../interfaces/transforms/node';
+import { normalizeNodeMatch } from '../utils/node-match';
 
-export const moveNodes: NodeMutationMethods['moveNodes'] = (
-  editor,
-  options
-) => {
+export const moveNodes = ((editor: Editor, options: NodeMoveNodesOptions) => {
   runEditorTransaction(editor, (tx) => {
     const { to, mode = 'lowest', voids = false } = options;
     const at = tx.resolveTarget({ at: options.at });
-    let { match } = options;
+    let match = normalizeNodeMatch(options.type, options.match);
 
     if (!at) {
       return;
@@ -67,7 +69,7 @@ export const moveNodes: NodeMutationMethods['moveNodes'] = (
       deletion: 'nearest',
     });
     const pathAnchors = Array.from(
-      getNodes(editor, { at, match, mode, voids }),
+      getNodes(editor as never, { at, match, mode, voids }),
       ([, path]) =>
         editor.anchor(path, {
           association: 'forward',
@@ -99,4 +101,4 @@ export const moveNodes: NodeMutationMethods['moveNodes'] = (
 
     toAnchor.release();
   });
-};
+}) as NodeMutationMethods['moveNodes'];

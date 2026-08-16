@@ -17,6 +17,7 @@ import {
   ContentSlice,
   createEditor as createPliteEditor,
   DocumentChange,
+  ElementApi,
   schema,
   type Element,
   type InitialValue,
@@ -269,7 +270,9 @@ describe('BaseListPlugin', () => {
     const ListDependentPlugin = defineBasePlugin('listDependent', {
       api: ({ editor }) => ({
         getPreviousType: () => {
-          const entry = editor.read.nodes.get<Element>([1]);
+          const entry = editor.read.nodes.get([1], {
+            match: ElementApi.isElement,
+          });
 
           if (!entry) return;
 
@@ -295,7 +298,9 @@ describe('BaseListPlugin', () => {
         },
       ],
     });
-    const firstEntry = editor.read.nodes.get<Element>([0]);
+    const firstEntry = editor.read.nodes.get([0], {
+      match: ElementApi.isElement,
+    });
 
     expect(editor.api.listDependent.getPreviousType()).toBe(PLUGINS.paragraph);
     expect(
@@ -335,7 +340,9 @@ describe('BaseListPlugin', () => {
         { at: [1] }
       );
 
-      const lastEntry = tx.nodes.get<Element>([2]);
+      const lastEntry = tx.nodes.get([2], {
+        match: ElementApi.isElement,
+      });
 
       expect(
         lastEntry ? tx.list.getPrevious(lastEntry)?.[0] : undefined

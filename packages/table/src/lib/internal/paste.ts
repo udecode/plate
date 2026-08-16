@@ -1,4 +1,3 @@
-import type { BaseEditor } from '@platejs/core';
 import {
   ContentSlice,
   createEditorView,
@@ -12,6 +11,7 @@ import {
   type Value,
 } from '@platejs/plite';
 import { ElementApi, PathApi } from '@platejs/plite';
+import type { AnyEditor } from '@platejs/plite/internal';
 import type { TableCellElement, TableRowElement } from '../BaseTablePlugin';
 import cloneDeep from 'lodash/cloneDeep.js';
 
@@ -74,7 +74,7 @@ export type PreparedTablePastePlan = Readonly<{
 export type TableDragCapture = Readonly<{
   bounds: TableSelectionBounds;
   cellKeys: readonly NodeKey[];
-  editor: BaseEditor;
+  editor: AnyEditor;
   root?: string;
   tableKey: NodeKey;
   tablePath: Path;
@@ -1245,7 +1245,7 @@ const targetBoundsForDrop = (
 };
 
 export const planTableCellDrop = (
-  editor: BaseEditor,
+  editor: AnyEditor,
   {
     copy,
     createCell: createTableCell,

@@ -27,23 +27,22 @@ type YjsAwarenessAdapterOptions = {
   readonly editor: Editor;
   readonly isConnected: () => boolean;
   readonly rootFor: (root: string) => Y.XmlElement | null;
+  readonly validateCursorData: (value: unknown) => boolean;
 };
 
-export type YjsAwarenessAdapter = {
+export type YjsAwarenessAdapter<
+  TCursorData extends YjsRemoteCursorData = YjsRemoteCursorData,
+> = {
   readonly clearSelection: () => void;
   readonly currentSelection: () => Range | null;
-  readonly remoteCursor: <
-    TCursorData extends YjsRemoteCursorData = YjsRemoteCursorData,
-  >(
+  readonly remoteCursor: (
     clientId: number
   ) => YjsRemoteCursor<TCursorData> | null;
-  readonly remoteCursors: <
-    TCursorData extends YjsRemoteCursorData = YjsRemoteCursorData,
-  >() => readonly YjsRemoteCursor<TCursorData>[];
-  readonly sendCursorData: (data: YjsRemoteCursorData | null) => void;
+  readonly remoteCursors: () => readonly YjsRemoteCursor<TCursorData>[];
+  readonly sendCursorData: (data: TCursorData | null) => void;
   readonly sendSelection: (
     range?: Range | null,
-    data?: YjsRemoteCursorData | null
+    data?: TCursorData | null
   ) => void;
 };
 
@@ -73,18 +72,19 @@ const getSortedAwarenessClientIds = (
   return clientIds;
 };
 
-const readRemoteCursorRecordData = <
-  TCursorData extends YjsRemoteCursorData = YjsRemoteCursorData,
->(
+const readRemoteCursorRecordData = <TCursorData extends YjsRemoteCursorData>(
   state: YjsAwarenessState,
-  field: string
+  field: string,
+  validate: (value: unknown) => boolean
 ): TCursorData | undefined => {
   const data = state[field];
 
-  return isRecord(data) ? (data as TCursorData) : undefined;
+  return isRecord(data) && validate(data) ? (data as TCursorData) : undefined;
 };
 
-export const createYjsAwarenessAdapter = ({
+export const createYjsAwarenessAdapter = <
+  TCursorData extends YjsRemoteCursorData = YjsRemoteCursorData,
+>({
   awareness,
   awarenessDataField,
   awarenessSelectionField,
@@ -94,7 +94,8 @@ export const createYjsAwarenessAdapter = ({
   editor,
   isConnected,
   rootFor,
-}: YjsAwarenessAdapterOptions): YjsAwarenessAdapter => {
+  validateCursorData,
+}: YjsAwarenessAdapterOptions): YjsAwarenessAdapter<TCursorData> => {
   const currentSelection = (): Range | null => {
     const selection = editor.read.selection();
 
@@ -149,9 +150,7 @@ export const createYjsAwarenessAdapter = ({
     }
   };
 
-  const readRemoteCursor = <
-    TCursorData extends YjsRemoteCursorData = YjsRemoteCursorData,
-  >(
+  const readRemoteCursor = (
     remoteClientId: number,
     localClientId: number
   ): YjsRemoteCursor<TCursorData> | null => {
@@ -167,7 +166,8 @@ export const createYjsAwarenessAdapter = ({
 
     const data = readRemoteCursorRecordData<TCursorData>(
       state,
-      awarenessDataField
+      awarenessDataField,
+      validateCursorData
     );
 
     const cursor: {
@@ -189,24 +189,17 @@ export const createYjsAwarenessAdapter = ({
     return cursor;
   };
 
-  const remoteCursor = <
-    TCursorData extends YjsRemoteCursorData = YjsRemoteCursorData,
-  >(
+  const remoteCursor = (
     remoteClientId: number
   ): YjsRemoteCursor<TCursorData> | null => {
     if (awareness === undefined || !isConnected()) {
       return null;
     }
 
-    return readRemoteCursor<TCursorData>(
-      remoteClientId,
-      getLocalAwarenessClientId()
-    );
+    return readRemoteCursor(remoteClientId, getLocalAwarenessClientId());
   };
 
-  const remoteCursors = <
-    TCursorData extends YjsRemoteCursorData = YjsRemoteCursorData,
-  >(): readonly YjsRemoteCursor<TCursorData>[] => {
+  const remoteCursors = (): readonly YjsRemoteCursor<TCursorData>[] => {
     if (awareness === undefined || !isConnected()) {
       return [];
     }
@@ -231,10 +224,7 @@ export const createYjsAwarenessAdapter = ({
         );
       }
 
-      const cursor = readRemoteCursor<TCursorData>(
-        remoteClientId,
-        localClientId
-      );
+      const cursor = readRemoteCursor(remoteClientId, localClientId);
 
       if (cursor !== null) {
         cursors[writeIndex] = cursor;
@@ -266,13 +256,16 @@ export const createYjsAwarenessAdapter = ({
     awareness.setLocalStateField(field, value);
   };
 
-  const sendCursorData = (data: YjsRemoteCursorData | null): void => {
+  const sendCursorData = (data: TCursorData | null): void => {
+    if (data !== null && !validateCursorData(data)) {
+      throw new Error('Yjs cursor data does not match its configured schema.');
+    }
     setLocalStateFieldIfChanged(awarenessDataField, data);
   };
 
   const sendSelection = (
     range: Range | null | undefined = currentSelection(),
-    data?: YjsRemoteCursorData | null
+    data?: TCursorData | null
   ): void => {
     if (awareness === undefined || !canSendSelection()) {
       return;

@@ -2,19 +2,13 @@
 
 import type { BaseEditor } from 'platejs';
 
-import {
-  PLUGINS,
-  defineBasePlugin,
-  createTextSubstitutionInputRule,
-} from 'platejs';
+import { BaseCodeBlockPlugin } from '@platejs/code-block';
+import { defineBasePlugin, createTextSubstitutionInputRule } from 'platejs';
 
-const isTextSubstitutionBlocked = (editor: BaseEditor) => {
-  const codeBlock = editor.plugin(PLUGINS.codeBlock);
-
-  return editor.read.nodes.some({
-    match: { type: codeBlock.schema.type },
+const isTextSubstitutionBlocked = (editor: BaseEditor) =>
+  editor.read.nodes.some({
+    type: BaseCodeBlockPlugin,
   });
-};
 
 const createAutoformatTextSubstitutionRule = ({
   patterns,

@@ -199,6 +199,11 @@ Current priorities:
 - Descriptor-aware schema calls identify schema elements and groups. Document
   property reads use typed property handles or semantic plugin APIs, never a
   one-property descriptor shortcut.
+- Generic node traversal uses an independent structural `type` selector and a
+  function-only `match` condition. Plate descriptors resolve through the final
+  application schema; Plite accepts persisted strings and schema handles.
+  Selectors and type guards infer results. Callers never choose a result type
+  with a generic argument.
 - Plugin-local property writes stay on one `tx.nodes.set({ ...props }, options)`
   object-patch law. Owned property names and values infer from the shallow
   plugin and required-dependency graph; duplicate persisted names infer their

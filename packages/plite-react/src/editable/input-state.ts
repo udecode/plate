@@ -1,5 +1,5 @@
 import type { RefObject } from 'react';
-import { type Editor, type Path, type Range, RangeApi } from '@platejs/plite';
+import { type Path, type Range, RangeApi } from '@platejs/plite';
 import type { DOMElement } from '@platejs/plite-dom';
 import {
   DOMRootRuntime,
@@ -7,7 +7,7 @@ import {
   EDITOR_TO_PENDING_INSERTION_MARKS,
   EDITOR_TO_USER_MARKS,
 } from '@platejs/plite-dom/internal';
-import { setEditorMarks } from './runtime-editor-api';
+import { type AnyEditor, setEditorMarks } from './runtime-editor-api';
 
 type DOMInputRuntime = DOMRootRuntime<HTMLElement>['domInputRuntime'];
 
@@ -311,7 +311,7 @@ export const runTrackedEditableCompositionMutation = <T>({
   inputController,
 }: {
   callback: () => T;
-  editor: Editor;
+  editor: AnyEditor;
   inputController: EditableInputController;
 }) => {
   if (!inputController.state.compositionSession) {
@@ -345,7 +345,7 @@ export const recordEditableCompositionText = (
   inputController.domInputRuntime.recordCompositionText(text);
 };
 
-export const captureEditableCompositionRuntimeMarks = (editor: Editor) => ({
+export const captureEditableCompositionRuntimeMarks = (editor: AnyEditor) => ({
   hadPendingInsertionMarks: EDITOR_TO_PENDING_INSERTION_MARKS.has(editor),
   hadUserMarks: EDITOR_TO_USER_MARKS.has(editor),
   pendingInsertionMarks: EDITOR_TO_PENDING_INSERTION_MARKS.get(editor),
@@ -353,7 +353,7 @@ export const captureEditableCompositionRuntimeMarks = (editor: Editor) => ({
 });
 
 export const restoreEditableCompositionRuntimeMarks = (
-  editor: Editor,
+  editor: AnyEditor,
   snapshot: ReturnType<typeof captureEditableCompositionRuntimeMarks>
 ) => {
   if (
@@ -374,7 +374,7 @@ export const restoreEditableCompositionRuntimeMarks = (
   }
 };
 
-export const clearEditableCompositionRuntimeState = (editor: Editor) => {
+export const clearEditableCompositionRuntimeState = (editor: AnyEditor) => {
   EDITOR_TO_PENDING_INSERTION_MARKS.delete(editor);
   const userMarks = EDITOR_TO_USER_MARKS.get(editor);
 

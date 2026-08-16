@@ -63,7 +63,7 @@ export const BlockquoteRules = {
     trigger: ' ',
     enabled: ({ editor }) =>
       !editor.read.nodes.some({
-        match: { type: editor.plugin(KEYS.codeBlock).type },
+        type: editor.plugin(KEYS.codeBlock).type,
       }),
     match: ({ marker }) => marker,
     apply: ({ editor, getBlockEntry, tx }, match) => {

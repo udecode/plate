@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { type Descendant, type Element, NodeApi } from '@platejs/plite';
+import { type Descendant, NodeApi } from '@platejs/plite';
 
 import {
   assertCanonicalYjsTrace,
@@ -52,9 +52,9 @@ const createPeers = (
   });
 
 const setHeading = (peer: Peer): void => {
-  peer.editor.update.nodes.set<Element>(
+  peer.editor.update.nodes.set(
     { role: 'title', type: 'heading-one' },
-    { at: [0] }
+    { at: [0], type: 'paragraph' }
   );
 };
 

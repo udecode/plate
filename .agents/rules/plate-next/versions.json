@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "latestVersion": 76,
+  "latestVersion": 85,
   "versions": [
     {
       "version": 0,
@@ -901,6 +901,105 @@
         "Keep one direct inferred plugin export as the only accepted target and route TS7056 to the owning generic or declaration boundary.",
         "Reject new @plate-plugin-declaration-stage markers, private definition carriers, annotated staging aliases, widened dependencies, casts, and public subset types.",
         "Treat existing marked stages as transitional debt that blocks current-doctrine attestation until direct declaration emit passes without them."
+      ]
+    },
+    {
+      "version": 77,
+      "date": "2026-08-15",
+      "doctrineFingerprint": "sha256:f1cf73950ffc39a45b9d539cc76f1fd753b336e61a8e544cc0e7210ab6d9feca",
+      "summary": "Node queries infer results from structural selectors or type guards and keep match function-only.",
+      "migrationChecks": [
+        "Replace node-query and transform match object DSLs with an independent type selector plus a function-only match condition.",
+        "Remove caller-selected node result generics and infer descriptor, schema-handle, raw-type, array-union, and type-guard results through the owning API.",
+        "Keep traversal targets independent from selected results, place insert split-target selection under split, and prove final-schema descriptor lowering."
+      ]
+    },
+    {
+      "version": 78,
+      "date": "2026-08-15",
+      "doctrineFingerprint": "sha256:80068ae37176bf6d4457e0eb247224fda77817344612b8dfcf90d1d66d22fb64",
+      "summary": "Plate Next execution plans teach the same selector-driven node query law as package doctrine.",
+      "migrationChecks": [
+        "Use type selectors plus function-only match conditions in new Plate Next plans and reject property-object matcher examples.",
+        "Reject caller-selected node result generics and keep insert split-target selection under split in future plan evidence.",
+        "Audit live source and current docs separately from immutable historical plan evidence before declaring the hard cut complete."
+      ]
+    },
+    {
+      "version": 79,
+      "date": "2026-08-15",
+      "doctrineFingerprint": "sha256:97b1ca2c1bbc390081f5180c32b991bda310dd174be860936d5d95294c0e76ac",
+      "summary": "Plate structural selectors keep exact plugin descriptors until the Core lowering boundary.",
+      "migrationChecks": [
+        "Pass exact plugin descriptors to descriptor-aware node, selection, correction, and insertion selectors instead of resolving persisted schema types first.",
+        "Retain persisted strings only for AST data, codecs and external formats, raw Plite views, deliberate dynamic input, or boundaries without an exact descriptor.",
+        "Audit package and copied-registry selectors, preserve direct registry package ownership, and prove configured-type lowering, type inference, generated skill parity, runtime behavior, and browser adoption."
+      ]
+    },
+    {
+      "version": 80,
+      "date": "2026-08-15",
+      "doctrineFingerprint": "sha256:b38c8796296fdc9b0f38e437ac658bea0a750d6692729e11ef1fcb819421ccf0",
+      "summary": "Public generics derive from checked inputs or installed descriptors instead of caller claims.",
+      "migrationChecks": [
+        "Remove caller-selected update transaction and command-dispatch generics; infer only installed groups and descriptor-owned command inputs.",
+        "Move external result typing behind an installed descriptor-owned runtime validator, and keep unvalidated data unknown.",
+        "Return unknown for raw string property reads, infer typed handles and semantic APIs, and prove zero stale caller-assertion examples across source, docs, and generated skills."
+      ]
+    },
+    {
+      "version": 81,
+      "date": "2026-08-15",
+      "doctrineFingerprint": "sha256:abc1ed4c0db1247170e4e651b7cf602d5c9e5828e21873a34bd6fe67c37458ed",
+      "summary": "Custom selection payloads derive from installed descriptors instead of ambient TypeScript registries.",
+      "migrationChecks": [
+        "Declare each custom selection payload, codec, validator, mapping, and behavior once through selectionKinds.",
+        "Remove ambient module augmentation, global selection-kind maps, side-effect type imports, duplicate registrations, and open custom-kind fallbacks.",
+        "Prove installed editor read narrowing and update acceptance, absent-editor rejection, runtime persistence behavior, and generated doctrine parity."
+      ]
+    },
+    {
+      "version": 82,
+      "date": "2026-08-16",
+      "doctrineFingerprint": "sha256:ea24ad31620e9b649dc041c1d50aa4d0cc67088db3b58acd3ba0335deb11263f",
+      "summary": "Concrete editor callbacks preserve installed capability truth without public bivariance.",
+      "migrationChecks": [
+        "Keep public read, update, and transaction-builder callbacks contravariant so explicit annotations cannot manufacture uninstalled capabilities.",
+        "Preserve concrete installed selection tuples with an invariant type witness and erase them only at named internal runtime boundaries.",
+        "Keep direct update.selection mutation-only and prove annotated-callback rejection, absent-editor rejection, exact installed acceptance, and generated doctrine parity."
+      ]
+    },
+    {
+      "version": 83,
+      "date": "2026-08-16",
+      "doctrineFingerprint": "sha256:0b797b33d5259ff15bb2732a607625efe793c058fa00cd5e09ff02c455856758",
+      "summary": "Bare editor types expose only core capabilities instead of widening uninstalled groups through any.",
+      "migrationChecks": [
+        "Default public Editor, BaseEditor, read, update, and view extension tuples to readonly [].",
+        "Use AnyEditor or an explicit any tuple only at named internal runtime boundaries.",
+        "Prove a bare Editor annotation rejects uninstalled selection payloads and regenerate packed API-reference declarations."
+      ]
+    },
+    {
+      "version": 84,
+      "date": "2026-08-16",
+      "doctrineFingerprint": "sha256:2bc48dc5ae75182da60a3f1198345acbdb3ce201bf4e70fdedc8b0a5e7f49625",
+      "summary": "Layered editors project installed extension capabilities once instead of intersecting recursive editor surfaces again.",
+      "migrationChecks": [
+        "Remove redundant whole-editor ReactEditor, DOMEditor, or sibling-layer intersections after those extensions are installed.",
+        "Add only genuinely missing shallow capabilities at their owning layer.",
+        "Prove app-scale api access and ordinary core-field access stay below TypeScript's instantiation-depth limit."
+      ]
+    },
+    {
+      "version": 85,
+      "date": "2026-08-16",
+      "doctrineFingerprint": "sha256:db7ec5cfad3391649f110815138d7423dd18c95e253f0d17f7cff02fd81dd188",
+      "summary": "Generic editor helpers preserve layered callers or depend on minimal structural capabilities.",
+      "migrationChecks": [
+        "Replace helpers that reconstruct a raw Editor, ReactEditor, or DOMEditor from one inferred provider with minimal structural capability inputs.",
+        "When a helper returns a root-scoped view, preserve the complete layered caller type through the public signature and erase only inside the runtime implementation.",
+        "Prove raw extension-tuple inference, layered Plate inference, app-scale typecheck, and generated doctrine parity."
       ]
     }
   ],

@@ -74,7 +74,7 @@ export type TableStoreSizeOverrides = Map<number, number>;
 
 export type TableFindOptions = Omit<
   EditorNodesOptions<Element>,
-  'at' | 'match'
+  'at' | 'match' | 'type'
 > & {
   at?: NodeTarget | Span;
 };

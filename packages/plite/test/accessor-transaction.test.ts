@@ -13,7 +13,6 @@ import {
 import {
   createEditor,
   createEditorView,
-  type Descendant,
   DocumentChange,
   type Editor,
   type Element,
@@ -470,7 +469,9 @@ describe('plite public accessor + transaction boundary', () => {
     const main = createEditorView(runtime);
     const header = createEditorView(runtime, { root: 'header' });
     const mainNodeKey = main.key([0]);
-    const headerNode = header.read.nodes.get<Descendant>([0])![0];
+    const headerEntry = header.read.nodes.get([0]);
+    assert(headerEntry && NodeApi.isDescendant(headerEntry[0]));
+    const headerNode = headerEntry[0];
     const canonicalHeaderNodeKey = runtime.key(headerNode);
     const headerNodeKey = header.key([0]);
 

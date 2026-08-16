@@ -3,6 +3,8 @@ import {
   defineExtension,
   defineEditorSchema,
   defineExtensionSlot,
+  type Descendant,
+  NodeApi,
   property,
   schema,
   type DescendantIn,
@@ -833,8 +835,8 @@ const siblingHeading: typeof child = {
 const entry = editor.read.nodes.find();
 const marks = editor.read.marks();
 
-if (entry) {
-  const inferredNode: DescendantIn<ValueOf<typeof editor>> = entry[0];
+if (entry && NodeApi.isDescendant(entry[0])) {
+  const inferredNode: Descendant = entry[0];
 
   void inferredNode;
 }

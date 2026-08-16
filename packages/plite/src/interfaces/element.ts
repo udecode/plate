@@ -28,7 +28,7 @@ type ElementOfVariant<N> = Element extends N
   ? Element
   : N extends EditorNodeTypeProvider<infer TElementFactory, any>
     ? Extract<ReturnType<TElementFactory>, Element>
-    : N extends BaseEditor<infer V>
+    : N extends BaseEditor<infer V, any>
       ? ElementIn<V>
       : N extends EditorSchemaExtensionProvider<infer TSchema>
         ? SchemaElementShapeFor<TSchema, SchemaElementTypes<TSchema>>

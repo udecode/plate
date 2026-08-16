@@ -35,7 +35,7 @@ type TextOfVariant<N> = N extends Text
     ? Text
     : N extends EditorNodeTypeProvider<any, infer TTextFactory>
       ? Extract<ReturnType<TTextFactory>, Text>
-      : N extends BaseEditor<infer V>
+      : N extends BaseEditor<infer V, any>
         ? TextIn<V>
         : Element extends N
           ? Text

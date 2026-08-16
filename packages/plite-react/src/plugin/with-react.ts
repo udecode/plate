@@ -2,9 +2,9 @@ import {
   type CreateEditorOptions,
   createEditor,
   defineExtension,
-  type Editor,
   type EditorExtensionPortal,
   type EditorExtensionReference,
+  type EditorLifecycleErrorSink,
   type EditorUpdateContext,
   type EditorUpdatePolicy,
   type EditorUpdateTransaction,
@@ -23,6 +23,7 @@ import {
   EDITOR_TO_PENDING_SELECTION,
   findEditorDOMRootRuntime,
 } from '@platejs/plite-dom/internal';
+import type { AnyEditor } from '../editable/runtime-editor-api';
 import { refreshEditorDecorations } from '../decoration-refresh';
 import type { PliteProjectionStoreRefreshOptions } from '../projection-store';
 
@@ -47,7 +48,7 @@ export type ReactApi = {
   isReadOnly: () => boolean;
 };
 
-const createReactApi = (editor: Editor): ReactApi =>
+const createReactApi = (editor: AnyEditor): ReactApi =>
   Object.freeze({
     refreshDecorations: (options) => {
       refreshEditorDecorations(editor, {
@@ -102,8 +103,8 @@ type ReactDefaultExtensions<TExtensions extends readonly unknown[]> = readonly [
 type ReactEditorBase<
   V extends Value,
   TExtensions extends readonly unknown[],
-> = Editor<V, ReactDefaultExtensions<TExtensions>>;
-/** Editor type with Plite React and DOM extensions installed. */
+> = AnyEditor<V, ReactDefaultExtensions<TExtensions>>;
+/** AnyEditor type with Plite React and DOM extensions installed. */
 export type ReactEditor<
   V extends Value = Value,
   TExtensions extends readonly unknown[] = readonly [],
@@ -127,7 +128,7 @@ export type ReactEditorContextValue<V extends Value = Value> = Omit<
     ((
       policy: EditorUpdatePolicy,
       fn: (
-        tx: EditorUpdateTransaction<V>,
+        tx: EditorUpdateTransaction<V, any>,
         context: EditorUpdateContext<ReactEditor<V>>
       ) => void
     ) => void);
@@ -137,8 +138,10 @@ export type ReactEditorContextValue<V extends Value = Value> = Omit<
 export type CreateReactEditorOptions<
   V extends Value = Value,
   TExtensions extends readonly unknown[] = readonly [],
-> = CreateEditorOptions<V, TExtensions> &
-  Pick<DOMEditorOptions, 'clipboardFormatKey'>;
+> = Omit<CreateEditorOptions<V, TExtensions>, 'lifecycleErrorSink'> &
+  Pick<DOMEditorOptions, 'clipboardFormatKey'> & {
+    lifecycleErrorSink?: EditorLifecycleErrorSink<ReactEditor<V, TExtensions>>;
+  };
 
 export function createReactEditor<
   const TOptions extends CreateReactEditorOptions<any, readonly unknown[]> & {
@@ -168,15 +171,23 @@ export function createReactEditor<
 >(
   options: CreateReactEditorOptions<V, TExtensions> = {}
 ): ReactEditor<V, TExtensions> {
-  const { clipboardFormatKey, extensions, ...editorOptions } = options;
+  const {
+    clipboardFormatKey,
+    extensions,
+    lifecycleErrorSink,
+    ...editorOptions
+  } = options;
   const exactDOMExtension = dom({ clipboardFormatKey });
   const editorExtensions = [
     react({ dom: exactDOMExtension }),
     ...((extensions ?? []) as TExtensions),
   ] as const;
 
-  return createEditor({
+  return createEditor<V, typeof editorExtensions>({
     ...editorOptions,
     extensions: editorExtensions,
+    lifecycleErrorSink: lifecycleErrorSink as EditorLifecycleErrorSink<
+      AnyEditor<V, typeof editorExtensions>
+    >,
   }) as unknown as ReactEditor<V, TExtensions>;
 }

@@ -429,7 +429,7 @@ const arrowsRule = createTextSubstitutionInputRule({
 
     return (
       !codeBlock.installed ||
-      !editor.read.nodes.some({ match: { type: codeBlock.schema.type } })
+      !editor.read.nodes.some({ type: codeBlock.schema.type })
     );
   },
   patterns: [
@@ -477,7 +477,7 @@ const createAutoformatTextSubstitutionRule = ({
 
       return (
         !codeBlock.installed ||
-        !editor.read.nodes.some({ match: { type: codeBlock.schema.type } })
+        !editor.read.nodes.some({ type: codeBlock.schema.type })
       );
     },
     patterns,
@@ -644,7 +644,7 @@ export const BlockquoteRules = {
 
       return (
         !codeBlock.installed ||
-        !editor.read.nodes.some({ match: { type: codeBlock.schema.type } })
+        !editor.read.nodes.some({ type: codeBlock.schema.type })
       );
     },
   }),
@@ -813,7 +813,7 @@ export const BlockquoteRules = {
 
       return (
         !codeBlock.installed ||
-        !editor.read.nodes.some({ match: { type: codeBlock.schema.type } })
+        !editor.read.nodes.some({ type: codeBlock.schema.type })
       );
     },
   }),

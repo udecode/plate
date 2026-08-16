@@ -1056,7 +1056,8 @@ const createPluginLifecycleHandlers = (
 export const createPlateRuntimeExtensions = (
   editor: BaseEditor,
   pluginList: readonly AnyBasePlugin[],
-  model: CompiledPlateModel
+  model: CompiledPlateModel,
+  lowerNodeType: (type: unknown) => unknown
 ): PlateRuntimeExtensionsResult => {
   const apiSnapshots = new WeakMap<object, unknown>();
   const extensions: EditorExtensionReference[] = [];
@@ -1291,7 +1292,7 @@ export const createPlateRuntimeExtensions = (
                       remove: (options?: Readonly<Record<string, unknown>>) =>
                         context.tx.nodes.remove({
                           ...options,
-                          match: { type: elementType },
+                          type: elementType,
                         }),
                       set: (
                         properties: Readonly<Record<string, unknown>>,
@@ -1299,7 +1300,7 @@ export const createPlateRuntimeExtensions = (
                       ) =>
                         context.tx.nodes.set(properties, {
                           ...options,
-                          match: { type: elementType },
+                          type: elementType,
                         }),
                       ...(hasGenericToggle && !hasAuthoredToggle
                         ? {
@@ -1361,8 +1362,27 @@ export const createPlateRuntimeExtensions = (
         : {}),
       ...(plugin.corrections
         ? {
-            corrections:
-              plugin.corrections as EditorExtensionDefinitionInput<BaseEditor>['corrections'],
+            corrections: (
+              plugin.corrections as NonNullable<
+                EditorExtensionDefinitionInput<BaseEditor>['corrections']
+              >
+            ).map((correction) => {
+              const query = correction.query;
+
+              if (
+                !query ||
+                query === 'root' ||
+                typeof query !== 'object' ||
+                !('type' in query)
+              ) {
+                return correction;
+              }
+
+              return {
+                ...correction,
+                query: { ...query, type: lowerNodeType(query.type) },
+              };
+            }) as EditorExtensionDefinitionInput<BaseEditor>['corrections'],
           }
         : {}),
       ...(stateFields.length > 0

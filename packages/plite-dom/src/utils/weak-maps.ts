@@ -102,7 +102,7 @@ export const EDITOR_TO_PENDING_DIFFS: WeakMap<AnyExtensionEditor, TextDiff[]> =
   new WeakMap();
 
 export const EDITOR_TO_ROOT_VIEW_EDITORS: WeakMap<
-  AnyExtensionEditor,
+  object,
   Set<AnyExtensionEditor>
 > = new WeakMap();
 

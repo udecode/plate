@@ -8,11 +8,7 @@ import {
 import { NodeApi } from '@platejs/plite';
 import { jsxt } from '@platejs/test-utils';
 import type { TestEditor } from '@platejs/test-utils';
-import type {
-  TableCellElement,
-  TableElement,
-  TableRowElement,
-} from './BaseTablePlugin';
+import type { TableCellElement, TableRowElement } from './BaseTablePlugin';
 import assert from 'node:assert/strict';
 
 describe('table merge slow contracts', () => {
@@ -30,7 +26,7 @@ describe('table merge slow contracts', () => {
       });
 
     const getTable = (editor: ReturnType<typeof createTableEditor>) => {
-      const entry = editor.read.nodes.get<TableElement>([0]);
+      const entry = editor.read.nodes.get([0], { type: BaseTablePlugin });
       assert(entry);
 
       return entry[0];
@@ -479,7 +475,7 @@ describe('table merge slow contracts', () => {
 
         expect(editor.read.text.string([0])).toBe('1222');
         expect(
-          editor.read.nodes.toArray({ at: [], match: { type: 'tableCell' } })
+          editor.read.nodes.toArray({ at: [], type: 'tableCell' })
         ).toHaveLength(2);
       });
 
@@ -575,7 +571,7 @@ describe('table merge slow contracts', () => {
         expect(editor.read.children()).toMatchObject([{ colSizes: [60] }]);
         expect(editor.read.text.string([0])).toBe('1323');
         expect(
-          editor.read.nodes.toArray({ at: [], match: { type: 'tableCell' } })
+          editor.read.nodes.toArray({ at: [], type: 'tableCell' })
         ).toHaveLength(2);
       });
     });

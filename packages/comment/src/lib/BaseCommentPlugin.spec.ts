@@ -5,7 +5,6 @@ import {
   defineBasePlugin,
 } from '@platejs/core';
 import { schema, type Selection, type ValueOf } from '@platejs/plite';
-import type { CommentText } from './BaseCommentPlugin';
 
 import { BaseCommentPlugin } from './BaseCommentPlugin';
 
@@ -116,7 +115,7 @@ describe('BaseCommentPlugin', () => {
 
     editor.update.nodes.set({ type: 'commentTarget' }, { at: [0] });
 
-    expect(editor.read.nodes.get<CommentText>([0, 0])?.[0]).toMatchObject(text);
+    expect(editor.read.nodes.get([0, 0])?.[0]).toMatchObject(text);
 
     editor.update.selection.set({
       kind: 'text',
@@ -125,7 +124,7 @@ describe('BaseCommentPlugin', () => {
     });
     editor.update.marks.add('comment_one', true);
 
-    expect(editor.read.nodes.get<CommentText>([0, 0])?.[0]).toMatchObject({
+    expect(editor.read.nodes.get([0, 0])?.[0]).toMatchObject({
       ...text,
       comment_one: true,
     });
@@ -202,7 +201,7 @@ describe('BaseCommentPlugin', () => {
 
     editor.update.comment.setDraft();
 
-    expect(editor.read.nodes.get<CommentText>([0, 0])?.[0]).toMatchObject({
+    expect(editor.read.nodes.get([0, 0])?.[0]).toMatchObject({
       comment: true,
       comment_draft: true,
       text: 'ab',
@@ -233,7 +232,7 @@ describe('BaseCommentPlugin', () => {
 
     editor.update.comment.removeMark();
 
-    expect(editor.read.nodes.get<CommentText>([0, 0])?.[0]).toEqual({
+    expect(editor.read.nodes.get([0, 0])?.[0]).toEqual({
       text: 'a',
     });
   });
@@ -267,7 +266,7 @@ describe('BaseCommentPlugin', () => {
 
     editor.update.comment.unsetMark({ id: 'one' });
 
-    expect(editor.read.nodes.get<CommentText>([0, 0])?.[0]).toEqual({
+    expect(editor.read.nodes.get([0, 0])?.[0]).toEqual({
       comment: true,
       comment_two: true,
       text: 'a',
@@ -284,7 +283,7 @@ describe('BaseCommentPlugin', () => {
 
     editor.update.comment.unsetMark({ id: 'one' });
 
-    expect(editor.read.nodes.get<CommentText>([0, 0])?.[0]).toEqual({
+    expect(editor.read.nodes.get([0, 0])?.[0]).toEqual({
       text: 'a',
     });
   });
@@ -299,7 +298,7 @@ describe('BaseCommentPlugin', () => {
 
     editor.update.comment.unsetMark({ transient: true });
 
-    expect(editor.read.nodes.get<CommentText>([0, 0])?.[0]).toEqual({
+    expect(editor.read.nodes.get([0, 0])?.[0]).toEqual({
       text: 'a',
     });
   });

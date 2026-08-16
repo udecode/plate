@@ -1,16 +1,18 @@
 import type {
   Descendant,
-  Element,
   ContentSlice,
+  Element,
   EditorSelection,
   EditorToggleMarkOptions,
   Location,
   Node,
+  NodeTypeSelector,
   NodeTarget,
   NodeProps,
   Path,
   Point,
   Range,
+  Value,
 } from '../interfaces';
 import {
   NodeApi,
@@ -43,6 +45,8 @@ import { defineCommand } from './command-definition';
 import { ContentSlice as ContentSliceValue } from './content-slice';
 import { areEditorJsonValuesEqual } from './value-codec';
 
+type CommandStateView = EditorStateView<Value, any>;
+
 type CommandTargetOptions<
   TOptions extends { at?: Location },
   TNode extends Descendant = Descendant,
@@ -51,7 +55,7 @@ type CommandTargetOptions<
 };
 
 const resolveCommandRange = (
-  state: EditorStateView,
+  state: CommandStateView,
   at: NodeTarget | undefined
 ) => {
   if (at === undefined) return state.selection.replacementRange() ?? undefined;
@@ -76,12 +80,12 @@ const withPointRoot = (
 ): Point | undefined =>
   point && root !== undefined ? { ...point, root } : point;
 
-const getBlockVoidBoundaryDeleteSpec = (state: EditorStateView) => {
+const getBlockVoidBoundaryDeleteSpec = (state: CommandStateView) => {
   const selection = state.selection();
 
   if (!selection || !RangeApi.isCollapsed(selection)) return null;
 
-  const block = state.nodes.above<Element>({
+  const block = state.nodes.above({
     at: selection.anchor,
     match: (node) => NodeApi.isElement(node) && state.nodes.isBlock(node),
     mode: 'highest',
@@ -120,7 +124,7 @@ const getBlockVoidBoundaryDeleteSpec = (state: EditorStateView) => {
   });
 };
 
-const getLeadingInlineVoidBoundaryDeleteSpec = (state: EditorStateView) => {
+const getLeadingInlineVoidBoundaryDeleteSpec = (state: CommandStateView) => {
   const selection = state.selection();
 
   if (
@@ -135,7 +139,7 @@ const getLeadingInlineVoidBoundaryDeleteSpec = (state: EditorStateView) => {
   const isInlineVoidAt = (at: Path | Point) => {
     const node = PathApi.isPath(at)
       ? state.nodes.get(at)?.[0]
-      : state.nodes.above<Element>({
+      : state.nodes.above({
           at,
           match: (candidate) =>
             NodeApi.isElement(candidate) &&
@@ -152,9 +156,10 @@ const getLeadingInlineVoidBoundaryDeleteSpec = (state: EditorStateView) => {
       state.schema.isVoid(node)
     );
   };
-  const block = state.nodes.above<Element>({
+  const block = state.nodes.above({
     at: point,
-    match: (node) => NodeApi.isElement(node) && state.nodes.isBlock(node),
+    match: (node): node is Element =>
+      NodeApi.isElement(node) && state.nodes.isBlock(node),
     mode: 'lowest',
     voids: true,
   });
@@ -211,7 +216,7 @@ const getLeadingInlineVoidBoundaryDeleteSpec = (state: EditorStateView) => {
 };
 
 const getFullySelectedSiblingBlockPaths = (
-  state: EditorStateView,
+  state: CommandStateView,
   range: Range,
   {
     includeAllSiblings = false,
@@ -226,12 +231,12 @@ const getFullySelectedSiblingBlockPaths = (
   const [start, end] = RangeApi.edges(range);
   const isBlock = (node: Node) =>
     NodeApi.isElement(node) && state.nodes.isBlock(node);
-  const startBlock = state.nodes.above<Element>({
+  const startBlock = state.nodes.above({
     at: start,
     match: isBlock,
     mode: 'highest',
   });
-  const endBlock = state.nodes.above<Element>({
+  const endBlock = state.nodes.above({
     at: end,
     match: isBlock,
     mode: 'highest',
@@ -290,7 +295,7 @@ const getTextMarks = (node: import('../interfaces').Text) => {
 };
 
 const getConsistentBlockTextMarks = (
-  state: EditorStateView,
+  state: CommandStateView,
   paths: readonly Path[]
 ) => {
   let expected: Record<string, unknown> | null | undefined;
@@ -329,7 +334,7 @@ const getConsistentBlockTextMarks = (
 };
 
 const fillDefaultRootChild = (
-  state: EditorStateView,
+  state: CommandStateView,
   root: string,
   text: string,
   marks: Record<string, unknown> | null
@@ -358,7 +363,7 @@ const fillDefaultRootChild = (
 const LINE_BREAK_PATTERN = /\r|\n/;
 
 const getFullBlockTextReplacement = (
-  state: EditorStateView,
+  state: CommandStateView,
   range: Range,
   text: string
 ) => {
@@ -438,7 +443,9 @@ export type InsertBreakCommand = void;
 
 export type InsertNodesCommand = {
   nodes: Descendant | readonly Descendant[];
-  options?: CommandTargetOptions<NodeInsertNodesOptions<Descendant>>;
+  options?: CommandTargetOptions<
+    NodeInsertNodesOptions<Node, NodeTypeSelector | undefined>
+  >;
 };
 
 export type InsertSoftBreakCommand = void;
@@ -636,7 +643,16 @@ export const editorCommands: EditorCommands = Object.freeze({
   }),
   insertNodes: defineCommand<InsertNodesCommand>('node.insert', {
     build: ({ input, state }) =>
-      state.transaction((tx) => tx.nodes.insert(input.nodes, input.options)),
+      state.transaction((tx) =>
+        (
+          tx.nodes.insert as (
+            nodes: Descendant | readonly Descendant[],
+            options?: CommandTargetOptions<
+              NodeInsertNodesOptions<Node, NodeTypeSelector | undefined>
+            >
+          ) => void
+        )(input.nodes, input.options)
+      ),
   }),
   insertSoftBreak: defineCommand<InsertSoftBreakCommand>('break.insertSoft', {
     build: ({ state }) => state.transaction((tx) => tx.break.insertSoft()),
@@ -677,7 +693,7 @@ export const editorCommands: EditorCommands = Object.freeze({
   }),
   removeNodes: defineCommand<RemoveNodesCommand>('node.remove', {
     build: ({ input, state }) =>
-      state.transaction((tx) => tx.nodes.remove(input.options)),
+      state.transaction((tx) => tx.nodes.remove(input.options as never)),
   }),
   select: defineCommand<SelectCommand>('selection.select', {
     build: ({ input, state }) =>

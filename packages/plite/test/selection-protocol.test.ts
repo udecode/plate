@@ -12,12 +12,16 @@ import {
   defineExtension,
   defineEditorSchema,
   defineValueCodec,
+  type Editor,
   type EditorSelectionSpec,
+  type EditorStateView,
+  type EditorUpdateTransaction,
   property,
   type Range,
   schema,
   SelectionApi,
   target,
+  type Value,
 } from '@platejs/plite';
 
 type CellSelection = Range &
@@ -26,11 +30,14 @@ type CellSelection = Range &
     kind: 'cell';
   }>;
 
-declare module '@platejs/plite' {
-  interface EditorSelectionKindMap {
-    cell: CellSelection;
-  }
-}
+type ShallowCellSelection = Range & Readonly<{ kind: 'cell' }>;
+
+type ShallowCellSelectionExtensions = readonly [
+  Readonly<{
+    name: 'shallow-cell-selection';
+    selectionKinds: ShallowCellSelection;
+  }>,
+];
 
 const range = (
   anchorPath: number[],
@@ -117,10 +124,62 @@ const conflictingCellSelectionExtension = defineExtension(
   }
 );
 
+const dependentCellSelectionExtension = defineExtension('cell-consumer', {
+  dependencies: [cellSelectionExtension],
+});
+
+type CellSelectionExtensions = readonly [typeof cellSelectionExtension];
+
 const initialValue = [
   { children: [{ text: 'a' }], type: 'paragraph' },
   { children: [{ text: 'b' }], type: 'paragraph' },
 ];
+
+const assertCellSelectionRequiresExtension = () => {
+  const editor = createEditor({ initialValue });
+
+  editor.update((tx) => {
+    // @ts-expect-error The cell selection kind is not installed.
+    tx.selection.set(cellSelection());
+  });
+  // @ts-expect-error Initial selections come from the installed extension tuple.
+  createEditor({ initialSelection: cellSelection(), initialValue });
+
+  editor.update(
+    // @ts-expect-error A callback annotation cannot manufacture an uninstalled capability.
+    (tx: EditorUpdateTransaction<Value, CellSelectionExtensions>) => {
+      tx.selection.set(cellSelection());
+    }
+  );
+
+  // @ts-expect-error A read callback cannot manufacture a richer transaction builder.
+  editor.read((state: EditorStateView<Value, CellSelectionExtensions>) =>
+    state.transaction((tx) => tx.selection.set(cellSelection()))
+  );
+
+  // @ts-expect-error Direct update selection exposes mutations, not state queries.
+  editor.update.selection();
+};
+
+void assertCellSelectionRequiresExtension;
+
+const assertSameKindSelectionPayloadIsInvariant = (
+  editor: Editor<Value, CellSelectionExtensions>
+) => {
+  // @ts-expect-error Matching `kind` is insufficient when the payload shape differs.
+  const shallowEditor: Editor<Value, ShallowCellSelectionExtensions> = editor;
+
+  void shallowEditor;
+};
+
+void assertSameKindSelectionPayloadIsInvariant;
+
+const assertBareEditorCapabilities = (editor: Editor) => {
+  // @ts-expect-error Bare Editor annotations expose only core capabilities.
+  editor.update.selection.set(cellSelection());
+};
+
+void assertBareEditorCapabilities;
 
 const selectionMarksSchema = defineEditorSchema(
   'schema:selection-marks-schema',
@@ -155,6 +214,23 @@ const selectionMarksSchema = defineEditorSchema(
 );
 
 describe('extensible selection protocol', () => {
+  it('infers custom selections only from installed extension closure', () => {
+    const editor = createEditor({
+      extensions: [dependentCellSelectionExtension],
+      initialSelection: cellSelection(),
+      initialValue,
+    });
+    const selection = editor.read.selection();
+
+    if (selection?.kind === 'cell') {
+      const cells: readonly Range[] = selection.cells;
+
+      assert.equal(cells.length, 2);
+    }
+
+    editor.update((tx) => tx.selection.set(cellSelection()));
+  });
+
   it('validates insertion marks at every selection ingress and named root', () => {
     const point = { offset: 0, path: [0, 0] };
 
@@ -398,7 +474,7 @@ describe('extensible selection protocol', () => {
     const editor = createEditor({ initialValue });
 
     assert.throws(
-      () => editor.update((tx) => tx.selection.set(cellSelection())),
+      () => editor.update((tx) => tx.selection.set(cellSelection() as never)),
       /Unsupported editor selection kind "cell"/
     );
     assert.throws(

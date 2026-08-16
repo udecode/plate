@@ -1,8 +1,8 @@
-import { PLUGINS } from '@platejs/utils';
 import type { ChatMessage } from '@/registry/components/editor/use-chat';
 import type { UIMessage } from 'ai';
 
 import type { MarkdownEditor } from '@platejs/markdown';
+import { BaseTableCellPlugin, BaseTablePlugin } from '@platejs/table';
 import dedent from 'dedent';
 import { ElementApi, type BaseEditor, type Element, RangeApi } from 'platejs';
 
@@ -282,8 +282,8 @@ export const isMultiBlocks = (editor: BaseEditor) =>
 
 export const serializePromptBlocks = (editor: MarkdownEditor) => {
   const blocks = editor.read.nodes
-    .toArray<Element>({
-      match: (node) =>
+    .toArray({
+      match: (node): node is Element =>
         ElementApi.isElement(node) && editor.read.schema.isBlock(node),
       mode: 'lowest',
     })
@@ -306,7 +306,7 @@ export const isSelectionInTable = (editor: BaseEditor): boolean => {
 
   const tableEntry = editor.read.nodes.block({
     at: selection,
-    match: { type: editor.plugin(PLUGINS.table).schema.type },
+    type: BaseTablePlugin,
   });
 
   return !!tableEntry;
@@ -321,7 +321,7 @@ export const isSingleCellSelection = (editor: BaseEditor): boolean => {
   // Get all td blocks in selection
   const cells = editor.read.nodes.toArray({
     at: selection,
-    match: { type: editor.plugin(PLUGINS.tableCell).schema.type },
+    type: BaseTableCellPlugin,
   });
 
   return cells.length === 1;

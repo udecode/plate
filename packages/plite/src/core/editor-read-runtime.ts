@@ -38,6 +38,7 @@ import type {
   EditorAboveOptions,
   EditorLevelsOptions,
   EditorNextOptions,
+  EditorParentOptions,
   EditorPreviousOptions,
   Location,
   Node,
@@ -143,9 +144,14 @@ export const createEditorReadRuntime = <V extends Value>(
 ): InternalEditorReadRuntime => ({
   above: <T extends Ancestor>(options?: EditorAboveOptions<T>) =>
     (({ options }) =>
-      withOptionsQueryRoot(editor, options, () => above(editor, options), {
-        selectionFallback: usesImplicitSelectionLocation(options),
-      }))({ options }) as NodeEntry<T> | undefined,
+      withOptionsQueryRoot(
+        editor,
+        options,
+        () => above(editor, options as never),
+        {
+          selectionFallback: usesImplicitSelectionLocation(options),
+        }
+      ))({ options }) as NodeEntry<T> | undefined,
   after: (at, options) =>
     (({ at, options }) => {
       const root = getQueryRoot(editor, [at]);
@@ -249,24 +255,44 @@ export const createEditorReadRuntime = <V extends Value>(
       withQueryRootGenerator(
         editor,
         [options?.at],
-        () => levels(editor, options),
+        () => levels(editor, options as never),
         { selectionFallback: usesImplicitSelectionLocation(options) }
       ))({
       options: options as EditorLevelsOptions<Node> | undefined,
     }) as Generator<NodeEntry<T>, void, undefined>,
   next: <T extends Descendant>(options?: EditorNextOptions<T>) =>
     (({ options }) =>
-      withOptionsQueryRoot(editor, options, () => next(editor, options), {
-        selectionFallback: usesImplicitSelectionLocation(options),
-      }))({ options: options as EditorNextOptions<Descendant> | undefined }) as
+      withOptionsQueryRoot(
+        editor,
+        options,
+        () => next(editor, options as never),
+        {
+          selectionFallback: usesImplicitSelectionLocation(options),
+        }
+      ))({ options: options as EditorNextOptions<Descendant> | undefined }) as
       | NodeEntry<T>
       | undefined,
-  parent: (at, options) =>
-    (({ at, options }) =>
-      withQueryRoot(editor, [at], () => parent(editor, at, options)))({
+  parent: ((at: Location, options?: EditorParentOptions) =>
+    (({ at, options }) => {
+      const filtered =
+        options?.type !== undefined || options?.match !== undefined;
+      const entry = withQueryRoot(editor, [at], () =>
+        (
+          parent as (
+            editor: unknown,
+            at: Location,
+            options?: unknown
+          ) => NodeEntry<Ancestor> | undefined
+        )(editor, at, options)
+      );
+
+      return filtered
+        ? entry
+        : (entry ?? failInvariant('Static parent read returned no result'));
+    })({
       at,
       options,
-    }) ?? failInvariant('Static parent read returned no result'),
+    })) as InternalEditorReadRuntime['parent'],
   path: (at, options) =>
     (({ at, options }) =>
       withQueryRoot(editor, [at], () => path(editor, at, options)))({
@@ -301,9 +327,14 @@ export const createEditorReadRuntime = <V extends Value>(
     })({ options }),
   previous: <T extends Node>(options?: EditorPreviousOptions<T>) =>
     (({ options }) =>
-      withOptionsQueryRoot(editor, options, () => previous(editor, options), {
-        selectionFallback: usesImplicitSelectionLocation(options),
-      }))({ options: options as EditorPreviousOptions<Node> | undefined }) as
+      withOptionsQueryRoot(
+        editor,
+        options,
+        () => previous(editor, options as never),
+        {
+          selectionFallback: usesImplicitSelectionLocation(options),
+        }
+      ))({ options: options as EditorPreviousOptions<Node> | undefined }) as
       | NodeEntry<T>
       | undefined,
   projectRange: (range) =>

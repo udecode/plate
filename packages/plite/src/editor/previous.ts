@@ -5,18 +5,25 @@ import {
   getSnapshot as editorGetSnapshot,
   parent as editorParent,
 } from '../interfaces/editor';
-import type { EditorStaticApi } from '../interfaces/editor';
+import type {
+  AnyEditor,
+  EditorPreviousOptions,
+  EditorStaticApi,
+} from '../interfaces/editor';
 import { LocationApi, type Span } from '../interfaces/location';
-import { NodeApi } from '../interfaces/node';
+import { type Node, NodeApi } from '../interfaces/node';
 import { PathApi } from '../interfaces/path';
 import { normalizeNodeMatch } from '../utils/node-match';
 import { node as editorNode } from './node';
 import { nodes } from './nodes';
 
-export const previous: EditorStaticApi['previous'] = (editor, options = {}) => {
+export const previous = ((
+  editor: AnyEditor,
+  options: EditorPreviousOptions<Node> = {}
+) => {
   const { from = 'before', mode = 'lowest', voids = false } = options;
   const { at = editorGetSnapshot(editor).selection } = options;
-  let match = normalizeNodeMatch(options.match);
+  let match = normalizeNodeMatch(options.type, options.match);
 
   if (!at) {
     return;
@@ -101,4 +108,4 @@ export const previous: EditorStaticApi['previous'] = (editor, options = {}) => {
   });
 
   return previous;
-};
+}) as EditorStaticApi['previous'];

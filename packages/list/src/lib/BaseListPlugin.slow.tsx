@@ -18,7 +18,6 @@ import {
   property,
   schema,
   target,
-  type Element,
   type InitialValue,
   type Value,
 } from '@platejs/plite';
@@ -48,11 +47,15 @@ const listPluginPage = BaseListPlugin.configure({
         const { nodes } = state;
 
         const nextPath = PathApi.next(path);
-        const nextNode = nodes.get<Element>(nextPath)?.[0];
+        const nextNode = nodes.get(nextPath, {
+          match: ElementApi.isElement,
+        })?.[0];
 
         if (!nextNode) {
           const nextPagePath = [path[0] + 1];
-          const nextPageNode = nodes.get<Element>(nextPagePath)?.[0];
+          const nextPageNode = nodes.get(nextPagePath, {
+            match: ElementApi.isElement,
+          })?.[0];
           const nextPageChild = nextPageNode?.children[0];
 
           if (!nextPageChild || !ElementApi.isElement(nextPageChild)) return;
@@ -73,7 +76,9 @@ const listPluginPage = BaseListPlugin.configure({
           if (path[0] === 0) return;
 
           const prevPagePath = [path[0] - 1];
-          const node = nodes.get<Element>(prevPagePath)?.[0];
+          const node = nodes.get(prevPagePath, {
+            match: ElementApi.isElement,
+          })?.[0];
 
           if (!node) return;
 
@@ -84,7 +89,9 @@ const listPluginPage = BaseListPlugin.configure({
           return [lastNode, prevPagePath.concat(node.children.length - 1)];
         }
 
-        const previousNode = nodes.get<Element>(prevPath)?.[0];
+        const previousNode = nodes.get(prevPath, {
+          match: ElementApi.isElement,
+        })?.[0];
 
         if (!previousNode) return;
 

@@ -15,21 +15,40 @@ import type {
   EditorStateSchemaApi,
   EditorExtensionTypeProvider,
   EditorReadMethods,
+  EditorInstalledUpdateGroups,
   EditorTransactionSpecBuilder,
   EditorUpdateTransaction,
   EditorUpdateTransactionProvider,
   EditorUpdateContext,
   EditorUpdateMethods,
   EditorUpdatePolicy,
+  EditorValueTypeProvider,
   EditorValueFromExtensions,
   Descendant,
   Element,
+  EditorAboveOptions,
+  EditorBlockOptions,
+  EditorLevelsOptions,
+  EditorNextOptions,
+  EditorNodeGetOptions,
+  EditorNodesReadOptions,
+  EditorParentOptions,
+  EditorPreviousOptions,
+  EditorSelectionBlockOptions,
+  EditorSelection,
+  EditorStateSelectionApi,
+  EditorTransactionSelectionApi,
   Location,
+  Node,
+  NodeEntry,
+  NodeMatch,
   NodeKey,
   NodeIn,
   NodeInsertNodesOptions,
   NodeRemoveNodesOptions,
   NodeSetNodesOptions,
+  NodeTarget,
+  NodeTypeSelector,
   PropertyValueDescriptor,
   PropertyValueOf,
   PropertyOptionsOf,
@@ -47,11 +66,13 @@ import type {
   SchemaTextProperties,
   SchemaExtensionsOf,
   SchemaTypesTarget,
+  SelectionValue,
   TransactionSpec,
   Value,
 } from '@platejs/plite';
 import type { UnionToIntersection } from '@udecode/utils';
 import type {
+  EditorGenericMethod,
   EditorSchemaSourceProvider,
   EditorExtensionDependencyReferenceFor,
   InternalEditorExtensionInstalledCapabilitiesOf,
@@ -65,6 +86,7 @@ import type {
   InferDependencies,
   InferEnabled,
   InferRead,
+  InferSelection,
   InferTargetPlugins,
   InferUpdate,
   PluginDependencySource,
@@ -143,6 +165,11 @@ type NormalizeInstalledCapability<
         (TCapability extends Readonly<{ read: infer TRead extends object }>
           ? Readonly<{ read: TRead }>
           : {}) &
+        (TCapability extends Readonly<{
+          selectionKinds: infer TSelection extends SelectionValue;
+        }>
+          ? Readonly<{ selectionKinds: TSelection }>
+          : {}) &
         (TCapability extends Readonly<{ markValue: infer TMarkValue }>
           ? Readonly<{ markValue: TMarkValue }>
           : {}) &
@@ -191,6 +218,9 @@ type CompactAuthoredPluginDefinition<D extends AnyBasePluginDefinition> =
     ([keyof InferRead<D>] extends [never]
       ? {}
       : Readonly<{ read: InferRead<D> }>) &
+    ([InferSelection<D>] extends [never]
+      ? {}
+      : Readonly<{ selectionKinds: InferSelection<D> }>) &
     ([InferPluginMarkValue<D>] extends [never]
       ? {}
       : Readonly<{ markValue: InferPluginMarkValue<D> }>) &
@@ -380,6 +410,11 @@ type NormalizeInstalledRuntimeCapability<
         (TCapability extends Readonly<{ read: infer TRead extends object }>
           ? Readonly<{ read: TRead }>
           : {}) &
+        (TCapability extends Readonly<{
+          selectionKinds: infer TSelection extends SelectionValue;
+        }>
+          ? Readonly<{ selectionKinds: TSelection }>
+          : {}) &
         (TCapability extends Readonly<{ markValue: infer TMarkValue }>
           ? Readonly<{ markValue: TMarkValue }>
           : {}) &
@@ -405,6 +440,9 @@ type CompactAuthoredRuntimePluginDefinition<D extends AnyBasePluginDefinition> =
     ([keyof InferRead<D>] extends [never]
       ? {}
       : Readonly<{ read: InferRead<D> }>) &
+    ([InferSelection<D>] extends [never]
+      ? {}
+      : Readonly<{ selectionKinds: InferSelection<D> }>) &
     ([InferPluginMarkValue<D>] extends [never]
       ? {}
       : Readonly<{ markValue: InferPluginMarkValue<D> }>) &
@@ -670,27 +708,72 @@ type ElementToggleUpdate = Readonly<{
   toggle: (options?: Omit<EditorToggleBlockOptions<Element>, 'wrap'>) => void;
 }>;
 
+type PlateGeneratedElementForSelector<TMutations, TSelector> =
+  TSelector extends readonly (infer TItem)[]
+    ? PlateGeneratedElementForSelector<TMutations, TItem>
+    : TSelector extends PluginReference
+      ? PlateElementForMutation<EditorMutationForPlugin<TMutations, TSelector>>
+      : TSelector extends string
+        ? Element & { type: TSelector }
+        : Element;
+
+type PlateElementInsertNode<TSchema, TMutations, TSelector> = [
+  TMutations,
+] extends [never]
+  ? PlateElementForSelector<TSchema, TSelector>
+  : PlateGeneratedElementForSelector<TMutations, TSelector>;
+
+type PlateElementInsertOptions<
+  TSchema,
+  TSelector extends PlateNodeTypeSelector,
+  TMutations = never,
+> = Omit<NodeInsertNodesOptions<Element>, 'match' | 'split' | 'type'> & {
+  split?: Omit<
+    NonNullable<NodeInsertNodesOptions<Element>['split']>,
+    'match' | 'type'
+  > & {
+    match?: NodeMatch<
+      PlateElementInsertNode<TSchema, TMutations, NoInfer<TSelector>>
+    >;
+    type: TSelector & NoInfer<PlateElementSelectorGuard<TSelector>>;
+  };
+};
+
+type PlateElementInsert<
+  TConstruction extends object,
+  TSchema,
+  TMutations = never,
+> = EditorGenericMethod<
+  <const TSelector extends PlateNodeTypeSelector>(
+    ...args: {} extends TConstruction
+      ? [
+          properties?: TConstruction,
+          options?: PlateElementInsertOptions<TSchema, TSelector, TMutations>,
+        ]
+      : [
+          properties: TConstruction,
+          options?: PlateElementInsertOptions<TSchema, TSelector, TMutations>,
+        ]
+  ) => void
+>;
+
 type GeneratedElementUpdate<
   TMutations,
   TPlugin extends AnyBasePluginDefinition,
 > = TPlugin['name'] extends infer TName extends keyof TMutations
   ? TMutations[TName] extends infer TMutation extends EditorElementMutation
     ? Readonly<{
-        insert: {} extends TMutation['construction']
-          ? (
-              properties?: TMutation['construction'],
-              options?: Omit<NodeInsertNodesOptions<Element>, 'match'>
-            ) => void
-          : (
-              properties: TMutation['construction'],
-              options?: Omit<NodeInsertNodesOptions<Element>, 'match'>
-            ) => void;
+        insert: PlateElementInsert<
+          TMutation['construction'],
+          InternalEditorMutationProvider<TMutations>,
+          TMutations
+        >;
         remove: (
-          options?: Omit<NodeRemoveNodesOptions<Element>, 'match'>
+          options?: Omit<NodeRemoveNodesOptions<Element>, 'match' | 'type'>
         ) => void;
         set: (
           properties: Partial<TMutation['properties']>,
-          options?: Omit<NodeSetNodesOptions<Element>, 'match'>
+          options?: Omit<NodeSetNodesOptions<Element>, 'match' | 'type'>
         ) => void;
       }> &
         (TMutation extends Readonly<{ toggle: true }>
@@ -720,32 +803,20 @@ type DefaultElementUpdate<
             >
           >
           ? Readonly<{
-              insert: {} extends SchemaElementConstructionPropertiesFor<
-                PlateSchemaSourceForInstalledDefinitions<
-                  InstalledSchemaDefinitionsOf<TSchemaDefinitions>
+              insert: PlateElementInsert<
+                SchemaElementConstructionPropertiesFor<
+                  PlateSchemaSourceForInstalledDefinitions<
+                    InstalledSchemaDefinitionsOf<TSchemaDefinitions>
+                  >,
+                  TType
                 >,
-                TType
-              >
-                ? (
-                    properties?: SchemaElementConstructionPropertiesFor<
-                      PlateSchemaSourceForInstalledDefinitions<
-                        InstalledSchemaDefinitionsOf<TSchemaDefinitions>
-                      >,
-                      TType
-                    >,
-                    options?: Omit<NodeInsertNodesOptions<Element>, 'match'>
-                  ) => void
-                : (
-                    properties: SchemaElementConstructionPropertiesFor<
-                      PlateSchemaSourceForInstalledDefinitions<
-                        InstalledSchemaDefinitionsOf<TSchemaDefinitions>
-                      >,
-                      TType
-                    >,
-                    options?: Omit<NodeInsertNodesOptions<Element>, 'match'>
-                  ) => void;
+                TSchemaDefinitions
+              >;
               remove: (
-                options?: Omit<NodeRemoveNodesOptions<Element>, 'match'>
+                options?: Omit<
+                  NodeRemoveNodesOptions<Element>,
+                  'match' | 'type'
+                >
               ) => void;
               set: (
                 properties: Partial<
@@ -756,7 +827,7 @@ type DefaultElementUpdate<
                     TType
                   >
                 >,
-                options?: Omit<NodeSetNodesOptions<Element>, 'match'>
+                options?: Omit<NodeSetNodesOptions<Element>, 'match' | 'type'>
               ) => void;
             }> &
               ('toggle' extends keyof InferUpdate<TPlugin>
@@ -1355,6 +1426,288 @@ type EditorMutationForPlugin<TMutations, TPlugin> =
       : never
     : never;
 
+type PlateElementForMutation<TMutation> =
+  TMutation extends EditorElementMutation
+    ? Element & Readonly<{ type: TMutation['type'] }> & TMutation['properties']
+    : never;
+
+type PlateElementForPlugin<TSchema, TPlugin> = [TSchema] extends [
+  InternalEditorMutationProvider<infer TMutations>,
+]
+  ? PlateElementForMutation<EditorMutationForPlugin<TMutations, TPlugin>>
+  : [TSchema] extends [InternalEditorApplicationSchemaProvider]
+    ? Element
+    : PlateElementForMutation<RawEditorMutationForPlugin<TPlugin>>;
+
+type PlatePropertiesForMutation<TMutation> =
+  TMutation extends EditorElementMutation
+    ? TMutation['properties']
+    : Readonly<Record<string, unknown>>;
+
+type PlatePropertiesForPlugin<TSchema, TPlugin> = [TSchema] extends [
+  InternalEditorMutationProvider<infer TMutations>,
+]
+  ? PlatePropertiesForMutation<EditorMutationForPlugin<TMutations, TPlugin>>
+  : [TSchema] extends [InternalEditorApplicationSchemaProvider]
+    ? Readonly<Record<string, unknown>>
+    : PlatePropertiesForMutation<RawEditorMutationForPlugin<TPlugin>>;
+
+type PlateNodeTypeSelector =
+  | PluginReference
+  | string
+  | readonly (PluginReference | string)[];
+
+/** Broad insertion options for package APIs that forward a stored selector. */
+export type PlateNodeInsertOptions = Omit<
+  NodeInsertNodesOptions<Node, NodeTypeSelector | undefined>,
+  'split'
+> & {
+  split?: Omit<
+    NonNullable<
+      NodeInsertNodesOptions<Node, NodeTypeSelector | undefined>['split']
+    >,
+    'type'
+  > & {
+    type?: PlateNodeTypeSelector;
+  };
+};
+
+type PlateElementForSelector<TSchema, TSelector> =
+  TSelector extends readonly (infer TItem)[]
+    ? PlateElementForSelector<TSchema, TItem>
+    : TSelector extends string
+      ? Element & { type: TSelector }
+      : TSelector extends PluginReference
+        ? PlateElementForPlugin<TSchema, TSelector>
+        : never;
+
+type PlatePropertiesForSelector<TSchema, TSelector> =
+  TSelector extends readonly (infer TItem)[]
+    ? PlatePropertiesForSelector<TSchema, TItem>
+    : TSelector extends PluginReference
+      ? PlatePropertiesForPlugin<TSchema, TSelector>
+      : Readonly<Record<string, unknown>>;
+
+type PlateNodesReadOptions<TNode extends Node, TSelector> = Omit<
+  EditorNodesReadOptions<TNode>,
+  'match' | 'type'
+> & {
+  match?: NodeMatch<TNode>;
+  type: TSelector & ([TNode] extends [never] ? never : unknown);
+};
+
+type PlateNodeGetOptions<TNode extends Node, TSelector> = Omit<
+  EditorNodeGetOptions<TNode>,
+  'match' | 'type'
+> & {
+  match?: NodeMatch<TNode>;
+  type: TSelector & ([TNode] extends [never] ? never : unknown);
+};
+
+type PlateAboveOptions<TNode extends Element, TSelector> = Omit<
+  EditorAboveOptions<TNode>,
+  'match' | 'type'
+> & {
+  match?: NodeMatch<TNode>;
+  type: TSelector & ([TNode] extends [never] ? never : unknown);
+};
+
+type PlateBlockOptions<TNode extends Element, TSelector> = Omit<
+  EditorBlockOptions<TNode>,
+  'match' | 'type'
+> & {
+  match?: NodeMatch<TNode>;
+  type: TSelector & ([TNode] extends [never] ? never : unknown);
+};
+
+type PlateLevelsOptions<TNode extends Node, TSelector> = Omit<
+  EditorLevelsOptions<TNode>,
+  'match' | 'type'
+> & {
+  match?: NodeMatch<TNode>;
+  type: TSelector & ([TNode] extends [never] ? never : unknown);
+};
+
+type PlateNextOptions<TNode extends Element, TSelector> = Omit<
+  EditorNextOptions<TNode>,
+  'match' | 'type'
+> & {
+  match?: NodeMatch<TNode>;
+  type: TSelector & ([TNode] extends [never] ? never : unknown);
+};
+
+type PlatePreviousOptions<TNode extends Node, TSelector> = Omit<
+  EditorPreviousOptions<TNode>,
+  'match' | 'type'
+> & {
+  match?: NodeMatch<TNode>;
+  type: TSelector & ([TNode] extends [never] ? never : unknown);
+};
+
+type PlateParentOptions<TNode extends Element, TSelector> = Omit<
+  EditorParentOptions<TNode>,
+  'match' | 'type'
+> & {
+  match?: NodeMatch<TNode>;
+  type: TSelector & ([TNode] extends [never] ? never : unknown);
+};
+
+type PlateEditorStateNodes<V extends Value, TSchema> = Omit<
+  EditorStateView<V>['nodes'],
+  | 'above'
+  | 'block'
+  | 'entries'
+  | 'find'
+  | 'get'
+  | 'levels'
+  | 'next'
+  | 'parent'
+  | 'previous'
+  | 'some'
+  | 'toArray'
+> & {
+  above: (<const TSelector extends PlateNodeTypeSelector>(
+    options: PlateAboveOptions<
+      PlateElementForSelector<TSchema, TSelector>,
+      TSelector
+    >
+  ) => NodeEntry<PlateElementForSelector<TSchema, TSelector>> | undefined) &
+    EditorStateView<V>['nodes']['above'];
+  block: (<const TSelector extends PlateNodeTypeSelector>(
+    options: PlateBlockOptions<
+      PlateElementForSelector<TSchema, TSelector>,
+      TSelector
+    >
+  ) => NodeEntry<PlateElementForSelector<TSchema, TSelector>> | undefined) &
+    EditorStateView<V>['nodes']['block'];
+  entries: (<const TSelector extends PlateNodeTypeSelector>(
+    options: PlateNodesReadOptions<
+      PlateElementForSelector<TSchema, TSelector>,
+      TSelector
+    >
+  ) => Generator<
+    NodeEntry<PlateElementForSelector<TSchema, TSelector>>,
+    void,
+    undefined
+  >) &
+    EditorStateView<V>['nodes']['entries'];
+  find: (<const TSelector extends PlateNodeTypeSelector>(
+    options: PlateNodesReadOptions<
+      PlateElementForSelector<TSchema, TSelector>,
+      TSelector
+    >
+  ) => NodeEntry<PlateElementForSelector<TSchema, TSelector>> | undefined) &
+    EditorStateView<V>['nodes']['find'];
+  get: (<const TSelector extends PlateNodeTypeSelector>(
+    at: NodeTarget,
+    options: PlateNodeGetOptions<
+      PlateElementForSelector<TSchema, TSelector>,
+      TSelector
+    >
+  ) => NodeEntry<PlateElementForSelector<TSchema, TSelector>> | undefined) &
+    EditorStateView<V>['nodes']['get'];
+  levels: (<const TSelector extends PlateNodeTypeSelector>(
+    options: PlateLevelsOptions<
+      PlateElementForSelector<TSchema, TSelector>,
+      TSelector
+    >
+  ) => Generator<
+    NodeEntry<PlateElementForSelector<TSchema, TSelector>>,
+    void,
+    undefined
+  >) &
+    EditorStateView<V>['nodes']['levels'];
+  next: (<const TSelector extends PlateNodeTypeSelector>(
+    options: PlateNextOptions<
+      PlateElementForSelector<TSchema, TSelector>,
+      TSelector
+    >
+  ) => NodeEntry<PlateElementForSelector<TSchema, TSelector>> | undefined) &
+    EditorStateView<V>['nodes']['next'];
+  parent: (<const TSelector extends PlateNodeTypeSelector>(
+    at: Parameters<EditorStateView<V>['nodes']['parent']>[0],
+    options: PlateParentOptions<
+      PlateElementForSelector<TSchema, TSelector>,
+      TSelector
+    >
+  ) => NodeEntry<PlateElementForSelector<TSchema, TSelector>> | undefined) &
+    EditorStateView<V>['nodes']['parent'];
+  previous: (<const TSelector extends PlateNodeTypeSelector>(
+    options: PlatePreviousOptions<
+      PlateElementForSelector<TSchema, TSelector>,
+      TSelector
+    >
+  ) => NodeEntry<PlateElementForSelector<TSchema, TSelector>> | undefined) &
+    EditorStateView<V>['nodes']['previous'];
+  some: (<const TSelector extends PlateNodeTypeSelector>(
+    options: PlateNodesReadOptions<
+      PlateElementForSelector<TSchema, TSelector>,
+      TSelector
+    >
+  ) => boolean) &
+    EditorStateView<V>['nodes']['some'];
+  toArray: {
+    <const TSelector extends PlateNodeTypeSelector>(
+      options: PlateNodesReadOptions<
+        PlateElementForSelector<TSchema, TSelector>,
+        TSelector
+      >
+    ): readonly NodeEntry<PlateElementForSelector<TSchema, TSelector>>[];
+    <const TSelector extends PlateNodeTypeSelector, R>(
+      options: PlateNodesReadOptions<
+        PlateElementForSelector<TSchema, TSelector>,
+        TSelector
+      >,
+      map: (entry: NodeEntry<PlateElementForSelector<TSchema, TSelector>>) => R
+    ): readonly R[];
+  } & EditorStateView<V>['nodes']['toArray'];
+};
+
+type PlateSelectionBlockOptions<TNode extends Element, TSelector> = Omit<
+  EditorSelectionBlockOptions,
+  'match' | 'type'
+> & {
+  match?: NodeMatch<TNode>;
+  type: TSelector & ([TNode] extends [never] ? never : unknown);
+};
+
+type PlateSelectionQueryMethod<TSchema, TMethod> = (<
+  const TSelector extends PlateNodeTypeSelector,
+>(
+  options: PlateSelectionBlockOptions<
+    PlateElementForSelector<TSchema, TSelector>,
+    TSelector
+  >
+) => boolean) &
+  TMethod;
+
+type PlateSelectionQueries<TSelection, TSchema> = (TSelection extends (
+  ...args: never[]
+) => infer TResult
+  ? () => TResult
+  : {}) &
+  Omit<
+    TSelection,
+    'isAcrossBlocks' | 'isAtBlockEnd' | 'isAtBlockStart' | 'isWithinBlock'
+  > & {
+    isAcrossBlocks: PlateSelectionQueryMethod<
+      TSchema,
+      TSelection extends { isAcrossBlocks: infer TMethod } ? TMethod : never
+    >;
+    isAtBlockEnd: PlateSelectionQueryMethod<
+      TSchema,
+      TSelection extends { isAtBlockEnd: infer TMethod } ? TMethod : never
+    >;
+    isAtBlockStart: PlateSelectionQueryMethod<
+      TSchema,
+      TSelection extends { isAtBlockStart: infer TMethod } ? TMethod : never
+    >;
+    isWithinBlock: PlateSelectionQueryMethod<
+      TSchema,
+      TSelection extends { isWithinBlock: infer TMethod } ? TMethod : never
+    >;
+  };
+
 type MutationPluginGuard<TMutations, TPlugin> = [
   EditorMutationForPlugin<TMutations, TPlugin>,
 ] extends [never]
@@ -1513,8 +1866,25 @@ type PlateSchemaInstalledExtension<D> = {
   name: 'plate';
 } & EditorSchemaExtensionProvider<PlateSchemaExtension<D>>;
 
+type InstalledPluginSelection<D> =
+  string extends InstalledNames<D>
+    ? SelectionValue
+    : D extends Readonly<{
+          selectionKinds: infer TSelection extends SelectionValue;
+        }>
+      ? TSelection
+      : never;
+
+type PlateInstalledSelection<D> = EditorSelection | InstalledPluginSelection<D>;
+
+type PlateSelectionTypeExtension<D> = Readonly<{
+  name: 'plate-selection-types';
+  selectionKinds: InstalledPluginSelection<D>;
+}>;
+
 type PlateInstalledExtension<V extends Value, D, S = D> = Readonly<{
   name: 'plate';
+  selectionKinds: InstalledPluginSelection<D>;
 }> &
   EditorExtensionTypeProvider<
     EditorExtensionCapabilities<{
@@ -1546,6 +1916,7 @@ type PlatePluginExtensionPortal<D> = <
 
 type PlatePluginDependencyExtension<D, S = D> = {
   name: 'plate-dependencies';
+  selectionKinds: InstalledPluginSelection<D>;
 } & EditorExtensionTypeProvider<
   EditorExtensionCapabilities<{
     api: InstalledPluginApi<D>;
@@ -1619,12 +1990,6 @@ type PlateTransactionExtension<D, S = D> = {
     >;
   }>
 >;
-
-type BivariantFunction<TFunction> = TFunction extends (
-  ...args: infer TArgs
-) => infer TResult
-  ? { bivarianceHack(...args: TArgs): TResult }['bivarianceHack']
-  : never;
 
 type WritablePropertyEntries<D> =
   D extends Readonly<{
@@ -1764,15 +2129,155 @@ type PlatePluginNodeSetOptions = Omit<NodeSetNodesOptions<any>, 'at'> & {
   at?: Descendant | Location | NodeKey;
 };
 
-type PlatePluginTransactionNodes<D> = Omit<
-  EditorUpdateTransaction<Value>['nodes'],
-  'set' | 'unset'
+type PlateNodeSelectorOptions<TOptions, TNode extends Node, TSelector> = Omit<
+  NonNullable<TOptions>,
+  'match' | 'type'
 > & {
-  set: <const TProps extends PlatePluginNodeSetProps<D>>(
-    props: TProps & ValidatePluginWritablePropertyPatch<D, TProps>,
-    options?: PlatePluginNodeSetOptions
-  ) => void;
-  unset: {
+  match?: NodeMatch<TNode>;
+  type: TSelector & ([TNode] extends [never] ? never : unknown);
+};
+
+type PlateInsertSplitOptions<TNode extends Node, TSelector> = Omit<
+  NonNullable<NodeInsertNodesOptions['split']>,
+  'match' | 'type'
+> & {
+  match?: NodeMatch<TNode>;
+  type: TSelector & ([TNode] extends [never] ? never : unknown);
+};
+
+type InvalidPlateElementSelectorItem<TItem> = TItem extends PluginReference
+  ? [RawEditorMutationForPlugin<TItem>] extends [never]
+    ? TItem
+    : never
+  : never;
+
+type PlateElementSelectorGuard<TSelector> = [
+  InvalidPlateElementSelectorItem<
+    TSelector extends readonly (infer TItem)[] ? TItem : TSelector
+  >,
+] extends [never]
+  ? unknown
+  : never;
+
+type PlateDirectNodeSelectorOptions<
+  TOptions,
+  TNode extends Node,
+  TSelector,
+> = PlateNodeSelectorOptions<TOptions, TNode, TSelector> & {
+  type: TSelector & NoInfer<PlateElementSelectorGuard<TSelector>>;
+};
+
+type PlateNodeSelectorSet<S> = <
+  const TSelector extends PlateNodeTypeSelector,
+  const TProps extends Partial<
+    PlatePropertiesForSelector<S, NoInfer<TSelector>>
+  >,
+>(
+  props: TProps,
+  options: PlateNodeSelectorOptions<
+    NodeSetNodesOptions<PlateElementForSelector<S, TSelector>>,
+    PlateElementForSelector<S, TSelector>,
+    TSelector
+  >
+) => void;
+
+type PlateNodeSelectorUnset<S> = <
+  const TSelector extends PlateNodeTypeSelector,
+  const TKey extends Extract<
+    keyof Omit<PlateElementForSelector<S, TSelector>, 'children' | 'type'>,
+    string
+  >,
+>(
+  property: TKey | readonly TKey[],
+  options: PlateNodeSelectorOptions<
+    EditorNodeUnsetOptions<PlateElementForSelector<S, TSelector>>,
+    PlateElementForSelector<S, TSelector>,
+    TSelector
+  >
+) => void;
+
+type PlatePluginTransactionNodes<D, S = D> = Omit<
+  EditorUpdateTransaction<Value>['nodes'],
+  | keyof PlateEditorStateNodes<Value, S>
+  | 'insert'
+  | 'lift'
+  | 'merge'
+  | 'move'
+  | 'remove'
+  | 'set'
+  | 'split'
+  | 'unset'
+  | 'unwrap'
+  | 'wrap'
+> & {
+  insert: (<
+    TNode extends Descendant,
+    const TSelector extends PlateNodeTypeSelector,
+  >(
+    nodes: TNode | readonly TNode[],
+    options: Omit<
+      NonNullable<
+        Parameters<EditorUpdateTransaction<Value>['nodes']['insert']>[1]
+      >,
+      'split'
+    > & {
+      split: PlateInsertSplitOptions<
+        PlateElementForSelector<S, TSelector>,
+        TSelector
+      >;
+    }
+  ) => void) &
+    (<TNode extends Descendant>(
+      nodes: TNode | readonly TNode[],
+      options?: PlateNodeInsertOptions
+    ) => void) &
+    EditorUpdateTransaction<Value>['nodes']['insert'];
+  lift: (<const TSelector extends PlateNodeTypeSelector>(
+    options: PlateNodeSelectorOptions<
+      Parameters<EditorUpdateTransaction<Value>['nodes']['lift']>[0],
+      PlateElementForSelector<S, TSelector>,
+      TSelector
+    >
+  ) => void) &
+    EditorUpdateTransaction<Value>['nodes']['lift'];
+  merge: (<const TSelector extends PlateNodeTypeSelector>(
+    options: PlateNodeSelectorOptions<
+      Parameters<EditorUpdateTransaction<Value>['nodes']['merge']>[0],
+      PlateElementForSelector<S, TSelector>,
+      TSelector
+    >
+  ) => void) &
+    EditorUpdateTransaction<Value>['nodes']['merge'];
+  move: (<const TSelector extends PlateNodeTypeSelector>(
+    options: PlateNodeSelectorOptions<
+      Parameters<EditorUpdateTransaction<Value>['nodes']['move']>[0],
+      PlateElementForSelector<S, TSelector>,
+      TSelector
+    >
+  ) => void) &
+    EditorUpdateTransaction<Value>['nodes']['move'];
+  remove: (<const TSelector extends PlateNodeTypeSelector>(
+    options: PlateNodeSelectorOptions<
+      NodeRemoveNodesOptions<PlateElementForSelector<S, TSelector>>,
+      PlateElementForSelector<S, TSelector>,
+      TSelector
+    >
+  ) => void) &
+    EditorUpdateTransaction<Value>['nodes']['remove'];
+  set: PlateNodeSelectorSet<S> &
+    (<const TProps extends PlatePluginNodeSetProps<D>>(
+      props: TProps & ValidatePluginWritablePropertyPatch<D, TProps>,
+      options?: PlatePluginNodeSetOptions
+    ) => void);
+  split: (<const TSelector extends PlateNodeTypeSelector>(
+    options: PlateNodeSelectorOptions<
+      Parameters<EditorUpdateTransaction<Value>['nodes']['split']>[0],
+      PlateElementForSelector<S, TSelector>,
+      TSelector
+    >
+  ) => void) &
+    EditorUpdateTransaction<Value>['nodes']['split'];
+  unset: PlateNodeSelectorUnset<S> & {
     <const TKey extends PluginWritablePropertyKey<D>>(
       property: TKey | readonly TKey[],
       options?: EditorNodeUnsetOptions<NodeIn<Value>>
@@ -1782,14 +2287,43 @@ type PlatePluginTransactionNodes<D> = Omit<
       options?: EditorNodeUnsetOptions<NodeIn<Value>>
     ): void;
     <TKey extends string>(
-      property: string extends TKey ? TKey | readonly TKey[] : never,
+      property: TKey | readonly TKey[],
       options?: EditorNodeUnsetOptions<NodeIn<Value>>
     ): void;
   };
-};
+  unwrap: (<const TSelector extends PlateNodeTypeSelector>(
+    options: PlateNodeSelectorOptions<
+      Parameters<EditorUpdateTransaction<Value>['nodes']['unwrap']>[0],
+      PlateElementForSelector<S, TSelector>,
+      TSelector
+    >
+  ) => void) &
+    EditorUpdateTransaction<Value>['nodes']['unwrap'];
+  wrap: (<
+    TElement extends Element,
+    const TSelector extends PlateNodeTypeSelector,
+  >(
+    element: TElement,
+    options: PlateNodeSelectorOptions<
+      Parameters<EditorUpdateTransaction<Value>['nodes']['wrap']>[1],
+      PlateElementForSelector<S, TSelector>,
+      TSelector
+    >
+  ) => void) &
+    EditorUpdateTransaction<Value>['nodes']['wrap'];
+} & PlateEditorStateNodes<Value, S>;
 
-type WithPluginWritableNodes<TTransaction, D> = Omit<TTransaction, 'nodes'> &
-  Readonly<{ nodes: PlatePluginTransactionNodes<D> }>;
+type WithPluginWritableNodes<TTransaction, D, S = D> = Omit<
+  TTransaction,
+  'nodes' | 'selection'
+> &
+  Readonly<{
+    nodes: PlatePluginTransactionNodes<D, S>;
+    selection: PlateSelectionQueries<
+      EditorTransactionSelectionApi<PlateInstalledSelection<D>>,
+      S
+    >;
+  }>;
 
 type WithPlateTransactionPluginPortal<TTransaction, D, S = D> = Omit<
   TTransaction,
@@ -1807,7 +2341,8 @@ type PlatePluginTransactionForInstalledDefinitions<
     D,
     S
   >,
-  D
+  D,
+  S
 >;
 
 type PlateEditorTransactionBuilder<
@@ -1820,24 +2355,26 @@ type PlateEditorTransactionBuilder<
     D,
     S
   >,
-  D
+  D,
+  S
 >;
 
 type PlateEditorStateView<V extends Value, D, S = D> = Omit<
   EditorStateView<V, readonly [PlateInstalledExtension<V, D, S>]>,
-  'transaction'
+  'nodes' | 'selection' | 'transaction'
 > & {
-  transaction: BivariantFunction<
-    (
+  nodes: PlateEditorStateNodes<V, S>;
+  selection: PlateSelectionQueries<
+    EditorStateSelectionApi<PlateInstalledSelection<D>>,
+    S
+  >;
+  transaction: ((
+    fn: (transaction: PlateEditorTransactionBuilder<V, D, S>) => void
+  ) => TransactionSpec) & {
+    extend: (
+      base: TransactionSpec,
       fn: (transaction: PlateEditorTransactionBuilder<V, D, S>) => void
-    ) => TransactionSpec
-  > & {
-    extend: BivariantFunction<
-      (
-        base: TransactionSpec,
-        fn: (transaction: PlateEditorTransactionBuilder<V, D, S>) => void
-      ) => TransactionSpec
-    >;
+    ) => TransactionSpec;
   };
 };
 
@@ -1849,34 +2386,172 @@ export type PlatePluginState<P extends AnyBasePluginDefinition> =
     InstalledRuntimePluginDefinitions<P>
   >;
 
-type PlateEditorRead<V extends Value, D, S = D> = EditorReadMethods<
-  V,
-  readonly [PlateInstalledExtension<V, D, S>]
+type PlateEditorRead<V extends Value, D, S = D> = Omit<
+  EditorReadMethods<V, readonly [PlateInstalledExtension<V, D, S>]>,
+  'nodes' | 'selection'
 > &
+  Readonly<{
+    nodes: PlateEditorStateNodes<V, S>;
+    selection: PlateSelectionQueries<
+      EditorStateSelectionApi<PlateInstalledSelection<D>>,
+      S
+    >;
+  }> &
   (<T>(fn: (state: PlateEditorStateView<V, D, S>) => T) => T);
 
-type PlateEditorUpdate<V extends Value, D, S = D> = {
-  <TTx extends object = {}>(
-    fn: (
-      transaction: PlatePluginTransactionForInstalledDefinitions<D, S, V> & TTx,
-      context: EditorUpdateContext<
-        PliteRuntimeBaseEditor<V, readonly [PlateInstalledExtension<V, D, S>]>
+type PlateEditorNodeSelectorMethod<TMethod, S> = TMethod extends (
+  ...args: any[]
+) => void
+  ? (<const TSelector extends PlateNodeTypeSelector>(
+      options: PlateDirectNodeSelectorOptions<
+        Parameters<TMethod>[0],
+        PlateElementForSelector<S, TSelector>,
+        TSelector
       >
-    ) => void
-  ): void;
-  <TTx extends object = {}>(
-    policy: EditorUpdatePolicy,
+    ) => void) &
+      TMethod
+  : never;
+
+type PlateEditorInsertNodes<TMethod, S> = TMethod extends (
+  ...args: any[]
+) => void
+  ? (<TNode extends Descendant, const TSelector extends PlateNodeTypeSelector>(
+      nodes: TNode | readonly TNode[],
+      options: Omit<NonNullable<Parameters<TMethod>[1]>, 'split'> & {
+        split: PlateInsertSplitOptions<
+          PlateElementForSelector<S, TSelector>,
+          TSelector
+        > & {
+          type: TSelector & NoInfer<PlateElementSelectorGuard<TSelector>>;
+        };
+      }
+    ) => void) &
+      (<TNode extends Descendant>(
+        nodes: TNode | readonly TNode[],
+        options?: PlateNodeInsertOptions
+      ) => void) &
+      TMethod
+  : never;
+
+type PlateEditorWrapNodes<TMethod, S> = TMethod extends (...args: any[]) => void
+  ? (<TElement extends Element, const TSelector extends PlateNodeTypeSelector>(
+      element: TElement,
+      options: PlateDirectNodeSelectorOptions<
+        Parameters<TMethod>[1],
+        PlateElementForSelector<S, TSelector>,
+        TSelector
+      >
+    ) => void) &
+      TMethod
+  : never;
+
+type PlateEditorUpdateNodeMethods<
+  V extends Value,
+  D,
+  S = D,
+> = EditorUpdateMethods<
+  V,
+  readonly [PlateInstalledExtension<V, D, S>]
+>['nodes'];
+
+type PlateEditorUpdateNodes<V extends Value, D, S = D> = Omit<
+  PlateEditorUpdateNodeMethods<V, D, S>,
+  | 'insert'
+  | 'lift'
+  | 'merge'
+  | 'move'
+  | 'remove'
+  | 'set'
+  | 'split'
+  | 'unset'
+  | 'unwrap'
+  | 'wrap'
+> & {
+  insert: PlateEditorInsertNodes<
+    PlateEditorUpdateNodeMethods<V, D, S>['insert'],
+    InternalEditorApplicationSchemaProvider
+  >;
+  lift: PlateEditorNodeSelectorMethod<
+    PlateEditorUpdateNodeMethods<V, D, S>['lift'],
+    InternalEditorApplicationSchemaProvider
+  >;
+  merge: PlateEditorNodeSelectorMethod<
+    PlateEditorUpdateNodeMethods<V, D, S>['merge'],
+    InternalEditorApplicationSchemaProvider
+  >;
+  move: PlateEditorNodeSelectorMethod<
+    PlateEditorUpdateNodeMethods<V, D, S>['move'],
+    InternalEditorApplicationSchemaProvider
+  >;
+  remove: PlateEditorNodeSelectorMethod<
+    PlateEditorUpdateNodeMethods<V, D, S>['remove'],
+    InternalEditorApplicationSchemaProvider
+  >;
+  set: PlateNodeSelectorSet<S> & PlateEditorUpdateNodeMethods<V, D, S>['set'];
+  split: PlateEditorNodeSelectorMethod<
+    PlateEditorUpdateNodeMethods<V, D, S>['split'],
+    InternalEditorApplicationSchemaProvider
+  >;
+  unset: PlateNodeSelectorUnset<S> &
+    PlateEditorUpdateNodeMethods<V, D, S>['unset'];
+  unwrap: PlateEditorNodeSelectorMethod<
+    PlateEditorUpdateNodeMethods<V, D, S>['unwrap'],
+    InternalEditorApplicationSchemaProvider
+  >;
+  wrap: PlateEditorWrapNodes<
+    PlateEditorUpdateNodeMethods<V, D, S>['wrap'],
+    InternalEditorApplicationSchemaProvider
+  >;
+};
+
+type PlateEditorUpdateMethods<V extends Value, D, S = D> = Omit<
+  EditorUpdateMethods<V, readonly [PlateInstalledExtension<V, D, S>]>,
+  'nodes' | 'selection'
+> & {
+  nodes: PlateEditorUpdateNodes<V, D, S>;
+  selection: EditorUpdateMethods<
+    V,
+    readonly [PlateSelectionTypeExtension<D>]
+  >['selection'];
+};
+
+type PlateEditorUpdatePolicy<V extends Value, D, S = D> = Readonly<
+  Omit<EditorUpdatePolicy, 'history'> &
+    ('history' extends keyof EditorInstalledUpdateGroups<
+      V,
+      readonly [PlateInstalledExtension<V, D, S>]
+    >
+      ? Pick<EditorUpdatePolicy, 'history'>
+      : { history?: never })
+>;
+
+type PlateEditorUpdateOverloads<V extends Value, D, S = D> = {
+  (
     fn: (
-      transaction: PlatePluginTransactionForInstalledDefinitions<D, S, V> & TTx,
+      transaction: PlatePluginTransactionForInstalledDefinitions<D, S, V>,
       context: EditorUpdateContext<
         PliteRuntimeBaseEditor<V, readonly [PlateInstalledExtension<V, D, S>]>
       >
     ) => void
   ): void;
   (
-    policy: EditorUpdatePolicy
-  ): EditorUpdateMethods<V, readonly [PlateInstalledExtension<V, D, S>]>;
-} & EditorUpdateMethods<V, readonly [PlateInstalledExtension<V, D, S>]>;
+    policy: PlateEditorUpdatePolicy<V, D, S>,
+    fn: (
+      transaction: PlatePluginTransactionForInstalledDefinitions<D, S, V>,
+      context: EditorUpdateContext<
+        PliteRuntimeBaseEditor<V, readonly [PlateInstalledExtension<V, D, S>]>
+      >
+    ) => void
+  ): void;
+  (policy: PlateEditorUpdatePolicy<V, D, S>): PlateEditorUpdateMethods<V, D, S>;
+};
+
+type PlateEditorUpdate<V extends Value, D, S = D> = PlateEditorUpdateOverloads<
+  V,
+  D,
+  S
+> &
+  PlateEditorUpdateMethods<V, D, S>;
 
 /** Dependency capabilities visible while a plugin registers editor behavior. */
 type PlatePluginExtensionEditorForInstalledDefinitions<D> =
@@ -1929,9 +2604,10 @@ export type PlatePluginTransaction<P extends AnyBasePluginDefinition> =
   >;
 
 /** Installed state capabilities visible while a plugin constructs a read group. */
-type PlatePluginReadStateForInstalledDefinitions<D> = EditorStateView<
+type PlatePluginReadStateForInstalledDefinitions<D> = PlateEditorStateView<
   Value,
-  readonly [PlatePluginDependencyExtension<D>]
+  D,
+  D
 >;
 
 export type PlatePluginReadState<P extends AnyBasePluginDefinition> =
@@ -1998,16 +2674,20 @@ export type InternalPliteEditorWithInstalledPlateDefinitions<
 > = {
   api: PlateEditorApi<V, D>;
   extension: PlatePluginExtensionPortal<D> &
-    PliteRuntimeBaseEditor<V>['extension'];
+    PliteRuntimeBaseEditor<V, readonly []>['extension'];
   read: PlateEditorRead<V, D, S> & {
     schema: PlateEditorStateSchemaApi<V, S>;
   };
   update: PlateEditorUpdate<V, D, S>;
-} & EditorStateViewProvider<() => PlateEditorStateView<V, D, S>> &
+} & EditorValueTypeProvider<() => V> &
+  EditorStateViewProvider<() => PlateEditorStateView<V, D, S>> &
   EditorUpdateTransactionProvider<
-    () => EditorUpdateTransaction<V, readonly [PlateTransactionExtension<D, S>]>
+    () => PlatePluginTransactionForInstalledDefinitions<D, S, V>
   > &
-  Omit<PliteRuntimeBaseEditor<V>, 'api' | 'extension' | 'read' | 'update'>;
+  Omit<
+    PliteRuntimeBaseEditor<V, readonly [PlateSelectionTypeExtension<D>]>,
+    'api' | 'extension' | 'read' | 'update'
+  >;
 
 export type PliteEditorWithPlatePlugins<
   V extends Value,

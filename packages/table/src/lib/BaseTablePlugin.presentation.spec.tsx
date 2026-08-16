@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { BaseTablePlugin } from './BaseTablePlugin';
+import { BaseTableCellPlugin, BaseTablePlugin } from './BaseTablePlugin';
 import {
   createTestTableEditor,
   getTestTablePlugins,
@@ -24,7 +24,9 @@ describe('table presentation', () => {
       editor: ReturnType<typeof createTableEditor>,
       path: number[]
     ) => {
-      const entry = editor.read.nodes.get<TableCellElement>(path);
+      const entry = editor.read.nodes.get(path, {
+        type: BaseTableCellPlugin,
+      });
       assert(entry);
 
       return entry[0];
@@ -155,7 +157,9 @@ describe('table presentation', () => {
       editor: ReturnType<typeof createTableEditor>,
       path: number[]
     ) => {
-      const entry = editor.read.nodes.get<TableCellElement>(path);
+      const entry = editor.read.nodes.get(path, {
+        type: BaseTableCellPlugin,
+      });
       assert(entry);
 
       return entry[0];

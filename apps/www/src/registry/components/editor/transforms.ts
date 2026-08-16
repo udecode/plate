@@ -3,6 +3,7 @@ import { PLUGINS } from '@platejs/utils';
 
 import type { PlateEditor } from 'platejs/react';
 import type { Element, NodeEntry, Path } from '@platejs/plite';
+import { BaseBlockquotePlugin } from '@platejs/basic-nodes';
 import { BaseCalloutPlugin } from '@platejs/callout';
 import { BaseCodeBlockPlugin } from '@platejs/code-block';
 import { BaseCodeDrawingPlugin } from '@platejs/code-drawing';
@@ -371,7 +372,7 @@ export const applyBlockAction = (
           node.type === actionType ||
           !!tx.nodes.above({
             at: path,
-            match: { type: actionType },
+            type: BaseBlockquotePlugin,
           });
 
         if (!isActive) {
@@ -388,9 +389,9 @@ export const applyBlockAction = (
     };
 
     if (at) {
-      const entry = tx.nodes.find<Element>({
+      const entry = tx.nodes.find({
         at,
-        match: (node) => ElementApi.isElement(node),
+        match: (node): node is Element => ElementApi.isElement(node),
       });
 
       if (entry) {
@@ -400,8 +401,9 @@ export const applyBlockAction = (
       }
     }
 
-    const entries = tx.nodes.toArray<Element>({
-      match: (node) => ElementApi.isElement(node) && tx.schema.isBlock(node),
+    const entries = tx.nodes.toArray({
+      match: (node): node is Element =>
+        ElementApi.isElement(node) && tx.schema.isBlock(node),
       mode: 'lowest',
     });
 

@@ -65,9 +65,9 @@ export function useBlockSelectionNodes() {
 
   return useMemo(
     () =>
-      editor.read.nodes.toArray<Element>({
+      editor.read.nodes.toArray({
         at: [],
-        match: (node) =>
+        match: (node): node is Element =>
           ElementApi.isElement(node) && selectedKeys.has(editor.key(node)!),
       }),
     [editor, selectedKeys]
@@ -197,7 +197,9 @@ export const useSelectionArea = (selectionAreaElement?: HTMLElement | null) => {
         if (!store.get().isSelectionAreaVisible) onStart();
 
         const getBlockByNodeKey = (nodeKey: NodeKey) =>
-          editor.read.nodes.get<Element>(nodeKey);
+          editor.read.nodes.get(nodeKey, {
+            match: ElementApi.isElement,
+          });
 
         if (changed.added.length > 0 || changed.removed.length > 0) {
           const next = new Set(store.get().selectedKeys);
@@ -232,7 +234,7 @@ export const useSelectionArea = (selectionAreaElement?: HTMLElement | null) => {
 
             const hasAncestor = editor.read.nodes.above({
               at: block[1],
-              match: (node) =>
+              match: (node): node is Element =>
                 ElementApi.isElement(node) &&
                 areaRef.current.keys.has(editor.key(node)!),
             });
@@ -296,9 +298,9 @@ export const useSelectionArea = (selectionAreaElement?: HTMLElement | null) => {
             )
               return false;
 
-            const table = editor.read.nodes.above<Element>({
+            const table = editor.read.nodes.above({
               at: block[1],
-              match: (node) => ElementApi.isElement(node),
+              match: ElementApi.isElement,
             });
 
             if (!table) return false;

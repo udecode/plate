@@ -1,5 +1,8 @@
+import type { Value } from '@platejs/plite';
 import type { PliteDecorationSource, ReactEditor } from '@platejs/plite-react';
 
+import { yjs } from '../core';
+import { getEditorYjsTx } from '../core/editor-yjs';
 import type {
   YjsRemoteCursorDecorationData,
   YjsRemoteCursorOverlayPosition,
@@ -17,12 +20,32 @@ type LabelData = {
   readonly label: string;
 };
 
-const verifyCursorOutputTypes = (editor: ReactEditor) => {
+const CursorYjs = yjs({
+  cursorData: {
+    validate: (value): value is CursorData =>
+      typeof value === 'object' &&
+      value !== null &&
+      'name' in value &&
+      typeof value.name === 'string',
+  },
+});
+
+type CursorEditor = ReactEditor<Value, readonly [typeof CursorYjs]>;
+
+const verifyCursorOutputTypes = (editor: CursorEditor) => {
+  editor.update((tx) => {
+    const yjsTx = getEditorYjsTx(tx);
+
+    yjsTx.sendCursorData({ name: 'Ada' });
+    // @ts-expect-error Cursor metadata is owned by the installed Yjs descriptor.
+    yjsTx.sendCursorData({ color: 'red' });
+  });
+
   const defaultSource: PliteDecorationSource<
     YjsRemoteCursorDecorationData<CursorData>
-  > = useYjsRemoteCursorDecorationSource<CursorData>(editor);
+  > = useYjsRemoteCursorDecorationSource(editor);
   const customSource: PliteDecorationSource<LabelData> =
-    useYjsRemoteCursorDecorationSource<CursorData, LabelData>(editor, {
+    useYjsRemoteCursorDecorationSource(editor, {
       decorate: (cursor) => ({ label: String(cursor.clientId) }),
     });
   const [defaultPositions]: readonly [
@@ -31,24 +54,30 @@ const verifyCursorOutputTypes = (editor: ReactEditor) => {
       YjsRemoteCursorDecorationData<CursorData>
     >[],
     () => void,
-  ] = useYjsRemoteCursorOverlayPositions<CursorData>(editor);
+  ] = useYjsRemoteCursorOverlayPositions(editor);
   const [customPositions]: readonly [
     readonly YjsRemoteCursorOverlayPosition<CursorData, LabelData>[],
     () => void,
-  ] = useYjsRemoteCursorOverlayPositions<CursorData, LabelData>(editor, {
+  ] = useYjsRemoteCursorOverlayPositions(editor, {
     data: (cursor) => ({ label: String(cursor.clientId) }),
   });
 
-  // @ts-expect-error Custom decoration data requires a producer.
-  useYjsRemoteCursorDecorationSource<CursorData, LabelData>(editor);
-  // @ts-expect-error Custom overlay data requires a producer.
-  useYjsRemoteCursorOverlayPositions<CursorData, LabelData>(editor);
+  // @ts-expect-error Default decoration data cannot become a custom result.
+  const invalidSource: PliteDecorationSource<LabelData> =
+    useYjsRemoteCursorDecorationSource(editor);
+  // @ts-expect-error Default overlay data cannot become a custom result.
+  const invalidPositions: readonly YjsRemoteCursorOverlayPosition<
+    CursorData,
+    LabelData
+  >[] = useYjsRemoteCursorOverlayPositions(editor)[0];
 
   return {
     customPositions,
     customSource,
     defaultPositions,
     defaultSource,
+    invalidPositions,
+    invalidSource,
   };
 };
 

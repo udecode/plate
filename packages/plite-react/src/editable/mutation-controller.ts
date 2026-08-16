@@ -179,7 +179,7 @@ const getProjectedClipboardInsertDataHandlers = (editor: RuntimeEditor) =>
 const applyProjectedClipboardInsertDataHandlers = (
   editor: RuntimeEditor,
   data: DataTransfer,
-  tx: EditorUpdateTransaction
+  tx: EditorUpdateTransaction<any, any>
 ) =>
   dispatchDOMClipboardHandlers(
     getProjectedClipboardInsertDataHandlers(editor),
@@ -190,7 +190,7 @@ const applyProjectedClipboardInsertDataHandlers = (
 
 const deleteProjectedRanges = (
   editor: RuntimeEditor,
-  tx: EditorUpdateTransaction,
+  tx: EditorUpdateTransaction<any, any>,
   ranges: readonly Range[]
 ) => {
   for (const range of [...ranges].reverse()) {
@@ -211,7 +211,7 @@ const deleteProjectedRanges = (
 
 const deleteProjectedRangeAnchors = (
   editor: RuntimeEditor,
-  tx: EditorUpdateTransaction,
+  tx: EditorUpdateTransaction<any, any>,
   rangeAnchors: Anchor<Range>[]
 ) => {
   const ranges = rangeAnchors

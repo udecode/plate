@@ -1,4 +1,4 @@
-import type { Editor, Range } from '@platejs/plite';
+import type { Range } from '@platejs/plite';
 import { DOMRootRuntime } from '@platejs/plite-dom/internal';
 
 // React only adapts canonical editor commands to the private per-root epoch.
@@ -13,6 +13,7 @@ import type {
   SelectionChangeOrigin,
   SelectionSource,
 } from './input-state';
+import type { AnyEditor } from './runtime-editor-api';
 
 export type EditableEditingEpochKind = 'destructive' | 'model-command';
 
@@ -69,11 +70,11 @@ export const isEditableEditingEpochCommand = (
 ): command is EditableEditingEpochCommand =>
   DOMRootRuntime.isInputEditingEpochCommand(command);
 
-const getInputRuntime = (editor: Editor) =>
+const getInputRuntime = (editor: AnyEditor) =>
   DOMRootRuntime.resolveInputRuntime(editor);
 
 export const getCurrentEditableEditingEpoch = (
-  editor: Editor
+  editor: AnyEditor
 ): EditableEditingEpoch | null =>
   getInputRuntime(editor).currentEditingEpoch<
     EditableCommand,
@@ -82,7 +83,7 @@ export const getCurrentEditableEditingEpoch = (
   >();
 
 export const beginEditableEditingEpoch = (
-  editor: Editor,
+  editor: AnyEditor,
   input: EditableEditingEpochInput
 ): EditableEditingEpoch =>
   getInputRuntime(editor).beginCommandEditingEpoch({
@@ -97,7 +98,7 @@ export const beginEditableEditingEpoch = (
   });
 
 export const endEditableEditingEpoch = (
-  editor: Editor
+  editor: AnyEditor
 ): EditableEditingEpoch | null =>
   getInputRuntime(editor).endEditingEpoch<
     EditableCommand,
@@ -106,7 +107,7 @@ export const endEditableEditingEpoch = (
   >();
 
 export const markEditableEditingEpochCommandHandled = (
-  editor: Editor,
+  editor: AnyEditor,
   command: EditableCommand | null
 ) => {
   if (command) {
@@ -115,17 +116,17 @@ export const markEditableEditingEpochCommandHandled = (
 };
 
 export const shouldSkipDuplicateEditableEditingEpochCommand = (
-  editor: Editor,
+  editor: AnyEditor,
   command: EditableCommand | null
 ) => getInputRuntime(editor).shouldSkipCommandEditingEpoch(command);
 
 export const completeDuplicateEditableEditingEpochCommand = (
-  editor: Editor,
+  editor: AnyEditor,
   command: EditableCommand | null
 ) => getInputRuntime(editor).completeDuplicateCommandEditingEpoch(command);
 
 export const beginOrJoinEditableEditingEpoch = (
-  editor: Editor,
+  editor: AnyEditor,
   input: EditableEditingEpochInput
 ): EditableEditingEpoch | null =>
   getInputRuntime(editor).beginOrJoinCommandEditingEpoch({
@@ -140,7 +141,7 @@ export const beginOrJoinEditableEditingEpoch = (
   });
 
 export const getEditableEditingEpochForTrace = (
-  editor: Editor,
+  editor: AnyEditor,
   trace: EditableEditingEpochTraceInput
 ): EditableEditingEpoch | null =>
   getInputRuntime(editor).editingEpochForCommandTrace<
@@ -155,7 +156,7 @@ export const getEditableEditingEpochForTrace = (
   });
 
 export const closeEditableEditingEpochAfterTrace = (
-  editor: Editor,
+  editor: AnyEditor,
   trace: EditableEditingEpochTraceInput & { epochId: number | null }
 ) => {
   getInputRuntime(editor).closeCommandEditingEpochAfterTrace({

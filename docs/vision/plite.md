@@ -75,6 +75,12 @@ donor checkout as proof after the transplant.
   Exact extension capabilities come from `editor.extension(Extension)`. Keep
   editor generics only on constructors or hooks whose typed input actually
   correlates with the result.
+- Public generics must correlate with a typed input, installed descriptor, or
+  descriptor-owned runtime validator. Update callbacks expose only installed
+  transaction groups; commands infer from their descriptors; raw schema
+  property names return `unknown`; collaborative metadata remains `unknown`
+  until its installed extension validates it. Never let a method-level generic
+  manufacture a capability or choose a result type.
 - Low-level React composition receives the actual DOM dependency as
   `react({ dom })`. Its implementation may erase exactly one invariant-union
   boundary when TypeScript 7 cannot reduce it; the public call stays one exact
@@ -105,6 +111,11 @@ donor checkout as proof after the transplant.
   their methods under `definition.name` onto the read view, active `tx`, and
   direct update surface. Use `txOnly(...)` for controls that require an active
   transaction. Do not restore descriptor `state`/`tx` authoring.
+- Custom selection payloads are installed capabilities. One `selectionKinds`
+  declaration owns the payload type and runtime protocol; concrete editor reads
+  and updates infer it from the installed descriptor tuple. Plite has no
+  ambient selection registry, side-effect type registration, or open custom
+  kind fallback.
 - `EditorExtension` stays flat except for the coherent `on.*` event family.
   Lifecycle and host/DOM observation use prefixless child names; Plate extends
   the same family with names such as `keyDown`, `paste`, `nodeChange`,

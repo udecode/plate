@@ -6,12 +6,12 @@ import {
   BaseParagraphPlugin,
   type DefinitionOf,
   defineBasePlugin,
+  type PlateNodeInsertOptions,
 } from '@platejs/core';
 import {
   type Descendant,
   type Element,
   type ElementOf,
-  type NodeInsertNodesOptions,
   type NodeEntry,
   type Path,
   type Point,
@@ -170,9 +170,9 @@ export const BaseFootnotePlugin = defineBasePlugin('footnote', {
       const definitionsByIdentifier = new Map<string, NodeEntry<Footnote>[]>();
       const referencesByIdentifier = new Map<string, NodeEntry<Footnote>[]>();
 
-      for (const entry of state.nodes.toArray<Footnote>({
+      for (const entry of state.nodes.toArray({
         at: [],
-        match: (node) =>
+        match: (node): node is Footnote =>
           ElementApi.isElement(node) &&
           (node.type === definitionType || node.type === referenceType),
       })) {
@@ -254,7 +254,10 @@ export const BaseFootnotePlugin = defineBasePlugin('footnote', {
         ),
       ],
       isDuplicateDefinition: ({ path }: { path: Path }) => {
-        const entry = state.nodes.get<Footnote>(path);
+        const entry = state.nodes.get(path, {
+          match: (node): node is FootnoteDefinitionElement =>
+            ElementApi.isElement(node) && node.type === definitionType,
+        });
 
         if (!entry || entry[0].type !== definitionType) return false;
 
@@ -314,7 +317,9 @@ export const BaseFootnotePlugin = defineBasePlugin('footnote', {
         ? definition.schema.type
         : undefined;
       const referencePoint = (path: Path) => {
-        const parentEntry = tx.nodes.parent<Element>(path);
+        const parentEntry = tx.nodes.parent(path, {
+          match: ElementApi.isElement,
+        });
         let point: Point | undefined;
 
         if (parentEntry) {
@@ -346,10 +351,10 @@ export const BaseFootnotePlugin = defineBasePlugin('footnote', {
         identifier?: string;
         path: Path;
       }) => {
-        const entry =
-          tx.nodes.get<
-            ElementOf<typeof BaseFootnoteDefinitionPlugin | typeof plugin>
-          >(path);
+        const entry = tx.nodes.get(path, {
+          match: (node): node is FootnoteDefinitionElement =>
+            ElementApi.isElement(node) && node.type === definitionType,
+        });
 
         if (!entry || entry[0].type !== definitionType) return false;
         if (!entry[0].identifier) return false;
@@ -481,7 +486,7 @@ export const BaseFootnotePlugin = defineBasePlugin('footnote', {
           identifier?: string;
           trigger?: string;
         } = {},
-        options: NodeInsertNodesOptions<ElementOf<typeof plugin>> = {}
+        options: PlateNodeInsertOptions = {}
       ) => {
         let selection = tx.selection();
 

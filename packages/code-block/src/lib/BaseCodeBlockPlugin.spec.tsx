@@ -256,10 +256,12 @@ describe('BaseCodeBlockPlugin', () => {
     });
 
   const getCodeBlock = (editor: ReturnType<typeof createFormatterEditor>) => {
-    const entry = editor.read.nodes.get<CodeBlockElement>([0]);
-    assert(entry);
+    const entry = editor
+      .plugin(BaseCodeBlockPlugin)
+      .read.entry({ at: [0, 0, 0] });
+    assert(entry?.codeBlock);
 
-    return entry[0];
+    return entry.codeBlock[0];
   };
 
   describe('formatter', () => {

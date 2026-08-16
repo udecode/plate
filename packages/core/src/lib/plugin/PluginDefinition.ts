@@ -18,6 +18,7 @@ import type {
   SchemaPropertyHandle,
   SchemaPropertyKey,
   SchemaTextPropertyOptions,
+  SelectionValue,
   Text,
 } from '@platejs/plite';
 import type {
@@ -77,7 +78,8 @@ export type BasePluginDefinition = Readonly<{
   render?: true;
   rules?: true;
   schema?: PluginSchemaDeclaration;
-  selectionKinds?: true;
+  /** Exact custom selection payload union, never the callback-rich specs. */
+  selectionKinds?: SelectionValue;
   selectors?: object;
   shortcuts?: true;
   stateFields?: true;
@@ -113,9 +115,11 @@ type PublicDependencyReferences<TReferences> =
     : readonly [];
 
 type PublicPluginDefinition<D extends AnyBasePluginDefinition> = Readonly<{
-  [TKey in keyof D]: TKey extends 'conflicts' | 'dependencies'
-    ? PublicDependencyReferences<D[TKey]>
-    : D[TKey];
+  [TKey in keyof D]: TKey extends 'selectionKinds'
+    ? true
+    : TKey extends 'conflicts' | 'dependencies'
+      ? PublicDependencyReferences<D[TKey]>
+      : D[TKey];
 }>;
 
 /** Extract the exact normalized public definition from a Base or Plate descriptor. */
@@ -667,6 +671,12 @@ export type InferRead<P> = P extends { read: infer R extends object } ? R : {};
 export type InferUpdate<P> = P extends { update: infer U extends object }
   ? U
   : {};
+
+export type InferSelection<P> = P extends {
+  selectionKinds: infer TSelection extends SelectionValue;
+}
+  ? TSelection
+  : never;
 
 /** Transient leaf fields produced by one plugin's decorator. */
 export type InferPluginDecoration<P> = P extends {

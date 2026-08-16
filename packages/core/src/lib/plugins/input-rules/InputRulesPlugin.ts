@@ -1,6 +1,6 @@
 import {
-  type EditorStateView,
   type Element,
+  type EditorStateView,
   editorCommands,
   ElementApi,
   NodeApi,
@@ -46,9 +46,9 @@ export const InputRulesPlugin = defineBasePlugin('inputRules', {
     const isCollapsed = !!selection && RangeApi.isCollapsed(selection);
     const getBlockEntry = createCachedGetter(() =>
       selection
-        ? state.nodes.above<Element>({
+        ? state.nodes.above({
             at: selection.focus,
-            match: (node) =>
+            match: (node): node is Element =>
               ElementApi.isElement(node) && state.schema.isBlock(node),
           })
         : undefined

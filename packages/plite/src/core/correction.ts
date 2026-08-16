@@ -1,11 +1,11 @@
-import {
-  type EditorCorrection,
-  type EditorCorrectionContext,
-  NodeApi,
-  type NodeEntry,
-  type Value,
+import type {
+  EditorCorrection,
+  EditorCorrectionContext,
+  NodeEntry,
+  Value,
 } from '../interfaces';
 import type { AnyEditor as Editor } from '../interfaces/editor';
+import { normalizeNodeMatch } from '../utils/node-match';
 import { getCorrectionUpdateView, getMutationVersion } from './public-state';
 
 export const matchesEditorCorrection = (
@@ -15,9 +15,12 @@ export const matchesEditorCorrection = (
   const [node, path] = entry;
   const query = correction.query;
 
-  return query === 'root'
-    ? path.length === 0
-    : path.length > 0 && (!query || NodeApi.matches(node, query, path));
+  if (query === 'root') return path.length === 0;
+  if (path.length === 0) return false;
+
+  const match = query && normalizeNodeMatch(query.type, query.match);
+
+  return match ? match(node, path) : true;
 };
 
 /** Run one registered semantic correction against one matching node. */

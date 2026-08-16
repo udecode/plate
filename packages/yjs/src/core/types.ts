@@ -86,6 +86,13 @@ export type YjsAwarenessSelection = {
 
 export type YjsRemoteCursorData = Readonly<Record<string, unknown>>;
 
+/** Runtime contract for cursor metadata received from other collaborators. */
+export type YjsCursorDataSchema<
+  TCursorData extends YjsRemoteCursorData = YjsRemoteCursorData,
+> = Readonly<{
+  validate: (value: unknown) => value is TCursorData;
+}>;
+
 export type YjsRemoteCursor<
   TCursorData extends YjsRemoteCursorData = YjsRemoteCursorData,
 > = {
@@ -143,7 +150,7 @@ export type YjsSharedEffectCompactionOptions = Readonly<{
   threshold?: number;
 }>;
 
-export type YjsExtensionOptions = {
+type YjsExtensionBaseOptions = {
   readonly autoSendSelection?: boolean;
   readonly awareness?: YjsAwarenessLike;
   readonly awarenessDataField?: string;
@@ -157,7 +164,15 @@ export type YjsExtensionOptions = {
   readonly sharedEffectCompaction?: YjsSharedEffectCompactionOptions;
 };
 
-export type YjsState = {
+export type YjsExtensionOptions = YjsExtensionBaseOptions &
+  (
+    | Readonly<{ cursorData?: never }>
+    | Readonly<{ cursorData: YjsCursorDataSchema }>
+  );
+
+export type YjsState<
+  TCursorData extends YjsRemoteCursorData = YjsRemoteCursorData,
+> = {
   readonly awarenessRevision: () => number;
   readonly clientId: () => number | string;
   readonly connected: () => boolean;
@@ -166,21 +181,19 @@ export type YjsState = {
   readonly providerRevision: () => number;
   readonly providerStatus: () => YjsProviderStatus | null;
   readonly providerSynced: () => boolean | null;
-  readonly remoteCursor: <
-    TCursorData extends YjsRemoteCursorData = YjsRemoteCursorData,
-  >(
+  readonly remoteCursor: (
     clientId: number
   ) => YjsRemoteCursor<TCursorData> | null;
-  readonly remoteCursors: <
-    TCursorData extends YjsRemoteCursorData = YjsRemoteCursorData,
-  >() => readonly YjsRemoteCursor<TCursorData>[];
+  readonly remoteCursors: () => readonly YjsRemoteCursor<TCursorData>[];
   readonly root: () => Y.XmlElement;
   readonly subscribeAwareness: (listener: () => void) => () => void;
   readonly subscribeProvider: (listener: () => void) => () => void;
   readonly trace: () => readonly YjsTraceEntry[];
 };
 
-export type YjsTx = {
+export type YjsTx<
+  TCursorData extends YjsRemoteCursorData = YjsRemoteCursorData,
+> = {
   readonly clearSelection: () => void;
   readonly clearTrace: () => void;
   readonly connect: () => void;
@@ -194,9 +207,9 @@ export type YjsTx = {
    * delivery. Compaction-authority only; a returning peer needs a fresh Y.Doc.
    */
   readonly retireSharedEffectPeer: (peerId: number | string) => void;
-  readonly sendCursorData: (data: YjsRemoteCursorData | null) => void;
+  readonly sendCursorData: (data: TCursorData | null) => void;
   readonly sendSelection: (
     range?: Range | null,
-    data?: YjsRemoteCursorData | null
+    data?: TCursorData | null
   ) => void;
 };

@@ -57,6 +57,31 @@ const editor = createEditor({
 });
 ```
 
+Cursor metadata uses one extension-owned runtime contract. That contract types
+state, updates, and React hooks without method-level generics.
+
+```tsx
+type CursorData = { color: string; name: string }
+
+const YjsExtension = yjs({
+  cursorData: {
+    validate: (value): value is CursorData =>
+      typeof value === 'object' &&
+      value !== null &&
+      'color' in value &&
+      typeof value.color === 'string' &&
+      'name' in value &&
+      typeof value.name === 'string',
+  },
+  doc,
+})
+
+const editor = createEditor({
+  extensions: [YjsExtension] as const,
+  initialValue,
+})
+```
+
 Each shared root records the compiled schema identity that owns its document.
 Peers must agree on the schema ID, version, and fingerprint. A nonempty Yjs
 root without schema metadata and a root with mismatched schema semantics both

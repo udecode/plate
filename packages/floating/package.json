@@ -43,7 +43,6 @@
     "@floating-ui/react": "^0.26.23",
     "@platejs/core": "workspace:^",
     "@platejs/plite": "workspace:^",
-    "@platejs/plite-dom": "workspace:^",
     "@platejs/plite-react": "workspace:^",
     "@udecode/react-utils": "workspace:^",
     "@udecode/utils": "workspace:^",

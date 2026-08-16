@@ -10,18 +10,22 @@ import type {
   EditorSchemaExtensionProvider,
   EditorExtensionDefinitionInput,
   EditorExtensionReference,
+  EditorSelectionSpec,
   EditorNodeChangeContext,
   EditorCoreStateView,
   EditorTextChangeContext,
   EditorTransactionChangeContext,
   EditorUpdateContext,
   NodeEntry,
+  NodeMatch,
+  NodeTypeSelector,
   Path,
   PropertyValueDescriptor,
   PropertyValueOf,
   SchemaElementProperty,
   SchemaProperty,
   SchemaTextProperty,
+  SelectionValue,
   Text,
   Value,
 } from '@platejs/plite';
@@ -1046,15 +1050,26 @@ type BaseNativeCorrection<C extends AnyBasePluginDefinition> = NonNullable<
 type BaseNativeCorrectionContext<C extends AnyBasePluginDefinition> =
   Parameters<BaseNativeCorrection<C>['correct']>[0];
 
+type BasePluginCorrectionType =
+  | NodeTypeSelector
+  | PluginReference
+  | readonly (NodeTypeSelector | PluginReference)[];
+
 type BasePluginCorrection<C extends AnyBasePluginDefinition> = Omit<
   BaseNativeCorrection<C>,
-  'correct'
+  'correct' | 'query'
 > & {
   correct: (
     context: Omit<BaseNativeCorrectionContext<C>, 'tx'> & {
       tx: BaseNativeCorrectionContext<C>['tx'] & PlatePluginTransaction<C>;
     }
   ) => void;
+  query?:
+    | 'root'
+    | Readonly<{
+        match?: NodeMatch;
+        type?: BasePluginCorrectionType;
+      }>;
 };
 
 type BasePluginAuthorFields<
@@ -1394,6 +1409,13 @@ type BasePluginShortcutRecord = Record<
   EditorShortcut | null | undefined
 >;
 
+type BasePluginSelectionFromKinds<
+  TSelectionKinds extends readonly EditorSelectionSpec<any>[],
+> =
+  TSelectionKinds[number] extends EditorSelectionSpec<infer TSelection>
+    ? Extract<TSelection, SelectionValue>
+    : never;
+
 type BasePluginStageConflictInput<TNames extends readonly string[]> = {
   readonly [TIndex in keyof TNames]: (
     | EditorExtensionReference
@@ -1409,6 +1431,7 @@ type BasePluginStageInput<
   TApi extends object,
   TRead extends object,
   TSelectors extends PluginSelectors<InferPluginStoreState<C>>,
+  TSelectionKinds extends readonly EditorSelectionSpec<any>[],
   TUpdate extends object,
   TDecoration extends object,
   TConflictNames extends readonly string[],
@@ -1432,6 +1455,7 @@ type BasePluginStageInput<
       }
     ) => TRead;
     selectors?: TSelectors & PluginSelectors<InferPluginStoreState<C>>;
+    selectionKinds?: TSelectionKinds;
     shortcuts?: PluginShortcutInput<C, TShortcuts, EditorShortcut>;
     targetPlugins?: TTargetPlugins;
     update?: (
@@ -1468,6 +1492,7 @@ type BasePluginStageSpecialKey =
   | 'enabled'
   | 'initialState'
   | 'read'
+  | 'selectionKinds'
   | 'selectors'
   | 'shortcuts'
   | 'targetPlugins'
@@ -1485,6 +1510,7 @@ type BasePluginStageContribution<
   TApi extends object,
   TRead extends object,
   TSelectors extends object,
+  TSelectionKinds extends readonly EditorSelectionSpec<any>[],
   TUpdate extends object,
   TDecoration extends object,
   TConflictNames extends readonly string[],
@@ -1504,6 +1530,11 @@ type BasePluginStageContribution<
     : Readonly<Record<never, never>>) &
   ('selectors' extends TKeys
     ? Readonly<{ selectors: TSelectors }>
+    : Readonly<Record<never, never>>) &
+  ('selectionKinds' extends TKeys
+    ? Readonly<{
+        selectionKinds: BasePluginSelectionFromKinds<TSelectionKinds>;
+      }>
     : Readonly<Record<never, never>>) &
   ('update' extends TKeys
     ? Readonly<{ update: TUpdate }>
@@ -1533,6 +1564,7 @@ type BasePluginStageDefinition<
   TApi extends object = {},
   TRead extends object = {},
   TSelectors extends object = {},
+  TSelectionKinds extends readonly EditorSelectionSpec<any>[] = readonly [],
   TUpdate extends object = {},
   TDecoration extends object = {},
   TConflictNames extends readonly string[] = readonly [],
@@ -1552,6 +1584,7 @@ type BasePluginStageDefinition<
       >,
       PluginSelectorMethods<TSelectors>
     >,
+    TSelectionKinds,
     TUpdate,
     TDecoration,
     TConflictNames,
@@ -1570,6 +1603,7 @@ type BasePluginStageDefinition<
       >,
       PluginSelectorMethods<TSelectors>
     >,
+    TSelectionKinds,
     TUpdate,
     TDecoration,
     TConflictNames,
@@ -1646,6 +1680,8 @@ interface BasePluginMethods<
     const TApi extends object = {},
     const TRead extends object = {},
     const TSelectors extends PluginSelectors<InferPluginStoreState<C>> = {},
+    const TSelectionKinds extends
+      readonly EditorSelectionSpec<any>[] = readonly [],
     const TUpdate extends object = {},
     const TDecoration extends object = {},
     const TConflictNames extends readonly string[] = readonly [],
@@ -1665,6 +1701,7 @@ interface BasePluginMethods<
       TApi,
       TRead,
       TSelectors,
+      TSelectionKinds,
       TUpdate,
       TDecoration,
       TConflictNames,
@@ -1680,6 +1717,7 @@ interface BasePluginMethods<
       TApi,
       TRead,
       TSelectors,
+      TSelectionKinds,
       TUpdate,
       TDecoration,
       TConflictNames,
@@ -1716,6 +1754,8 @@ interface BasePluginMethods<
     const TApi extends object = {},
     const TRead extends object = {},
     const TSelectors extends PluginSelectors<InferPluginStoreState<C>> = {},
+    const TSelectionKinds extends
+      readonly EditorSelectionSpec<any>[] = readonly [],
     const TUpdate extends object = {},
     const TDecoration extends object = {},
     const TConflictNames extends readonly string[] = readonly [],
@@ -1733,6 +1773,7 @@ interface BasePluginMethods<
       TApi,
       TRead,
       TSelectors,
+      TSelectionKinds,
       TUpdate,
       TDecoration,
       TConflictNames,
@@ -1748,6 +1789,7 @@ interface BasePluginMethods<
       TApi,
       TRead,
       TSelectors,
+      TSelectionKinds,
       TUpdate,
       TDecoration,
       TConflictNames,

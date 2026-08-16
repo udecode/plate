@@ -6,16 +6,26 @@ import {
 
 import { YjsController } from './controller';
 import type {
+  YjsCursorDataSchema,
   YjsExtensionOptions,
   YjsRemoteCursorData,
   YjsState,
   YjsTx,
 } from './types';
 
-const activeControllers = new WeakMap<Editor, YjsController>();
+type YjsCursorDataOfOptions<TOptions> =
+  TOptions extends Readonly<{
+    cursorData: YjsCursorDataSchema<infer TCursorData>;
+  }>
+    ? TCursorData
+    : YjsRemoteCursorData;
 
-const createDeferredYjsState = (getController: () => YjsController) => {
-  const state: YjsState = {
+const activeControllers = new WeakMap<Editor, YjsController<any>>();
+
+const createDeferredYjsState = <TCursorData extends YjsRemoteCursorData>(
+  getController: () => YjsController<TCursorData>
+): YjsState<TCursorData> => {
+  const state: YjsState<TCursorData> = {
     awarenessRevision: () => getController().state().awarenessRevision(),
     clientId: () => getController().state().clientId(),
     connected: () => getController().state().connected(),
@@ -24,14 +34,8 @@ const createDeferredYjsState = (getController: () => YjsController) => {
     providerRevision: () => getController().state().providerRevision(),
     providerStatus: () => getController().state().providerStatus(),
     providerSynced: () => getController().state().providerSynced(),
-    remoteCursor: <
-      TCursorData extends YjsRemoteCursorData = YjsRemoteCursorData,
-    >(
-      clientId: number
-    ) => getController().state().remoteCursor<TCursorData>(clientId),
-    remoteCursors: <
-      TCursorData extends YjsRemoteCursorData = YjsRemoteCursorData,
-    >() => getController().state().remoteCursors<TCursorData>(),
+    remoteCursor: (clientId) => getController().state().remoteCursor(clientId),
+    remoteCursors: () => getController().state().remoteCursors(),
     root: () => getController().state().root(),
     subscribeAwareness: (listener) =>
       getController().state().subscribeAwareness(listener),
@@ -43,7 +47,9 @@ const createDeferredYjsState = (getController: () => YjsController) => {
   return Object.freeze(state);
 };
 
-const createDeferredYjsTx = (getController: () => YjsController): YjsTx =>
+const createDeferredYjsTx = <TCursorData extends YjsRemoteCursorData>(
+  getController: () => YjsController<TCursorData>
+): YjsTx<TCursorData> =>
   Object.freeze({
     clearSelection: () => getController().tx().clearSelection(),
     clearTrace: () => getController().tx().clearTrace(),
@@ -60,9 +66,11 @@ const createDeferredYjsTx = (getController: () => YjsController): YjsTx =>
       getController().tx().sendSelection(range, data),
   });
 
-export const yjs = (options: YjsExtensionOptions = {}) => {
+const createYjsExtension = <TCursorData extends YjsRemoteCursorData>(
+  options: YjsExtensionOptions
+) => {
   const activationErrors = new WeakMap<Editor, unknown>();
-  const controllers = new WeakMap<Editor, YjsController>();
+  const controllers = new WeakMap<Editor, YjsController<TCursorData>>();
   const getController = (editor: Editor) => {
     const owner = getEditorRuntimeOwner(editor);
     const controller = controllers.get(owner);
@@ -111,7 +119,7 @@ export const yjs = (options: YjsExtensionOptions = {}) => {
 
       const controller = (() => {
         try {
-          return new YjsController(owner, options, {
+          return new YjsController<TCursorData>(owner, options, {
             canonicalize: (root, children) =>
               owner.read((state) => {
                 const before = state.value();
@@ -218,5 +226,17 @@ export const yjs = (options: YjsExtensionOptions = {}) => {
     },
   });
 };
+
+type YjsExtensionFor<TCursorData extends YjsRemoteCursorData> = ReturnType<
+  typeof createYjsExtension<TCursorData>
+>;
+
+export function yjs(): YjsExtensionFor<YjsRemoteCursorData>;
+export function yjs<const TOptions extends YjsExtensionOptions>(
+  options: TOptions
+): YjsExtensionFor<YjsCursorDataOfOptions<TOptions>>;
+export function yjs(options: YjsExtensionOptions = {}): YjsExtensionFor<any> {
+  return createYjsExtension<any>(options);
+}
 
 export type YjsExtension = ReturnType<typeof yjs>;

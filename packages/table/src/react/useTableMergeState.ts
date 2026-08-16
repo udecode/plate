@@ -10,11 +10,9 @@ export const useTableMergeState = () => {
   const { disableMerge } = store.get();
 
   const readOnly = useEditorReadOnly();
-  const someTable = useEditorSelector((editor) => {
-    const { schema } = editor.plugin(TablePlugin);
-
-    return editor.read.nodes.some({ match: { type: schema.type } });
-  });
+  const someTable = useEditorSelector((editor) =>
+    editor.read.nodes.some({ type: TablePlugin })
+  );
   const selectionExpanded = useEditorSelector((editor) =>
     editor.read.selection.isExpanded()
   );

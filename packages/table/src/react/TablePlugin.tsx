@@ -201,18 +201,17 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
     keyDown: ({ editor, event, read, update }) => {
       if (event.defaultPrevented) return;
 
-      const cellType = editor.plugin(TableCellPlugin).schema.type;
       const getMoveContext = (point = editor.read.selection()?.anchor) => {
         if (
           !point ||
-          !editor.read.selection.isWithinBlock({ match: { type: cellType } })
+          !editor.read.selection.isWithinBlock({ type: TableCellPlugin })
         ) {
           return;
         }
 
         const cellEntry = editor.read.nodes.above({
           at: point,
-          match: { type: cellType },
+          type: TableCellPlugin,
         });
         const blockEntry = editor.read.nodes.block({ at: point });
 

@@ -3,10 +3,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { isHotkey } from '@platejs/core';
 import { useEditor, useElement } from '@platejs/core/react';
 
-import {
-  BaseImagePlugin,
-  type ImageElement,
-} from '../../lib/image/BaseImagePlugin';
+import { BaseImagePlugin } from '../../lib/image/BaseImagePlugin';
 import { ImagePlugin } from '../plugins';
 import { ImagePreviewStore, useImagePreviewValue } from './ImageStore';
 
@@ -59,11 +56,9 @@ export const useImage = () => {
         ImagePreviewStore.set(
           'previewList',
           Array.from(
-            editor.read.nodes.entries<ImageElement>({
+            editor.read.nodes.entries({
               at: [],
-              match: {
-                type: editor.plugin(BaseImagePlugin).schema.type,
-              },
+              type: BaseImagePlugin,
             }),
             ([node, path]) => ({
               key: editor.key(path)!,

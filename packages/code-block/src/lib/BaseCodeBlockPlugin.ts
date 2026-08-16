@@ -4,6 +4,7 @@ import {
   defineBasePlugin,
   DebugPlugin,
   type DefinitionOf,
+  type PlateNodeInsertOptions,
 } from '@platejs/core';
 import {
   ContentSlice,
@@ -16,7 +17,6 @@ import {
   type Location,
   NodeApi,
   type NodeEntry,
-  type NodeInsertNodesOptions,
   PathApi,
   property,
   RangeApi,
@@ -86,33 +86,24 @@ export const BaseCodeLinePlugin = defineBasePlugin(PLUGINS.codeLine, {
 
 export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
   dependencies: [BaseCodeLinePlugin],
-  read: ({ editor, state }) => {
-    const type = editor.plugin(PLUGINS.codeBlock).schema.type;
-    const entry = <N extends Element = Element>({
+  read: ({ plugin, state }) => {
+    const entry = ({
       at = state.selection(),
     }: {
       at?: Location | null;
     } = {}) => {
       if (!at) return;
 
-      const codeLine = state.nodes.above<N>({
+      const codeLine = state.nodes.above({
         at,
-        match: (node): node is N =>
-          ElementApi.isElement<N>(node) &&
-          node.type === editor.plugin(PLUGINS.codeLine).schema.type,
+        type: BaseCodeLinePlugin,
       });
 
       if (!codeLine) return;
 
-      const codeBlock = state.nodes.parent<N>(codeLine[1]);
+      const codeBlock = state.nodes.parent(codeLine[1], { type: plugin });
 
-      if (
-        !codeBlock ||
-        !ElementApi.isElement(codeBlock[0]) ||
-        codeBlock[0].type !== type
-      ) {
-        return;
-      }
+      if (!codeBlock) return;
 
       return { codeBlock, codeLine };
     };
@@ -196,7 +187,7 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
             !selection ||
             !state.nodes.some({
               at: selection,
-              match: { type: codeLineType },
+              type: codeLineType,
             })
           );
         },
@@ -239,9 +230,9 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
           if (!at) return;
 
           const codeBlockEntries = Array.from(
-            tx.nodes.entries<Element>({
+            tx.nodes.entries({
               at,
-              match: { type },
+              type: plugin,
             })
           ).reverse();
 
@@ -256,12 +247,12 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
             });
             tx.nodes.unwrap({
               at: codeBlockPath,
-              match: { type },
+              type: plugin,
             });
           }
         };
         const insertBlock = (
-          options: Omit<NodeInsertNodesOptions<Element>, 'match'> = {}
+          options: Omit<PlateNodeInsertOptions, 'split'> = {}
         ) => {
           const selection = tx.selection();
 
@@ -269,22 +260,28 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
 
           const codeLineType = editor.plugin(PLUGINS.codeLine).schema.type;
 
-          if (tx.nodes.some({ match: { type: [type, codeLineType] } })) return;
+          if (tx.nodes.some({ type: [plugin, BaseCodeLinePlugin] })) return;
           if (!tx.selection.isAtBlockStart()) tx.break.insert();
+
+          const mutationOptions = {
+            at: options.at,
+            mode: options.mode,
+            voids: options.voids,
+          };
 
           tx.nodes.set(
             {
               children: [{ text: '' }],
               type: codeLineType,
             },
-            options
+            mutationOptions
           );
           tx.nodes.wrap(
             {
               children: [],
               type,
             },
-            options
+            mutationOptions
           );
         };
         const indent = ({
@@ -347,11 +344,9 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
           );
         };
         const tab = (reverse = false) => {
-          const codeLines = tx.nodes.toArray<Element>({
+          const codeLines = tx.nodes.toArray({
             at: tx.selection() ?? undefined,
-            match: {
-              type: editor.plugin(PLUGINS.codeLine).schema.type,
-            },
+            type: BaseCodeLinePlugin,
           });
 
           if (codeLines.length === 0) return false;
@@ -365,9 +360,13 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
 
           for (const codeLineAnchor of codeLineAnchors) {
             const path = codeLineAnchor.release();
-            const codeLine = path ? tx.nodes.get<Element>(path) : undefined;
+            const codeLine = path
+              ? tx.nodes.get(path, { type: BaseCodeLinePlugin })
+              : undefined;
 
-            if (!codeLine || !tx.nodes.parent<Element>(codeLine[1])) continue;
+            if (!codeLine || !tx.nodes.parent(codeLine[1], { type: plugin })) {
+              continue;
+            }
 
             if (reverse) {
               outdent({ codeLine });
@@ -401,7 +400,7 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
             {
               defaultType = editor.plugin(PLUGINS.paragraph).schema.type,
             }: { defaultType?: string } = {},
-            options: Omit<NodeInsertNodesOptions<Element>, 'match'> = {}
+            options: Omit<PlateNodeInsertOptions, 'split'> = {}
           ) => {
             const selection = tx.selection();
 
@@ -432,15 +431,15 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
             insertBlock(codeBlockOptions);
           },
           resetBlock: () => {
-            if (!tx.nodes.block({ match: { type } })) return false;
+            if (!tx.nodes.block({ type: plugin })) return false;
 
             unwrap();
 
             return true;
           },
           selectAll: () => {
-            const codeBlock = tx.nodes.above<Element>({
-              match: { type },
+            const codeBlock = tx.nodes.above({
+              type: plugin,
             });
 
             if (!codeBlock) return false;
@@ -468,7 +467,7 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
 
             const isActive = tx.nodes.some({
               at: selection,
-              match: { type },
+              type: plugin,
             });
 
             unwrap();
@@ -562,13 +561,11 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
 
           if (!selection || state.selection.isExpanded()) return false;
 
-          const codeLine = state.nodes.above<Element>({
-            match: {
-              type: context.editor.plugin(PLUGINS.codeLine).schema.type,
-            },
+          const codeLine = state.nodes.above({
+            type: BaseCodeLinePlugin,
           });
           const codeBlock = codeLine
-            ? state.nodes.parent<Element>(codeLine[1])
+            ? state.nodes.parent(codeLine[1], { type: context.plugin })
             : undefined;
 
           if (
@@ -576,19 +573,15 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
             !codeBlock ||
             codeBlock[0].type !== context.schema.type ||
             !state.selection.isAtBlockStart({
-              match: {
-                type: context.editor.plugin(PLUGINS.codeLine).schema.type,
-              },
+              type: BaseCodeLinePlugin,
             })
           ) {
             return false;
           }
 
-          const previousCodeLine = state.nodes.previous<Element>({
+          const previousCodeLine = state.nodes.previous({
             at: codeLine[1],
-            match: {
-              type: context.editor.plugin(PLUGINS.codeLine).schema.type,
-            },
+            type: BaseCodeLinePlugin,
           });
           const codeLineText = NodeApi.string(codeLine[0]);
 
@@ -630,15 +623,13 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
         around(editorCommands.insertBreak, ({ state, next }) => {
           const selection = state.selection();
           const codeLine = selection
-            ? state.nodes.above<Element>({
+            ? state.nodes.above({
                 at: selection,
-                match: {
-                  type: context.editor.plugin(PLUGINS.codeLine).schema.type,
-                },
+                type: BaseCodeLinePlugin,
               })
             : undefined;
           const codeBlock = codeLine
-            ? state.nodes.parent<Element>(codeLine[1])
+            ? state.nodes.parent(codeLine[1], { type: context.plugin })
             : undefined;
 
           if (
@@ -658,10 +649,8 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
           if (result === false) return false;
 
           return state.transaction.extend(result, (tx) => {
-            const insertedCodeLine = tx.nodes.above<Element>({
-              match: {
-                type: context.editor.plugin(PLUGINS.codeLine).schema.type,
-              },
+            const insertedCodeLine = tx.nodes.above({
+              type: BaseCodeLinePlugin,
             });
 
             if (!insertedCodeLine) return;
@@ -715,7 +704,7 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
           if (
             !state.nodes.block({
               at,
-              match: { type: [context.schema.type, codeLineType] },
+              type: [context.schema.type, codeLineType],
             })
           ) {
             return next();

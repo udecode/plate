@@ -215,10 +215,11 @@
           "name": "BlockDuplicateOptions",
           "route": null,
           "runtime": false,
-          "signature": "type BlockDuplicateOptions<T extends Element = Element> = {\n  at?: Location;\n  match?: NodeMatch<T>;\n  mode?: RangeMode;\n  voids?: boolean;\n} & Pick<NodeInsertNodesOptions<T>, 'hanging' | 'select'>;",
+          "signature": "type BlockDuplicateOptions<T extends Element = Element, TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined> = {\n  at?: Location;\n  match?: NodeMatch<T>;\n  type?: TType;\n  mode?: RangeMode;\n  voids?: boolean;\n} & Pick<NodeInsertNodesOptions, 'hanging' | 'select'>;",
           "source": "packages/plite/src/interfaces/transforms/node.ts",
           "typeParameters": [
-            "T extends Element = Element"
+            "T extends Element = Element",
+            "TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined"
           ]
         },
         "@platejs/plite:BooleanMarkKeysOf": {
@@ -327,7 +328,7 @@
           "name": "CreateEditorOptions",
           "route": null,
           "runtime": false,
-          "signature": "type CreateEditorOptions<V extends Value = Value, TExtensions extends readonly unknown[] = readonly []> = {\n  extensions?: TExtensions;\n  /** Stable logical identity for this editor instance. */\n  id?: string;\n  initialSelection?: Selection;\n  initialValue?: InitialValue<V>;\n  lifecycleErrorSink?: EditorLifecycleErrorSink<Editor<V, TExtensions>>;\n  maxLength?: number;\n  readOnly?: boolean;\n};",
+          "signature": "type CreateEditorOptions<V extends Value = Value, TExtensions extends readonly unknown[] = readonly []> = {\n  extensions?: TExtensions;\n  /** Stable logical identity for this editor instance. */\n  id?: string;\n  initialSelection?: Selection<EditorSelectionFromExtensions<TExtensions>>;\n  initialValue?: InitialValue<V>;\n  lifecycleErrorSink?: EditorLifecycleErrorSink<Editor<V, TExtensions>>;\n  maxLength?: number;\n  readOnly?: boolean;\n};",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
             "V extends Value = Value",
@@ -348,13 +349,13 @@
         },
         "@platejs/plite:createEditorView": {
           "aliases": [],
-          "documentation": "Create a root-scoped editor view from an existing editor.",
+          "documentation": "Create a root-scoped editor view while preserving layered capabilities.",
           "entrypoint": "@platejs/plite",
           "kind": "const",
           "name": "createEditorView",
           "route": null,
           "runtime": true,
-          "signature": "createEditorView: <V extends Value, TExtensions extends readonly unknown[] = readonly [], const TRoot extends RootKey = RootKey>(sourceEditor: AnyEditor<V, TExtensions>, options?: EditorViewOptions<TRoot>) => EditorView<V, TExtensions>",
+          "signature": "createEditorView: CreateEditorView",
           "source": "packages/plite/src/editor-runtime-view.ts",
           "typeParameters": []
         },
@@ -695,10 +696,11 @@
           "name": "EditorAboveOptions",
           "route": null,
           "runtime": false,
-          "signature": "interface EditorAboveOptions<T extends Ancestor> {\n  at?: Location;\n  match?: NodeMatch<T>;\n  mode?: MaximizeMode;\n  voids?: boolean;\n}",
+          "signature": "interface EditorAboveOptions<T extends Ancestor, TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined> {\n  at?: Location;\n  match?: NodeMatch<T>;\n  type?: TType;\n  mode?: MaximizeMode;\n  voids?: boolean;\n}",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
-            "T extends Ancestor"
+            "T extends Ancestor",
+            "TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined"
           ]
         },
         "@platejs/plite:EditorBlockOptions": {
@@ -709,10 +711,11 @@
           "name": "EditorBlockOptions",
           "route": null,
           "runtime": false,
-          "signature": "interface EditorBlockOptions<T extends Element = Element> {\n  at?: Location;\n  match?: NodeMatch<T>;\n  mode?: MaximizeMode;\n  voids?: boolean;\n}",
+          "signature": "interface EditorBlockOptions<T extends Element = Element, TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined> {\n  at?: Location;\n  match?: NodeMatch<T>;\n  type?: TType;\n  mode?: MaximizeMode;\n  voids?: boolean;\n}",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
-            "T extends Element = Element"
+            "T extends Element = Element",
+            "TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined"
           ]
         },
         "@platejs/plite:EditorBlockResetOptions": {
@@ -819,7 +822,7 @@
           "name": "EditorCommandDispatch",
           "route": null,
           "runtime": false,
-          "signature": "type EditorCommandDispatch<TEditor = Editor> = <TCommand extends EditorCommandDescriptor>(command: CompatibleEditorCommand<TEditor, TCommand>, ...input: [EditorCommandInput<TCommand>] extends [void] ? [] | [input: EditorCommandInput<TCommand>] : [input: EditorCommandInput<TCommand>]) => boolean;",
+          "signature": "type EditorCommandDispatch<TEditor = Editor> = <TCommand extends EditorCommandDescriptor>(command: TCommand & CompatibleEditorCommand<TEditor, TCommand>, ...input: [EditorCommandInput<TCommand>] extends [void] ? [] | [input: EditorCommandInput<TCommand>] : [input: EditorCommandInput<TCommand>]) => boolean;",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
             "TEditor = Editor"
@@ -1002,10 +1005,11 @@
           "name": "EditorCoreStateView",
           "route": null,
           "runtime": false,
-          "signature": "type EditorCoreStateView<V extends Value = Value> = {\n  /**\n   * Read the primary document children without cloning the full serializable\n   * document value. Treat the returned nodes as read-only live state.\n   */\n  children: () => readonly [...V];\n  facet: <TOutput>(facet: EditorFacet<any, TOutput>) => TOutput;\n  fragment: EditorStateFragmentApi<V>;\n  getField: <TValue>(field: EditorStateField<TValue>) => TValue;\n  lastCommit: () => EditorCommit<V> | null;\n  /** Return the stable runtime key for a live node or location. */\n  key: EditorKeyApi;\n  marks: EditorStateMarksApi<V>;\n  /**\n   * Read persisted document metadata. Use state fields for typed access.\n   */\n  meta: () => Readonly<Record<string, unknown>> | undefined;\n  nodes: EditorStateNodesApi<V>;\n  points: EditorStatePointsApi;\n  ranges: EditorStateRangesApi;\n  /**\n   * Read a named secondary root. Use `children()` for the primary document.\n   */\n  root: <TRoot extends RootKey>(root: NamedRootKey<TRoot>) => readonly V[number][];\n  runtime: EditorStateRuntimeApi<V>;\n  schema: EditorStateSchemaApi<V>;\n  selection: EditorStateSelectionApi;\n  slice: EditorStateSliceApi<V>;\n  text: EditorStateTextApi;\n  value: EditorStateValueApi<V>;\n  view: EditorStateViewApi;\n};",
+          "signature": "type EditorCoreStateView<V extends Value = Value, TSelection extends SelectionValue = SelectionValue> = {\n  /**\n   * Read the primary document children without cloning the full serializable\n   * document value. Treat the returned nodes as read-only live state.\n   */\n  children: () => readonly [...V];\n  facet: <TOutput>(facet: EditorFacet<any, TOutput>) => TOutput;\n  fragment: EditorStateFragmentApi<V>;\n  getField: <TValue>(field: EditorStateField<TValue>) => TValue;\n  lastCommit: () => EditorCommit<V> | null;\n  /** Return the stable runtime key for a live node or location. */\n  key: EditorKeyApi;\n  marks: EditorStateMarksApi<V>;\n  /**\n   * Read persisted document metadata. Use state fields for typed access.\n   */\n  meta: () => Readonly<Record<string, unknown>> | undefined;\n  nodes: EditorStateNodesApi<V>;\n  points: EditorStatePointsApi;\n  ranges: EditorStateRangesApi;\n  /**\n   * Read a named secondary root. Use `children()` for the primary document.\n   */\n  root: <TRoot extends RootKey>(root: NamedRootKey<TRoot>) => readonly V[number][];\n  runtime: EditorStateRuntimeApi<V>;\n  schema: EditorStateSchemaApi<V>;\n  selection: EditorStateSelectionApi<TSelection>;\n  slice: EditorStateSliceApi<V>;\n  text: EditorStateTextApi;\n  value: EditorStateValueApi<V>;\n  view: EditorStateViewApi;\n};",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
-            "V extends Value = Value"
+            "V extends Value = Value",
+            "TSelection extends SelectionValue = SelectionValue"
           ]
         },
         "@platejs/plite:EditorCoreUpdateMethods": {
@@ -1016,7 +1020,7 @@
           "name": "EditorCoreUpdateMethods",
           "route": null,
           "runtime": false,
-          "signature": "type EditorCoreUpdateMethods<V extends Value = Value, TExtensions extends readonly unknown[] = readonly []> = {\n  annotations: EditorBivariantMethods<EditorTransactionAnnotationsApi>;\n  blocks: EditorBivariantMethods<EditorTransactionBlocksApi<V>>;\n  break: EditorBivariantMethods<EditorTransactionBreakApi>;\n  changes: EditorBivariantMethods<EditorTransactionChangesApi>;\n  /** Dispatch a typed semantic command in one update. */\n  command: EditorCommandDispatch<BaseEditor<V, TExtensions>>;\n  effects: EditorBivariantMethods<EditorTransactionEffectsApi>;\n  extensions: EditorBivariantMethods<EditorTransactionExtensionsApi>;\n  fragment: EditorBivariantMethods<Pick<EditorTransactionFragmentApi<V>, 'delete' | 'replace'>>;\n  marks: EditorBivariantMethods<Pick<EditorTransactionMarksApi<V>, 'add' | 'remove' | 'set' | 'toggle'>>;\n  nodes: EditorBivariantMethods<Pick<EditorTransactionNodesApi<V>, 'insert' | 'duplicate' | 'lift' | 'merge' | 'move' | 'remove' | 'replace' | 'replaceChildren' | 'split' | 'toggle' | 'unwrap' | 'wrap'>> & Pick<EditorTransactionNodesApi<V>, 'set' | 'unset'>;\n  roots: EditorBivariantMethods<EditorTransactionRootsApi<V>>;\n  slice: EditorBivariantMethods<Pick<EditorTransactionSliceApi<V>, 'replace'>>;\n  selection: EditorBivariantMethods<Pick<EditorTransactionSelectionApi, 'clear' | 'collapse' | 'move' | 'set' | 'setPoint' | 'setRange'>>;\n  setField: BivariantFunction<EditorCoreUpdateTransaction<V>['setField']>;\n  text: EditorBivariantMethods<Pick<EditorTransactionTextApi, 'delete' | 'deleteBackward' | 'deleteForward' | 'insert'>>;\n  value: EditorBivariantMethods<Pick<EditorUpdateValueApi<V>, 'repair' | 'replace'>>;\n};",
+          "signature": "type EditorCoreUpdateMethods<V extends Value = Value, TExtensions extends readonly unknown[] = readonly []> = {\n  annotations: EditorBivariantMethods<EditorTransactionAnnotationsApi>;\n  blocks: EditorBivariantMethods<EditorTransactionBlocksApi<V>>;\n  break: EditorBivariantMethods<EditorTransactionBreakApi>;\n  changes: EditorBivariantMethods<EditorTransactionChangesApi>;\n  /** Dispatch a typed semantic command in one update. */\n  command: EditorCommandDispatch<BaseEditor<V, TExtensions>>;\n  effects: EditorBivariantMethods<EditorTransactionEffectsApi>;\n  extensions: EditorBivariantMethods<EditorTransactionExtensionsApi>;\n  fragment: EditorBivariantMethods<Pick<EditorTransactionFragmentApi<V>, 'delete' | 'replace'>>;\n  marks: EditorBivariantMethods<Pick<EditorTransactionMarksApi<V>, 'add' | 'remove' | 'set' | 'toggle'>>;\n  nodes: EditorBivariantMethods<Pick<EditorTransactionNodesApi<V>, 'insert' | 'duplicate' | 'lift' | 'merge' | 'move' | 'remove' | 'replace' | 'replaceChildren' | 'split' | 'toggle' | 'unwrap' | 'wrap'>> & Pick<EditorTransactionNodesApi<V>, 'set' | 'unset'>;\n  roots: EditorBivariantMethods<EditorTransactionRootsApi<V>>;\n  slice: EditorBivariantMethods<Pick<EditorTransactionSliceApi<V>, 'replace'>>;\n  selection: EditorBivariantMethods<Pick<EditorTransactionSelectionApi<EditorSelectionFromExtensions<TExtensions>>, 'clear' | 'collapse' | 'move' | 'set' | 'setPoint' | 'setRange'>>;\n  setField: BivariantFunction<EditorCoreUpdateTransaction<V>['setField']>;\n  text: EditorBivariantMethods<Pick<EditorTransactionTextApi, 'delete' | 'deleteBackward' | 'deleteForward' | 'insert'>>;\n  value: EditorBivariantMethods<Pick<EditorUpdateValueApi<V>, 'repair' | 'replace'>>;\n};",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
             "V extends Value = Value",
@@ -1031,10 +1035,11 @@
           "name": "EditorCoreUpdateTransaction",
           "route": null,
           "runtime": false,
-          "signature": "type EditorCoreUpdateTransaction<V extends Value = Value> = Omit<EditorCoreStateView<V>, 'marks' | 'nodes' | 'selection' | 'slice' | 'text' | 'value'> & {\n  /** Create a live location from the transaction's current document state. */\n  anchor: EditorAnchorApi;\n  annotations: EditorTransactionAnnotationsApi;\n  blocks: EditorTransactionBlocksApi<V>;\n  break: EditorTransactionBreakApi;\n  changes: EditorTransactionChangesApi;\n  effects: EditorTransactionEffectsApi;\n  extensions: EditorTransactionExtensionsApi;\n  fragment: EditorTransactionFragmentApi<V>;\n  marks: EditorTransactionMarksApi<V>;\n  nodes: EditorTransactionNodesApi<V>;\n  refs: EditorTransactionRefsApi;\n  roots: EditorTransactionRootsApi<V>;\n  slice: EditorTransactionSliceApi<V>;\n  selection: EditorTransactionSelectionApi;\n  setField: <TValue>(field: EditorStateField<TValue>, value: StateFieldValueInput<TValue>) => void;\n  tags: EditorTransactionTagsApi;\n  text: EditorTransactionTextApi;\n  value: EditorTransactionValueApi<V>;\n};",
+          "signature": "type EditorCoreUpdateTransaction<V extends Value = Value, TSelection extends SelectionValue = SelectionValue> = Omit<EditorCoreStateView<V, TSelection>, 'marks' | 'nodes' | 'selection' | 'slice' | 'text' | 'value'> & {\n  /** Create a live location from the transaction's current document state. */\n  anchor: EditorAnchorApi;\n  annotations: EditorTransactionAnnotationsApi;\n  blocks: EditorTransactionBlocksApi<V>;\n  break: EditorTransactionBreakApi;\n  changes: EditorTransactionChangesApi;\n  effects: EditorTransactionEffectsApi;\n  extensions: EditorTransactionExtensionsApi;\n  fragment: EditorTransactionFragmentApi<V>;\n  marks: EditorTransactionMarksApi<V>;\n  nodes: EditorTransactionNodesApi<V>;\n  refs: EditorTransactionRefsApi;\n  roots: EditorTransactionRootsApi<V>;\n  slice: EditorTransactionSliceApi<V>;\n  selection: EditorTransactionSelectionApi<TSelection>;\n  setField: <TValue>(field: EditorStateField<TValue>, value: StateFieldValueInput<TValue>) => void;\n  tags: EditorTransactionTagsApi;\n  text: EditorTransactionTextApi;\n  value: EditorTransactionValueApi<V>;\n};",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
-            "V extends Value = Value"
+            "V extends Value = Value",
+            "TSelection extends SelectionValue = SelectionValue"
           ]
         },
         "@platejs/plite:EditorDocumentValue": {
@@ -1123,7 +1128,7 @@
           "name": "EditorEffectType",
           "route": null,
           "runtime": false,
-          "signature": "type EditorEffectType<TValue = any> = Readonly<{\n  codec?: EditorValueCodec<TValue>;\n  collab: StateFieldCollabPolicy;\n  collabReplay: EditorEffectCollabReplay;\n  /** Pure capture of the current absolute value for late-join checkpoints. */\n  collabSnapshot?: (state: EditorStateView) => TValue | undefined;\n  collabTransport?: EditorEffectCollabTransport<TValue>;\n  history: StateFieldHistoryPolicy;\n  invert: (value: TValue) => TValue;\n  key: string;\n  map: (value: TValue, changes: DocumentChange) => TValue | undefined;\n}>;",
+          "signature": "type EditorEffectType<TValue = any> = Readonly<{\n  codec?: EditorValueCodec<TValue>;\n  collab: StateFieldCollabPolicy;\n  collabReplay: EditorEffectCollabReplay;\n  /** Pure capture of the current absolute value for late-join checkpoints. */\n  collabSnapshot?: (state: EditorStateView<Value, any>) => TValue | undefined;\n  collabTransport?: EditorEffectCollabTransport<TValue>;\n  history: StateFieldHistoryPolicy;\n  invert: (value: TValue) => TValue;\n  key: string;\n  map: (value: TValue, changes: DocumentChange) => TValue | undefined;\n}>;",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
             "TValue = any"
@@ -1175,10 +1180,10 @@
           "name": "EditorExtensionApiFactory",
           "route": null,
           "runtime": false,
-          "signature": "type EditorExtensionApiFactory<TEditor extends BaseEditor<any> = Editor, TResult = unknown> = BivariantMethod<[context: EditorExtensionApiFactoryContext<TEditor>], TResult>;",
+          "signature": "type EditorExtensionApiFactory<TEditor extends BaseEditor<any, any> = Editor, TResult = unknown> = BivariantMethod<[context: EditorExtensionApiFactoryContext<TEditor>], TResult>;",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
-            "TEditor extends BaseEditor<any> = Editor",
+            "TEditor extends BaseEditor<any, any> = Editor",
             "TResult = unknown"
           ]
         },
@@ -1190,10 +1195,10 @@
           "name": "EditorExtensionApiFactoryContext",
           "route": null,
           "runtime": false,
-          "signature": "type EditorExtensionApiFactoryContext<TEditor extends BaseEditor<any> = Editor> = Readonly<{\n  editor: EditorExtensionCandidateEditor<TEditor>;\n  getContributions: <TValue>(point: EditorExtensionPoint<TValue>) => readonly Readonly<TValue>[];\n  /** Named view root, or `undefined` for the primary document. */\n  root: NamedRootKey | undefined;\n}>;",
+          "signature": "type EditorExtensionApiFactoryContext<TEditor extends BaseEditor<any, any> = Editor> = Readonly<{\n  editor: EditorExtensionCandidateEditor<TEditor>;\n  getContributions: <TValue>(point: EditorExtensionPoint<TValue>) => readonly Readonly<TValue>[];\n  /** Named view root, or `undefined` for the primary document. */\n  root: NamedRootKey | undefined;\n}>;",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
-            "TEditor extends BaseEditor<any> = Editor"
+            "TEditor extends BaseEditor<any, any> = Editor"
           ]
         },
         "@platejs/plite:EditorExtensionCandidateContext": {
@@ -1204,10 +1209,10 @@
           "name": "EditorExtensionCandidateContext",
           "route": null,
           "runtime": false,
-          "signature": "type EditorExtensionCandidateContext<TEditor extends BaseEditor<any> = Editor> = EditorExtensionApiFactoryContext<TEditor> & Readonly<{\n  name: string;\n  schema: EditorStateSchemaApi<ValueOf<TEditor>>;\n}>;",
+          "signature": "type EditorExtensionCandidateContext<TEditor extends BaseEditor<any, any> = Editor> = EditorExtensionApiFactoryContext<TEditor> & Readonly<{\n  name: string;\n  schema: EditorStateSchemaApi<ValueOf<TEditor>>;\n}>;",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
-            "TEditor extends BaseEditor<any> = Editor"
+            "TEditor extends BaseEditor<any, any> = Editor"
           ]
         },
         "@platejs/plite:EditorExtensionCandidateEditor": {
@@ -1218,10 +1223,10 @@
           "name": "EditorExtensionCandidateEditor",
           "route": null,
           "runtime": false,
-          "signature": "type EditorExtensionCandidateEditor<TEditor extends BaseEditor<any> = Editor> = TEditor & {\n  extension: TEditor['extension'];\n};",
+          "signature": "type EditorExtensionCandidateEditor<TEditor extends BaseEditor<any, any> = Editor> = TEditor & {\n  extension: TEditor['extension'];\n};",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
-            "TEditor extends BaseEditor<any> = Editor"
+            "TEditor extends BaseEditor<any, any> = Editor"
           ]
         },
         "@platejs/plite:EditorExtensionCapabilities": {
@@ -1287,7 +1292,7 @@
           "name": "EditorExtensionDefinition",
           "route": null,
           "runtime": false,
-          "signature": "type EditorExtensionDefinition = Readonly<{\n  api?: unknown;\n  activate?: true;\n  commands?: true;\n  conflicts?: readonly EditorExtensionShallowReference[];\n  contributions?: true;\n  corrections?: true;\n  dependencies?: readonly EditorExtensionShallowReference[];\n  effectTypes?: true;\n  enabled?: boolean;\n  facetProviders?: true;\n  name: string;\n  on?: true;\n  read?: unknown;\n  readMiddleware?: true;\n  schema?: EditorSchemaDeclaration;\n  selectionKinds?: true;\n  stateFields?: true;\n  update?: unknown;\n  validate?: true;\n}>;",
+          "signature": "type EditorExtensionDefinition = Readonly<{\n  api?: unknown;\n  activate?: true;\n  commands?: true;\n  conflicts?: readonly EditorExtensionShallowReference[];\n  contributions?: true;\n  corrections?: true;\n  dependencies?: readonly EditorExtensionShallowReference[];\n  effectTypes?: true;\n  enabled?: boolean;\n  facetProviders?: true;\n  name: string;\n  on?: true;\n  read?: unknown;\n  readMiddleware?: true;\n  schema?: EditorSchemaDeclaration;\n  /** Exact custom selection payload union, never the callback-rich specs. */\n  selectionKinds?: SelectionValue;\n  stateFields?: true;\n  update?: unknown;\n  validate?: true;\n}>;",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
@@ -1299,10 +1304,10 @@
           "name": "EditorExtensionDefinitionInput",
           "route": null,
           "runtime": false,
-          "signature": "type EditorExtensionDefinitionInput<TEditor extends BaseEditor<any, any> = Editor> = {\n  enabled?: boolean;\n  dependencies?: readonly EditorExtensionReference[];\n  conflicts?: readonly EditorExtensionReference[];\n  schema?: EditorSchemaDeclaration | EditorExtensionSchemaFactory;\n  api?: EditorExtensionApiFactory<TEditor>;\n  read?: EditorExtensionReadFactory<TEditor>;\n  update?: EditorExtensionUpdateFactory<TEditor>;\n  readMiddleware?: EditorExtensionReadMiddlewareFactory<TEditor>;\n  commands?: (context: EditorExtensionCommandContext<TEditor>) => readonly EditorCommandRegistration<TEditor>[];\n  corrections?: readonly EditorCorrection<TEditor>[];\n  stateFields?: readonly EditorStateField<any>[];\n  effectTypes?: readonly EditorEffectType[];\n  facetProviders?: readonly EditorFacetProvider[];\n  selectionKinds?: readonly EditorSelectionSpec[];\n  contributions?: readonly EditorExtensionContributionInput<NoInfer<TEditor>>[];\n  on?: EditorExtensionChangeHandlers<TEditor>;\n  activate?: (context: EditorExtensionActivationContext & Readonly<{\n    editor: TEditor;\n  }>) => void;\n  validate?: BivariantMethod<[context: EditorExtensionCandidateContext<TEditor>], void>;\n};",
+          "signature": "type EditorExtensionDefinitionInput<TEditor extends BaseEditor<any, any> = BaseEditor<any, readonly []>> = {\n  enabled?: boolean;\n  dependencies?: readonly EditorExtensionReference[];\n  conflicts?: readonly EditorExtensionReference[];\n  schema?: EditorSchemaDeclaration | EditorExtensionSchemaFactory;\n  api?: EditorExtensionApiFactory<TEditor>;\n  read?: EditorExtensionReadFactory<TEditor>;\n  update?: EditorExtensionUpdateFactory<TEditor>;\n  readMiddleware?: EditorExtensionReadMiddlewareFactory<TEditor>;\n  commands?: (context: EditorExtensionCommandContext<TEditor>) => readonly EditorCommandRegistration<TEditor>[];\n  corrections?: readonly EditorCorrection<TEditor>[];\n  stateFields?: readonly EditorStateField<any>[];\n  effectTypes?: readonly EditorEffectType[];\n  facetProviders?: readonly EditorFacetProvider[];\n  selectionKinds?: readonly EditorSelectionSpec<any>[];\n  contributions?: readonly EditorExtensionContributionInput<NoInfer<TEditor>>[];\n  on?: EditorExtensionChangeHandlers<TEditor>;\n  activate?: (context: EditorExtensionActivationContext & Readonly<{\n    editor: TEditor;\n  }>) => void;\n  validate?: BivariantMethod<[context: EditorExtensionCandidateContext<TEditor>], void>;\n};",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
-            "TEditor extends BaseEditor<any, any> = Editor"
+            "TEditor extends BaseEditor<any, any> = BaseEditor<any, readonly []>"
           ]
         },
         "@platejs/plite:EditorExtensionDependencyReference": {
@@ -1404,10 +1409,10 @@
           "name": "EditorExtensionReadFactory",
           "route": null,
           "runtime": false,
-          "signature": "type EditorExtensionReadFactory<TEditor extends BaseEditor<any> = Editor, TResult = unknown> = BivariantMethod<[context: EditorExtensionReadFactoryContext<TEditor>], TResult>;",
+          "signature": "type EditorExtensionReadFactory<TEditor extends BaseEditor<any, any> = Editor, TResult = unknown> = BivariantMethod<[context: EditorExtensionReadFactoryContext<TEditor>], TResult>;",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
-            "TEditor extends BaseEditor<any> = Editor",
+            "TEditor extends BaseEditor<any, any> = Editor",
             "TResult = unknown"
           ]
         },
@@ -1552,10 +1557,10 @@
           "name": "EditorExtensionUpdateFactory",
           "route": null,
           "runtime": false,
-          "signature": "type EditorExtensionUpdateFactory<TEditor extends BaseEditor<any> = Editor, TResult = unknown> = BivariantMethod<[context: EditorExtensionUpdateFactoryContext<TEditor>], TResult>;",
+          "signature": "type EditorExtensionUpdateFactory<TEditor extends BaseEditor<any, any> = Editor, TResult = unknown> = BivariantMethod<[context: EditorExtensionUpdateFactoryContext<TEditor>], TResult>;",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
-            "TEditor extends BaseEditor<any> = Editor",
+            "TEditor extends BaseEditor<any, any> = Editor",
             "TResult = unknown"
           ]
         },
@@ -1581,7 +1586,7 @@
           "name": "EditorFacet",
           "route": null,
           "runtime": false,
-          "signature": "type EditorFacet<TInput, TOutput = readonly TInput[]> = Readonly<{\n  combine: (inputs: readonly TInput[]) => TOutput;\n  compare: (left: TOutput, right: TOutput) => boolean;\n  compareInput: (left: TInput, right: TInput) => boolean;\n  compute: <const TRoot extends RootKey>(compute: (state: EditorStateView) => TInput, options?: EditorFacetComputeOptions<TRoot>) => EditorFacetProvider<TInput>;\n  default: TOutput;\n  key: string;\n  of: (value: TInput) => EditorFacetProvider<TInput>;\n}>;",
+          "signature": "type EditorFacet<TInput, TOutput = readonly TInput[]> = Readonly<{\n  combine: (inputs: readonly TInput[]) => TOutput;\n  compare: (left: TOutput, right: TOutput) => boolean;\n  compareInput: (left: TInput, right: TInput) => boolean;\n  compute: <const TRoot extends RootKey>(compute: (state: EditorStateView<Value, any>) => TInput, options?: EditorFacetComputeOptions<TRoot>) => EditorFacetProvider<TInput>;\n  default: TOutput;\n  key: string;\n  of: (value: TInput) => EditorFacetProvider<TInput>;\n}>;",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
             "TInput",
@@ -1638,7 +1643,7 @@
           "name": "EditorFacetProvider",
           "route": null,
           "runtime": false,
-          "signature": "type EditorFacetProvider<TInput = any> = Readonly<{\n  compute?: (state: EditorStateView) => TInput;\n  dependencies?: readonly EditorFacetDependency[];\n  facet: EditorFacet<TInput, any>;\n  value?: TInput;\n}>;",
+          "signature": "type EditorFacetProvider<TInput = any> = Readonly<{\n  compute?: (state: EditorStateView<Value, any>) => TInput;\n  dependencies?: readonly EditorFacetDependency[];\n  facet: EditorFacet<TInput, any>;\n  value?: TInput;\n}>;",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
             "TInput = any"
@@ -1676,7 +1681,7 @@
           "name": "EditorInstalledApiGroups",
           "route": null,
           "runtime": false,
-          "signature": "type EditorInstalledApiGroups<TExtensions extends readonly unknown[] = readonly []> = UnionToIntersection<EditorApiGroupsFromExtension<EditorResolvedInstalledExtensions<TExtensions>[number]>>;",
+          "signature": "type EditorInstalledApiGroups<TExtensions extends readonly unknown[] = readonly []> = IsAny<TExtensions> extends true ? Record<string, any> : UnionToIntersection<EditorApiGroupsFromExtension<EditorResolvedInstalledExtensions<TExtensions>[number]>>;",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
             "TExtensions extends readonly unknown[] = readonly []"
@@ -1690,7 +1695,7 @@
           "name": "EditorInstalledReadGroups",
           "route": null,
           "runtime": false,
-          "signature": "type EditorInstalledReadGroups<V extends Value = Value, TExtensions extends readonly unknown[] = readonly []> = UnionToIntersection<EditorReadGroupsFromExtension<V, EditorResolvedInstalledExtensions<TExtensions>[number]>>;",
+          "signature": "type EditorInstalledReadGroups<V extends Value = Value, TExtensions extends readonly unknown[] = readonly []> = IsAny<TExtensions> extends true ? Record<string, any> : UnionToIntersection<EditorReadGroupsFromExtension<V, EditorResolvedInstalledExtensions<TExtensions>[number]>>;",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
             "V extends Value = Value",
@@ -1705,7 +1710,7 @@
           "name": "EditorInstalledUpdateGroups",
           "route": null,
           "runtime": false,
-          "signature": "type EditorInstalledUpdateGroups<V extends Value = Value, TExtensions extends readonly unknown[] = readonly []> = UnionToIntersection<EditorUpdateGroupsFromExtension<V, EditorResolvedInstalledExtensions<TExtensions>[number]>>;",
+          "signature": "type EditorInstalledUpdateGroups<V extends Value = Value, TExtensions extends readonly unknown[] = readonly []> = IsAny<TExtensions> extends true ? Record<string, any> : UnionToIntersection<EditorUpdateGroupsFromExtension<V, EditorResolvedInstalledExtensions<TExtensions>[number]>>;",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
             "V extends Value = Value",
@@ -1724,6 +1729,21 @@
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
+        "@platejs/plite:EditorLevelsOptions": {
+          "aliases": [],
+          "documentation": "",
+          "entrypoint": "@platejs/plite",
+          "kind": "interface",
+          "name": "EditorLevelsOptions",
+          "route": null,
+          "runtime": false,
+          "signature": "interface EditorLevelsOptions<T extends Node, TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined> {\n  at?: Location;\n  match?: NodeMatch<T>;\n  type?: TType;\n  reverse?: boolean;\n  voids?: boolean;\n}",
+          "source": "packages/plite/src/interfaces/editor.ts",
+          "typeParameters": [
+            "T extends Node",
+            "TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined"
+          ]
+        },
         "@platejs/plite:EditorLifecycleError": {
           "aliases": [],
           "documentation": "",
@@ -1732,10 +1752,10 @@
           "name": "EditorLifecycleError",
           "route": null,
           "runtime": false,
-          "signature": "type EditorLifecycleError<TEditor extends BaseEditor<any, any> = Editor> = Readonly<{\n  cause: unknown;\n  editor: TEditor;\n  extensionName: string;\n  phase: 'afterPublish' | 'cleanup';\n}> | Readonly<{\n  cause: unknown;\n  editor: TEditor;\n  extensionName: string;\n  format: string;\n  key: string;\n  phase: 'parse' | 'query' | 'serialize';\n  source: 'host-codec';\n}>;",
+          "signature": "type EditorLifecycleError<TEditor = Editor> = Readonly<{\n  cause: unknown;\n  editor: TEditor;\n  extensionName: string;\n  phase: 'afterPublish' | 'cleanup';\n}> | Readonly<{\n  cause: unknown;\n  editor: TEditor;\n  extensionName: string;\n  format: string;\n  key: string;\n  phase: 'parse' | 'query' | 'serialize';\n  source: 'host-codec';\n}>;",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
-            "TEditor extends BaseEditor<any, any> = Editor"
+            "TEditor = Editor"
           ]
         },
         "@platejs/plite:EditorLifecycleErrorSink": {
@@ -1746,10 +1766,10 @@
           "name": "EditorLifecycleErrorSink",
           "route": null,
           "runtime": false,
-          "signature": "type EditorLifecycleErrorSink<TEditor extends BaseEditor<any, any> = Editor> = (error: EditorLifecycleError<TEditor>) => void;",
+          "signature": "type EditorLifecycleErrorSink<TEditor = Editor> = (error: EditorLifecycleError<TEditor>) => void;",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
-            "TEditor extends BaseEditor<any, any> = Editor"
+            "TEditor = Editor"
           ]
         },
         "@platejs/plite:EditorMarks": {
@@ -1774,10 +1794,25 @@
           "name": "EditorMarksOf",
           "route": null,
           "runtime": false,
-          "signature": "type EditorMarksOf<E extends BaseEditor<any> = Editor> = EditorMarks<ValueOf<E>>;",
+          "signature": "type EditorMarksOf<E extends BaseEditor<any, any> = Editor> = EditorMarks<ValueOf<E>>;",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
-            "E extends BaseEditor<any> = Editor"
+            "E extends BaseEditor<any, any> = Editor"
+          ]
+        },
+        "@platejs/plite:EditorNextOptions": {
+          "aliases": [],
+          "documentation": "",
+          "entrypoint": "@platejs/plite",
+          "kind": "interface",
+          "name": "EditorNextOptions",
+          "route": null,
+          "runtime": false,
+          "signature": "interface EditorNextOptions<T extends Descendant, TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined> {\n  at?: Location;\n  from?: 'after' | 'child';\n  match?: NodeMatch<T>;\n  type?: TType;\n  mode?: SelectionMode;\n  voids?: boolean;\n}",
+          "source": "packages/plite/src/interfaces/editor.ts",
+          "typeParameters": [
+            "T extends Descendant",
+            "TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined"
           ]
         },
         "@platejs/plite:EditorNodeChangeContext": {
@@ -1820,6 +1855,21 @@
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
+        "@platejs/plite:EditorNodeGetOptions": {
+          "aliases": [],
+          "documentation": "",
+          "entrypoint": "@platejs/plite",
+          "kind": "type",
+          "name": "EditorNodeGetOptions",
+          "route": null,
+          "runtime": false,
+          "signature": "type EditorNodeGetOptions<T extends Node, TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined> = {\n  match?: NodeMatch<T>;\n  type?: TType;\n};",
+          "source": "packages/plite/src/interfaces/editor.ts",
+          "typeParameters": [
+            "T extends Node",
+            "TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined"
+          ]
+        },
         "@platejs/plite:EditorNodesOptions": {
           "aliases": [],
           "documentation": "",
@@ -1828,10 +1878,26 @@
           "name": "EditorNodesOptions",
           "route": null,
           "runtime": false,
-          "signature": "interface EditorNodesOptions<T extends Node> {\n  at?: Location | Span;\n  match?: NodeMatch<T>;\n  mode?: SelectionMode;\n  universal?: boolean;\n  reverse?: boolean;\n  voids?: boolean;\n  pass?: (entry: NodeEntry) => boolean;\n}",
+          "signature": "interface EditorNodesOptions<T extends Node, TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined> {\n  at?: Location | Span;\n  match?: NodeMatch<T>;\n  type?: TType;\n  mode?: SelectionMode;\n  universal?: boolean;\n  reverse?: boolean;\n  voids?: boolean;\n  pass?: (entry: NodeEntry) => boolean;\n}",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
-            "T extends Node"
+            "T extends Node",
+            "TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined"
+          ]
+        },
+        "@platejs/plite:EditorNodesReadOptions": {
+          "aliases": [],
+          "documentation": "",
+          "entrypoint": "@platejs/plite",
+          "kind": "type",
+          "name": "EditorNodesReadOptions",
+          "route": null,
+          "runtime": false,
+          "signature": "type EditorNodesReadOptions<T extends Node, TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined> = WithNodeTargetOrSpan<EditorNodesOptions<T, TType>>;",
+          "source": "packages/plite/src/interfaces/editor.ts",
+          "typeParameters": [
+            "T extends Node",
+            "TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined"
           ]
         },
         "@platejs/plite:EditorNodeTypeProvider": {
@@ -1857,10 +1923,41 @@
           "name": "EditorNodeUnsetOptions",
           "route": null,
           "runtime": false,
-          "signature": "type EditorNodeUnsetOptions<T extends Node> = {\n  at?: NodeTarget<TargetDescendant<T>>;\n  match?: NodeMatch<T>;\n  mode?: MaximizeMode;\n  hanging?: boolean;\n  split?: boolean;\n  voids?: boolean;\n};",
+          "signature": "type EditorNodeUnsetOptions<T extends Node, TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined> = {\n  at?: NodeTarget;\n  match?(node: T, path: Path): boolean;\n  type?: TType;\n  mode?: MaximizeMode;\n  hanging?: boolean;\n  split?: boolean;\n  voids?: boolean;\n};",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
-            "T extends Node"
+            "T extends Node",
+            "TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined"
+          ]
+        },
+        "@platejs/plite:EditorParentOptions": {
+          "aliases": [],
+          "documentation": "",
+          "entrypoint": "@platejs/plite",
+          "kind": "interface",
+          "name": "EditorParentOptions",
+          "route": null,
+          "runtime": false,
+          "signature": "interface EditorParentOptions<T extends Ancestor = Ancestor, TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined> {\n  depth?: number;\n  edge?: LeafEdge;\n  match?: NodeMatch<T>;\n  type?: TType;\n}",
+          "source": "packages/plite/src/interfaces/editor.ts",
+          "typeParameters": [
+            "T extends Ancestor = Ancestor",
+            "TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined"
+          ]
+        },
+        "@platejs/plite:EditorPreviousOptions": {
+          "aliases": [],
+          "documentation": "",
+          "entrypoint": "@platejs/plite",
+          "kind": "interface",
+          "name": "EditorPreviousOptions",
+          "route": null,
+          "runtime": false,
+          "signature": "interface EditorPreviousOptions<T extends Node, TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined> {\n  at?: Location;\n  from?: 'before' | 'parent';\n  match?: NodeMatch<T>;\n  type?: TType;\n  mode?: SelectionMode;\n  sibling?: boolean;\n  voids?: boolean;\n}",
+          "source": "packages/plite/src/interfaces/editor.ts",
+          "typeParameters": [
+            "T extends Node",
+            "TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined"
           ]
         },
         "@platejs/plite:EditorRead": {
@@ -1948,7 +2045,7 @@
           "name": "EditorReadMethods",
           "route": null,
           "runtime": false,
-          "signature": "type EditorReadMethods<V extends Value = Value, TExtensions extends readonly unknown[] = readonly []> = Omit<EditorCoreStateView<V>, 'key'> & EditorInstalledReadGroups<V, TExtensions>;",
+          "signature": "type EditorReadMethods<V extends Value = Value, TExtensions extends readonly unknown[] = readonly []> = Omit<EditorCoreStateView<V, EditorSelectionFromExtensions<TExtensions>>, 'key'> & EditorInstalledReadGroups<V, TExtensions>;",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
             "V extends Value = Value",
@@ -2421,7 +2518,7 @@
           "name": "EditorSchemaReadProperty",
           "route": null,
           "runtime": false,
-          "signature": "type EditorSchemaReadProperty = {\n  <TKey extends string, TValue, TPlacement extends 'element' | 'text'>(node: Element | Text, property: SchemaPropertyHandle<TKey, TValue, TPlacement>, options?: EditorSchemaPropertyReadOptions): TValue | undefined;\n  <T = unknown>(node: Element | Text, property: string, options?: EditorSchemaPropertyReadOptions): T | undefined;\n};",
+          "signature": "type EditorSchemaReadProperty = {\n  <TKey extends string, TValue, TPlacement extends 'element' | 'text'>(node: Element | Text, property: SchemaPropertyHandle<TKey, TValue, TPlacement>, options?: EditorSchemaPropertyReadOptions): TValue | undefined;\n  (node: Element | Text, property: string, options?: EditorSchemaPropertyReadOptions): unknown;\n};",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
@@ -2505,7 +2602,7 @@
           "name": "EditorSelection",
           "route": null,
           "runtime": false,
-          "signature": "type EditorSelection = EditorSelectionKindMap[keyof EditorSelectionKindMap];",
+          "signature": "type EditorSelection = NodeSelection | TextSelection;",
           "source": "packages/plite/src/interfaces/selection.ts",
           "typeParameters": []
         },
@@ -2517,20 +2614,8 @@
           "name": "EditorSelectionBlockOptions",
           "route": null,
           "runtime": false,
-          "signature": "type EditorSelectionBlockOptions = EditorSelectionTargetOptions & {\n  match?: NodeMatch<Element>;\n};",
+          "signature": "type EditorSelectionBlockOptions = EditorSelectionTargetOptions & {\n  match?: NodeMatch<Element>;\n  type?: NodeTypeSelector;\n};",
           "source": "packages/plite/src/interfaces/editor.ts",
-          "typeParameters": []
-        },
-        "@platejs/plite:EditorSelectionKindMap": {
-          "aliases": [],
-          "documentation": "Selection kinds installed in an editor. Packages can add kinds through\nmodule augmentation while keeping every selection plain serializable data.",
-          "entrypoint": "@platejs/plite",
-          "kind": "interface",
-          "name": "EditorSelectionKindMap",
-          "route": null,
-          "runtime": false,
-          "signature": "interface EditorSelectionKindMap {\n  node: NodeSelection;\n  text: TextSelection;\n}",
-          "source": "packages/plite/src/interfaces/selection.ts",
           "typeParameters": []
         },
         "@platejs/plite:EditorSelectionMapContext": {
@@ -2553,10 +2638,10 @@
           "name": "EditorSelectionSpec",
           "route": null,
           "runtime": false,
-          "signature": "type EditorSelectionSpec<TSelection extends EditorSelection = EditorSelection> = TSelection extends EditorSelection ? Readonly<{\n  /** Versioned persistence contract for this selection kind. */\n  codec: EditorValueCodec<TSelection>;\n  kind: TSelection['kind'];\n  map?: (selection: TSelection, context: EditorSelectionMapContext) => TSelection | null;\n  marks?: (selection: TSelection, state: EditorStateView) => EditorMarks | null;\n  primaryRange?: (selection: TSelection) => Range | null;\n  ranges?: (selection: TSelection) => readonly Range[];\n  replacementRange?: (selection: TSelection) => Range | null;\n  slice?: (selection: TSelection, state: EditorStateView) => ContentSlice$1;\n  /** Validate kind-specific runtime fields before the selection is accepted. */\n  validate: (selection: TSelection) => boolean;\n}> : never;",
+          "signature": "type EditorSelectionSpec<TSelection extends SelectionValue = SelectionValue> = TSelection extends SelectionValue ? Readonly<{\n  /** Versioned persistence contract for this selection kind. */\n  codec: EditorValueCodec<TSelection>;\n  kind: TSelection['kind'];\n  map?: (selection: TSelection, context: EditorSelectionMapContext) => TSelection | null;\n  marks?: (selection: TSelection, state: EditorStateView<Value, any>) => EditorMarks | null;\n  primaryRange?: (selection: TSelection) => Range | null;\n  ranges?: (selection: TSelection) => readonly Range[];\n  replacementRange?: (selection: TSelection) => Range | null;\n  slice?: (selection: TSelection, state: EditorStateView<Value, any>) => ContentSlice$1;\n  /** Validate kind-specific runtime fields before the selection is accepted. */\n  validate: (selection: TSelection) => boolean;\n}> : never;",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
-            "TSelection extends EditorSelection = EditorSelection"
+            "TSelection extends SelectionValue = SelectionValue"
           ]
         },
         "@platejs/plite:EditorSelectionTargetOptions": {
@@ -2647,7 +2732,7 @@
           "name": "EditorStateNodesApi",
           "route": null,
           "runtime": false,
-          "signature": "type EditorStateNodesApi<V extends Value = Value> = {\n  above: <T extends Ancestor = ValueElement<V>>(options?: WithNodeTarget<EditorAboveOptions<T>, TargetDescendant<T>>) => NodeEntry<T> | undefined;\n  block: <T extends Element = ValueElement<V>>(options?: WithNodeTarget<EditorBlockOptions<T>, T>) => NodeEntry<T> | undefined;\n  children: (at?: NodeTarget) => readonly ValueDescendant<V>[];\n  elementReadOnly: (options?: WithNodeTarget<EditorElementReadOnlyOptions>) => NodeEntry<Element> | undefined;\n  first: (at: NodeTarget) => NodeEntry | undefined;\n  get: <T extends Node = ValueNode<V>>(at: NodeTarget<TargetDescendant<T>>) => NodeEntry<T> | undefined;\n  hasBlocks: (element: Element) => boolean;\n  hasInlines: (element: Element) => boolean;\n  hasPath: (path: Path) => boolean;\n  hasTexts: (element: Element) => boolean;\n  isBlock: (element: Node) => boolean;\n  isSelectable: (element: Node) => boolean;\n  isEmpty: (element: Element) => boolean;\n  last: (at: NodeTarget, options?: EditorLastOptions) => NodeEntry | undefined;\n  leaf: (at: NodeTarget<Text>, options?: EditorLeafOptions) => NodeEntry<ValueText<V>> | undefined;\n  levels: <T extends Node = ValueNode<V>>(options?: WithNodeTarget<EditorLevelsOptions<T>, TargetDescendant<T>>) => Generator<NodeEntry<T>, void, undefined>;\n  /**\n   * Resolve a path in this editor/view root. A `NodeKey` owned by another root\n   * returns `undefined`; create that root's view because `Path` has no root.\n   */\n  path: (at: NodeTarget, options?: EditorPathOptions) => Path | undefined;\n  entries: <T extends Node = ValueNode<V>>(options?: EditorNodesReadOptions<T>) => Generator<NodeEntry<T>, void, undefined>;\n  find: <T extends Node = ValueNode<V>>(options?: EditorNodesReadOptions<T>) => NodeEntry<T> | undefined;\n  some: <T extends Node>(options?: EditorNodesReadOptions<T>) => boolean;\n  toArray: {\n    <T extends Node = ValueNode<V>>(options?: EditorNodesReadOptions<T>): readonly NodeEntry<T>[];\n    <T extends Node, R>(options: EditorNodesReadOptions<T> | undefined, map: (entry: NodeEntry<T>) => R): readonly R[];\n  };\n  next: <T extends Descendant = ValueDescendant<V>>(options?: WithNodeTarget<EditorNextOptions<T>, T>) => NodeEntry<T> | undefined;\n  parent: <T extends Ancestor = ValueElement<V>>(at: NodeTarget, options?: EditorParentOptions) => NodeEntry<T> | undefined;\n  previous: <T extends Node = ValueNode<V>>(options?: WithNodeTarget<EditorPreviousOptions<T>, TargetDescendant<T>>) => NodeEntry<T> | undefined;\n  shouldMergeNodesRemovePrevNode: (previous: NodeEntry, current: NodeEntry) => boolean;\n  void: (options?: WithNodeTarget<EditorVoidOptions>) => NodeEntry<Element> | undefined;\n};",
+          "signature": "type EditorStateNodesApi<V extends Value = Value> = {\n  above: {\n    <TGuard extends Ancestor>(options: WithNodeTarget<EditorAboveOptions<Ancestor, undefined>> & {\n      match: (node: Ancestor, path: Path) => node is TGuard;\n    }): NodeEntry<TGuard> | undefined;\n    <const TType extends NodeTypeSelector>(options: WithNodeTarget<EditorAboveOptions<NodeForTypeSelector<TType>, TType>> & {\n      type: TType;\n    }): NodeEntry<NodeForTypeSelector<TType>> | undefined;\n    (options?: WithNodeTarget<EditorAboveOptions<Ancestor>>): NodeEntry<Ancestor> | undefined;\n  };\n  block: {\n    <TGuard extends ValueElement<V>>(options: WithNodeTarget<EditorBlockOptions<ValueElement<V>, undefined>> & {\n      match: (node: ValueElement<V>, path: Path) => node is TGuard;\n    }): NodeEntry<TGuard> | undefined;\n    <const TType extends NodeTypeSelector>(options: WithNodeTarget<EditorBlockOptions<NodeForTypeSelector<TType>, TType>> & {\n      type: TType;\n    }): NodeEntry<NodeForTypeSelector<TType>> | undefined;\n    (options?: WithNodeTarget<EditorBlockOptions<ValueElement<V>>>): NodeEntry<ValueElement<V>> | undefined;\n  };\n  children: (at?: NodeTarget) => readonly ValueDescendant<V>[];\n  elementReadOnly: (options?: WithNodeTarget<EditorElementReadOnlyOptions>) => NodeEntry<Element> | undefined;\n  first: (at: NodeTarget) => NodeEntry | undefined;\n  get: {\n    <TGuard extends ValueTreeNode<V>>(at: NodeTarget, options: EditorNodeGetOptions<ValueTreeNode<V>, undefined> & {\n      match: (node: ValueTreeNode<V>, path: Path) => node is TGuard;\n    }): NodeEntry<TGuard> | undefined;\n    <const TType extends NodeTypeSelector>(at: NodeTarget, options: EditorNodeGetOptions<NodeForTypeSelector<TType>, TType> & {\n      type: TType;\n    }): NodeEntry<NodeForTypeSelector<TType>> | undefined;\n    <TNode extends Descendant>(at: TNode): NodeEntry<TNode> | undefined;\n    (at: Location | NodeKey, options?: EditorNodeGetOptions<ValueTreeNode<V>>): NodeEntry<ValueTreeNode<V>> | undefined;\n  };\n  hasBlocks: (element: Element) => boolean;\n  hasInlines: (element: Element) => boolean;\n  hasPath: (path: Path) => boolean;\n  hasTexts: (element: Element) => boolean;\n  isBlock: (element: Node) => boolean;\n  isSelectable: (element: Node) => boolean;\n  isEmpty: (element: Element) => boolean;\n  last: (at: NodeTarget, options?: EditorLastOptions) => NodeEntry | undefined;\n  leaf: (at: NodeTarget<Text>, options?: EditorLeafOptions) => NodeEntry<ValueText<V>> | undefined;\n  levels: {\n    <TGuard extends ValueTreeNode<V>>(options: WithNodeTarget<EditorLevelsOptions<ValueTreeNode<V>, undefined>> & {\n      match: (node: ValueTreeNode<V>, path: Path) => node is TGuard;\n    }): Generator<NodeEntry<TGuard>, void, undefined>;\n    <const TType extends NodeTypeSelector>(options: WithNodeTarget<EditorLevelsOptions<NodeForTypeSelector<TType>, TType>> & {\n      type: TType;\n    }): Generator<NodeEntry<NodeForTypeSelector<TType>>, void, undefined>;\n    (options?: WithNodeTarget<EditorLevelsOptions<ValueTreeNode<V>>>): Generator<NodeEntry<ValueTreeNode<V>>, void, undefined>;\n  };\n  /**\n   * Resolve a path in this editor/view root. A `NodeKey` owned by another root\n   * returns `undefined`; create that root's view because `Path` has no root.\n   */\n  path: (at: NodeTarget, options?: EditorPathOptions) => Path | undefined;\n  entries: {\n    <TGuard extends ValueTreeNode<V>>(options: EditorNodesReadOptions<ValueTreeNode<V>, undefined> & {\n      match: (node: ValueTreeNode<V>, path: Path) => node is TGuard;\n    }): Generator<NodeEntry<TGuard>, void, undefined>;\n    <const TType extends NodeTypeSelector>(options: EditorNodesReadOptions<NodeForTypeSelector<TType>, TType> & {\n      type: TType;\n    }): Generator<NodeEntry<NodeForTypeSelector<TType>>, void, undefined>;\n    (options?: EditorNodesReadOptions<ValueTreeNode<V>>): Generator<NodeEntry<ValueTreeNode<V>>, void, undefined>;\n  };\n  find: {\n    <TGuard extends ValueTreeNode<V>>(options: EditorNodesReadOptions<ValueTreeNode<V>> & {\n      match: (node: ValueTreeNode<V>, path: Path) => node is TGuard;\n      type?: undefined;\n    }): NodeEntry<TGuard> | undefined;\n    <const TType extends NodeTypeSelector>(options: EditorNodesReadOptions<NodeForTypeSelector<TType>, TType> & {\n      type: TType;\n    }): NodeEntry<NodeForTypeSelector<TType>> | undefined;\n    (options?: EditorNodesReadOptions<ValueTreeNode<V>>): NodeEntry<ValueTreeNode<V>> | undefined;\n  };\n  some: {\n    <const TType extends NodeTypeSelector>(options: EditorNodesReadOptions<NodeForTypeSelector<TType>, TType> & {\n      type: TType;\n    }): boolean;\n    (options?: EditorNodesReadOptions<ValueTreeNode<V>>): boolean;\n  };\n  toArray: {\n    <TGuard extends ValueTreeNode<V>>(options: EditorNodesReadOptions<ValueTreeNode<V>, undefined> & {\n      match: (node: ValueTreeNode<V>, path: Path) => node is TGuard;\n    }): readonly NodeEntry<TGuard>[];\n    <const TType extends NodeTypeSelector>(options: EditorNodesReadOptions<NodeForTypeSelector<TType>, TType> & {\n      type: TType;\n    }): readonly NodeEntry<NodeForTypeSelector<TType>>[];\n    (options?: EditorNodesReadOptions<ValueTreeNode<V>>): readonly NodeEntry<ValueTreeNode<V>>[];\n    <const TType extends NodeTypeSelector, R>(options: EditorNodesReadOptions<NodeForTypeSelector<TType>, TType> & {\n      type: TType;\n    }, map: (entry: NodeEntry<NodeForTypeSelector<TType>>) => R): readonly R[];\n    <TGuard extends ValueTreeNode<V>, R>(options: EditorNodesReadOptions<ValueTreeNode<V>, undefined> & {\n      match: (node: ValueTreeNode<V>, path: Path) => node is TGuard;\n    }, map: (entry: NodeEntry<TGuard>) => R): readonly R[];\n    <R>(options: EditorNodesReadOptions<ValueTreeNode<V>> | undefined, map: (entry: NodeEntry<ValueTreeNode<V>>) => R): readonly R[];\n  };\n  next: {\n    <TGuard extends ValueDescendant<V>>(options: WithNodeTarget<EditorNextOptions<ValueDescendant<V>>> & {\n      match: (node: ValueDescendant<V>, path: Path) => node is TGuard;\n    }): NodeEntry<TGuard> | undefined;\n    <const TType extends NodeTypeSelector>(options: WithNodeTarget<EditorNextOptions<NodeForTypeSelector<TType>, TType>> & {\n      type: TType;\n    }): NodeEntry<NodeForTypeSelector<TType>> | undefined;\n    (options?: WithNodeTarget<EditorNextOptions<ValueDescendant<V>>>): NodeEntry<ValueDescendant<V>> | undefined;\n  };\n  parent: {\n    <TGuard extends Ancestor>(at: NodeTarget, options: EditorParentOptions<Ancestor, undefined> & {\n      match: (node: Ancestor, path: Path) => node is TGuard;\n    }): NodeEntry<TGuard> | undefined;\n    <const TType extends NodeTypeSelector>(at: NodeTarget, options: EditorParentOptions<NodeForTypeSelector<TType>, TType> & {\n      type: TType;\n    }): NodeEntry<NodeForTypeSelector<TType>> | undefined;\n    (at: NodeTarget, options?: EditorParentOptions<Ancestor>): NodeEntry<Ancestor> | undefined;\n  };\n  previous: {\n    <TGuard extends ValueTreeNode<V>>(options: WithNodeTarget<EditorPreviousOptions<ValueTreeNode<V>, undefined>> & {\n      match: (node: ValueTreeNode<V>, path: Path) => node is TGuard;\n    }): NodeEntry<TGuard> | undefined;\n    <const TType extends NodeTypeSelector>(options: WithNodeTarget<EditorPreviousOptions<NodeForTypeSelector<TType>, TType>> & {\n      type: TType;\n    }): NodeEntry<NodeForTypeSelector<TType>> | undefined;\n    (options?: WithNodeTarget<EditorPreviousOptions<ValueTreeNode<V>>>): NodeEntry<ValueTreeNode<V>> | undefined;\n  };\n  shouldMergeNodesRemovePrevNode: (previous: NodeEntry, current: NodeEntry) => boolean;\n  void: (options?: WithNodeTarget<EditorVoidOptions>) => NodeEntry<Element> | undefined;\n};",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
             "V extends Value = Value"
@@ -2713,9 +2798,11 @@
           "name": "EditorStateSelectionApi",
           "route": null,
           "runtime": false,
-          "signature": "type EditorStateSelectionApi = (() => Selection) & {\n  contains: (target: NodeTarget) => boolean;\n  intersects: (target: NodeTarget) => boolean;\n  isAcrossBlocks: (options?: EditorSelectionBlockOptions) => boolean;\n  isAtBlockEnd: (options?: EditorSelectionBlockOptions) => boolean;\n  isAtBlockStart: (options?: EditorSelectionBlockOptions) => boolean;\n  isCollapsed: () => boolean;\n  isExpanded: () => boolean;\n  isWithinBlock: (options?: EditorSelectionBlockOptions) => boolean;\n  isWithinText: (options?: EditorSelectionTargetOptions) => boolean;\n  primaryRange: () => Range | null;\n  ranges: () => readonly Range[];\n  replacementRange: () => Range | null;\n  /** Named root containing the current selection, or `undefined` for primary. */\n  root: () => NamedRootKey | undefined;\n};",
+          "signature": "type EditorStateSelectionApi<TSelection extends SelectionValue = SelectionValue> = (() => Selection<TSelection>) & {\n  contains: (target: NodeTarget) => boolean;\n  intersects: (target: NodeTarget) => boolean;\n  isAcrossBlocks: (options?: EditorSelectionBlockOptions) => boolean;\n  isAtBlockEnd: (options?: EditorSelectionBlockOptions) => boolean;\n  isAtBlockStart: (options?: EditorSelectionBlockOptions) => boolean;\n  isCollapsed: () => boolean;\n  isExpanded: () => boolean;\n  isWithinBlock: (options?: EditorSelectionBlockOptions) => boolean;\n  isWithinText: (options?: EditorSelectionTargetOptions) => boolean;\n  primaryRange: () => Range | null;\n  ranges: () => readonly Range[];\n  replacementRange: () => Range | null;\n  /** Named root containing the current selection, or `undefined` for primary. */\n  root: () => NamedRootKey | undefined;\n};",
           "source": "packages/plite/src/interfaces/editor.ts",
-          "typeParameters": []
+          "typeParameters": [
+            "TSelection extends SelectionValue = SelectionValue"
+          ]
         },
         "@platejs/plite:EditorStateSliceApi": {
           "aliases": [],
@@ -2765,7 +2852,7 @@
           "name": "EditorStateView",
           "route": null,
           "runtime": false,
-          "signature": "type EditorStateView<V extends Value = Value, TExtensions extends readonly unknown[] = readonly []> = EditorCoreStateView<V> & EditorInstalledReadGroups<V, TExtensions> & {\n  /**\n   * Build an immutable transaction without mutating or publishing editor\n   * state. An empty spec represents an intentionally handled no-op.\n   */\n  transaction: BivariantFunction<(fn: (transaction: EditorTransactionSpecBuilder<V, TExtensions>) => void) => TransactionSpec> & {\n    /** Continue building from a delegated spec without publishing either step. */\n    extend: BivariantFunction<(base: TransactionSpec, fn: (transaction: EditorTransactionSpecBuilder<V, TExtensions>) => void) => TransactionSpec>;\n  };\n};",
+          "signature": "type EditorStateView<V extends Value = Value, TExtensions extends readonly unknown[] = readonly []> = EditorCoreStateView<V, EditorSelectionFromExtensions<TExtensions>> & EditorInstalledReadGroups<V, TExtensions> & EditorSelectionCapability<EditorSelectionFromExtensions<TExtensions>> & {\n  /**\n   * Build an immutable transaction without mutating or publishing editor\n   * state. An empty spec represents an intentionally handled no-op.\n   */\n  transaction: ((fn: (transaction: EditorTransactionSpecBuilder<V, TExtensions>) => void) => TransactionSpec) & {\n    /** Continue building from a delegated spec without publishing either step. */\n    extend: (base: TransactionSpec, fn: (transaction: EditorTransactionSpecBuilder<V, TExtensions>) => void) => TransactionSpec;\n  };\n};",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
             "V extends Value = Value",
@@ -2884,7 +2971,7 @@
           "name": "EditorTransactionBlocksApi",
           "route": null,
           "runtime": false,
-          "signature": "type EditorTransactionBlocksApi<V extends Value = Value> = {\n  duplicate: (options?: WithNodeTarget<BlockDuplicateOptions<ElementIn<V>>, ElementIn<V>>) => void;\n  /** Insert block nodes after the block containing the target. */\n  insertAfter: <T extends ElementIn<V>>(nodes: T | readonly T[], options?: WithNodeTarget<NodeInsertNodesOptions<T>>) => void;\n  lift: EditorTransactionNodesApi<V>['lift'];\n  reset: <T extends ElementIn<V>>(props: Partial<NodeProps<T>>, options?: WithNodeTarget<EditorBlockResetOptions<T>, T>) => void;\n  toggle: EditorTransactionNodesApi<V>['toggle'];\n};",
+          "signature": "type EditorTransactionBlocksApi<V extends Value = Value> = {\n  duplicate: {\n    <const TType extends NodeTypeSelector>(options: WithNodeTarget<BlockDuplicateOptions<NodeForTypeSelector<TType>, TType>> & {\n      type: TType;\n    }): void;\n    (options?: WithNodeTarget<BlockDuplicateOptions<ElementIn<V>>>): void;\n  };\n  /** Insert block nodes after the block containing the target. */\n  insertAfter: <T extends ElementIn<V>>(nodes: T | readonly T[], options?: NodeDuplicateOptions & {\n    at?: NodeTarget;\n  }) => void;\n  lift: EditorTransactionNodesApi<V>['lift'];\n  reset: <T extends ElementIn<V>>(props: Partial<NodeProps<T>>, options?: WithNodeTarget<EditorBlockResetOptions<T>, T>) => void;\n  toggle: EditorTransactionNodesApi<V>['toggle'];\n};",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
             "V extends Value = Value"
@@ -3040,7 +3127,7 @@
           "name": "EditorTransactionNodesApi",
           "route": null,
           "runtime": false,
-          "signature": "type EditorTransactionNodesApi<V extends Value = Value> = EditorStateNodesApi<V> & {\n  duplicate: <T extends ElementOrTextIn<V>>(entries: readonly NodeEntry<T>[], options?: NodeDuplicateOptions<T>) => void;\n  insert: <T extends ElementOrTextIn<V>>(nodes: T | readonly T[], options?: WithNodeTarget<NodeInsertNodesOptions<T>, T>) => void;\n  lift: <T extends NodeIn<V>>(options?: {\n    at?: NodeTarget<TargetDescendant<T>>;\n    match?: NodeMatch<T>;\n    mode?: MaximizeMode;\n    voids?: boolean;\n  }) => void;\n  merge: <T extends NodeIn<V>>(options?: {\n    at?: NodeTarget<TargetDescendant<T>>;\n    match?: NodeMatch<T>;\n    mode?: RangeMode;\n    hanging?: boolean;\n    voids?: boolean;\n  }) => void;\n  move: <T extends NodeIn<V>>(options: {\n    at?: NodeTarget<TargetDescendant<T>>;\n    match?: NodeMatch<T>;\n    mode?: MaximizeMode;\n    to: Path;\n    voids?: boolean;\n  }) => void;\n  remove: <T extends NodeIn<V>>(options?: {\n    at?: NodeTarget<TargetDescendant<T>>;\n    match?: NodeMatch<T>;\n    mode?: MaximizeMode;\n    hanging?: boolean;\n    voids?: boolean;\n  }) => void;\n  replace: <T extends ElementOrTextIn<V>>(nodes: T | readonly T[], options: EditorReplaceNodeOptions) => void;\n  replaceChildren: <T extends ElementOrTextIn<V>>(children: readonly T[], options: EditorReplaceChildrenOptions) => void;\n  set: EditorNodeSetObject<V>;\n  split: <T extends NodeIn<V>>(options?: {\n    at?: NodeTarget<TargetDescendant<T>>;\n    match?: NodeMatch<T>;\n    mode?: RangeMode;\n    always?: boolean;\n    height?: number;\n    position?: number;\n    voids?: boolean;\n  }) => void;\n  toggle: (type: string, options?: EditorBlockToggleOptions<DescendantIn<V>>) => void;\n  unset: {\n    <const TKey extends NodePropertyKeyIn<V>, T extends NodeIn<V>>(props: TKey | readonly TKey[], options?: EditorNodeUnsetOptions<T>): void;\n    <const THandle extends SchemaPropertyHandle<string, unknown>, T extends NodeIn<V>>(property: THandle, options?: EditorNodeUnsetOptions<T>): void;\n    <TKey extends string, T extends NodeIn<V>>(property: string extends TKey ? TKey | readonly TKey[] : never, options?: EditorNodeUnsetOptions<T>): void;\n  };\n  unwrap: <T extends NodeIn<V>>(options?: {\n    at?: NodeTarget<TargetDescendant<T>>;\n    match?: NodeMatch<T>;\n    mode?: MaximizeMode;\n    split?: boolean;\n    voids?: boolean;\n  }) => void;\n  wrap: <T extends NodeIn<V>, E extends ElementIn<V>>(element: E, options?: {\n    at?: NodeTarget<TargetDescendant<T>>;\n    match?: NodeMatch<T>;\n    mode?: MaximizeMode;\n    split?: boolean;\n    voids?: boolean;\n  }) => void;\n};",
+          "signature": "type EditorTransactionNodesApi<V extends Value = Value> = EditorStateNodesApi<V> & {\n  duplicate: <T extends ElementOrTextIn<V>>(entries: readonly NodeEntry<T>[], options?: NodeDuplicateOptions) => void;\n  insert: {\n    <T extends ElementOrTextIn<V>, const TType extends NodeTypeSelector | undefined>(nodes: T | readonly T[], options: WithNodeTarget<NodeInsertNodesOptions<NodeInsertSplitTarget<V, TType>, TType>> & {\n      split: NodeInsertNodesOptions<NodeInsertSplitTarget<V, TType>, TType>['split'] & {\n        type: TType;\n      };\n    }): void;\n    <T extends ElementOrTextIn<V>>(nodes: T | readonly T[], options?: WithNodeTarget<NodeInsertNodesOptions<NodeIn<V>, undefined>>): void;\n  };\n  lift: {\n    <const TType extends NodeTypeSelector>(options: {\n      at?: NodeTarget;\n      match?: NodeMatch<NodeForTypeSelector<TType>>;\n      mode?: MaximizeMode;\n      type: TType;\n      voids?: boolean;\n    }): void;\n    (options?: {\n      at?: NodeTarget;\n      match?: NodeMatch<NodeIn<V>>;\n      mode?: MaximizeMode;\n      type?: NodeTypeSelector;\n      voids?: boolean;\n    }): void;\n  };\n  merge: {\n    <const TType extends NodeTypeSelector>(options: {\n      at?: NodeTarget;\n      match?: NodeMatch<NodeForTypeSelector<TType>>;\n      mode?: RangeMode;\n      hanging?: boolean;\n      type: TType;\n      voids?: boolean;\n    }): void;\n    (options?: {\n      at?: NodeTarget;\n      match?: NodeMatch<NodeIn<V>>;\n      mode?: RangeMode;\n      hanging?: boolean;\n      type?: NodeTypeSelector;\n      voids?: boolean;\n    }): void;\n  };\n  move: {\n    <const TType extends NodeTypeSelector>(options: {\n      at?: NodeTarget;\n      match?: NodeMatch<NodeForTypeSelector<TType>>;\n      mode?: MaximizeMode;\n      to: Path;\n      type: TType;\n      voids?: boolean;\n    }): void;\n    (options: {\n      at?: NodeTarget;\n      match?: NodeMatch<NodeIn<V>>;\n      mode?: MaximizeMode;\n      to: Path;\n      type?: NodeTypeSelector;\n      voids?: boolean;\n    }): void;\n  };\n  remove: {\n    <const TType extends NodeTypeSelector>(options: {\n      at?: NodeTarget;\n      match?: NodeMatch<NodeForTypeSelector<TType>>;\n      mode?: MaximizeMode;\n      hanging?: boolean;\n      type: TType;\n      voids?: boolean;\n    }): void;\n    (options?: {\n      at?: NodeTarget;\n      match?: NodeMatch<NodeIn<V>>;\n      mode?: MaximizeMode;\n      hanging?: boolean;\n      type?: NodeTypeSelector;\n      voids?: boolean;\n    }): void;\n  };\n  replace: <T extends ElementOrTextIn<V>>(nodes: T | readonly T[], options: EditorReplaceNodeOptions) => void;\n  replaceChildren: <T extends ElementOrTextIn<V>>(children: readonly T[], options: EditorReplaceChildrenOptions) => void;\n  set: EditorNodeSetObject<V>;\n  split: {\n    <const TType extends NodeTypeSelector>(options: {\n      at?: NodeTarget;\n      match?: NodeMatch<NodeForTypeSelector<TType>>;\n      mode?: RangeMode;\n      always?: boolean;\n      height?: number;\n      position?: number;\n      type: TType;\n      voids?: boolean;\n    }): void;\n    (options?: {\n      at?: NodeTarget;\n      match?: NodeMatch<NodeIn<V>>;\n      mode?: RangeMode;\n      always?: boolean;\n      height?: number;\n      position?: number;\n      type?: NodeTypeSelector;\n      voids?: boolean;\n    }): void;\n  };\n  toggle: (type: string, options?: EditorBlockToggleOptions<DescendantIn<V>>) => void;\n  unset: {\n    <const TKey extends NodePropertyKeyIn<V>, const TType extends NodeTypeSelector>(props: TKey | readonly TKey[], options: EditorNodeUnsetOptions<NodeForTypeSelector<TType>, TType> & {\n      type: TType;\n    }): void;\n    <const TKey extends NodePropertyKeyIn<V>>(props: TKey | readonly TKey[], options?: EditorNodeUnsetOptions<NodeIn<V>>): void;\n    <const THandle extends SchemaPropertyHandle<string, unknown>, const TType extends NodeTypeSelector>(property: THandle, options: EditorNodeUnsetOptions<NodeForTypeSelector<TType>, TType> & {\n      type: TType;\n    }): void;\n    <const THandle extends SchemaPropertyHandle<string, unknown>>(property: THandle, options?: EditorNodeUnsetOptions<NodeIn<V>>): void;\n    <TKey extends string, const TType extends NodeTypeSelector>(property: string extends TKey ? TKey | readonly TKey[] : never, options: EditorNodeUnsetOptions<NodeForTypeSelector<TType>, TType> & {\n      type: TType;\n    }): void;\n    <TKey extends string>(property: string extends TKey ? TKey | readonly TKey[] : never, options?: EditorNodeUnsetOptions<NodeIn<V>>): void;\n  };\n  unwrap: {\n    <const TType extends NodeTypeSelector>(options: {\n      at?: NodeTarget;\n      match?: NodeMatch<NodeForTypeSelector<TType>>;\n      mode?: MaximizeMode;\n      split?: boolean;\n      type: TType;\n      voids?: boolean;\n    }): void;\n    (options?: {\n      at?: NodeTarget;\n      match?: NodeMatch<NodeIn<V>>;\n      mode?: MaximizeMode;\n      split?: boolean;\n      type?: NodeTypeSelector;\n      voids?: boolean;\n    }): void;\n  };\n  wrap: {\n    <E extends ElementIn<V>, const TType extends NodeTypeSelector>(element: E, options: {\n      at?: NodeTarget;\n      match?: NodeMatch<NodeForTypeSelector<TType>>;\n      mode?: MaximizeMode;\n      split?: boolean;\n      type: TType;\n      voids?: boolean;\n    }): void;\n    <E extends ElementIn<V>>(element: E, options?: {\n      at?: NodeTarget;\n      match?: NodeMatch<NodeIn<V>>;\n      mode?: MaximizeMode;\n      split?: boolean;\n      type?: NodeTypeSelector;\n      voids?: boolean;\n    }): void;\n  };\n};",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
             "V extends Value = Value"
@@ -3080,9 +3167,11 @@
           "name": "EditorTransactionSelectionApi",
           "route": null,
           "runtime": false,
-          "signature": "type EditorTransactionSelectionApi = EditorStateSelectionApi & {\n  clear: () => void;\n  collapse: (options?: SelectionCollapseOptions) => void;\n  move: (options?: SelectionMoveOptions) => void;\n  set: (target: EditorSelection | Location | null) => void;\n  setPoint: (props: Partial<Point>, options?: SelectionSetPointOptions) => void;\n  setRange: (props: Partial<Range>) => void;\n};",
+          "signature": "type EditorTransactionSelectionApi<TSelection extends SelectionValue = SelectionValue> = EditorStateSelectionApi<TSelection> & {\n  clear: () => void;\n  collapse: (options?: SelectionCollapseOptions) => void;\n  move: (options?: SelectionMoveOptions) => void;\n  set: BivariantMethod<[target: TSelection | EditorSelectionLocation | null], void>;\n  setPoint: (props: Partial<Point>, options?: SelectionSetPointOptions) => void;\n  setRange: (props: Partial<Range>) => void;\n};",
           "source": "packages/plite/src/interfaces/editor.ts",
-          "typeParameters": []
+          "typeParameters": [
+            "TSelection extends SelectionValue = SelectionValue"
+          ]
         },
         "@platejs/plite:EditorTransactionSliceApi": {
           "aliases": [],
@@ -3106,7 +3195,7 @@
           "name": "EditorTransactionSpecBuilder",
           "route": null,
           "runtime": false,
-          "signature": "type EditorTransactionSpecBuilder<V extends Value = Value, TExtensions extends readonly unknown[] = readonly []> = Omit<EditorCoreUpdateTransaction<V>, 'anchor' | 'extensions' | 'key'> & EditorExtensionSpecMethods<EditorInstalledUpdateGroups<V, TExtensions>>;",
+          "signature": "type EditorTransactionSpecBuilder<V extends Value = Value, TExtensions extends readonly unknown[] = readonly []> = Omit<EditorCoreUpdateTransaction<V, EditorSelectionFromExtensions<TExtensions>>, 'anchor' | 'extensions' | 'key'> & EditorExtensionSpecMethods<EditorInstalledUpdateGroups<V, TExtensions>> & EditorSelectionCapability<EditorSelectionFromExtensions<TExtensions>>;",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
             "V extends Value = Value",
@@ -3171,7 +3260,7 @@
           "name": "EditorUpdate",
           "route": null,
           "runtime": false,
-          "signature": "type EditorUpdate<V extends Value = Value, TExtensions extends readonly unknown[] = readonly []> = {\n  <TTx extends object = {}>(fn: (transaction: EditorUpdateTransaction<V, TExtensions> & TTx, context: EditorUpdateContext<BaseEditor<V, TExtensions>>) => void): void;\n  <TTx extends object = {}>(policy: EditorAvailableUpdatePolicy<EditorInstalledUpdateGroups<V, TExtensions>>, fn: (transaction: EditorUpdateTransaction<V, TExtensions> & TTx, context: EditorUpdateContext<BaseEditor<V, TExtensions>>) => void): void;\n  (policy: EditorAvailableUpdatePolicy<EditorInstalledUpdateGroups<V, TExtensions>>): EditorUpdateMethods<V, TExtensions>;\n} & EditorUpdateMethods<V, TExtensions>;",
+          "signature": "type EditorUpdate<V extends Value = Value, TExtensions extends readonly unknown[] = readonly []> = {\n  (fn: (transaction: EditorUpdateTransaction<V, TExtensions>, context: EditorUpdateContext<BaseEditor<V, TExtensions>>) => void): void;\n  (policy: EditorAvailableUpdatePolicy<EditorInstalledUpdateGroups<V, TExtensions>>, fn: (transaction: EditorUpdateTransaction<V, TExtensions>, context: EditorUpdateContext<BaseEditor<V, TExtensions>>) => void): void;\n  (policy: EditorAvailableUpdatePolicy<EditorInstalledUpdateGroups<V, TExtensions>>): EditorUpdateMethods<V, TExtensions>;\n} & EditorUpdateMethods<V, TExtensions>;",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
             "V extends Value = Value",
@@ -3200,10 +3289,10 @@
           "name": "EditorUpdateContext",
           "route": null,
           "runtime": false,
-          "signature": "type EditorUpdateContext<TEditor extends BaseEditor<any, any> = Editor> = {\n  afterCommit: (handler: EditorCommitHandler<TEditor>) => void;\n};",
+          "signature": "type EditorUpdateContext<TEditor = Editor> = {\n  afterCommit: (handler: EditorCommitHandler<TEditor>) => void;\n};",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
-            "TEditor extends BaseEditor<any, any> = Editor"
+            "TEditor = Editor"
           ]
         },
         "@platejs/plite:EditorUpdateMethods": {
@@ -3279,7 +3368,7 @@
           "name": "EditorUpdateTransaction",
           "route": null,
           "runtime": false,
-          "signature": "type EditorUpdateTransaction<V extends Value = Value, TExtensions extends readonly unknown[] = readonly []> = EditorCoreUpdateTransaction<V> & {\n  /** Dispatch a typed semantic command inside this active update. */\n  command: EditorCommandDispatch<BaseEditor<V, TExtensions>>;\n} & EditorInstalledUpdateGroups<V, TExtensions>;",
+          "signature": "type EditorUpdateTransaction<V extends Value = Value, TExtensions extends readonly unknown[] = readonly []> = EditorCoreUpdateTransaction<V, EditorSelectionFromExtensions<TExtensions>> & {\n  /** Dispatch a typed semantic command inside this active update. */\n  command: EditorCommandDispatch<BaseEditor<V, TExtensions>>;\n} & EditorInstalledUpdateGroups<V, TExtensions> & EditorSelectionCapability<EditorSelectionFromExtensions<TExtensions>>;",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
             "V extends Value = Value",
@@ -3591,7 +3680,7 @@
           "name": "InsertNodesCommand",
           "route": null,
           "runtime": false,
-          "signature": "type InsertNodesCommand = {\n  nodes: Descendant | readonly Descendant[];\n  options?: CommandTargetOptions<NodeInsertNodesOptions<Descendant>>;\n};",
+          "signature": "type InsertNodesCommand = {\n  nodes: Descendant | readonly Descendant[];\n  options?: CommandTargetOptions<NodeInsertNodesOptions<Node, NodeTypeSelector | undefined>>;\n};",
           "source": "packages/plite/src/core/editor-commands.ts",
           "typeParameters": []
         },
@@ -3925,11 +4014,9 @@
           "name": "NodeDuplicateOptions",
           "route": null,
           "runtime": false,
-          "signature": "type NodeDuplicateOptions<T extends Node> = Omit<NodeInsertNodesOptions<T>, 'at'>;",
+          "signature": "type NodeDuplicateOptions = Pick<NodeInsertNodesOptions, 'hanging' | 'select' | 'voids'>;",
           "source": "packages/plite/src/interfaces/transforms/node.ts",
-          "typeParameters": [
-            "T extends Node"
-          ]
+          "typeParameters": []
         },
         "@platejs/plite:NodeElementsOptions": {
           "aliases": [],
@@ -4031,10 +4118,26 @@
           "name": "NodeInsertNodesOptions",
           "route": null,
           "runtime": false,
-          "signature": "interface NodeInsertNodesOptions<T extends Node = Node> {\n  at?: Location;\n  match?: NodeMatch<T>;\n  mode?: RangeMode;\n  hanging?: boolean;\n  select?: boolean;\n  voids?: boolean;\n}",
+          "signature": "interface NodeInsertNodesOptions<TSplit extends Node = Node, TType extends NodeTypeSelector | undefined = undefined> {\n  at?: Location;\n  mode?: RangeMode;\n  hanging?: boolean;\n  select?: boolean;\n  split?: NodeInsertSplitOptions<TSplit, TType>;\n  voids?: boolean;\n}",
           "source": "packages/plite/src/interfaces/transforms/node.ts",
           "typeParameters": [
-            "T extends Node = Node"
+            "TSplit extends Node = Node",
+            "TType extends NodeTypeSelector | undefined = undefined"
+          ]
+        },
+        "@platejs/plite:NodeInsertSplitOptions": {
+          "aliases": [],
+          "documentation": "",
+          "entrypoint": "@platejs/plite",
+          "kind": "interface",
+          "name": "NodeInsertSplitOptions",
+          "route": null,
+          "runtime": false,
+          "signature": "interface NodeInsertSplitOptions<T extends Node = Node, TType extends NodeTypeSelector | undefined = undefined> {\n  match?: NodeMatch<T>;\n  type?: TType;\n}",
+          "source": "packages/plite/src/interfaces/transforms/node.ts",
+          "typeParameters": [
+            "T extends Node = Node",
+            "TType extends NodeTypeSelector | undefined = undefined"
           ]
         },
         "@platejs/plite:NodeInterface": {
@@ -4045,7 +4148,7 @@
           "name": "NodeInterface",
           "route": null,
           "runtime": false,
-          "signature": "interface NodeInterface {\n  /**\n   * Get the node at a specific path, asserting that it's an ancestor node.\n   */\n  ancestor: (root: Node, path: Path) => Ancestor;\n  /**\n   * Return a generator of all the ancestor nodes above a specific path.\n   *\n   * By default the order is top-down, from highest to lowest ancestor in\n   * the tree, but you can pass the `reverse: true` option to go bottom-up.\n   */\n  ancestors: (root: Node, path: Path, options?: NodeAncestorsOptions) => Generator<NodeEntry<Ancestor>, void, undefined>;\n  /**\n   * Get the child of a node at a specific index.\n   */\n  child: (root: Node, index: number) => Descendant;\n  /**\n   * Iterate over the children of a node at a specific path.\n   */\n  children: (root: Node, path: Path, options?: NodeChildrenOptions) => Generator<NodeEntry<Descendant>, void, undefined>;\n  /**\n   * Get an entry for the common ancesetor node of two paths.\n   */\n  common: (root: Node, path: Path, another: Path) => NodeEntry;\n  /**\n   * Get the node at a specific path, asserting that it's a descendant node.\n   */\n  descendant: (root: Node, path: Path) => Descendant;\n  /**\n   * Return a generator of all the descendant node entries inside a root node.\n   */\n  descendants: (root: Node, options?: NodeDescendantsOptions) => Generator<NodeEntry<Descendant>, void, undefined>;\n  /**\n   * Return a generator of all the element nodes inside a root node. Each iteration\n   * will return an `ElementEntry` tuple consisting of `[Element, Path]`. If the\n   * root node is an element it will be included in the iteration as well.\n   */\n  elements: (root: Node, options?: NodeElementsOptions) => Generator<ElementEntry, void, undefined>;\n  /**\n   * Extract props from a Node.\n   */\n  extractProps: (node: Node) => NodeProps;\n  /**\n   * Check if a node has props after the caller's metadata policy is applied.\n   */\n  hasProps: (node: Node, options?: NodeHasPropsOptions) => boolean;\n  /**\n   * Get the first leaf node entry in a root node from a path.\n   */\n  first: (root: Node, path: Path) => NodeEntry;\n  /**\n   * Get the sliced fragment represented by a range inside a root node.\n   */\n  fragment: <T extends Ancestor = AnyExtensionEditor$1>(root: T, range: Range) => readonly Descendant[];\n  /**\n   * Find ranges for a text query inside text leaves or text-only ancestor\n   * children. String queries are literal; use a regular expression or callback\n   * for custom matching.\n   */\n  findTextRanges: (root: Node | NodeTextRangeRoot, query: NodeTextRangeQuery, options?: NodeFindTextRangesOptions) => readonly Range[];\n  /**\n   * Get the descendant node referred to by a specific path. If the path is an\n   * empty array, it refers to the root node itself.\n   */\n  get: (root: Node, path: Path) => Node;\n  /**\n   * Similar to get, but returns undefined if the node does not exist.\n   */\n  getIf: (root: Node, path: readonly number[]) => Node | undefined;\n  /**\n   * Check if a descendant node exists at a specific path.\n   */\n  has: (root: Node, path: Path) => boolean;\n  /**\n   * Check if a node is an `Editor` or `Element` object.\n   */\n  isAncestor: (node: Node) => node is Ancestor;\n  /**\n   * Check if a value is an `Element` or `Text` node.\n   */\n  isDescendant: (value: unknown) => value is Descendant;\n  /**\n   * Check if a node is an `Editor` object.\n   */\n  isEditor: (value: unknown) => value is AnyExtensionEditor$1;\n  /**\n   * Check if a node is an `Element` object.\n   */\n  isElement: (value: unknown) => value is Element;\n  /**\n   * Check if a value implements the `Node` interface.\n   */\n  isNode: (value: unknown, options?: NodeIsNodeOptions) => value is Node;\n  /**\n   * Check if a value is a list of `Node` objects.\n   */\n  isNodeList: (value: unknown, options?: NodeIsNodeOptions) => value is readonly Node[];\n  /**\n   * Check if a node is an `Text` object.\n   */\n  isText: (value: unknown) => value is Text;\n  /**\n   * Get the last leaf node entry in a root node from a path.\n   */\n  last: (root: Node, path: Path) => NodeEntry;\n  /**\n   * Get the node at a specific path, ensuring it's a leaf text node.\n   */\n  leaf: (root: Node, path: Path) => Text;\n  /**\n   * Return a generator of the in a branch of the tree, from a specific path.\n   *\n   * By default the order is top-down, from highest to lowest node in the tree,\n   * but you can pass the `reverse: true` option to go bottom-up.\n   */\n  levels: (root: Node, path: Path, options?: NodeLevelsOptions) => Generator<NodeEntry, void, undefined>;\n  /** Check a node against a predicate or shallow property matcher. */\n  matches: {\n    <T extends Node>(node: Node, match: (node: Node, path: Path) => node is T, path?: Path): node is T;\n    <T extends Node>(node: T, match: NodeMatch<T>, path?: Path): boolean;\n  };\n  /**\n   * Return a generator of all the node entries of a root node. Each entry is\n   * returned as a `[Node, Path]` tuple, with the path referring to the node's\n   * position inside the root node.\n   */\n  nodes: (root: Node, options?: NodeNodesOptions) => Generator<NodeEntry, void, undefined>;\n  /**\n   * Get the parent of a node at a specific path.\n   */\n  parent: (root: Node, path: Path) => Ancestor;\n  /**\n   * Get the concatenated text string of a node's content.\n   *\n   * Note that this will not include spaces or line breaks between block nodes.\n   * It is not a user-facing string, but a string for performing offset-related\n   * computations for a node.\n   */\n  string: (node: Node) => string;\n  /**\n   * Return a generator of all leaf text nodes in a root node.\n   */\n  texts: (root: Node, options?: NodeTextsOptions) => Generator<NodeEntry<Text>, void, undefined>;\n}",
+          "signature": "interface NodeInterface {\n  /**\n   * Get the node at a specific path, asserting that it's an ancestor node.\n   */\n  ancestor: (root: Node, path: Path) => Ancestor;\n  /**\n   * Return a generator of all the ancestor nodes above a specific path.\n   *\n   * By default the order is top-down, from highest to lowest ancestor in\n   * the tree, but you can pass the `reverse: true` option to go bottom-up.\n   */\n  ancestors: (root: Node, path: Path, options?: NodeAncestorsOptions) => Generator<NodeEntry<Ancestor>, void, undefined>;\n  /**\n   * Get the child of a node at a specific index.\n   */\n  child: (root: Node, index: number) => Descendant;\n  /**\n   * Iterate over the children of a node at a specific path.\n   */\n  children: (root: Node, path: Path, options?: NodeChildrenOptions) => Generator<NodeEntry<Descendant>, void, undefined>;\n  /**\n   * Get an entry for the common ancesetor node of two paths.\n   */\n  common: (root: Node, path: Path, another: Path) => NodeEntry;\n  /**\n   * Get the node at a specific path, asserting that it's a descendant node.\n   */\n  descendant: (root: Node, path: Path) => Descendant;\n  /**\n   * Return a generator of all the descendant node entries inside a root node.\n   */\n  descendants: (root: Node, options?: NodeDescendantsOptions) => Generator<NodeEntry<Descendant>, void, undefined>;\n  /**\n   * Return a generator of all the element nodes inside a root node. Each iteration\n   * will return an `ElementEntry` tuple consisting of `[Element, Path]`. If the\n   * root node is an element it will be included in the iteration as well.\n   */\n  elements: (root: Node, options?: NodeElementsOptions) => Generator<ElementEntry, void, undefined>;\n  /**\n   * Extract props from a Node.\n   */\n  extractProps: (node: Node) => NodeProps;\n  /**\n   * Check if a node has props after the caller's metadata policy is applied.\n   */\n  hasProps: (node: Node, options?: NodeHasPropsOptions) => boolean;\n  /**\n   * Get the first leaf node entry in a root node from a path.\n   */\n  first: (root: Node, path: Path) => NodeEntry;\n  /**\n   * Get the sliced fragment represented by a range inside a root node.\n   */\n  fragment: <T extends Ancestor = AnyExtensionEditor$1>(root: T, range: Range) => readonly Descendant[];\n  /**\n   * Find ranges for a text query inside text leaves or text-only ancestor\n   * children. String queries are literal; use a regular expression or callback\n   * for custom matching.\n   */\n  findTextRanges: (root: Node | NodeTextRangeRoot, query: NodeTextRangeQuery, options?: NodeFindTextRangesOptions) => readonly Range[];\n  /**\n   * Get the descendant node referred to by a specific path. If the path is an\n   * empty array, it refers to the root node itself.\n   */\n  get: (root: Node, path: Path) => Node;\n  /**\n   * Similar to get, but returns undefined if the node does not exist.\n   */\n  getIf: (root: Node, path: readonly number[]) => Node | undefined;\n  /**\n   * Check if a descendant node exists at a specific path.\n   */\n  has: (root: Node, path: Path) => boolean;\n  /**\n   * Check if a node is an `Editor` or `Element` object.\n   */\n  isAncestor: (node: Node) => node is Ancestor;\n  /**\n   * Check if a value is an `Element` or `Text` node.\n   */\n  isDescendant: (value: unknown) => value is Descendant;\n  /**\n   * Check if a node is an `Editor` object.\n   */\n  isEditor: (value: unknown) => value is AnyExtensionEditor$1;\n  /**\n   * Check if a node is an `Element` object.\n   */\n  isElement: (value: unknown) => value is Element;\n  /**\n   * Check if a value implements the `Node` interface.\n   */\n  isNode: (value: unknown, options?: NodeIsNodeOptions) => value is Node;\n  /**\n   * Check if a value is a list of `Node` objects.\n   */\n  isNodeList: (value: unknown, options?: NodeIsNodeOptions) => value is readonly Node[];\n  /**\n   * Check if a node is an `Text` object.\n   */\n  isText: (value: unknown) => value is Text;\n  /**\n   * Get the last leaf node entry in a root node from a path.\n   */\n  last: (root: Node, path: Path) => NodeEntry;\n  /**\n   * Get the node at a specific path, ensuring it's a leaf text node.\n   */\n  leaf: (root: Node, path: Path) => Text;\n  /**\n   * Return a generator of the in a branch of the tree, from a specific path.\n   *\n   * By default the order is top-down, from highest to lowest node in the tree,\n   * but you can pass the `reverse: true` option to go bottom-up.\n   */\n  levels: (root: Node, path: Path, options?: NodeLevelsOptions) => Generator<NodeEntry, void, undefined>;\n  /** Check a node against a predicate. */\n  matches: {\n    <T extends Node>(node: Node, match: (node: Node, path: Path) => node is T, path?: Path): node is T;\n    <T extends Node>(node: T, match: NodeMatch<T>, path?: Path): boolean;\n  };\n  /**\n   * Return a generator of all the node entries of a root node. Each entry is\n   * returned as a `[Node, Path]` tuple, with the path referring to the node's\n   * position inside the root node.\n   */\n  nodes: (root: Node, options?: NodeNodesOptions) => Generator<NodeEntry, void, undefined>;\n  /**\n   * Get the parent of a node at a specific path.\n   */\n  parent: (root: Node, path: Path) => Ancestor;\n  /**\n   * Get the concatenated text string of a node's content.\n   *\n   * Note that this will not include spaces or line breaks between block nodes.\n   * It is not a user-facing string, but a string for performing offset-related\n   * computations for a node.\n   */\n  string: (node: Node) => string;\n  /**\n   * Return a generator of all leaf text nodes in a root node.\n   */\n  texts: (root: Node, options?: NodeTextsOptions) => Generator<NodeEntry<Text>, void, undefined>;\n}",
           "source": "packages/plite/src/interfaces/node.ts",
           "typeParameters": []
         },
@@ -4085,18 +4188,33 @@
           "source": "packages/plite/src/interfaces/node.ts",
           "typeParameters": []
         },
-        "@platejs/plite:NodeMatch": {
+        "@platejs/plite:NodeLiftNodesOptions": {
           "aliases": [],
           "documentation": "",
+          "entrypoint": "@platejs/plite",
+          "kind": "interface",
+          "name": "NodeLiftNodesOptions",
+          "route": null,
+          "runtime": false,
+          "signature": "interface NodeLiftNodesOptions<T extends Node = Node, TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined> {\n  at?: Location;\n  match?: NodeMatch<T>;\n  type?: TType;\n  mode?: MaximizeMode;\n  voids?: boolean;\n}",
+          "source": "packages/plite/src/interfaces/transforms/node.ts",
+          "typeParameters": [
+            "T extends Node = Node",
+            "TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined"
+          ]
+        },
+        "@platejs/plite:NodeMatch": {
+          "aliases": [],
+          "documentation": "Additional conditions applied after structural node selection.",
           "entrypoint": "@platejs/plite",
           "kind": "type",
           "name": "NodeMatch",
           "route": null,
           "runtime": false,
-          "signature": "type NodeMatch<T extends Node> = NodeMatchPredicate<T> | NodeMatchProps<T>;",
+          "signature": "type NodeMatch<T extends Node = Node> = (node: T, path: Path) => boolean;",
           "source": "packages/plite/src/interfaces/node.ts",
           "typeParameters": [
-            "T extends Node"
+            "T extends Node = Node"
           ]
         },
         "@platejs/plite:NodeMatchPredicate": {
@@ -4107,10 +4225,40 @@
           "name": "NodeMatchPredicate",
           "route": null,
           "runtime": false,
-          "signature": "type NodeMatchPredicate<T extends Node> = ((node: Node, path: Path) => node is T) | ((node: Node, path: Path) => boolean);",
+          "signature": "type NodeMatchPredicate<T extends Node = Node> = ((node: Node, path: Path) => node is T) | ((node: Node, path: Path) => boolean);",
           "source": "packages/plite/src/interfaces/node.ts",
           "typeParameters": [
-            "T extends Node"
+            "T extends Node = Node"
+          ]
+        },
+        "@platejs/plite:NodeMergeNodesOptions": {
+          "aliases": [],
+          "documentation": "",
+          "entrypoint": "@platejs/plite",
+          "kind": "interface",
+          "name": "NodeMergeNodesOptions",
+          "route": null,
+          "runtime": false,
+          "signature": "interface NodeMergeNodesOptions<T extends Node = Node, TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined> {\n  at?: Location;\n  match?: NodeMatch<T>;\n  type?: TType;\n  mode?: RangeMode;\n  hanging?: boolean;\n  voids?: boolean;\n}",
+          "source": "packages/plite/src/interfaces/transforms/node.ts",
+          "typeParameters": [
+            "T extends Node = Node",
+            "TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined"
+          ]
+        },
+        "@platejs/plite:NodeMoveNodesOptions": {
+          "aliases": [],
+          "documentation": "",
+          "entrypoint": "@platejs/plite",
+          "kind": "interface",
+          "name": "NodeMoveNodesOptions",
+          "route": null,
+          "runtime": false,
+          "signature": "interface NodeMoveNodesOptions<T extends Node = Node, TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined> {\n  at?: Location;\n  match?: NodeMatch<T>;\n  type?: TType;\n  mode?: MaximizeMode;\n  to: Path;\n  voids?: boolean;\n}",
+          "source": "packages/plite/src/interfaces/transforms/node.ts",
+          "typeParameters": [
+            "T extends Node = Node",
+            "TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined"
           ]
         },
         "@platejs/plite:NodeMutationMethods": {
@@ -4121,7 +4269,7 @@
           "name": "NodeMutationMethods",
           "route": null,
           "runtime": false,
-          "signature": "interface NodeMutationMethods<V extends Value = Value> {\n  /**\n   * Insert nodes in the editor\n   * at the specified location or (if not defined) the current selection or (if not defined) the end of the document.\n   */\n  insertNodes: <TExtensions extends readonly unknown[], T extends ElementOrTextIn<V>>(editor: Editor<V, TExtensions>, nodes: T | readonly T[], options?: NodeInsertNodesOptions<T>) => void;\n  /**\n   * Lift nodes at a specific location upwards in the document tree, splitting\n   * their parent in two if necessary.\n   */\n  liftNodes: <TValue extends V, TExtensions extends readonly unknown[], T extends NodeIn<TValue>>(editor: Editor<TValue, TExtensions>, options?: {\n    at?: Location;\n    match?: NodeMatch<T>;\n    mode?: MaximizeMode;\n    voids?: boolean;\n  }) => void;\n  /**\n   * Merge a node at a location with the previous node of the same depth,\n   * removing any empty containing nodes after the merge if necessary.\n   */\n  mergeNodes: <TValue extends V, TExtensions extends readonly unknown[], T extends NodeIn<TValue>>(editor: Editor<TValue, TExtensions>, options?: {\n    at?: Location;\n    match?: NodeMatch<T>;\n    mode?: RangeMode;\n    hanging?: boolean;\n    voids?: boolean;\n  }) => void;\n  /**\n   * Move the nodes at a location to a new location.\n   */\n  moveNodes: <TValue extends V, TExtensions extends readonly unknown[], T extends NodeIn<TValue>>(editor: Editor<TValue, TExtensions>, options: {\n    at?: Location;\n    match?: NodeMatch<T>;\n    mode?: MaximizeMode;\n    to: Path;\n    voids?: boolean;\n  }) => void;\n  /**\n   * Remove the nodes at a specific location in the document.\n   */\n  removeNodes: <TValue extends V, TExtensions extends readonly unknown[], T extends NodeIn<TValue>>(editor: Editor<TValue, TExtensions>, options?: NodeRemoveNodesOptions<T>) => void;\n  /** Replace a range of children under an ancestor node atomically. */\n  replaceChildren: <TValue extends V, TExtensions extends readonly unknown[], T extends ElementOrTextIn<TValue>>(editor: Editor<TValue, TExtensions>, children: readonly T[], options: NodeReplaceChildrenOptions) => void;\n  /**\n   * Set new properties on the nodes at a location.\n   */\n  setNodes: <TValue extends V, TExtensions extends readonly unknown[], T extends NodeIn<TValue>>(editor: Editor<TValue, TExtensions>, props: Partial<NodeProps<T>>, options?: NodeSetNodesOptions<T>) => void;\n  /**\n   * Split the nodes at a specific location.\n   */\n  splitNodes: <TValue extends V, TExtensions extends readonly unknown[], T extends NodeIn<TValue>>(editor: Editor<TValue, TExtensions>, options?: {\n    at?: Location;\n    match?: NodeMatch<T>;\n    mode?: RangeMode;\n    always?: boolean;\n    height?: number;\n    position?: number;\n    voids?: boolean;\n  }) => void;\n  /**\n   * Unset properties on the nodes at a location.\n   */\n  unsetNodes: <TValue extends V, TExtensions extends readonly unknown[], T extends NodeIn<TValue>>(editor: Editor<TValue, TExtensions>, props: string | readonly string[], options?: NodeUnsetNodesOptions<T>) => void;\n  /**\n   * Unwrap the nodes at a location from a parent node, splitting the parent if\n   * necessary to ensure that only the content in the range is unwrapped.\n   */\n  unwrapNodes: <TValue extends V, TExtensions extends readonly unknown[], T extends NodeIn<TValue>>(editor: Editor<TValue, TExtensions>, options?: {\n    at?: Location;\n    match?: NodeMatch<T>;\n    mode?: MaximizeMode;\n    split?: boolean;\n    voids?: boolean;\n  }) => void;\n  /**\n   * Wrap the nodes at a location in a new container node, splitting the edges\n   * of the range first to ensure that only the content in the range is wrapped.\n   */\n  wrapNodes: <TValue extends V, TExtensions extends readonly unknown[], T extends NodeIn<TValue>, E extends ElementIn<TValue>>(editor: Editor<TValue, TExtensions>, element: E, options?: {\n    at?: Location;\n    match?: NodeMatch<T>;\n    mode?: MaximizeMode;\n    split?: boolean;\n    voids?: boolean;\n  }) => void;\n}",
+          "signature": "interface NodeMutationMethods<V extends Value = Value> {\n  /**\n   * Insert nodes in the editor\n   * at the specified location or (if not defined) the current selection or (if not defined) the end of the document.\n   */\n  insertNodes: {\n    <TValue extends V, TExtensions extends readonly unknown[], T extends ElementOrTextIn<TValue>, const TType extends NodeTypeSelector | undefined>(editor: Editor<TValue, TExtensions>, nodes: T | readonly T[], options: NodeInsertNodesOptions<NodeMutationTarget<TValue, TType>, TType> & {\n      split: NodeInsertNodesOptions<NodeMutationTarget<TValue, TType>, TType>['split'] & {\n        type: TType;\n      };\n    }): void;\n    <TValue extends V, TExtensions extends readonly unknown[], T extends ElementOrTextIn<TValue>>(editor: Editor<TValue, TExtensions>, nodes: T | readonly T[], options?: NodeInsertNodesOptions<NodeIn<TValue>, undefined>): void;\n  };\n  /**\n   * Lift nodes at a specific location upwards in the document tree, splitting\n   * their parent in two if necessary.\n   */\n  liftNodes: {\n    <TValue extends V, TExtensions extends readonly unknown[], const TType extends NodeTypeSelector>(editor: Editor<TValue, TExtensions>, options: NodeLiftNodesOptions<NodeForTypeSelector<TType>, TType> & {\n      type: TType;\n    }): void;\n    <TValue extends V, TExtensions extends readonly unknown[], const TOptions extends NodeLiftNodesOptions<NodeIn<TValue>> = NodeLiftNodesOptions<NodeIn<TValue>>>(editor: Editor<TValue, TExtensions>, options?: OptionalSelectorOptions<TOptions>): void;\n  };\n  /**\n   * Merge a node at a location with the previous node of the same depth,\n   * removing any empty containing nodes after the merge if necessary.\n   */\n  mergeNodes: {\n    <TValue extends V, TExtensions extends readonly unknown[], const TType extends NodeTypeSelector>(editor: Editor<TValue, TExtensions>, options: NodeMergeNodesOptions<NodeForTypeSelector<TType>, TType> & {\n      type: TType;\n    }): void;\n    <TValue extends V, TExtensions extends readonly unknown[], const TOptions extends NodeMergeNodesOptions<NodeIn<TValue>> = NodeMergeNodesOptions<NodeIn<TValue>>>(editor: Editor<TValue, TExtensions>, options?: OptionalSelectorOptions<TOptions>): void;\n  };\n  /**\n   * Move the nodes at a location to a new location.\n   */\n  moveNodes: {\n    <TValue extends V, TExtensions extends readonly unknown[], const TType extends NodeTypeSelector>(editor: Editor<TValue, TExtensions>, options: NodeMoveNodesOptions<NodeForTypeSelector<TType>, TType> & {\n      type: TType;\n    }): void;\n    <TValue extends V, TExtensions extends readonly unknown[], const TOptions extends NodeMoveNodesOptions<NodeIn<TValue>> = NodeMoveNodesOptions<NodeIn<TValue>>>(editor: Editor<TValue, TExtensions>, options: OptionalSelectorOptions<TOptions>): void;\n  };\n  /**\n   * Remove the nodes at a specific location in the document.\n   */\n  removeNodes: {\n    <TValue extends V, TExtensions extends readonly unknown[], const TType extends NodeTypeSelector>(editor: Editor<TValue, TExtensions>, options: NodeRemoveNodesOptions<NodeForTypeSelector<TType>, TType> & {\n      type: TType;\n    }): void;\n    <TValue extends V, TExtensions extends readonly unknown[], const TOptions extends NodeRemoveNodesOptions<NodeIn<TValue>> = NodeRemoveNodesOptions<NodeIn<TValue>>>(editor: Editor<TValue, TExtensions>, options?: OptionalSelectorOptions<TOptions>): void;\n  };\n  /** Replace a range of children under an ancestor node atomically. */\n  replaceChildren: <TValue extends V, TExtensions extends readonly unknown[], T extends ElementOrTextIn<TValue>>(editor: Editor<TValue, TExtensions>, children: readonly T[], options: NodeReplaceChildrenOptions) => void;\n  /**\n   * Set new properties on the nodes at a location.\n   */\n  setNodes: {\n    <TValue extends V, TExtensions extends readonly unknown[], const TType extends NodeTypeSelector>(editor: Editor<TValue, TExtensions>, props: Partial<NodeProps<NodeForTypeSelector<TType>>>, options: NodeSetNodesOptions<NodeForTypeSelector<TType>, TType> & {\n      type: TType;\n    }): void;\n    <TValue extends V, TExtensions extends readonly unknown[], const TOptions extends NodeSetNodesOptions<NodeIn<TValue>> = NodeSetNodesOptions<NodeIn<TValue>>>(editor: Editor<TValue, TExtensions>, props: Partial<NodeProps<NodeIn<TValue>>>, options?: OptionalSelectorOptions<TOptions>): void;\n  };\n  /**\n   * Split the nodes at a specific location.\n   */\n  splitNodes: {\n    <TValue extends V, TExtensions extends readonly unknown[], const TType extends NodeTypeSelector>(editor: Editor<TValue, TExtensions>, options: NodeSplitNodesOptions<NodeForTypeSelector<TType>, TType> & {\n      type: TType;\n    }): void;\n    <TValue extends V, TExtensions extends readonly unknown[], const TOptions extends NodeSplitNodesOptions<NodeIn<TValue>> = NodeSplitNodesOptions<NodeIn<TValue>>>(editor: Editor<TValue, TExtensions>, options?: OptionalSelectorOptions<TOptions>): void;\n  };\n  /**\n   * Unset properties on the nodes at a location.\n   */\n  unsetNodes: {\n    <TValue extends V, TExtensions extends readonly unknown[], const TType extends NodeTypeSelector>(editor: Editor<TValue, TExtensions>, props: string | readonly string[], options: NodeUnsetNodesOptions<NodeForTypeSelector<TType>, TType> & {\n      type: TType;\n    }): void;\n    <TValue extends V, TExtensions extends readonly unknown[], const TOptions extends NodeUnsetNodesOptions<NodeIn<TValue>> = NodeUnsetNodesOptions<NodeIn<TValue>>>(editor: Editor<TValue, TExtensions>, props: string | readonly string[], options?: OptionalSelectorOptions<TOptions>): void;\n  };\n  /**\n   * Unwrap the nodes at a location from a parent node, splitting the parent if\n   * necessary to ensure that only the content in the range is unwrapped.\n   */\n  unwrapNodes: {\n    <TValue extends V, TExtensions extends readonly unknown[], const TType extends NodeTypeSelector>(editor: Editor<TValue, TExtensions>, options: NodeUnwrapNodesOptions<NodeForTypeSelector<TType>, TType> & {\n      type: TType;\n    }): void;\n    <TValue extends V, TExtensions extends readonly unknown[], const TOptions extends NodeUnwrapNodesOptions<NodeIn<TValue>> = NodeUnwrapNodesOptions<NodeIn<TValue>>>(editor: Editor<TValue, TExtensions>, options?: OptionalSelectorOptions<TOptions>): void;\n  };\n  /**\n   * Wrap the nodes at a location in a new container node, splitting the edges\n   * of the range first to ensure that only the content in the range is wrapped.\n   */\n  wrapNodes: {\n    <TValue extends V, TExtensions extends readonly unknown[], const TType extends NodeTypeSelector>(editor: Editor<TValue, TExtensions>, element: ElementIn<TValue>, options: NodeWrapNodesOptions<NodeForTypeSelector<TType>, TType> & {\n      type: TType;\n    }): void;\n    <TValue extends V, TExtensions extends readonly unknown[], const TOptions extends NodeWrapNodesOptions<NodeIn<TValue>> = NodeWrapNodesOptions<NodeIn<TValue>>>(editor: Editor<TValue, TExtensions>, element: ElementIn<TValue>, options?: OptionalSelectorOptions<TOptions>): void;\n  };\n}",
           "source": "packages/plite/src/interfaces/transforms/node.ts",
           "typeParameters": [
             "V extends Value = Value"
@@ -4175,10 +4323,11 @@
           "name": "NodeRemoveNodesOptions",
           "route": null,
           "runtime": false,
-          "signature": "interface NodeRemoveNodesOptions<T extends Node = Node> {\n  at?: Location;\n  match?: NodeMatch<T>;\n  mode?: MaximizeMode;\n  hanging?: boolean;\n  voids?: boolean;\n}",
+          "signature": "interface NodeRemoveNodesOptions<T extends Node = Node, TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined> {\n  at?: Location;\n  match?: NodeMatch<T>;\n  type?: TType;\n  mode?: MaximizeMode;\n  hanging?: boolean;\n  voids?: boolean;\n}",
           "source": "packages/plite/src/interfaces/transforms/node.ts",
           "typeParameters": [
-            "T extends Node = Node"
+            "T extends Node = Node",
+            "TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined"
           ]
         },
         "@platejs/plite:NodeReplaceChildrenOptions": {
@@ -4213,10 +4362,26 @@
           "name": "NodeSetNodesOptions",
           "route": null,
           "runtime": false,
-          "signature": "interface NodeSetNodesOptions<T extends Node = Node> {\n  at?: Location;\n  match?: NodeMatch<T>;\n  mode?: MaximizeMode;\n  hanging?: boolean;\n  marks?: boolean;\n  split?: boolean;\n  voids?: boolean;\n  compare?: PropsCompare;\n  merge?: PropsMerge;\n}",
+          "signature": "interface NodeSetNodesOptions<T extends Node = Node, TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined> {\n  at?: Location;\n  match?: NodeMatch<T>;\n  type?: TType;\n  mode?: MaximizeMode;\n  hanging?: boolean;\n  marks?: boolean;\n  split?: boolean;\n  voids?: boolean;\n  compare?: PropsCompare;\n  merge?: PropsMerge;\n}",
           "source": "packages/plite/src/interfaces/transforms/node.ts",
           "typeParameters": [
-            "T extends Node = Node"
+            "T extends Node = Node",
+            "TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined"
+          ]
+        },
+        "@platejs/plite:NodeSplitNodesOptions": {
+          "aliases": [],
+          "documentation": "",
+          "entrypoint": "@platejs/plite",
+          "kind": "interface",
+          "name": "NodeSplitNodesOptions",
+          "route": null,
+          "runtime": false,
+          "signature": "interface NodeSplitNodesOptions<T extends Node = Node, TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined> {\n  at?: Location;\n  match?: NodeMatch<T>;\n  type?: TType;\n  mode?: RangeMode;\n  always?: boolean;\n  height?: number;\n  position?: number;\n  voids?: boolean;\n}",
+          "source": "packages/plite/src/interfaces/transforms/node.ts",
+          "typeParameters": [
+            "T extends Node = Node",
+            "TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined"
           ]
         },
         "@platejs/plite:NodeTarget": {
@@ -4293,6 +4458,18 @@
           "source": "packages/plite/src/interfaces/node.ts",
           "typeParameters": []
         },
+        "@platejs/plite:NodeTypeSelector": {
+          "aliases": [],
+          "documentation": "One or more persisted element identities used for structural selection.",
+          "entrypoint": "@platejs/plite",
+          "kind": "type",
+          "name": "NodeTypeSelector",
+          "route": null,
+          "runtime": false,
+          "signature": "type NodeTypeSelector = SchemaElementHandle<object, string> | string | readonly (SchemaElementHandle<object, string> | string)[];",
+          "source": "packages/plite/src/interfaces/node.ts",
+          "typeParameters": []
+        },
         "@platejs/plite:NodeUnsetNodesOptions": {
           "aliases": [],
           "documentation": "",
@@ -4301,10 +4478,41 @@
           "name": "NodeUnsetNodesOptions",
           "route": null,
           "runtime": false,
-          "signature": "interface NodeUnsetNodesOptions<T extends Node = Node> {\n  at?: Location;\n  match?: NodeMatch<T>;\n  mode?: MaximizeMode;\n  hanging?: boolean;\n  split?: boolean;\n  voids?: boolean;\n}",
+          "signature": "interface NodeUnsetNodesOptions<T extends Node = Node, TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined> {\n  at?: Location;\n  match?: NodeMatch<T>;\n  type?: TType;\n  mode?: MaximizeMode;\n  hanging?: boolean;\n  split?: boolean;\n  voids?: boolean;\n}",
           "source": "packages/plite/src/interfaces/transforms/node.ts",
           "typeParameters": [
-            "T extends Node = Node"
+            "T extends Node = Node",
+            "TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined"
+          ]
+        },
+        "@platejs/plite:NodeUnwrapNodesOptions": {
+          "aliases": [],
+          "documentation": "",
+          "entrypoint": "@platejs/plite",
+          "kind": "interface",
+          "name": "NodeUnwrapNodesOptions",
+          "route": null,
+          "runtime": false,
+          "signature": "interface NodeUnwrapNodesOptions<T extends Node = Node, TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined> {\n  at?: Location;\n  match?: NodeMatch<T>;\n  type?: TType;\n  mode?: MaximizeMode;\n  split?: boolean;\n  voids?: boolean;\n}",
+          "source": "packages/plite/src/interfaces/transforms/node.ts",
+          "typeParameters": [
+            "T extends Node = Node",
+            "TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined"
+          ]
+        },
+        "@platejs/plite:NodeWrapNodesOptions": {
+          "aliases": [],
+          "documentation": "",
+          "entrypoint": "@platejs/plite",
+          "kind": "interface",
+          "name": "NodeWrapNodesOptions",
+          "route": null,
+          "runtime": false,
+          "signature": "interface NodeWrapNodesOptions<T extends Node = Node, TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined> {\n  at?: Location;\n  match?: NodeMatch<T>;\n  type?: TType;\n  mode?: MaximizeMode;\n  split?: boolean;\n  voids?: boolean;\n}",
+          "source": "packages/plite/src/interfaces/transforms/node.ts",
+          "typeParameters": [
+            "T extends Node = Node",
+            "TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined"
           ]
         },
         "@platejs/plite:Path": {
@@ -5654,7 +5862,7 @@
           "name": "screenReaderAnnouncementEffect",
           "route": null,
           "runtime": true,
-          "signature": "screenReaderAnnouncementEffect: Readonly<{\n  codec?: Readonly<{\n    decode: (value: unknown) => string;\n    encode: (value: string) => unknown;\n    version: number;\n  }> | undefined;\n  collab: StateFieldCollabPolicy;\n  collabReplay: EditorEffectCollabReplay;\n  collabSnapshot?: ((state: EditorStateView) => string | undefined) | undefined;\n  collabTransport?: Readonly<{\n    decode: (value: unknown, context: Readonly<{\n      point: (value: unknown) => Point | null;\n      range: (value: unknown) => Range | null;\n    }>) => string | undefined;\n    encode: (value: string, context: Readonly<{\n      point: (point: Point) => unknown;\n      range: (range: Range) => unknown;\n    }>) => unknown;\n  }> | undefined;\n  history: StateFieldHistoryPolicy;\n  invert: (value: string) => string;\n  key: string;\n  map: (value: string, changes: DocumentChange) => string | undefined;\n}>",
+          "signature": "screenReaderAnnouncementEffect: Readonly<{\n  codec?: Readonly<{\n    decode: (value: unknown) => string;\n    encode: (value: string) => unknown;\n    version: number;\n  }> | undefined;\n  collab: StateFieldCollabPolicy;\n  collabReplay: EditorEffectCollabReplay;\n  collabSnapshot?: ((state: EditorStateView<Value, any>) => string | undefined) | undefined;\n  collabTransport?: Readonly<{\n    decode: (value: unknown, context: Readonly<{\n      point: (value: unknown) => Point | null;\n      range: (value: unknown) => Range | null;\n    }>) => string | undefined;\n    encode: (value: string, context: Readonly<{\n      point: (point: Point) => unknown;\n      range: (range: Range) => unknown;\n    }>) => unknown;\n  }> | undefined;\n  history: StateFieldHistoryPolicy;\n  invert: (value: string) => string;\n  key: string;\n  map: (value: string, changes: DocumentChange) => string | undefined;\n}>",
           "source": "packages/plite/src/core/screen-reader-announcement.ts",
           "typeParameters": []
         },
@@ -5678,9 +5886,11 @@
           "name": "Selection",
           "route": null,
           "runtime": false,
-          "signature": "type Selection = EditorSelection | null;",
+          "signature": "type Selection<TSelection extends SelectionValue = SelectionValue> = TSelection | null;",
           "source": "packages/plite/src/interfaces/selection.ts",
-          "typeParameters": []
+          "typeParameters": [
+            "TSelection extends SelectionValue = SelectionValue"
+          ]
         },
         "@platejs/plite:SelectionApi": {
           "aliases": [],
@@ -5690,7 +5900,7 @@
           "name": "SelectionApi",
           "route": null,
           "runtime": true,
-          "signature": "SelectionApi: Readonly<{\n  equals(left: Selection, right: Selection): boolean;\n  isNode(value: unknown): value is NodeSelection;\n  isSelection(value: unknown): value is EditorSelection;\n  isText(value: unknown): value is TextSelection;\n  node(path: Path, range: Range): NodeSelection;\n  text(range: Range, options?: Omit<TextSelection, keyof Range | 'kind'>): TextSelection;\n}>",
+          "signature": "SelectionApi: Readonly<{\n  equals(left: Selection, right: Selection): boolean;\n  isNode(value: unknown): value is NodeSelection;\n  isSelection(value: unknown): value is SelectionValue;\n  isText(value: unknown): value is TextSelection;\n  node(path: Path, range: Range): NodeSelection;\n  text(range: Range, options?: Omit<TextSelection, keyof Range | 'kind'>): TextSelection;\n}>",
           "source": "packages/plite/src/interfaces/selection.ts",
           "typeParameters": []
         },
@@ -5776,6 +5986,18 @@
           "runtime": false,
           "signature": "interface SelectionSetPointOptions {\n  edge?: SelectionEdge;\n}",
           "source": "packages/plite/src/interfaces/transforms/selection.ts",
+          "typeParameters": []
+        },
+        "@platejs/plite:SelectionValue": {
+          "aliases": [],
+          "documentation": "Plain serializable selection payload accepted by extension-owned kinds.",
+          "entrypoint": "@platejs/plite",
+          "kind": "type",
+          "name": "SelectionValue",
+          "route": null,
+          "runtime": false,
+          "signature": "type SelectionValue = Range & Readonly<{\n  affinity?: SelectionAssociation;\n  kind: string;\n  marks?: Readonly<Record<string, unknown>>;\n  path?: Path;\n}>;",
+          "source": "packages/plite/src/interfaces/selection.ts",
           "typeParameters": []
         },
         "@platejs/plite:SerializedEditorEffect": {
@@ -6364,7 +6586,7 @@
           "name": "ValueOf",
           "route": null,
           "runtime": false,
-          "signature": "type ValueOf<E> = E extends EditorValueTypeProvider<infer TValueFactory> ? ReturnType<TValueFactory> extends (infer TProvidedValue) ? IsAny<TProvidedValue> extends true ? Value : TProvidedValue extends Value ? TProvidedValue : Value : Value : E extends BaseEditor<infer V> ? IsAny<V> extends true ? Value : V extends Value ? V : Value : Value;",
+          "signature": "type ValueOf<E> = E extends EditorValueTypeProvider<infer TValueFactory> ? ReturnType<TValueFactory> extends (infer TProvidedValue) ? IsAny<TProvidedValue> extends true ? Value : TProvidedValue extends Value ? TProvidedValue : Value : Value : E extends BaseEditor<infer V, any> ? IsAny<V> extends true ? Value : V extends Value ? V : Value : Value;",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
             "E"
@@ -6378,7 +6600,7 @@
           "name": "above",
           "route": null,
           "runtime": true,
-          "signature": "above: <T extends Ancestor>(editor: AnyEditor, options?: EditorAboveOptions<T>) => NodeEntry<T> | undefined",
+          "signature": "above: EditorStaticAbove",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
@@ -6918,6 +7140,20 @@
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
+        "@platejs/plite/internal:EditorGenericMethod": {
+          "aliases": [],
+          "documentation": "",
+          "entrypoint": "@platejs/plite/internal",
+          "kind": "type",
+          "name": "EditorGenericMethod",
+          "route": null,
+          "runtime": false,
+          "signature": "type EditorGenericMethod<TMethod extends (...args: any[]) => any> = TMethod & Readonly<{\n  [editorGenericMethod]: true;\n}>;",
+          "source": "packages/plite/src/interfaces/editor.ts",
+          "typeParameters": [
+            "TMethod extends (...args: any[]) => any"
+          ]
+        },
         "@platejs/plite/internal:EditorSchemaCompileError": {
           "aliases": [],
           "documentation": "",
@@ -7128,7 +7364,7 @@
           "name": "fragment",
           "route": null,
           "runtime": true,
-          "signature": "fragment: <V extends Value>(editor: Editor<V>, at: Location) => readonly DescendantIn<V>[]",
+          "signature": "fragment: <V extends Value>(editor: AnyEditor<V>, at: Location) => readonly DescendantIn<V>[]",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
@@ -7164,7 +7400,7 @@
           "name": "getChildren",
           "route": null,
           "runtime": true,
-          "signature": "getChildren: <V extends Value>(editor: Editor<V>) => V",
+          "signature": "getChildren: <V extends Value>(editor: AnyEditor<V>) => V",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
@@ -7176,7 +7412,7 @@
           "name": "getCollabEffects",
           "route": null,
           "runtime": true,
-          "signature": "getCollabEffects: <V extends Value>(editor: Editor<V>, commit: EditorCommit<V>) => readonly EditorEffect[]",
+          "signature": "getCollabEffects: <V extends Value>(editor: AnyEditor<V>, commit: EditorCommit<V>) => readonly EditorEffect[]",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
@@ -7414,7 +7650,7 @@
           "name": "getEditorRuntimeOwner",
           "route": null,
           "runtime": true,
-          "signature": "getEditorRuntimeOwner: <TEditor extends BaseEditor<any, any>>(editor: TEditor) => AnyEditor",
+          "signature": "getEditorRuntimeOwner: (editor: EditorRuntimeCarrier) => AnyEditor",
           "source": "packages/plite/src/core/editor-runtime.ts",
           "typeParameters": []
         },
@@ -7512,7 +7748,7 @@
           "name": "getFragment",
           "route": null,
           "runtime": true,
-          "signature": "getFragment: <V extends Value>(editor: Editor<V>) => readonly DescendantIn<V>[]",
+          "signature": "getFragment: <V extends Value>(editor: AnyEditor<V>) => readonly DescendantIn<V>[]",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
@@ -7596,7 +7832,7 @@
           "name": "getLastCommit",
           "route": null,
           "runtime": true,
-          "signature": "getLastCommit: <V extends Value>(editor: Editor<V>) => EditorCommit<V> | null",
+          "signature": "getLastCommit: <V extends Value>(editor: AnyEditor<V>) => EditorCommit<V> | null",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
@@ -7692,7 +7928,7 @@
           "name": "getSnapshot",
           "route": null,
           "runtime": true,
-          "signature": "getSnapshot: <V extends Value>(editor: Editor<V>) => EditorSnapshot<V>",
+          "signature": "getSnapshot: <V extends Value>(editor: AnyEditor<V>) => EditorSnapshot<V>",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
@@ -7826,7 +8062,7 @@
           "name": "initializeEditorExtensions",
           "route": null,
           "runtime": true,
-          "signature": "initializeEditorExtensions: <TEditor extends AnyEditor>(editor: TEditor, input: EditorExtensionInput, options?: Readonly<{\n  initialize?: (transaction: EditorTransactionSpecBuilder<TEditor extends BaseEditor<infer V, any> ? V : Value>) => void;\n}>) => void",
+          "signature": "initializeEditorExtensions: <TEditor extends AnyEditor>(editor: TEditor, input: EditorExtensionInput, options?: Readonly<{\n  initialize?: (transaction: EditorTransactionSpecBuilder<ValueOf<TEditor>, ExtensionsOf<TEditor>>) => void;\n}>) => void",
           "source": "packages/plite/src/create-editor.ts",
           "typeParameters": []
         },
@@ -7850,7 +8086,7 @@
           "name": "insertNode",
           "route": null,
           "runtime": true,
-          "signature": "insertNode: <V extends Value, T extends ElementOrTextIn<V>>(editor: Editor<V>, node: T, options?: NodeInsertNodesOptions<T>) => void",
+          "signature": "insertNode: {\n  <V extends Value, T extends ElementOrTextIn<V>, const TType extends NodeTypeSelector | undefined>(editor: AnyEditor<V>, node: T, options: NodeInsertNodesOptions<NodeInsertSplitTarget<V, TType>, TType> & {\n    split: NodeInsertNodesOptions<NodeInsertSplitTarget<V, TType>, TType>['split'] & {\n      type: TType;\n    };\n  }): void;\n  <V extends Value, T extends ElementOrTextIn<V>>(editor: AnyEditor<V>, node: T, options?: NodeInsertNodesOptions<NodeIn<V>, undefined>): void;\n}",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
@@ -7862,7 +8098,7 @@
           "name": "insertNodes",
           "route": null,
           "runtime": true,
-          "signature": "insertNodes: <TExtensions extends readonly unknown[], T extends ElementOrTextIn<Value>>(editor: Editor<Value, TExtensions>, nodes: T | readonly T[], options?: NodeInsertNodesOptions<T> | undefined) => void",
+          "signature": "insertNodes: {\n  <TValue extends Value, TExtensions extends readonly unknown[], T extends ElementOrTextIn<TValue>, const TType extends NodeTypeSelector | undefined>(editor: Editor<TValue, TExtensions>, nodes: T | readonly T[], options: NodeInsertNodesOptions<undefined extends TType ? NodeIn<TValue> : NodeForTypeSelector<Extract<TType, NodeTypeSelector>>, TType> & {\n    split: NodeInsertSplitOptions<undefined extends TType ? NodeIn<TValue> : NodeForTypeSelector<Extract<TType, NodeTypeSelector>>, TType> & {\n      type: TType;\n    };\n  }): void;\n  <TValue extends Value, TExtensions extends readonly unknown[], T extends ElementOrTextIn<TValue>>(editor: Editor<TValue, TExtensions>, nodes: T | readonly T[], options?: NodeInsertNodesOptions<NodeIn<TValue>, undefined> | undefined): void;\n}",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
@@ -8146,7 +8382,7 @@
           "name": "levels",
           "route": null,
           "runtime": true,
-          "signature": "levels: <T extends Node>(editor: AnyEditor, options?: EditorLevelsOptions<T>) => Generator<NodeEntry<T>, void, undefined>",
+          "signature": "levels: EditorStaticLevels",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
@@ -8158,7 +8394,7 @@
           "name": "liftNodes",
           "route": null,
           "runtime": true,
-          "signature": "liftNodes: <TValue extends Value, TExtensions extends readonly unknown[], T extends NodeIn<TValue>>(editor: Editor<TValue, TExtensions>, options?: {\n  at?: Location;\n  match?: NodeMatch<T> | undefined;\n  mode?: MaximizeMode;\n  voids?: boolean;\n} | undefined) => void",
+          "signature": "liftNodes: {\n  <TValue extends Value, TExtensions extends readonly unknown[], const TType extends NodeTypeSelector>(editor: Editor<TValue, TExtensions>, options: NodeLiftNodesOptions<NodeForTypeSelector<TType>, TType> & {\n    type: TType;\n  }): void;\n  <TValue extends Value, TExtensions extends readonly unknown[], const TOptions extends NodeLiftNodesOptions<NodeIn<TValue>> = NodeLiftNodesOptions<NodeIn<TValue>, NodeTypeSelector | undefined>>(editor: Editor<TValue, TExtensions>, options?: (undefined extends TOptions[\"type\"] ? TOptions : never) | undefined): void;\n}",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
@@ -8210,6 +8446,18 @@
           "source": "packages/plite/src/core/selection-protocol.ts",
           "typeParameters": []
         },
+        "@platejs/plite/internal:mapSemanticUpdateMethodArguments": {
+          "aliases": [],
+          "documentation": "",
+          "entrypoint": "@platejs/plite/internal",
+          "kind": "const",
+          "name": "mapSemanticUpdateMethodArguments",
+          "route": null,
+          "runtime": true,
+          "signature": "mapSemanticUpdateMethodArguments: <TMethod extends UpdateMethod>(method: TMethod, mapArguments: (args: readonly unknown[]) => readonly unknown[]) => TMethod",
+          "source": "packages/plite/src/core/semantic-update-method.ts",
+          "typeParameters": []
+        },
         "@platejs/plite/internal:matchesCompiledSchemaTarget": {
           "aliases": [],
           "documentation": "",
@@ -8230,7 +8478,7 @@
           "name": "mergeNodes",
           "route": null,
           "runtime": true,
-          "signature": "mergeNodes: <TValue extends Value, TExtensions extends readonly unknown[], T extends NodeIn<TValue>>(editor: Editor<TValue, TExtensions>, options?: {\n  at?: Location;\n  match?: NodeMatch<T> | undefined;\n  mode?: RangeMode;\n  hanging?: boolean;\n  voids?: boolean;\n} | undefined) => void",
+          "signature": "mergeNodes: {\n  <TValue extends Value, TExtensions extends readonly unknown[], const TType extends NodeTypeSelector>(editor: Editor<TValue, TExtensions>, options: NodeMergeNodesOptions<NodeForTypeSelector<TType>, TType> & {\n    type: TType;\n  }): void;\n  <TValue extends Value, TExtensions extends readonly unknown[], const TOptions extends NodeMergeNodesOptions<NodeIn<TValue>> = NodeMergeNodesOptions<NodeIn<TValue>, NodeTypeSelector | undefined>>(editor: Editor<TValue, TExtensions>, options?: (undefined extends TOptions[\"type\"] ? TOptions : never) | undefined): void;\n}",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
@@ -8254,7 +8502,7 @@
           "name": "moveNodes",
           "route": null,
           "runtime": true,
-          "signature": "moveNodes: <TValue extends Value, TExtensions extends readonly unknown[], T extends NodeIn<TValue>>(editor: Editor<TValue, TExtensions>, options: {\n  at?: Location;\n  match?: NodeMatch<T> | undefined;\n  mode?: MaximizeMode;\n  to: Path;\n  voids?: boolean;\n}) => void",
+          "signature": "moveNodes: {\n  <TValue extends Value, TExtensions extends readonly unknown[], const TType extends NodeTypeSelector>(editor: Editor<TValue, TExtensions>, options: NodeMoveNodesOptions<NodeForTypeSelector<TType>, TType> & {\n    type: TType;\n  }): void;\n  <TValue extends Value, TExtensions extends readonly unknown[], const TOptions extends NodeMoveNodesOptions<NodeIn<TValue>> = NodeMoveNodesOptions<NodeIn<TValue>, NodeTypeSelector | undefined>>(editor: Editor<TValue, TExtensions>, options: undefined extends TOptions[\"type\"] ? TOptions : never): void;\n}",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
@@ -8266,7 +8514,7 @@
           "name": "next",
           "route": null,
           "runtime": true,
-          "signature": "next: <T extends Descendant>(editor: AnyEditor, options?: EditorNextOptions<T>) => NodeEntry<T> | undefined",
+          "signature": "next: EditorStaticNext",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
@@ -8278,7 +8526,7 @@
           "name": "parent",
           "route": null,
           "runtime": true,
-          "signature": "parent: (editor: AnyEditor, at: Location, options?: EditorParentOptions) => NodeEntry<Ancestor>",
+          "signature": "parent: EditorStaticParent",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
@@ -8338,7 +8586,7 @@
           "name": "previous",
           "route": null,
           "runtime": true,
-          "signature": "previous: <T extends Node>(editor: AnyEditor, options?: EditorPreviousOptions<T>) => NodeEntry<T> | undefined",
+          "signature": "previous: EditorStaticPrevious",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
@@ -8386,7 +8634,7 @@
           "name": "read",
           "route": null,
           "runtime": true,
-          "signature": "read: <V extends Value, T>(editor: Editor<V>, fn: (state: EditorStateView<V>) => T) => T",
+          "signature": "read: <V extends Value, TExtensions extends readonly unknown[], T>(editor: Editor<V, TExtensions>, fn: (state: EditorStateView<V, TExtensions>) => T) => T",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
@@ -8422,7 +8670,7 @@
           "name": "removeNodes",
           "route": null,
           "runtime": true,
-          "signature": "removeNodes: <TValue extends Value, TExtensions extends readonly unknown[], T extends NodeIn<TValue>>(editor: Editor<TValue, TExtensions>, options?: NodeRemoveNodesOptions<T> | undefined) => void",
+          "signature": "removeNodes: {\n  <TValue extends Value, TExtensions extends readonly unknown[], const TType extends NodeTypeSelector>(editor: Editor<TValue, TExtensions>, options: NodeRemoveNodesOptions<NodeForTypeSelector<TType>, TType> & {\n    type: TType;\n  }): void;\n  <TValue extends Value, TExtensions extends readonly unknown[], const TOptions extends NodeRemoveNodesOptions<NodeIn<TValue>> = NodeRemoveNodesOptions<NodeIn<TValue>, NodeTypeSelector | undefined>>(editor: Editor<TValue, TExtensions>, options?: (undefined extends TOptions[\"type\"] ? TOptions : never) | undefined): void;\n}",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
@@ -8446,7 +8694,7 @@
           "name": "replace",
           "route": null,
           "runtime": true,
-          "signature": "replace: <V extends Value>(editor: Editor<V> | EditorView<V, any>, input: SnapshotInput<V>) => void",
+          "signature": "replace: <V extends Value>(editor: AnyEditor<V>, input: SnapshotInput<V>) => void",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
@@ -8482,7 +8730,7 @@
           "name": "reset",
           "route": null,
           "runtime": true,
-          "signature": "reset: <V extends Value>(editor: Editor<V> | EditorView<V, any>, input: SnapshotInput<V>) => void",
+          "signature": "reset: <V extends Value>(editor: AnyEditor<V>, input: SnapshotInput<V>) => void",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
@@ -8648,6 +8896,18 @@
           "source": "packages/plite/src/core/public-state.ts",
           "typeParameters": []
         },
+        "@platejs/plite/internal:setEditorStateViewTransform": {
+          "aliases": [],
+          "documentation": "",
+          "entrypoint": "@platejs/plite/internal",
+          "kind": "const",
+          "name": "setEditorStateViewTransform",
+          "route": null,
+          "runtime": true,
+          "signature": "setEditorStateViewTransform: (editor: AnyEditor, transform: ((state: Record<string, unknown>) => void) | undefined) => () => void",
+          "source": "packages/plite/src/core/public-state.ts",
+          "typeParameters": []
+        },
         "@platejs/plite/internal:setEditorTargetRuntime": {
           "aliases": [
             "setTargetRuntime"
@@ -8682,7 +8942,7 @@
           "name": "setNodes",
           "route": null,
           "runtime": true,
-          "signature": "setNodes: <TValue extends Value, TExtensions extends readonly unknown[], T extends NodeIn<TValue>>(editor: Editor<TValue, TExtensions>, props: Partial<NodeProps<T>>, options?: NodeSetNodesOptions<T> | undefined) => void",
+          "signature": "setNodes: {\n  <TValue extends Value, TExtensions extends readonly unknown[], const TType extends NodeTypeSelector>(editor: Editor<TValue, TExtensions>, props: Partial<NodeProps<NodeForTypeSelector<TType>>>, options: NodeSetNodesOptions<NodeForTypeSelector<TType>, TType> & {\n    type: TType;\n  }): void;\n  <TValue extends Value, TExtensions extends readonly unknown[], const TOptions extends NodeSetNodesOptions<NodeIn<TValue>> = NodeSetNodesOptions<NodeIn<TValue>, NodeTypeSelector | undefined>>(editor: Editor<TValue, TExtensions>, props: Partial<NodeProps<NodeIn<TValue>>>, options?: (undefined extends TOptions[\"type\"] ? TOptions : never) | undefined): void;\n}",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
@@ -8730,7 +8990,7 @@
           "name": "splitNodes",
           "route": null,
           "runtime": true,
-          "signature": "splitNodes: <TValue extends Value, TExtensions extends readonly unknown[], T extends NodeIn<TValue>>(editor: Editor<TValue, TExtensions>, options?: {\n  at?: Location;\n  match?: NodeMatch<T> | undefined;\n  mode?: RangeMode;\n  always?: boolean;\n  height?: number;\n  position?: number;\n  voids?: boolean;\n} | undefined) => void",
+          "signature": "splitNodes: {\n  <TValue extends Value, TExtensions extends readonly unknown[], const TType extends NodeTypeSelector>(editor: Editor<TValue, TExtensions>, options: NodeSplitNodesOptions<NodeForTypeSelector<TType>, TType> & {\n    type: TType;\n  }): void;\n  <TValue extends Value, TExtensions extends readonly unknown[], const TOptions extends NodeSplitNodesOptions<NodeIn<TValue>> = NodeSplitNodesOptions<NodeIn<TValue>, NodeTypeSelector | undefined>>(editor: Editor<TValue, TExtensions>, options?: (undefined extends TOptions[\"type\"] ? TOptions : never) | undefined): void;\n}",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
@@ -8754,7 +9014,7 @@
           "name": "subscribe",
           "route": null,
           "runtime": true,
-          "signature": "subscribe: <V extends Value>(editor: Editor<V>, listener: SnapshotListener<V>) => () => void",
+          "signature": "subscribe: <V extends Value>(editor: AnyEditor<V>, listener: SnapshotListener<V>) => () => void",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
@@ -8766,7 +9026,7 @@
           "name": "subscribeCommit",
           "route": null,
           "runtime": true,
-          "signature": "subscribeCommit: <V extends Value>(editor: Editor<V>, listener: EditorCommitListener<V>) => () => void",
+          "signature": "subscribeCommit: <V extends Value>(editor: AnyEditor<V>, listener: EditorCommitListener<V>) => () => void",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
@@ -8790,7 +9050,7 @@
           "name": "subscribeSource",
           "route": null,
           "runtime": true,
-          "signature": "subscribeSource: <V extends Value>(editor: Editor<V>, source: EditorCommitSource, listener: SnapshotListener<V>) => () => void",
+          "signature": "subscribeSource: <V extends Value>(editor: AnyEditor<V>, source: EditorCommitSource, listener: SnapshotListener<V>) => () => void",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
@@ -8900,7 +9160,7 @@
           "name": "unsetNodes",
           "route": null,
           "runtime": true,
-          "signature": "unsetNodes: <TValue extends Value, TExtensions extends readonly unknown[], T extends NodeIn<TValue>>(editor: Editor<TValue, TExtensions>, props: string | readonly string[], options?: NodeUnsetNodesOptions<T> | undefined) => void",
+          "signature": "unsetNodes: {\n  <TValue extends Value, TExtensions extends readonly unknown[], const TType extends NodeTypeSelector>(editor: Editor<TValue, TExtensions>, props: string | readonly string[], options: NodeUnsetNodesOptions<NodeForTypeSelector<TType>, TType> & {\n    type: TType;\n  }): void;\n  <TValue extends Value, TExtensions extends readonly unknown[], const TOptions extends NodeUnsetNodesOptions<NodeIn<TValue>> = NodeUnsetNodesOptions<NodeIn<TValue>, NodeTypeSelector | undefined>>(editor: Editor<TValue, TExtensions>, props: string | readonly string[], options?: (undefined extends TOptions[\"type\"] ? TOptions : never) | undefined): void;\n}",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
@@ -8912,7 +9172,7 @@
           "name": "unwrapNodes",
           "route": null,
           "runtime": true,
-          "signature": "unwrapNodes: <TValue extends Value, TExtensions extends readonly unknown[], T extends NodeIn<TValue>>(editor: Editor<TValue, TExtensions>, options?: {\n  at?: Location;\n  match?: NodeMatch<T> | undefined;\n  mode?: MaximizeMode;\n  split?: boolean;\n  voids?: boolean;\n} | undefined) => void",
+          "signature": "unwrapNodes: {\n  <TValue extends Value, TExtensions extends readonly unknown[], const TType extends NodeTypeSelector>(editor: Editor<TValue, TExtensions>, options: NodeUnwrapNodesOptions<NodeForTypeSelector<TType>, TType> & {\n    type: TType;\n  }): void;\n  <TValue extends Value, TExtensions extends readonly unknown[], const TOptions extends NodeUnwrapNodesOptions<NodeIn<TValue>> = NodeUnwrapNodesOptions<NodeIn<TValue>, NodeTypeSelector | undefined>>(editor: Editor<TValue, TExtensions>, options?: (undefined extends TOptions[\"type\"] ? TOptions : never) | undefined): void;\n}",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
@@ -8924,7 +9184,7 @@
           "name": "update",
           "route": null,
           "runtime": true,
-          "signature": "update: <V extends Value>(editor: Editor<V>, fn: (transaction: EditorUpdateTransaction<V>, context: EditorUpdateContext<Editor<V>>) => void) => void",
+          "signature": "update: <V extends Value, TExtensions extends readonly unknown[]>(editor: Editor<V, TExtensions>, fn: (transaction: EditorUpdateTransaction<V, TExtensions>, context: EditorUpdateContext<Editor<V, TExtensions>>) => void) => void",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
@@ -8974,7 +9234,7 @@
           "name": "wrapNodes",
           "route": null,
           "runtime": true,
-          "signature": "wrapNodes: <TValue extends Value, TExtensions extends readonly unknown[], T extends NodeIn<TValue>, E extends ElementIn<TValue>>(editor: Editor<TValue, TExtensions>, element: E, options?: {\n  at?: Location;\n  match?: NodeMatch<T> | undefined;\n  mode?: MaximizeMode;\n  split?: boolean;\n  voids?: boolean;\n} | undefined) => void",
+          "signature": "wrapNodes: {\n  <TValue extends Value, TExtensions extends readonly unknown[], const TType extends NodeTypeSelector>(editor: Editor<TValue, TExtensions>, element: ElementOf<TValue[number]>, options: NodeWrapNodesOptions<NodeForTypeSelector<TType>, TType> & {\n    type: TType;\n  }): void;\n  <TValue extends Value, TExtensions extends readonly unknown[], const TOptions extends NodeWrapNodesOptions<NodeIn<TValue>> = NodeWrapNodesOptions<NodeIn<TValue>, NodeTypeSelector | undefined>>(editor: Editor<TValue, TExtensions>, element: ElementOf<TValue[number]>, options?: (undefined extends TOptions[\"type\"] ? TOptions : never) | undefined): void;\n}",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         }

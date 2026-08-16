@@ -236,8 +236,9 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
         let element = node;
 
         if (node.listStyleType && node.listStart) {
-          const previous = editor.read.nodes.previous<Element>({
+          const previous = editor.read.nodes.previous({
             at: editor.read.selection()?.focus,
+            match: ElementApi.isElement,
           })?.[0];
 
           if (
@@ -517,7 +518,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
     const currentBlockPath = (state: AIChatInsertState) => {
       const anchor = state.nodes.find({
         at: [],
-        match: { type: context.schema.type },
+        type: context.plugin,
       });
       const anchorPrevious =
         anchor && anchor[1].at(-1) !== 0
@@ -525,7 +526,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
           : undefined;
       const path = anchorPrevious ??
         state.selection()?.focus.path.slice(0, 1) ?? [0];
-      const entry = state.nodes.get<Element>(path);
+      const entry = state.nodes.get(path, { match: ElementApi.isElement });
       const containerTypes = new Set<string>(
         [columnGroup, tablePlugin]
           .filter((plugin) => plugin.installed)
@@ -538,7 +539,9 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
     };
     const getInsertStart = (state: AIChatInsertState) => {
       const path = currentBlockPath(state);
-      const startBlock = state.nodes.get<Element>(path)?.[0];
+      const startBlock = state.nodes.get(path, {
+        match: ElementApi.isElement,
+      })?.[0];
 
       return {
         path,
@@ -729,7 +732,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
       editor.update({ history: 'skip' }, (tx) => {
         tx.nodes.remove({
           at: [],
-          match: { type: context.schema.type },
+          type: context.plugin,
         });
       });
     };
@@ -746,8 +749,8 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
       }
       if (type === 'block') {
         const blocks = state.nodes
-          .toArray<Element>({
-            match: (node) =>
+          .toArray({
+            match: (node): node is Element =>
               ElementApi.isElement(node) && state.schema.isBlock(node),
             mode: 'lowest',
           })
@@ -793,8 +796,8 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
         tableView ? tableView.key(path) : state.key(path);
 
       const selectedNodeKeys = new Set(cells.map(([, path]) => tableKey(path)));
-      const tableEntry = tableNodes.block<Element>({
-        match: (node) =>
+      const tableEntry = tableNodes.block({
+        match: (node): node is Element =>
           ElementApi.isElement(node) && node.type === tablePlugin.schema.type,
       });
 
@@ -885,9 +888,9 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
         : null;
       const blockRefs: AIChatPluginState['_blockRefs'] = {};
       const blocks = requestEditor.read.nodes
-        .toArray<Element>({
+        .toArray({
           at: requestAt ?? [],
-          match: (node) =>
+          match: (node): node is Element =>
             ElementApi.isElement(node) &&
             requestEditor.read.schema.isBlock(node),
           mode: 'lowest',
@@ -967,7 +970,9 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
           if (chatSelection) editor.update.selection.set(chatSelection);
           else {
             const nodeKeys = chatNodes.flatMap(({ nodeKey }) =>
-              editor.read.nodes.get(nodeKey) ? [nodeKey] : []
+              editor.read.nodes.get(nodeKey, { match: ElementApi.isElement })
+                ? [nodeKey]
+                : []
             );
 
             if (
@@ -1044,8 +1049,8 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
           const chatNodes = (
             blocks.length
               ? blocks
-              : editor.read.nodes.toArray<Element>({
-                  match: (node) =>
+              : editor.read.nodes.toArray({
+                  match: (node): node is Element =>
                     ElementApi.isElement(node) &&
                     editor.read.schema.isBlock(node),
                   mode: 'highest',
@@ -1087,7 +1092,9 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
           const blockEditor = blockRef.root
             ? createEditorView(editor, { root: blockRef.root })
             : editor;
-          const firstBlock = blockEditor.read.nodes.get<Element>(blockRef.key);
+          const firstBlock = blockEditor.read.nodes.get(blockRef.key, {
+            match: ElementApi.isElement,
+          });
 
           if (!firstBlock) return;
 
@@ -1100,9 +1107,9 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
             const block =
               index === 0
                 ? firstBlock
-                : blockEditor.read.nodes.get<Element>([
-                    firstBlock[1][0]! + index,
-                  ]);
+                : blockEditor.read.nodes.get([firstBlock[1][0]! + index], {
+                    match: ElementApi.isElement,
+                  });
 
             if (!block) return;
 
@@ -1133,7 +1140,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
         insertStart: getInsertStart.bind(null, state),
         markdown: serializeMarkdown.bind(null, state),
         node: (
-          options: EditorNodesOptions<Node> & {
+          options: Omit<EditorNodesOptions<Node>, 'type'> & {
             anchor?: boolean;
             streaming?: boolean;
           } = {}
@@ -1141,10 +1148,10 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
           const { anchor = false, streaming = false, ...rest } = options;
 
           if (anchor) {
-            return state.nodes.find<Node>({
+            return state.nodes.find({
               at: [],
-              match: { type: context.schema.type },
               ...rest,
+              type: context.plugin,
             });
           }
           if (streaming) {
@@ -1152,7 +1159,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
 
             if (!context.store.get('streaming') || !path) return;
 
-            return state.nodes.find<Node>({
+            return state.nodes.find({
               at: path,
               match: (node) => Boolean(Reflect.get(node, ai.schema.key)),
               mode: 'lowest',
@@ -1161,7 +1168,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
             });
           }
 
-          return state.nodes.find<Node>({
+          return state.nodes.find({
             match: (node) => Boolean(Reflect.get(node, ai.schema.key)),
             ...rest,
           });
@@ -1260,7 +1267,9 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
               lastPath = PathApi.next(lastPath);
             }
 
-            const lastBlock = tx.nodes.get<Element>(lastPath);
+            const lastBlock = tx.nodes.get(lastPath, {
+              match: ElementApi.isElement,
+            });
 
             if (!lastBlock) return;
 
@@ -1296,7 +1305,9 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
 
           const update = () => {
             if (blocks.length === 1) {
-              const current = tx.nodes.get<Element>(_blockPath)?.[0];
+              const current = tx.nodes.get(_blockPath, {
+                match: ElementApi.isElement,
+              })?.[0];
 
               if (!current) return;
 
@@ -1310,7 +1321,9 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
                   { at: end, select: true }
                 );
 
-                const updated = tx.nodes.get<Element>(_blockPath);
+                const updated = tx.nodes.get(_blockPath, {
+                  match: ElementApi.isElement,
+                });
 
                 if (!updated) return;
 
@@ -1366,7 +1379,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
               nextPath = PathApi.next(nextPath);
             }
 
-            const end = tx.nodes.get<Element>(nextPath);
+            const end = tx.nodes.get(nextPath, { match: ElementApi.isElement });
 
             if (end) {
               nextChunks = serializeChunk(
@@ -1425,7 +1438,12 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
           ) {
             return;
           }
-          if (chatNodes.length === 1 && !tx.nodes.get(chatNodes[0]!.nodeKey)) {
+          if (
+            chatNodes.length === 1 &&
+            !tx.nodes.get(chatNodes[0]!.nodeKey, {
+              match: ElementApi.isElement,
+            })
+          ) {
             return;
           }
 
@@ -1465,7 +1483,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
             return;
           }
           const resolvedReplaceNodes = replaceNodeKeys.map((nodeKey) =>
-            tx.nodes.get<Element>(nodeKey)
+            tx.nodes.get(nodeKey, { match: ElementApi.isElement })
           );
 
           if (resolvedReplaceNodes.some((entry) => !entry)) return;
@@ -1529,10 +1547,9 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
             });
 
             group.keys = group.children.map((_node, offset) => {
-              const node = tx.nodes.get<Element>([
-                ...group.at,
-                group.index + offset,
-              ])?.[0];
+              const node = tx.nodes.get([...group.at, group.index + offset], {
+                match: ElementApi.isElement,
+              })?.[0];
 
               if (!node || !ElementApi.isElement(node)) {
                 throw new Error('AI block replacements must be elements.');
@@ -1562,7 +1579,9 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
         }: TableCellUpdate) => {
           const refs = context.store.get('_tableCellRefs');
           const target = Object.hasOwn(refs, ref) ? refs[ref] : undefined;
-          const entry = target ? tx.nodes.get<Element>(target.key) : undefined;
+          const entry = target
+            ? tx.nodes.get(target.key, { match: ElementApi.isElement })
+            : undefined;
 
           if (!target || !entry) {
             console.warn('Table cell reference not found');
@@ -1608,7 +1627,9 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
 
           return [...selectedKeys]
             .flatMap((nodeKey) => {
-              const entry = tx.nodes.get<Element>(nodeKey);
+              const entry = tx.nodes.get(nodeKey, {
+                match: ElementApi.isElement,
+              });
 
               return entry ? [entry] : [];
             })
@@ -1619,7 +1640,9 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
 
           const chatNodes = context.store.get('chatNodes');
           const entries = chatNodes.flatMap(({ nodeKey }) => {
-            const keyedEntry = tx.nodes.get<Element>(nodeKey);
+            const keyedEntry = tx.nodes.get(nodeKey, {
+              match: ElementApi.isElement,
+            });
 
             return keyedEntry ? [keyedEntry] : [];
           });
@@ -1658,7 +1681,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
                 tx.ai.removeMarks();
                 tx.nodes.remove({
                   at: [],
-                  match: { type: context.schema.type },
+                  type: context.plugin,
                 });
               }
 
@@ -1670,7 +1693,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
               reviewSuggestions('accept');
               tx.nodes.remove({
                 at: [],
-                match: { type: context.schema.type },
+                type: context.plugin,
               });
               updateContext.afterCommit(() => hideOptions());
             }
@@ -1699,7 +1722,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
               reviewSuggestions('accept');
               tx.nodes.remove({
                 at: [],
-                match: { type: context.schema.type },
+                type: context.plugin,
               });
               updateContext.afterCommit(() => hideOptions({ focus: false }));
 
@@ -1716,7 +1739,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
             const restored = tx.ai.undo();
             tx.nodes.remove({
               at: [],
-              match: { type: context.schema.type },
+              type: context.plugin,
             });
             updateContext.afterCommit(() => hideOptions());
 
@@ -1788,7 +1811,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
             const restored = tx.ai.undo();
             tx.nodes.remove({
               at: [],
-              match: { type: context.schema.type },
+              type: context.plugin,
             });
             updateContext.afterCommit(() => hideOptions());
 

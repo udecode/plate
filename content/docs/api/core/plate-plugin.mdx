@@ -465,7 +465,9 @@ Specifies the HTML tag name used when no component is bound through
 </APIItem>
 
 <APIItem name="selectionKinds" type="readonly EditorSelectionSpec[]">
-  Custom selection codecs and behavior.
+  Installed custom selection payloads, codecs, and behavior. Concrete editor
+  reads and updates infer each payload from the installed plugin descriptor;
+  no module augmentation is required.
 </APIItem>
 
 <APIItem name="contributions" type="readonly EditorExtensionContribution[]">

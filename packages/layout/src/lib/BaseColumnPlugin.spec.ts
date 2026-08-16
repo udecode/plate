@@ -12,7 +12,12 @@ import {
 } from './BaseColumnPlugin';
 import { ColumnItemPlugin, ColumnPlugin } from '../react/ColumnPlugin';
 import assert from 'node:assert/strict';
-import { type Element, schema, type Selection } from '@platejs/plite';
+import {
+  type Element,
+  ElementApi,
+  schema,
+  type Selection,
+} from '@platejs/plite';
 
 const columnPlugins = [BaseColumnPlugin] as const;
 const TestColumnHostPlugin = defineBasePlugin('testColumnHost', {
@@ -31,6 +36,16 @@ type ColumnGroupNode = Omit<ColumnGroupElement, 'children'> & {
   children: readonly ColumnNode[];
 };
 type ColumnValue = readonly Element[];
+
+const isColumnGroupNode = (node: unknown): node is ColumnGroupNode =>
+  ElementApi.isElement(node) &&
+  node.type === PLUGINS.columnGroup &&
+  node.children.every(
+    (child) =>
+      ElementApi.isElement(child) &&
+      child.type === PLUGINS.column &&
+      typeof child.width === 'string'
+  );
 
 describe('BaseColumnPlugin schema', () => {
   it('declares the item as an exact required Base and React dependency', () => {
@@ -196,7 +211,7 @@ describe('BaseColumnPlugin schema', () => {
     });
 
   const getColumnGroup = (editor: ReturnType<typeof createEditor>) => {
-    const entry = editor.read.nodes.get<ColumnGroupNode>([0]);
+    const entry = editor.read.nodes.get([0], { match: isColumnGroupNode });
 
     assert(entry);
 
@@ -292,7 +307,9 @@ describe('BaseColumnPlugin schema', () => {
           .plugin(BaseColumnPlugin)
           .update.insert({ columns: 3 }, { at: [1] });
 
-        const entry = editor.read.nodes.get<ColumnGroupNode>([1]);
+        const entry = editor.read.nodes.get([1], {
+          match: isColumnGroupNode,
+        });
 
         assert(entry);
         expect(BaseColumnPlugin.name).toBe('columnGroup');
@@ -353,7 +370,9 @@ describe('BaseColumnPlugin schema', () => {
             },
           ],
         });
-        const entry = editor.read.nodes.get<ColumnGroupNode>([0]);
+        const entry = editor.read.nodes.get([0], {
+          match: ElementApi.isElement,
+        });
 
         assert(entry);
         editor.update.column.moveMiddle(entry, { direction: 'left' });
@@ -392,7 +411,9 @@ describe('BaseColumnPlugin schema', () => {
             },
           ],
         });
-        const entry = editor.read.nodes.get<ColumnGroupNode>([0]);
+        const entry = editor.read.nodes.get([0], {
+          match: ElementApi.isElement,
+        });
 
         assert(entry);
         expect(

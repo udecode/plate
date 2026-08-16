@@ -105,6 +105,6 @@ export const restoreHistoricSelection = <V extends Value>(
     getHistoricSelectionRoot(batch, target) ?? getRangeRootOrMain(selection);
 
   if (root === viewRoot && !SelectionApi.equals(tx.selection(), selection)) {
-    tx.selection.set(selection);
+    (tx.selection.set as (selection: Selection) => void)(selection);
   }
 };

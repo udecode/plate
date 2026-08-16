@@ -20,19 +20,19 @@ export type NodeSelection = Range &
     path: Path;
   }>;
 
-/**
- * Selection kinds installed in an editor. Packages can add kinds through
- * module augmentation while keeping every selection plain serializable data.
- */
-export interface EditorSelectionKindMap {
-  node: NodeSelection;
-  text: TextSelection;
-}
+/** Plain serializable selection payload accepted by extension-owned kinds. */
+export type SelectionValue = Range &
+  Readonly<{
+    affinity?: SelectionAssociation;
+    kind: string;
+    marks?: Readonly<Record<string, unknown>>;
+    path?: Path;
+  }>;
 
-export type EditorSelection =
-  EditorSelectionKindMap[keyof EditorSelectionKindMap];
+export type EditorSelection = NodeSelection | TextSelection;
 
-export type Selection = EditorSelection | null;
+export type Selection<TSelection extends SelectionValue = SelectionValue> =
+  TSelection | null;
 
 const equalValue = (left: unknown, right: unknown): boolean => {
   if (Object.is(left, right)) return true;
@@ -78,7 +78,7 @@ export const SelectionApi = Object.freeze({
       PathApi.isPath((value as { path?: unknown }).path)
     );
   },
-  isSelection(value: unknown): value is EditorSelection {
+  isSelection(value: unknown): value is SelectionValue {
     return (
       typeof value === 'object' &&
       value !== null &&

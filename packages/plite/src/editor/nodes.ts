@@ -7,12 +7,35 @@ import {
 import type {
   AnyEditor as Editor,
   EditorNodesOptions,
+  NodeForTypeSelector,
 } from '../interfaces/editor';
 import { LocationApi } from '../interfaces/location';
-import { type Node, NodeApi, type NodeEntry } from '../interfaces/node';
+import {
+  type Node,
+  NodeApi,
+  type NodeEntry,
+  type NodeTypeSelector,
+} from '../interfaces/node';
 import { type Path, PathApi } from '../interfaces/path';
 import { normalizeNodeMatch } from '../utils/node-match';
 
+export function nodes<T extends Node>(
+  editor: Editor,
+  options: EditorNodesOptions<Node> & {
+    match: (node: Node, path: Path) => node is T;
+    type?: undefined;
+  }
+): Generator<NodeEntry<T>, void, undefined>;
+export function nodes<const TType extends NodeTypeSelector>(
+  editor: Editor,
+  options: EditorNodesOptions<NodeForTypeSelector<TType>, TType> & {
+    type: TType;
+  }
+): Generator<NodeEntry<NodeForTypeSelector<TType>>, void, undefined>;
+export function nodes(
+  editor: Editor,
+  options?: EditorNodesOptions<Node>
+): Generator<NodeEntry<Node>, void, undefined>;
 export function* nodes<T extends Node>(
   editor: Editor,
   options: EditorNodesOptions<T> = {}
@@ -25,7 +48,7 @@ export function* nodes<T extends Node>(
     voids = false,
     pass,
   } = options;
-  const match = normalizeNodeMatch(options.match) ?? (() => true);
+  const match = normalizeNodeMatch(options.type, options.match) ?? (() => true);
 
   if (!at) {
     return;

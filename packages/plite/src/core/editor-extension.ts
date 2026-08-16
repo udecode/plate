@@ -32,8 +32,10 @@ import type {
   EditorUpdateTransaction,
   EditorValueFromExtensions,
   RegisteredEditorExtension,
+  EditorSelectionSpec,
   ValueOf,
 } from '../interfaces/editor';
+import type { SelectionValue } from '../interfaces/selection';
 import type {
   EditorSchemaDeclaration,
   EditorSchemaDefinition,
@@ -235,7 +237,7 @@ export const isEditorExtension = (
   CANONICAL_EDITOR_EXTENSIONS.has(value);
 
 const getEditorExtensionRuntimeFields = <
-  TEditor extends BaseEditor<any> = Editor,
+  TEditor extends BaseEditor<any, any> = Editor,
 >(
   extension: EditorExtensionReference
 ) => extension as unknown as EditorExtensionDefinitionInput<TEditor>;
@@ -600,7 +602,6 @@ type EditorExtensionPresenceField =
   | 'facetProviders'
   | 'on'
   | 'readMiddleware'
-  | 'selectionKinds'
   | 'stateFields'
   | 'validate';
 
@@ -639,11 +640,22 @@ type NormalizeEditorExtensionDefinition<
             ? NormalizedEditorExtensionUpdate<TInput>
             : TKey extends 'schema'
               ? NormalizedEditorExtensionSchema<TInput>
-              : TKey extends EditorExtensionPresenceField
-                ? true
-                : TInput[TKey];
+              : TKey extends 'selectionKinds'
+                ? Extract<
+                    EditorExtensionSelectionFromInput<TInput>,
+                    SelectionValue
+                  >
+                : TKey extends EditorExtensionPresenceField
+                  ? true
+                  : TInput[TKey];
 }> &
   Readonly<{ name: N }>;
+
+type EditorExtensionSelectionFromInput<TInput> = TInput extends {
+  selectionKinds: readonly EditorSelectionSpec<infer TSelection>[];
+}
+  ? TSelection
+  : never;
 
 type DefineExtension = {
   <

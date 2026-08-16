@@ -12,7 +12,7 @@ import {
 } from '../core/public-state';
 import { node as getNode } from '../editor/node';
 import { nodes as getNodes } from '../editor/nodes';
-import { LocationApi } from '../interfaces';
+import { type Location, LocationApi } from '../interfaces';
 import {
   after as editorAfter,
   isBlock as editorIsBlock,
@@ -26,14 +26,23 @@ import {
   void as editorVoid,
 } from '../interfaces/editor';
 import type { AnyEditor as Editor } from '../interfaces/editor';
-import { type Node, NodeApi } from '../interfaces/node';
+import {
+  type Ancestor,
+  type Node,
+  NodeApi,
+  type NodeEntry,
+} from '../interfaces/node';
 import { type Path, PathApi } from '../interfaces/path';
 import type { Point } from '../interfaces/point';
 import { type Range, RangeApi } from '../interfaces/range';
 import { SelectionApi } from '../interfaces/selection';
-import type { NodeMutationMethods } from '../interfaces/transforms/node';
+import type {
+  NodeMutationMethods,
+  NodeSplitNodesOptions,
+} from '../interfaces/transforms/node';
 import { select } from '../transforms-selection/select';
 import { deleteText } from '../transforms-text/delete-text';
+import { normalizeNodeMatch } from '../utils/node-match';
 import { insertNodes } from './insert-nodes';
 
 const deleteRange = (editor: Editor, range: Range): Point | null => {
@@ -159,14 +168,16 @@ const ensureStartPointAfterHighestSplit = (
   return null;
 };
 
-export const splitNodes: NodeMutationMethods['splitNodes'] = (
-  editor,
-  options = {}
+export const splitNodes = ((
+  editor: Editor,
+  options: NodeSplitNodesOptions = {}
 ) => {
   runEditorTransaction(editor, (tx) => {
     profileCoreDuration('split-nodes-transaction', () => {
       const { mode = 'lowest', voids = false } = options;
-      let { match, height = 0, always = false } = options;
+      let { height = 0, always = false } = options;
+      const hasExplicitSelector = options.match != null || options.type != null;
+      let match = normalizeNodeMatch(options.type, options.match);
       let at = profileCoreDuration('split-nodes-resolve-target', () =>
         tx.resolveTarget({ at: options.at })
       );
@@ -199,30 +210,57 @@ export const splitNodes: NodeMutationMethods['splitNodes'] = (
           const path = at;
           const [node] = getNode(editor, path);
 
-          applyBuiltDocumentChange(editor, (builder, root) =>
-            builder.splitNode(
-              root,
-              path,
-              options.position!,
-              getSplitProperties(editor, node, path, root)
-            )
-          );
+          if (!hasExplicitSelector || match(node, path)) {
+            applyBuiltDocumentChange(editor, (builder, root) =>
+              builder.splitNode(
+                root,
+                path,
+                options.position!,
+                getSplitProperties(editor, node, path, root)
+              )
+            );
 
-          return;
+            return;
+          }
+
+          always = true;
+          at = NodeApi.isText(node)
+            ? { path, offset: options.position }
+            : NodeApi.isElement(node)
+              ? editorPoint(
+                  editor,
+                  options.position < node.children.length
+                    ? path.concat(options.position)
+                    : path,
+                  {
+                    edge:
+                      options.position < node.children.length ? 'start' : 'end',
+                  }
+                )
+              : null;
+
+          if (!at) return;
         }
 
-        const path = at;
-        const point = profileCoreDuration('split-nodes-path-point', () =>
-          editorPoint(editor, path)
-        );
-        const [parent] = profileCoreDuration('split-nodes-path-parent', () =>
-          editorParent(editor, path)
-        );
+        if (LocationApi.isPath(at)) {
+          const path = at;
+          const point = profileCoreDuration('split-nodes-path-point', () =>
+            editorPoint(editor, path)
+          );
+          const [parent] = profileCoreDuration('split-nodes-path-parent', () =>
+            (
+              editorParent as (
+                editor: unknown,
+                at: Location
+              ) => NodeEntry<Ancestor>
+            )(editor, path)
+          );
 
-        match = (n) => n === parent;
-        height = point.path.length - path.length + 1;
-        at = point;
-        always = true;
+          if (!hasExplicitSelector) match = (n) => n === parent;
+          height = point.path.length - path.length + 1;
+          at = point;
+          always = true;
+        }
       }
 
       if (!LocationApi.isPoint(at)) {
@@ -242,7 +280,7 @@ export const splitNodes: NodeMutationMethods['splitNodes'] = (
 
       try {
         const [highest] = profileCoreDuration('split-nodes-find-highest', () =>
-          getNodes(editor, {
+          getNodes(editor as never, {
             at: splitPoint,
             match,
             mode,
@@ -270,7 +308,7 @@ export const splitNodes: NodeMutationMethods['splitNodes'] = (
             if (!after) {
               const text = { text: '' };
               const afterPath = PathApi.next(voidPath);
-              insertNodes(editor, text, { at: afterPath, voids });
+              insertNodes(editor as Editor, text, { at: afterPath, voids });
               after = editorPoint(editor, afterPath)!;
             }
 
@@ -402,4 +440,4 @@ export const splitNodes: NodeMutationMethods['splitNodes'] = (
       }
     });
   });
-};
+}) as NodeMutationMethods['splitNodes'];

@@ -18,6 +18,7 @@ import {
   SelectionApi,
   type EditorSelection,
   type Selection,
+  type SelectionValue,
 } from '../interfaces/selection';
 
 import {
@@ -54,18 +55,18 @@ type SelectionMappingOptions = RangeMappingOptions & {
 };
 
 type RuntimeSelectionSpec = Readonly<{
-  codec?: import('../interfaces/editor').EditorValueCodec<EditorSelection>;
+  codec?: import('../interfaces/editor').EditorValueCodec<any>;
   kind: string;
   map?: (
-    selection: EditorSelection,
+    selection: SelectionValue,
     context: EditorSelectionMapContext
   ) => Selection;
   marks?: (...args: any[]) => any;
-  primaryRange?: (selection: EditorSelection) => Range | null;
-  ranges?: (selection: EditorSelection) => readonly Range[];
-  replacementRange?: (selection: EditorSelection) => Range | null;
+  primaryRange?: (selection: SelectionValue) => Range | null;
+  ranges?: (selection: SelectionValue) => readonly Range[];
+  replacementRange?: (selection: SelectionValue) => Range | null;
   slice?: (...args: any[]) => any;
-  validate?: (selection: EditorSelection) => boolean;
+  validate?: (selection: SelectionValue) => boolean;
 }>;
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -91,7 +92,9 @@ const isStrictPoint = (value: unknown): value is Point =>
 const isMarks = (value: unknown): value is Readonly<Record<string, unknown>> =>
   isRecord(value);
 
-const assertBuiltInSelection = (selection: EditorSelection) => {
+const assertBuiltInSelection: (
+  selection: SelectionValue
+) => asserts selection is EditorSelection = (selection) => {
   if (!isRecord(selection)) {
     throw new Error('Invalid built-in editor selection.');
   }
@@ -166,7 +169,7 @@ const publicPoint = (
     ...(includeRoot ? { root } : {}),
   });
 
-const selectionRoot = (selection: EditorSelection, fallback: RootKey) =>
+const selectionRoot = (selection: SelectionValue, fallback: RootKey) =>
   pointRoot(selection.anchor, fallback);
 
 const getSelectionSpecByKind = (
@@ -188,7 +191,7 @@ const getSelectionSpecByKind = (
 
 const getSelectionSpec = (
   editor: Editor,
-  selection: EditorSelection,
+  selection: SelectionValue,
   registry?: ExtensionRegistry
 ) => getSelectionSpecByKind(editor, selection.kind, registry);
 
@@ -202,7 +205,11 @@ const BUILT_IN_SELECTION_CODEC = Object.freeze({
 
     return value;
   },
-  encode: (value: EditorSelection) => value,
+  encode(value: SelectionValue) {
+    assertBuiltInSelection(value);
+
+    return value;
+  },
   version: 1,
 });
 
@@ -587,10 +594,13 @@ export const getSelectionPrimaryRange = <TEditor extends Editor<any, any>>(
   return primaryRange ? primaryRange(selection) : selection;
 };
 
-export const getSelectionSpecMarks = <V extends Value>(
+export const getSelectionSpecMarks = <
+  V extends Value,
+  TExtensions extends readonly unknown[],
+>(
   editor: Editor,
   selection: Selection,
-  state: EditorStateView<V>
+  state: EditorStateView<V, TExtensions>
 ): EditorMarks<V> | null | undefined => {
   if (!selection) return;
 
@@ -600,10 +610,13 @@ export const getSelectionSpecMarks = <V extends Value>(
     | undefined;
 };
 
-export const getSelectionSpecSlice = <V extends Value>(
+export const getSelectionSpecSlice = <
+  V extends Value,
+  TExtensions extends readonly unknown[],
+>(
   editor: Editor,
   selection: Selection,
-  state: EditorStateView<V>
+  state: EditorStateView<V, TExtensions>
 ): ContentSlice<V> | undefined => {
   if (!selection) return;
 
@@ -700,7 +713,7 @@ export const assertSelectionSupported = (
 
 export const mapSelectionWithContext = (
   editor: Editor,
-  selection: EditorSelection,
+  selection: SelectionValue,
   context: EditorSelectionMapContext,
   options: RangeMappingOptions = {},
   registry?: ExtensionRegistry
