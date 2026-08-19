@@ -1,0 +1,155 @@
+---
+title: Plate Document Model
+description: The canonical JSON contract for Plate documents, nodes, schemas, migrations, and format adapters.
+---
+
+Plate stores editor-native JSON. Plite owns the tree contract; Plate plugins add schema-checked properties and codecs map documents to external formats.
+
+## Core Tree
+
+~~~ts
+type Text = { text: string };
+
+type Element = {
+  type: string;
+  children: Array<Element | Text>;
+};
+
+type EditorDocumentValue = {
+  children: Element[];
+  roots?: Record<string, Element[]>;
+  meta?: Record<string, unknown>;
+};
+~~~
+
+Feature properties stay flat on their owning node. Runtime NodeKey values are editor state and are never serialized.
+
+## Application Schema
+
+Persistence uses a named envelope:
+
+~~~ts
+type PersistedDocumentInput = {
+  document: EditorDocumentValue;
+  schema: { id: string; version: number; fingerprint: string };
+  selection?: Selection | 'start' | 'end';
+};
+~~~
+
+The application schema decides which element types, marks, properties, content, and roots are valid. defineDocumentMigrations binds an ascending chain to that schema. Runtime loading and the CLI call the same migrateDocument runner before schema fitting.
+
+Plate v55 runs `migratePlateV54` and `migratePlateV55` in order for documents from the frozen v53.3.6 profile. Existing v54 documents run only the v55 step.
+
+## Representative Feature Shapes
+
+Plate packages own local node shapes; the consuming application's plugin tuple and schema determine its complete grammar. Use `plate generate` when an application needs an exact committed `Value` type.
+
+~~~ts
+type HeadingElement = {
+  type: 'heading';
+  level: 1 | 2 | 3 | 4 | 5 | 6;
+  children: Text[];
+};
+
+type CodeBlockElement = {
+  type: 'codeBlock';
+  language?: string;
+  children: CodeLineElement[];
+};
+
+type TableElement = {
+  type: 'table';
+  columnWidths?: Array<number | null>;
+  marginLeft?: number;
+  children: TableRowElement[];
+};
+
+type TableRowElement = {
+  type: 'tableRow';
+  height?: number;
+  children: TableCellElement[];
+};
+
+type TableCellElement = {
+  type: 'tableCell';
+  backgroundColor?: string;
+  borders?: Partial<Record<
+    'top' | 'right' | 'bottom' | 'left',
+    { color?: string; style?: string; width?: number }
+  >>;
+  colSpan?: number;
+  rowSpan?: number;
+  header?: boolean;
+  children: Element[];
+};
+
+type ListItemProperties = {
+  listType: 'bulleted' | 'numbered' | 'task';
+  listStyle?: string;
+  listStart?: number;
+  listRestart?: number;
+  checked?: boolean;
+  indent?: number;
+};
+
+type DateElement = {
+  type: 'date';
+  value: string;
+  children: Text[];
+};
+
+type MentionElement = {
+  type: 'mention';
+  ref: string;
+  label?: string;
+  children: Text[];
+};
+
+type FootnoteReferenceElement = {
+  type: 'footnoteReference';
+  ref: string;
+  children: Text[];
+};
+
+type EquationElement = {
+  type: 'equation' | 'inlineEquation';
+  latex: string;
+  children: Text[];
+};
+
+type ImageElement = {
+  type: 'image';
+  url: string;
+  naturalWidth?: number;
+  naturalHeight?: number;
+  children: Text[];
+};
+
+type VideoElement = {
+  type: 'video';
+  url: string;
+  provider?: string;
+  children: Text[];
+};
+~~~
+
+listStart is conditional author intent: it applies only while the item is first in its numbered sequence and remains stored while ignored. listRestart forces a new sequence at that item. editor.read.list.ordinal(element) derives display numbers; ordinary edits do not rewrite following nodes.
+
+List starts and restarts are signed safe integers. Element `id` identifies one persisted node occurrence; `ref` associates nodes or external entities; live runtime identity remains `NodeKey`.
+
+Table column width has one owner: TableElement.columnWidths. HTML cell widths normalize into that array during import; `null` records an unknown imported width without pretending the column is zero pixels wide.
+
+Image naturalWidth and naturalHeight store source-image geometry; media width stores the user-selected rendered width. Media captions are direct children. Upload queues, progress, and placeholder identity stay in application state.
+
+## Standards Relationship
+
+| Model | Plate relationship |
+| --- | --- |
+| Slate | Same practical descendant shape: text leaves and elements with children. Plate adds a compiled application schema. |
+| ProseMirror | Same schema-first discipline. Plate keeps flat editor-native JSON. |
+| UNIST | Conceptual tree vocabulary only. Plate does not require position or data fields. |
+| MDAST | External Markdown AST. Codecs map heading.level to depth and codeBlock.language to lang. |
+| Portable Text | A portability reference, not Plate storage. Plate keeps nested editor nodes and live selection semantics. |
+| Block Protocol | A block embedding protocol, not a rich-text AST contract. |
+
+Plate is intentionally Plate-native. Compatibility belongs in a codec or adapter, not in the live document shape.

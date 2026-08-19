@@ -6,7 +6,7 @@ jsx;
 
 export const deserializeCsvValue = (
   <fragment>
-    <hh2>CSV</hh2>
+    <hheading level={2}>CSV</hheading>
     <hp>复制并粘贴 CSV 内容到表格中。</hp>
   </fragment>
 );

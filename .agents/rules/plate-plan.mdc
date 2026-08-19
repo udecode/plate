@@ -89,6 +89,13 @@ rejected shape.
   without an independently consumed lifecycle.
 - A private bridge is exceptional. Name its owner, non-public proof, deletion
   trigger, and removal gate in the decision row.
+- For persisted document upgrades, plan one app-owned `{ document, schema }`
+  envelope, exact generated fingerprints for every supported historical
+  envelope version, an ascending `defineDocumentMigrations` target-version
+  chain, and the shared `migrateDocument` runtime/CLI runner. Raw documents use
+  only an explicit unversioned floor. Keep `prepareDocument` for installed
+  current-schema invariants after migration. Reject migration plugins,
+  historical normalizers, AST version guessing, and CLI-only runtime policy.
 - Planning edits only planning, research, vision, behavior-law, migration, and
   reference artifacts it explicitly owns. Do not implement product source
   before accepted-plan execution.

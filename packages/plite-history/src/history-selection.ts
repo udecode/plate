@@ -103,8 +103,12 @@ export const restoreHistoricSelection = <V extends Value>(
     target === 'before' ? batch.selectionBefore : batch.selectionAfter;
   const root =
     getHistoricSelectionRoot(batch, target) ?? getRangeRootOrMain(selection);
+  const restoredSelection = cloneRange(selection, root);
 
-  if (root === viewRoot && !SelectionApi.equals(tx.selection(), selection)) {
-    (tx.selection.set as (selection: Selection) => void)(selection);
+  if (
+    root === viewRoot &&
+    !SelectionApi.equals(tx.selection(), restoredSelection)
+  ) {
+    (tx.selection.set as (selection: Selection) => void)(restoredSelection);
   }
 };

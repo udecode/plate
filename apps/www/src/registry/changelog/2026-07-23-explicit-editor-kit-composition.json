@@ -20,7 +20,7 @@
     {
       "name": "editor-kit",
       "files": [],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "definitionFiles": [],
       "diagnostics": [
         {
           "severity": "warning",
@@ -31,43 +31,80 @@
     },
     {
       "name": "fixed-toolbar-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/fixed-toolbar-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for fixed-toolbar-kit."
+        }
+      ]
     },
     {
       "name": "floating-toolbar-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/floating-toolbar-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for floating-toolbar-kit."
+        }
+      ]
     },
     {
       "name": "list-classic-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/list-classic-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for list-classic-kit."
+        }
+      ]
     },
     {
       "name": "list-classic-demo",
-      "files": ["apps/www/src/registry/examples/list-classic-demo.tsx"],
+      "files": [
+        "apps/www/src/registry/examples/list-classic-demo.tsx",
+        "apps/www/src/registry/examples/values/list-classic-value.tsx"
+      ],
       "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
       "diagnostics": []
     },
     {
       "name": "playground-demo",
-      "files": ["apps/www/src/registry/examples/playground-demo.tsx"],
+      "files": [
+        "apps/www/src/registry/examples/demo.tsx",
+        "apps/www/src/registry/examples/playground-demo.tsx"
+      ],
       "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
       "diagnostics": []
     },
     {
       "name": "plate-to-html",
-      "files": ["apps/www/src/registry/components/editor/plate-to-html.tsx"],
+      "files": [
+        "apps/www/src/registry/blocks/plate-to-html/page.tsx",
+        "apps/www/src/registry/components/editor/plate-to-html.tsx",
+        "apps/www/src/registry/examples/values/align-value.tsx",
+        "apps/www/src/registry/examples/values/basic-blocks-value.tsx",
+        "apps/www/src/registry/examples/values/basic-marks-value.tsx",
+        "apps/www/src/registry/examples/values/column-value.tsx",
+        "apps/www/src/registry/examples/values/date-value.tsx",
+        "apps/www/src/registry/examples/values/discussion-value.tsx",
+        "apps/www/src/registry/examples/values/equation-value.tsx",
+        "apps/www/src/registry/examples/values/font-value.tsx",
+        "apps/www/src/registry/examples/values/indent-value.tsx",
+        "apps/www/src/registry/examples/values/line-height-value.tsx",
+        "apps/www/src/registry/examples/values/link-value.tsx",
+        "apps/www/src/registry/examples/values/list-value.tsx",
+        "apps/www/src/registry/examples/values/media-value.tsx",
+        "apps/www/src/registry/examples/values/mention-value.tsx",
+        "apps/www/src/registry/examples/values/table-value.tsx",
+        "apps/www/src/registry/examples/values/toc-value.tsx"
+      ],
       "definitionFiles": ["apps/www/src/registry/registry-blocks.ts"],
       "diagnostics": []
     },

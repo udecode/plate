@@ -1,9 +1,9 @@
 ---
 title: Code Block
 docs:
-  - route: https://pro.platejs.org/docs/components/code-block-node
+  - route: https://pro.platejs.org/docs/components/code-block
     title: Plus
-  - route: /docs/components/code-block-node
+  - route: /docs/components/code-block
     title: Code Block Element
 ---
 
@@ -29,11 +29,11 @@ docs:
 
 The fastest way to add code blocks is with `CodeBlockKit`. It composes `CodeBlockPlugin`, its required `CodeLinePlugin`, and the removable `CodeHighlightPlugin` with the shipped triple-backtick input rule and [Plate UI](/docs/installation/plate-ui) components.
 
-<ComponentSource name="code-block-kit" />
+<ComponentSource name="code-block" />
 
-- [`CodeBlockElement`](/docs/components/code-block-node): Renders code block containers.
-- [`CodeLineElement`](/docs/components/code-block-node): Renders individual code lines.
-- [`CodeSyntaxLeaf`](/docs/components/code-block-node): Renders syntax highlighted text.
+- [`CodeBlockElement`](/docs/components/code-block): Renders code block containers.
+- [`CodeLineElement`](/docs/components/code-block): Renders individual code lines.
+- [`CodeSyntaxLeaf`](/docs/components/code-block): Renders syntax highlighted text.
 
 ### Add Kit
 
@@ -41,7 +41,7 @@ Add the kit to your plugins:
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { CodeBlockKit } from '@/components/editor/plugins/code-block-kit';
+import { CodeBlockKit } from '@/components/editor/code-block';
 
 const editor = createPlateEditor({
   plugins: [
@@ -90,7 +90,7 @@ import { CodeBlockRules } from '@platejs/code-block';
 import { CodeBlockPlugin, CodeHighlightPlugin, CodeLinePlugin } from '@platejs/code-block/react';
 import { all, createLowlight } from 'lowlight';
 import { createPlateEditor } from 'platejs/react';
-import { CodeBlockElement, CodeLineElement, CodeSyntaxLeaf } from '@/components/ui/code-block-node';
+import { CodeBlockElement, CodeLineElement, CodeSyntaxLeaf } from '@/components/editor/code-block';
 
 // Create a lowlight instance with all languages
 const lowlight = createLowlight(all);
@@ -153,7 +153,7 @@ const editor = createPlateEditor({
 ```
 
 - `CodeBlockPlugin.configure({ component })`: Assigns
-  [`CodeBlockElement`](/docs/components/code-block-node) to render code block
+  [`CodeBlockElement`](/docs/components/code-block) to render code block
   containers.
 - `inputRules`: Registers the triple-backtick fence rule. Use `on: 'match'` to commit when the fence becomes complete or `on: 'break'` to commit on `Enter`.
 - `CodeHighlightPlugin.initialState.lowlight`: Lowlight instance for syntax highlighting.

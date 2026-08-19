@@ -1,6 +1,7 @@
 export const testValue = [
   {
-    type: 'h1',
+    level: 1,
+    type: 'heading',
     children: [
       {
         text: 'Playground',
@@ -8,7 +9,8 @@ export const testValue = [
     ],
   },
   {
-    type: 'h2',
+    level: 2,
+    type: 'heading',
     children: [
       {
         text: 'Comments and suggestions',
@@ -63,7 +65,8 @@ export const testValue = [
     type: 'paragraph',
   },
   {
-    type: 'h3',
+    level: 3,
+    type: 'heading',
     children: [
       {
         text: 'Heading',
@@ -73,7 +76,7 @@ export const testValue = [
   {
     type: 'paragraph',
     indent: 1,
-    listStyleType: 'disc',
+    listType: 'bulleted',
     children: [
       {
         text: '1',
@@ -83,7 +86,7 @@ export const testValue = [
   {
     type: 'paragraph',
     indent: 2,
-    listStyleType: 'disc',
+    listType: 'bulleted',
     children: [
       {
         text: '2',
@@ -93,7 +96,7 @@ export const testValue = [
   {
     type: 'paragraph',
     indent: 3,
-    listStyleType: 'disc',
+    listType: 'bulleted',
     children: [
       {
         text: '3',
@@ -103,7 +106,7 @@ export const testValue = [
   {
     type: 'paragraph',
     indent: 4,
-    listStyleType: 'disc',
+    listType: 'bulleted',
     children: [
       {
         text: '4',
@@ -113,7 +116,7 @@ export const testValue = [
   {
     type: 'paragraph',
     indent: 1,
-    listStyleType: 'disc',
+    listType: 'bulleted',
     children: [
       {
         text: 'parent style change',
@@ -123,7 +126,7 @@ export const testValue = [
   {
     type: 'paragraph',
     indent: 2,
-    listStyleType: 'decimal',
+    listType: 'numbered',
     listStart: 1,
     children: [
       {
@@ -134,7 +137,7 @@ export const testValue = [
   {
     type: 'paragraph',
     indent: 2,
-    listStyleType: 'disc',
+    listType: 'bulleted',
     listStart: 1,
     children: [
       {
@@ -145,7 +148,7 @@ export const testValue = [
   {
     type: 'paragraph',
     indent: 2,
-    listStyleType: 'todo',
+    listType: 'task',
     checked: true,
     children: [
       {
@@ -274,7 +277,7 @@ export const testValue = [
             text: '',
           },
         ],
-        texExpression: 'E=mc^2',
+        latex: 'E=mc^2',
         type: 'inlineEquation',
       },
     ],
@@ -287,7 +290,7 @@ export const testValue = [
   },
   {
     type: 'codeBlock',
-    lang: 'javascript',
+    language: 'javascript',
     children: [
       {
         type: 'codeLine',
@@ -329,7 +332,7 @@ export const testValue = [
         text: '',
       },
     ],
-    texExpression: 'f(x)',
+    latex: 'f(x)',
     type: 'equation',
   },
   {
@@ -344,7 +347,7 @@ export const testValue = [
     type: 'paragraph',
     checked: true,
     indent: 1,
-    listStyleType: 'todo',
+    listType: 'task',
     children: [
       {
         text: 'Todo item',
@@ -354,7 +357,7 @@ export const testValue = [
   {
     type: 'paragraph',
     indent: 1,
-    listStyleType: 'decimal',
+    listType: 'numbered',
     children: [
       {
         text: 'Numbered list item',
@@ -426,7 +429,6 @@ export const testValue = [
   },
   {
     type: 'columnGroup',
-    layout: [50, 50],
     children: [
       {
         type: 'column',
@@ -470,8 +472,8 @@ export const testValue = [
             text: '',
           },
         ],
+        ref: 'User',
         type: 'mention',
-        value: 'User',
       },
     ],
   },
@@ -488,7 +490,7 @@ export const testValue = [
           },
         ],
         type: 'date',
-        date: '2024-01-01',
+        value: '2024-01-01',
       },
     ],
   },

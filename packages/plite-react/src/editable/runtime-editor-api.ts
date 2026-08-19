@@ -27,6 +27,7 @@ export {
   hasCommandHandler,
   hasEditorRuntime,
   projectRangeInSnapshot,
+  probeCommandNativeEquivalent,
   runTrustedUpdate,
   setEditorMarks,
   setEditorComposing,

@@ -103,19 +103,19 @@ test('app build inputs cover the external collaboration example graph', () => {
   const entries = normalizedEntries(appBuildEntries);
 
   for (const expected of [
-    'apps/www/src/registry/components/editor/plugins/basic-blocks-kit.tsx',
-    'apps/www/src/registry/components/editor/plugins/basic-marks-kit.tsx',
-    'apps/www/src/registry/components/editor/plugins/basic-nodes-kit.tsx',
+    'apps/www/src/registry/components/editor/basic-blocks.tsx',
+    'apps/www/src/registry/components/editor/basic-marks.tsx',
+    'apps/www/src/registry/components/editor/basic-nodes.tsx',
     'apps/www/src/registry/examples/collaboration-demo.tsx',
-    'apps/www/src/registry/ui/blockquote-node.tsx',
-    'apps/www/src/registry/ui/code-node.tsx',
-    'apps/www/src/registry/ui/editor.tsx',
-    'apps/www/src/registry/ui/heading-node.tsx',
-    'apps/www/src/registry/ui/highlight-node.tsx',
-    'apps/www/src/registry/ui/hr-node.tsx',
-    'apps/www/src/registry/ui/kbd-node.tsx',
-    'apps/www/src/registry/ui/paragraph-node.tsx',
-    'apps/www/src/registry/ui/remote-cursor-overlay.tsx',
+    'apps/www/src/registry/components/editor/blockquote.tsx',
+    'apps/www/src/registry/components/editor/code.tsx',
+    'apps/www/src/registry/components/editor/editor.tsx',
+    'apps/www/src/registry/components/editor/heading.tsx',
+    'apps/www/src/registry/components/editor/highlight.tsx',
+    'apps/www/src/registry/components/editor/horizontal-rule.tsx',
+    'apps/www/src/registry/components/editor/kbd.tsx',
+    'apps/www/src/registry/components/editor/paragraph.tsx',
+    'apps/www/src/registry/components/editor/remote-cursor-overlay.tsx',
   ]) {
     assert.ok(
       entries.has(expected),

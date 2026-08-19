@@ -26,10 +26,16 @@ import {
   Plite,
 } from '../src';
 import { createDecorationSource } from '../src/decoration-source';
+import { setDOMTextSyncRendererCapability } from '../src/dom-text-sync';
 import { createLayoutVirtualizerSizeMap } from '../src/dom-strategy/use-virtualized-root-plan';
 import { EditableDOMRuntime } from '../src/editable/editable-dom-runtime';
 import { syncEditableDOMSelectionToEditor } from '../src/editable/selection-controller';
-import { didSyncTextPathToDOM } from '../src/hooks/use-plite-node-ref';
+import {
+  didSyncTextPathToDOM,
+  getDOMTextRenderRevision,
+  invalidateUnsyncedMountedTextDOM,
+  syncChangedTextToDOM,
+} from '../src/hooks/use-plite-node-ref';
 import { createPliteReactRenderCounter } from '../src/render-profiler';
 
 type InternalPartialDOMStrategyForTest = {
@@ -1288,8 +1294,13 @@ test('Editable restores native-updated app-owned text from model history', async
   ).toBe('alpha');
 });
 
-test('Editable disables DOM text sync for custom leaf renderers', async () => {
+test('Editable keeps unknown custom leaf renderers model-owned', async () => {
   const leafEditor = createReactEditor();
+  let renderLeafProps:
+    | Parameters<
+        NonNullable<React.ComponentProps<typeof Editable>['renderLeaf']>
+      >[0]
+    | null = null;
 
   const children: Descendant[] = [
     {
@@ -1313,54 +1324,15 @@ test('Editable disables DOM text sync for custom leaf renderers', async () => {
       }}
       editor={leafEditor}
       id="dom-strategy-custom-render-leaf"
-      renderLeaf={({ attributes, children }) => (
-        <span {...attributes} data-custom-leaf="true">
-          {children}
-        </span>
-      )}
-    />
-  );
+      renderLeaf={(props) => {
+        renderLeafProps = props;
 
-  expect(
-    leafRendered.container
-      .querySelector('[data-plite-node="text"]')
-      ?.hasAttribute('data-plite-dom-sync')
-  ).toBe(false);
-  expect(
-    leafRendered.container
-      .querySelector('[data-plite-node="text"]')
-      ?.getAttribute('data-plite-dom-sync-reason')
-  ).toBe('custom-leaf');
-});
-
-test('Editable enables DOM text sync for text-invariant custom leaf renderers', async () => {
-  const leafEditor = createReactEditor();
-
-  editorReplace(leafEditor, {
-    children: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'alpha' }],
-      },
-    ],
-    selection: null,
-  });
-
-  const leafRendered = render(
-    <TestEditorSurface
-      domStrategy={{
-        overscan: 0,
-        textSync: { renderLeaf: 'text-invariant' },
-        threshold: 1,
-        type: 'virtualized',
+        return (
+          <span {...props.attributes} data-custom-leaf="true">
+            {props.children}
+          </span>
+        );
       }}
-      editor={leafEditor}
-      id="dom-strategy-text-invariant-render-leaf"
-      renderLeaf={({ attributes, children }) => (
-        <span {...attributes} data-custom-leaf="true">
-          {children}
-        </span>
-      )}
     />
   );
 
@@ -1368,12 +1340,23 @@ test('Editable enables DOM text sync for text-invariant custom leaf renderers', 
     leafRendered.container
       .querySelector('[data-plite-node="text"]')
       ?.getAttribute('data-plite-dom-sync')
-  ).toBe('true');
+  ).toBeNull();
   expect(
     leafRendered.container
       .querySelector('[data-plite-node="text"]')
-      ?.hasAttribute('data-plite-dom-sync-reason')
-  ).toBe(false);
+      ?.getAttribute('data-plite-dom-sync-reason')
+  ).toBe('custom-leaf');
+  expect(renderLeafProps).toMatchObject({
+    leaf: {},
+    path: [0, 0],
+    segment: { marks: {}, slices: [] },
+    text: {},
+  });
+  expect('text' in renderLeafProps!.leaf).toBe(false);
+  expect('text' in renderLeafProps!.text).toBe(false);
+  expect('text' in renderLeafProps!.segment).toBe(false);
+  expect('start' in renderLeafProps!.segment).toBe(false);
+  expect('end' in renderLeafProps!.segment).toBe(false);
 });
 
 test('Editable disables DOM text sync for app-owned segment renderers', async () => {
@@ -1472,8 +1455,8 @@ test('Editable disables DOM text sync when projections affect the text node', as
   highlightSource.destroy();
 });
 
-test('Editable treats native-updated projected text as synced without rewriting DOM', async () => {
-  const editor = createReactEditor();
+test('Editable routes native-updated projected text through React', async () => {
+  const editor = createReactEditor({ extensions: [history()] });
 
   editorReplace(editor, {
     children: [
@@ -1482,7 +1465,11 @@ test('Editable treats native-updated projected text as synced without rewriting 
         children: [{ text: 'alpha beta' }],
       },
     ],
-    selection: null,
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 5 },
+      focus: { path: [0, 0], offset: 5 },
+    },
   });
 
   const highlightSource = createDecorationSource(editor, {
@@ -1504,15 +1491,14 @@ test('Editable treats native-updated projected text as synced without rewriting 
       <Editable
         domStrategy={{
           overscan: 0,
-          textSync: {
-            projections: 'range-transform',
-            renderLeaf: 'text-invariant',
-          },
           type: 'partial-dom',
           segmentSize: 2,
           threshold: 1,
         }}
         id="dom-strategy-native-projected-dom-sync"
+        renderLeaf={({ attributes, children }) => (
+          <span {...attributes}>{children}</span>
+        )}
       />
     </Plite>
   );
@@ -1522,10 +1508,10 @@ test('Editable treats native-updated projected text as synced without rewriting 
   const firstString = rendered.container.querySelector('[data-plite-string]');
 
   expect(textElement?.getAttribute('data-plite-dom-sync-reason')).toBe(
-    'projection'
+    'custom-leaf'
   );
-  expect(textElement?.getAttribute('data-plite-projected-dom-sync')).toBe(
-    'true'
+  expect(textElement?.hasAttribute('data-plite-projected-dom-sync')).toBe(
+    false
   );
   expect(firstString?.textContent).toBe('alpha');
 
@@ -1541,13 +1527,107 @@ test('Editable treats native-updated projected text as synced without rewriting 
     });
   });
 
-  expect(didSyncTextPathToDOM(editor, [0, 0])).toBe(true);
-  expect(firstString.textContent).toBe('alpha!');
+  expect(didSyncTextPathToDOM(editor, [0, 0])).toBe(false);
+  expect(
+    [...rendered.container.querySelectorAll('[data-plite-string]')].map(
+      (element) => element.textContent
+    )
+  ).toEqual(['alpha', '! beta']);
+
+  await act(async () => {
+    editor.update({ history: 'new-batch' }).break.insert();
+    editor.update({ history: 'new-batch' }).break.insert();
+    editor.update.history.undo();
+    editor.update.history.undo();
+  });
+
+  expect(editor.read.text.string([])).toBe('alpha! beta');
+  expect(
+    rendered.container.querySelector('[data-plite-editor]')?.textContent
+  ).toBe('alpha! beta');
 
   highlightSource.destroy();
 });
 
-test('Editable syncs projected leaf strings for Plite-owned text input', async () => {
+test('Editable still reconciles an exact current custom leaf through React', async () => {
+  const editor = createReactEditor();
+
+  editorReplace(editor, {
+    children: [
+      {
+        type: 'paragraph',
+        children: [{ text: 'alpha' }],
+      },
+    ],
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 5 },
+      focus: { path: [0, 0], offset: 5 },
+    },
+  });
+  const rendered = render(
+    <Plite editor={editor}>
+      <Editable
+        renderLeaf={({ attributes, children }) => (
+          <span {...attributes}>{children}</span>
+        )}
+      />
+    </Plite>
+  );
+  const stringElement = rendered.container.querySelector(
+    '[data-plite-string="true"]'
+  );
+
+  if (!stringElement) throw new Error('Expected a custom leaf string.');
+  stringElement.textContent = 'alpha!';
+
+  await act(async () => {
+    editor.update((tx) =>
+      tx.text.insert('!', { at: { path: [0, 0], offset: 5 } })
+    );
+  });
+  const textNodeKey = getNodeKey(editor, [0, 0]);
+  const syncResult = syncChangedTextToDOM(editor, [textNodeKey]);
+
+  expect(syncResult.syncedTextCount).toBe(0);
+  expect(didSyncTextPathToDOM(editor, [0, 0])).toBe(false);
+  expect(
+    rendered.container.querySelector('[data-plite-string="true"]')?.textContent
+  ).toBe('alpha!');
+});
+
+test('history DOM invalidation stays scoped to affected custom text shells', () => {
+  const editor = createReactEditor();
+
+  editorReplace(editor, {
+    children: [
+      { type: 'paragraph', children: [{ text: 'first' }] },
+      { type: 'paragraph', children: [{ text: 'second' }] },
+    ],
+    selection: null,
+  });
+  const rendered = render(
+    <Plite editor={editor}>
+      <Editable
+        renderLeaf={({ attributes, children }) => (
+          <span {...attributes}>{children}</span>
+        )}
+      />
+    </Plite>
+  );
+  const firstNodeKey = getNodeKey(editor, [0, 0]);
+  const secondNodeKey = getNodeKey(editor, [1, 0]);
+
+  expect(invalidateUnsyncedMountedTextDOM(editor, [firstNodeKey])).toEqual([
+    firstNodeKey,
+  ]);
+  expect(getDOMTextRenderRevision(editor, [firstNodeKey])).toBe(1);
+  expect(getDOMTextRenderRevision(editor, [secondNodeKey])).toBe(0);
+
+  rendered.unmount();
+});
+
+test('Editable renders projected leaf strings for Plite-owned text input', async () => {
   const editor = createReactEditor();
 
   editorReplace(editor, {
@@ -1579,10 +1659,6 @@ test('Editable syncs projected leaf strings for Plite-owned text input', async (
       <Editable
         domStrategy={{
           overscan: 0,
-          textSync: {
-            projections: 'range-transform',
-            renderLeaf: 'text-invariant',
-          },
           type: 'partial-dom',
           segmentSize: 2,
           threshold: 1,
@@ -1614,7 +1690,7 @@ test('Editable syncs projected leaf strings for Plite-owned text input', async (
   highlightSource.destroy();
 });
 
-test('Editable syncs projected leaf strings from model-owned history', async () => {
+test('Editable renders projected leaf strings from model-owned history', async () => {
   const editor = createReactEditor({ extensions: [history()] });
 
   editorReplace(editor, {
@@ -1645,10 +1721,6 @@ test('Editable syncs projected leaf strings from model-owned history', async () 
       <Editable
         domStrategy={{
           overscan: 0,
-          textSync: {
-            projections: 'range-transform',
-            renderLeaf: 'text-invariant',
-          },
           type: 'partial-dom',
           segmentSize: 2,
           threshold: 1,
@@ -1670,6 +1742,118 @@ test('Editable syncs projected leaf strings from model-owned history', async () 
       (element) => element.textContent
     )
   ).toEqual(['alpha', ' beta']);
+
+  highlightSource.destroy();
+});
+
+test('Editable restores projected text exactly after split history merges', async () => {
+  const editor = createReactEditor({ extensions: [history()] });
+
+  editorReplace(editor, {
+    children: [
+      {
+        type: 'paragraph',
+        children: [{ text: 'alpha beta' }],
+      },
+    ],
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 5 },
+      focus: { path: [0, 0], offset: 5 },
+    },
+  });
+
+  const highlightSource = createDecorationSource(editor, {
+    id: 'highlight-alpha-split-history',
+    read: () => [
+      {
+        key: 'highlight-alpha-split-history',
+        range: {
+          kind: 'text',
+          anchor: { path: [0, 0], offset: 0 },
+          focus: { path: [0, 0], offset: 5 },
+        },
+      },
+    ],
+  });
+  const rendered = render(
+    <Plite decorationSources={[highlightSource]} editor={editor}>
+      <Editable />
+    </Plite>
+  );
+
+  await act(async () => {
+    editor.update.text.insert('!');
+    editor.update({ history: 'new-batch' }).break.insert();
+    editor.update({ history: 'new-batch' }).break.insert();
+    editor.update.history.undo();
+    editor.update.history.undo();
+  });
+
+  expect(editor.read.text.string([])).toBe('alpha! beta');
+  expect(
+    rendered.container.querySelector('[data-plite-editor]')?.textContent
+  ).toBe('alpha! beta');
+
+  highlightSource.destroy();
+});
+
+test('Editable restores capability-backed projected leaf text after split history merges', async () => {
+  const editor = createReactEditor({ extensions: [history()] });
+
+  editorReplace(editor, {
+    children: [
+      {
+        type: 'paragraph',
+        children: [{ text: 'alpha beta' }],
+      },
+    ],
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 5 },
+      focus: { path: [0, 0], offset: 5 },
+    },
+  });
+
+  const highlightSource = createDecorationSource(editor, {
+    id: 'highlight-alpha-capability-history',
+    read: () => [
+      {
+        key: 'highlight-alpha-capability-history',
+        range: {
+          kind: 'text',
+          anchor: { path: [0, 0], offset: 0 },
+          focus: { path: [0, 0], offset: 5 },
+        },
+      },
+    ],
+  });
+  const renderLeaf = setDOMTextSyncRendererCapability(
+    (({ attributes, children }) => (
+      <span {...attributes}>{children}</span>
+    )) satisfies NonNullable<
+      React.ComponentProps<typeof Editable>['renderLeaf']
+    >,
+    () => true
+  );
+  const rendered = render(
+    <Plite decorationSources={[highlightSource]} editor={editor}>
+      <Editable renderLeaf={renderLeaf} />
+    </Plite>
+  );
+
+  await act(async () => {
+    editor.update.text.insert('!');
+    editor.update({ history: 'new-batch' }).break.insert();
+    editor.update({ history: 'new-batch' }).break.insert();
+    editor.update.history.undo();
+    editor.update.history.undo();
+  });
+
+  expect(editor.read.text.string([])).toBe('alpha! beta');
+  expect(
+    rendered.container.querySelector('[data-plite-editor]')?.textContent
+  ).toBe('alpha! beta');
 
   highlightSource.destroy();
 });

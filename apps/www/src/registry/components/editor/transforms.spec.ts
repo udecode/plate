@@ -1,7 +1,6 @@
 import { PLUGINS } from '@platejs/utils';
 import { CodeBlockPlugin } from '@platejs/code-block/react';
 import { BaseColumnPlugin } from '@platejs/layout';
-import { LinkPlugin } from '@platejs/link/react';
 import {
   BaseAudioPlugin,
   BaseFilePlugin,
@@ -12,10 +11,11 @@ import { SuggestionPlugin } from '@platejs/suggestion/react';
 import { BaseTocPlugin } from '@platejs/toc';
 import { type Selection, type Value, schema } from 'platejs';
 import { createPlateEditor, definePlatePlugin } from 'platejs/react';
+import { linkPlugin } from '@/registry/components/editor/link';
 
-import { BaseBasicBlocksKit } from './plugins/basic-blocks-base-kit';
-import { BaseListKit } from './plugins/list-base-kit';
-import { BaseToggleKit } from './plugins/toggle-base-kit';
+import { BaseBasicBlocksKit } from './basic-blocks-static';
+import { BaseListKit } from './list-static';
+import { BaseToggleKit } from './toggle-static';
 import {
   applyBlockAction,
   insertBlock,
@@ -52,7 +52,7 @@ const createEditor = ({
       ...BaseListKit,
       ...BaseToggleKit,
       CodeBlockPlugin,
-      LinkPlugin,
+      linkPlugin,
       BaseAudioPlugin,
       BaseFilePlugin,
       BasePlaceholderPlugin,
@@ -72,7 +72,7 @@ describe('editor block transforms', () => {
 
     insertInlineElement(editor, PLUGINS.link);
 
-    expect(editor.plugin(LinkPlugin).store.get()).toMatchObject({
+    expect(editor.plugin(linkPlugin).store.get()).toMatchObject({
       mode: 'insert',
       openEditorId: editor.id,
       text: '',
@@ -152,7 +152,7 @@ describe('editor block transforms', () => {
       {
         children: [{ text: 'two' }],
         indent: 1,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
     ]);
@@ -178,7 +178,7 @@ describe('editor block transforms', () => {
       {
         children: [{ text: '' }],
         indent: 1,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
     ]);
@@ -269,12 +269,12 @@ describe('editor block transforms', () => {
     });
     const version = editor.read.lastCommit()?.version ?? 0;
 
-    insertBlock(editor, PLUGINS.h2);
+    insertBlock(editor, 'heading-2');
 
     expect(editor.read.lastCommit()?.version).toBe(version + 1);
     expect(editor.read.children()).toMatchObject([
       { children: [{ text: 'one' }], type: 'paragraph' },
-      { children: [{ text: '' }], type: 'h2' },
+      { children: [{ text: '' }], level: 2, type: 'heading' },
     ]);
   });
 

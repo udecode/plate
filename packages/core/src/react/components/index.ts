@@ -11,4 +11,3 @@ export * from './PlateRoot';
 export * from './PlateTest';
 export * from './PlateView';
 export * from './plate-nodes';
-export * from './withHOC';

@@ -160,8 +160,8 @@ describe('BaseTablePlugin schema', () => {
       placement: 'element',
       type: 'tableCell',
     })?.value.validate;
-    const colSizes = editor.read.schema.property({
-      key: 'colSizes',
+    const columnWidths = editor.read.schema.property({
+      key: 'columnWidths',
       placement: 'element',
       type: 'table',
     })?.value.validate;
@@ -173,7 +173,9 @@ describe('BaseTablePlugin schema', () => {
         type: 'tableCell',
       })?.value.kind
     ).toBe('number');
-    expect(colSpan).toBeUndefined();
+    expect(colSpan?.(2)).toBe(true);
+    expect(colSpan?.(1.5)).toBe(false);
+    expect(colSpan?.(0)).toBe(false);
     expect(() =>
       editor.read.schema.assertDocument({
         children: [
@@ -196,11 +198,14 @@ describe('BaseTablePlugin schema', () => {
         type: 'tableCell',
       })
     ).toBeNull();
-    expect(borders?.({ bottom: { color: 'red', size: 1 } })).toBe(true);
-    expect(borders?.({ bottom: { size: Number.POSITIVE_INFINITY } })).toBe(
+    expect(borders?.({ bottom: { color: 'red', width: 1 } })).toBe(true);
+    expect(borders?.({ bottom: { size: 2 } })).toBe(false);
+    expect(borders?.({ bottom: { width: Number.POSITIVE_INFINITY } })).toBe(
       false
     );
-    expect(colSizes?.([40, 60])).toBe(true);
-    expect(colSizes?.([40, Number.NaN])).toBe(false);
+    expect(columnWidths?.([40, 60])).toBe(true);
+    expect(columnWidths?.([40, null])).toBe(true);
+    expect(columnWidths?.([40, 0])).toBe(false);
+    expect(columnWidths?.([40, Number.NaN])).toBe(false);
   });
 });

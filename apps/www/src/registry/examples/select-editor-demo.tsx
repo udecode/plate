@@ -21,7 +21,7 @@ import {
   SelectEditorCombobox,
   SelectEditorContent,
   SelectEditorInput,
-} from '@/registry/ui/select-editor';
+} from '@/registry/components/editor/select-editor';
 
 const LABELS = [
   { url: '/docs/components/editor', value: 'Editor' },
@@ -34,7 +34,7 @@ const LABELS = [
   { url: '/docs/components/input', value: 'Input' },
   { url: '/docs/components/label', value: 'Label' },
   { url: '/docs/components/popover', value: 'Popover' },
-  { url: '/docs/components/tag-node', value: 'Tag Element' },
+  { url: '/docs/components/tag', value: 'Tag Element' },
 ] satisfies (SelectItem & { url: string })[];
 
 const formSchema = z.object({

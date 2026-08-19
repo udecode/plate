@@ -45,7 +45,7 @@ toc: true
 
 最快速增加 Markdown 支持的方法是使用 `MarkdownKit`。它组合了预配置的 `MarkdownPlugin`、实时 Footnote 插件和必要的 remark 插件，兼容 [Plate UI](/docs/installation/plate-ui)。
 
-<ComponentSource name="markdown-kit" />
+<ComponentSource name="markdown" />
 
 ### 挂载套件
 
@@ -53,7 +53,7 @@ toc: true
 import {
   PLUGINS,
   createPlateEditor } from 'platejs/react';
-import { MarkdownKit } from '@/components/editor/plugins/markdown-kit';
+import { MarkdownKit } from '@/components/editor/markdown';
 
 const editor = createPlateEditor({
   plugins: [
@@ -142,7 +142,7 @@ const editor = createPlateEditor({
 import { createPlateEditor } from 'platejs/react';
 import { MarkdownPlugin } from '@platejs/markdown';
 import { ItalicPlugin } from '@platejs/basic-nodes/react';
-import { BasicBlocksKit } from '@/components/editor/plugins/basic-blocks-kit';
+import { BasicBlocksKit } from '@/components/editor/basic-blocks';
 // ...还需引入其它用于渲染的 Plate 插件
 
 const markdownString = '# Hello, *Plate*!';
@@ -161,7 +161,7 @@ const editor = createPlateEditor({
 ```
 
 <Callout type="warning" title="插件依赖提醒">
-  你需要在 `plugins` 中包含渲染 Markdown 反序列化结果所需的所有 Plate 插件（例如渲染 `#` 需 `H1Plugin`，渲染表格需 `TablePlugin`）。
+  你需要在 `plugins` 中包含渲染 Markdown 反序列化结果所需的所有 Plate 插件（例如渲染 `#` 需 `HeadingPlugin`，渲染表格需 `TablePlugin`）。
 </Callout>
 
 ### Plate 转 Markdown（序列化）
@@ -184,7 +184,7 @@ console.info(markdownOutput);
 const specificNodes = [
   { type: 'paragraph',
   children: [{ text: '仅序列化这一段。' }] },
-  { type: 'h1',
+  { type: 'heading', level: 1,
   children: [{ text: '以及这个标题。' }] },
   ];
 
@@ -584,7 +584,7 @@ const value = editor.api.markdown.deserialize(markdown, {
     ['codeBlock']: {
       deserialize: (mdastNode) => ({
         children: [{ text: '' }],
-        lang: mdastNode.lang ?? undefined,
+        language: mdastNode.lang ?? undefined,
         rawCode: mdastNode.value || '',
         type: 'codeBlock',
       }),
@@ -597,7 +597,7 @@ const output = editor.api.markdown.serialize({
   rules: {
     ['codeBlock']: {
       serialize: (node) => ({
-        lang: node.lang,
+        lang: node.language,
         type: 'code',
         value: node.rawCode,
       }),
@@ -858,7 +858,7 @@ Options 示例使用 `import { MarkdownPlugin } from '@platejs/markdown'`。
 | `children` (字符串)             | 传递给 `editor.api.markdown.deserialize(string)`                                                      | 通常在 `createPlateEditor` 的 `initialValue` 配置                   |
 | `remarkPlugins`                 | `MarkdownPlugin.configure({ initialState: { remarkPlugins: [...] } })`                                                | 在 mdast 层操作                                                      |
 | `rehypePlugins`                 | 不属于 `MarkdownPlugin` 转换管线                                                                     | 将 Markdown 或 Plate 节点交给 Plate 前，单独运行 HTML 管线            |
-| `components={{ h1: MyH1 }}`     | `createPlateEditor({ components: { h1: MyH1 } })`                                                    | 设置已安装 `H1Plugin` 键对应的渲染组件                               |
+| `components={{ h1: MyH1 }}`     | `createPlateEditor({ components: { h1: MyH1 } })`                                                    | 设置已安装 `HeadingPlugin` 键对应的渲染组件                               |
 | `components={{ code: MyCode }}` | 功能插件的 `text/markdown` codec 加 `components: { ['codeBlock']: MyCode }` | codec 负责 mdast ↔ Plate；component 负责渲染 |
 | `allowedElements`               | `MarkdownPlugin.configure({ initialState: { allowedNodes: [...] } })`                                                 | 转换时过滤 mdast/Plate 节点                                          |
 | `disallowedElements`            | `MarkdownPlugin.configure({ initialState: { disallowedNodes: [...] } })`                                              | 转换时过滤不支持节点                                                 |
@@ -975,8 +975,8 @@ editor.api.markdown.deserialize(markdown, {
 import { createPlateEditor, ParagraphPlugin, PlateLeaf } from 'platejs/react';
 import { BoldPlugin } from '@platejs/basic-nodes/react';
 import { CodeBlockPlugin } from '@platejs/code-block/react';
-import { ParagraphElement } from '@/components/ui/paragraph-node'; // UI组件示例
-import { CodeBlockElement } from '@/components/ui/code-block-node'; // UI组件示例
+import { ParagraphElement } from '@/components/editor/paragraph'; // UI组件示例
+import { CodeBlockElement } from '@/components/editor/code-block'; // UI组件示例
 
 const editor = createPlateEditor({
   plugins: [
@@ -999,7 +999,7 @@ import React, { useEffect } from 'react';
 import { Plate, PlateContent, usePlateEditor } from 'platejs/react';
 import { MarkdownPlugin } from '@platejs/markdown';
 // 导入各类常用的 Plate 插件
-import { BasicBlocksKit } from '@/components/editor/plugins/basic-blocks-kit';
+import { BasicBlocksKit } from '@/components/editor/basic-blocks';
 // ... 还可以按需引入 BlockquotePlugin、CodeBlockPlugin、ListPlugin等
 // ... 以及粗体、斜体等标记插件
 

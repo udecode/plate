@@ -24,7 +24,7 @@ These rules apply to user-facing technical prose: docs, commit messages, PR desc
 - **PR titles:** Do not prefix PR titles with agent markers such as `[codex]` or `[ai]`. If AI assistance matters, put it in the PR body.
 - **Bug-fix PR evidence:** Before landing or claiming a bug-fix PR is fixed, require symptom evidence, root cause in code, fix path, and regression test or explicit manual proof with a reason no test fits.
 - **GitHub multiline bodies:** For multiline `gh` comments, close messages, or PR bodies, use `--body-file`, stdin, or a heredoc with real newlines. Never pass literal `\n` in shell strings.
-- **Fixed public issues:** After a user-selected non-security public issue is fixed and proof gates pass, always post one concise issue comment, even when the fix exists only locally. State the exact local/commit/PR status, leave the issue open unless closure is separately authorized, and never imply the fix is shipped.
+- **Public issue status:** After a user-selected non-security public behavior issue passes its reporter-valid proof gates, always post one concise status comment. Local-only or unpushed work is a candidate, not fixed/completed. Fixed/completed wording and the `completed` label require exact-case replay on the final pushed ref, with matching proof-file fingerprints. A fresh reporter contradiction invalidates earlier green proof. State the exact local/commit/PR status, leave the issue open unless closure is separately authorized, and never imply the fix is shipped.
 - Dirty workspace: Never pause to ask about unrelated local changes. Continue work and ignore unrelated diffs.
 - Never browse GitHub files. For library/API questions or unfamiliar deps, inspect the repo at `..`; if missing, clone `https://github.com/{owner}/{repo}.git` to `../{repo-name}`.
 
@@ -64,8 +64,9 @@ their doctrine into each other:
 | durable Plate/Plite architecture and accepted API law                         | root `VISION.md` and `docs/vision/plate.md` |
 | ideal reusable public call shape and API debt ranking                         | `best-api`                                  |
 | accepted API adoption, boundary, and proof plan                               | `plate-plan`                                |
+| end-to-end feature delivery across package, registry, docs, release, and proof | `plate-feature`                             |
 | package plugin implementation, colocation, inference, and package proof       | `plate-plugin-creator`                      |
-| copied registry UI, app-local composition, registry wiring, and browser proof | `plate-ui`                                  |
+| Plate React/component shape, copied UI, registry wiring, and browser proof    | `plate-ui`                                  |
 | current-state public teaching                                                 | `docs-creator`                              |
 | migration/adoption audit against the latest doctrine                          | `plate-next`                                |
 
@@ -74,13 +75,27 @@ plugin authoring, registry UI, and public docs must not require generated
 application contracts. Vision and `best-api` own that API law; worker skills
 only apply it inside their layer.
 
+`plate-ui` is the sole Plate-specific React/component doctrine owner across
+packages and copied registry UI. `plate-plugin-creator` implements package
+mechanics and `plate-next` audits adoption; neither maintains a second hook or
+component model. Vercel React skills provide selected implementation tactics
+only and never override Plate public shape, ownership, or file topology.
+
 Primary user-facing entrypoints:
 
+- `plate-feature` for creating or extending a Plate feature through package
+  semantics, React adapters, copied registry UI, composition, docs, release
+  artifacts, proof, and final Plate Next attestation from one manifest.
 - `auto` as the ergonomic Plate/Plite front door: route public GitHub queue
   prompts to `maintainer`, post-merge/current-tree closure to `autoclosure`,
-  one local Plate/Plite behavior bug or regression to `patch`, and
+  explicit regression-harness/rewrite-closure/test-fix-verify loops to
+  standalone `regression` through `auto regression`, one ordinary local
+  Plate/Plite behavior bug to `patch`, and
   broad/internal Plate/Plite
   quality prompts to `auto`.
+- `regression` as the standalone master for evolving behavior inventories,
+  exact reproduction, test selection, one-case `patch` delegation, fix
+  verification, stability, packet decisions, and methodology self-repair.
 - `plate-next` for Plate v2 cleanup review: deeply audit migrated Plate files,
   APIs, and packages against the Plite boundary, then cut old Slate/Plate
   compatibility sludge or route the decision to `plate-plan`.
@@ -106,6 +121,11 @@ Default routing:
     with the preserved target/mode.
   - `current tree`, `post-merge`, `teammate branch`, `external PR`,
     `ready-to-commit`, or `until-clean` -> `autoclosure`.
+  - `regression <bug|surface|corpus>`, regression harness, rewrite closure,
+    corpus replay, or explicit reproduce-test-fix-verify loop -> `regression`.
+    Auto is only the ergonomic route; Regression owns executable case
+    selection, proof width, and methodology repair;
+    `patch` owns one normalized case implementation at a time.
   - `slate`, `plite`, `huge-document`, editor behavior/perf/API/docs
     quality -> `auto` Plite lane.
   - `plate`, `plate packages`, registry/docs/plugin/component quality ->
@@ -117,12 +137,19 @@ Default routing:
   `resolve-slate-issue`.
 - One public Slate issue to reproduce, fix, ship to Plate `next`, and update ->
   `resolve-slate-issue`.
-- One local Plate or Plite behavior bug or regression with no public mutation
+- One ordinary local Plate or Plite behavior bug or regression with no request
+  for a harness, corpus, rewrite-closure, or self-improving test-fix-verify loop
   -> `patch`.
+- Regression-harness, rewrite-closure, corpus replay, or evolving
+  reproduce-classify-fix-verify methodology -> `regression`.
 - Internal Plate/Plite quality, behavior, perf, browser proof, API cleanup,
   benchmark repair, docs/API cohesion, or long autonomous loop -> `auto`.
 - "best API", "cleanest API", "best DX/AX", public call-shape design/review,
   or whether current API machinery should exist -> `best-api`.
+- Creating or adding a Plate package/feature through registry consumers, docs,
+  release artifacts, and proof -> `plate-feature`. A package-only implementation
+  routes to `plate-plugin-creator`; a React/registry-only implementation routes
+  to `plate-ui`; an adoption audit routes to `plate-next`.
 - "compare", "audit", or "pull from" one or more editor repositories at the
   architecture/API/runtime level -> `editor-audit`. Test and issue behavior
   mining stays with the harvesters.
@@ -169,6 +196,10 @@ non-matching findings instead of patching around reviewer hallucinations.
 - `architecture-cleanup` for source-backed architecture/code cleanup: shallow modules, split ownership, duplicate helpers, over-splits, stale oracles, testability gaps, and agent-navigation friction. It ranks delete/merge/inline/simplify/split/keep/defer decisions, implements only safe behavior-neutral cleanup packets, and routes broad decisions to the right owner
 - `vision` to route agents to root `VISION.md` for unified Plate/Plite taste, public API doctrine, Plite-vs-Plate boundaries, proof standards, checkpoint-zero routing, and autonomous maintainer-fit decisions
 - `best-api` for concrete Plate/Plite public API design, review, and ranked audits. It starts from ideal call sites, treats current machinery and compatibility as evidence rather than requirements, and hands accepted targets to the layer plan or implementation owner.
+- `plate-feature` for one end-to-end Plate feature manifest and phase flow across
+  package, React, copied registry UI, composition, docs, release artifacts,
+  proof, Plate Next attestation, and review. It coordinates existing doctrine
+  owners and never recreates package-generation tooling.
 - `editor-audit` for exhaustive one-to-many local editor architecture
   comparison: source-derived atomic concepts, verified commit cursors,
   material-value ranking, current/proposed shapes, incremental `sync`, and
@@ -181,10 +212,12 @@ non-matching findings instead of patching around reviewer hallucinations.
 - `resolve-slate-issue` for one public Slate issue: intake/classification,
   delegation of local repair to `patch`, root check, Plate PR targeting
   `next`, verified issue update, and integration/release-aware closure
-- `patch` as the sole local Plate/Plite behavior-bug and regression owner:
-  classify the owning lane, reproduce, add durable behavior proof, fix the
-  owning package, apply architecture pressure, verify, and P2 autoreview
-  without public GitHub mutation
+- `patch` as the sole one-case local Plate/Plite behavior-bug and regression
+  implementation owner: accept a normalized case from `regression` or a
+  coordinator, classify the owning lane, reproduce, add durable behavior proof,
+  fix the owning package, apply architecture pressure, verify, and return exact
+  red/green/stability/ref/fingerprint evidence without performing public GitHub
+  mutation
 - `resolve-pr-feedback` for already-open PR review feedback: fetch unresolved
   threads/comments, use an autogoal feedback ledger, patch valid findings, end
   with P2 `autoreview` by passing `--max-priority P2`, then reply/resolve only with current-checkout authority
@@ -203,7 +236,15 @@ non-matching findings instead of patching around reviewer hallucinations.
   prioritization, and promotion into narrower owners. Selected local editor
   architecture comparisons route to `editor-audit`; it does not run Codex
   Autoresearch packets
-- `auto` for Plate/Plite long autonomous supervisor loops: quality, behavior, visual proof, perf, API cleanup, benchmark/test repair, external issue/test harvests, skill repair, docs consolidation, and readiness without user micro-routing. It routes worker skills itself; the user should not need to name `patch`, `plite-plan`, `plate-plan`, `slate-ar`, `plite-research`, `issue-harvester`, `editor-test-harvester`, or `tdd` for ordinary internal Plate/Plite automation
+- `regression` for standalone regression harness, rewrite closure, corpus
+  replay, exact reproduce-test-fix-verify, stability, and methodology repair.
+  It delegates one normalized case at a time to `patch`; `auto regression`
+  routes here and does not retain a second implementation.
+- `auto` for Plate/Plite long autonomous supervisor loops: quality, behavior,
+  visual proof, perf, API cleanup, benchmark/test repair, external issue/test
+  harvests, skill repair, docs consolidation, readiness, and ergonomic routing
+  of `auto regression <bug|surface|corpus>` to `regression`. The user should
+  not need to micro-route worker skills.
 - `slate-migration` for autonomous Plite migration closure: Plate-to-Plite-v2 migration loops, stale Plite API audits, migration-guide repair, changeset repair, package/docs/examples/tests proof, and migration workflow self-repair
 - `sync-plate-ui` for fork-aware Plate UI registry component syncs into downstream apps like Potion, including status, planning, review, dashboard, and accepted-row apply workflows
 - `release-lanes` for beta/latest release lane maintenance, promote, direct main-to-next sync, beta pre-mode, and npm/GitHub release verification

@@ -78,6 +78,7 @@ export const assertCollapsedModelDOMSelectionExpectation = async (
 ) => {
   let actual: {
     dom: DOMSelectionSnapshot | null;
+    domLocation: DOMSelectionLocationSnapshot | null;
     domResolved: SelectionSnapshot | null;
     inputState: unknown;
     kernelTrace: unknown[];
@@ -87,10 +88,11 @@ export const assertCollapsedModelDOMSelectionExpectation = async (
   try {
     await expect
       .poll(async () => {
-        const [model, dom, domResolved, inputState, kernelTrace] =
+        const [model, dom, domLocation, domResolved, inputState, kernelTrace] =
           await Promise.all([
             takeSelectionSnapshotForRoot(root),
             takeDOMSelectionSnapshotForRoot(root),
+            takeDOMSelectionLocationSnapshotForRoot(root),
             takeResolvedDOMSelectionSnapshotForRoot(root),
             root.evaluate(
               (element: HTMLElement, { key }: { key: string }) => {
@@ -110,7 +112,14 @@ export const assertCollapsedModelDOMSelectionExpectation = async (
             ),
           ]);
 
-        actual = { dom, domResolved, inputState, kernelTrace, model };
+        actual = {
+          dom,
+          domLocation,
+          domResolved,
+          inputState,
+          kernelTrace,
+          model,
+        };
 
         if (!model || !dom) {
           return false;
@@ -119,7 +128,7 @@ export const assertCollapsedModelDOMSelectionExpectation = async (
         const modelCollapsed =
           pathsEqual(model.anchor.path, model.focus.path) &&
           model.anchor.offset === model.focus.offset;
-        const domCollapsed = dom.anchorOffset === dom.focusOffset;
+        const domCollapsed = domLocation?.isCollapsed === true;
         const modelAtPath =
           pathsEqual(model.anchor.path, expected.path) &&
           pathsEqual(model.focus.path, expected.path);
@@ -143,7 +152,10 @@ export const assertCollapsedModelDOMSelectionExpectation = async (
           model.focus.offset === domResolved.focus.offset;
         const sameOffset = domResolved
           ? resolvedDOMCollapsed && resolvedDOMAtPath && resolvedSameOffset
-          : rawSameOffset;
+          : domLocation?.isCollapsed === true &&
+            domLocation.anchorPath != null &&
+            pathsEqual(domLocation.anchorPath, expected.path) &&
+            rawSameOffset;
 
         return (
           modelCollapsed &&
@@ -200,10 +212,33 @@ export const assertDOMSelectionExpectation = async (
       })
       .toBe(true);
   } catch {
+    const [model, resolvedDOM, inputState, kernelTrace] = await Promise.all([
+      takeSelectionSnapshotForRoot(root),
+      takeResolvedDOMSelectionSnapshotForRoot(root),
+      root.evaluate(
+        (element: HTMLElement, { key }: { key: string }) =>
+          (element as Record<string, any>)[key]?.getInputState?.() ?? null,
+        { key: PLITE_BROWSER_HANDLE_KEY }
+      ),
+      root.evaluate(
+        (element: HTMLElement, { key }: { key: string }) =>
+          (element as Record<string, any>)[key]
+            ?.getKernelTrace?.()
+            ?.slice(-8) ?? [],
+        { key: PLITE_BROWSER_HANDLE_KEY }
+      ),
+    ]);
+
     throw new Error(
       `Expected DOM selection ${JSON.stringify(
         expected
-      )} but received ${JSON.stringify(actual)}`
+      )} but received ${JSON.stringify({
+        actual,
+        inputState,
+        kernelTrace,
+        model,
+        resolvedDOM,
+      })}`
     );
   }
 };
@@ -224,6 +259,12 @@ export const assertDOMCaretExpectation = async (
         return {
           anchorOffset: selection?.anchorOffset ?? null,
           anchorText: selection?.anchorNode?.textContent ?? null,
+          insideRoot: Boolean(
+            selection?.anchorNode &&
+            selection.focusNode &&
+            element.contains(selection.anchorNode) &&
+            element.contains(selection.focusNode)
+          ),
           isCollapsed: selection?.isCollapsed ?? null,
           isTextNode: selection?.anchorNode?.nodeType === Node.TEXT_NODE,
         };
@@ -232,6 +273,7 @@ export const assertDOMCaretExpectation = async (
     .toEqual({
       anchorOffset: expected.offset,
       anchorText: expected.text,
+      insideRoot: true,
       isCollapsed: true,
       isTextNode: true,
     });
@@ -322,7 +364,7 @@ export const takeDOMSelectionLocationSnapshotForRoot = async (
         ? rootNode.getSelection()
         : element.ownerDocument.getSelection();
 
-    if (!selection?.anchorNode) {
+    if (!selection?.anchorNode || !element.contains(selection.anchorNode)) {
       return null;
     }
 
@@ -355,9 +397,8 @@ export const takeSelectionSnapshot = async (
   page.evaluate(
     ({ key }) => {
       const root = document.querySelector('[data-plite-editor="true"]');
-      const selection = window.getSelection();
 
-      if (!root || !selection || selection.rangeCount === 0) {
+      if (!root) {
         return null;
       }
 
@@ -365,6 +406,11 @@ export const takeSelectionSnapshot = async (
 
       if (handle?.getSelection) {
         return handle.getSelection();
+      }
+      const selection = window.getSelection();
+
+      if (!selection || selection.rangeCount === 0) {
+        return null;
       }
 
       const getTextSegments = (owner: Element) =>
@@ -403,11 +449,24 @@ export const takeSelectionSnapshot = async (
                 '[data-plite-string], [data-plite-zero-width]'
               );
 
-        const localOffset = findZeroWidthMarker(node) ? 0 : offset;
+        const isZeroWidth = Boolean(findZeroWidthMarker(node));
+        const localOffset = isZeroWidth ? 0 : offset;
 
-        if (!owner || !segment) {
+        if (!owner) {
           return localOffset;
         }
+        if (!isZeroWidth && node?.nodeType === Node.ELEMENT_NODE) {
+          const range = owner.ownerDocument.createRange();
+
+          range.setStart(owner, 0);
+          range.setEnd(
+            node,
+            Math.max(0, Math.min(offset, node.childNodes.length))
+          );
+
+          return range.toString().replaceAll('\uFEFF', '').length;
+        }
+        if (!segment) return localOffset;
 
         const segments = getTextSegments(owner);
         const segmentIndex = segments.findIndex(
@@ -536,11 +595,24 @@ export const takeSelectionSnapshotForRoot = async (
                 '[data-plite-string], [data-plite-zero-width]'
               );
 
-        const localOffset = findZeroWidthMarker(node) ? 0 : offset;
+        const isZeroWidth = Boolean(findZeroWidthMarker(node));
+        const localOffset = isZeroWidth ? 0 : offset;
 
-        if (!owner || !segment) {
+        if (!owner) {
           return localOffset;
         }
+        if (!isZeroWidth && node?.nodeType === Node.ELEMENT_NODE) {
+          const range = owner.ownerDocument.createRange();
+
+          range.setStart(owner, 0);
+          range.setEnd(
+            node,
+            Math.max(0, Math.min(offset, node.childNodes.length))
+          );
+
+          return range.toString().replaceAll('\uFEFF', '').length;
+        }
+        if (!segment) return localOffset;
 
         const segments = getTextSegments(owner);
         const segmentIndex = segments.findIndex(
@@ -606,16 +678,22 @@ export const takeSelectionSnapshotForRoot = async (
 
 export const waitForSelectionSync = async (
   root: Locator,
-  expectedSelection?: SelectionSnapshot
+  expectedSelection?: SelectionSnapshot,
+  options: Readonly<{ allowMissingNativeSelection?: boolean }> = {}
 ) => {
   const readSyncState = () =>
     root.evaluate(
       (
         element: HTMLElement,
         {
+          allowMissingNativeSelection,
           expectedSelection,
           key,
-        }: { expectedSelection?: SelectionSnapshot; key: string }
+        }: {
+          allowMissingNativeSelection: boolean;
+          expectedSelection?: SelectionSnapshot;
+          key: string;
+        }
       ) => {
         const pointsEqual = (
           left: SelectionPoint | null | undefined,
@@ -697,11 +775,24 @@ export const waitForSelectionSync = async (
                     '[data-plite-string], [data-plite-zero-width]'
                   );
 
-            const localOffset = findZeroWidthMarker(node) ? 0 : offset;
+            const isZeroWidth = Boolean(findZeroWidthMarker(node));
+            const localOffset = isZeroWidth ? 0 : offset;
 
-            if (!owner || !segment) {
+            if (!owner) {
               return localOffset;
             }
+            if (!isZeroWidth && node?.nodeType === Node.ELEMENT_NODE) {
+              const range = owner.ownerDocument.createRange();
+
+              range.setStart(owner, 0);
+              range.setEnd(
+                node,
+                Math.max(0, Math.min(offset, node.childNodes.length))
+              );
+
+              return range.toString().replaceAll('\uFEFF', '').length;
+            }
+            if (!segment) return localOffset;
 
             const segments = getTextSegments(owner);
             const segmentIndex = segments.findIndex(
@@ -769,25 +860,51 @@ export const waitForSelectionSync = async (
           typeof handle?.getSelection === 'function'
             ? handle.getSelection()
             : null;
+        const viewSelection = handle?.getViewSelection?.();
+        const toViewPoint = (pointLike: any) => {
+          const point = pointLike?.point ?? pointLike;
+
+          return Array.isArray(point?.path) && Number.isInteger(point?.offset)
+            ? { offset: point.offset, path: [...point.path] }
+            : null;
+        };
+        const viewAnchor = toViewPoint(viewSelection?.anchor);
+        const viewFocus = toViewPoint(viewSelection?.focus);
+        const projectedSelection =
+          viewAnchor && viewFocus
+            ? { anchor: viewAnchor, focus: viewFocus, kind: 'text' as const }
+            : null;
 
         const nativeSelection = getNativeSelectionSnapshot();
         const modelBackedSelection =
           element.getAttribute('data-plite-dom-strategy-selection') ===
             'partial-dom-backed' ||
           !!element.querySelector('[data-plite-view-selection="true"]');
-        const synced = expectedSelection
-          ? handle?.getSelection
-            ? selectionsEqual(handleSelection, expectedSelection) &&
-              (modelBackedSelection ||
-                selectionsEqual(nativeSelection, expectedSelection))
-            : selectionsEqual(nativeSelection, expectedSelection)
-          : handle?.getSelection
-            ? modelBackedSelection
-              ? !!handleSelection
-              : nativeSelection
-                ? selectionsEqual(handleSelection, nativeSelection)
-                : nativeSelectionInRoot
-            : nativeSelectionInRoot;
+        const missingNativeSelectionAccepted =
+          allowMissingNativeSelection &&
+          !nativeSelectionInRoot &&
+          (!expectedSelection ||
+            (!!handle?.getSelection &&
+              selectionsEqual(handleSelection, expectedSelection) &&
+              (!modelBackedSelection ||
+                selectionsEqual(projectedSelection, expectedSelection))));
+        const synced = missingNativeSelectionAccepted
+          ? true
+            : expectedSelection
+              ? handle?.getSelection
+                ? selectionsEqual(handleSelection, expectedSelection) &&
+                  (modelBackedSelection ||
+                    selectionsEqual(nativeSelection, expectedSelection)) &&
+                  (!modelBackedSelection ||
+                    selectionsEqual(projectedSelection, expectedSelection))
+                : selectionsEqual(nativeSelection, expectedSelection)
+              : handle?.getSelection
+                ? modelBackedSelection
+                  ? selectionsEqual(handleSelection, projectedSelection)
+                  : nativeSelection
+                    ? selectionsEqual(handleSelection, nativeSelection)
+                    : handleSelection === null && !nativeSelectionInRoot
+                : nativeSelection !== null;
 
         return {
           expectedSelection,
@@ -795,10 +912,16 @@ export const waitForSelectionSync = async (
           modelBackedSelection,
           nativeSelection,
           nativeSelectionInRoot,
+          projectedSelection,
           synced,
         };
       },
-      { expectedSelection, key: PLITE_BROWSER_HANDLE_KEY }
+      {
+        allowMissingNativeSelection:
+          options.allowMissingNativeSelection ?? false,
+        expectedSelection,
+        key: PLITE_BROWSER_HANDLE_KEY,
+      }
     );
 
   await expect

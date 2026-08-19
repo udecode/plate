@@ -1,0 +1,97 @@
+export const V53_PROFILE_SOURCE = {
+  commit: '2f87593f95',
+  packageVersion: '53.3.6',
+} as const;
+
+export const V53_FIRST_PARTY_IDENTITIES = [
+  { identity: 'a', kind: 'element-rename', owner: 'link' },
+  { identity: 'action_item', kind: 'element-rename', owner: 'todoList' },
+  { identity: 'ai', kind: 'mark-unchanged' },
+  { identity: 'aiChat', kind: 'element-unchanged' },
+  { identity: 'audio', kind: 'element-unchanged' },
+  { identity: 'blockquote', kind: 'element-unchanged' },
+  { identity: 'bold', kind: 'mark-unchanged' },
+  { identity: 'callout', kind: 'element-unchanged' },
+  { identity: 'code', kind: 'mark-unchanged' },
+  { identity: 'code_block', kind: 'element-rename', owner: 'codeBlock' },
+  { identity: 'code_drawing', kind: 'element-rename', owner: 'codeDrawing' },
+  { identity: 'code_line', kind: 'element-rename', owner: 'codeLine' },
+  { identity: 'code_syntax', kind: 'transient' },
+  { identity: 'column', kind: 'element-unchanged' },
+  { identity: 'column_group', kind: 'element-rename', owner: 'columnGroup' },
+  { identity: 'comment', kind: 'mark-unchanged' },
+  { identity: 'date', kind: 'element-unchanged' },
+  { identity: 'emoji_input', kind: 'element-rename', owner: 'emojiInput' },
+  { identity: 'equation', kind: 'element-unchanged' },
+  { identity: 'excalidraw', kind: 'element-unchanged' },
+  { identity: 'file', kind: 'element-unchanged' },
+  { identity: 'footnoteDefinition', kind: 'element-unchanged' },
+  { identity: 'footnoteInput', kind: 'element-unchanged' },
+  {
+    identity: 'footnoteReference',
+    kind: 'element-unchanged',
+    owner: 'footnote',
+  },
+  { identity: 'h1', kind: 'element-structural', owner: 'heading' },
+  { identity: 'h2', kind: 'element-structural', owner: 'heading' },
+  { identity: 'h3', kind: 'element-structural', owner: 'heading' },
+  { identity: 'h4', kind: 'element-structural', owner: 'heading' },
+  { identity: 'h5', kind: 'element-structural', owner: 'heading' },
+  { identity: 'h6', kind: 'element-structural', owner: 'heading' },
+  { identity: 'highlight', kind: 'mark-unchanged' },
+  { identity: 'hr', kind: 'element-rename', owner: 'horizontalRule' },
+  { identity: 'img', kind: 'element-structural', owner: 'image' },
+  {
+    identity: 'inline_equation',
+    kind: 'element-rename',
+    owner: 'inlineEquation',
+  },
+  { identity: 'italic', kind: 'mark-unchanged' },
+  { identity: 'kbd', kind: 'mark-unchanged' },
+  { identity: 'li', kind: 'element-rename', owner: 'listItem' },
+  { identity: 'lic', kind: 'element-rename', owner: 'listItemContent' },
+  { identity: 'media_embed', kind: 'element-structural', owner: 'mediaEmbed' },
+  { identity: 'mention', kind: 'element-unchanged' },
+  { identity: 'mention_input', kind: 'element-rename', owner: 'mentionInput' },
+  { identity: 'ol', kind: 'element-rename', owner: 'numberedList' },
+  { identity: 'p', kind: 'element-rename', owner: 'paragraph' },
+  { identity: 'search_highlight', kind: 'transient' },
+  { identity: 'slash_input', kind: 'element-rename', owner: 'slashInput' },
+  { identity: 'strikethrough', kind: 'mark-unchanged' },
+  { identity: 'subscript', kind: 'property-structural', owner: 'script' },
+  { identity: 'suggestion', kind: 'mark-unchanged' },
+  { identity: 'superscript', kind: 'property-structural', owner: 'script' },
+  { identity: 'table', kind: 'element-unchanged' },
+  { identity: 'tag', kind: 'element-unchanged' },
+  { identity: 'taskList', kind: 'element-unchanged' },
+  { identity: 'td', kind: 'element-rename', owner: 'tableCell' },
+  { identity: 'th', kind: 'element-structural', owner: 'tableCell' },
+  { identity: 'toc', kind: 'element-unchanged' },
+  { identity: 'toggle', kind: 'element-unchanged' },
+  { identity: 'tr', kind: 'element-rename', owner: 'tableRow' },
+  { identity: 'ul', kind: 'element-rename', owner: 'bulletedList' },
+  { identity: 'underline', kind: 'mark-unchanged' },
+  { identity: 'video', kind: 'element-unchanged' },
+] as const;
+
+export const V53_STRUCTURAL_PROPERTIES = [
+  { key: 'align', kind: 'property-rename', to: 'textAlign' },
+  { key: 'caption', kind: 'property-structural' },
+  { key: 'colSizes', kind: 'property-rename', to: 'columnWidths' },
+  { key: 'initialHeight', kind: 'property-rename', to: 'naturalHeight' },
+  { key: 'initialWidth', kind: 'property-rename', to: 'naturalWidth' },
+  { key: 'isUpload', kind: 'property-structural' },
+  { key: 'lang', kind: 'property-rename', to: 'language' },
+  { key: 'listRestart', kind: 'property-structural' },
+  { key: 'listRestartPolite', kind: 'property-structural' },
+  { key: 'listStyleType', kind: 'property-structural' },
+  { key: 'placeholderId', kind: 'property-structural' },
+] as const;
+
+export const V53_ELEMENT_TYPE_OWNERS = Object.fromEntries(
+  V53_FIRST_PARTY_IDENTITIES.flatMap((entry) =>
+    'owner' in entry && entry.kind.startsWith('element-')
+      ? [[entry.identity, entry.owner]]
+      : []
+  )
+) as Readonly<Record<string, string>>;

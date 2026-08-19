@@ -31,7 +31,7 @@ The Block Selection feature allows users to select and manipulate entire text bl
 
 The fastest way to add Block Selection is with the `BlockSelectionKit`, which includes the pre-configured `BlockSelectionPlugin` and the [`BlockSelection`](/docs/components/block-selection) UI component.
 
-<ComponentSource name="block-selection-kit" />
+<ComponentSource name="block-selection" />
 
 - [`BlockSelection`](/docs/components/block-selection): Renders the selection rectangle around selected blocks.
 
@@ -44,7 +44,7 @@ lines and table cells. Add the separate
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { BlockSelectionKit } from '@/components/editor/plugins/block-selection-kit';
+import { BlockSelectionKit } from '@/components/editor/block-selection';
 
 const editor = createPlateEditor({
   plugins: [
@@ -470,58 +470,8 @@ Sets text properties on the selected nodes.
 
 ## Hooks
 
-### `useBlockSelectable`
-
-A hook that provides props for making a block element selectable, including context menu behavior.
-
-<API name="useBlockSelectable">
-  <APIReturns type="object">
-    <APIItem name="props" type="object">
-      Props to be spread on the block element.
-      <APISubList>
-        <APISubListItem parent="props" name="className" type="string">
-          Required class for selection functionality. - **Default:**
-          `'plite-selectable'`
-        </APISubListItem>
-        <APISubListItem
-          parent="props"
-          name="onContextMenu"
-          type="(event: React.MouseEvent) => void"
-        >
-          Handles right-click context menu behavior: - Opens context menu for
-          selected blocks - Opens for void elements - Opens for elements with
-          `data-plate-open-context-menu="true"` - Adds block to selection with
-          Shift key for multi-select
-        </APISubListItem>
-      </APISubList>
-    </APIItem>
-  </APIReturns>
-</API>
-
 ### `useBlockSelected`
 
 <API name="useBlockSelected">
   <APIReturns type="boolean">Whether the context block is selected.</APIReturns>
 </API>
-
-### `useBlockSelectionNodes`
-
-<API name="useBlockSelectionNodes">
-  <APIReturns type="NodeEntry[]">Array of selected block entries.</APIReturns>
-</API>
-
-### `useBlockSelectionFragment`
-
-<API name="useBlockSelectionFragment">
-  <APIReturns type="Node[]">Array of selected block nodes.</APIReturns>
-</API>
-
-### `useBlockSelectionFragmentProp`
-
-<API name="useBlockSelectionFragmentProp">
-  <APIReturns type="Node[]">Fragment prop for selected blocks.</APIReturns>
-</API>
-
-### `useSelectionArea`
-
-Initialize and manage selection area functionality.

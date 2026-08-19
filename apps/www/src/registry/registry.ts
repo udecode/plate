@@ -6,7 +6,7 @@ import { registryExamples } from './registry-examples';
 import { registryHooks } from './registry-hooks';
 import { registryLib } from './registry-lib';
 import { registryStyles } from './registry-styles';
-import { registryUI } from './registry-ui';
+import { registryEditor } from './registry-editor';
 
 const url =
   process.env.NODE_ENV === 'development'
@@ -15,6 +15,19 @@ const url =
 
 const EDITOR_COMPONENT_PATH_SEGMENT = 'components/editor/';
 const EDITOR_COMPONENT_TARGET_PREFIX = '@components/editor/';
+
+export const PLATE_REGISTRY_BASES = ['radix', 'base', 'aria'] as const;
+
+export type PlateRegistryBase = (typeof PLATE_REGISTRY_BASES)[number];
+
+const EDITOR_BASE_VARIANT_FILES = new Map([
+  ['components/editor/toolbar.tsx', 'toolbar.tsx'],
+]);
+const EDITOR_BASE_PACKAGES: Record<PlateRegistryBase, string[]> = {
+  aria: ['react-aria-components'],
+  base: ['@base-ui/react'],
+  radix: ['@radix-ui/react-toolbar', '@radix-ui/react-tooltip'],
+};
 
 function getEditorComponentTarget(filePath: string) {
   const segmentIndex = filePath.indexOf(EDITOR_COMPONENT_PATH_SEGMENT);
@@ -42,6 +55,43 @@ function withEditorComponentTargets(
       };
     }),
   }));
+}
+
+function withEditorBase(
+  items: Registry['items'],
+  base: PlateRegistryBase
+): Registry['items'] {
+  return items.map((item) => {
+    let hasVariantFile = false;
+    const files = item.files?.map((file) => {
+      const fileName = EDITOR_BASE_VARIANT_FILES.get(file.path);
+
+      if (!fileName) return file;
+      hasVariantFile = true;
+
+      if (base === 'radix') return file;
+
+      return {
+        ...file,
+        path: `bases/${base}/editor/${fileName}`,
+        target: `${EDITOR_COMPONENT_TARGET_PREFIX}${fileName}`,
+      };
+    });
+
+    if (!hasVariantFile) return { ...item, files };
+
+    return {
+      ...item,
+      dependencies: [
+        ...(item.dependencies ?? []).filter(
+          (dependency) =>
+            !Object.values(EDITOR_BASE_PACKAGES).flat().includes(dependency)
+        ),
+        ...EDITOR_BASE_PACKAGES[base],
+      ],
+      files,
+    };
+  });
 }
 
 export const registryInit: RegistryItem[] = [
@@ -72,7 +122,11 @@ export const registryInit: RegistryItem[] = [
   },
 ];
 
-export function createPlateRegistryItems(): Registry['items'] {
+export function createPlateRegistryItems({
+  base = 'radix',
+}: {
+  base?: PlateRegistryBase;
+} = {}): Registry['items'] {
   const registryBlockItems = registryBlocks.map((block) => ({
     ...block,
     registryDependencies: [
@@ -81,22 +135,28 @@ export function createPlateRegistryItems(): Registry['items'] {
     ],
   }));
 
-  return withEditorComponentTargets([
-    ...registryInit,
-    ...registryUI,
-    ...registryComponents,
-    ...registryBlockItems,
-    ...registryLib,
-    ...registryStyles,
-    ...registryHooks,
-    ...registryExamples,
-  ]);
+  return withEditorBase(
+    withEditorComponentTargets([
+      ...registryInit,
+      ...registryEditor,
+      ...registryComponents,
+      ...registryBlockItems,
+      ...registryLib,
+      ...registryStyles,
+      ...registryHooks,
+      ...registryExamples,
+    ]),
+    base
+  );
 }
 
-export function createPlateRegistry(homepage = url): Registry {
+export function createPlateRegistry(
+  homepage = url,
+  options?: { base?: PlateRegistryBase }
+): Registry {
   return {
     homepage,
-    items: createPlateRegistryItems(),
+    items: createPlateRegistryItems(options),
     name: 'plate',
   };
 }

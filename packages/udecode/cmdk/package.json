@@ -46,8 +46,8 @@
     "@types/use-sync-external-store": "0.0.6"
   },
   "peerDependencies": {
-    "react": "^18 || ^19 || ^19.0.0-rc",
-    "react-dom": "^18 || ^19 || ^19.0.0-rc"
+    "react": ">=19.2.0",
+    "react-dom": ">=19.2.0"
   },
   "publishConfig": {
     "access": "public"

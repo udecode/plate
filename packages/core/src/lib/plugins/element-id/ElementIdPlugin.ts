@@ -1,9 +1,6 @@
 import {
   type Descendant,
-  createEditorView,
   type EditorDocumentValue,
-  type Editor,
-  type EditorSnapshot,
   type EditorStateView,
   type Element,
   ElementApi,
@@ -274,55 +271,56 @@ export const ElementIdPlugin = defineBasePlugin('elementId', {
       nodeKey: NodeKey;
     }>
   > | null = null;
-  let runtimeIndexSnapshots: ReadonlyMap<RootKey, EditorSnapshot> | null = null;
+  let runtimeIndexRoots: ReadonlyMap<RootKey, readonly Descendant[]> | null =
+    null;
   const nodeKeys = new Map<NodeKey, string>();
-  const collectRuntimeSnapshots = (state: EditorStateView) => {
-    const snapshots = new Map<RootKey, EditorSnapshot>();
+  const collectRuntimeRoots = (value: EditorDocumentValue) => {
+    const roots = new Map<RootKey, readonly Descendant[]>();
 
-    for (const root of documentRoots(state.value())) {
-      snapshots.set(
-        root,
-        root === MAIN_ROOT_KEY
-          ? state.runtime.snapshot()
-          : createEditorView(context.editor as unknown as Editor, {
-              root,
-            }).read.runtime.snapshot()
-      );
+    for (const root of documentRoots(value)) {
+      roots.set(root, rootChildren(value, root));
     }
 
-    return snapshots;
+    return roots;
   };
-  const hasCurrentRuntimeSnapshots = (
-    snapshots: ReadonlyMap<RootKey, EditorSnapshot>
+  const hasCurrentRuntimeRoots = (
+    roots: ReadonlyMap<RootKey, readonly Descendant[]>
   ) =>
-    runtimeIndexSnapshots?.size === snapshots.size &&
-    [...snapshots].every(
-      ([root, snapshot]) => runtimeIndexSnapshots?.get(root) === snapshot
+    runtimeIndexRoots?.size === roots.size &&
+    [...roots].every(
+      ([root, children]) => runtimeIndexRoots?.get(root) === children
     );
-  const indexRuntimeSnapshot = (
-    state: Pick<EditorStateView, 'schema'>,
+  const indexRuntimeChildren = (
+    state: Pick<EditorStateView, 'key' | 'schema'>,
     root: RootKey,
-    snapshot: EditorSnapshot,
+    children: readonly Descendant[],
     ids: Map<string, Readonly<{ path: Path; root: RootKey; nodeKey: NodeKey }>>,
     reverse: Map<NodeKey, string>
   ) => {
-    for (const [nodeKey, path] of snapshot.index.entries()) {
-      const node = getDescendantAt(snapshot.children, path);
+    const visit = (nodes: readonly Descendant[], parentPath: Path) => {
+      nodes.forEach((node, index) => {
+        if (!ElementApi.isElement(node)) return;
 
-      if (!ElementApi.isElement(node)) continue;
-      const id = state.schema.getProperty(node, idProperty);
+        const path = [...parentPath, index];
+        const nodeKey = state.key(node);
+        const id = state.schema.getProperty(node, idProperty);
 
-      if (typeof id !== 'string') continue;
-      const existing = ids.get(id);
+        if (typeof id === 'string') {
+          const existing = ids.get(id);
 
-      if (existing) {
-        throw new Error(
-          `Duplicate element ID "${id}" at ${existing.root}:[${existing.path}] and ${root}:[${path}].`
-        );
-      }
-      ids.set(id, { path, root, nodeKey });
-      reverse.set(nodeKey, id);
-    }
+          if (existing) {
+            throw new Error(
+              `Duplicate element ID "${id}" at ${existing.root}:[${existing.path}] and ${root}:[${path}].`
+            );
+          }
+          ids.set(id, { path, root, nodeKey });
+          reverse.set(nodeKey, id);
+        }
+        visit(node.children, path);
+      });
+    };
+
+    visit(children, []);
   };
   return {
     corrections: [
@@ -356,8 +354,6 @@ export const ElementIdPlugin = defineBasePlugin('elementId', {
           nodeKeys.delete(nodeKey);
         }
         editor.read((state) => {
-          const snapshots = collectRuntimeSnapshots(state);
-
           for (const root of documentRoots(state.value())) {
             const publicRoot = root === MAIN_ROOT_KEY ? undefined : root;
             const rootNodeKeys = new Set([
@@ -385,15 +381,15 @@ export const ElementIdPlugin = defineBasePlugin('elementId', {
               nodeKeys.set(nodeKey, id);
             }
           }
-          runtimeIndexSnapshots = snapshots;
+          runtimeIndexRoots = collectRuntimeRoots(state.value());
         });
       },
     },
     read: ({ state }) => {
       const ensureRuntimeIndex = () => {
-        const snapshots = collectRuntimeSnapshots(state);
+        const roots = collectRuntimeRoots(state.value());
 
-        if (runtimeIndex && hasCurrentRuntimeSnapshots(snapshots)) {
+        if (runtimeIndex && hasCurrentRuntimeRoots(roots)) {
           return runtimeIndex;
         }
         const ids = new Map<
@@ -401,11 +397,11 @@ export const ElementIdPlugin = defineBasePlugin('elementId', {
           Readonly<{ path: Path; root: RootKey; nodeKey: NodeKey }>
         >();
         const reverse = new Map<NodeKey, string>();
-        for (const [root, snapshot] of snapshots) {
-          indexRuntimeSnapshot(state, root, snapshot, ids, reverse);
+        for (const [root, children] of roots) {
+          indexRuntimeChildren(state, root, children, ids, reverse);
         }
         runtimeIndex = ids;
-        runtimeIndexSnapshots = snapshots;
+        runtimeIndexRoots = roots;
         nodeKeys.clear();
         for (const [nodeKey, id] of reverse) nodeKeys.set(nodeKey, id);
 
@@ -450,8 +446,8 @@ export const ElementIdPlugin = defineBasePlugin('elementId', {
         id,
       };
     },
-    transformInitialValue({ store, value }) {
-      const result = migrateElementIds(value, {
+    prepareDocument({ document, store }) {
+      const result = migrateElementIds(document, {
         generateId: store.get().generateId,
       });
 

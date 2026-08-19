@@ -33,12 +33,12 @@ docs:
 
 Use `AlignKit` for the Plate UI setup. It targets headings, paragraphs, images, and media embeds.
 
-<ComponentSource name="align-kit" />
+<ComponentSource name="align" />
 
 ```tsx
 import { createPlateEditor } from "platejs/react";
 
-import { AlignKit } from "@/components/editor/plugins/align-kit";
+import { AlignKit } from "@/components/editor/align";
 
 export const editor = createPlateEditor({
   plugins: [...AlignKit],
@@ -50,7 +50,7 @@ export const editor = createPlateEditor({
 `AlignToolbarButton` shows left, center, right, and justify controls.
 
 ```tsx
-import { AlignToolbarButton } from "@/components/ui/align-toolbar-button";
+import { AlignToolbarButton } from "@/components/editor/align-toolbar-button";
 
 export function AlignControls() {
   return <AlignToolbarButton />;
@@ -82,7 +82,7 @@ export const editor = createPlateEditor({
   plugins: [
     TextAlignPlugin.configure({
       targetPlugins: [
-        PLUGINS.h1, PLUGINS.h2, PLUGINS.h3, PLUGINS.h4, PLUGINS.h5, PLUGINS.h6,
+        PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.heading,
         PLUGINS.paragraph,
       ],
       inject: {

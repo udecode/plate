@@ -1,6 +1,6 @@
 ---
-description: Plate/Plite ergonomic automation router and internal supervisor. Routes public GitHub queue prompts to maintainer, post-merge/current-tree closure to autoclosure, narrow local Plate/Plite behavior bugs or regressions to patch, and runs autogoal-backed Plate/Plite quality loops.
-argument-hint: '[PR|issue|queue|plite|slate|plate|current tree|post-merge|lane/surface/objective] [full-loop | timed 1h|2h|overnight | batch-loop]'
+description: Plate/Plite ergonomic automation router and internal supervisor. Routes public queue work to maintainer, current-tree closure to autoclosure, regression harness and reproduce-fix-verify loops to the regression skill, one local bug to patch, and runs broader quality automation.
+argument-hint: '[regression <bug|surface|corpus> | PR|issue|queue|plite|slate|plate|current tree|post-merge|lane/surface/objective] [full-loop | timed 1h|2h|overnight | batch-loop]'
 disable-model-invocation: true
 name: auto
 metadata:
@@ -15,14 +15,16 @@ Handle $ARGUMENTS.
 Use this as the ergonomic Plate/Plite front door. If the prompt names public
 GitHub queue work, route immediately to `maintainer`. If it names already
 applied/current-tree closure, route immediately to `autoclosure`. Otherwise,
-if it names one narrow local Plate or Plite behavior bug or regression, route
-immediately to `patch`. Otherwise, run internal Plate/Plite automation until the surface
-is actually good:
+if it starts with `regression`, remove that routing token and send the remaining
+arguments immediately to `regression`. If it names one narrow
+local Plate or Plite behavior bug outside regression mode, route immediately
+to `patch`. Otherwise, run internal Plate/Plite automation until the surface is
+actually good:
 correct, fast, visually stable, well-tested, architecturally clean,
 docs-aligned, and ready for review.
 
 This is a router and supervisor skill. It does not replace `maintainer`,
-`autoclosure`, `patch`, `plite-plan`, `plate-plan`, `slate-ar`,
+`autoclosure`, `regression`, `patch`, `plite-plan`, `plate-plan`, `slate-ar`,
 `slate-migration`, `architecture-cleanup`, or package owners unless evidence
 proves the skill topology itself is wrong. It routes them, repairs missing
 proof/metrics/skills, reshapes the Plate/Slate skill stack when needed, and
@@ -52,6 +54,8 @@ explicitly deferred, decisions are consolidated, and ship readiness is clean.
 ## Use When
 
 - The user invokes `auto`.
+- The user invokes `auto regression <bug|surface|corpus>`; route it to the
+  standalone `regression` skill.
 - The user says `auto PR #123`, `auto issue #123`, `auto <GitHub URL>`,
   `auto all PRs`, `auto all issues`, `auto queue`, or `auto security`; treat
   this as a user-friendly `maintainer` invocation, not as internal quality work.
@@ -105,6 +109,7 @@ Route these immediately:
 | `auto all PRs`, `auto all issues`, `auto queue`, `auto repo heartbeat` | `maintainer heartbeat` or the matching maintainer mode | broad public queue work |
 | `auto security`, `auto GHSA...`, `auto CVE...` | `maintainer security` | security authority boundary |
 | `auto current tree`, `auto post-merge`, `auto ready to commit`, `auto teammate branch` | `autoclosure <target>` | already-applied/current-tree closure |
+| `auto regression <bug|surface|corpus>` | `regression <bug|surface|corpus>` | standalone executable case selection, `patch` delegation, stability, packet decision, and methodology repair |
 | `auto plite`, `auto slate`, `auto slate-v2`, `auto huge-document`, `auto editor behavior` | `auto` Plite lane | broad internal Plite quality loop |
 | `auto <one local Plate or Plite behavior bug or regression>` | `patch <bug>` | one local reproduce-test-fix-proof pass |
 | `auto plate`, `auto plate packages`, `auto docs`, `auto registry` | `auto` Plate lane | internal Plate quality loop |
@@ -163,7 +168,6 @@ timebox, and stop-question policy in the active plan.
   closed-issue PR/test provenance scan, and unchecked issue-by-issue loop to
   `issue-harvester`. `auto` owns the autogoal, timebox, packet
   ledger, workflow repairs, and final handoff.
-
 Natural prompts should work:
 
 - `auto PR #123`
@@ -171,6 +175,8 @@ Natural prompts should work:
 - `auto all PRs, issues`
 - `auto current tree`
 - `auto post-merge`
+- `auto regression selection drag across inline boundaries`
+- `auto regression table navigation corpus batch-loop`
 - `auto slate`
 - `auto plate packages`
 - `auto huge-document auto timed 2h`

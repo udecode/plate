@@ -6,7 +6,7 @@ jsx;
 
 export const createTable = (spanning?: boolean) => (
   <fragment>
-    <htable colSizes={[100, 100, 100, 100]} marginLeft={20}>
+    <htable columnWidths={[100, 100, 100, 100]} marginLeft={20}>
       {spanning ? (
         <htr>
           <hth colSpan={4}>
@@ -98,7 +98,7 @@ export const createTable = (spanning?: boolean) => (
 
 export const tableValue = (
   <fragment>
-    <hh2>表格</hh2>
+    <hheading level={2}>表格</hheading>
     <hp>
       创建可自定义的表格，具有可调整大小的列和行，让您能够设计结构化布局。
     </hp>
@@ -108,7 +108,7 @@ export const tableValue = (
 
 export const tableMergeValue = (
   <fragment>
-    <hh3>表格合并</hh3>
+    <hheading level={3}>表格合并</hheading>
     <hp>
       您可以使用 <htext code>enableMerging: true</htext>{' '}
       选项启用合并功能。试试看：

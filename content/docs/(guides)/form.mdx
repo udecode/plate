@@ -317,8 +317,10 @@ import { Plate, PlateContent, usePlateEditor } from "platejs/react";
  *   )}
  * />
  */
-export interface EditorFieldProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange"> {
+export type EditorFieldProps = Omit<
+  React.ComponentPropsWithRef<"div">,
+  "onChange"
+> & {
   /**
    * The initial Plate document or primary-root value.
    */
@@ -333,24 +335,25 @@ export interface EditorFieldProps
    * Placeholder text to display when editor is empty.
    */
   placeholder?: string;
+};
+
+export function EditorField({
+  initialValue,
+  onChange,
+  placeholder = "Type here...",
+  ref,
+  ...props
+}: EditorFieldProps) {
+  const editor = usePlateEditor({
+    initialValue: initialValue ?? [{ type: "paragraph", children: [{ text: "" }] }],
+  });
+
+  return (
+    <Plate editor={editor} onValueChange={({ value }) => onChange?.(value)}>
+      <PlateContent {...props} placeholder={placeholder} ref={ref} />
+    </Plate>
+  );
 }
-
-export const EditorField = React.forwardRef<HTMLDivElement, EditorFieldProps>(
-  function EditorField(
-    { initialValue, onChange, placeholder = "Type here...", ...props },
-    ref
-  ) {
-    const editor = usePlateEditor({
-      initialValue: initialValue ?? [{ type: "paragraph", children: [{ text: "" }] }],
-    });
-
-    return (
-      <Plate editor={editor} onValueChange={({ value }) => onChange?.(value)}>
-        <PlateContent {...props} placeholder={placeholder} ref={ref} />
-      </Plate>
-    );
-  }
-);
 ```
 
 3. Replace the `<Textarea>` with a `<EditorField>` block:

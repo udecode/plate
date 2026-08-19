@@ -131,7 +131,7 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
   schema: {
     element: {
       content: schema.content.element(BaseCodeLinePlugin, { min: 1 }),
-      properties: { lang: property.string() },
+      properties: { language: property.string() },
       slice: { preserveContext: true },
     },
   },
@@ -153,7 +153,8 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
           const languageClass = element
             .querySelector(':scope > code')
             ?.className.match(CODE_LANGUAGE_CLASS_RE)?.[1];
-          const lang = element.dataset.language || languageClass || undefined;
+          const language =
+            element.dataset.language || languageClass || undefined;
           const lines =
             encodedLines.length > 0
               ? encodedLines.map((line) => line.textContent ?? '')
@@ -165,12 +166,12 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
               children: [{ text: line }],
               type: codeLineType,
             })),
-            ...(lang ? { lang } : {}),
+            ...(language ? { language } : {}),
           };
         },
         encode: ({ content, node }) => ({
           attributes: {
-            'data-language': node.lang,
+            'data-language': node.language,
           },
           children: [{ children: content, tag: 'code' }],
           tag: 'pre',
@@ -196,7 +197,7 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
         from: 'code',
         kind: 'node',
         decode: ({ node }) => ({
-          ...(node.lang ? { lang: node.lang } : {}),
+          ...(node.lang ? { language: node.lang } : {}),
           children: (node.value || '').split('\n').map((line) => ({
             children: [{ text: line }],
             type: codeLineType,
@@ -204,7 +205,7 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
           type,
         }),
         encode: ({ node }) => ({
-          lang: node.lang,
+          lang: node.language,
           type: 'code',
           value: node.children.map((child) => NodeApi.string(child)).join('\n'),
         }),
@@ -380,10 +381,10 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
 
         return {
           format: ({ element }: { element: CodeBlock }) => {
-            const { lang } = element;
+            const { language } = element;
             const code = NodeApi.string(element);
 
-            if (lang !== 'json') return;
+            if (language !== 'json') return;
 
             try {
               JSON.parse(code);
@@ -530,7 +531,7 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
                   [
                     {
                       children: lines.map(createCodeLine),
-                      lang: language,
+                      language,
                       type: context.schema.type,
                     },
                   ],
@@ -1200,7 +1201,8 @@ export const BaseCodeHighlightPlugin = defineBasePlugin(PLUGINS.codeSyntax, {
   ) => {
     const decorations = new Map<Element, CodeBlockDecoration[]>();
     const text = block.children.map((line) => NodeApi.string(line)).join('\n');
-    const language = typeof block.lang === 'string' ? block.lang : undefined;
+    const language =
+      typeof block.language === 'string' ? block.language : undefined;
     const effectiveLanguage = language || defaultLanguage;
 
     ensureStablePythonGrammar(lowlight, effectiveLanguage);

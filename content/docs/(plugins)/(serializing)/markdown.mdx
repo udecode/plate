@@ -49,13 +49,13 @@ While libraries like `react-markdown` render Markdown to React elements, `@plate
 
 The fastest way to add Markdown functionality is with `MarkdownKit`. It combines the configured `MarkdownPlugin` with the live Footnote plugins and essential remark plugins for [Plate UI](/docs/installation/plate-ui).
 
-<ComponentSource name="markdown-kit" />
+<ComponentSource name="markdown" />
 
 ### Add Kit
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { MarkdownKit } from '@/components/editor/plugins/markdown-kit';
+import { MarkdownKit } from '@/components/editor/markdown';
 
 const editor = createPlateEditor({
   plugins: [
@@ -150,7 +150,7 @@ element.
 import { createPlateEditor } from 'platejs/react';
 import { MarkdownPlugin } from '@platejs/markdown';
 import { ItalicPlugin } from '@platejs/basic-nodes/react';
-import { BasicBlocksKit } from '@/components/editor/plugins/basic-blocks-kit';
+import { BasicBlocksKit } from '@/components/editor/basic-blocks';
 // ... import other necessary Plate plugins for rendering elements
 
 const markdownString = '# Hello, *Plate*!';
@@ -170,7 +170,7 @@ const editor = createPlateEditor({
 
 <Callout type="warning" title="Plugin Requirements">
   Ensure all Plate plugins required to render the deserialized Markdown (e.g.,
-  `H1Plugin` for `#`, `TablePlugin` for tables) are included in your
+  `HeadingPlugin` for `#`, `TablePlugin` for tables) are included in your
   editor's `plugins` array.
 </Callout>
 
@@ -199,7 +199,7 @@ const specificNodes = [
   },
   {
     children: [{ text: 'And this heading.' }],
-    type: 'h1',
+    type: 'heading', level: 1,
   },
 ];
 
@@ -620,7 +620,7 @@ const value = editor.api.markdown.deserialize(markdown, {
     [codeBlock.name]: {
       deserialize: (mdastNode) => ({
         children: [{ text: '' }],
-        lang: mdastNode.lang ?? undefined,
+        language: mdastNode.lang ?? undefined,
         rawCode: mdastNode.value || '',
         type: codeBlock.schema.type,
       }),
@@ -633,7 +633,7 @@ const output = editor.api.markdown.serialize({
   rules: {
     [codeBlock.schema.type]: {
       serialize: (node) => ({
-        lang: node.lang,
+        lang: node.language,
         type: 'code',
         value: node.rawCode,
       }),
@@ -1040,8 +1040,8 @@ to _render_ Plate nodes. Configure these in `createPlateEditor` via the
 import { createPlateEditor, ParagraphPlugin, PlateLeaf } from 'platejs/react';
 import { BoldPlugin } from '@platejs/basic-nodes/react';
 import { CodeBlockPlugin } from '@platejs/code-block/react';
-import { ParagraphElement } from '@/components/ui/paragraph-node'; // Example UI component
-import { CodeBlockElement } from '@/components/ui/code-block-node'; // Example UI component
+import { ParagraphElement } from '@/components/editor/paragraph'; // Example UI component
+import { CodeBlockElement } from '@/components/editor/code-block'; // Example UI component
 
 const editor = createPlateEditor({
   plugins: [
@@ -1064,7 +1064,7 @@ import React, { useEffect } from 'react';
 import { Plate, PlateContent, usePlateEditor } from 'platejs/react';
 import { MarkdownPlugin } from '@platejs/markdown';
 // Import necessary Plate plugins for common Markdown features
-import { BasicBlocksKit } from '@/components/editor/plugins/basic-blocks-kit';
+import { BasicBlocksKit } from '@/components/editor/basic-blocks';
 // ... include other plugins like BlockquotePlugin, CodeBlockPlugin, ListPlugin, etc.
 // ... and mark plugins like BoldPlugin, ItalicPlugin, etc.
 

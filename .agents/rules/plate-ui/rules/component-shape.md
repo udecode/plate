@@ -146,6 +146,10 @@ Do not hide this behind a factory if the explicit array is clearer.
 
 If a helper is used once, keep it in the component file.
 
+Start with the direct component. Do not extract `useFooState`, `useFooProps`, a
+prop factory, provider, HOC, or component factory to make the JSX owner shorter.
+The master component-family and headless-primitive gates live in `plate-ui`.
+
 Extract only when:
 
 - it becomes a stable package contract

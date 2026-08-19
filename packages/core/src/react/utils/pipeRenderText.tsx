@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { setDOMTextSyncRendererCapability } from '@platejs/plite-react/internal';
 import clsx from 'clsx';
 
 import type { AnyBasePlugin, EditableProps } from '../../lib';
@@ -23,6 +24,7 @@ type SimpleRenderText = {
 };
 
 type RenderTextEntry = {
+  requiresModelTextSync: boolean;
   renderText: RenderText;
   textKey: string;
 };
@@ -31,6 +33,11 @@ type TextPropsEntry = {
   plugin: AnyBasePlugin;
   textKey: string;
 };
+
+const isTextMarkActive = (marks: Record<string, unknown>, textKey: string) =>
+  Object.hasOwn(marks, textKey) &&
+  marks[textKey] !== false &&
+  marks[textKey] !== undefined;
 
 /** @see {@link RenderText} */
 export const pipeRenderText = (
@@ -42,10 +49,27 @@ export const pipeRenderText = (
   const simpleRenderTexts: SimpleRenderText[] = [];
   const simpleRenderTextByKey = new Map<string, true>();
   const textPropsEntries: TextPropsEntry[] = [];
+  const plateRuntime = getPlateRuntime(editor);
   const hasInjectNodeProps =
-    getPlateRuntime(editor).pluginCache.inject.nodeProps.length > 0;
+    plateRuntime.pluginCache.inject.nodeProps.length > 0;
+  const hasUnknownTextInjection = plateRuntime.pluginList.some((plugin) => {
+    const nodeProps = plugin.inject?.nodeProps;
+    const hasTextInjectionTransform = [
+      nodeProps?.transformClassName,
+      nodeProps?.transformNodeValue,
+      nodeProps?.transformProps,
+      nodeProps?.transformStyle,
+    ].some((transform) => typeof transform === 'function');
 
-  getPlateRuntime(editor).pluginList.forEach((plugin) => {
+    return (
+      hasTextInjectionTransform &&
+      !plugin.inject.isBlock &&
+      !plugin.inject.isElement &&
+      plugin.targetPlugins.length === 0
+    );
+  });
+
+  plateRuntime.pluginList.forEach((plugin) => {
     const binding = getCompiledPlateModelBinding(editor, plugin);
 
     if (binding?.kind === 'mark' && !binding.isDecoration) {
@@ -63,6 +87,9 @@ export const pipeRenderText = (
         simpleRenderTextByKey.set(entry.textKey, true);
       } else {
         const entry = {
+          requiresModelTextSync: Boolean(
+            plugin.render.node || plugin.render.nodeProps
+          ),
           renderText: pluginRenderText(editor, plugin),
           textKey: binding.propertyKey!,
         };
@@ -87,92 +114,102 @@ export const pipeRenderText = (
       return renderTextProp;
     }
 
-    return function render({ attributes, ...props }) {
-      return <span {...attributes}>{props.children}</span>;
-    };
+    return setDOMTextSyncRendererCapability(
+      function render({ attributes, ...props }) {
+        return <span {...attributes}>{props.children}</span>;
+      },
+      () => true
+    );
   }
 
   const canUsePlainOuterText =
     !hasInjectNodeProps && !renderTextProp && textPropsEntries.length === 0;
 
-  return function render({ attributes, ...props }) {
-    const readOnly = editor.read.view.isReadOnly();
-    const text = props.text as Record<string, unknown>;
-    let hasActiveSimpleRenderText = false;
-    let hasActiveRenderText = false;
+  return setDOMTextSyncRendererCapability(
+    function render({ attributes, ...props }) {
+      const readOnly = editor.read.view.isReadOnly();
+      const text = props.text as Record<string, unknown>;
+      let hasActiveSimpleRenderText = false;
+      let hasActiveRenderText = false;
 
-    for (const textKey in text) {
-      if (!Object.hasOwn(text, textKey)) continue;
+      for (const textKey in text) {
+        if (!Object.hasOwn(text, textKey)) continue;
 
-      if (!hasActiveSimpleRenderText && simpleRenderTextByKey.has(textKey)) {
-        hasActiveSimpleRenderText = true;
+        if (!hasActiveSimpleRenderText && simpleRenderTextByKey.has(textKey)) {
+          hasActiveSimpleRenderText = true;
+        }
+
+        if (!hasActiveRenderText && renderTextByKey.has(textKey)) {
+          hasActiveRenderText = true;
+        }
+
+        if (hasActiveSimpleRenderText && hasActiveRenderText) break;
       }
 
-      if (!hasActiveRenderText && renderTextByKey.has(textKey)) {
-        hasActiveRenderText = true;
+      if (hasActiveSimpleRenderText) {
+        for (const {
+          className,
+          plugin,
+          tag: Tag,
+          textKey,
+        } of simpleRenderTexts) {
+          if (!isTextMarkActive(text, textKey)) continue;
+          if (isEditOnly(readOnly, plugin, 'render')) continue;
+
+          props.children = <Tag className={className}>{props.children}</Tag>;
+        }
       }
 
-      if (hasActiveSimpleRenderText && hasActiveRenderText) break;
-    }
+      if (hasActiveRenderText) {
+        for (const { renderText: RenderText, textKey } of renderTexts) {
+          if (!isTextMarkActive(text, textKey)) continue;
 
-    if (hasActiveSimpleRenderText) {
-      for (const {
-        className,
-        plugin,
-        tag: Tag,
-        textKey,
-      } of simpleRenderTexts) {
-        if (!text[textKey]) continue;
-        if (isEditOnly(readOnly, plugin, 'render')) continue;
-
-        props.children = <Tag className={className}>{props.children}</Tag>;
+          props.children = (
+            <RenderText {...(props as any)}>{props.children}</RenderText>
+          );
+        }
       }
-    }
 
-    if (hasActiveRenderText) {
-      for (const { renderText: RenderText, textKey } of renderTexts) {
-        if (!text[textKey]) continue;
+      textPropsEntries.forEach(({ plugin, textKey }) => {
+        if (isTextMarkActive(props.text, textKey)) {
+          const pluginTextProps =
+            typeof plugin.render.textProps === 'function'
+              ? plugin.render.textProps(props as any)
+              : (plugin.render.textProps ?? {});
 
-        props.children = (
-          <RenderText {...(props as any)}>{props.children}</RenderText>
-        );
+          attributes = {
+            ...attributes,
+            ...pluginTextProps,
+            ...(pluginTextProps.className && {
+              className: clsx(attributes.className, pluginTextProps.className),
+            }),
+          };
+        }
+      });
+
+      if (canUsePlainOuterText) {
+        return <span {...attributes}>{props.children}</span>;
       }
-    }
 
-    textPropsEntries.forEach(({ plugin, textKey }) => {
-      if (props.text[textKey]) {
-        const pluginTextProps =
-          typeof plugin.render.textProps === 'function'
-            ? plugin.render.textProps(props as any)
-            : (plugin.render.textProps ?? {});
-
-        attributes = {
-          ...attributes,
-          ...pluginTextProps,
-          ...(pluginTextProps.className && {
-            className: clsx(
-              (props as any).className,
-              pluginTextProps.className
-            ),
-          }),
-        };
+      if (renderTextProp) {
+        return renderTextProp({ attributes, ...props } as any);
       }
-    });
 
-    if (canUsePlainOuterText) {
-      return <span {...attributes}>{props.children}</span>;
-    }
+      const ctxProps = getRenderNodeProps({
+        editor,
+        props: { attributes, ...props } as any,
+        readOnly,
+      }) as any;
 
-    if (renderTextProp) {
-      return renderTextProp({ attributes, ...props } as any);
-    }
-
-    const ctxProps = getRenderNodeProps({
-      editor,
-      props: { attributes, ...props } as any,
-      readOnly,
-    }) as any;
-
-    return <PlateText {...ctxProps}>{props.children}</PlateText>;
-  };
+      return <PlateText {...ctxProps}>{props.children}</PlateText>;
+    },
+    ({ marks }) =>
+      !renderTextProp &&
+      !hasUnknownTextInjection &&
+      !renderTexts.some(
+        ({ requiresModelTextSync, textKey }) =>
+          requiresModelTextSync && isTextMarkActive(marks, textKey)
+      ) &&
+      !textPropsEntries.some(({ textKey }) => isTextMarkActive(marks, textKey))
+  );
 };

@@ -190,10 +190,10 @@ describe('editor.api.markdown.deserialize', () => {
           <fragment>
             <hblockquote>
               <hp>some thing is reference</hp>
-              <hp indent={1} listStyleType="disc">
+              <hp indent={1} listType="bulleted">
                 aaa
               </hp>
-              <hp indent={1} listStyleType="disc">
+              <hp indent={1} listType="bulleted">
                 bbb
               </hp>
             </hblockquote>
@@ -274,12 +274,12 @@ Paragraph 2 line 1`,
         name: 'deserializes heading levels',
         output: (
           <fragment>
-            <hh1>Heading 1</hh1>
-            <hh2>Heading 2</hh2>
-            <hh3>Heading 3</hh3>
-            <hh4>Heading 4</hh4>
-            <hh5>Heading 5</hh5>
-            <hh6>Heading 6</hh6>
+            <hheading level={1}>Heading 1</hheading>
+            <hheading level={2}>Heading 2</hheading>
+            <hheading level={3}>Heading 3</hheading>
+            <hheading level={4}>Heading 4</hheading>
+            <hheading level={5}>Heading 5</hheading>
+            <hheading level={6}>Heading 6</hheading>
           </fragment>
         ),
       },
@@ -433,7 +433,7 @@ Paragraph 2 line 1`,
           <fragment>
             <hp>
               <htext>1 </htext>
-              <hmention value="User">
+              <hmention ref="User">
                 <htext />
               </hmention>
             </hp>
@@ -446,7 +446,7 @@ Paragraph 2 line 1`,
         output: (
           <fragment>
             <hp>
-              <hmention value="User">
+              <hmention ref="User">
                 <htext />
               </hmention>
             </hp>
@@ -471,7 +471,7 @@ Paragraph 2 line 1`,
           alt: 'alt text',
           children: [{ text: '' }],
           indent: 1,
-          listStyleType: 'disc',
+          listType: 'bulleted',
           type: 'image',
           url: 'https://example.com/image.png',
         },

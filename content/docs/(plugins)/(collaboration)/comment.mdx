@@ -3,7 +3,7 @@ title: Comment
 docs:
   - route: https://pro.platejs.org/docs/examples/discussion
     title: Plus
-  - route: /docs/components/comment-node
+  - route: /docs/components/comment
     title: Comment Leaf
   - route: /docs/components/comment-toolbar-button
     title: Comment Toolbar Button
@@ -33,16 +33,16 @@ docs:
 
 The fastest way to add comment functionality is with the `CommentKit`, which includes pre-configured `commentPlugin` and related components along with their [Plate UI](/docs/installation/plate-ui) components.
 
-<ComponentSource name="comment-kit" />
+<ComponentSource name="comment" />
 
-- [`CommentLeaf`](/docs/components/comment-node): Renders comment text marks
+- [`CommentLeaf`](/docs/components/comment): Renders comment text marks
 - [`BlockDiscussion`](/docs/components/block-discussion): Renders discussion UI with comments integration
 
 ### Add Kit
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { CommentKit } from '@/components/editor/plugins/comment-kit';
+import { CommentKit } from '@/components/editor/comment';
 
 const editor = createPlateEditor({
   plugins: [
@@ -72,7 +72,7 @@ Create the comment plugin with extended configuration for state management:
 import { isString } from '@platejs/plite-dom';
 import { TextApi, type Path } from 'platejs';
 import { BaseCommentPlugin, getDraftCommentKey } from '@platejs/comment';
-import { CommentLeaf } from '@/components/ui/comment-node';
+import { CommentLeaf } from '@/components/editor/comment';
 
 const initialState: {
   activeId: string | null;
@@ -94,7 +94,7 @@ export const commentPlugin = BaseCommentPlugin.configure({
 - `initialState.commentingBlock`: Path of the block currently being commented
 - `initialState.hoverId`: Currently hovered comment ID for hover effects
 - `component: CommentLeaf`: Renders comment text marks with
-  [`CommentLeaf`](/docs/components/comment-node)
+  [`CommentLeaf`](/docs/components/comment)
 
 ### Add Click Handler
 
@@ -214,7 +214,7 @@ const editor = createPlateEditor({
 The comment plugin works with the [discussion plugin](/docs/discussion) for complete collaboration:
 
 ```tsx
-import { discussionPlugin } from '@/components/editor/plugins/discussion-kit';
+import { discussionPlugin } from '@/components/editor/discussion';
 
 const editor = createPlateEditor({
   plugins: [

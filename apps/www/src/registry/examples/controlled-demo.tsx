@@ -5,7 +5,7 @@ import * as React from 'react';
 import { Plate, usePlateEditor } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
-import { Editor, EditorContainer } from '@/registry/ui/editor';
+import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 
 const initialValue = [
   {

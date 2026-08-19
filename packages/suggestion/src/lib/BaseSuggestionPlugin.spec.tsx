@@ -245,8 +245,8 @@ import {
         element: {
           inline: true,
           properties: {
-            key: property.string(),
-            value: property.string(),
+            label: property.string(),
+            ref: property.string({ required: true }),
           },
           void: 'markable-inline',
         },
@@ -370,8 +370,8 @@ import {
               { text: 'like ' },
               {
                 type: 'mention',
-                value: 'Alice',
-                key: 'u1',
+                label: 'Alice',
+                ref: 'u1',
                 suggestion: true,
                 suggestion_same: {
                   id: 'same',
@@ -1537,7 +1537,8 @@ import {
       element: {
         inline: true,
         properties: {
-          value: property.string(),
+          label: property.string(),
+          ref: property.string({ required: true }),
         },
         void: 'markable-inline',
       },
@@ -1557,7 +1558,12 @@ import {
           {
             children: [
               { text: 'ab ' },
-              { children: [{ text: '' }], type: 'mention', value: 'Ada' },
+              {
+                children: [{ text: '' }],
+                label: 'Ada',
+                ref: 'u1',
+                type: 'mention',
+              },
               { text: ' cd' },
             ],
             type: 'paragraph',
@@ -1616,7 +1622,12 @@ import {
           {
             children: [
               { text: 'abc' },
-              { children: [{ text: '' }], type: 'mention', value: 'Ada' },
+              {
+                children: [{ text: '' }],
+                label: 'Ada',
+                ref: 'u1',
+                type: 'mention',
+              },
             ],
             type: 'paragraph',
           },
@@ -2940,6 +2951,13 @@ import {
         'inline'
       );
       expect(api.id(editor.read.children()[1] as any)).toBe('block');
+      expect(
+        api.id({
+          children: [{ text: '' }],
+          suggestion: null,
+          type: 'paragraph',
+        } as any)
+      ).toBeUndefined();
     });
 
     it('filters transient suggestion nodes when requested', () => {

@@ -1,18 +1,11 @@
 ---
-title: 可调整大小
-description: \@platejs/resizable 的 API 参考。
+title: Resizable
+description: \@platejs/resizable 的 API 参考文档。
 ---
 
-<PackageInfo>
-
-## 特性
-
-- 带有手柄的可调整大小的元素
-- 可配置的最小/最大宽度约束
-- 支持居中/左/右对齐
-- 在编辑器状态中保持宽度
-
-</PackageInfo>
+`@platejs/resizable` 导出两个 headless React 组件和长度工具。包负责指针、
+触摸、键盘、RTL、ARIA 和临时 resize 状态；registry 组件负责样式和编辑器
+持久化。
 
 ## 安装
 
@@ -20,197 +13,90 @@ description: \@platejs/resizable 的 API 参考。
 npm install @platejs/resizable
 ```
 
-## API
+## 使用
 
-### `useResizableState`
+```tsx
+import type { PlateElementProps } from 'platejs/react';
+import { PlateElement, useEditor } from 'platejs/react';
+import { Image, ImagePlugin } from '@platejs/media/react';
+import { Resizable, ResizeHandle } from '@platejs/resizable';
 
-管理可调整大小元素的状态。
+export function ImageElement(props: PlateElementProps<typeof ImagePlugin>) {
+  const editor = useEditor();
 
-<API name="useResizableState">
-<APIOptions type="ResizableOptions">
+  return (
+    <PlateElement {...props}>
+      <Resizable
+        align="center"
+        width={props.element.width}
+        onResizeEnd={(width) =>
+          editor.plugin(ImagePlugin).update.set(
+            { width },
+            { at: props.element }
+          )
+        }
+      >
+        <ResizeHandle direction="left" />
+        <Image alt={props.element.alt} />
+        <ResizeHandle direction="right" />
+      </Resizable>
+      {props.children}
+    </PlateElement>
+  );
+}
+```
+
+`Resizable` 拥有 nested handle 使用的私有 family context。公共 API 不包含
+provider 或原始 resize store。
+
+## `Resizable`
+
+<API name="Resizable">
+<APIOptions type="ResizableProps">
   <APIItem name="align" type="'center' | 'left' | 'right'" optional>
-    节点对齐方式。
-    - **默认值:** `'center'`
+    控制 resize 方向计算。默认为 `center`。
   </APIItem>
   <APIItem name="maxWidth" type="ResizeLength" optional>
-    最大宽度约束。
-    - **默认值:** `'100%'`
+    最大宽度。默认为 `100%`。
   </APIItem>
   <APIItem name="minWidth" type="ResizeLength" optional>
-    最小宽度约束。
-    - **默认值:** `92`
+    最小宽度。默认为 `92`。
   </APIItem>
   <APIItem name="onResizeEnd" type="(width: ResizeLength) => void" optional>
-    调整完成时提交宽度。媒体所有者在这里传入其作用域插件更新。
+    将最终宽度提交给功能所有者。
   </APIItem>
   <APIItem name="width" type="ResizeLength" optional>
-    当前文档宽度。默认值为 `100%`。
+    当前宽度。默认为 `100%`。
   </APIItem>
 </APIOptions>
-
-<APIReturns type="object">
-  <APIItem name="align" type="'center' | 'left' | 'right'">
-    当前对齐设置。
-  </APIItem>
-  <APIItem name="maxWidth" type="ResizeLength">
-    最大宽度约束。
-  </APIItem>
-  <APIItem name="minWidth" type="ResizeLength">
-    最小宽度约束。
-  </APIItem>
-  <APIItem name="onResizeEnd" type="((width: ResizeLength) => void) | undefined">
-    所属功能提供的提交回调。
-  </APIItem>
-  <APIItem name="setWidth" type="(width: number | string) => void">
-    更新本地状态中的宽度。
-  </APIItem>
-  <APIItem name="width" type="number | string">
-    当前宽度值。
-  </APIItem>
-</APIReturns>
 </API>
 
-### `useResizable`
+## `ResizeHandle`
 
-为可调整大小的元素提供调整大小的行为属性和处理程序。
-
-<API name="useResizable">
-<APIParameters>
-  <APIItem name="state" type="ReturnType<typeof useResizableState>">
-    来自 `useResizableState` 的状态。
-  </APIItem>
-</APIParameters>
-
-<APIReturns type="object">
-  <APIItem name="context" type="object">
-    <APISubList>
-      <APISubListItem parent="context" name="onResize" type="(event: ResizeEvent) => void">
-        调整大小事件的处理程序。
-      </APISubListItem>
-      <APISubListItem parent="context" name="nudgeWidth" type="(delta: number) => void">
-        限制并提交一次键盘调整步长。
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-  <APIItem name="props" type="object">
-    可调整大小元素的样式属性：
-    - `maxWidth`: 最大宽度约束
-    - `minWidth`: 最小宽度约束
-    - `position`: 'relative'
-    - `width`: 当前宽度
-  </APIItem>
-  <APIItem name="wrapperProps" type="object">
-    包装元素的样式属性：
-    - `position`: 'relative'
-  </APIItem>
-  <APIItem name="wrapperRef" type="React.RefObject<HTMLDivElement>">
-    包装元素的引用。
-  </APIItem>
-</APIReturns>
-</API>
-
-`@platejs/resizable` 不修改编辑器节点。媒体宽度由媒体插件持久化，例如
-`editor.plugin(ImagePlugin).update.set({ width }, { at: element })`。
-
-### `useResizeHandleState`
-
-管理调整大小手柄元素的状态。
-
-<API name="useResizeHandleState">
-<APIOptions type="ResizeHandleOptions">
+<API name="ResizeHandle">
+<APIOptions type="ResizeHandleProps">
   <APIItem name="direction" type="ResizeDirection" optional>
-    调整大小的方向。
-    - **默认值:** `'left'`
+    Resize 边。默认为 `left`。
   </APIItem>
   <APIItem name="initialSize" type="number" optional>
-    可调整大小元素的初始大小。
-  </APIItem>
-  <APIItem name="onHover" type="() => void" optional>
-    手柄被悬停时的回调。
-  </APIItem>
-  <APIItem name="onHoverEnd" type="() => void" optional>
-    手柄悬停结束时的回调。
-  </APIItem>
-  <APIItem name="onMouseDown" type="React.MouseEventHandler" optional>
-    自定义鼠标按下处理程序。
+    初始尺寸。省略时从父元素读取。
   </APIItem>
   <APIItem name="onResize" type="(event: ResizeEvent) => void" optional>
-    自定义调整大小处理程序。如果未提供，则回退到存储处理程序。
-  </APIItem>
-  <APIItem name="onTouchStart" type="React.TouchEventHandler" optional>
-    自定义触摸开始处理程序。
+    覆盖最近 `Resizable` 的 callback。
   </APIItem>
 </APIOptions>
-
-<APIReturns type="object">
-  <APIItem name="direction" type="ResizeDirection">
-    当前调整大小方向。
-  </APIItem>
-  <APIItem name="initialPosition" type="number">
-    初始光标/触摸位置。
-  </APIItem>
-  <APIItem name="initialSize" type="number">
-    元素初始大小。
-  </APIItem>
-  <APIItem name="isHorizontal" type="boolean">
-    调整大小方向是否为水平。
-  </APIItem>
-  <APIItem name="isResizing" type="boolean">
-    是否正在调整大小。
-  </APIItem>
-  <APIItem name="readOnly" type="boolean">
-    编辑器只读状态。
-  </APIItem>
-  <APIItem name="setInitialPosition" type="(position: number) => void">
-    更新初始位置。
-  </APIItem>
-  <APIItem name="setInitialSize" type="(size: number) => void">
-    更新初始大小。
-  </APIItem>
-  <APIItem name="setIsResizing" type="(resizing: boolean) => void">
-    更新调整大小状态。
-  </APIItem>
-  <APIItem name="onHover" type="() => void">
-    悬停回调。
-  </APIItem>
-  <APIItem name="onHoverEnd" type="() => void">
-    悬停结束回调。
-  </APIItem>
-  <APIItem name="onMouseDown" type="React.MouseEventHandler">
-    鼠标按下处理程序。
-  </APIItem>
-  <APIItem name="onResize" type="(event: ResizeEvent) => void">
-    调整大小处理程序。
-  </APIItem>
-  <APIItem name="onTouchStart" type="React.TouchEventHandler">
-    触摸开始处理程序。
-  </APIItem>
-</APIReturns>
 </API>
 
-### `useResizeHandle`
+Handle 渲染为 `slider`，只读模式下不渲染，拖动期间监听 `window`，并支持
+方向键。按住 Shift 可使用更大的键盘步长。
 
-为调整大小手柄元素提供处理程序和属性。
+## 类型和长度工具
 
-<API name="useResizeHandle">
-<APIParameters>
-  <APIItem name="state" type="ReturnType<typeof useResizeHandleState>">
-    来自 `useResizeHandleState` 的状态。
-  </APIItem>
-</APIParameters>
-
-<APIReturns type="object">
-  <APIItem name="hidden" type="boolean">
-    手柄是否应该隐藏（在只读模式下）。
-  </APIItem>
-  <APIItem name="props" type="object">
-    要应用到手柄元素的属性：
-    - `onMouseDown`: 鼠标按下事件处理程序
-    - `onMouseOut`: 鼠标移出事件处理程序
-    - `onMouseOver`: 鼠标悬停事件处理程序
-    - `onTouchEnd`: 触摸结束事件处理程序
-    - `onTouchMove`: 触摸移动事件处理程序
-    - `onTouchStart`: 触摸开始事件处理程序
-  </APIItem>
-</APIReturns>
-</API>
+| API | 定义 |
+| --- | --- |
+| `ResizeDirection` | `'bottom' | 'left' | 'right' | 'top'` |
+| `ResizeLength` | `number | \`${number}%\`` |
+| `ResizeEvent` | `{ delta; direction; finished; initialSize }` |
+| `resizeLengthClamp` | 在混合约束下 clamp 像素或百分比长度。 |
+| `resizeLengthToRelative` | 将像素转换为百分比。 |
+| `resizeLengthToStatic` | 将百分比转换为像素。 |

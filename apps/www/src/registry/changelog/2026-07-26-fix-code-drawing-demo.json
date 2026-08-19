@@ -19,7 +19,10 @@
   "targets": [
     {
       "name": "code-drawing-demo",
-      "files": ["apps/www/src/registry/examples/code-drawing-demo.tsx"],
+      "files": [
+        "apps/www/src/registry/examples/code-drawing-demo.tsx",
+        "apps/www/src/registry/examples/values/code-drawing-value.tsx"
+      ],
       "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
       "diagnostics": []
     }

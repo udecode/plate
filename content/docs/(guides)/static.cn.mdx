@@ -35,19 +35,19 @@ description: 一个支持 RSC/SSR 的最小化、记忆化、只读版本的 Pla
 
 启用静态渲染最快的方式是使用 `BaseEditorKit`，它包含预配置的基础插件，可与服务端渲染无缝配合。
 
-<ComponentSource name="editor-base-kit" />
+<ComponentSource name="editor-plugins-static" />
 
 ### 添加 Kit
 
 ```tsx
 import { createBaseEditor } from 'platejs';
 import { PlateStatic } from 'platejs/static';
-import { BaseEditorKit } from '@/components/editor/editor-base-kit';
+import { BaseEditorKit } from '@/components/editor/plugins-static';
 
 const editor = createBaseEditor({
   plugins: BaseEditorKit,
   initialValue: [
-    { type: 'h1', children: [{ text: 'Server-Rendered Title' }] },
+    { type: 'heading', level: 1, children: [{ text: 'Server-Rendered Title' }] },
     { type: 'paragraph', children: [{ text: 'This content is rendered statically.' }] },
   ],
 });
@@ -76,7 +76,7 @@ export default function MyStaticPage() {
 
 ```tsx title="lib/plate-static-editor.ts"
 import { createBaseEditor } from 'platejs';
-import { BaseBasicBlocksKit } from '@/components/editor/plugins/basic-blocks-base-kit';
+import { BaseBasicBlocksKit } from '@/components/editor/basic-blocks-static';
 // Import any other desired base plugins, such as MarkdownPlugin.
 // Ensure you are NOT importing from /react subpaths for server environments.
 
@@ -98,7 +98,7 @@ const editor = createBaseEditor({
 
 如果您的交互式编辑器使用客户端组件（例如带有 `use client` 或事件处理器的组件），您**必须**创建静态的、服务端安全的等效组件。这些组件应该渲染纯 HTML，不包含浏览器特定的逻辑。
 
-```tsx title="components/ui/paragraph-node-static.tsx"
+```tsx title="components/editor/paragraph-static.tsx"
 import React from 'react';
 import type { BaseParagraphPlugin } from 'platejs';
 import type { PliteElementProps } from 'platejs/static';
@@ -120,8 +120,8 @@ export function ParagraphElementStatic(
 创建一个将插件名称或节点类型映射到相应静态 React 组件的对象，然后将其传递给编辑器。
 
 ```ts title="components/static-components.ts"
-import { ParagraphElementStatic } from './ui/paragraph-node-static';
-import { HeadingElementStatic } from './ui/heading-node-static';
+import { ParagraphElementStatic } from './ui/paragraph-static';
+import { HeadingElementStatic } from './ui/heading-static';
 // ... import other static components
 
 export const staticComponents = {
@@ -138,13 +138,13 @@ export const staticComponents = {
 ```tsx title="app/my-static-page/page.tsx (RSC Example)"
 import { createBaseEditor } from 'platejs';
 import { PlateStatic } from 'platejs/static';
-import { BaseBasicBlocksKit } from '@/components/editor/plugins/basic-blocks-base-kit';
+import { BaseBasicBlocksKit } from '@/components/editor/basic-blocks-static';
 import { staticComponents } from '@/components/static-components';
 
 export default async function MyStaticPage() {
   // Example: Fetch or define editor value
   const initialValue = [
-    { type: 'h1', children: [{ text: 'Server-Rendered Title' }] },
+    { type: 'heading', level: 1, children: [{ text: 'Server-Rendered Title' }] },
     { type: 'paragraph', children: [{ text: 'Content rendered statically.' }] },
   ];
 
@@ -180,7 +180,7 @@ export default async function MyStaticPage() {
 
 ```tsx title="app/document/page.tsx"
 import { createStaticEditor, PlateStatic } from 'platejs/static';
-import { BaseEditorKit } from '@/components/editor/editor-base-kit';
+import { BaseEditorKit } from '@/components/editor/plugins-static';
 import { InteractiveViewer } from './interactive-viewer';
 
 export default async function DocumentPage() {
@@ -217,7 +217,7 @@ export default async function DocumentPage() {
 
 import { usePlateViewEditor } from 'platejs/react';
 import { PlateView } from 'platejs/react';
-import { BaseEditorKit } from '@/components/editor/editor-base-kit';
+import { BaseEditorKit } from '@/components/editor/plugins-static';
 
 export function InteractiveViewer({ value }) {
   const editor = usePlateViewEditor({
@@ -260,13 +260,13 @@ export function InteractiveViewer({ value }) {
 ```tsx title="app/preview/page.tsx (RSC)"
 import { createBaseEditor } from 'platejs';
 import { PlateStatic } from 'platejs/static';
-import { BaseBasicBlocksKit } from '@/components/editor/plugins/basic-blocks-base-kit';
+import { BaseBasicBlocksKit } from '@/components/editor/basic-blocks-static';
 import { staticComponents } from '@/components/static-components'; // Your static components mapping
 
 export default async function Page() {
   // Fetch or define content server-side
   const serverContent = [
-    { type: 'h1', children: [{ text: 'Rendered on the Server! 🎉' }] },
+    { type: 'heading', level: 1, children: [{ text: 'Rendered on the Server! 🎉' }] },
     { type: 'paragraph', children: [{ text: 'This content is static and server-rendered.' }] },
   ];
 
@@ -293,7 +293,7 @@ export default async function Page() {
 ```ts title="lib/html-serializer.ts"
 import { createBaseEditor } from 'platejs';
 import { renderStaticHtml } from 'platejs/static';
-import { BaseBasicBlocksKit } from '@/components/editor/plugins/basic-blocks-base-kit';
+import { BaseBasicBlocksKit } from '@/components/editor/basic-blocks-static';
 import { staticComponents } from '@/components/static-components';
 
 async function getDocumentAsHtml(value: any[]) {
@@ -312,7 +312,7 @@ async function getDocumentAsHtml(value: any[]) {
 }
 
 // Example Usage:
-// const mySlateValue = [ { type: 'h1', children: [{ text: 'My Document' }] } ];
+// const mySlateValue = [ { type: 'heading', level: 1, children: [{ text: 'My Document' }] } ];
 // getDocumentAsHtml(mySlateValue).then(console.log);
 ```
 更多详情请参阅 [HTML 序列化指南](/docs/html)。

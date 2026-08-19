@@ -45,7 +45,10 @@
   "targets": [
     {
       "name": "huge-document-demo",
-      "files": ["apps/www/src/registry/examples/huge-document-demo.tsx"],
+      "files": [
+        "apps/www/src/registry/examples/huge-document-demo.tsx",
+        "apps/www/src/registry/examples/values/huge-document-value.tsx"
+      ],
       "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
       "diagnostics": []
     },

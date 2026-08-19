@@ -512,14 +512,14 @@ describe('DOM coverage private boundary harness', () => {
       return <EditableElement>{children}</EditableElement>;
     };
     const Surface = ({ mounted }: { mounted: boolean }) => (
-      <BoundaryVisibilityContext.Provider value={mounted}>
+      <BoundaryVisibilityContext value={mounted}>
         <Plite editor={editor}>
           <Editable
             id="dom-coverage-context-boundary-toggle"
             renderElement={renderElement}
           />
         </Plite>
-      </BoundaryVisibilityContext.Provider>
+      </BoundaryVisibilityContext>
     );
     const rendered = render(<Surface mounted={false} />);
 

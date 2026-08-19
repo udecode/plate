@@ -38,7 +38,7 @@ exports[`listToMdastTree handle todo lists correctly 1`] = `
   ],
   "ordered": false,
   "spread": false,
-  "start": 1,
+  "start": undefined,
   "type": "list",
 }
 `;

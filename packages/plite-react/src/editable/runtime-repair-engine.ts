@@ -35,10 +35,10 @@ export const useRuntimeRepairEngine = ({
   >[0]['scrollSelectionIntoView'];
   syncDOMSelectionToEditor: () => void;
 }) => {
+  const { domPhaseScheduler, editor, inputController } = runtime;
   const [, forceRender] = useReducer((s) => s + 1, 0);
   const pendingModelSelectionExportAfterRenderRef =
     useRef<PendingModelSelectionExport | null>(null);
-  const { domPhaseScheduler, editor, inputController } = runtime;
   const domRepairQueue = useMemo(
     () =>
       createDOMRepairQueue({

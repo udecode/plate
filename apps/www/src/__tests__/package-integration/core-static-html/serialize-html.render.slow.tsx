@@ -4,7 +4,7 @@ import { property } from 'platejs';
 import { createBaseEditor, defineBasePlugin } from 'platejs';
 import { renderStaticHtml } from 'platejs/static';
 
-import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
+import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 
 import { createStaticEditor } from './create-static-editor';
 

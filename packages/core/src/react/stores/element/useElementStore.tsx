@@ -277,8 +277,8 @@ export function ElementProvider({
   }, [element, elementPath, entry, runtime]);
 
   return (
-    <ElementStoreContext.Provider value={storeContextValue}>
+    <ElementStoreContext value={storeContextValue}>
       {children}
-    </ElementStoreContext.Provider>
+    </ElementStoreContext>
   );
 }

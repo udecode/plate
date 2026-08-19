@@ -7,7 +7,7 @@ jsx;
 export const imageValue = {
   children: (
     <fragment>
-      <hh2>图片</hh2>
+      <hheading level={2}>图片</hheading>
       <hp>通过上传或提供图片 URL 来添加图片：</hp>
       <himg
         textAlign="center"
@@ -24,17 +24,16 @@ export const imageValue = {
 export const mediaPlaceholderValue = {
   children: (
     <fragment>
-      <hh2>上传</hh2>
+      <hheading level={2}>上传</hheading>
       <hp>我们的编辑器支持多种媒体类型的上传，包括图片、视频、音频和文件。</hp>
       <hfile
         name="sample.pdf"
         url="https://s26.q4cdn.com/900411403/files/doc_downloads/test.pdf"
         width="80%"
-        isUpload
       >
         <htext />
       </hfile>
-      <hp indent={1} listStyleType="disc">
+      <hp indent={1} listType="bulleted">
         实时上传状态和进度跟踪
       </hp>
       <haudio
@@ -44,21 +43,21 @@ export const mediaPlaceholderValue = {
       >
         <htext />
       </haudio>
-      <hp indent={1} listStyleType="disc">
+      <hp indent={1} listType="bulleted">
         可配置的文件大小限制和批量上传设置
       </hp>
       <hvideo
         textAlign="center"
         url="https://videos.pexels.com/video-files/6769791/6769791-uhd_2560_1440_24fps.mp4"
         width="80%"
-        isUpload
+        provider="file"
       >
         <htext />
       </hvideo>
-      <hp indent={1} listStyleType="disc">
+      <hp indent={1} listType="bulleted">
         清晰的上传错误提示信息
       </hp>
-      <hp indent={1} listStyleType="disc">
+      <hp indent={1} listType="bulleted">
         立即尝试 - 从桌面拖拽图片或点击工具栏中的上传按钮
       </hp>
     </fragment>
@@ -71,7 +70,7 @@ export const mediaValue = {
       {imageValue.children}
       {mediaPlaceholderValue.children}
 
-      <hh2>嵌入</hh2>
+      <hheading level={2}>嵌入</hheading>
       <hp>嵌入各种类型的内容，如视频和推文：</hp>
       <hmediaembed
         textAlign="center"

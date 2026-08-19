@@ -11,10 +11,12 @@ import { type ElementOf, property } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
 
 const TRIGGER_PREVIOUS_CHAR_PATTERN = /^\s?$/;
+const isNonBlankRef = (value: unknown): value is string =>
+  typeof value === 'string' && value.trim().length > 0;
 
-export type TMentionItemBase<TKey = unknown> = {
-  text: string;
-  key?: TKey;
+export type TMentionItemBase<TRef = string> = {
+  label: string;
+  ref: TRef;
 };
 
 export type MentionPluginState = {
@@ -49,8 +51,12 @@ export const BaseMentionPlugin = defineBasePlugin(PLUGINS.mention, {
   schema: {
     element: {
       properties: {
-        key: property.string(),
-        value: property.string({ required: true }),
+        label: property.string(),
+        ref: property.string({
+          required: true,
+          validate: isNonBlankRef,
+          validationVersion: 1,
+        }),
       },
       void: 'markable-inline',
     },
@@ -69,25 +75,25 @@ export const BaseMentionPlugin = defineBasePlugin(PLUGINS.mention, {
     defineCodecs({
       'text/html': {
         decode: ({ element }) => {
-          const value = element.getAttribute('data-plate-mention-value');
+          const ref = element.getAttribute('data-plate-mention-ref');
 
-          if (value === null) return;
+          if (!isNonBlankRef(ref)) return;
 
-          const key = element.getAttribute('data-plate-mention-key');
+          const label = element.getAttribute('data-plate-mention-label');
 
           return {
             children: [{ text: '' }],
-            ...(key === null ? {} : { key }),
-            value,
+            ...(label === null ? {} : { label }),
+            ref,
           };
         },
         encode: ({ content, node }) => ({
           attributes: {
             'data-plate-mention': true,
-            'data-plate-mention-key': node.key,
-            'data-plate-mention-value': node.value,
+            'data-plate-mention-label': node.label,
+            'data-plate-mention-ref': node.ref,
           },
-          children: [content, { text: `@${node.value}` }],
+          children: [content, { text: `@${node.label ?? node.ref}` }],
           tag: 'span',
         }),
         match: [{ attributes: { 'data-plate-mention': true }, tag: 'span' }],
@@ -95,20 +101,25 @@ export const BaseMentionPlugin = defineBasePlugin(PLUGINS.mention, {
       },
 
       'text/markdown': {
-        decode: ({ node }) => ({
-          ...(node.displayText && { key: node.username }),
-          children: [{ text: '' }],
-          type,
-          value: node.displayText || node.username,
-        }),
+        decode: ({ node }) => {
+          if (!isNonBlankRef(node.username)) return;
+
+          return {
+            children: [{ text: '' }],
+            ...(node.displayText && node.displayText !== node.username
+              ? { label: node.displayText }
+              : {}),
+            ref: node.username,
+            type,
+          };
+        },
         encode: ({ node }) => {
-          const mentionId = node.key || node.value;
-          const encodedId = encodeURIComponent(String(mentionId))
+          const encodedId = encodeURIComponent(node.ref)
             .replace(/\(/g, '%28')
             .replace(/\)/g, '%29');
 
           return {
-            children: [{ type: 'text', value: String(node.value ?? '') }],
+            children: [{ type: 'text', value: node.label ?? node.ref }],
             type: 'link',
             url: `mention:${encodedId}`,
           };
@@ -119,9 +130,13 @@ export const BaseMentionPlugin = defineBasePlugin(PLUGINS.mention, {
     }),
   update: ({ store, tx, schema: { type } }) => ({
     insert: (
-      { key, value }: { value: string; key?: string },
+      { label, ref }: { ref: string; label?: string },
       options: PlateNodeInsertOptions = {}
     ) => {
+      if (!isNonBlankRef(ref)) {
+        throw new TypeError('Mention ref must be a non-empty string.');
+      }
+
       const selection = options.at === undefined ? tx.selection() : undefined;
       const blockPath = selection ? tx.nodes.block()?.[1] : undefined;
       const insertSpaceAfter =
@@ -130,10 +145,10 @@ export const BaseMentionPlugin = defineBasePlugin(PLUGINS.mention, {
         selection &&
         tx.points.isEnd(selection.anchor, blockPath);
       const mention = {
-        key,
         children: [{ text: '' }],
+        ...(label === undefined ? {} : { label }),
+        ref,
         type,
-        value,
       };
 
       tx.nodes.insert(

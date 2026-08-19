@@ -257,21 +257,6 @@ pnpm e2e
 - 在**`/docs`**中创建一个新的 mdx 文件
 - 将新文档添加到**`/apps/www/src/config/docs.ts`**
 
-### 如何：创建 Plate 包
-
-使用以下命令并按照提示创建新包：
-
-```bash
-pnpm gen:package
-```
-
-After creating your package, install and build it:
-
-```bash
-pnpm install
-pnpm build
-```
-
 ### 如何：服务器打包
 
 主要打包是客户端的，并未在服务器环境中测试。通常，当包的使用依赖于`slate-react`或 React 时，需要服务器打包。在这种情况下，以下是创建服务器打包的方法：

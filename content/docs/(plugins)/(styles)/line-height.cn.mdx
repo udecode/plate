@@ -24,7 +24,7 @@ docs:
 
 最快捷的方式是使用 `LineHeightKit`，它包含预配置的 `LineHeightPlugin`，针对段落和标题元素。
 
-<ComponentSource name="line-height-kit" />
+<ComponentSource name="line-height" />
 
 - 配置 `Paragraph` 和 `Heading` 元素（H1-H6）支持 `lineHeight` 属性
 - 提供默认行高值 `1.5` 和有效值 `[1, 1.2, 1.5, 2, 3]`
@@ -35,7 +35,7 @@ docs:
 
 ```tsx
 import { createPlateEditor } from "platejs/react";
-import { LineHeightKit } from "@/components/editor/plugins/line-height-kit";
+import { LineHeightKit } from "@/components/editor/line-height";
 
 const editor = createPlateEditor({
   plugins: [
@@ -87,7 +87,7 @@ const editor = createPlateEditor({
     // ...其他插件,
     LineHeightPlugin.configure({
       targetPlugins: [
-        PLUGINS.h1, PLUGINS.h2, PLUGINS.h3, PLUGINS.h4, PLUGINS.h5, PLUGINS.h6,
+        PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.heading,
         PLUGINS.paragraph,
       ],
       inject: {

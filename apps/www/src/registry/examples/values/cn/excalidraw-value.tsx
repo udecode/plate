@@ -74,7 +74,7 @@ export const excalidrawInitialData: Partial<
 
 export const excalidrawValue = (
   <fragment>
-    <hh2>Excalidraw</hh2>
+    <hheading level={2}>Excalidraw</hheading>
     <hp>
       使用 Excalidraw
       插件释放您的创造力，它使您能够直接在编辑器中嵌入和绘制图表。

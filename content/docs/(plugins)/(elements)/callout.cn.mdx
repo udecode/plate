@@ -3,7 +3,7 @@ title: 提示框
 docs:
   - route: /docs/components/callout
     title: 提示框元素
-  - route: https://pro.platejs.org/docs/components/callout-node
+  - route: https://pro.platejs.org/docs/components/callout
     title: 提示框元素
 ---
 
@@ -27,9 +27,9 @@ docs:
 
 最快添加提示框插件的方式是使用 `CalloutKit`，它包含预配置的 `CalloutPlugin` 和 [Plate UI](/docs/installation/plate-ui) 组件。
 
-<ComponentSource name="callout-kit" />
+<ComponentSource name="callout" />
 
-- [`CalloutElement`](/docs/components/callout-node): 渲染提示框元素
+- [`CalloutElement`](/docs/components/callout): 渲染提示框元素
 
 ### 添加套件
 
@@ -37,7 +37,7 @@ docs:
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { CalloutKit } from '@/components/editor/plugins/callout-kit';
+import { CalloutKit } from '@/components/editor/callout';
 
 const editor = createPlateEditor({
   plugins: [
@@ -82,7 +82,7 @@ const editor = createPlateEditor({
 ```tsx
 import { CalloutPlugin } from '@platejs/callout/react';
 import { createPlateEditor } from 'platejs/react';
-import { CalloutElement } from '@/components/ui/callout-node';
+import { CalloutElement } from '@/components/editor/callout';
 
 const editor = createPlateEditor({
   plugins: [
@@ -92,7 +92,7 @@ const editor = createPlateEditor({
 });
 ```
 
-- `component`: 指定 [`CalloutElement`](/docs/components/callout-node) 来渲染提示框元素
+- `component`: 指定 [`CalloutElement`](/docs/components/callout) 来渲染提示框元素
 
 </Steps>
 
@@ -129,51 +129,6 @@ const editor = createPlateEditor({
   标准节点插入选项，例如 `at` 和 `select`
 </APIItem>
 </APIParameters>
-</API>
-
-## 钩子
-
-### `useCalloutEmojiPicker`
-
-管理提示框的表情符号选择器功能。
-
-<API name="useCalloutEmojiPicker">
-<APIOptions type="UseCalloutEmojiPickerOptions">
-  <APIItem name="isOpen" type="boolean">
-    表情符号选择器是否打开
-  </APIItem>
-  <APIItem name="setIsOpen" type="(isOpen: boolean) => void">
-    设置表情符号选择器打开状态的函数
-  </APIItem>
-</APIOptions>
-
-<APIReturns type="object">
-  <APIItem name="emojiToolbarDropdownProps" type="object">
-    表情符号工具栏下拉框的属性
-    <APISubList>
-      <APISubListItem parent="emojiToolbarDropdownProps" name="isOpen" type="boolean">
-        表情符号选择器是否打开
-      </APISubListItem>
-      <APISubListItem parent="emojiToolbarDropdownProps" name="setIsOpen" type="(v: boolean) => void">
-        设置表情符号选择器打开状态的函数，会考虑只读模式
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-  <APIItem name="props" type="object">
-    表情符号选择器组件的属性
-    <APISubList>
-      <APISubListItem parent="props" name="isOpen" type="boolean">
-        表情符号选择器是否打开
-      </APISubListItem>
-      <APISubListItem parent="props" name="setIsOpen" type="(isOpen: boolean) => void">
-        设置表情符号选择器打开状态的函数
-      </APISubListItem>
-      <APISubListItem parent="props" name="onSelectEmoji" type="(options: { emojiValue?: any; icon?: any }) => void">
-        当选择表情符号时调用的函数。它会更新提示框的图标并关闭选择器
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-</APIReturns>
 </API>
 
 ## 类型

@@ -1,4 +1,5 @@
 import React from 'react';
+import { runInNewContext } from 'node:vm';
 import { editorCommands, property, schema } from '@platejs/plite';
 import { createBaseEditor } from '../../lib/editor';
 import type { AnyBasePlugin } from '../../lib/plugin/BasePlugin';
@@ -271,6 +272,181 @@ describe('resolvePlugins', () => {
     expect(editor.plugin(Plugin).read.hasSelection()).toBe(true);
   });
 
+  it('compiles nested capability trees without descriptor merge machinery', () => {
+    const Plugin = defineBasePlugin('nestedCapabilities', {
+      api: () => ({ nested: { first: () => 'first' }, values: ['first'] }),
+      read: () => ({ nested: { first: () => 'first' } }),
+      update: () => ({ nested: { first: () => 'first' } }),
+    }).extend(() => ({
+      api: () => ({ nested: { second: () => 'second' }, values: ['second'] }),
+      read: () => ({ nested: { second: () => 'second' } }),
+      update: () => ({ nested: { second: () => 'second' } }),
+    }));
+    const editor = createBaseEditor({ plugins: [Plugin] });
+
+    expect(editor.api.nestedCapabilities.nested.first()).toBe('first');
+    expect(editor.api.nestedCapabilities.nested.second()).toBe('second');
+    expect(editor.api.nestedCapabilities.values).toEqual(['second']);
+    expect(editor.read.nestedCapabilities.nested.first()).toBe('first');
+    expect(editor.read.nestedCapabilities.nested.second()).toBe('second');
+    expect(editor.update.nestedCapabilities.nested.first()).toBe('first');
+    expect(editor.update.nestedCapabilities.nested.second()).toBe('second');
+    expect(
+      editor.read((state) => Object.isFrozen(state.nestedCapabilities.nested))
+    ).toBe(true);
+  });
+
+  it('canonicalizes ordinary cross-realm read records locally', () => {
+    const crossRealmRead = runInNewContext(
+      '({ nested: { ready() { return true; } } })'
+    ) as { nested: { ready(): boolean } };
+    const Plugin = defineBasePlugin('crossRealmRead', {
+      read: () => crossRealmRead,
+    });
+    const editor = createBaseEditor({ plugins: [Plugin] });
+
+    expect(editor.read.crossRealmRead.nested.ready()).toBe(true);
+    editor.read((state) => {
+      expect(Object.getPrototypeOf(state.crossRealmRead)).toBe(
+        Object.prototype
+      );
+    });
+  });
+
+  it('lets later read stages replace callable roots and nested methods', () => {
+    const CallablePlugin = defineBasePlugin('callableOverride', {
+      read: () => () => 'first',
+    }).extend(() => ({
+      read: () => () => 'second',
+    }));
+    const MethodPlugin = defineBasePlugin('methodOverride', {
+      read: () => ({ nested: { value: () => 'first' } }),
+    }).extend(() => ({
+      read: () => ({ nested: { value: () => 'second' } }),
+    }));
+    const editor = createBaseEditor({
+      plugins: [CallablePlugin, MethodPlugin],
+    });
+
+    expect(editor.plugin(CallablePlugin).read()).toBe('second');
+    expect(editor.read.methodOverride.nested.value()).toBe('second');
+  });
+
+  it('rejects mixed callable and record read-root contributions', () => {
+    const Plugin = defineBasePlugin('mixedReadRoot', {
+      read: () => Object.assign(() => true, { ready: () => true }),
+    }).extend(() => ({
+      read: () => ({ nested: { ready: () => true } }),
+    }));
+
+    expect(() => createBaseEditor({ plugins: [Plugin] })).toThrow(
+      /cannot merge callable and record roots/
+    );
+  });
+
+  it('defines prototype-named capability keys as exact own methods', () => {
+    const Plugin = defineBasePlugin('prototypeCapability', {
+      read: () => ({ ['__proto__']: () => 'own' }),
+    });
+    const editor = createBaseEditor({ plugins: [Plugin] });
+
+    editor.read((state) => {
+      const group = state.prototypeCapability;
+      const method = Reflect.get(group, '__proto__');
+
+      expect(Object.hasOwn(group, '__proto__')).toBe(true);
+      expect(Reflect.apply(method, group, [])).toBe('own');
+    });
+    const directGroup = editor.read.prototypeCapability;
+    const directMethod = Reflect.get(directGroup, '__proto__');
+
+    expect(Reflect.apply(directMethod, directGroup, [])).toBe('own');
+  });
+
+  it('rejects Plate read capability data properties', () => {
+    const Plugin = defineBasePlugin('invalidReadCapability', {
+      read: (() => ({ count: 1 })) as never,
+    });
+    expect(() => createBaseEditor({ plugins: [Plugin] })).toThrow(
+      /read capability "count" must be a method/
+    );
+  });
+
+  it('rejects Plate read capability accessors without invoking them', () => {
+    let getterCalls = 0;
+    const Plugin = defineBasePlugin('invalidReadAccessor', {
+      read: (() =>
+        Object.defineProperty({}, 'method', {
+          enumerable: true,
+          get: () => {
+            getterCalls += 1;
+
+            return () => true;
+          },
+        })) as never,
+    });
+
+    expect(() => createBaseEditor({ plugins: [Plugin] })).toThrow(
+      /read capability "method" must not use an accessor/
+    );
+    expect(getterCalls).toBe(0);
+  });
+
+  it('rejects hidden Plate read accessors without invoking them', () => {
+    let getterCalls = 0;
+    const Plugin = defineBasePlugin('invalidHiddenReadAccessor', {
+      read: (() =>
+        Object.defineProperty({}, 'method', {
+          get: () => {
+            getterCalls += 1;
+
+            return () => true;
+          },
+        })) as never,
+    });
+
+    expect(() => createBaseEditor({ plugins: [Plugin] })).toThrow(
+      /read capability "method" must not use an accessor/
+    );
+    expect(getterCalls).toBe(0);
+  });
+
+  it('rejects hidden and symbol Plate read methods', () => {
+    const HiddenPlugin = defineBasePlugin('invalidHiddenReadMethod', {
+      read: (() =>
+        Object.defineProperty({}, 'method', {
+          value: () => true,
+        })) as never,
+    });
+    const SymbolPlugin = defineBasePlugin('invalidSymbolReadMethod', {
+      read: (() => ({ [Symbol('method')]: () => true })) as never,
+    });
+
+    expect(() => createBaseEditor({ plugins: [HiddenPlugin] })).toThrow(
+      /read capability "method" must be enumerable/
+    );
+    expect(() => createBaseEditor({ plugins: [SymbolPlugin] })).toThrow(
+      /read capability symbols are not supported/
+    );
+  });
+
+  it('rejects redefined Plate read function intrinsics', () => {
+    const method = () => true;
+
+    Object.defineProperty(method, 'name', {
+      configurable: true,
+      enumerable: true,
+      get: () => 'method',
+    });
+    const Plugin = defineBasePlugin('invalidReadFunctionIntrinsic', {
+      read: () => ({ method }),
+    });
+
+    expect(() => createBaseEditor({ plugins: [Plugin] })).toThrow(
+      /read capability function intrinsic "name" was redefined/
+    );
+  });
+
   it('registers constructor-authored unified contributions', () => {
     const Plugin = defineBasePlugin('objectUnifiedRuntime', {
       api: () => ({
@@ -323,7 +499,7 @@ describe('resolvePlugins', () => {
               nodeChange: () => {},
               textChange: () => {},
             },
-            transformInitialValue: ({ value }) => value,
+            prepareDocument: ({ document }) => document,
             render: {
               isDecoration: false,
               leafProps: { 'data-leaf': 'x' } as any,
@@ -363,7 +539,7 @@ describe('resolvePlugins', () => {
     expect(getPlateRuntime(editor).pluginCache.node.textProps).toContain(
       'cachey'
     );
-    expect(getPlateRuntime(editor).pluginCache.transformInitialValue).toContain(
+    expect(getPlateRuntime(editor).pluginCache.prepareDocument).toContain(
       'cachey'
     );
     expect(getPlateRuntime(editor).pluginCache.render.aboveEditable).toContain(
@@ -1177,6 +1353,15 @@ describe('applyPluginOverrides', () => {
 });
 
 describe('mergePlugins behavior in resolvePlugins', () => {
+  it('keeps the empty initial state default when authoring omits it', () => {
+    const plugin = defineBasePlugin('emptyInitialState', {});
+    const editor = createBaseEditor({ plugins: [plugin] });
+
+    expect(
+      getPlateRuntime(editor).plugins.emptyInitialState.initialState
+    ).toEqual({});
+  });
+
   it('preserves configured initialState when an overlay uses undefined', () => {
     const plugin = defineBasePlugin('test', {
       initialState: {

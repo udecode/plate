@@ -48,8 +48,8 @@
     "react-compiler-runtime": "^1.0.0"
   },
   "peerDependencies": {
-    "react": ">=18.0.0",
-    "react-dom": ">=18.0.0"
+    "react": ">=19.2.0",
+    "react-dom": ">=19.2.0"
   },
   "publishConfig": {
     "access": "public"

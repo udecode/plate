@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { type Path, PathApi, TextApi } from '@platejs/plite';
+import { setDOMTextSyncRendererCapability } from '@platejs/plite-react/internal';
 import clsx from 'clsx';
 
 import type { EditableProps, EditOnlyConfig } from '../../lib';
@@ -22,7 +24,11 @@ const HARD_AFFINITY_SPACER_STYLE = {
   lineHeight: 0,
 } as const;
 
-const isActiveHardAffinityBoundary = (editor: PlateEditor, text: any) => {
+const isActiveHardAffinityBoundary = (
+  editor: PlateEditor,
+  path: Path | undefined
+) => {
+  if (!path) return false;
   const match = editor.read((state) => {
     if (!state.selection.isCollapsed()) return;
 
@@ -35,11 +41,14 @@ const isActiveHardAffinityBoundary = (editor: PlateEditor, text: any) => {
     return selectedText ? { focus, selectedText } : undefined;
   });
 
-  if (!match) return false;
+  if (!match || !TextApi.isText(match.selectedText)) return false;
 
-  if (match.selectedText !== text) return false;
+  if (!PathApi.equals(match.focus.path, path)) return false;
 
-  return match.focus.offset === 0 || match.focus.offset === text.text.length;
+  return (
+    match.focus.offset === 0 ||
+    match.focus.offset === match.selectedText.text.length
+  );
 };
 
 const getDecoratedLeaf = (
@@ -82,6 +91,7 @@ export const pipeRenderLeaf = (
 ): EditableProps['renderLeaf'] => {
   const complexRenderLeafEntries: Array<{
     key: string;
+    requiresModelTextSync: boolean;
     renderLeaf: RenderLeaf;
   }> = [];
   const complexRenderLeafEntryByKey = new Map<string, RenderLeaf>();
@@ -97,10 +107,46 @@ export const pipeRenderLeaf = (
     key: string;
     plugin: AnyResolvedPlatePlugin;
   }> = [];
+  const plateRuntime = getPlateRuntime(editor);
   const hasInjectNodeProps =
-    getPlateRuntime(editor).pluginCache.inject.nodeProps.length > 0;
+    plateRuntime.pluginCache.inject.nodeProps.length > 0;
+  const textInjectionTransformScopes = plateRuntime.pluginList.flatMap(
+    (plugin) => {
+      const nodeProps = plugin.inject?.nodeProps;
+      const hasTextInjectionTransform = [
+        nodeProps?.transformClassName,
+        nodeProps?.transformNodeValue,
+        nodeProps?.transformProps,
+        nodeProps?.transformStyle,
+      ].some((transform) => typeof transform === 'function');
 
-  getPlateRuntime(editor).pluginCache.node.decoratedMarks.forEach((name) => {
+      if (
+        !hasTextInjectionTransform ||
+        plugin.inject.isBlock ||
+        plugin.inject.isElement
+      ) {
+        return [];
+      }
+      if (plugin.targetPlugins.length === 0) {
+        return [{ keys: [] as string[], wildcard: true }];
+      }
+      let unresolved = false;
+      const keys = plugin.targetPlugins.flatMap((target) => {
+        const binding = getCompiledPlateModelBinding(editor, target);
+
+        if (!binding) {
+          unresolved = true;
+          return [];
+        }
+
+        return binding.propertyKey ? [binding.propertyKey] : [];
+      });
+
+      return [{ keys, wildcard: unresolved }];
+    }
+  );
+
+  plateRuntime.pluginCache.node.decoratedMarks.forEach((name) => {
     const plugin = getCompiledPlatePlugin(editor, name)!;
 
     if (plugin) {
@@ -108,7 +154,7 @@ export const pipeRenderLeaf = (
 
       if (!leafKey) return;
       const canUseSimpleLeaf =
-        getPlateRuntime(editor).pluginCache.inject.nodeProps.length === 0 &&
+        plateRuntime.pluginCache.inject.nodeProps.length === 0 &&
         !plugin.render?.leaf &&
         !plugin.render?.node &&
         !plugin.render.nodeProps &&
@@ -129,6 +175,12 @@ export const pipeRenderLeaf = (
       } else {
         const entry = {
           key: leafKey,
+          requiresModelTextSync: Boolean(
+            (plugin as { component?: unknown }).component ||
+              plugin.render.leaf ||
+              plugin.render.node ||
+              plugin.render.nodeProps
+          ),
           renderLeaf: pluginRenderLeaf(editor, plugin as any),
         };
 
@@ -138,7 +190,7 @@ export const pipeRenderLeaf = (
     }
   });
 
-  getPlateRuntime(editor).pluginCache.node.leafProps.forEach((name) => {
+  plateRuntime.pluginCache.node.leafProps.forEach((name) => {
     const plugin = getCompiledPlatePlugin(editor, name)!;
     const key = plugin
       ? getCompiledPlateModelBinding(editor, plugin)?.propertyKey
@@ -159,133 +211,169 @@ export const pipeRenderLeaf = (
       return renderLeafProp;
     }
 
-    return function render({ attributes, ...props }) {
-      return <span {...attributes}>{props.children}</span>;
-    };
+    return setDOMTextSyncRendererCapability(
+      function render({ attributes, ...props }) {
+        return <span {...attributes}>{props.children}</span>;
+      },
+      () => true
+    );
   }
 
   const canUsePlainOuterLeaf =
     !hasInjectNodeProps && !renderLeafProp && leafPropsEntries.length === 0;
 
-  return function render({ attributes, ...props }) {
-    const readOnly = editor.read.view.isReadOnly();
-    const leaf = getDecoratedLeaf(
-      props.leaf as Record<string, unknown>,
-      (props as any).segment
-    );
-    let hasActiveSimpleRenderLeaf = false;
-    let hasActiveComplexRenderLeaf = false;
+  return setDOMTextSyncRendererCapability(
+    function render({ attributes, ...props }) {
+      const readOnly = editor.read.view.isReadOnly();
+      const leaf = getDecoratedLeaf(
+        props.leaf as Record<string, unknown>,
+        (props as any).segment
+      );
+      let hasActiveSimpleRenderLeaf = false;
+      let hasActiveComplexRenderLeaf = false;
 
-    props.leaf = leaf as any;
+      props.leaf = leaf as any;
 
-    for (const key in leaf) {
-      if (!Object.hasOwn(leaf, key)) continue;
+      for (const key in leaf) {
+        if (!Object.hasOwn(leaf, key)) continue;
 
-      if (!hasActiveSimpleRenderLeaf && renderLeafEntryByKey.has(key)) {
-        hasActiveSimpleRenderLeaf = true;
-      }
-
-      if (!hasActiveComplexRenderLeaf && complexRenderLeafEntryByKey.has(key)) {
-        hasActiveComplexRenderLeaf = true;
-      }
-
-      if (hasActiveSimpleRenderLeaf && hasActiveComplexRenderLeaf) break;
-    }
-
-    if (hasActiveSimpleRenderLeaf) {
-      for (const {
-        className,
-        editOnly,
-        key,
-        selectionAffinity,
-        tag: Tag,
-      } of renderLeafEntries) {
-        if (!leaf[key]) continue;
-
-        if (editOnly && isEditOnly(readOnly, { editOnly } as any, 'render')) {
-          continue;
+        if (!hasActiveSimpleRenderLeaf && renderLeafEntryByKey.has(key)) {
+          hasActiveSimpleRenderLeaf = true;
         }
 
-        if (selectionAffinity === 'hard') {
-          const showBoundarySpacers = isActiveHardAffinityBoundary(
-            editor,
-            props.text
-          );
+        if (
+          !hasActiveComplexRenderLeaf &&
+          complexRenderLeafEntryByKey.has(key)
+        ) {
+          hasActiveComplexRenderLeaf = true;
+        }
 
-          if (!showBoundarySpacers) {
-            props.children = <Tag className={className}>{props.children}</Tag>;
+        if (hasActiveSimpleRenderLeaf && hasActiveComplexRenderLeaf) break;
+      }
 
+      if (hasActiveSimpleRenderLeaf) {
+        for (const {
+          className,
+          editOnly,
+          key,
+          selectionAffinity,
+          tag: Tag,
+        } of renderLeafEntries) {
+          if (!leaf[key]) continue;
+
+          if (editOnly && isEditOnly(readOnly, { editOnly } as any, 'render')) {
             continue;
           }
 
-          props.children = (
-            <>
-              <span contentEditable={false} style={HARD_AFFINITY_SPACER_STYLE}>
-                {HARD_AFFINITY_SPACE}
-              </span>
-              <Tag className={className}>
-                {props.children}
+          if (selectionAffinity === 'hard') {
+            const showBoundarySpacers = isActiveHardAffinityBoundary(
+              editor,
+              props.path
+            );
+
+            if (!showBoundarySpacers) {
+              props.children = (
+                <Tag className={className}>{props.children}</Tag>
+              );
+
+              continue;
+            }
+
+            props.children = (
+              <>
                 <span
                   contentEditable={false}
                   style={HARD_AFFINITY_SPACER_STYLE}
                 >
                   {HARD_AFFINITY_SPACE}
                 </span>
-              </Tag>
-            </>
-          );
+                <Tag className={className}>
+                  {props.children}
+                  <span
+                    contentEditable={false}
+                    style={HARD_AFFINITY_SPACER_STYLE}
+                  >
+                    {HARD_AFFINITY_SPACE}
+                  </span>
+                </Tag>
+              </>
+            );
 
-          continue;
+            continue;
+          }
+
+          props.children = <Tag className={className}>{props.children}</Tag>;
         }
-
-        props.children = <Tag className={className}>{props.children}</Tag>;
       }
-    }
 
-    if (hasActiveComplexRenderLeaf) {
-      for (const { key, renderLeaf: RenderLeaf } of complexRenderLeafEntries) {
-        if (!leaf[key]) continue;
+      if (hasActiveComplexRenderLeaf) {
+        for (const {
+          key,
+          renderLeaf: RenderLeaf,
+        } of complexRenderLeafEntries) {
+          if (!leaf[key]) continue;
 
-        props.children = (
-          <RenderLeaf {...(props as any)}>{props.children}</RenderLeaf>
-        );
+          props.children = (
+            <RenderLeaf {...(props as any)}>{props.children}</RenderLeaf>
+          );
+        }
       }
-    }
 
-    leafPropsEntries.forEach(({ key, plugin }) => {
-      if (props.leaf[key]) {
-        const pluginLeafProps =
-          typeof plugin.render.leafProps === 'function'
-            ? plugin.render.leafProps(props as any)
-            : (plugin.render.leafProps ?? {});
+      leafPropsEntries.forEach(({ key, plugin }) => {
+        if (props.leaf[key]) {
+          const pluginLeafProps =
+            typeof plugin.render.leafProps === 'function'
+              ? plugin.render.leafProps(props as any)
+              : (plugin.render.leafProps ?? {});
 
-        attributes = {
-          ...attributes,
-          ...pluginLeafProps,
-          ...(pluginLeafProps.className && {
-            className: clsx(
-              (props as any).className,
-              pluginLeafProps.className
-            ),
-          }),
-        };
+          attributes = {
+            ...attributes,
+            ...pluginLeafProps,
+            ...(pluginLeafProps.className && {
+              className: clsx(
+                (props as any).className,
+                pluginLeafProps.className
+              ),
+            }),
+          };
+        }
+      });
+
+      if (canUsePlainOuterLeaf) {
+        return <span {...attributes}>{props.children}</span>;
       }
-    });
 
-    if (canUsePlainOuterLeaf) {
-      return <span {...attributes}>{props.children}</span>;
+      if (renderLeafProp) {
+        return renderLeafProp({ attributes, ...props } as any);
+      }
+
+      const ctxProps = getRenderNodeProps({
+        editor,
+        props: { attributes, ...props } as any,
+        readOnly,
+      }) as any;
+
+      return <PlateLeaf {...ctxProps}>{props.children}</PlateLeaf>;
+    },
+    ({ marks, projections }) => {
+      const decoratedMarks = getDecoratedLeaf(
+        marks as Record<string, unknown>,
+        { slices: projections }
+      );
+      const hasActiveTextInjectionTransform = textInjectionTransformScopes.some(
+        ({ keys, wildcard }) =>
+          wildcard || keys.some((key) => Boolean(decoratedMarks[key]))
+      );
+
+      return (
+        !renderLeafProp &&
+        !hasActiveTextInjectionTransform &&
+        !complexRenderLeafEntries.some(
+          ({ key, requiresModelTextSync }) =>
+            requiresModelTextSync && Boolean(decoratedMarks[key])
+        ) &&
+        !leafPropsEntries.some(({ key }) => Boolean(decoratedMarks[key]))
+      );
     }
-
-    if (renderLeafProp) {
-      return renderLeafProp({ attributes, ...props } as any);
-    }
-
-    const ctxProps = getRenderNodeProps({
-      editor,
-      props: { attributes, ...props } as any,
-      readOnly,
-    }) as any;
-
-    return <PlateLeaf {...ctxProps}>{props.children}</PlateLeaf>;
-  };
+  );
 };

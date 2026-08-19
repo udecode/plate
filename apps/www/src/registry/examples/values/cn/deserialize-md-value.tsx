@@ -6,7 +6,7 @@ jsx;
 
 export const deserializeMdValue = (
   <fragment>
-    <hh2>Markdown</hh2>
+    <hheading level={2}>Markdown</hheading>
     <hp>
       从流行的 Markdown 编辑器（如{' '}
       <ha url="https://markdown-it.github.io/">markdown-it.github.io/</ha>）

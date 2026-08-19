@@ -35,12 +35,12 @@ Strikethrough applies the `strikethrough` leaf mark to selected text. The packag
 
 `BasicMarksKit` includes `StrikethroughPlugin`, `~~` input rules, and a `mod+shift+x` shortcut.
 
-<ComponentSource name="basic-marks-kit" />
+<ComponentSource name="basic-marks" />
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
 
-import { BasicMarksKit } from '@/components/editor/plugins/basic-marks-kit';
+import { BasicMarksKit } from '@/components/editor/basic-marks';
 
 export const editor = createPlateEditor({
   plugins: [...BasicMarksKit],
@@ -55,7 +55,7 @@ Pass `StrikethroughPlugin` to `MarkToolbarButton` so the button uses the configu
 import { StrikethroughIcon } from 'lucide-react';
 import { StrikethroughPlugin } from '@platejs/basic-nodes/react';
 
-import { MarkToolbarButton } from '@/components/ui/mark-toolbar-button';
+import { MarkToolbarButton } from '@/components/editor/mark-toolbar-button';
 
 export function StrikethroughToolbarButton() {
   return (

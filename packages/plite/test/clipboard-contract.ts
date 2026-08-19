@@ -1612,13 +1612,13 @@ describe('plite slice contract', () => {
       {
         type: 'paragraph',
         indent: 1,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         children: [{ text: 'one' }],
       },
       {
         type: 'paragraph',
         indent: 2,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         children: [{ text: 'two' }],
       },
     ]);
@@ -1629,13 +1629,13 @@ describe('plite slice contract', () => {
       {
         type: 'paragraph',
         indent: 1,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         children: [{ text: 'one' }],
       },
       {
         type: 'paragraph',
         indent: 2,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         children: [{ text: 'two' }],
       },
     ]);

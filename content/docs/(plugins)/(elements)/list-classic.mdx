@@ -1,7 +1,7 @@
 ---
 title: List Classic
 docs:
-  - route: /docs/components/list-classic-node
+  - route: /docs/components/list-classic
     title: List Nodes
   - route: /docs/components/list-classic-toolbar-button
     title: List Toolbar Button
@@ -70,13 +70,13 @@ For a more flexible, Word-like approach, see the [List plugin](/docs/list).
 
 ### Installation
 
-The fastest way to add list functionality is with the `ListKit` export from `list-classic-kit`, which includes pre-configured list plugins, the classic markdown entry rules, [Plate UI](/docs/installation/plate-ui) components, and keyboard shortcuts.
+The fastest way to add list functionality is with the `ListKit` export from `list-classic`, which includes pre-configured list plugins, the classic markdown entry rules, [Plate UI](/docs/installation/plate-ui) components, and keyboard shortcuts.
 
-<ComponentSource name="list-classic-kit" />
+<ComponentSource name="list-classic" />
 
-- [`BulletedListElement`](/docs/components/list-classic-node): Renders unordered list elements.
-- [`NumberedListElement`](/docs/components/list-classic-node): Renders ordered list elements.
-- [`TaskListElement`](/docs/components/list-classic-node): Renders task list elements with checkboxes.
+- [`BulletedListElement`](/docs/components/list-classic): Renders unordered list elements.
+- [`NumberedListElement`](/docs/components/list-classic): Renders ordered list elements.
+- [`TaskListElement`](/docs/components/list-classic): Renders task list elements with checkboxes.
 
 ### Add Kit
 
@@ -84,7 +84,7 @@ Add the kit to your plugins:
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { ListKit } from '@/components/editor/plugins/list-classic-kit';
+import { ListKit } from '@/components/editor/list-classic';
 
 const editor = createPlateEditor({
   plugins: [
@@ -142,7 +142,7 @@ import {
   TaskListPlugin,
 } from '@platejs/list-classic/react';
 import { createPlateEditor } from 'platejs/react';
-import { BulletedListElement, NumberedListElement, TaskListElement } from '@/components/ui/list-classic-node';
+import { BulletedListElement, NumberedListElement, TaskListElement } from '@/components/editor/list-classic';
 
 const editor = createPlateEditor({
   plugins: [
@@ -174,7 +174,7 @@ const editor = createPlateEditor({
 ```
 
 - `inputRules`: Registers the classic markdown entry rules for bulleted, ordered, and task lists.
-- `.configure({ component })`: Assigns [`BulletedListElement`](/docs/components/list-classic-node), [`NumberedListElement`](/docs/components/list-classic-node), and [`TaskListElement`](/docs/components/list-classic-node) to render list elements.
+- `.configure({ component })`: Assigns [`BulletedListElement`](/docs/components/list-classic), [`NumberedListElement`](/docs/components/list-classic), and [`TaskListElement`](/docs/components/list-classic) to render list elements.
 - `shortcuts.toggle`: Defines keyboard [shortcuts](/docs/plugin-shortcuts) to toggle list types (`mod+alt+5` for bulleted, `mod+alt+6` for numbered, `mod+alt+7` for task lists).
 
 ### Add Toolbar Button
@@ -430,82 +430,10 @@ Removes list formatting from selected items.
 </APIOptions>
 </API>
 
-## Hooks
+## Registry UI
 
-### `useListToolbarButton`
+The copied classic-list node owns todo checkbox state and updates. The copied
+toolbar button owns pressed state and list toggling.
 
-A behavior hook for a list toolbar button.
-
-<API name="useListToolbarButton">
-<APIState>
-  <APIItem name="pressed" type="boolean">
-    Button pressed state.
-  </APIItem>
-  <APIItem name="plugin" type="PluginReference | string">
-    List plugin descriptor or capability name.
-    - **Default:** `PLUGINS.bulletedList`
-  </APIItem>
-</APIState>
-
-<APIReturns type="object">
-  <APIItem name="props" type="object">
-    Props for toolbar button.
-  </APIItem>
-  <APISubList>
-    <APISubListItem parent="props" name="pressed" type="boolean">
-      Button pressed state.
-    </APISubListItem>
-    <APISubListItem parent="props" name="onClick" type="function">
-      Handler to toggle list and focus editor.
-    </APISubListItem>
-  </APISubList>
-</APIReturns>
-</API>
-
-### `useTodoListElementState`
-
-Hook to manage task list item state.
-
-<API name="useTodoListElementState">
-<APIState>
-  <APIItem name="element" type="TTodoListItemElement">
-    Task list item element.
-  </APIItem>
-</APIState>
-
-<APIReturns type="object">
-  <APIItem name="checked" type="boolean">
-    Whether the task item is checked.
-  </APIItem>
-  <APIItem name="readOnly" type="boolean">
-    Whether the editor is in read-only mode.
-  </APIItem>
-  <APIItem name="onCheckedChange" type="function">
-    Handler to toggle the checked state.
-  </APIItem>
-</APIReturns>
-</API>
-
-### `useTodoListElement`
-
-Hook to get props for task list item checkbox.
-
-<API name="useTodoListElement">
-<APIState>
-  <APIItem name="checked" type="boolean">
-    Whether the task item is checked.
-  </APIItem>
-  <APIItem name="readOnly" type="boolean">
-    Whether the editor is in read-only mode.
-  </APIItem>
-  <APIItem name="onCheckedChange" type="function">
-    Handler to toggle the checked state.
-  </APIItem>
-</APIState>
-
-<APIReturns type="object">
-  <APIItem name="checkboxProps" type="object">
-    Props to be spread on the checkbox component.
-  </APIItem>
-</APIReturns>
-</API>
+<ComponentSource name="list-classic" />
+<ComponentSource name="list-classic-toolbar-button" />

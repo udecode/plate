@@ -36,6 +36,9 @@ import {
   withEditorRootChildren,
   withEditorRootChildrenGenerator,
   withEditorTargetRuntime,
+  isPersistedDocumentEnvelope,
+  replaceTransformedSnapshot,
+  transformEditorSnapshotInput,
 } from './core/public-state';
 import type {
   AnyEditor as Editor,
@@ -498,8 +501,14 @@ const withViewTransaction = <V extends Value>(
 
     return runSelectionMutation(fn);
   };
-  const replaceValue = (input: SnapshotInput<V>) =>
-    runRootTransform(editor, viewState, () => {
+  const replaceValue = (input: SnapshotInput<V>) => {
+    if (isPersistedDocumentEnvelope(input)) {
+      throw new Error(
+        'A persisted document envelope can replace only the complete editor, not one editor view root.'
+      );
+    }
+
+    return runRootTransform(editor, viewState, () => {
       const value = transaction.value();
       const selection =
         input.selection &&
@@ -513,7 +522,7 @@ const withViewTransaction = <V extends Value>(
             }
           : input.selection;
 
-      transaction.value.replace({
+      const scopedInput: SnapshotInput<V> = {
         ...(viewState.root === MAIN_ROOT_KEY
           ? { ...value, children: input.children }
           : {
@@ -527,7 +536,19 @@ const withViewTransaction = <V extends Value>(
           input.selection === 'start' || input.selection === 'end'
             ? null
             : selection,
-      });
+      };
+      const transformedInput = transformEditorSnapshotInput(
+        editor,
+        scopedInput
+      );
+
+      if (isPersistedDocumentEnvelope(transformedInput)) {
+        throw new Error(
+          'A persisted document envelope can replace only the complete editor, not one editor view root.'
+        );
+      }
+
+      replaceTransformedSnapshot(editor, transformedInput);
 
       if (input.selection === 'start' || input.selection === 'end') {
         const point =
@@ -538,6 +559,7 @@ const withViewTransaction = <V extends Value>(
         if (point) transaction.selection.set(point);
       }
     });
+  };
 
   const viewTransaction = Object.freeze({
     ...state,
@@ -803,8 +825,23 @@ const createViewRuntime = <V extends Value>(
   baseRuntime: InternalEditorRuntime<V>,
   viewState: ViewState,
   getViewEditor: () => Editor<V> | null
-): InternalEditorRuntime<V> =>
-  Object.freeze({
+): InternalEditorRuntime<V> => {
+  let cachedBaseState: EditorStateView<V, any> | undefined;
+  let cachedViewState: EditorStateView<V, any> | undefined;
+  const projectState = (state: EditorStateView<V, any>) => {
+    if (state !== cachedBaseState) {
+      cachedBaseState = state;
+      cachedViewState = withViewState<V, EditorStateView<V, any>>(
+        editor,
+        state,
+        viewState
+      ) as EditorStateView<V, any>;
+    }
+
+    return cachedViewState!;
+  };
+
+  return Object.freeze({
     ...baseRuntime,
     above: (...args) =>
       withRootRead(editor, viewState, () => baseRuntime.above(...args)),
@@ -883,16 +920,7 @@ const createViewRuntime = <V extends Value>(
       withRootRead(editor, viewState, () => baseRuntime.projectRange(...args)),
     range: (...args) =>
       withRootRead(editor, viewState, () => baseRuntime.range(...args)),
-    read: (fn) =>
-      baseRuntime.read((state) =>
-        fn(
-          withViewState<V, EditorStateView<V, any>>(
-            editor,
-            state,
-            viewState
-          ) as EditorStateView<V, any>
-        )
-      ),
+    read: (fn) => baseRuntime.read((state) => fn(projectState(state))),
     runCommand: createCommandDispatch(() => {
       if (viewState.readOnly) {
         throw new Error('Cannot update a read-only editor view.');
@@ -990,6 +1018,7 @@ const createViewRuntime = <V extends Value>(
     void: (...args) =>
       withRootRead(editor, viewState, () => baseRuntime.void(...args)),
   });
+};
 
 /** Create a root-scoped editor view from an existing editor. */
 const createEditorViewRuntime = <

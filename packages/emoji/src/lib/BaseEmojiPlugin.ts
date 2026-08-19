@@ -1,4 +1,4 @@
-import type { Emoji, EmojiMartData } from '@emoji-mart/data';
+import type { Emoji } from '@emoji-mart/data';
 
 import {
   triggerCombobox,
@@ -12,18 +12,9 @@ import {
 } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
 
-import { DEFAULT_EMOJI_LIBRARY } from './EmojiLibrary';
-
 const TRIGGER_PREVIOUS_CHAR_PATTERN = /^\s?$/;
 
 export type EmojiPluginState = {
-  /**
-   * The emoji data.
-   *
-   * @example
-   *   import emojiMartData from '@emoji-mart/data';
-   */
-  data: EmojiMartData;
   createEmojiNode: (
     emoji: Emoji
   ) => Exclude<
@@ -62,7 +53,6 @@ export const BaseEmojiPlugin = defineBasePlugin(PLUGINS.emoji, {
       children: [{ text: '' }],
       type: editor.plugin(BaseEmojiInputPlugin).schema.type,
     }),
-    data: DEFAULT_EMOJI_LIBRARY,
     trigger: ':',
     triggerPreviousCharPattern: TRIGGER_PREVIOUS_CHAR_PATTERN,
     createEmojiNode: ({ skins }) => ({ text: skins[0].native }),

@@ -3,6 +3,7 @@ import { describe, it } from 'node:test';
 
 import {
   createEditor,
+  createEditorView,
   defineExtension,
   defineExtensionPoint,
   type EditorExtensionContribution,
@@ -33,6 +34,37 @@ describe('typed extension contributions', () => {
       'first',
       'second',
     ]);
+  });
+
+  it('keeps retained extension portals live across API recompilation', () => {
+    const messages = defineExtensionPoint<string>('test:live-messages');
+    const first = defineExtension('first-live-message', {
+      contributions: [messages.of('first')],
+    });
+    const second = defineExtension('second-live-message', {
+      contributions: [messages.of('second')],
+    });
+    const consumer = defineExtension('live-consumer', {
+      api({ getContributions }) {
+        const values = getContributions(messages);
+
+        return { values: () => values };
+      },
+    });
+    const editor = createEditor({ extensions: [first, consumer] });
+    const view = createEditorView(editor);
+    const portal = editor.extension(consumer);
+    const viewPortal = view.extension(consumer);
+
+    assert.deepEqual(portal.api.values(), ['first']);
+    assert.equal(viewPortal.api, view.api['live-consumer']);
+    const cleanup = editor.install(second);
+    assert.deepEqual(portal.api.values(), ['first', 'second']);
+    assert.deepEqual(viewPortal.api.values(), ['first', 'second']);
+    assert.equal(viewPortal.api, view.api['live-consumer']);
+    cleanup();
+    assert.deepEqual(portal.api.values(), ['first']);
+    assert.deepEqual(viewPortal.api.values(), ['first']);
   });
 
   it('rejects structurally spoofed contributions without publishing them', () => {

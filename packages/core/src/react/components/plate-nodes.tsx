@@ -35,13 +35,8 @@ const VOID_HTML_TAGS = new Set<keyof HTMLElementTagNameMap>([
   'wbr',
 ]);
 
-export const useNodeAttributes = (props: any, ref?: any) => ({
-  ...props.attributes,
-  className:
-    clsx((props.attributes as any).className, props.className) || undefined,
-  ref: useComposedRef(ref, props.attributes.ref),
-  style: { ...(props.attributes as any).style, ...props.style },
-});
+const getAttributeRef = (attributes: UnknownObject) =>
+  (attributes as { ref?: React.Ref<HTMLElement> }).ref;
 
 export const isHtmlVoidElementTag = (tag: keyof HTMLElementTagNameMap) =>
   VOID_HTML_TAGS.has(tag);
@@ -137,23 +132,20 @@ type PlateElementComponentProps<
     style?: React.CSSProperties;
   };
 
-export const PlateElement = React.forwardRef(function PlateElement(
-  {
-    as: Tag = 'div',
-    children,
-    insetProp,
-    ...props
-  }: PlateElementComponentProps,
-  ref: React.ForwardedRef<HTMLDivElement>
-) {
-  const attributes = useNodeAttributes(
-    {
-      attributes: props.attributes,
-      className: props.className,
-      style: props.style,
-    },
-    ref
-  );
+export const PlateElement = function PlateElement({
+  as: Tag = 'div',
+  children,
+  insetProp,
+  ref,
+  ...props
+}: PlateElementComponentProps) {
+  const attributes = {
+    ...props.attributes,
+    className:
+      clsx((props.attributes as any).className, props.className) || undefined,
+    ref: useComposedRef(ref, getAttributeRef(props.attributes)),
+    style: { ...(props.attributes as any).style, ...props.style },
+  };
 
   const inset =
     insetProp ?? props.plugin?.rules.selection?.affinity === 'directional';
@@ -163,7 +155,7 @@ export const PlateElement = React.forwardRef(function PlateElement(
       {children}
     </PlateElementBody>
   );
-}) as unknown as {
+} as unknown as {
   <
     N extends Element = Element,
     C extends AnyBasePluginDefinition = never,
@@ -251,14 +243,22 @@ type PlateTextComponentProps<
   T extends keyof HTMLElementTagNameMap = 'span',
 > = PlateTextRenderProps<N, C> & PlateHTMLProps<C, T>;
 
-export const PlateText = React.forwardRef<
-  HTMLSpanElement,
-  PlateTextComponentProps
->(({ as: Tag = 'span', children, ...props }, ref) => {
-  const attributes = useNodeAttributes(props, ref);
+export const PlateText = function PlateText({
+  as: Tag = 'span',
+  children,
+  ref,
+  ...props
+}: PlateTextComponentProps) {
+  const attributes = {
+    ...props.attributes,
+    className:
+      clsx((props.attributes as any).className, props.className) || undefined,
+    ref: useComposedRef(ref, getAttributeRef(props.attributes)),
+    style: { ...(props.attributes as any).style, ...props.style },
+  };
 
   return <Tag {...attributes}>{children}</Tag>;
-}) as unknown as <
+} as unknown as <
   N extends Text = Text,
   C extends AnyBasePluginDefinition = never,
   T extends keyof HTMLElementTagNameMap = 'span',
@@ -299,11 +299,20 @@ const NonBreakingSpace = () => (
   </span>
 );
 
-export const PlateLeaf = React.forwardRef<
-  HTMLSpanElement,
-  PlateLeafComponentProps
->(({ as: Tag = 'span', children, inset: insetProp, ...props }, ref) => {
-  const attributes = useNodeAttributes(props, ref);
+export const PlateLeaf = function PlateLeaf({
+  as: Tag = 'span',
+  children,
+  inset: insetProp,
+  ref,
+  ...props
+}: PlateLeafComponentProps) {
+  const attributes = {
+    ...props.attributes,
+    className:
+      clsx((props.attributes as any).className, props.className) || undefined,
+    ref: useComposedRef(ref, getAttributeRef(props.attributes)),
+    style: { ...(props.attributes as any).style, ...props.style },
+  };
 
   const inset = insetProp ?? props.plugin?.rules.selection?.affinity === 'hard';
 
@@ -321,7 +330,7 @@ export const PlateLeaf = React.forwardRef<
   }
 
   return <Tag {...attributes}>{children}</Tag>;
-}) as unknown as <
+} as unknown as <
   N extends Text = Text,
   C extends AnyBasePluginDefinition = never,
   T extends keyof HTMLElementTagNameMap = 'span',

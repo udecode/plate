@@ -21,15 +21,18 @@ describe('core static renderStaticHtml element rendering', () => {
     const editor = createStaticEditor([
       {
         children: [{ text: 'Heading 1' }],
-        type: 'h1',
+        level: 1,
+        type: 'heading',
       },
       {
         children: [{ text: 'Heading 2' }],
-        type: 'h2',
+        level: 2,
+        type: 'heading',
       },
       {
         children: [{ text: 'Heading 3' }],
-        type: 'h3',
+        level: 3,
+        type: 'heading',
       },
     ]);
 

@@ -1,5 +1,5 @@
 ---
-description: Autogoal-backed fork-aware status, planning, review, dashboard, apply, and tracking for syncing Plate UI registry components into downstream custom apps such as Potion. Use when the user asks for `sync-plate-ui`, `sync-plate-ui status`, `sync-plate-ui plan`, `sync-plate-ui review`, `sync-plate-ui dashboard`, `sync-plate-ui apply`, to sync or migrate one Plate UI component from the component changelog, to compare Plate UI registry source with a downstream repo, or to smart-merge local forked Plate UI components.
+description: Sync Plate UI registry components into downstream apps with fork-aware status, planning, review, dashboards, apply, and changelog tracking.
 name: sync-plate-ui
 metadata:
   skiller:
@@ -89,8 +89,8 @@ If the first token is a command, dispatch to that command. Otherwise treat the
 argument as planning scope. Examples:
 
 ```txt
-sync-plate-ui ../potion code-block-node
-sync-plate-ui plan ../potion code-block-node
+sync-plate-ui ../potion code-block
+sync-plate-ui plan ../potion code-block
 sync-plate-ui status ../potion
 sync-plate-ui apply ../potion
 ```
@@ -119,7 +119,7 @@ The target repo owns its sync state:
   "targetRepo": "/Users/zbeyens/git/potion",
   "lastReviewedAt": "YYYY-MM-DD",
   "components": {
-    "code-block-node": {
+    "code-block": {
       "lastAppliedPr": 4989,
       "lastAppliedSourceRef": "<plate-git-sha>",
       "lastAppliedSourceHash": "<sha256-of-transformed-source>",
@@ -163,11 +163,10 @@ recommending apply. Prose alone is not enough.
 
 Plate registry sources to inspect first:
 
-- `apps/www/src/registry/registry-ui.ts`
-- `apps/www/src/registry/registry-kits.ts`
+- `apps/www/src/registry/registry-editor.ts`
+- `apps/www/src/registry/registry-features.ts`
 - `apps/www/src/registry/registry-examples.ts`
-- `apps/www/src/registry/ui/**`
-- `apps/www/src/registry/components/**`
+- `apps/www/src/registry/components/editor/**`
 - `apps/www/src/registry/hooks/**`
 - `apps/www/src/registry/lib/**`
 - `apps/www/src/registry/app/**`
@@ -344,8 +343,8 @@ Copied apply payload:
 $sync-plate-ui apply ../potion
 
 Rows:
-- code-block-node/4989/language-label: Pull note: safe upstream-only render hunk
-- code-block-node/4989/toolbar-style: Keep Fork note: Potion toolbar owns layout
+- code-block/4989/language-label: Pull note: safe upstream-only render hunk
+- code-block/4989/toolbar-style: Keep Fork note: Potion toolbar owns layout
 
 Questions:
 - ai-menu/streaming: Should Potion keep its custom stream controls?
@@ -441,16 +440,16 @@ Potion is a good stress target because it contains copied registry files under
 packages. Its existing `sync:plate` and `sync:potion-ui` scripts must be read
 before use; do not assume they sync Plate UI into Potion.
 
-For `../potion code-block-node`, inspect at minimum:
+For `../potion code-block`, inspect at minimum:
 
 - `../potion/components.json`
 - `../potion/package.json`
 - `../potion/src/registry/ui/code-block-node.tsx`
 - `../potion/src/registry/ui/code-block-node-static.tsx`
 - related Potion editor imports
-- Plate `apps/www/src/registry/ui/code-block-node.tsx`
-- Plate `apps/www/src/registry/ui/code-block-node-static.tsx`
-- component changelog entries for `code-block-node` and related components
+- Plate `apps/www/src/registry/components/editor/code-block.tsx`
+- Plate `apps/www/src/registry/components/editor/code-block-static.tsx`
+- component changelog entries for `code-block` and related components
 
 Expected result is a plan that says which hunks to pull, which Potion hunks to
 keep, and what verification Potion owns.

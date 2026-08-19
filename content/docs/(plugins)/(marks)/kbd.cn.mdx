@@ -25,9 +25,9 @@ docs:
 
 The fastest way to add the kbd plugin is with the `BasicMarksKit`, which includes pre-configured `KbdPlugin` along with other basic marks and their [Plate UI](/docs/installation/plate-ui) components.
 
-<ComponentSource name="basic-marks-kit" />
+<ComponentSource name="basic-marks" />
 
-- [`KbdLeaf`](/docs/components/kbd-node): Renders keyboard shortcut elements.
+- [`KbdLeaf`](/docs/components/kbd): Renders keyboard shortcut elements.
 
 ### Add Kit
 
@@ -35,7 +35,7 @@ Add the kit to your plugins:
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { BasicMarksKit } from '@/components/editor/plugins/basic-marks-kit';
+import { BasicMarksKit } from '@/components/editor/basic-marks';
 
 const editor = createPlateEditor({
   plugins: [
@@ -80,7 +80,7 @@ You can configure the `KbdPlugin` with a custom component.
 ```tsx
 import { KbdPlugin } from '@platejs/basic-nodes/react';
 import { createPlateEditor } from 'platejs/react';
-import { KbdLeaf } from '@/components/ui/kbd-node';
+import { KbdLeaf } from '@/components/editor/kbd';
 
 const editor = createPlateEditor({
   plugins: [
@@ -90,7 +90,7 @@ const editor = createPlateEditor({
 });
 ```
 
-- `component`: Assigns [`KbdLeaf`](/docs/components/kbd-node) to render keyboard shortcut elements.
+- `component`: Assigns [`KbdLeaf`](/docs/components/kbd) to render keyboard shortcut elements.
 
 ### Add Toolbar Button
 

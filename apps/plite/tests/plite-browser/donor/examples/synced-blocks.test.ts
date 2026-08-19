@@ -3221,6 +3221,10 @@ test.describe('synced blocks example', () => {
       .getByRole('button', { name: 'Unsync synced block' })
       .nth(1)
       .click();
+    await expect(getSyncedBlock(page, 1)).not.toHaveAttribute(
+      'data-plite-synced-root',
+      SHARED_ROOT
+    );
 
     await first.selection.collapse({ path: [0, 0], offset: 0 });
     await first.insertText('Live ');

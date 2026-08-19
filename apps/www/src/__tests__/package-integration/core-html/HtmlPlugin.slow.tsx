@@ -1,14 +1,6 @@
 /** @jsx jsxt */
 
-import {
-  BaseBoldPlugin,
-  BaseH1Plugin,
-  BaseH2Plugin,
-  BaseH3Plugin,
-  BaseH4Plugin,
-  BaseH5Plugin,
-  BaseH6Plugin,
-} from '@platejs/basic-nodes';
+import { BaseBoldPlugin, BaseHeadingPlugin } from '@platejs/basic-nodes';
 import { BaseLinkPlugin } from '@platejs/link';
 import { BaseMediaEmbedPlugin } from '@platejs/media';
 import { jsxt, type TestEditorFixture } from '@platejs/test-utils';
@@ -66,14 +58,7 @@ describe('when inserting html', () => {
       ) as any;
 
       const editor = createBaseEditor({
-        plugins: [
-          BaseH1Plugin,
-          BaseH2Plugin,
-          BaseH3Plugin,
-          BaseH4Plugin,
-          BaseH5Plugin,
-          BaseH6Plugin,
-        ],
+        plugins: [BaseHeadingPlugin],
         selection: input.selection,
         initialValue: input.children,
       });
@@ -96,22 +81,15 @@ describe('when inserting html', () => {
 
       const expected = (
         <editor>
-          <hh1>
+          <hheading level={1}>
             inserted
             <cursor />
-          </hh1>
+          </hheading>
         </editor>
       ) as any;
 
       const editor = createBaseEditor({
-        plugins: [
-          BaseH1Plugin,
-          BaseH2Plugin,
-          BaseH3Plugin,
-          BaseH4Plugin,
-          BaseH5Plugin,
-          BaseH6Plugin,
-        ],
+        plugins: [BaseHeadingPlugin],
         selection: input.selection,
         initialValue: input.children,
       });

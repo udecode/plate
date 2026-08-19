@@ -1054,8 +1054,8 @@ export const applyEditableDOMSelectionChange = ({
 
   if (selectionChangeOrigin === 'repair-induced' && domSelection.isCollapsed) {
     if (
-      state.activeIntent === 'text-insert' ||
-      state.recentTextInputRepairEcho
+      state.textInputOwnership === 'model' &&
+      (state.activeIntent === 'text-insert' || state.recentTextInputRepairEcho)
     ) {
       setEditableModelSelectionPreference({
         inputController,
@@ -1174,7 +1174,8 @@ export const applyEditableDOMSelectionChange = ({
   if (pendingRepairSelectionChangePolicy === 'suppress') {
     if (
       selectionChangeOrigin === 'repair-induced' &&
-      state.activeIntent === 'text-insert'
+      state.activeIntent === 'text-insert' &&
+      state.textInputOwnership === 'model'
     ) {
       setEditableModelSelectionPreference({
         inputController,

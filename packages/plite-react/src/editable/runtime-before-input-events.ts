@@ -44,7 +44,7 @@ import {
 import { getNativeBeforeInputDecision } from './native-input-strategy';
 import {
   editorCommands,
-  hasCommandHandler,
+  probeCommandNativeEquivalent,
   toInternalRoot,
 } from './runtime-editor-api';
 import type { EditableEventRuntime } from './runtime-event-engine';
@@ -574,14 +574,11 @@ export const useRuntimeBeforeInputEvents = ({
             return;
           }
 
-          const hasAppInputPolicy = Boolean(
-            onDOMBeforeInput ||
-              onBeforeInput ||
-              onInput ||
-              hasCommandHandler(editor, editorCommands.insertText)
+          const hasAppDOMInputPolicy = Boolean(
+            onDOMBeforeInput || onBeforeInput || onInput
           );
 
-          if (hasAppInputPolicy) {
+          if (hasAppDOMInputPolicy) {
             flushPendingNativeTextInput?.();
             currentSelection = profileBeforeInputDuration(
               'beforeinput-reread-selection-after-native-text-flush',
@@ -598,7 +595,25 @@ export const useRuntimeBeforeInputEvents = ({
                   inputController.state.selectionSource === 'dom-current',
                 editor,
                 event,
-                hasAppInputPolicy,
+                hasAppDOMInputPolicy,
+                isCommandNativeEquivalent: () => {
+                  const evaluation = probeCommandNativeEquivalent(
+                    editor,
+                    editorCommands.insertText,
+                    {
+                      text: event.data ?? '',
+                    }
+                  );
+
+                  if (!evaluation.nativeEquivalent) {
+                    recordPliteReactRender({
+                      id: `beforeinput-command-material:${evaluation.materialHandlers.join(',') || 'non-default'}`,
+                      kind: 'runtime-time',
+                    });
+                  }
+
+                  return evaluation.nativeEquivalent;
+                },
                 selection: currentSelection,
               })
           );
@@ -607,8 +622,15 @@ export const useRuntimeBeforeInputEvents = ({
             inputType: type,
             isCompositionChange,
             native: initialNative,
+            nativeBlocker: initialNativeBlocker,
             shouldAbortForCompositionChange,
           } = beforeInputDecision;
+          if (!initialNative && initialNativeBlocker) {
+            recordPliteReactRender({
+              id: `beforeinput-native-blocked:${initialNativeBlocker}`,
+              kind: 'runtime-time',
+            });
+          }
           clearExpiredTextInputRepairEcho(inputController, now());
           const selectionRoot =
             getSelectionRoot(currentSelection) ??
@@ -809,7 +831,15 @@ export const useRuntimeBeforeInputEvents = ({
             }
           );
           native = beforeInputSelection.native;
+          if (initialNative && !native && beforeInputSelection.nativeBlocker) {
+            recordPliteReactRender({
+              id: `beforeinput-native-demoted:${beforeInputSelection.nativeBlocker}`,
+              kind: 'runtime-time',
+            });
+          }
           currentSelection = beforeInputSelection.selection;
+          inputController.state.textInputOwnership =
+            type === 'insertText' ? (native ? 'native' : 'model') : null;
           const pendingCompositionInputOwnership =
             getPendingCompositionInputOwnership({
               editor,
@@ -821,6 +851,16 @@ export const useRuntimeBeforeInputEvents = ({
           if (pendingCompositionInputOwnership === 'external') {
             return;
           }
+
+          if (native && type === 'insertText' && !isCompositionChange) {
+            setEditableModelSelectionPreference({
+              inputController,
+              preferModelSelection: false,
+              reason: 'native-selection',
+              selectionSource: 'dom-current',
+            });
+          }
+
           let didRepairNonNativeDOMTextInput = false;
 
           if (

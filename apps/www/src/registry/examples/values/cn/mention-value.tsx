@@ -6,15 +6,15 @@ jsx;
 
 export const mentionValue = (
   <fragment>
-    <hh2>提及</hh2>
+    <hheading level={2}>提及</hheading>
     <hp>使用@提及功能在文本中提及和引用其他用户或实体。</hp>
     <hp>
       试试提及{' '}
-      <hmention value="BB-8">
+      <hmention ref="BB-8">
         <htext />
       </hmention>{' '}
       或{' '}
-      <hmention value="Boba Fett">
+      <hmention ref="Boba Fett">
         <htext />
       </hmention>
       。

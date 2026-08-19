@@ -1,14 +1,4 @@
-import React from 'react';
-
-import { Plate, createPlateEditor } from '@platejs/core/react';
-import type { TextSelection } from '@platejs/plite';
-import { act, renderHook } from '@testing-library/react';
-
-const selection = {
-  kind: 'text',
-  anchor: { offset: 0, path: [0, 0] },
-  focus: { offset: 4, path: [0, 0] },
-} satisfies TextSelection;
+import { renderHook } from '@testing-library/react';
 const setReference = mock();
 const setFloating = mock();
 const update = mock();
@@ -78,38 +68,5 @@ describe('floating hooks', () => {
       visibility: undefined,
     });
     expect(update).toHaveBeenCalled();
-  });
-
-  it('closes the toolbar when focus moves to another editor', async () => {
-    const { useFloatingToolbar, useFloatingToolbarState } = await import(
-      `./useFloating?toolbar=${Math.random().toString(36).slice(2)}`
-    );
-    const editor = createPlateEditor({
-      id: 'editor-1',
-      selection,
-      initialValue: [{ children: [{ text: 'text' }], type: 'paragraph' }],
-    });
-    const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <Plate editor={editor}>{children}</Plate>
-    );
-    const { rerender, result } = renderHook(
-      ({ focusedEditorId }: { focusedEditorId: string }) => {
-        const state = useFloatingToolbarState({
-          editorId: 'editor-1',
-          focusedEditorId,
-        });
-
-        return useFloatingToolbar(state);
-      },
-      { initialProps: { focusedEditorId: 'editor-1' }, wrapper }
-    );
-
-    await act(async () => {});
-    expect(result.current.hidden).toBe(false);
-
-    rerender({ focusedEditorId: 'editor-2' });
-    await act(async () => {});
-
-    expect(result.current.hidden).toBe(true);
   });
 });

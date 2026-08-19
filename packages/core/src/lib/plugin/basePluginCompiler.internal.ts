@@ -378,7 +378,7 @@ type BasePluginPresenceField =
   | 'rules'
   | 'shortcuts'
   | 'targetPlugins'
-  | 'transformInitialValue'
+  | 'prepareDocument'
   | 'useHooks';
 
 type NormalizedBasePluginField<TInput, TKey extends keyof TInput> = TKey extends

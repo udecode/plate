@@ -642,9 +642,9 @@ export const EditableDOMRoot = (props: EditableDOMRootProps) => {
   ]);
 
   return (
-    <ReadOnlyContext.Provider value={readOnly}>
-      <ComposingContext.Provider value={isComposing}>
-        <EditableDOMRuntimeContext.Provider value={runtime}>
+    <ReadOnlyContext value={readOnly}>
+      <ComposingContext value={isComposing}>
+        <EditableDOMRuntimeContext value={runtime}>
           <EditableDOMCommitFence runtime={runtime}>
             <Component
               aria-multiline
@@ -705,9 +705,9 @@ export const EditableDOMRoot = (props: EditableDOMRootProps) => {
               {customChildren}
             </Component>
           </EditableDOMCommitFence>
-        </EditableDOMRuntimeContext.Provider>
-      </ComposingContext.Provider>
-    </ReadOnlyContext.Provider>
+        </EditableDOMRuntimeContext>
+      </ComposingContext>
+    </ReadOnlyContext>
   );
 };
 

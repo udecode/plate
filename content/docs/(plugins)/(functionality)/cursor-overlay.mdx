@@ -28,7 +28,7 @@ docs:
 
 The fastest way to add cursor overlay functionality is with the `CursorOverlayKit`, which includes the pre-configured `CursorOverlayPlugin` and the [`CursorOverlay`](/docs/components/cursor-overlay) UI component.
 
-<ComponentSource name="cursor-overlay-kit" />
+<ComponentSource name="cursor-overlay" />
 
 - [`CursorOverlay`](/docs/components/cursor-overlay): Renders cursor and selection overlays.
 
@@ -36,7 +36,7 @@ The fastest way to add cursor overlay functionality is with the `CursorOverlayKi
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { CursorOverlayKit } from '@/components/editor/plugins/cursor-overlay-kit';
+import { CursorOverlayKit } from '@/components/editor/cursor-overlay';
 
 const editor = createPlateEditor({
   plugins: [
@@ -78,7 +78,7 @@ Configure the cursor overlay with a component to render overlays:
 
 ```tsx
 import { CursorOverlayPlugin } from '@platejs/selection/react';
-import { CursorOverlay } from '@/components/ui/cursor-overlay';
+import { CursorOverlay } from '@/components/editor/cursor-overlay';
 
 CursorOverlayPlugin.configure({
   render: {

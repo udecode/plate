@@ -305,6 +305,14 @@ export const createDOMRepairQueue = ({
         }
       })
     );
+    if (!isInsideVirtualizedDOM(textHost)) {
+      setEditableModelSelectionPreference({
+        inputController,
+        preferModelSelection: false,
+        reason: 'native-selection',
+        selectionSource: 'dom-current',
+      });
+    }
     profileDOMRepairDuration('captured-repair-caret', () =>
       scheduleTextInsertCaretRepair()
     );
@@ -606,6 +614,14 @@ export const createDOMRepairQueue = ({
             });
           }
         });
+        if (textHost && !isInsideVirtualizedDOM(textHost)) {
+          setEditableModelSelectionPreference({
+            inputController,
+            preferModelSelection: false,
+            reason: 'native-selection',
+            selectionSource: 'dom-current',
+          });
+        }
         if (shouldRepairCaretAfterTextInsert) {
           scheduleTextInsertCaretRepair();
         } else if (shouldArmVirtualizedTextInsertCaretRepair) {
@@ -804,8 +820,7 @@ export const createDOMRepairQueue = ({
           const isVirtualizedTextHost = isInsideVirtualizedDOM(textHost);
           const shouldRetainModelOwnedTextInsert =
             kind === 'repair-caret-after-text-insert' &&
-            (inputController.preferModelSelectionForInputRef.current ||
-              inputController.state.selectionSource === 'model-owned');
+            inputController.state.textInputOwnership === 'model';
           const isModelOwnedTextInsertRepair =
             kind === 'repair-caret-after-text-insert' &&
             (isVirtualizedTextHost ||

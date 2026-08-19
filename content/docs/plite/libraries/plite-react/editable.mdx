@@ -85,9 +85,8 @@ type EditableProps = {
 `Editable` also accepts safe `div` attributes such as `aria-*`, `data-*`, and event handlers that are not owned by Plite.
 
 `DOMStrategyOptions` is either `'auto'`, `'staged'`, `'full'`, an object with
-`{ type: 'auto' | 'staged' | 'full', textSync? }`, or the experimental object
-form `{ type: 'virtualized', estimatedBlockSize?, overscan?, threshold?,
-textSync? }`.
+`{ type: 'auto' | 'staged' | 'full' }`, or the experimental object form
+`{ type: 'virtualized', estimatedBlockSize?, overscan?, threshold? }`.
 
 `scrollSelectionIntoView` defaults to `defaultScrollSelectionIntoView`. Import
 the helper when custom scroll behavior should wrap Plite's default caret and
@@ -190,6 +189,12 @@ const ImageElement = ({ element }) => {
 
 Use `renderLeaf` for text marks.
 
+Live leaf renderers receive marks, decorations, and a stable text path, but not
+the underlying text string or segment offsets. Render `children` for the text.
+A custom `renderLeaf` stays on the conservative model-owned input path because
+arbitrary returned DOM cannot be proven safe. Internally compiled Plate mark
+renderers can publish native DOM capability without an app-owned flag.
+
 ```tsx
 const renderLeaf = ({ attributes, children, leaf }) => {
   return (
@@ -209,6 +214,10 @@ const renderLeaf = ({ attributes, children, leaf }) => {
 ## `renderText`
 
 Use `renderText` when you need to wrap a whole text node, regardless of how decorations split it into leaves.
+
+`renderText` is the advanced model-owned lane for whole-text DOM structure. A
+custom text renderer deliberately gives up direct native DOM text sync; prefer
+`renderLeaf` for ordinary mark and decoration presentation.
 
 ```tsx
 const renderText = ({ attributes, children, text }) => {

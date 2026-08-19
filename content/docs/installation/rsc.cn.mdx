@@ -19,10 +19,10 @@ description: 安装并配置适用于 React Server Components 的 Plate。
 如果需要 Plate UI 静态组件和默认序列化插件，请安装复制到应用中的基础编辑器 kit。
 
 ```bash
-npx shadcn@latest add @plate/editor-base-kit
+npx shadcn@latest add @plate/editor-plugins-static
 ```
 
-`editor-base-kit` 会安装 `BaseEditorKit`、静态节点组件，以及服务端渲染使用的 `editor-static` UI 组件。
+`editor-plugins-static` 会安装 `BaseEditorKit`、静态节点组件，以及服务端渲染使用的 `editor-static` UI 组件。
 
 ### 渲染静态内容
 
@@ -32,12 +32,12 @@ npx shadcn@latest add @plate/editor-base-kit
 import type { Value } from 'platejs';
 import { createStaticEditor, PlateStatic } from 'platejs/static';
 
-import { BaseEditorKit } from '@/components/editor/editor-base-kit';
+import { BaseEditorKit } from '@/components/editor/plugins-static';
 
 const value: Value = [
   {
     children: [{ text: '服务端渲染的文档' }],
-    type: 'h1',
+    type: 'heading', level: 1,
   },
   {
     children: [{ text: '这些内容在没有编辑器状态的情况下渲染。' }],
@@ -63,13 +63,13 @@ export default function DocumentsPage() {
 import type { Value } from 'platejs';
 import { createStaticEditor, renderStaticHtml } from 'platejs/static';
 
-import { BaseEditorKit } from '@/components/editor/editor-base-kit';
-import { EditorStatic } from '@/components/ui/editor-static';
+import { BaseEditorKit } from '@/components/editor/plugins-static';
+import { EditorStatic } from '@/components/editor/editor-static';
 
 const value: Value = [
   {
     children: [{ text: '导出的文档' }],
-    type: 'h1',
+    type: 'heading', level: 1,
   },
   {
     children: [{ text: '这段 HTML 在服务端生成。' }],

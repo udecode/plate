@@ -36,7 +36,7 @@
     "dist/**/*"
   ],
   "scripts": {
-    "build": "plate-pkg p:build",
+    "build": "tsdown --config tsdown.config.mts --log-level warn",
     "build:watch": "plate-pkg p:build:watch",
     "clean": "plate-pkg p:clean",
     "lint": "plate-pkg p:lint",
@@ -55,8 +55,8 @@
     "react-compiler-runtime": "^1.0.0"
   },
   "peerDependencies": {
-    "react": ">=18.0.0",
-    "react-dom": ">=18.0.0"
+    "react": ">=19.2.0",
+    "react-dom": ">=19.2.0"
   },
   "publishConfig": {
     "access": "public"

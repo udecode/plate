@@ -3,4 +3,3 @@
  */
 
 export * from './ExcalidrawPlugin';
-export * from './useExcalidrawElement';

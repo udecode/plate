@@ -13,9 +13,9 @@ describe(getDocxTestName(name), () => {
   testDocxDeserializer({
     expected: (
       <editor>
-        <hh1 indent={1} listStyleType="decimal">
+        <hheading level={1} indent={1} listType="numbered">
           A Numbered Header.
-        </hh1>
+        </hheading>
       </editor>
     ),
     filename: name,

@@ -6,7 +6,7 @@ jsx;
 
 export const lineHeightValue = (
   <fragment>
-    <hh2>Line Height</hh2>
+    <hheading level={2}>Line Height</hheading>
     <hp>
       Control the line height of your text to improve readability and adjust the
       spacing between lines.

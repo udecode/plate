@@ -1019,6 +1019,57 @@ describe('keyboard input strategy', () => {
     isComposing.mockRestore();
   });
 
+  it('lets the public keydown handler override model-owned history', () => {
+    const editor = createEditor({
+      extensions: [history()],
+      initialSelection: {
+        kind: 'text',
+        anchor: { path: [0, 0], offset: 4 },
+        focus: { path: [0, 0], offset: 4 },
+      },
+      initialValue: [{ children: [{ text: 'test' }] }],
+    }) as ReactEditorType;
+
+    editor.update.text.insert('!');
+
+    const event = reactKeyEvent(keyEvent('z', { metaKey: true }));
+    const onKeyDown: NonNullable<ApplyEditableKeyDownOptions['onKeyDown']> =
+      vi.fn((keyboardEvent) => {
+        keyboardEvent.preventDefault();
+
+        return true;
+      });
+    const hasEditableTarget = vi
+      .spyOn(ReactEditor, 'hasEditableTarget')
+      .mockReturnValue(true);
+    const isComposing = vi
+      .spyOn(ReactEditor, 'isComposing')
+      .mockReturnValue(false);
+
+    try {
+      const result = applyEditableKeyDown({
+        androidInputManagerRef: { current: null },
+        editor,
+        event,
+        forceRender: vi.fn(),
+        inputController: {} as any,
+        onKeyDown,
+        readOnly: false,
+        domStrategyRuntime: null,
+        setComposing: vi.fn(),
+        setExplicitPartialDOMBackedSelection: vi.fn(),
+        partialDOMBackedSelection: false,
+      });
+
+      expect(result.handled).toBe(true);
+      expect(onKeyDown).toHaveBeenCalledOnce();
+      expect(editor.read.text.string([])).toBe('test!');
+    } finally {
+      hasEditableTarget.mockRestore();
+      isComposing.mockRestore();
+    }
+  });
+
   it('keeps Enter during active composition browser-owned', () => {
     const editor = createEditor({
       initialValue: [{ children: [{ text: 'test' }] }],
@@ -1033,6 +1084,7 @@ describe('keyboard input strategy', () => {
     const isComposing = vi
       .spyOn(ReactEditor, 'isComposing')
       .mockReturnValue(true);
+    const onKeyDown = vi.fn(() => true);
 
     try {
       const result = applyEditableKeyDown({
@@ -1041,6 +1093,7 @@ describe('keyboard input strategy', () => {
         event,
         forceRender: vi.fn(),
         inputController: {} as any,
+        onKeyDown,
         readOnly: false,
         domStrategyRuntime: null,
         setComposing: vi.fn(),
@@ -1049,6 +1102,7 @@ describe('keyboard input strategy', () => {
       });
 
       expect(result.handled).toBe(true);
+      expect(onKeyDown).not.toHaveBeenCalled();
       expect(event.preventDefault).not.toHaveBeenCalled();
       expect(editor.read((state) => state.children())).toEqual([
         { children: [{ text: 'test' }] },

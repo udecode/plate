@@ -10,9 +10,7 @@ import {
 } from '@platejs/basic-nodes';
 import {
   BaseBlockquotePlugin,
-  BaseH1Plugin,
-  BaseH2Plugin,
-  BaseH3Plugin,
+  BaseHeadingPlugin,
   BaseHorizontalRulePlugin,
 } from '@platejs/basic-nodes';
 import {
@@ -78,9 +76,8 @@ const markdownPlugin = MarkdownPlugin.configure({
 
 const testPlugins = [
   BaseParagraphPlugin,
-  BaseH1Plugin,
-  BaseH2Plugin,
-  BaseH3Plugin,
+  BaseHeadingPlugin,
+
   BaseBlockquotePlugin,
   BaseHorizontalRulePlugin,
   BaseCodeBlockPlugin,

@@ -25,7 +25,8 @@ const refEquality = <T>(a: T | null, b: T) => a === b;
  * Subscribe to a derived state value from an explicit editor instance.
  *
  * Use this for chrome that owns or receives an editor but is outside a
- * `<Plite>` provider. Inside provider descendants, prefer `useEditorState`.
+ * `<Plite>` provider. Commit-driven selectors invalidate synchronously. Inside
+ * provider descendants, prefer `useEditorState`.
  */
 export function useEditorRuntimeState<
   T,

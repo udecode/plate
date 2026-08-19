@@ -149,9 +149,9 @@ import type { Value } from 'platejs';
 import {
   BlockquotePlugin,
   BoldPlugin,
-  H1Plugin,
-  H2Plugin,
-  H3Plugin,
+  HeadingPlugin,
+  
+  
   ItalicPlugin,
   UnderlinePlugin,
 } from '@platejs/basic-nodes/react';
@@ -166,7 +166,7 @@ import {
 const initialValue: Value = [
   {
     children: [{ text: '标题' }],
-    type: 'h3',
+    type: 'heading', level: 3,
   },
   {
     children: [{ text: '这是引用内容。' }],
@@ -183,15 +183,15 @@ const initialValue: Value = [
 ];
 
 // 定义元素组件
-function H1Element(props: PlateElementProps<typeof H1Plugin>) {
+function HeadingElement(props: PlateElementProps<typeof HeadingPlugin>) {
   return <PlateElement as="h1" {...props} />;
 }
 
-function H2Element(props: PlateElementProps<typeof H2Plugin>) {
+function HeadingElement(props: PlateElementProps<typeof HeadingPlugin>) {
   return <PlateElement as="h2" {...props} />;
 }
 
-function H3Element(props: PlateElementProps<typeof H3Plugin>) {
+function HeadingElement(props: PlateElementProps<typeof HeadingPlugin>) {
   return <PlateElement as="h3" {...props} />;
 }
 
@@ -218,9 +218,9 @@ export default function App() {
       BoldPlugin,
       ItalicPlugin,
       UnderlinePlugin,
-      H1Plugin.configure({ component: H1Element }),
-      H2Plugin.configure({ component: H2Element }),
-      H3Plugin.configure({ component: H3Element }),
+      HeadingPlugin.configure({ component: HeadingElement }),
+      HeadingPlugin.configure({ component: HeadingElement }),
+      HeadingPlugin.configure({ component: HeadingElement }),
       BlockquotePlugin.configure({ component: BlockquoteElement }),
     ],
     initialValue,
@@ -252,9 +252,9 @@ import type { Value } from 'platejs';
 import {
   BlockquotePlugin,
   BoldPlugin,
-  H1Plugin,
-  H2Plugin,
-  H3Plugin,
+  HeadingPlugin,
+  
+  
   ItalicPlugin,
   UnderlinePlugin,
 } from '@platejs/basic-nodes/react';
@@ -269,7 +269,7 @@ import {
 const initialValue: Value = [
   {
     children: [{ text: '标题' }],
-    type: 'h3',
+    type: 'heading', level: 3,
   },
   {
     children: [{ text: '这是引用内容。' }],
@@ -286,15 +286,15 @@ const initialValue: Value = [
 ];
 
 // 定义元素组件
-function H1Element(props: PlateElementProps<typeof H1Plugin>) {
+function HeadingElement(props: PlateElementProps<typeof HeadingPlugin>) {
   return <PlateElement as="h1" {...props} />;
 }
 
-function H2Element(props: PlateElementProps<typeof H2Plugin>) {
+function HeadingElement(props: PlateElementProps<typeof HeadingPlugin>) {
   return <PlateElement as="h2" {...props} />;
 }
 
-function H3Element(props: PlateElementProps<typeof H3Plugin>) {
+function HeadingElement(props: PlateElementProps<typeof HeadingPlugin>) {
   return <PlateElement as="h3" {...props} />;
 }
 
@@ -321,9 +321,9 @@ export default function App() {
       BoldPlugin,
       ItalicPlugin,
       UnderlinePlugin,
-      H1Plugin.configure({ component: H1Element }),
-      H2Plugin.configure({ component: H2Element }),
-      H3Plugin.configure({ component: H3Element }),
+      HeadingPlugin.configure({ component: HeadingElement }),
+      HeadingPlugin.configure({ component: HeadingElement }),
+      HeadingPlugin.configure({ component: HeadingElement }),
       BlockquotePlugin.configure({ component: BlockquoteElement }),
     ],
     initialValue: () => {
@@ -391,7 +391,7 @@ export default function App() {
     *   如需快速使用预制组件，考虑使用[Plate UI](/docs/installation/plate-ui)
     *   或继续使用CSS、CSS-in-JS库或您偏好的样式解决方案手动设置样式
 *   **[添加插件](/docs/plugins):** Plate拥有丰富的插件生态（如表单、提及、图片、列表等）。安装对应包（如`@platejs/table`）并添加到`plugins`数组
-*   **[构建工具栏](/docs/toolbar):** 创建使用[编辑器转换](/docs/transforms)应用格式的工具栏按钮组件（如`editor.update.bold.toggle()`、`editor.plugin(H1Plugin).update.toggle()`）。您也可以结合[编辑器API](/docs/api)使用编辑器状态
+*   **[构建工具栏](/docs/toolbar):** 创建使用[编辑器转换](/docs/transforms)应用格式的工具栏按钮组件（如`editor.update.bold.toggle()`、`editor.plugin(HeadingPlugin).update.toggle({ level: 1 })`）。您也可以结合[编辑器API](/docs/api)使用编辑器状态
 *   **深入学习：**
     *   [编辑器配置](/docs/editor)
     *   [插件配置](/docs/plugin)

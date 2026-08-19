@@ -80,6 +80,7 @@ const expectedPliteBrowserRuntimeSubpathExports = {
     'locatePliteBrowserBlock',
     'locatePliteBrowserText',
     'matchesPliteBrowserKernelTrace',
+    'measurePliteTrustedTyping',
     'normalizeScenarioMetadata',
     'openExample',
     'openExampleWithOptions',

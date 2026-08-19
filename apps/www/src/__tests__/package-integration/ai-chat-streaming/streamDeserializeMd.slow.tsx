@@ -43,7 +43,7 @@ describe('AIChatPlugin api.deserializeChunk', () => {
           { children: [{ text: 'const a = 1' }], type: 'codeLine' },
           { children: [{ text: '' }], type: 'codeLine' },
         ],
-        lang: 'typescript',
+        language: 'typescript',
         type: 'codeBlock',
       },
     ];

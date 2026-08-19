@@ -233,41 +233,47 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
           return { ...options.textProps, ...node, text: node.text };
         }
 
-        let element = node;
-
-        if (node.listStyleType && node.listStart) {
-          const previous = editor.read.nodes.previous({
-            at: editor.read.selection()?.focus,
-            match: ElementApi.isElement,
-          })?.[0];
-
-          if (
-            !(previous?.listStyleType && previous.listStart) &&
-            node.listStart !== 1
-          ) {
-            element = { ...node, listRestartPolite: node.listStart };
-          }
-        }
-
         return {
-          ...element,
+          ...node,
           ...options.elementProps,
           children: withNodeProps(node.children, options),
         };
       });
     }
     const isSameNode = (left: Descendant, right: Descendant) => {
+      const heading = editor.plugin(PLUGINS.heading);
+
+      if (left.type !== right.type) return false;
+
       if (
-        left.type !== editor.plugin(PLUGINS.paragraph).schema.type ||
-        right.type !== editor.plugin(PLUGINS.paragraph).schema.type
+        heading.installed &&
+        ElementApi.isElement(left) &&
+        ElementApi.isElement(right) &&
+        left.type === heading.schema.type &&
+        left.level !== right.level
       ) {
-        return left.type === right.type;
+        return false;
       }
 
-      return left.listStyleType !== undefined ||
-        right.listStyleType !== undefined
-        ? left.listStyleType === right.listStyleType
-        : left.type === right.type;
+      return [
+        left.listType,
+        right.listType,
+        left.listStyle,
+        right.listStyle,
+        left.listStart,
+        right.listStart,
+        left.listRestart,
+        right.listRestart,
+        left.checked,
+        right.checked,
+      ].some((value) => value !== undefined)
+        ? left.listType === right.listType &&
+            left.listStyle === right.listStyle &&
+            left.listStart === right.listStart &&
+            left.listRestart === right.listRestart &&
+            left.checked === right.checked &&
+            left.indent === right.indent
+        : true;
     };
     const deserializeInlineChunk = (
       text: string,
@@ -332,8 +338,8 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
               children: [...node.children],
               ...(equation.installed &&
               node.type === equation.schema.type &&
-              typeof node.texExpression === 'string'
-                ? { texExpression: node.texExpression.trim() }
+              typeof node.latex === 'string'
+                ? { latex: node.latex.trim() }
                 : {}),
             }
           : node
@@ -409,18 +415,11 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
       if (
         lastBlock &&
         ElementApi.isElement(lastBlock) &&
-        [
-          PLUGINS.h1,
-          PLUGINS.h2,
-          PLUGINS.h3,
-          PLUGINS.h4,
-          PLUGINS.h5,
-          PLUGINS.h6,
-        ].some((headingName) => {
-          const heading = editor.plugin(headingName);
+        (() => {
+          const heading = editor.plugin(PLUGINS.heading);
 
           return heading.installed && lastBlock.type === heading.schema.type;
-        })
+        })()
       ) {
         const lastText = lastBlock.children.at(-1);
 
@@ -636,7 +635,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
 
       return withTransient(
         editor.plugin(SuggestionPlugin).api.diff(chatNodes, parsed, {
-          ignoreProps: ['id', 'listStart'],
+          ignoreProps: ['id'],
         })
       );
     };

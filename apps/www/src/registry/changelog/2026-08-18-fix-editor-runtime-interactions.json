@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-18-fix-editor-runtime-interactions",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-18-fix-editor-runtime-interactions.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-18",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Keep controlled tags and decorated text stable during typing and undo",
+  "targets": [
+    {
+      "name": "select-editor",
+      "files": ["apps/www/src/registry/components/editor/select-editor.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "find-replace-demo",
+      "files": [
+        "apps/www/src/registry/examples/find-replace-demo.tsx",
+        "apps/www/src/registry/examples/values/find-replace-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-18-select-editor-keep-controlled-tags-decorated-52878c0b",
+      "kind": "fix",
+      "summary": "Keep controlled tags and decorated text stable during typing and undo.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["select-editor", "find-replace-demo"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-18",
+          "entry": "2026-08-18-fix-editor-runtime-interactions",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

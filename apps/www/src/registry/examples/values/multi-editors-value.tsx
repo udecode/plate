@@ -11,7 +11,9 @@ export const createMultiEditorsValue = () => {
 
   for (let h = 0; h < 300; h++) {
     const multiEditor: Element[] = [];
-    multiEditor.push(<hh1>Amet duis nisi ea enim laborum laboris.</hh1>);
+    multiEditor.push(
+      <hheading level={1}>Amet duis nisi ea enim laborum laboris.</hheading>
+    );
 
     for (let p = 0; p < 2; p++) {
       multiEditor.push(

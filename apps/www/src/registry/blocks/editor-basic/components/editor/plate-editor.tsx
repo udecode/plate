@@ -2,8 +2,8 @@
 
 import { Plate, usePlateEditor } from 'platejs/react';
 
-import { BasicNodesKit } from '@/registry/components/editor/plugins/basic-nodes-kit';
-import { Editor, EditorContainer } from '@/registry/ui/editor';
+import { BasicNodesKit } from '@/registry/components/editor/basic-nodes';
+import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 
 export function PlateEditor() {
   const editor = usePlateEditor({
@@ -23,15 +23,18 @@ export function PlateEditor() {
 const value = [
   {
     children: [{ text: 'Basic Editor' }],
-    type: 'h1',
+    level: 1,
+    type: 'heading',
   },
   {
     children: [{ text: 'Heading 2' }],
-    type: 'h2',
+    level: 2,
+    type: 'heading',
   },
   {
     children: [{ text: 'Heading 3' }],
-    type: 'h3',
+    level: 3,
+    type: 'heading',
   },
   {
     children: [

@@ -103,9 +103,9 @@ const CustomBoldPlugin = definePlatePlugin("customBold", {
 例如，您可以定义当用户在空标题中按`Enter`或在块引用开头按`Backspace`时发生的情况。
 
 ```ts
-import { H1Plugin } from "@platejs/basic-nodes/react";
+import { HeadingPlugin } from "@platejs/basic-nodes/react";
 
-H1Plugin.configure({
+HeadingPlugin.configure({
   rules: {
     break: { empty: "reset" },
   },

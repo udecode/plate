@@ -32,20 +32,20 @@ docs:
 
 The fastest way to add toolbar functionality is with the `FixedToolbarKit` and `FloatingToolbarKit`, which include pre-configured toolbar plugins along with their [Plate UI](/docs/installation/plate-ui) components.
 
-<ComponentSource name="fixed-toolbar-kit" />
-<ComponentSource name="floating-toolbar-kit" />
+<ComponentSource name="fixed-toolbar" />
+<ComponentSource name="floating-toolbar" />
 
 - [`FixedToolbar`](/docs/components/fixed-toolbar): Renders a persistent toolbar above the editor
-- [`FixedToolbarButtons`](/docs/components/fixed-toolbar-buttons): Pre-configured button set for the fixed toolbar
+- [`FixedToolbarButtons`](/docs/components/fixed-toolbar): Pre-configured button set for the fixed toolbar
 - [`FloatingToolbar`](/docs/components/floating-toolbar): Renders a contextual toolbar on text selection
-- [`FloatingToolbarButtons`](/docs/components/floating-toolbar-buttons): Pre-configured button set for the floating toolbar
+- [`FloatingToolbarButtons`](/docs/components/floating-toolbar): Pre-configured button set for the floating toolbar
 
 ### Add Kit
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { FixedToolbarKit } from '@/components/editor/plugins/fixed-toolbar-kit';
-import { FloatingToolbarKit } from '@/components/editor/plugins/floating-toolbar-kit';
+import { FixedToolbarKit } from '@/components/editor/fixed-toolbar';
+import { FloatingToolbarKit } from '@/components/editor/floating-toolbar';
 
 const editor = createPlateEditor({
   plugins: [
@@ -66,10 +66,10 @@ const editor = createPlateEditor({
 
 ```tsx
 import { definePlatePlugin } from 'platejs/react';
-import { FixedToolbar } from '@/components/ui/fixed-toolbar';
-import { FixedToolbarButtons } from '@/components/ui/fixed-toolbar-buttons';
-import { FloatingToolbar } from '@/components/ui/floating-toolbar';
-import { FloatingToolbarButtons } from '@/components/ui/floating-toolbar-buttons';
+import { FixedToolbar } from '@/components/editor/fixed-toolbar';
+import { FixedToolbarButtons } from '@/components/editor/fixed-toolbar';
+import { FloatingToolbar } from '@/components/editor/floating-toolbar';
+import { FloatingToolbarButtons } from '@/components/editor/floating-toolbar';
 
 const fixedToolbarPlugin = definePlatePlugin('fixedToolbar', {
   render: {
@@ -107,15 +107,15 @@ const editor = createPlateEditor({
 
 The `FixedToolbarButtons` component contains the default set of buttons for the fixed toolbar.
 
-<ComponentSource name="fixed-toolbar-buttons" />
+<ComponentSource name="fixed-toolbar" />
 
-To customize it, you can edit `components/ui/fixed-toolbar-buttons.tsx`.
+To customize it, you can edit `components/editor/fixed-toolbar.tsx`.
 
 ### Customizing Floating Toolbar Buttons
 
-Similarly, you can customize the floating toolbar by editing `components/ui/floating-toolbar-buttons.tsx`.
+Similarly, you can customize the floating toolbar by editing `components/editor/floating-toolbar.tsx`.
 
-<ComponentSource name="floating-toolbar-buttons" />
+<ComponentSource name="floating-toolbar" />
 
 
 ### Creating Custom Button
@@ -125,7 +125,7 @@ This example shows a button that inserts custom text into the editor.
 ```tsx
 import { useEditor } from 'platejs/react';
 import { CustomIcon } from 'lucide-react';
-import { ToolbarButton } from '@/components/ui/toolbar';
+import { ToolbarButton } from '@/components/editor/toolbar';
 
 export function CustomToolbarButton() {
   const editor = useEditor();
@@ -155,7 +155,7 @@ This example creates a "Bold" button.
 ```tsx
 import { BoldIcon } from 'lucide-react';
 
-import { MarkToolbarButton } from '@/components/ui/mark-toolbar-button';
+import { MarkToolbarButton } from '@/components/editor/mark-toolbar-button';
 
 export function BoldToolbarButton() {
   return (
@@ -168,7 +168,7 @@ export function BoldToolbarButton() {
 
 - `nodeType`: Specifies the mark to toggle (e.g., `bold`, `italic`).
 - `tooltip`: Provides a helpful tooltip for the button.
-- The `MarkToolbarButton` uses `useMarkToolbarButtonState` to get the toggle state and `useMarkToolbarButton` to get the `onClick` handler and other props.
+- `MarkToolbarButton` reads mark state and handles toggling directly in the component.
 
 ### Turn Into Toolbar Button
 

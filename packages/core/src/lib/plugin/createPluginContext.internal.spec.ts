@@ -46,6 +46,37 @@ describe('createPluginContext', () => {
     });
   });
 
+  it('reuses plugin access while keeping runtime getters live', () => {
+    const context = createPluginContext(editor, testPlugin);
+    const portal = editor.plugin(testPlugin);
+
+    expect(createPluginContext(editor, testPlugin)).toBe(context);
+    expect(editor.plugin(testPlugin)).toBe(portal);
+    expect(context.store.get('testValue')).toBe('initial');
+    expect(portal.store.get('testValue')).toBe('initial');
+  });
+
+  it('keeps plugin capability facades serialization-safe', () => {
+    const plugin = defineBasePlugin('serializableContext', {
+      api: () => ({ ready: () => true }),
+      read: () => ({ ready: () => true }),
+      update: () => ({ run: () => {} }),
+    });
+    const typedEditor = createBaseEditor({ plugins: [plugin] });
+    const portal = typedEditor.plugin(plugin);
+
+    expect(() => JSON.stringify(portal.api)).not.toThrow();
+    expect(() => JSON.stringify(portal.read)).not.toThrow();
+    expect(() => JSON.stringify(portal.update)).not.toThrow();
+    expect(
+      JSON.stringify({
+        api: portal.api,
+        read: portal.read,
+        update: portal.update,
+      })
+    ).toBe('{"api":{}}');
+  });
+
   it('works with extension context typing', () => {
     const plugin = defineBasePlugin('test', {
       initialState: {
@@ -277,12 +308,17 @@ describe('createPluginContext', () => {
     expect(typedEditor.api.editorMethod).toBeUndefined();
   });
 
-  it('preserves function introspection on plugin capability facades', () => {
+  it('keeps capability facades callable without prototype traversal', () => {
+    let updateInspections = 0;
     const plugin = defineBasePlugin('capability', {
       read: () => ({
+        inspect: () => 'read',
         isActive: () => true,
       }),
       update: () => ({
+        inspect: () => {
+          updateInspections += 1;
+        },
         toggle: () => {},
       }),
     }).extend(() => ({
@@ -295,10 +331,33 @@ describe('createPluginContext', () => {
     });
     const context = typedEditor.plugin(plugin);
 
-    expect(context.api.inspect.constructor).toBe(Function);
-    expect(context.read.isActive.constructor).toBe(Function);
-    expect(context.update.toggle.constructor).toBe(Function);
+    expect(typeof context.api.inspect).toBe('function');
+    expect(typeof context.read.isActive).toBe('function');
+    expect(typeof context.update.toggle).toBe('function');
     expect(context.read.isActive()).toBe(true);
+    expect(context.read.inspect()).toBe('read');
+    context.update.inspect();
+    expect(updateInspections).toBe(1);
+    const prototypeFacade = Reflect.get(context.read as object, '__proto__');
+    const inheritedMethod = Reflect.get(prototypeFacade, 'hasOwnProperty');
+
+    expect(() =>
+      Reflect.apply(inheritedMethod, prototypeFacade, ['isActive'])
+    ).toThrow('Plugin read method "__proto__.hasOwnProperty" is not callable.');
+  });
+
+  it('keeps callable read roots symmetric through plugin access', () => {
+    const plugin = defineBasePlugin('callableRead', {
+      read: () =>
+        Object.assign(() => 'root', {
+          nested: () => 'nested',
+        }),
+    });
+    const typedEditor = createBaseEditor({ plugins: [plugin] });
+
+    expect(typedEditor.read.callableRead()).toBe('root');
+    expect(typedEditor.plugin(plugin).read()).toBe('root');
+    expect(typedEditor.plugin(plugin).read.nested()).toBe('nested');
   });
 
   it('exposes plugin-owned updates without their name namespace', () => {

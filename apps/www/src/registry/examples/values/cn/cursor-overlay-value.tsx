@@ -6,7 +6,7 @@ jsx;
 
 export const cursorOverlayValue = (
   <fragment>
-    <hh2>光标覆盖</hh2>
+    <hheading level={2}>光标覆盖</hheading>
     <hp>
       试着拖动文本：你会在放置目标上看到一个彩色光标：颜色和其他样式都是可以自定义的！
     </hp>

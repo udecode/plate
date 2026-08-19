@@ -75,9 +75,9 @@ Plate checks the current block and handles these cases in order:
 Use `splitReset` for blocks that should not keep their type after a normal split.
 
 ```tsx title="plugins.tsx" showLineNumbers
-import { H1Plugin } from '@platejs/basic-nodes/react';
+import { HeadingPlugin } from '@platejs/basic-nodes/react';
 
-export const AppH1Plugin = H1Plugin.configure({
+export const AppHeadingPlugin = HeadingPlugin.configure({
   rules: {
     break: {
       splitReset: true,
@@ -120,9 +120,9 @@ Plate checks collapsed `deleteBackward` in this order:
 Use `start: 'reset'` for formatted text blocks that should become paragraphs before they merge into the previous block.
 
 ```tsx title="plugins.tsx" showLineNumbers
-import { H1Plugin } from '@platejs/basic-nodes/react';
+import { HeadingPlugin } from '@platejs/basic-nodes/react';
 
-export const AppH1Plugin = H1Plugin.configure({
+export const AppHeadingPlugin = HeadingPlugin.configure({
   rules: {
     delete: {
       start: 'reset',
@@ -173,9 +173,9 @@ Plate's merge-rule query middleware adds three important guards:
 Use `removeEmpty: true` for text-like blocks such as paragraphs and headings.
 
 ```tsx title="plugins.tsx" showLineNumbers
-import { H1Plugin } from '@platejs/basic-nodes/react';
+import { HeadingPlugin } from '@platejs/basic-nodes/react';
 
-export const AppH1Plugin = H1Plugin.configure({
+export const AppHeadingPlugin = HeadingPlugin.configure({
   rules: {
     merge: {
       removeEmpty: true,

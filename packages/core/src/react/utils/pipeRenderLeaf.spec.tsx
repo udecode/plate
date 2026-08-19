@@ -6,6 +6,7 @@ import React from 'react';
 import { render } from '@testing-library/react';
 
 import { defineBasePlugin } from '../../lib/plugin';
+import { BaseParagraphPlugin } from '../../lib/plugins/paragraph/BaseParagraphPlugin';
 import { createPlateEditor } from '../editor/withPlate';
 import { definePlatePlugin } from '../plugin/definePlatePlugin';
 import { pipeRenderLeaf } from './pipeRenderLeaf';
@@ -67,6 +68,104 @@ it('returns the custom leaf renderer unchanged when no plugin work exists', () =
       renderLeaf
     )
   ).toBe(renderLeaf);
+});
+
+it('keeps element-targeted injection transforms out of leaf capability', () => {
+  const injectionPlugin = defineBasePlugin('injection', {
+    targetPlugins: [BaseParagraphPlugin],
+    inject: {
+      nodeProps: {
+        transformProps: ({ props }) => props,
+      },
+    },
+  });
+  const renderLeaf = pipeRenderLeaf(
+    createPlateEditor({
+      navigationFeedback: false,
+      plugins: [BaseParagraphPlugin, injectionPlugin],
+    })
+  )!;
+  const resolveDOMTextSyncCapability = Reflect.get(
+    renderLeaf,
+    Symbol.for('@platejs/plite-react/dom-text-sync-renderer-capability')
+  ) as (context: { marks: object; projections: unknown[] }) => boolean;
+
+  expect(resolveDOMTextSyncCapability({ marks: {}, projections: [] })).toBe(
+    true
+  );
+});
+
+it('fails DOM text sync closed for untargeted text injection transforms', () => {
+  const injectionPlugin = defineBasePlugin('injection', {
+    inject: {
+      nodeProps: {
+        transformProps: ({ props }) => props,
+      },
+    },
+  });
+  const renderLeaf = pipeRenderLeaf(
+    createPlateEditor({
+      navigationFeedback: false,
+      plugins: [injectionPlugin],
+    })
+  )!;
+  const resolveDOMTextSyncCapability = Reflect.get(
+    renderLeaf,
+    Symbol.for('@platejs/plite-react/dom-text-sync-renderer-capability')
+  ) as (context: { marks: object; projections: unknown[] }) => boolean;
+
+  expect(resolveDOMTextSyncCapability({ marks: {}, projections: [] })).toBe(
+    false
+  );
+});
+
+it('fails DOM text sync closed for untargeted text style transforms', () => {
+  const injectionPlugin = defineBasePlugin('styleInjection', {
+    inject: {
+      nodeProps: {
+        transformStyle: ({ value }) => ({ color: String(value) }),
+      },
+    },
+  });
+  const renderLeaf = pipeRenderLeaf(
+    createPlateEditor({
+      navigationFeedback: false,
+      plugins: [injectionPlugin],
+    })
+  )!;
+  const resolveDOMTextSyncCapability = Reflect.get(
+    renderLeaf,
+    Symbol.for('@platejs/plite-react/dom-text-sync-renderer-capability')
+  ) as (context: { marks: object; projections: unknown[] }) => boolean;
+
+  expect(resolveDOMTextSyncCapability({ marks: {}, projections: [] })).toBe(
+    false
+  );
+});
+
+it('fails DOM text sync closed for active custom plugin components', () => {
+  const componentPlugin = definePlatePlugin('componentMark', {
+    component: ({ children }: ChildrenProps) => <>{children}</>,
+    render: { isDecoration: true },
+    schema: { mark: property.boolean({ default: false, omitDefault: true }) },
+  });
+  const renderLeaf = pipeRenderLeaf(
+    createPlateEditor({
+      navigationFeedback: false,
+      plugins: [componentPlugin],
+    })
+  )!;
+  const resolveDOMTextSyncCapability = Reflect.get(
+    renderLeaf,
+    Symbol.for('@platejs/plite-react/dom-text-sync-renderer-capability')
+  ) as (context: { marks: object; projections: unknown[] }) => boolean;
+
+  expect(
+    resolveDOMTextSyncCapability({
+      marks: { componentMark: true },
+      projections: [],
+    })
+  ).toBe(false);
 });
 
 it('render with render.leaf and isDecoration=false', () => {
@@ -661,6 +760,47 @@ it('keeps complex text renderer hooks stable when a mark activates', () => {
   }
 });
 
+it('renders present falsy mark values and keeps DOM text sync closed', () => {
+  const booleanPlugin = defineBasePlugin('booleanMark', {
+    render: { as: 'u', isDecoration: false },
+    schema: { mark: property.boolean({ default: false }) },
+  });
+  const numericPlugin = defineBasePlugin('numericMark', {
+    render: {
+      as: 'strong',
+      isDecoration: false,
+      textProps: { 'data-numeric-mark': 'present' },
+    },
+    schema: { mark: property.number() },
+  });
+  const editor = createPlateEditor({ plugins: [booleanPlugin, numericPlugin] });
+  const Text = pipeRenderText(editor)!;
+  const resolveDOMTextSyncCapability = Reflect.get(
+    Text,
+    Symbol.for('@platejs/plite-react/dom-text-sync-renderer-capability')
+  ) as (context: { marks: object; projections: unknown[] }) => boolean;
+  const { container } = render(
+    <Text
+      attributes={attributes}
+      text={{ booleanMark: false, numericMark: 0, text: 'test' } as any}
+    >
+      test content
+    </Text>
+  );
+
+  expect(container.querySelector('strong')).not.toBeNull();
+  expect(container.querySelector('u')).toBeNull();
+  expect(
+    container.querySelector('[data-numeric-mark="present"]')
+  ).not.toBeNull();
+  expect(
+    resolveDOMTextSyncCapability({
+      marks: { numericMark: 0 },
+      projections: [],
+    })
+  ).toBe(false);
+});
+
 it('keeps plugin textProps behavior', () => {
   const testPlugin = defineBasePlugin('test', {
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
@@ -683,7 +823,7 @@ it('keeps plugin textProps behavior', () => {
   expect(Object.isFrozen(publishedTextProps)).toBe(true);
 
   const { container } = render(
-    <Text attributes={attributes} text={text}>
+    <Text attributes={{ ...attributes, className: 'base-text' }} text={text}>
       test content
     </Text>
   );
@@ -692,6 +832,7 @@ it('keeps plugin textProps behavior', () => {
     expect(container.querySelector('[data-text-probe="yes"]')) as any
   ).toHaveAttribute('data-text-probe', 'yes');
   expect(container.querySelector('[data-text-probe="yes"]')).toHaveClass(
+    'base-text',
     'plugin-text'
   );
   expect(publishedTextProps).toEqual({

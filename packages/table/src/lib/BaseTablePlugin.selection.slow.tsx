@@ -426,7 +426,10 @@ describe('table selection slow contracts', () => {
 
           const editor = createTableEditor(input);
 
-          editor.update.nodes.set({ background: 'red' }, { at: [0, 1, 0] });
+          editor.update.nodes.set(
+            { backgroundColor: 'red' },
+            { at: [0, 1, 0] }
+          );
 
           expect(editor.read.children()).toEqual(
             (
@@ -441,7 +444,7 @@ describe('table selection slow contracts', () => {
                     </htd>
                   </htr>
                   <htr>
-                    <htd background="red">
+                    <htd backgroundColor="red">
                       <hp>row2col1</hp>
                     </htd>
                     <htd>
@@ -648,14 +651,17 @@ describe('table selection slow contracts', () => {
 
           const editor = createTableEditor(input);
 
-          editor.update.nodes.set({ background: 'red' }, { at: [0, 0, 0] });
+          editor.update.nodes.set(
+            { backgroundColor: 'red' },
+            { at: [0, 0, 0] }
+          );
 
           expect(
             editor
               .plugin(BaseTablePlugin)
               .read.getSelectedCell(editor.key([0, 0, 0])!)
           ).toMatchObject({
-            background: 'red',
+            backgroundColor: 'red',
             id: 'c11',
           });
           expect(

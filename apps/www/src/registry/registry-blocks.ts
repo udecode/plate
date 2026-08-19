@@ -19,9 +19,9 @@ export const registryBlocks: Registry['items'] = [
     name: 'editor-ai',
     registryDependencies: [
       '@plate/editor',
-      '@plate/editor-kit',
       '@plate/media-uploadthing-api',
       '@plate/settings-dialog',
+      '@plate/editor-plugins',
     ],
     type: 'registry:block',
   },
@@ -58,7 +58,11 @@ export const registryBlocks: Registry['items'] = [
       },
     ],
     name: 'editor-basic',
-    registryDependencies: ['@plate/editor', '@plate/basic-nodes-kit'],
+    registryDependencies: [
+      '@plate/editor',
+      '@plate/basic-nodes',
+      '@plate/editor-plugins',
+    ],
     type: 'registry:block',
   },
   {
@@ -73,10 +77,6 @@ export const registryBlocks: Registry['items'] = [
       {
         path: 'components/editor/plate-to-html.tsx',
         type: 'registry:component',
-      },
-      {
-        path: 'lib/create-html-document.ts',
-        type: 'registry:lib',
       },
       {
         path: 'examples/values/align-value.tsx',
@@ -148,12 +148,13 @@ export const registryBlocks: Registry['items'] = [
     },
     name: 'plate-to-html',
     registryDependencies: [
-      '@plate/editor-base-kit',
+      '@plate/editor-static',
       '@plate/editor',
-      '@plate/editor-kit',
-      '@plate/fixed-toolbar-kit',
-      '@plate/floating-toolbar-kit',
+      '@plate/fixed-toolbar',
+      '@plate/floating-toolbar',
       'button',
+      '@plate/editor-plugins',
+      '@plate/editor-plugins-static',
     ],
     type: 'registry:block',
   },

@@ -14,9 +14,9 @@ import {
 } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
-import { EditorKit } from '@/registry/components/editor/editor';
+import { EditorKit } from '@/registry/components/editor/plugins';
 import { tabbableValue } from '@/registry/examples/values/tabbable-value';
-import { Editor, EditorContainer } from '@/registry/ui/editor';
+import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 
 const TabbableElementPlugin = definePlatePlugin('tabbableElement', {
   schema: { element: { void: 'block' } },

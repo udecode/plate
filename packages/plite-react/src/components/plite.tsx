@@ -14,6 +14,7 @@ import {
   type EditorSnapshot,
   isEditor,
   type NamedRootKey,
+  type NodeKey,
   type Path,
   RangeApi,
   type RootKey,
@@ -45,6 +46,7 @@ import {
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import { PliteAnnotationStoreContext } from '../hooks/use-plite-annotations';
 import {
+  invalidateUnsyncedMountedTextDOM,
   syncChangedTextToDOM,
   syncPliteNodePathBindingsToDOM,
 } from '../hooks/use-plite-node-ref';
@@ -368,21 +370,19 @@ const PliteRuntimeView = <
   }, [annotationStore, decorationSources]);
 
   return (
-    <EditorSelectorContext.Provider value={runtimeContext.selectorContext}>
-      <ProjectionContext.Provider value={projectionContextValue}>
-        <PliteAnnotationStoreContext.Provider value={annotationStore}>
-          <EditorContext.Provider
+    <EditorSelectorContext value={runtimeContext.selectorContext}>
+      <ProjectionContext value={projectionContextValue}>
+        <PliteAnnotationStoreContext value={annotationStore}>
+          <EditorContext
             value={reactEditor as unknown as ReactEditorContextValue<any>}
           >
-            <ReadOnlyContext.Provider value={readOnly}>
-              <FocusedContext.Provider value={isFocused}>
-                {children}
-              </FocusedContext.Provider>
-            </ReadOnlyContext.Provider>
-          </EditorContext.Provider>
-        </PliteAnnotationStoreContext.Provider>
-      </ProjectionContext.Provider>
-    </EditorSelectorContext.Provider>
+            <ReadOnlyContext value={readOnly}>
+              <FocusedContext value={isFocused}>{children}</FocusedContext>
+            </ReadOnlyContext>
+          </EditorContext>
+        </PliteAnnotationStoreContext>
+      </ProjectionContext>
+    </EditorSelectorContext>
   );
 };
 
@@ -721,24 +721,49 @@ const PliteSingleEditor = <
   );
   const syncMountedRootChangesToDOM = useCallback((commit: EditorCommit) => {
     if (mountedViewEditorsRef.current.size === 0) {
-      return { changedTextCount: 0, syncedTextCount: 0 };
+      return {
+        changedTextCount: 0,
+        invalidatedNodeKeys: [] as NodeKey[],
+        requiresGlobalRender: false,
+        syncedTextCount: 0,
+      };
     }
 
     let changedTextCount = 0;
+    const invalidatedNodeKeys = new Set<NodeKey>();
+    let requiresGlobalRender = false;
     let syncedTextCount = 0;
 
     for (const [root, viewEditors] of mountedViewEditorsRef.current) {
       const publicRoot = toPublicRootOption(root);
       const changedTextNodeKeys = commit.changed.nodeKeys('text', publicRoot);
       const changedPathNodeKeys = commit.changed.nodeKeys('path', publicRoot);
+      const historyAffectedNodeKeys = [
+        ...changedTextNodeKeys,
+        ...changedPathNodeKeys,
+        ...commit.changed.nodeKeys('node', publicRoot),
+      ];
       let didSyncEveryView = changedTextNodeKeys.length > 0;
 
       for (const viewEditor of viewEditors) {
         const runtimeEditor = viewEditor as unknown as Editor;
+        if (commit.annotations['history.action'] !== undefined) {
+          invalidateUnsyncedMountedTextDOM(
+            runtimeEditor,
+            historyAffectedNodeKeys
+          ).forEach((nodeKey) => {
+            invalidatedNodeKeys.add(nodeKey);
+          });
+        }
         const textSync = syncChangedTextToDOM(
           runtimeEditor,
-          changedTextNodeKeys
+          changedTextNodeKeys,
+          { allowProjected: changedPathNodeKeys.length === 0 }
         );
+        requiresGlobalRender ||= textSync.requiresGlobalRender;
+        textSync.invalidatedNodeKeys.forEach((nodeKey) => {
+          invalidatedNodeKeys.add(nodeKey);
+        });
 
         if (textSync.syncedTextCount < textSync.changedTextCount) {
           didSyncEveryView = false;
@@ -752,7 +777,12 @@ const PliteSingleEditor = <
       if (didSyncEveryView) syncedTextCount += changedTextNodeKeys.length;
     }
 
-    return { changedTextCount, syncedTextCount };
+    return {
+      changedTextCount,
+      invalidatedNodeKeys: [...invalidatedNodeKeys],
+      requiresGlobalRender,
+      syncedTextCount,
+    };
   }, []);
   const handleCommittedEditorChange = useCallback(
     (commit: EditorCommit, snapshot: EditorSnapshot<V>) => {
@@ -772,24 +802,28 @@ const PliteSingleEditor = <
         profileRuntimeDuration('focused-state', () => {
           refreshFocused();
         });
+        const mainPathNodeKeys = commit.changed.nodeKeys('path');
+        const invalidatedNodeKeys =
+          commit.annotations['history.action'] !== undefined
+            ? invalidateUnsyncedMountedTextDOM(runtimeEditor, [
+                ...commit.changed.nodeKeysAll('text'),
+                ...commit.changed.nodeKeysAll('path'),
+                ...commit.changed.nodeKeysAll('node'),
+              ])
+            : [];
         const textSync = profileRuntimeDuration('dom-text-sync', () =>
-          syncChangedTextToDOM(runtimeEditor, commit.changed.nodeKeys('text'))
+          syncChangedTextToDOM(runtimeEditor, commit.changed.nodeKeys('text'), {
+            allowProjected: mainPathNodeKeys.length === 0,
+          })
         );
         const rootTextSync = profileRuntimeDuration('dom-root-text-sync', () =>
           syncMountedRootChangesToDOM(commit)
         );
-        const mainPathNodeKeys = commit.changed.nodeKeys('path');
-
         if (mainPathNodeKeys.length > 0) {
           profileRuntimeDuration('dom-path-sync', () =>
             syncPliteNodePathBindingsToDOM(runtimeEditor, mainPathNodeKeys)
           );
         }
-        const hasUnsyncedTextChange =
-          commit.changed.hasAny('text') &&
-          (textSync.changedTextCount > textSync.syncedTextCount ||
-            rootTextSync.changedTextCount > rootTextSync.syncedTextCount);
-
         profileRuntimeDuration('change-callbacks', () => {
           const { onCommit, onSelectionChange, onValueChange } =
             changeCallbacksCell.current;
@@ -826,8 +860,15 @@ const PliteSingleEditor = <
 
         profileRuntimeDuration('selector-dispatch', () =>
           handleSelectorChange(
-            hasUnsyncedTextChange ? undefined : commit,
-            getSchemaInvalidatedNodeKeys(editor, commit)
+            textSync.requiresGlobalRender || rootTextSync.requiresGlobalRender
+              ? undefined
+              : commit,
+            [
+              ...getSchemaInvalidatedNodeKeys(editor, commit),
+              ...textSync.invalidatedNodeKeys,
+              ...invalidatedNodeKeys,
+              ...rootTextSync.invalidatedNodeKeys,
+            ]
           )
         );
 
@@ -945,23 +986,21 @@ const PliteSingleEditor = <
   );
 
   return (
-    <EditorSelectorContext.Provider value={selectorContext}>
-      <ProjectionContext.Provider value={projectionContextValue}>
-        <PliteAnnotationStoreContext.Provider value={annotationStore}>
-          <PliteRuntimeContext.Provider value={runtimeContextValue as any}>
+    <EditorSelectorContext value={selectorContext}>
+      <ProjectionContext value={projectionContextValue}>
+        <PliteAnnotationStoreContext value={annotationStore}>
+          <PliteRuntimeContext value={runtimeContextValue as any}>
             <EditorAnnouncementLiveRegion editor={editor} />
-            <EditorContext.Provider
+            <EditorContext
               value={reactEditor as unknown as ReactEditorContextValue<any>}
             >
-              <ReadOnlyContext.Provider value={readOnly}>
-                <FocusedContext.Provider value={isFocused}>
-                  {children}
-                </FocusedContext.Provider>
-              </ReadOnlyContext.Provider>
-            </EditorContext.Provider>
-          </PliteRuntimeContext.Provider>
-        </PliteAnnotationStoreContext.Provider>
-      </ProjectionContext.Provider>
-    </EditorSelectorContext.Provider>
+              <ReadOnlyContext value={readOnly}>
+                <FocusedContext value={isFocused}>{children}</FocusedContext>
+              </ReadOnlyContext>
+            </EditorContext>
+          </PliteRuntimeContext>
+        </PliteAnnotationStoreContext>
+      </ProjectionContext>
+    </EditorSelectorContext>
   );
 };

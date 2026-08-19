@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "latestVersion": 85,
+  "latestVersion": 100,
   "versions": [
     {
       "version": 0,
@@ -1001,6 +1001,187 @@
         "When a helper returns a root-scoped view, preserve the complete layered caller type through the public signature and erase only inside the runtime implementation.",
         "Prove raw extension-tuple inference, layered Plate inference, app-scale typecheck, and generated doctrine parity."
       ]
+    },
+    {
+      "version": 86,
+      "date": "2026-08-16",
+      "doctrineFingerprint": "sha256:31da7d9c6cf20877ad2e820dbd9eb6aa821738d18adc91063eb58f33babffca6",
+      "summary": "Plate UI is the sole React/component doctrine owner, with direct components and at most one semantic family controller.",
+      "migrationChecks": [
+        "Start each family with one direct <Family>.tsx owner; add at most one use<Family> semantic controller for real shared lifecycle.",
+        "Cut state-hook/prop-hook pipelines, one custom hook per subcomponent, public one-renderer prop bags, speculative providers/stores, small factories/HOCs, forwardRef, and React 18 branches.",
+        "Keep headless package primitives only when reusable DOM behavior and accessibility are the contract; keep registry styling, labels, persistence, and composition open.",
+        "Route package implementation to plate-plugin-creator and migration audits to plate-next while keeping all Plate-specific React/component law in plate-ui."
+      ]
+    },
+    {
+      "version": 87,
+      "date": "2026-08-16",
+      "doctrineFingerprint": "sha256:9c33939af144c4e92c9dbf837eef57495cd9361c44d3e6e73c7a2c8012c3d6ed",
+      "summary": "Package roots export capabilities, while app and registry source own named plugin-array kits.",
+      "migrationChecks": [
+        "Reject every package-root export of a named plugin-array *Kit preset, including exports from convenience facade packages.",
+        "Keep feature and facade package exports to individual descriptors, operations, and types; encode inseparable structure through dependencies on one honest descriptor.",
+        "Move preset membership and order into explicit app or registry readonly arrays, then prove package exports, copied-registry imports, docs, release guidance, and generated skill parity."
+      ]
+    },
+    {
+      "version": 88,
+      "date": "2026-08-16",
+      "doctrineFingerprint": "sha256:02515c0e9ef8004b78c5ab8f29082b8af187cdaa62a92b5112b38b895e4a8f04",
+      "summary": "React ownership follows terminal product consumers; copied registry UI owns UI-only controllers and state.",
+      "migrationChecks": [
+        "Trace every public package React hook through wrappers, adapters, barrels, and reexports to its terminal product consumers; do not count tests, docs, exports, or forwarding package components as independent reuse.",
+        "When every terminal consumer is copied registry UI, move the complete UI-only hook, store, provider, hotkey controller, and plugin extension into its registry component family or kit.",
+        "Keep package publication only for multiple independent terminal owners or a durable headless semantic, DOM, accessibility, or integration subsystem, then prove exports, consumers, registry dependencies, Browser behavior, and generated doctrine parity."
+      ]
+    },
+    {
+      "version": 89,
+      "date": "2026-08-17",
+      "doctrineFingerprint": "sha256:3d47a615584f3cca1609304906ff870a268f95fcdd2466251aa6ed43f3a4322f",
+      "summary": "Copied Plate features install flat under components/editor, with feature-named items, stable registry kits, and install-time primitive variants.",
+      "migrationChecks": [
+        "Move copied Plate source out of components/ui, components/plate, and nested editor plugins, kits, nodes, hooks, or feature folders into one flat components/editor namespace.",
+        "Name registry items and files for the feature while keeping FooKit as the stable app-owned plugin tuple, including one-descriptor features; keep package roots kit-free.",
+        "Resolve Radix, Base UI, and React Aria variants before installation, write them to one editor target, reject runtime base switching and variant-only shared helpers, and prove each variant through types and Browser behavior."
+      ]
+    },
+    {
+      "version": 90,
+      "date": "2026-08-17",
+      "doctrineFingerprint": "sha256:7131ba7df619e73a65858d93d58d771f219b3bc3ba9a2afd12c3879889e17d63",
+      "summary": "Feature registry files own their kits and family-only renderers instead of delegating through shallow node or UI siblings.",
+      "migrationChecks": [
+        "Reject a feature file that exports FooKit while importing its sole renderer or family-only UI from foo-node, foo-buttons, foo-toast, or another one-consumer sibling.",
+        "Merge live family-only source into foo and static family-only source into foo-static, then delete obsolete files, registry items, dependencies, docs paths, and test names.",
+        "Keep a sibling only for an independently installable main component, the one allowed semantic controller, shared cross-feature use, or another durable boundary with its own consumers and proof."
+      ]
+    },
+    {
+      "version": 91,
+      "date": "2026-08-17",
+      "doctrineFingerprint": "sha256:393128b7bc47753ef743046a6be8f92552d4847ce54a1db0ed0d9a6ac759eec9",
+      "summary": "Application schema migrations and installed-plugin document preparation have separate owners and lifecycles.",
+      "migrationChecks": [
+        "Reject feature migration plugins, historical-shape normalizers, source guessing, per-node versions, and prepareDocument callbacks that implement release migrations.",
+        "Keep persisted source identity in the app-owned document envelope and bind ascending target-version steps to one named application schema.",
+        "Use the same migrateDocument runner for runtime and CLI execution, then run installed-plugin prepareDocument invariants before schema fitting."
+      ]
+    },
+    {
+      "version": 92,
+      "date": "2026-08-17",
+      "doctrineFingerprint": "sha256:35a8f45a04f8aad84c0a2950fee03ff46dc18a74a5995dff7074e70f817514a6",
+      "summary": "Standalone copied registry components use semantic feature names and publish live and static sources as separate items.",
+      "migrationChecks": [
+        "Rename every modern copied-registry *-node or implementation-role item/file to its semantic feature name while preserving aggregate kits as composition owners.",
+        "Split every registry item that publishes both live and static source into foo and foo-static, then migrate aggregate kits, docs, tests, changelog, and copied imports.",
+        "Reject modern *-node item and filenames structurally; allow Classic only under its explicit maintenance-only policy."
+      ]
+    },
+    {
+      "version": 93,
+      "date": "2026-08-17",
+      "doctrineFingerprint": "sha256:c35238fefe687ca120d5853dc3e2d0ae7d3688b33c82c63fedc5c5a5e396abe6",
+      "summary": "Historical document envelopes require exact source fingerprints before version steps run.",
+      "migrationChecks": [
+        "Bind every supported historical envelope version to its generated schema fingerprint and reject missing or mismatched identities before migration.",
+        "Keep the explicit unversioned floor as the only source path without historical fingerprint proof.",
+        "Verify runtime, CLI, docs, and generated migration snapshots expose the same source-fingerprint contract."
+      ]
+    },
+    {
+      "version": 94,
+      "date": "2026-08-17",
+      "doctrineFingerprint": "sha256:f9114bc8b8085737d2038d3d6805809e8de299e20419393f92b4910787b0c67f",
+      "summary": "Classic maintenance policy does not preserve stale implementation-role registry names when an owner is explicitly touched.",
+      "migrationChecks": [
+        "Reject every copied-registry *-node item and filename, including Classic owners explicitly touched by the task.",
+        "Merge a Classic renderer into its existing semantic feature owner without adding behavior or parity work.",
+        "Audit registry dependency direction after the merge and remove cycles or stale reverse dependencies."
+      ]
+    },
+    {
+      "version": 95,
+      "date": "2026-08-17",
+      "doctrineFingerprint": "sha256:f8af2afd428df5ed0add2889ca1418bbf2cbe9b395cd30bdf79940e49bf08a21",
+      "summary": "Copied component families own one-consumer prop hooks and package barrels hide plugin-mounted implementation components.",
+      "migrationChecks": [
+        "Inline any hook whose sole consumer immediately spreads refs, handlers, styles, or state props into one component.",
+        "Use one private compound family for interactive UI shared by independent registry items; do not export a state-to-props hook beside it.",
+        "Keep package headless terminals public while removing plugin-mounted components and lower-level adapters from the package entrypoint.",
+        "Hide primitive-library component types behind stable Plate-owned registry props."
+      ]
+    },
+    {
+      "version": 96,
+      "date": "2026-08-17",
+      "doctrineFingerprint": "sha256:24ab9e76d1a8bc87e530922e17de142f5267169cd82dc285a4e4fb981a8e5fae",
+      "summary": "Packages keep neutral mechanics while copied registry families own product policy and one-owner assets.",
+      "migrationChecks": [
+        "Move application endpoints, visible copy, upload quotas, media limits, feature-specific labels, and visual stacking from package defaults into copied registry kits.",
+        "Publish one family controller through private context instead of spreading its complete result into an intermediate component.",
+        "Inline one-consumer icon sets and output helpers regardless of file length, then remove reverse registry dependencies created only to carry those files.",
+        "Search host and installed-target consumers outside registry source before deleting a standalone registry hook."
+      ]
+    },
+    {
+      "version": 97,
+      "date": "2026-08-17",
+      "doctrineFingerprint": "sha256:030195177e3ddeea82ba8d099add65ae6b88676f7a2d29b5987c588d36c8a572",
+      "summary": "Mixed renderer hooks split durable lifecycle from copied renderer composition.",
+      "migrationChecks": [
+        "Audit public hooks that return renderer state, props, or event handlers alongside subscription, observer, DOM projection, or cleanup behavior; classify each responsibility separately.",
+        "Retain only the durable lifecycle in a minimal package hook with required lifecycle inputs, returning void when the hook is side-effect-only.",
+        "Move layout and presentation derivation, transient overrides, rounding, refs or styles used only as props, and event handlers into the copied component family; delete unused return fields and result types.",
+        "Keep trivial pure calculations private when one component family owns them, and preserve focused lifecycle cleanup plus renderer interaction proof.",
+        "Use the flat apps/www/src/registry/components/editor owner and audit registry-features.ts, registry-editor.ts, and registry-examples.ts instead of pre-colocation registry paths."
+      ]
+    },
+    {
+      "version": 98,
+      "date": "2026-08-17",
+      "doctrineFingerprint": "sha256:f5471a3efe0616ff9b68eb8a4562296eeb1ee296cb84e813b233c3ca30a0b2d9",
+      "summary": "One manifest coordinates manual package creation through registry delivery while worker doctrine loads progressively.",
+      "migrationChecks": [
+        "Route end-to-end package-to-registry feature delivery through one plate-feature manifest without copying Best API, plugin, UI, docs, release, or Plate Next doctrine.",
+        "Keep plate-feature discoverable from the fingerprinted AGENTS routing source and allow its coordinator to load Plate Next for the attestation phase.",
+        "Create new package shells manually from two current sibling patterns; do not restore package-generation tooling.",
+        "Load worker rules and goal packs only for applicable manifest phases, with explicit N/A reasons for headless and registry-only exclusions.",
+        "Reuse the same manifest for package proof and Plate Next attestation, linking its Package and Plate Next rows to subordinate per-file evidence in the same plan; never mass-attest packages after this doctrine bump.",
+        "Require the exact feature plan path, latest applied doctrine version, authoritative package fingerprint, and existing registry evidence to agree before package attestation closes.",
+        "Fingerprint the version helper and canonical immutable version history so proof-law or prior migration edits require a new doctrine version.",
+        "Compare fingerprinted doctrine with an immutable Git base, preserve its complete version history as an exact prefix, and reject source or history changes that reuse the base version number.",
+        "Recompute package attestations with length-prefixed file-kind records that include tracked symlink targets.",
+        "Validate new-package, existing-package, headless-package, and registry-only flows, resolved manifest evidence, and completed P2 review with the deterministic feature checker before goal completion."
+      ]
+    },
+    {
+      "version": 99,
+      "date": "2026-08-18",
+      "doctrineFingerprint": "sha256:445161d70c2db455136a1764a16025e938ee4b759d87cfcab7e3cc1139b3608b",
+      "summary": "Regression coverage lives in executable tests instead of a manual duplicate case registry.",
+      "migrationChecks": [
+        "Delete manual Regression TSV, JSON, manifest, database, validator, and generated-mirror surfaces; do not rename or replace them.",
+        "Require every observed fixed regression to have an executable test at the model, DOM, route, Chrome, or device layer that proves the actual invariant.",
+        "Discover corpus work from current tests, source, and live issues; keep only transient current-run coordination in the Autogoal plan.",
+        "Preserve exact reproduction, fresh-host proof, retry-free stability, pushed-ref authority, Patch delegation, honest claim width, and methodology self-repair.",
+        "Make Patch return executable red/green commands, final ref or dirty fingerprints, stability, architecture pressure, review, and residual caveats without another case database.",
+        "Regenerate agent mirrors, prove removed resources are absent, verify the Regression template can close from executable evidence, and complete agent-native plus P2 review."
+      ]
+    },
+    {
+      "version": 100,
+      "date": "2026-08-18",
+      "doctrineFingerprint": "sha256:6c56ba04e9dc25245be8715d9f53465a1faaf3acff0356bb7b4f93787bf33ff7",
+      "summary": "Copied default editor composition stays free of persisted lineage and migration policy.",
+      "migrationChecks": [
+        "Audit copied editor-kit composition for fixed schema IDs, migration chains, historical fingerprints, EditorMigrations-style exports, and default migrations options.",
+        "Keep reusable editor-kit source limited to plugin composition and let generated contracts derive current schema types without named persisted identity.",
+        "Move named lineage and upgrade policy to the real host persistence owner or a dedicated migration example with an application-specific schema ID.",
+        "Delete compatibility reexports and default-example migration wiring, then verify generated contracts, registry metadata, teaching examples, docs, and release artifacts use the selected ownership."
+      ]
     }
   ],
   "retiredPackages": {
@@ -1008,6 +1189,11 @@
       "appliedVersion": 0,
       "retiredAt": "2026-07-23",
       "evidence": "docs/plans/2026-07-23-schema-api-hard-cuts.md"
+    },
+    "docx-io": {
+      "appliedVersion": 50,
+      "retiredAt": "2026-08-16",
+      "evidence": "docs/plans/2026-08-16-hard-cut-docx-package-topology.md"
     }
   },
   "packages": {
@@ -1090,16 +1276,20 @@
       "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
     },
     "docx": {
-      "appliedVersion": 50,
-      "fingerprint": "sha256:8a3024a3a2ae8f25fef7158d96b9b0fa4ad7cdc64c1a2280d0d1a5f2d2a6055b",
-      "verifiedAt": "2026-08-03",
-      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
+      "appliedVersion": 0,
+      "fingerprint": null
     },
-    "docx-io": {
-      "appliedVersion": 50,
-      "fingerprint": "sha256:1ea5629b16d20b6371c60c0553b4a68a94e813f66133dc804a169ae0519a4c2e",
-      "verifiedAt": "2026-08-03",
-      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
+    "docx-export": {
+      "appliedVersion": 0,
+      "fingerprint": null
+    },
+    "docx-import": {
+      "appliedVersion": 0,
+      "fingerprint": null
+    },
+    "docx-paste": {
+      "appliedVersion": 0,
+      "fingerprint": null
     },
     "emoji": {
       "appliedVersion": 50,

@@ -59,7 +59,8 @@ test('native anchor checks use the editor window NodeFilter realm', () => {
       canUseNativeSingleCharacterInput({
         editor,
         eventData: 'x',
-        hasAppInputPolicy: false,
+        hasAppDOMInputPolicy: false,
+        isCommandNativeEquivalent: () => true,
         selection: {
           kind: 'text',
           anchor: { path: [0, 0], offset: 2 },
@@ -71,7 +72,8 @@ test('native anchor checks use the editor window NodeFilter realm', () => {
       canUseNativeSingleCharacterInput({
         editor,
         eventData: 'x',
-        hasAppInputPolicy: false,
+        hasAppDOMInputPolicy: false,
+        isCommandNativeEquivalent: () => true,
         selection: {
           kind: 'text',
           anchor: { path: [0, 0], offset: 2 },
@@ -116,7 +118,8 @@ test('native single-character input allows synced printable ASCII', () => {
       canUseNativeSingleCharacterInput({
         editor,
         eventData: '5',
-        hasAppInputPolicy: false,
+        hasAppDOMInputPolicy: false,
+        isCommandNativeEquivalent: () => true,
         selection: {
           kind: 'text',
           anchor: { path: [0, 0], offset: 1 },
@@ -127,8 +130,22 @@ test('native single-character input allows synced printable ASCII', () => {
     expect(
       canUseNativeSingleCharacterInput({
         editor,
+        eventData: '5',
+        hasAppDOMInputPolicy: false,
+        isCommandNativeEquivalent: () => false,
+        selection: {
+          kind: 'text',
+          anchor: { path: [0, 0], offset: 1 },
+          focus: { path: [0, 0], offset: 1 },
+        },
+      })
+    ).toBe(false);
+    expect(
+      canUseNativeSingleCharacterInput({
+        editor,
         eventData: 'ä',
-        hasAppInputPolicy: false,
+        hasAppDOMInputPolicy: false,
+        isCommandNativeEquivalent: () => true,
         selection: {
           kind: 'text',
           anchor: { path: [0, 0], offset: 1 },
@@ -172,7 +189,8 @@ test('native single-character input keeps deferred dirty DOM bursts native on th
         allowDirtyDOMText: false,
         editor,
         eventData: '5',
-        hasAppInputPolicy: false,
+        hasAppDOMInputPolicy: false,
+        isCommandNativeEquivalent: () => true,
         selection: editorGetSelection(editor),
       })
     ).toBe(false);
@@ -181,7 +199,8 @@ test('native single-character input keeps deferred dirty DOM bursts native on th
         allowDirtyDOMText: true,
         editor,
         eventData: '5',
-        hasAppInputPolicy: false,
+        hasAppDOMInputPolicy: false,
+        isCommandNativeEquivalent: () => true,
         selection: editorGetSelection(editor),
       })
     ).toBe(true);
@@ -218,7 +237,8 @@ test('native single-character input rejects projected text hosts', () => {
       canUseNativeSingleCharacterInput({
         editor,
         eventData: 'x',
-        hasAppInputPolicy: false,
+        hasAppDOMInputPolicy: false,
+        isCommandNativeEquivalent: () => true,
         selection: {
           kind: 'text',
           anchor: { path: [0, 0], offset: 1 },

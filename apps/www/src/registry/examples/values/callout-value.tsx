@@ -6,7 +6,7 @@ jsx;
 
 export const calloutValue = (
   <fragment>
-    <hh2>Callouts</hh2>
+    <hheading level={2}>Callouts</hheading>
     <hp>
       Use callouts to highlight important information and organize content with
       visual emphasis.

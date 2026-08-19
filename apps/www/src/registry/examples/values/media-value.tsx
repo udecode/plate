@@ -7,7 +7,7 @@ jsx;
 export const imageValue = {
   children: (
     <fragment>
-      <hh2>Image</hh2>
+      <hheading level={2}>Image</hheading>
       <hp>Add images by either uploading them or providing the image URL:</hp>
       <himg
         textAlign="center"
@@ -24,7 +24,7 @@ export const imageValue = {
 export const mediaPlaceholderValue = {
   children: (
     <fragment>
-      <hh2>Upload</hh2>
+      <hheading level={2}>Upload</hheading>
       <hp>
         Our editor supports various media types for upload, including images,
         videos, audio, and files.
@@ -33,11 +33,10 @@ export const mediaPlaceholderValue = {
         name="sample.pdf"
         url="https://s26.q4cdn.com/900411403/files/doc_downloads/test.pdf"
         width="80%"
-        isUpload
       >
         <htext />
       </hfile>
-      <hp indent={1} listStyleType="disc">
+      <hp indent={1} listType="bulleted">
         Real-time upload status and progress tracking
       </hp>
       <haudio
@@ -47,21 +46,21 @@ export const mediaPlaceholderValue = {
       >
         <htext />
       </haudio>
-      <hp indent={1} listStyleType="disc">
+      <hp indent={1} listType="bulleted">
         Configurable file size limits and batch upload settings
       </hp>
       <hvideo
         textAlign="center"
         url="https://videos.pexels.com/video-files/6769791/6769791-uhd_2560_1440_24fps.mp4"
         width="80%"
-        isUpload
+        provider="file"
       >
         <htext />
       </hvideo>
-      <hp indent={1} listStyleType="disc">
+      <hp indent={1} listType="bulleted">
         Clear error messages for any upload issues
       </hp>
-      <hp indent={1} listStyleType="disc">
+      <hp indent={1} listType="bulleted">
         Try it now - drag an image from your desktop or click the upload button
         in the toolbar
       </hp>
@@ -75,7 +74,7 @@ export const mediaValue = {
       {imageValue.children}
       {mediaPlaceholderValue.children}
 
-      <hh2>Embed</hh2>
+      <hheading level={2}>Embed</hheading>
       <hp>Embed various types of content, such as videos and tweets:</hp>
       <hmediaembed
         textAlign="center"

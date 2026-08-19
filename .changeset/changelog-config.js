@@ -1,14 +1,7 @@
 const { config } = require('dotenv');
-const {
-  getInfo,
-  getInfoFromPullRequest,
-} = require('@changesets/get-github-info');
+const { getInfo } = require('@changesets/get-github-info');
 
 config();
-
-const PR_REGEX = /^\s*(?:pr|pull|pull\s+request):\s*#?(\d+)/im;
-const COMMIT_REGEX = /^\s*commit:\s*([^\s]+)/im;
-const USER_REGEX = /^\s*(?:author|user):\s*@?([^\s]+)/gim;
 
 module.exports = {
   getDependencyReleaseLine: async () => '',
@@ -19,49 +12,17 @@ module.exports = {
       );
     }
 
-    let prFromSummary;
-    let commitFromSummary;
-    const usersFromSummary = [];
-
-    const replacedChangelog = changeset.summary
-      .replace(PR_REGEX, (_, pr) => {
-        const num = Number(pr);
-        if (!Number.isNaN(num)) prFromSummary = num;
-        return '';
-      })
-      .replace(COMMIT_REGEX, (_, commit) => {
-        commitFromSummary = commit;
-        return '';
-      })
-      .replace(USER_REGEX, (_, user) => {
-        usersFromSummary.push(user);
-        return '';
-      })
-      .trim();
+    const replacedChangelog = changeset.summary.trim();
 
     const [firstLine, ...futureLines] = replacedChangelog
       .split('\n')
       .map((l) => l.trimEnd());
 
     const links = await (async () => {
-      if (prFromSummary !== undefined) {
-        let { links } = await getInfoFromPullRequest({
-          repo: options.repo,
-          pull: prFromSummary,
-        });
-        if (commitFromSummary) {
-          links = {
-            ...links,
-            commit: `[\`${commitFromSummary}\`](https://github.com/${options.repo}/commit/${commitFromSummary})`,
-          };
-        }
-        return links;
-      }
-      const commitToFetchFrom = commitFromSummary || changeset.commit;
-      if (commitToFetchFrom) {
+      if (changeset.commit) {
         const { links } = await getInfo({
           repo: options.repo,
-          commit: commitToFetchFrom,
+          commit: changeset.commit,
         });
         return links;
       }
@@ -72,21 +33,14 @@ module.exports = {
       };
     })();
 
-    const users = usersFromSummary.length
-      ? usersFromSummary
-          .map(
-            (userFromSummary) =>
-              `[@${userFromSummary}](https://github.com/${userFromSummary})`
-          )
-          .join(', ')
-      : links.user;
-
     const pull = links.pull === null ? '' : ` ${links.pull}`;
     const commit = !!pull || links.commit === null ? '' : ` ${links.commit}`;
 
-    const prefix = [pull, commit, users === null ? '' : ` by ${users}`].join(
-      ''
-    );
+    const prefix = [
+      pull,
+      commit,
+      links.user === null ? '' : ` by ${links.user}`,
+    ].join('');
 
     let lines = `${firstLine}\n${futureLines.map((l) => `  ${l}`).join('\n')}`;
 

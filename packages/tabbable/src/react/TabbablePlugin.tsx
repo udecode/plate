@@ -8,7 +8,7 @@ import type {
   TabDestination,
   TabbablePluginState,
 } from '../lib/TabbablePluginTypes';
-import { TabbableEffects } from './TabbableEffects';
+import { TabbableEffects } from './TabbableEffects.internal';
 
 export const TabbablePlugin = definePlatePlugin(PLUGINS.tabbable, {
   initialState: ({ editor }): TabbablePluginState => ({

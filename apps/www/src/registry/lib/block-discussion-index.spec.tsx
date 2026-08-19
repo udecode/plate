@@ -79,8 +79,8 @@ const MentionPlugin = defineBasePlugin(PLUGINS.mention, {
     element: {
       inline: true,
       properties: {
-        key: property.string(),
-        value: property.string(),
+        label: property.string(),
+        ref: property.string({ required: true }),
       },
       void: 'markable-inline',
     },
@@ -91,7 +91,7 @@ const InlineEquationPlugin = defineBasePlugin(PLUGINS.inlineEquation, {
   schema: {
     element: {
       inline: true,
-      properties: { texExpression: property.string() },
+      properties: { latex: property.string() },
       void: 'inline',
     },
   },
@@ -114,8 +114,14 @@ const getResolvedSuggestions = (editor: BaseEditor) => {
       getSuggestionId: (node) => suggestionApi.id(node),
       getSuggestionKey: (id) => suggestionApi.key(id),
       isBlockSuggestion: (node) => suggestionApi.isBlockSuggestion(node),
-      isInlineEquation: (node) =>
-        node.type === editor.plugin(InlineEquationPlugin).schema.type,
+      isDate: (node) => node.type === PLUGINS.date,
+      isInlineEquation: (node) => {
+        const inlineEquation = editor.plugin(InlineEquationPlugin);
+
+        return (
+          inlineEquation.installed && node.type === inlineEquation.schema.type
+        );
+      },
     }).suggestionsByBlock.get('0') ?? []
   );
 };
@@ -161,9 +167,9 @@ describe('buildBlockDiscussionIndex', () => {
             dates like{' '}
           </htext>
           <hdate
-            date="Mon Jan 15 2024"
             suggestion
             suggestion_1={suggestionData}
+            value="Mon Jan 15 2024"
           >
             <htext />
           </hdate>
@@ -174,7 +180,7 @@ describe('buildBlockDiscussionIndex', () => {
           <hinlineequation
             suggestion
             suggestion_1={suggestionData}
-            texExpression="E = mc^2"
+            latex="E = mc^2"
           >
             <htext />
           </hinlineequation>
@@ -190,6 +196,7 @@ describe('buildBlockDiscussionIndex', () => {
       getSuggestionDataList,
       getSuggestionId,
       getSuggestionKey,
+      isDate: (node) => node.type === 'date',
       isInlineEquation: (node) => node.type === 'inlineEquation',
       isBlockSuggestion: () => false,
     });
@@ -207,6 +214,37 @@ describe('buildBlockDiscussionIndex', () => {
     expect(suggestion?.type).toBe('remove');
     expect(suggestion?.text).toBe(
       `dates like ${expectedDate} or use inline equations: E = mc^2`
+    );
+  });
+
+  it('preserves authored date text in remove summaries', () => {
+    const input = (
+      <editor>
+        <hp>
+          <hdate
+            suggestion
+            suggestion_1={suggestionData}
+            value="sometime next week"
+          >
+            <htext />
+          </hdate>
+        </hp>
+      </editor>
+    ) as TestEditorFixture;
+    const index = buildBlockDiscussionIndex({
+      discussions: [],
+      entries: collectEntries(input.children),
+      getCommentId: () => {},
+      getSuggestionData,
+      getSuggestionDataList,
+      getSuggestionId,
+      getSuggestionKey,
+      isBlockSuggestion: () => false,
+      isDate: (node) => node.type === 'date',
+    });
+
+    expect(index.suggestionsByBlock.get('0')?.[0]?.text).toBe(
+      'sometime next week'
     );
   });
 
@@ -286,7 +324,7 @@ describe('buildBlockDiscussionIndex', () => {
       <editor>
         <hequation
           suggestion={{ ...suggestionData }}
-          texExpression="\int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}"
+          latex="\int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}"
         >
           <htext />
         </hequation>
@@ -317,7 +355,7 @@ describe('buildBlockDiscussionIndex', () => {
         <editor>
           <hp>
             <htext>like </htext>
-            <hmention key="u1" value="Alice">
+            <hmention label="Alice" ref="u1">
               <htext />
             </hmention>
             <htext>,or</htext>
@@ -333,7 +371,7 @@ describe('buildBlockDiscussionIndex', () => {
         <editor>
           <hp>
             <htext>equations: </htext>
-            <hinlineequation texExpression="E = mc^2">
+            <hinlineequation latex="E = mc^2">
               <htext />
             </hinlineequation>
             <htext>.</htext>

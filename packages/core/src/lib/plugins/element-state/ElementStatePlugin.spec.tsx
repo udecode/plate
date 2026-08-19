@@ -46,7 +46,7 @@ describe('ElementStatePlugin', () => {
     expect(
       editor.plugin(ElementStatePlugin).api.isEmpty({
         children: [{ text: '' }],
-        listStyleType: 'disc',
+        markerStyle: 'disc',
         type: 'paragraph',
       })
     ).toBe(false);

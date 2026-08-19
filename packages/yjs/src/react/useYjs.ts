@@ -499,18 +499,11 @@ export const getYjsProviderSynced = <
   editor: Editor<V, TExtensions>
 ): boolean | null => readYjsState(editor, (state) => state.providerSynced());
 
-export function useYjsAwarenessRevision<
+function useYjsAwarenessRevision<
   V extends Value,
   TExtensions extends readonly unknown[],
 >(editor: Editor<V, TExtensions>): number {
   return useYjsRevision(editor, 'subscribeAwareness', getYjsAwarenessRevision);
-}
-
-export function useYjsProviderRevision<
-  V extends Value,
-  TExtensions extends readonly unknown[],
->(editor: Editor<V, TExtensions>): number {
-  return useYjsRevision(editor, 'subscribeProvider', getYjsProviderRevision);
 }
 
 export function useYjsProviderStatus<

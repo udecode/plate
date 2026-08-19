@@ -55,7 +55,7 @@ mock.module('platejs/react', () => ({
     return editor;
   },
   Plate: ({ children, editor }: React.PropsWithChildren<{ editor: any }>) => (
-    <EditorContext.Provider value={editor}>{children}</EditorContext.Provider>
+    <EditorContext value={editor}>{children}</EditorContext>
   ),
   useEditor: () => React.useContext(EditorContext) ?? currentOverlayEditor,
   useEditorScrollElement: (editor: any) => editor.api.dom.scroll(),
@@ -76,11 +76,11 @@ mock.module('@platejs/yjs/react', () => ({
   },
 }));
 
-mock.module('@/registry/components/editor/plugins/basic-nodes-kit', () => ({
+mock.module('@/registry/components/editor/basic-nodes', () => ({
   BasicNodesKit: [],
 }));
 
-mock.module('@/registry/ui/editor', () => ({
+mock.module('@/registry/components/editor/editor', () => ({
   Editor: ({ 'aria-label': ariaLabel }: { 'aria-label': string }) => (
     <div aria-label={ariaLabel} contentEditable />
   ),
@@ -89,7 +89,7 @@ mock.module('@/registry/ui/editor', () => ({
   ),
 }));
 
-mock.module('@/registry/ui/remote-cursor-overlay', () => ({
+mock.module('@/registry/components/editor/remote-cursor-overlay', () => ({
   RemoteCursorOverlay: () => <div data-remote-cursor-overlay="" />,
 }));
 
@@ -168,7 +168,7 @@ describe('CollaborativeEditingDemo', () => {
     ];
 
     const { RemoteCursorOverlay } = await import(
-      `../ui/remote-cursor-overlay?test=${Math.random().toString(36).slice(2)}`
+      `../components/editor/remote-cursor-overlay?test=${Math.random().toString(36).slice(2)}`
     );
     const view = render(<RemoteCursorOverlay />);
     const adaCaret = view.container.querySelector(
@@ -220,7 +220,7 @@ describe('CollaborativeEditingDemo', () => {
     ];
 
     const { RemoteCursorOverlay } = await import(
-      `../ui/remote-cursor-overlay?test=${Math.random().toString(36).slice(2)}`
+      `../components/editor/remote-cursor-overlay?test=${Math.random().toString(36).slice(2)}`
     );
     const view = render(<RemoteCursorOverlay />);
     const caret = view.container.querySelector(
@@ -236,7 +236,7 @@ describe('CollaborativeEditingDemo', () => {
     currentOverlayEditor.api.dom.scroll = () => null;
 
     const { RemoteCursorOverlay } = await import(
-      `../ui/remote-cursor-overlay?test=${Math.random().toString(36).slice(2)}`
+      `../components/editor/remote-cursor-overlay?test=${Math.random().toString(36).slice(2)}`
     );
     const view = render(<RemoteCursorOverlay />);
 

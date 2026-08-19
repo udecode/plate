@@ -546,6 +546,13 @@ export type SnapshotSelectionInput<
   TSelection extends SelectionValue = SelectionValue,
 > = Selection<TSelection> | 'end' | 'start';
 
+/** Application persistence envelope for one complete external document. */
+export type PersistedDocumentInput<V extends Value = Value> = Readonly<{
+  document: EditorDocumentValue<V>;
+  schema: EditorSchemaIdentity;
+  selection?: SnapshotSelectionInput;
+}>;
+
 export type EditorTransactionValueApi<V extends Value = Value> =
   EditorStateValueApi<V> & {
     replace: (input: SnapshotInput<V>) => void;
@@ -1900,12 +1907,14 @@ export type EditorSnapshot<V extends Value = Value> = Readonly<{
   version: number;
 }>;
 
-export type SnapshotInput<V extends Value = Value> = Readonly<{
-  children: V | readonly Descendant[];
-  meta?: Readonly<Record<string, unknown>>;
-  roots?: Readonly<Record<RootKey, V | readonly Descendant[]>>;
-  selection?: SnapshotSelectionInput;
-}>;
+export type SnapshotInput<V extends Value = Value> =
+  | PersistedDocumentInput<V>
+  | Readonly<{
+      children: V | readonly Descendant[];
+      meta?: Readonly<Record<string, unknown>>;
+      roots?: Readonly<Record<RootKey, V | readonly Descendant[]>>;
+      selection?: SnapshotSelectionInput;
+    }>;
 
 export type SnapshotListener<V extends Value = Value> = (
   snapshot: EditorSnapshot<V>,
@@ -2296,6 +2305,14 @@ export type EditorExtensionReadFactoryContext<
   state: EditorStateView<ValueOf<TEditor>, ExtensionsOf<TEditor>>;
 }>;
 
+export type EditorReadMethodRecord = Readonly<{
+  [key: string]: EditorReadMethodTree;
+}>;
+
+export type EditorReadMethodTree =
+  | ((...args: any[]) => unknown)
+  | EditorReadMethodRecord;
+
 export type EditorExtensionUpdateFactoryContext<
   TEditor extends BaseEditor<any, any> = Editor,
 > = Readonly<{
@@ -2306,7 +2323,7 @@ export type EditorExtensionUpdateFactoryContext<
 
 export type EditorExtensionReadFactory<
   TEditor extends BaseEditor<any, any> = Editor,
-  TResult = unknown,
+  TResult extends EditorReadMethodTree = EditorReadMethodTree,
 > = BivariantMethod<
   [context: EditorExtensionReadFactoryContext<TEditor>],
   TResult
@@ -2423,7 +2440,7 @@ export type EditorLifecycleError<TEditor = Editor> =
       cause: unknown;
       editor: TEditor;
       extensionName: string;
-      phase: 'afterPublish' | 'cleanup';
+      phase: 'afterPublish' | 'cleanup' | 'commit-listener';
     }>
   | Readonly<{
       cause: unknown;
@@ -2988,7 +3005,7 @@ export type EditorSelectionSpec<
 
 export type EditorExtensionTypes = {
   api?: Record<string, unknown>;
-  read?: Record<string, unknown>;
+  read?: EditorReadMethodTree;
   update?: Record<string, unknown>;
 };
 

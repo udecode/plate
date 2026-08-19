@@ -5,6 +5,7 @@ import type {
   EditorExtensionDependencyReference,
   EditorExtensionDefinition,
   EditorExtensionReference,
+  EditorReadMethodTree,
   Editor,
   Element,
   Path,
@@ -73,7 +74,7 @@ export type BasePluginDefinition = Readonly<{
   name: string;
   on?: true;
   override?: true;
-  read?: object;
+  read?: EditorReadMethodTree;
   readMiddleware?: true;
   render?: true;
   rules?: true;
@@ -84,7 +85,7 @@ export type BasePluginDefinition = Readonly<{
   shortcuts?: true;
   stateFields?: true;
   targetPlugins?: readonly (PluginReference | string)[];
-  transformInitialValue?: true;
+  prepareDocument?: true;
   update?: object;
   useHooks?: true;
   validate?: true;
@@ -330,7 +331,7 @@ export type PluginBase<
    *       always be active.
    *   - `inject` (for `inject.nodeProps`): Edit-only by default (true if not
    *       specified). Set to `false` to always be active.
-   *   - `transformInitialValue`: NOT edit-only by default (false if not specified).
+   *   - `prepareDocument`: NOT edit-only by default (false if not specified).
    *       Set to `true` to make it edit-only.
    */
   editOnly?: EditOnlyConfig | boolean;
@@ -625,12 +626,12 @@ export type EditOnlyConfig = {
    */
   inject?: boolean;
   /**
-   * If true, `transformInitialValue` is only called when the editor is not
+   * If true, `prepareDocument` is only called when the editor is not
    * read-only.
    *
    * @default false (This is an exception. It's not edit-only by default, even if `editOnly` is true or an object, unless explicitly set to true here).
    */
-  transformInitialValue?: boolean;
+  prepareDocument?: boolean;
   /**
    * If true, `render` functions are only active when the editor is not
    * read-only.
@@ -666,7 +667,11 @@ export type InferName<P> = P extends { name: infer N } ? N : never;
 
 export type InferApi<P> = P extends { api: infer A extends object } ? A : {};
 
-export type InferRead<P> = P extends { read: infer R extends object } ? R : {};
+export type InferRead<P> = P extends {
+  read: infer R extends EditorReadMethodTree;
+}
+  ? R
+  : {};
 
 export type InferUpdate<P> = P extends { update: infer U extends object }
   ? U

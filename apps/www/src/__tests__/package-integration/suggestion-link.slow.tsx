@@ -4,7 +4,7 @@ import { BaseSuggestionPlugin } from '@platejs/suggestion';
 import { jsxt, type TestEditorFixture } from '@platejs/test-utils';
 import { type BaseEditor, createBaseEditor } from 'platejs';
 
-import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
+import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 
 jsxt;
 

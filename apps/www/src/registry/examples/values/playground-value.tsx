@@ -5,7 +5,8 @@ export const playgroundValue: EditorDocumentValue = {
     // Intro
     {
       children: [{ text: 'Welcome to the Plate Playground!' }],
-      type: 'h1',
+      level: 1,
+      type: 'heading',
     },
     {
       children: [
@@ -30,7 +31,8 @@ export const playgroundValue: EditorDocumentValue = {
     // Suggestions & Comments Section
     {
       children: [{ text: 'Collaborative Editing' }],
-      type: 'h2',
+      level: 2,
+      type: 'heading',
     },
     {
       children: [
@@ -128,7 +130,8 @@ export const playgroundValue: EditorDocumentValue = {
     // AI Section
     {
       children: [{ text: 'AI-Powered Editing' }],
-      type: 'h2',
+      level: 2,
+      type: 'heading',
     },
     {
       children: [
@@ -151,7 +154,7 @@ export const playgroundValue: EditorDocumentValue = {
         { text: 'Generate content (continue writing, summarize, explain)' },
       ],
       indent: 1,
-      listStyleType: 'disc',
+      listType: 'bulleted',
       type: 'paragraph',
     },
     {
@@ -159,13 +162,14 @@ export const playgroundValue: EditorDocumentValue = {
         { text: 'Edit existing text (improve, fix grammar, change tone)' },
       ],
       indent: 1,
-      listStyleType: 'disc',
+      listType: 'bulleted',
       type: 'paragraph',
     },
     // Core Features Section (Combined)
     {
       children: [{ text: 'Rich Content Editing' }],
-      type: 'h2',
+      level: 2,
+      type: 'heading',
     },
     {
       children: [
@@ -248,7 +252,7 @@ export const playgroundValue: EditorDocumentValue = {
             },
           ],
           indent: 1,
-          listStyleType: 'disc',
+          listType: 'bulleted',
           type: 'paragraph',
         },
         {
@@ -267,12 +271,12 @@ export const playgroundValue: EditorDocumentValue = {
       children: [
         { children: [{ text: 'function hello() {' }], type: 'codeLine' },
         {
-          children: [{ text: "  console.info('Code blocks are supported!');" }],
+          children: [{ text: "  console.info('code blocks are supported!');" }],
           type: 'codeLine',
         },
         { children: [{ text: '}' }], type: 'codeLine' },
       ],
-      lang: 'javascript',
+      language: 'javascript',
       type: 'codeBlock',
     },
     {
@@ -290,7 +294,12 @@ export const playgroundValue: EditorDocumentValue = {
           url: '/docs/mention',
         },
         { text: ' users like ' },
-        { children: [{ text: '' }], type: 'mention', value: 'Alice' },
+        {
+          children: [{ text: '' }],
+          label: 'Alice',
+          ref: 'alice',
+          type: 'mention',
+        },
         { text: ', or insert ' },
         {
           children: [{ text: 'emojis' }],
@@ -310,7 +319,8 @@ export const playgroundValue: EditorDocumentValue = {
     // Table Section
     {
       children: [{ text: 'How Plate Compares' }],
-      type: 'h3',
+      level: 3,
+      type: 'heading',
     },
     {
       children: [
@@ -558,13 +568,14 @@ export const playgroundValue: EditorDocumentValue = {
         },
       ],
 
-      colSizes: [160, 170, 200],
+      columnWidths: [160, 170, 200],
       type: 'table',
     },
     // Media Section
     {
       children: [{ text: 'Images and Media' }],
-      type: 'h3',
+      level: 3,
+      type: 'heading',
     },
     {
       children: [
@@ -599,7 +610,6 @@ export const playgroundValue: EditorDocumentValue = {
     },
     {
       children: [{ text: '' }],
-      isUpload: true,
       name: 'sample.pdf',
       type: 'file',
       url: 'https://s26.q4cdn.com/900411403/files/doc_downloads/test.pdf',
@@ -611,7 +621,8 @@ export const playgroundValue: EditorDocumentValue = {
     },
     {
       children: [{ text: 'Table of Contents' }],
-      type: 'h3',
+      level: 3,
+      type: 'heading',
     },
     {
       children: [{ text: '' }],
@@ -625,16 +636,17 @@ export const playgroundValue: EditorDocumentValue = {
     // Date
     {
       children: [{ text: 'Dates and Equations' }],
-      type: 'h3',
+      level: 3,
+      type: 'heading',
     },
     {
       children: [
         { text: 'Insert dates like ' },
-        { children: [{ text: '' }], date: '2024-01-15', type: 'date' },
+        { children: [{ text: '' }], type: 'date', value: '2024-01-15' },
         { text: ' or use inline equations: ' },
         {
           children: [{ text: '' }],
-          texExpression: 'E = mc^2',
+          latex: 'E = mc^2',
           type: 'inlineEquation',
         },
         { text: '.' },
@@ -644,13 +656,14 @@ export const playgroundValue: EditorDocumentValue = {
     // Block Equation
     {
       children: [{ text: '' }],
-      texExpression: '\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}',
+      latex: '\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}',
       type: 'equation',
     },
     // Callout
     {
       children: [{ text: 'Callouts and Toggles' }],
-      type: 'h3',
+      level: 3,
+      type: 'heading',
     },
     {
       children: [
@@ -663,7 +676,8 @@ export const playgroundValue: EditorDocumentValue = {
     // Columns
     {
       children: [{ text: 'Multi-column Layout' }],
-      type: 'h3',
+      level: 3,
+      type: 'heading',
     },
     {
       children: [
@@ -708,10 +722,7 @@ export const playgroundValue: EditorDocumentValue = {
           text: '',
         },
       ],
-      data: {
-        drawingMode: 'Both',
-        drawingType: 'Mermaid',
-        code: `classDiagram
+      code: `classDiagram
       Animal <|-- Duck
       Animal <|-- Fish
       Animal <|-- Zebra
@@ -733,8 +744,9 @@ export const playgroundValue: EditorDocumentValue = {
         +run()
       } 
       `,
-      },
+      language: 'mermaid',
       type: 'codeDrawing',
+      view: 'split',
     },
   ],
 };

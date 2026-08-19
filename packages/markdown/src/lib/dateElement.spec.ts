@@ -14,7 +14,7 @@ describe('markdown date element', () => {
           { text: 'Date: ' },
           {
             children: [{ text: '' }],
-            date: '2024-01-01',
+            value: '2024-01-01',
             type: 'date',
           },
         ],
@@ -41,7 +41,7 @@ describe('markdown date element', () => {
           { text: 'Date: ' },
           {
             children: [{ text: '' }],
-            date: '2024-01-01',
+            value: '2024-01-01',
             type: 'date',
           },
         ],
@@ -64,7 +64,7 @@ describe('markdown date element', () => {
           { text: 'Date: ' },
           {
             children: [{ text: '' }],
-            rawDate: 'sometime next week',
+            value: 'sometime next week',
             type: 'date',
           },
         ],
@@ -87,7 +87,7 @@ describe('markdown date element', () => {
           { text: 'Date: ' },
           {
             children: [{ text: '' }],
-            date: '2026-03-23',
+            value: '2026-03-23',
             type: 'date',
           },
         ],

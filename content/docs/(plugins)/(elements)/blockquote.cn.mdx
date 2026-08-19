@@ -1,7 +1,7 @@
 ---
 title: 引用块
 docs:
-  - route: /docs/components/blockquote-node
+  - route: /docs/components/blockquote
     title: 引用块元素
 ---
 
@@ -25,9 +25,9 @@ docs:
 
 添加引用块插件最快的方法是使用 `BasicBlocksKit`，它包含预配置的 `BlockquotePlugin` 以及其他基本块元素及其 [Plate UI](/docs/installation/plate-ui) 组件。
 
-<ComponentSource name="basic-blocks-kit" />
+<ComponentSource name="basic-blocks" />
 
-- [`BlockquoteElement`](/docs/components/blockquote-node): 渲染引用块元素。
+- [`BlockquoteElement`](/docs/components/blockquote): 渲染引用块元素。
 
 ### 添加 Kit
 
@@ -35,7 +35,7 @@ docs:
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { BasicBlocksKit } from '@/components/editor/plugins/basic-blocks-kit';
+import { BasicBlocksKit } from '@/components/editor/basic-blocks';
 
 const editor = createPlateEditor({
   plugins: [
@@ -81,7 +81,7 @@ const editor = createPlateEditor({
 ```tsx
 import { BlockquotePlugin } from '@platejs/basic-nodes/react';
 import { createPlateEditor } from 'platejs/react';
-import { BlockquoteElement } from '@/components/ui/blockquote-node';
+import { BlockquoteElement } from '@/components/editor/blockquote';
 
 const editor = createPlateEditor({
   plugins: [
@@ -94,7 +94,7 @@ const editor = createPlateEditor({
 });
 ```
 
-- `.configure({ component })`: 分配 [`BlockquoteElement`](/docs/components/blockquote-node) 来渲染引用块元素。
+- `.configure({ component })`: 分配 [`BlockquoteElement`](/docs/components/blockquote) 来渲染引用块元素。
 - `shortcuts.toggle`: 调用 `editor.plugin(BlockquotePlugin).update.toggle()`。
 
 ### 转换为工具栏按钮

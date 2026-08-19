@@ -111,7 +111,13 @@ export {
 export {
   defineCommand,
   dispatchCommand,
+  evaluateCommand,
   hasCommandHandler,
+  probeCommandNativeEquivalent,
+} from '../core/command-registry';
+export type {
+  EditorCommandEvaluation,
+  EditorCommandNativeProbe,
 } from '../core/command-registry';
 export { createDetachedContentSlice } from '../core/content-slice';
 export type { InternalEditorRuntimeElementEntry } from '../core/snapshot-index';
@@ -206,6 +212,7 @@ export {
   getLiveSelection as getEditorLiveSelection,
   getLiveText as getEditorLiveText,
   getSnapshotVersion,
+  withTransactionSpecDraftRead,
   getStateFieldEffectTypes,
   repairEditorValue,
   runTrustedUpdate,

@@ -77,12 +77,12 @@ export function ReadOnlyEditor() {
 
 ## Render Pipeline
 
-`PlateContent` builds the editable props with `useEditableProps`. That pipeline combines store-level renderers, `PlateContent` render props, plugin decorators, and plugin DOM events.
+`PlateContent` composes editable props directly from store renderers, its own render props, plugin decorators, and plugin DOM events.
 
 | Stage           | Source                                                                                                                  |
 | --------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | Plite provider  | `Plite` receives the editor instance and store callbacks.                                                               |
-| Editable props  | `useEditableProps` pipes decorators, DOM events, `renderElement`, `renderLeaf`, and `renderText`.                       |
+| Editable props  | `PlateContent` pipes decorators, DOM events, `renderElement`, `renderLeaf`, and `renderText`.                            |
 | Plugin slots    | `beforeEditable`, `aboveEditable`, and `afterEditable` wrap or sit around the editable surface.                         |
 | Effects         | `EditorShortcutDispatcher`, `EditorRefEffect`, and `PlateControllerEffect` run inside `PlateContent`. |
 | Read-only state | `disabled` forces read-only; `readOnly` syncs back into the Plate store.                                                |
@@ -109,7 +109,7 @@ Pass a plugin descriptor when the component belongs to one plugin. The props
 infer that plugin's configured element type.
 
 ```tsx title="components/quote-element.tsx"
-import { QuotePlugin } from "@/components/editor/plugins/quote-plugin";
+import { QuotePlugin } from "@/components/editor/quote-plugin";
 import { PlateElement, type PlateElementProps } from "platejs/react";
 
 export function QuoteElement(props: PlateElementProps<typeof QuotePlugin>) {
@@ -135,7 +135,7 @@ When a schema element owns a named content root, render it through the typed
 static rendering; Plate chooses an editable root view or static root children.
 
 ```tsx title="components/figure-element.tsx"
-import { FigurePlugin } from "@/components/editor/plugins/figure-plugin";
+import { FigurePlugin } from "@/components/editor/figure-plugin";
 import type { PlateElementProps } from "platejs/react";
 
 export function FigureElement({
@@ -157,7 +157,6 @@ export function FigureElement({
 | `PlateElement`      | Adds `data-plite-node="element"`, preserves Plite's `data-plite-node-key`, exposes typed element-owned content-root slots, and adds directional-affinity spacers when needed. |
 | `PlateLeaf`         | Renders a text leaf and adds hard-affinity spacers when needed.                                                                                                                                                               |
 | `PlateText`         | Renders a text node without leaf-decoration matching.                                                                                                                                                                         |
-| `useNodeAttributes` | Merges Plite attributes, refs, class names, and styles for node primitives.                                                                                                                                                   |
 
 ## API Reference
 
@@ -373,4 +372,3 @@ Container `div` with plugin container slots.
 | `PlateElement` | `div`              | Accepts `as`, `attributes`, `className`, `style`, `ref`, `element`, `path`, `editor`, `plugin`, and `insetProp`. |
 | `PlateLeaf`    | `span`             | Accepts `as`, `attributes`, `className`, `style`, `ref`, `leaf`, `text`, `editor`, `plugin`, and `inset`.        |
 | `PlateText`    | `span`             | Accepts `as`, `attributes`, `className`, `style`, `ref`, `text`, `editor`, and `plugin`.                         |
-| `withHOC`      | `React.forwardRef` | Wraps one ref-capable component with another ref-capable component.                                              |

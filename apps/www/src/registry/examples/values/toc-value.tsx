@@ -6,9 +6,9 @@ jsx;
 
 export const tocValue = (
   <fragment>
-    <hh1>
+    <hheading level={1}>
       <htext>Table of Contents</htext>
-    </hh1>
+    </hheading>
     <hp>
       <htext>
         The Table of Contents (TOC) feature allows you to create an
@@ -16,10 +16,10 @@ export const tocValue = (
       </htext>
     </hp>
     <hp>How to use the Table of Contents:</hp>
-    <hp indent={1} listStyleType="disc">
+    <hp indent={1} listType="bulleted">
       <htext>Type "/toc" and press Enter to create the TOC.</htext>
     </hp>
-    <hp indent={1} listStyleType="disc">
+    <hp indent={1} listType="bulleted">
       <htext>
         The TOC updates automatically when you modify headings in the document.
       </htext>
@@ -27,21 +27,21 @@ export const tocValue = (
     <htoc>
       <htext />
     </htoc>
-    <hh2>Example Content</hh2>
+    <hheading level={2}>Example Content</hheading>
     <hp>
       <htext>
         This is an example of content that would be reflected in the Table of
         Contents.
       </htext>
     </hp>
-    <hh3>Subsection</hh3>
+    <hheading level={3}>Subsection</hheading>
     <hp>
       <htext>
         Adding or modifying headings in your document will automatically update
         the TOC.
       </htext>
     </hp>
-    <hh2>Benefits of Using TOC</hh2>
+    <hheading level={2}>Benefits of Using TOC</hheading>
     <hp>
       <htext>
         A Table of Contents improves document navigation and provides a quick

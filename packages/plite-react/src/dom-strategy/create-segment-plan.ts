@@ -1,11 +1,6 @@
 import type { Path, NodeKey } from '@platejs/plite';
-import type { DOMTextSyncOptions } from '../dom-text-sync';
 
 export type DOMStrategyType = 'auto' | 'full' | 'staged';
-
-type DOMStrategyTextSyncConfig = {
-  textSync?: DOMTextSyncOptions;
-};
 
 export type DOMStrategyVirtualizedLayout = {
   pageItems?: readonly VirtualizedPageLayoutItem[];
@@ -34,9 +29,9 @@ export type VirtualizedTopLevelLayoutItem = {
 
 export type DOMStrategyOptions =
   | DOMStrategyType
-  | (DOMStrategyTextSyncConfig & {
+  | {
       type: DOMStrategyType;
-    })
+    }
   | {
       /**
        * Experimental viewport-only rendering for pathological documents.
@@ -46,7 +41,6 @@ export type DOMStrategyOptions =
       estimatedBlockSize?: number;
       layout?: DOMStrategyVirtualizedLayout;
       overscan?: number;
-      textSync?: DOMTextSyncOptions;
       threshold?: number;
       type: 'virtualized';
     };

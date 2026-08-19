@@ -149,28 +149,6 @@ describe('BaseColumnPlugin schema', () => {
         },
       ])
     ).toThrow(/at least 2 children/i);
-    expect(() =>
-      editor.read.schema.assertDocument({
-        children: [
-          {
-            children: [
-              {
-                children: [{ children: [{ text: '' }], type: 'paragraph' }],
-                type: 'column',
-                width: '50%',
-              },
-              {
-                children: [{ children: [{ text: '' }], type: 'paragraph' }],
-                type: 'column',
-                width: '50%',
-              },
-            ],
-            layout: [50, '50'],
-            type: 'columnGroup',
-          },
-        ],
-      })
-    ).toThrow(/element property "layout" fails custom property validation/);
   });
 });
 

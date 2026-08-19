@@ -19,11 +19,8 @@
   "targets": [
     {
       "name": "editor",
-      "files": [
-        "apps/www/src/registry/components/editor/editor.ts",
-        "apps/www/src/registry/ui/editor.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "files": ["apps/www/src/registry/components/editor/editor.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
       "diagnostics": []
     }
   ],

@@ -26,81 +26,6 @@ export type UseCursorOverlayPositionsOptions<
   refreshOnResize?: boolean;
 };
 
-export const useRequestReRender = () => {
-  const [, setUpdateCounter] = React.useState(0);
-  const animationFrameRef = React.useRef<number | null>(null);
-
-  const requestReRender = React.useCallback((immediate = false) => {
-    if (animationFrameRef.current !== null && !immediate) return;
-
-    if (!immediate) {
-      animationFrameRef.current = requestAnimationFrame(() => {
-        setUpdateCounter((state) => state + 1);
-        animationFrameRef.current = null;
-      });
-
-      return;
-    }
-    if (animationFrameRef.current !== null) {
-      cancelAnimationFrame(animationFrameRef.current);
-      animationFrameRef.current = null;
-    }
-
-    setUpdateCounter((state) => state + 1);
-  }, []);
-
-  React.useEffect(() => {
-    if (animationFrameRef.current !== null) {
-      cancelAnimationFrame(animationFrameRef.current);
-      animationFrameRef.current = null;
-    }
-  });
-
-  React.useEffect(
-    () => () => {
-      if (animationFrameRef.current !== null) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-    },
-    []
-  );
-
-  return requestReRender;
-};
-
-export const useRefreshOnResize = ({
-  containerRef,
-  refreshOnResize,
-  selectionRectCache,
-}: Pick<
-  UseCursorOverlayPositionsOptions,
-  'containerRef' | 'refreshOnResize'
-> & {
-  selectionRectCache: React.MutableRefObject<
-    WeakMap<Range, readonly SelectionRect[]>
-  >;
-}) => {
-  const requestReRender = useRequestReRender();
-  const refresh = React.useCallback(
-    (sync = false) => {
-      selectionRectCache.current = new WeakMap();
-      requestReRender(sync);
-    },
-    [requestReRender, selectionRectCache]
-  );
-
-  React.useEffect(() => {
-    if (!refreshOnResize || !containerRef?.current) return;
-
-    const resizeObserver = new ResizeObserver(() => refresh());
-    resizeObserver.observe(containerRef.current);
-
-    return () => resizeObserver.disconnect();
-  }, [containerRef, refresh, refreshOnResize]);
-
-  return { refresh };
-};
-
 export const useCursorOverlayPositions = <TCursorData extends UnknownObject>({
   containerRef,
   cursors,
@@ -112,6 +37,8 @@ export const useCursorOverlayPositions = <TCursorData extends UnknownObject>({
     WeakMap<Range, readonly SelectionRect[]>
   >(new WeakMap());
   const cachedMinSelectionWidth = React.useRef(minSelectionWidth);
+  const animationFrameRef = React.useRef<number | null>(null);
+  const [, setUpdateCounter] = React.useState(0);
   const [selectionRects, setSelectionRects] = React.useState<
     Record<string, readonly SelectionRect[]>
   >({});
@@ -180,11 +107,51 @@ export const useCursorOverlayPositions = <TCursorData extends UnknownObject>({
     () => getCursorOverlayState({ cursors, selectionRects }),
     [cursors, selectionRects]
   );
-  const { refresh } = useRefreshOnResize({
-    containerRef,
-    refreshOnResize,
-    selectionRectCache,
+  const refresh = React.useCallback((sync = false) => {
+    selectionRectCache.current = new WeakMap();
+
+    if (animationFrameRef.current !== null && !sync) return;
+
+    if (!sync) {
+      animationFrameRef.current = requestAnimationFrame(() => {
+        setUpdateCounter((state) => state + 1);
+        animationFrameRef.current = null;
+      });
+
+      return;
+    }
+    if (animationFrameRef.current !== null) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
+
+    setUpdateCounter((state) => state + 1);
+  }, []);
+
+  React.useEffect(() => {
+    if (animationFrameRef.current !== null) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
   });
+
+  React.useEffect(() => {
+    if (!refreshOnResize || !containerRef?.current) return;
+
+    const resizeObserver = new ResizeObserver(() => refresh());
+    resizeObserver.observe(containerRef.current);
+
+    return () => resizeObserver.disconnect();
+  }, [containerRef, refresh, refreshOnResize]);
+
+  React.useEffect(
+    () => () => {
+      if (animationFrameRef.current !== null) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    },
+    []
+  );
 
   return { cursors: overlay, refresh };
 };

@@ -19,33 +19,51 @@
   "targets": [
     {
       "name": "discussion-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/discussion-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for discussion-kit."
+        }
+      ]
     },
     {
       "name": "mention-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/mention-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for mention-kit."
+        }
+      ]
     },
     {
       "name": "tabbable-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/tabbable-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for tabbable-kit."
+        }
+      ]
     },
     {
       "name": "toc-kit",
-      "files": ["apps/www/src/registry/components/editor/plugins/toc-kit.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for toc-kit."
+        }
+      ]
     }
   ],
   "entries": [

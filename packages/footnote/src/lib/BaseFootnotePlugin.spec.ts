@@ -13,6 +13,29 @@ import {
 } from '@platejs/plite';
 
 describe('BaseFootnotePlugins', () => {
+  it('requires non-empty refs on references and definitions', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseFootnotePlugin, BaseFootnoteDefinitionPlugin],
+    });
+
+    expect(() =>
+      editor.read.schema.assertFragment([
+        { children: [{ text: '' }], ref: ' ', type: 'footnoteReference' },
+      ])
+    ).toThrow(/ref.*validation/i);
+    expect(() =>
+      editor.read.schema.assertDocument({
+        children: [
+          {
+            children: [{ children: [{ text: '' }], type: 'paragraph' }],
+            ref: '',
+            type: 'footnoteDefinition',
+          },
+        ],
+      })
+    ).toThrow(/ref.*validation/i);
+  });
+
   it('declares the input as an exact required Base dependency', () => {
     expect(BaseFootnotePlugin.dependencies).toEqual([BaseFootnoteInputPlugin]);
   });
@@ -62,6 +85,7 @@ describe('BaseFootnotePlugins', () => {
     expect(
       editor.read.schema.getElementBehavior({
         children: [{ text: '' }],
+        ref: '1',
         type: 'footnoteReference',
       })
     ).toMatchObject({ atom: true, inline: true, void: true });
@@ -70,6 +94,7 @@ describe('BaseFootnotePlugins', () => {
         children: [
           {
             children: [{ text: '' }],
+            ref: '1',
             type: 'footnoteReference',
           },
         ],
@@ -108,8 +133,11 @@ describe('BaseFootnotePlugins', () => {
     expect(
       editor.read.schema.element(BaseFootnoteDefinitionPlugin)?.behavior.inline
     ).toBe(false);
-    expect(editor.read.schema.create(BaseFootnoteDefinitionPlugin)).toEqual({
+    expect(
+      editor.read.schema.create(BaseFootnoteDefinitionPlugin, { ref: '1' })
+    ).toEqual({
       children: [{ children: [{ text: '' }], type: 'paragraph' }],
+      ref: '1',
       type: 'footnoteDefinition',
     });
     expect(
@@ -120,6 +148,7 @@ describe('BaseFootnotePlugins', () => {
         children: [
           {
             children: [{ children: [{ text: '' }], type: 'paragraph' }],
+            ref: '1',
             type: 'footnoteDefinition',
           },
         ],
@@ -135,16 +164,16 @@ describe('BaseFootnotePlugins', () => {
     const footnote = editor.update.footnote;
 
     expect(api).toBeDefined();
-    expect(typeof api.nextId).toBe('function');
+    expect(typeof api.nextRef).toBe('function');
     expect(typeof api.definition).toBe('function');
     expect(typeof api.definitions).toBe('function');
     expect(typeof api.duplicateDefinitions).toBe('function');
     expect(typeof api.references).toBe('function');
-    expect(typeof api.identifiers).toBe('function');
+    expect(typeof api.refs).toBe('function');
     expect(typeof api.isDuplicateDefinition).toBe('function');
     expect(typeof api.isResolved).toBe('function');
     expect(typeof api.hasDuplicateDefinitions).toBe('function');
-    expect(typeof api.duplicateIdentifiers).toBe('function');
+    expect(typeof api.duplicateRefs).toBe('function');
 
     expect(typeof editor.update.footnote.insert).toBe('function');
     expect(typeof footnote.createDefinition).toBe('function');
@@ -167,7 +196,7 @@ describe('BaseFootnotePlugins', () => {
             { text: 'hi ' },
             {
               children: [{ text: '' }],
-              identifier: '1',
+              ref: '1',
               type: 'footnoteReference',
             },
             { text: ' after' },
@@ -206,7 +235,7 @@ describe('BaseFootnotePlugins', () => {
             { text: 'hi ' },
             {
               children: [{ text: '' }],
-              identifier: '1',
+              ref: '1',
               type: 'footnoteReference',
             },
             { text: ' after' },
@@ -280,7 +309,7 @@ describe('BaseFootnotePlugin read', () => {
             { text: '' },
             {
               children: [{ text: '1' }],
-              identifier: '1',
+              ref: '1',
               type: 'footnoteReference',
             },
             { text: '' },
@@ -289,25 +318,25 @@ describe('BaseFootnotePlugin read', () => {
         },
         {
           children: [{ children: [{ text: 'body' }], type: 'paragraph' }],
-          identifier: '1',
+          ref: '1',
           type: 'footnoteDefinition',
         },
       ],
     });
     const { footnote } = editor.read;
 
-    expect(footnote.definition({ identifier: '1' })).toBeDefined();
-    expect(footnote.definitions({ identifier: '1' })).toHaveLength(1);
-    expect(footnote.isResolved({ identifier: '1' })).toBe(true);
-    expect(footnote.hasDuplicateDefinitions({ identifier: '1' })).toBe(false);
-    expect(footnote.duplicateIdentifiers()).toEqual([]);
-    expect(footnote.references({ identifier: '1' })).toHaveLength(1);
-    expect(footnote.definitionText({ identifier: '1' })).toBe('body');
-    expect(footnote.nextId()).toBe('2');
+    expect(footnote.definition({ ref: '1' })).toBeDefined();
+    expect(footnote.definitions({ ref: '1' })).toHaveLength(1);
+    expect(footnote.isResolved({ ref: '1' })).toBe(true);
+    expect(footnote.hasDuplicateDefinitions({ ref: '1' })).toBe(false);
+    expect(footnote.duplicateRefs()).toEqual([]);
+    expect(footnote.references({ ref: '1' })).toHaveLength(1);
+    expect(footnote.definitionText({ ref: '1' })).toBe('body');
+    expect(footnote.nextRef()).toBe('2');
 
     editor.update.text.insert('!');
 
-    expect(footnote.definitionText({ identifier: '1' })).toBe('body!');
+    expect(footnote.definitionText({ ref: '1' })).toBe('body!');
 
     editor.update.selection.set({
       kind: 'text',
@@ -316,10 +345,10 @@ describe('BaseFootnotePlugin read', () => {
     });
     editor.update.footnote.insert({
       focusDefinition: false,
-      identifier: '2',
+      ref: '2',
     });
 
-    expect(footnote.nextId()).toBe('3');
+    expect(footnote.nextRef()).toBe('3');
   });
 
   it('detects duplicate definitions without scanning on every lookup', () => {
@@ -328,23 +357,23 @@ describe('BaseFootnotePlugin read', () => {
       initialValue: [
         {
           children: [{ children: [{ text: 'one' }], type: 'paragraph' }],
-          identifier: '1',
+          ref: '1',
           type: 'footnoteDefinition',
         },
         {
           children: [{ children: [{ text: 'duplicate' }], type: 'paragraph' }],
-          identifier: '1',
+          ref: '1',
           type: 'footnoteDefinition',
         },
       ],
     });
     const { footnote } = editor.read;
 
-    expect(footnote.isResolved({ identifier: '1' })).toBe(true);
-    expect(footnote.hasDuplicateDefinitions({ identifier: '1' })).toBe(true);
-    expect(footnote.duplicateIdentifiers()).toEqual(['1']);
-    expect(footnote.definitions({ identifier: '1' })).toHaveLength(2);
-    expect(footnote.duplicateDefinitions({ identifier: '1' })).toHaveLength(1);
+    expect(footnote.isResolved({ ref: '1' })).toBe(true);
+    expect(footnote.hasDuplicateDefinitions({ ref: '1' })).toBe(true);
+    expect(footnote.duplicateRefs()).toEqual(['1']);
+    expect(footnote.definitions({ ref: '1' })).toHaveLength(2);
+    expect(footnote.duplicateDefinitions({ ref: '1' })).toHaveLength(1);
     expect(footnote.isDuplicateDefinition({ path: [0] })).toBe(false);
     expect(footnote.isDuplicateDefinition({ path: [1] })).toBe(true);
   });
@@ -355,14 +384,14 @@ describe('BaseFootnotePlugin read', () => {
       initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
 
-    expect(editor.read.footnote.nextId()).toBe('1');
+    expect(editor.read.footnote.nextRef()).toBe('1');
 
     editor.update.nodes.insert(
       {
         children: [
           {
             children: [{ text: '' }],
-            identifier: '1',
+            ref: '1',
             type: 'footnoteReference',
           },
         ],
@@ -371,11 +400,11 @@ describe('BaseFootnotePlugin read', () => {
       { at: [1] }
     );
 
-    expect(editor.read.footnote.nextId()).toBe('2');
+    expect(editor.read.footnote.nextRef()).toBe('2');
 
     editor.update.nodes.remove({ at: [1] });
 
-    expect(editor.read.footnote.nextId()).toBe('1');
+    expect(editor.read.footnote.nextRef()).toBe('1');
   });
 
   it('can renumber a later duplicate definition without touching the canonical first definition', () => {
@@ -384,12 +413,12 @@ describe('BaseFootnotePlugin read', () => {
       initialValue: [
         {
           children: [{ children: [{ text: 'one' }], type: 'paragraph' }],
-          identifier: '1',
+          ref: '1',
           type: 'footnoteDefinition',
         },
         {
           children: [{ children: [{ text: 'duplicate' }], type: 'paragraph' }],
-          identifier: '1',
+          ref: '1',
           type: 'footnoteDefinition',
         },
       ],
@@ -399,24 +428,24 @@ describe('BaseFootnotePlugin read', () => {
     expect(
       editor.update.footnote.normalizeDuplicateDefinition({ path: [1] })
     ).toBe('2');
-    expect(footnote.hasDuplicateDefinitions({ identifier: '1' })).toBe(false);
-    expect(footnote.duplicateIdentifiers()).toEqual([]);
-    expect(footnote.definition({ identifier: '1' })).toMatchObject([
-      { identifier: '1', type: 'footnoteDefinition' },
+    expect(footnote.hasDuplicateDefinitions({ ref: '1' })).toBe(false);
+    expect(footnote.duplicateRefs()).toEqual([]);
+    expect(footnote.definition({ ref: '1' })).toMatchObject([
+      { ref: '1', type: 'footnoteDefinition' },
       [0],
     ]);
-    expect(footnote.definition({ identifier: '2' })).toMatchObject([
-      { identifier: '2', type: 'footnoteDefinition' },
+    expect(footnote.definition({ ref: '2' })).toMatchObject([
+      { ref: '2', type: 'footnoteDefinition' },
       [1],
     ]);
     expect(footnote.isDuplicateDefinition({ path: [1] })).toBe(false);
   });
 
-  it('invalidates for a classification-free identifier change', () => {
+  it('invalidates for a classification-free ref change', () => {
     const value = [
       {
         children: [{ children: [{ text: 'one' }], type: 'paragraph' }],
-        identifier: '1',
+        ref: '1',
         type: 'footnoteDefinition',
       },
     ] as const;
@@ -426,7 +455,7 @@ describe('BaseFootnotePlugin read', () => {
       initialValue: value,
     });
 
-    source.update.nodes.set({ identifier: '2' }, { at: [0] });
+    source.update.nodes.set({ ref: '2' }, { at: [0] });
 
     const change = DocumentChange.fromJSON(
       source.read.lastCommit()!.changes.toJSON()
@@ -436,14 +465,12 @@ describe('BaseFootnotePlugin read', () => {
       initialValue: value,
     });
 
-    expect(replay.read.footnote.definition({ identifier: '1' })).toBeDefined();
+    expect(replay.read.footnote.definition({ ref: '1' })).toBeDefined();
     expect(change.primaryClassification).toBeNull();
     replay.update((tx) => tx.changes.apply(change));
 
-    expect(
-      replay.read.footnote.definition({ identifier: '1' })
-    ).toBeUndefined();
-    expect(replay.read.footnote.definition({ identifier: '2' })).toBeDefined();
+    expect(replay.read.footnote.definition({ ref: '1' })).toBeUndefined();
+    expect(replay.read.footnote.definition({ ref: '2' })).toBeDefined();
   });
 });
 
@@ -462,7 +489,7 @@ describe('BaseFootnotePlugin updates', () => {
     expect(
       editor.update.footnote.createDefinition({
         focus: false,
-        identifier: '1',
+        ref: '1',
       })
     ).toEqual([1]);
     expect(editor.read.selection()).toEqual({
@@ -470,9 +497,7 @@ describe('BaseFootnotePlugin updates', () => {
       anchor: { offset: 5, path: [0, 0] },
       focus: { offset: 5, path: [0, 0] },
     });
-    expect(
-      editor.update.footnote.createDefinition({ identifier: '1' })
-    ).toEqual([1]);
+    expect(editor.update.footnote.createDefinition({ ref: '1' })).toEqual([1]);
     expect(editor.read.value().children).toHaveLength(2);
     expect(editor.read.selection()).toEqual({
       kind: 'text',
@@ -506,7 +531,7 @@ describe('BaseFootnotePlugin updates', () => {
           type: 'testFootnoteBlock',
         },
       ],
-      identifier: '3',
+      ref: '3',
     });
 
     expect(editor.read.nodes.get([1])?.[0]).toMatchObject({
@@ -516,7 +541,7 @@ describe('BaseFootnotePlugin updates', () => {
           type: 'testFootnoteBlock',
         },
       ],
-      identifier: '3',
+      ref: '3',
       type: 'footnoteDefinition',
     });
     expect(() =>
@@ -548,7 +573,7 @@ describe('BaseFootnotePlugin updates', () => {
           { text: 'hello ' },
           {
             children: [{ text: '' }],
-            identifier: '1',
+            ref: '1',
             type: 'footnoteReference',
           },
           { text: '' },
@@ -557,7 +582,7 @@ describe('BaseFootnotePlugin updates', () => {
       },
       {
         children: [{ children: [{ text: 'world' }], type: 'paragraph' }],
-        identifier: '1',
+        ref: '1',
         type: 'footnoteDefinition',
       },
     ]);
@@ -582,7 +607,7 @@ describe('BaseFootnotePlugin updates', () => {
           { text: '' },
           {
             children: [{ text: '' }],
-            identifier: '1',
+            ref: '1',
             type: 'footnoteReference',
           },
           { text: 'hello' },
@@ -591,7 +616,7 @@ describe('BaseFootnotePlugin updates', () => {
       },
       {
         children: [{ children: [{ text: '' }], type: 'paragraph' }],
-        identifier: '1',
+        ref: '1',
         type: 'footnoteDefinition',
       },
     ]);
@@ -615,12 +640,12 @@ describe('BaseFootnotePlugin updates', () => {
 
     expect(editor.read.text.string([0])).toBe('abc');
     expect(editor.read.nodes.get([0, 1])?.[0]).toMatchObject({
-      identifier: '1',
+      ref: '1',
       type: 'footnoteReference',
     });
   });
 
-  it('skips used numeric identifiers when inserting', () => {
+  it('skips used numeric refs when inserting', () => {
     const editor = createBaseEditor({
       plugins: [BaseFootnotePlugin, BaseFootnoteDefinitionPlugin] as const,
       selection: {
@@ -632,12 +657,12 @@ describe('BaseFootnotePlugin updates', () => {
         { children: [{ text: 'x' }], type: 'paragraph' },
         {
           children: [{ children: [{ text: 'one' }], type: 'paragraph' }],
-          identifier: '1',
+          ref: '1',
           type: 'footnoteDefinition',
         },
         {
           children: [{ children: [{ text: 'three' }], type: 'paragraph' }],
-          identifier: '3',
+          ref: '3',
           type: 'footnoteDefinition',
         },
       ],
@@ -646,16 +671,16 @@ describe('BaseFootnotePlugin updates', () => {
     editor.update.footnote.insert({ focusDefinition: false });
 
     expect(editor.read.nodes.get([0, 1])?.[0]).toMatchObject({
-      identifier: '2',
+      ref: '2',
       type: 'footnoteReference',
     });
     expect(editor.read.nodes.get([3])?.[0]).toMatchObject({
-      identifier: '2',
+      ref: '2',
       type: 'footnoteDefinition',
     });
   });
 
-  it('reuses an existing definition for an explicit identifier', () => {
+  it('reuses an existing definition for an explicit ref', () => {
     const editor = createBaseEditor({
       plugins: [BaseFootnotePlugin, BaseFootnoteDefinitionPlugin] as const,
       selection: {
@@ -667,13 +692,13 @@ describe('BaseFootnotePlugin updates', () => {
         { children: [{ text: 'x' }], type: 'paragraph' },
         {
           children: [{ children: [{ text: 'existing' }], type: 'paragraph' }],
-          identifier: '7',
+          ref: '7',
           type: 'footnoteDefinition',
         },
       ],
     });
 
-    editor.update.footnote.insert({ identifier: '7' });
+    editor.update.footnote.insert({ ref: '7' });
 
     expect(editor.read.value().children).toHaveLength(2);
     expect(editor.read.selection()).toEqual({
@@ -681,6 +706,30 @@ describe('BaseFootnotePlugin updates', () => {
       anchor: { offset: 0, path: [1, 0, 0] },
       focus: { offset: 0, path: [1, 0, 0] },
     });
+  });
+
+  it('rejects blank explicit refs before inserting footnote nodes', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseFootnotePlugin, BaseFootnoteDefinitionPlugin] as const,
+      selection: {
+        kind: 'text',
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 1, path: [0, 0] },
+      },
+      initialValue: [{ children: [{ text: 'x' }], type: 'paragraph' }],
+    });
+
+    expect(() => editor.update.footnote.insert({ ref: '   ' })).toThrow(
+      /footnote ref must be a non-empty string/i
+    );
+    expect(() =>
+      editor.update.footnote.createDefinition({ ref: '   ' })
+    ).toThrow(/footnote ref must be a non-empty string/i);
+    expect(editor.read.footnote.definition({ ref: '' })).toBeUndefined();
+    expect(editor.read.footnote.isResolved({ ref: '' })).toBe(false);
+    expect(editor.read.value().children).toEqual([
+      { children: [{ text: 'x' }], type: 'paragraph' },
+    ]);
   });
 });
 
@@ -707,7 +756,7 @@ describe('BaseFootnotePlugin updates', () => {
             children: [
               {
                 children: [{ text: '' }],
-                identifier: '1',
+                ref: '1',
                 type: 'footnoteReference',
               },
             ],
@@ -715,32 +764,30 @@ describe('BaseFootnotePlugin updates', () => {
           },
           {
             children: [{ children: [{ text: 'body' }], type: 'paragraph' }],
-            identifier: '1',
+            ref: '1',
             type: 'footnoteDefinition',
           },
           {
             children: [
               { children: [{ text: 'duplicate' }], type: 'paragraph' },
             ],
-            identifier: '1',
+            ref: '1',
             type: 'footnoteDefinition',
           },
         ],
       });
       const { footnote } = editor.read;
 
-      expect(footnote.definition({ identifier: '1' })?.[1]).toEqual([1]);
-      expect(footnote.definitions({ identifier: '1' })).toHaveLength(2);
-      expect(footnote.references({ identifier: '1' })).toHaveLength(1);
-      expect(footnote.definitionText({ identifier: '1' })).toBe('body');
-      expect(footnote.isResolved({ identifier: '1' })).toBe(true);
-      expect(footnote.hasDuplicateDefinitions({ identifier: '1' })).toBe(true);
-      expect(footnote.duplicateDefinitions({ identifier: '1' })).toHaveLength(
-        1
-      );
-      expect(footnote.duplicateIdentifiers()).toEqual(['1']);
-      expect(footnote.identifiers()).toEqual(['1']);
-      expect(footnote.nextId()).toBe('2');
+      expect(footnote.definition({ ref: '1' })?.[1]).toEqual([1]);
+      expect(footnote.definitions({ ref: '1' })).toHaveLength(2);
+      expect(footnote.references({ ref: '1' })).toHaveLength(1);
+      expect(footnote.definitionText({ ref: '1' })).toBe('body');
+      expect(footnote.isResolved({ ref: '1' })).toBe(true);
+      expect(footnote.hasDuplicateDefinitions({ ref: '1' })).toBe(true);
+      expect(footnote.duplicateDefinitions({ ref: '1' })).toHaveLength(1);
+      expect(footnote.duplicateRefs()).toEqual(['1']);
+      expect(footnote.refs()).toEqual(['1']);
+      expect(footnote.nextRef()).toBe('2');
     });
 
     it('renumbers duplicate definitions through the runtime transaction group', () => {
@@ -748,47 +795,91 @@ describe('BaseFootnotePlugin updates', () => {
         value: [
           {
             children: [{ children: [{ text: 'one' }], type: 'paragraph' }],
-            identifier: '1',
+            ref: '1',
             type: 'footnoteDefinition',
           },
           {
             children: [
               { children: [{ text: 'duplicate' }], type: 'paragraph' },
             ],
-            identifier: '1',
+            ref: '1',
             type: 'footnoteDefinition',
           },
         ],
       });
-      const normalizedIdentifier =
-        editor.update.footnote.normalizeDuplicateDefinition({ path: [1] });
+      const normalizedRef = editor.update.footnote.normalizeDuplicateDefinition(
+        { path: [1] }
+      );
 
-      expect(String(normalizedIdentifier)).toBe('2');
+      expect(String(normalizedRef)).toBe('2');
 
       const { footnote } = editor.read;
 
-      expect(footnote.hasDuplicateDefinitions({ identifier: '1' })).toBe(false);
-      expect(footnote.definition({ identifier: '2' })?.[1]).toEqual([1]);
+      expect(footnote.hasDuplicateDefinitions({ ref: '1' })).toBe(false);
+      expect(footnote.definition({ ref: '2' })?.[1]).toEqual([1]);
     });
 
-    it('does not renumber definitions without an identifier', () => {
+    it('rejects the duplicate definition current ref as a target', () => {
       const editor = createFootnoteRuntimeEditor({
         value: [
           {
             children: [{ children: [{ text: 'one' }], type: 'paragraph' }],
+            ref: '1',
             type: 'footnoteDefinition',
           },
           {
-            children: [{ children: [{ text: 'two' }], type: 'paragraph' }],
+            children: [
+              { children: [{ text: 'duplicate' }], type: 'paragraph' },
+            ],
+            ref: '1',
             type: 'footnoteDefinition',
           },
         ],
       });
 
       expect(
-        editor.update.footnote.normalizeDuplicateDefinition({ path: [1] })
+        editor.update.footnote.normalizeDuplicateDefinition({
+          path: [1],
+          ref: '1',
+        })
       ).toBe(false);
-      expect(editor.read.nodes.get([1])?.[0]).not.toHaveProperty('identifier');
+      expect(editor.read.footnote.hasDuplicateDefinitions({ ref: '1' })).toBe(
+        true
+      );
+    });
+
+    it('rejects refs already occupied by unresolved references', () => {
+      const editor = createFootnoteRuntimeEditor({
+        value: [
+          {
+            children: [{ children: [{ text: 'one' }], type: 'paragraph' }],
+            ref: '1',
+            type: 'footnoteDefinition',
+          },
+          {
+            children: [
+              { children: [{ text: 'duplicate' }], type: 'paragraph' },
+            ],
+            ref: '1',
+            type: 'footnoteDefinition',
+          },
+          {
+            children: [{ text: '' }],
+            ref: '2',
+            type: 'footnoteReference',
+          },
+        ],
+      });
+
+      expect(
+        editor.update.footnote.normalizeDuplicateDefinition({
+          path: [1],
+          ref: '2',
+        })
+      ).toBe(false);
+      expect(editor.read.footnote.hasDuplicateDefinitions({ ref: '1' })).toBe(
+        true
+      );
     });
 
     it('renumbers a definition inserted earlier in the same transaction', () => {
@@ -796,7 +887,7 @@ describe('BaseFootnotePlugin updates', () => {
         value: [
           {
             children: [{ children: [{ text: 'one' }], type: 'paragraph' }],
-            identifier: '1',
+            ref: '1',
             type: 'footnoteDefinition',
           },
         ],
@@ -808,7 +899,7 @@ describe('BaseFootnotePlugin updates', () => {
             children: [
               { children: [{ text: 'duplicate' }], type: 'paragraph' },
             ],
-            identifier: '1',
+            ref: '1',
             type: 'footnoteDefinition',
           },
           { at: [1] }
@@ -817,7 +908,7 @@ describe('BaseFootnotePlugin updates', () => {
       });
 
       expect(editor.read.nodes.get([1])?.[0]).toMatchObject({
-        identifier: '2',
+        ref: '2',
       });
     });
 
@@ -839,7 +930,7 @@ describe('BaseFootnotePlugin updates', () => {
             { text: 'hi' },
             {
               children: [{ text: '' }],
-              identifier: '1',
+              ref: '1',
               type: 'footnoteReference',
             },
             { text: '' },
@@ -848,7 +939,7 @@ describe('BaseFootnotePlugin updates', () => {
         },
         {
           children: [{ children: [{ text: '' }], type: 'paragraph' }],
-          identifier: '1',
+          ref: '1',
           type: 'footnoteDefinition',
         },
       ]);
@@ -867,7 +958,7 @@ describe('BaseFootnotePlugin updates', () => {
               { text: 'a' },
               {
                 children: [{ text: '' }],
-                identifier: '1',
+                ref: '1',
                 type: 'footnoteReference',
               },
               { text: 'b' },
@@ -876,13 +967,13 @@ describe('BaseFootnotePlugin updates', () => {
           },
           {
             children: [{ children: [{ text: 'body' }], type: 'paragraph' }],
-            identifier: '1',
+            ref: '1',
             type: 'footnoteDefinition',
           },
         ],
       });
       const didFocusDefinition = editor.update.footnote.focusDefinition({
-        identifier: '1',
+        ref: '1',
       });
 
       expect(didFocusDefinition).toBe(true);
@@ -893,7 +984,7 @@ describe('BaseFootnotePlugin updates', () => {
       });
 
       const didFocusReference = editor.update.footnote.focusReference({
-        identifier: '1',
+        ref: '1',
       });
 
       expect(didFocusReference).toBe(true);

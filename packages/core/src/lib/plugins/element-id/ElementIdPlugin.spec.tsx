@@ -200,9 +200,9 @@ describe('ElementIdPlugin', () => {
   it('seeds duplicate checks from the final transformed initial value', () => {
     const RewriteElementIdPlugin = defineBasePlugin('rewriteElementId', {
       dependencies: [ElementIdPlugin],
-      transformInitialValue: ({ value }) => ({
-        ...value,
-        children: value.children.map((node) =>
+      prepareDocument: ({ document }) => ({
+        ...document,
+        children: document.children.map((node) =>
           ElementApi.isElement(node) ? { ...node, id: 'rewritten' } : node
         ),
       }),

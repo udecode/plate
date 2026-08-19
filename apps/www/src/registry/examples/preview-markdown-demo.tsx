@@ -14,9 +14,9 @@ import {
 import Prism, { type TokenStream } from 'prismjs';
 
 import { cn } from '@/lib/utils';
-import { BasicNodesKit } from '@/registry/components/editor/plugins/basic-nodes-kit';
+import { BasicNodesKit } from '@/registry/components/editor/basic-nodes';
 import { previewMdValue } from '@/registry/examples/values/preview-md-value';
-import { Editor, EditorContainer } from '@/registry/ui/editor';
+import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 
 import 'prismjs/components/prism-markdown.js';
 

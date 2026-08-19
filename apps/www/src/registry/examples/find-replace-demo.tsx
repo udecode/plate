@@ -12,11 +12,10 @@ import {
 } from 'platejs/react';
 
 import { Input } from '@/components/ui/input';
-import { EditorKit } from '@/registry/components/editor/editor';
+import { EditorKit } from '@/registry/components/editor/plugins';
 import { findReplaceValue } from '@/registry/examples/values/find-replace-value';
-import { Editor, EditorContainer } from '@/registry/ui/editor';
-import { FixedToolbar } from '@/registry/ui/fixed-toolbar';
-import { SearchHighlightLeaf } from '@/registry/ui/search-highlight-node';
+import { Editor, EditorContainer } from '@/registry/components/editor/editor';
+import { FixedToolbar } from '@/registry/components/editor/fixed-toolbar';
 
 export function FindToolbar() {
   const editor = useEditor();
@@ -46,8 +45,8 @@ export default function FindReplaceDemo() {
       plugins: [
         ...EditorKit,
         FindReplacePlugin.configure({
-          component: SearchHighlightLeaf,
           initialState: { search: 'text' },
+          render: { as: 'span' },
         }),
       ],
       initialValue: findReplaceValue,
@@ -59,7 +58,10 @@ export default function FindReplaceDemo() {
     <Plate editor={editor}>
       <FindToolbar />
 
-      <EditorContainer variant="demo" className="border-t">
+      <EditorContainer
+        variant="demo"
+        className="border-t [&_.plite-searchHighlight]:bg-yellow-100"
+      >
         <Editor />
       </EditorContainer>
     </Plate>

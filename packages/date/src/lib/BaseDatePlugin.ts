@@ -3,7 +3,7 @@ import type { ElementOf } from '@platejs/plite';
 import { property } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
 
-import { normalizeDateValue } from './dateValue';
+import { normalizeDateValue, parseCanonicalDateValue } from './dateValue';
 
 export const BaseDatePlugin = defineBasePlugin(PLUGINS.date, {
   codecs: ({ defineCodecs, schema: { type } }) =>
@@ -20,17 +20,20 @@ export const BaseDatePlugin = defineBasePlugin(PLUGINS.date, {
               : firstChild?.type === 'text'
                 ? firstChild.value
                 : '';
+          const value = normalizeDateValue(dateValue);
+
+          if (!value) return;
 
           return {
-            ...normalizeDateValue(dateValue),
             children: [{ text: '' }],
             type,
+            value,
           };
         },
         encode: ({ node, propsToAttributes }) => {
-          if (node.date && !node.rawDate) {
+          if (parseCanonicalDateValue(node.value)) {
             return {
-              attributes: propsToAttributes({ value: node.date }),
+              attributes: propsToAttributes({ value: node.value }),
               children: [],
               name: type,
               type: 'mdxJsxTextElement',
@@ -39,9 +42,7 @@ export const BaseDatePlugin = defineBasePlugin(PLUGINS.date, {
 
           return {
             attributes: [],
-            children: [
-              { type: 'text', value: node.rawDate ?? node.date ?? '' },
-            ],
+            children: [{ type: 'text', value: node.value }],
             name: type,
             type: 'mdxJsxTextElement',
           };
@@ -51,8 +52,12 @@ export const BaseDatePlugin = defineBasePlugin(PLUGINS.date, {
   schema: {
     element: {
       properties: {
-        date: property.string(),
-        rawDate: property.string(),
+        value: property.string({
+          required: true,
+          validate: (value): value is string =>
+            typeof value === 'string' && value.trim().length > 0,
+          validationVersion: 1,
+        }),
       },
       void: 'inline',
     },
@@ -60,15 +65,19 @@ export const BaseDatePlugin = defineBasePlugin(PLUGINS.date, {
 }).extend(({ schema: { type } }) => ({
   update: ({ tx }) => ({
     insert: (
-      { date }: { date?: string } = {},
+      { value }: { value?: Date | string } = {},
       options: PlateNodeInsertOptions = {}
     ) => {
+      const normalized = normalizeDateValue(value ?? new Date());
+
+      if (!normalized) return;
+
       tx.nodes.insert(
         [
           {
             children: [{ text: '' }],
-            ...normalizeDateValue(date ?? new Date()),
             type,
+            value: normalized,
           },
           { text: ' ' },
         ],

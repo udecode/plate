@@ -1,1618 +1,1095 @@
-/** @jsx jsxt */
-
 import {
   BaseParagraphPlugin,
-  createBaseEditor as createTypedBaseEditor,
+  createBaseEditor as createTypedEditor,
   defineBasePlugin,
   type BaseEditorOptions,
-  type BasePluginInput,
 } from '@platejs/core';
-import {
-  getPlateRuntime,
-  prepareHtmlPluginContext,
-  prepareHtmlRegistry,
-} from '@platejs/core/internal';
 import { BaseIndentPlugin } from '@platejs/indent';
 import {
-  ContentSlice,
-  createEditor as createPliteEditor,
-  DocumentChange,
   ElementApi,
   schema,
-  type Element,
+  SelectionApi,
   type InitialValue,
-  type NodeEntry,
   type Value,
 } from '@platejs/plite';
-import { writeHostFragmentData } from '@platejs/plite-dom';
-import { jsxt, type TestEditor } from '@platejs/test-utils';
-
 import { PLUGINS } from '@platejs/utils';
+
 import {
   BaseListPlugin,
+  BULLETED_LIST_STYLES,
   BulletedListRules,
   isOrderedList,
-  ListStyleType,
+  ListStyle,
+  ListType,
   OrderedListRules,
   TaskListRules,
 } from './BaseListPlugin';
 
-jsxt;
-
-const createBaseEditor = <const P extends readonly BasePluginInput[]>(
+const createEditor = (
   options: Omit<BaseEditorOptions, 'plugins'> & {
     initialValue?: InitialValue<Value>;
-    plugins: P;
-  }
+  } = {}
 ) =>
-  createTypedBaseEditor({
-    ...options,
-    editor: createPliteEditor<Value>(),
-  });
-
-const FixtureHeadingPlugin = defineBasePlugin(PLUGINS.h1, {
-  schema: {
-    element: {
-      content: schema.content.text({ default: 'text', min: 1 }),
-    },
-  },
-});
-
-const createListEditorFromFixture = (fixture: TestEditor) =>
-  createBaseEditor({
-    plugins: [BaseListPlugin, FixtureHeadingPlugin],
-    initialValue:
-      fixture.children.length > 0
-        ? fixture.children
-        : [{ children: [{ text: '' }], type: 'paragraph' }],
-  });
-
-const assertScopedListTypes = () => {
-  const editor = createBaseEditor({
+  createTypedEditor({
+    initialValue: options.initialValue ?? [
+      { children: [{ text: 'Item' }], type: 'paragraph' },
+    ],
     plugins: [BaseListPlugin],
-  });
-  const list = editor.plugin(BaseListPlugin);
-
-  editor.read.list.expandItemsWithChildren([]);
-  editor.read.list.isActive(['disc', 'circle']);
-  editor.update.list.toggle({ at: [0], listStyleType: 'disc' });
-  editor.update.list.indent({ at: { offset: 0, path: [0, 0] } });
-  editor.update.list.outdent();
-
-  list.read.expandItemsWithChildren([]);
-  list.read.isActive(['disc', 'circle']);
-  list.update.toggle({ at: [0], listStyleType: 'disc' });
-  list.update.indent({ at: { offset: 0, path: [0, 0] } });
-  list.update.outdent({
-    at: {
-      anchor: { offset: 0, path: [0, 0] },
-      focus: { offset: 0, path: [1, 0] },
-    },
+    selection:
+      options.selection ??
+      ({
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 4, path: [0, 0] },
+      } as const),
+    ...options,
   });
 
-  editor.update((tx) => tx.indent.increase());
-
-  // @ts-expect-error toggle requires a list style
-  list.update.toggle({});
-  // @ts-expect-error Indent methods stay on the Indent portal
-  list.update.increase();
-};
-
-void assertScopedListTypes;
-
-describe('BaseListPlugin', () => {
-  const transformListHtml = (data: string) => {
-    const editor = createBaseEditor({
-      plugins: [BaseListPlugin],
-    });
-    const createContext = prepareHtmlPluginContext(editor, BaseListPlugin);
-    const context = editor.read((state) => createContext(state));
-    const transformData = prepareHtmlRegistry(editor).plugins.find(
-      ({ name }) => name === BaseListPlugin.name
-    )?.transformData;
-
-    if (!transformData) {
-      throw new Error('Missing HTML transformData');
-    }
-
-    const dataTransfer = new DataTransfer();
-
-    return transformData({
-      ...context,
-      data,
-      format: 'text/html',
-      source: {
-        files: dataTransfer.files,
-        getData: (format) => dataTransfer.getData(format),
-        types: [...dataTransfer.types],
-      },
-    });
-  };
-
-  it('keeps list blocks on the single compiled paragraph schema', () => {
-    const editor = createBaseEditor({
-      plugins: [BaseListPlugin],
-      initialValue: [
+describe('BaseListPlugin canonical model', () => {
+  it('accepts signed integer starts and rejects fractional ordinals', () => {
+    const editor = createEditor();
+    const document = (listStart: number, listRestart: number) => ({
+      children: [
         {
           children: [{ text: 'Item' }],
           indent: 1,
-          listStyleType: 'disc',
+          listRestart,
+          listStart,
+          listType: 'numbered',
           type: 'paragraph',
         },
       ],
     });
-    const paragraph = editor.read.children()[0];
 
-    expect(editor.read.schema.element(BaseParagraphPlugin)?.groups).toContain(
-      'block'
-    );
-    expect(editor.read.schema.isBlock(paragraph)).toBe(true);
     expect(() =>
-      editor.read.schema.assertDocument(editor.read.value())
+      editor.read.schema.assertDocument(document(-3, 0))
     ).not.toThrow();
+    expect(() => editor.read.schema.assertDocument(document(1.5, 2))).toThrow(
+      /listStart.*validation/i
+    );
   });
 
-  it('uses configured targets for both model validation and injection', () => {
-    const CalloutPlugin = defineBasePlugin('callout', {
-      schema: {
-        element: {
-          content: schema.content.text({ default: 'text', min: 1 }),
-        },
-      },
-    });
-    const ListCalloutPlugin = BaseListPlugin.configure({
-      targetPlugins: ['callout'],
-    });
-    const editor = createBaseEditor({
-      plugins: [CalloutPlugin, ListCalloutPlugin],
+  it('repairs incompatible persisted list properties', () => {
+    const editor = createEditor({
       initialValue: [
         {
-          children: [{ text: 'Callout' }],
-          listStyleType: 'disc',
-          type: 'callout',
-        },
-      ],
-    });
-
-    expect(editor.plugin(BaseListPlugin).targetPlugins.join()).toBe('callout');
-    expect(editor.plugin(BaseIndentPlugin).targetPlugins.join()).toBe(
-      'callout'
-    );
-    expect(editor.read.children()[0]).toMatchObject({
-      listStyleType: 'disc',
-      type: 'callout',
-    });
-
-    editor.plugin(BaseListPlugin).update.indent({ at: [0] });
-
-    expect(editor.read.children()[0]).toMatchObject({
-      indent: 1,
-      listStyleType: 'disc',
-      type: 'callout',
-    });
-    expect(() =>
-      editor.read.schema.assertDocument(editor.read.value())
-    ).not.toThrow();
-    expect(
-      editor.api.html.deserialize({
-        element: '<li aria-level="2">Imported</li>',
-      })
-    ).toEqual([
-      {
-        children: [{ text: 'Imported' }],
-        indent: 2,
-        listStyleType: undefined,
-        type: 'callout',
-      },
-    ]);
-    const multiTargetEditor = createBaseEditor({
-      plugins: [
-        CalloutPlugin,
-        BaseListPlugin.configure({
-          targetPlugins: ['callout', PLUGINS.paragraph],
-        }),
-      ],
-    });
-
-    expect(
-      multiTargetEditor.api.html.deserialize({
-        element: '<li>Paragraph list item</li>',
-      })
-    ).toEqual([
-      {
-        children: [{ text: 'Paragraph list item' }],
-        type: 'callout',
-      },
-    ]);
-    expect(() =>
-      editor.read.schema.assertFragment([
-        {
-          children: [{ text: 'Paragraph' }],
-          listStyleType: 'disc',
+          checked: true,
+          children: [{ text: 'Bulleted' }],
+          indent: 1,
+          listStart: 4,
+          listType: 'bulleted',
           type: 'paragraph',
         },
-      ])
-    ).toThrow(
-      /Schema element property "listStyleType" cannot target element "paragraph"/
-    );
+        {
+          checked: true,
+          children: [{ text: 'Numbered' }],
+          indent: 1,
+          listRestart: 5,
+          listStart: 4,
+          listType: 'numbered',
+          type: 'paragraph',
+        },
+        {
+          children: [{ text: 'Task' }],
+          indent: 1,
+          listStart: 2,
+          listStyle: 'disc',
+          listType: 'task',
+          type: 'paragraph',
+        },
+        {
+          checked: true,
+          children: [{ text: 'Plain' }],
+          listRestart: 3,
+          listStyle: 'square',
+          type: 'paragraph',
+        },
+      ],
+    });
+
+    editor.update.value.repair();
+
+    expect(editor.read.children()).toEqual([
+      {
+        children: [{ text: 'Bulleted' }],
+        indent: 1,
+        listType: 'bulleted',
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'Numbered' }],
+        indent: 1,
+        listRestart: 5,
+        listType: 'numbered',
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'Task' }],
+        indent: 1,
+        listType: 'task',
+        type: 'paragraph',
+      },
+      { children: [{ text: 'Plain' }], type: 'paragraph' },
+    ]);
   });
 
-  it('installs Indent and exposes scoped list reads and updates', () => {
-    const editor = createBaseEditor({
-      plugins: [BaseListPlugin],
+  it('keeps single-item toggles inside heading sequence boundaries', () => {
+    const HeadingPlugin = defineBasePlugin(PLUGINS.heading, {
+      schema: { element: schema.element.textBlock() },
+    });
+    const editor = createTypedEditor({
+      initialValue: [
+        {
+          children: [{ text: 'Paragraph' }],
+          indent: 1,
+          listType: 'numbered',
+          type: 'paragraph',
+        },
+        {
+          children: [{ text: 'Heading' }],
+          indent: 1,
+          listType: 'numbered',
+          type: 'heading',
+        },
+      ],
+      plugins: [
+        HeadingPlugin,
+        BaseListPlugin.configure({
+          targetPlugins: [BaseParagraphPlugin, HeadingPlugin],
+        }),
+      ],
       selection: {
         kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      initialValue: [{ children: [{ text: 'Item' }], type: 'paragraph' }],
     });
-    const list = editor.plugin(BaseListPlugin);
-    const names = getPlateRuntime(editor).pluginList.map(
-      (plugin) => plugin.name
-    );
 
-    expect(names.indexOf(PLUGINS.indent)).toBeLessThan(
-      names.indexOf(PLUGINS.list)
-    );
-    expect(list.read.isActive('disc')).toBe(false);
+    editor.update.list.toggle({ type: ListType.Bulleted });
 
-    list.update.toggle({ listStyleType: 'disc' });
-
-    expect(list.read.isActive('disc')).toBe(true);
-    expect(editor.read.children()[0]).toMatchObject({
-      indent: 1,
-      listStyleType: 'disc',
-    });
+    expect(editor.read.children()).toMatchObject([
+      { listType: 'bulleted', type: 'paragraph' },
+      { listType: 'numbered', type: 'heading' },
+    ]);
   });
 
-  it('publishes staged list queries to required dependents', () => {
-    const ListDependentPlugin = defineBasePlugin('listDependent', {
-      api: ({ editor }) => ({
-        getPreviousType: () => {
-          const entry = editor.read.nodes.get([1], {
-            match: ElementApi.isElement,
-          });
+  it('toggles a bulleted list without persisting a default marker style', () => {
+    const editor = createEditor();
 
-          if (!entry) return;
+    editor.update.list.toggle({ type: ListType.Bulleted });
 
-          return editor.read.list.getPrevious(entry)?.[0].type;
-        },
-      }),
-      dependencies: [BaseListPlugin],
-    });
-    const editor = createBaseEditor({
-      plugins: [ListDependentPlugin],
-      initialValue: [
-        {
-          children: [{ text: 'First' }],
-          indent: 1,
-          listStyleType: 'disc',
-          type: 'paragraph',
-        },
-        {
-          children: [{ text: 'Second' }],
-          indent: 1,
-          listStyleType: 'disc',
-          type: 'paragraph',
-        },
-      ],
-    });
-    const firstEntry = editor.read.nodes.get([0], {
-      match: ElementApi.isElement,
-    });
-
-    expect(editor.api.listDependent.getPreviousType()).toBe(PLUGINS.paragraph);
-    expect(
-      firstEntry
-        ? editor.plugin(BaseListPlugin).read.getNext(firstEntry)?.[1]
-        : undefined
-    ).toEqual([1]);
+    expect(editor.read.children()).toEqual([
+      {
+        children: [{ text: 'Item' }],
+        indent: 1,
+        listType: 'bulleted',
+        type: 'paragraph',
+      },
+    ]);
   });
 
-  it('reads staged list queries from the active transaction snapshot', () => {
-    const editor = createBaseEditor({
-      plugins: [BaseListPlugin],
-      initialValue: [
-        {
-          children: [{ text: 'First' }],
-          indent: 1,
-          listStyleType: 'disc',
-          type: 'paragraph',
-        },
-        {
-          children: [{ text: 'Second' }],
-          indent: 1,
-          listStyleType: 'disc',
-          type: 'paragraph',
-        },
-      ],
+  it('stores a custom marker separately from list kind', () => {
+    const editor = createEditor();
+
+    editor.update.list.toggle({
+      listStyle: ListStyle.Square,
+      type: ListType.Bulleted,
     });
-
-    editor.update((tx) => {
-      tx.nodes.insert(
-        {
-          children: [{ text: 'Inserted' }],
-          indent: 1,
-          listStyleType: 'disc',
-          type: 'paragraph',
-        },
-        { at: [1] }
-      );
-
-      const lastEntry = tx.nodes.get([2], {
-        match: ElementApi.isElement,
-      });
-
-      expect(
-        lastEntry ? tx.list.getPrevious(lastEntry)?.[0] : undefined
-      ).toMatchObject({
-        children: [{ text: 'Inserted' }],
-      });
-    });
-  });
-
-  it('composes indent and outdent into one undoable update', () => {
-    const value = [{ children: [{ text: 'Item' }], type: 'paragraph' }];
-    const editor = createBaseEditor({
-      plugins: [BaseListPlugin],
-      initialValue: value,
-    });
-    const list = editor.plugin(BaseListPlugin);
-
-    list.update.indent({ at: [0], listStyleType: 'circle' });
 
     expect(editor.read.children()[0]).toMatchObject({
       indent: 1,
-      listStyleType: 'circle',
+      listStyle: 'square',
+      listType: 'bulleted',
     });
-    expect(editor.read.history.undos()).toHaveLength(1);
-
-    editor.update.history.undo();
-    expect(editor.read.children()).toEqual(value);
-
-    editor.update.history.redo();
-    list.update.outdent({ at: [0] });
-
-    expect(editor.read.children()).toEqual(value);
   });
 
-  it('removes list metadata when outdenting a root item', () => {
-    const editor = createBaseEditor({
-      plugins: [BaseListPlugin],
+  it('toggles a custom marker off when the marker is omitted', () => {
+    const editor = createEditor({
       initialValue: [
         {
           children: [{ text: 'Item' }],
           indent: 1,
-          listRestart: 4,
-          listRestartPolite: 5,
-          listStart: 4,
-          listStyleType: 'decimal',
+          listStyle: 'square',
+          listType: 'bulleted',
           type: 'paragraph',
         },
       ],
     });
 
-    editor.plugin(BaseListPlugin).update.outdent({ at: [0] });
+    editor.update.list.toggle({ type: ListType.Bulleted });
+
+    expect(editor.read.children()[0]).toEqual({
+      children: [{ text: 'Item' }],
+      type: 'paragraph',
+    });
+  });
+
+  it('stores an ordered start only on the explicit boundary', () => {
+    const editor = createEditor({
+      initialValue: [
+        { children: [{ text: 'One' }], type: 'paragraph' },
+        { children: [{ text: 'Two' }], type: 'paragraph' },
+      ],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 3, path: [1, 0] },
+      },
+    });
+
+    editor.update.list.toggle({
+      listStart: 4,
+      type: ListType.Numbered,
+    });
+
+    expect(editor.read.children()).toEqual([
+      {
+        children: [{ text: 'One' }],
+        indent: 1,
+        listStart: 4,
+        listType: 'numbered',
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'Two' }],
+        indent: 1,
+        listType: 'numbered',
+        type: 'paragraph',
+      },
+    ]);
+  });
+
+  it('stores checked only on task items', () => {
+    const editor = createEditor();
+
+    editor.update.list.toggle({ type: ListType.Task });
+
+    expect(editor.read.children()[0]).toMatchObject({
+      checked: false,
+      listType: 'task',
+    });
+
+    editor.update.list.toggle({ type: ListType.Numbered });
+
+    expect(editor.read.children()[0]).toMatchObject({
+      listType: 'numbered',
+    });
+    expect(editor.read.children()[0]).not.toHaveProperty('checked');
+  });
+
+  it('toggles the same list kind back to a plain block', () => {
+    const editor = createEditor();
+
+    editor.update.list.toggle({ type: ListType.Bulleted });
+    editor.update.list.toggle({ type: ListType.Bulleted });
 
     expect(editor.read.children()).toEqual([
       { children: [{ text: 'Item' }], type: 'paragraph' },
     ]);
   });
 
-  it('replays a frozen list update without replaying local selection or history', () => {
-    const value = [
-      { children: [{ text: 'First' }], type: 'paragraph' },
-      { children: [{ text: 'Second' }], type: 'paragraph' },
-    ];
-    const source = createBaseEditor({
-      plugins: [BaseListPlugin],
+  it('round-trips a plain block indent when toggling a list', () => {
+    const editor = createEditor({
+      initialValue: [
+        {
+          children: [{ text: 'Indented' }],
+          indent: 3,
+          type: 'paragraph',
+        },
+      ],
+    });
+
+    editor.update.list.toggle({ type: ListType.Bulleted });
+    expect(editor.read.children()[0]).toMatchObject({
+      indent: 4,
+      listType: 'bulleted',
+    });
+
+    editor.update.list.toggle({ type: ListType.Bulleted });
+    expect(editor.read.children()[0]).toEqual({
+      children: [{ text: 'Indented' }],
+      indent: 3,
+      type: 'paragraph',
+    });
+  });
+
+  it('applies an explicit restart to the selected list boundary', () => {
+    const editor = createEditor({
+      initialValue: ['One', 'Two', 'Three'].map((text) => ({
+        children: [{ text }],
+        indent: 1,
+        listType: 'numbered' as const,
+        type: 'paragraph',
+      })),
       selection: {
         kind: 'text',
-        anchor: { offset: 0, path: [0, 0] },
-        focus: { offset: 6, path: [1, 0] },
+        anchor: { offset: 0, path: [2, 0] },
+        focus: { offset: 5, path: [2, 0] },
       },
-      initialValue: value,
     });
 
-    source.plugin(BaseListPlugin).update.toggle({ listStyleType: 'decimal' });
-
-    const committedChange = source.read.lastCommit()?.changes;
-
-    expect(committedChange).toBeDefined();
-
-    const change = DocumentChange.fromJSON(
-      JSON.parse(JSON.stringify(committedChange!.toJSON()))
-    );
-    expect(change.primaryClassification).toBeNull();
-    const replaySelection = {
-      kind: 'text' as const,
-      anchor: { offset: 2, path: [1, 0] },
-      focus: { offset: 2, path: [1, 0] },
-    };
-    const replay = createBaseEditor({
-      plugins: [BaseListPlugin],
-      selection: replaySelection,
-      initialValue: value,
+    editor.update.list.toggle({
+      listRestart: 7,
+      type: ListType.Numbered,
     });
 
-    replay.update({ history: 'skip' }, (tx) => tx.changes.apply(change));
-
-    expect(replay.read.children()).toEqual(source.read.children());
-    expect(replay.read.selection()).toEqual(replaySelection);
-    expect(replay.read.history.undos()).toHaveLength(0);
+    expect(editor.read.children()[0]).not.toHaveProperty('listRestart');
+    expect(editor.read.children()[2]).toHaveProperty('listRestart', 7);
   });
 
-  it('flattens nested lists, block children, and derives indent metadata from html', () => {
-    const body = new DOMParser().parseFromString(
-      transformListHtml(
-        '<ul><li><p>Parent</p><ul><li>Child</li></ul></li></ul>'
-      ),
-      'text/html'
-    ).body;
-    const parentItem = body.querySelector('ul > li') as HTMLElement;
-    const childItem = body.querySelector('ul > ul > li') as HTMLElement;
-
-    expect(parentItem.innerHTML).toBe('Parent');
-    expect(parentItem.querySelector('p')).toBeNull();
-    expect(parentItem.dataset.indent).toBe('1');
-    expect(parentItem.dataset.listStyleType).toBe('disc');
-    expect(childItem.dataset.indent).toBe('2');
-    expect(childItem.dataset.listStyleType).toBe('disc');
-  });
-
-  it('prefers aria-level and inline list styles over derived defaults', () => {
-    const item = new DOMParser()
-      .parseFromString(
-        transformListHtml(
-          '<ol style="list-style-type: upper-alpha"><li aria-level="3" style="list-style-type: square"><span>Item</span></li></ol>'
-        ),
-        'text/html'
-      )
-      .body.querySelector('li') as HTMLElement;
-
-    expect(item.dataset.indent).toBe('3');
-    expect(item.dataset.listStyleType).toBe('square');
-  });
-
-  it('leaves non-list HTML untouched for later transforms', () => {
-    const input =
-      '<style>.item { line-height: 150%; }</style><p class="item">Text</p>';
-    const html = transformListHtml(input);
-
-    expect(html).toBe(input);
-  });
-
-  it('parses list metadata for list items', () => {
-    const editor = createBaseEditor({
-      plugins: [BaseListPlugin],
+  it('keeps a conditional start latent until the item becomes first', () => {
+    const editor = createEditor({
+      initialValue: [
+        {
+          children: [{ text: 'Five' }],
+          indent: 1,
+          listStart: 5,
+          listType: 'numbered',
+          type: 'paragraph',
+        },
+        {
+          children: [{ text: 'Six' }],
+          indent: 1,
+          listStart: 2,
+          listType: 'numbered',
+          type: 'paragraph',
+        },
+      ],
     });
+
+    expect(editor.read.list.ordinal(editor.read.children()[1])).toBe(6);
+
+    editor.update.nodes.remove({ at: [0] });
+
+    expect(editor.read.children()[0]).toHaveProperty('listStart', 2);
+    expect(editor.read.list.ordinal(editor.read.children()[0])).toBe(2);
+  });
+
+  it('normalizes explicit default marker styles', () => {
+    const editor = createEditor({
+      initialValue: [
+        {
+          children: [{ text: 'One' }],
+          indent: 1,
+          listType: 'numbered',
+          type: 'paragraph',
+        },
+        { children: [{ text: 'Two' }], type: 'paragraph' },
+      ],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [1, 0] },
+        focus: { offset: 3, path: [1, 0] },
+      },
+    });
+
+    editor.update.list.toggle({
+      listStyle: ListStyle.Decimal,
+      type: ListType.Numbered,
+    });
+
+    expect(editor.read.children()[1]).not.toHaveProperty('listStyle');
+    expect(editor.read.list.ordinal(editor.read.children()[1])).toBe(2);
+  });
+
+  it('clears an explicit start from the sibling created by a split', () => {
+    const editor = createEditor({
+      initialValue: [
+        {
+          children: [{ text: 'OneTwo' }],
+          indent: 1,
+          listStart: 7,
+          listType: 'numbered',
+          type: 'paragraph',
+        },
+      ],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 3, path: [0, 0] },
+        focus: { offset: 3, path: [0, 0] },
+      },
+    });
+
+    editor.update.break.insert();
+
+    expect(editor.read.children()[0]).toHaveProperty('listStart', 7);
+    expect(editor.read.children()[1]).not.toHaveProperty('listStart');
+    expect(editor.read.list.ordinal(editor.read.children()[1])).toBe(8);
+  });
+
+  it('drops an explicit start for direct node splits', () => {
+    const editor = createEditor({
+      initialValue: [
+        {
+          children: [{ text: 'OneTwo' }],
+          indent: 1,
+          listStart: 7,
+          listType: 'numbered',
+          type: 'paragraph',
+        },
+      ],
+    });
+
+    editor.update.nodes.split({
+      at: { offset: 3, path: [0, 0] },
+    });
+
+    expect(editor.read.children()[0]).toHaveProperty('listStart', 7);
+    expect(editor.read.children()[1]).not.toHaveProperty('listStart');
+  });
+
+  it('drops a forced restart from split siblings', () => {
+    const editor = createEditor({
+      initialValue: [
+        {
+          children: [{ text: 'OneTwo' }],
+          indent: 1,
+          listRestart: 4,
+          listType: 'numbered',
+          type: 'paragraph',
+        },
+      ],
+    });
+
+    editor.update.nodes.split({
+      at: { offset: 3, path: [0, 0] },
+    });
+
+    expect(editor.read.children()[0]).toHaveProperty('listRestart', 4);
+    expect(editor.read.children()[1]).not.toHaveProperty('listRestart');
+  });
+
+  it('changes one list sequence without crossing explicit boundaries', () => {
+    const editor = createEditor({
+      initialValue: [
+        {
+          children: [{ text: 'One' }],
+          indent: 1,
+          listType: 'numbered',
+          type: 'paragraph',
+        },
+        {
+          children: [{ text: 'Two' }],
+          indent: 1,
+          listType: 'numbered',
+          type: 'paragraph',
+        },
+        {
+          children: [{ text: 'Seven' }],
+          indent: 1,
+          listRestart: 7,
+          listType: 'numbered',
+          type: 'paragraph',
+        },
+        {
+          children: [{ text: 'Eight' }],
+          indent: 1,
+          listType: 'numbered',
+          type: 'paragraph',
+        },
+        {
+          children: [{ text: 'One again' }],
+          indent: 1,
+          listRestart: 1,
+          listType: 'numbered',
+          type: 'paragraph',
+        },
+      ],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [2, 0] },
+        focus: { offset: 5, path: [2, 0] },
+      },
+    });
+
+    editor.update.list.toggle({ type: ListType.Bulleted });
+
+    expect(editor.read.children().map((node) => node.listType)).toEqual([
+      'numbered',
+      'numbered',
+      'bulleted',
+      'bulleted',
+      'numbered',
+    ]);
+  });
+
+  it('keeps explicit start boundaries stable during ordinary edits', () => {
+    const editor = createEditor({
+      initialValue: [
+        {
+          children: [{ text: 'One' }],
+          indent: 1,
+          listRestart: 7,
+          listType: 'numbered',
+          type: 'paragraph',
+        },
+        {
+          children: [{ text: 'Two' }],
+          indent: 1,
+          listType: 'numbered',
+          type: 'paragraph',
+        },
+      ],
+    });
+
+    editor.update.text.insert('!', { at: { offset: 3, path: [1, 0] } });
+
+    expect(editor.read.children()[0]).toHaveProperty('listRestart', 7);
+    expect(editor.read.children()[1]).not.toHaveProperty('listStart');
+  });
+
+  it('derives display ordinals without writing them into list items', () => {
+    const editor = createEditor({
+      initialValue: [
+        {
+          children: [{ text: 'Four' }],
+          indent: 1,
+          listStart: 4,
+          listType: 'numbered',
+          type: 'paragraph',
+        },
+        {
+          children: [{ text: 'Five' }],
+          indent: 1,
+          listType: 'numbered',
+          type: 'paragraph',
+        },
+      ],
+    });
+    const [first, second] = editor.read.children();
+
+    expect(editor.read.list.ordinal(first)).toBe(4);
+    expect(editor.read.list.ordinal(second)).toBe(5);
+    expect(second).not.toHaveProperty('listStart');
+  });
+
+  it('treats an omitted root indent as level one', () => {
+    const editor = createEditor({
+      initialValue: [
+        {
+          children: [{ text: 'One' }],
+          listType: 'numbered',
+          type: 'paragraph',
+        },
+        {
+          children: [{ text: 'Two' }],
+          indent: 1,
+          listType: 'numbered',
+          type: 'paragraph',
+        },
+      ],
+    });
+
+    expect(editor.read.list.ordinal(editor.read.children()[0])).toBe(1);
+    expect(editor.read.list.ordinal(editor.read.children()[1])).toBe(2);
+  });
+
+  it('treats an explicit default marker as the canonical sequence', () => {
+    const editor = createEditor({
+      initialValue: [
+        {
+          children: [{ text: 'One' }],
+          indent: 1,
+          listStyle: 'decimal',
+          listType: 'numbered',
+          type: 'paragraph',
+        },
+        {
+          children: [{ text: 'Two' }],
+          indent: 1,
+          listType: 'numbered',
+          type: 'paragraph',
+        },
+      ],
+    });
+
+    expect(editor.read.list.ordinal(editor.read.children()[1])).toBe(2);
+  });
+
+  it('starts a numbered sequence at one after a non-list block', () => {
+    const editor = createEditor({
+      initialValue: [
+        { children: [{ text: 'Body' }], type: 'paragraph' },
+        {
+          children: [{ text: 'One' }],
+          indent: 1,
+          listType: 'numbered',
+          type: 'paragraph',
+        },
+      ],
+    });
+
+    expect(editor.read.list.ordinal(editor.read.children()[1])).toBe(1);
+  });
+
+  it('invalidates ordinal caches inside a staged transaction', () => {
+    const editor = createEditor({
+      initialValue: [
+        {
+          children: [{ text: 'One' }],
+          indent: 1,
+          listType: 'numbered',
+          type: 'paragraph',
+        },
+        {
+          children: [{ text: 'Two' }],
+          indent: 1,
+          listType: 'numbered',
+          type: 'paragraph',
+        },
+      ],
+    });
+
+    editor.update((tx) => {
+      const second = tx.nodes.get([1])?.[0];
+
+      if (!second || !ElementApi.isElement(second)) {
+        throw new TypeError('Expected second list item');
+      }
+
+      expect(tx.list.ordinal(second)).toBe(2);
+      tx.nodes.insert(
+        {
+          children: [{ text: 'Zero' }],
+          indent: 1,
+          listType: 'numbered',
+          type: 'paragraph',
+        },
+        { at: [0] }
+      );
+      expect(tx.list.ordinal(second)).toBe(3);
+    });
+  });
+
+  it('indents and outdents through semantic list fields', () => {
+    const editor = createEditor();
+
+    editor.update.list.indent({
+      listStyle: ListStyle.Circle,
+      type: ListType.Bulleted,
+    });
+    expect(editor.read.children()[0]).toMatchObject({
+      indent: 1,
+      listStyle: 'circle',
+      listType: 'bulleted',
+    });
+
+    editor.update.list.outdent();
+    expect(editor.read.children()[0]).toEqual({
+      children: [{ text: 'Item' }],
+      type: 'paragraph',
+    });
+  });
+
+  it('clears fields incompatible with an indented list kind', () => {
+    const editor = createEditor({
+      initialValue: [
+        {
+          children: [{ text: 'Seven' }],
+          indent: 1,
+          listRestart: 7,
+          listStyle: 'lower-alpha',
+          listType: 'numbered',
+          type: 'paragraph',
+        },
+      ],
+    });
+
+    editor.update.list.indent({ type: ListType.Bulleted });
+
+    expect(editor.read.children()[0]).toEqual({
+      children: [{ text: 'Seven' }],
+      indent: 2,
+      listType: 'bulleted',
+      type: 'paragraph',
+    });
+
+    editor.update.list.indent({ type: ListType.Task });
+
+    expect(editor.read.children()[0]).toEqual({
+      checked: false,
+      children: [{ text: 'Seven' }],
+      indent: 3,
+      listType: 'task',
+      type: 'paragraph',
+    });
+  });
+
+  it('reads active state by kind and optional marker', () => {
+    const editor = createEditor({
+      initialValue: [
+        {
+          children: [{ text: 'Item' }],
+          indent: 1,
+          listStyle: 'square',
+          listType: 'bulleted',
+          type: 'paragraph',
+        },
+      ],
+    });
+
+    expect(
+      editor.read.list.isActive({
+        style: ListStyle.Square,
+        type: ListType.Bulleted,
+      })
+    ).toBe(true);
+    expect(editor.read.list.isActive({ type: ListType.Numbered })).toBe(false);
+  });
+
+  it('decodes HTML starts only on the first ordered item', () => {
+    const editor = createEditor({ selection: undefined });
 
     expect(
       editor.api.html.deserialize({
         element:
-          '<li aria-level="2" style="list-style-type: circle">Parsed</li>',
+          '<ol start="4"><li>One</li><li>Two</li></ol><ul style="list-style-type: square"><li>Three</li></ul>',
       })
-    ).toEqual([
+    ).toMatchObject([
       {
-        children: [{ text: 'Parsed' }],
-        indent: 2,
-        listStyleType: 'circle',
-        type: editor.plugin(PLUGINS.paragraph).schema.type,
+        children: [{ text: 'One' }],
+        listStart: 4,
+        listType: 'numbered',
+      },
+      {
+        children: [{ text: 'Two' }],
+        listType: 'numbered',
+      },
+      {
+        children: [{ text: 'Three' }],
+        listStyle: 'square',
+        listType: 'bulleted',
       },
     ]);
   });
 
-  it('increments an ordered parent start across its list items', () => {
-    const editor = createBaseEditor({
-      plugins: [BaseParagraphPlugin, BaseListPlugin],
-    });
+  it.each([
+    ['circle', 'bulleted'],
+    ['lower-alpha', 'numbered'],
+  ] as const)('infers %s standalone list items as %s', (listStyle, listType) => {
+    const editor = createEditor({ selection: undefined });
 
     expect(
       editor.api.html.deserialize({
-        element: '<ol start="4"><li>Four</li><li>Five</li></ol>',
+        element: `<li aria-level="2" style="list-style-type: ${listStyle}">Item</li>`,
       })
-    ).toEqual([
+    ).toMatchObject([{ indent: 2, listStyle, listType }]);
+  });
+
+  it('preserves isolated ordinals without freezing a copied sequence', () => {
+    const editor = createEditor({ selection: undefined });
+
+    expect(
+      editor.api.html.deserialize({
+        element: '<ol start="5"><li data-list-type="numbered">Five</li></ol>',
+      })
+    ).toMatchObject([{ listStart: 5, listType: 'numbered' }]);
+    const sequence = editor.api.html.deserialize({
+      element:
+        '<ol start="5"><li data-list-type="numbered">Five</li></ol><ol start="6"><li data-list-type="numbered">Six</li></ol>',
+    });
+
+    if (!sequence) throw new TypeError('Expected decoded list sequence');
+
+    expect(sequence).toMatchObject([
+      { listStart: 5, listType: 'numbered' },
+      { listType: 'numbered' },
+    ]);
+    expect(sequence[1]).not.toHaveProperty('listStart');
+    const externalBoundary = editor.api.html.deserialize({
+      element: '<ol><li>One</li></ol><ol start="5"><li>Five</li></ol>',
+    });
+
+    expect(externalBoundary).toMatchObject([
+      { listType: 'numbered' },
+      { listRestart: 5, listType: 'numbered' },
+    ]);
+    expect(
+      editor.api.html.deserialize({
+        element: '<ol><li>One</li></ol><ol><li>One again</li></ol>',
+      })
+    ).toMatchObject([
+      { listType: 'numbered' },
+      { listRestart: 1, listType: 'numbered' },
+    ]);
+    const multiItemSequence = editor.api.html.deserialize({
+      element:
+        '<ol start="4"><li data-list-type="numbered">Four</li><li data-list-type="numbered">Five</li></ol><ol start="6"><li data-list-type="numbered">Six</li></ol>',
+    });
+
+    if (!multiItemSequence) {
+      throw new TypeError('Expected decoded multi-item list sequence');
+    }
+
+    expect(multiItemSequence[2]).not.toHaveProperty('listStart');
+    const conditional = editor.api.html.deserialize({
+      element:
+        '<ol start="4"><li data-list-start="4" data-list-type="numbered">Four</li></ol>',
+    });
+
+    expect(conditional).toMatchObject([{ listStart: 4, listType: 'numbered' }]);
+    expect(conditional?.[0]).not.toHaveProperty('listRestart');
+    const mixedRootIndents = editor.api.html.deserialize({
+      element:
+        '<ol start="1"><li data-list-type="numbered">One</li></ol><ol start="2"><li data-indent="1" data-list-type="numbered">Two</li></ol>',
+    });
+
+    if (!mixedRootIndents) {
+      throw new TypeError('Expected decoded root list sequence');
+    }
+
+    expect(mixedRootIndents[1]).not.toHaveProperty('listStart');
+    const mixedDefaultStyles = editor.api.html.deserialize({
+      element:
+        '<ol start="1"><li data-list-style="decimal" data-list-type="numbered">One</li></ol><ol start="2"><li data-list-type="numbered">Two</li></ol>',
+    });
+
+    if (!mixedDefaultStyles) {
+      throw new TypeError('Expected decoded default-marker sequence');
+    }
+
+    expect(mixedDefaultStyles[1]).not.toHaveProperty('listStart');
+    const nestedSequence = editor.api.html.deserialize({
+      element:
+        '<ol start="1"><li data-indent="1" data-list-type="numbered">One</li></ol><ol start="1"><li data-indent="2" data-list-type="numbered">Nested</li></ol><ol start="2"><li data-indent="1" data-list-type="numbered">Two</li></ol>',
+    });
+
+    if (!nestedSequence) {
+      throw new TypeError('Expected decoded nested list sequence');
+    }
+
+    expect(nestedSequence[2]).not.toHaveProperty('listStart');
+    expect(
+      editor.api.html.deserialize({
+        element:
+          '<ol start="5"><li data-list-restart="5" data-list-type="numbered">Five</li></ol>',
+      })
+    ).toMatchObject([{ listRestart: 5, listType: 'numbered' }]);
+  });
+
+  it('decodes checked HTML items as task lists', () => {
+    const editor = createEditor({ selection: undefined });
+
+    expect(
+      editor.api.html.deserialize({
+        element: '<ul><li data-checked="false">Task</li></ul>',
+      })
+    ).toMatchObject([
       {
-        children: [{ text: 'Four' }],
-        listStart: 4,
-        listStyleType: 'decimal',
-        type: 'paragraph',
-      },
-      {
-        children: [{ text: 'Five' }],
-        listStart: 5,
-        listStyleType: 'decimal',
-        type: 'paragraph',
+        checked: false,
+        listType: 'task',
       },
     ]);
   });
 
-  it('round-trips every list claim with the indent patch on its list item', () => {
-    const editor = createBaseEditor({
-      plugins: [BaseParagraphPlugin, BaseListPlugin],
+  it('encodes a forced restart in Plate clipboard HTML', () => {
+    const point = { offset: 0, path: [0, 0] };
+    const editor = createEditor({
       initialValue: [
         {
-          checked: false,
-          children: [{ text: 'Item' }],
-          indent: 2,
+          children: [{ text: 'Four' }],
+          indent: 1,
           listRestart: 4,
-          listRestartPolite: 5,
-          listStart: 6,
-          listStyleType: 'decimal',
+          listStyle: 'lower-alpha',
+          listType: 'numbered',
           type: 'paragraph',
         },
       ],
+      selection: SelectionApi.node([0], { anchor: point, focus: point }),
     });
-    const serialized = new Map<string, string>();
+    const data = new DataTransfer();
 
-    writeHostFragmentData(
-      editor,
-      {
-        setData: (format, value) => serialized.set(format, value),
-      },
-      ContentSlice.closed(editor.read.children())
-    );
-    const html = serialized.get('text/html');
+    editor.api.dom.clipboard.writeSelection(data);
 
-    if (!html) throw new Error('HTML codec did not serialize the list');
-
-    const body = new DOMParser().parseFromString(html, 'text/html').body;
-    const list = body.querySelector('ol') as HTMLOListElement;
-    const listItem = list.querySelector('li') as HTMLLIElement;
-
-    expect(list.start).toBe(6);
-    expect(list.style.listStyleType).toBe('decimal');
-    expect(listItem.dataset.checked).toBe('false');
-    expect(listItem.dataset.indent).toBe('2');
-    expect(listItem.dataset.listRestart).toBe('4');
-    expect(listItem.dataset.listRestartPolite).toBe('5');
-    expect(listItem.dataset.listStart).toBe('6');
-    expect(listItem.dataset.listStyleType).toBe('decimal');
-    expect(listItem.style.marginLeft).toBe('48px');
-    expect(editor.api.html.deserialize({ element: html })).toEqual([
-      ...editor.read.children(),
-    ]);
+    const html = data.getData('text/html');
+    expect(html).toContain('<ol');
+    expect(html).toContain('start="4"');
+    expect(html).toContain('list-style-type: lower-alpha');
+    expect(html).toContain('data-list-restart="4"');
   });
-});
 
-describe('list input rules', () => {
-  const createEditor = (text: string, offset = text.length) =>
-    createBaseEditor({
+  it('preserves conditional start intent in Plate clipboard HTML', () => {
+    const point = { offset: 0, path: [0, 0] };
+    const editor = createEditor({
+      initialValue: [
+        {
+          children: [{ text: 'Four' }],
+          indent: 1,
+          listStart: 4,
+          listType: 'numbered',
+          type: 'paragraph',
+        },
+      ],
+      selection: SelectionApi.node([0], { anchor: point, focus: point }),
+    });
+    const data = new DataTransfer();
+
+    editor.api.dom.clipboard.writeSelection(data);
+
+    const item = new DOMParser()
+      .parseFromString(data.getData('text/html'), 'text/html')
+      .body.querySelector<HTMLElement>('li');
+
+    expect(item?.dataset.listStart).toBe('4');
+    expect(item?.dataset.listRestart).toBeUndefined();
+  });
+
+  it('encodes a top-level ordinal after a nested item', () => {
+    const point = { offset: 0, path: [2, 0] };
+    const editor = createEditor({
+      initialValue: [
+        {
+          children: [{ text: 'One' }],
+          indent: 1,
+          listType: 'numbered',
+          type: 'paragraph',
+        },
+        {
+          children: [{ text: 'Nested' }],
+          indent: 2,
+          listType: 'numbered',
+          type: 'paragraph',
+        },
+        {
+          children: [{ text: 'Two' }],
+          indent: 1,
+          listType: 'numbered',
+          type: 'paragraph',
+        },
+      ],
+      selection: SelectionApi.node([2], { anchor: point, focus: point }),
+    });
+    const data = new DataTransfer();
+
+    editor.api.dom.clipboard.writeSelection(data);
+
+    const body = new DOMParser().parseFromString(
+      data.getData('text/html'),
+      'text/html'
+    ).body;
+
+    expect(body.querySelector('ol')?.getAttribute('start')).toBe('2');
+  });
+
+  it('supports all three markdown input-rule kinds', () => {
+    const plugin = BaseListPlugin.configure({
+      inputRules: [
+        BulletedListRules.markdown(),
+        OrderedListRules.markdown(),
+        TaskListRules.markdown({ checked: true }),
+      ],
+    });
+    const cases = [
+      ['-', { listType: 'bulleted' }],
+      ['0.', { listStart: 0, listType: 'numbered' }],
+      ['3.', { listStart: 3, listType: 'numbered' }],
+      ['[x]', { checked: true, listType: 'task' }],
+    ] as const;
+
+    for (const [prefix, expected] of cases) {
+      const editor = createTypedEditor({
+        initialValue: [
+          {
+            children: [{ text: `${prefix} Item` }],
+            type: 'paragraph',
+          },
+        ],
+        plugins: [plugin],
+        selection: {
+          kind: 'text',
+          anchor: { offset: prefix.length, path: [0, 0] },
+          focus: { offset: prefix.length, path: [0, 0] },
+        },
+      });
+
+      editor.update.text.insert(' ');
+
+      expect(editor.read.children()[0]).toMatchObject(expected);
+    }
+  });
+
+  it('joins an existing sequence without forcing the typed start', () => {
+    const editor = createTypedEditor({
+      initialValue: [
+        {
+          children: [{ text: 'Five' }],
+          indent: 1,
+          listStart: 5,
+          listType: 'numbered',
+          type: 'paragraph',
+        },
+        { children: [{ text: '1. Next' }], type: 'paragraph' },
+      ],
       plugins: [
-        BaseIndentPlugin,
         BaseListPlugin.configure({
-          inputRules: [
-            BulletedListRules.markdown({ variant: '-' }),
-            OrderedListRules.markdown({ variant: '.' }),
-            TaskListRules.markdown({ checked: false }),
-            TaskListRules.markdown({ checked: true }),
-          ],
+          inputRules: [OrderedListRules.markdown()],
         }),
       ],
       selection: {
         kind: 'text',
-        anchor: { offset, path: [0, 0] },
-        focus: { offset, path: [0, 0] },
+        anchor: { offset: 2, path: [1, 0] },
+        focus: { offset: 2, path: [1, 0] },
       },
-      initialValue: [{ children: [{ text }], type: 'paragraph' }],
     });
-
-  it('creates a bullet list item when markdown group is enabled', () => {
-    const editor = createEditor('-', 1);
 
     editor.update.text.insert(' ');
 
-    expect(editor.read.children()[0]).toMatchObject({
-      children: [{ text: '' }],
-      indent: 1,
-      listStyleType: 'disc',
-      type: 'paragraph',
+    expect(editor.read.children()[1]).toMatchObject({
+      listStart: 1,
+      listType: 'numbered',
     });
-    expect(editor.read.selection()).toEqual({
-      kind: 'text',
-      anchor: { offset: 0, path: [0, 0] },
-      focus: { offset: 0, path: [0, 0] },
-    });
+    expect(editor.read.children()[1]).not.toHaveProperty('listRestart');
+    expect(editor.read.list.ordinal(editor.read.children()[1])).toBe(6);
   });
 
-  it('creates an ordered list item from markdown shorthand', () => {
-    const editor = createEditor('3.', 2);
-
-    editor.update.text.insert(' ');
-
-    expect(editor.read.children()[0]).toMatchObject({
-      children: [{ text: '' }],
-      indent: 1,
-      listStart: 3,
-      listRestartPolite: 3,
-      listStyleType: 'decimal',
-      type: 'paragraph',
-    });
-    expect(editor.read.selection()).toEqual({
-      kind: 'text',
-      anchor: { offset: 0, path: [0, 0] },
-      focus: { offset: 0, path: [0, 0] },
-    });
+  it('treats only numbered nodes as ordered', () => {
+    expect(
+      isOrderedList({
+        children: [],
+        listStyle: 'disc',
+        listType: 'numbered',
+        type: 'paragraph',
+      })
+    ).toBe(true);
+    expect(
+      isOrderedList({
+        children: [],
+        listStyle: 'decimal',
+        listType: 'bulleted',
+        type: 'paragraph',
+      })
+    ).toBe(false);
+    expect(BULLETED_LIST_STYLES).toContain(ListStyle.Disc);
   });
 
-  it('creates a checked todo item from [x]', () => {
-    const editor = createEditor('[x]', 3);
-
-    editor.update.text.insert(' ');
-
-    expect(editor.read.children()[0]).toMatchObject({
-      checked: true,
-      children: [{ text: '' }],
-      indent: 1,
-      listStyleType: 'todo',
-      type: 'paragraph',
+  it('supports configured list target types', () => {
+    const CalloutPlugin = defineBasePlugin('callout', {
+      schema: {
+        element: schema.element.textBlock(),
+      },
     });
-    expect(editor.read.selection()).toEqual({
-      kind: 'text',
-      anchor: { offset: 0, path: [0, 0] },
-      focus: { offset: 0, path: [0, 0] },
-    });
-  });
-});
-
-const InlinePlugin = defineBasePlugin('inline', {
-  schema: {
-    element: {
-      content: schema.content.text({ default: 'text', min: 1 }),
-      inline: true,
-    },
-  },
-});
-
-describe('normalizeList', () => {
-  describe('when listStyleType without indent', () => {
-    it('remove listStyleType and listStart props', async () => {
-      const input = (
-        <editor>
-          <hp indent={1} listStyleType="decimal">
-            1
-          </hp>
-          <hp indent={1} listStart={2} listStyleType="decimal">
-            <cursor />
-          </hp>
-          <hp indent={1} listStart={3} listStyleType="decimal">
-            1
-          </hp>
-        </editor>
-      ) as TestEditor;
-
-      const output = (
-        <editor>
-          <hp indent={1} listStyleType="decimal">
-            1
-          </hp>
-          <hp>
-            <cursor />
-          </hp>
-          <hp indent={1} listStyleType="decimal">
-            1
-          </hp>
-        </editor>
-      ) as TestEditor;
-
-      const editor = createBaseEditor({
-        plugins: [BaseListPlugin, BaseIndentPlugin],
-        selection: input.selection,
-        shouldNormalizeEditor: true,
-        initialValue: input.children,
-      });
-
-      editor.update.text.deleteBackward();
-
-      expect(editor.read.children()).toEqual(output.children);
-    });
-  });
-
-  describe('when deleting backward on empty paragraph between two lists', () => {
-    it('merge and renumber the lists', () => {
-      const input = (
-        <editor>
-          <hp indent={1} listStyleType="decimal">
-            1
-          </hp>
-          <hp indent={1} listStart={2} listStyleType="decimal">
-            2
-          </hp>
-          <hp>
-            <htext />
-            <cursor />
-          </hp>
-          <hp indent={1} listStyleType="decimal">
-            3
-          </hp>
-          <hp indent={1} listStart={2} listStyleType="decimal">
-            4
-          </hp>
-        </editor>
-      ) as TestEditor;
-
-      const output = (
-        <editor>
-          <hp indent={1} listStyleType="decimal">
-            1
-          </hp>
-          <hp indent={1} listStart={2} listStyleType="decimal">
-            2
-          </hp>
-          <hp indent={1} listStart={3} listStyleType="decimal">
-            3
-          </hp>
-          <hp indent={1} listStart={4} listStyleType="decimal">
-            4
-          </hp>
-        </editor>
-      ) as TestEditor;
-
-      const editor = createBaseEditor({
-        plugins: [BaseListPlugin, BaseIndentPlugin],
-        selection: input.selection,
-        shouldNormalizeEditor: true,
-        initialValue: input.children,
-      });
-
-      editor.update.text.deleteBackward();
-
-      expect(editor.read.children()).toEqual(output.children);
-    });
-  });
-
-  describe('when deleting forward on empty paragraph between two lists', () => {
-    it('merge and renumber the lists', () => {
-      const input = (
-        <editor>
-          <hp indent={1} listStyleType="decimal">
-            1
-          </hp>
-          <hp indent={1} listStart={2} listStyleType="decimal">
-            2
-          </hp>
-          <hp>
-            <htext />
-            <cursor />
-          </hp>
-          <hp indent={1} listStyleType="decimal">
-            3
-          </hp>
-          <hp indent={1} listStart={2} listStyleType="decimal">
-            4
-          </hp>
-        </editor>
-      ) as TestEditor;
-
-      const output = (
-        <editor>
-          <hp indent={1} listStyleType="decimal">
-            1
-          </hp>
-          <hp indent={1} listStart={2} listStyleType="decimal">
-            2
-          </hp>
-          <hp indent={1} listStart={3} listStyleType="decimal">
-            3
-          </hp>
-          <hp indent={1} listStart={4} listStyleType="decimal">
-            4
-          </hp>
-        </editor>
-      ) as TestEditor;
-
-      const editor = createBaseEditor({
-        plugins: [BaseListPlugin, BaseIndentPlugin],
-        selection: input.selection,
-        shouldNormalizeEditor: true,
-        initialValue: input.children,
-      });
-
-      editor.update.text.deleteForward();
-
-      expect(editor.read.children()).toEqual(output.children);
-    });
-  });
-});
-
-describe('keyboard handling', () => {
-  describe('when Enter on root list and empty', () => {
-    it('exits the list to a plain paragraph', () => {
-      const input = (
-        <editor>
-          <hp indent={1} listStyleType="disc">
-            <cursor />
-          </hp>
-        </editor>
-      ) as TestEditor;
-
-      const output = (
-        <editor>
-          <hp>
-            <cursor />
-          </hp>
-        </editor>
-      ) as TestEditor;
-
-      const editor = createBaseEditor({
-        plugins: [BaseListPlugin, BaseIndentPlugin],
-        selection: input.selection,
-        initialValue: input.children,
-      });
-
-      editor.update.break.insert();
-
-      expect(editor.read.children()).toEqual(output.children);
-      expect(editor.read.selection()).toEqual(output.selection!);
-    });
-  });
-
-  describe('when Enter on indented list and empty', () => {
-    it('outdent', () => {
-      const input = (
-        <editor>
-          <hp indent={2} listStyleType="disc">
-            <cursor />
-          </hp>
-        </editor>
-      ) as TestEditor;
-
-      const output = (
-        <editor>
-          <hp indent={1} listStyleType="disc">
-            <htext />
-          </hp>
-        </editor>
-      ) as TestEditor;
-
-      const editor = createBaseEditor({
-        plugins: [BaseListPlugin, BaseIndentPlugin],
-        selection: input.selection,
-        initialValue: input.children,
-      });
-
-      editor.update.break.insert();
-
-      expect(editor.read.children()).toEqual(output.children);
-    });
-  });
-
-  describe('when Enter on indented and empty but not list', () => {
-    it('does not outdent', () => {
-      const input = (
-        <editor>
-          <hp indent={2}>
-            <cursor />
-          </hp>
-        </editor>
-      ) as TestEditor;
-
-      const output = (
-        <editor>
-          <hp indent={2}>
-            <htext />
-          </hp>
-          <hp indent={2}>
-            <cursor />
-          </hp>
-        </editor>
-      ) as TestEditor;
-
-      const editor = createBaseEditor({
-        plugins: [BaseListPlugin, BaseIndentPlugin],
-        selection: input.selection,
-        initialValue: input.children,
-      });
-
-      editor.update.break.insert();
-
-      expect(editor.read.children()).toEqual(output.children);
-    });
-  });
-
-  describe('when Backspace at start of a root list item', () => {
-    it('removes the list layer before touching content', () => {
-      const input = (
-        <editor>
-          <hp indent={1} listStyleType="disc">
-            <cursor />
-            One
-          </hp>
-        </editor>
-      ) as TestEditor;
-
-      const output = (
-        <editor>
-          <hp>
-            <cursor />
-            One
-          </hp>
-        </editor>
-      ) as TestEditor;
-
-      const editor = createBaseEditor({
-        plugins: [BaseListPlugin, BaseIndentPlugin],
-        selection: input.selection,
-        initialValue: input.children,
-      });
-
-      editor.update.text.deleteBackward();
-
-      expect(editor.read.children()).toEqual(output.children);
-      expect(editor.read.selection()).toEqual({
-        kind: 'text',
-        anchor: { offset: 0, path: [0, 0] },
-        focus: { offset: 0, path: [0, 0] },
-      });
-    });
-  });
-
-  describe('when Backspace at start of an indented list item', () => {
-    it('outdents one level', () => {
-      const input = (
-        <editor>
-          <hp indent={2} listStyleType="disc">
-            <cursor />
-            One
-          </hp>
-        </editor>
-      ) as TestEditor;
-
-      const output = (
-        <editor>
-          <hp indent={1} listStyleType="disc">
-            <cursor />
-            One
-          </hp>
-        </editor>
-      ) as TestEditor;
-
-      const editor = createBaseEditor({
-        plugins: [BaseListPlugin, BaseIndentPlugin],
-        selection: input.selection,
-        initialValue: input.children,
-      });
-
-      editor.update.text.deleteBackward();
-
-      expect(editor.read.children()).toEqual(output.children);
-      expect(editor.read.selection()).toEqual({
-        kind: 'text',
-        anchor: { offset: 0, path: [0, 0] },
-        focus: { offset: 0, path: [0, 0] },
-      });
-    });
-
-    it('outdents when the cursor starts inside an inline', () => {
-      const editor = createBaseEditor({
-        plugins: [BaseListPlugin, BaseIndentPlugin, InlinePlugin],
-        selection: {
-          kind: 'text',
-          anchor: { offset: 0, path: [0, 1, 0] },
-          focus: { offset: 0, path: [0, 1, 0] },
-        },
-        initialValue: [
-          {
-            children: [
-              { text: '' },
-              {
-                children: [{ text: 'One' }],
-                type: 'inline',
-              },
-              { text: '' },
-            ],
-            indent: 2,
-            listStyleType: 'disc',
-            type: 'paragraph',
-          },
-        ],
-      });
-
-      editor.update.text.deleteBackward();
-
-      expect(editor.read.children()).toEqual([
-        {
-          children: [
-            { text: '' },
-            {
-              children: [{ text: 'One' }],
-              type: 'inline',
-            },
-            { text: '' },
-          ],
-          indent: 1,
-          listStyleType: 'disc',
-          type: 'paragraph',
-        },
-      ]);
-    });
-  });
-
-  describe('when tabbing list items', () => {
-    it('indents a list item one level on Tab', () => {
-      const input = (
-        <editor>
-          <hp indent={1} listStyleType="disc">
-            <cursor />
-            One
-          </hp>
-        </editor>
-      ) as TestEditor;
-
-      const output = (
-        <editor>
-          <hp indent={2} listStyleType="disc">
-            <cursor />
-            One
-          </hp>
-        </editor>
-      ) as TestEditor;
-
-      const editor = createBaseEditor({
-        plugins: [BaseListPlugin, BaseIndentPlugin],
-        selection: input.selection,
-        initialValue: input.children,
-      });
-
-      expect(editor.update.indent.tab()).toBe(true);
-      expect(editor.read.children()).toEqual(output.children);
-      expect(editor.read.selection()).toEqual(output.selection!);
-    });
-
-    it('outdents a nested list item one level on Shift+Tab', () => {
-      const input = (
-        <editor>
-          <hp indent={2} listStyleType="disc">
-            <cursor />
-            One
-          </hp>
-        </editor>
-      ) as TestEditor;
-
-      const output = (
-        <editor>
-          <hp indent={1} listStyleType="disc">
-            <cursor />
-            One
-          </hp>
-        </editor>
-      ) as TestEditor;
-
-      const editor = createBaseEditor({
-        plugins: [BaseListPlugin, BaseIndentPlugin],
-        selection: input.selection,
-        initialValue: input.children,
-      });
-
-      expect(editor.update.indent.untab()).toBe(true);
-      expect(editor.read.children()).toEqual(output.children);
-      expect(editor.read.selection()).toEqual(output.selection!);
-    });
-  });
-});
-
-describe('apply override', () => {
-  it('coerces ambiguous styles across a batched insert', () => {
-    const editor = createBaseEditor({
-      plugins: [BaseListPlugin, BaseIndentPlugin],
-      initialValue: [
-        {
-          children: [{ text: 'a' }],
-          indent: 1,
-          listStyleType: 'lower-alpha',
-          type: 'paragraph',
-        },
+    const editor = createTypedEditor({
+      initialValue: [{ children: [{ text: 'Callout' }], type: 'callout' }],
+      plugins: [
+        CalloutPlugin,
+        BaseListPlugin.configure({ targetPlugins: ['callout'] }),
+        BaseIndentPlugin.configure({ targetPlugins: ['callout'] }),
       ],
-    });
-
-    editor.update.nodes.insert(
-      [
-        {
-          children: [{ text: 'i' }],
-          indent: 1,
-          listStyleType: 'lower-roman',
-          type: 'paragraph',
-        },
-        {
-          children: [{ text: 'ii' }],
-          indent: 1,
-          listStyleType: 'lower-roman',
-          type: 'paragraph',
-        },
-      ],
-      { at: [1] }
-    );
-
-    expect(editor.read.children()).toMatchObject([
-      { listStyleType: 'lower-alpha' },
-      { listStart: 2, listStyleType: 'lower-alpha' },
-      { listStart: 3, listStyleType: 'lower-alpha' },
-    ]);
-  });
-
-  it('coerces lower-roman inserts to lower-alpha when the previous sibling is alpha', () => {
-    const editor = createBaseEditor({
-      plugins: [BaseListPlugin, BaseIndentPlugin],
-      initialValue: [
-        {
-          children: [{ text: 'a' }],
-          indent: 1,
-          listStyleType: 'lower-alpha',
-          type: 'paragraph',
-        },
-      ],
-    });
-
-    editor.update.nodes.insert({
-      children: [{ text: 'i' }],
-      indent: 1,
-      listStyleType: 'lower-roman',
-      type: 'paragraph',
-    });
-
-    expect(editor.read.children()[1]?.listStyleType).toBe('lower-alpha');
-  });
-
-  it('drops list restart props from split list items', () => {
-    const editor = createBaseEditor({
-      plugins: [BaseListPlugin, BaseIndentPlugin],
       selection: {
         kind: 'text',
-        anchor: { path: [0, 0], offset: 1 },
-        focus: { path: [0, 0], offset: 1 },
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 7, path: [0, 0] },
       },
-      initialValue: [
-        {
-          children: [{ text: '12' }],
-          indent: 1,
-          listRestart: 5,
-          listRestartPolite: 5,
-          listStyleType: 'decimal',
-          type: 'paragraph',
-        },
-      ],
     });
 
-    editor.update.nodes.split({ always: true });
+    editor.update.list.toggle({ type: ListType.Bulleted });
 
-    expect(editor.read.children()).toEqual([
-      {
-        children: [{ text: '1' }],
-        indent: 1,
-        listRestart: 5,
-        listRestartPolite: 5,
-        listStart: 5,
-        listStyleType: 'decimal',
-        type: 'paragraph',
-      },
-      {
-        children: [{ text: '2' }],
-        indent: 1,
-        listStart: 6,
-        listStyleType: 'decimal',
-        type: 'paragraph',
-      },
-    ]);
-  });
-});
-
-describe('withInsertBreakList', () => {
-  it('insert a new todo list line with the same formatting', () => {
-    const input = (
-      <editor>
-        <hp checked={false} indent={1} listStyleType={'todo'}>
-          Todo item
-          <cursor />
-        </hp>
-      </editor>
-    ) as TestEditor;
-
-    const output = (
-      <editor>
-        <hp checked={false} indent={1} listStyleType={'todo'}>
-          Todo item
-        </hp>
-        <hp checked={false} indent={1} listStart={2} listStyleType={'todo'}>
-          <cursor />
-        </hp>
-      </editor>
-    ) as TestEditor;
-
-    const editor = createBaseEditor({
-      plugins: [BaseParagraphPlugin, BaseIndentPlugin, BaseListPlugin],
-      selection: input.selection,
-      initialValue: input.children,
-    });
-
-    editor.update.break.insert();
-
-    expect(editor.read.children()).toEqual(output.children);
-  });
-
-  it('behave like a normal break if not a todo line', () => {
-    const input = (
-      <editor>
-        <hp indent={1} listStyleType="disc">
-          Disc item
-          <cursor />
-        </hp>
-      </editor>
-    ) as TestEditor;
-
-    const output = (
-      <editor>
-        <hp indent={1} listStyleType="disc">
-          Disc item
-        </hp>
-        <hp indent={1} listStyleType="disc">
-          <cursor />
-        </hp>
-      </editor>
-    ) as TestEditor;
-
-    const editor = createBaseEditor({
-      plugins: [BaseParagraphPlugin, BaseIndentPlugin, BaseListPlugin],
-      selection: input.selection,
-      initialValue: input.children,
-    });
-
-    editor.update.break.insert();
-
-    expect(editor.read.children()).toEqual(output.children);
-  });
-
-  it('behave like a normal break if selection is expanded', () => {
-    const input = (
-      <editor>
-        <hp checked={false} indent={1} listStyleType={'todo'}>
-          Todo <anchor />
-          item
-          <focus />
-        </hp>
-      </editor>
-    ) as TestEditor;
-
-    const output = (
-      <editor>
-        <hp checked={false} indent={1} listStyleType={'todo'}>
-          Todo <cursor />
-        </hp>
-        <hp checked={false} indent={1} listStart={2} listStyleType={'todo'}>
-          <cursor />
-        </hp>
-      </editor>
-    ) as TestEditor;
-
-    const editor = createBaseEditor({
-      plugins: [BaseParagraphPlugin, BaseIndentPlugin, BaseListPlugin],
-      selection: input.selection,
-      initialValue: input.children,
-    });
-
-    editor.update.break.insert();
-
-    expect(editor.read.children()).toEqual(output.children);
-  });
-});
-
-describe('BaseListPlugin expansion', () => {
-  describe('when input contains no list items', () => {
-    it('returns the same blocks unchanged', () => {
-      const input = (
-        <fragment>
-          <hp>
-            paragraph 1<cursor />
-          </hp>
-          <hp>paragraph 2</hp>
-          <hh1>heading</hh1>
-        </fragment>
-      ) as Element[];
-
-      const editor = createListEditorFromFixture(
-        (<editor>{input}</editor>) as TestEditor
-      );
-
-      const entries = [
-        [input[0]!, [0]],
-        [input[1]!, [1]],
-        [input[2]!, [2]],
-      ] satisfies NodeEntry<Element>[];
-
-      const result = editor
-        .plugin(BaseListPlugin)
-        .read.expandItemsWithChildren(entries);
-
-      expect(result).toEqual(entries);
-    });
-  });
-
-  describe('when input contains list items without children', () => {
-    it('returns the same list items', () => {
-      const input = (
-        <fragment>
-          <hp indent={1} listStyleType="disc">
-            item 1
-          </hp>
-          <hp indent={1} listStyleType="disc">
-            item 2<cursor />
-          </hp>
-          <hp indent={1} listStyleType="disc">
-            item 3
-          </hp>
-        </fragment>
-      ) as Element[];
-
-      const editor = createListEditorFromFixture(
-        (<editor>{input}</editor>) as TestEditor
-      );
-
-      const entries = [
-        [input[0]!, [0]],
-        [input[1]!, [1]],
-        [input[2]!, [2]],
-      ] satisfies NodeEntry<Element>[];
-
-      const result = editor
-        .plugin(BaseListPlugin)
-        .read.expandItemsWithChildren(entries);
-
-      expect(result).toEqual(entries);
-    });
-  });
-
-  describe('when input contains list items with children', () => {
-    it('expand single list item to include its children', () => {
-      const input = (
-        <fragment>
-          <hp indent={1} listStyleType="disc">
-            parent
-            <cursor />
-          </hp>
-          <hp indent={2} listStyleType="disc">
-            child 1
-          </hp>
-          <hp indent={2} listStyleType="disc">
-            child 2
-          </hp>
-          <hp indent={1} listStyleType="disc">
-            sibling
-          </hp>
-        </fragment>
-      ) as Element[];
-
-      const editor = createListEditorFromFixture(
-        (<editor>{input}</editor>) as TestEditor
-      );
-
-      // Only pass the parent item
-      const entries = [[input[0]!, [0]]] satisfies NodeEntry<Element>[];
-
-      const result = editor
-        .plugin(BaseListPlugin)
-        .read.expandItemsWithChildren(entries);
-
-      expect(result).toEqual([
-        [input[0], [0]], // parent
-        [input[1], [1]], // child 1
-        [input[2], [2]], // child 2
-      ]);
-    });
-
-    it('handle multiple list items with children', () => {
-      const input = (
-        <fragment>
-          <hp indent={1} listStyleType="disc">
-            parent 1
-          </hp>
-          <hp indent={2} listStyleType="disc">
-            child 1.1
-          </hp>
-          <hp indent={1} listStyleType="disc">
-            parent 2<cursor />
-          </hp>
-          <hp indent={2} listStyleType="disc">
-            child 2.1
-          </hp>
-          <hp indent={3} listStyleType="disc">
-            grandchild 2.1.1
-          </hp>
-        </fragment>
-      ) as Element[];
-
-      const editor = createListEditorFromFixture(
-        (<editor>{input}</editor>) as TestEditor
-      );
-
-      // Pass both parent items
-      const entries = [
-        [input[0]!, [0]],
-        [input[2]!, [2]],
-      ] satisfies NodeEntry<Element>[];
-
-      const result = editor
-        .plugin(BaseListPlugin)
-        .read.expandItemsWithChildren(entries);
-
-      expect(result).toEqual([
-        [input[0], [0]], // parent 1
-        [input[1], [1]], // child 1.1
-        [input[2], [2]], // parent 2
-        [input[3], [3]], // child 2.1
-        [input[4], [4]], // grandchild 2.1.1
-      ]);
-    });
-
-    it('avoid duplicates when children are already in input', () => {
-      const input = (
-        <fragment>
-          <hp indent={1} listStyleType="disc">
-            parent
-          </hp>
-          <hp indent={2} listStyleType="disc">
-            child 1<cursor />
-          </hp>
-          <hp indent={2} listStyleType="disc">
-            child 2
-          </hp>
-        </fragment>
-      ) as Element[];
-
-      const editor = createListEditorFromFixture(
-        (<editor>{input}</editor>) as TestEditor
-      );
-
-      // Pass parent and one child (child 1)
-      const entries = [
-        [input[0]!, [0]],
-        [input[1]!, [1]],
-      ] satisfies NodeEntry<Element>[];
-
-      const result = editor
-        .plugin(BaseListPlugin)
-        .read.expandItemsWithChildren(entries);
-
-      // Should not duplicate child 1, but should add child 2
-      expect(result).toEqual([
-        [input[0], [0]], // parent
-        [input[1], [1]], // child 1 (from input)
-        [input[2], [2]], // child 2 (added)
-      ]);
-    });
-  });
-
-  describe('when input contains mixed blocks', () => {
-    it('expand only list items and keep other blocks as-is', () => {
-      const input = (
-        <fragment>
-          <hp>paragraph before</hp>
-          <hp indent={1} listStyleType="disc">
-            list parent
-            <cursor />
-          </hp>
-          <hp indent={2} listStyleType="disc">
-            list child
-          </hp>
-          <hh1>heading after</hh1>
-        </fragment>
-      ) as Element[];
-
-      const editor = createListEditorFromFixture(
-        (<editor>{input}</editor>) as TestEditor
-      );
-
-      const entries = [
-        [input[0]!, [0]], // paragraph
-        [input[1]!, [1]], // list parent
-        [input[3]!, [3]], // heading
-      ] satisfies NodeEntry<Element>[];
-
-      const result = editor
-        .plugin(BaseListPlugin)
-        .read.expandItemsWithChildren(entries);
-
-      expect(result).toEqual([
-        [input[0], [0]], // paragraph (unchanged)
-        [input[1], [1]], // list parent
-        [input[2], [2]], // list child (added)
-        [input[3], [3]], // heading (unchanged)
-      ]);
-    });
-  });
-
-  describe('edge cases', () => {
-    it('handle empty input', () => {
-      const editor = createListEditorFromFixture((<editor />) as TestEditor);
-
-      const result = editor
-        .plugin(BaseListPlugin)
-        .read.expandItemsWithChildren([]);
-
-      expect(result).toEqual([]);
-    });
-
-    it('handle list items at end of document', () => {
-      const input = (
-        <fragment>
-          <hp indent={1} listStyleType="disc">
-            parent at end
-            <cursor />
-          </hp>
-          <hp indent={2} listStyleType="disc">
-            child at end
-          </hp>
-        </fragment>
-      ) as Element[];
-
-      const editor = createListEditorFromFixture(
-        (<editor>{input}</editor>) as TestEditor
-      );
-
-      const entries = [[input[0]!, [0]]] satisfies NodeEntry<Element>[];
-
-      const result = editor
-        .plugin(BaseListPlugin)
-        .read.expandItemsWithChildren(entries);
-
-      expect(result).toEqual([
-        [input[0], [0]], // parent
-        [input[1], [1]], // child
-      ]);
-    });
-
-    it('handle deeply nested lists', () => {
-      const input = (
-        <fragment>
-          <hp indent={1} listStyleType="disc">
-            level 1<cursor />
-          </hp>
-          <hp indent={2} listStyleType="disc">
-            level 2
-          </hp>
-          <hp indent={3} listStyleType="disc">
-            level 3
-          </hp>
-          <hp indent={4} listStyleType="disc">
-            level 4
-          </hp>
-          <hp indent={5} listStyleType="disc">
-            level 5
-          </hp>
-        </fragment>
-      ) as Element[];
-
-      const editor = createListEditorFromFixture(
-        (<editor>{input}</editor>) as TestEditor
-      );
-
-      const entries = [[input[0]!, [0]]] satisfies NodeEntry<Element>[];
-
-      const result = editor
-        .plugin(BaseListPlugin)
-        .read.expandItemsWithChildren(entries);
-
-      expect(result).toEqual([
-        [input[0], [0]], // level 1
-        [input[1], [1]], // level 2
-        [input[2], [2]], // level 3
-        [input[3], [3]], // level 4
-        [input[4], [4]], // level 5
-      ]);
+    expect(editor.read.children()[0]).toMatchObject({
+      listType: 'bulleted',
+      type: 'callout',
     });
   });
 });
 
-describe('isOrderedList', () => {
-  it.each([
-    [undefined, false],
-    [ListStyleType.Disc, false],
-    [ListStyleType.Circle, false],
-    [ListStyleType.Decimal, true],
-    [ListStyleType.DecimalLeadingZero, true],
-    [ListStyleType.LowerRoman, true],
-  ])('treats %s as ordered=%s', (listStyleType, expected) => {
-    expect(
-      isOrderedList({ children: [], listStyleType, type: 'paragraph' })
-    ).toBe(expected);
-  });
-});
+void BaseParagraphPlugin;
+void PLUGINS;

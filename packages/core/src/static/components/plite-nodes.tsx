@@ -13,7 +13,7 @@ import type {
   InferPluginDecoration,
   PluginReference,
   RenderElementProps,
-  RenderLeafProps,
+  StaticRenderLeafProps as RenderLeafProps,
   RenderTextProps,
 } from '../../lib';
 import type { InternalPluginDefinitionOf } from '../../lib/plugin/pluginDefinitionLookup.internal';
@@ -34,7 +34,7 @@ type MergedNodeAttributes<E extends HTMLElement> = UnknownObject & {
   style?: React.CSSProperties;
 };
 
-export const useNodeAttributes = <E extends HTMLElement>(
+const getNodeAttributes = <E extends HTMLElement>(
   props: NodeAttributeProps,
   ref?: React.Ref<E>
 ): MergedNodeAttributes<E> => ({
@@ -119,11 +119,16 @@ type PliteElementComponentProps<
     style?: React.CSSProperties;
   };
 
-export const PliteElement = React.forwardRef<
-  HTMLDivElement,
-  PliteElementComponentProps<Element, any>
->(function PliteElement({ as: Tag = 'div', children, ...props }, ref) {
-  const attributes = useNodeAttributes(props, ref);
+export const PliteElement = function PliteElement({
+  as: Tag = 'div',
+  children,
+  ref,
+  ...props
+}: PliteElementComponentProps<Element, any>) {
+  const attributes = getNodeAttributes<HTMLDivElement>(
+    props,
+    ref as React.Ref<HTMLDivElement>
+  );
 
   return (
     <Tag
@@ -140,7 +145,7 @@ export const PliteElement = React.forwardRef<
       {children}
     </Tag>
   );
-}) as {
+} as {
   <
     N extends Element = Element,
     C extends AnyBasePluginDefinition = BasePluginDefinition,
@@ -176,14 +181,16 @@ type PliteTextComponentProps<
   T extends keyof HTMLElementTagNameMap = 'span',
 > = PliteTextRenderProps<N, C> & PliteHTMLProps<C, T>;
 
-export const PliteText = React.forwardRef<
-  HTMLSpanElement,
-  PliteTextComponentProps<Text, any>
->(({ as: Tag = 'span', children, ...props }, ref) => {
-  const attributes = useNodeAttributes(props, ref);
+export const PliteText = function PliteText({
+  as: Tag = 'span',
+  children,
+  ref,
+  ...props
+}: PliteTextComponentProps<Text, any>) {
+  const attributes = getNodeAttributes(props, ref);
 
   return <Tag {...attributes}>{children}</Tag>;
-}) as <
+} as <
   N extends Text = Text,
   C extends AnyBasePluginDefinition = BasePluginDefinition,
   T extends keyof HTMLElementTagNameMap = 'span',
@@ -221,11 +228,14 @@ const NonBreakingSpace = () => (
   </span>
 );
 
-export const PliteLeaf = React.forwardRef<
-  HTMLSpanElement,
-  PliteLeafComponentProps<Text, any>
->(({ as: Tag = 'span', children, inset, ...props }, ref) => {
-  const attributes = useNodeAttributes(props, ref);
+export const PliteLeaf = function PliteLeaf({
+  as: Tag = 'span',
+  children,
+  inset,
+  ref,
+  ...props
+}: PliteLeafComponentProps<Text, any>) {
+  const attributes = getNodeAttributes(props, ref);
 
   if (inset) {
     return (
@@ -240,7 +250,7 @@ export const PliteLeaf = React.forwardRef<
   }
 
   return <Tag {...attributes}>{children}</Tag>;
-}) as <
+} as <
   N extends Text = Text,
   C extends AnyBasePluginDefinition = BasePluginDefinition,
   T extends keyof HTMLElementTagNameMap = 'span',

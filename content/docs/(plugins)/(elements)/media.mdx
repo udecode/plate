@@ -3,21 +3,21 @@ title: Media
 docs:
   - route: https://pro.platejs.org/docs/examples/media
     title: Plus
-  - route: /docs/components/media-image-node
+  - route: /docs/components/media-image
     title: Image Element
-  - route: /docs/components/media-video-node
+  - route: /docs/components/media-video
     title: Video Element
-  - route: /docs/components/media-audio-node
+  - route: /docs/components/media-audio
     title: Audio Element
-  - route: /docs/components/media-file-node
+  - route: /docs/components/media-file
     title: File Element
-  - route: /docs/components/media-embed-node
+  - route: /docs/components/media-embed
     title: Media Embed Element
   - route: /docs/components/media-toolbar
     title: Media Popover
-  - route: /docs/components/media-placeholder-node
+  - route: /docs/components/media-placeholder
     title: Media Placeholder Element
-  - route: /docs/components/media-upload-toast
+  - route: /docs/components/media
     title: Media Upload Toast
   - route: /docs/components/media-toolbar-button
     title: Media Toolbar Button
@@ -73,15 +73,15 @@ which includes pre-configured `ImagePlugin`, `VideoPlugin`, `AudioPlugin`,
 `FilePlugin`, `MediaEmbedPlugin`, and `PlaceholderPlugin` with their
 [Plate UI](/docs/installation/plate-ui) components.
 
-<ComponentSource name="media-kit" />
+<ComponentSource name="media" />
 
-- [`ImageElement`](/docs/components/media-image-node): Renders image elements.
-- [`VideoElement`](/docs/components/media-video-node): Renders video elements.
-- [`AudioElement`](/docs/components/media-audio-node): Renders audio elements.
-- [`FileElement`](/docs/components/media-file-node): Renders file elements.
-- [`MediaEmbedElement`](/docs/components/media-embed-node): Renders embedded media.
-- [`PlaceholderElement`](/docs/components/media-placeholder-node): Renders upload placeholders.
-- [`MediaUploadToast`](/docs/components/media-upload-toast): Shows upload progress notifications.
+- [`ImageElement`](/docs/components/media-image): Renders image elements.
+- [`VideoElement`](/docs/components/media-video): Renders video elements.
+- [`AudioElement`](/docs/components/media-audio): Renders audio elements.
+- [`FileElement`](/docs/components/media-file): Renders file elements.
+- [`MediaEmbedElement`](/docs/components/media-embed): Renders embedded media.
+- [`PlaceholderElement`](/docs/components/media-placeholder): Renders upload placeholders.
+- [`MediaUploadToast`](/docs/components/media): Shows upload progress notifications.
 - [`MediaPreviewDialog`](/docs/components/media-preview-dialog): Provides media preview functionality.
 
 ### Add Kit
@@ -90,7 +90,7 @@ Add the kit to your plugins:
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { MediaKit } from '@/components/editor/plugins/media-kit';
+import { MediaKit } from '@/components/editor/media';
 
 const editor = createPlateEditor({
   plugins: [
@@ -173,8 +173,8 @@ import {
   MediaEmbedElement, 
   PlaceholderElement, 
   VideoElement 
-} from '@/components/ui/media-nodes';
-import { MediaUploadToast } from '@/components/ui/media-upload-toast';
+} from '@/components/editor/media-nodes';
+import { MediaUploadToast } from '@/components/editor/media';
 
 const editor = createPlateEditor({
   plugins: [
@@ -212,7 +212,7 @@ Configure only the media plugin and its renderer:
 
 ```tsx
 import { ImagePlugin } from '@platejs/media/react';
-import { ImageElement } from '@/components/ui/media-image-node';
+import { ImageElement } from '@/components/editor/media-image';
 
 export const MediaKit = [
   ImagePlugin.configure({ component: ImageElement }),
@@ -269,6 +269,7 @@ An empty text child is the canonical absent-caption state:
 
 The renderer can hide that empty caption until the media asset is focused.
 Placeholder visibility is UI state and does not change the persisted element.
+Shared media nodes persist `url`, optional rendered `width`, and direct caption children. Only `FileElement` adds optional `name`; Image, Audio, Video, and Media Embed do not inherit filename metadata.
 
 Asset focus and caption editing are separate selection states:
 
@@ -394,11 +395,13 @@ export function PlaceholderElement({
         tx.nodes.insert(
           {
             children: [{ text: '' }],
-            isUpload: true,
-            name:
-              file.installed && element.mediaType === file.schema.type
-                ? uploadedFile.name
-                : '',
+            provider:
+              element.mediaType === editor.plugin(PLUGINS.video).schema.type
+                ? 'file'
+                : undefined,
+            ...(file.installed && element.mediaType === file.schema.type
+              ? { name: uploadedFile.name }
+              : {}),
             type: element.mediaType,
             url: uploadedFile.url,
           },
@@ -499,7 +502,9 @@ Plugin for managing media placeholders during upload. Handles file uploads, drag
 <API name="PlaceholderPlugin">
 <APIOptions type="object">
   <APIItem name="uploadConfig" type="Partial<Record<AllowedFileType, MediaItemConfig>>" optional>
-Configuration for different file types. Default configuration:
+Configuration for different file types. The package maps every supported file
+family to its media plugin without imposing size or per-type count limits. The
+copied `MediaKit` applies this product policy:
 ```ts
 {
   audio: {
@@ -566,7 +571,7 @@ Disable drag and drop file upload functionality.
 </APIItem>
 <APIItem name="maxFileCount" type="number" optional>
 Maximum number of files that can be uploaded at once, if not specified by `uploadConfig`.
-- **Default:** `5`
+- **Default:** `Number.POSITIVE_INFINITY`
 </APIItem>
 <APIItem name="multiple" type="boolean" optional>
 Allow multiple files of the same type to be uploaded.
@@ -753,185 +758,21 @@ Import it from `@platejs/media/react`.
 </APIOptions>
 </API>
 
-## Hooks
+## Registry Media UI
 
-### `useResizable`
+`media-toolbar` owns URL editing, submission, cancellation, and focus restore.
+Each copied media node reads its typed element and primitive editor state
+directly. `media-image` renders the image and opens
+`media-preview-dialog`, which owns preview navigation, scale, translation, and
+download behavior.
 
-Handles the resizable properties of a media element.
+<ComponentSource name="media-toolbar" />
+<ComponentSource name="media-image" />
+<ComponentSource name="media-preview-dialog" />
 
-<API name="useResizable">
-<APIState>
-  <APIItem name="align" type="'left' | 'center' | 'right'">
-    The alignment of the content within the resizable element.
-  </APIItem>
-  <APIItem name="minWidth" type="ResizeLength">
-    The minimum width that the resizable element can be adjusted to.
-  </APIItem>
-  <APIItem name="maxWidth" type="ResizeLength">
-    The maximum width that the resizable element can be adjusted to.
-  </APIItem>
-  <APIItem name="onResizeEnd" type="((width: ResizeLength) => void) | undefined">
-    Commit callback supplied by the media owner.
-  </APIItem>
-  <APIItem name="setWidth" type="(width: number | string) => void">
-    Function to set the width of the resizable element directly.
-  </APIItem>
-  <APIItem name="width" type="Property.Width<string | number> | undefined">
-    The current width of the resizable element (percentage, 'auto', or pixels).
-  </APIItem>
-</APIState>
-
-<APIReturns type="object">
-  <APIItem name="wrapperRef" type="React.RefObject<HTMLDivElement>">
-    React reference to the outermost wrapper div.
-  </APIItem>
-  <APIItem name="wrapperProps.style" type="CSSProperties">
-    CSS styles for the wrapper div.
-  </APIItem>
-  <APIItem name="props.style" type="CSSProperties">
-    CSS styles for the resizable element.
-  </APIItem>
-  <APIItem name="context.onResize" type="(event: ResizeEvent) => void">
-    Updates preview width while dragging and commits through `onResizeEnd` when finished.
-  </APIItem>
-  <APIItem name="context.nudgeWidth" type="(delta: number) => void">
-    Clamps and commits a keyboard resize step.
-  </APIItem>
-</APIReturns>
-</API>
-
-The resizable package owns pointer and keyboard math, not document writes.
-Image UI commits through
-`editor.plugin(ImagePlugin).update.set({ width }, { at: element })`.
-
-### `useMediaState`
-
-A state hook for a media element.
-
-<API name="useMediaState">
-<APIParameters>
-  <APIItem name="plugin" type="MediaPlugin" required>
-    The exact image, video, audio, file, or embed plugin for the rendered element.
-  </APIItem>
-  <APIItem name="options.urlParsers" type="EmbedUrlParser[]" optional>
-    Array of URL parsers to parse the media element URL.
-    - **`EmbedUrlParser`:** `(url: string) => EmbedUrlData | undefined`
-  </APIItem>
-</APIParameters>
-
-<APIReturns type="object">
-  <APIItem name="textAlign" type="'center' | 'left' | 'right' | undefined">
-    The alignment of the media element.
-  </APIItem>
-  <APIItem name="embed" type="EmbedUrlData | undefined">
-    The parsed embed data of the media element.
-  </APIItem>
-  <APIItem name="focused" type="boolean">
-    Whether the media element is currently focused.
-  </APIItem>
-  <APIItem name="isTweet" type="boolean">
-    Whether the media element is a tweet.
-  </APIItem>
-  <APIItem name="isUpload" type="boolean | undefined">
-    Whether the media element represents an upload.
-  </APIItem>
-  <APIItem name="isVideo" type="boolean">
-    Whether the media element is a video.
-  </APIItem>
-  <APIItem name="isYoutube" type="boolean">
-    Whether the media element is a YouTube video.
-  </APIItem>
-  <APIItem name="name" type="string | undefined">
-    The media file name.
-  </APIItem>
-  <APIItem name="readOnly" type="boolean">
-    Whether the editor is in read-only mode.
-  </APIItem>
-  <APIItem name="selected" type="boolean">
-    Whether the media element is currently selected.
-  </APIItem>
-  <APIItem name="unsafeUrl" type="string">
-    The unescaped media URL stored on the element.
-  </APIItem>
-</APIReturns>
-</API>
-
-### `useMediaToolbarButton`
-
-A behavior hook for a media toolbar button.
-
-<API name="useMediaToolbarButton">
-<APIParameters>
-  <APIItem name="options.nodeType" type="string" optional>
-    The type of media node to insert.
-  </APIItem>
-</APIParameters>
-
-<APIReturns type="object">
-  <APIItem name="props.onClick" type="() => Promise<void>">
-    Prompts for a URL and inserts the requested media node.
-  </APIItem>
-</APIReturns>
-</API>
-
-### `useFloatingMediaEditButton`
-
-Handles the floating media edit button.
-
-<API name="useFloatingMediaEditButton">
-<APIParameters>
-  <APIItem name="options.plugin" type="MediaPlugin" required>
-    The exact media plugin for the rendered element.
-  </APIItem>
-</APIParameters>
-<APIReturns type="object">
-  <APIItem name="props.onClick" type="() => void">
-    Callback function to handle the button click.
-  </APIItem>
-</APIReturns>
-</API>
-
-### `useFloatingMediaUrlInput`
-
-Handles the URL input field for media elements.
-
-<API name="useFloatingMediaUrlInput">
-<APIProps>
-  <APIItem name="defaultValue" type="string">
-    The default value for the URL input field.
-  </APIItem>
-</APIProps>
-
-<APIReturns type="object">
-  <APIItem name="props.onChange" type="() => void">
-    Callback function to handle input changes.
-  </APIItem>
-  <APIItem name="props.autoFocus" type="boolean">
-    Whether the URL input field should be focused on mount.
-  </APIItem>
-  <APIItem name="props.defaultValue" type="string">
-    The default value for the URL input field.
-  </APIItem>
-</APIReturns>
-</API>
-
-### `useImage`
-
-A hook for image elements.
-
-<API name="useImage">
-<APIReturns type="object">
-  <APIItem name="props.src" type="string">
-    The URL of the media element.
-  </APIItem>
-  <APIItem name="props.draggable" type="boolean">
-    Whether the image is draggable.
-  </APIItem>
-  <APIItem name="props.onDoubleClickCapture" type="() => void">
-    Opens the image preview.
-  </APIItem>
-</APIReturns>
-</API>
+For resizable media, compose the direct `Resizable` and `ResizeHandle`
+components from [`@platejs/resizable`](/docs/api/resizable). The media renderer
+commits the final width through its scoped plugin update.
 
 ## Utilities
 

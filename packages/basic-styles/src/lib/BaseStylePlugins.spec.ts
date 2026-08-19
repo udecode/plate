@@ -499,14 +499,14 @@ describe('BaseTextAlignPlugin', () => {
     expect(plugin.inject.nodeProps).toMatchObject({
       defaultNodeValue: 'start',
       styleKey: 'textAlign',
-      validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],
+      validNodeValues: ['center', 'end', 'justify', 'left', 'right', 'start'],
     });
     expect(
       editor.read.schema.property({
         key: 'textAlign',
         placement: 'element',
       })?.value.kind
-    ).toBe('string');
+    ).toBe('enum');
     expect(typeof editor.update.textAlign.set).toBe('function');
   });
 

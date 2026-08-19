@@ -27,7 +27,7 @@ type UsePlateEditorResult<
  *
  * ```ts
  * const editor = usePlateEditor({
- *   plugins: [ParagraphPlugin, H1Plugin],
+ *   plugins: [ParagraphPlugin, HeadingPlugin],
  *   initialValue: [{ type: 'paragraph', children: [{ text: 'Hello world!' }] }],
  * });
  *

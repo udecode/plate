@@ -2,7 +2,7 @@
 title: Find
 description: Highlight search matches in editable text.
 docs:
-  - route: /docs/components/search-highlight-node
+  - route: /docs/components/search-highlight
     title: Search Highlight Leaf
   - route: /docs/examples/find-replace
     title: Find Replace Demo
@@ -38,7 +38,7 @@ Configure `FindReplacePlugin` with a leaf renderer for highlighted ranges.
 import { FindReplacePlugin } from '@platejs/find-replace';
 import { createPlateEditor } from 'platejs/react';
 
-import { SearchHighlightLeaf } from '@/components/ui/search-highlight-node';
+import { SearchHighlightLeaf } from '@/components/editor/search-highlight';
 
 export const editor = createPlateEditor({
   plugins: [
@@ -110,12 +110,12 @@ The package is headless. The registry gives you a visible highlight leaf and a d
 Install the registry leaf when you want the default yellow highlight.
 
 ```bash
-npx shadcn@latest add @plate/search-highlight-node
+npx shadcn@latest add @plate/search-highlight
 ```
 
 The copied component is intentionally small:
 
-```tsx title="components/ui/search-highlight-node.tsx"
+```tsx title="components/editor/search-highlight.tsx"
 import type { FindReplacePlugin } from '@platejs/find-replace';
 import { type PlateLeafProps, PlateLeaf } from 'platejs/react';
 

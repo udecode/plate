@@ -472,7 +472,7 @@ const invalidBodyValue: BodyValue = [
     align: 'left',
     children: [{ text: 'nope' }],
     // @ts-expect-error createPlateEditor value inference should stay narrow
-    type: 'h1',
+    type: 'heading',
   },
   {
     children: [{ text: 'world' }],

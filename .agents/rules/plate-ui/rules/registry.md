@@ -62,6 +62,13 @@ never host editor types, application-definition modules, or root plugin
 namespaces. `editor-kit` is the registry item name, not an application runtime
 API or application type owner.
 
+`editor-kit` owns the copied plugin composition only. Do not colocate a fixed
+persisted schema ID, migration chain, historical fingerprint, or default
+`migrations` option with that reusable composition. Put lineage and upgrade
+policy in the actual host persistence owner or a dedicated migration example.
+Generated editor typing derives the current schema from the plugin tuple and
+does not require named persisted identity.
+
 Do not use this for unrelated plugins or divergent authoring branches that
 merely share a name; Core rejects those collisions.
 

@@ -6,7 +6,7 @@ import type { Value } from 'platejs';
 import { Plate, usePlateEditor } from 'platejs/react';
 
 import { createMultiEditorsValue } from '@/registry/examples/values/multi-editors-value';
-import { Editor, EditorContainer } from '@/registry/ui/editor';
+import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 
 const values = createMultiEditorsValue();
 

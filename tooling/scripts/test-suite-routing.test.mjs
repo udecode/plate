@@ -16,11 +16,15 @@ import {
 test('routes tooling slow contracts exclusively through the slow suite', (t) => {
   const fixtureRoot = mkdtempSync(path.join(tmpdir(), 'plate-test-suites-'));
   const toolingRoot = path.join(fixtureRoot, 'tooling/scripts');
+  const browserRoot = path.join(fixtureRoot, 'apps/www/tests/browser');
+  const browserFixture = 'apps/www/tests/browser/fixture.spec.ts';
   const fastFixture = 'tooling/scripts/fixture.test.mjs';
   const slowFixture = 'tooling/scripts/fixture.slow.test.mjs';
 
   t.after(() => rmSync(fixtureRoot, { force: true, recursive: true }));
   mkdirSync(toolingRoot, { recursive: true });
+  mkdirSync(browserRoot, { recursive: true });
+  writeFileSync(path.join(fixtureRoot, browserFixture), '');
   writeFileSync(path.join(fixtureRoot, fastFixture), '');
   writeFileSync(path.join(fixtureRoot, slowFixture), '');
 
@@ -40,6 +44,7 @@ test('routes tooling slow contracts exclusively through the slow suite', (t) => 
   );
 
   assert.equal(fastFiles.has(fastFixture), true);
+  assert.equal(fastFiles.has(browserFixture), false);
   assert.equal(fastFiles.has(slowFixture), false);
   assert.equal(slowFiles.has(fastFixture), false);
   assert.equal(slowFiles.has(slowFixture), true);

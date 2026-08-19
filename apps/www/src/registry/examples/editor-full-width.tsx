@@ -2,8 +2,8 @@
 
 import { Plate, usePlateEditor } from 'platejs/react';
 
-import { EditorKit } from '@/registry/components/editor/editor';
-import { Editor, EditorContainer } from '@/registry/ui/editor';
+import { EditorKit } from '@/registry/components/editor/plugins';
+import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 
 export default function EditorDefault() {
   const editor = usePlateEditor({

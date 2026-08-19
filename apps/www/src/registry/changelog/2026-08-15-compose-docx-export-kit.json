@@ -19,16 +19,22 @@
   "targets": [
     {
       "name": "docx-export-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/docx-export-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for docx-export-kit."
+        }
+      ]
     },
     {
       "name": "export-toolbar-button",
-      "files": ["apps/www/src/registry/ui/export-toolbar-button.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "files": [
+        "apps/www/src/registry/components/editor/export-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
       "diagnostics": []
     }
   ],

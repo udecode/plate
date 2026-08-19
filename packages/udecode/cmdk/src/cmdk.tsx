@@ -88,7 +88,7 @@ type DialogProps = RadixDialog.DialogProps &
     /** Provide a className to the Dialog overlay. */
     overlayClassName?: string;
   };
-type DivProps = React.ComponentPropsWithoutRef<typeof Primitive.div>;
+type DivProps = React.ComponentPropsWithRef<typeof Primitive.div>;
 type EmptyProps = Children & DivProps & {};
 type Group = {
   id: string;
@@ -107,7 +107,7 @@ type GroupProps = Children &
     value?: string;
   };
 type InputProps = Omit<
-  React.ComponentPropsWithoutRef<typeof Primitive.input>,
+  React.ComponentPropsWithRef<typeof Primitive.input>,
   'onChange' | 'type' | 'value'
 > & {
   /** Optional controlled state for the value of the search input. */
@@ -233,934 +233,906 @@ const GroupContext = React.createContext<Group | undefined>(undefined);
 //   return 'cmdk' + id;
 // };
 
-const Command = React.forwardRef<HTMLDivElement, CommandProps>(
-  (props, forwardedRef) => {
-    const state = useLazyRef<State>(() => ({
-      filtered: {
-        /** The count of all visible items. */
-        count: 0,
-        /** Set of groups with at least one visible item. */
-        groups: new Set(),
-        /** Map from visible item id to its search score. */
-        items: new Map(),
+const Command = (props: CommandProps) => {
+  const state = useLazyRef<State>(() => ({
+    filtered: {
+      /** The count of all visible items. */
+      count: 0,
+      /** Set of groups with at least one visible item. */
+      groups: new Set(),
+      /** Map from visible item id to its search score. */
+      items: new Map(),
+    },
+    /** Value of the search query. */
+    search: '',
+    /** Currently selected item value. */
+    value: props.value ?? props.defaultValue ?? '',
+  }));
+  const allItems = useLazyRef<Set<string>>(() => new Set()); // [...itemIds]
+  const allGroups = useLazyRef<Map<string, Set<string>>>(() => new Map()); // groupId → [...itemIds]
+  const ids = useLazyRef<Map<string, { value: string; keywords?: string[] }>>(
+    () => new Map()
+  ); // id → { value, keywords }
+  const listeners = useLazyRef<Set<() => void>>(() => new Set()); // [...rerenders]
+  const propsRef = useAsRef(props);
+  const {
+    children,
+    filter,
+    label,
+    loop,
+    ref: forwardedRef,
+    shouldFilter,
+    value,
+    vimBindings = true,
+    onValueChange,
+    ...etc
+  } = props;
+
+  const listId = useId();
+  const labelId = useId();
+  const inputId = useId();
+
+  const listInnerRef = React.useRef<HTMLDivElement>(null);
+
+  const schedule = useScheduleLayoutEffect();
+
+  /** Controlled mode `value` handling. */
+  useLayoutEffect(() => {
+    if (value !== undefined) {
+      const v = value.trim();
+      state.current.value = v;
+      store.emit();
+    }
+  }, [value]);
+
+  useLayoutEffect(() => {
+    schedule(6, scrollSelectedIntoView);
+  }, []);
+
+  const store: Store = React.useMemo(() => {
+    return {
+      emit: () => {
+        for (const l of listeners.current) {
+          l();
+        }
       },
-      /** Value of the search query. */
-      search: '',
-      /** Currently selected item value. */
-      value: props.value ?? props.defaultValue ?? '',
-    }));
-    const allItems = useLazyRef<Set<string>>(() => new Set()); // [...itemIds]
-    const allGroups = useLazyRef<Map<string, Set<string>>>(() => new Map()); // groupId → [...itemIds]
-    const ids = useLazyRef<Map<string, { value: string; keywords?: string[] }>>(
-      () => new Map()
-    ); // id → { value, keywords }
-    const listeners = useLazyRef<Set<() => void>>(() => new Set()); // [...rerenders]
-    const propsRef = useAsRef(props);
-    const {
-      children,
-      filter,
-      label,
-      loop,
-      shouldFilter,
-      value,
-      vimBindings = true,
-      onValueChange,
-      ...etc
-    } = props;
+      setState: (key, value, preventScroll) => {
+        if (Object.is(state.current[key], value)) return;
 
-    const listId = useId();
-    const labelId = useId();
-    const inputId = useId();
+        state.current[key] = value;
 
-    const listInnerRef = React.useRef<HTMLDivElement>(null);
+        if (key === 'search') {
+          // Filter synchronously before emitting back to children
+          filterItems();
+          sort();
+          schedule(1, selectFirstItem);
+        } else if (key === 'value') {
+          if (!preventScroll) {
+            // Scroll the selected item into view
+            schedule(5, scrollSelectedIntoView);
+          }
+          if (propsRef.current?.value !== undefined) {
+            // If controlled, just call the callback instead of updating state internally
+            const newValue = state.current.value ?? '';
+            propsRef.current.onValueChange?.(newValue);
 
-    const schedule = useScheduleLayoutEffect();
+            return;
+          }
+        }
 
-    /** Controlled mode `value` handling. */
-    useLayoutEffect(() => {
-      if (value !== undefined) {
-        const v = value.trim();
-        state.current.value = v;
+        // Notify subscribers that state has changed
         store.emit();
-      }
-    }, [value]);
+      },
+      snapshot: () => state.current,
+      subscribe: (cb) => {
+        listeners.current.add(cb);
 
-    useLayoutEffect(() => {
-      schedule(6, scrollSelectedIntoView);
-    }, []);
+        return () => listeners.current.delete(cb);
+      },
+    };
+  }, []);
 
-    const store: Store = React.useMemo(() => {
-      return {
-        emit: () => {
-          for (const l of listeners.current) {
-            l();
+  const context: Context = React.useMemo(
+    () => ({
+      inputId,
+      label: label ?? props['aria-label'] ?? 'Command Menu',
+      labelId,
+      listId,
+      listInnerRef,
+      filter: () => propsRef.current.shouldFilter !== false,
+      getDisablePointerSelection: () =>
+        propsRef.current.disablePointerSelection ?? false,
+      // Track group lifecycle (mount, unmount)
+      group: (id) => {
+        if (!allGroups.current.has(id)) {
+          allGroups.current.set(id, new Set());
+        }
+
+        return () => {
+          ids.current.delete(id);
+          allGroups.current.delete(id);
+        };
+      },
+      // Track item lifecycle (mount, unmount)
+      item: (id, groupId) => {
+        allItems.current.add(id);
+
+        // Track this item within the group
+        if (groupId) {
+          if (allGroups.current.has(groupId)) {
+            allGroups.current.get(groupId)?.add(id);
+          } else {
+            allGroups.current.set(groupId, new Set([id]));
           }
-        },
-        setState: (key, value, preventScroll) => {
-          if (Object.is(state.current[key], value)) return;
+        }
 
-          state.current[key] = value;
+        // Batch this, multiple items can mount in one pass
+        // and we should not be filtering/sorting/emitting each time
+        schedule(3, () => {
+          filterItems();
+          sort();
 
-          if (key === 'search') {
-            // Filter synchronously before emitting back to children
-            filterItems();
-            sort();
-            schedule(1, selectFirstItem);
-          } else if (key === 'value') {
-            if (!preventScroll) {
-              // Scroll the selected item into view
-              schedule(5, scrollSelectedIntoView);
-            }
-            if (propsRef.current?.value !== undefined) {
-              // If controlled, just call the callback instead of updating state internally
-              const newValue = state.current.value ?? '';
-              propsRef.current.onValueChange?.(newValue);
-
-              return;
-            }
+          // Could be initial mount, select the first item if none already selected
+          if (!state.current.value) {
+            selectFirstItem();
           }
 
-          // Notify subscribers that state has changed
           store.emit();
-        },
-        snapshot: () => state.current,
-        subscribe: (cb) => {
-          listeners.current.add(cb);
+        });
 
-          return () => listeners.current.delete(cb);
-        },
-      };
-    }, []);
+        return () => {
+          ids.current.delete(id);
+          allItems.current.delete(id);
+          state.current.filtered.items.delete(id);
+          const selectedItem = getSelectedItem();
 
-    const context: Context = React.useMemo(
-      () => ({
-        inputId,
-        label: label ?? props['aria-label'] ?? 'Command Menu',
-        labelId,
-        listId,
-        listInnerRef,
-        filter: () => propsRef.current.shouldFilter !== false,
-        getDisablePointerSelection: () =>
-          propsRef.current.disablePointerSelection ?? false,
-        // Track group lifecycle (mount, unmount)
-        group: (id) => {
-          if (!allGroups.current.has(id)) {
-            allGroups.current.set(id, new Set());
-          }
-
-          return () => {
-            ids.current.delete(id);
-            allGroups.current.delete(id);
-          };
-        },
-        // Track item lifecycle (mount, unmount)
-        item: (id, groupId) => {
-          allItems.current.add(id);
-
-          // Track this item within the group
-          if (groupId) {
-            if (allGroups.current.has(groupId)) {
-              allGroups.current.get(groupId)?.add(id);
-            } else {
-              allGroups.current.set(groupId, new Set([id]));
-            }
-          }
-
-          // Batch this, multiple items can mount in one pass
-          // and we should not be filtering/sorting/emitting each time
-          schedule(3, () => {
+          // Batch this, multiple items could be removed in one pass
+          schedule(4, () => {
             filterItems();
-            sort();
 
-            // Could be initial mount, select the first item if none already selected
-            if (!state.current.value) {
-              selectFirstItem();
-            }
+            // The item removed have been the selected one,
+            // so selection should be moved to the first
+            if (selectedItem?.getAttribute('id') === id) selectFirstItem();
 
             store.emit();
           });
+        };
+      },
+      // Keep id → {value, keywords} mapping up-to-date
+      value: (id, value, keywords) => {
+        if (value !== ids.current.get(id)?.value) {
+          ids.current.set(id, { keywords, value });
+          state.current.filtered.items.set(id, score(value, keywords));
+          schedule(2, () => {
+            sort();
+            store.emit();
+          });
+        }
+      },
+    }),
+    []
+  );
 
-          return () => {
-            ids.current.delete(id);
-            allItems.current.delete(id);
-            state.current.filtered.items.delete(id);
-            const selectedItem = getSelectedItem();
+  function score(value: string, keywords?: string[]) {
+    const filter = propsRef.current?.filter ?? defaultFilter;
 
-            // Batch this, multiple items could be removed in one pass
-            schedule(4, () => {
-              filterItems();
+    return value ? filter(value, state.current.search, keywords) : 0;
+  }
 
-              // The item removed have been the selected one,
-              // so selection should be moved to the first
-              if (selectedItem?.getAttribute('id') === id) selectFirstItem();
-
-              store.emit();
-            });
-          };
-        },
-        // Keep id → {value, keywords} mapping up-to-date
-        value: (id, value, keywords) => {
-          if (value !== ids.current.get(id)?.value) {
-            ids.current.set(id, { keywords, value });
-            state.current.filtered.items.set(id, score(value, keywords));
-            schedule(2, () => {
-              sort();
-              store.emit();
-            });
-          }
-        },
-      }),
-      []
-    );
-
-    function score(value: string, keywords?: string[]) {
-      const filter = propsRef.current?.filter ?? defaultFilter;
-
-      return value ? filter(value, state.current.search, keywords) : 0;
+  /** Sorts items by score, and groups by highest item score. */
+  function sort() {
+    if (
+      !state.current.search ||
+      // Explicitly false, because true | undefined is the default
+      propsRef.current.shouldFilter === false
+    ) {
+      return;
     }
 
-    /** Sorts items by score, and groups by highest item score. */
-    function sort() {
-      if (
-        !state.current.search ||
-        // Explicitly false, because true | undefined is the default
-        propsRef.current.shouldFilter === false
-      ) {
-        return;
-      }
+    const scores = state.current.filtered.items;
 
-      const scores = state.current.filtered.items;
+    // Sort the groups
+    const groups: [string, number][] = [];
+    state.current.filtered.groups.forEach((value) => {
+      const items = allGroups.current.get(value);
 
-      // Sort the groups
-      const groups: [string, number][] = [];
-      state.current.filtered.groups.forEach((value) => {
-        const items = allGroups.current.get(value);
-
-        // Get the maximum score of the group's items
-        let max = 0;
-        items?.forEach((item) => {
-          const score = scores.get(item) ?? 0;
-          max = Math.max(score, max);
-        });
-
-        groups.push([value, max]);
+      // Get the maximum score of the group's items
+      let max = 0;
+      items?.forEach((item) => {
+        const score = scores.get(item) ?? 0;
+        max = Math.max(score, max);
       });
 
-      // Sort items within groups to bottom
-      // Sort items outside of groups
-      // Sort groups to bottom (pushes all non-grouped items to the top)
-      const listInsertionElement = listInnerRef.current;
+      groups.push([value, max]);
+    });
 
-      if (!listInsertionElement) return;
+    // Sort items within groups to bottom
+    // Sort items outside of groups
+    // Sort groups to bottom (pushes all non-grouped items to the top)
+    const listInsertionElement = listInnerRef.current;
 
-      // Sort the items
-      getValidItems()
-        .sort((a, b) => {
-          const valueA = a.getAttribute('id');
-          const valueB = b.getAttribute('id');
+    if (!listInsertionElement) return;
 
-          return (
-            (scores.get(valueB ?? '') ?? 0) - (scores.get(valueA ?? '') ?? 0)
-          );
-        })
-        .forEach((item) => {
-          const group = item.closest(GROUP_ITEMS_SELECTOR);
-          const insertionTarget =
-            item.parentElement === (group ?? listInsertionElement)
-              ? item
-              : item.closest(`${GROUP_ITEMS_SELECTOR} > *`);
+    // Sort the items
+    getValidItems()
+      .sort((a, b) => {
+        const valueA = a.getAttribute('id');
+        const valueB = b.getAttribute('id');
 
-          if (!insertionTarget) return;
+        return (
+          (scores.get(valueB ?? '') ?? 0) - (scores.get(valueA ?? '') ?? 0)
+        );
+      })
+      .forEach((item) => {
+        const group = item.closest(GROUP_ITEMS_SELECTOR);
+        const insertionTarget =
+          item.parentElement === (group ?? listInsertionElement)
+            ? item
+            : item.closest(`${GROUP_ITEMS_SELECTOR} > *`);
 
-          if (group) {
-            group.append(insertionTarget);
-          } else {
-            listInsertionElement.append(insertionTarget);
-          }
-        });
+        if (!insertionTarget) return;
 
-      groups
-        .sort((a, b) => b[1] - a[1])
-        .forEach((group) => {
-          const element = listInnerRef.current?.querySelector(
-            `${GROUP_SELECTOR}[${VALUE_ATTR}="${encodeURIComponent(group[0])}"]`
-          );
-          element?.parentElement?.append(element);
-        });
-    }
-
-    function selectFirstItem() {
-      const item = getValidItems().find(
-        (item) => item.getAttribute('aria-disabled') !== 'true'
-      );
-      const value = item?.getAttribute(VALUE_ATTR);
-      store.setState('value', value ?? undefined);
-    }
-
-    /** Filters the current items. */
-    function filterItems() {
-      if (
-        !state.current.search ||
-        // Explicitly false, because true | undefined is the default
-        propsRef.current.shouldFilter === false
-      ) {
-        state.current.filtered.count = allItems.current.size;
-
-        // Do nothing, each item will know to show itself because search is empty
-        return;
-      }
-
-      // Reset the groups
-      state.current.filtered.groups = new Set();
-      let itemCount = 0;
-
-      // Check which items should be included
-      for (const id of allItems.current) {
-        const value = ids.current.get(id)?.value ?? '';
-        const keywords = ids.current.get(id)?.keywords ?? [];
-        const rank = score(value, keywords);
-        state.current.filtered.items.set(id, rank);
-
-        if (rank > 0) itemCount++;
-      }
-
-      // Check which groups have at least 1 item shown
-      for (const [groupId, group] of allGroups.current) {
-        for (const itemId of group) {
-          if ((state.current.filtered.items.get(itemId) ?? 0) > 0) {
-            state.current.filtered.groups.add(groupId);
-
-            break;
-          }
+        if (group) {
+          group.append(insertionTarget);
+        } else {
+          listInsertionElement.append(insertionTarget);
         }
-      }
+      });
 
-      state.current.filtered.count = itemCount;
-    }
+    groups
+      .sort((a, b) => b[1] - a[1])
+      .forEach((group) => {
+        const element = listInnerRef.current?.querySelector(
+          `${GROUP_SELECTOR}[${VALUE_ATTR}="${encodeURIComponent(group[0])}"]`
+        );
+        element?.parentElement?.append(element);
+      });
+  }
 
-    function scrollSelectedIntoView() {
-      const item = getSelectedItem();
-
-      if (item) {
-        if (item.parentElement?.firstChild === item) {
-          // First item in Group, ensure heading is in view
-          item
-            .closest(GROUP_SELECTOR)
-            ?.querySelector(GROUP_HEADING_SELECTOR)
-            ?.scrollIntoView({ block: 'nearest' });
-        }
-
-        // Ensure the item is always in view
-        item.scrollIntoView({ block: 'nearest' });
-      }
-    }
-
-    /** Getters */
-
-    function getSelectedItem() {
-      return listInnerRef.current?.querySelector<HTMLElement>(
-        `${ITEM_SELECTOR}[aria-selected="true"]`
-      );
-    }
-
-    function getValidItems() {
-      return Array.from(
-        listInnerRef.current?.querySelectorAll<HTMLElement>(
-          VALID_ITEM_SELECTOR
-        ) ?? []
-      );
-    }
-
-    /** Setters */
-
-    function updateSelectedToIndex(index: number) {
-      const items = getValidItems();
-      const item = items[index];
-
-      const value = item?.getAttribute(VALUE_ATTR);
-
-      if (value !== null && value !== undefined) {
-        store.setState('value', value);
-      }
-    }
-
-    function updateSelectedByItem(change: -1 | 1) {
-      const selected = getSelectedItem();
-
-      if (!selected) return;
-      const items = getValidItems();
-      const index = items.indexOf(selected);
-
-      // Get item at this index
-      let newSelected: HTMLElement | undefined = items[index + change];
-
-      if (propsRef.current?.loop) {
-        newSelected =
-          index + change < 0
-            ? items.at(-1)
-            : index + change === items.length
-              ? items[0]
-              : items[index + change];
-      }
-      const value = newSelected?.getAttribute(VALUE_ATTR);
-
-      if (value !== null && value !== undefined) {
-        store.setState('value', value);
-      }
-    }
-
-    function updateSelectedByGroup(change: -1 | 1) {
-      const selected = getSelectedItem();
-      let group = selected?.closest(GROUP_SELECTOR);
-      let item: Element | undefined;
-
-      while (group && !item) {
-        group =
-          change > 0
-            ? findNextSibling(group, GROUP_SELECTOR)
-            : findPreviousSibling(group, GROUP_SELECTOR);
-        item = group?.querySelector(VALID_ITEM_SELECTOR) ?? undefined;
-      }
-
-      if (item) {
-        const value = item.getAttribute(VALUE_ATTR);
-
-        if (value !== null) store.setState('value', value);
-      } else {
-        updateSelectedByItem(change);
-      }
-    }
-
-    const last = () => updateSelectedToIndex(getValidItems().length - 1);
-
-    const next = (e: React.KeyboardEvent) => {
-      e.preventDefault();
-
-      if (e.metaKey) {
-        // Last item
-        last();
-      } else if (e.altKey) {
-        // Next group
-        updateSelectedByGroup(1);
-      } else {
-        // Next item
-        updateSelectedByItem(1);
-      }
-    };
-
-    const prev = (e: React.KeyboardEvent) => {
-      e.preventDefault();
-
-      if (e.metaKey) {
-        // First item
-        updateSelectedToIndex(0);
-      } else if (e.altKey) {
-        // Previous group
-        updateSelectedByGroup(-1);
-      } else {
-        // Previous item
-        updateSelectedByItem(-1);
-      }
-    };
-
-    // FORK: refactor
-    const selectItem = () => {
-      const item = getSelectedItem();
-
-      if (item) {
-        const event = new Event(SELECT_EVENT);
-        item.dispatchEvent(event);
-      }
-    };
-
-    const setSearch = (search: string) => {
-      store.setState('search', search);
-    };
-
-    const actions: Actions = React.useMemo(
-      () => ({
-        selectCurrentItem: selectItem,
-        selectFirstItem,
-        selectItem: updateSelectedToIndex,
-        selectLastItem: last,
-        selectNextItem: next,
-        selectPrevItem: prev,
-        setSearch,
-        selectNextGroup: () => updateSelectedByGroup(1),
-        selectPrevGroup: () => updateSelectedByGroup(-1),
-      }),
-      []
+  function selectFirstItem() {
+    const item = getValidItems().find(
+      (item) => item.getAttribute('aria-disabled') !== 'true'
     );
-    // FORK END
+    const value = item?.getAttribute(VALUE_ATTR);
+    store.setState('value', value ?? undefined);
+  }
 
-    return (
-      <Primitive.div
-        ref={forwardedRef}
-        tabIndex={-1}
-        {...etc}
-        cmdk-root=""
-        onKeyDown={(e) => {
-          etc.onKeyDown?.(e);
+  /** Filters the current items. */
+  function filterItems() {
+    if (
+      !state.current.search ||
+      // Explicitly false, because true | undefined is the default
+      propsRef.current.shouldFilter === false
+    ) {
+      state.current.filtered.count = allItems.current.size;
 
-          if (!e.defaultPrevented) {
-            switch (e.key) {
-              case 'ArrowDown': {
-                next(e);
+      // Do nothing, each item will know to show itself because search is empty
+      return;
+    }
 
-                break;
-              }
-              case 'ArrowUp': {
-                prev(e);
+    // Reset the groups
+    state.current.filtered.groups = new Set();
+    let itemCount = 0;
 
-                break;
-              }
-              case 'End': {
-                // Last item
-                e.preventDefault();
-                last();
+    // Check which items should be included
+    for (const id of allItems.current) {
+      const value = ids.current.get(id)?.value ?? '';
+      const keywords = ids.current.get(id)?.keywords ?? [];
+      const rank = score(value, keywords);
+      state.current.filtered.items.set(id, rank);
 
-                break;
-              }
-              case 'Enter': {
-                // Check if IME composition is finished before triggering onSelect
-                // This prevents unwanted triggering while user is still inputting text with IME
-                // e.keyCode === 229 is for the Japanese IME and Safari.
-                // isComposing does not work with Japanese IME and Safari combination.
-                if (!e.nativeEvent.isComposing && e.keyCode !== 229) {
-                  // Trigger item onSelect
-                  e.preventDefault();
-                  const item = getSelectedItem();
+      if (rank > 0) itemCount++;
+    }
 
-                  if (item) {
-                    const event = new Event(SELECT_EVENT);
-                    item.dispatchEvent(event);
-                  }
-                }
-                break;
-              }
-              case 'Home': {
-                // First item
-                e.preventDefault();
-                updateSelectedToIndex(0);
+    // Check which groups have at least 1 item shown
+    for (const [groupId, group] of allGroups.current) {
+      for (const itemId of group) {
+        if ((state.current.filtered.items.get(itemId) ?? 0) > 0) {
+          state.current.filtered.groups.add(groupId);
 
-                break;
-              }
-              case 'j':
-              case 'n': {
-                // vim keybind down
-                if (vimBindings && e.ctrlKey) {
-                  next(e);
-                }
+          break;
+        }
+      }
+    }
 
-                break;
-              }
-              case 'k':
-              case 'p': {
-                // vim keybind up
-                if (vimBindings && e.ctrlKey) {
-                  prev(e);
-                }
+    state.current.filtered.count = itemCount;
+  }
 
-                break;
-              }
-            }
-          }
-        }}
-      >
-        <label
-          cmdk-label=""
-          // Screen reader only
-          htmlFor={context.inputId}
-          id={context.labelId}
-          style={srOnlyStyles}
-        >
-          {label}
-        </label>
+  function scrollSelectedIntoView() {
+    const item = getSelectedItem();
 
-        {SlottableWithNestedChildren(props, (child) => (
-          <StoreContext.Provider value={store}>
-            {/* FORK: provide actions */}
-            <ActionsContext.Provider value={actions}>
-              <CommandContext.Provider value={context}>
-                {child}
-              </CommandContext.Provider>
-            </ActionsContext.Provider>
-          </StoreContext.Provider>
-        ))}
-      </Primitive.div>
+    if (item) {
+      if (item.parentElement?.firstChild === item) {
+        // First item in Group, ensure heading is in view
+        item
+          .closest(GROUP_SELECTOR)
+          ?.querySelector(GROUP_HEADING_SELECTOR)
+          ?.scrollIntoView({ block: 'nearest' });
+      }
+
+      // Ensure the item is always in view
+      item.scrollIntoView({ block: 'nearest' });
+    }
+  }
+
+  /** Getters */
+
+  function getSelectedItem() {
+    return listInnerRef.current?.querySelector<HTMLElement>(
+      `${ITEM_SELECTOR}[aria-selected="true"]`
     );
   }
-);
+
+  function getValidItems() {
+    return Array.from(
+      listInnerRef.current?.querySelectorAll<HTMLElement>(
+        VALID_ITEM_SELECTOR
+      ) ?? []
+    );
+  }
+
+  /** Setters */
+
+  function updateSelectedToIndex(index: number) {
+    const items = getValidItems();
+    const item = items[index];
+
+    const value = item?.getAttribute(VALUE_ATTR);
+
+    if (value !== null && value !== undefined) {
+      store.setState('value', value);
+    }
+  }
+
+  function updateSelectedByItem(change: -1 | 1) {
+    const selected = getSelectedItem();
+
+    if (!selected) return;
+    const items = getValidItems();
+    const index = items.indexOf(selected);
+
+    // Get item at this index
+    let newSelected: HTMLElement | undefined = items[index + change];
+
+    if (propsRef.current?.loop) {
+      newSelected =
+        index + change < 0
+          ? items.at(-1)
+          : index + change === items.length
+            ? items[0]
+            : items[index + change];
+    }
+    const value = newSelected?.getAttribute(VALUE_ATTR);
+
+    if (value !== null && value !== undefined) {
+      store.setState('value', value);
+    }
+  }
+
+  function updateSelectedByGroup(change: -1 | 1) {
+    const selected = getSelectedItem();
+    let group = selected?.closest(GROUP_SELECTOR);
+    let item: Element | undefined;
+
+    while (group && !item) {
+      group =
+        change > 0
+          ? findNextSibling(group, GROUP_SELECTOR)
+          : findPreviousSibling(group, GROUP_SELECTOR);
+      item = group?.querySelector(VALID_ITEM_SELECTOR) ?? undefined;
+    }
+
+    if (item) {
+      const value = item.getAttribute(VALUE_ATTR);
+
+      if (value !== null) store.setState('value', value);
+    } else {
+      updateSelectedByItem(change);
+    }
+  }
+
+  const last = () => updateSelectedToIndex(getValidItems().length - 1);
+
+  const next = (e: React.KeyboardEvent) => {
+    e.preventDefault();
+
+    if (e.metaKey) {
+      // Last item
+      last();
+    } else if (e.altKey) {
+      // Next group
+      updateSelectedByGroup(1);
+    } else {
+      // Next item
+      updateSelectedByItem(1);
+    }
+  };
+
+  const prev = (e: React.KeyboardEvent) => {
+    e.preventDefault();
+
+    if (e.metaKey) {
+      // First item
+      updateSelectedToIndex(0);
+    } else if (e.altKey) {
+      // Previous group
+      updateSelectedByGroup(-1);
+    } else {
+      // Previous item
+      updateSelectedByItem(-1);
+    }
+  };
+
+  // FORK: refactor
+  const selectItem = () => {
+    const item = getSelectedItem();
+
+    if (item) {
+      const event = new Event(SELECT_EVENT);
+      item.dispatchEvent(event);
+    }
+  };
+
+  const setSearch = (search: string) => {
+    store.setState('search', search);
+  };
+
+  const actions: Actions = React.useMemo(
+    () => ({
+      selectCurrentItem: selectItem,
+      selectFirstItem,
+      selectItem: updateSelectedToIndex,
+      selectLastItem: last,
+      selectNextItem: next,
+      selectPrevItem: prev,
+      setSearch,
+      selectNextGroup: () => updateSelectedByGroup(1),
+      selectPrevGroup: () => updateSelectedByGroup(-1),
+    }),
+    []
+  );
+  // FORK END
+
+  return (
+    <Primitive.div
+      ref={forwardedRef}
+      tabIndex={-1}
+      {...etc}
+      cmdk-root=""
+      onKeyDown={(e) => {
+        etc.onKeyDown?.(e);
+
+        if (!e.defaultPrevented) {
+          switch (e.key) {
+            case 'ArrowDown': {
+              next(e);
+
+              break;
+            }
+            case 'ArrowUp': {
+              prev(e);
+
+              break;
+            }
+            case 'End': {
+              // Last item
+              e.preventDefault();
+              last();
+
+              break;
+            }
+            case 'Enter': {
+              // Check if IME composition is finished before triggering onSelect
+              // This prevents unwanted triggering while user is still inputting text with IME
+              // e.keyCode === 229 is for the Japanese IME and Safari.
+              // isComposing does not work with Japanese IME and Safari combination.
+              if (!e.nativeEvent.isComposing && e.keyCode !== 229) {
+                // Trigger item onSelect
+                e.preventDefault();
+                const item = getSelectedItem();
+
+                if (item) {
+                  const event = new Event(SELECT_EVENT);
+                  item.dispatchEvent(event);
+                }
+              }
+              break;
+            }
+            case 'Home': {
+              // First item
+              e.preventDefault();
+              updateSelectedToIndex(0);
+
+              break;
+            }
+            case 'j':
+            case 'n': {
+              // vim keybind down
+              if (vimBindings && e.ctrlKey) {
+                next(e);
+              }
+
+              break;
+            }
+            case 'k':
+            case 'p': {
+              // vim keybind up
+              if (vimBindings && e.ctrlKey) {
+                prev(e);
+              }
+
+              break;
+            }
+          }
+        }
+      }}
+    >
+      <label
+        cmdk-label=""
+        // Screen reader only
+        htmlFor={context.inputId}
+        id={context.labelId}
+        style={srOnlyStyles}
+      >
+        {label}
+      </label>
+
+      {SlottableWithNestedChildren(props, (child) => (
+        <StoreContext value={store}>
+          {/* FORK: provide actions */}
+          <ActionsContext value={actions}>
+            <CommandContext value={context}>{child}</CommandContext>
+          </ActionsContext>
+        </StoreContext>
+      ))}
+    </Primitive.div>
+  );
+};
 
 /**
  * Command menu item. Becomes active on pointer enter or through keyboard
  * navigation. Preferably pass a `value`, otherwise the value will be inferred
  * from `children` or the rendered item's `textContent`.
  */
-const Item = React.forwardRef<HTMLDivElement, ItemProps>(
-  (props, forwardedRef) => {
-    const id = useId();
-    const ref = React.useRef<HTMLDivElement>(null);
-    const groupContext = React.useContext(GroupContext);
-    const context = useCommand();
-    const propsRef = useAsRef(props);
-    const forceMount = propsRef.current?.forceMount ?? groupContext?.forceMount;
+const Item = (props: ItemProps) => {
+  const id = useId();
+  const ref = React.useRef<HTMLDivElement>(null);
+  const groupContext = React.useContext(GroupContext);
+  const context = useCommand();
+  const propsRef = useAsRef(props);
+  const forceMount = propsRef.current?.forceMount ?? groupContext?.forceMount;
 
-    useLayoutEffect(() => {
-      if (!forceMount) {
-        return context.item(id, groupContext?.id);
-      }
-    }, [forceMount]);
+  useLayoutEffect(() => {
+    if (!forceMount) {
+      return context.item(id, groupContext?.id);
+    }
+  }, [forceMount]);
 
-    const value = useValue(id, ref, [props.value, props.children, ref]);
+  const value = useValue(id, ref, [props.value, props.children, ref]);
 
-    const store = useStore();
-    const selected = useCmdk(
-      (state) => state.value && state.value === value.current
-    );
-    const render = useCmdk((state) =>
-      forceMount
+  const store = useStore();
+  const selected = useCmdk(
+    (state) => state.value && state.value === value.current
+  );
+  const render = useCmdk((state) =>
+    forceMount
+      ? true
+      : context.filter() === false
         ? true
-        : context.filter() === false
-          ? true
-          : state.search
-            ? (state.filtered.items.get(id) ?? 0) > 0
-            : true
-    );
+        : state.search
+          ? (state.filtered.items.get(id) ?? 0) > 0
+          : true
+  );
 
-    React.useEffect(() => {
-      const element = ref.current;
+  React.useEffect(() => {
+    const element = ref.current;
 
-      if (!element || props.disabled) return;
+    if (!element || props.disabled) return;
 
-      element.addEventListener(SELECT_EVENT, onSelect);
+    element.addEventListener(SELECT_EVENT, onSelect);
 
-      return () => element.removeEventListener(SELECT_EVENT, onSelect);
-    }, [render, props.onSelect, props.disabled]);
+    return () => element.removeEventListener(SELECT_EVENT, onSelect);
+  }, [render, props.onSelect, props.disabled]);
 
-    function onSelect() {
-      const currentValue = value.current;
+  function onSelect() {
+    const currentValue = value.current;
 
-      if (currentValue === undefined) return;
+    if (currentValue === undefined) return;
 
-      select();
-      propsRef.current.onSelect?.(currentValue);
-    }
-
-    function select() {
-      if (value.current !== undefined) {
-        store.setState('value', value.current, true);
-      }
-    }
-
-    if (!render) return null;
-
-    const {
-      disabled,
-      forceMount: ___,
-      keywords: ____,
-      value: _,
-      onSelect: __,
-      ...etc
-    } = props;
-
-    return (
-      <Primitive.div
-        ref={mergeRefs([ref, forwardedRef])}
-        {...etc}
-        aria-disabled={Boolean(disabled)}
-        aria-selected={Boolean(selected)}
-        cmdk-item=""
-        data-disabled={Boolean(disabled)}
-        data-selected={Boolean(selected)}
-        id={id}
-        onClick={disabled ? undefined : onSelect}
-        onPointerMove={
-          disabled || context.getDisablePointerSelection() ? undefined : select
-        }
-        role="option"
-      >
-        {props.children}
-      </Primitive.div>
-    );
+    select();
+    propsRef.current.onSelect?.(currentValue);
   }
-);
+
+  function select() {
+    if (value.current !== undefined) {
+      store.setState('value', value.current, true);
+    }
+  }
+
+  if (!render) return null;
+
+  const {
+    disabled,
+    forceMount: ___,
+    keywords: ____,
+    ref: forwardedRef,
+    value: _,
+    onSelect: __,
+    ...etc
+  } = props;
+
+  return (
+    <Primitive.div
+      ref={mergeRefs([ref, forwardedRef ?? null])}
+      {...etc}
+      aria-disabled={Boolean(disabled)}
+      aria-selected={Boolean(selected)}
+      cmdk-item=""
+      data-disabled={Boolean(disabled)}
+      data-selected={Boolean(selected)}
+      id={id}
+      onClick={disabled ? undefined : onSelect}
+      onPointerMove={
+        disabled || context.getDisablePointerSelection() ? undefined : select
+      }
+      role="option"
+    >
+      {props.children}
+    </Primitive.div>
+  );
+};
 
 /**
  * Group command menu items together with a heading. Grouped items are always
  * shown together.
  */
-const Group = React.forwardRef<HTMLDivElement, GroupProps>(
-  (props, forwardedRef) => {
-    const { children, forceMount, heading, ...etc } = props;
-    const id = useId();
-    const ref = React.useRef<HTMLDivElement>(null);
-    const headingRef = React.useRef<HTMLDivElement>(null);
-    const headingId = useId();
-    const context = useCommand();
-    const render = useCmdk((state) =>
-      forceMount
+const Group = (props: GroupProps) => {
+  const { children, forceMount, heading, ref: forwardedRef, ...etc } = props;
+  const id = useId();
+  const ref = React.useRef<HTMLDivElement>(null);
+  const headingRef = React.useRef<HTMLDivElement>(null);
+  const headingId = useId();
+  const context = useCommand();
+  const render = useCmdk((state) =>
+    forceMount
+      ? true
+      : context.filter() === false
         ? true
-        : context.filter() === false
-          ? true
-          : state.search
-            ? state.filtered.groups.has(id)
-            : true
-    );
+        : state.search
+          ? state.filtered.groups.has(id)
+          : true
+  );
 
-    useLayoutEffect(() => context.group(id), []);
+  useLayoutEffect(() => context.group(id), []);
 
-    useValue(id, ref, [props.value, props.heading, headingRef]);
+  useValue(id, ref, [props.value, props.heading, headingRef]);
 
-    const contextValue = React.useMemo(
-      () => ({ id, forceMount }),
-      [forceMount]
-    );
+  const contextValue = React.useMemo(() => ({ id, forceMount }), [forceMount]);
 
-    return (
-      <Primitive.div
-        ref={mergeRefs([ref, forwardedRef])}
-        {...etc}
-        cmdk-group=""
-        hidden={render ? undefined : true}
-        role="presentation"
-      >
-        {heading && (
-          <div
-            aria-hidden
-            cmdk-group-heading=""
-            id={headingId}
-            ref={headingRef}
-          >
-            {heading}
-          </div>
-        )}
+  return (
+    <Primitive.div
+      ref={mergeRefs([ref, forwardedRef ?? null])}
+      {...etc}
+      cmdk-group=""
+      hidden={render ? undefined : true}
+      role="presentation"
+    >
+      {heading && (
+        <div aria-hidden cmdk-group-heading="" id={headingId} ref={headingRef}>
+          {heading}
+        </div>
+      )}
 
-        {SlottableWithNestedChildren(props, (child) => (
-          <div
-            aria-labelledby={heading ? headingId : undefined}
-            cmdk-group-items=""
-            role="group"
-          >
-            <GroupContext.Provider value={contextValue}>
-              {child}
-            </GroupContext.Provider>
-          </div>
-        ))}
-      </Primitive.div>
-    );
-  }
-);
+      {SlottableWithNestedChildren(props, (child) => (
+        <div
+          aria-labelledby={heading ? headingId : undefined}
+          cmdk-group-items=""
+          role="group"
+        >
+          <GroupContext value={contextValue}>{child}</GroupContext>
+        </div>
+      ))}
+    </Primitive.div>
+  );
+};
 
 /**
  * A visual and semantic separator between items or groups. Visible when the
  * search query is empty or `alwaysRender` is true, hidden otherwise.
  */
-const Separator = React.forwardRef<HTMLDivElement, SeparatorProps>(
-  (props, forwardedRef) => {
-    const { alwaysRender, ...etc } = props;
-    const ref = React.useRef<HTMLDivElement>(null);
-    const render = useCmdk((state) => !state.search);
+const Separator = (props: SeparatorProps) => {
+  const { alwaysRender, ref: forwardedRef, ...etc } = props;
+  const ref = React.useRef<HTMLDivElement>(null);
+  const render = useCmdk((state) => !state.search);
 
-    if (!alwaysRender && !render) return null;
+  if (!alwaysRender && !render) return null;
 
-    return (
-      <Primitive.div
-        ref={mergeRefs([ref, forwardedRef])}
-        {...etc}
-        cmdk-separator=""
-        role="separator"
-      />
-    );
-  }
-);
+  return (
+    <Primitive.div
+      ref={mergeRefs([ref, forwardedRef ?? null])}
+      {...etc}
+      cmdk-separator=""
+      role="separator"
+    />
+  );
+};
 
 /**
  * Command menu input. All props are forwarded to the underyling `input`
  * element.
  */
-const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  (props, forwardedRef) => {
-    const { onValueChange, ...etc } = props;
-    const isControlled = props.value != null;
-    const store = useStore();
-    const search = useCmdk((state) => state.search);
-    const value = useCmdk((state) => state.value);
-    const context = useCommand();
-    const [selectedItemId, setSelectedItemId] = React.useState<string>();
+const Input = (props: InputProps) => {
+  const { onValueChange, ref: forwardedRef, ...etc } = props;
+  const isControlled = props.value != null;
+  const store = useStore();
+  const search = useCmdk((state) => state.search);
+  const value = useCmdk((state) => state.value);
+  const context = useCommand();
+  const [selectedItemId, setSelectedItemId] = React.useState<string>();
 
-    useLayoutEffect(() => {
-      const item = context.listInnerRef.current?.querySelector(
-        `${ITEM_SELECTOR}[aria-selected="true"]`
-      );
-
-      setSelectedItemId(item?.getAttribute('id') ?? undefined);
-    }, [context.listInnerRef, value]);
-
-    React.useEffect(() => {
-      if (props.value != null) {
-        store.setState('search', props.value);
-      }
-    }, [props.value]);
-
-    return (
-      <Primitive.input
-        ref={forwardedRef}
-        {...etc}
-        aria-activedescendant={selectedItemId}
-        aria-autocomplete="list"
-        aria-controls={context.listId}
-        aria-expanded={true}
-        aria-labelledby={context.labelId}
-        autoComplete="off"
-        autoCorrect="off"
-        cmdk-input=""
-        id={context.inputId}
-        onChange={(e) => {
-          if (!isControlled) {
-            store.setState('search', e.target.value);
-          }
-
-          onValueChange?.(e.target.value);
-        }}
-        role="combobox"
-        spellCheck={false}
-        type="text"
-        value={isControlled ? props.value : search}
-      />
+  useLayoutEffect(() => {
+    const item = context.listInnerRef.current?.querySelector(
+      `${ITEM_SELECTOR}[aria-selected="true"]`
     );
-  }
-);
+
+    setSelectedItemId(item?.getAttribute('id') ?? undefined);
+  }, [context.listInnerRef, value]);
+
+  React.useEffect(() => {
+    if (props.value != null) {
+      store.setState('search', props.value);
+    }
+  }, [props.value]);
+
+  return (
+    <Primitive.input
+      ref={forwardedRef}
+      {...etc}
+      aria-activedescendant={selectedItemId}
+      aria-autocomplete="list"
+      aria-controls={context.listId}
+      aria-expanded={true}
+      aria-labelledby={context.labelId}
+      autoComplete="off"
+      autoCorrect="off"
+      cmdk-input=""
+      id={context.inputId}
+      onChange={(e) => {
+        if (!isControlled) {
+          store.setState('search', e.target.value);
+        }
+
+        onValueChange?.(e.target.value);
+      }}
+      role="combobox"
+      spellCheck={false}
+      type="text"
+      value={isControlled ? props.value : search}
+    />
+  );
+};
 
 /**
  * Contains `Item`, `Group`, and `Separator`. Use the `--cmdk-list-height` CSS
  * variable to animate height based on the number of results.
  */
-const List = React.forwardRef<HTMLDivElement, ListProps>(
-  (props, forwardedRef) => {
-    const { children, label = 'Suggestions', ...etc } = props;
-    const ref = React.useRef<HTMLDivElement>(null);
-    const height = React.useRef<HTMLDivElement>(null);
-    const context = useCommand();
+const List = (props: ListProps) => {
+  const { children, label = 'Suggestions', ref: forwardedRef, ...etc } = props;
+  const ref = React.useRef<HTMLDivElement>(null);
+  const height = React.useRef<HTMLDivElement>(null);
+  const context = useCommand();
 
-    React.useEffect(() => {
-      if (height.current && ref.current) {
-        const el = height.current;
-        const wrapper = ref.current;
-        let animationFrame = 0;
-        const observer = new ResizeObserver(() => {
-          animationFrame = requestAnimationFrame(() => {
-            const height = el.offsetHeight;
-            wrapper.style.setProperty(
-              '--cmdk-list-height',
-              `${height.toFixed(1)}px`
-            );
-          });
+  React.useEffect(() => {
+    if (height.current && ref.current) {
+      const el = height.current;
+      const wrapper = ref.current;
+      let animationFrame = 0;
+      const observer = new ResizeObserver(() => {
+        animationFrame = requestAnimationFrame(() => {
+          const height = el.offsetHeight;
+          wrapper.style.setProperty(
+            '--cmdk-list-height',
+            `${height.toFixed(1)}px`
+          );
         });
-        observer.observe(el);
+      });
+      observer.observe(el);
 
-        return () => {
-          cancelAnimationFrame(animationFrame);
-          observer.unobserve(el);
-        };
-      }
-    }, []);
+      return () => {
+        cancelAnimationFrame(animationFrame);
+        observer.unobserve(el);
+      };
+    }
+  }, []);
 
-    return (
-      <Primitive.div
-        ref={mergeRefs([ref, forwardedRef])}
-        {...etc}
-        aria-label={label}
-        cmdk-list=""
-        id={context.listId}
-        role="listbox"
-      >
-        {SlottableWithNestedChildren(props, (child) => (
-          <div
-            cmdk-list-sizer=""
-            ref={mergeRefs([height, context.listInnerRef])}
-          >
-            {child}
-          </div>
-        ))}
-      </Primitive.div>
-    );
-  }
-);
+  return (
+    <Primitive.div
+      ref={mergeRefs([ref, forwardedRef ?? null])}
+      {...etc}
+      aria-label={label}
+      cmdk-list=""
+      id={context.listId}
+      role="listbox"
+    >
+      {SlottableWithNestedChildren(props, (child) => (
+        <div cmdk-list-sizer="" ref={mergeRefs([height, context.listInnerRef])}>
+          {child}
+        </div>
+      ))}
+    </Primitive.div>
+  );
+};
 
 /** Renders the command menu in a Radix Dialog. */
-const Dialog = React.forwardRef<HTMLDivElement, DialogProps>(
-  (props, forwardedRef) => {
-    const {
-      container,
-      contentClassName,
-      open,
-      overlayClassName,
-      onOpenChange,
-      ...etc
-    } = props;
+const Dialog = (props: DialogProps) => {
+  const {
+    container,
+    contentClassName,
+    open,
+    overlayClassName,
+    ref: forwardedRef,
+    onOpenChange,
+    ...etc
+  } = props;
 
-    return (
-      <RadixDialog.Root onOpenChange={onOpenChange} open={open}>
-        <RadixDialog.Portal container={container}>
-          <RadixDialog.Overlay className={overlayClassName} cmdk-overlay="" />
-          <RadixDialog.Content
-            aria-label={props.label}
-            className={contentClassName}
-            cmdk-dialog=""
-          >
-            <Command ref={forwardedRef} {...etc} />
-          </RadixDialog.Content>
-        </RadixDialog.Portal>
-      </RadixDialog.Root>
-    );
-  }
-);
+  return (
+    <RadixDialog.Root onOpenChange={onOpenChange} open={open}>
+      <RadixDialog.Portal container={container}>
+        <RadixDialog.Overlay className={overlayClassName} cmdk-overlay="" />
+        <RadixDialog.Content
+          aria-label={props.label}
+          className={contentClassName}
+          cmdk-dialog=""
+        >
+          <Command ref={forwardedRef} {...etc} />
+        </RadixDialog.Content>
+      </RadixDialog.Portal>
+    </RadixDialog.Root>
+  );
+};
 
 /** Automatically renders when there are no results for the search query. */
-const Empty = React.forwardRef<HTMLDivElement, EmptyProps>(
-  (props, forwardedRef) => {
-    const render = useCmdk((state) => state.filtered.count === 0);
+const Empty = (props: EmptyProps) => {
+  const render = useCmdk((state) => state.filtered.count === 0);
+  const { ref, ...rest } = props;
 
-    if (!render) return null;
+  if (!render) return null;
 
-    return (
-      <Primitive.div
-        ref={forwardedRef}
-        {...props}
-        cmdk-empty=""
-        role="presentation"
-      />
-    );
-  }
-);
+  return (
+    <Primitive.div ref={ref} {...rest} cmdk-empty="" role="presentation" />
+  );
+};
 
 /**
  * You should conditionally render this with `progress` while loading
  * asynchronous items.
  */
-const Loading = React.forwardRef<HTMLDivElement, LoadingProps>(
-  (props, forwardedRef) => {
-    const { children, label = 'Loading...', progress, ...etc } = props;
+const Loading = (props: LoadingProps) => {
+  const {
+    children,
+    label = 'Loading...',
+    progress,
+    ref: forwardedRef,
+    ...etc
+  } = props;
 
-    return (
-      <Primitive.div
-        ref={forwardedRef}
-        {...etc}
-        aria-label={label}
-        aria-valuemax={100}
-        aria-valuemin={0}
-        aria-valuenow={progress}
-        cmdk-loading=""
-        role="progressbar"
-      >
-        {SlottableWithNestedChildren(props, (child) => (
-          <div aria-hidden>{child}</div>
-        ))}
-      </Primitive.div>
-    );
-  }
-);
+  return (
+    <Primitive.div
+      ref={forwardedRef}
+      {...etc}
+      aria-label={label}
+      aria-valuemax={100}
+      aria-valuemin={0}
+      aria-valuenow={progress}
+      cmdk-loading=""
+      role="progressbar"
+    >
+      {SlottableWithNestedChildren(props, (child) => (
+        <div aria-hidden>{child}</div>
+      ))}
+    </Primitive.div>
+  );
+};
 
 const pkg = Object.assign(Command, {
   Dialog,
@@ -1330,17 +1302,6 @@ function isRenderComponent(value: unknown): value is RenderComponent {
   return typeof value === 'function';
 }
 
-function isForwardRefComponent(
-  value: unknown
-): value is { render: RenderComponent } {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    'render' in value &&
-    isRenderComponent(value.render)
-  );
-}
-
 function renderChildren(children: React.ReactElement<SlottableElementProps>) {
   const childrenType: unknown = children.type;
   let rendered: React.ReactNode = children;
@@ -1349,11 +1310,6 @@ function renderChildren(children: React.ReactElement<SlottableElementProps>) {
   if (isRenderComponent(childrenType)) {
     rendered = childrenType(children.props);
   }
-  // The children is a component with `forwardRef`
-  else if (isForwardRefComponent(childrenType)) {
-    rendered = childrenType.render(children.props);
-  }
-
   return React.isValidElement<SlottableElementProps>(rendered)
     ? rendered
     : children;

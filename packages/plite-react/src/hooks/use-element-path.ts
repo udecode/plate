@@ -1,7 +1,7 @@
 import { useCallback, useContext } from 'react';
 import type { EditorCommit, Path } from '@platejs/plite';
-import { NodeKeyContext } from '../context';
-import { getPathByNodeKey as editorGetPathByNodeKey } from '../editable/runtime-editor-api';
+import { ElementPathContext, NodeKeyContext } from '../context';
+import { readPathByNodeKey } from '../editable/runtime-live-state';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { useEditorSelector } from './use-editor-selector';
 
@@ -14,19 +14,16 @@ const samePath = (left: Path | null, right: Path | null) => {
 
 /** Subscribe to the live path for the current rendered element. */
 export const useElementPath = (): Path | null => {
+  const renderedPath = useContext(ElementPathContext);
   const nodeKey = useContext(NodeKeyContext);
 
   const selector = useCallback(
     (editor: ReactRuntimeEditor) => {
-      if (!nodeKey) {
-        return null;
-      }
-
-      const path = editorGetPathByNodeKey(editor, nodeKey);
+      const path = readPathByNodeKey(editor, nodeKey) ?? renderedPath;
 
       return path ? ([...path] as Path) : null;
     },
-    [nodeKey]
+    [nodeKey, renderedPath]
   );
 
   const shouldUpdate = useCallback(

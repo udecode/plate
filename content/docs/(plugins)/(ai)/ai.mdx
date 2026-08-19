@@ -29,7 +29,7 @@ docs:
 
 The fastest way to add AI functionality is with the `AIKit`. It ships the configured `AIPlugin`, `AIChatPlugin`, Markdown streaming helpers, cursor overlay, and their [Plate UI](/docs/installation/plate-ui) components.
 
-<ComponentSource name="ai-kit" />
+<ComponentSource name="ai" />
 
 - [`AIMenu`](/docs/components/ai-menu): Floating command surface for prompts, tool shortcuts, and chat review.
 - [`AILoadingBar`](/docs/components/ai-loading-bar): Displays streaming status at the editor container.
@@ -40,7 +40,7 @@ The fastest way to add AI functionality is with the `AIKit`. It ships the config
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { AIKit } from '@/components/editor/plugins/ai-kit';
+import { AIKit } from '@/components/editor/ai';
 
 const editor = createPlateEditor({
   plugins: [
@@ -211,7 +211,7 @@ import { createGateway } from '@ai-sdk/gateway';
 import { convertToCoreMessages, streamText } from 'ai';
 import { createBaseEditor } from 'platejs';
 
-import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
+import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 import { markdownJoinerTransform } from '@/registry/lib/markdown-joiner-transform';
 
 export async function POST(req: Request) {
@@ -279,17 +279,10 @@ export const useEditorAIChat = () => {
 };
 ```
 
-Combine the helper with `useEditorChat` to keep the floating menu anchored correctly:
+The copied `ai-menu` item owns floating-menu anchoring for cursor, text, and
+block selections. Keep product-specific menu effects beside that component.
 
-```tsx
-import { useEditorChat } from '@platejs/ai/react';
-
-useEditorChat({
-  onOpenChange: (open) => {
-    if (!open) chat.stop?.();
-  },
-});
-```
+<ComponentSource name="ai-menu" />
 
 Now you can submit prompts programmatically:
 
@@ -408,7 +401,7 @@ Main plugin that powers the AI menu, chat state, and transforms.
     <APIItem name="chatSelection" type="Range | null" optional>Selection captured before submitting a prompt (managed internally).</APIItem>
     <APIItem name="mode" type="'chat' | 'insert'">Controls whether responses stream directly into the document or open a review panel. Defaults to `'insert'`.</APIItem>
     <APIItem name="open" type="boolean" optional>Whether the AI menu is visible. Defaults to `false`.</APIItem>
-    <APIItem name="previewValue" type="Value" optional>Generated preview nodes registered by `useAIChatEditor` for insert and replace commands (managed internally).</APIItem>
+    <APIItem name="previewValue" type="Value" optional>Generated preview nodes registered by the copied AI chat editor for insert and replace commands (managed internally).</APIItem>
     <APIItem name="streaming" type="boolean" optional>True while a response is streaming. Defaults to `false`.</APIItem>
     <APIItem name="toolName" type="'comment' | 'edit' | 'generate' | null" optional>Active tool used to interpret the response.</APIItem>
   </APIOptions>
@@ -569,41 +562,13 @@ Reports whether an insert-mode preview rollback point is currently active.
 Undoes the latest batch marked by `editor.update.ai.markBatch()`. If an
 insert-mode preview is active, it cancels that preview first.
 
-### `useAIChatEditor`
+### Registry Chat Preview
 
-Registers an auxiliary editor for chat previews and deserializes Markdown into it.
+The copied `ai-menu` item includes `AIChatEditor`. It creates the preview
+editor, deserializes response Markdown, and publishes `previewValue` to the AI
+Chat plugin beside the UI that consumes it.
 
-<API name="useAIChatEditor">
-<APIParameters>
-  <APIItem name="editor" type="BaseEditor">Editor instance dedicated to the chat preview.</APIItem>
-  <APIItem name="content" type="string">Markdown content returned by the model.</APIItem>
-</APIParameters>
-</API>
-
-```tsx
-import { usePlateEditor } from 'platejs/react';
-import { MarkdownPlugin } from '@platejs/markdown';
-import { AIChatPlugin, useAIChatEditor } from '@platejs/ai/react';
-
-const aiPreviewEditor = usePlateEditor({
-  plugins: [MarkdownPlugin, AIChatPlugin],
-});
-
-useAIChatEditor(aiPreviewEditor, responseMarkdown);
-```
-
-### `useEditorChat`
-
-Observes AI menu state and reports whether an open menu is anchored to the cursor, a text selection, or a block selection.
-
-<API name="useEditorChat">
-<APIParameters>
-  <APIItem name="onOpenBlockSelection" type="(blocks: NodeEntry[]) => void" optional>Called when the menu opens on block selection.</APIItem>
-  <APIItem name="onOpenChange" type="(open: boolean) => void" optional>Called whenever the menu opens or closes.</APIItem>
-  <APIItem name="onOpenCursor" type="() => void" optional>Called when the menu opens at the cursor.</APIItem>
-  <APIItem name="onOpenSelection" type="() => void" optional>Called when the menu opens on a text selection.</APIItem>
-</APIParameters>
-</API>
+<ComponentSource name="ai-menu" />
 
 ### `useChatChunk`
 
@@ -690,7 +655,7 @@ export const aiChatItems = {
     label: 'Generate table of contents',
     value: 'generateTOC',
     onSelect: ({ editor }) => {
-      const headingTypes = [PLUGINS.h1, PLUGINS.h2, PLUGINS.h3]
+      const headingTypes = [PLUGINS.heading, PLUGINS.heading, PLUGINS.heading]
         .map((name) => editor.plugin(name))
         .flatMap((plugin) =>
           plugin.installed ? [plugin.schema.type] : []

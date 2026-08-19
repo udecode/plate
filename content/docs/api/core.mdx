@@ -20,9 +20,10 @@ Generates a new instance of a `PlateEditor`, initialized with a set of plugins a
   <APIItem name="plugins" type="P[]" optional>
     An array of editor plugins.
   </APIItem>
-  <APIItem name="initialValue" type="V | ((context: { editor: PlateEditor }) => V)" optional>
-    Synchronous initial document. Use the callback when decoding needs the
-    compiled editor model. Load remote data before constructing the editor.
+  <APIItem name="initialValue" type="EditorValueInput | ((context: { editor: PlateEditor }) => EditorValueInput)" optional>
+    Synchronous initial document, persisted `{ document, schema }` envelope,
+    or primary-root array. Use the callback when decoding needs the compiled
+    editor model. Load remote data before constructing the editor.
   </APIItem>
   <APIItem name="autoSelect" type="'end' | 'start' | boolean" optional>
     Select the editor after initialization.
@@ -33,6 +34,10 @@ Generates a new instance of a `PlateEditor`, initialized with a set of plugins a
   </APIItem>
   <APIItem name="maxLength" type="number" optional>
     Maximum character count for user-facing text, fragment, and node insertions.
+  </APIItem>
+  <APIItem name="migrations" type="DocumentMigrations" optional>
+    Application-owned target-version migration chain. Plate runs every required
+    step before plugin document preparation and schema fitting.
   </APIItem>
   <APIItem name="navigationFeedback" type="object | boolean" optional>
     Configuration for the built-in navigation feedback plugin.
@@ -45,6 +50,10 @@ Generates a new instance of a `PlateEditor`, initialized with a set of plugins a
   </APIItem>
   <APIItem name="selection" type="TSelection" optional>
     Initial selection for the editor.
+  </APIItem>
+  <APIItem name="schema" type="EditorApplicationSchema" optional>
+    Application schema policy and optional named lineage. A migration plan
+    requires an exact `id` and `version` match.
   </APIItem>
   <APIItem name="shouldNormalizeEditor" type="boolean" optional>
     When `true`, it normalizes the `initialValue` passed to the editor.
@@ -62,10 +71,6 @@ Generates a new instance of a `PlateEditor`, initialized with a set of plugins a
   </APIItem>
   <APIItem name="inject" type="object" optional>
     Injection configuration for the editor.
-  </APIItem>
-  <APIItem name="transformInitialValue" type="function" optional>
-    Transforms complete document inputs before schema fitting. It runs for
-    editor initialization and `editor.update.value.replace(...)` loads.
   </APIItem>
   <APIItem name="options" type="object" optional>
     Additional options for the editor.
@@ -97,6 +102,53 @@ Generates a new instance of a `PlateEditor`, initialized with a set of plugins a
 </API>
 
 For more details on editor configuration, refer to the [Editor Configuration](/docs/editor) guide.
+
+### `defineDocumentMigrations`
+
+Defines one target-version migration chain for a named application schema.
+Each numeric key is the schema version produced by that step.
+
+```ts
+import { defineDocumentMigrations } from 'platejs/migrations';
+
+import { fingerprint as v1Fingerprint } from './migrations/v2-add-section/from';
+import { fingerprint as v2Fingerprint } from './migrations/v3-add-caption/from';
+
+const migrations = defineDocumentMigrations(EditorSchema, {
+  sourceFingerprints: {
+    1: v1Fingerprint,
+    2: v2Fingerprint,
+  },
+  steps: {
+    2: migrateDocumentV2,
+    3: migrateDocumentV3,
+  },
+  unversioned: 1,
+});
+```
+
+`sourceFingerprints` binds every supported historical envelope version to its
+generated schema fingerprint. `unversioned` assigns an explicit source version
+to raw documents without a persisted schema identity. Plate rejects missing
+intermediate steps and historical identity drift.
+
+### `migrateDocument`
+
+Runs the required migration steps for one complete document without publishing
+it to the editor. Runtime editor loads and `plate migrate run` use this runner.
+
+```ts
+import { migrateDocument } from 'platejs/migrations';
+
+const result = migrateDocument(persisted, {
+  editor,
+  migrations: EditorMigrations,
+});
+```
+
+The result contains `document`, mapped `selection`, `source`, `target`, and the
+ascending `applied` version list. The runner rejects a different schema
+lineage, a future source, or fingerprint drift.
 
 ### `definePlatePlugin`
 
@@ -373,49 +425,6 @@ Get the version of the editor selection. That version is incremented on each sel
   </APIReturns>
 </API>
 
-### `useSelectionCollapsed`
-
-<API name="useSelectionCollapsed">
-  <APIReturns type="boolean">
-    Whether the current selection is collapsed.
-  </APIReturns>
-</API>
-
-### `useSelectionExpanded`
-
-<API name="useSelectionExpanded">
-  <APIReturns type="boolean">
-    Whether the current selection is expanded.
-  </APIReturns>
-</API>
-
-### `useSelectionWithinBlock`
-
-<API name="useSelectionWithinBlock">
-  <APIReturns type="boolean">
-    Whether the current selection is within a single block.
-  </APIReturns>
-</API>
-
-### `useSelectionAcrossBlocks`
-
-<API name="useSelectionAcrossBlocks">
-  <APIReturns type="boolean">
-    Whether the current selection spans across multiple blocks.
-  </APIReturns>
-</API>
-
-### `useSelectionFragment`
-
-Returns the fragment of the current selection, optionally unwrapping structural nodes.
-
-<API name="useSelectionFragment">
-  <APIReturns type="Element[]">
-    The fragment of the current selection. Returns an empty array if the
-    selection is not expanded or if no fragment is found.
-  </APIReturns>
-</API>
-
 ### `useSelectionFragmentProp`
 
 Returns a prop value derived from the current selection fragment.
@@ -620,7 +629,7 @@ elementState.api.isEmpty({
 
 elementState.api.isEmpty({
   children: [{ text: "" }],
-  listStyleType: "disc",
+  listType: "bulleted",
   type: "paragraph",
 }); // false
 

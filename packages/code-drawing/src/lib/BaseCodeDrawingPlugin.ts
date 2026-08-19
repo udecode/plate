@@ -2,67 +2,22 @@ import { defineBasePlugin } from '@platejs/core';
 import { type ElementOf, property } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
 
-export const CODE_DRAWING_TYPE = {
-  PlantUml: 'PlantUml',
-  Graphviz: 'Graphviz',
-  Flowchart: 'Flowchart',
-  Mermaid: 'Mermaid',
-} as const;
-
-export const CODE_DRAWING_TYPE_ARRAY = [
-  {
-    value: CODE_DRAWING_TYPE.PlantUml,
-    label: CODE_DRAWING_TYPE.PlantUml,
-  },
-  {
-    value: CODE_DRAWING_TYPE.Graphviz,
-    label: CODE_DRAWING_TYPE.Graphviz,
-  },
-  {
-    value: CODE_DRAWING_TYPE.Flowchart,
-    label: CODE_DRAWING_TYPE.Flowchart,
-  },
-  {
-    value: CODE_DRAWING_TYPE.Mermaid,
-    label: CODE_DRAWING_TYPE.Mermaid,
-  },
+export const CODE_DRAWING_LANGUAGES = [
+  'flowchart',
+  'graphviz',
+  'mermaid',
+  'plantuml',
 ] as const;
 
-export type CodeDrawingType =
-  (typeof CODE_DRAWING_TYPE)[keyof typeof CODE_DRAWING_TYPE];
+export type CodeDrawingLanguage = (typeof CODE_DRAWING_LANGUAGES)[number];
 
-export const VIEW_MODE = {
-  Both: 'Both',
-  Code: 'Code',
-  Image: 'Image',
-} as const;
+export const CODE_DRAWING_VIEWS = ['code', 'preview', 'split'] as const;
 
-export const VIEW_MODE_ARRAY = [
-  {
-    value: VIEW_MODE.Both,
-    label: VIEW_MODE.Both,
-  },
-  {
-    value: VIEW_MODE.Code,
-    label: VIEW_MODE.Code,
-  },
-  {
-    value: VIEW_MODE.Image,
-    label: VIEW_MODE.Image,
-  },
-] as const;
-
-export type ViewMode = (typeof VIEW_MODE)[keyof typeof VIEW_MODE];
+export type CodeDrawingView = (typeof CODE_DRAWING_VIEWS)[number];
 
 export const DEFAULT_MIN_HEIGHT = 300;
 export const RENDER_DEBOUNCE_DELAY = 500;
 export const DOWNLOAD_FILENAME = 'code-drawing.png';
-
-export type CodeDrawingData = {
-  code?: string;
-  drawingMode?: ViewMode;
-  drawingType?: CodeDrawingType;
-};
 
 /** Enables support for PlantUML, Graphviz, Flowchart, and Mermaid drawings. */
 export const BaseCodeDrawingPlugin = defineBasePlugin(PLUGINS.codeDrawing, {
@@ -91,35 +46,14 @@ export const BaseCodeDrawingPlugin = defineBasePlugin(PLUGINS.codeDrawing, {
   schema: {
     element: {
       properties: {
-        data: property.json({
-          default: {
-            code: '',
-            drawingMode: VIEW_MODE.Both,
-            drawingType: CODE_DRAWING_TYPE.Mermaid,
-          },
+        code: property.string({ default: '', omitDefault: false }),
+        language: property.enum(CODE_DRAWING_LANGUAGES, {
+          default: 'mermaid',
           omitDefault: false,
-          validate: (value): value is CodeDrawingData => {
-            if (
-              typeof value !== 'object' ||
-              value === null ||
-              Array.isArray(value)
-            ) {
-              return false;
-            }
-
-            return (
-              (!('code' in value) || typeof value.code === 'string') &&
-              (!('drawingMode' in value) ||
-                VIEW_MODE_ARRAY.some(
-                  ({ value: mode }) => mode === value.drawingMode
-                )) &&
-              (!('drawingType' in value) ||
-                CODE_DRAWING_TYPE_ARRAY.some(
-                  ({ value: type }) => type === value.drawingType
-                ))
-            );
-          },
-          validationVersion: 1,
+        }),
+        view: property.enum(CODE_DRAWING_VIEWS, {
+          default: 'split',
+          omitDefault: false,
         }),
       },
       void: 'block',

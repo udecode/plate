@@ -6,7 +6,7 @@ jsx;
 
 export const codeBlockValue = (
   <fragment>
-    <hh2>Code Blocks</hh2>
+    <hheading level={2}>Code Blocks</hheading>
     <hp>
       Showcase your code with syntax highlighting. Supports multiple programming
       languages with proper formatting and indentation.

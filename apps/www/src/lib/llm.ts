@@ -54,11 +54,11 @@ Source: ${docUrl}
 
 ## Registry URLs
 
-- Components index: https://platejs.org/r/registry.json
-- Docs index: https://platejs.org/r/registry-docs.json
-- Component content: https://platejs.org/r/{name}
+- Components index: https://platejs.org/r/new-york/registry.json
+- Docs index: https://platejs.org/r/new-york/registry-docs.json
+- Component content: https://platejs.org/r/new-york/{name}.json
 
-Any \`<ComponentSource name="..." />\` or \`<ComponentPreview name="..." />\` in this page can be resolved at \`https://platejs.org/r/{name}\`.
+Any \`<ComponentSource name="..." />\` or \`<ComponentPreview name="..." />\` in this page can be resolved at \`https://platejs.org/r/new-york/{name}.json\`.
 
 ---
 
@@ -130,5 +130,5 @@ export const processMdxForLLMs = (content: string) =>
   content.replace(
     /<Component(?:Preview|Source)[\s\S]*?name="([^"]+)"[\s\S]*?\/>/g,
     (_match, name: string) =>
-      `[${name} registry content](https://platejs.org/r/${name})`
+      `[${name} registry content](https://platejs.org/r/new-york/${name}.json)`
   );

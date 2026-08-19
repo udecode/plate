@@ -8,7 +8,6 @@ import { BaseCodeBlockPlugin } from '@platejs/code-block';
 import { BaseDatePlugin } from '@platejs/date';
 import { BaseFootnotePlugin } from '@platejs/footnote';
 import { BaseColumnPlugin } from '@platejs/layout';
-import { LinkPlugin } from '@platejs/link/react';
 import { BaseListPlugin } from '@platejs/list-classic';
 import { BaseEquationPlugin, BaseInlineEquationPlugin } from '@platejs/math';
 import { BasePlaceholderPlugin } from '@platejs/media';
@@ -17,14 +16,25 @@ import { BaseSuggestionPlugin } from '@platejs/suggestion';
 import { BaseTablePlugin } from '@platejs/table';
 import { BaseTocPlugin } from '@platejs/toc';
 import { ElementApi, PathApi } from 'platejs';
+import { linkPlugin } from '@/registry/components/editor/link';
 
 const ACTION_THREE_COLUMNS = 'action_three_columns';
 const ACTION_FOOTNOTE = 'action_footnote';
+const HEADING_ACTION_RE = /^heading-([1-6])$/;
+const getHeadingLevel = (action: string) => {
+  const match = HEADING_ACTION_RE.exec(action);
+
+  return match ? Number(match[1]) : undefined;
+};
 
 const toggleCodeBlock = (editor: PlateEditor) =>
   editor.plugin(BaseCodeBlockPlugin).update.toggle();
 
-const createBlock = ({ type }: { type: string }): Element => ({
+const createBlock = ({
+  type,
+  ...properties
+}: { type: string } & Record<string, unknown>): Element => ({
+  ...properties,
   children: [{ text: '' }],
   type,
 });
@@ -35,6 +45,9 @@ const runFootnoteAction = (editor: PlateEditor) =>
 const getActionType = (editor: PlateEditor, action: string) => {
   if (action === ACTION_THREE_COLUMNS) {
     return editor.plugin(BaseColumnPlugin).schema.type;
+  }
+  if (getHeadingLevel(action)) {
+    return editor.plugin(PLUGINS.heading).schema.type;
   }
 
   const plugin = editor.plugin(action);
@@ -75,7 +88,7 @@ const insertInlineMap: Record<string, (editor: PlateEditor) => void> = {
   [PLUGINS.inlineEquation]: (editor) =>
     editor.plugin(BaseInlineEquationPlugin).update.insert({}, { select: true }),
   [PLUGINS.link]: (editor) => {
-    const link = editor.plugin(LinkPlugin);
+    const link = editor.plugin(linkPlugin);
 
     link.store.set({ text: editor.read.text.string() });
     link.api.show('insert', editor.id);
@@ -187,10 +200,18 @@ export const insertBlock = (editor: PlateEditor, action: string) => {
     return;
   }
   editor.update((tx) => {
-    tx.nodes.insert(createBlock({ type: actionType }), {
-      at: PathApi.next(path),
-      select: true,
-    });
+    const headingLevel = getHeadingLevel(action);
+
+    tx.nodes.insert(
+      createBlock({
+        ...(headingLevel ? { level: headingLevel } : {}),
+        type: actionType,
+      }),
+      {
+        at: PathApi.next(path),
+        select: true,
+      }
+    );
 
     if (currentBlockType !== actionType && isCurrentBlockEmpty) {
       const source = tx.nodes.get(path);
@@ -246,6 +267,12 @@ export const applyBlockAction = (
     const actionType = getActionType(editor, action);
     const setEntry = (entry: NodeEntry<Element>) => {
       const [node, path] = entry;
+      const headingLevel = getHeadingLevel(action);
+
+      if (headingLevel) {
+        tx.nodes.set({ level: headingLevel, type: actionType }, { at: path });
+        return;
+      }
 
       if (node.type !== actionType) {
         tx.nodes.set({ type: actionType }, { at: path });
@@ -276,4 +303,7 @@ export const applyBlockAction = (
   });
 };
 
-export const getBlockType = (block: Element) => block.type;
+export const getBlockType = (block: Element) =>
+  block.type === PLUGINS.heading && typeof block.level === 'number'
+    ? `heading-${block.level}`
+    : block.type;

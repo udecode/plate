@@ -11,7 +11,9 @@ describe(getDocxTestName(name), () => {
   testDocxDeserializer({
     expected: (
       <editor>
-        <hh1 lineHeight="107%">Test</hh1>
+        <hheading level={1} lineHeight="107%">
+          Test
+        </hheading>
         <hp lineHeight="107%">
           <htext />
         </hp>

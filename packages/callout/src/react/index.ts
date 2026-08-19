@@ -3,4 +3,3 @@
  */
 
 export * from './CalloutPlugin';
-export * from './useCalloutEmojiPicker';

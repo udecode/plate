@@ -7,25 +7,24 @@ import type { Value } from 'platejs';
 import {
   BlockquotePlugin,
   BoldPlugin,
-  H1Plugin,
-  H2Plugin,
-  H3Plugin,
+  HeadingPlugin,
   ItalicPlugin,
   UnderlinePlugin,
 } from '@platejs/basic-nodes/react';
 import { Plate, usePlateEditor } from 'platejs/react';
 
-import { BlockquoteElement } from '@/registry/ui/blockquote-node';
-import { Editor, EditorContainer } from '@/registry/ui/editor';
-import { FixedToolbar } from '@/registry/ui/fixed-toolbar';
-import { H1Element, H2Element, H3Element } from '@/registry/ui/heading-node';
-import { MarkToolbarButton } from '@/registry/ui/mark-toolbar-button';
-import { ToolbarButton } from '@/registry/ui/toolbar';
+import { BlockquoteElement } from '@/registry/components/editor/blockquote';
+import { Editor, EditorContainer } from '@/registry/components/editor/editor';
+import { FixedToolbar } from '@/registry/components/editor/fixed-toolbar';
+import { HeadingElement } from '@/registry/components/editor/heading';
+import { MarkToolbarButton } from '@/registry/components/editor/mark-toolbar-button';
+import { ToolbarButton } from '@/registry/components/editor/toolbar';
 
 const initialValue: Value = [
   {
     children: [{ text: 'Title' }],
-    type: 'h3',
+    level: 3,
+    type: 'heading',
   },
   {
     children: [
@@ -52,9 +51,7 @@ export default function MyEditorPage() {
       BoldPlugin,
       ItalicPlugin,
       UnderlinePlugin,
-      H1Plugin.configure({ component: H1Element }),
-      H2Plugin.configure({ component: H2Element }),
-      H3Plugin.configure({ component: H3Element }),
+      HeadingPlugin.configure({ component: HeadingElement }),
       BlockquotePlugin.configure({ component: BlockquoteElement }),
     ],
     initialValue,
@@ -63,13 +60,25 @@ export default function MyEditorPage() {
   return (
     <Plate editor={editor}>
       <FixedToolbar className="flex justify-start gap-1 rounded-t-lg">
-        <ToolbarButton onClick={() => editor.plugin(H1Plugin).update.toggle()}>
+        <ToolbarButton
+          onClick={() =>
+            editor.plugin(HeadingPlugin).update.toggle({ level: 1 })
+          }
+        >
           H1
         </ToolbarButton>
-        <ToolbarButton onClick={() => editor.plugin(H2Plugin).update.toggle()}>
+        <ToolbarButton
+          onClick={() =>
+            editor.plugin(HeadingPlugin).update.toggle({ level: 2 })
+          }
+        >
           H2
         </ToolbarButton>
-        <ToolbarButton onClick={() => editor.plugin(H3Plugin).update.toggle()}>
+        <ToolbarButton
+          onClick={() =>
+            editor.plugin(HeadingPlugin).update.toggle({ level: 3 })
+          }
+        >
           H3
         </ToolbarButton>
 

@@ -28,7 +28,7 @@ export function SetupMCPDialog() {
 
   const componentsConfig = `{
   "registries": {
-    "@plate": "https://platejs.org/r/{name}.json"
+    "@plate": "https://platejs.org/r/{style}/{name}.json"
   }
 }`;
   const claudeCodeConfig = `{

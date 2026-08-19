@@ -9,7 +9,7 @@ exports[`deserializeMdList - comprehensive coverage deserializes an empty list 1
       },
     ],
     "indent": 1,
-    "listStyleType": "disc",
+    "listType": "bulleted",
     "type": "paragraph",
   },
   {
@@ -19,7 +19,7 @@ exports[`deserializeMdList - comprehensive coverage deserializes an empty list 1
       },
     ],
     "indent": 2,
-    "listStyleType": "disc",
+    "listType": "bulleted",
     "type": "paragraph",
   },
   {
@@ -29,7 +29,7 @@ exports[`deserializeMdList - comprehensive coverage deserializes an empty list 1
       },
     ],
     "indent": 1,
-    "listStyleType": "disc",
+    "listType": "bulleted",
     "type": "paragraph",
   },
   {
@@ -39,7 +39,7 @@ exports[`deserializeMdList - comprehensive coverage deserializes an empty list 1
       },
     ],
     "indent": 1,
-    "listStyleType": "disc",
+    "listType": "bulleted",
     "type": "paragraph",
   },
   {
@@ -49,7 +49,7 @@ exports[`deserializeMdList - comprehensive coverage deserializes an empty list 1
       },
     ],
     "indent": 1,
-    "listStyleType": "disc",
+    "listType": "bulleted",
     "type": "paragraph",
   },
 ]
@@ -65,7 +65,7 @@ exports[`deserializeMdList - comprehensive coverage deserializes a todo list 1`]
       },
     ],
     "indent": 1,
-    "listStyleType": "todo",
+    "listType": "task",
     "type": "paragraph",
   },
   {
@@ -76,7 +76,7 @@ exports[`deserializeMdList - comprehensive coverage deserializes a todo list 1`]
       },
     ],
     "indent": 1,
-    "listStyleType": "todo",
+    "listType": "task",
     "type": "paragraph",
   },
 ]

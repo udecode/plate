@@ -6,7 +6,7 @@ jsx;
 
 export const deserializeDocxValue = (
   <fragment>
-    <hh2>Docx</hh2>
+    <hheading level={2}>Docx</hheading>
     <hp>
       通过简单地将 Docx 内容复制并粘贴到编辑器中，即可轻松导入 Microsoft Word
       文档的内容。

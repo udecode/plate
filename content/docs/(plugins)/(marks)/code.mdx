@@ -4,7 +4,7 @@ description: Add inline code formatting.
 docs:
   - route: /docs/basic-marks
     title: Basic Marks
-  - route: /docs/components/code-node
+  - route: /docs/components/code
     title: Code Leaf
   - route: /docs/components/mark-toolbar-button
     title: Mark Toolbar Button
@@ -37,12 +37,12 @@ Code applies the `code` leaf mark to inline text. Use [Code Block](/docs/code-bl
 
 `BasicMarksKit` includes `CodePlugin`, `CodeLeaf`, the backtick input rule, and a `mod+e` shortcut.
 
-<ComponentSource name="basic-marks-kit" />
+<ComponentSource name="basic-marks" />
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
 
-import { BasicMarksKit } from '@/components/editor/plugins/basic-marks-kit';
+import { BasicMarksKit } from '@/components/editor/basic-marks';
 
 export const editor = createPlateEditor({
   plugins: [...BasicMarksKit],
@@ -57,7 +57,7 @@ Pass `CodePlugin` to `MarkToolbarButton` so the button uses the configured mark 
 import { Code2Icon } from 'lucide-react';
 import { CodePlugin } from '@platejs/basic-nodes/react';
 
-import { MarkToolbarButton } from '@/components/ui/mark-toolbar-button';
+import { MarkToolbarButton } from '@/components/editor/mark-toolbar-button';
 
 export function CodeToolbarButton() {
   return (
@@ -95,7 +95,7 @@ Configure the registry leaf, input rule, and shortcut when you want the same beh
 import { CodeRules } from '@platejs/basic-nodes';
 import { CodePlugin } from '@platejs/basic-nodes/react';
 
-import { CodeLeaf } from '@/components/ui/code-node';
+import { CodeLeaf } from '@/components/editor/code';
 
 export const codePlugin = CodePlugin.configure({
   component: CodeLeaf,

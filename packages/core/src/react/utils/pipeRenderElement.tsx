@@ -72,7 +72,7 @@ function FastElementWithPath({
   );
 }
 
-function useFastInjectedAttributes({
+function getFastInjectedAttributes({
   attributes,
   editor,
   element,
@@ -119,7 +119,7 @@ function FastElementBody({
 }) {
   const readOnly = useEditorReadOnly();
   const pluginContext = createPluginContext(editor, plugin.name);
-  const injectedAttributes = useFastInjectedAttributes({
+  const injectedAttributes = getFastInjectedAttributes({
     attributes,
     editor,
     element,
@@ -213,7 +213,7 @@ function FastIntrinsicElementBody({
 }) {
   const readOnly = useEditorReadOnly();
   const elementContext = createPluginContext(editor, plugin.name);
-  const injectedAttributes = useFastInjectedAttributes({
+  const injectedAttributes = getFastInjectedAttributes({
     attributes,
     editor,
     element,
@@ -234,13 +234,13 @@ function FastIntrinsicElementBody({
 
     getPlateRuntime(editor).pluginCache.render.belowNodes.forEach((name) => {
       const wrapperContext = createPluginContext(editor, name);
-      const hoc = wrapperContext.plugin.render.belowNodes!({
+      const wrap = wrapperContext.plugin.render.belowNodes!({
         ...nodeProps,
         ...wrapperContext,
       });
 
-      if (hoc && !isEditOnly(readOnly, wrapperContext.plugin, 'render')) {
-        elementChildren = hoc({
+      if (wrap && !isEditOnly(readOnly, wrapperContext.plugin, 'render')) {
+        elementChildren = wrap({
           ...nodeProps,
           children: elementChildren,
         });

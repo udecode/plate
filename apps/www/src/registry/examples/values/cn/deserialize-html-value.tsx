@@ -6,7 +6,7 @@ jsx;
 
 export const deserializeHtmlValue = (
   <fragment>
-    <hh2>HTML</hh2>
+    <hheading level={2}>HTML</hheading>
     <hp>
       默认情况下，当您将内容粘贴到 Plate 编辑器中时，它会使用剪贴板的{' '}
       <htext code>'text/plain'</htext>

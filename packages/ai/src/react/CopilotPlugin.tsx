@@ -28,8 +28,8 @@ const nonCjkMatchRegex =
   /^(\s*\S+?)(?=[\s\u1100-\u11FF\u3040-\u30FF\u3400-\u4DBF\u4E00-\u9FFF\uAC00-\uD7AF\uF900-\uFAFF]|$)/;
 
 type CallCompletionOptions = {
+  api: string;
   prompt: string;
-  api?: string;
   body?: Record<string, unknown>;
   credentials?: RequestCredentials;
   fetch?: typeof fetch;
@@ -39,12 +39,14 @@ type CallCompletionOptions = {
   onResponse?: (response: Response) => Promise<void> | void;
 };
 
+export type CopilotCompleteOptions = Omit<CallCompletionOptions, 'prompt'>;
+
 export type CopilotPluginState = {
   abortController: AbortController | null;
   autoTriggerQuery: (options: {
     editor: MarkdownEditor<PlateEditor>;
   }) => boolean;
-  completeOptions: Partial<CallCompletionOptions>;
+  completeOptions: CopilotCompleteOptions | null;
   completion: string | null;
   debounceDelay: number;
   error: Error | null;
@@ -87,7 +89,7 @@ const dependencies = [MarkdownPlugin] as const;
 
 const initialState: CopilotPluginState = {
   abortController: null,
-  completeOptions: {},
+  completeOptions: null,
   completion: '',
   debounceDelay: 0,
   error: null,
@@ -237,7 +239,7 @@ export const CopilotPlugin = definePlatePlugin(PLUGINS.copilot, {
       }
     };
     const callCompletion = async ({
-      api = '/api/completion',
+      api,
       body,
       credentials,
       fetch: fetcher = fetch,
@@ -358,9 +360,19 @@ export const CopilotPlugin = definePlatePlugin(PLUGINS.copilot, {
 
       if (!prompt) return false;
 
+      if (!completeOptions) {
+        context.store.set({
+          error: new Error(
+            'CopilotPlugin requires completeOptions.api before requesting a completion.'
+          ),
+        });
+
+        return false;
+      }
+
       stop();
 
-      const headers = completeOptions?.headers;
+      const headers = completeOptions.headers;
       const isHeaderTupleList = (
         value: unknown
       ): value is readonly (readonly [string, string])[] =>
@@ -379,11 +391,11 @@ export const CopilotPlugin = definePlatePlugin(PLUGINS.copilot, {
                 : undefined,
         onError: (error) => {
           context.store.set({ error });
-          completeOptions?.onError?.(error);
+          completeOptions.onError?.(error);
         },
         onFinish: (sourcePrompt, completion) => {
           context.update.setBlockSuggestion({ text: completion });
-          completeOptions?.onFinish?.(sourcePrompt, completion);
+          completeOptions.onFinish?.(sourcePrompt, completion);
         },
       });
     }

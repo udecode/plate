@@ -60,13 +60,13 @@ const RuntimeRoot = ({
   runtime: EditableDOMRuntime;
   store?: ReturnType<typeof createExternalStore>;
 }) => (
-  <EditableDOMRuntimeContext.Provider value={runtime}>
+  <EditableDOMRuntimeContext value={runtime}>
     <EditableDOMCommitFence runtime={runtime}>
       <div data-plite-editor ref={(node) => runtime.setRoot(node)}>
         {store ? <ExternalStoreAttribute store={store} /> : null}
       </div>
     </EditableDOMCommitFence>
-  </EditableDOMRuntimeContext.Provider>
+  </EditableDOMRuntimeContext>
 );
 
 test('the root runtime owns one observer across React commits', () => {

@@ -32,7 +32,7 @@ After the slow-lane migration, `pnpm brl` started exporting `*.slow` files from 
 
 ```ts
 export * from './Plate.slow';
-export * from './cleanDocx.slow';
+export * from './cleanWordHtml.slow';
 ```
 
 That is pure garbage. Slow tests are not runtime exports.

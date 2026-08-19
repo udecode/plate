@@ -1,0 +1,124 @@
+---
+description: Deliver a Plate feature end to end across package code, React adapters, copied registry UI, docs, release artifacts, proof, and Plate Next attestation.
+argument-hint: <new package | feature | package path | registry item>
+name: plate-feature
+metadata:
+  skiller:
+    source: .agents/rules/plate-feature.mdc
+---
+
+# Plate Feature
+
+Handle $ARGUMENTS.
+
+Own one cross-layer feature manifest from intake through handoff. This skill
+coordinates existing owners; it does not copy their API, plugin, UI, docs, or
+release doctrine.
+
+## Use When
+
+- creating a new Plate package or feature that must reach registry consumers;
+- adding React, registry, docs, or release surfaces to an existing package;
+- delivering a headless package with explicit UI exclusions;
+- delivering a registry-only feature with explicit package exclusions;
+- the user asks for the complete package-to-registry development flow.
+
+For one settled package implementation, use `plate-plugin-creator`. For one
+React or registry surface, use `plate-ui`. For public call-shape design, use
+`best-api`. For migration/adoption audit, use `plate-next`.
+
+## Distinct Job
+
+`plate-feature` owns:
+
+- the one Feature Manifest shared by every phase;
+- phase ordering and legal skips;
+- conditional worker and goal-pack routing;
+- the cross-layer completion contract;
+- final Plate Next attestation and review handoff.
+
+Every worker owns its own law:
+
+| Concern | Owner |
+| --- | --- |
+| reusable public call shape | `best-api` |
+| cross-layer or breaking adoption plan | `plate-plan` |
+| package semantics, plugin mechanics, colocation, package proof | `plate-plugin-creator` |
+| package React adapters, copied UI, kits, metadata, browser proof | `plate-ui` |
+| current-state public teaching | `docs-creator` |
+| package release notes | `changeset` |
+| registry release notes | `registry-changelog` |
+| final adoption/version audit | `plate-next` |
+| closure review | `autoreview` |
+
+## Goal
+
+For non-trivial work, create one plan from the specialized template and add
+only the packs the manifest requires:
+
+```bash
+node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
+  --template plate-feature \
+  --with package-api \
+  --with docs \
+  --with browser \
+  --with registry-changelog \
+  --with plate-next-attestation \
+  --title "<feature>"
+```
+
+Omit packs for rows marked `no`. Add `agent-native` only when the workflow,
+skill, command, template, or generated agent surface changes.
+
+Read [manifest.md](./rules/manifest.md) before starting. Read
+[phases.md](./rules/phases.md) as each phase becomes active. Read
+[proof-routing.md](./rules/proof-routing.md) before verification. Do not load
+every worker skill up front.
+
+## Manual Package Creation
+
+There is no package generator. Do not add one. For a new package:
+
+1. inspect the two nearest current clean sibling packages;
+2. copy only the mechanical package shape they still share;
+3. author semantic source through `plate-plugin-creator`;
+4. run install, manifest, barrel, package type, test, and lint proof as required.
+
+The sibling packages are evidence, not doctrine. Reject legacy files, copied
+compatibility, redundant helpers, and topology that conflicts with current
+skills.
+
+## Phase Law
+
+Advance one phase at a time:
+
+1. classify the flow and complete every manifest row;
+2. settle public shape and layer ownership;
+3. create the package shell manually when needed;
+4. implement and prove package semantics;
+5. add a thin React adapter when needed;
+6. author copied registry component families when needed;
+7. wire app-owned kits, static variants, metadata, and examples when needed;
+8. write current-state docs and release artifacts;
+9. run package, type, registry, browser, and stale-surface proof;
+10. reuse the same manifest for Plate Next attestation, P2 review, and handoff.
+
+A row may be skipped only as `no` with a concrete N/A reason. Headless and
+registry-only flows are first-class modes, not incomplete full flows.
+
+## Completion
+
+Before handoff:
+
+```bash
+node tooling/scripts/check-plate-feature.mjs <plan>
+```
+
+Then run the proof selected by the manifest, Plate Next version/status checks
+for reviewed packages, and P2 `autoreview`. Never mass-attest packages after a
+doctrine bump. A package advances only after its own full current review and
+recorded evidence.
+
+Stop only when every applicable manifest row is complete, every excluded row
+has an explicit reason, all selected packs are closed, and the goal checker
+passes.

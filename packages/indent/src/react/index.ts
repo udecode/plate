@@ -3,4 +3,3 @@
  */
 
 export * from './IndentPlugin';
-export * from './useIndentButton';

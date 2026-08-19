@@ -401,6 +401,31 @@ const assertTypedInputRuleConfiguration = () => {
 
 void assertTypedInputRuleConfiguration;
 
+defineBasePlugin('invalidReadDataProperty', {
+  // @ts-expect-error read groups expose methods, not cached data properties
+  read: () => ({ count: 1 }),
+});
+
+const MarkReadPlugin = defineBasePlugin('markReadRecord', {
+  schema: {
+    mark: property.boolean({ default: false, omitDefault: true }),
+  },
+  read: () => ({ ready: () => true }),
+});
+
+defineBasePlugin('invalidCallableMarkRead', {
+  schema: {
+    mark: property.boolean({ default: false, omitDefault: true }),
+  },
+  // @ts-expect-error mark plugins merge synthesized reads into a record root
+  read: () => () => true,
+});
+
+MarkReadPlugin.extend({
+  // @ts-expect-error mark plugin extensions keep the read root record-shaped
+  read: () => () => true,
+});
+
 const assertTypedAuthoringContext = () => {
   const FullSchemaPlugin = defineBasePlugin('fullSchemaConstructor', {
     api: () => ({

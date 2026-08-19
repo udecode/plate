@@ -21,7 +21,7 @@ export type PlatePluginCache = Readonly<{
     leafProps: readonly string[];
     textProps: readonly string[];
   }>;
-  transformInitialValue: readonly string[];
+  prepareDocument: readonly string[];
   render: Readonly<{
     aboveEditable: readonly string[];
     aboveNodes: readonly string[];

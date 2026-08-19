@@ -11,7 +11,7 @@ describe(getDocxTestName(name), () => {
   testDocxDeserializer({
     expected: (
       <editor>
-        <hh2>Some block quotes, in different ways</hh2>
+        <hheading level={2}>Some block quotes, in different ways</hheading>
         <hp>
           <htext />
         </hp>

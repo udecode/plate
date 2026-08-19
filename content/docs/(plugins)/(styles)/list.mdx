@@ -1,9 +1,12 @@
 ---
 title: List
+description: Flat semantic list items with derived numbering.
 docs:
   - route: /docs/components/list-toolbar-button
     title: List Toolbar Button
 ---
+
+List turns supported blocks into flat list items. Kind, marker style, explicit numbering boundaries, task state, and indentation are separate fields.
 
 <ComponentPreview name="list-demo" />
 
@@ -11,172 +14,100 @@ docs:
 
 ## Features
 
-- **Flat list model**: Any supported block can become a list item without a nested list-node tree.
-- **Bulleted, numbered, and todo styles**: Use CSS list styles or `'todo'`.
-- **Automatic indentation support**: `ListPlugin` installs its required Indent dependency.
-- **Targeted commands**: Toggle, indent, or outdent the selection, a path, a point, or a range.
-- **Input rules**: Register the shipped Markdown rules for `-`, `*`, `1.`, and task-list syntax.
+- listType is bulleted, numbered, or task.
+- listStyle optionally selects a CSS marker.
+- listStart stores a conditional start that applies only while the item is first in its sequence.
+- listRestart forces a numbered-list boundary at that item.
+- checked belongs to task items.
+- Display ordinals are derived without rewriting following nodes.
+- Markdown rules cover bullets, numbers, and tasks.
 
 </PackageInfo>
 
 ## Kit Usage
 
-`ListKit` configures list rendering, input rules, and the block types that support lists.
-
-<ComponentSource name="list-kit" />
-
-```tsx
+~~~tsx
+import { ListKit } from '@/components/editor/list';
 import { createPlateEditor } from 'platejs/react';
-import { ListKit } from '@/components/editor/plugins/list-kit';
 
 const editor = createPlateEditor({
   plugins: [...ListKit],
 });
-```
+~~~
 
-Add the [`List Toolbar Button`](/docs/components/list-toolbar-button) for bulleted, numbered, and todo controls.
+## Value
 
-## Manual Usage
-
-### Installation
-
-```bash
-npm install @platejs/list
-```
-
-### Add the Plugin
-
-`ListPlugin` includes the default Indent configuration.
-
-```tsx
-import { ListPlugin } from '@platejs/list/react';
-import { createPlateEditor } from 'platejs/react';
-
-const editor = createPlateEditor({
-  plugins: [ListPlugin],
-});
-```
-
-### Configure List Rendering and Input Rules
-
-```tsx
-import {
-  BulletedListRules,
-  OrderedListRules,
-  TaskListRules,
-} from '@platejs/list';
-import { ListPlugin } from '@platejs/list/react';
-import { PLUGINS } from 'platejs';
-import { BlockList } from '@/components/ui/block-list';
-
-const CustomListPlugin = ListPlugin.configure({
-  targetPlugins: [
-    PLUGINS.h1, PLUGINS.h2, PLUGINS.h3, PLUGINS.h4, PLUGINS.h5, PLUGINS.h6,
-    PLUGINS.paragraph,
-    PLUGINS.blockquote,
-    PLUGINS.codeBlock,
-  ],
-  inputRules: [
-    BulletedListRules.markdown({ variant: '-' }),
-    OrderedListRules.markdown({ variant: '.' }),
-    TaskListRules.markdown({ checked: false }),
-  ],
-  render: {
-    belowNodes: BlockList,
+~~~ts
+const value = [
+  {
+    type: 'paragraph',
+    listType: 'numbered',
+    listStart: 4,
+    indent: 1,
+    children: [{ text: 'Four' }],
   },
-});
-```
+  {
+    type: 'paragraph',
+    listType: 'numbered',
+    indent: 1,
+    children: [{ text: 'Five' }],
+  },
+  {
+    type: 'paragraph',
+    listType: 'task',
+    checked: false,
+    indent: 1,
+    children: [{ text: 'Ship it' }],
+  },
+];
+~~~
 
-Add `IndentPlugin.configure(...)` when you need custom targets, offsets, or units. An explicit Indent configuration overrides the dependency defaults and still installs only one Indent runtime plugin.
+The second item does not store 5. Plate derives it with editor.read.list.ordinal(element).
+
+listStart is latent author intent. Plate ignores it while a compatible previous item exists, keeps it in the document, and applies it if later edits make that item first. Use listRestart when the item must begin a new sequence even with a compatible predecessor.
+
+Both fields are signed safe integers, so zero and negative ordered-list starts remain valid.
+
+## Commands
+
+~~~ts
+import { ListStyle, ListType } from '@platejs/list';
+import { ListPlugin } from '@platejs/list/react';
+
+const list = editor.plugin(ListPlugin);
+
+list.update.toggle({ type: ListType.Bulleted });
+list.update.toggle({
+  type: ListType.Bulleted,
+  listStyle: ListStyle.Square,
+});
+list.update.toggle({
+  type: ListType.Numbered,
+  listStart: 4,
+});
+list.update.toggle({
+  type: ListType.Numbered,
+  listRestart: 4,
+});
+list.update.toggle({ type: ListType.Task });
+
+list.update.indent({ type: ListType.Bulleted });
+list.update.outdent();
+~~~
+
+## HTML and Markdown
+
+HTML ul and ol tags map to listType. Explicit CSS list-style-type maps to listStyle. A natural ol start maps to listStart; a following compatible ol boundary maps to listRestart. Plate clipboard HTML carries both fields in private list metadata.
+
+MDAST list.ordered maps to listType. Both start policies serialize as the currently visible list.start, and a non-default structural MDAST start deserializes as listRestart. Markdown cannot retain the conditional-versus-forced distinction. Task checkboxes map to listType task plus checked.
 
 ## API Reference
 
-### Scoped Reads
-
-Read list state from the List plugin portal:
-
-```ts
-const list = editor.plugin(ListPlugin);
-
-list.read.isActive(ListStyleType.Disc);
-list.read.isActive([ListStyleType.Disc, ListStyleType.Circle]);
-list.read.isActive('todo');
-```
-
-`isActive` returns `false` when the editor has no selection.
-
-### Scoped Updates
-
-List updates run in one Plite transaction and create one undo step:
-
-```ts
-const list = editor.plugin(ListPlugin);
-
-list.update.toggle({ listStyleType: ListStyleType.Decimal });
-list.update.indent({ listStyleType: ListStyleType.Disc });
-list.update.outdent();
-```
-
-Pass `at` to target a location without moving the selection:
-
-```ts
-list.update.toggle({ at: [2], listStyleType: ListStyleType.Disc });
-list.update.toggle({
-  at: {
-    anchor: { path: [2, 0], offset: 0 },
-    focus: { path: [4, 0], offset: 3 },
-  },
-  listStyleType: ListStyleType.Decimal,
-});
-```
-
-- No `at`: targets the current selection.
-- `Path` or `Point`: targets one block.
-- `Range`: targets every matching block in the range.
-- Missing, invalid, or root locations do nothing.
-
-### Update Options
-
-```ts
-type ToggleListOptions = {
-  at?: Location;
-  getSiblingListOptions?: GetSiblingListOptions<Element>;
-  listRestart?: number;
-  listRestartPolite?: number;
-  listStyleType: ListStyleType | string;
-};
-
-type IndentListOptions = {
-  at?: Location;
-  listStyleType?: ListStyleType | string;
-};
-
-type OutdentListOptions = {
-  at?: Location;
-};
-```
-
-`listRestart` restarts numbering at the target. `listRestartPolite` applies only when the target begins a list sequence.
-
-### Domain Queries
-
-The package exports focused traversal and list-policy queries:
-
-- `areEqListStyleType`
-- `expandListItemsWithChildren`
-- `getListAbove`
-- `getListChildren`
-- `getListSiblings` and `GetListSiblingsOptions`
-- `getNextList`
-- `getPreviousList`
-- `getSiblingList` and `GetSiblingListOptions`
-- `getSiblingListStyleType`
-- `isOrderedList`
-
-### Hooks
-
-- `useListToolbarButtonState` and `useListToolbarButton`
-- `useTodoListToolbarButtonState` and `useTodoListToolbarButton`
-- `useTodoListElementState` and `useTodoListElement`
-
-The toolbar hooks read and update the scoped `ListPlugin` API. The todo element hook resolves the element path when the checkbox changes, so it remains correct after node moves.
+| API | Purpose |
+| --- | --- |
+| ListType | Semantic bulleted, numbered, and task constants. |
+| ListStyle | CSS marker constants. |
+| update.toggle(options) | Set or remove list semantics. |
+| update.indent(options) | Increase indentation and set list semantics. |
+| update.outdent(options) | Decrease indentation and clear list fields at the outer level. |
+| read.ordinal(element) | Derive a numbered item's display ordinal. |

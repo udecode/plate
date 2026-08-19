@@ -31,6 +31,11 @@ Need a plugin or plugin refactor?
 |  +- exactly one production owner?
 |  |   +- yes -> inline in that plugin/component/test-family owner
 |  |
+|  +- React behavior passes through a package wrapper?
+|  |   +- trace to terminal product consumers
+|  |       +- all copied registry UI + UI/product policy -> registry family/kit
+|  |       +- independent owners or durable headless subsystem -> package
+|  |
 |  +- multiple callers can reuse the scoped plugin API?
 |  |   +- yes -> keep implementation inline; callers use the portal
 |  |
@@ -84,8 +89,11 @@ Use `definePlatePlugin` only when:
 2. the behavior exists only at a DOM/editor surface;
 3. the behavior only exists through React node props or components.
 
-Grouping already-authored complete plugins is not a plugin. Keep that product
-choice in an app or registry kit array; packages export the descriptors.
+Grouping already-authored complete plugins is not a plugin. Package roots must
+not export named plugin-array `*Kit` presets, including from facade packages.
+Keep that product choice in an app or registry kit array; packages export or
+reexport the individual descriptors. Encode truly inseparable structure through
+one honest descriptor's `dependencies`, not a package array.
 
 ### Plite extension
 
@@ -180,15 +188,18 @@ File length is irrelevant. Extract only when another durable owner exists.
 ### Component family owner
 
 One `<Family>.tsx` may own exported primitives plus family-only subcomponents,
-variants, constants, and render helpers.
+variants, constants, render helpers, and direct component-local hook calls.
 
 A sibling import within the same family is internal composition, not reuse.
 
 ### Hook or state owner
 
-When a component family has hooks, keep every related public and private hook
-in one `use<Family>.ts[x]` file, including subcomponent-only hooks. Create a
-provider or store file only when it owns independent state or lifecycle.
+Use `plate-ui` as the source of truth. A family gets zero or one
+`use<Family>.ts[x]` semantic controller, only when multiple family members or
+surfaces share real lifecycle. Do not create subcomponent hooks,
+state-hook/prop-hook pipelines, or public prop bags. Create a provider/store
+file only for independent lifecycle or cross-family reuse; otherwise keep one
+private family context.
 
 ### Test-family owner
 
@@ -208,6 +219,11 @@ None of these justify another source file:
 - implementation kind such as query, transform, hook, or utility;
 - multiple callers that can use the owning scoped API;
 - hypothetical future reuse.
+
+For React behavior, an intermediate package component, adapter, barrel, or
+reexport is not a production owner. Trace terminal product consumers. If all of
+them are copied registry UI and the behavior is UI/product composition, move
+the complete hook/store/provider/hotkey/plugin-extension owner to `plate-ui`.
 
 ## File Placement
 

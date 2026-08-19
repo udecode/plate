@@ -30,20 +30,20 @@ docs:
 
 最快捷的方式是使用`FixedToolbarKit`和`FloatingToolbarKit`，它们包含预配置的工具栏插件及其[Plate UI](/docs/installation/plate-ui)组件。
 
-<ComponentSource name="fixed-toolbar-kit" />
-<ComponentSource name="floating-toolbar-kit" />
+<ComponentSource name="fixed-toolbar" />
+<ComponentSource name="floating-toolbar" />
 
 - [`FixedToolbar`](/docs/components/fixed-toolbar): 在编辑器上方渲染固定工具栏
-- [`FixedToolbarButtons`](/docs/components/fixed-toolbar-buttons): 固定工具栏的预配置按钮集
+- [`FixedToolbarButtons`](/docs/components/fixed-toolbar): 固定工具栏的预配置按钮集
 - [`FloatingToolbar`](/docs/components/floating-toolbar): 文本选中时渲染浮动工具栏
-- [`FloatingToolbarButtons`](/docs/components/floating-toolbar-buttons): 浮动工具栏的预配置按钮集
+- [`FloatingToolbarButtons`](/docs/components/floating-toolbar): 浮动工具栏的预配置按钮集
 
 ### 添加套件
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { FixedToolbarKit } from '@/components/editor/plugins/fixed-toolbar-kit';
-import { FloatingToolbarKit } from '@/components/editor/plugins/floating-toolbar-kit';
+import { FixedToolbarKit } from '@/components/editor/fixed-toolbar';
+import { FloatingToolbarKit } from '@/components/editor/floating-toolbar';
 
 const editor = createPlateEditor({
   plugins: [
@@ -64,10 +64,10 @@ const editor = createPlateEditor({
 
 ```tsx
 import { definePlatePlugin } from 'platejs/react';
-import { FixedToolbar } from '@/components/ui/fixed-toolbar';
-import { FixedToolbarButtons } from '@/components/ui/fixed-toolbar-buttons';
-import { FloatingToolbar } from '@/components/ui/floating-toolbar';
-import { FloatingToolbarButtons } from '@/components/ui/floating-toolbar-buttons';
+import { FixedToolbar } from '@/components/editor/fixed-toolbar';
+import { FixedToolbarButtons } from '@/components/editor/fixed-toolbar';
+import { FloatingToolbar } from '@/components/editor/floating-toolbar';
+import { FloatingToolbarButtons } from '@/components/editor/floating-toolbar';
 
 const fixedToolbarPlugin = definePlatePlugin('fixedToolbar', {
   type: 'fixed-toolbar',
@@ -107,15 +107,15 @@ const editor = createPlateEditor({
 
 `FixedToolbarButtons`组件包含固定工具栏的默认按钮集。
 
-<ComponentSource name="fixed-toolbar-buttons" />
+<ComponentSource name="fixed-toolbar" />
 
-可以通过编辑`components/ui/fixed-toolbar-buttons.tsx`来自定义。
+可以通过编辑`components/editor/fixed-toolbar.tsx`来自定义。
 
 ### 自定义浮动工具栏按钮
 
-同样地，可以通过编辑`components/ui/floating-toolbar-buttons.tsx`来自定义浮动工具栏。
+同样地，可以通过编辑`components/editor/floating-toolbar.tsx`来自定义浮动工具栏。
 
-<ComponentSource name="floating-toolbar-buttons" />
+<ComponentSource name="floating-toolbar" />
 
 
 ### 创建自定义按钮
@@ -125,7 +125,7 @@ const editor = createPlateEditor({
 ```tsx
 import { useEditor } from 'platejs/react';
 import { CustomIcon } from 'lucide-react';
-import { ToolbarButton } from '@/components/ui/toolbar';
+import { ToolbarButton } from '@/components/editor/toolbar';
 
 export function CustomToolbarButton() {
   const editor = useEditor();
@@ -155,7 +155,7 @@ export function CustomToolbarButton() {
 ```tsx
 import { BoldIcon } from 'lucide-react';
 
-import { MarkToolbarButton } from '@/components/ui/mark-toolbar-button';
+import { MarkToolbarButton } from '@/components/editor/mark-toolbar-button';
 
 export function BoldToolbarButton() {
   return (
@@ -168,7 +168,7 @@ export function BoldToolbarButton() {
 
 - `nodeType`: 指定要切换的标记类型(如`bold`、`italic`)
 - `tooltip`: 为按钮提供提示信息
-- `MarkToolbarButton`使用`useMarkToolbarButtonState`获取切换状态，使用`useMarkToolbarButton`获取`onClick`处理器和其他属性
+- `MarkToolbarButton` 直接在组件中读取标记状态并处理切换。
 
 ### 转换工具栏按钮
 

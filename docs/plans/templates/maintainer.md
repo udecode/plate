@@ -22,6 +22,20 @@ Maintainer source:
 - queue artifact: pending
 - run artifact: pending
 
+Reporter-valid behavior case:
+- applies: pending
+- case ID: pending
+- source refs: pending
+- exact route / surface: pending
+- setup / target / action / expected end state: pending
+- browser / OS-device / branch-channel / observed bad ref: pending
+- claim fields: pending
+- exact red proof: pending
+- final replay ref and production/test/fixture/harness fingerprints: pending
+- retry-free warm result and required Chrome/device spot check: pending
+- current status: pending (`needs-repro`, `candidate-local`, `fixed-pushed-ref`, or
+  N/A with reason)
+
 First checkpoint:
 - Copy every explicit prompt requirement into this plan as checkable rows:
   repo, queue slice, non-goals, authority boundaries, proof requirements,
@@ -102,6 +116,7 @@ Start Gates:
 | Standing orders read | pending | pending |
 | Heartbeat runbook read | pending | pending |
 | Output budget strategy recorded | pending | pending |
+| Reporter-valid case contract recorded | pending | For a public behavior report, fill every case field above before reproduction; otherwise N/A with reason |
 
 Work Checklist:
 - [ ] First checkpoint complete.
@@ -129,6 +144,18 @@ Work Checklist:
       requested a broader batch.
 - [ ] Owner route is selected with reason.
 - [ ] Proof path or proof blocker is recorded.
+- [ ] Public behavior proof uses the exact reporter case. Proxy routes, easier
+      targets, partial end states, and temporary/unshipped scaffolding stay
+      `needs-repro` and cannot support fixed/completed wording.
+- [ ] The final replay records every applicable model/DOM/selection/caret/focus/
+      popup/toolbar/paint/error/follow-up-input field after the interaction,
+      the final ref and fingerprints, and 5/5 retry-free warm runs for native
+      selection/paint, focus, DnD, compositor, or React DOM lifecycle cases.
+- [ ] Local-only or unpushed work is classified `candidate-local`.
+      Fixed/completed wording and a `completed` label require replay on the
+      final pushed ref.
+- [ ] Fresh reporter contradictions invalidate earlier green proof and move the
+      item to `needs-repro`; residual symptoms are split or explicitly kept open.
 - [ ] Public mutation authority is recorded as none, explicit, or blocked.
 - [ ] Execution owner is invoked, or a decision-ready brief is produced.
 - [ ] Changed list is recorded.
@@ -150,6 +177,9 @@ Completion Gates:
 | Duplicate/claim guard | pending | Check related PRs/branches/assignees/recent claims for selected item | pending |
 | Owner route | pending | Name selected owner skill/package/docs surface and why | pending |
 | Proof path | pending | Run proof, name command, or record proof blocker | pending |
+| Reporter-valid exact replay | pending | For public behavior reports, prove the exact case and all applicable final-state claim fields; otherwise N/A with reason | pending |
+| Final-ref truth gate | pending | From a fresh process in a clean checkout or immutable CI artifact, record the final pushed ref, zero tracked/untracked issue-owned runtime-input differences, matching file fingerprints, and the retry-free warm ledger in the exact reported browser/device; local-only or unpushed packets remain candidates | pending |
+| Reporter contradiction check | pending | Re-read current comments; invalidate prior proof and stale completed status when the reporter still reproduces, or record no contradiction | pending |
 | Public mutation boundary | pending | Confirm none, or record explicit user authority and result | pending |
 | Public intake completeness | pending | Read relevant issue/PR/security template and classify whether the item is agent-ready | pending |
 | Rejected candidates | pending | Record skipped/rejected candidates with concrete reasons | pending |

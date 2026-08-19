@@ -21,13 +21,13 @@ title: 可聚焦元素 (Tabbable)
 
 最快捷的方式是使用 `TabbableKit`。该套件会保留 Indent，仅移除其 Tab 和 Shift+Tab 快捷键，让焦点导航负责这两个按键。
 
-<ComponentSource name="tabbable-kit" />
+<ComponentSource name="tabbable" />
 
 ### 添加套件
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { TabbableKit } from '@/components/editor/plugins/tabbable-kit';
+import { TabbableKit } from '@/components/editor/tabbable';
 
 const editor = createPlateEditor({
   plugins: [

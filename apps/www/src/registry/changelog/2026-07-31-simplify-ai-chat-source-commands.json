@@ -19,8 +19,8 @@
   "targets": [
     {
       "name": "ai-menu",
-      "files": ["apps/www/src/registry/ui/ai-menu.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "files": ["apps/www/src/registry/components/editor/ai-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
       "diagnostics": []
     }
   ],

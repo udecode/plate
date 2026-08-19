@@ -5,15 +5,15 @@ import * as React from 'react';
 import { Plate, usePlateEditor } from 'platejs/react';
 
 import { Separator } from '@/components/ui/separator';
-import { AlignKit } from '@/registry/components/editor/plugins/align-kit';
-import { BasicNodesKit } from '@/registry/components/editor/plugins/basic-nodes-kit';
-import { MediaKit } from '@/registry/components/editor/plugins/media-kit';
+import { AlignKit } from '@/registry/components/editor/align';
+import { BasicNodesKit } from '@/registry/components/editor/basic-nodes';
+import { MediaKit } from '@/registry/components/editor/media';
 import { basicBlocksValue } from '@/registry/examples/values/basic-blocks-value';
 import { basicMarksValue } from '@/registry/examples/values/basic-marks-value';
 import { imageValue } from '@/registry/examples/values/media-value';
-import { Editor, EditorContainer } from '@/registry/ui/editor';
-import { FixedToolbar } from '@/registry/ui/fixed-toolbar';
-import { TurnIntoToolbarButton } from '@/registry/ui/turn-into-toolbar-button';
+import { Editor, EditorContainer } from '@/registry/components/editor/editor';
+import { FixedToolbar } from '@/registry/components/editor/fixed-toolbar';
+import { TurnIntoToolbarButton } from '@/registry/components/editor/turn-into-toolbar-button';
 
 export default function MultipleEditorsDemo() {
   const editor = usePlateEditor({

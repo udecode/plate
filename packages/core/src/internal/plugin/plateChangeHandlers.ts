@@ -30,8 +30,11 @@ export const subscribePlateChangeCallbacks = <E extends BaseEditor>(
   editor: E,
   callbacks: PlateChangeCallbacks<E>
 ) => {
-  const listeners = PLATE_CHANGE_CALLBACKS.get(editor) ?? new Set();
   const { onNodeChange, onTextChange } = callbacks;
+
+  if (!onNodeChange && !onTextChange) return () => {};
+
+  const listeners = PLATE_CHANGE_CALLBACKS.get(editor) ?? new Set();
   const listener: PlateChangeCallbacks = {
     onNodeChange: onNodeChange
       ? (context) => onNodeChange(context as EditorNodeChangeContext<E>)

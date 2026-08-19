@@ -1,7 +1,7 @@
 import type { BasePluginInput, CreateBaseEditorOptions, Value } from 'platejs';
 import { createBaseEditor } from 'platejs';
 
-import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
+import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 
 export const createStaticEditor = <
   const TPlugins extends readonly BasePluginInput[] = typeof BaseEditorKit,

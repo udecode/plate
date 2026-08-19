@@ -45,17 +45,21 @@
   "targets": [
     {
       "name": "inline-combobox",
-      "files": ["apps/www/src/registry/ui/inline-combobox.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "files": ["apps/www/src/registry/components/editor/inline-combobox.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
       "diagnostics": []
     },
     {
       "name": "mention-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/mention-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for mention-kit."
+        }
+      ]
     }
   ],
   "entries": [

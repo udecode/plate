@@ -19,8 +19,11 @@
   "targets": [
     {
       "name": "block-discussion",
-      "files": ["apps/www/src/registry/ui/block-discussion.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "files": [
+        "apps/www/src/registry/components/editor/block-discussion.tsx",
+        "apps/www/src/registry/lib/block-discussion-index.ts"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
       "diagnostics": []
     }
   ],

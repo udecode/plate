@@ -1,9 +1,12 @@
 ---
 title: 列表
+description: 使用派生编号的扁平语义列表项。
 docs:
   - route: /docs/components/list-toolbar-button
-    title: 列表工具栏按钮
+    title: List Toolbar Button
 ---
+
+列表将支持的块转换为扁平列表项。列表种类、标记样式、明确编号边界、任务状态和缩进分别存储。
 
 <ComponentPreview name="list-demo" />
 
@@ -11,172 +14,94 @@ docs:
 
 ## 功能
 
-- **扁平列表模型**：任何受支持的块都可以成为列表项，无需嵌套的列表节点树。
-- **项目符号、编号和待办样式**：使用 CSS 列表样式或 `'todo'`。
-- **自动缩进支持**：`ListPlugin` 会安装必需的 Indent 依赖。
-- **精确目标命令**：对当前选择、路径、点或范围执行切换、缩进和减少缩进。
-- **输入规则**：注册内置的 `-`、`*`、`1.` 和任务列表 Markdown 规则。
+- listType 为 bulleted、numbered 或 task。
+- listStyle 可选，用于 CSS 标记样式。
+- listStart 保存条件开始值，仅在该项是序列第一项时生效。
+- listRestart 强制该项成为有序列表的新边界。
+- checked 只属于任务项。
+- 显示编号通过读取计算，不重写后续节点。
 
 </PackageInfo>
 
 ## Kit 用法
 
-`ListKit` 配置列表渲染、输入规则以及支持列表的块类型。
-
-<ComponentSource name="list-kit" />
-
-```tsx
-import { createPlateEditor } from 'platejs/react';
-import { ListKit } from '@/components/editor/plugins/list-kit';
+~~~tsx
+import { ListKit } from '@/components/editor/list';
 
 const editor = createPlateEditor({
   plugins: [...ListKit],
 });
-```
+~~~
 
-添加[`列表工具栏按钮`](/docs/components/list-toolbar-button)以提供项目符号、编号和待办控件。
+## 值
 
-## 手动用法
-
-### 安装
-
-```bash
-npm install @platejs/list
-```
-
-### 添加插件
-
-`ListPlugin` 包含默认的 Indent 配置。
-
-```tsx
-import { ListPlugin } from '@platejs/list/react';
-import { createPlateEditor } from 'platejs/react';
-
-const editor = createPlateEditor({
-  plugins: [ListPlugin],
-});
-```
-
-### 配置列表渲染和输入规则
-
-```tsx
-import {
-  BulletedListRules,
-  OrderedListRules,
-  TaskListRules,
-} from '@platejs/list';
-import { ListPlugin } from '@platejs/list/react';
-import { PLUGINS } from 'platejs';
-import { BlockList } from '@/components/ui/block-list';
-
-const CustomListPlugin = ListPlugin.configure({
-  targetPlugins: [
-    PLUGINS.h1, PLUGINS.h2, PLUGINS.h3, PLUGINS.h4, PLUGINS.h5, PLUGINS.h6,
-    PLUGINS.paragraph,
-    PLUGINS.blockquote,
-    PLUGINS.codeBlock,
-  ],
-  inputRules: [
-    BulletedListRules.markdown({ variant: '-' }),
-    OrderedListRules.markdown({ variant: '.' }),
-    TaskListRules.markdown({ checked: false }),
-  ],
-  render: {
-    belowNodes: BlockList,
+~~~ts
+const value = [
+  {
+    type: 'paragraph',
+    listType: 'numbered',
+    listStart: 4,
+    indent: 1,
+    children: [{ text: '四' }],
   },
-});
-```
+  {
+    type: 'paragraph',
+    listType: 'numbered',
+    indent: 1,
+    children: [{ text: '五' }],
+  },
+  {
+    type: 'paragraph',
+    listType: 'task',
+    checked: false,
+    indent: 1,
+    children: [{ text: '发布' }],
+  },
+];
+~~~
 
-需要自定义目标、偏移量或单位时，添加 `IndentPlugin.configure(...)`。显式的 Indent 配置会覆盖依赖默认值，并且运行时仍只安装一个 Indent 插件。
+第二项不保存 5。Plate 通过 editor.read.list.ordinal(element) 计算。
 
-## API 参考
+listStart 保存潜在作者意图。存在兼容的前一项时 Plate 会忽略它，但仍保留该字段；如果后续编辑让该项成为第一项，它就会生效。当该项即使存在兼容前项也必须开启新序列时，使用 listRestart。
 
-### 作用域读取
+两个字段都是有符号安全整数，因此零和负数的有序列表起始值仍然有效。
 
-通过 List 插件入口读取列表状态：
+## 命令
 
-```ts
+~~~ts
+import { ListStyle, ListType } from '@platejs/list';
+import { ListPlugin } from '@platejs/list/react';
+
 const list = editor.plugin(ListPlugin);
-
-list.read.isActive(ListStyleType.Disc);
-list.read.isActive([ListStyleType.Disc, ListStyleType.Circle]);
-list.read.isActive('todo');
-```
-
-编辑器没有选择时，`isActive` 返回 `false`。
-
-### 作用域更新
-
-列表更新在一个 Plite 事务中运行，并生成一个撤销步骤：
-
-```ts
-const list = editor.plugin(ListPlugin);
-
-list.update.toggle({ listStyleType: ListStyleType.Decimal });
-list.update.indent({ listStyleType: ListStyleType.Disc });
-list.update.outdent();
-```
-
-传入 `at` 可以在不移动选择的情况下指定位置：
-
-```ts
-list.update.toggle({ at: [2], listStyleType: ListStyleType.Disc });
+list.update.toggle({ type: ListType.Bulleted });
 list.update.toggle({
-  at: {
-    anchor: { path: [2, 0], offset: 0 },
-    focus: { path: [4, 0], offset: 3 },
-  },
-  listStyleType: ListStyleType.Decimal,
+  type: ListType.Bulleted,
+  listStyle: ListStyle.Square,
 });
-```
+list.update.toggle({
+  type: ListType.Numbered,
+  listStart: 4,
+});
+list.update.toggle({
+  type: ListType.Numbered,
+  listRestart: 4,
+});
+list.update.toggle({ type: ListType.Task });
+~~~
 
-- 不传 `at`：使用当前选择。
-- `Path` 或 `Point`：指定一个块。
-- `Range`：指定范围内所有匹配的块。
-- 缺失、无效或根位置不会执行操作。
+## HTML 和 Markdown
 
-### 更新选项
+HTML ul 和 ol 映射到 listType。明确的 CSS list-style-type 映射到 listStyle。自然边界的 ol start 映射到 listStart；兼容序列后的 ol 边界映射到 listRestart。Plate 剪贴板 HTML 在私有列表元数据中携带这两个字段。
 
-```ts
-type ToggleListOptions = {
-  at?: Location;
-  getSiblingListOptions?: GetSiblingListOptions<Element>;
-  listRestart?: number;
-  listRestartPolite?: number;
-  listStyleType: ListStyleType | string;
-};
+MDAST list.ordered 映射到 listType。两种开始策略都会序列化为当前可见的 list.start，非默认的结构化 MDAST start 会反序列化为 listRestart。Markdown 无法保留条件开始与强制重启的区别。任务复选框映射到 task 和 checked。
 
-type IndentListOptions = {
-  at?: Location;
-  listStyleType?: ListStyleType | string;
-};
+## API
 
-type OutdentListOptions = {
-  at?: Location;
-};
-```
-
-`listRestart` 在目标处重新开始编号。`listRestartPolite` 仅在目标是列表序列开头时生效。
-
-### 领域查询
-
-该包导出以下列表遍历和策略查询：
-
-- `areEqListStyleType`
-- `expandListItemsWithChildren`
-- `getListAbove`
-- `getListChildren`
-- `getListSiblings` 和 `GetListSiblingsOptions`
-- `getNextList`
-- `getPreviousList`
-- `getSiblingList` 和 `GetSiblingListOptions`
-- `getSiblingListStyleType`
-- `isOrderedList`
-
-### Hooks
-
-- `useListToolbarButtonState` 和 `useListToolbarButton`
-- `useTodoListToolbarButtonState` 和 `useTodoListToolbarButton`
-- `useTodoListElementState` 和 `useTodoListElement`
-
-工具栏 hooks 通过作用域化的 `ListPlugin` API 读取和更新状态。待办元素 hook 会在复选框变化时解析元素路径，因此节点移动后仍能正确更新。
+| API | 用途 |
+| --- | --- |
+| ListType | bulleted、numbered 和 task 常量。 |
+| ListStyle | CSS 标记常量。 |
+| update.toggle(options) | 设置或移除列表语义。 |
+| update.indent(options) | 增加缩进并设置列表语义。 |
+| update.outdent(options) | 减少缩进。 |
+| read.ordinal(element) | 计算有序项显示编号。 |

@@ -1,7 +1,18 @@
-import type React from 'react';
+import { Slot } from '@radix-ui/react-slot';
+import * as React from 'react';
 
-import { createSlotComponent } from './createSlotComponent';
+export type TextProps = React.ComponentPropsWithRef<'span'> & {
+  as?: React.ElementType;
+  asChild?: boolean;
+};
 
-export const Text = createSlotComponent('span');
+export function Text({
+  as: Component = 'span',
+  asChild = false,
+  ref,
+  ...props
+}: TextProps) {
+  const Comp = asChild ? Slot : Component;
 
-export type TextProps = React.ComponentPropsWithRef<typeof Text>;
+  return <Comp ref={ref} {...props} />;
+}

@@ -39,14 +39,34 @@ const createEditor = (paragraphType = 'paragraph') => {
             kind: 'node',
             encode: ({ node }) => ({
               type: 'math',
-              value: node.texExpression ?? '',
+              value: node.latex ?? '',
             }),
           },
         }),
       schema: {
         element: {
-          properties: { texExpression: property.string() },
+          properties: { latex: property.string() },
           void: 'block',
+        },
+      },
+    }),
+    defineBasePlugin(PLUGINS.heading, {
+      codecs: ({ defineCodecs, schema: { type } }) =>
+        defineCodecs({
+          'text/markdown': {
+            from: 'heading',
+            kind: 'node',
+            decode: ({ decode, decoration, node }) => ({
+              children: decode(node.children, decoration),
+              level: node.depth,
+              type,
+            }),
+          },
+        }),
+      schema: {
+        element: {
+          content: schema.content.open(),
+          properties: { level: property.number() },
         },
       },
     }),
@@ -160,7 +180,7 @@ describe('AIChatPlugin streaming', () => {
             children: [
               {
                 children: [{ text: '' }],
-                texExpression: 'x+1',
+                latex: 'x+1',
                 type: 'equation',
               },
             ],
@@ -180,5 +200,21 @@ describe('AIChatPlugin streaming', () => {
 
     expect(editor.read.text.string([])).toBe('hello');
     expect(Reflect.get(editor.read.children()[0]!, AI_PREVIEW_KEY)).toBe(true);
+  });
+
+  it('replaces a streamed heading when its canonical level changes', () => {
+    const editor = createEditor();
+    const aiChat = editor.plugin(AIChatPlugin);
+
+    editor.update.nodes.set({ level: 1, type: 'heading' }, { at: [0] });
+    aiChat.store.set({ _blockChunks: '', _blockPath: [0] });
+
+    aiChat.update.insertChunk('## Two');
+
+    expect(editor.read.children()[0]).toMatchObject({
+      children: [{ text: 'Two' }],
+      level: 2,
+      type: 'heading',
+    });
   });
 });

@@ -2,7 +2,8 @@ import type { Value } from 'platejs';
 export const discussionValue: Value = [
   {
     children: [{ text: '评论和建议' }],
-    type: 'h2',
+    level: 2,
+    type: 'heading',
   },
   {
     children: [

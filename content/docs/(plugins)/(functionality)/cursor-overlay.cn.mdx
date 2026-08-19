@@ -28,7 +28,7 @@ docs:
 
 最快捷的添加光标覆盖功能的方式是使用`CursorOverlayKit`，它包含预配置的`CursorOverlayPlugin`和[`CursorOverlay`](/docs/components/cursor-overlay) UI组件。
 
-<ComponentSource name="cursor-overlay-kit" />
+<ComponentSource name="cursor-overlay" />
 
 - [`CursorOverlay`](/docs/components/cursor-overlay): 渲染光标和选中区域覆盖层
 
@@ -36,7 +36,7 @@ docs:
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { CursorOverlayKit } from '@/components/editor/plugins/cursor-overlay-kit';
+import { CursorOverlayKit } from '@/components/editor/cursor-overlay';
 
 const editor = createPlateEditor({
   plugins: [
@@ -78,7 +78,7 @@ const editor = createPlateEditor({
 
 ```tsx
 import { CursorOverlayPlugin } from '@platejs/selection/react';
-import { CursorOverlay } from '@/components/ui/cursor-overlay';
+import { CursorOverlay } from '@/components/editor/cursor-overlay';
 
 CursorOverlayPlugin.configure({
   render: {

@@ -13,7 +13,7 @@ description: 学习如何配置和自定义Plate编辑器。
 import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
-  plugins: [H1Plugin],
+  plugins: [HeadingPlugin],
 });
 ```
 
@@ -56,7 +56,7 @@ Plate 根据已安装插件编译文档 schema。普通编辑器省略 `schema` 
 
 ```ts
 const editor = createPlateEditor({
-  plugins: [H1Plugin],
+  plugins: [HeadingPlugin],
 });
 
 editor.read.schema.identity();
@@ -69,7 +69,7 @@ editor.read.schema.identity();
 
 ```ts
 const editor = createPlateEditor({
-  plugins: [H1Plugin],
+  plugins: [HeadingPlugin],
   schema: { id: 'acme-document', version: 3 },
 });
 
@@ -79,6 +79,63 @@ editor.read.schema.identity();
 
 命名谱系的 schema 语义变化时递增 `version`。同一 ID 和版本对应不同指纹时，
 Plate 会将其视为身份不匹配。
+
+### 文档迁移
+
+将 schema 身份与文档一起持久化，并声明一条由应用拥有的迁移链。目标版本步骤会按
+升序运行，然后 Plate 执行已安装插件的文档准备和 schema 适配。
+
+```ts title="src/editor.ts" showLineNumbers
+import { ParagraphPlugin } from '@platejs/basic-nodes/react';
+import {
+  defineDocumentMigrations,
+  migratePlateV54,
+  migratePlateV55,
+} from 'platejs/migrations';
+
+import { fingerprint as v53Fingerprint } from './migrations/v54-upgrade-plate/from';
+import { fingerprint as v54Fingerprint } from './migrations/v55-upgrade-plate/from';
+
+export const EditorKit = [ParagraphPlugin] as const;
+export const EditorSchema = { id: 'acme-document', version: 55 } as const;
+
+export const EditorMigrations = defineDocumentMigrations(EditorSchema, {
+  sourceFingerprints: { 53: v53Fingerprint, 54: v54Fingerprint },
+  steps: { 54: migratePlateV54, 55: migratePlateV55 },
+  unversioned: 53,
+});
+```
+
+把同一组导出传给编辑器。`unversioned` 是没有 schema 元数据的历史文档的显式支持
+下限；这些文档不再受支持时应移除该字段。
+
+```tsx title="src/document-editor.tsx" showLineNumbers
+import { Plate, usePlateEditor } from 'platejs/react';
+
+import { EditorKit, EditorMigrations, EditorSchema } from './editor';
+
+export function DocumentEditor({ persisted }) {
+  const editor = usePlateEditor({
+    initialValue: persisted,
+    migrations: EditorMigrations,
+    plugins: EditorKit,
+    schema: EditorSchema,
+  });
+
+  return <Plate editor={editor} />;
+}
+```
+
+持久化 `{ document: value, schema: editor.read.schema.identity() }`。版本 53 的文档由
+版本 55 的编辑器加载时，会依次运行步骤 54 和 55。缺失步骤、错误 schema ID、未来
+版本或指纹不匹配都会直接报错。每个历史 envelope 版本都要在 `sourceFingerprints`
+中绑定生成的精确指纹；原始文档使用显式 `unversioned` 下限。
+
+<Callout type="warning" title="历史和协作需要切换边界">
+  文档迁移不会重写已序列化的 history 或已有内容的 Yjs room。离线迁移或丢弃旧
+  history；迁移快照后让升级客户端连接新的 schema 版本 room。不要混用不同 schema
+  版本的协作节点。
+</Callout>
 
 ### 异步初始值
 
@@ -136,7 +193,7 @@ function AsyncEditor() {
 
 ```ts
 const editor = createPlateEditor({
-  plugins: [H1Plugin, ListPlugin],
+  plugins: [HeadingPlugin, ListPlugin],
 });
 ```
 
@@ -148,24 +205,24 @@ const editor = createPlateEditor({
 在一个源文件中导出运行时输入：
 
 ```ts title="src/editor.ts"
-import { H1Plugin } from '@platejs/basic-nodes/react';
+import { HeadingPlugin } from '@platejs/basic-nodes/react';
 import { TablePlugin } from '@platejs/table/react';
 import { property, schema as s, target } from 'platejs';
 
-export const EditorKit = [H1Plugin, TablePlugin] as const;
+export const EditorKit = [HeadingPlugin, TablePlugin] as const;
 
 export const EditorSchema = {
   id: 'app-document',
   version: 1,
   overrides: [
-    s.override(H1Plugin, {
+    s.override(HeadingPlugin, {
       element: { type: 'headingOne' },
     }),
   ],
   properties: {
     reviewState: s.elementProperty(
       property.enum(['draft', 'approved'] as const),
-      { target: target.element(H1Plugin) }
+      { target: target.element(HeadingPlugin) }
     ),
   },
 } as const;
@@ -181,7 +238,7 @@ property key 和 value law 保持固定；更改它们需要新字段和显式 m
 已安装代码从 schema handle 读取最终 identity：
 
 ```ts
-editor.plugin(H1Plugin).schema.type; // 'headingOne'
+editor.plugin(HeadingPlugin).schema.type; // 'headingOne'
 generatedSchema.properties.reviewState.key; // 'reviewState'
 ```
 
@@ -206,11 +263,11 @@ import {
   schema as generatedSchema,
   type Editor,
   type Value,
-} from './editor.generated';
+} from './plugins.generated';
 import { EditorKit, EditorSchema } from './editor';
 
-export function prepareDocument(editor: Editor) {
-  editor.update.h1.insert();
+export function insertDocumentContent(editor: Editor) {
+  editor.update.heading.insert({ level: 1 });
   editor.update.table.set({ marginLeft: 24 });
 }
 
@@ -235,7 +292,7 @@ constructor 和 hook 直接使用手写的 `EditorKit` 和 `EditorSchema`。
 在 CI 中使用同一命令并加上 `--check`。该命令重新编译 editor module，并在已提交
 的生成产物过期时失败。
 
-需要处理已存储文档的 schema 变更使用显式 scaffold：
+使用 migration scaffold 创建带类型的应用迁移步骤：
 
 ```bash
 pnpm exec plate migrate new add-caption
@@ -243,8 +300,23 @@ pnpm exec plate migrate new add-caption
 
 editor module 不在标准路径时，传入 `--entry <path>`。
 
-scaffold 包含带类型的 `FromValue`、`ToValue` 快照和结构 diff。应用的存储或协作
-代码决定何时以及如何运行这个纯迁移；Plate 不会自动应用它。
+scaffold 包含带类型的 `FromValue`、`ToValue` 快照、指纹和结构 diff。将完成的函数
+加入 `EditorMigrations.steps`，key 是该步骤生成的版本，并把导出的 `from` 指纹绑定到
+`sourceFingerprints`。
+
+编辑器会在初始和延迟完整文档加载时运行已配置的迁移。离线 JSON 文件的 entry module
+使用下方命令要求的精确导出名：`EditorKit`、`EditorSchema` 和 `EditorMigrations`。即使
+module 还导出其他数组或类似 schema 的对象，显式名称也能让可执行 runner 保持确定性。
+
+```bash
+pnpm exec plate migrate run --entry src/editor.ts --check documents/*.json
+pnpm exec plate migrate run --entry src/editor.ts --write documents/*.json
+cat document.json | pnpm exec plate migrate run --entry src/editor.ts --stdin
+```
+
+没有 `--write` 时命令只做 dry run。`--check` 在任一文档需要迁移时返回非零退出码。
+`--stdin` 将迁移后的 envelope 写到标准输出，不修改存储。envelope selection 会通过同一
+文档迁移和准备 pipeline 完成映射并保留。
 
 ### 最大长度
 
@@ -366,10 +438,10 @@ const editor = createPlateEditor({
 
 ```ts
 const editor = createPlateEditor({
-  plugins: [H1Plugin],
+  plugins: [HeadingPlugin],
   components: {
     paragraph: CustomParagraphComponent,
-    h1: CustomHeadingComponent,
+    heading: CustomHeadingComponent,
   },
 });
 ```

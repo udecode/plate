@@ -429,7 +429,7 @@ test('Plite CI watches and typechecks the bounded www adopter surface', () => {
     config.include.includes('src/__tests__/package-integration/**/*.ts')
   );
   for (const extension of ['ts', 'tsx']) {
-    const input = `apps/www/src/registry/components/editor/plugins/**/*.${extension}`;
+    const input = `apps/www/src/registry/components/editor/**/*.${extension}`;
 
     assert.equal(
       workflow.match(
@@ -443,7 +443,7 @@ test('Plite CI watches and typechecks the bounded www adopter surface', () => {
     );
     assert.ok(
       config.include.includes(
-        `src/registry/components/editor/plugins/**/*.${extension}`
+        `src/registry/components/editor/**/*.${extension}`
       )
     );
   }

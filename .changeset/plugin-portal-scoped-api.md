@@ -2,6 +2,12 @@
 "@platejs/core": major
 ---
 
+Require React and React DOM 19.2 or newer.
+
+Remove `withHOC`, `useEditableProps`, `usePlateRootProps`, and the public
+node-attribute hook. Compose concrete React 19 components directly and receive
+`ref` as a normal prop.
+
 Export named `*PluginState` contracts for state-owning Core descriptors,
 including debug, DOM, navigation feedback, and persisted element IDs.
 Replace the default `NodeIdPlugin` with opt-in `ElementIdPlugin`. It assigns
@@ -69,6 +75,12 @@ rule reference.
 Infer callback-created plugin state from its return type without erasing
 constructor `read`, `update`, or other inferred capabilities.
 
+Require plugin `read` factories to return callable method trees and build each
+tree once per published plugin configuration.
+
+Compile API, read, and update capability trees with plain-record composition
+instead of descriptor merging.
+
 Preserve exact custom selection payloads from installed Plate plugin
 descriptors across editor reads, transactions, and direct updates. Declare a
 custom selection once through `selectionKinds`; editors without that plugin do
@@ -113,6 +125,18 @@ owning call site.
 Replace `pipeInsertDataQuery` with `prepareHtmlParserQuery`, which compiles one
 resolved plugin query and runs it against an immutable editor state.
 
+Replace plugin `transformInitialValue` with `prepareDocument` for installed
+current-schema invariants. Configure application schema upgrades through
+`defineDocumentMigrations(EditorSchema, { steps })`; Plate runs every required
+target-version step before plugin preparation and schema fitting for initial
+and deferred complete-document loads.
+
+Persist `{ document, schema }` and pass the envelope to `initialValue` or
+`editor.update.value.replace(...)`. Use `migrateDocument` to run the same chain
+outside editor publication. Bind each supported historical envelope version to
+its generated schema fingerprint; use an explicit unversioned floor only for
+raw documents without identity metadata.
+
 Remove exported whitespace character aliases in favor of native character
 literals. Preserve the first matching descendant returned by
 `someHtmlElement`.
@@ -150,9 +174,9 @@ mark names.
 
 Skip autofocus, input rule, and override work when lifecycle targets are unavailable.
 
-Preserve initial selections when `transformInitialValue` wraps selected text
-during editor setup. Run the same document-input transforms before schema
-fitting for complete `editor.update.value.replace(...)` loads.
+Preserve selections when application migrations or `prepareDocument` wrap
+selected text during editor setup and complete
+`editor.update.value.replace(...)` loads.
 
 Install typed plugin-object dependencies recursively with deterministic
 overrides, dependency-first ordering, and graph validation.

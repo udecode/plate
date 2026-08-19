@@ -8,3 +8,4 @@ factory exports, and correct clipboard mock writes. Remove the unused
 Pass `Map<string, string>` directly to `createDataTransfer` instead of
 importing `DataTransferDataMap`.
 Emit `hth` fixtures as `tableCell` nodes with `header: true`.
+Replace rank-specific heading JSX fixtures with one heading element and level.

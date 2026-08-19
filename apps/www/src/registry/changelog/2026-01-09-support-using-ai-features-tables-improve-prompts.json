@@ -45,20 +45,24 @@
   "targets": [
     {
       "name": "ai-api",
-      "files": [],
+      "files": [
+        "apps/www/src/registry/app/api/ai/command/prompt/common.ts",
+        "apps/www/src/registry/app/api/ai/command/prompt/getChooseToolPrompt.ts",
+        "apps/www/src/registry/app/api/ai/command/prompt/getCommentPrompt.ts",
+        "apps/www/src/registry/app/api/ai/command/prompt/getEditPrompt.ts",
+        "apps/www/src/registry/app/api/ai/command/prompt/getEditTablePrompt.ts",
+        "apps/www/src/registry/app/api/ai/command/prompt/getGeneratePrompt.ts",
+        "apps/www/src/registry/app/api/ai/command/prompt/index.ts",
+        "apps/www/src/registry/app/api/ai/command/route.ts",
+        "apps/www/src/registry/app/api/ai/command/utils.ts"
+      ],
       "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
-      "diagnostics": [
-        {
-          "severity": "warning",
-          "code": "registry-file-missing",
-          "message": "No exact registry source file found for ai-api."
-        }
-      ]
+      "diagnostics": []
     },
     {
       "name": "ai-menu",
-      "files": ["apps/www/src/registry/ui/ai-menu.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "files": ["apps/www/src/registry/components/editor/ai-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
       "diagnostics": []
     },
     {
@@ -69,8 +73,8 @@
     },
     {
       "name": "cursor-overlay",
-      "files": ["apps/www/src/registry/ui/cursor-overlay.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "files": ["apps/www/src/registry/components/editor/cursor-overlay.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
       "diagnostics": []
     }
   ],

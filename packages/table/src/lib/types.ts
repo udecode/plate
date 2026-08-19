@@ -55,10 +55,10 @@ export type BorderStylesDefault = {
   top?: TableCellBorder;
 };
 
-export type SetBorderSizeOptions = {
+export type SetBorderWidthOptions = {
   at?: Path;
   border?: BorderDirection | 'all';
-  size: number;
+  width: number;
 };
 
 export type TableBorderStates = {

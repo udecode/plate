@@ -1,52 +1,70 @@
 #!/usr/bin/env node
 
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import {
+  existsSync,
+  lstatSync,
+  readFileSync,
+  readlinkSync,
+  readdirSync,
+} from 'node:fs';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { spawnSync } from 'node:child_process';
+
+import { resourcePairs, retiredGeneratedPaths } from './sync-resources.mjs';
 
 const scriptPath = fileURLToPath(import.meta.url);
 const defaultRoot = resolve(dirname(scriptPath), '../../../..');
-const doctrinePaths = [
+export const doctrinePaths = [
+  '.agents/AGENTS.md',
+  '.agents/rules/plate-feature.mdc',
+  '.agents/rules/plate-feature/rules/manifest.md',
+  '.agents/rules/plate-feature/rules/phases.md',
+  '.agents/rules/plate-feature/rules/proof-routing.md',
   '.agents/rules/plate-next.mdc',
+  '.agents/rules/plate-next/rules/audit-modes.md',
+  '.agents/rules/plate-next/rules/ownership-and-correction.md',
+  '.agents/rules/plate-next/rules/review-law.md',
+  '.agents/rules/plate-next/scripts/version.mjs',
+  '.agents/rules/best-api.mdc',
+  '.agents/rules/best-api/rules/authoring-and-inference.md',
+  '.agents/rules/best-api/rules/behavior-and-ownership.md',
+  '.agents/rules/best-api/rules/schema-and-identity.md',
+  '.agents/rules/docs-creator.mdc',
+  '.agents/rules/docs-creator/rules/lane-templates.md',
+  '.agents/rules/docs-creator/rules/style-and-structure.md',
   '.agents/rules/plate-plugin-creator.mdc',
   '.agents/rules/plate-plugin-creator/references/plugin-authoring-audit.md',
+  '.agents/rules/plate-plugin-creator/rules/capabilities.md',
   '.agents/rules/plate-plugin-creator/rules/creation-flow.md',
   '.agents/rules/plate-plugin-creator/rules/typing.md',
   '.agents/rules/plate-ui.mdc',
   '.agents/rules/plate-ui/references/component-audit.md',
+  '.agents/rules/plate-ui/rules/component-family.md',
   '.agents/rules/plate-ui/rules/component-shape.md',
+  '.agents/rules/plate-ui/rules/cross-platform.md',
+  '.agents/rules/plate-ui/rules/ownership.md',
+  '.agents/rules/plate-ui/rules/react-performance.md',
   '.agents/rules/plate-ui/rules/registry.md',
+  '.agents/rules/plate-ui/rules/shadcn-proofing.md',
   '.agents/rules/plate-next/scripts/sync-resources.mjs',
+  '.agents/rules/plate-next/scripts/version.test.mjs',
+  'docs/plans/templates/plate-feature.md',
+  'docs/plans/templates/packs/plate-next-attestation.md',
   'docs/plans/templates/plate-next.md',
+  'tooling/scripts/check-plate-feature.mjs',
+  'tooling/scripts/check-plate-feature.test.mjs',
 ];
-const requiredGeneratedResources = [
-  [
-    '.agents/rules/plate-plugin-creator/references/plugin-authoring-audit.md',
-    '.agents/skills/plate-plugin-creator/references/plugin-authoring-audit.md',
-  ],
-  [
-    '.agents/rules/plate-plugin-creator/rules/creation-flow.md',
-    '.agents/skills/plate-plugin-creator/rules/creation-flow.md',
-  ],
-  [
-    '.agents/rules/plate-plugin-creator/rules/typing.md',
-    '.agents/skills/plate-plugin-creator/rules/typing.md',
-  ],
-  [
-    '.agents/rules/plate-ui/references/component-audit.md',
-    '.agents/skills/plate-ui/references/component-audit.md',
-  ],
-  [
-    '.agents/rules/plate-ui/rules/component-shape.md',
-    '.agents/skills/plate-ui/rules/component-shape.md',
-  ],
-  [
-    '.agents/rules/plate-ui/rules/registry.md',
-    '.agents/skills/plate-ui/rules/registry.md',
-  ],
-];
-const requiredGeneratedSkills = [
+export const requiredGeneratedResources = resourcePairs;
+
+export const requiredGeneratedSkills = [
+  {
+    generatedPath: '.agents/skills/plate-feature/SKILL.md',
+    heading: '# Plate Feature',
+    name: 'plate-feature',
+    sourcePath: '.agents/rules/plate-feature.mdc',
+  },
   {
     generatedPath: '.agents/skills/plate-next/SKILL.md',
     heading: '# Plate Next',
@@ -96,12 +114,22 @@ const ignoredFiles = new Set([
 const datePattern = /^\d{4}-\d{2}-\d{2}$/;
 const doctrineVersionPattern = /Current doctrine version: `(\d+)`\./;
 const frontmatterPattern = /^---\n([\s\S]*?)\n---/;
-const frontmatterPropertyPattern = /^([^:\s][^:]*):/;
 const reviewedPackageBlockPattern =
   /const reviewedPackageSlugs = \[([\s\S]*?)\n\];/;
 const reviewedPackageSlugPattern = /'([^']+)'/g;
 const sha256Pattern = /^sha256:[a-f0-9]{64}$/;
-const compare = (left, right) => left.localeCompare(right);
+const compare = (left, right) => (left < right ? -1 : left > right ? 1 : 0);
+
+const canonicalize = (value) => {
+  if (Array.isArray(value)) return value.map(canonicalize);
+  if (value === null || typeof value !== 'object') return value;
+
+  return Object.fromEntries(
+    Object.keys(value)
+      .sort(compare)
+      .map((key) => [key, canonicalize(value[key])])
+  );
+};
 
 export const readDeclaredDoctrineVersion = (source) => {
   const value = source.match(doctrineVersionPattern)?.[1];
@@ -127,6 +155,27 @@ export const computeDoctrineFingerprint = (root) => {
     hash.update('\0');
   }
 
+  const registry = JSON.parse(
+    readFileSync(join(root, '.agents/rules/plate-next/versions.json'), 'utf8')
+  );
+  const versions = Array.isArray(registry.versions)
+    ? registry.versions.map((entry, index, entries) => {
+        if (index !== entries.length - 1 || entry === null) return entry;
+        const { doctrineFingerprint: _currentFingerprint, ...currentEntry } =
+          entry;
+
+        return currentEntry;
+      })
+    : registry.versions;
+
+  hash.update('plate-next-version-history:v1\0');
+  hash.update(
+    JSON.stringify(
+      canonicalize({ schemaVersion: registry.schemaVersion, versions })
+    )
+  );
+  hash.update('\0');
+
   return `sha256:${hash.digest('hex')}`;
 };
 
@@ -140,29 +189,10 @@ export const haveMatchingRequiredResources = (root) =>
       existsSync(generated) &&
       readFileSync(source).equals(readFileSync(generated))
     );
-  });
-
-const readFrontmatterGroups = (value) => {
-  const frontmatter = value.match(frontmatterPattern)?.[1];
-
-  if (!frontmatter) return null;
-
-  const groups = new Map();
-  let currentKey = null;
-
-  for (const line of frontmatter.split('\n')) {
-    const key = line.match(frontmatterPropertyPattern)?.[1] ?? null;
-
-    if (key) {
-      currentKey = key;
-      groups.set(key, line);
-    } else if (currentKey) {
-      groups.set(currentKey, `${groups.get(currentKey)}\n${line}`);
-    }
-  }
-
-  return groups;
-};
+  }) &&
+  retiredGeneratedPaths.every(
+    (generatedPath) => !existsSync(join(root, generatedPath))
+  );
 
 export const haveMatchingSkillSource = (
   source,
@@ -173,41 +203,13 @@ export const haveMatchingSkillSource = (
     sourcePath = '.agents/rules/plate-next.mdc',
   } = {}
 ) => {
-  const expectedGeneratedFrontmatter = new Map([
-    ['metadata', `metadata:\n  skiller:\n    source: ${sourcePath}`],
-    ['name', `name: ${name}`],
-  ]);
-  const sourceStart = source.indexOf(heading);
-  const generatedStart = generated.indexOf(heading);
-  const sourceFrontmatter = readFrontmatterGroups(source);
-  const generatedFrontmatter = readFrontmatterGroups(generated);
+  const sourceFrontmatter = source.match(frontmatterPattern);
+  if (!sourceFrontmatter || !source.includes(heading)) return false;
 
-  if (
-    sourceStart === -1 ||
-    generatedStart === -1 ||
-    !sourceFrontmatter ||
-    !generatedFrontmatter
-  ) {
-    return false;
-  }
-  for (const [key, value] of sourceFrontmatter) {
-    if (generatedFrontmatter.get(key) !== value) return false;
-  }
-  const generatedOnlyKeys = [...generatedFrontmatter.keys()].filter(
-    (key) => !sourceFrontmatter.has(key)
-  );
+  const sourceBody = source.slice(sourceFrontmatter[0].length);
+  const expected = `---\n${sourceFrontmatter[1]}\nname: ${name}\nmetadata:\n  skiller:\n    source: ${sourcePath}\n---${sourceBody}`;
 
-  if (
-    generatedOnlyKeys.length !== expectedGeneratedFrontmatter.size ||
-    generatedOnlyKeys.some(
-      (key) =>
-        generatedFrontmatter.get(key) !== expectedGeneratedFrontmatter.get(key)
-    )
-  ) {
-    return false;
-  }
-
-  return source.slice(sourceStart) === generated.slice(generatedStart);
+  return generated === expected;
 };
 
 export const haveMatchingRequiredSkills = (root) =>
@@ -246,7 +248,6 @@ const collectPackageFiles = (packageDirectory, directory = packageDirectory) =>
   readdirSync(directory, { withFileTypes: true })
     .sort((left, right) => compare(left.name, right.name))
     .flatMap((entry) => {
-      if (entry.isSymbolicLink()) return [];
       if (entry.isDirectory() && ignoredDirectories.has(entry.name)) return [];
       if (entry.isFile() && ignoredFiles.has(entry.name)) return [];
       if (entry.isFile() && entry.name.endsWith('.log')) return [];
@@ -256,7 +257,7 @@ const collectPackageFiles = (packageDirectory, directory = packageDirectory) =>
       if (entry.isDirectory()) {
         return collectPackageFiles(packageDirectory, path);
       }
-      if (!entry.isFile()) return [];
+      if (!entry.isFile() && !entry.isSymbolicLink()) return [];
 
       return [path];
     });
@@ -271,19 +272,35 @@ export const computePackageFingerprint = (root, slug) => {
   const files = collectPackageFiles(packageDirectory);
   const hash = createHash('sha256');
 
-  hash.update('plate-next-package-fingerprint:v1\0');
+  hash.update('plate-next-package-fingerprint:v2\0');
 
-  for (const path of files) {
-    const packagePath = relative(packageDirectory, path).split(sep).join('/');
+  const packagePaths = files.map((path) =>
+    relative(packageDirectory, path).split(sep).join('/')
+  );
+  const updateRecordField = (value) => {
+    const bytes = Buffer.isBuffer(value) ? value : Buffer.from(value);
+    const length = Buffer.allocUnsafe(8);
 
-    hash.update(packagePath);
-    hash.update('\0');
-    hash.update(readFileSync(path));
-    hash.update('\0');
+    length.writeBigUInt64BE(BigInt(bytes.length));
+    hash.update(length);
+    hash.update(bytes);
+  };
+
+  for (let index = 0; index < files.length; index++) {
+    const path = files[index];
+    const packagePath = packagePaths[index];
+    const kind = lstatSync(path).isSymbolicLink() ? 'symlink' : 'file';
+    const contents =
+      kind === 'symlink' ? Buffer.from(readlinkSync(path)) : readFileSync(path);
+
+    updateRecordField(packagePath);
+    updateRecordField(kind);
+    updateRecordField(contents);
   }
 
   return {
     fileCount: files.length,
+    files: packagePaths,
     fingerprint: `sha256:${hash.digest('hex')}`,
   };
 };
@@ -291,7 +308,76 @@ export const computePackageFingerprint = (root, slug) => {
 const isPlainObject = (value) =>
   value !== null && typeof value === 'object' && !Array.isArray(value);
 
+const isValidEvidencePlan = (root, value) =>
+  typeof value === 'string' &&
+  value.startsWith('docs/plans/') &&
+  value.endsWith('.md') &&
+  !value.includes('\\') &&
+  !value.split('/').includes('..') &&
+  (!root || existsSync(join(root, value)));
+
+export const selectDoctrineBaseRef = ({ dirty, override, versionCommits }) => {
+  if (override) return override;
+  if (dirty) return 'HEAD';
+  if (versionCommits.length < 2) {
+    throw new Error(
+      'Could not find the prior Plate Next registry revision; set PLATE_NEXT_BASE to an immutable base ref.'
+    );
+  }
+
+  return versionCommits[1];
+};
+
+const readBaseRegistry = (root) => {
+  const doctrineInputs = [
+    ...doctrinePaths,
+    '.agents/rules/plate-next/versions.json',
+  ];
+  const diff = spawnSync(
+    'git',
+    ['diff', '--quiet', 'HEAD', '--', ...doctrineInputs],
+    { cwd: root }
+  );
+  if (![0, 1].includes(diff.status)) {
+    throw new Error('Could not inspect the Plate Next doctrine baseline.');
+  }
+
+  const versionHistory = spawnSync(
+    'git',
+    [
+      'log',
+      '--format=%H',
+      '-n',
+      '2',
+      '--',
+      '.agents/rules/plate-next/versions.json',
+    ],
+    { cwd: root, encoding: 'utf8' }
+  );
+  if (versionHistory.status !== 0) {
+    throw new Error('Could not inspect Plate Next registry history.');
+  }
+  const baseRef = selectDoctrineBaseRef({
+    dirty: diff.status === 1,
+    override: process.env.PLATE_NEXT_BASE,
+    versionCommits: versionHistory.stdout.trim().split('\n').filter(Boolean),
+  });
+  const result = spawnSync(
+    'git',
+    ['show', `${baseRef}:.agents/rules/plate-next/versions.json`],
+    { cwd: root, encoding: 'utf8' }
+  );
+  if (result.status !== 0) {
+    throw new Error(
+      `Could not read Plate Next baseline ${baseRef}; set PLATE_NEXT_BASE to an immutable base ref.`
+    );
+  }
+
+  return { baseRef, registry: JSON.parse(result.stdout) };
+};
+
 export const validateRegistry = ({
+  baseRegistry,
   currentDoctrineFingerprint,
   declaredVersion,
   generatedResourcesMatch,
@@ -378,6 +464,36 @@ export const validateRegistry = ({
       'Current Plate Next doctrine fingerprint does not match the latest version entry; bump the doctrine version.'
     );
   }
+  if (baseRegistry) {
+    const baseVersions = Array.isArray(baseRegistry.versions)
+      ? baseRegistry.versions
+      : [];
+    const currentPrefix = Array.isArray(registry.versions)
+      ? registry.versions.slice(0, baseVersions.length)
+      : [];
+
+    if (
+      JSON.stringify(canonicalize(currentPrefix)) !==
+      JSON.stringify(canonicalize(baseVersions))
+    ) {
+      errors.push(
+        'Current version history must preserve the immutable base versions as an exact prefix.'
+      );
+    }
+    if (registry.latestVersion < baseRegistry.latestVersion) {
+      errors.push(
+        'latestVersion cannot move behind the immutable base registry.'
+      );
+    } else if (
+      registry.latestVersion === baseRegistry.latestVersion &&
+      currentDoctrineFingerprint !==
+        baseRegistry.versions?.at(-1)?.doctrineFingerprint
+    ) {
+      errors.push(
+        'Fingerprint inputs changed without a doctrine version increment from the immutable base.'
+      );
+    }
+  }
   if (generatedSkillsMatch === false) {
     errors.push(
       'Required generated doctrine skills are stale; run pnpm install and revalidate.'
@@ -455,9 +571,9 @@ export const validateRegistry = ({
           `packages.${slug}.verifiedAt must be YYYY-MM-DD after attestation.`
         );
       }
-      if (typeof entry.evidence !== 'string' || entry.evidence.length === 0) {
+      if (!isValidEvidencePlan(root, entry.evidence)) {
         errors.push(
-          `packages.${slug}.evidence must name the closed plan after attestation.`
+          `packages.${slug}.evidence must name an existing repo-relative docs/plans/*.md file after attestation.`
         );
       }
     }
@@ -487,9 +603,9 @@ export const validateRegistry = ({
     if (!datePattern.test(entry.retiredAt ?? '')) {
       errors.push(`retiredPackages.${slug}.retiredAt must be YYYY-MM-DD.`);
     }
-    if (typeof entry.evidence !== 'string' || entry.evidence.length === 0) {
+    if (!isValidEvidencePlan(root, entry.evidence)) {
       errors.push(
-        `retiredPackages.${slug}.evidence must name the retirement plan.`
+        `retiredPackages.${slug}.evidence must name an existing repo-relative docs/plans/*.md retirement plan.`
       );
     }
     if (root && existsSync(join(root, 'packages', slug, 'package.json'))) {
@@ -589,7 +705,9 @@ const loadContext = (root = defaultRoot) => {
   const reviewedSlugs = readReviewedPackageSlugs(
     readFileSync(checkCorePath, 'utf8')
   );
+  const baseline = readBaseRegistry(root);
   const errors = validateRegistry({
+    baseRegistry: baseline.registry,
     currentDoctrineFingerprint,
     declaredVersion,
     generatedResourcesMatch,
@@ -605,6 +723,7 @@ const loadContext = (root = defaultRoot) => {
     generatedResourcesMatch,
     generatedSkillsMatch,
     errors,
+    baseRef: baseline.baseRef,
     registry,
     registryPath,
     reviewedSlugs,

@@ -6,7 +6,7 @@ jsx;
 
 export const basicMarksValue = (
   <fragment>
-    <hh2>标记</hh2>
+    <hheading level={2}>标记</hheading>
     <hp>使用标记插件为你的文本添加样式和强调，它提供了多种格式化选项。</hp>
     <hp>
       让文本变得<htext bold>粗体</htext>、<htext italic>斜体</htext>、

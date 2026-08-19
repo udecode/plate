@@ -1,7 +1,7 @@
 import { AIChatPlugin } from '@platejs/ai/react';
 import { createBaseEditor, type Range, type Value } from 'platejs';
 
-import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
+import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 
 const createTestEditor = (value: Value) => {
   const refByFixtureId: Record<string, string> = {};
@@ -38,7 +38,8 @@ describe('AIChatPlugin read.commentRange', () => {
             text: 'Welcome to the Plate Playground!',
           },
         ],
-        type: 'h1',
+        level: 1,
+        type: 'heading',
       },
       {
         id: '5zZ8_hM53b',
@@ -92,7 +93,8 @@ describe('AIChatPlugin read.commentRange', () => {
             text: 'Collaborative Editing',
           },
         ],
-        type: 'h2',
+        level: 2,
+        type: 'heading',
       },
       {
         id: 'YY-HyLNMl-',
@@ -186,7 +188,8 @@ describe('AIChatPlugin read.commentRange', () => {
             text: 'AI-Powered Editing',
           },
         ],
-        type: 'h2',
+        level: 2,
+        type: 'heading',
       },
       {
         id: 'gw4Fd3XZU6',
@@ -231,7 +234,7 @@ describe('AIChatPlugin read.commentRange', () => {
           },
         ],
         indent: 1,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
       {
@@ -242,8 +245,7 @@ describe('AIChatPlugin read.commentRange', () => {
           },
         ],
         indent: 1,
-        listStart: 2,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
       {
@@ -253,7 +255,8 @@ describe('AIChatPlugin read.commentRange', () => {
             text: 'Rich Content Editing',
           },
         ],
-        type: 'h2',
+        level: 2,
+        type: 'heading',
       },
       {
         id: '-WVMecrPDQ',

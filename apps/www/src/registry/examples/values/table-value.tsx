@@ -11,7 +11,7 @@ export const createTable = (spanning?: boolean) => {
     <fragment>
       <htable
         id={`${id}-table`}
-        colSizes={[100, 100, 100, 100]}
+        columnWidths={[100, 100, 100, 100]}
         marginLeft={20}
       >
         {spanning ? (
@@ -106,7 +106,9 @@ export const createTable = (spanning?: boolean) => {
 
 export const tableValue = (
   <fragment>
-    <hh2 id="table-demo-heading">Table</hh2>
+    <hheading level={2} id="table-demo-heading">
+      Table
+    </hheading>
     <hp id="table-demo-description">
       Create customizable tables with resizable columns and rows, allowing you
       to design structured layouts.
@@ -117,7 +119,9 @@ export const tableValue = (
 
 export const tableMergeValue = (
   <fragment>
-    <hh3 id="table-merge-demo-heading">Table Merge</hh3>
+    <hheading level={3} id="table-merge-demo-heading">
+      Table Merge
+    </hheading>
     <hp id="table-merge-demo-description">
       You can disable merging using <htext code>disableMerge: true</htext>{' '}
       option. Try it out:

@@ -4,4 +4,3 @@
 
 export * from './Resizable';
 export * from './resizeLength';
-export * from './useResizable';

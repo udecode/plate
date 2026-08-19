@@ -3,4 +3,3 @@
  */
 
 export * from './EmojiPlugin';
-export * from './useEmojiPicker';

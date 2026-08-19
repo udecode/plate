@@ -2,12 +2,7 @@ import {
   BaseBlockquotePlugin,
   BaseBoldPlugin,
   BaseCodePlugin,
-  BaseH1Plugin,
-  BaseH2Plugin,
-  BaseH3Plugin,
-  BaseH4Plugin,
-  BaseH5Plugin,
-  BaseH6Plugin,
+  BaseHeadingPlugin,
   BaseHighlightPlugin,
   BaseHorizontalRulePlugin,
   BaseItalicPlugin,
@@ -67,12 +62,8 @@ import {
 import { remarkMdx, remarkMention } from '../plugins';
 
 const testSchemaPlugins: readonly BasePluginInput[] = [
-  BaseH1Plugin,
-  BaseH2Plugin,
-  BaseH3Plugin,
-  BaseH4Plugin,
-  BaseH5Plugin,
-  BaseH6Plugin,
+  BaseHeadingPlugin,
+
   BaseBlockquotePlugin,
   BaseHorizontalRulePlugin,
   BaseBoldPlugin,

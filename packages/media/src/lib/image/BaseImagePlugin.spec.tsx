@@ -47,6 +47,28 @@ describe('BaseImagePlugin clipboard behavior', () => {
       initialValue: [{ children: [{ text: 'test' }], type: 'paragraph' }],
     });
 
+  it('accepts positive intrinsic dimensions and rejects fractional values', () => {
+    const editor = createEditor();
+    const document = (naturalWidth: number) => ({
+      children: [
+        {
+          children: [{ text: '' }],
+          naturalHeight: 480,
+          naturalWidth,
+          type: 'image',
+          url: 'https://platejs.org/image.png',
+        },
+      ],
+    });
+
+    expect(() =>
+      editor.read.schema.assertDocument(document(640))
+    ).not.toThrow();
+    expect(() => editor.read.schema.assertDocument(document(640.5))).toThrow(
+      /naturalWidth.*validation/i
+    );
+  });
+
   it('inserts at an exact explicit target through the flat scoped update', () => {
     const editor = createEditor();
 

@@ -1,7 +1,7 @@
 ---
 title: Blockquote
 docs:
-  - route: /docs/components/blockquote-node
+  - route: /docs/components/blockquote
     title: Blockquote Element
 ---
 
@@ -25,9 +25,9 @@ docs:
 
 The fastest way to add the blockquote plugin is with the `BasicBlocksKit`, which includes pre-configured `BlockquotePlugin` along with other basic block elements and their [Plate UI](/docs/installation/plate-ui) components.
 
-<ComponentSource name="basic-blocks-kit" />
+<ComponentSource name="basic-blocks" />
 
-- [`BlockquoteElement`](/docs/components/blockquote-node): Renders blockquote elements.
+- [`BlockquoteElement`](/docs/components/blockquote): Renders blockquote elements.
 
 ### Add Kit
 
@@ -35,7 +35,7 @@ Add the kit to your plugins:
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { BasicBlocksKit } from '@/components/editor/plugins/basic-blocks-kit';
+import { BasicBlocksKit } from '@/components/editor/basic-blocks';
 
 const editor = createPlateEditor({
   plugins: [
@@ -81,7 +81,7 @@ The `toggle` shortcut dispatches the plugin's structural toggle command.
 ```tsx
 import { BlockquotePlugin } from '@platejs/basic-nodes/react';
 import { createPlateEditor } from 'platejs/react';
-import { BlockquoteElement } from '@/components/ui/blockquote-node';
+import { BlockquoteElement } from '@/components/editor/blockquote';
 
 const editor = createPlateEditor({
   plugins: [
@@ -94,7 +94,7 @@ const editor = createPlateEditor({
 });
 ```
 
-- `.configure({ component })`: Assigns [`BlockquoteElement`](/docs/components/blockquote-node) to render blockquote elements.
+- `.configure({ component })`: Assigns [`BlockquoteElement`](/docs/components/blockquote) to render blockquote elements.
 - `shortcuts.toggle`: Dispatches `editor.plugin(BlockquotePlugin).update.toggle()`.
 
 ### Turn Into Toolbar Button

@@ -1,10 +1,11 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { property, schema } from '@platejs/plite';
+import { editorCommands, property, schema } from '@platejs/plite';
 import {
   insertBreak,
   insertText,
+  probeCommandNativeEquivalent,
   string as editorString,
 } from '@platejs/plite/internal';
 import { BaseParagraphPlugin } from '../../lib/plugins';
@@ -93,6 +94,37 @@ describe('input rules', () => {
     insertText(editor, '*');
 
     expect(apply).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps non-trigger input native and classifies a handled rule as material', () => {
+    const editor = createPlateEditor({
+      plugins: [
+        definePlatePlugin('testPlugin', {}).configure({
+          inputRules: [
+            defineInputRule({
+              apply: () => true,
+              target: 'insertText',
+              trigger: '*',
+            }),
+          ],
+        }),
+      ],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
+    } as any);
+
+    expect(
+      probeCommandNativeEquivalent(editor, editorCommands.insertText, {
+        text: 'x',
+      })
+    ).toEqual({ materialHandlers: [], nativeEquivalent: true });
+    expect(
+      probeCommandNativeEquivalent(editor, editorCommands.insertText, {
+        text: '*',
+      })
+    ).toEqual({
+      materialHandlers: ['inputRules'],
+      nativeEquivalent: false,
+    });
   });
 
   it('keeps generated competing insertText rules single-winner', () => {

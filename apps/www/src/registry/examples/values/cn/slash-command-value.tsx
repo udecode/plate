@@ -6,32 +6,32 @@ jsx;
 
 export const slashCommandValue = (
   <fragment>
-    <hh2>
+    <hheading level={2}>
       <htext>斜杠命令</htext>
-    </hh2>
+    </hheading>
     <hp>
       <htext>斜杠菜单提供了快速访问各种格式化选项和内容类型的方式。</htext>
     </hp>
-    <hp indent={1} listStyleType="disc">
+    <hp indent={1} listType="bulleted">
       <htext>在文档中的任何位置输入 '/' 即可打开斜杠菜单。</htext>
     </hp>
-    <hp indent={1} listStyleType="disc">
+    <hp indent={1} listType="bulleted">
       <htext>开始输入以筛选选项，或使用方向键导航。</htext>
     </hp>
-    <hp indent={1} listStyleType="disc">
+    <hp indent={1} listType="bulleted">
       <htext>按回车键或点击以选择选项。</htext>
     </hp>
-    <hp indent={1} listStyleType="disc">
+    <hp indent={1} listType="bulleted">
       <htext>按 Escape 键可以不选择而关闭菜单。</htext>
     </hp>
     <hp>可用选项包括：</hp>
-    <hp indent={1} listStyleType="disc">
+    <hp indent={1} listType="bulleted">
       <htext>标题：一级标题、二级标题、三级标题</htext>
     </hp>
-    <hp indent={1} listStyleType="disc">
+    <hp indent={1} listType="bulleted">
       <htext>列表：无序列表、有序列表</htext>
     </hp>
-    <hp indent={1} listStyleType="disc">
+    <hp indent={1} listType="bulleted">
       <htext>内联元素：日期</htext>
     </hp>
     {/* <hcallout variant="info" icon="💡">

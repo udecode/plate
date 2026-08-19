@@ -171,6 +171,10 @@ Current priorities:
 - Feature state uses Plite `NodeKey` values for live node identity and names
   those fields `key` or `keys`, never `id`. Optional durable element identity
   belongs to `ElementIdPlugin` under the canonical schema property `id`.
+  Persisted associations use `ref` or `refs`; definitions and references may
+  share one `ref`, while separate occurrences keep distinct element IDs.
+  External names such as MDAST `identifier` stay inside codecs, and semantic
+  addresses such as `url` keep their domain name.
   Exact generated nodes read `element.id`; generic package boundaries use the
   installed plugin portal. Runtime keys never leak into persisted content.
   One-request protocols expose small refs mapped to local `NodeKey` values;
@@ -222,6 +226,17 @@ Current priorities:
   on the plugin root; context-dependent behavior stays inside the authoring
   callback, while independently reusable standalone descriptors use the Plite
   builder with domain inputs and compose as dependencies.
+- Persisted document lineage lives in an app-owned `{ document, schema }`
+  envelope. A named app schema owns one ascending target-version migration
+  chain and the expected generated fingerprint for every supported historical
+  envelope version. `migrateDocument` runs it for runtime or offline callers
+  before installed-plugin preparation and schema fitting; missing versions and
+  identity drift fail closed. Only an explicit unversioned floor may omit
+  historical fingerprint proof.
+- `prepareDocument` is an installed-plugin invariant hook for current-schema
+  documents. It is not a release migration, normalizer, source-version
+  selector, or replacement for an application migration chain. History and
+  Yjs room cutovers remain app-owned persistence policy.
 - Plugin constructors own every independent author contribution: `api`,
   `read`, `selectors`, `update`, flat native Plite fields, `codecs`, and
   ordinary Plate fields and their context callbacks. There is no nested
@@ -265,6 +280,16 @@ Current priorities:
   element identity, and encoded tag name. External MDAST, HTML, and MDX syntax
   remains literal. Legacy tags migrate before codec dispatch; codecs never
   accept both identities.
+- Plate documents stay editor-native: `Text` leaves use `text`, elements use
+  `type` and `children`, and feature properties stay flat and schema-owned.
+  Parameter values never become fake plugin identities. First-party fields use
+  semantic names such as `heading.level`, `codeBlock.language`,
+  `table.columnWidths`, `listType`, and persisted association `ref`. Derived display state, upload
+  workflow state, and format-specific names do not enter canonical JSON.
+  Inactive author intent is not derived state: when a legal later edit can make
+  stored intent observable, preserve that intent instead of snapshotting only
+  its current effect during migration.
+  UNIST and MDAST are adapter targets, not the live Plate AST.
 - Structural Plate nodes synthesized by a format runtime, including wrappers
   and unknown-node fallbacks, resolve the installed application schema type.
   Literal types remain only on the external format tree or when the Plate
@@ -320,6 +345,9 @@ Current priorities:
   the active transaction; flat native Plite fields own genuine editor-wide
   substrate. Immutable API publication does not imply method purity, but
   document reads and writes still belong in `read` and `update`.
+- Plate compiles `api`, `read`, and `update` capability trees once per plugin
+  configuration with plain-record recursion and source-order replacement.
+  Descriptor merging never owns runtime capability values.
 - Every element plugin gets descriptor-bound `insert`, `set`, and `remove` on
   `editor.plugin(Plugin).update`. Default-constructible, schema-compatible text
   blocks also get `toggle`; text blocks with required construction properties
@@ -483,15 +511,31 @@ Current priorities:
   staging API. Existing exact stages may keep a broken build green while that
   owner repair is active, but they are tracked debt rather than accepted
   architecture and must be deleted before current-doctrine attestation.
-- React files follow durable families rather than individual symbols or
-  implementation kinds. Keep a component family in one `<Family>.tsx` file
-  with its subcomponents, variants, render helpers, and component-local
-  constants. When that family has hooks, keep every related public and private
-  hook in one `use<Family>.ts[x]` hook-family file, including
-  subcomponent-only hooks. Plugin descriptors, component files, stores, and
-  providers never own hook definitions. A provider or store earns another
-  file only for independently owned state or lifecycle. Public access and
-  sibling composition do not justify more files.
+- `plate-ui` is the sole Plate-specific React/component doctrine owner. Start
+  with one direct `<Family>.tsx` component family containing subcomponents,
+  variants, render helpers, local state, and simple local hook calls. Add at
+  most one `use<Family>.ts[x]` semantic controller when multiple family members
+  or surfaces share real lifecycle. Complex siblings may consume one private
+  family context. Do not create state-hook/prop-hook pipelines, one custom hook
+  per subcomponent, public prop-bag hooks, speculative providers/stores, small
+  component factories/HOCs, React 18 branches, or `forwardRef`. A separate
+  state owner needs independent lifecycle or cross-family reuse.
+- A package may publish a headless React primitive when reusable DOM behavior
+  and accessibility are the contract. The package owns interaction mechanics;
+  copied registry UI owns styles, labels, editor persistence, and product
+  composition. Internal providers, stores, and prop hooks stay private.
+- When one hook mixes durable DOM lifecycle with renderer composition, split
+  it. Keep only the subscription, imperative DOM projection, and cleanup in the
+  package; a side-effect-only adapter takes its required lifecycle input and
+  returns `void`. The copied renderer derives layout/presentation state and
+  owns transient overrides, trivial calculations, and event handlers. A pure
+  helper with one component-family owner is still local, not public API.
+- Measure React ownership at terminal product consumers, not at package-wrapper
+  imports. A hook, store, provider, hotkey controller, or plugin extension used
+  only by copied registry UI is registry-owned when its job is UI or product
+  composition. Package publication requires independent terminal consumers or
+  a durable headless semantic, DOM, or accessibility contract. Siblings inside
+  one component family are one owner, not reuse.
 - Keep feature-package React roots flat by default. A nested component/hook
   directory earns its keep only as a real public subsystem with multiple
   cross-family owners, not as taxonomy or a response to file size.
@@ -500,6 +544,16 @@ Current priorities:
   explicit optional package or registry dependency. Never create a shared
   integration grab bag for dependency-graph aesthetics; extract only a coherent
   capability, durable behavior owner, or real runtime-cycle boundary.
+- Copied Plate registry source installs into one flat `components/editor`
+  namespace; `components/ui` remains the selected shadcn primitive layer.
+  Feature files and item ids use the feature name, while app-owned plugin-array
+  exports use `FooKit`, including one-descriptor features. Keep presentation
+  (`editor.tsx`), static presentation (`editor-static.tsx`), live composition
+  (`plugins.ts`), and static composition (`plugins-static.ts`) separate because
+  their client/server and dependency cycles are real. Primitive-library
+  variants resolve at install time, expose one editor-facing contract, and
+  write to one target; never ship runtime base switching or variant-only shared
+  helpers.
 - Registry surfaces dedicated to `*-classic`, including `list-classic`, are
   maintenance-only pending deprecation. Do not add parity work, new variants,
   shared abstractions, polish, demos, adoption, or API investment. Touch them
@@ -622,6 +676,14 @@ discovers the unique exported plugin tuple and optional schema by validated
 runtime shape rather than fixed export names; it is not required editor setup
 or first-class public teaching. Improve onboarding through templates, docs,
 and registry flows without hiding critical editor decisions.
+
+A copied default editor kit owns plugin composition, not the registry author's
+persisted document lineage. Do not ship a fixed schema ID, migration chain, or
+historical fingerprints beside reusable `EditorKit` source. The real host
+persistence owner chooses its stable identity and migrations; a dedicated
+migration example may teach the complete advanced path. Generated contracts
+derive current schema types without turning that derived schema into persisted
+application identity.
 
 ## What We Will Not Merge For Now
 

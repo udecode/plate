@@ -2,6 +2,11 @@
 "@platejs/toggle": major
 ---
 
+Require React and React DOM 19.2 or newer.
+
+Keep the plugin lifecycle hook private and derive visibility directly in
+`ToggleVisibility`.
+
 Track open toggles and enclosing-toggle indexes with editor-scoped `NodeKey`
 values rather than persisted element IDs.
 
@@ -22,7 +27,7 @@ plugin's `schema.type`. Toggle navigation, delete handling, and selectable-node
 behavior run inside `TogglePlugin`.
 Rendering is owned by `TogglePlugin`; `renderToggleAboveNodes` is not exported.
 
-Export the toggle button, toolbar button, visibility, and plugin lifecycle
-hooks from the colocated `useToggle` family.
+Export `TogglePlugin`; keep `ToggleVisibility` as its renderer implementation,
+while registry buttons own their local UI behavior.
 
 Infer `ToggleVisibility` renderer props from `BaseTogglePlugin`.

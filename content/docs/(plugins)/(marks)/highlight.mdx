@@ -4,7 +4,7 @@ description: Add marked inline text.
 docs:
   - route: /docs/basic-marks
     title: Basic Marks
-  - route: /docs/components/highlight-node
+  - route: /docs/components/highlight
     title: Highlight Leaf
   - route: /docs/components/mark-toolbar-button
     title: Mark Toolbar Button
@@ -37,12 +37,12 @@ Highlight applies the `highlight` leaf mark to selected text. It is the authorin
 
 `BasicMarksKit` includes `HighlightPlugin`, `HighlightLeaf`, `==` and `≡` input rules, and a `mod+shift+h` shortcut.
 
-<ComponentSource name="basic-marks-kit" />
+<ComponentSource name="basic-marks" />
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
 
-import { BasicMarksKit } from '@/components/editor/plugins/basic-marks-kit';
+import { BasicMarksKit } from '@/components/editor/basic-marks';
 
 export const editor = createPlateEditor({
   plugins: [...BasicMarksKit],
@@ -57,7 +57,7 @@ Pass `HighlightPlugin` to `MarkToolbarButton` so the button uses the configured 
 import { HighlighterIcon } from 'lucide-react';
 import { HighlightPlugin } from '@platejs/basic-nodes/react';
 
-import { MarkToolbarButton } from '@/components/ui/mark-toolbar-button';
+import { MarkToolbarButton } from '@/components/editor/mark-toolbar-button';
 
 export function HighlightToolbarButton() {
   return (
@@ -95,7 +95,7 @@ Configure the registry leaf, input rules, and shortcut when you want the same be
 import { HighlightRules } from '@platejs/basic-nodes';
 import { HighlightPlugin } from '@platejs/basic-nodes/react';
 
-import { HighlightLeaf } from '@/components/ui/highlight-node';
+import { HighlightLeaf } from '@/components/editor/highlight';
 
 export const highlightPlugin = HighlightPlugin.configure({
   component: HighlightLeaf,

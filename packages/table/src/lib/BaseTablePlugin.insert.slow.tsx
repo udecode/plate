@@ -370,18 +370,18 @@ describe('table insertion slow contracts', () => {
 
     type MakeTableWithColsOptions = {
       rowCols: string[][];
-      colSizes?: number[];
+      columnWidths?: (number | null)[];
       cursorPath?: [number, number];
     };
 
     const makeTableWithCols = ({
-      colSizes,
+      columnWidths,
       cursorPath,
       rowCols,
     }: MakeTableWithColsOptions): TestEditor => {
       const children = [
         {
-          ...(colSizes ? { colSizes } : {}),
+          ...(columnWidths ? { columnWidths } : {}),
           children: rowCols.map((row) => ({
             children: row.map((text) => ({
               children: [{ children: [{ text }], type: 'paragraph' }],
@@ -549,16 +549,45 @@ describe('table insertion slow contracts', () => {
         });
       });
 
+      describe('without initialTableWidth', () => {
+        it.each([
+          { disableMerge: true },
+          { disableMerge: false },
+        ])('uses null for the unknown inserted width (disableMerge: $disableMerge)', ({
+          disableMerge,
+        }) => {
+          const input = makeTableWithCols({
+            columnWidths: [20, 30],
+            cursorPath: [1, 1],
+            rowCols: [
+              ['11', '12'],
+              ['21', '22'],
+            ],
+          });
+          const editor = createTestTableEditor({
+            plugins: getTestTablePlugins({ disableMerge }),
+            selection: input.selection,
+            initialValue: input.children,
+          });
+
+          editor.update.table.insertColumn();
+
+          expect(editor.read.children()).toMatchObject([
+            { columnWidths: [20, 30, null] },
+          ]);
+        });
+      });
+
       describe('with initialTableWidth', () => {
         describe('when inserting at last column with width less than initialTableWidth', () => {
           it.each([
             { disableMerge: true },
             { disableMerge: false },
-          ])('adds the last column width to colSizes (disableMerge: $disableMerge)', ({
+          ])('adds the last column width to columnWidths (disableMerge: $disableMerge)', ({
             disableMerge,
           }) => {
             const input = makeTableWithCols({
-              colSizes: [20, 30],
+              columnWidths: [20, 30],
               cursorPath: [1, 1],
               rowCols: [
                 ['11', '12'],
@@ -567,7 +596,7 @@ describe('table insertion slow contracts', () => {
             });
 
             const output = makeTableWithCols({
-              colSizes: [20, 30, 30],
+              columnWidths: [20, 30, 30],
               cursorPath: [1, 2],
               rowCols: [
                 ['11', '12', ''],
@@ -595,11 +624,11 @@ describe('table insertion slow contracts', () => {
           it.each([
             { disableMerge: true },
             { disableMerge: false },
-          ])('adds the second column width to colSizes (disableMerge: $disableMerge)', ({
+          ])('adds the second column width to columnWidths (disableMerge: $disableMerge)', ({
             disableMerge,
           }) => {
             const input = makeTableWithCols({
-              colSizes: [20, 30],
+              columnWidths: [20, 30],
               cursorPath: [0, 0],
               rowCols: [
                 ['11', '12'],
@@ -608,7 +637,7 @@ describe('table insertion slow contracts', () => {
             });
 
             const output = makeTableWithCols({
-              colSizes: [20, 30, 30],
+              columnWidths: [20, 30, 30],
               cursorPath: [1, 1],
               rowCols: [
                 ['11', '', '12'],
@@ -634,11 +663,11 @@ describe('table insertion slow contracts', () => {
           it.each([
             { disableMerge: true },
             { disableMerge: false },
-          ])('adds the first column width to colSizes using at (disableMerge: $disableMerge)', ({
+          ])('adds the first column width to columnWidths using at (disableMerge: $disableMerge)', ({
             disableMerge,
           }) => {
             const input = makeTableWithCols({
-              colSizes: [20, 30],
+              columnWidths: [20, 30],
               cursorPath: [0, 0],
               rowCols: [
                 ['11', '12'],
@@ -647,7 +676,7 @@ describe('table insertion slow contracts', () => {
             });
 
             const output = makeTableWithCols({
-              colSizes: [20, 20, 30],
+              columnWidths: [20, 20, 30],
               cursorPath: [1, 0],
               rowCols: [
                 ['', '11', '12'],
@@ -675,11 +704,98 @@ describe('table insertion slow contracts', () => {
           it.each([
             { disableMerge: true },
             { disableMerge: false },
+          ])('keeps scaled widths positive (disableMerge: $disableMerge)', ({
+            disableMerge,
+          }) => {
+            const input = makeTableWithCols({
+              columnWidths: [1],
+              cursorPath: [0, 0],
+              rowCols: [['11']],
+            });
+            const editor = createTestTableEditor({
+              plugins: getTestTablePlugins({
+                disableMerge,
+                initialTableWidth: 1,
+              }),
+              selection: input.selection,
+              initialValue: input.children,
+            });
+
+            editor.update.table.insertColumn();
+
+            expect(editor.read.children()).toMatchObject([
+              { columnWidths: [48, 48] },
+            ]);
+          });
+
+          it.each([
+            { disableMerge: true },
+            { disableMerge: false },
+          ])('handles an empty width array (disableMerge: $disableMerge)', ({
+            disableMerge,
+          }) => {
+            const input = makeTableWithCols({
+              columnWidths: [],
+              cursorPath: [0, 0],
+              rowCols: [['11']],
+            });
+            const editor = createTestTableEditor({
+              plugins: getTestTablePlugins({
+                disableMerge,
+                initialTableWidth: 100,
+              }),
+              selection: input.selection,
+              initialValue: input.children,
+            });
+
+            editor.update.table.insertColumn();
+
+            expect(editor.read.children()).toMatchObject([
+              { columnWidths: [50, 50] },
+            ]);
+          });
+
+          it.each([
+            { disableMerge: true },
+            { disableMerge: false },
+          ])('keeps partial widths within the table width (disableMerge: $disableMerge)', ({
+            disableMerge,
+          }) => {
+            const input = makeTableWithCols({
+              columnWidths: [100, null],
+              cursorPath: [0, 0],
+              rowCols: [['11', '12']],
+            });
+            const editor = createTestTableEditor({
+              plugins: getTestTablePlugins({
+                disableMerge,
+                initialTableWidth: 200,
+              }),
+              selection: input.selection,
+              initialValue: input.children,
+            });
+
+            editor.update.table.insertColumn({ at: [0, 0, 0] });
+
+            const table = editor.read.children()[0] as Element & {
+              columnWidths: number[];
+            };
+
+            expect(table.columnWidths).toHaveLength(3);
+            expect(table.columnWidths.every((width) => width > 0)).toBe(true);
+            expect(
+              table.columnWidths.reduce((total, width) => total + width, 0)
+            ).toBeLessThanOrEqual(200);
+          });
+
+          it.each([
+            { disableMerge: true },
+            { disableMerge: false },
           ])('shrinks all columns by the same factor (disableMerge: $disableMerge)', ({
             disableMerge,
           }) => {
             const input = makeTableWithCols({
-              colSizes: [20, 30, 40],
+              columnWidths: [20, 30, 40],
               cursorPath: [0, 0],
               rowCols: [
                 ['11', '12', '13'],
@@ -688,7 +804,7 @@ describe('table insertion slow contracts', () => {
             });
 
             const output = makeTableWithCols({
-              colSizes: [20, 30, 30, 40].map((w) =>
+              columnWidths: [20, 30, 30, 40].map((w) =>
                 Math.floor((w * 100) / 120)
               ),
               cursorPath: [1, 1],
@@ -720,7 +836,7 @@ describe('table insertion slow contracts', () => {
             disableMerge,
           }) => {
             const input = makeTableWithCols({
-              colSizes: Array.from<number>({ length: 10 }).fill(10),
+              columnWidths: Array.from<number>({ length: 10 }).fill(10),
               cursorPath: [0, 0],
               rowCols: [
                 Array.from<string>({ length: 10 }).fill(''),
@@ -729,7 +845,7 @@ describe('table insertion slow contracts', () => {
             });
 
             const output = makeTableWithCols({
-              colSizes: Array.from<number>({ length: 11 }).fill(10),
+              columnWidths: Array.from<number>({ length: 11 }).fill(10),
               cursorPath: [1, 1],
               rowCols: [
                 Array.from<string>({ length: 11 }).fill(''),
@@ -760,7 +876,7 @@ describe('table insertion slow contracts', () => {
           disableMerge,
         }) => {
           const input = makeTableWithCols({
-            colSizes: [20, 30],
+            columnWidths: [20, 30],
             cursorPath: [1, 1],
             rowCols: [
               ['11', '12'],
@@ -769,7 +885,7 @@ describe('table insertion slow contracts', () => {
           });
 
           const output = makeTableWithCols({
-            colSizes: [20, 30, 30],
+            columnWidths: [20, 30, 30],
             cursorPath: [1, 1],
             rowCols: [
               ['11', '', '12'],

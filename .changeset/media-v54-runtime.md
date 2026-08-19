@@ -2,6 +2,14 @@
 "@platejs/media": major
 ---
 
+Require React and React DOM 19.2 or newer.
+
+Copy the media node renderers, `media-toolbar`, and `media-preview-dialog` for
+rendering, URL editing, preview state, navigation, scale, translation, and
+download behavior. Each copied renderer reads its typed element and primitive
+editor state directly. Remove public media UI stores, providers, monolithic
+components, and UI-only hooks.
+
 Export complete `*PluginState` contracts for audio, file, video, image, media
 embed, and React placeholder descriptors.
 
@@ -28,24 +36,21 @@ embed, and React placeholder descriptors.
   `editor.insert.imageFromFiles` and `insertImageFromFiles`
 - Remove the `withImage*`, `insertImagePlaceholder`, `setMediaNode`, `mediaStore`, `useMediaController*`, `placeholderStore`, and `usePlaceholder*` store and component-state exports
 - Honor disabled file drops and upload configurations without a file-size limit
+- Keep package upload defaults limit-free; copied `MediaKit` owns concrete file
+  counts and size quotas
 - Target image, embed, and placeholder insertion through exact `at` locations
 - Preserve plugin API inference in typed component integrations and accept
   arrays when inserting placeholder media
 - Publish pending upload state only after its placeholder transaction commits
 - Expose the `MediaPlugin` union for typed floating-media URL controls
-- Pass the exact media descriptor to `useMediaState(plugin, options)`
 - Rename `MediaPluginOptions` to `MediaPluginState`
 - Replace `MediaPlaceholderOptions` with the React
   `PlaceholderPluginState`; the headless `BasePlaceholderPlugin` is state-free
 - Register media properties and required direct inline caption children in
   compiled schemas.
-- Export `MediaV54MigrationPlugin` from `@platejs/media/migrations` to convert
-  legacy `img` and `media_embed` element identities to the resolved image and
-  media-embed schema types, then convert the published
-  `caption: Descendant[]` property, including its single-block form, into
-  direct inline children before schema fitting. It also fills a missing legacy
-  media URL with an empty string and removes the retired `placeholderId`
-  property.
+- Convert legacy v53 media identities, captions, missing URLs, and retired
+  placeholder IDs through the shared `migratePlateV54` application document
+  step.
 - Accept caption strings or inline children as construction input and persist
   them as direct media children.
 - Use capability name `mediaEmbed` and persisted element type `mediaEmbed`,
@@ -54,18 +59,28 @@ embed, and React placeholder descriptors.
   `editor.plugin(ImagePlugin).update.set({ width }, { at: element })`.
 - Preserve standalone media embeds through clipboard sanitization by carrying
   sanitized URL and normalized width metadata on the owning figure.
+- Persist source image geometry as `naturalWidth` and `naturalHeight`, separate
+  from the user-selected rendered `width`.
+- Persist optional `name` only on File nodes; other media nodes share only URL,
+  rendered width, and direct caption children.
+- Validate intrinsic image dimensions as positive safe integers.
 
 **Migration:** Remove `@platejs/caption` imports and caption plugin
 registration. Store captions in each media element's direct children and render
-that child slot as the caption. Add the versioned migration plugin while
-loading persisted caption properties:
+that child slot as the caption. Add the shared v54 document step while loading
+persisted caption properties:
 
 ```tsx
-import { MediaV54MigrationPlugin } from '@platejs/media/migrations';
-import { ImagePlugin } from '@platejs/media/react';
+import { defineDocumentMigrations, migratePlateV54 } from 'platejs/migrations';
 
-const plugins = [MediaV54MigrationPlugin, ImagePlugin];
+const migrations = defineDocumentMigrations(EditorSchema, {
+  steps: { 54: migratePlateV54 },
+  unversioned: 53,
+});
 ```
 
-The same migration handles legacy media identities and captions in one pass.
-Remove `MediaV54MigrationPlugin` after every persisted document is resaved.
+The same application step handles legacy media identities and captions in one
+pass.
+
+Use intrinsic image dimensions and semantic file video providers without
+upload workflow fields.

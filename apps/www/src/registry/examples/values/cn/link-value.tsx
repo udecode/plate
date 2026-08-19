@@ -6,7 +6,7 @@ jsx;
 
 export const linkValue = (
   <fragment>
-    <hh2>链接</hh2>
+    <hheading level={2}>链接</hheading>
     <hp>
       使用链接插件在文本中添加
       <ha url="https://en.wikipedia.org/wiki/Hypertext">超链接</ha>{' '}

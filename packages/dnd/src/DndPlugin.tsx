@@ -1,8 +1,8 @@
 import type { DefinitionOf } from '@platejs/core';
 
 import { DndScrollerAfterEditable } from './DndScroller';
+import { useDndPlugin } from './internal/DndStore';
 import { DndStorePlugin } from './internal/DndStorePlugin';
-import { useDndPlugin } from './useDndNode';
 
 export type { DndPluginState } from './internal/DndStorePlugin';
 

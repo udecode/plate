@@ -1,5 +1,5 @@
 import { createBaseEditor, defineBasePlugin } from '@platejs/core';
-import { schema } from '@platejs/plite';
+import { property, schema } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
 
 import { BaseTocPlugin } from './BaseTocPlugin';
@@ -13,24 +13,11 @@ const TestParagraphPlugin = defineBasePlugin(PLUGINS.paragraph, {
 });
 
 const TestHeadingPlugins = [
-  defineBasePlugin(PLUGINS.h1, {
+  defineBasePlugin(PLUGINS.heading, {
     schema: {
       element: {
         content: schema.content.text({ default: 'text', min: 1 }),
-      },
-    },
-  }),
-  defineBasePlugin(PLUGINS.h2, {
-    schema: {
-      element: {
-        content: schema.content.text({ default: 'text', min: 1 }),
-      },
-    },
-  }),
-  defineBasePlugin(PLUGINS.h3, {
-    schema: {
-      element: {
-        content: schema.content.text({ default: 'text', min: 1 }),
+        properties: { level: property.number({ required: true }) },
       },
     },
   }),
@@ -209,11 +196,13 @@ describe('BaseTocPlugin.read.headings', () => {
       initialValue: [
         {
           children: [{ text: 'Title' }],
-          type: 'h1',
+          level: 1,
+          type: 'heading',
         },
         {
           children: [{ text: '' }],
-          type: 'h2',
+          level: 2,
+          type: 'heading',
         },
         {
           children: [{ text: 'Body' }],
@@ -221,7 +210,8 @@ describe('BaseTocPlugin.read.headings', () => {
         },
         {
           children: [{ text: 'Section' }],
-          type: 'h3',
+          level: 3,
+          type: 'heading',
         },
       ],
     });
@@ -233,13 +223,13 @@ describe('BaseTocPlugin.read.headings', () => {
         depth: 1,
         key: editor.key([0])!,
         title: 'Title',
-        type: 'h1',
+        type: 'heading',
       },
       {
         depth: 3,
         key: editor.key([3])!,
         title: 'Section',
-        type: 'h3',
+        type: 'heading',
       },
     ]);
   });
@@ -267,7 +257,8 @@ describe('BaseTocPlugin.read.headings', () => {
       initialValue: [
         {
           children: [{ text: 'Ignored' }],
-          type: 'h1',
+          level: 1,
+          type: 'heading',
         },
       ],
     });
@@ -291,7 +282,8 @@ describe('BaseTocPlugin.read.headings', () => {
       initialValue: [
         {
           children: [{ text: 'Title' }],
-          type: 'h1',
+          level: 1,
+          type: 'heading',
         },
       ],
     });
@@ -308,7 +300,7 @@ describe('BaseTocPlugin.read.headings', () => {
         depth: 1,
         key,
         title: 'Title',
-        type: 'h1',
+        type: 'heading',
       },
     ]);
   });

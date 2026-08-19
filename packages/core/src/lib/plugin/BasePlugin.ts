@@ -10,6 +10,8 @@ import type {
   EditorSchemaExtensionProvider,
   EditorExtensionDefinitionInput,
   EditorExtensionReference,
+  EditorReadMethodRecord,
+  EditorReadMethodTree,
   EditorSelectionSpec,
   EditorNodeChangeContext,
   EditorCoreStateView,
@@ -118,6 +120,23 @@ export type AnyInjectNodeProps = BaseInjectProps & {
   transformProps?: unknown;
   transformStyle?: unknown;
 };
+
+type ResolvePluginSchemaForRead<C extends AnyBasePluginDefinition> =
+  C extends Readonly<{ schema: infer TSchema }>
+    ? TSchema extends (...args: never[]) => infer TDeclaration
+      ? TDeclaration
+      : TSchema
+    : never;
+
+type PluginReadMethodTree<C extends AnyBasePluginDefinition> =
+  ResolvePluginSchemaForRead<C> extends Readonly<{ mark: unknown }>
+    ? EditorReadMethodRecord
+    : EditorReadMethodTree;
+
+type InferPluginRead<C extends AnyBasePluginDefinition> =
+  ResolvePluginSchemaForRead<C> extends Readonly<{ mark: unknown }>
+    ? Extract<InferRead<C>, EditorReadMethodRecord>
+    : InferRead<C>;
 type ErasedPluginInject = {
   excludeBelowPlugins?: readonly (PluginReference | string)[] | null;
   excludePlugins?: readonly (PluginReference | string)[] | null;
@@ -151,6 +170,7 @@ type ErasedPluginRender = {
   leafProps?: unknown;
   node?: NodeComponent | null;
   nodeProps?: unknown;
+  textSync?: boolean | null;
   textProps?: unknown;
 };
 type ErasedPluginRules = {
@@ -202,7 +222,7 @@ export type AnyBasePlugin = {
     components?: NodeComponents;
     plugins?: Record<string, object>;
   };
-  read?: ErasedPluginCallable<object>;
+  read?: ErasedPluginCallable<EditorReadMethodTree>;
   readMiddleware?: ErasedPluginCallable;
   render: ErasedPluginRender;
   rules: ErasedPluginRules;
@@ -214,9 +234,7 @@ export type AnyBasePlugin = {
     EditorExtensionDefinitionInput<BaseEditor>['stateFields']
   >;
   targetPlugins: readonly (PluginReference | string)[];
-  transformInitialValue?: ErasedPluginCallable<
-    EditorDocumentValue | Value
-  > | null;
+  prepareDocument?: ErasedPluginCallable<EditorDocumentValue | Value> | null;
   update?: ErasedPluginCallable<object>;
   useHooks?: ErasedPluginCallable | null;
   validate?: ErasedPluginCallable;
@@ -230,7 +248,7 @@ export type AnyBasePluginPortal = Omit<
 > & {
   readonly api: object;
   readonly installed: boolean;
-  readonly read: object;
+  readonly read: EditorReadMethodTree;
   readonly schema?: Readonly<{ key: string }> | Readonly<{ type: string }>;
   readonly store: object;
   readonly update: object;
@@ -303,12 +321,12 @@ export type NodeStaticProps<
  * `editor.update.value.replace(...)` load. The transform should be
  * deterministic and safe to reapply to canonical documents.
  */
-export type TransformInitialValue<
+export type PrepareDocument<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
 > = (
   ctx: PluginBaseContext<C> & {
+    document: EditorDocumentValue;
     editor: BaseEditor;
-    value: EditorDocumentValue;
   }
 ) => EditorDocumentValue;
 
@@ -918,7 +936,7 @@ type ErasedBasePluginOverride = Partial<{
   selectors: object;
   shortcuts: object;
   targetPlugins: readonly (PluginReference | string)[];
-  transformInitialValue: unknown;
+  prepareDocument: unknown;
 }>;
 
 /**
@@ -1085,7 +1103,7 @@ type BasePluginAuthorFields<
       context: BasePluginContext<C> & {
         state: PlatePluginReadState<C>;
       }
-    ) => InferRead<C>;
+    ) => InferPluginRead<C>;
     update?: (
       context: BasePluginContext<C> & {
         context: EditorUpdateContext;
@@ -1097,7 +1115,7 @@ type BasePluginAuthorFields<
       | PluginCodecMapDeclaration
       | ((context: BasePluginContext<C>) => PluginCodecMapDeclaration);
     decorate?: Decorate<C>;
-    transformInitialValue?: TransformInitialValue<WithAnyName<C>>;
+    prepareDocument?: PrepareDocument<WithAnyName<C>>;
   }> &
   BasePluginMethods<C> & {
     inject: Nullable<{
@@ -1170,7 +1188,7 @@ type BasePluginAuthorFields<
        * Used to override behavior based on node properties beyond just type
        * matching.
        *
-       * Example: List plugin sets `match: ({ node }) => !!node.listStyleType`
+       * Example: List plugin sets `match: ({ node }) => !!node.listType`
        * to override paragraph behavior when the paragraph is a list item.
        *
        * No implicit capability-name or schema-identity match is applied.
@@ -1196,7 +1214,7 @@ type ProjectBasePluginFields<C extends AnyBasePluginDefinition> = Readonly<{
   [TKey in Extract<
     Exclude<
       keyof C,
-      BasePluginRuntimeField | 'decorate' | 'transformInitialValue' | 'useHooks'
+      BasePluginRuntimeField | 'decorate' | 'prepareDocument' | 'useHooks'
     >,
     keyof BasePluginAuthorFields<C>
   >]-?: Exclude<BasePluginAuthorFields<C>[TKey], undefined>;
@@ -1206,7 +1224,7 @@ type ProjectBasePluginContextualFields<C extends AnyBasePluginDefinition> =
   Readonly<{
     [TKey in Extract<
       keyof C,
-      ('decorate' | 'transformInitialValue' | 'useHooks') &
+      ('decorate' | 'prepareDocument' | 'useHooks') &
         keyof BasePluginAuthorFields<C>
     >]-?: Exclude<BasePluginAuthorFields<C>[TKey], undefined>;
   }>;
@@ -1264,7 +1282,7 @@ type BasePluginRuntimeDescriptor<
   | 'read'
   | 'render'
   | 'schema'
-  | 'transformInitialValue'
+  | 'prepareDocument'
   | 'update'
   | 'useHooks'
 > &
@@ -1318,7 +1336,7 @@ export interface BasePlugin<
     context: BasePluginContext<C> & {
       state: PlatePluginReadState<C>;
     }
-  ) => InferRead<C>;
+  ) => InferPluginRead<C>;
   readonly schema: InferPluginSchema<C>;
   readonly selectors: InferSelectors<C>;
   readonly targetPlugins: C extends {
@@ -1360,7 +1378,7 @@ type BasePluginInputFields<C extends AnyBasePluginDefinition> = Omit<
     context: BasePluginContext<C> & {
       state: PlatePluginReadState<C>;
     }
-  ) => InferRead<C>;
+  ) => InferPluginRead<C>;
   schema?: PluginSchema<C> | null;
   update?: (
     context: BasePluginContext<C> & {
@@ -1394,7 +1412,7 @@ type BasePluginExtensionObject<C extends AnyBasePluginDefinition> = Omit<
     context: BasePluginContext<C> & {
       state: PlatePluginReadState<C>;
     }
-  ) => object;
+  ) => PluginReadMethodTree<C>;
   selectors?: PluginSelectors<InferPluginStoreState<C>>;
   update?: (
     context: BasePluginContext<C> & {
@@ -1429,7 +1447,7 @@ type BasePluginStageInput<
   TKeys extends keyof BasePluginExtensionObject<C>,
   S extends object,
   TApi extends object,
-  TRead extends object,
+  TRead extends PluginReadMethodTree<C>,
   TSelectors extends PluginSelectors<InferPluginStoreState<C>>,
   TSelectionKinds extends readonly EditorSelectionSpec<any>[],
   TUpdate extends object,
@@ -1678,7 +1696,7 @@ interface BasePluginMethods<
     const TKeys extends keyof BasePluginExtensionObject<C>,
     S extends object = {},
     const TApi extends object = {},
-    const TRead extends object = {},
+    const TRead extends PluginReadMethodTree<C> = {},
     const TSelectors extends PluginSelectors<InferPluginStoreState<C>> = {},
     const TSelectionKinds extends
       readonly EditorSelectionSpec<any>[] = readonly [],
@@ -1752,7 +1770,7 @@ interface BasePluginMethods<
     const TKeys extends keyof BasePluginExtensionObject<C>,
     S extends object = {},
     const TApi extends object = {},
-    const TRead extends object = {},
+    const TRead extends PluginReadMethodTree<C> = {},
     const TSelectors extends PluginSelectors<InferPluginStoreState<C>> = {},
     const TSelectionKinds extends
       readonly EditorSelectionSpec<any>[] = readonly [],

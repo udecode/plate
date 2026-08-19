@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-18-separate-document-migrations",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-18-separate-document-migrations.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-18",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Keep default editor composition migration-free",
+  "targets": [
+    {
+      "name": "editor-plugins",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins.generated.ts",
+        "apps/www/src/registry/components/editor/plugins.ts"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor-default",
+      "files": ["apps/www/src/registry/examples/editor-default.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "document-migration-demo",
+      "files": ["apps/www/src/registry/examples/document-migration-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-18-editor-plugins-keep-default-composition-migration-ecc22ef9",
+      "kind": "wiring",
+      "summary": "Keep reusable editor composition migration-free and teach named lineage only in the dedicated migration example.",
+      "details": [],
+      "migrationNotes": [
+        "Define your named schema and migration chain in the application persistence owner; `editor-plugins` exports only `EditorKit`."
+      ],
+      "targets": [
+        "editor-plugins",
+        "editor-default",
+        "document-migration-demo"
+      ],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-18",
+          "entry": "2026-08-18-separate-document-migrations",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

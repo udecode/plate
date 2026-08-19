@@ -25,7 +25,7 @@ docs:
 
 The fastest way to add the underline plugin is with the `BasicMarksKit`, which includes pre-configured `UnderlinePlugin` along with other basic marks and their [Plate UI](/docs/installation/plate-ui) components.
 
-<ComponentSource name="basic-marks-kit" />
+<ComponentSource name="basic-marks" />
 
 ### Add Kit
 
@@ -33,7 +33,7 @@ Add the kit to your plugins:
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { BasicMarksKit } from '@/components/editor/plugins/basic-marks-kit';
+import { BasicMarksKit } from '@/components/editor/basic-marks';
 
 const editor = createPlateEditor({
   plugins: [

@@ -32,19 +32,19 @@ export const BaseEquationPlugin = defineBasePlugin(PLUGINS.equation, {
         kind: 'node',
         decode: ({ node }) => ({
           children: [{ text: '' }],
-          texExpression: node.value,
+          latex: node.value,
           type,
         }),
         encode: ({ node }) => ({
           type: 'math',
-          value: node.texExpression ?? '',
+          value: node.latex,
         }),
       },
     }),
   schema: {
     element: {
       properties: {
-        texExpression: property.string({ default: '', omitDefault: false }),
+        latex: property.string({ default: '', omitDefault: false }),
       },
       void: 'block',
     },
@@ -61,18 +61,20 @@ export const BaseInlineEquationPlugin = defineBasePlugin(
           kind: 'node',
           decode: ({ node }) => ({
             children: [{ text: '' }],
-            texExpression: node.value,
+            latex: node.value,
             type,
           }),
           encode: ({ node }) => ({
             type: 'inlineMath',
-            value: node.texExpression ?? '',
+            value: node.latex,
           }),
         },
       }),
     schema: {
       element: {
-        properties: { texExpression: property.string({ required: true }) },
+        properties: {
+          latex: property.string({ default: '', omitDefault: false }),
+        },
         void: 'inline',
       },
     },
@@ -80,13 +82,13 @@ export const BaseInlineEquationPlugin = defineBasePlugin(
 ).extend(({ schema: { type } }) => ({
   update: ({ tx }) => ({
     insert: (
-      { texExpression }: { texExpression?: string } = {},
+      { latex }: { latex?: string } = {},
       options: PlateNodeInsertOptions = {}
     ) => {
       tx.nodes.insert(
         {
           children: [{ text: '' }],
-          texExpression: texExpression ?? tx.text.string(),
+          latex: latex ?? tx.text.string(),
           type,
         },
         options
@@ -103,7 +105,7 @@ type InlineMathMatch = {
   deleteRange: NonNullable<
     ReturnType<typeof matchDelimitedInline>
   >['deleteRange'];
-  texExpression: string;
+  latex: string;
 };
 
 export const MathRules = (() => {
@@ -118,7 +120,7 @@ export const MathRules = (() => {
       tx.nodes.insert(
         {
           children: [{ text: '' }],
-          texExpression: '',
+          latex: '',
           type: editor.plugin(BaseEquationPlugin).schema.type,
         },
         {
@@ -147,7 +149,7 @@ export const MathRules = (() => {
       tx.selection.set(match.deleteRange.anchor);
       tx.nodes.insert({
         children: [{ text: '' }],
-        texExpression: match.texExpression,
+        latex: match.latex,
         type: editor.plugin(BaseInlineEquationPlugin).schema.type,
       });
 
@@ -168,7 +170,7 @@ export const MathRules = (() => {
 
       return {
         deleteRange: match.deleteRange,
-        texExpression: match.content,
+        latex: match.content,
       };
     },
     trigger: '$',
@@ -228,4 +230,4 @@ export const getEquationHtml = ({
 }: {
   element: EquationElement;
   options?: KatexOptions;
-}) => katex.renderToString(element.texExpression, options);
+}) => katex.renderToString(element.latex, options);

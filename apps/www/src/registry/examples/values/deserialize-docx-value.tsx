@@ -6,7 +6,7 @@ jsx;
 
 export const deserializeDocxValue = (
   <fragment>
-    <hh2>Docx</hh2>
+    <hheading level={2}>Docx</hheading>
     <hp>
       Easily import content from Microsoft Word documents by simply copying and
       pasting the Docx content into the editor.

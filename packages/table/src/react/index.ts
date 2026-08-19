@@ -3,7 +3,4 @@
  */
 
 export * from './TablePlugin';
-export * from './useTableCellElement';
-export * from './useTableElement';
-export * from './useTableMergeState';
-export * from './useTableStore';
+export * from './useTableSelectionDOM';

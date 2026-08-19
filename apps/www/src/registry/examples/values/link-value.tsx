@@ -6,7 +6,7 @@ jsx;
 
 export const linkValue = (
   <fragment>
-    <hh2>Link</hh2>
+    <hheading level={2}>Link</hheading>
     <hp>
       Add{' '}
       <ha target="_blank" url="https://en.wikipedia.org/wiki/Hypertext">

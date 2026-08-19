@@ -32,8 +32,8 @@ const MentionPlugin = defineBasePlugin(PLUGINS.mention, {
   schema: {
     element: {
       properties: {
-        key: property.string(),
-        value: property.string(),
+        label: property.string(),
+        ref: property.string({ required: true }),
       },
       void: 'markable-inline',
     },
@@ -44,7 +44,7 @@ const DatePlugin = defineBasePlugin(PLUGINS.date, {
   schema: {
     element: {
       properties: {
-        date: property.string(),
+        value: property.string({ required: true }),
       },
       selectable: false,
       void: 'inline',
@@ -99,8 +99,9 @@ describe('BaseSuggestionPlugin behavior', () => {
             {
               [SUGGESTION_TRANSIENT_KEY]: true,
               children: [{ text: '' }],
+              label: 'Ada',
+              ref: 'u1',
               type: 'mention',
-              value: 'Ada',
             },
             { text: 'after' },
           ],
@@ -121,8 +122,9 @@ describe('BaseSuggestionPlugin behavior', () => {
           { text: 'before' },
           {
             children: [{ text: '' }],
+            label: 'Ada',
+            ref: 'u1',
             type: 'mention',
-            value: 'Ada',
           },
           { text: 'after' },
         ],
@@ -466,7 +468,7 @@ describe('when editor.plugin(SuggestionPlugin).store.get().isSuggesting is true'
         <editor>
           <hp>
             <htext>a</htext>
-            <hmention key="u1" value="Ada">
+            <hmention label="Ada" ref="u1">
               <htext />
             </hmention>
             <htext>
@@ -483,7 +485,7 @@ describe('when editor.plugin(SuggestionPlugin).store.get().isSuggesting is true'
               a
               <cursor />
             </htext>
-            <hmention key="u1" value="Ada">
+            <hmention label="Ada" ref="u1">
               <htext />
             </hmention>
             <htext />
@@ -518,7 +520,7 @@ describe('when editor.plugin(SuggestionPlugin).store.get().isSuggesting is true'
         <editor>
           <hp>
             <htext>a</htext>
-            <hdate date="2026-04-14">
+            <hdate value="2026-04-14">
               <htext />
             </hdate>
             <htext>
@@ -554,7 +556,7 @@ describe('when editor.plugin(SuggestionPlugin).store.get().isSuggesting is true'
         <editor>
           <hp>
             <htext>a</htext>
-            <hdate date="2026-04-14">
+            <hdate value="2026-04-14">
               <htext>
                 <cursor />
               </htext>
@@ -590,7 +592,7 @@ describe('when editor.plugin(SuggestionPlugin).store.get().isSuggesting is true'
         <editor>
           <hp>
             <htext>a</htext>
-            <hdate date="2026-04-14">
+            <hdate value="2026-04-14">
               <htext />
             </hdate>
             <htext>
@@ -940,7 +942,7 @@ describe('delete fragment when editor.plugin(SuggestionPlugin).store.get().isSug
             before <anchor />
             text{' '}
           </htext>
-          <hmention key="u1" value="Ada">
+          <hmention label="Ada" ref="u1">
             <htext />
           </hmention>
           <htext>
@@ -969,7 +971,7 @@ describe('delete fragment when editor.plugin(SuggestionPlugin).store.get().isSug
             <cursor />
             text{' '}
           </htext>
-          <hmention key="u1" suggestion value="Ada">
+          <hmention label="Ada" ref="u1" suggestion>
             <htext />
           </hmention>
           <htext suggestion>{' after'}</htext>
@@ -1094,7 +1096,7 @@ describe('insert text when cursor is expanded', () => {
             before <anchor />
             text{' '}
           </htext>
-          <hmention key="u1" value="Ada">
+          <hmention label="Ada" ref="u1">
             <htext />
           </hmention>
           <htext>
@@ -1121,7 +1123,7 @@ describe('insert text when cursor is expanded', () => {
         <hp>
           <htext>before </htext>
           <htext suggestion>{'text '}</htext>
-          <hmention key="u1" suggestion value="Ada">
+          <hmention label="Ada" ref="u1" suggestion>
             <htext />
           </hmention>
           <htext suggestion>{' after'}</htext>

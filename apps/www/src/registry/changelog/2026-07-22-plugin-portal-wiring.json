@@ -19,21 +19,39 @@
   "targets": [
     {
       "name": "footnote-node",
-      "files": ["apps/www/src/registry/ui/footnote-node.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for footnote-node."
+        }
+      ]
     },
     {
       "name": "table-node",
-      "files": ["apps/www/src/registry/ui/table-node.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for table-node."
+        }
+      ]
     },
     {
       "name": "table-node-static",
-      "files": ["apps/www/src/registry/ui/table-node-static.tsx"],
+      "files": [],
       "definitionFiles": [],
-      "diagnostics": []
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for table-node-static."
+        }
+      ]
     }
   ],
   "entries": [

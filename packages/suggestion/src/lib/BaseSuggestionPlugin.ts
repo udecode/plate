@@ -129,8 +129,10 @@ type SuggestionIdentity = {
   id: string;
 };
 
+type InlineSuggestionProperties = Node | Omit<Text, 'text'>;
+
 type BaseSuggestionApi = {
-  dataList: (node: Element | Text) => InlineSuggestionData[];
+  dataList: (node: InlineSuggestionProperties) => InlineSuggestionData[];
   createFragment: (
     fragment: readonly Descendant[],
     identity: SuggestionIdentity
@@ -161,15 +163,17 @@ type BaseSuggestionApi = {
       transient?: boolean;
     }
   ) => Record<string, unknown>;
-  inlineData: (node: Element | Text) => InlineSuggestionData | undefined;
+  inlineData: (
+    node: InlineSuggestionProperties
+  ) => InlineSuggestionData | undefined;
   /** Whether suggestion middleware should track the current operation. */
   isTracking: (tags: readonly EditorUpdateTag[]) => boolean;
   isBlockSuggestion: (node: Node) => node is SuggestionElementContract;
-  isCurrentUser: (node: Element | Text) => boolean;
+  isCurrentUser: (node: InlineSuggestionProperties) => boolean;
   key: (id?: string) => `suggestion_${string}`;
-  keyId: (node: Element | Text) => string | undefined;
+  keyId: (node: InlineSuggestionProperties) => string | undefined;
   keys: (node: Node) => string[];
-  id: (node: Node) => string | undefined;
+  id: (node: InlineSuggestionProperties) => string | undefined;
   suggestionData: (
     node: Node
   ) =>
@@ -254,11 +258,13 @@ const inlineSuggestionDataProperty = property.json({
   validationVersion: 1,
 });
 
+const isBlockSuggestionData = (value: unknown): value is SuggestionData =>
+  hasSuggestionIdentity(value) &&
+  (value.type === 'insert' || value.type === 'remove') &&
+  (!('isLineBreak' in value) || typeof value.isLineBreak === 'boolean');
+
 const blockSuggestionProperty = property.json({
-  validate: (value): value is SuggestionData =>
-    hasSuggestionIdentity(value) &&
-    (value.type === 'insert' || value.type === 'remove') &&
-    (!('isLineBreak' in value) || typeof value.isLineBreak === 'boolean'),
+  validate: isBlockSuggestionData,
   validationVersion: 1,
 });
 
@@ -402,7 +408,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
     }): BaseSuggestionApi => {
       const key = (id = '0'): `suggestion_${string}` =>
         `${suggestionKey}_${id}`;
-      const keyId = (node: Element | Text) =>
+      const keyId = (node: InlineSuggestionProperties) =>
         Object.keys(node)
           .filter((nodeKey) => nodeKey.startsWith(`${suggestionKey}_`))
           .at(-1);
@@ -410,31 +416,33 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
         Object.keys(node).filter((nodeKey) =>
           nodeKey.startsWith(`${suggestionKey}_`)
         );
-      const inlineData = (node: Element | Text) => {
+      const inlineData = (node: InlineSuggestionProperties) => {
         const nodeKey = keyId(node);
 
         if (!nodeKey) return;
 
-        const value = node[nodeKey];
+        const value = Reflect.get(node, nodeKey);
 
         return isInlineSuggestionData(value) ? value : undefined;
       };
-      const dataList = (node: Element | Text): InlineSuggestionData[] =>
+      const dataList = (
+        node: InlineSuggestionProperties
+      ): InlineSuggestionData[] =>
         Object.keys(node)
           .filter((nodeKey) => nodeKey.startsWith(`${suggestionKey}_`))
-          .map((nodeKey) => node[nodeKey])
+          .map((nodeKey) => Reflect.get(node, nodeKey))
           .filter(isInlineSuggestionData);
       const isBlockSuggestion = (
         node: Node
       ): node is SuggestionElementContract =>
         ElementApi.isElement(node) &&
         !editor.read.schema.isInline(node) &&
-        'suggestion' in node;
+        isBlockSuggestionData(Reflect.get(node, 'suggestion'));
       const isInlineSuggestion = (node: Node): node is Element | Text =>
         TextApi.isText(node) ||
         (ElementApi.isElement(node) && editor.read.schema.isInline(node));
-      const id = (node: Node) => {
-        if (isInlineSuggestion(node)) {
+      const id = (node: InlineSuggestionProperties) => {
+        if (!ElementApi.isElement(node) || editor.read.schema.isInline(node)) {
           return keyId(node)?.replace(`${suggestionKey}_`, '');
         }
 

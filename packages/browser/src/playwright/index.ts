@@ -40,6 +40,11 @@ export {
   takePliteBrowserNativeEventTrace,
 } from './native-event-trace';
 export {
+  measurePliteTrustedTyping,
+  type PliteTrustedTypingResult,
+  type PliteTrustedTypingRow,
+} from './interaction-performance';
+export {
   getPliteReactRenderProfilerSnapshot,
   installPliteReactRenderProfiler,
   resetPliteReactRenderProfiler,

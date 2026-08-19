@@ -63,45 +63,74 @@ const assertUpdatePolicy = (
   }
 };
 
-const readExtensionProperty = <
+const resolvePath = (value: unknown, path: readonly string[]) => {
+  let current = value;
+  let owner: unknown;
+
+  for (const key of path) {
+    owner = current;
+    if (
+      (typeof current !== 'object' || current === null) &&
+      typeof current !== 'function'
+    ) {
+      return { owner: undefined, value: undefined };
+    }
+    const descriptor = Object.getOwnPropertyDescriptor(current, key);
+
+    if (!descriptor || !('value' in descriptor)) {
+      return { owner: undefined, value: undefined };
+    }
+    current = descriptor.value;
+  }
+
+  return { owner, value: current };
+};
+
+const createReadExtensionPath = <
   V extends Value,
   TExtensions extends readonly unknown[],
 >(
   read: RunEditorRead<V, TExtensions>,
   groupName: string,
-  propertyName: string
-) =>
-  read((state) => {
-    const group = (state as Record<string, unknown>)[groupName];
-    const property = (group as Record<string, unknown> | undefined)?.[
-      propertyName
-    ];
+  pathCache: Map<string, unknown>,
+  path: readonly string[] = []
+): unknown => {
+  const cacheKey = JSON.stringify([groupName, ...path]);
+  const existing = pathCache.get(cacheKey);
 
-    if (property === undefined) {
-      throw new Error(
-        `Editor read group "${groupName}" property "${propertyName}" is not installed.`
-      );
-    }
+  if (existing) return existing;
 
-    if (typeof property === 'function') {
-      return (...args: unknown[]) => property(...args);
-    }
+  const extensionPath = new Proxy(() => {}, {
+    apply(_target, _thisArg, args) {
+      return read((state) => {
+        const group = (state as Record<string, unknown>)[groupName];
+        const { owner, value: method } = resolvePath(group, path);
 
-    return property;
+        if (typeof method !== 'function') {
+          throw new Error(
+            `Editor read group "${groupName}" method "${path.join(
+              '.'
+            )}" is not installed.`
+          );
+        }
+
+        return Reflect.apply(method, owner, args);
+      });
+    },
+    get(_target, key) {
+      if (typeof key !== 'string') return;
+      if (key === 'then' || key === 'toJSON') return;
+      return createReadExtensionPath(read, groupName, pathCache, [
+        ...path,
+        key,
+      ]);
+    },
   });
 
-const resolvePath = (value: unknown, path: readonly string[]): unknown =>
-  path.reduce<unknown>(
-    (current, key) => (current as Record<string, unknown> | undefined)?.[key],
-    value
-  );
+  pathCache.set(cacheKey, extensionPath);
 
-const ignoredDynamicPropertyNames = new Set([
-  'inspect',
-  'toJSON',
-  'toString',
-  'valueOf',
-]);
+  return extensionPath;
+};
 
 const createUpdateExtensionPath = <
   V extends Value,
@@ -130,7 +159,7 @@ const createUpdateExtensionPath = <
 
       runUpdate((tx) => {
         const group = (tx as Record<string, unknown>)[groupName];
-        const method = resolvePath(group, path);
+        const { owner, value: method } = resolvePath(group, path);
 
         if (typeof method !== 'function') {
           throw new Error(
@@ -155,17 +184,14 @@ const createUpdateExtensionPath = <
           );
         }
 
-        result = method(...args);
+        result = Reflect.apply(method, owner, args);
       });
 
       return result;
     },
-    get(target, key, receiver) {
+    get(_target, key) {
       if (typeof key !== 'string') return;
-      if (key in target) {
-        return Reflect.get(target, key, receiver);
-      }
-
+      if (key === 'then' || key === 'toJSON') return;
       return createUpdateExtensionPath(runUpdate, groupName, pathCache, [
         ...path,
         key,
@@ -185,6 +211,7 @@ export const createEditorReadApi = <
   runRead: RunEditorRead<V, TExtensions>
 ): EditorRead<V, TExtensions> => {
   type RuntimeReadMethods = Omit<EditorCoreStateView<V, SelectionValue>, 'key'>;
+  const extensionPathCache = new Map<string, unknown>();
   const read = (<T>(fn: (state: EditorStateView<V, TExtensions>) => T): T =>
     runRead(fn)) as EditorRead<V, TExtensions>;
 
@@ -196,6 +223,7 @@ export const createEditorReadApi = <
       {
         get(target, key, receiver) {
           if (typeof key !== 'string') return;
+          if (key === 'toJSON') return;
           if (key in target) {
             return Reflect.get(target, key, receiver);
           }
@@ -237,6 +265,7 @@ export const createEditorReadApi = <
       },
       get(target, key, receiver) {
         if (typeof key !== 'string') return;
+        if (key === 'toJSON') return;
         if (key in target) {
           return Reflect.get(target, key, receiver);
         }
@@ -291,6 +320,7 @@ export const createEditorReadApi = <
       read((state) => state.value(...args))) as RuntimeReadMethods['value'],
     view: createGroup('view'),
   } satisfies RuntimeReadMethods;
+  const coreMethodNames = new Set(Object.keys(methods));
 
   const readApi = Object.assign(read, methods);
 
@@ -299,36 +329,16 @@ export const createEditorReadApi = <
       if (typeof groupName !== 'string') {
         return Reflect.get(target, groupName, receiver);
       }
-      if (ignoredDynamicPropertyNames.has(groupName)) {
+      if (
+        groupName in target ||
+        coreMethodNames.has(groupName) ||
+        groupName === 'then' ||
+        groupName === 'toJSON'
+      ) {
         return Reflect.get(target, groupName, receiver);
       }
-      if (groupName in target || groupName === 'then') {
-        return Reflect.get(target, groupName, receiver);
-      }
 
-      return new Proxy(() => {}, {
-        apply(_groupTarget, _thisArg, args) {
-          return read((state) => {
-            const group = (state as Record<string, unknown>)[groupName];
-
-            if (typeof group !== 'function') {
-              throw new Error(
-                `Editor read group "${groupName}" is not callable.`
-              );
-            }
-
-            return group(...args);
-          });
-        },
-        get(groupTarget, methodName, receiver) {
-          if (typeof methodName !== 'string') return;
-          if (methodName in groupTarget) {
-            return Reflect.get(groupTarget, methodName, receiver);
-          }
-
-          return readExtensionProperty(read, groupName, methodName);
-        },
-      });
+      return createReadExtensionPath(read, groupName, extensionPathCache);
     },
   }) as EditorRead<V, TExtensions>;
 };
@@ -451,6 +461,7 @@ export const createEditorUpdateApi = <
         {
           get(_target, key) {
             if (typeof key !== 'string') return;
+            if (key === 'toJSON') return;
 
             const existing = methodCache.get(key);
 
@@ -543,12 +554,9 @@ export const createEditorUpdateApi = <
           value = new Proxy(
             {},
             {
-              get(target, methodName, receiver) {
+              get(_target, methodName) {
                 if (typeof methodName !== 'string') return;
-                if (methodName in target) {
-                  return Reflect.get(target, methodName, receiver);
-                }
-
+                if (methodName === 'then' || methodName === 'toJSON') return;
                 return createUpdateExtensionPath(
                   invoke,
                   property,
@@ -571,10 +579,7 @@ export const createEditorUpdateApi = <
         if (typeof property !== 'string' || property in target) {
           return Reflect.get(target, property, receiver);
         }
-        if (ignoredDynamicPropertyNames.has(property)) {
-          return Reflect.get(target, property, receiver);
-        }
-        if (property === 'then') return;
+        if (property === 'then' || property === 'toJSON') return;
 
         return getUpdateProperty(property);
       },

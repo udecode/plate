@@ -350,29 +350,77 @@ const rowIsHeader = (row: TableRowElement) =>
   (row.children as readonly TableCellElement[]).every(cellIsHeader);
 
 const resizeColumnSizes = (
-  colSizes: readonly number[],
+  columnWidths: readonly (number | null)[],
   index: number,
+  columnCount: number,
   initialTableWidth?: number,
   minColumnWidth?: number
 ) => {
-  let sizes = [...colSizes.slice(0, index), 0, ...colSizes.slice(index)];
+  const currentColumnWidths: Array<number | null> = Array.from(
+    { length: columnCount },
+    (_, columnIndex): number | null => columnWidths[columnIndex] ?? null
+  );
+  let sizes: Array<number | null> = Array.from(
+    { length: columnCount + 1 },
+    (_, outputIndex): number | null => {
+      if (outputIndex === index) return null;
 
-  if (!initialTableWidth) return sizes;
+      return (
+        currentColumnWidths[
+          outputIndex > index ? outputIndex - 1 : outputIndex
+        ] ?? null
+      );
+    }
+  );
 
-  sizes[index] =
-    colSizes[index] ??
-    colSizes[index - 1] ??
-    initialTableWidth / colSizes.length;
+  if (
+    initialTableWidth === undefined ||
+    !Number.isFinite(initialTableWidth) ||
+    initialTableWidth <= 0
+  ) {
+    return sizes;
+  }
 
-  const oldTotal = colSizes.reduce((total, size) => total + size, 0);
-  const newTotal = sizes.reduce((total, size) => total + size, 0);
+  const adjacentWidth =
+    currentColumnWidths[index] ?? currentColumnWidths[index - 1];
+
+  if (adjacentWidth !== null && adjacentWidth !== undefined) {
+    sizes[index] = adjacentWidth;
+  }
+
+  const oldFallbackWidth =
+    initialTableWidth / Math.max(currentColumnWidths.length, 1);
+  const oldTotal = currentColumnWidths.reduce<number>(
+    (total, size) => total + (size ?? oldFallbackWidth),
+    0
+  );
+  const newFallbackWidth = initialTableWidth / sizes.length;
+  const newTotal = sizes.reduce<number>(
+    (total, size) => total + (size ?? newFallbackWidth),
+    0
+  );
   const maxTotal = Math.max(oldTotal, initialTableWidth);
 
   if (newTotal > maxTotal) {
-    const factor = maxTotal / newTotal;
+    const unresolvedTotal = sizes.reduce<number>(
+      (total, size) => total + (size === null ? newFallbackWidth : 0),
+      0
+    );
+    const knownTotal = sizes.reduce<number>(
+      (total, size) => total + (size ?? 0),
+      0
+    );
+    const factor =
+      knownTotal === 0
+        ? 1
+        : Math.max(0, maxTotal - unresolvedTotal) / knownTotal;
+    const minimumWidth =
+      minColumnWidth === undefined || !Number.isFinite(minColumnWidth)
+        ? 1
+        : Math.max(1, minColumnWidth);
 
     sizes = sizes.map((size) =>
-      Math.max(minColumnWidth ?? 0, Math.floor(size * factor))
+      size === null ? null : Math.max(minimumWidth, Math.floor(size * factor))
     );
   }
 
@@ -588,9 +636,10 @@ const planInsertColumn = (
       kind: 'set-node',
       path: freezePath(context.tablePath),
       properties: {
-        colSizes: resizeColumnSizes(
+        columnWidths: resizeColumnSizes(
           currentColSizes,
           insertCol,
+          context.grid.width,
           intent.initialTableWidth,
           intent.minColumnWidth
         ),
@@ -752,13 +801,16 @@ const planRemoveColumn = (
   const currentColSizes = getTableColumnSizes(context.table);
 
   if (currentColSizes) {
-    const colSizes = [...currentColSizes];
+    const columnWidths = Array.from(
+      { length: context.grid.width },
+      (_, index) => currentColSizes[index] ?? null
+    );
 
-    colSizes.splice(start, count);
+    columnWidths.splice(start, count);
     operations.push({
       kind: 'set-node',
       path: freezePath(context.tablePath),
-      properties: { colSizes },
+      properties: { columnWidths },
     });
   }
 

@@ -6,7 +6,8 @@ import path from 'node:path';
 
 import { hrefWithLocale } from '@/lib/withLocale';
 import { registryExamples } from '@/registry/registry-examples';
-import { registryUI } from '@/registry/registry-ui';
+import { registryEditor } from '@/registry/registry-editor';
+import { registryFeatures } from '@/registry/registry-features';
 
 import {
   createDocsRegistry,
@@ -29,7 +30,7 @@ const MDX_EXTENSION_REGEX = /\.mdx$/;
 const CN_EXTENSION_REGEX = /\.cn$/;
 const CONTENT_DIR = path.join(process.cwd(), '../../content/docs');
 const META_FILE = path.join(CONTENT_DIR, 'meta.json');
-const PLATE_PUBLIC_REGISTRY_BASE_URL = 'https://platejs.org/r';
+const PLATE_PUBLIC_REGISTRY_BASE_URL = 'https://platejs.org/r/new-york';
 const SOURCE_FILES = [
   path.join(process.cwd(), '.source/index.ts'),
   path.join(process.cwd(), '.source/server.ts'),
@@ -245,7 +246,9 @@ async function getFrontmatterTitle(filePath: string) {
 
 function checkNavRoutes(meta: DocsMeta, sourceUrls: Set<string>) {
   const registryFallbackUrls = new Set([
-    ...registryUI.map((item) => `/docs/components/${item.name}`),
+    ...[...registryEditor, ...registryFeatures].map(
+      (item) => `/docs/components/${item.name}`
+    ),
     ...registryExamples.map(
       (item) => `/docs/examples/${item.name.replace(DEMO_SUFFIX_REGEX, '')}`
     ),

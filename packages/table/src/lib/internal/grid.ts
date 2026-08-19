@@ -72,12 +72,18 @@ const isValidSpan = (value: unknown) =>
     Number.isFinite(value) &&
     value > 0);
 
-export const isTableColumnSizes = (value: unknown): value is number[] =>
+export const isTableColumnSizes = (
+  value: unknown
+): value is (number | null)[] =>
   Array.isArray(value) &&
-  value.every((size) => typeof size === 'number' && Number.isFinite(size));
+  value.every(
+    (size) =>
+      size === null ||
+      (typeof size === 'number' && Number.isFinite(size) && size > 0)
+  );
 
 export const getTableColumnSizes = (node: Element) =>
-  isTableColumnSizes(node.colSizes) ? node.colSizes : undefined;
+  isTableColumnSizes(node.columnWidths) ? node.columnWidths : undefined;
 
 const freezePath = (path: readonly number[]): Path =>
   Object.freeze([...path]) as Path;

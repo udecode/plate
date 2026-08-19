@@ -3,8 +3,6 @@
  */
 
 export * from './BlockMenuPlugin';
-export * from './BlockSelection';
 export * from './BlockSelectionPlugin';
 export * from './CursorOverlayPlugin';
 export * from './useBlockSelection';
-export * from './useCursorOverlay';

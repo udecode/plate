@@ -11,9 +11,9 @@ import {
 } from '@platejs/basic-nodes/react';
 import { Plate, usePlateEditor } from 'platejs/react';
 
-import { Editor, EditorContainer } from '@/registry/ui/editor';
-import { FixedToolbar } from '@/registry/ui/fixed-toolbar';
-import { MarkToolbarButton } from '@/registry/ui/mark-toolbar-button';
+import { Editor, EditorContainer } from '@/registry/components/editor/editor';
+import { FixedToolbar } from '@/registry/components/editor/fixed-toolbar';
+import { MarkToolbarButton } from '@/registry/components/editor/mark-toolbar-button';
 // import { Bold, Italic, Underline } from 'lucide-react'; // Example icons
 
 const initialValue: Value = [

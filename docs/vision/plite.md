@@ -91,6 +91,10 @@ donor checkout as proof after the transplant.
 - Layering beats feature buckets: document truth, DOM transport, React runtime,
   browser proof, projections/services, layout, lightweight surfaces, and
   productization need clear owners.
+- Fast paths follow material behavior, not installed-handler or renderer
+  presence. The owning runtime publishes internal capability, unknown behavior
+  fails closed, and ordinary applications never opt into correctness with a
+  performance flag.
 - Page layout is not core editor truth. Pagination, deterministic measurement,
   occlusion, and scroll stability live above document semantics; active caret,
   selection, and composition stay on the native/browser editing path.
@@ -111,6 +115,10 @@ donor checkout as proof after the transplant.
   their methods under `definition.name` onto the read view, active `tx`, and
   direct update surface. Use `txOnly(...)` for controls that require an active
   transaction. Do not restore descriptor `state`/`tx` authoring.
+- A `read` factory constructs one callable method tree per published extension
+  configuration. Document commits reuse that topology; live values are method
+  results, stable host values use `api`, and direct read facades resolve and
+  invoke methods inside the read boundary.
 - Custom selection payloads are installed capabilities. One `selectionKinds`
   declaration owns the payload type and runtime protocol; concrete editor reads
   and updates infer it from the installed descriptor tuple. Plite has no

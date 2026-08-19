@@ -1,6 +1,6 @@
 export const PLATE_REGISTRY_NAMESPACE = '@plate';
 export const PLATE_REGISTRY_HOMEPAGE = 'https://platejs.org';
-export const PLATE_REGISTRY_URL = 'https://platejs.org/r/{name}.json';
+export const PLATE_REGISTRY_URL = 'https://platejs.org/r/{style}/{name}.json';
 export const PLATE_REGISTRY_DESCRIPTION =
   'AI-powered rich text editor for React.';
 export const PLATE_INIT_URL = 'https://platejs.org/init';

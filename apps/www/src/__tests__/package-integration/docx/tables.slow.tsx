@@ -13,9 +13,9 @@ describe(getDocxTestName(name), () => {
   testDocxDeserializer({
     expected: (
       <editor>
-        <hh2>
+        <hheading level={2}>
           <htext>A table, with and without a header row</htext>
-        </hh2>
+        </hheading>
         <hp>
           <htext />
         </hp>
@@ -44,16 +44,16 @@ describe(getDocxTestName(name), () => {
           </htr>
 
           <htr>
-            <htd background="silver">
+            <htd backgroundColor="silver">
               <hp>Lebron James</hp>
             </htd>
-            <htd background="silver">
+            <htd backgroundColor="silver">
               <hp>Basketball</hp>
             </htd>
-            <htd background="silver">
+            <htd backgroundColor="silver">
               <hp>Very High</hp>
             </htd>
-            <htd background="silver">
+            <htd backgroundColor="silver">
               <hp>Leaving Cleveland</hp>
             </htd>
           </htr>
@@ -74,16 +74,16 @@ describe(getDocxTestName(name), () => {
           </htr>
 
           <htr>
-            <htd background="silver">
+            <htd backgroundColor="silver">
               <hp>Russell Wilson</hp>
             </htd>
-            <htd background="silver">
+            <htd backgroundColor="silver">
               <hp>Football</hp>
             </htd>
-            <htd background="silver">
+            <htd backgroundColor="silver">
               <hp>High</hp>
             </htd>
-            <htd background="silver">
+            <htd backgroundColor="silver">
               <hp>Tacky uniform</hp>
             </htd>
           </htr>

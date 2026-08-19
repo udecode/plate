@@ -261,7 +261,7 @@ test('rejects the deleted root editor tx channel in test fixtures', () => {
     assert.match(
       auditPlateSchemaSource(
         source,
-        'apps/www/src/registry/ui/footnote-node.slow.tsx'
+        'apps/www/src/registry/components/editor/footnote.slow.tsx'
       )[0]?.reason ?? '',
       /root editor\.update channel/
     );
@@ -554,7 +554,7 @@ test('rejects static plugin API references in current docs and release prose', (
   for (const file of ['.changeset/docx.md', 'content/docs/plugins/docx.mdx']) {
     assert.match(
       auditNamedSchemaLineageDocument(
-        'Use `DocxIOPlugin.api.import` for DOCX input.',
+        'Use `DocxImportPlugin.api.import` for DOCX input.',
         file
       )[0]?.reason ?? '',
       /installed editor portal/
@@ -562,7 +562,7 @@ test('rejects static plugin API references in current docs and release prose', (
   }
   assert.deepEqual(
     auditNamedSchemaLineageDocument(
-      'Use `editor.plugin(DocxIOPlugin).api.import` for DOCX input.',
+      'Use `editor.plugin(DocxImportPlugin).api.import` for DOCX input.',
       '.changeset/docx.md'
     ),
     []
@@ -1460,7 +1460,7 @@ test('rejects raw registry runtime and configuration identities', () => {
     `const selected = props.plugin.type !== 'tableRow'`,
     `const selected = props.plugin.type !== editor.plugin(TableRowPlugin).type`,
     `MarkdownPlugin.configure({ initialState: { plainMarks: ['suggestion'] } })`,
-    `DocxPlugin.configure({ override: { components: { table: Table } } })`,
+    `DocxPastePlugin.configure({ override: { components: { table: Table } } })`,
     `Plugin.configure({ override: { plugins: { indent: {} } } })`,
   ]) {
     assert.notDeepEqual(auditPlateSchemaSource(source, file), [], source);
@@ -1471,7 +1471,7 @@ test('rejects raw registry runtime and configuration identities', () => {
     `const selected = node.type === editor.plugin(TablePlugin).schema.type`,
     `const selected = props.element.type !== editor.plugin(TableRowPlugin).schema.type`,
     `MarkdownPlugin.configure(({ editor }) => ({ initialState: { plainMarks: [editor.plugin(SuggestionPlugin).schema.key] } }))`,
-    `DocxPlugin.configure({ override: { components: { [PLUGINS.table]: Table } } })`,
+    `DocxPastePlugin.configure({ override: { components: { [PLUGINS.table]: Table } } })`,
     `Plugin.configure({ override: { plugins: { [IndentPlugin.name]: {} } } })`,
   ]) {
     assert.deepEqual(auditPlateSchemaSource(source, file), [], source);
@@ -2170,13 +2170,13 @@ test('allows render.node only in Core resolved-slot owners', () => {
 
 test('keeps static/base component bindings free of Plate React adapters', () => {
   const file =
-    'apps/www/src/registry/components/editor/plugins/basic-blocks-base-kit.tsx';
+    'apps/www/src/registry/components/editor/basic-blocks-static.tsx';
 
   assert.deepEqual(
     auditPlateSchemaSource(
       [
         `import { BaseParagraphPlugin } from 'platejs';`,
-        `import { ParagraphStatic } from '@/registry/ui/paragraph-node-static';`,
+        `import { ParagraphStatic } from '@/registry/components/editor/paragraph-static';`,
         `const kit = [defineBasePlugin('p', { component: ParagraphStatic, })];`,
       ].join('\n'),
       file
@@ -2187,7 +2187,7 @@ test('keeps static/base component bindings free of Plate React adapters', () => 
   for (const source of [
     `import { ParagraphPlugin } from 'platejs/react';`,
     `import { H1Plugin } from '@platejs/basic-nodes/react';`,
-    `import { CodeDrawingElement } from '@/registry/ui/code-drawing-node';`,
+    `import { CodeDrawingElement } from '@/registry/components/editor/code-drawing';`,
     `import { toPlatePlugin } from 'platejs/react';`,
     `toPlatePlugin(BaseParagraphPlugin).configure({ component: ParagraphStatic });`,
     `ParagraphPlugin.configure({ component: ParagraphStatic });`,

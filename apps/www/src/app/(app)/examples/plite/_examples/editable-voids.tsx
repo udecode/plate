@@ -3,7 +3,6 @@ import { defineExtension, schema } from '@platejs/plite';
 import { history } from '@platejs/plite-history';
 import {
   Editable,
-  type EditableProps,
   type RenderElementProps,
   type RenderLeafProps,
   type RenderVoidProps,
@@ -64,11 +63,6 @@ const createEditableVoidBody = (): CustomValue => [
 
 const createEmptyEditableVoidBody = (): CustomValue => [paragraph('')];
 
-const textInvariantDOMStrategy: EditableProps['domStrategy'] = {
-  textSync: { renderLeaf: 'text-invariant' },
-  type: 'full',
-};
-
 const EditableVoidsExample = () => {
   const editor = usePliteEditor({
     extensions: [history(), editableVoid()],
@@ -105,7 +99,7 @@ const EditableVoidsExample = () => {
       </Toolbar>
 
       <Editable
-        domStrategy={textInvariantDOMStrategy}
+        domStrategy="full"
         placeholder="Enter some text..."
         renderElement={renderElement}
         renderLeaf={renderLeaf}
@@ -217,7 +211,7 @@ const EditableVoid = ({ element }: { element: EditableVoidElement }) => {
         <Editable
           aria-label="Editable void rich content"
           className="plite-editable-voids-child-editor"
-          domStrategy={textInvariantDOMStrategy}
+          domStrategy="full"
           placeholder="Tell us about yourself..."
           renderElement={renderElement}
           renderLeaf={renderLeaf}

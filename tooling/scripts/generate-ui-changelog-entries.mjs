@@ -4,6 +4,8 @@ import os from 'node:os';
 import path from 'node:path';
 import process from 'node:process';
 import { execFileSync } from 'node:child_process';
+import { pathToFileURL } from 'node:url';
+import { parse } from '@babel/parser';
 
 const DEFAULT_SOURCE = 'apps/www/src/registry/changelog/entries';
 const LEGACY_SOURCE = 'tooling/data/plate-ui-changelog.mdx';
@@ -965,12 +967,17 @@ function toDiagnostics(messages) {
 
 function buildRegistryChangelogTargets(
   rows,
-  { registryDefinitions = [], registryFiles = [] } = {}
+  {
+    registryDefinitions = [],
+    registryFiles = [],
+    registryRoot = DEFAULT_REGISTRY_ROOT,
+  } = {}
 ) {
   return unique(rows.flatMap((row) => row.items)).map((name) => {
     const registryHints = inferRegistryHints(name, {
       registryDefinitions,
       registryFiles,
+      registryRoot,
     });
     const diagnostics =
       registryHints.files.length === 0
@@ -1110,6 +1117,7 @@ export function buildRegistryChangelogEvents(
     provenanceBySourceId = new Map(),
     registryDefinitions = [],
     registryFiles = [],
+    registryRoot = DEFAULT_REGISTRY_ROOT,
     releases = [],
     latestRelease = releases[0] ?? null,
     previousRelease = releases[1] ?? null,
@@ -1171,6 +1179,7 @@ export function buildRegistryChangelogEvents(
       targets: buildRegistryChangelogTargets(groupRows, {
         registryDefinitions,
         registryFiles,
+        registryRoot,
       }),
       entries,
       diagnostics,
@@ -1190,6 +1199,7 @@ export function buildRegistryChangelogEntryFileEvents(
     outDir = DEFAULT_OUT_DIR,
     registryDefinitions = [],
     registryFiles = [],
+    registryRoot = DEFAULT_REGISTRY_ROOT,
   } = {}
 ) {
   return sources.map((source) => {
@@ -1213,6 +1223,7 @@ export function buildRegistryChangelogEntryFileEvents(
       targets: buildRegistryChangelogTargets(source.rows, {
         registryDefinitions,
         registryFiles,
+        registryRoot,
       }),
       entries,
       diagnostics: source.diagnostics,
@@ -1262,18 +1273,94 @@ export function extractRegistryItemNames(value) {
   return [];
 }
 
+const registryItemPathsCache = new Map();
+
+function getObjectProperty(node, name) {
+  return node.properties.find(
+    (property) =>
+      property.type === 'ObjectProperty' &&
+      !property.computed &&
+      ((property.key.type === 'Identifier' && property.key.name === name) ||
+        (property.key.type === 'StringLiteral' && property.key.value === name))
+  );
+}
+
+function extractRegistryItemPaths(content) {
+  const cached = registryItemPathsCache.get(content);
+
+  if (cached) return cached;
+
+  const items = new Map();
+  const ast = parse(content, {
+    plugins: ['typescript', 'jsx'],
+    sourceType: 'module',
+  });
+
+  const visit = (node) => {
+    if (!node || typeof node !== 'object') return;
+
+    if (node.type === 'ObjectExpression') {
+      const nameProperty = getObjectProperty(node, 'name');
+      const filesProperty = getObjectProperty(node, 'files');
+
+      if (
+        nameProperty?.value.type === 'StringLiteral' &&
+        filesProperty?.value.type === 'ArrayExpression'
+      ) {
+        const files = filesProperty.value.elements.flatMap((element) => {
+          if (element?.type !== 'ObjectExpression') return [];
+
+          const pathProperty = getObjectProperty(element, 'path');
+
+          return pathProperty?.value.type === 'StringLiteral'
+            ? [pathProperty.value.value]
+            : [];
+        });
+
+        items.set(nameProperty.value.value, files);
+      }
+    }
+
+    for (const [key, value] of Object.entries(node)) {
+      if (['end', 'extra', 'loc', 'start'].includes(key)) continue;
+
+      if (Array.isArray(value)) {
+        value.forEach(visit);
+      } else {
+        visit(value);
+      }
+    }
+  };
+
+  visit(ast.program);
+  registryItemPathsCache.set(content, items);
+
+  return items;
+}
+
 export function inferRegistryHints(
   itemName,
-  { registryDefinitions = [], registryFiles = [] } = {}
+  {
+    registryDefinitions = [],
+    registryFiles = [],
+    registryRoot = DEFAULT_REGISTRY_ROOT,
+  } = {}
 ) {
   const exactFilePattern = new RegExp(
     `(?:^|/)${escapeRegExp(itemName)}\\.(?:ts|tsx|mts)$`
   );
   const namePattern = new RegExp(`name:\\s*['"]${escapeRegExp(itemName)}['"]`);
-  const files = registryFiles
+  const explicitFiles = registryDefinitions.flatMap(({ content }) =>
+    (extractRegistryItemPaths(content).get(itemName) ?? []).map((filePath) =>
+      path.join(registryRoot, filePath)
+    )
+  );
+  const files = unique([
+    ...registryFiles.filter((filePath) => exactFilePattern.test(filePath)),
+    ...explicitFiles.filter((filePath) => registryFiles.includes(filePath)),
+  ])
     .filter((filePath) => SOURCE_EXTENSIONS.has(path.extname(filePath)))
     .filter((filePath) => !SPEC_OR_TEST_FILE_PATTERN.test(filePath))
-    .filter((filePath) => exactFilePattern.test(filePath))
     .map((filePath) => relativePath(filePath))
     .sort();
   const definitionFiles = registryDefinitions
@@ -1852,6 +1939,7 @@ function main() {
         outDir: args.outDir,
         registryDefinitions,
         registryFiles,
+        registryRoot: args.registryRoot,
       })
     : buildRegistryChangelogEvents(selectedRows, {
         hasPendingChangeset: pendingChangeset,
@@ -1859,6 +1947,7 @@ function main() {
         provenanceBySourceId,
         registryDefinitions,
         registryFiles,
+        registryRoot: args.registryRoot,
         releases,
         sourcePath: args.source,
       });
@@ -1919,7 +2008,10 @@ function main() {
   console.log(relativePath(path.join(args.outDir, 'components.json')));
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(process.argv[1]).href
+) {
   try {
     main();
   } catch (error) {

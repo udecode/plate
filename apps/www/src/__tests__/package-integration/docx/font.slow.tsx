@@ -19,7 +19,7 @@ describe(getDocxTestName(name), () => {
   testDocxDeserializer({
     expected: (
       <editor>
-        <hh1>
+        <hheading level={1}>
           <htext
             color="#345A8A"
             fontFamily="Calibri, sans-serif"
@@ -27,7 +27,7 @@ describe(getDocxTestName(name), () => {
           >
             H1 + 18 pt
           </htext>
-        </hh1>
+        </hheading>
         <hp>
           <htext fontFamily="Cambria, serif" fontSize="12pt">
             Normal with{' '}

@@ -5,6 +5,8 @@ import {
   takeDisplayedSelectionSnapshotForRoot,
   takeSelectionSnapshot,
 } from '../../src/playwright';
+import { waitForSelectionSync } from '../../src/playwright/selection-snapshots';
+import { waitForSelectionRange } from '../../src/playwright/selection-handle';
 
 const createPage = () =>
   ({
@@ -20,6 +22,7 @@ const createRootLocator = (root: HTMLElement) =>
       callback: (root: HTMLElement, arg: A) => T,
       arg: A
     ) => callback(root, arg),
+    page: () => ({ waitForTimeout: async () => {} }),
   }) as Parameters<typeof takeDisplayedSelectionSnapshotForRoot>[0];
 
 describe('playwright selection snapshots', () => {
@@ -78,6 +81,37 @@ describe('playwright selection snapshots', () => {
     await expectZeroWidthOffset(br, 0);
   });
 
+  test('includes preceding segments before a zero-width caret', async () => {
+    document.body.innerHTML = `
+      <div data-plite-editor="true">
+        <span data-plite-node="text" data-plite-path="0,0">
+          <span data-plite-leaf="true">
+            <span data-plite-string="true">hello</span>
+          </span>
+          <span data-plite-leaf="true">
+            <span data-plite-zero-width="n" data-plite-length="0">\uFEFF<br /></span>
+          </span>
+        </span>
+      </div>
+    `;
+
+    const marker = document.querySelector('[data-plite-zero-width="n"]')!;
+    const markerText = marker.firstChild as Text;
+    const selection = window.getSelection()!;
+    const range = document.createRange();
+
+    range.setStart(markerText, 1);
+    range.setEnd(markerText, 1);
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    expect(await takeSelectionSnapshot(createPage())).toEqual({
+      anchor: { path: [0, 0], offset: 5 },
+      focus: { path: [0, 0], offset: 5 },
+      kind: 'text',
+    });
+  });
+
   test('reports no visible selection without native text or projected markers', async () => {
     document.body.innerHTML = `
       <div data-plite-editor="true">
@@ -105,6 +139,92 @@ describe('playwright selection snapshots', () => {
         markerCount: 0,
       },
     });
+  });
+
+  test('accepts a model selection whose virtualized DOM unmounts during conditional sync', async () => {
+    document.body.innerHTML = '<div data-plite-editor="true"></div>';
+
+    const root = document.querySelector<HTMLElement>('[data-plite-editor]')!;
+
+    (root as any).__pliteBrowserHandle = {
+      getSelection: () => ({
+        anchor: { offset: 3, path: [47, 119, 1, 0] },
+        focus: { offset: 3, path: [47, 119, 1, 0] },
+        kind: 'text',
+      }),
+    };
+    window.getSelection()?.removeAllRanges();
+
+    await expect(
+      waitForSelectionSync(createRootLocator(root), undefined, {
+        allowMissingNativeSelection: true,
+      })
+    ).resolves.toBeUndefined();
+  });
+
+  test('still waits for the expected model selection when virtualized DOM is absent', async () => {
+    document.body.innerHTML = '<div data-plite-editor="true"></div>';
+
+    const root = document.querySelector<HTMLElement>('[data-plite-editor]')!;
+    const expected = {
+      anchor: { offset: 3, path: [47, 119, 1, 0] },
+      focus: { offset: 3, path: [47, 119, 1, 0] },
+      kind: 'text' as const,
+    };
+    let reads = 0;
+    let selection = {
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 0, path: [0, 0] },
+      kind: 'text' as const,
+    };
+
+    (root as any).__pliteBrowserHandle = {
+      getSelection: () => {
+        reads++;
+        return selection;
+      },
+    };
+    window.getSelection()?.removeAllRanges();
+    setTimeout(() => {
+      selection = expected;
+    }, 20);
+
+    await waitForSelectionSync(createRootLocator(root), expected, {
+      allowMissingNativeSelection: true,
+    });
+
+    expect(reads).toBeGreaterThan(1);
+  });
+
+  test('waits for native selection inside the requested editor root', async () => {
+    document.body.innerHTML = `
+      <div data-editor="first"><span>first</span></div>
+      <div data-editor="second"><span>second</span></div>
+    `;
+
+    const first = document.querySelector<HTMLElement>('[data-editor="first"]')!;
+    const secondText = document.querySelector('[data-editor="second"] span')!
+      .firstChild!;
+    const firstText = first.querySelector('span')!.firstChild!;
+    const selection = window.getSelection()!;
+    const outsideRange = document.createRange();
+
+    outsideRange.setStart(secondText, 0);
+    outsideRange.collapse(true);
+    selection.removeAllRanges();
+    selection.addRange(outsideRange);
+    setTimeout(() => {
+      const insideRange = document.createRange();
+
+      insideRange.setStart(firstText, 1);
+      insideRange.collapse(true);
+      selection.removeAllRanges();
+      selection.addRange(insideRange);
+    }, 20);
+
+    await waitForSelectionRange(createRootLocator(first));
+
+    expect(selection.anchorNode).toBe(firstText);
   });
 
   test('captures the native selection as the displayed selection', async () => {

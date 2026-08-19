@@ -3,4 +3,3 @@
  */
 
 export * from './TocPlugin';
-export * from './useToc';

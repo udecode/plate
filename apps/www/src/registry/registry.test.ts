@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'bun:test';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 
-import { createPlateRegistry } from './registry';
+import { createPlateRegistry, PLATE_REGISTRY_BASES } from './registry';
 
 describe('Plate registry editor files', () => {
   const items = createPlateRegistry().items;
@@ -21,23 +23,48 @@ describe('Plate registry editor files', () => {
     }
   });
 
-  it('keeps editor-base-kit relative plugin imports installable', () => {
-    const itemsByName = new Map(items.map((item) => [item.name, item]));
-    const editorBaseKit = itemsByName.get('editor-base-kit');
+  it('resolves every Toolbar base to one installed editor path', () => {
+    for (const base of PLATE_REGISTRY_BASES) {
+      const toolbar = createPlateRegistry('https://platejs.org', {
+        base,
+      }).items.find((item) => item.name === 'toolbar');
+      const file = toolbar?.files?.[0];
 
-    expect(editorBaseKit).toBeDefined();
-    expect(editorBaseKit?.files?.[0]?.target).toBe(
-      '@components/editor/editor-base-kit.tsx'
+      expect(file?.path).toBe(
+        base === 'radix'
+          ? 'components/editor/toolbar.tsx'
+          : `bases/${base}/editor/toolbar.tsx`
+      );
+      expect(file?.target).toBe('@components/editor/toolbar.tsx');
+      expect(toolbar?.dependencies).toContain(
+        base === 'base'
+          ? '@base-ui/react'
+          : base === 'aria'
+            ? 'react-aria-components'
+            : '@radix-ui/react-toolbar'
+      );
+      expect(
+        existsSync(join(import.meta.dir, file?.path ?? 'missing-toolbar'))
+      ).toBe(true);
+    }
+  });
+
+  it('keeps static editor feature imports flat and installable', () => {
+    const itemsByName = new Map(items.map((item) => [item.name, item]));
+    const staticEditor = itemsByName.get('editor-plugins-static');
+
+    expect(staticEditor).toBeDefined();
+    expect(staticEditor?.files?.[0]?.target).toBe(
+      '@components/editor/plugins-static.ts'
     );
 
-    const pluginDependencies = editorBaseKit?.registryDependencies
+    const featureDependencies = staticEditor?.registryDependencies
       ?.filter((dependency) => dependency.startsWith('@plate/'))
-      .map((dependency) => dependency.slice('@plate/'.length))
-      .filter((name) => name.endsWith('-kit'));
+      .map((dependency) => dependency.slice('@plate/'.length));
 
-    expect(pluginDependencies?.length).toBeGreaterThan(0);
+    expect(featureDependencies?.length).toBeGreaterThan(0);
 
-    for (const dependencyName of pluginDependencies ?? []) {
+    for (const dependencyName of featureDependencies ?? []) {
       const dependency = itemsByName.get(dependencyName);
       const file = dependency?.files?.[0];
 
@@ -45,9 +72,8 @@ describe('Plate registry editor files', () => {
       expect(file?.target, dependencyName).toBe(
         toEditorTarget(file?.path ?? '')
       );
-      expect(file?.target?.startsWith('@components/editor/plugins/')).toBe(
-        true
-      );
+      expect(file?.target?.startsWith('@components/editor/')).toBe(true);
+      expect(file?.target).not.toContain('/plugins/');
     }
   });
 
@@ -82,7 +108,7 @@ describe('Plate registry editor files', () => {
     const generatedEditorContracts = items.flatMap((item) =>
       (item.files ?? [])
         .filter((file) =>
-          /editor\.(?:generated\.ts|schema\.json)$/.test(file.path)
+          /plugins\.(?:generated\.ts|schema\.json)$/.test(file.path)
         )
         .map((file) => ({
           item: item.name,
@@ -93,14 +119,14 @@ describe('Plate registry editor files', () => {
 
     expect(generatedEditorContracts).toEqual([
       {
-        item: 'editor-kit',
-        path: 'components/editor/editor.generated.ts',
-        target: '@components/editor/editor.generated.ts',
+        item: 'editor-plugins',
+        path: 'components/editor/plugins.generated.ts',
+        target: '@components/editor/plugins.generated.ts',
       },
       {
-        item: 'editor-kit',
-        path: 'components/editor/editor.schema.json',
-        target: '@components/editor/editor.schema.json',
+        item: 'editor-plugins',
+        path: 'components/editor/plugins.schema.json',
+        target: '@components/editor/plugins.schema.json',
       },
     ]);
   });
@@ -128,22 +154,50 @@ describe('Plate registry editor files', () => {
 
     for (const name of ['editor-ai', 'markdown-streaming-demo']) {
       expect(itemsByName.get(name)?.registryDependencies).toEqual(
-        expect.arrayContaining(['@plate/editor-kit'])
+        expect.arrayContaining(['@plate/editor'])
       );
       expect(itemsByName.get(name)?.registryDependencies).not.toContain(
-        '@plate/copilot-kit'
+        '@plate/copilot'
       );
     }
 
     expect(itemsByName.get('copilot-demo')?.registryDependencies).toEqual(
-      expect.arrayContaining(['@plate/editor-kit', '@plate/copilot-kit'])
+      expect.arrayContaining(['@plate/editor', '@plate/copilot'])
     );
     expect(
       items
-        .filter((item) =>
-          item.registryDependencies?.includes('@plate/copilot-kit')
-        )
+        .filter((item) => item.registryDependencies?.includes('@plate/copilot'))
         .map((item) => item.name)
     ).toEqual(['copilot-demo']);
+  });
+
+  it('keeps DOCX file IO isolated to the dedicated DOCX example', () => {
+    const itemsByName = new Map(items.map((item) => [item.name, item]));
+    const docxDemo = itemsByName.get('docx-demo');
+    const editorPlugins = itemsByName.get('editor-plugins');
+    const fixedToolbar = itemsByName.get('fixed-toolbar');
+
+    expect(editorPlugins?.dependencies).toContain('@platejs/docx-paste');
+    expect(editorPlugins?.registryDependencies).not.toContain('@plate/docx');
+    expect(fixedToolbar?.registryDependencies).not.toEqual(
+      expect.arrayContaining([
+        '@plate/export-toolbar-button',
+        '@plate/import-toolbar-button',
+      ])
+    );
+    expect(docxDemo?.files?.map((file) => file.path)).toEqual([
+      'examples/docx-demo.tsx',
+      'examples/values/deserialize-docx-value.tsx',
+    ]);
+    expect(docxDemo?.registryDependencies).toEqual(
+      expect.arrayContaining([
+        '@plate/docx',
+        '@plate/editor',
+        '@plate/editor-plugins',
+        '@plate/export-toolbar-button',
+        '@plate/import-toolbar-button',
+        '@plate/toolbar',
+      ])
+    );
   });
 });

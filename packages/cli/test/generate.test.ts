@@ -2436,7 +2436,7 @@ ${readFileSync(entryPath, 'utf8').replace(
     });
     const manifest = JSON.parse(readFileSync(result.manifestPath, 'utf8')) as {
       diff: { requiresMigration: boolean };
-      from: { version: number };
+      from: { fingerprint: string; version: number };
       to: { version: number };
     };
     const migration = readFileSync(result.migrationPath, 'utf8');
@@ -2448,7 +2448,13 @@ ${readFileSync(entryPath, 'utf8').replace(
     expect(manifest.to.version).toBe(3);
     expect(migration).toContain('FromValue');
     expect(migration).toContain('ToValue');
-    expect(migration).toContain('Plate never runs this automatically');
+    expect(migration).toContain('DocumentMigration<');
+    expect(migration).toContain('FromDocument');
+    expect(migration).toContain('ToDocument');
+    expect(migration).toContain('({ document })');
+    expect(readFileSync(result.paths[2]!, 'utf8')).toContain(
+      `export const fingerprint = "${manifest.from.fingerprint}"`
+    );
     expect(existsSync(join(result.directory, 'from.schema.json'))).toBe(true);
     expect(existsSync(join(result.directory, 'to.schema.json'))).toBe(true);
     expect(result.paths).toHaveLength(6);

@@ -2,6 +2,14 @@
 
 export type { BaseEditor } from './lib/editor/BaseEditor';
 export type { EditorApplicationSchema } from './lib/editor/editorApplicationSchema';
+export {
+  defineDocumentMigrations,
+  migrateDocument,
+  type DocumentMigration,
+  type DocumentMigrationContext,
+  type DocumentMigrationResult,
+  type DocumentMigrations,
+} from './lib/editor/documentMigrations';
 export type {
   BasePluginInput,
   PlatePluginOwnUpdate,
@@ -51,7 +59,7 @@ export type {
   RenderStaticNodeWrapperProps,
   ResolvedPlatePlugin,
   TextStaticProps,
-  TransformInitialValue,
+  PrepareDocument,
   TransformOptions,
 } from './lib/plugin/BasePlugin';
 export type { HandlerReturnType } from './lib/plugin/HandlerReturnType';

@@ -37,7 +37,7 @@ Both components merge Plite attributes, Plate node props, `className`, and
 
 Element components render block, inline, and void element nodes.
 
-```tsx title="components/ui/blockquote-node.tsx" showLineNumbers
+```tsx title="components/editor/blockquote.tsx" showLineNumbers
 'use client';
 
 import type { BlockquotePlugin } from '@platejs/basic-nodes/react';
@@ -66,7 +66,7 @@ as a specific HTML element.
 
 Leaf components render marked and decorated text ranges.
 
-```tsx title="components/ui/code-node.tsx" showLineNumbers
+```tsx title="components/editor/code.tsx" showLineNumbers
 'use client';
 
 import type { CodePlugin } from '@platejs/basic-nodes/react';
@@ -106,8 +106,8 @@ import {
   CodePlugin,
 } from '@platejs/basic-nodes/react';
 
-import { BlockquoteElement } from '@/components/ui/blockquote-node';
-import { CodeLeaf } from '@/components/ui/code-node';
+import { BlockquoteElement } from '@/components/editor/blockquote';
+import { CodeLeaf } from '@/components/editor/code';
 
 export const plugins = [
   BlockquotePlugin.configure({ component: BlockquoteElement }),
@@ -124,7 +124,7 @@ put every override in that same terminal `.configure()` call.
 import { CodeRules } from '@platejs/basic-nodes';
 import { CodePlugin } from '@platejs/basic-nodes/react';
 
-import { CodeLeaf } from '@/components/ui/code-node';
+import { CodeLeaf } from '@/components/editor/code';
 
 export const plugins = [
   CodePlugin.configure({
@@ -147,9 +147,9 @@ import {
 } from '@platejs/basic-nodes/react';
 import { Plate, usePlateEditor } from 'platejs/react';
 
-import { BlockquoteElement } from '@/components/ui/blockquote-node';
-import { CodeLeaf } from '@/components/ui/code-node';
-import { Editor, EditorContainer } from '@/components/ui/editor';
+import { BlockquoteElement } from '@/components/editor/blockquote';
+import { CodeLeaf } from '@/components/editor/code';
+import { Editor, EditorContainer } from '@/components/editor/editor';
 
 export function AppEditor() {
   const editor = usePlateEditor({

@@ -1298,6 +1298,7 @@ export type PliteBrowserEditorHarness = {
     modelText: () => Promise<string>;
     modelBlockText: (index: number) => Promise<string | null>;
     modelBlockTexts: () => Promise<string[]>;
+    modelValue: () => Promise<unknown>;
     text: () => Promise<string>;
     blockTexts: () => Promise<string[]>;
     renderedDOMShape: () => Promise<RenderedBlockDOMShapeSnapshot[]>;

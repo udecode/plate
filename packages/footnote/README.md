@@ -11,7 +11,7 @@ footnotes.
 - Parse GFM footnote references and definitions into Plate nodes
 - Serialize footnote nodes back to markdown footnotes
 - Insert a reference and matching definition with one transform
-- Allocate the next free numeric identifier automatically
+- Allocate the next free numeric ref automatically
 - Create a missing definition for an unresolved reference
 - Detect and repair later duplicate definitions
 - Navigate between references and definitions
@@ -50,12 +50,12 @@ const editor = createPlateEditor({
 
 Reads:
 
-- `editor.read.footnote.nextId`
+- `editor.read.footnote.nextRef`
 - `editor.read.footnote.definition`
 - `editor.read.footnote.definitions`
 - `editor.read.footnote.definitionText`
 - `editor.read.footnote.duplicateDefinitions`
-- `editor.read.footnote.duplicateIdentifiers`
+- `editor.read.footnote.duplicateRefs`
 - `editor.read.footnote.hasDuplicateDefinitions`
 - `editor.read.footnote.isDuplicateDefinition`
 - `editor.read.footnote.isResolved`

@@ -25,9 +25,13 @@ external store.
 
 ## Use Existing Rules
 
-- `react-useeffect`
-- `rerender-derived-state-no-effect`
-- `rerender-move-effect-to-event`
-- `advanced-effect-event-deps`
+- `vercel-react-best-practices/rules/rerender-derived-state-no-effect.md`
+- `vercel-react-best-practices/rules/rerender-move-effect-to-event.md`
+- `vercel-react-best-practices/rules/advanced-effect-event-deps.md`
+- `vercel-react-best-practices/rules/advanced-event-handler-refs.md` when a
+  long-lived subscription needs fresh handler behavior
+
+For Plate component/hook ownership, apply `plate-ui`; performance tactics do
+not create new public hooks, providers, or files.
 
 This rule owns the repeated-unit budget and Plite runtime subscription proof.

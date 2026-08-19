@@ -255,7 +255,8 @@ function buildHeadingValue(blocks: number): Value {
 
   const value = Array.from({ length: blocks }, (_, index) => ({
     children: [{ text: `Huge document heading ${index + 1}.` }],
-    type: 'h1',
+    level: 1,
+    type: 'heading',
   })) as Value;
 
   headingDocumentCache.set(blocks, value);

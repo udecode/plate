@@ -1,116 +1,185 @@
 ---
-title: DOCX 粘贴
-description: 从 Microsoft Word 粘贴内容并自动格式化。
+title: DOCX
+description: 从 Word 粘贴、导入 DOCX 文件，并将 Plate 内容导出为 DOCX。
 ---
+
+DOCX 支持三个方向：将 Word 剪贴板内容粘贴到 Plate、将 `.docx` 文件导入为 Plate 节点，以及将 Plate 节点导出为 `.docx` 文件。每个方向都有独立包，`@platejs/docx` 则重新导出三个包的公共 API。
 
 <ComponentPreview name="docx-demo" />
 
 <PackageInfo>
 
-## 功能特性
+## 功能
 
-- 将粘贴的 DOCX 内容转换为 Plate 格式
-- 清理并规范化 DOCX HTML 内容以确保与 Plate 兼容
-- 支持从 Word 文档保留列表样式和嵌套缩进
+- 清理并规范化从 Microsoft Word 粘贴的 HTML 和 RTF
+- 导入 `.docx` 文件，并返回批注和转换警告
+- 使用文档样式、页面设置、表格、列表和图片导出 DOCX
 
 </PackageInfo>
 
-<Callout type="info">
-  需要 DOCX 文件导入/导出功能？请参阅 [DOCX 导入/导出](/docs/docx-io)。
+<Callout type="info" title="客户端边界">
+  粘贴、文件导入和文件下载都使用浏览器 API，请在客户端代码中执行。DOCX 导出还使用 React 静态渲染，因此应传入定义文档输出的相同插件描述符和静态组件。
 </Callout>
 
-## 套件使用
+## 所有权
+
+| API | 所属包 | 用途 |
+| --- | --- | --- |
+| DOCX 门面包 | `@platejs/docx` | 从一个包导入粘贴、导入和导出 API |
+| `DocxPastePlugin` | `@platejs/docx-paste` | 从 Word 粘贴 |
+| `DocxImportPlugin` | `@platejs/docx-import` | 将 `.docx` 缓冲区转换为 Plate 节点 |
+| `DocxExportPlugin`、`exportToDocx` | `@platejs/docx-export` | 将 Plate 节点转换为 DOCX Blob |
+| Registry `DocxKit` | 应用内复制代码 | 选择完整 DOCX 预设的插件及其顺序 |
+| Registry `DocxExportKit` | 应用内复制代码 | 提供 DOCX 专用静态渲染器 |
+
+## Kit 用法
+
+Registry kit 是最快的完整配置。应用内数组安装 `JuicePlugin`、`DocxPastePlugin`、`DocxImportPlugin` 和 `DocxExportPlugin`。`JuicePlugin` 会在 Plate 解码前内联粘贴内容中的 CSS。
 
 <Steps>
 
 ### 安装
 
-添加 DOCX 导入功能的最快方式是使用 `DocxKit`，它包含预配置的 `DocxPlugin` 和 `JuicePlugin`，用于处理 DOCX 内容和 CSS 处理。
-
-<ComponentSource name="docx-kit" />
-
-### 添加套件
-
-```tsx
-import { createPlateEditor } from 'platejs/react';
-import { DocxKit } from '@/components/editor/plugins/docx-kit';
-
-const editor = createPlateEditor({
-  plugins: [
-    // ...其他插件,
-    ...DocxKit,
-  ],
-});
-```
-
-</Steps>
-
-## 手动配置
-
-<Steps>
-
-### 安装依赖
-
 ```bash
 npm install @platejs/docx @platejs/juice
 ```
 
-### 添加插件
+### 添加 Kit
 
-```tsx
-import { DocxPlugin } from '@platejs/docx';
-import { JuicePlugin } from '@platejs/juice';
+<ComponentSource name="docx" />
+
+```tsx title="components/editor/editor.tsx"
 import { createPlateEditor } from 'platejs/react';
+import { DocxKit } from '@/components/editor/docx';
 
 const editor = createPlateEditor({
-  plugins: [
-    // ...其他插件,
-    JuicePlugin,
-    DocxPlugin,
-  ],
+  plugins: [...DocxKit],
 });
 ```
-
-### 配置插件
-
-```tsx
-import { DocxPlugin } from '@platejs/docx';
-import { JuicePlugin } from '@platejs/juice';
-import { createPlateEditor } from 'platejs/react';
-
-const editor = createPlateEditor({
-  plugins: [
-    // ...其他插件,
-    JuicePlugin, // 将 CSS 属性内联到 style 属性中
-    DocxPlugin, // 处理 DOCX 内容转换
-  ],
-});
-```
-
-- `DocxPlugin`: 处理粘贴的 DOCX 内容并转换为 Plate 格式
-- `JuicePlugin`: 将 CSS 属性内联到 `style` 属性中以提高兼容性
 
 </Steps>
 
-## 使用说明
+## 从 Word 粘贴
 
-### DOCX 转 Plate
+如果只需要剪贴板输入，请安装 `@platejs/docx-paste`。`JuicePlugin` 会保留 Word 粘贴 HTML 中定义的样式。
 
-当用户从 Microsoft Word 粘贴内容时，DOCX 插件会自动：
+```bash
+npm install @platejs/docx-paste @platejs/juice
+```
 
-1. 检测剪贴板中的 DOCX 内容
-2. 清理并规范化 HTML 结构
-3. 保留缩进和列表格式
-4. 将 DOCX 特定元素转换为 Plate 格式
+```tsx title="components/editor/editor.tsx"
+import { DocxPastePlugin } from '@platejs/docx-paste';
+import { JuicePlugin } from '@platejs/juice';
+import { createPlateEditor } from 'platejs/react';
 
-该插件与粘贴功能无缝协作 - 安装后无需额外代码。
+const editor = createPlateEditor({
+  plugins: [JuicePlugin, DocxPastePlugin],
+});
+```
 
-## 插件说明
+安装后，`DocxPastePlugin` 会检测剪贴板中的 Word HTML，清理 HTML 和 RTF，再交由已安装的 Plate codecs 解码。
 
-### DocxPlugin
+## 导入 DOCX
 
-用于在粘贴操作中处理 DOCX 内容的插件。
+`DocxImportPlugin` 将 DOCX `ArrayBuffer` 转换为节点、批注和警告。编辑器中已安装的 HTML codecs 决定最终的 Plate 节点。
 
-### JuicePlugin
+```bash
+npm install @platejs/docx-import
+```
 
-用于将 CSS 属性内联到 HTML 元素中的插件。将外部 CSS 样式转换为内联的 `style` 属性。这对于 DOCX 处理至关重要，因为它能确保从 Word 文档粘贴内容时保留样式信息。
+```tsx title="components/editor/editor.tsx"
+import { DocxImportPlugin } from '@platejs/docx-import';
+import { createPlateEditor } from 'platejs/react';
+import { BaseEditorKit } from '@/components/editor/plugins-static';
+
+const editor = createPlateEditor({
+  plugins: [...BaseEditorKit, DocxImportPlugin],
+});
+
+export async function importDocx(file: File) {
+  const result = await editor
+    .plugin(DocxImportPlugin)
+    .api.import(await file.arrayBuffer());
+
+  editor.update.fragment.replace(result.nodes);
+
+  return {
+    comments: result.comments,
+    warnings: result.warnings,
+  };
+}
+```
+
+每条批注都包含 Word 批注 `id`、提取的 `text`，以及指向返回节点快照的 `references`。
+
+## 导出 DOCX
+
+`DocxExportPlugin` 负责编辑器绑定的导出。显式传入文档快照，使导出操作保持确定性。
+
+```bash
+npm install @platejs/docx-export
+```
+
+```tsx title="components/editor/editor.tsx"
+import { DocxExportPlugin, downloadDocx } from '@platejs/docx-export';
+import { createPlateEditor } from 'platejs/react';
+import { BaseEditorKit } from '@/components/editor/plugins-static';
+import { DocxExportKit } from '@/components/editor/docx-export';
+
+const editorPlugins = [...BaseEditorKit, ...DocxExportKit] as const;
+const editor = createPlateEditor({
+  plugins: [...editorPlugins, DocxExportPlugin],
+});
+
+export async function downloadEditorDocx() {
+  const blob = await editor
+    .plugin(DocxExportPlugin)
+    .api.toBlob(editor.read.children(), {
+      editorPlugins,
+      orientation: 'portrait',
+    });
+
+  downloadDocx(blob, 'document.docx');
+}
+```
+
+如果不需要已安装的插件 portal，可直接使用 `exportToDocx`：
+
+```tsx
+import { downloadDocx, exportToDocx } from '@platejs/docx-export';
+
+const blob = await exportToDocx(editor.read.children(), {
+  editorPlugins,
+  margins: { bottom: 1440, left: 1440, right: 1440, top: 1440 },
+});
+
+downloadDocx(blob, 'document.docx');
+```
+
+### DOCX Export Kit
+
+应用内的 `DocxExportKit` 为代码块、分栏、公式、Callout、标题和目录提供静态渲染器。
+
+<ComponentSource name="docx-export" />
+
+## API 参考
+
+### `@platejs/docx`
+
+该门面包重新导出 `DocxPastePlugin`、`DocxImportPlugin`、`DocxExportPlugin`，以及三个独立包中的操作和类型。应用通过本地插件数组决定插件成员和顺序。
+
+### `DocxImportPlugin`
+
+`editor.plugin(DocxImportPlugin).api.import(arrayBuffer, options?)` 返回 `nodes`、`comments` 和 `warnings`。`options.rtf` 可接收与文件内容匹配的 RTF 数据。
+
+### `DocxExportPlugin`
+
+`editor.plugin(DocxExportPlugin).api.toBlob(value, options?)` 为显式节点快照返回 DOCX `Blob`。
+
+### `exportToDocx`
+
+`exportToDocx(value, options?)` 无需安装 `DocxExportPlugin` 即可返回 DOCX `Blob`。选项包括 `allowRemoteImages`、`customStyles`、`editorPlugins`、`editorStaticComponent`、`fontFamily`、`margins`、`orientation`、`pageSize` 和 `title`。
+
+### `downloadDocx`
+
+`downloadDocx(blob, filename)` 触发浏览器下载，并在需要时添加 `.docx` 扩展名。

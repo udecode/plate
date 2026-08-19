@@ -219,6 +219,8 @@ export class EditableDOMRuntime {
     evidence: DOMIntegrityRepairEvidence
   ) => void = () => {};
 
+  private selectionExportAfterDOMCommitHandler: () => void = () => {};
+
   private readonly nativeInputHandlers: {
     beforeInput: ((event: InputEvent) => void) | null;
     input: ((event: Event) => void) | null;
@@ -611,6 +613,29 @@ export class EditableDOMRuntime {
     this.rootRuntime.claimHostCommit();
   }
 
+  requestSelectionExportAfterDOMCommit() {
+    const exportSelection = () => this.selectionExportAfterDOMCommitHandler();
+
+    this.domPhaseScheduler.schedule(
+      'selection-repair',
+      'node-bind-selection-export-microtask',
+      exportSelection,
+      {
+        key: 'node-bind-selection-export-microtask',
+        timing: 'microtask',
+      }
+    );
+    this.domPhaseScheduler.schedule(
+      'selection-repair',
+      'node-bind-selection-export-frame',
+      exportSelection,
+      {
+        key: 'node-bind-selection-export-frame',
+        timing: 'animation-frame',
+      }
+    );
+  }
+
   runOwnedDOMMutation<T>(
     owner: DOMIntegrityMutationOwner,
     callback: () => T
@@ -630,6 +655,10 @@ export class EditableDOMRuntime {
     handler: (evidence: DOMIntegrityRepairEvidence) => void
   ) {
     this.integrityRepairHandler = handler;
+  }
+
+  updateSelectionExportAfterDOMCommitHandler(handler: () => void) {
+    this.selectionExportAfterDOMCommitHandler = handler;
   }
 
   update(update: EditableDOMRuntimeUpdate) {

@@ -10,15 +10,15 @@ Use them to start from working Plate UI wiring, then edit the installed kit when
 
 | Kit type | Example | Use for |
 | --- | --- | --- |
-| Client/UI kit | `basic-nodes-kit`, `table-kit`, `media-kit` | Editable React editors with Plate UI components. |
-| Base kit | `basic-blocks-base-kit`, `table-base-kit` | Static rendering and server-safe editor setup. |
-| Full editor kit | `editor-kit` | A complete client editor feature stack. |
-| Full base kit | `editor-base-kit` | A broad static/base plugin stack. |
+| Client/UI kit | `basic-nodes`, `table`, `media` | Editable React editors with Plate UI components. |
+| Base kit | `basic-blocks-static`, `table-static` | Static rendering and server-safe editor setup. |
+| Full editor kit | `editor-plugins` | A complete client editor feature stack. |
+| Full base kit | `editor-plugins-static` | A broad static/base plugin stack. |
 
-Feature kits live under `components/editor/plugins` after installation. Full
-editor kits like `editor-kit` and `editor-base-kit` live under
-`components/editor`. They are normal TypeScript files in your app, not package
-exports locked inside `node_modules`.
+Feature kits live directly under `components/editor` after installation. The
+file and registry item use the feature name, while the exported value keeps the
+`Kit` suffix: `link.tsx` exports `LinkKit`. They are normal TypeScript files in
+your app, not package exports locked inside `node_modules`.
 
 ## Use a Kit
 
@@ -27,9 +27,9 @@ Install the kit through the Plate registry, then import it from your app.
 ```tsx title="components/editor.tsx" showLineNumbers
 import { Plate, usePlateEditor } from 'platejs/react';
 
-import { BasicNodesKit } from '@/components/editor/plugins/basic-nodes-kit';
-import { TableKit } from '@/components/editor/plugins/table-kit';
-import { Editor, EditorContainer } from '@/components/ui/editor';
+import { BasicNodesKit } from '@/components/editor/basic-nodes';
+import { TableKit } from '@/components/editor/table';
+import { Editor, EditorContainer } from '@/components/editor/editor';
 
 export function MyEditor() {
   const editor = usePlateEditor({
@@ -55,13 +55,13 @@ shortcuts, and mark leaf components.
 
 | Need | Start with |
 | --- | --- |
-| Paragraphs, headings, blockquotes, marks. | `basic-nodes-kit` |
-| Tables with table UI components. | `table-kit` |
-| Images, video, audio, files, embeds, captions. | `media-kit` |
-| Comments and discussions. | `comment-kit` plus `discussion-kit` |
-| AI menu, AI nodes, cursor overlay, and Markdown support. | `ai-kit` |
-| Full editable editor stack. | `editor-kit` |
-| Static or server-rendered output. | `editor-base-kit` or focused `*-base-kit` files |
+| Paragraphs, headings, blockquotes, marks. | `basic-nodes` |
+| Tables with table UI components. | `table` |
+| Images, video, audio, files, embeds, captions. | `media` |
+| Comments and discussions. | `comment` plus `discussion` |
+| AI menu, AI nodes, cursor overlay, and Markdown support. | `ai` |
+| Full editable editor stack. | `editor-plugins` |
+| Static or server-rendered output. | `editor-plugins-static` or focused `*-static` files |
 
 Plugin pages show the recommended kit in their installation section. Use the kit
 source when you need the exact plugin list, imported UI components, shortcuts,
@@ -74,7 +74,7 @@ point for [Static Rendering](/docs/static), [Node.js](/docs/installation/node),
 and other non-editable pipelines.
 
 ```ts title="static-editor.ts"
-import { BaseEditorKit } from '@/components/editor/editor-base-kit';
+import { BaseEditorKit } from '@/components/editor/plugins-static';
 import { createStaticEditor } from 'platejs/static';
 
 const editor = createStaticEditor({
@@ -91,17 +91,17 @@ the runtime.
 Because kits are copied into your app, the cleanest customization is usually to
 edit the installed kit file.
 
-```tsx title="components/editor/plugins/my-basic-kit.tsx"
-import { H1Plugin } from '@platejs/basic-nodes/react';
+```tsx title="components/editor/my-basic.tsx"
+import { HeadingPlugin } from '@platejs/basic-nodes/react';
 import { ParagraphPlugin } from 'platejs/react';
 
-import { H1Element } from '@/components/ui/heading-node';
-import { ParagraphElement } from '@/components/ui/paragraph-node';
+import { HeadingElement } from '@/components/editor/heading';
+import { ParagraphElement } from '@/components/editor/paragraph';
 
 export const MyBasicKit = [
   ParagraphPlugin.configure({ component: ParagraphElement }),
-  H1Plugin.configure({
-    component: H1Element,
+  HeadingPlugin.configure({
+    component: HeadingElement,
   }),
 ];
 ```
@@ -112,17 +112,17 @@ boundary.
 
 ## Registry Names
 
-Kits are registry items. These names map to files in
-`components/editor/plugins` or `components/editor`.
+Kits are exported composition values. Registry items and files use feature
+names and install directly into `components/editor`.
 
 | Registry item | Installs |
 | --- | --- |
-| `basic-nodes-kit` | `BasicNodesKit`, `BasicBlocksKit`, and `BasicMarksKit` dependencies. |
-| `table-kit` | `TableKit` and table UI components. |
-| `media-kit` | `MediaKit` without a media upload API route. |
-| `media-uploadthing-kit` | `media-kit` plus the UploadThing API route. |
-| `editor-kit` | The full editable editor kit. |
-| `editor-base-kit` | The full static/base kit. |
+| `basic-nodes` | `BasicNodesKit`, `BasicBlocksKit`, and `BasicMarksKit` dependencies. |
+| `table` | `TableKit` and table UI components. |
+| `media` | `MediaKit` without a media upload API route. |
+| `media-uploadthing` | `media` plus the UploadThing API route. |
+| `editor-plugins` | The full editable editor kit. |
+| `editor-plugins-static` | The full static/base kit. |
 
 ## Next Steps
 

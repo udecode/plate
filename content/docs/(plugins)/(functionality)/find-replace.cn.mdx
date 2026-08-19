@@ -2,7 +2,7 @@
 title: 查找
 description: 高亮编辑器文本中的搜索结果。
 docs:
-  - route: /docs/components/search-highlight-node
+  - route: /docs/components/search-highlight
     title: 搜索高亮叶节点
   - route: /docs/examples/find-replace
     title: 查找演示
@@ -35,7 +35,7 @@ decorations；应用负责输入框与替换命令。
 import { FindReplacePlugin } from '@platejs/find-replace';
 import { createPlateEditor } from 'platejs/react';
 
-import { SearchHighlightLeaf } from '@/components/ui/search-highlight-node';
+import { SearchHighlightLeaf } from '@/components/editor/search-highlight';
 
 export const editor = createPlateEditor({
   plugins: [

@@ -2,6 +2,8 @@
 "@platejs/suggestion": major
 ---
 
+Require React and React DOM 19.2 or newer.
+
 Ignore schema-declared metadata properties when computing suggestion diffs,
 including configured persisted element-ID keys.
 
@@ -13,6 +15,9 @@ installed editor API, and register suggestion marks and metadata in compiled
 schemas with versioned inline validation.
 Infer `nodes()` and `nodeEntries()` results as descendant entries rather than
 exposing the editor root through the broad `Node` union.
+
+Let suggestion leaf components inspect suggestion metadata without receiving
+the underlying text string.
 
 **Migration:** Read pure value helpers from `editor.api.suggestion`, snapshot
 queries from `editor.read.suggestion`, and mutations from

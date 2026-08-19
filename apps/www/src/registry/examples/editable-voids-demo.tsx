@@ -14,9 +14,9 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { EditorKit } from '@/registry/components/editor/editor';
+import { EditorKit } from '@/registry/components/editor/plugins';
 import { editableVoidsValue } from '@/registry/examples/values/editable-voids-value';
-import { Editor, EditorContainer } from '@/registry/ui/editor';
+import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 
 export const EditableVoidPlugin = definePlatePlugin('editableVoid', {
   schema: { element: { void: 'editable-island' } },

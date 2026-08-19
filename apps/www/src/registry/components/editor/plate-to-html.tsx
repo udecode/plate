@@ -7,12 +7,12 @@ import type { InitialValue } from 'platejs';
 import { Plate, usePlateEditor, usePlateViewEditor } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
-import { EditorKit } from '@/registry/components/editor/editor';
-import { Editor, EditorView } from '@/registry/ui/editor';
+import { EditorKit } from '@/registry/components/editor/plugins';
+import { Editor, EditorView } from '@/registry/components/editor/editor';
 
-import { BaseEditorKit } from './editor-base-kit';
-import { FixedToolbarPlugin } from './plugins/fixed-toolbar-kit';
-import { FloatingToolbarPlugin } from './plugins/floating-toolbar-kit';
+import { BaseEditorKit } from './plugins-static';
+import { FixedToolbarPlugin } from './fixed-toolbar';
+import { FloatingToolbarPlugin } from './floating-toolbar';
 
 function useThemedHtml(html: string, serverTheme?: string) {
   const { resolvedTheme } = useTheme();

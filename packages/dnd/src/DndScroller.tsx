@@ -3,7 +3,7 @@ import React from 'react';
 import throttle from 'lodash/throttle.js';
 import raf from 'raf';
 
-import { useDndPluginStore } from './useDndNode';
+import { useDndPluginStore } from './internal/DndStore';
 
 const getCoords = (event: React.DragEvent | React.TouchEvent) => {
   if ('changedTouches' in event) {
@@ -29,7 +29,7 @@ const stopScrolling = (
   }
 };
 
-export type ScrollAreaProps = {
+type ScrollAreaProps = {
   placement: 'bottom' | 'top';
   containerRef?: React.RefObject<HTMLElement | Window | null>;
   enabled?: boolean;
@@ -153,9 +153,9 @@ export function ScrollArea({
   );
 }
 
-export type ScrollerProps = Omit<ScrollAreaProps, 'placement'>;
+export type DndScrollerOptions = Omit<ScrollAreaProps, 'placement'>;
 
-export function Scroller(props: ScrollerProps) {
+export function Scroller(props: DndScrollerOptions) {
   return (
     <>
       <ScrollArea placement="top" {...props} />
@@ -164,7 +164,7 @@ export function Scroller(props: ScrollerProps) {
   );
 }
 
-export function DndScroller(props: Partial<ScrollerProps>) {
+export function DndScroller(props: Partial<DndScrollerOptions>) {
   const isDragging = useDndPluginStore('isDragging');
   const [show, setShow] = React.useState(false);
 

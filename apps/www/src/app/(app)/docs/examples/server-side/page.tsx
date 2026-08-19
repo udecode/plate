@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 
-import { DocxPlugin } from '@platejs/docx';
+import { DocxPastePlugin } from '@platejs/docx-paste';
 import {
   createBaseEditor,
   ExitBreakPlugin,
@@ -15,7 +15,7 @@ import { Code } from '@/components/code';
 import { Link } from '@/components/link';
 import { Markdown } from '@/components/markdown';
 import { H2, H3, P } from '@/components/typography';
-import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
+import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 import { basicBlocksValue } from '@/registry/examples/values/basic-blocks-value';
 import { basicMarksValue } from '@/registry/examples/values/basic-marks-value';
 
@@ -57,7 +57,7 @@ export default function RSCPage() {
       // Functionality
       ExitBreakPlugin,
       TrailingBlockPlugin,
-      DocxPlugin,
+      DocxPastePlugin,
     ],
     initialValue: [...basicBlocksValue, ...basicMarksValue],
   });

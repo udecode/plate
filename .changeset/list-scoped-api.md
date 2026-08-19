@@ -2,6 +2,12 @@
 "@platejs/list": major
 ---
 
+Require React and React DOM 19.2 or newer.
+
+Remove modern list toolbar and todo renderer prop hooks. Registry components
+call list reads and updates directly. `@platejs/list-classic` remains a
+maintenance-only compatibility surface.
+
 Export `BaseListPluginState` as the complete mutable state contract for
 `BaseListPlugin`.
 
@@ -27,3 +33,7 @@ editor.update.list.outdent();
 Generic package code can use the same groups through
 `editor.plugin(ListPlugin).read` and `editor.plugin(ListPlugin).update`.
 Configure list targets through `targetPlugins`.
+
+Use `listStart` for conditional numbered-list starts, `listRestart` for forced
+boundaries, validate both as signed safe integers, and derive display ordinals
+without persisting them.

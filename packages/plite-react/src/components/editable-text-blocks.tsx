@@ -31,7 +31,6 @@ import {
   NodeKeyContext,
   PliteContentRootOwnerContext,
   PliteDOMStrategyVirtualOffsetContext,
-  PliteDOMTextSyncContext,
   PliteEditableRootContext,
 } from '../context';
 import {
@@ -513,7 +512,7 @@ function EditableContentRootView({
       onMouseUpCapture={onMouseUpCapture}
       suppressContentEditableWarning
     >
-      <PliteContentRootOwnerContext.Provider value={contentRootOwner}>
+      <PliteContentRootOwnerContext value={contentRootOwner}>
         <EditableInner
           aria-label={ariaLabel}
           className={className}
@@ -532,7 +531,7 @@ function EditableContentRootView({
           style={style}
           tabIndex={tabIndex}
         />
-      </PliteContentRootOwnerContext.Provider>
+      </PliteContentRootOwnerContext>
     </div>
   );
 }
@@ -851,7 +850,7 @@ const EditableDescendantNodeInner = <T, TElement extends PliteElementNode>({
   const renderChild = (childNodeKey: NodeKey, index: number) =>
     renderDirectTextChild(childNodeKey, node.children[index], index) ?? (
       <EditableDescendantNode
-        key={childNodeKey}
+        key={`${childNodeKey}:${getDOMTextRenderRevision(editor, [childNodeKey])}`}
         placeholder={placeholder}
         placeholderRef={placeholderRef}
         renderElement={renderElement}
@@ -882,9 +881,9 @@ const EditableDescendantNodeInner = <T, TElement extends PliteElementNode>({
     const children = renderChildren();
 
     return (
-      <NodeKeyContext.Provider key={nodeKey} value={nodeKey}>
-        <ElementPathContext.Provider value={path}>
-          <ElementContext.Provider value={node}>
+      <NodeKeyContext key={nodeKey} value={nodeKey}>
+        <ElementPathContext value={path}>
+          <ElementContext value={node}>
             <EditableRenderedVoid
               element={node as TElement}
               isInline={inline}
@@ -892,9 +891,9 @@ const EditableDescendantNodeInner = <T, TElement extends PliteElementNode>({
             >
               {children}
             </EditableRenderedVoid>
-          </ElementContext.Provider>
-        </ElementPathContext.Provider>
-      </NodeKeyContext.Provider>
+          </ElementContext>
+        </ElementPathContext>
+      </NodeKeyContext>
     );
   }
 
@@ -932,17 +931,17 @@ const EditableDescendantNodeInner = <T, TElement extends PliteElementNode>({
     } as unknown as RenderElementProps<TElement>;
 
     return (
-      <NodeKeyContext.Provider key={nodeKey} value={nodeKey}>
-        <ElementPathContext.Provider value={path}>
-          <ElementContext.Provider value={node}>
+      <NodeKeyContext key={nodeKey} value={nodeKey}>
+        <ElementPathContext value={path}>
+          <ElementContext value={node}>
             <EditableRenderedElement
               path={path}
               props={renderElementProps}
               renderElement={nodeRenderElement}
             />
-          </ElementContext.Provider>
-        </ElementPathContext.Provider>
-      </NodeKeyContext.Provider>
+          </ElementContext>
+        </ElementPathContext>
+      </NodeKeyContext>
     );
   }
 
@@ -954,28 +953,28 @@ const EditableDescendantNodeInner = <T, TElement extends PliteElementNode>({
     const children = renderChildren();
 
     return (
-      <NodeKeyContext.Provider key={nodeKey} value={nodeKey}>
-        <ElementPathContext.Provider value={path}>
-          <ElementContext.Provider value={node}>
+      <NodeKeyContext key={nodeKey} value={nodeKey}>
+        <ElementPathContext value={path}>
+          <ElementContext value={node}>
             <EditableRenderedVoid element={node as TElement} isInline={inline}>
               {children}
             </EditableRenderedVoid>
-          </ElementContext.Provider>
-        </ElementPathContext.Provider>
-      </NodeKeyContext.Provider>
+          </ElementContext>
+        </ElementPathContext>
+      </NodeKeyContext>
     );
   }
 
   return (
-    <NodeKeyContext.Provider key={nodeKey} value={nodeKey}>
-      <ElementPathContext.Provider value={path}>
-        <ElementContext.Provider value={node}>
+    <NodeKeyContext key={nodeKey} value={nodeKey}>
+      <ElementPathContext value={path}>
+        <ElementContext value={node}>
           <EditableElement as={inline ? 'span' : 'div'} isInline={inline}>
             {defaultChildren}
           </EditableElement>
-        </ElementContext.Provider>
-      </ElementPathContext.Provider>
-    </NodeKeyContext.Provider>
+        </ElementContext>
+      </ElementPathContext>
+    </NodeKeyContext>
   );
 };
 
@@ -1087,10 +1086,6 @@ const EditableInner = <T, TElement extends PliteElementNode>({
   enableVirtualizedRendering?: boolean;
 }) => {
   const domStrategyOptions = domStrategy;
-  const domTextSyncOptions =
-    typeof domStrategyOptions === 'object' && domStrategyOptions != null
-      ? (domStrategyOptions.textSync ?? null)
-      : null;
   const editor = useEditor();
   const editableRoot = toInternalRoot(
     editor.read((state) => state.view.root())
@@ -1763,263 +1758,232 @@ const EditableInner = <T, TElement extends PliteElementNode>({
     : null;
 
   return (
-    <ProjectionContext.Provider value={projectionStore}>
-      <PliteDOMTextSyncContext.Provider value={domTextSyncOptions}>
-        <PliteEditableRootContext.Provider value={editableRoot}>
-          <EditableDOMRoot
-            autoFocus={autoFocus}
-            {...attributes}
-            className={className}
-            deferNativeTextInputRepair={domStrategyType === 'virtualized'}
-            disableDefaultStyles={disableDefaultStyles}
-            domStrategyMetrics={domStrategyMetrics}
-            domStrategyRuntime={
-              virtualizedPlan
+    <ProjectionContext value={projectionStore}>
+      <PliteEditableRootContext value={editableRoot}>
+        <EditableDOMRoot
+          autoFocus={autoFocus}
+          {...attributes}
+          className={className}
+          deferNativeTextInputRepair={domStrategyType === 'virtualized'}
+          disableDefaultStyles={disableDefaultStyles}
+          domStrategyMetrics={domStrategyMetrics}
+          domStrategyRuntime={
+            virtualizedPlan
+              ? {
+                  mountedTopLevelNodeKeys:
+                    virtualizedPlan.mountedTopLevelNodeKeys,
+                  mountedTopLevelRanges:
+                    virtualizedPlan.mountedTopLevelRanges ?? undefined,
+                  scrollToPath: scrollVirtualizedPathIntoView,
+                  type: 'virtualized',
+                }
+              : segmentPlan
                 ? {
-                    mountedTopLevelNodeKeys:
-                      virtualizedPlan.mountedTopLevelNodeKeys,
-                    mountedTopLevelRanges:
-                      virtualizedPlan.mountedTopLevelRanges ?? undefined,
-                    scrollToPath: scrollVirtualizedPathIntoView,
-                    type: 'virtualized',
+                    mountedTopLevelNodeKeys,
+                    mountedTopLevelRanges: mountedTopLevelRanges ?? undefined,
+                    type: 'partial-dom',
                   }
-                : segmentPlan
+                : rootGroups
                   ? {
-                      mountedTopLevelNodeKeys,
-                      mountedTopLevelRanges: mountedTopLevelRanges ?? undefined,
-                      type: 'partial-dom',
+                      mountedTopLevelNodeKeys:
+                        domPresentMountedTopLevelNodeKeys,
+                      mountedTopLevelRanges:
+                        domPresentMountedTopLevelRanges ?? undefined,
+                      type: 'staged',
                     }
-                  : rootGroups
-                    ? {
-                        mountedTopLevelNodeKeys:
-                          domPresentMountedTopLevelNodeKeys,
-                        mountedTopLevelRanges:
-                          domPresentMountedTopLevelRanges ?? undefined,
-                        type: 'staged',
-                      }
-                    : null
-            }
-            id={id}
-            ignoreBlankEditableRootClicks={
-              ignoreBlankEditableRootClicks ||
-              virtualizedDOMStrategyOptions?.layout != null
-            }
-            onBeforeInput={onBeforeInput}
-            onDOMBeforeInput={onDOMBeforeInput}
-            onDOMStrategyMetrics={onDOMStrategyMetrics}
-            onKeyDown={onKeyDown}
-            onPaste={onPaste}
-            readOnly={effectiveReadOnly}
-            ref={
-              virtualizedDOMStrategyConfig || forwardedRef
-                ? editableRootRef
-                : undefined
-            }
-            scrollSelectionIntoView={scrollSelectionIntoView}
-            spellCheck={spellCheck}
-            style={rootStyle}
-          >
-            {virtualizedPlan ? (
-              <div
-                data-plite-dom-strategy-virtualizer="true"
-                style={{
-                  height: virtualizedPlan.totalSize,
-                  position: 'relative',
-                  width: '100%',
-                }}
-              >
-                {virtualizedPlan.missingRanges.map((range) => (
-                  <DOMStrategyVirtualizedRangeBoundary
-                    anchorNodeKey={range.anchorNodeKey}
-                    boundaryId={range.boundaryId}
-                    endIndex={range.endIndex}
-                    focusNodeKey={range.focusNodeKey}
-                    key={range.boundaryId}
-                    startIndex={range.startIndex}
-                  />
-                ))}
-                {virtualizedItemGroups!.map((group) => (
-                  <div
-                    data-plite-dom-strategy-virtual-row-group="true"
-                    key={group.groupId}
-                    style={{
-                      left: 0,
-                      pointerEvents: 'none',
-                      position: 'absolute',
-                      top: 0,
-                      transform: `translateY(${group.start}px)`,
-                      width: '100%',
-                    }}
-                  >
-                    {group.items.map((item) => {
-                      const hasInlineBounds =
-                        typeof item.left === 'number' &&
-                        typeof item.width === 'number';
+                  : null
+          }
+          id={id}
+          ignoreBlankEditableRootClicks={
+            ignoreBlankEditableRootClicks ||
+            virtualizedDOMStrategyOptions?.layout != null
+          }
+          onBeforeInput={onBeforeInput}
+          onDOMBeforeInput={onDOMBeforeInput}
+          onDOMStrategyMetrics={onDOMStrategyMetrics}
+          onKeyDown={onKeyDown}
+          onPaste={onPaste}
+          readOnly={effectiveReadOnly}
+          ref={
+            virtualizedDOMStrategyConfig || forwardedRef
+              ? editableRootRef
+              : undefined
+          }
+          scrollSelectionIntoView={scrollSelectionIntoView}
+          spellCheck={spellCheck}
+          style={rootStyle}
+        >
+          {virtualizedPlan ? (
+            <div
+              data-plite-dom-strategy-virtualizer="true"
+              style={{
+                height: virtualizedPlan.totalSize,
+                position: 'relative',
+                width: '100%',
+              }}
+            >
+              {virtualizedPlan.missingRanges.map((range) => (
+                <DOMStrategyVirtualizedRangeBoundary
+                  anchorNodeKey={range.anchorNodeKey}
+                  boundaryId={range.boundaryId}
+                  endIndex={range.endIndex}
+                  focusNodeKey={range.focusNodeKey}
+                  key={range.boundaryId}
+                  startIndex={range.startIndex}
+                />
+              ))}
+              {virtualizedItemGroups!.map((group) => (
+                <div
+                  data-plite-dom-strategy-virtual-row-group="true"
+                  key={group.groupId}
+                  style={{
+                    left: 0,
+                    pointerEvents: 'none',
+                    position: 'absolute',
+                    top: 0,
+                    transform: `translateY(${group.start}px)`,
+                    width: '100%',
+                  }}
+                >
+                  {group.items.map((item) => {
+                    const hasInlineBounds =
+                      typeof item.left === 'number' &&
+                      typeof item.width === 'number';
 
-                      return (
-                        <div
-                          data-index={item.index}
-                          data-plite-dom-strategy-virtual-row="true"
-                          key={String(item.key)}
-                          ref={virtualizedPlan.measureElement}
-                          style={{
-                            minHeight: item.size,
-                            pointerEvents: 'none',
-                            position: 'relative',
-                            width: '100%',
-                          }}
+                    return (
+                      <div
+                        data-index={item.index}
+                        data-plite-dom-strategy-virtual-row="true"
+                        key={String(item.key)}
+                        ref={virtualizedPlan.measureElement}
+                        style={{
+                          minHeight: item.size,
+                          pointerEvents: 'none',
+                          position: 'relative',
+                          width: '100%',
+                        }}
+                      >
+                        <PliteDOMStrategyVirtualOffsetContext
+                          value={item.start}
                         >
-                          <PliteDOMStrategyVirtualOffsetContext.Provider
-                            value={item.start}
+                          <div
+                            style={{
+                              marginLeft: hasInlineBounds
+                                ? item.left
+                                : undefined,
+                              minHeight: item.size,
+                              pointerEvents: 'auto',
+                              position: hasInlineBounds ? 'static' : 'relative',
+                              width: hasInlineBounds ? item.width : '100%',
+                            }}
                           >
-                            <div
-                              style={{
-                                marginLeft: hasInlineBounds
-                                  ? item.left
-                                  : undefined,
-                                minHeight: item.size,
-                                pointerEvents: 'auto',
-                                position: hasInlineBounds
-                                  ? 'static'
-                                  : 'relative',
-                                width: hasInlineBounds ? item.width : '100%',
-                              }}
-                            >
-                              <EditableDescendantNode
-                                placeholder={placeholderValue}
-                                placeholderRef={placeholderRef}
-                                renderElement={renderElement}
-                                renderLeaf={renderLeaf}
-                                renderPlaceholder={renderPlaceholder}
-                                renderSegment={renderSegment}
-                                renderText={renderText}
-                                renderVoid={renderVoid}
-                                nodeKey={item.nodeKey}
-                              />
-                            </div>
-                          </PliteDOMStrategyVirtualOffsetContext.Provider>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ))}
-              </div>
-            ) : segmentPlan ? (
-              segmentPlan.segments.map((segment) =>
-                segment.isActive ? (
-                  <React.Fragment key={`partial-dom-${segment.segmentIndex}`}>
-                    {segment.mountedStartIndex != null &&
-                    segment.mountedStartIndex > segment.startIndex ? (
-                      <DOMStrategySegmentPlaceholder
-                        boundaryId={`partial-dom-aggressive:${segment.segmentIndex}:before`}
-                        coverageReason={
-                          domStrategyType === 'virtualized'
-                            ? 'viewport-virtualization'
-                            : 'partial-dom-aggressive'
-                        }
-                        dataSegment={`${segment.segmentIndex}:before`}
-                        endIndex={segment.mountedStartIndex - 1}
-                        onPromote={handlePromoteSegment}
-                        previewChars={
-                          internalSegmentDOMStrategyConfig!.previewChars
-                        }
-                        nodeKeys={segment.nodeKeys.slice(
-                          0,
-                          segment.mountedStartIndex - segment.startIndex
-                        )}
-                        segmentIndex={segment.segmentIndex}
-                        startIndex={segment.startIndex}
-                      />
-                    ) : null}
-                    {segment.mountedNodeKeys.map((nodeKey) => (
-                      <EditableDescendantNode
-                        key={nodeKey}
-                        placeholder={placeholderValue}
-                        placeholderRef={placeholderRef}
-                        renderElement={renderElement}
-                        renderLeaf={renderLeaf}
-                        renderPlaceholder={renderPlaceholder}
-                        renderSegment={renderSegment}
-                        renderText={renderText}
-                        renderVoid={renderVoid}
-                        nodeKey={nodeKey}
-                      />
-                    ))}
-                    {segment.mountedEndIndex != null &&
-                    segment.mountedEndIndex < segment.endIndex ? (
-                      <DOMStrategySegmentPlaceholder
-                        boundaryId={`partial-dom-aggressive:${segment.segmentIndex}:after`}
-                        coverageReason={
-                          domStrategyType === 'virtualized'
-                            ? 'viewport-virtualization'
-                            : 'partial-dom-aggressive'
-                        }
-                        dataSegment={`${segment.segmentIndex}:after`}
-                        endIndex={segment.endIndex}
-                        onPromote={handlePromoteSegment}
-                        previewChars={
-                          internalSegmentDOMStrategyConfig!.previewChars
-                        }
-                        nodeKeys={segment.nodeKeys.slice(
-                          segment.mountedEndIndex - segment.startIndex + 1
-                        )}
-                        segmentIndex={segment.segmentIndex}
-                        startIndex={segment.mountedEndIndex + 1}
-                      />
-                    ) : null}
-                  </React.Fragment>
-                ) : (
-                  <DOMStrategySegmentPlaceholder
-                    coverageReason={
-                      domStrategyType === 'virtualized'
-                        ? 'viewport-virtualization'
-                        : 'partial-dom-aggressive'
-                    }
-                    endIndex={segment.endIndex}
-                    key={`partial-dom-${segment.segmentIndex}`}
-                    onPromote={handlePromoteSegment}
-                    previewChars={
-                      internalSegmentDOMStrategyConfig!.previewChars
-                    }
-                    nodeKeys={segment.nodeKeys}
-                    segmentIndex={segment.segmentIndex}
-                    startIndex={segment.startIndex}
-                  />
-                )
+                            <EditableDescendantNode
+                              placeholder={placeholderValue}
+                              placeholderRef={placeholderRef}
+                              renderElement={renderElement}
+                              renderLeaf={renderLeaf}
+                              renderPlaceholder={renderPlaceholder}
+                              renderSegment={renderSegment}
+                              renderText={renderText}
+                              renderVoid={renderVoid}
+                              nodeKey={item.nodeKey}
+                            />
+                          </div>
+                        </PliteDOMStrategyVirtualOffsetContext>
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          ) : segmentPlan ? (
+            segmentPlan.segments.map((segment) =>
+              segment.isActive ? (
+                <React.Fragment key={`partial-dom-${segment.segmentIndex}`}>
+                  {segment.mountedStartIndex != null &&
+                  segment.mountedStartIndex > segment.startIndex ? (
+                    <DOMStrategySegmentPlaceholder
+                      boundaryId={`partial-dom-aggressive:${segment.segmentIndex}:before`}
+                      coverageReason={
+                        domStrategyType === 'virtualized'
+                          ? 'viewport-virtualization'
+                          : 'partial-dom-aggressive'
+                      }
+                      dataSegment={`${segment.segmentIndex}:before`}
+                      endIndex={segment.mountedStartIndex - 1}
+                      onPromote={handlePromoteSegment}
+                      previewChars={
+                        internalSegmentDOMStrategyConfig!.previewChars
+                      }
+                      nodeKeys={segment.nodeKeys.slice(
+                        0,
+                        segment.mountedStartIndex - segment.startIndex
+                      )}
+                      segmentIndex={segment.segmentIndex}
+                      startIndex={segment.startIndex}
+                    />
+                  ) : null}
+                  {segment.mountedNodeKeys.map((nodeKey) => (
+                    <EditableDescendantNode
+                      key={nodeKey}
+                      placeholder={placeholderValue}
+                      placeholderRef={placeholderRef}
+                      renderElement={renderElement}
+                      renderLeaf={renderLeaf}
+                      renderPlaceholder={renderPlaceholder}
+                      renderSegment={renderSegment}
+                      renderText={renderText}
+                      renderVoid={renderVoid}
+                      nodeKey={nodeKey}
+                    />
+                  ))}
+                  {segment.mountedEndIndex != null &&
+                  segment.mountedEndIndex < segment.endIndex ? (
+                    <DOMStrategySegmentPlaceholder
+                      boundaryId={`partial-dom-aggressive:${segment.segmentIndex}:after`}
+                      coverageReason={
+                        domStrategyType === 'virtualized'
+                          ? 'viewport-virtualization'
+                          : 'partial-dom-aggressive'
+                      }
+                      dataSegment={`${segment.segmentIndex}:after`}
+                      endIndex={segment.endIndex}
+                      onPromote={handlePromoteSegment}
+                      previewChars={
+                        internalSegmentDOMStrategyConfig!.previewChars
+                      }
+                      nodeKeys={segment.nodeKeys.slice(
+                        segment.mountedEndIndex - segment.startIndex + 1
+                      )}
+                      segmentIndex={segment.segmentIndex}
+                      startIndex={segment.mountedEndIndex + 1}
+                    />
+                  ) : null}
+                </React.Fragment>
+              ) : (
+                <DOMStrategySegmentPlaceholder
+                  coverageReason={
+                    domStrategyType === 'virtualized'
+                      ? 'viewport-virtualization'
+                      : 'partial-dom-aggressive'
+                  }
+                  endIndex={segment.endIndex}
+                  key={`partial-dom-${segment.segmentIndex}`}
+                  onPromote={handlePromoteSegment}
+                  previewChars={internalSegmentDOMStrategyConfig!.previewChars}
+                  nodeKeys={segment.nodeKeys}
+                  segmentIndex={segment.segmentIndex}
+                  startIndex={segment.startIndex}
+                />
               )
-            ) : renderedRootGroupItems ? (
-              renderedRootGroupItems.map((item) =>
-                item.kind === 'mounted' ? (
-                  <EditableRootGroup
-                    endIndex={item.group.endIndex}
-                    groupId={item.group.groupId}
-                    key={item.group.groupId}
-                    placeholder={placeholderValue}
-                    placeholderRef={placeholderRef}
-                    renderElement={renderElement}
-                    renderLeaf={renderLeaf}
-                    renderPlaceholder={renderPlaceholder}
-                    renderSegment={renderSegment}
-                    renderText={renderText}
-                    renderVoid={renderVoid}
-                    nodeKeys={item.group.nodeKeys}
-                    startIndex={item.group.startIndex}
-                  />
-                ) : (
-                  <EditableRootGroupPlaceholder
-                    anchorNodeKey={item.anchorNodeKey}
-                    endIndex={item.endIndex}
-                    focusNodeKey={item.focusNodeKey}
-                    groupId={item.groupId}
-                    key={item.groupId}
-                    startIndex={item.startIndex}
-                  />
-                )
-              )
-            ) : (
-              topLevelNodeKeys.map((nodeKey) => (
-                <EditableDescendantNode
-                  key={nodeKey}
+            )
+          ) : renderedRootGroupItems ? (
+            renderedRootGroupItems.map((item) =>
+              item.kind === 'mounted' ? (
+                <EditableRootGroup
+                  endIndex={item.group.endIndex}
+                  groupId={item.group.groupId}
+                  key={item.group.groupId}
                   placeholder={placeholderValue}
                   placeholderRef={placeholderRef}
                   renderElement={renderElement}
@@ -2028,14 +1992,39 @@ const EditableInner = <T, TElement extends PliteElementNode>({
                   renderSegment={renderSegment}
                   renderText={renderText}
                   renderVoid={renderVoid}
-                  nodeKey={nodeKey}
+                  nodeKeys={item.group.nodeKeys}
+                  startIndex={item.group.startIndex}
                 />
-              ))
-            )}
-          </EditableDOMRoot>
-        </PliteEditableRootContext.Provider>
-      </PliteDOMTextSyncContext.Provider>
-    </ProjectionContext.Provider>
+              ) : (
+                <EditableRootGroupPlaceholder
+                  anchorNodeKey={item.anchorNodeKey}
+                  endIndex={item.endIndex}
+                  focusNodeKey={item.focusNodeKey}
+                  groupId={item.groupId}
+                  key={item.groupId}
+                  startIndex={item.startIndex}
+                />
+              )
+            )
+          ) : (
+            topLevelNodeKeys.map((nodeKey) => (
+              <EditableDescendantNode
+                key={nodeKey}
+                placeholder={placeholderValue}
+                placeholderRef={placeholderRef}
+                renderElement={renderElement}
+                renderLeaf={renderLeaf}
+                renderPlaceholder={renderPlaceholder}
+                renderSegment={renderSegment}
+                renderText={renderText}
+                renderVoid={renderVoid}
+                nodeKey={nodeKey}
+              />
+            ))
+          )}
+        </EditableDOMRoot>
+      </PliteEditableRootContext>
+    </ProjectionContext>
   );
 };
 

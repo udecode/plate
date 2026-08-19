@@ -951,7 +951,7 @@ export const PagedEditable = ({
   );
 
   return (
-    <PliteLayoutFragmentContext.Provider
+    <PliteLayoutFragmentContext
       value={{
         layout,
         projectedLinesByFragment,
@@ -1037,6 +1037,6 @@ export const PagedEditable = ({
           </div>
         </div>
       </div>
-    </PliteLayoutFragmentContext.Provider>
+    </PliteLayoutFragmentContext>
   );
 };

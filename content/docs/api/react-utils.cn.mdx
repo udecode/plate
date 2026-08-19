@@ -3,90 +3,68 @@ title: React 工具库
 description: \@udecode/react-utils 的 API 参考文档。
 ---
 
-`@udecode/react-utils` 包含用于 React 的实用函数。
+`@udecode/react-utils` 提供 Plate UI 包使用的小型 React 19 工具。它也从
+`platejs/react` 和 `@udecode/cn` 重新导出。
+
+## 安装
+
+```bash
+npm install @udecode/react-utils
+```
 
 ## 组件
 
-### `<PortalBody>`
+| 组件 | 功能 |
+| --- | --- |
+| `PortalBody` | 将 children portal 到 `element ?? document.body`；没有 DOM 容器时直接渲染 children。 |
+| `Box` | 渲染 `div`、`as` 组件，或在 `asChild` 为 true 时渲染 Radix `Slot`。 |
+| `Text` | 渲染 `span`、`as` 组件，或在 `asChild` 为 true 时渲染 Radix `Slot`。 |
+| `MemoizedChildren` | 对只有 `children` 属性的 fragment 进行 memo。 |
 
-通过 portal 在 `document.body` 中渲染 React 组件。
+`Box` 和 `Text` 将 `ref` 作为普通 React 19 属性接收。
 
-### `<Text>`
+```tsx
+import { Box, Text } from '@udecode/react-utils';
 
-用于渲染 span 的通用组件。
+export function Status() {
+  return (
+    <Box className="rounded-md border p-3">
+      <Text as="strong">Connected</Text>
+    </Box>
+  );
+}
+```
 
-### `<Box>`
+## Ref 与 Effect 工具
 
-用于渲染 div 的通用组件。
+| API | 功能 |
+| --- | --- |
+| `composeRefs(...refs)` | 将同一个节点写入 callback ref 和 ref object，并支持 ref cleanup callback。 |
+| `useComposedRef(...refs)` | 返回 memo 后的组合 ref callback。 |
+| `useStableFn(fn, deps?)` | 返回调用最新 `fn` 的稳定函数。 |
+| `useIsomorphicLayoutEffect` | 浏览器中使用 `useLayoutEffect`，SSR 中使用 `useEffect`。 |
 
-## API
+## 外部点击
 
-### `createPrimitiveComponent`
-
-创建一个原始组件工厂，该工厂利用 hooks 来管理状态和 props，并将引用转发给子组件。
-
-<API name="createPrimitiveComponent">
+<API name="useOnClickOutside">
 <APIParameters>
-  <APIItem name="element" type="React.ElementType">
-    基础组件或原生 HTML 元素。
+  <APIItem name="callback" type="(event: Event) => void">
+    配置的事件发生在所有跟踪元素之外时调用。
+  </APIItem>
+  <APIItem name="options.disabled" type="boolean" optional>
+    为 true 时移除事件监听。
+  </APIItem>
+  <APIItem name="options.eventTypes" type="string[]" optional>
+    默认为 `['mousedown', 'touchstart']`。
+  </APIItem>
+  <APIItem name="options.refs" type="React.RefObject<HTMLElement | null>[]" optional>
+    使用明确的 refs，而不是返回的 callback ref。
   </APIItem>
 </APIParameters>
-
-<APIReturns type="Function">
-  返回一个带有状态和 props 管理 hooks 的原始组件函数。
+<APIReturns type="(element: HTMLElement | null) => void">
+  注册外部点击检测元素的 callback ref。
 </APIReturns>
 </API>
 
-### `createPrimitiveElement`
-
-根据元素类型创建一个组件。
-
-<API name="createPrimitiveElement">
-<APIParameters>
-  <APIItem name="element" type="React.ElementType">
-    原生 HTML 元素。
-  </APIItem>
-</APIParameters>
-
-<APIReturns type="React.FC">
-  返回一个渲染指定元素的函数组件。
-</APIReturns>
-</API>
-
-### `createSlotComponent`
-
-创建一个 Slot 组件，当您希望组件表现得像其子组件时非常有用。
-
-<API name="createSlotComponent">
-<APIParameters>
-  <APIItem name="element" type="React.ElementType">
-    基础组件或原生 HTML 元素。
-  </APIItem>
-</APIParameters>
-
-<APIReturns type="Function">
-  返回一个 Slot 组件函数。
-</APIReturns>
-</API>
-
-### `withProviders`
-
-一个用多个 provider 包装组件的函数。
-
-<API name="withProviders">
-<APIParameters>
-  <APIItem name="providers" type="any[]">
-    用于包装组件的 providers。如果有任何 props 需要传递给 provider，只需传递一个数组。
-  </APIItem>
-  <APIItem name="WrappedComponent" type="FunctionComponent<T>">
-    需要被包装的组件。
-  </APIItem>
-  <APIItem name="props" type="T">
-    传递给被包装组件的 props。
-  </APIItem>
-</APIParameters>
-
-<APIReturns type="FunctionComponent<T>">
-  返回一个被指定 providers 包装的新组件。
-</APIReturns>
-</API>
+`composeEventHandlers(original, next, options?)` 先调用 `original`。如果事件
+未被阻止，或 `checkForDefaultPrevented` 为 false，再调用 `next`。

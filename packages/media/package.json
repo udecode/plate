@@ -20,7 +20,6 @@
   "sideEffects": false,
   "exports": {
     ".": "./dist/index.js",
-    "./migrations": "./dist/migrations/index.js",
     "./react": "./dist/react/index.js",
     "./package.json": "./package.json"
   },
@@ -52,13 +51,12 @@
     "react-compiler-runtime": "^1.0.0"
   },
   "devDependencies": {
-    "@plate/scripts": "workspace:*",
-    "platejs": "workspace:^"
+    "@plate/scripts": "workspace:*"
   },
   "peerDependencies": {
     "platejs": ">=54.0.0-beta.0",
-    "react": ">=18.0.0",
-    "react-dom": ">=18.0.0"
+    "react": ">=19.2.0",
+    "react-dom": ">=19.2.0"
   },
   "publishConfig": {
     "access": "public"

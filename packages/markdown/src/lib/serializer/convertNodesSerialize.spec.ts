@@ -19,7 +19,8 @@ describe('convertNodesSerialize', () => {
 
   const mockHeadingNodeSlate: Descendant = {
     children: [{ text: 'Title' }],
-    type: 'h1',
+    level: 1,
+    type: 'heading',
   };
 
   const mockThematicBreakNodeSlate: Descendant = {
@@ -79,7 +80,7 @@ describe('convertNodesSerialize', () => {
       expect(() =>
         convertNodesSerialize(mockNodesSlate, {
           ...baseOptions,
-          allowedNodes: ['h1'],
+          allowedNodes: ['heading'],
           disallowedNodes: ['p'],
         })
       ).toThrow('Cannot combine allowedNodes with disallowedNodes');
@@ -88,7 +89,7 @@ describe('convertNodesSerialize', () => {
     it('only include nodes specified in allowedNodes', () => {
       const options: SerializeMdContext = {
         ...baseOptions,
-        allowedNodes: ['h1', 'text'],
+        allowedNodes: ['heading', 'text'],
       };
 
       const result = convertNodesSerialize(mockNodesSlate, options);
@@ -246,7 +247,8 @@ describe('convertNodesSerialize', () => {
         buildMdastNode(
           {
             children: [{ text: 'Subtitle' }],
-            type: 'h2',
+            level: 2,
+            type: 'heading',
           },
           baseOptions
         )
@@ -256,33 +258,13 @@ describe('convertNodesSerialize', () => {
         type: 'heading',
       });
     });
-
-    it.each([
-      ['h4', 4],
-      ['h5', 5],
-      ['h6', 6],
-    ] as const)('normalizes persisted %s heading types before selecting the serializer', (type, depth) => {
-      expect(
-        buildMdastNode(
-          {
-            children: [{ text: `Heading ${depth}` }],
-            type,
-          },
-          baseOptions
-        )
-      ).toEqual({
-        children: [{ type: 'text', value: `Heading ${depth}` }],
-        depth,
-        type: 'heading',
-      });
-    });
   });
 
   describe('disallowedNodes option', () => {
     it('exclude nodes specified in disallowedNodes', () => {
       const options: SerializeMdContext = {
         ...baseOptions,
-        disallowedNodes: ['h1'],
+        disallowedNodes: ['heading'],
       };
 
       const result = convertNodesSerialize(mockNodesSlate, options);
@@ -435,7 +417,86 @@ describe('convertNodesSerialize', () => {
     });
   });
 
-  describe('listStyleType handling', () => {
+  describe('listType handling', () => {
+    it('groups root list items whose indent is omitted', () => {
+      const result = convertNodesSerialize(
+        [
+          {
+            children: [{ text: 'one' }],
+            listType: 'numbered',
+            type: 'paragraph',
+          },
+          {
+            children: [{ text: 'two' }],
+            listType: 'numbered',
+            type: 'paragraph',
+          },
+        ],
+        baseOptions
+      );
+
+      expect(result).toMatchObject([
+        {
+          children: [{}, {}],
+          ordered: true,
+          type: 'list',
+        },
+      ]);
+    });
+
+    it('groups explicit and omitted default marker styles', () => {
+      const result = convertNodesSerialize(
+        [
+          {
+            children: [{ text: 'one' }],
+            listStyle: 'decimal',
+            listType: 'numbered',
+            type: 'paragraph',
+          },
+          {
+            children: [{ text: 'two' }],
+            listType: 'numbered',
+            type: 'paragraph',
+          },
+        ],
+        baseOptions
+      );
+
+      expect(result).toMatchObject([
+        {
+          children: [{}, {}],
+          ordered: true,
+          type: 'list',
+        },
+      ]);
+    });
+
+    it('splits an explicit numbered-list restart into a new MDAST list', () => {
+      const result = convertNodesSerialize(
+        [
+          {
+            children: [{ text: 'one' }],
+            indent: 1,
+            listType: 'numbered',
+            type: 'paragraph',
+          },
+          {
+            children: [{ text: 'seven' }],
+            indent: 1,
+            listRestart: 7,
+            listType: 'numbered',
+            type: 'paragraph',
+          },
+        ],
+        baseOptions
+      );
+
+      expect(result).toMatchObject([
+        { ordered: true, type: 'list' },
+        { ordered: true, start: 7, type: 'list' },
+      ]);
+    });
+
     it('flattens block-id list fragments returned by the list serializer', () => {
       const result = convertNodesSerialize(
         [
@@ -443,16 +504,14 @@ describe('convertNodesSerialize', () => {
             children: [{ text: 'one' }],
             id: 'block-a',
             indent: 1,
-            listStart: 1,
-            listStyleType: 'decimal',
+            listType: 'numbered',
             type: 'paragraph',
           },
           {
             children: [{ text: 'two' }],
             id: 'block-b',
             indent: 1,
-            listStart: 1,
-            listStyleType: 'decimal',
+            listType: 'numbered',
             type: 'paragraph',
           },
         ],
@@ -478,28 +537,25 @@ describe('convertNodesSerialize', () => {
       });
     });
 
-    it('split list blocks when listStyleType changes', () => {
+    it('split list blocks when listType changes', () => {
       const listNodes: Descendant[] = [
         {
           children: [{ text: 'unordered' }],
           indent: 1,
-          listStart: 1,
-          listStyleType: 'disc',
+          listType: 'bulleted',
           type: 'paragraph',
         },
         {
           children: [{ text: 'todo' }],
           indent: 1,
-          listStart: 1,
-          listStyleType: 'todo',
+          listType: 'task',
           checked: false,
           type: 'paragraph',
         },
         {
           children: [{ text: 'ordered' }],
           indent: 1,
-          listStart: 1,
-          listStyleType: 'decimal',
+          listType: 'numbered',
           type: 'paragraph',
         },
       ];
@@ -523,7 +579,7 @@ describe('convertNodesSerialize', () => {
           ],
           ordered: false,
           spread: false,
-          start: 1,
+          start: undefined,
           type: 'list',
         },
         {
@@ -542,7 +598,7 @@ describe('convertNodesSerialize', () => {
           ],
           ordered: false,
           spread: false,
-          start: 1,
+          start: undefined,
           type: 'list',
         },
         {
@@ -561,7 +617,7 @@ describe('convertNodesSerialize', () => {
           ],
           ordered: true,
           spread: false,
-          start: 1,
+          start: undefined,
           type: 'list',
         },
       ]);
@@ -572,22 +628,19 @@ describe('convertNodesSerialize', () => {
         {
           children: [{ text: 'parent bullet' }],
           indent: 1,
-          listStart: 1,
-          listStyleType: 'disc',
+          listType: 'bulleted',
           type: 'paragraph',
         },
         {
           children: [{ text: 'child ordered' }],
           indent: 2,
-          listStart: 1,
-          listStyleType: 'decimal',
+          listType: 'numbered',
           type: 'paragraph',
         },
         {
           children: [{ text: 'child bullet' }],
           indent: 2,
-          listStart: 1,
-          listStyleType: 'disc',
+          listType: 'bulleted',
           type: 'paragraph',
         },
       ];
@@ -620,7 +673,7 @@ describe('convertNodesSerialize', () => {
                   ],
                   ordered: true,
                   spread: false,
-                  start: 1,
+                  start: undefined,
                   type: 'list',
                 },
                 {
@@ -639,7 +692,7 @@ describe('convertNodesSerialize', () => {
                   ],
                   ordered: false,
                   spread: false,
-                  start: 1,
+                  start: undefined,
                   type: 'list',
                 },
               ],
@@ -649,33 +702,30 @@ describe('convertNodesSerialize', () => {
           ],
           ordered: false,
           spread: false,
-          start: 1,
+          start: undefined,
           type: 'list',
         },
       ]);
     });
 
-    it('split when listStyleType changes across indentation', () => {
+    it('split when listType changes across indentation', () => {
       const listNodes: Descendant[] = [
         {
           children: [{ text: 'parent bullet' }],
           indent: 1,
-          listStart: 1,
-          listStyleType: 'disc',
+          listType: 'bulleted',
           type: 'paragraph',
         },
         {
           children: [{ text: 'child bullet' }],
           indent: 2,
-          listStart: 1,
-          listStyleType: 'disc',
+          listType: 'bulleted',
           type: 'paragraph',
         },
         {
           children: [{ text: 'child ordered' }],
           indent: 2,
-          listStart: 1,
-          listStyleType: 'decimal',
+          listType: 'numbered',
           type: 'paragraph',
         },
       ];
@@ -708,7 +758,7 @@ describe('convertNodesSerialize', () => {
                   ],
                   ordered: false,
                   spread: false,
-                  start: 1,
+                  start: undefined,
                   type: 'list',
                 },
                 {
@@ -727,7 +777,7 @@ describe('convertNodesSerialize', () => {
                   ],
                   ordered: true,
                   spread: false,
-                  start: 1,
+                  start: undefined,
                   type: 'list',
                 },
               ],
@@ -737,7 +787,7 @@ describe('convertNodesSerialize', () => {
           ],
           ordered: false,
           spread: false,
-          start: 1,
+          start: undefined,
           type: 'list',
         },
       ]);

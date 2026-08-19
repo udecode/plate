@@ -2,11 +2,11 @@
 title: Horizontal Rule
 description: Void divider blocks rendered as horizontal rules.
 docs:
-  - route: /docs/components/hr-node
+  - route: /docs/components/horizontal-rule
     title: Horizontal Rule Element
   - route: /docs/basic-blocks
     title: Basic Blocks
-  - route: https://pro.platejs.org/docs/components/hr-node
+  - route: https://pro.platejs.org/docs/components/horizontal-rule
     title: Plus
 ---
 
@@ -35,12 +35,12 @@ Horizontal Rule adds a void `horizontalRule` block for separating sections. The 
 
 `BasicBlocksKit` installs `HorizontalRulePlugin` with the registry `HrElement` and both default input rules.
 
-<ComponentSource name="basic-blocks-kit" />
+<ComponentSource name="basic-blocks" />
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
 
-import { BasicBlocksKit } from '@/components/editor/plugins/basic-blocks-kit';
+import { BasicBlocksKit } from '@/components/editor/basic-blocks';
 
 export const editor = createPlateEditor({
   plugins: BasicBlocksKit,
@@ -49,15 +49,15 @@ export const editor = createPlateEditor({
 
 ### Render The Divider
 
-`hr-node` renders the editable divider with selected/focused ring styles and a static companion component.
+`horizontal-rule` renders the editable divider with selected/focused ring styles and a static companion component.
 
-<ComponentSource name="hr-node" />
+<ComponentSource name="horizontal-rule" />
 
 ### Add Static Rendering
 
 Use `BaseBasicBlocksKit` when rendering read-only content with `platejs/static`.
 
-<ComponentSource name="basic-blocks-base-kit" />
+<ComponentSource name="basic-blocks-static" />
 
 </Steps>
 
@@ -67,9 +67,9 @@ Use `BaseBasicBlocksKit` when rendering read-only content with `platejs/static`.
 |-------|-------|--------------|
 | `@platejs/basic-nodes` | Package | Exports `BaseHorizontalRulePlugin` and `HorizontalRuleRules`. |
 | `@platejs/basic-nodes/react` | Package | Exports `HorizontalRulePlugin`. |
-| `basic-blocks-kit` | Registry | Adds `HorizontalRulePlugin` with dash and underscore input rules plus `HrElement`. |
-| `basic-blocks-base-kit` | Registry | Adds `BaseHorizontalRulePlugin.configure({ component: HrElementStatic })`. |
-| `hr-node` | Registry UI | Renders editable and static divider components. |
+| `basic-blocks` | Registry | Adds `HorizontalRulePlugin` with dash and underscore input rules plus `HrElement`. |
+| `basic-blocks-static` | Registry | Adds `BaseHorizontalRulePlugin.configure({ component: HrElementStatic })`. |
+| `horizontal-rule` | Registry UI | Renders editable and static divider components. |
 | Insert toolbar | Registry UI | Uses `PLUGINS.horizontalRule` to select the horizontal-rule capability, then inserts its resolved schema type through the generic `insertBlock` path. |
 
 There is no package-specific `insertHorizontalRule` helper. App UI usually passes `PLUGINS.horizontalRule` to the same descriptor-aware block insertion helper used by other registry blocks.
@@ -93,7 +93,7 @@ import { HorizontalRuleRules } from '@platejs/basic-nodes';
 import { HorizontalRulePlugin } from '@platejs/basic-nodes/react';
 import { createPlateEditor } from 'platejs/react';
 
-import { HrElement } from '@/components/ui/hr-node';
+import { HrElement } from '@/components/editor/horizontal-rule';
 
 export const editor = createPlateEditor({
   plugins: [
@@ -116,7 +116,7 @@ Use the base plugin with the static component in static rendering paths.
 import { BaseHorizontalRulePlugin } from '@platejs/basic-nodes';
 import { createStaticEditor } from 'platejs/static';
 
-import { HrElementStatic } from '@/components/ui/hr-node-static';
+import { HrElementStatic } from '@/components/editor/horizontal-rule-static';
 
 export const staticEditor = createStaticEditor({
   plugins: [

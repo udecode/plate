@@ -572,9 +572,11 @@ export const syncSelectionForBeforeInput = ({
   selection: Range | null;
 }): {
   native: boolean;
+  nativeBlocker?: string;
   selection: Range | null;
 } => {
   let nextNative = native;
+  let nativeBlocker: string | undefined;
   let nextSelection = selection;
   const domSelection = getSelection(root);
   const domSelectionAnchorNode = domSelection?.anchorNode ?? null;
@@ -598,7 +600,13 @@ export const syncSelectionForBeforeInput = ({
     data.length === 1 &&
     (forceModelOwnedTextInput || domSelectionUsesProjectedTextHost)
   ) {
-    return { native: false, selection };
+    return {
+      native: false,
+      nativeBlocker: forceModelOwnedTextInput
+        ? 'force-model-owned'
+        : 'projected-text-host',
+      selection,
+    };
   }
 
   const domSelectionBelongsToEditor =
@@ -661,6 +669,11 @@ export const syncSelectionForBeforeInput = ({
       targetRangeUsesProjectedTextHost)
   ) {
     nextNative = false;
+    nativeBlocker = forceModelOwnedTextInput
+      ? 'force-model-owned'
+      : domSelectionUsesProjectedTextHost
+        ? 'projected-dom-selection'
+        : 'projected-target-range';
   }
 
   // Most deleting forward/backward input types can derive the target from the
@@ -724,6 +737,7 @@ export const syncSelectionForBeforeInput = ({
         (!nextSelection || !RangeApi.equals(nextSelection, range))
       ) {
         nextNative = false;
+        nativeBlocker = 'target-range-selection-import';
 
         const selectionAnchor =
           !isCompositionChange &&
@@ -801,6 +815,13 @@ export const syncSelectionForBeforeInput = ({
       staleBackwardTextInputDOMSelection
     ) {
       nextNative = false;
+      nativeBlocker = staleRepairInducedTextInputDOMSelection
+        ? 'stale-repair-selection'
+        : pendingNativeTextInputRepairOwnsDifferentPath
+          ? 'pending-repair-path'
+          : pendingNativeTextInputRepairOwnsDifferentOffset
+            ? 'pending-repair-offset'
+            : 'stale-dom-selection';
     } else if (
       pendingNativeTextInputRepairOwnsSelection &&
       pendingNativeTextInputRepairPath &&
@@ -826,6 +847,7 @@ export const syncSelectionForBeforeInput = ({
       (!nextSelection || !RangeApi.equals(nextSelection, range))
     ) {
       nextNative = false;
+      nativeBlocker = 'dom-selection-import';
       writePliteViewSelection(editor, null);
       editor.update((tx) => {
         tx.selection.set(range);
@@ -899,6 +921,7 @@ export const syncSelectionForBeforeInput = ({
 
   return {
     native: nextNative,
+    ...(nativeBlocker ? { nativeBlocker } : {}),
     selection: nextSelection,
   };
 };

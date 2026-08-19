@@ -77,8 +77,8 @@ Use React entrypoints only in client-side editor code.
 
 <Callout type="warning" title="No React plugins on the server">
   Server Components and Node scripts should not import `platejs/react` or
-  `@platejs/*/react`. Use base plugins such as `BaseH1Plugin` from
-  `@platejs/basic-nodes`, not `H1Plugin` from `@platejs/basic-nodes/react`.
+  `@platejs/*/react`. Use base plugins such as `BaseHeadingPlugin` from
+  `@platejs/basic-nodes`, not `HeadingPlugin` from `@platejs/basic-nodes/react`.
 </Callout>
 
 If a server route only needs serialization or transforms, use the Node path from
@@ -90,11 +90,11 @@ If a server route only needs serialization or transforms, use the Node path from
 When a node appears as plain text or a default `div`, check the component path.
 
 ```tsx title="components/editor/plugins.tsx" showLineNumbers
-import { H1Plugin } from '@platejs/basic-nodes/react';
+import { HeadingPlugin } from '@platejs/basic-nodes/react';
 
-import { H1Element } from '@/components/ui/heading-node';
+import { HeadingElement } from '@/components/editor/heading';
 
-export const plugins = [H1Plugin.configure({ component: H1Element })];
+export const plugins = [HeadingPlugin.configure({ component: HeadingElement })];
 ```
 
 For copied Plate UI kits, inspect the kit that owns the feature before adding

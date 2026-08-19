@@ -34,7 +34,7 @@
     {
       "name": "editor-kit",
       "files": [],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "definitionFiles": [],
       "diagnostics": [
         {
           "severity": "warning",
@@ -45,9 +45,15 @@
     },
     {
       "name": "dnd-kit",
-      "files": ["apps/www/src/registry/components/editor/plugins/dnd-kit.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for dnd-kit."
+        }
+      ]
     }
   ],
   "entries": [

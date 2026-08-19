@@ -5,7 +5,7 @@ import type {
   CreateCellOptions,
   GetEmptyRowNodeOptions,
   GetEmptyTableNodeOptions,
-  SetBorderSizeOptions,
+  SetBorderWidthOptions,
   TableBorderStates,
   TableFindOptions,
   TableStoreSizeOverrides,
@@ -49,10 +49,15 @@ import { clipboardHandler } from '@platejs/plite-dom';
 import { PLUGINS } from '@platejs/utils';
 import {
   getColSpan,
+  getImportedTableCellColSpan,
   getRowSpan,
   getTableCellHtmlCodecProps,
   getTableCellHtmlProps,
+  MAX_IMPORTED_TABLE_COLUMNS,
+  parseHtmlColSpan,
   parseTableCellHtml,
+  parseHtmlRowSpan,
+  resetImportedTableCellSpans,
 } from './internal/codec';
 import {
   createDetachedTableContext,
@@ -351,8 +356,8 @@ type ToggleTableBordersOptions = {
 
 export type TableCellBorder = {
   color?: string;
-  size?: number;
   style?: string;
+  width?: number;
 };
 
 export type TableCellBorders = {
@@ -367,11 +372,38 @@ export type TableCellBorders = {
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
+const isPositiveSafeInteger = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isSafeInteger(value) && value > 0;
+
+const isPositiveFiniteNumber = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isFinite(value) && value > 0;
+
+const getFallbackColumnWidth = ({
+  columnCount,
+  initialTableWidth,
+  minColumnWidth,
+}: {
+  columnCount: number;
+  initialTableWidth?: number;
+  minColumnWidth?: number;
+}) => {
+  const minimum = isPositiveFiniteNumber(minColumnWidth) ? minColumnWidth : 1;
+
+  return isPositiveFiniteNumber(initialTableWidth) && columnCount > 0
+    ? Math.max(initialTableWidth / columnCount, minimum)
+    : minimum;
+};
+
+const TABLE_CELL_BORDER_KEYS = new Set(['color', 'style', 'width']);
+
 const isTableCellBorder = (value: unknown): value is TableCellBorder =>
   isRecord(value) &&
+  Object.keys(value).every((key) => TABLE_CELL_BORDER_KEYS.has(key)) &&
   (!('color' in value) || typeof value.color === 'string') &&
-  (!('size' in value) ||
-    (typeof value.size === 'number' && Number.isFinite(value.size))) &&
+  (!('width' in value) ||
+    (typeof value.width === 'number' &&
+      Number.isFinite(value.width) &&
+      value.width >= 0)) &&
   (!('style' in value) || typeof value.style === 'string');
 
 const tableCellBordersProperty = property.json({
@@ -384,11 +416,23 @@ const tableCellBordersProperty = property.json({
   validationVersion: 1,
 });
 
+const HTML_PX_NUMBER_PATTERN = /^-?(?:\d+(?:\.\d*)?|\.\d+)(?:px)?$/i;
+
 const parseHtmlCssNumber = (value: string | null | undefined) => {
   if (!value) return;
-  const parsed = Number.parseFloat(value);
+  const normalized = value.trim();
+
+  if (!HTML_PX_NUMBER_PATTERN.test(normalized)) return;
+
+  const parsed = Number.parseFloat(normalized);
 
   return Number.isFinite(parsed) ? parsed : undefined;
+};
+
+const parsePositiveHtmlCssNumber = (value: string | null | undefined) => {
+  const parsed = parseHtmlCssNumber(value);
+
+  return parsed !== undefined && parsed > 0 ? parsed : undefined;
 };
 
 export const BaseTableCellPlugin = defineBasePlugin(PLUGINS.tableCell, {
@@ -400,12 +444,17 @@ export const BaseTableCellPlugin = defineBasePlugin(PLUGINS.tableCell, {
         min: 1,
       }),
       properties: {
-        background: property.string(),
+        backgroundColor: property.string(),
         borders: tableCellBordersProperty,
-        colSpan: property.number(),
+        colSpan: property.number({
+          validate: isPositiveSafeInteger,
+          validationVersion: 1,
+        }),
         header: property.boolean({ default: false, omitDefault: true }),
-        rowSpan: property.number(),
-        size: property.number(),
+        rowSpan: property.number({
+          validate: isPositiveSafeInteger,
+          validationVersion: 1,
+        }),
       },
       blockContent: false,
     },
@@ -463,7 +512,12 @@ export const BaseTableRowPlugin = defineBasePlugin(PLUGINS.tableRow, {
         // A row fully covered by row spans has no physical cell children.
         min: 0,
       }),
-      properties: { size: property.number() },
+      properties: {
+        height: property.number({
+          validate: isPositiveFiniteNumber,
+          validationVersion: 1,
+        }),
+      },
       blockContent: false,
     },
   },
@@ -471,16 +525,16 @@ export const BaseTableRowPlugin = defineBasePlugin(PLUGINS.tableRow, {
     defineCodecs({
       'text/html': {
         decode: ({ element }) => {
-          const size = parseHtmlCssNumber(
+          const height = parsePositiveHtmlCssNumber(
             element.style.height || element.getAttribute('height')
           );
 
-          return size === undefined ? {} : { size };
+          return height === undefined ? {} : { height };
         },
         encode: ({ content, node }) => ({
           children: content,
           style: {
-            height: node.size === undefined ? undefined : `${node.size}px`,
+            height: node.height === undefined ? undefined : `${node.height}px`,
           },
           tag: 'tr',
         }),
@@ -511,6 +565,9 @@ const initialState: TablePluginState = {
   minColumnWidth: 48,
 };
 
+const MAX_IMPORTED_TABLE_CONSTRAINT_WORK = 10_000;
+const TABLE_WIDTH_CONSTRAINT_EPSILON = 0.001;
+
 const escapeCsvField = (value: string) =>
   csvSpecialCharacterPattern.test(value)
     ? `"${value.replaceAll('"', '""')}"`
@@ -528,7 +585,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
     element: {
       content: schema.content.element(BaseTableRowPlugin, { min: 1 }),
       properties: {
-        colSizes: property.json({
+        columnWidths: property.json({
           validate: isTableColumnSizes,
           validationVersion: 1,
         }),
@@ -540,32 +597,301 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
     defineCodecs({
       'text/html': {
         decode: ({ element }) => {
-          const widths = Array.from(
+          resetImportedTableCellSpans(element as HTMLTableElement);
+
+          const colgroupColumns = Array.from(
             element.querySelectorAll(':scope > colgroup > col')
-          ).map((column) =>
-            parseHtmlCssNumber(
+          );
+          const colgroupWidths: Array<number | undefined> = [];
+          let colgroupWidthInferenceTruncated = false;
+
+          for (const column of colgroupColumns) {
+            if (colgroupWidths.length >= MAX_IMPORTED_TABLE_COLUMNS) {
+              colgroupWidthInferenceTruncated = true;
+              break;
+            }
+
+            const importedSpan =
+              parseHtmlColSpan(column.getAttribute('span')) ?? 1;
+            const span = Math.min(
+              importedSpan,
+              MAX_IMPORTED_TABLE_COLUMNS - colgroupWidths.length
+            );
+            const width = parsePositiveHtmlCssNumber(
               (column as HTMLElement).style.width ||
                 column.getAttribute('width')
+            );
+
+            if (span < importedSpan) colgroupWidthInferenceTruncated = true;
+            for (let index = 0; index < span; index++) {
+              colgroupWidths.push(width);
+            }
+          }
+          const rows = Array.from(
+            element.querySelectorAll(
+              ':scope > thead > tr, :scope > tbody > tr, :scope > tfoot > tr, :scope > tr'
             )
           );
-          const colSizes =
-            widths.length > 0 && widths.every((width) => width !== undefined)
-              ? widths
+          const cellWidths: Array<number | undefined> = [...colgroupWidths];
+          const exactCellWidths = colgroupWidths.map(
+            (width) => width !== undefined
+          );
+          const spanWidthConstraints: Array<{
+            indices: number[];
+            total: number;
+          }> = [];
+          const occupiedRows: number[] = [];
+          let currentRowGroup: HTMLElement | null = null;
+          let columnCount = 0;
+          let inferenceWork = 0;
+          let widthInferenceTruncated = colgroupWidthInferenceTruncated;
+
+          rows.forEach((row, rowIndex) => {
+            if (row.parentElement !== currentRowGroup) {
+              currentRowGroup = row.parentElement;
+              occupiedRows.length = 0;
+            } else if (rowIndex > 0) {
+              occupiedRows.forEach((remaining, index) => {
+                occupiedRows[index] = Math.max(0, remaining - 1);
+              });
+            }
+
+            let column = 0;
+
+            Array.from(
+              row.querySelectorAll(':scope > td, :scope > th')
+            ).forEach((cell) => {
+              if (widthInferenceTruncated) return;
+
+              const width = parsePositiveHtmlCssNumber(
+                (cell as HTMLElement).style.width || cell.getAttribute('width')
+              );
+              const importedColumnSpan = getImportedTableCellColSpan(
+                cell as HTMLElement
+              );
+              while (column < MAX_IMPORTED_TABLE_COLUMNS) {
+                const candidateSpan = Math.min(
+                  importedColumnSpan,
+                  MAX_IMPORTED_TABLE_COLUMNS - column
+                );
+                let blocked = false;
+
+                for (let offset = 0; offset < candidateSpan; offset++) {
+                  inferenceWork += 1;
+                  if (inferenceWork > MAX_IMPORTED_TABLE_CONSTRAINT_WORK) {
+                    widthInferenceTruncated = true;
+                    return;
+                  }
+                  if ((occupiedRows[column + offset] ?? 0) > 0) {
+                    blocked = true;
+                    break;
+                  }
+                }
+
+                if (!blocked) break;
+                column++;
+              }
+              if (column >= MAX_IMPORTED_TABLE_COLUMNS) {
+                widthInferenceTruncated = true;
+                return;
+              }
+              const columnSpan = Math.min(
+                importedColumnSpan,
+                MAX_IMPORTED_TABLE_COLUMNS - column
+              );
+
+              if (columnSpan < importedColumnSpan) {
+                widthInferenceTruncated = true;
+              }
+              const rowSpanValue = parseHtmlRowSpan(cell as HTMLElement) ?? 1;
+              const spanIndices = Array.from(
+                { length: columnSpan },
+                (_, offset) => column + offset
+              );
+
+              for (const index of spanIndices) {
+                if (rowSpanValue > 1) {
+                  occupiedRows[index] = Math.max(
+                    occupiedRows[index] ?? 0,
+                    rowSpanValue
+                  );
+                }
+              }
+
+              if (columnSpan === 1 && width !== undefined) {
+                const index = spanIndices[0];
+
+                if (
+                  index !== undefined &&
+                  colgroupWidths[index] === undefined
+                ) {
+                  cellWidths[index] = width;
+                  exactCellWidths[index] = true;
+                }
+              } else if (width !== undefined) {
+                inferenceWork += spanIndices.length;
+
+                if (inferenceWork > MAX_IMPORTED_TABLE_CONSTRAINT_WORK) {
+                  widthInferenceTruncated = true;
+                } else {
+                  spanWidthConstraints.push({
+                    indices: spanIndices,
+                    total: width,
+                  });
+                }
+              }
+
+              column += columnSpan;
+              columnCount = Math.max(columnCount, column);
+            });
+          });
+
+          const constraints = widthInferenceTruncated
+            ? []
+            : [...spanWidthConstraints].sort(
+                (left, right) =>
+                  (left.indices[0] ?? 0) - (right.indices[0] ?? 0) ||
+                  (left.indices.at(-1) ?? 0) - (right.indices.at(-1) ?? 0) ||
+                  left.total - right.total
+              );
+          const maxPasses = Math.min(
+            MAX_IMPORTED_TABLE_COLUMNS + 1,
+            Math.max(64, columnCount + 1, constraints.length + 1)
+          );
+          const resolvedCellWidths = [...exactCellWidths];
+
+          for (let pass = 0; pass < columnCount; pass++) {
+            let resolved = false;
+
+            for (const constraint of constraints) {
+              const unresolvedIndices = constraint.indices.filter(
+                (columnIndex) => !resolvedCellWidths[columnIndex]
+              );
+
+              if (unresolvedIndices.length !== 1) continue;
+
+              const targetIndex = unresolvedIndices[0];
+              const knownWidth = constraint.indices.reduce(
+                (total, columnIndex) =>
+                  columnIndex === targetIndex
+                    ? total
+                    : total + (cellWidths[columnIndex] ?? 0),
+                0
+              );
+              const inferredWidth = constraint.total - knownWidth;
+
+              if (inferredWidth <= 0) continue;
+              cellWidths[targetIndex] = inferredWidth;
+              resolvedCellWidths[targetIndex] = true;
+              resolved = true;
+            }
+
+            if (!resolved) break;
+          }
+
+          const constraintsSatisfied = () =>
+            constraints.every((constraint) => {
+              const width = constraint.indices.reduce(
+                (total, columnIndex) => total + (cellWidths[columnIndex] ?? 0),
+                0
+              );
+
+              return (
+                Math.abs(width - constraint.total) <
+                TABLE_WIDTH_CONSTRAINT_EPSILON * constraint.indices.length
+              );
+            });
+          let constraintsConverged =
+            constraints.length === 0 || constraintsSatisfied();
+
+          for (
+            let pass = 0;
+            !constraintsConverged && pass < maxPasses;
+            pass++
+          ) {
+            let largestAdjustment = 0;
+
+            for (const constraint of constraints) {
+              const adjustableIndices = constraint.indices.filter(
+                (columnIndex) => !exactCellWidths[columnIndex]
+              );
+
+              if (adjustableIndices.length === 0) continue;
+
+              const currentWidth = constraint.indices.reduce(
+                (total, columnIndex) => total + (cellWidths[columnIndex] ?? 0),
+                0
+              );
+              const adjustment =
+                (constraint.total - currentWidth) / adjustableIndices.length;
+
+              largestAdjustment = Math.max(
+                largestAdjustment,
+                Math.abs(adjustment)
+              );
+              adjustableIndices.forEach((columnIndex) => {
+                cellWidths[columnIndex] =
+                  (cellWidths[columnIndex] ?? 0) + adjustment;
+              });
+            }
+
+            if (largestAdjustment < TABLE_WIDTH_CONSTRAINT_EPSILON) {
+              constraintsConverged = constraintsSatisfied();
+              break;
+            }
+          }
+
+          if (!constraintsConverged) widthInferenceTruncated = true;
+          if (
+            cellWidths.some(
+              (width, index) =>
+                !exactCellWidths[index] &&
+                width !== undefined &&
+                (!Number.isFinite(width) || width <= 0)
+            )
+          ) {
+            widthInferenceTruncated = true;
+          }
+
+          if (widthInferenceTruncated) {
+            cellWidths.forEach((_width, index) => {
+              if (!exactCellWidths[index]) cellWidths[index] = undefined;
+            });
+          }
+
+          cellWidths.length = columnCount;
+          const normalizedCellWidths = Array.from(
+            { length: columnCount },
+            (_, index) => cellWidths[index]
+          );
+          const widthCount = Math.max(
+            colgroupWidths.length,
+            normalizedCellWidths.length
+          );
+          const widths = Array.from(
+            { length: widthCount },
+            (_, index) => colgroupWidths[index] ?? normalizedCellWidths[index]
+          );
+          const columnWidths =
+            widths.length > 0 && widths.some((width) => width !== undefined)
+              ? widths.map((width) => width ?? null)
               : undefined;
           const marginLeft = parseHtmlCssNumber(element.style.marginLeft);
 
           return {
-            ...(colSizes === undefined ? {} : { colSizes }),
+            ...(columnWidths === undefined ? {} : { columnWidths }),
             ...(marginLeft === undefined ? {} : { marginLeft }),
           };
         },
         encode: ({ content, node }) => ({
           children: [
-            ...(node.colSizes && node.colSizes.length > 0
+            ...(node.columnWidths && node.columnWidths.length > 0
               ? [
                   {
-                    children: node.colSizes.map((size) => ({
-                      style: { width: `${size}px` },
+                    children: node.columnWidths.map((width) => ({
+                      style: {
+                        width: width === null ? undefined : `${width}px`,
+                      },
                       tag: 'col',
                     })),
                     tag: 'colgroup',
@@ -695,7 +1021,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
         ),
     }),
   }))
-  .extend(({ api, editor }) => ({
+  .extend(({ api, editor, store }) => ({
     api: () => ({
       createRow: ({
         colCount = 1,
@@ -711,13 +1037,21 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
         colSizeOverrides?: TableStoreSizeOverrides
       ): number[] => {
         const colCount = api.getColumnCount(tableNode);
-        const colSizes = getTableColumnSizes(tableNode);
+        const columnWidths = getTableColumnSizes(tableNode);
+        const { initialTableWidth, minColumnWidth } = store.get();
+        const fallbackWidth = getFallbackColumnWidth({
+          columnCount: colCount,
+          initialTableWidth,
+          minColumnWidth,
+        });
 
-        return (
-          colSizes
-            ? [...colSizes]
-            : (Array.from({ length: colCount }).fill(0) as number[])
-        ).map((size, index) => colSizeOverrides?.get?.(index) ?? size);
+        return Array.from(
+          { length: colCount },
+          (_, index) =>
+            colSizeOverrides?.get?.(index) ??
+            columnWidths?.[index] ??
+            fallbackWidth
+        );
       },
     }),
   }))
@@ -886,6 +1220,27 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
       }
 
       return {
+        canMerge: () => {
+          const view = state.table.getSelection();
+
+          return (
+            !state.view.isReadOnly() &&
+            state.selection.isExpanded() &&
+            !!view &&
+            view.anchors.length > 1 &&
+            view.complete
+          );
+        },
+        canSplit: () => {
+          const view = state.table.getSelection();
+
+          return (
+            !state.view.isReadOnly() &&
+            !state.selection.isExpanded() &&
+            view?.anchors.length === 1 &&
+            (view.anchor.colSpan > 1 || view.anchor.rowSpan > 1)
+          );
+        },
         createCellSelection: (at: Location): TableCellSelection | null => {
           const range = RangeApi.isRange(at) ? at : state.ranges.get(at);
 
@@ -1088,11 +1443,11 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
       };
     },
   }))
-  .extend(({ api, editor, plugin, read, schema: { type } }) => ({
+  .extend(({ api, editor, plugin, read, schema: { type }, store }) => ({
     read: ({ state }) => ({
       getCellBorders: ({
         cellIndices,
-        defaultBorder = { size: 1 },
+        defaultBorder = { width: 1 },
         element,
       }: {
         element: TableCellElement;
@@ -1126,7 +1481,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
 
           return {
             color: border?.color ?? defaultBorder.color,
-            size: border?.size ?? defaultBorder.size,
+            width: border?.width ?? defaultBorder.width,
             style: border?.style ?? defaultBorder.style,
           };
         };
@@ -1140,13 +1495,13 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
       },
       getCellSize: ({
         cellIndices,
-        colSizes,
+        columnWidths,
         element,
         rowSize,
       }: {
         element: TableCellElement;
         cellIndices?: CellIndices;
-        colSizes?: number[];
+        columnWidths?: readonly (number | null)[];
         rowSize?: number;
       }): { minHeight: number; width: number } => {
         const path = state.nodes.path(element);
@@ -1164,9 +1519,9 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
             return { minHeight: 0, width: 0 };
           }
 
-          rowSize = rowElement.size ?? 0;
+          rowSize = rowElement.height ?? 0;
         }
-        if (!colSizes) {
+        if (!columnWidths) {
           const [, rowPath] =
             state.nodes.parent(path, { type: BaseTableRowPlugin }) ?? [];
 
@@ -1177,14 +1532,24 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
 
           if (!tableNode) return { minHeight: rowSize, width: 0 };
 
-          colSizes = api.getOverriddenColumnSizes(tableNode);
+          columnWidths = api.getOverriddenColumnSizes(tableNode);
         }
+
+        const { initialTableWidth, minColumnWidth } = store.get();
+        const fallbackWidth = getFallbackColumnWidth({
+          columnCount: columnWidths.length,
+          initialTableWidth,
+          minColumnWidth,
+        });
 
         const colSpan = getColSpan(element);
         const { col } = cellIndices ?? state.table.getCellIndices(element);
-        const width = (colSizes ?? [])
+        const width = columnWidths
           .slice(col, col + colSpan)
-          .reduce((total, size) => total + (size || 0), 0);
+          .reduce<number>(
+            (total, width) => total + (width ?? fallbackWidth),
+            0
+          );
 
         return { minHeight: rowSize, width };
       },
@@ -1236,14 +1601,14 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
 
           if (!cellPath) continue;
           if (select.none && !hasAnyBorder) {
-            if (isFirstRow && (cell.borders?.top?.size ?? 1) > 0) {
+            if (isFirstRow && (cell.borders?.top?.width ?? 1) > 0) {
               hasAnyBorder = true;
             }
-            if (isFirstCell && (cell.borders?.left?.size ?? 1) > 0) {
+            if (isFirstCell && (cell.borders?.left?.width ?? 1) > 0) {
               hasAnyBorder = true;
             }
-            if ((cell.borders?.bottom?.size ?? 1) > 0) hasAnyBorder = true;
-            if ((cell.borders?.right?.size ?? 1) > 0) hasAnyBorder = true;
+            if ((cell.borders?.bottom?.width ?? 1) > 0) hasAnyBorder = true;
+            if ((cell.borders?.right?.width ?? 1) > 0) hasAnyBorder = true;
 
             if (!hasAnyBorder) {
               if (!isFirstRow) {
@@ -1254,7 +1619,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
 
                 if (
                   cellAboveEntry &&
-                  (cellAboveEntry[0].borders?.bottom?.size ?? 1) > 0
+                  (cellAboveEntry[0].borders?.bottom?.width ?? 1) > 0
                 ) {
                   hasAnyBorder = true;
                 }
@@ -1267,7 +1632,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
 
                 if (
                   previousCellEntry &&
-                  (previousCellEntry[0].borders?.right?.size ?? 1) > 0
+                  (previousCellEntry[0].borders?.right?.width ?? 1) > 0
                 ) {
                   hasAnyBorder = true;
                 }
@@ -1283,7 +1648,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
               ) {
                 if (rowIndex === minRow) {
                   if (isFirstRow) {
-                    if ((cell.borders?.top?.size ?? 1) < 1) {
+                    if ((cell.borders?.top?.width ?? 1) <= 0) {
                       borderStates.top = false;
                       if (select.outer) allOuterBordersSet = false;
                     } else if (!borderStates.top) {
@@ -1296,7 +1661,9 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
                     });
 
                     if (cellAboveEntry) {
-                      if ((cellAboveEntry[0].borders?.bottom?.size ?? 1) < 1) {
+                      if (
+                        (cellAboveEntry[0].borders?.bottom?.width ?? 1) <= 0
+                      ) {
                         borderStates.top = false;
                         if (select.outer) allOuterBordersSet = false;
                       } else if (!borderStates.top) {
@@ -1306,7 +1673,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
                   }
                 }
                 if (rowIndex === maxRow) {
-                  if ((cell.borders?.bottom?.size ?? 1) < 1) {
+                  if ((cell.borders?.bottom?.width ?? 1) <= 0) {
                     borderStates.bottom = false;
                     if (select.outer) allOuterBordersSet = false;
                   } else if (!borderStates.bottom) {
@@ -1315,7 +1682,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
                 }
                 if (columnIndex === minCol) {
                   if (isFirstCell) {
-                    if ((cell.borders?.left?.size ?? 1) < 1) {
+                    if ((cell.borders?.left?.width ?? 1) <= 0) {
                       borderStates.left = false;
                       if (select.outer) allOuterBordersSet = false;
                     } else if (!borderStates.left) {
@@ -1329,7 +1696,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
 
                     if (previousCellEntry) {
                       if (
-                        (previousCellEntry[0].borders?.right?.size ?? 1) < 1
+                        (previousCellEntry[0].borders?.right?.width ?? 1) <= 0
                       ) {
                         borderStates.left = false;
                         if (select.outer) allOuterBordersSet = false;
@@ -1340,7 +1707,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
                   }
                 }
                 if (columnIndex === maxCol) {
-                  if ((cell.borders?.right?.size ?? 1) < 1) {
+                  if ((cell.borders?.right?.width ?? 1) <= 0) {
                     borderStates.right = false;
                     if (select.outer) allOuterBordersSet = false;
                   } else if (!borderStates.right) {
@@ -1364,18 +1731,18 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
         if (border === 'left') {
           const node = state.table.getAdjacentCell({ deltaCol: -1 })?.[0];
 
-          if (node) return node.borders?.right?.size === 0;
+          if (node) return node.borders?.right?.width === 0;
         }
         if (border === 'top') {
           const node = state.table.getAdjacentCell({ deltaRow: -1 })?.[0];
 
-          if (node) return node.borders?.bottom?.size === 0;
+          if (node) return node.borders?.bottom?.width === 0;
         }
 
         return (
           state.nodes.find({
             match: api.isCell,
-          })?.[0].borders?.[border]?.size === 0
+          })?.[0].borders?.[border]?.width === 0
         );
       },
       isSelectedCellBorder: (
@@ -1401,7 +1768,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
             ) {
               if (side === 'top' && rowIndex === minRow) {
                 if (row === 0) {
-                  return (cell.borders?.top?.size ?? 1) >= 1;
+                  return (cell.borders?.top?.width ?? 1) > 0;
                 }
 
                 const cellAboveEntry = state.table.getAdjacentCell({
@@ -1410,15 +1777,15 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
                 });
 
                 return cellAboveEntry
-                  ? (cellAboveEntry[0].borders?.bottom?.size ?? 1) >= 1
+                  ? (cellAboveEntry[0].borders?.bottom?.width ?? 1) > 0
                   : true;
               }
               if (side === 'bottom' && rowIndex === maxRow) {
-                return (cell.borders?.bottom?.size ?? 1) >= 1;
+                return (cell.borders?.bottom?.width ?? 1) > 0;
               }
               if (side === 'left' && columnIndex === minCol) {
                 if (col === 0) {
-                  return (cell.borders?.left?.size ?? 1) >= 1;
+                  return (cell.borders?.left?.width ?? 1) > 0;
                 }
 
                 const previousCellEntry = state.table.getAdjacentCell({
@@ -1427,11 +1794,11 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
                 });
 
                 return previousCellEntry
-                  ? (previousCellEntry[0].borders?.right?.size ?? 1) >= 1
+                  ? (previousCellEntry[0].borders?.right?.width ?? 1) > 0
                   : true;
               }
               if (side === 'right' && columnIndex === maxCol) {
-                return (cell.borders?.right?.size ?? 1) >= 1;
+                return (cell.borders?.right?.width ?? 1) > 0;
               }
             }
           }
@@ -1446,10 +1813,10 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
           const cellPath = state.nodes.path(cell);
 
           if (!cellPath) return true;
-          if (row === 0 && (borders?.top?.size ?? 1) > 0) return false;
-          if (col === 0 && (borders?.left?.size ?? 1) > 0) return false;
-          if ((borders?.bottom?.size ?? 1) > 0) return false;
-          if ((borders?.right?.size ?? 1) > 0) return false;
+          if (row === 0 && (borders?.top?.width ?? 1) > 0) return false;
+          if (col === 0 && (borders?.left?.width ?? 1) > 0) return false;
+          if ((borders?.bottom?.width ?? 1) > 0) return false;
+          if ((borders?.right?.width ?? 1) > 0) return false;
 
           if (row !== 0) {
             const cellAboveEntry = state.table.getAdjacentCell({
@@ -1459,7 +1826,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
 
             if (
               cellAboveEntry &&
-              (cellAboveEntry[0].borders?.bottom?.size ?? 1) > 0
+              (cellAboveEntry[0].borders?.bottom?.width ?? 1) > 0
             ) {
               return false;
             }
@@ -1472,7 +1839,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
 
             if (
               previousCellEntry &&
-              (previousCellEntry[0].borders?.right?.size ?? 1) > 0
+              (previousCellEntry[0].borders?.right?.width ?? 1) > 0
             ) {
               return false;
             }
@@ -1495,24 +1862,24 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
               columnIndex < col + colSpan;
               columnIndex++
             ) {
-              if (rowIndex === minRow && (cell.borders?.top?.size ?? 1) < 1) {
+              if (rowIndex === minRow && (cell.borders?.top?.width ?? 1) <= 0) {
                 return false;
               }
               if (
                 rowIndex === maxRow &&
-                (cell.borders?.bottom?.size ?? 1) < 1
+                (cell.borders?.bottom?.width ?? 1) <= 0
               ) {
                 return false;
               }
               if (
                 columnIndex === minCol &&
-                (cell.borders?.left?.size ?? 1) < 1
+                (cell.borders?.left?.width ?? 1) <= 0
               ) {
                 return false;
               }
               if (
                 columnIndex === maxCol &&
-                (cell.borders?.right?.size ?? 1) < 1
+                (cell.borders?.right?.width ?? 1) <= 0
               ) {
                 return false;
               }
@@ -1997,7 +2364,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
 
     return {
       update: ({ tx }) => {
-        const setBorderSizes = (options: readonly SetBorderSizeOptions[]) => {
+        const setBorderWidths = (options: readonly SetBorderWidthOptions[]) => {
           const updates = new Map<
             string,
             { borders: TableCellElement['borders']; path: Path }
@@ -2005,7 +2372,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
           const addBorder = (
             [node, path]: NodeEntry<TableCellElement>,
             direction: BorderDirection,
-            size: number
+            width: number
           ) => {
             const key = path.join(',');
             const current = updates.get(key);
@@ -2013,13 +2380,13 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
             updates.set(key, {
               borders: {
                 ...(current?.borders ?? node.borders),
-                [direction]: { size },
+                [direction]: { width },
               },
               path,
             });
           };
 
-          options.forEach(({ at, border = 'all', size }) => {
+          options.forEach(({ at, border = 'all', width }) => {
             const cellEntry = tx.nodes.find({
               at,
               match: api.isCell,
@@ -2033,7 +2400,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
             const view = tx.table.getSelection(cellPath);
             const addDirection = (direction: BorderDirection) => {
               if (direction === 'top') {
-                if (rowIndex === 0) return addBorder(cellEntry, 'top', size);
+                if (rowIndex === 0) return addBorder(cellEntry, 'top', width);
 
                 const anchor = view
                   ? getTableSelectionNeighbor(
@@ -2047,11 +2414,11 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
                     ? view.context.entryAt(anchor.row, anchor.col)
                     : undefined;
 
-                if (cellAbove) addBorder(cellAbove, 'bottom', size);
+                if (cellAbove) addBorder(cellAbove, 'bottom', width);
                 return;
               }
               if (direction === 'left') {
-                if (cellIndex === 0) return addBorder(cellEntry, 'left', size);
+                if (cellIndex === 0) return addBorder(cellEntry, 'left', width);
 
                 const anchor = view
                   ? getTableSelectionNeighbor(view.context, view.anchor, 'left')
@@ -2061,11 +2428,11 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
                     ? view.context.entryAt(anchor.row, anchor.col)
                     : undefined;
 
-                if (cellLeft) addBorder(cellLeft, 'right', size);
+                if (cellLeft) addBorder(cellLeft, 'right', width);
                 return;
               }
 
-              addBorder(cellEntry, direction, size);
+              addBorder(cellEntry, direction, width);
             };
 
             (border === 'all'
@@ -2161,27 +2528,27 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
                 },
               ];
             });
-            const updates: SetBorderSizeOptions[] = [];
+            const updates: SetBorderWidthOptions[] = [];
             const add = (
               at: Path | null,
               directions: readonly BorderDirection[] | 'all',
-              size: number
+              width: number
             ) => {
               if (!at) return;
 
               if (directions === 'all') {
-                updates.push({ at, border: 'all', size });
+                updates.push({ at, border: 'all', width });
                 return;
               }
 
               directions.forEach((direction) => {
-                updates.push({ at, border: direction, size });
+                updates.push({ at, border: direction, width });
               });
             };
-            const apply = () => setBorderSizes(updates);
+            const apply = () => setBorderWidths(updates);
 
             if (border === 'none') {
-              const size = tx.table.getSelectedCellsBorders(selectedCells).none
+              const width = tx.table.getSelectedCellsBorders(selectedCells).none
                 ? 1
                 : 0;
 
@@ -2191,12 +2558,12 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
                 if (target.row === 0) directions.unshift('top');
                 if (target.col === 0) directions.unshift('left');
                 if (target.row > 0) {
-                  add(target.topCellPath, ['bottom'], size);
+                  add(target.topCellPath, ['bottom'], width);
                 }
                 if (target.col > 0) {
-                  add(target.leftCellPath, ['right'], size);
+                  add(target.leftCellPath, ['right'], width);
                 }
-                add(target.path, directions, size);
+                add(target.path, directions, width);
               });
 
               apply();
@@ -2207,7 +2574,8 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
               tx.table.getSelectedCellsBoundingBox(selectedCells);
 
             if (border === 'outer') {
-              const size = tx.table.getSelectedCellsBorders(selectedCells).outer
+              const width = tx.table.getSelectedCellsBorders(selectedCells)
+                .outer
                 ? 0
                 : 1;
 
@@ -2228,7 +2596,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
                     if (row === maxRow) directions.push('bottom');
                     if (col === minCol) directions.push('left');
                     if (col === maxCol) directions.push('right');
-                    add(target.path, directions, size);
+                    add(target.path, directions, width);
                   }
                 }
               });
@@ -2237,7 +2605,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
               return;
             }
 
-            const size = tx.table.isSelectedCellBorder(selectedCells, border)
+            const width = tx.table.isSelectedCellBorder(selectedCells, border)
               ? 0
               : 1;
 
@@ -2248,7 +2616,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
                 if (target.row === 0) {
                   directions.push('top');
                 } else {
-                  add(target.topCellPath, ['bottom'], size);
+                  add(target.topCellPath, ['bottom'], width);
                 }
               }
               if (
@@ -2261,7 +2629,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
                 if (target.col === 0) {
                   directions.push('left');
                 } else {
-                  add(target.leftCellPath, ['right'], size);
+                  add(target.leftCellPath, ['right'], width);
                 }
               }
               if (
@@ -2270,16 +2638,26 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
               ) {
                 directions.push('right');
               }
-              add(target.path, directions, size);
+              add(target.path, directions, width);
             });
 
             apply();
           },
-          setBorderSize: (
-            size: number,
-            { at, border = 'all' }: Omit<SetBorderSizeOptions, 'size'> = {}
+          setBorderWidth: (
+            width: number,
+            { at, border = 'all' }: Omit<SetBorderWidthOptions, 'width'> = {}
           ) => {
-            setBorderSizes([{ at, border, size }]);
+            if (
+              typeof width !== 'number' ||
+              !Number.isFinite(width) ||
+              width < 0
+            ) {
+              throw new TypeError(
+                'Table border width must be a non-negative finite number.'
+              );
+            }
+
+            setBorderWidths([{ at, border, width }]);
           },
           merge: (): void => {
             const cellEntries = tx.table.getSelection()?.cellEntries ?? [];
@@ -2419,11 +2797,11 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
                 if (!cellPath) return;
 
                 if (color === null) {
-                  tx.nodes.unset('background', {
+                  tx.nodes.unset('backgroundColor', {
                     at: cellPath,
                   });
                 } else {
-                  tx.nodes.set({ background: color }, { at: cellPath });
+                  tx.nodes.set({ backgroundColor: color }, { at: cellPath });
                 }
               });
 
@@ -2437,17 +2815,28 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
             if (!currentCell) return;
 
             if (color === null) {
-              tx.nodes.unset('background', {
+              tx.nodes.unset('backgroundColor', {
                 at: currentCell[1],
               });
             } else {
-              tx.nodes.set({ background: color }, { at: currentCell[1] });
+              tx.nodes.set({ backgroundColor: color }, { at: currentCell[1] });
             }
           },
-          setColumnSize: (
+          setColumnWidth: (
             { colIndex, width }: { colIndex: number; width: number },
             options: TableFindOptions = {}
           ) => {
+            if (!Number.isSafeInteger(colIndex) || colIndex < 0) {
+              throw new TypeError(
+                'Table column index must be a non-negative safe integer.'
+              );
+            }
+            if (!isPositiveFiniteNumber(width)) {
+              throw new TypeError(
+                'Table column width must be a positive finite number.'
+              );
+            }
+
             const table = tx.nodes.find({
               ...options,
               type: context.plugin,
@@ -2456,19 +2845,39 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
             if (!table) return;
 
             const [tableNode, tablePath] = table;
+            const columnCount = api.getColumnCount(tableNode);
+
+            if (colIndex >= columnCount) {
+              throw new RangeError(
+                `Table column index ${colIndex} exceeds the last column index ${columnCount - 1}.`
+              );
+            }
+
             const currentColSizes = getTableColumnSizes(tableNode);
-            const colSizes = currentColSizes
-              ? [...currentColSizes]
-              : Array.from({ length: api.getColumnCount(tableNode) }, () => 0);
+            const columnWidths: Array<number | null> = Array.from(
+              { length: columnCount },
+              (_, index): number | null => currentColSizes?.[index] ?? null
+            );
 
-            colSizes[colIndex] = width;
+            columnWidths[colIndex] = width;
 
-            tx.nodes.set({ colSizes }, { at: tablePath });
+            tx.nodes.set({ columnWidths }, { at: tablePath });
           },
-          setRowSize: (
+          setRowHeight: (
             { height, rowIndex }: { height: number; rowIndex: number },
             options: TableFindOptions = {}
           ) => {
+            if (!Number.isSafeInteger(rowIndex) || rowIndex < 0) {
+              throw new TypeError(
+                'Table row index must be a non-negative safe integer.'
+              );
+            }
+            if (!isPositiveFiniteNumber(height)) {
+              throw new TypeError(
+                'Table row height must be a positive finite number.'
+              );
+            }
+
             const table = tx.nodes.find({
               ...options,
               type: context.plugin,
@@ -2476,7 +2885,15 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
 
             if (!table) return;
 
-            tx.nodes.set({ size: height }, { at: [...table[1], rowIndex] });
+            const rowCount = table[0].children.length;
+
+            if (rowIndex >= rowCount) {
+              throw new RangeError(
+                `Table row index ${rowIndex} exceeds the last row index ${rowCount - 1}.`
+              );
+            }
+
+            tx.nodes.set({ height }, { at: [...table[1], rowIndex] });
           },
           split: (): void => {
             const firstCell = tx.table.getSelection()?.cellEntries[0];
@@ -2693,7 +3110,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
               enableUnsetSingleColSize &&
               context.api.getColumnCount(table) < 2
             ) {
-              tx.nodes.unset('colSizes', { at: path });
+              tx.nodes.unset('columnWidths', { at: path });
               return;
             }
 
@@ -2704,12 +3121,15 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
 
               if (colCount) {
                 const fallbackSize = initialTableWidth / colCount;
-                const colSizes = currentColSizes
-                  ? currentColSizes.map((size) => size || fallbackSize)
+                const columnWidths = currentColSizes
+                  ? currentColSizes.map((width) => width ?? fallbackSize)
                   : Array.from({ length: colCount }, () => fallbackSize);
 
-                if (!currentColSizes || currentColSizes.some((size) => !size)) {
-                  tx.nodes.set({ colSizes }, { at: path });
+                if (
+                  !currentColSizes ||
+                  currentColSizes.some((width) => width === null)
+                ) {
+                  tx.nodes.set({ columnWidths }, { at: path });
                   return;
                 }
               }

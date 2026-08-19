@@ -1,7 +1,7 @@
 ---
 title: 日期
 docs:
-  - route: /docs/components/date-node
+  - route: /docs/components/date
     title: 日期元素
 ---
 
@@ -24,9 +24,9 @@ docs:
 
 最快捷添加日期功能的方式是使用 `DateKit`，它包含了预配置的 `DatePlugin` 和 [Plate UI](/docs/installation/plate-ui) 组件。
 
-<ComponentSource name="date-kit" />
+<ComponentSource name="date" />
 
-- [`DateElement`](/docs/components/date-node): 渲染内联日期元素
+- [`DateElement`](/docs/components/date): 渲染内联日期元素
 
 ### 添加套件
 
@@ -34,7 +34,7 @@ docs:
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { DateKit } from '@/components/editor/plugins/date-kit';
+import { DateKit } from '@/components/editor/date';
 
 const editor = createPlateEditor({
   plugins: [
@@ -79,7 +79,7 @@ const editor = createPlateEditor({
 ```tsx
 import { DatePlugin } from '@platejs/date/react';
 import { createPlateEditor } from 'platejs/react';
-import { DateElement } from '@/components/ui/date-node';
+import { DateElement } from '@/components/editor/date';
 
 const editor = createPlateEditor({
   plugins: [
@@ -89,7 +89,7 @@ const editor = createPlateEditor({
 });
 ```
 
-- `component`: 指定 [`DateElement`](/docs/components/date-node) 来渲染内联日期元素
+- `component`: 指定 [`DateElement`](/docs/components/date) 来渲染内联日期元素
 
 ### 插入工具栏按钮
 
@@ -111,32 +111,6 @@ const editor = createPlateEditor({
 ### `DatePlugin`
 
 用于向文档添加日期元素的插件。
-
-## API
-
-### `isPointNextToNode`
-
-检查一个点是否邻近特定类型的节点。
-
-<API name="isPointNextToNode">
-<APIParameters>
-  <APIItem name="nodeType" type="string">
-    要检查邻近性的节点类型（例如 'date' 表示内联日期元素）
-  </APIItem>
-  <APIItem name="options" type="object">
-    检查邻近性的选项
-  </APIItem>
-</APIParameters>
-
-<APIOptions type="object">
-  <APIItem name="at" type="Point" optional>
-    检查的起始位置。如未提供则使用当前选区锚点
-  </APIItem>
-  <APIItem name="reverse" type="boolean">
-    检查方向。为 true 时检查前一个节点，为 false 时检查后一个节点
-  </APIItem>
-</APIOptions>
-</API>
 
 ## 转换操作
 

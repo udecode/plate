@@ -52,7 +52,7 @@ describe('BaseEquationPlugin', () => {
     expect(editor.read.schema.isVoid(element)).toBe(true);
     expect(
       editor.read.schema.property({
-        key: 'texExpression',
+        key: 'latex',
         placement: 'element',
       })?.value.kind
     ).toBe('string');
@@ -72,7 +72,7 @@ describe('BaseEquationPlugin', () => {
       initialValue: [
         {
           children: [{ text: '' }],
-          texExpression: 'x+1',
+          latex: 'x+1',
           type: 'equation',
         },
         {
@@ -117,7 +117,7 @@ describe('BaseEquationPlugin', () => {
       },
       {
         children: [{ text: '' }],
-        texExpression: '',
+        latex: '',
         type: 'equation',
       },
     ]);
@@ -149,7 +149,7 @@ describe('BaseEquationPlugin', () => {
       },
       {
         children: [{ text: '' }],
-        texExpression: '',
+        latex: '',
         type: 'equation',
       },
     ]);
@@ -158,7 +158,7 @@ describe('BaseEquationPlugin', () => {
   it('renders KaTeX html and forwards options', () => {
     const element: BlockEquationElement = {
       children: [{ text: '' }],
-      texExpression: 'x^2',
+      latex: 'x^2',
       type: 'equation',
     };
 
@@ -189,7 +189,7 @@ describe('BaseInlineEquationPlugin', () => {
     expect(editor.read.schema.isVoid(element)).toBe(true);
     expect(
       editor.read.schema.property({
-        key: 'texExpression',
+        key: 'latex',
         placement: 'element',
       })?.value.kind
     ).toBe('string');
@@ -215,7 +215,7 @@ describe('BaseInlineEquationPlugin', () => {
             { text: 'hi ' },
             {
               children: [{ text: '' }],
-              texExpression: 'x+1',
+              latex: 'x+1',
               type: 'inlineEquation',
             },
             { text: ' after' },
@@ -269,7 +269,7 @@ describe('BaseInlineEquationPlugin', () => {
           { text: '' },
           {
             children: [{ text: '' }],
-            texExpression: 'abc',
+            latex: 'abc',
             type: 'inlineEquation',
           },
           { text: '' },
@@ -298,10 +298,7 @@ describe('BaseInlineEquationPlugin', () => {
 
     editor
       .plugin(InlineEquationPlugin)
-      .update.insert(
-        { texExpression: 'x^2' },
-        { at: { offset: 1, path: [0, 0] } }
-      );
+      .update.insert({ latex: 'x^2' }, { at: { offset: 1, path: [0, 0] } });
 
     expect(editor.read.value().children).toMatchObject([
       {
@@ -309,7 +306,7 @@ describe('BaseInlineEquationPlugin', () => {
           { text: 'x' },
           {
             children: [{ text: '' }],
-            texExpression: 'x^2',
+            latex: 'x^2',
             type: 'inlineEquation',
           },
           { text: 'y' },
@@ -369,7 +366,7 @@ describe('math input rules', () => {
           { text: 'Math: ' },
           {
             children: [{ text: '' }],
-            texExpression: 'x',
+            latex: 'x',
             type: 'inlineEquation',
           },
           { text: '' },
@@ -401,7 +398,7 @@ describe('math input rules', () => {
 
     expect(editor.read.value().children).toMatchObject([
       {
-        texExpression: '',
+        latex: '',
         type: 'equation',
       },
     ]);
@@ -432,7 +429,7 @@ describe('math input rules', () => {
 
     expect(editor.read.value().children).toMatchObject([
       {
-        texExpression: '',
+        latex: '',
         type: 'equation',
       },
     ]);
@@ -487,7 +484,7 @@ describe('math input rules', () => {
         { text: 'Math: ' },
         {
           children: [{ text: '' }],
-          texExpression: 'x',
+          latex: 'x',
           type: 'inlineEquation',
         },
         { text: '' },

@@ -29,14 +29,14 @@ description: 用于构建内容的常用块级元素。
 
 `BasicBlocksKit` 捆绑了段落、标题（H1、H2、H3）、引用块和水平分割线的插件，以及它们对应的 [Plate UI](/docs/installation/plate-ui) 组件。同时也注册了标题、引用块和水平分割线自带的 Markdown input rules。
 
-<ComponentSource name="basic-blocks-kit" />
+<ComponentSource name="basic-blocks" />
 
-- [`ParagraphElement`](/docs/components/paragraph-node): 渲染段落元素。
-- [`H1Element`](/docs/components/heading-node): 渲染 H1 元素。
-- [`H2Element`](/docs/components/heading-node): 渲染 H2 元素。
-- [`H3Element`](/docs/components/heading-node): 渲染 H3 元素。
-- [`BlockquoteElement`](/docs/components/blockquote-node): 渲染引用块元素。
-- [`HrElement`](/docs/components/hr-node): 渲染水平分割线元素。
+- [`ParagraphElement`](/docs/components/paragraph): 渲染段落元素。
+- [`HeadingElement`](/docs/components/heading): 渲染 H1 元素。
+- [`HeadingElement`](/docs/components/heading): 渲染 H2 元素。
+- [`HeadingElement`](/docs/components/heading): 渲染 H3 元素。
+- [`BlockquoteElement`](/docs/components/blockquote): 渲染引用块元素。
+- [`HrElement`](/docs/components/horizontal-rule): 渲染水平分割线元素。
 
 ### 添加套件
 
@@ -44,7 +44,7 @@ description: 用于构建内容的常用块级元素。
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { BasicBlocksKit } from '@/components/editor/plugins/basic-blocks-kit';
+import { BasicBlocksKit } from '@/components/editor/basic-blocks';
 
 const editor = createPlateEditor({
   plugins: [

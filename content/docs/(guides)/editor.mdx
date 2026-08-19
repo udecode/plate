@@ -15,7 +15,7 @@ To create a basic Plate editor, you can use the `createPlateEditor` function, or
 import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
-  plugins: [H1Plugin],
+  plugins: [HeadingPlugin],
 });
 ```
 
@@ -60,7 +60,7 @@ identity with the exact compiled fingerprint:
 
 ```ts
 const editor = createPlateEditor({
-  plugins: [H1Plugin],
+  plugins: [HeadingPlugin],
 });
 
 editor.read.schema.identity();
@@ -74,7 +74,7 @@ lineage. The fingerprint remains tied only to the compiled schema:
 
 ```ts
 const editor = createPlateEditor({
-  plugins: [H1Plugin],
+  plugins: [HeadingPlugin],
   schema: { id: 'acme-document', version: 3 },
 });
 
@@ -84,6 +84,80 @@ editor.read.schema.identity();
 
 Bump `version` whenever the named lineage changes schema semantics. Reusing an
 ID and version with a different fingerprint is an identity mismatch.
+
+### Document Migrations
+
+Persist schema identity beside the document, then declare one application-owned
+migration chain. Target-version steps run in ascending order before installed
+plugin preparation and schema fitting.
+
+```ts title="src/editor.ts" showLineNumbers
+import { ParagraphPlugin } from '@platejs/basic-nodes/react';
+import {
+  defineDocumentMigrations,
+  migratePlateV54,
+  migratePlateV55,
+} from 'platejs/migrations';
+
+import { fingerprint as v53Fingerprint } from './migrations/v54-upgrade-plate/from';
+import { fingerprint as v54Fingerprint } from './migrations/v55-upgrade-plate/from';
+
+export const EditorKit = [ParagraphPlugin] as const;
+
+export const EditorSchema = {
+  id: 'acme-document',
+  version: 55,
+} as const;
+
+export const EditorMigrations = defineDocumentMigrations(EditorSchema, {
+  sourceFingerprints: { 53: v53Fingerprint, 54: v54Fingerprint },
+  steps: { 54: migratePlateV54, 55: migratePlateV55 },
+  unversioned: 53,
+});
+```
+
+Pass the same three exports to the editor. `unversioned` is an explicit support
+floor for stored documents without schema metadata; remove it when that data is
+no longer supported.
+
+```tsx title="src/document-editor.tsx" showLineNumbers
+import { Plate, usePlateEditor } from 'platejs/react';
+
+import { EditorKit, EditorMigrations, EditorSchema } from './editor';
+
+export function DocumentEditor({ persisted }) {
+  const editor = usePlateEditor({
+    initialValue: persisted,
+    migrations: EditorMigrations,
+    plugins: EditorKit,
+    schema: EditorSchema,
+  });
+
+  return <Plate editor={editor} />;
+}
+```
+
+Store the complete envelope returned by your application boundary:
+
+```ts
+const persisted = {
+  document: value,
+  schema: editor.read.schema.identity(),
+};
+```
+
+A document at version 53 loaded by a version 55 editor runs steps 54 and 55.
+Plate rejects a missing step, a different schema ID, a future version, or a
+fingerprint mismatch instead of fitting incompatible data. Every historical
+envelope version needs its exact generated fingerprint in
+`sourceFingerprints`; raw documents use the explicit `unversioned` floor.
+
+<Callout type="warning" title="History and collaboration need a cutover">
+  Document migrations do not rewrite serialized history or a populated Yjs
+  room. Invalidate or migrate stored history offline, and connect upgraded
+  clients to a new schema-versioned room after migrating its snapshot. Do not
+  mix peers from different schema versions.
+</Callout>
 
 ### Remote Initial Value
 
@@ -118,7 +192,7 @@ You can add plugins to your editor by including them in the `plugins` array:
 
 ```ts
 const editor = createPlateEditor({
-  plugins: [H1Plugin, ListPlugin],
+  plugins: [HeadingPlugin, ListPlugin],
 });
 ```
 
@@ -131,24 +205,24 @@ also needs one exact recursive `Value` across the complete plugin graph.
 Export the runtime inputs from one source file:
 
 ```ts title="src/editor.ts"
-import { H1Plugin } from '@platejs/basic-nodes/react';
+import { HeadingPlugin } from '@platejs/basic-nodes/react';
 import { TablePlugin } from '@platejs/table/react';
 import { property, schema as s, target } from 'platejs';
 
-export const EditorKit = [H1Plugin, TablePlugin] as const;
+export const EditorKit = [HeadingPlugin, TablePlugin] as const;
 
 export const EditorSchema = {
   id: 'app-document',
   version: 1,
   overrides: [
-    s.override(H1Plugin, {
+    s.override(HeadingPlugin, {
       element: { type: 'headingOne' },
     }),
   ],
   properties: {
     reviewState: s.elementProperty(
       property.enum(['draft', 'approved'] as const),
-      { target: target.element(H1Plugin) }
+      { target: target.element(HeadingPlugin) }
     ),
   },
 } as const;
@@ -166,7 +240,7 @@ laws stay fixed; changing one requires a new field and an explicit migration.
 Installed code reads final identities from schema handles:
 
 ```ts
-editor.plugin(H1Plugin).schema.type; // 'headingOne'
+editor.plugin(HeadingPlugin).schema.type; // 'headingOne'
 generatedSchema.properties.reviewState.key; // 'reviewState'
 ```
 
@@ -191,11 +265,11 @@ import {
   schema as generatedSchema,
   type Editor,
   type Value,
-} from './editor.generated';
+} from './plugins.generated';
 import { EditorKit, EditorSchema } from './editor';
 
-export function prepareDocument(editor: Editor) {
-  editor.update.h1.insert();
+export function insertDocumentContent(editor: Editor) {
+  editor.update.heading.insert({ level: 1 });
   editor.update.table.set({ marginLeft: 24 });
 }
 
@@ -221,7 +295,7 @@ consume the authored `EditorKit` and `EditorSchema` directly.
 Run the same command with `--check` in CI. It recompiles the authored module
 and fails when committed generated artifacts are stale.
 
-Schema changes that need stored-document work use an explicit scaffold:
+Create typed application steps with the migration scaffold:
 
 ```bash
 pnpm exec plate migrate new add-caption
@@ -229,9 +303,27 @@ pnpm exec plate migrate new add-caption
 
 Pass `--entry <path>` when the editor module does not use the standard path.
 
-The scaffold contains typed `FromValue` and `ToValue` snapshots plus the
-structural diff. Application storage or collaboration code decides when and
-how to run the pure migration; Plate never applies it automatically.
+The scaffold contains typed `FromValue` and `ToValue` snapshots, their
+fingerprints, and the structural diff. Add the completed function to
+`EditorMigrations.steps` under the version it produces, and bind the exported
+`from` fingerprint in `sourceFingerprints`.
+
+The editor runs configured migrations for initial and deferred complete
+document loads. For offline JSON files, the entry module exports the exact
+`EditorKit`, `EditorSchema`, and `EditorMigrations` names used below. Explicit
+names keep the executable runner deterministic even when the module exports
+other arrays or schema-like objects.
+
+```bash
+pnpm exec plate migrate run --entry src/editor.ts --check documents/*.json
+pnpm exec plate migrate run --entry src/editor.ts --write documents/*.json
+cat document.json | pnpm exec plate migrate run --entry src/editor.ts --stdin
+```
+
+The command is a dry run unless `--write` is present. `--check` exits nonzero
+when any document needs migration. `--stdin` writes the migrated envelope to
+standard output and never mutates storage. Envelope selections are mapped and
+preserved through the same document and preparation pipeline.
 
 ### Max Length
 
@@ -391,10 +483,10 @@ Override default components for plugins:
 
 ```ts
 const editor = createPlateEditor({
-  plugins: [H1Plugin],
+  plugins: [HeadingPlugin],
   components: {
     paragraph: CustomParagraphComponent,
-    h1: CustomHeadingComponent,
+    heading: CustomHeadingComponent,
   },
 });
 ```

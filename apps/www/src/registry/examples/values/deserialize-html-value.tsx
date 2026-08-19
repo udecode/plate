@@ -6,7 +6,7 @@ jsx;
 
 export const deserializeHtmlValue = (
   <fragment>
-    <hh2>HTML</hh2>
+    <hheading level={2}>HTML</hheading>
     <hp>
       By default, when you paste content into the Plate editor, it will utilize
       the clipboard's <htext code>'text/plain'</htext>

@@ -2,6 +2,24 @@
 "@platejs/utils": major
 ---
 
+Fix mark toolbar buttons so mutually exclusive marks are cleared only when
+enabling the target mark.
+
+Resolve exit-break targets against earlier writes in the active transaction.
+
+Keep block-placeholder controllers package-private and read complete editor
+text with `useEditorSelector` instead of `useEditorString`.
+Keep package placeholder copy empty by default; copied kits configure visible
+placeholder text.
+
+Require React and React DOM 19.2 or newer.
+
+Remove the one-consumer form-input, remove-node-button, mark-toolbar-button,
+selection-state, and selection-fragment hooks. Keep
+`useSelectionFragmentProp` at the flat React package root; use
+`useEditorSelector` with `editor.read.selection` or `editor.read.fragment()`
+for component-local selection reads.
+
 Export complete `NormalizeTypesPluginState`, `TrailingBlockPluginState`, and
 `BlockPlaceholderPluginState` contracts.
 
@@ -17,7 +35,8 @@ Export complete `NormalizeTypesPluginState`, `TrailingBlockPluginState`, and
   default insertion; it no longer receives an editor or transaction context
 - Use one flat `PLUGINS` catalog for camel-case capability names; resolve
   persisted element types and property keys separately, and remove `KEYS`,
-  `NODES`, `STYLE_KEYS`, and the redundant `tableCellHeader` capability
+  `NODES`, `STYLE_KEYS`, and the redundant `tableCellHeader` capability. Use
+  `docxPaste`, `docxImport`, and `docxExport` for the three DOCX capabilities
 - Replace the separate subscript and superscript identities with
   `PLUGINS.script`; represent script text
   with `TScriptValue` (`'sub' | 'sup'`)
@@ -52,5 +71,4 @@ insert: (insert) => {
 };
 ```
 
-Run `migratePlateAstIdentities` before editor construction to rewrite explicit
-legacy element types and property keys.
+Replace `h1` through `h6` capability names with one heading capability.

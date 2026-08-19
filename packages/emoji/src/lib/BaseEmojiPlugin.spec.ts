@@ -4,7 +4,6 @@ import { property, schema } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
 
 import { BaseEmojiInputPlugin, BaseEmojiPlugin } from './BaseEmojiPlugin';
-import { DEFAULT_EMOJI_LIBRARY } from './EmojiLibrary';
 import { EmojiInputPlugin, EmojiPlugin } from '../react/EmojiPlugin';
 
 describe('BaseEmojiPlugin', () => {
@@ -53,7 +52,7 @@ describe('BaseEmojiPlugin', () => {
     ).toThrow(/emoji.*disabled.*emojiInput|emojiInput.*disabled.*emoji/i);
   });
 
-  it('ships the default trigger, library, and node builders', () => {
+  it('ships the default trigger and node builders', () => {
     const editor = createBaseEditor({
       plugins: [BaseEmojiPlugin],
     });
@@ -73,7 +72,6 @@ describe('BaseEmojiPlugin', () => {
     }
 
     expect(plugin.editOnly).toBe(true);
-    expect(state.data).toEqual(DEFAULT_EMOJI_LIBRARY);
     expect(state.trigger).toBe(':');
     expect(triggerPreviousCharPattern.test('')).toBe(true);
     expect(triggerPreviousCharPattern.test(' ')).toBe(true);

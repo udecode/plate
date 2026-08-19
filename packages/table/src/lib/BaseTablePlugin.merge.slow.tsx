@@ -479,10 +479,10 @@ describe('table merge slow contracts', () => {
         ).toHaveLength(2);
       });
 
-      it('shrinks spanning cells and table colSizes when deleting a merged column', () => {
+      it('shrinks spanning cells and table columnWidths when deleting a merged column', () => {
         const input = (
           <editor>
-            <htable colSizes={[40, 60]}>
+            <htable columnWidths={[40, 60]}>
               <htr>
                 <htd colSpan={2}>
                   <hp>11</hp>
@@ -509,7 +509,7 @@ describe('table merge slow contracts', () => {
 
         expect(editor.read.children()).toMatchObject([
           {
-            colSizes: [40],
+            columnWidths: [40],
             type: 'table',
             children: [
               {
@@ -537,7 +537,7 @@ describe('table merge slow contracts', () => {
       it('removes every colSize covered by the selected spanning cell', () => {
         const input = (
           <editor>
-            <htable colSizes={[40, 50, 60]}>
+            <htable columnWidths={[40, 50, 60]}>
               <htr>
                 <htd colSpan={2}>
                   <hp>
@@ -568,7 +568,7 @@ describe('table merge slow contracts', () => {
 
         editor.update.table.removeColumn();
 
-        expect(editor.read.children()).toMatchObject([{ colSizes: [60] }]);
+        expect(editor.read.children()).toMatchObject([{ columnWidths: [60] }]);
         expect(editor.read.text.string([0])).toBe('1323');
         expect(
           editor.read.nodes.toArray({ at: [], type: 'tableCell' })

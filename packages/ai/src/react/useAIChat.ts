@@ -1,43 +1,11 @@
 'use client';
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
-import type { MarkdownEditor } from '@platejs/markdown';
-import type { NodeEntry, Text } from '@platejs/plite';
-import { BlockSelectionPlugin } from '@platejs/selection/react';
-import {
-  useEditor,
-  useEditorPlugin,
-  useEditorRuntimeState,
-  usePluginStore,
-} from '@platejs/core/react';
+import type { Text } from '@platejs/plite';
+import { usePluginStore } from '@platejs/core/react';
 
 import { AIChatPlugin } from './AIChatPlugin';
-
-export const useAIChatEditor = (editor: MarkdownEditor, content: string) => {
-  const { store } = useEditorPlugin(AIChatPlugin);
-  const document = useMemo(
-    () => editor.api.markdown.deserialize(content),
-    [content, editor]
-  );
-  const value = useEditorRuntimeState(editor, (state) => state.children());
-
-  useEffect(() => {
-    editor.update({ history: 'skip' }).value.replace(document);
-    store.set({ previewValue: editor.read.children() });
-  }, [document, editor, store]);
-
-  return value;
-};
-
-export const useLastAssistantMessage = () => {
-  const toolName = usePluginStore(AIChatPlugin, 'toolName');
-  const chat = usePluginStore(AIChatPlugin, 'chat');
-
-  if (toolName === 'comment') return;
-
-  return chat?.messages?.findLast((message) => message.role === 'assistant');
-};
 
 export const useChatChunk = ({
   onChunk,
@@ -52,10 +20,16 @@ export const useChatChunk = ({
   onFinish?: ({ content }: { content: string }) => void;
 }) => {
   const status = usePluginStore(AIChatPlugin, 'chat')?.status;
+  const toolName = usePluginStore(AIChatPlugin, 'toolName');
+  const lastAssistantMessage = usePluginStore(
+    AIChatPlugin,
+    'lastAssistantMessage'
+  );
   const isLoading = status === 'streaming' || status === 'submitted';
-  const content = useLastAssistantMessage()?.parts.find(
-    (part) => part.type === 'text'
-  )?.text;
+  const content =
+    toolName === 'comment'
+      ? undefined
+      : lastAssistantMessage?.parts.find((part) => part.type === 'text')?.text;
   const insertedTextRef = useRef('');
   const previousLoadingRef = useRef(isLoading);
   const previousContentRef = useRef(isLoading ? '' : (content ?? ''));
@@ -96,61 +70,4 @@ export const useChatChunk = ({
     previousContentRef.current = nextContent;
     previousLoadingRef.current = isLoading;
   }, [content, isLoading]);
-};
-
-export type UseEditorChatOptions = {
-  onOpenBlockSelection?: (blocks: NodeEntry[]) => void;
-  onOpenChange?: (open: boolean) => void;
-  onOpenCursor?: () => void;
-  onOpenSelection?: () => void;
-};
-
-export const useEditorChat = ({
-  onOpenBlockSelection,
-  onOpenChange,
-  onOpenCursor,
-  onOpenSelection,
-}: UseEditorChatOptions) => {
-  const editor = useEditor();
-  const open = usePluginStore(AIChatPlugin, 'open');
-  const callbacksRef = useRef({
-    onOpenBlockSelection,
-    onOpenChange,
-    onOpenCursor,
-    onOpenSelection,
-  });
-
-  useEffect(() => {
-    callbacksRef.current = {
-      onOpenBlockSelection,
-      onOpenChange,
-      onOpenCursor,
-      onOpenSelection,
-    };
-  }, [onOpenBlockSelection, onOpenChange, onOpenCursor, onOpenSelection]);
-
-  useEffect(() => {
-    const callbacks = callbacksRef.current;
-
-    callbacks.onOpenChange?.(open);
-
-    if (!open) return;
-    if (callbacks.onOpenBlockSelection) {
-      const blockSelection = editor.plugin(BlockSelectionPlugin);
-
-      if (blockSelection.store.get('isSelectingSome')) {
-        callbacks.onOpenBlockSelection([...blockSelection.read.getNodes({})]);
-
-        return;
-      }
-    }
-    if (callbacks.onOpenCursor && editor.read.selection.isCollapsed()) {
-      callbacks.onOpenCursor();
-
-      return;
-    }
-    if (callbacks.onOpenSelection && editor.read.selection.isExpanded()) {
-      callbacks.onOpenSelection();
-    }
-  }, [editor, open]);
 };

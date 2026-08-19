@@ -146,6 +146,7 @@ describe('transactional extension configuration', () => {
     const updated = createEditor();
 
     updated.update((tx) => tx.nodes.insert(paragraph('written')));
+    updated.install(defineExtension('post-document-runtime-extension', {}));
     assert.throws(
       () => initializeEditorExtensions(updated, articleSchema),
       /unchanged document/u
@@ -1730,8 +1731,6 @@ describe('transactional extension configuration', () => {
   it('keeps a captured command pipeline immutable through publication', () => {
     const command = defineCommand('captured-command-pipeline');
     const seen: string[] = [];
-    let editor!: ReturnType<typeof createEditor>;
-    let installed = false;
     const late = defineExtension('captured-command-late', {
       commands: ({ handle }) => [
         handle(command, () => {
@@ -1741,16 +1740,12 @@ describe('transactional extension configuration', () => {
         }),
       ],
     });
-    editor = createEditor({
+    const editor = createEditor({
       extensions: [
         defineExtension('captured-command-base', {
           commands: ({ handle }) => [
             handle(command, () => {
               seen.push('first');
-              if (!installed) {
-                installed = true;
-                editor.install(late);
-              }
 
               return false;
             }),
@@ -1774,6 +1769,8 @@ describe('transactional extension configuration', () => {
     assert.equal(Object.isFrozen(previousEntries), true);
     assert.equal(previousPipeline.entries, previousEntries);
     assert.equal(previousEntries.length, 2);
+
+    editor.install(late);
 
     const currentRegistry = getEditorExtensionRegistry(editor);
 
@@ -2254,6 +2251,33 @@ describe('transactional extension configuration', () => {
     );
   });
 
+  it('revokes retained candidate portals after failed publication', () => {
+    let retainedPortal: Readonly<{ api: unknown }> | undefined;
+    const Candidate = defineExtension('revokedCandidatePortal', {
+      api: () => ({ ready: () => true }),
+      activate(context) {
+        const candidateEditor = context.editor as unknown as {
+          extension(
+            extension: EditorExtensionReference
+          ): Readonly<{ api: unknown }>;
+        };
+
+        retainedPortal = candidateEditor.extension(Candidate);
+        throw new Error('candidate activation failed');
+      },
+    });
+    const editor = createEditor();
+
+    assert.throws(
+      () => editor.install(Candidate),
+      /candidate activation failed/
+    );
+    const portal = retainedPortal;
+
+    assert.ok(portal);
+    assert.throws(() => portal.api, /descriptor is no longer installed/);
+  });
+
   it('isolates nested editor writes during activation', () => {
     const errors: Array<{ extensionName: string; phase: string }> = [];
     const editor = createEditor({
@@ -2434,32 +2458,157 @@ describe('transactional extension configuration', () => {
     assert.equal(editor.read.text.string([]), 'before!');
   });
 
-  it('runs after-publish exactly once when a commit observer throws', () => {
+  it('reports commit observer failures without losing the install cleanup', () => {
     let afterPublishCalls = 0;
-    const editor = createEditor();
-
-    editor.subscribeCommit(() => {
-      throw new Error('observer failed');
+    const errors: Array<{ extensionName: string; phase: string }> = [];
+    const editor = createEditor({
+      lifecycleErrorSink(error) {
+        errors.push({ extensionName: error.extensionName, phase: error.phase });
+      },
     });
 
-    assert.throws(
-      () =>
-        editor.install(
-          defineExtension('after-publish-after-observer-failure', {
-            activate(context) {
-              context.afterPublish(() => {
-                afterPublishCalls++;
-              });
-            },
-          })
-        ),
-      /observer failed/
+    const unsubscribe = editor.subscribeCommit(() => {
+      throw new Error('observer failed');
+    });
+    const cleanup = editor.install(
+      defineExtension('after-publish-after-observer-failure', {
+        activate(context) {
+          context.afterPublish(() => {
+            afterPublishCalls++;
+          });
+        },
+      })
     );
 
     assert.equal(afterPublishCalls, 1);
+    assert.deepEqual(errors, [
+      { extensionName: '$editor', phase: 'commit-listener' },
+    ]);
     assert.deepEqual(
       getCompiledEditorConfiguration(editor).extensions.map(({ name }) => name),
       ['after-publish-after-observer-failure']
+    );
+    unsubscribe();
+    cleanup();
+    assert.deepEqual(getCompiledEditorConfiguration(editor).extensions, []);
+  });
+
+  it('does not let a stale cleanup remove a same-name replacement', () => {
+    const extension = (value: string) =>
+      defineExtension('staleCleanupOwner', {
+        read: () => ({ value: () => value }),
+      });
+    const editor = createEditor();
+    const cleanupFirst = editor.install(extension('first'));
+    const cleanupSecond = editor.install(extension('second'));
+
+    assert.equal(
+      (
+        editor.read as typeof editor.read & {
+          staleCleanupOwner: { value(): string };
+        }
+      ).staleCleanupOwner.value(),
+      'second'
+    );
+    cleanupFirst();
+    assert.equal(
+      (
+        editor.read as typeof editor.read & {
+          staleCleanupOwner: { value(): string };
+        }
+      ).staleCleanupOwner.value(),
+      'second'
+    );
+    cleanupSecond();
+    assert.throws(
+      () =>
+        (
+          editor.read as typeof editor.read & {
+            staleCleanupOwner: { value(): string };
+          }
+        ).staleCleanupOwner.value(),
+      /is not installed/
+    );
+  });
+
+  it('keeps cached portals bound to their installed descriptor identity', () => {
+    const slot = defineExtensionSlot('portal-replacement-owner');
+    const extension = (value: string) =>
+      defineExtension('portalReplacement', {
+        api: () => ({ value: () => value }),
+        read: () => ({ value: () => value }),
+        update: () => ({ run: () => {} }),
+      });
+    const first = extension('first');
+    const second = extension('second');
+    const editor = createEditor({ extensions: [slot.of(first)] });
+    const portal = editor.extension(first);
+    const capturedUpdate = portal.update;
+
+    assert.equal(portal.api.value(), 'first');
+    assert.equal(portal.read.value(), 'first');
+    editor.update.extensions.reconfigure(slot, second);
+
+    assert.throws(() => portal.api, /descriptor is no longer installed/);
+    assert.throws(
+      () => portal.read.value(),
+      /descriptor is no longer installed/
+    );
+    assert.throws(
+      () => capturedUpdate.run(),
+      /descriptor is no longer installed/
+    );
+    assert.equal(editor.extension(second).api.value(), 'second');
+  });
+
+  it('keeps a slot-owned extension after explicit ownership is cleaned up', () => {
+    const extension = defineExtension('slotAndExplicitOwner', {
+      read: () => ({ ready: () => true }),
+    });
+    const slot = defineExtensionSlot('slot-and-explicit-owner');
+    const editor = createEditor({ extensions: [slot.of(extension)] });
+    const cleanupExplicit = editor.install(extension);
+
+    cleanupExplicit();
+
+    assert.equal(
+      (
+        editor.read as typeof editor.read & {
+          slotAndExplicitOwner: { ready(): boolean };
+        }
+      ).slotAndExplicitOwner.ready(),
+      true
+    );
+  });
+
+  it('removes a shared slotted extension after its last owner is removed', () => {
+    const child = defineExtension('sharedSlottedChild', {
+      read: () => ({ ready: () => true }),
+    });
+    const firstSlot = defineExtensionSlot('first-shared-slot-owner');
+    const secondSlot = defineExtensionSlot('second-shared-slot-owner');
+    const editor = createEditor();
+    const cleanupFirst = editor.install(firstSlot.of(child));
+    const cleanupSecond = editor.install(secondSlot.of(child));
+
+    cleanupFirst();
+    assert.equal(
+      (
+        editor.read as typeof editor.read & {
+          sharedSlottedChild: { ready(): boolean };
+        }
+      ).sharedSlottedChild.ready(),
+      true
+    );
+    cleanupSecond();
+    assert.throws(
+      () =>
+        (
+          editor.read as typeof editor.read & {
+            sharedSlottedChild: { ready(): boolean };
+          }
+        ).sharedSlottedChild.ready(),
+      /is not installed/
     );
   });
 
@@ -2563,6 +2712,34 @@ describe('transactional extension configuration', () => {
     ]);
   });
 
+  it('reports cleanup failures when a published candidate rolls back', () => {
+    const errors: Array<{ extensionName: string; phase: string }> = [];
+    const editor = createEditor({
+      lifecycleErrorSink(error) {
+        errors.push({ extensionName: error.extensionName, phase: error.phase });
+      },
+    });
+    const publication = prepareEditorExtensionPublication(
+      editor,
+      defineExtension('rollback-cleanup-failure', {
+        activate(context) {
+          context.onCleanup(() => {
+            throw new Error('rollback cleanup failed');
+          });
+        },
+      })
+    );
+
+    publication.stage();
+    publication.commit();
+    publication.rollback();
+
+    assert.deepEqual(errors, [
+      { extensionName: 'rollback-cleanup-failure', phase: 'cleanup' },
+    ]);
+    assert.deepEqual(getCompiledEditorConfiguration(editor).extensions, []);
+  });
+
   it('rejects thenables from every synchronous publication phase', () => {
     const errors: Array<{ extensionName: string; phase: string }> = [];
     const editor = createEditor({
@@ -2652,6 +2829,29 @@ describe('transactional extension configuration', () => {
       true
     );
     cleanupDependent();
+    assert.deepEqual(getCompiledEditorConfiguration(editor).extensions, []);
+  });
+
+  it('rejects a dependency descriptor that collides with an explicit installation', () => {
+    const editor = createEditor();
+    const explicit = defineExtension('dependency-identity-collision', {});
+    const conflicting = defineExtension('dependency-identity-collision', {});
+    const cleanup = editor.install(explicit);
+    const registry = getEditorExtensionRegistry(editor);
+
+    assert.throws(
+      () =>
+        editor.install(
+          defineExtension('dependency-identity-consumer', {
+            dependencies: [conflicting],
+          })
+        ),
+      /multiple descriptor identities/
+    );
+    assert.equal(getEditorExtensionRegistry(editor), registry);
+    assert.equal(registry.extensions.get(explicit.name)?.descriptor, explicit);
+
+    cleanup();
     assert.deepEqual(getCompiledEditorConfiguration(editor).extensions, []);
   });
 
@@ -2756,6 +2956,7 @@ describe('transactional extension configuration', () => {
   it('rolls back an activated candidate when its publication becomes stale', () => {
     const editor = createEditor();
     let staleActivations = 0;
+    let staleCleanups = 0;
     const first = prepareEditorExtensionPublication(
       editor,
       defineExtension('first-candidate', {})
@@ -2763,8 +2964,11 @@ describe('transactional extension configuration', () => {
     const stale = prepareEditorExtensionPublication(
       editor,
       defineExtension('stale-candidate', {
-        activate() {
+        activate({ onCleanup }) {
           staleActivations++;
+          onCleanup(() => {
+            staleCleanups++;
+          });
         },
       })
     );
@@ -2776,6 +2980,7 @@ describe('transactional extension configuration', () => {
 
     assert.throws(() => stale.commit(), /publication is stale/);
     assert.equal(staleActivations, 1);
+    assert.equal(staleCleanups, 1);
     assert.deepEqual(
       getCompiledEditorConfiguration(editor).extensions.map(({ name }) => name),
       ['first-candidate']

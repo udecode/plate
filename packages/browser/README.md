@@ -51,6 +51,8 @@ The package is subpath-only. Import exactly the layer you need:
   - file-backed JSON attachment helper for replayable proof artifacts
   - native event trace helpers for `selectionchange`, `beforeinput`, `input`,
     composition, target ranges, DOM deltas, and anomaly labels
+  - trusted typing timing and long-task capture through
+    `measurePliteTrustedTyping(...)`
   - block-text getter and assertion helpers
   - snapshot helper for aggregated editor state
   - selection namespace for semantic selection actions and setup
@@ -146,6 +148,13 @@ Every remaining `insertText` call in non-pagination example specs is classified
 by `packages/browser/test/core/keyboard-oracle-audit.test.ts`.
 Then assert model text, native selection, and native event trace when the
 behavior depends on browser input.
+Use `measurePliteTrustedTyping({ page, root, text })` after explicit editor
+readiness, selection, focus, and warmup when a route needs exact per-key DOM
+target/model readiness, a post-readiness paint boundary, trusted input, an
+unthrottled burst budget, and fail-closed long-task coverage. Pair it with an
+exact final model assertion for the whole measured text. Model-owned input
+binds to the runtime's recorded event selection; native input also requires its
+DOM target range to resolve to that same path and offset.
 Native event traces are browser contracts, not one-size-fits-all strings:
 Chromium/WebKit `insertText` may produce only `beforeinput`, while Firefox can
 report `insertCompositionText` and a trailing `input` event for the same

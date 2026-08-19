@@ -26,8 +26,10 @@ import { profileCoreDuration } from './profiling';
 import {
   applyTransactionSpec,
   continueTransactionSpec,
+  enterEditorRead,
   getActiveEditorUpdateTags,
   getActiveEditorTransaction,
+  isBuildingTransactionSpec,
   isInTransaction,
   isTransactionSpec,
   isTransactionSpecContinuation,
@@ -39,11 +41,30 @@ export { defineCommand } from './command-definition';
 type RegisteredCommand = Readonly<{
   command: Readonly<{ id: string }>;
   kind: 'around' | 'handle';
+  owner: string;
   run: (context: unknown) => EditorCommandResult;
 }>;
 
-const commandStacks = new WeakMap<Editor, EditorCommand<unknown>[]>();
+export type EditorCommandEvaluation = Readonly<{
+  /** Installed extension names that materially changed the default result. */
+  materialHandlers: readonly string[];
+  /** True only when every installed handler delegated the original input unchanged. */
+  nativeEquivalent: boolean;
+  result: EditorCommandResult;
+}>;
 
+export type EditorCommandNativeProbe = Readonly<{
+  materialHandlers: readonly string[];
+  nativeEquivalent: boolean;
+}>;
+
+const EMPTY_MATERIAL_HANDLERS = Object.freeze([]) as readonly string[];
+const NATIVE_EQUIVALENT_PROBE = Object.freeze({
+  materialHandlers: EMPTY_MATERIAL_HANDLERS,
+  nativeEquivalent: true,
+}) satisfies EditorCommandNativeProbe;
+
+const commandStacks = new WeakMap<Editor, EditorCommand<unknown>[]>();
 const getCommandRegistry = (editor: Editor) =>
   getExtensionRegistry(editor).commands.byDescriptor as ReadonlyMap<
     object,
@@ -58,7 +79,8 @@ export const hasCommandHandler = <Input>(
 /** Compile one pure command registration into a detached extension registry. */
 export const registerCommandInRegistry = <TEditor extends BaseEditor<any, any>>(
   commands: CompiledCommandRegistry,
-  registration: EditorCommandRegistration<TEditor>
+  registration: EditorCommandRegistration<TEditor>,
+  owner: string
 ) => {
   const byDescriptor = commands.byDescriptor as Map<
     object,
@@ -84,6 +106,7 @@ export const registerCommandInRegistry = <TEditor extends BaseEditor<any, any>>(
   const compiled = Object.freeze({
     command,
     kind,
+    owner,
     run: run as (context: unknown) => EditorCommandResult,
   });
 
@@ -142,23 +165,42 @@ const assertCommandResult = (
   throw new Error(`Command "${id}" must return false or a transaction spec.`);
 };
 
-const runCommandChain = <Input, TEditor extends BaseEditor<any, any>>(
+const evaluateCommandChainInRead = <
+  Input,
+  TEditor extends BaseEditor<any, any>,
+>(
   editor: TEditor,
   command: EditorCommand<Input, TEditor>,
-  input: Input
-): boolean => {
-  if (editor.read.view.isReadOnly()) {
+  input: Input,
+  state: EditorStateView<any, any>
+): EditorCommandEvaluation => {
+  if (state.view.isReadOnly()) {
     throw new Error('Cannot update a read-only editor view.');
   }
 
   const owner = getEditorRuntimeOwner(editor);
   const entries = getCommandRegistry(owner).get(command)?.entries ?? [];
   const runtime = getCommandRuntime(command);
+  let cachedReadState = state as unknown as
+    | EditorCommandContext<Input, TEditor>['state']
+    | undefined;
   const readState = () =>
-    withTransactionSpecDraftRead(owner, () =>
-      editor.read((state) => state as EditorStateView)
-    ) as unknown as EditorCommandContext<Input, TEditor>['state'];
+    (cachedReadState ??= (isBuildingTransactionSpec(owner) ||
+    isInTransaction(owner)
+      ? withTransactionSpecDraftRead(owner, () =>
+          editor.read((state) => state as EditorStateView)
+        )
+      : editor.read(
+          (state) => state as EditorStateView
+        )) as unknown as EditorCommandContext<Input, TEditor>['state']);
   const tags = () => getActiveEditorUpdateTags(owner);
+  let defaultResult: EditorCommandResult | undefined;
+  let inputOverridden = false;
+  let materialHandlers: Set<string> | null = null;
+  const markMaterial = (name: string) => {
+    materialHandlers ??= new Set();
+    materialHandlers.add(name);
+  };
 
   const dispatch = (
     index: number,
@@ -172,7 +214,7 @@ const runCommandChain = <Input, TEditor extends BaseEditor<any, any>>(
     );
 
     if (!registration) {
-      return profileCoreDuration(`command-${command.id}-default`, () =>
+      defaultResult = profileCoreDuration(`command-${command.id}-default`, () =>
         assertCommandResult(
           command.id,
           runtime.build({
@@ -182,6 +224,8 @@ const runCommandChain = <Input, TEditor extends BaseEditor<any, any>>(
           })
         )
       );
+
+      return defaultResult;
     }
 
     if (registration.kind === 'handle') {
@@ -193,6 +237,10 @@ const runCommandChain = <Input, TEditor extends BaseEditor<any, any>>(
         })
       );
       const commandResult = assertCommandResult(command.id, result);
+
+      if (commandResult !== false) {
+        markMaterial(registration.owner);
+      }
 
       return commandResult === false
         ? dispatch(index + 1, preparedInput, true)
@@ -212,23 +260,37 @@ const runCommandChain = <Input, TEditor extends BaseEditor<any, any>>(
     const next = Object.assign(
       (...overrideInput: [] | [Input]) => {
         beginDelegation();
+        const hasDifferentInput =
+          overrideInput.length > 0 && overrideInput[0] !== preparedInput;
+
+        inputOverridden ||= hasDifferentInput;
+        if (hasDifferentInput) {
+          markMaterial(registration.owner);
+        }
         delegatedResult = dispatch(
           index + 1,
-          overrideInput.length === 0 ? preparedInput : overrideInput[0]!,
-          overrideInput.length === 0
+          hasDifferentInput ? overrideInput[0]! : preparedInput,
+          !hasDifferentInput
         );
         return delegatedResult;
       },
       {
         after(prefix: TransactionSpec, ...overrideInput: [] | [Input]) {
           beginDelegation();
-          delegatedResult = continueTransactionSpec(owner, prefix, () =>
-            dispatch(
+          const hasDifferentInput =
+            overrideInput.length > 0 && overrideInput[0] !== preparedInput;
+
+          inputOverridden ||= hasDifferentInput;
+          markMaterial(registration.owner);
+          delegatedResult = continueTransactionSpec(owner, prefix, () => {
+            cachedReadState = undefined;
+
+            return dispatch(
               index + 1,
-              overrideInput.length === 0 ? preparedInput : overrideInput[0]!,
-              overrideInput.length === 0
-            )
-          );
+              hasDifferentInput ? overrideInput[0]! : preparedInput,
+              !hasDifferentInput
+            );
+          });
           return delegatedResult;
         },
       }
@@ -242,6 +304,13 @@ const runCommandChain = <Input, TEditor extends BaseEditor<any, any>>(
       })
     );
     const commandResult = assertCommandResult(command.id, result);
+
+    if (
+      commandResult !== false &&
+      (!delegated || commandResult !== delegatedResult)
+    ) {
+      markMaterial(registration.owner);
+    }
 
     if (delegated) {
       if (
@@ -285,21 +354,111 @@ const runCommandChain = <Input, TEditor extends BaseEditor<any, any>>(
       dispatch(0, input)
     );
 
-    if (result === false) return false;
+    const nativeEquivalent =
+      result !== false &&
+      result === defaultResult &&
+      !inputOverridden &&
+      materialHandlers === null;
 
-    if (isInTransaction(owner)) {
-      getActiveEditorTransaction(owner)?.tags.add('semantic-command');
-      applyTransactionSpec(owner, result);
-    } else {
-      editor.update({ tags: 'semantic-command' }, () =>
-        applyTransactionSpec(owner, result)
-      );
-    }
-    return true;
+    return Object.freeze({
+      materialHandlers:
+        materialHandlers === null
+          ? EMPTY_MATERIAL_HANDLERS
+          : Object.freeze([...materialHandlers]),
+      nativeEquivalent,
+      result,
+    });
   } finally {
     stack.pop();
     if (stack.length === 0) commandStacks.delete(owner);
   }
+};
+
+const evaluateCommandChain = <Input, TEditor extends BaseEditor<any, any>>(
+  editor: TEditor,
+  command: EditorCommand<Input, TEditor>,
+  input: Input
+): EditorCommandEvaluation => {
+  const owner = getEditorRuntimeOwner(editor);
+  const readState = () => editor.read((state) => state);
+  const state =
+    isBuildingTransactionSpec(owner) || isInTransaction(owner)
+      ? withTransactionSpecDraftRead(owner, readState)
+      : readState();
+  const exitRead = enterEditorRead(owner);
+
+  try {
+    return evaluateCommandChainInRead(editor, command, input, state);
+  } finally {
+    exitRead();
+  }
+};
+
+const applyCommandEvaluation = <TEditor extends BaseEditor<any, any>>(
+  editor: TEditor,
+  evaluation: EditorCommandEvaluation
+) => {
+  const { result } = evaluation;
+
+  if (result === false) return false;
+
+  const owner = getEditorRuntimeOwner(editor);
+
+  if (isInTransaction(owner)) {
+    getActiveEditorTransaction(owner)?.tags.add('semantic-command');
+    applyTransactionSpec(owner, result);
+  } else {
+    editor.update({ tags: 'semantic-command' }, () =>
+      applyTransactionSpec(owner, result)
+    );
+  }
+
+  return true;
+};
+
+const runCommandChain = <Input, TEditor extends BaseEditor<any, any>>(
+  editor: TEditor,
+  command: EditorCommand<Input, TEditor>,
+  input: Input
+) =>
+  applyCommandEvaluation(editor, evaluateCommandChain(editor, command, input));
+
+/** @internal Evaluate one pure command without publishing its transaction. */
+export const evaluateCommand = <TCommand extends EditorCommandDescriptor>(
+  editor: Editor<any, any>,
+  command: TCommand,
+  ...input: [EditorCommandInput<TCommand>] extends [void]
+    ? [] | [input: EditorCommandInput<TCommand>]
+    : [input: EditorCommandInput<TCommand>]
+): EditorCommandEvaluation =>
+  evaluateCommandChain(
+    editor as Editor,
+    command as unknown as EditorCommand<unknown, Editor>,
+    input[0]
+  );
+
+/** @internal Probe whether installed handlers preserve the default command unchanged. */
+export const probeCommandNativeEquivalent = <
+  TCommand extends EditorCommandDescriptor,
+>(
+  editor: Editor<any, any>,
+  command: TCommand,
+  ...input: [EditorCommandInput<TCommand>] extends [void]
+    ? [] | [input: EditorCommandInput<TCommand>]
+    : [input: EditorCommandInput<TCommand>]
+): EditorCommandNativeProbe => {
+  const evaluation = evaluateCommandChain(
+    editor as Editor,
+    command as unknown as EditorCommand<unknown, Editor>,
+    input[0]
+  );
+
+  return evaluation.nativeEquivalent
+    ? NATIVE_EQUIVALENT_PROBE
+    : Object.freeze({
+        materialHandlers: evaluation.materialHandlers,
+        nativeEquivalent: false,
+      });
 };
 
 /** @internal Imperatively dispatch a pure command at a host boundary. */

@@ -23,7 +23,11 @@ import {
   type TransactionSpec,
   type Value,
 } from '@platejs/plite';
-import { dispatchCommand } from '@platejs/plite/internal';
+import {
+  dispatchCommand,
+  evaluateCommand,
+  probeCommandNativeEquivalent,
+} from '@platejs/plite/internal';
 import { createCommandRegistration } from '../src/core/command-definition';
 import { registerCommandInRegistry } from '../src/core/command-registry';
 import {
@@ -98,6 +102,248 @@ const CommandScriptSchema = defineEditorSchema('schema:command-script-schema', {
 });
 
 describe('pure command transaction specs', () => {
+  it('keeps pass-through command registration native-equivalent', () => {
+    const plain = createTextEditor();
+    const handled = createTextEditor(({ handle }) => [
+      handle(editorCommands.insertText, () => false),
+    ]);
+    const wrapped = createTextEditor(({ around }) => [
+      around(editorCommands.insertText, ({ next }) => next()),
+    ]);
+    const forwarded = createTextEditor(({ around }) => [
+      around(editorCommands.insertText, ({ input, next }) => next(input)),
+    ]);
+
+    for (const editor of [plain, handled, wrapped, forwarded]) {
+      const evaluation = evaluateCommand(editor, editorCommands.insertText, {
+        text: 'x',
+      });
+
+      assert.equal(evaluation.result === false, false);
+      assert.equal(evaluation.nativeEquivalent, true);
+      assert.deepEqual(evaluation.materialHandlers, []);
+      assert.equal(editor.read.text.string([]), 'ab');
+    }
+  });
+
+  it('keeps cached command state reads live across committed changes', () => {
+    const observed: Array<{
+      selectionOffset: number | undefined;
+      text: string;
+      version: number;
+    }> = [];
+    const editor = createTextEditor(({ around }) => [
+      around(editorCommands.insertText, ({ next, state }) => {
+        observed.push({
+          selectionOffset: state.selection()?.anchor.offset,
+          text: state.text.string([]),
+          version: state.runtime.snapshot().version,
+        });
+
+        return next();
+      }),
+    ]);
+
+    assert.equal(
+      probeCommandNativeEquivalent(editor, editorCommands.insertText, {
+        text: 'x',
+      }).nativeEquivalent,
+      true
+    );
+
+    editor.update((tx) => {
+      tx.text.insert('x', { at: { offset: 1, path: [0, 0] } });
+      tx.selection.set({ offset: 2, path: [0, 0] });
+    });
+
+    assert.equal(
+      probeCommandNativeEquivalent(editor, editorCommands.insertText, {
+        text: 'y',
+      }).nativeEquivalent,
+      true
+    );
+    assert.deepEqual(observed, [
+      { selectionOffset: 1, text: 'ab', version: 0 },
+      { selectionOffset: 2, text: 'axb', version: 1 },
+    ]);
+  });
+
+  it('keeps cached command state scoped to the dispatching editor view', () => {
+    const observed: string[] = [];
+    const runtime = createEditor({
+      extensions: [
+        defineExtension('test.view-command-state', {
+          commands: ({ around }) => [
+            around(editorCommands.insertText, ({ next, state }) => {
+              observed.push(state.text.string([]));
+
+              return next();
+            }),
+          ],
+        }),
+      ],
+      initialValue: {
+        children: [{ type: 'paragraph', children: [{ text: 'main' }] }],
+        roots: {
+          header: [{ type: 'paragraph', children: [{ text: 'head' }] }],
+        },
+      },
+    });
+    const header = createEditorView(runtime, { root: 'header' });
+
+    assert.equal(
+      probeCommandNativeEquivalent(runtime, editorCommands.insertText, {
+        text: 'x',
+      }).nativeEquivalent,
+      true
+    );
+    assert.equal(
+      probeCommandNativeEquivalent(header, editorCommands.insertText, {
+        text: 'y',
+      }).nativeEquivalent,
+      true
+    );
+    assert.deepEqual(observed, ['main', 'head']);
+  });
+
+  it('marks material and rewritten command results model-owned', () => {
+    const handled = createTextEditor(({ handle }) => [
+      handle(editorCommands.insertText, ({ state }) =>
+        state.transaction((tx) => {
+          tx.text.insert('handled');
+        })
+      ),
+    ]);
+    const rewritten = createTextEditor(({ around }) => [
+      around(editorCommands.insertText, ({ next }) => next({ text: 'y' })),
+    ]);
+    const prefixed = createTextEditor(({ around }) => [
+      around(editorCommands.insertText, ({ next, state }) =>
+        next.after(
+          state.transaction((tx) => {
+            tx.tags.add('prefix');
+          })
+        )
+      ),
+    ]);
+
+    for (const [editor, owner] of [
+      [handled, 'test.commands'],
+      [rewritten, 'test.commands'],
+      [prefixed, 'test.commands'],
+    ] as const) {
+      const evaluation = evaluateCommand(editor, editorCommands.insertText, {
+        text: 'x',
+      });
+
+      assert.equal(evaluation.result === false, false);
+      assert.equal(evaluation.nativeEquivalent, false);
+      assert.deepEqual(evaluation.materialHandlers, [owner]);
+      assert.equal(editor.read.text.string([]), 'ab');
+    }
+  });
+
+  it('probes pass-through handlers against the real default without publishing', () => {
+    const passThrough = createTextEditor(({ around, handle }) => [
+      around(editorCommands.insertText, ({ next }) => next()),
+      handle(editorCommands.insertText, () => false),
+    ]);
+    const consumesDefault = createTextEditor(({ around }) => [
+      around(editorCommands.insertText, ({ next, state }) => {
+        const result = next();
+
+        if (result === false) return false;
+
+        return state.transaction.extend(result, () => {});
+      }),
+    ]);
+
+    assert.deepEqual(
+      probeCommandNativeEquivalent(passThrough, editorCommands.insertText, {
+        text: 'x',
+      }),
+      { materialHandlers: [], nativeEquivalent: true }
+    );
+    assert.deepEqual(
+      probeCommandNativeEquivalent(consumesDefault, editorCommands.insertText, {
+        text: 'x',
+      }),
+      {
+        materialHandlers: ['test.commands'],
+        nativeEquivalent: false,
+      }
+    );
+    assert.equal(passThrough.read.text.string([]), 'ab');
+    assert.equal(consumesDefault.read.text.string([]), 'ab');
+  });
+
+  it('rejects native equivalence when an unhandled default command rejects', () => {
+    const reject = defineCommand<{ text: string }>('test.reject-native', {
+      build: () => false,
+    });
+    const editor = createTextEditor();
+
+    assert.deepEqual(
+      probeCommandNativeEquivalent(editor, reject, { text: 'x' }),
+      {
+        materialHandlers: [],
+        nativeEquivalent: false,
+      }
+    );
+  });
+
+  it('classifies reflective middleware from the real default result', () => {
+    const caughtInspection = createTextEditor(({ around }) => [
+      around(editorCommands.insertText, ({ next }) => {
+        const result = next();
+
+        try {
+          Object.getPrototypeOf(result);
+        } catch {}
+
+        return result;
+      }),
+    ]);
+    const reflectiveInspection = createTextEditor(({ around }) => [
+      around(editorCommands.insertText, ({ next }) => {
+        const result = next();
+
+        try {
+          Object.isExtensible(result);
+        } catch {}
+
+        return result;
+      }),
+    ]);
+    const wrappedInspection = createTextEditor(({ around }) => [
+      around(editorCommands.insertText, ({ next }) => {
+        const result = next();
+
+        try {
+          structuredClone(result);
+        } catch {}
+
+        return result;
+      }),
+    ]);
+
+    for (const editor of [
+      caughtInspection,
+      reflectiveInspection,
+      wrappedInspection,
+    ]) {
+      assert.deepEqual(
+        probeCommandNativeEquivalent(editor, editorCommands.insertText, {
+          text: 'x',
+        }),
+        {
+          materialHandlers: [],
+          nativeEquivalent: true,
+        }
+      );
+    }
+  });
+
   it('builds a frozen spec without publishing or moving anchors', () => {
     const editor = createTextEditor();
     const anchor = editor.anchor(
@@ -250,7 +496,6 @@ describe('pure command transaction specs', () => {
                 false
               );
             }
-
             return evaluate(position + 1, nextInput, true);
           };
           const command = defineCommand<Input>('test.generated-chain', {
@@ -739,6 +984,52 @@ describe('pure command transaction specs', () => {
     });
   });
 
+  it('runs command prepare, handler, and build callbacks inside the read guard', () => {
+    const editor = createTextEditor();
+    const prepareCommand = defineCommand<{ text: string }>(
+      'test.guarded-prepare',
+      {
+        prepare: (input) => {
+          editor.update(() => {});
+
+          return input;
+        },
+      }
+    );
+    const buildCommand = defineCommand<{ text: string }>('test.guarded-build', {
+      build: () => {
+        editor.update(() => {});
+
+        return false;
+      },
+    });
+    const handlerCommand = defineCommand<{ text: string }>(
+      'test.guarded-handler'
+    );
+    let handlerEditor!: Editor<Value>;
+
+    handlerEditor = createTextEditor(({ handle }) => [
+      handle(handlerCommand, () => {
+        handlerEditor.update(() => {});
+
+        return false;
+      }),
+    ]);
+
+    for (const [targetEditor, command] of [
+      [editor, prepareCommand],
+      [editor, buildCommand],
+      [handlerEditor, handlerCommand],
+    ] as const) {
+      assert.throws(
+        () =>
+          probeCommandNativeEquivalent(targetEditor, command, { text: 'x' }),
+        /editor\.update cannot be started inside editor\.read/
+      );
+      assert.equal(targetEditor.read.text.string([]), 'ab');
+    }
+  });
+
   it('replaces an explicit text target independently of the current selection', () => {
     const editor = createEditor({
       initialSelection: SelectionApi.text({
@@ -1144,14 +1435,16 @@ describe('pure command transaction specs', () => {
       createCommandRegistration(insert, 'handle', () => {
         calls.push('base');
         return false as const;
-      })
+      }),
+      'base'
     );
     registerCommandInRegistry(
       configured.commands,
       createCommandRegistration(insert, 'handle', () => {
         calls.push('configured');
         return false as const;
-      })
+      }),
+      'configured'
     );
     initializeBaseExtensionRegistry(editor, finalizeExtensionRegistry(base));
 

@@ -29,6 +29,43 @@ export type ImagePluginState = {
 
 const initialState: ImagePluginState = {};
 
+const isPositiveSafeInteger = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isSafeInteger(value) && value > 0;
+
+const readPositiveNumber = (value: null | string) => {
+  if (value === null) return;
+
+  const parsed = Number(value);
+
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+};
+
+const readPositiveSafeInteger = (value: null | string) => {
+  const parsed = readPositiveNumber(value);
+
+  return isPositiveSafeInteger(parsed) ? parsed : undefined;
+};
+
+const readImageSize = (image: HTMLElement) => {
+  const naturalHeight = readPositiveSafeInteger(
+    image.dataset.plateNaturalHeight ?? null
+  );
+  const naturalWidth = readPositiveSafeInteger(
+    image.dataset.plateNaturalWidth ?? null
+  );
+  const width =
+    image.style.width ||
+    (naturalWidth === undefined
+      ? readPositiveNumber(image.getAttribute('width'))
+      : undefined);
+
+  return {
+    ...(naturalHeight === undefined ? {} : { naturalHeight }),
+    ...(naturalWidth === undefined ? {} : { naturalWidth }),
+    ...(width === undefined ? {} : { width }),
+  };
+};
+
 /** Enables support for images. */
 export const BaseImagePlugin = defineBasePlugin(PLUGINS.image, {
   initialState,
@@ -39,8 +76,14 @@ export const BaseImagePlugin = defineBasePlugin(PLUGINS.image, {
       properties: {
         ...mediaElementProperties,
         alt: property.string(),
-        initialHeight: property.number(),
-        initialWidth: property.number(),
+        naturalHeight: property.number({
+          validate: isPositiveSafeInteger,
+          validationVersion: 1,
+        }),
+        naturalWidth: property.number({
+          validate: isPositiveSafeInteger,
+          validationVersion: 1,
+        }),
         title: property.string(),
       },
     }),
@@ -59,29 +102,14 @@ export const BaseImagePlugin = defineBasePlugin(PLUGINS.image, {
             if (!url) return;
 
             const alt = image.getAttribute('alt');
-            const initialHeight = Number(image.getAttribute('height'));
-            const initialWidth = Number(image.getAttribute('width'));
-            const width = image.style.width || undefined;
-
             return {
               ...(alt === null ? {} : { alt }),
-              ...(Number.isFinite(initialHeight) && initialHeight > 0
-                ? { initialHeight }
-                : {}),
-              ...(Number.isFinite(initialWidth) && initialWidth > 0
-                ? { initialWidth }
-                : {}),
-              ...(width === undefined ? {} : { width }),
+              ...readImageSize(image),
               url,
             };
           },
           encode: ({ content, node }) => {
-            if (
-              typeof node.url !== 'string' ||
-              node.url.length === 0 ||
-              node.isUpload !== undefined ||
-              node.name !== undefined
-            ) {
+            if (typeof node.url !== 'string' || node.url.length === 0) {
               return null;
             }
 
@@ -91,9 +119,11 @@ export const BaseImagePlugin = defineBasePlugin(PLUGINS.image, {
                 {
                   attributes: {
                     alt: node.alt,
-                    height: node.initialHeight,
+                    'data-plate-natural-height': node.naturalHeight,
+                    'data-plate-natural-width': node.naturalWidth,
+                    height: node.naturalHeight,
                     src: node.url,
-                    width: node.initialWidth,
+                    width: node.naturalWidth,
                   },
                   style: {
                     width:
@@ -120,20 +150,10 @@ export const BaseImagePlugin = defineBasePlugin(PLUGINS.image, {
             if (!url) return;
 
             const alt = element.getAttribute('alt');
-            const initialHeight = Number(element.getAttribute('height'));
-            const initialWidth = Number(element.getAttribute('width'));
-            const width = element.style.width || undefined;
-
             return {
               ...(alt === null ? {} : { alt }),
               children: [{ text: '' }],
-              ...(Number.isFinite(initialHeight) && initialHeight > 0
-                ? { initialHeight }
-                : {}),
-              ...(Number.isFinite(initialWidth) && initialWidth > 0
-                ? { initialWidth }
-                : {}),
-              ...(width === undefined ? {} : { width }),
+              ...readImageSize(element),
               url,
             };
           },

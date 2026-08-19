@@ -237,9 +237,9 @@ describe('plite-react projections and selection contract', () => {
     };
 
     render(
-      <ProjectionContext.Provider value={store}>
+      <ProjectionContext value={store}>
         <Harness />
-      </ProjectionContext.Provider>
+      </ProjectionContext>
     );
 
     act(() => {
@@ -658,6 +658,9 @@ describe('plite-react projections and selection contract', () => {
       <Plite decorationSources={[store]} editor={editor}>
         <Editable
           renderLeaf={({ children, leaf, leafPosition, segment }) => {
+            if (!leafPosition) {
+              throw new Error('Projected leaves require a leaf position.');
+            }
             const payloads = segment.slices
               .flatMap((slice) =>
                 Object.keys(
@@ -670,10 +673,9 @@ describe('plite-react projections and selection contract', () => {
               <span
                 data-leaf={JSON.stringify({
                   bold: Boolean((leaf as { bold?: boolean }).bold),
-                  end: leafPosition?.end ?? segment.end,
+                  end: leafPosition.end,
                   payloads,
-                  start: leafPosition?.start ?? segment.start,
-                  text: leaf.text,
+                  start: leafPosition.start,
                 })}
               >
                 {children}
@@ -694,21 +696,18 @@ describe('plite-react projections and selection contract', () => {
         end: 6,
         payloads: ['comment'],
         start: 0,
-        text: 'Hello ',
       },
       {
         bold: true,
         end: 11,
         payloads: ['comment', 'spelling'],
         start: 6,
-        text: 'world',
       },
       {
         bold: true,
         end: 12,
         payloads: ['spelling'],
         start: 11,
-        text: '!',
       },
     ]);
 
@@ -1135,10 +1134,10 @@ describe('plite-react projections and selection contract', () => {
     };
 
     const rendered = render(
-      <ProjectionContext.Provider value={store}>
+      <ProjectionContext value={store}>
         <ProjectionProbe label="first" nodeKey={firstNodeKey} />
         <ProjectionProbe label="second" nodeKey={secondNodeKey} />
-      </ProjectionContext.Provider>
+      </ProjectionContext>
     );
 
     expect(rendered.getByTestId('first').textContent).toBe('0');
@@ -1223,9 +1222,9 @@ describe('plite-react projections and selection contract', () => {
     };
 
     const rendered = render(
-      <ProjectionContext.Provider value={store}>
+      <ProjectionContext value={store}>
         <ProjectionProbe />
-      </ProjectionContext.Provider>
+      </ProjectionContext>
     );
 
     expect(rendered.getByTestId('first-decoration').textContent).toBe('A');

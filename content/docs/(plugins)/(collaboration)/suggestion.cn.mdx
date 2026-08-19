@@ -1,11 +1,11 @@
 ---
 title: 建议功能
 docs:
-  - route: /docs/components/suggestion-node
+  - route: /docs/components/suggestion
     title: 建议文本节点
   - route: /docs/components/suggestion-toolbar-button
     title: 建议工具栏按钮
-  - route: /docs/components/block-suggestion
+  - route: /docs/components/block-discussion
     title: 区块建议
   - route: /docs/components/block-discussion
     title: 区块讨论
@@ -33,17 +33,17 @@ docs:
 
 最快捷的添加建议功能方式是使用 `SuggestionKit`，它包含预配置的 `SuggestionPlugin` 及相关组件，以及它们的 [Plate UI](/docs/installation/plate-ui) 组件。
 
-<ComponentSource name="suggestion-kit" />
+<ComponentSource name="suggestion" />
 
-- [`SuggestionLeaf`](/docs/components/suggestion-node)：渲染建议文本标记
-- [`BlockSuggestion`](/docs/components/block-suggestion)：渲染区块级建议
-- [`SuggestionLineBreak`](/docs/components/suggestion-node)：处理建议中的换行符
+- [`SuggestionLeaf`](/docs/components/suggestion)：渲染建议文本标记
+- [`BlockSuggestion`](/docs/components/block-discussion)：渲染区块级建议
+- [`SuggestionLineBreak`](/docs/components/suggestion)：处理建议中的换行符
 
 ### 添加套件
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { SuggestionKit } from '@/components/editor/plugins/suggestion-kit';
+import { SuggestionKit } from '@/components/editor/suggestion';
 
 const editor = createPlateEditor({
   plugins: [
@@ -72,8 +72,8 @@ npm install @platejs/suggestion @platejs/plite-dom
 ```tsx
 import { isEditor, isElement, isString } from '@platejs/plite-dom';
 import { SuggestionPlugin } from '@platejs/suggestion/react';
-import { BlockSuggestion } from '@/components/ui/block-suggestion';
-import { SuggestionLeaf } from '@/components/ui/suggestion-node';
+import { BlockSuggestion } from '@/components/editor/block-discussion';
+import { SuggestionLeaf } from '@/components/editor/suggestion';
 
 export const suggestionPlugin = SuggestionPlugin.configure({
   component: SuggestionLeaf,
@@ -95,8 +95,8 @@ export const suggestionPlugin = SuggestionPlugin.configure({
 - `SuggestionPlugin` 拥有渲染器使用的当前活跃和悬停建议状态
 - `initialState.currentUserId`：创建建议的当前用户ID
 - `.configure({ component: SuggestionLeaf })`：使用
-  [`SuggestionLeaf`](/docs/components/suggestion-node) 渲染建议文本标记
-- `render.belowRootNodes`：为区块级建议渲染 [`BlockSuggestion`](/docs/components/block-suggestion)
+  [`SuggestionLeaf`](/docs/components/suggestion) 渲染建议文本标记
+- `render.belowRootNodes`：为区块级建议渲染 [`BlockSuggestion`](/docs/components/block-discussion)
 
 ### 添加点击处理器
 
@@ -158,7 +158,7 @@ export const suggestionPlugin = SuggestionPlugin.configure({
 
 ```tsx
 import { createPlateEditor, definePlatePlugin } from 'platejs/react';
-import { SuggestionLineBreak } from '@/components/ui/suggestion-node';
+import { SuggestionLineBreak } from '@/components/editor/suggestion';
 
 const suggestionLineBreakPlugin = definePlatePlugin('suggestionLineBreak', {
   render: { belowNodes: SuggestionLineBreak as any },
@@ -173,7 +173,7 @@ const editor = createPlateEditor({
 });
 ```
 
-- `render.belowNodes`：渲染 [`SuggestionLineBreak`](/docs/components/suggestion-node) 处理建议中的换行符
+- `render.belowNodes`：渲染 [`SuggestionLineBreak`](/docs/components/suggestion) 处理建议中的换行符
 
 ### 启用建议模式
 

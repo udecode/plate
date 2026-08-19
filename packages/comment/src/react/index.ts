@@ -3,4 +3,3 @@
  */
 
 export * from './CommentPlugin';
-export * from './useCommentId';

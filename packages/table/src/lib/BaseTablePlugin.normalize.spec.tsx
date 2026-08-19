@@ -11,11 +11,13 @@ import {
 jsxt;
 
 describe('BaseTablePlugin normalization', () => {
-  describe('initialTableWidth is defined and colSizes is not defined', () => {
+  describe('initialTableWidth is defined and columnWidths is not defined', () => {
     it.each([
       { disableMerge: true },
       { disableMerge: false },
-    ])('sets colSizes (disableMerge: $disableMerge)', ({ disableMerge }) => {
+    ])('sets columnWidths (disableMerge: $disableMerge)', ({
+      disableMerge,
+    }) => {
       const input = (
         <fragment>
           <htable>
@@ -51,7 +53,7 @@ describe('BaseTablePlugin normalization', () => {
 
       const output = (
         <fragment>
-          <htable colSizes={[30, 30, 30]}>
+          <htable columnWidths={[30, 30, 30]}>
             <htr>
               <htd>
                 <hp>
@@ -95,100 +97,16 @@ describe('BaseTablePlugin normalization', () => {
     });
   });
 
-  describe('initialTableWidth is defined and colSizes is partially defined', () => {
+  describe('initialTableWidth is defined and columnWidths is partially defined', () => {
     it.each([
       { disableMerge: true },
       { disableMerge: false },
-    ])('sets colSizes (disableMerge: $disableMerge)', ({ disableMerge }) => {
-      const input = (
-        <fragment>
-          <htable colSizes={[0, 40, 0]}>
-            <htr>
-              <htd>
-                <hp>
-                  <htext />
-                </hp>
-              </htd>
-              <htd>
-                <hp>11</hp>
-              </htd>
-              <htd>
-                <hp>12</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd>
-                <hp>
-                  <cursor />
-                </hp>
-              </htd>
-              <htd>
-                <hp>21</hp>
-              </htd>
-              <htd>
-                <hp>22</hp>
-              </htd>
-            </htr>
-          </htable>
-        </fragment>
-      ) as Value;
-
-      const output = (
-        <fragment>
-          <htable colSizes={[30, 40, 30]}>
-            <htr>
-              <htd>
-                <hp>
-                  <htext />
-                </hp>
-              </htd>
-              <htd>
-                <hp>11</hp>
-              </htd>
-              <htd>
-                <hp>12</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd>
-                <hp>
-                  <cursor />
-                </hp>
-              </htd>
-              <htd>
-                <hp>21</hp>
-              </htd>
-              <htd>
-                <hp>22</hp>
-              </htd>
-            </htr>
-          </htable>
-        </fragment>
-      ) as Value;
-
-      const editor = createTestTableEditor({
-        plugins: getTestTablePlugins({
-          disableMerge,
-          initialTableWidth: 90,
-        }),
-        initialValue: input,
-      });
-
-      editor.update.value.repair();
-      expect(editor.read.children()).toMatchObject(output);
-    });
-  });
-
-  describe('initialTableWidth is defined and colSizes is fully defined', () => {
-    it.each([
-      { disableMerge: true },
-      { disableMerge: false },
-    ])('keeps existing colSizes when every column width is already defined (disableMerge: $disableMerge)', ({
+    ])('sets columnWidths (disableMerge: $disableMerge)', ({
       disableMerge,
     }) => {
       const input = (
         <fragment>
-          <htable colSizes={[40, 40, 40]}>
+          <htable columnWidths={[null, 40, null]}>
             <htr>
               <htd>
                 <hp>
@@ -221,7 +139,93 @@ describe('BaseTablePlugin normalization', () => {
 
       const output = (
         <fragment>
-          <htable colSizes={[40, 40, 40]}>
+          <htable columnWidths={[30, 40, 30]}>
+            <htr>
+              <htd>
+                <hp>
+                  <htext />
+                </hp>
+              </htd>
+              <htd>
+                <hp>11</hp>
+              </htd>
+              <htd>
+                <hp>12</hp>
+              </htd>
+            </htr>
+            <htr>
+              <htd>
+                <hp>
+                  <cursor />
+                </hp>
+              </htd>
+              <htd>
+                <hp>21</hp>
+              </htd>
+              <htd>
+                <hp>22</hp>
+              </htd>
+            </htr>
+          </htable>
+        </fragment>
+      ) as Value;
+
+      const editor = createTestTableEditor({
+        plugins: getTestTablePlugins({
+          disableMerge,
+          initialTableWidth: 90,
+        }),
+        initialValue: input,
+      });
+
+      editor.update.value.repair();
+      expect(editor.read.children()).toMatchObject(output);
+    });
+  });
+
+  describe('initialTableWidth is defined and columnWidths is fully defined', () => {
+    it.each([
+      { disableMerge: true },
+      { disableMerge: false },
+    ])('keeps existing columnWidths when every column width is already defined (disableMerge: $disableMerge)', ({
+      disableMerge,
+    }) => {
+      const input = (
+        <fragment>
+          <htable columnWidths={[40, 40, 40]}>
+            <htr>
+              <htd>
+                <hp>
+                  <htext />
+                </hp>
+              </htd>
+              <htd>
+                <hp>11</hp>
+              </htd>
+              <htd>
+                <hp>12</hp>
+              </htd>
+            </htr>
+            <htr>
+              <htd>
+                <hp>
+                  <cursor />
+                </hp>
+              </htd>
+              <htd>
+                <hp>21</hp>
+              </htd>
+              <htd>
+                <hp>22</hp>
+              </htd>
+            </htr>
+          </htable>
+        </fragment>
+      ) as Value;
+
+      const output = (
+        <fragment>
+          <htable columnWidths={[40, 40, 40]}>
             <htr>
               <htd>
                 <hp>
@@ -269,7 +273,7 @@ describe('BaseTablePlugin normalization', () => {
     it.each([
       { disableMerge: true },
       { disableMerge: false },
-    ])('unsets colSizes for single-column tables (disableMerge: $disableMerge)', ({
+    ])('unsets columnWidths for single-column tables (disableMerge: $disableMerge)', ({
       disableMerge,
     }) => {
       const editor = createTestTableEditor({
@@ -279,7 +283,7 @@ describe('BaseTablePlugin normalization', () => {
         }),
         initialValue: (
           <fragment>
-            <htable colSizes={[120]}>
+            <htable columnWidths={[120]}>
               <htr>
                 <htd>
                   <hp>cell</hp>

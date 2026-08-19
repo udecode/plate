@@ -116,7 +116,7 @@ export function PlateUiReleaseUpdates({
 
 function AgentSyncSection({ index }: { index: RegistryChangelogIndex }) {
   const latestEvent = index.events[0];
-  const latestTarget = latestEvent?.targets[0] ?? 'code-block-node';
+  const latestTarget = latestEvent?.targets[0] ?? 'code-block';
   const latestHref = latestEvent?.href ?? indexHref;
   const prompt = `Use sync-plate-ui to sync \`${latestTarget}\` from:\nhttps://platejs.org${latestHref}`;
 

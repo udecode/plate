@@ -78,7 +78,7 @@ export const BaseCommentPlugin = defineBasePlugin(PLUGINS.comment, {
 
     return {
       api: () => ({
-        id: (leaf: Text) => {
+        id: (leaf: Omit<Text, 'text'>) => {
           const keys = Object.keys(leaf);
 
           if (keys.includes(getDraftCommentKey())) return;

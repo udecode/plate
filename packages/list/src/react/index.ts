@@ -3,5 +3,3 @@
  */
 
 export * from './ListPlugin';
-export * from './useListToolbarButton';
-export * from './useTodoListElement';

@@ -2,6 +2,8 @@
 "@platejs/footnote": major
 ---
 
+Require React and React DOM 19.2 or newer.
+
 Export `FootnotePluginState` as the complete mutable state contract for
 `BaseFootnotePlugin`.
 
@@ -19,3 +21,8 @@ navigation, insertion, definition creation, and duplicate normalization are
 owned by the plugin instead of exported editor/transaction helper functions.
 The plugin capability is `footnote`; reference elements persist under the
 semantic schema type `footnoteReference`.
+
+Persist one required `ref` on both footnote definitions and references. Rename
+query and update inputs from `identifier` to `ref`, `identifiers()` to `refs()`,
+and `nextId()` to `nextRef()`. Markdown codecs continue mapping that field to
+MDAST `identifier`.

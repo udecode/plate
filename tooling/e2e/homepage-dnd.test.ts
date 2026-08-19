@@ -58,9 +58,11 @@ test.describe('homepage block drag', () => {
       const introBlock = page.locator(`[data-block-id="${introBlockId}"]`);
 
       await welcomeBlock.hover();
-      const dragHandle = page.locator(
-        '[data-plate-block-drag-handle="static-0001"]'
-      );
+      const dragHandle = page
+        .locator('.plite-blockWrapper')
+        .filter({ has: welcomeBlock })
+        .locator('..')
+        .getByRole('button', { name: 'Drag block' });
       const introBox = await introBlock.boundingBox();
 
       if (!introBox) throw new Error('Expected a visible intro block');

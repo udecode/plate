@@ -1,7 +1,7 @@
 import { BaseItalicPlugin } from '@platejs/basic-nodes';
 import { renderStaticHtml } from 'platejs/static';
 
-import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
+import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 import { createStaticEditor } from './create-static-editor';
 
 describe('core static renderStaticHtml attributes', () => {

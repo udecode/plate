@@ -1,7 +1,7 @@
 ---
 title: 代码块
 docs:
-  - route: /docs/components/code-block-node
+  - route: /docs/components/code-block
     title: 代码块元素
 ---
 
@@ -27,11 +27,11 @@ docs:
 
 最快捷添加代码块功能的方式是使用 `CodeBlockKit`。它组合了 `CodeBlockPlugin`、必需的 `CodeLinePlugin`，以及可移除的 `CodeHighlightPlugin`，并带上三反引号 input rule 和 [Plate UI](/docs/installation/plate-ui) 组件。
 
-<ComponentSource name="code-block-kit" />
+<ComponentSource name="code-block" />
 
-- [`CodeBlockElement`](/docs/components/code-block-node): 渲染代码块容器
-- [`CodeLineElement`](/docs/components/code-block-node): 渲染单行代码
-- [`CodeSyntaxLeaf`](/docs/components/code-block-node): 渲染语法高亮文本
+- [`CodeBlockElement`](/docs/components/code-block): 渲染代码块容器
+- [`CodeLineElement`](/docs/components/code-block): 渲染单行代码
+- [`CodeSyntaxLeaf`](/docs/components/code-block): 渲染语法高亮文本
 
 ### 添加套件
 
@@ -39,7 +39,7 @@ docs:
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { CodeBlockKit } from '@/components/editor/plugins/code-block-kit';
+import { CodeBlockKit } from '@/components/editor/code-block';
 
 const editor = createPlateEditor({
   plugins: [
@@ -88,7 +88,7 @@ import { CodeBlockRules } from '@platejs/code-block';
 import { CodeBlockPlugin, CodeHighlightPlugin, CodeLinePlugin } from '@platejs/code-block/react';
 import { all, createLowlight } from 'lowlight';
 import { createPlateEditor } from 'platejs/react';
-import { CodeBlockElement, CodeLineElement, CodeSyntaxLeaf } from '@/components/ui/code-block-node';
+import { CodeBlockElement, CodeLineElement, CodeSyntaxLeaf } from '@/components/editor/code-block';
 
 // 创建包含所有语言的 lowlight 实例
 const lowlight = createLowlight(all);
@@ -151,7 +151,7 @@ const editor = createPlateEditor({
 ```
 
 - `CodeBlockPlugin.configure({ component })`：使用
-  [`CodeBlockElement`](/docs/components/code-block-node) 渲染代码块容器
+  [`CodeBlockElement`](/docs/components/code-block) 渲染代码块容器
 - `inputRules`：注册三反引号围栏规则。`on: 'match'` 表示围栏完成时立即提交，`on: 'break'` 表示围栏完成后按 `Enter` 再提交。
 - `CodeHighlightPlugin.initialState.lowlight`: 用于语法高亮的 lowlight 实例
 - `CodeHighlightPlugin.initialState.defaultLanguage`: 未指定语言时使用的默认语言

@@ -1,4 +1,4 @@
-import type { Editor } from '@/registry/components/editor/editor.generated';
+import type { Editor } from '@/registry/components/editor/plugins.generated';
 
 type Assert<T extends true> = T;
 type AssertNever<T extends never> = T;
@@ -13,7 +13,6 @@ type ExpectedEditorApiKeys =
   | 'csv'
   | 'cursorOverlay'
   | 'debug'
-  | 'docxIO'
   | 'dom'
   | 'elementState'
   | 'file'

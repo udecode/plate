@@ -10,7 +10,7 @@ import type {
   InferPluginDecoration,
 } from '../lib/plugin/PluginDefinition';
 import type { RenderElementProps } from '../lib/types/RenderElementProps';
-import type { RenderLeafProps } from '../lib/types/RenderLeafProps';
+import type { StaticRenderLeafProps } from '../lib/types/RenderLeafProps';
 import type { RenderTextProps } from '../lib/types/RenderTextProps';
 
 export type BoxStaticProps = React.ComponentProps<'div'> & {
@@ -26,7 +26,7 @@ export type PliteRenderLeafProps<
   N extends Text = Text,
   C extends BasePluginDefinition = BasePluginDefinition,
 > = PliteRenderNodeProps<C> &
-  RenderLeafProps<N, N & Partial<InferPluginDecoration<NoInfer<C>>>>;
+  StaticRenderLeafProps<N, N & Partial<InferPluginDecoration<NoInfer<C>>>>;
 
 type ErasedBasePluginContext = AnyBasePluginContext;
 

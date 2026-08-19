@@ -4,7 +4,7 @@ description: AI-powered text completion suggestions.
 docs:
   - route: https://pro.platejs.org/docs/examples/copilot
     title: Plus
-  - route: /docs/components/ghost-text
+  - route: /docs/components/copilot
     title: Ghost Text
 ---
 
@@ -31,15 +31,15 @@ docs:
 
 The fastest way to add Copilot functionality is with the `CopilotKit`, which includes pre-configured `CopilotPlugin` along with `MarkdownKit` and their [Plate UI](/docs/installation/plate-ui) components.
 
-<ComponentSource name="copilot-kit" />
+<ComponentSource name="copilot" />
 
-- [`GhostText`](/docs/components/ghost-text): Renders the ghost text suggestions.
+- [`GhostText`](/docs/components/copilot): Renders the ghost text suggestions.
 
 ### Add Kit
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { CopilotKit } from '@/components/editor/plugins/copilot-kit';
+import { CopilotKit } from '@/components/editor/copilot';
 
 const editor = createPlateEditor({
   plugins: [
@@ -112,7 +112,7 @@ import {
   MarkdownPlugin,
   stripMarkdown,
 } from '@platejs/markdown';
-import { GhostText } from '@/components/ui/ghost-text';
+import { GhostText } from '@/components/editor/copilot';
 
 const plugins = [
   // ...otherPlugins,
@@ -152,8 +152,8 @@ const plugins = [
 ];
 ```
 
-- `completeOptions`: Configures the Vercel AI SDK `useCompletion` hook.
-  - `api`: The endpoint for your AI completion route.
+- `completeOptions`: Configures the completion transport.
+  - `api`: Required endpoint for your AI completion route.
   - `onError`: A callback for handling errors (used for mocking during development).
   - `onFinish`: A callback to handle the completed suggestion. Here, it sets the suggestion in the editor.
 - `debounceDelay`: The delay in milliseconds for auto-triggering suggestions after the user stops typing.
@@ -422,8 +422,8 @@ Plugin for AI-powered text completion suggestions.
       - Block above ends with a space
       - No existing suggestion
   </APIItem>
-  <APIItem name="completeOptions" type="Partial<CompleteOptions>">
-    AI completion configuration options. See [AI SDK useCompletion Parameters](https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-completion#parameters).
+  <APIItem name="completeOptions" type="CopilotCompleteOptions | null">
+    AI completion transport. Configure an explicit `api` before triggering a completion.
   </APIItem>
   <APIItem name="debounceDelay" type="number" optional>
     Delay for debouncing auto-triggered suggestions.

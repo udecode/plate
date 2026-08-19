@@ -1,21 +1,21 @@
 ---
 title: 媒体组件
 docs:
-  - route: /docs/components/media-image-node
+  - route: /docs/components/media-image
     title: 图片元素
-  - route: /docs/components/media-video-node
+  - route: /docs/components/media-video
     title: 视频元素
-  - route: /docs/components/media-audio-node
+  - route: /docs/components/media-audio
     title: 音频元素
-  - route: /docs/components/media-file-node
+  - route: /docs/components/media-file
     title: 文件元素
-  - route: /docs/components/media-embed-node
+  - route: /docs/components/media-embed
     title: 媒体嵌入元素
   - route: /docs/components/media-toolbar
     title: 媒体弹出框
-  - route: /docs/components/media-placeholder-node
+  - route: /docs/components/media-placeholder
     title: 媒体占位元素
-  - route: /docs/components/media-upload-toast
+  - route: /docs/components/media
     title: 媒体上传提示
   - route: /docs/components/media-toolbar-button
     title: 媒体工具栏按钮
@@ -73,15 +73,15 @@ docs:
 `VideoPlugin`、`AudioPlugin`、`FilePlugin`、`MediaEmbedPlugin` 和
 `PlaceholderPlugin`，以及对应的 [Plate UI](/docs/installation/plate-ui) 组件。
 
-<ComponentSource name="media-kit" />
+<ComponentSource name="media" />
 
-- [`ImageElement`](/docs/components/media-image-node): 渲染图片元素
-- [`VideoElement`](/docs/components/media-video-node): 渲染视频元素
-- [`AudioElement`](/docs/components/media-audio-node): 渲染音频元素
-- [`FileElement`](/docs/components/media-file-node): 渲染文件元素
-- [`MediaEmbedElement`](/docs/components/media-embed-node): 渲染嵌入媒体
-- [`PlaceholderElement`](/docs/components/media-placeholder-node): 渲染上传占位符
-- [`MediaUploadToast`](/docs/components/media-upload-toast): 显示上传进度通知
+- [`ImageElement`](/docs/components/media-image): 渲染图片元素
+- [`VideoElement`](/docs/components/media-video): 渲染视频元素
+- [`AudioElement`](/docs/components/media-audio): 渲染音频元素
+- [`FileElement`](/docs/components/media-file): 渲染文件元素
+- [`MediaEmbedElement`](/docs/components/media-embed): 渲染嵌入媒体
+- [`PlaceholderElement`](/docs/components/media-placeholder): 渲染上传占位符
+- [`MediaUploadToast`](/docs/components/media): 显示上传进度通知
 - [`MediaPreviewDialog`](/docs/components/media-preview-dialog): 提供媒体预览功能
 
 ### 添加套件
@@ -90,7 +90,7 @@ docs:
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { MediaKit } from '@/components/editor/plugins/media-kit';
+import { MediaKit } from '@/components/editor/media';
 
 const editor = createPlateEditor({
   plugins: [
@@ -173,8 +173,8 @@ import {
   MediaEmbedElement, 
   PlaceholderElement, 
   VideoElement 
-} from '@/components/ui/media-nodes';
-import { MediaUploadToast } from '@/components/ui/media-upload-toast';
+} from '@/components/editor/media-nodes';
+import { MediaUploadToast } from '@/components/editor/media';
 
 const editor = createPlateEditor({
   plugins: [
@@ -207,7 +207,7 @@ const editor = createPlateEditor({
 
 ```tsx
 import { ImagePlugin } from '@platejs/media/react';
-import { ImageElement } from '@/components/ui/media-image-node';
+import { ImageElement } from '@/components/editor/media-image';
 
 export const MediaKit = [
   ImagePlugin.configure({ component: ImageElement }),
@@ -387,7 +387,10 @@ export function PlaceholderElement({
         tx.nodes.insert(
           {
             children: [{ text: '' }],
-            isUpload: true,
+            provider:
+              element.mediaType === editor.plugin(PLUGINS.video).schema.type
+                ? 'file'
+                : undefined,
             name:
               file.installed && element.mediaType === file.schema.type
                 ? uploadedFile.name
@@ -491,7 +494,7 @@ export function PlaceholderElement({
 <API name="PlaceholderPlugin">
 <APIOptions type="object">
   <APIItem name="uploadConfig" type="Partial<Record<AllowedFileType, MediaItemConfig>>" optional>
-不同文件类型的配置。默认配置:
+不同文件类型的配置。包默认把每个受支持的文件类别映射到对应媒体插件，且不设置大小或分类数量限制。复制的 `MediaKit` 使用以下产品策略：
 ```ts
 {
   audio: {
@@ -558,7 +561,7 @@ export function PlaceholderElement({
 </APIItem>
 <APIItem name="maxFileCount" type="number" optional>
 如果`uploadConfig`未指定，可一次上传的最大文件数。
-- **默认:** `5`
+- **默认:** `Number.POSITIVE_INFINITY`
 </APIItem>
 <APIItem name="multiple" type="boolean" optional>
 允许上传多个相同类型的文件。
@@ -743,184 +746,19 @@ enum UploadErrorCode {
 </APIOptions>
 </API>
 
-## Hooks
+## Registry Media UI
 
-### `useResizable`
+`media-toolbar` 负责 URL 编辑、提交、取消和焦点恢复。
+每个复制的媒体节点直接读取其类型化元素和编辑器原语状态。
+`media-image` 渲染图片并打开 `media-preview-dialog`；预览对话框负责导航、缩放、平移和下载。
 
-处理媒体元素的可调整大小属性。
+<ComponentSource name="media-toolbar" />
+<ComponentSource name="media-image" />
+<ComponentSource name="media-preview-dialog" />
 
-<API name="useResizable">
-<APIState>
-  <APIItem name="align" type="'left' | 'center' | 'right'">
-    可调整大小元素内容的对齐方式。
-  </APIItem>
-  <APIItem name="minWidth" type="ResizeLength">
-    可调整大小元素可以调整到的最小宽度。
-  </APIItem>
-  <APIItem name="maxWidth" type="ResizeLength">
-    可调整大小元素可以调整到的最大宽度。
-  </APIItem>
-  <APIItem name="onResizeEnd" type="((width: ResizeLength) => void) | undefined">
-    媒体所有者提供的提交回调。
-  </APIItem>
-  <APIItem name="setWidth" type="(width: number | string) => void">
-    直接设置可调整大小元素宽度的函数。
-  </APIItem>
-  <APIItem name="width" type="Property.Width<string | number> | undefined">
-    可调整大小元素的当前宽度（百分比、'auto' 或像素）。
-  </APIItem>
-</APIState>
-
-<APIReturns type="object">
-  <APIItem name="wrapperRef" type="React.RefObject<HTMLDivElement>">
-    最外层包装 div 的 React 引用。
-  </APIItem>
-  <APIItem name="wrapperProps.style" type="CSSProperties">
-    包装 div 的 CSS 样式。
-  </APIItem>
-  <APIItem name="props.style" type="CSSProperties">
-    可调整大小元素的 CSS 样式。
-  </APIItem>
-  <APIItem name="context.onResize" type="(event: ResizeEvent) => void">
-    拖动期间更新预览宽度，并在完成时通过 `onResizeEnd` 提交。
-  </APIItem>
-  <APIItem name="context.nudgeWidth" type="(delta: number) => void">
-    限制并提交一次键盘调整步长。
-  </APIItem>
-</APIReturns>
-</API>
-
-可调整大小包负责指针和键盘计算，不负责文档写入。图片 UI 通过
-`editor.plugin(ImagePlugin).update.set({ width }, { at: element })` 提交。
-
-### `useMediaState`
-
-媒体元素的状态钩子。
-
-<API name="useMediaState">
-<APIParameters>
-  <APIItem name="plugin" type="MediaPlugin" required>
-    当前渲染元素对应的图片、视频、音频、文件或嵌入插件。
-  </APIItem>
-  <APIItem name="options.urlParsers" type="EmbedUrlParser[]" optional>
-    用于解析媒体元素 URL 的 URL 解析器数组。
-    - **`EmbedUrlParser`:** `(url: string) => EmbedUrlData | undefined`
-  </APIItem>
-</APIParameters>
-
-<APIReturns type="object">
-  <APIItem name="textAlign" type="'center' | 'left' | 'right' | undefined">
-    媒体元素的对齐方式。
-  </APIItem>
-  <APIItem name="embed" type="EmbedUrlData | undefined">
-    媒体元素的解析嵌入数据。
-  </APIItem>
-  <APIItem name="focused" type="boolean">
-    媒体元素是否当前获得焦点。
-  </APIItem>
-  <APIItem name="isTweet" type="boolean">
-    媒体元素是否为推文。
-  </APIItem>
-  <APIItem name="isUpload" type="boolean | undefined">
-    媒体元素是否表示上传。
-  </APIItem>
-  <APIItem name="isVideo" type="boolean">
-    媒体元素是否为视频。
-  </APIItem>
-  <APIItem name="isYoutube" type="boolean">
-    媒体元素是否为 YouTube 视频。
-  </APIItem>
-  <APIItem name="name" type="string | undefined">
-    媒体文件名。
-  </APIItem>
-  <APIItem name="readOnly" type="boolean">
-    编辑器是否处于只读模式。
-  </APIItem>
-  <APIItem name="selected" type="boolean">
-    媒体元素是否当前被选中。
-  </APIItem>
-  <APIItem name="unsafeUrl" type="string">
-    元素中存储的未转义媒体 URL。
-  </APIItem>
-</APIReturns>
-</API>
-
-### `useMediaToolbarButton`
-
-媒体工具栏按钮的行为钩子。
-
-<API name="useMediaToolbarButton">
-<APIParameters>
-  <APIItem name="options.nodeType" type="string" optional>
-    要插入的媒体节点类型。
-  </APIItem>
-</APIParameters>
-
-<APIReturns type="object">
-  <APIItem name="props.onClick" type="() => Promise<void>">
-    提示输入 URL 并插入所需媒体节点。
-  </APIItem>
-</APIReturns>
-</API>
-
-### `useFloatingMediaEditButton`
-
-处理浮动媒体编辑按钮。
-
-<API name="useFloatingMediaEditButton">
-<APIParameters>
-  <APIItem name="options.plugin" type="MediaPlugin" required>
-    当前渲染元素对应的媒体插件。
-  </APIItem>
-</APIParameters>
-<APIReturns type="object">
-  <APIItem name="props.onClick" type="() => void">
-    处理按钮点击的回调函数。
-  </APIItem>
-</APIReturns>
-</API>
-
-### `useFloatingMediaUrlInput`
-
-处理媒体元素的 URL 输入字段。
-
-<API name="useFloatingMediaUrlInput">
-<APIProps>
-  <APIItem name="defaultValue" type="string">
-    URL 输入字段的默认值。
-  </APIItem>
-</APIProps>
-
-<APIReturns type="object">
-  <APIItem name="props.onChange" type="() => void">
-    处理输入变化的回调函数。
-  </APIItem>
-  <APIItem name="props.autoFocus" type="boolean">
-    URL 输入字段是否应在挂载时获得焦点。
-  </APIItem>
-  <APIItem name="props.defaultValue" type="string">
-    URL 输入字段的默认值。
-  </APIItem>
-</APIReturns>
-</API>
-
-### `useImage`
-
-图片元素的钩子。
-
-<API name="useImage">
-<APIReturns type="object">
-  <APIItem name="props.src" type="string">
-    媒体元素的 URL。
-  </APIItem>
-  <APIItem name="props.draggable" type="boolean">
-    图片是否可拖动。
-  </APIItem>
-  <APIItem name="props.onDoubleClickCapture" type="() => void">
-    打开图片预览。
-  </APIItem>
-</APIReturns>
-</API>
+可调整大小的媒体直接组合 [`@platejs/resizable`](/docs/api/resizable) 的
+`Resizable` 和 `ResizeHandle`。媒体 renderer 通过 scoped plugin update
+提交最终宽度。
 
 ## 工具函数
 

@@ -1,6 +1,6 @@
 import type { Registry } from 'shadcn/schema';
 
-import { registryKits } from './registry-kits';
+import { registryFeatures } from './registry-features';
 
 const registryApi: Registry['items'] = [
   {
@@ -64,9 +64,10 @@ const registryApi: Registry['items'] = [
     name: 'ai-api',
     registryDependencies: [
       '@plate/copilot-api',
-      '@plate/editor-base-kit',
+      '@plate/editor-static',
       '@plate/markdown-joiner-transform',
       '@plate/use-chat',
+      '@plate/editor-plugins-static',
     ],
     type: 'registry:file',
   },
@@ -99,7 +100,7 @@ const registryApi: Registry['items'] = [
 ];
 
 export const registryComponents: Registry['items'] = [
-  ...registryKits,
+  ...registryFeatures,
   ...registryApi,
   {
     dependencies: ['@platejs/ai'],
@@ -111,7 +112,7 @@ export const registryComponents: Registry['items'] = [
     ],
     name: 'settings-dialog',
     registryDependencies: [
-      '@plate/ai-kit',
+      '@plate/ai',
       'button',
       'command',
       'dialog',
@@ -140,7 +141,7 @@ export const registryComponents: Registry['items'] = [
       },
     ],
     name: 'use-chat',
-    registryDependencies: ['@plate/discussion-kit'],
+    registryDependencies: ['@plate/discussion'],
     type: 'registry:component',
   },
   {
@@ -169,6 +170,7 @@ export const registryComponents: Registry['items'] = [
       },
     ],
     name: 'transforms',
+    registryDependencies: ['@plate/link'],
     type: 'registry:component',
   },
   {
@@ -195,6 +197,7 @@ export const registryComponents: Registry['items'] = [
       },
     ],
     name: 'transforms-classic',
+    registryDependencies: ['@plate/link'],
     type: 'registry:component',
   },
 ];

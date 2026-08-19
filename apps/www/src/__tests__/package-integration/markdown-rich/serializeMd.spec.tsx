@@ -266,14 +266,13 @@ describe('editor.api.markdown.serialize', () => {
       {
         children: [{ text: '1' }],
         indent: 1,
-        listStyleType: 'decimal',
+        listType: 'numbered',
         type: 'paragraph',
       },
       {
         children: [{ text: '2' }],
         indent: 1,
-        listStart: 2,
-        listStyleType: 'decimal',
+        listType: 'numbered',
         type: 'paragraph',
       },
     ];

@@ -33,8 +33,13 @@ elements without authored toggle semantics.
 
 Add canonical Plite schema contract serialization and structural diffs. Use
 `plate migrate new <name>` to create typed application-owned migration
-snapshots and a pure `FromValue -> ToValue` scaffold; Plate does not execute the
-migration automatically.
+snapshots and a pure `FromValue -> ToValue` scaffold. Add each completed step to
+the editor module's `defineDocumentMigrations` chain and bind the generated
+source fingerprint for each historical envelope version. Use
+`plate migrate run` for dry-run and `--check` validation, or add `--write` to
+atomically replace JSON files through the same runner as editor initialization.
+The executable runner reads `EditorKit`, `EditorSchema`, and
+`EditorMigrations` from its entry module by exact export name.
 
 Run `plate generate` with the conventional `src/editor.ts` entry, pass multiple
 entries for one atomic batch, or add `--watch` to reuse one TypeScript project.

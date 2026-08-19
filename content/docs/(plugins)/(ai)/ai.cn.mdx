@@ -29,7 +29,7 @@ docs:
 
 添加 AI 功能最快的方式是使用 `AIKit`。它包含已配置的 `AIPlugin`、`AIChatPlugin`、Markdown 流式助手、光标覆盖层及其 [Plate UI](/docs/installation/plate-ui) 组件。
 
-<ComponentSource name="ai-kit" />
+<ComponentSource name="ai" />
 
 - [`AIMenu`](/docs/components/ai-menu)：用于提示、工具快捷方式和聊天审查的浮动命令界面。
 - [`AILoadingBar`](/docs/components/ai-loading-bar)：在编辑器容器中显示流式状态。
@@ -41,7 +41,7 @@ docs:
 ```tsx
 import {
   createPlateEditor } from 'platejs/react';
-import { AIKit } from '@/components/editor/plugins/ai-kit';
+import { AIKit } from '@/components/editor/ai';
 
 const editor = createPlateEditor({
   plugins: [
@@ -215,7 +215,7 @@ import { createGateway } from '@ai-sdk/gateway';
 import { convertToCoreMessages, streamText } from 'ai';
 import { createBaseEditor } from 'platejs';
 
-import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
+import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 import { markdownJoinerTransform } from '@/registry/lib/markdown-joiner-transform';
 
 export async function POST(req: Request) {
@@ -283,17 +283,10 @@ export const useEditorAIChat = () => {
 };
 ```
 
-将助手与 `useEditorChat` 结合使用，以保持浮动菜单正确锚定：
+复制的 `ai-menu` 项负责光标、文本选区和块选区的浮动菜单锚定。将产品专属的
+菜单副作用放在该组件旁边。
 
-```tsx
-import { useEditorChat } from '@platejs/ai/react';
-
-useEditorChat({
-  onOpenChange: (open) => {
-    if (!open) chat.stop?.();
-  },
-});
-```
+<ComponentSource name="ai-menu" />
 
 现在您可以以编程方式提交提示：
 
@@ -384,41 +377,12 @@ editor.plugin(aiChatPlugin).store.set({
 
 ## Hooks
 
-### `useAIChatEditor`
+### Registry 聊天预览
 
-为聊天预览注册一个辅助编辑器，并将 Markdown 反序列化到该编辑器中。
+复制的 `ai-menu` 项包含 `AIChatEditor`。它创建预览编辑器、反序列化响应
+Markdown，并在消费该状态的 UI 旁将 `previewValue` 发布到 AI Chat 插件。
 
-<API name="useAIChatEditor">
-<APIParameters>
-  <APIItem name="editor" type="BaseEditor">专用于聊天预览的编辑器实例。</APIItem>
-  <APIItem name="content" type="string">模型返回的 Markdown 内容。</APIItem>
-</APIParameters>
-</API>
-
-```tsx
-import { usePlateEditor } from 'platejs/react';
-import { MarkdownPlugin } from '@platejs/markdown';
-import { AIChatPlugin, useAIChatEditor } from '@platejs/ai/react';
-
-const aiPreviewEditor = usePlateEditor({
-  plugins: [MarkdownPlugin, AIChatPlugin],
-});
-
-useAIChatEditor(aiPreviewEditor, responseMarkdown);
-```
-
-### `useEditorChat`
-
-监视 AI 菜单状态，并报告打开的菜单锚定到光标、文本选择还是块选择。
-
-<API name="useEditorChat">
-<APIParameters>
-  <APIItem name="onOpenBlockSelection" type="(blocks: NodeEntry[]) => void" optional>在块选择上打开菜单时调用。</APIItem>
-  <APIItem name="onOpenChange" type="(open: boolean) => void" optional>菜单打开或关闭时调用。</APIItem>
-  <APIItem name="onOpenCursor" type="() => void" optional>在光标处打开菜单时调用。</APIItem>
-  <APIItem name="onOpenSelection" type="() => void" optional>在文本选择上打开菜单时调用。</APIItem>
-</APIParameters>
-</API>
+<ComponentSource name="ai-menu" />
 
 ### `useChatChunk`
 
@@ -490,7 +454,7 @@ const range = editor.plugin(AIPlugin).api.findTextRangeInBlock({
     <APIItem name="chatSelection" type="Range | null" optional>提交提示前捕获的选择（内部管理）。</APIItem>
     <APIItem name="mode" type="'chat' | 'insert'">控制响应是直接流式传输到文档还是打开审查面板。默认为 `'insert'`。</APIItem>
     <APIItem name="open" type="boolean" optional>AI 菜单是否可见。默认为 `false`。</APIItem>
-    <APIItem name="previewValue" type="Value" optional>由 `useAIChatEditor` 注册并供插入和替换命令使用的生成预览节点（内部管理）。</APIItem>
+    <APIItem name="previewValue" type="Value" optional>由复制的 AI 聊天编辑器注册并供插入和替换命令使用的生成预览节点（内部管理）。</APIItem>
     <APIItem name="streaming" type="boolean" optional>响应流式传输时为 true。默认为 `false`。</APIItem>
     <APIItem name="toolName" type="'comment' | 'edit' | 'generate' | null" optional>用于解释响应的活动工具。</APIItem>
   </APIOptions>
@@ -696,7 +660,7 @@ export const aiChatItems = {
     label: 'Generate table of contents',
     value: 'generateTOC',
     onSelect: ({ editor }) => {
-      const headingTypes = [PLUGINS.h1, PLUGINS.h2, PLUGINS.h3]
+      const headingTypes = [PLUGINS.heading, PLUGINS.heading, PLUGINS.heading]
         .map((name) => editor.plugin(name))
         .flatMap((plugin) =>
           plugin.installed ? [plugin.schema.type] : []

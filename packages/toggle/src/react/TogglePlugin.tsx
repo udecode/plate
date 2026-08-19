@@ -8,8 +8,8 @@ import {
 } from '@platejs/plite';
 
 import { BaseTogglePlugin } from '../lib/BaseTogglePlugin';
-import { ToggleVisibility } from './ToggleVisibility';
-import { useToggleIndex } from './useToggle';
+import { ToggleVisibility } from './ToggleVisibility.internal';
+import { useToggle } from './useToggle.internal';
 
 /** Enables support for toggleable elements in the editor. */
 export const TogglePlugin = toPlatePlugin(BaseTogglePlugin).extend(
@@ -151,7 +151,7 @@ export const TogglePlugin = toPlatePlugin(BaseTogglePlugin).extend(
     render: {
       aboveNodes: () => ToggleVisibility,
     },
-    useHooks: useToggleIndex,
+    useHooks: useToggle,
   })
 );
 

@@ -1,11 +1,6 @@
 import {
   BaseBlockquotePlugin,
-  BaseH1Plugin,
-  BaseH2Plugin,
-  BaseH3Plugin,
-  BaseH4Plugin,
-  BaseH5Plugin,
-  BaseH6Plugin,
+  BaseHeadingPlugin,
   BaseHorizontalRulePlugin,
 } from '@platejs/basic-nodes';
 import { BaseCodeBlockPlugin } from '@platejs/code-block';
@@ -14,7 +9,7 @@ import { BaseTogglePlugin } from '@platejs/toggle';
 import { BaseParagraphPlugin, ElementIdPlugin } from 'platejs';
 import { createPlateEditor } from 'platejs/react';
 
-import { ListKit } from '@/registry/components/editor/plugins/list-kit';
+import { ListKit } from '@/registry/components/editor/list';
 
 describe('ListKit current contract', () => {
   it('promotes `- ` into a list item and moves selection into the empty item', () => {
@@ -23,12 +18,8 @@ describe('ListKit current contract', () => {
         ElementIdPlugin,
         BaseParagraphPlugin,
         BaseBlockquotePlugin,
-        BaseH1Plugin,
-        BaseH2Plugin,
-        BaseH3Plugin,
-        BaseH4Plugin,
-        BaseH5Plugin,
-        BaseH6Plugin,
+        BaseHeadingPlugin,
+
         BaseHorizontalRulePlugin,
         BaseCodeBlockPlugin,
         BaseTogglePlugin,
@@ -50,7 +41,7 @@ describe('ListKit current contract', () => {
       {
         children: [{ text: '' }],
         indent: 1,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
     ]);

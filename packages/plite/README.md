@@ -102,6 +102,8 @@ Pure data helpers live on namespaces such as `ElementApi`, `NodeApi`,
 editor, prefer `editor.read.<group>.<method>()` for one-shot reads, grouped
 `state.*` reads for custom read logic, `editor.update.<group>.<method>()` for
 one-shot writes, and grouped `tx.*` writes for composed commands.
+Extension `read` factories return callable method trees built once per
+configuration; methods read live state when invoked.
 
 The `/internal` package subpath is reserved for sibling Plite packages in this repo.
 Applications, extension libraries, and framework adapters outside this

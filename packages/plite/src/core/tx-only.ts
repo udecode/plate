@@ -1,6 +1,23 @@
 const TX_ONLY_METHOD: unique symbol = Symbol('plite.txOnlyMethod');
 const TX_READ_METHOD: unique symbol = Symbol('plite.txReadMethod');
 
+const getRuntimeMethodSet = (name: string): WeakSet<object> => {
+  const key = Symbol.for(`@platejs/plite.${name}`);
+  const registry = globalThis as unknown as Record<PropertyKey, unknown>;
+  const existing = registry[key];
+
+  if (existing instanceof WeakSet) return existing;
+
+  const methods = new WeakSet<object>();
+
+  Object.defineProperty(registry, key, { value: methods });
+
+  return methods;
+};
+
+const TX_ONLY_METHODS = getRuntimeMethodSet('txOnlyMethods');
+const TX_READ_METHODS = getRuntimeMethodSet('txReadMethods');
+
 /** A method available on a transaction but omitted from direct updates. */
 export type TxOnlyMethod<TMethod extends (...args: any[]) => any> = TMethod & {
   readonly [TX_ONLY_METHOD]: true;
@@ -18,7 +35,7 @@ export type TxReadMethod<TMethod extends (...args: any[]) => any> = TMethod & {
 export const txOnly = <TMethod extends (...args: any[]) => any>(
   method: TMethod
 ): TxOnlyMethod<TMethod> => {
-  Object.defineProperty(method, TX_ONLY_METHOD, { value: true });
+  TX_ONLY_METHODS.add(method);
 
   return method as TxOnlyMethod<TMethod>;
 };
@@ -30,7 +47,7 @@ export const txOnly = <TMethod extends (...args: any[]) => any>(
 export const txRead = <TMethod extends (...args: any[]) => any>(
   method: TMethod
 ): TxReadMethod<TMethod> => {
-  Object.defineProperty(method, TX_READ_METHOD, { value: true });
+  TX_READ_METHODS.add(method);
 
   return method as TxReadMethod<TMethod>;
 };
@@ -38,9 +55,14 @@ export const txRead = <TMethod extends (...args: any[]) => any>(
 export const isTxOnlyMethod = (
   value: unknown
 ): value is TxOnlyMethod<(...args: any[]) => any> =>
-  typeof value === 'function' && TX_ONLY_METHOD in value;
+  typeof value === 'function' && TX_ONLY_METHODS.has(value);
 
 export const isTxReadMethod = (
   value: unknown
 ): value is TxReadMethod<(...args: any[]) => any> =>
-  typeof value === 'function' && TX_READ_METHOD in value;
+  typeof value === 'function' && TX_READ_METHODS.has(value);
+
+export const copyTxMethodMarkers = (source: unknown, target: object) => {
+  if (isTxOnlyMethod(source)) TX_ONLY_METHODS.add(target);
+  if (isTxReadMethod(source)) TX_READ_METHODS.add(target);
+};

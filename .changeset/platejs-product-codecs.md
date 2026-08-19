@@ -2,6 +2,8 @@
 "platejs": major
 ---
 
+Require React and React DOM 19.2 or newer.
+
 - Expose the Plite-backed Plate editor and plugin model, including
   `editor.read`, `editor.update`, sole plugin identity `name`, compiled
   `schema.element` and `schema.mark`, plugin `initialState`, an editor-local
@@ -14,6 +16,8 @@
 - Separate plugin capability `name` from persisted element `type` and property
   `key`. Default omitted schema identities to `name`, expose only the identity
   owned by each schema plugin, and keep `PLUGINS` capability-only.
+- Name live node identity `key`, persisted element occurrence identity `id`,
+  and persisted associations `ref`.
 - Infer one exact plugin definition from each positional descriptor factory,
   `defineBasePlugin(name, definition)` or
   `definePlatePlugin(name, definition)`, use
@@ -30,8 +34,8 @@
   complete document through Plate `onValueChange`, and render typed interactive
   or static content-root slots
 - Defer initialization with `skipInitialization: true`, then publish the loaded
-  document with one `editor.update.value.replace({ children })` call; plugin
-  document-input transforms run before schema fitting
+  document with one `editor.update.value.replace(...)` call; application
+  migrations run before installed-plugin preparation and schema fitting
 - Delete `@platejs/autoformat`; declare input rules on the feature plugins that
   own the resulting behavior
 - Delete `@platejs/caption`; non-void media elements own direct inline caption
@@ -67,15 +71,43 @@ put whole-input HTML hooks on the `'text/html'` codec.
 
 Replace `KEYS`, `NODES`, and `STYLE_KEYS` plugin references with `PLUGINS`.
 Resolve persisted identity through `.type` / `.key` or explicit document
-literals, and remove every public reverse name/type lookup. Run
-`migratePlateAstIdentities` before constructing editors that load legacy
-documents.
+literals, and remove every public reverse name/type lookup.
+
+Persist schema identity beside each durable document. Configure the v54 release
+step and v55 AST-contract step through the application schema migration chain:
+
+```tsx
+import {
+  defineDocumentMigrations,
+  migratePlateV54,
+  migratePlateV55,
+} from 'platejs/migrations';
+import { fingerprint as v53Fingerprint } from './migrations/v54-upgrade-plate/from';
+import { fingerprint as v54Fingerprint } from './migrations/v55-upgrade-plate/from';
+
+const migrations = defineDocumentMigrations(EditorSchema, {
+  sourceFingerprints: { 53: v53Fingerprint, 54: v54Fingerprint },
+  steps: { 54: migratePlateV54, 55: migratePlateV55 },
+  unversioned: 53,
+});
+```
+
+Replace plugin `transformInitialValue` with `prepareDocument` only for
+permanent installed-plugin invariants.
 
 For deferred loading:
 
 ```tsx
-const editor = createPlateEditor({ plugins, skipInitialization: true });
-const children = await loadDocument();
+const editor = createPlateEditor({
+  migrations,
+  plugins,
+  schema: EditorSchema,
+  skipInitialization: true,
+});
+const persisted = await loadDocument();
 
-editor.update.value.replace({ children });
+editor.update.value.replace(persisted);
 ```
+
+Migrate frozen Plate v53 documents through v54 and v55. Existing v54 documents
+run only the v55 AST-contract step.

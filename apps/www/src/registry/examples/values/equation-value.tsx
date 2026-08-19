@@ -6,68 +6,68 @@ jsx;
 
 export const equationValue = (
   <fragment>
-    <hh2>
+    <hheading level={2}>
       <htext>Equation</htext>
-    </hh2>
-    <hp indent={1} listStyleType="decimal">
+    </hheading>
+    <hp indent={1} listType="numbered">
       <htext>
         Equations allow you to express complex mathematical concepts in both
         inline and block formats.
       </htext>
     </hp>
-    <hp indent={1} listStart={2} listStyleType="decimal">
+    <hp indent={1} listType="numbered">
       <htext>Key features:</htext>
     </hp>
-    <hp indent={2} listStyleType="disc">
+    <hp indent={2} listType="bulleted">
       <htext>LaTeX syntax support</htext>
     </hp>
-    <hp indent={2} listStyleType="disc">
+    <hp indent={2} listType="bulleted">
       <htext>Inline and block equation formats</htext>
     </hp>
-    <hp indent={1} listStart={3} listStyleType="decimal">
+    <hp indent={1} listType="numbered">
       <htext>Inline equation example: </htext>
-      <hinlineequation texExpression="E=mc^2">
+      <hinlineequation latex="E=mc^2">
         <htext />
       </hinlineequation>
       <htext> (Einstein's famous equation)</htext>
     </hp>
-    <hp indent={1} listStart={4} listStyleType="decimal">
+    <hp indent={1} listType="numbered">
       <htext>Block equation examples:</htext>
     </hp>
-    <hequation texExpression="\frac{-b \pm \sqrt{b^2 - 4ac}}{2a}">
+    <hequation latex="\frac{-b \pm \sqrt{b^2 - 4ac}}{2a}">
       <htext />
     </hequation>
     <hp>
       <htext>The quadratic formula for solving </htext>
-      <hinlineequation texExpression="ax^2 + bx + c = 0">
+      <hinlineequation latex="ax^2 + bx + c = 0">
         <htext />
       </hinlineequation>
       <htext>.</htext>
     </hp>
-    <hequation texExpression="\int_{a}^{b} f(x) \, dx = F(b) - F(a)">
+    <hequation latex="\int_{a}^{b} f(x) \, dx = F(b) - F(a)">
       <htext />
     </hequation>
     <hp>
       <htext>The fundamental theorem of calculus.</htext>
     </hp>
-    <hp indent={1} listStart={5} listStyleType="decimal">
+    <hp indent={1} listStart={5} listType="numbered">
       <htext>Try these actions:</htext>
     </hp>
-    <hp indent={2} listStyleType="disc">
+    <hp indent={2} listType="bulleted">
       <htext>
         Click on any equation to edit it. Press Escape to close the menu without
         editing it.
       </htext>
     </hp>
-    <hp indent={2} listStyleType="disc">
+    <hp indent={2} listType="bulleted">
       <htext>
         You can navigate through the equation by using the arrow keys
       </htext>
     </hp>
-    <hp indent={2} listStyleType="disc">
+    <hp indent={2} listType="bulleted">
       <htext>Use the slash command (/equation) to insert a new equation</htext>
     </hp>
-    <hp indent={2} listStyleType="disc">
+    <hp indent={2} listType="bulleted">
       <htext>
         Use the slash command (/inline equation) for inline equations
       </htext>
@@ -80,7 +80,7 @@ export const equationValue = (
     </hp>
     <hp>
       <htext>The Schrödinger equation, </htext>
-      <hinlineequation texExpression="i\hbar\frac{\partial}{\partial t}\Psi = \hat{H}\Psi">
+      <hinlineequation latex="i\hbar\frac{\partial}{\partial t}\Psi = \hat{H}\Psi">
         <htext />
       </hinlineequation>
       <htext>, is fundamental in quantum mechanics.</htext>

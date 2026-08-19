@@ -308,10 +308,10 @@ describe('table removal', () => {
     });
   });
 
-  it('shrinks table colSizes when deleting a column', () => {
+  it('shrinks table columnWidths when deleting a column', () => {
     const input = (
       <editor>
-        <htable colSizes={[40, 60]}>
+        <htable columnWidths={[40, 60]}>
           <htr>
             <htd>
               <hp>11</hp>
@@ -345,7 +345,7 @@ describe('table removal', () => {
 
     expect(editor.read.children()).toMatchObject([
       {
-        colSizes: [40],
+        columnWidths: [40],
         type: 'table',
       },
     ]);

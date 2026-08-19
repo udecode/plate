@@ -3,7 +3,6 @@ import { defineExtension, schema } from '@platejs/plite';
 import { history } from '@platejs/plite-history';
 import {
   Editable,
-  type EditableProps,
   type RenderElementProps,
   type RenderLeafProps,
   Plite,
@@ -58,11 +57,6 @@ const createSyncedBlockBody = (
 
 const cloneValue = <T,>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
 
-const textInvariantDOMStrategy: EditableProps['domStrategy'] = {
-  textSync: { renderLeaf: 'text-invariant' },
-  type: 'full',
-};
-
 const getNextSiblingPath = (path: readonly number[]) => [
   ...path.slice(0, -1),
   (path.at(-1) ?? 0) + 1,
@@ -101,7 +95,7 @@ const SyncedBlocksExample = () => {
 
       <Editable
         aria-label="Synced blocks editor"
-        domStrategy={textInvariantDOMStrategy}
+        domStrategy="full"
         placeholder="Write around synced blocks..."
         renderElement={renderElement}
         renderLeaf={renderLeaf}
@@ -254,7 +248,7 @@ const SyncedBlock = ({
       {slots.contentRoot('body', {
         ariaLabel: `Synced block ${element.copyId} content`,
         className: 'plite-synced-blocks-synced-block-body',
-        domStrategy: textInvariantDOMStrategy,
+        domStrategy: 'full',
         placeholder: 'Empty synced block',
       })}
     </section>

@@ -25,7 +25,7 @@ docs:
 
 最快捷的文本对齐实现方式是使用 `AlignKit`，它包含了预配置好的 `TextAlignPlugin`，可作用于段落、标题、图片和媒体元素。
 
-<ComponentSource name="align-kit" />
+<ComponentSource name="align" />
 
 - 配置 `Paragraph`、`Heading`、`Image` 和 `Media` 元素支持 `textAlign` 属性
 - 提供对齐选项：`start`、`left`、`center`、`right`、`end`、`justify`
@@ -36,7 +36,7 @@ docs:
 
 ```tsx
 import { createPlateEditor } from "platejs/react";
-import { AlignKit } from "@/components/editor/plugins/align-kit";
+import { AlignKit } from "@/components/editor/align";
 
 const editor = createPlateEditor({
   plugins: [
@@ -88,7 +88,7 @@ const editor = createPlateEditor({
     // ...其他插件
     TextAlignPlugin.configure({
       targetPlugins: [
-        PLUGINS.h1, PLUGINS.h2, PLUGINS.h3, PLUGINS.h4, PLUGINS.h5, PLUGINS.h6,
+        PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.heading,
         PLUGINS.paragraph,
       ],
       inject: {

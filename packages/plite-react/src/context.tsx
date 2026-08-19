@@ -1,6 +1,5 @@
 import { createContext } from 'react';
 import type { Path, RootKey, NodeKey } from '@platejs/plite';
-import type { DOMTextSyncOptions } from './dom-text-sync';
 
 export { EditorContext } from './hooks/use-editor';
 export { ComposingContext } from './hooks/use-editor-composing';
@@ -16,7 +15,4 @@ export const PliteContentRootOwnerContext = createContext<{
   ownerPath: Path;
   ownerRoot: RootKey;
 } | null>(null);
-export const PliteDOMTextSyncContext = createContext<DOMTextSyncOptions | null>(
-  null
-);
 export const PliteDOMStrategyVirtualOffsetContext = createContext(0);

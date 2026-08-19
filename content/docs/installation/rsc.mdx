@@ -20,10 +20,10 @@ Install the copied base editor kit when you want Plate UI static components and
 the default serializer plugins.
 
 ```bash
-npx shadcn@latest add @plate/editor-base-kit
+npx shadcn@latest add @plate/editor-plugins-static
 ```
 
-The `editor-base-kit` item installs `BaseEditorKit`, static node components, and
+The `editor-plugins-static` item installs `BaseEditorKit`, static node components, and
 the `editor-static` UI component used by server rendering.
 
 ### Render Static Content
@@ -35,12 +35,12 @@ Create a static editor in the Server Component and render it with
 import type { Value } from 'platejs';
 import { createStaticEditor, PlateStatic } from 'platejs/static';
 
-import { BaseEditorKit } from '@/components/editor/editor-base-kit';
+import { BaseEditorKit } from '@/components/editor/plugins-static';
 
 const value: Value = [
   {
     children: [{ text: 'Server-rendered document' }],
-    type: 'h1',
+    type: 'heading', level: 1,
   },
   {
     children: [{ text: 'This content is rendered without editor state.' }],
@@ -67,13 +67,13 @@ Plate view instead of a React tree.
 import type { Value } from 'platejs';
 import { createStaticEditor, renderStaticHtml } from 'platejs/static';
 
-import { BaseEditorKit } from '@/components/editor/editor-base-kit';
-import { EditorStatic } from '@/components/ui/editor-static';
+import { BaseEditorKit } from '@/components/editor/plugins-static';
+import { EditorStatic } from '@/components/editor/editor-static';
 
 const value: Value = [
   {
     children: [{ text: 'Exported document' }],
-    type: 'h1',
+    type: 'heading', level: 1,
   },
   {
     children: [{ text: 'This HTML is generated on the server.' }],

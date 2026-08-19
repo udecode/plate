@@ -26,7 +26,7 @@ docs:
 
 添加缩进功能最快的方法是使用 `IndentKit`，它包含预配置的 `IndentPlugin`，针对段落、标题、引用块、代码块和切换元素。
 
-<ComponentSource name="indent-kit" />
+<ComponentSource name="indent" />
 
 - 配置 `Paragraph`、`Heading`、`Blockquote`、`CodeBlock` 和 `Toggle` 元素以支持 `indent` 属性。
 - 设置自定义缩进间距为 `24px`。
@@ -38,7 +38,7 @@ docs:
 
 ```tsx
 import { createPlateEditor } from "platejs/react";
-import { IndentKit } from "@/components/editor/plugins/indent-kit";
+import { IndentKit } from "@/components/editor/indent";
 
 const editor = createPlateEditor({
   plugins: [
@@ -90,7 +90,7 @@ const editor = createPlateEditor({
     // ...otherPlugins,
     IndentPlugin.configure({
       targetPlugins: [
-        PLUGINS.h1, PLUGINS.h2, PLUGINS.h3, PLUGINS.h4, PLUGINS.h5, PLUGINS.h6,
+        PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.heading,
         PLUGINS.paragraph,
         PLUGINS.blockquote,
       ],
@@ -217,38 +217,13 @@ const editor = createPlateEditor({
   </APIOptions>
 </API>
 
-## Hooks
+## 工具栏按钮
 
-### `useIndentButton`
+工具栏组件直接调用 descriptor-scoped update：
 
-缩进按钮组件的行为 hook。
+```tsx
+const { update } = useEditorPlugin(IndentPlugin);
 
-<API name="useIndentButton">
-  <APIReturns type="object">
-    <APIItem name="props" type="object">
-      缩进按钮的属性。
-      <APISubList>
-        <APISubListItem parent="props" name="onClick" type="function">
-          处理点击事件的回调。缩进选定的内容并聚焦编辑器。
-        </APISubListItem>
-      </APISubList>
-    </APIItem>
-  </APIReturns>
-</API>
-
-### `useOutdentButton`
-
-取消缩进按钮组件的行为 hook。
-
-<API name="useOutdentButton">
-  <APIReturns type="object">
-    <APIItem name="props" type="object">
-      取消缩进按钮的属性。
-      <APISubList>
-        <APISubListItem parent="props" name="onClick" type="function">
-          处理点击事件的回调。取消选定内容的缩进并聚焦编辑器。
-        </APISubListItem>
-      </APISubList>
-    </APIItem>
-  </APIReturns>
-</API>
+<ToolbarButton onClick={() => update.increase()}>Indent</ToolbarButton>
+<ToolbarButton onClick={() => update.decrease()}>Outdent</ToolbarButton>
+```

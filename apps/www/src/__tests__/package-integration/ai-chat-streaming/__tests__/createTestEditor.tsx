@@ -2,7 +2,7 @@
 import { jsxt, type TestEditorFixture } from '@platejs/test-utils';
 import { createBaseEditor, type EditorDocumentValue } from 'platejs';
 
-import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
+import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 
 // biome-ignore lint/suspicious/noUnusedExpressions: required to prevent removal by compiler
 jsxt;

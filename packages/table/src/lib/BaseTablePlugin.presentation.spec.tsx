@@ -48,12 +48,12 @@ describe('table presentation', () => {
 
         expect(
           editor.plugin(BaseTablePlugin).read.getCellBorders({
-            defaultBorder: { color: 'gray', size: 2, style: 'solid' },
+            defaultBorder: { color: 'gray', width: 2, style: 'solid' },
             element,
           })
         ).toEqual({
-          bottom: { color: 'gray', size: 2, style: 'solid' },
-          right: { color: 'gray', size: 2, style: 'solid' },
+          bottom: { color: 'gray', width: 2, style: 'solid' },
+          right: { color: 'gray', width: 2, style: 'solid' },
         });
       });
 
@@ -64,7 +64,7 @@ describe('table presentation', () => {
               <htr>
                 <htd
                   borders={{
-                    bottom: { color: 'red', size: 4 },
+                    bottom: { color: 'red', width: 4 },
                     top: { style: 'dashed' },
                   }}
                 >
@@ -91,14 +91,14 @@ describe('table presentation', () => {
 
         expect(
           editor.plugin(BaseTablePlugin).read.getCellBorders({
-            defaultBorder: { color: 'gray', size: 1, style: 'solid' },
+            defaultBorder: { color: 'gray', width: 1, style: 'solid' },
             element,
           })
         ).toEqual({
-          bottom: { color: 'red', size: 4, style: 'solid' },
-          left: { color: 'gray', size: 1, style: 'solid' },
-          right: { color: 'gray', size: 1, style: 'solid' },
-          top: { color: 'gray', size: 1, style: 'dashed' },
+          bottom: { color: 'red', width: 4, style: 'solid' },
+          left: { color: 'gray', width: 1, style: 'solid' },
+          right: { color: 'gray', width: 1, style: 'solid' },
+          top: { color: 'gray', width: 1, style: 'dashed' },
         });
       });
 
@@ -118,7 +118,7 @@ describe('table presentation', () => {
                 <htd>
                   <hp>21</hp>
                 </htd>
-                <htd borders={{ right: { size: 3 } }}>
+                <htd borders={{ right: { width: 3 } }}>
                   <hp>22</hp>
                 </htd>
               </htr>
@@ -131,13 +131,13 @@ describe('table presentation', () => {
 
         expect(
           editor.plugin(BaseTablePlugin).read.getCellBorders({
-            defaultBorder: { size: 1 },
+            defaultBorder: { width: 1 },
             element,
           })
         ).toEqual({
-          bottom: { color: undefined, size: 1, style: undefined },
+          bottom: { color: undefined, width: 1, style: undefined },
           left: undefined,
-          right: { color: undefined, size: 3, style: undefined },
+          right: { color: undefined, width: 3, style: undefined },
           top: undefined,
         });
       });
@@ -190,8 +190,8 @@ describe('table presentation', () => {
       it('sums the table column widths across the current cell colSpan', () => {
         const input = (
           <editor>
-            <htable colSizes={[40, 50, 60]}>
-              <htr size={72}>
+            <htable columnWidths={[40, 50, 60]}>
+              <htr height={72}>
                 <htd>
                   <hp>11</hp>
                 </htd>
@@ -217,8 +217,8 @@ describe('table presentation', () => {
       it('uses explicit row and column sizes when provided', () => {
         const input = (
           <editor>
-            <htable colSizes={[40, 50, 60]}>
-              <htr size={72}>
+            <htable columnWidths={[40, 50, 60]}>
+              <htr height={72}>
                 <htd>
                   <hp>11</hp>
                 </htd>
@@ -235,7 +235,7 @@ describe('table presentation', () => {
 
         expect(
           editor.plugin(BaseTablePlugin).read.getCellSize({
-            colSizes: [10, 20, 30],
+            columnWidths: [10, 20, 30],
             element,
             rowSize: 99,
           })
@@ -243,6 +243,32 @@ describe('table presentation', () => {
           minHeight: 99,
           width: 50,
         });
+      });
+
+      it('resolves explicit unknown widths through the minimum fallback', () => {
+        const input = (
+          <editor>
+            <htable columnWidths={[40, 50, 60]}>
+              <htr height={72}>
+                <htd>
+                  <hp>11</hp>
+                </htd>
+                <htd colSpan={2}>
+                  <hp>12</hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as TestEditor;
+        const editor = createTableEditor(input);
+        const element = getCell(editor, [0, 0, 1]);
+
+        expect(
+          editor.plugin(BaseTablePlugin).read.getCellSize({
+            columnWidths: [10, null, 30],
+            element,
+          })
+        ).toEqual({ minHeight: 72, width: 78 });
       });
     });
   }
@@ -268,21 +294,21 @@ describe('table presentation', () => {
         <editor>
           <htable>
             <htr>
-              <htd borders={{ left: { size: 1 }, right: { size: 0 } }}>
+              <htd borders={{ left: { width: 1 }, right: { width: 0 } }}>
                 <hp>11</hp>
               </htd>
               <htd
                 borders={{
-                  bottom: { size: 0 },
-                  left: { size: 0 },
-                  right: { size: 1 },
+                  bottom: { width: 0 },
+                  left: { width: 0 },
+                  right: { width: 1 },
                 }}
               >
                 <hp>12</hp>
               </htd>
             </htr>
             <htr>
-              <htd borders={{ top: { size: 0 } }}>
+              <htd borders={{ top: { width: 0 } }}>
                 <hp>21</hp>
               </htd>
               <htd>
@@ -360,7 +386,7 @@ describe('table presentation', () => {
     });
     const makeTableElement = (
       columnCount: number,
-      colSizes?: number[]
+      columnWidths?: (number | null)[]
     ): TableElement =>
       ({
         children: [
@@ -369,19 +395,19 @@ describe('table presentation', () => {
             type: 'tableRow',
           },
         ],
-        colSizes,
+        columnWidths,
       }) as unknown as TableElement;
 
     describe('getTableOverriddenColSizes', () => {
-      describe('when colSizes is not defined', () => {
-        it('returns all zeros', () => {
+      describe('when columnWidths is not defined', () => {
+        it('returns the minimum width fallback', () => {
           const tableElement = makeTableElement(3);
           const overrides = new Map<number, number>();
           expect(
             editor
               .plugin(BaseTablePlugin)
               .api.getOverriddenColumnSizes(tableElement, overrides)
-          ).toMatchObject([0, 0, 0]);
+          ).toMatchObject([48, 48, 48]);
         });
 
         it('apply overrides', () => {
@@ -394,12 +420,12 @@ describe('table presentation', () => {
             editor
               .plugin(BaseTablePlugin)
               .api.getOverriddenColumnSizes(tableElement, overrides)
-          ).toMatchObject([100, 0, 200]);
+          ).toMatchObject([100, 48, 200]);
         });
       });
 
-      describe('when colSizes is defined', () => {
-        it('returns colSizes', () => {
+      describe('when columnWidths is defined', () => {
+        it('returns columnWidths', () => {
           const tableElement = makeTableElement(3, [100, 200, 300]);
           const overrides = new Map<number, number>();
           expect(
@@ -421,6 +447,44 @@ describe('table presentation', () => {
               .api.getOverriddenColumnSizes(tableElement, overrides)
           ).toMatchObject([1000, 200, 2000]);
         });
+
+        it('uses the minimum width fallback for unknown columns', () => {
+          const tableElement = makeTableElement(3, [100, null, 300]);
+
+          expect(
+            editor
+              .plugin(BaseTablePlugin)
+              .api.getOverriddenColumnSizes(tableElement)
+          ).toEqual([100, 48, 300]);
+        });
+
+        it('normalizes stored widths to the logical column count', () => {
+          expect(
+            editor
+              .plugin(BaseTablePlugin)
+              .api.getOverriddenColumnSizes(makeTableElement(2, [80]))
+          ).toEqual([80, 48]);
+          expect(
+            editor
+              .plugin(BaseTablePlugin)
+              .api.getOverriddenColumnSizes(makeTableElement(2, [80, 120, 160]))
+          ).toEqual([80, 120]);
+        });
+
+        it('clamps derived widths to the configured minimum', () => {
+          const configuredEditor = createTestTableEditor({
+            plugins: getTestTablePlugins({
+              initialTableWidth: 200,
+              minColumnWidth: 100,
+            }),
+          });
+
+          expect(
+            configuredEditor
+              .plugin(BaseTablePlugin)
+              .api.getOverriddenColumnSizes(makeTableElement(3))
+          ).toEqual([100, 100, 100]);
+        });
       });
     });
   }
@@ -436,7 +500,7 @@ describe('table presentation', () => {
       });
 
     describe('setTableColSize', () => {
-      it('creates a colSizes array when the table does not have one yet', () => {
+      it('creates a columnWidths array when the table does not have one yet', () => {
         const input = (
           <editor>
             <htable>
@@ -467,20 +531,20 @@ describe('table presentation', () => {
 
         editor
           .plugin(BaseTablePlugin)
-          .update.setColumnSize({ colIndex: 1, width: 120 });
+          .update.setColumnWidth({ colIndex: 1, width: 120 });
 
         expect(editor.read.children()).toMatchObject([
           {
-            colSizes: [0, 120],
+            columnWidths: [null, 120],
             type: 'table',
           },
         ]);
       });
 
-      it('updates only the requested column width when colSizes already exist', () => {
+      it('updates only the requested column width when columnWidths already exist', () => {
         const input = (
           <editor>
-            <htable colSizes={[20, 30]}>
+            <htable columnWidths={[20, 30]}>
               <htr>
                 <htd>
                   <hp>
@@ -500,19 +564,90 @@ describe('table presentation', () => {
 
         editor
           .plugin(BaseTablePlugin)
-          .update.setColumnSize({ colIndex: 0, width: 64 });
+          .update.setColumnWidth({ colIndex: 0, width: 64 });
 
         expect(editor.read.children()).toMatchObject([
           {
-            colSizes: [64, 30],
+            columnWidths: [64, 30],
             type: 'table',
           },
         ]);
+      });
+
+      it('pads a short columnWidths array with null before updating', () => {
+        const input = (
+          <editor>
+            <htable columnWidths={[100]}>
+              <htr>
+                <htd>
+                  <hp>
+                    11
+                    <cursor />
+                  </hp>
+                </htd>
+                <htd>
+                  <hp>12</hp>
+                </htd>
+                <htd>
+                  <hp>13</hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as TestEditor;
+        const editor = createTableEditor(input);
+
+        editor
+          .plugin(BaseTablePlugin)
+          .update.setColumnWidth({ colIndex: 2, width: 120 });
+
+        expect(editor.read.children()).toMatchObject([
+          {
+            columnWidths: [100, null, 120],
+            type: 'table',
+          },
+        ]);
+      });
+
+      it('rejects invalid column indexes and widths before mutation', () => {
+        const input = (
+          <editor>
+            <htable columnWidths={[100]}>
+              <htr>
+                <htd>
+                  <hp>
+                    11
+                    <cursor />
+                  </hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as TestEditor;
+        const editor = createTableEditor(input);
+        const before = editor.read.children();
+
+        expect(() =>
+          editor
+            .plugin(BaseTablePlugin)
+            .update.setColumnWidth({ colIndex: -1, width: 100 })
+        ).toThrow(/column index.*non-negative safe integer/i);
+        expect(() =>
+          editor
+            .plugin(BaseTablePlugin)
+            .update.setColumnWidth({ colIndex: 0, width: 0 })
+        ).toThrow(/column width.*positive finite number/i);
+        expect(() =>
+          editor
+            .plugin(BaseTablePlugin)
+            .update.setColumnWidth({ colIndex: 1, width: 100 })
+        ).toThrow(/column index 1 exceeds the last column index 0/i);
+        expect(editor.read.children()).toBe(before);
       });
     });
 
-    describe('setTableRowSize', () => {
-      it('sets the size on the requested table row', () => {
+    describe('setRowHeight', () => {
+      it('sets the height on the requested table row', () => {
         const input = (
           <editor>
             <htable>
@@ -543,14 +678,50 @@ describe('table presentation', () => {
 
         editor
           .plugin(BaseTablePlugin)
-          .update.setRowSize({ height: 48, rowIndex: 0 });
+          .update.setRowHeight({ height: 48, rowIndex: 0 });
 
         expect(editor.read.children()).toMatchObject([
           {
-            children: [{ size: 48 }, {}],
+            children: [{ height: 48 }, {}],
             type: 'table',
           },
         ]);
+      });
+
+      it('rejects invalid row indexes and heights before mutation', () => {
+        const input = (
+          <editor>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>
+                    11
+                    <cursor />
+                  </hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as TestEditor;
+        const editor = createTableEditor(input);
+        const before = editor.read.children();
+
+        expect(() =>
+          editor
+            .plugin(BaseTablePlugin)
+            .update.setRowHeight({ height: 100, rowIndex: -1 })
+        ).toThrow(/row index.*non-negative safe integer/i);
+        expect(() =>
+          editor
+            .plugin(BaseTablePlugin)
+            .update.setRowHeight({ height: Number.NaN, rowIndex: 0 })
+        ).toThrow(/row height.*positive finite number/i);
+        expect(() =>
+          editor
+            .plugin(BaseTablePlugin)
+            .update.setRowHeight({ height: 100, rowIndex: 1 })
+        ).toThrow(/row index 1 exceeds the last row index 0/i);
+        expect(editor.read.children()).toBe(before);
       });
     });
   }

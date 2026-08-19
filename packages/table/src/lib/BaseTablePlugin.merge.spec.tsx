@@ -188,6 +188,52 @@ describe('table merge', () => {
           '22',
         ]);
       });
+
+      it('reports whether the current table selection can merge or split', () => {
+        const mergeInput = (
+          <editor>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>
+                    <anchor />
+                    11
+                  </hp>
+                </htd>
+                <htd>
+                  <hp>
+                    12
+                    <focus />
+                  </hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as TestEditor;
+        const mergeEditor = createTableEditor(mergeInput);
+
+        expect(mergeEditor.plugin(BaseTablePlugin).read.canMerge()).toBe(true);
+        expect(mergeEditor.plugin(BaseTablePlugin).read.canSplit()).toBe(false);
+
+        const splitInput = (
+          <editor>
+            <htable>
+              <htr>
+                <htd colSpan={2}>
+                  <hp>
+                    11
+                    <cursor />
+                  </hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as TestEditor;
+        const splitEditor = createTableEditor(splitInput);
+
+        expect(splitEditor.plugin(BaseTablePlugin).read.canMerge()).toBe(false);
+        expect(splitEditor.plugin(BaseTablePlugin).read.canSplit()).toBe(true);
+      });
     });
   }
 

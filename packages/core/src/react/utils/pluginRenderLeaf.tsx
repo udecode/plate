@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { type Path, PathApi, TextApi } from '@platejs/plite';
 import { useEditorReadOnly } from '@platejs/plite-react';
 
 import type { PlateEditor } from '../editor/PlateEditor';
@@ -27,7 +28,11 @@ const HARD_AFFINITY_SPACER_STYLE = {
   lineHeight: 0,
 } as const;
 
-const isActiveHardAffinityBoundary = (editor: PlateEditor, text: any) => {
+const isActiveHardAffinityBoundary = (
+  editor: PlateEditor,
+  path: Path | undefined
+) => {
+  if (!path) return false;
   const match = editor.read((state) => {
     if (!state.selection.isCollapsed()) return;
 
@@ -40,11 +45,14 @@ const isActiveHardAffinityBoundary = (editor: PlateEditor, text: any) => {
     return selectedText ? { focus, selectedText } : undefined;
   });
 
-  if (!match) return false;
+  if (!match || !TextApi.isText(match.selectedText)) return false;
 
-  if (match.selectedText !== text) return false;
+  if (!PathApi.equals(match.focus.path, path)) return false;
 
-  return match.focus.offset === 0 || match.focus.offset === text.text.length;
+  return (
+    match.focus.offset === 0 ||
+    match.focus.offset === match.selectedText.text.length
+  );
 };
 
 const getSimpleLeafAttributes = (
@@ -73,7 +81,7 @@ export const pluginRenderLeaf = (
     const {
       render: { leaf: leafComponent, node },
     } = plugin;
-    const { children, leaf, text } = props;
+    const { children, leaf } = props;
     const Component = leafComponent ?? node;
     const leafKey = getCompiledPlateModelBinding(editor, plugin)?.propertyKey;
 
@@ -104,7 +112,10 @@ export const pluginRenderLeaf = (
           props,
           getPluginNodeClass(plugin.name) || undefined
         );
-        const showBoundarySpacers = isActiveHardAffinityBoundary(editor, text);
+        const showBoundarySpacers = isActiveHardAffinityBoundary(
+          editor,
+          props.path
+        );
 
         if (!showBoundarySpacers) {
           return <Tag {...attributes}>{children}</Tag>;

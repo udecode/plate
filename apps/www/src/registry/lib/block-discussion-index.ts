@@ -1,9 +1,5 @@
-'use client';
-
-import * as React from 'react';
-
 import type { ResolvedSuggestion as BaseResolvedSuggestion } from '@platejs/suggestion';
-import type { PlateEditor } from 'platejs/react';
+import { getDateDisplayLabel, normalizeDateValue } from '@platejs/date';
 import type {
   EditorCommit,
   Element,
@@ -13,21 +9,11 @@ import type {
   Text,
 } from '@platejs/plite';
 
-import { BaseCommentPlugin } from '@platejs/comment';
-import { BaseSuggestionPlugin } from '@platejs/suggestion';
-import { ElementApi, NodeApi, PLUGINS, PathApi, TextApi } from 'platejs';
+import { ElementApi, NodeApi, PathApi, TextApi } from 'platejs';
 import type { NormalizePluginState } from '@platejs/core/internal';
-import {
-  useEditor,
-  useEditorRuntimeState,
-  usePluginStore,
-} from 'platejs/react';
 
-import {
-  type TDiscussion,
-  discussionPlugin,
-} from '@/registry/components/editor/plugins/discussion-kit';
-import type { TComment } from '@/registry/ui/comment';
+import type { TDiscussion } from '@/registry/components/editor/discussion';
+import type { TComment } from '@/registry/components/editor/comment';
 
 export interface ResolvedSuggestion extends BaseResolvedSuggestion {
   comments: TComment[];
@@ -68,24 +54,10 @@ type BuildBlockDiscussionIndexOptions = {
   }>;
   getSuggestionId: (node: Node) => string | undefined;
   getSuggestionKey: (id: string) => string;
+  isDate?: (node: Element) => boolean;
   isInlineEquation?: (node: Element) => boolean;
   isBlockSuggestion: (node: Node) => boolean;
 };
-
-const discussionIndexCache = new WeakMap<
-  PlateEditor,
-  {
-    discussions: readonly DiscussionSnapshot[];
-    index: BlockDiscussionIndex;
-    version: number;
-  }
->();
-
-const getCommentApi = (editor: PlateEditor) =>
-  editor.plugin(BaseCommentPlugin).api;
-
-const getSuggestionApi = (editor: PlateEditor) =>
-  editor.plugin(BaseSuggestionPlugin).api;
 
 export const shouldRefreshBlockDiscussionIndex = (change?: EditorCommit) => {
   if (!change) return true;
@@ -176,54 +148,26 @@ const getSuggestionIds = (
   return [];
 };
 
-const formatSuggestionDateText = (date: string) => {
-  const elementDate = new Date(date);
-
-  if (Number.isNaN(elementDate.getTime())) return date;
-
-  const today = new Date();
-  const yesterday = new Date(today);
-  const tomorrow = new Date(today);
-
-  yesterday.setDate(today.getDate() - 1);
-  tomorrow.setDate(today.getDate() + 1);
-
-  const sameDay = (left: Date, right: Date) =>
-    left.getDate() === right.getDate() &&
-    left.getMonth() === right.getMonth() &&
-    left.getFullYear() === right.getFullYear();
-
-  if (sameDay(elementDate, today)) return 'Today';
-  if (sameDay(elementDate, yesterday)) return 'Yesterday';
-  if (sameDay(elementDate, tomorrow)) return 'Tomorrow';
-
-  return elementDate.toLocaleDateString(undefined, {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  });
-};
-
 const getInlineSuggestionElementText = (
   node: Element,
+  isDate: (node: Element) => boolean,
   isInlineEquation: (node: Element) => boolean
 ) => {
+  if (isDate(node) && typeof node.value === 'string' && node.value.length > 0) {
+    return getDateDisplayLabel(normalizeDateValue(node.value) ?? node.value);
+  }
+
+  if (typeof node.label === 'string') return node.label;
+  if (typeof node.ref === 'string') return node.ref;
+
   if (typeof node.value === 'string' && node.value.length > 0) {
     return node.value;
   }
 
-  if (typeof node.date === 'string' && node.date.length > 0) {
-    return formatSuggestionDateText(node.date);
-  }
+  const { latex } = node;
 
-  const { texExpression } = node;
-
-  if (
-    isInlineEquation(node) &&
-    typeof texExpression === 'string' &&
-    texExpression.length > 0
-  ) {
-    return texExpression;
+  if (isInlineEquation(node) && typeof latex === 'string' && latex.length > 0) {
+    return latex;
   }
 
   const nodeText = NodeApi.string(node);
@@ -242,6 +186,7 @@ const toResolvedSuggestion = ({
   getSuggestionKey,
   id,
   isBlockSuggestion,
+  isDate,
   isInlineEquation,
 }: {
   discussionsById: Map<string, TDiscussion>;
@@ -252,6 +197,7 @@ const toResolvedSuggestion = ({
   getSuggestionKey: BuildBlockDiscussionIndexOptions['getSuggestionKey'];
   id: string;
   isBlockSuggestion: BuildBlockDiscussionIndexOptions['isBlockSuggestion'];
+  isDate: NonNullable<BuildBlockDiscussionIndexOptions['isDate']>;
   isInlineEquation: NonNullable<
     BuildBlockDiscussionIndexOptions['isInlineEquation']
   >;
@@ -301,6 +247,7 @@ const toResolvedSuggestion = ({
 
     const inlineSuggestionText = getInlineSuggestionElementText(
       node,
+      isDate,
       isInlineEquation
     );
 
@@ -407,6 +354,7 @@ export const buildBlockDiscussionIndex = ({
   getSuggestionId,
   getSuggestionKey,
   isBlockSuggestion,
+  isDate = () => false,
   isInlineEquation = () => false,
 }: BuildBlockDiscussionIndexOptions): BlockDiscussionIndex => {
   const materializedDiscussions = discussions.map(
@@ -479,6 +427,7 @@ export const buildBlockDiscussionIndex = ({
       getSuggestionKey,
       id: suggestionId,
       isBlockSuggestion,
+      isDate,
       isInlineEquation,
     });
 
@@ -491,121 +440,4 @@ export const buildBlockDiscussionIndex = ({
     discussionsByBlock,
     suggestionsByBlock,
   };
-};
-
-const getDiscussionIndex = (
-  editor: PlateEditor,
-  discussions: readonly DiscussionSnapshot[],
-  version: number
-) => {
-  const cached = discussionIndexCache.get(editor);
-
-  if (
-    cached &&
-    cached.version === version &&
-    cached.discussions === discussions
-  ) {
-    return cached.index;
-  }
-
-  const commentApi = getCommentApi(editor);
-  const suggestionApi = getSuggestionApi(editor);
-  const blockLabels = new Map<string, string>();
-
-  (
-    [
-      [PLUGINS.audio, 'Audio'],
-      [PLUGINS.blockquote, 'Blockquote'],
-      [PLUGINS.callout, 'Callout'],
-      [PLUGINS.codeBlock, 'Code Block'],
-      [PLUGINS.column, 'Column'],
-      [PLUGINS.equation, 'Equation'],
-      [PLUGINS.file, 'File'],
-      [PLUGINS.h1, 'Heading 1'],
-      [PLUGINS.h2, 'Heading 2'],
-      [PLUGINS.h3, 'Heading 3'],
-      [PLUGINS.h4, 'Heading 4'],
-      [PLUGINS.h5, 'Heading 5'],
-      [PLUGINS.h6, 'Heading 6'],
-      [PLUGINS.horizontalRule, 'Horizontal Rule'],
-      [PLUGINS.image, 'Image'],
-      [PLUGINS.mediaEmbed, 'Media'],
-      [PLUGINS.table, 'Table'],
-      [PLUGINS.toc, 'Table of Contents'],
-      [PLUGINS.toggle, 'Toggle'],
-      [PLUGINS.video, 'Video'],
-    ] as const
-  ).forEach(([plugin, label]) => {
-    const portal = editor.plugin(plugin);
-
-    if (portal.installed) blockLabels.set(portal.schema.type, label);
-  });
-  const paragraph = editor.plugin(PLUGINS.paragraph);
-  const paragraphType = paragraph.installed ? paragraph.schema.type : null;
-  const inlineEquation = editor.plugin(PLUGINS.inlineEquation);
-  const inlineEquationType = inlineEquation.installed
-    ? inlineEquation.schema.type
-    : null;
-
-  const index = buildBlockDiscussionIndex({
-    discussions,
-    entries: editor.read.nodes.toArray({
-      at: [],
-      match: (node): node is Element | Text =>
-        ElementApi.isElement(node) || TextApi.isText(node),
-      mode: 'all',
-    }),
-    getBlockLabel: (node) => {
-      if (node.type === paragraphType) {
-        if (node.listStyleType === 'todo') return 'Todo List';
-        if (node.listStyleType === 'decimal') return 'Ordered List';
-        if (node.listStyleType === 'disc') return 'List';
-
-        return 'Paragraph';
-      }
-
-      return blockLabels.get(node.type) ?? node.type;
-    },
-    getCommentId: (node) => commentApi.id(node),
-    getSuggestionData: (node) => suggestionApi.suggestionData(node),
-    getSuggestionDataList: (node) => suggestionApi.dataList(node),
-    getSuggestionId: (node) => suggestionApi.id(node),
-    getSuggestionKey: (id) => suggestionApi.key(id),
-    isBlockSuggestion: (node) =>
-      ElementApi.isElement(node) && suggestionApi.isBlockSuggestion(node),
-    isInlineEquation: (node) => node.type === inlineEquationType,
-  });
-
-  discussionIndexCache.set(editor, { discussions, index, version });
-
-  return index;
-};
-
-export const useBlockDiscussionItems = (blockPath: Path) => {
-  const editor = useEditor();
-  const discussions = usePluginStore(discussionPlugin, 'discussions');
-  const indexVersionRef = React.useRef(editor.read.runtime.snapshot().version);
-  const version = useEditorRuntimeState(
-    editor,
-    (state) => {
-      const commit = state.lastCommit();
-
-      if (shouldRefreshBlockDiscussionIndex(commit ?? undefined)) {
-        indexVersionRef.current = state.runtime.snapshot().version;
-      }
-
-      return indexVersionRef.current;
-    },
-    { shouldUpdate: shouldRefreshBlockDiscussionIndex }
-  );
-
-  return React.useMemo(() => {
-    const index = getDiscussionIndex(editor, discussions, version);
-    const blockKey = getBlockKey(blockPath);
-
-    return {
-      resolvedDiscussions: index.discussionsByBlock.get(blockKey) ?? [],
-      resolvedSuggestions: index.suggestionsByBlock.get(blockKey) ?? [],
-    };
-  }, [blockPath, discussions, editor, version]);
 };

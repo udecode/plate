@@ -7,12 +7,7 @@ import {
   BaseBlockquotePlugin,
   BaseBoldPlugin,
   BaseCodePlugin,
-  BaseH1Plugin,
-  BaseH2Plugin,
-  BaseH3Plugin,
-  BaseH4Plugin,
-  BaseH5Plugin,
-  BaseH6Plugin,
+  BaseHeadingPlugin,
   BaseHighlightPlugin,
   BaseHorizontalRulePlugin,
   BaseItalicPlugin,
@@ -74,12 +69,9 @@ describe('playground rules current contract', () => {
         offset,
         plugins: [
           BaseParagraphPlugin,
-          BaseH1Plugin.configure({ inputRules: [HeadingRules.markdown()] }),
-          BaseH2Plugin.configure({ inputRules: [HeadingRules.markdown()] }),
-          BaseH3Plugin.configure({ inputRules: [HeadingRules.markdown()] }),
-          BaseH4Plugin.configure({ inputRules: [HeadingRules.markdown()] }),
-          BaseH5Plugin.configure({ inputRules: [HeadingRules.markdown()] }),
-          BaseH6Plugin.configure({ inputRules: [HeadingRules.markdown()] }),
+          BaseHeadingPlugin.configure({
+            inputRules: [HeadingRules.markdown()],
+          }),
           BaseBlockquotePlugin.configure({
             inputRules: [BlockquoteRules.markdown()],
           }),
@@ -95,20 +87,21 @@ describe('playground rules current contract', () => {
       });
 
     it.each([
-      ['#', 'h1'],
-      ['##', 'h2'],
-      ['###', 'h3'],
-      ['####', 'h4'],
-      ['#####', 'h5'],
-      ['######', 'h6'],
-    ])('promotes `%s ` into %s', (markdown, type) => {
+      ['#', 1],
+      ['##', 2],
+      ['###', 3],
+      ['####', 4],
+      ['#####', 5],
+      ['######', 6],
+    ])('promotes `%s ` into heading level %s', (markdown, level) => {
       const editor = createBlocksEditor(markdown, markdown.length);
 
       insertText(editor, ' ');
 
       expect(editor.read.children()[0]).toMatchObject({
         children: [{ text: '' }],
-        type,
+        level,
+        type: 'heading',
       });
       expect(editor.read.selection()).toEqual({
         kind: 'text',
@@ -226,15 +219,15 @@ describe('playground rules current contract', () => {
       });
 
     it.each([
-      ['-', ' ', { indent: 1, listStyleType: 'disc', type: 'paragraph' }],
-      ['*', ' ', { indent: 1, listStyleType: 'disc', type: 'paragraph' }],
+      ['-', ' ', { indent: 1, listType: 'bulleted', type: 'paragraph' }],
+      ['*', ' ', { indent: 1, listType: 'bulleted', type: 'paragraph' }],
       [
         '3.',
         ' ',
         {
           indent: 1,
           listStart: 3,
-          listStyleType: 'decimal',
+          listType: 'numbered',
           type: 'paragraph',
         },
       ],
@@ -243,21 +236,20 @@ describe('playground rules current contract', () => {
         ' ',
         {
           indent: 1,
-          listRestartPolite: 3,
           listStart: 3,
-          listStyleType: 'decimal',
+          listType: 'numbered',
           type: 'paragraph',
         },
       ],
       [
         '[]',
         ' ',
-        { checked: false, indent: 1, listStyleType: 'todo', type: 'paragraph' },
+        { checked: false, indent: 1, listType: 'task', type: 'paragraph' },
       ],
       [
         '[x]',
         ' ',
-        { checked: true, indent: 1, listStyleType: 'todo', type: 'paragraph' },
+        { checked: true, indent: 1, listType: 'task', type: 'paragraph' },
       ],
     ])('promotes list shorthand `%s`', (prefix, finalInput, expectedNode) => {
       const editor = createListsEditor(prefix, prefix.length);
@@ -299,7 +291,7 @@ describe('playground rules current contract', () => {
       expect(editor.read.children()[0]).toMatchObject({
         children: [
           { text: 'Math: ' },
-          { texExpression: 'x', type: 'inlineEquation' },
+          { latex: 'x', type: 'inlineEquation' },
           { text: '' },
         ],
         type: 'paragraph',

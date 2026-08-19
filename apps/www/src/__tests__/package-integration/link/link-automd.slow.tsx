@@ -3,8 +3,8 @@
 import { BaseParagraphPlugin, createBaseEditor } from 'platejs';
 import { jsxt } from '@platejs/test-utils';
 
-import { LinkKit } from '@/registry/components/editor/plugins/link-kit';
-import { AutoformatKit } from '@/registry/components/editor/plugins/autoformat-kit';
+import { LinkKit } from '@/registry/components/editor/link';
+import { AutoformatKit } from '@/registry/components/editor/autoformat';
 
 jsxt;
 

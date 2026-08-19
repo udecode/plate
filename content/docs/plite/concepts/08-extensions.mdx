@@ -97,6 +97,15 @@ editor.update((tx) => {
 });
 ```
 
+Plite constructs each `read` namespace once for an installed extension
+configuration. Return methods or nested method records. Read live document
+state inside those methods; do not return document-derived data properties or
+perform reads while constructing the namespace. Put stable constants and host
+services in `api`.
+
+Direct calls such as `editor.read.links.hasSelection()` execute inside the same
+coherent read boundary as `editor.read((state) => ...)`.
+
 Reads cannot write by accident. Updates can still read transaction-local state
 after earlier writes in the same transaction. Wrap a method with `txOnly(...)`
 when it requires an active transaction; Plite then omits it from the direct

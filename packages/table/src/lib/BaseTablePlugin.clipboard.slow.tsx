@@ -441,7 +441,7 @@ describe('table clipboard slow contracts', () => {
                 <htd>
                   <hp>12</hp>
                 </htd>
-                <htd background="custom">
+                <htd backgroundColor="custom">
                   <hp>
                     <htext />
                   </hp>
@@ -457,20 +457,20 @@ describe('table clipboard slow contracts', () => {
                     aa
                   </hp>
                 </htd>
-                <htd background="custom">
+                <htd backgroundColor="custom">
                   <hp>ab</hp>
                 </htd>
               </htr>
               <htr>
-                <htd background="custom">
+                <htd backgroundColor="custom">
                   <hp>
                     <htext />
                   </hp>
                 </htd>
-                <htd background="custom">
+                <htd backgroundColor="custom">
                   <hp>ba</hp>
                 </htd>
-                <htd background="custom">
+                <htd backgroundColor="custom">
                   <hp>
                     bb
                     <focus />
@@ -486,7 +486,7 @@ describe('table clipboard slow contracts', () => {
             BaseTablePlugin.extend(() => ({
               api: () => ({
                 createCell: () => ({
-                  background: 'custom',
+                  backgroundColor: 'custom',
                   children: [
                     {
                       children: [{ text: '' }],

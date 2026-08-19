@@ -9,10 +9,10 @@ describe('editor.api.markdown.serialize - mention', () => {
           children: [
             { text: 'Hello ' },
             {
-              key: 'alice',
+              ref: 'alice',
               children: [{ text: '' }],
               type: 'mention',
-              value: 'alice',
+              label: 'alice',
             },
             { text: ' how are you?' },
           ],
@@ -32,17 +32,17 @@ describe('editor.api.markdown.serialize - mention', () => {
         {
           children: [
             {
-              key: 'bob',
+              ref: 'bob',
               children: [{ text: '' }],
               type: 'mention',
-              value: 'bob',
+              label: 'bob',
             },
             { text: ' mentioned ' },
             {
-              key: 'charlie',
+              ref: 'charlie',
               children: [{ text: '' }],
               type: 'mention',
-              value: 'charlie',
+              label: 'charlie',
             },
             { text: ' in the discussion' },
           ],
@@ -65,10 +65,10 @@ describe('editor.api.markdown.serialize - mention', () => {
           children: [
             { text: 'Hey ' },
             {
-              key: 'john_doe',
+              ref: 'john_doe',
               children: [{ text: '' }],
               type: 'mention',
-              value: 'John Doe',
+              label: 'John Doe',
             },
             { text: ' check this out' },
           ],
@@ -89,10 +89,10 @@ describe('editor.api.markdown.serialize - mention', () => {
           children: [
             { text: 'Hey ' },
             {
-              key: 'john_doe',
+              ref: 'john_doe',
               children: [{ text: '' }],
               type: 'mention',
-              value: 'John Doe',
+              label: 'John Doe',
             },
             { text: ' check this out' },
           ],
@@ -126,17 +126,17 @@ describe('editor.api.markdown.serialize - mention', () => {
           children: [
             { text: 'Assigned to ' },
             {
-              key: 'qa_team_us',
+              ref: 'qa_team_us',
               children: [{ text: '' }],
               type: 'mention',
-              value: 'QA Team (US)',
+              label: 'QA Team (US)',
             },
             { text: ' and ' },
             {
-              key: 'dev-team',
+              ref: 'dev-team',
               children: [{ text: '' }],
               type: 'mention',
-              value: 'dev-team',
+              label: 'dev-team',
             },
           ],
           type: 'paragraph',

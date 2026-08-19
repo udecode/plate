@@ -77,12 +77,12 @@ export function ReadOnlyEditor() {
 
 ## 渲染管线
 
-`PlateContent` 通过 `useEditableProps` 构建可编辑 props。该管线组合 store 级 renderer、`PlateContent` render prop、插件 decorator 和插件 DOM 事件。
+`PlateContent` 直接组合 store 级 renderer、自身 render prop、插件 decorator 和插件 DOM 事件。
 
 | 阶段           | 来源                                                                                                |
 | -------------- | --------------------------------------------------------------------------------------------------- |
 | Plite provider | `Plite` 接收编辑器实例和 store 回调。                                                               |
-| Editable props | `useEditableProps` 串联 decorator、DOM 事件、`renderElement`、`renderLeaf` 和 `renderText`。        |
+| Editable props | `PlateContent` 串联 decorator、DOM 事件、`renderElement`、`renderLeaf` 和 `renderText`。             |
 | 插件 slot      | `beforeEditable`、`aboveEditable` 和 `afterEditable` 包裹可编辑区域或渲染在其周围。                 |
 | Effect         | `EditorShortcutDispatcher`、`EditorRefEffect` 和 `PlateControllerEffect` 在 `PlateContent` 内运行。 |
 | 只读状态       | `disabled` 强制只读；`readOnly` 会同步回 Plate store。                                              |
@@ -108,7 +108,7 @@ export function ParagraphElement(
 组件属于单个插件时，传入插件 descriptor。props 会推断该插件配置的元素类型。
 
 ```tsx title="components/quote-element.tsx"
-import { QuotePlugin } from "@/components/editor/plugins/quote-plugin";
+import { QuotePlugin } from "@/components/editor/quote-plugin";
 import { PlateElement, type PlateElementProps } from "platejs/react";
 
 export function QuoteElement(props: PlateElementProps<typeof QuotePlugin>) {
@@ -131,7 +131,7 @@ export function TypedElement<TElement extends Element>(
 当 schema 元素拥有命名内容根时，通过类型化的 `slots.contentRoot(slot)` 函数渲染。相同组件可用于交互式和静态渲染；Plate 会选择可编辑根视图或静态根子节点。
 
 ```tsx title="components/figure-element.tsx"
-import { FigurePlugin } from "@/components/editor/plugins/figure-plugin";
+import { FigurePlugin } from "@/components/editor/figure-plugin";
 import type { PlateElementProps } from "platejs/react";
 
 export function FigureElement({
@@ -153,7 +153,6 @@ export function FigureElement({
 | `PlateElement`      | 添加 `data-plite-node="element"`，保留 Plite 的 `data-plite-node-key`，提供类型化的元素自有 content-root slot，并在需要时添加 directional-affinity spacer。 |
 | `PlateLeaf`         | 渲染文本 leaf，并在需要时添加 hard-affinity spacer。                                                                                                                                          |
 | `PlateText`         | 渲染文本节点，不匹配 leaf decoration。                                                                                                                                                        |
-| `useNodeAttributes` | 为节点原语合并 Plite attributes、ref、class name 和 style。                                                                                                                                   |
 
 ## API 参考
 
@@ -366,4 +365,3 @@ export function FigureElement({
 | `PlateElement` | `div`              | 接受 `as`、`attributes`、`className`、`style`、`ref`、`element`、`path`、`editor`、`plugin` 和 `insetProp`。 |
 | `PlateLeaf`    | `span`             | 接受 `as`、`attributes`、`className`、`style`、`ref`、`leaf`、`text`、`editor`、`plugin` 和 `inset`。        |
 | `PlateText`    | `span`             | 接受 `as`、`attributes`、`className`、`style`、`ref`、`text`、`editor` 和 `plugin`。                         |
-| `withHOC`      | `React.forwardRef` | 用另一个支持 ref 的组件包装一个支持 ref 的组件。                                                             |

@@ -16,7 +16,7 @@ Footnote turns GFM footnote markup (`[^1]` references and `[^1]: text` definitio
 ## Features
 
 - GFM-compatible footnote references and definitions as dedicated Plate nodes.
-- One-transform insertion with automatic numeric identifier allocation.
+- One-transform insertion with automatic numeric ref allocation.
 - `[^` inline combobox for insertion from the default UI kit.
 - Recreate a missing definition from an unresolved reference without duplicating.
 - Keep the first duplicate definition canonical; renumber later duplicates on demand.
@@ -32,13 +32,13 @@ Footnote turns GFM footnote markup (`[^1]` references and `[^1]: text` definitio
 
 The fastest way to add footnote-aware markdown is with the `MarkdownKit`, which includes `MarkdownPlugin`, the footnote plugins wired for the default markdown profile, and works with [Plate UI](/docs/installation/plate-ui).
 
-<ComponentSource name="markdown-kit" />
+<ComponentSource name="markdown" />
 
 ### Add Kit
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { MarkdownKit } from '@/components/editor/plugins/markdown-kit';
+import { MarkdownKit } from '@/components/editor/markdown';
 
 const editor = createPlateEditor({
   plugins: [
@@ -105,21 +105,21 @@ Pass `focusDefinition: false` when the reference should stay inline (for example
 editor.update((tx) => tx.footnote.insert({ focusDefinition: false }));
 ```
 
-Pass `identifier` to reuse an existing identifier; the transform skips creating a duplicate definition when one already exists.
+Pass `ref` to reuse an existing ref; the transform skips creating a duplicate definition when one already exists.
 
 ### Repair an Unresolved Reference
 
-When a reference points at an identifier with no definition (e.g. pasted from elsewhere), use `tx.footnote.createDefinition` to create just the definition — without inserting another reference:
+When a reference points at an ref with no definition (e.g. pasted from elsewhere), use `tx.footnote.createDefinition` to create just the definition — without inserting another reference:
 
 ```tsx
-editor.update((tx) => tx.footnote.createDefinition({ identifier: '3' }));
+editor.update((tx) => tx.footnote.createDefinition({ ref: '3' }));
 ```
 
 Pass `focus: false` when you want to leave the caret where it was:
 
 ```tsx
 editor.update((tx) =>
-  tx.footnote.createDefinition({ focus: false, identifier: '3' })
+  tx.footnote.createDefinition({ focus: false, ref: '3' })
 );
 ```
 
@@ -128,35 +128,35 @@ editor.update((tx) =>
 `tx.footnote.focusDefinition` and `tx.footnote.focusReference` jump the selection, scroll the target into view, and flash it through [Navigation Feedback](/docs/navigation-feedback). No extra wiring needed:
 
 ```tsx
-editor.update((tx) => tx.footnote.focusDefinition({ identifier: '3' }));
-editor.update((tx) => tx.footnote.focusReference({ identifier: '3' }));
+editor.update((tx) => tx.footnote.focusDefinition({ ref: '3' }));
+editor.update((tx) => tx.footnote.focusReference({ ref: '3' }));
 ```
 
 When a single definition is pointed at by multiple references, pass `index` to pick which one to land on:
 
 ```tsx
 editor.update((tx) =>
-  tx.footnote.focusReference({ identifier: '3', index: 1 })
+  tx.footnote.focusReference({ ref: '3', index: 1 })
 );
 ```
 
-Both transaction commands return `false` when the identifier doesn't resolve, so you can branch on stale links without throwing.
+Both transaction commands return `false` when the ref doesn't resolve, so you can branch on stale links without throwing.
 
 ### Handle Duplicate Definitions
 
-Two definitions with the same identifier is a resolvable edit state, not an error. The **first** definition in document order stays canonical; later ones are flagged as duplicates. Renumber a later duplicate with:
+Two definitions with the same ref is a resolvable edit state, not an error. The **first** definition in document order stays canonical; later ones are flagged as duplicates. Renumber a later duplicate with:
 
 ```tsx
-let nextIdentifier: string | undefined;
+let nextRefentifier: string | undefined;
 
 editor.update((tx) => {
-  nextIdentifier = tx.footnote.normalizeDuplicateDefinition({
+  nextRefentifier = tx.footnote.normalizeDuplicateDefinition({
     path: duplicatePath,
   });
 });
 ```
 
-The transform returns the newly assigned identifier string on success, or `false` when the path isn't a duplicate definition or the requested identifier is already taken. Pass `identifier` to target a specific free identifier instead of the next available one.
+The transform returns the newly assigned ref string on success, or `false` when the path isn't a duplicate definition or the requested ref is already taken. Pass `ref` to target a specific free ref instead of the next available one.
 
 ### Customize Rendering
 
@@ -177,7 +177,7 @@ const editor = createPlateEditor({
 });
 ```
 
-The package owns node semantics, identifier allocation, and navigation helpers. App-level surfaces — hover previews, the `[^` combobox, slash-command entries, toolbar buttons — are built on top of the transforms and API methods below.
+The package owns node semantics, ref allocation, and navigation helpers. App-level surfaces — hover previews, the `[^` combobox, slash-command entries, toolbar buttons — are built on top of the transforms and API methods below.
 
 </Steps>
 
@@ -185,7 +185,7 @@ The package owns node semantics, identifier allocation, and navigation helpers. 
 
 ### `FootnotePlugin`
 
-Inline void node rendered as `<sup>`. Owns the `[^` combobox trigger, identifier registry, navigation transforms, and query API. Requires `FootnoteInputPlugin`.
+Inline void node rendered as `<sup>`. Owns the `[^` combobox trigger, ref registry, navigation transforms, and query API. Requires `FootnoteInputPlugin`.
 
 <API name="FootnotePlugin">
 <APIOptions>
@@ -208,7 +208,7 @@ Inline void node rendered as `<sup>`. Owns the `[^` combobox trigger, identifier
 
 ### `FootnoteDefinitionPlugin`
 
-Block node for footnote definitions. Lives at the bottom of the document and carries the identifier + body content.
+Block node for footnote definitions. Lives at the bottom of the document and carries the ref + body content.
 
 <API name="FootnoteDefinitionPlugin" />
 
@@ -225,12 +225,12 @@ snapshot directly.
 
 ### `editor.read.footnote.definition`
 
-Get the canonical (first-in-document-order) definition entry for an identifier.
+Get the canonical (first-in-document-order) definition entry for an ref.
 
 <API name="definition">
 <APIParameters>
-  <APIItem name="identifier" type="string">
-    Footnote identifier.
+  <APIItem name="ref" type="string">
+    Footnote ref.
   </APIItem>
 </APIParameters>
 <APIReturns>
@@ -242,12 +242,12 @@ Get the canonical (first-in-document-order) definition entry for an identifier.
 
 ### `editor.read.footnote.definitions`
 
-Get every definition entry that shares an identifier, in document order. When duplicates exist, the first entry is canonical; later entries are duplicates.
+Get every definition entry that shares an ref, in document order. When duplicates exist, the first entry is canonical; later entries are duplicates.
 
 <API name="definitions">
 <APIParameters>
-  <APIItem name="identifier" type="string">
-    Footnote identifier.
+  <APIItem name="ref" type="string">
+    Footnote ref.
   </APIItem>
 </APIParameters>
 <APIReturns>
@@ -263,8 +263,8 @@ Get the plain-text content of the canonical definition. Ideal for hover previews
 
 <API name="definitionText">
 <APIParameters>
-  <APIItem name="identifier" type="string">
-    Footnote identifier.
+  <APIItem name="ref" type="string">
+    Footnote ref.
   </APIItem>
 </APIParameters>
 <APIReturns>
@@ -276,12 +276,12 @@ Get the plain-text content of the canonical definition. Ideal for hover previews
 
 ### `editor.read.footnote.references`
 
-Get every reference entry that points at an identifier, in document order.
+Get every reference entry that points at an ref, in document order.
 
 <API name="references">
 <APIParameters>
-  <APIItem name="identifier" type="string">
-    Footnote identifier.
+  <APIItem name="ref" type="string">
+    Footnote ref.
   </APIItem>
 </APIParameters>
 <APIReturns>
@@ -291,55 +291,55 @@ Get every reference entry that points at an identifier, in document order.
 </APIReturns>
 </API>
 
-### `editor.read.footnote.identifiers`
+### `editor.read.footnote.refs`
 
-List every identifier that has at least one definition, in document order.
+List every ref that has at least one definition, in document order.
 
-<API name="identifiers">
+<API name="refs">
 <APIReturns>
   <APIItem name="return" type="string[]">
-    Defined identifiers.
+    Defined refs.
   </APIItem>
 </APIReturns>
 </API>
 
-### `editor.read.footnote.nextId`
+### `editor.read.footnote.nextRef`
 
-Compute the next free numeric identifier. Used by `tx.footnote.insert` when the caller doesn't supply one.
+Compute the next free numeric ref. Used by `tx.footnote.insert` when the caller doesn't supply one.
 
-<API name="nextId">
+<API name="nextRef">
 <APIReturns>
   <APIItem name="return" type="string">
-    Next free identifier (e.g. `'1'`, `'2'`).
+    Next free ref (e.g. `'1'`, `'2'`).
   </APIItem>
 </APIReturns>
 </API>
 
 ### `editor.read.footnote.isResolved`
 
-Check whether an identifier has at least one definition.
+Check whether an ref has at least one definition.
 
 <API name="isResolved">
 <APIParameters>
-  <APIItem name="identifier" type="string">
-    Footnote identifier.
+  <APIItem name="ref" type="string">
+    Footnote ref.
   </APIItem>
 </APIParameters>
 <APIReturns>
   <APIItem name="return" type="boolean">
-    `true` when at least one definition exists for the identifier.
+    `true` when at least one definition exists for the ref.
   </APIItem>
 </APIReturns>
 </API>
 
 ### `editor.read.footnote.duplicateDefinitions`
 
-Get every non-canonical definition entry for an identifier — that is, every definition after the first in document order.
+Get every non-canonical definition entry for an ref — that is, every definition after the first in document order.
 
 <API name="duplicateDefinitions">
 <APIParameters>
-  <APIItem name="identifier" type="string">
-    Footnote identifier.
+  <APIItem name="ref" type="string">
+    Footnote ref.
   </APIItem>
 </APIParameters>
 <APIReturns>
@@ -349,31 +349,31 @@ Get every non-canonical definition entry for an identifier — that is, every de
 </APIReturns>
 </API>
 
-### `editor.read.footnote.duplicateIdentifiers`
+### `editor.read.footnote.duplicateRefs`
 
-List every identifier that has more than one definition.
+List every ref that has more than one definition.
 
-<API name="duplicateIdentifiers">
+<API name="duplicateRefs">
 <APIReturns>
   <APIItem name="return" type="string[]">
-    Identifiers with duplicate definitions.
+    Refs with duplicate definitions.
   </APIItem>
 </APIReturns>
 </API>
 
 ### `editor.read.footnote.hasDuplicateDefinitions`
 
-Check whether an identifier has more than one definition.
+Check whether an ref has more than one definition.
 
 <API name="hasDuplicateDefinitions">
 <APIParameters>
-  <APIItem name="identifier" type="string">
-    Footnote identifier.
+  <APIItem name="ref" type="string">
+    Footnote ref.
   </APIItem>
 </APIParameters>
 <APIReturns>
   <APIItem name="return" type="boolean">
-    `true` when two or more definitions share the identifier.
+    `true` when two or more definitions share the ref.
   </APIItem>
 </APIReturns>
 </API>
@@ -407,8 +407,8 @@ When the selection is expanded, the expanded fragment seeds the new definition b
 <APIParameters>
   <APIItem name="input" type="object" optional>
     <APISubList>
-      <APISubListItem parent="input" name="identifier" type="string" optional>
-        Reuse an existing identifier. Defaults to `editor.read.footnote.nextId()`.
+      <APISubListItem parent="input" name="ref" type="string" optional>
+        Reuse an existing ref. Defaults to `editor.read.footnote.nextRef()`.
       </APISubListItem>
       <APISubListItem parent="input" name="focusDefinition" type="boolean" optional>
         Focus the definition body after insertion. Pass `false` to keep the caret inline after the reference.
@@ -423,12 +423,12 @@ When the selection is expanded, the expanded fragment seeds the new definition b
 
 ### `editor.update.footnote.createDefinition`
 
-Create the missing definition for an existing identifier without inserting another reference. Returns the path of the definition — the newly created one, or the existing one when the identifier already resolves.
+Create the missing definition for an existing ref without inserting another reference. Returns the path of the definition — the newly created one, or the existing one when the ref already resolves.
 
 <API name="createDefinition">
 <APIParameters>
-  <APIItem name="identifier" type="string">
-    Identifier to create a definition for.
+  <APIItem name="ref" type="string">
+    Ref to create a definition for.
   </APIItem>
   <APIItem name="focus" type="boolean" optional>
     Focus the definition body after creation.
@@ -448,8 +448,8 @@ Jump the selection into the canonical definition body, scroll it into view, and 
 
 <API name="focusDefinition">
 <APIParameters>
-  <APIItem name="identifier" type="string">
-    Footnote identifier.
+  <APIItem name="ref" type="string">
+    Footnote ref.
   </APIItem>
 </APIParameters>
 <APIReturns>
@@ -465,8 +465,8 @@ Jump the selection to the matching reference, scroll it into view, and flash it 
 
 <API name="focusReference">
 <APIParameters>
-  <APIItem name="identifier" type="string">
-    Footnote identifier.
+  <APIItem name="ref" type="string">
+    Footnote ref.
   </APIItem>
   <APIItem name="index" type="number" optional>
     Pick a specific reference when the definition is pointed at by several. Indexed by document order.
@@ -482,20 +482,20 @@ Jump the selection to the matching reference, scroll it into view, and flash it 
 
 ### `editor.update.footnote.normalizeDuplicateDefinition`
 
-Renumber a later duplicate definition so the canonical definition stays intact. Pass the path of the duplicate; optionally pass a specific `identifier` to target, otherwise the transform picks `editor.read.footnote.nextId()`.
+Renumber a later duplicate definition so the canonical definition stays intact. Pass the path of the duplicate; optionally pass a specific `ref` to target, otherwise the transform picks `editor.read.footnote.nextRef()`.
 
 <API name="normalizeDuplicateDefinition">
 <APIParameters>
   <APIItem name="path" type="number[]">
     Path of the duplicate definition to renumber.
   </APIItem>
-  <APIItem name="identifier" type="string" optional>
-    Target identifier. Must be free. Defaults to `editor.read.footnote.nextId()`.
+  <APIItem name="ref" type="string" optional>
+    Target ref. Must be free. Defaults to `editor.read.footnote.nextRef()`.
   </APIItem>
 </APIParameters>
 <APIReturns>
   <APIItem name="return" type="false | string">
-    The assigned identifier on success, or `false` when the path isn't a duplicate definition or the target identifier is already taken.
+    The assigned ref on success, or `false` when the path isn't a duplicate definition or the target ref is already taken.
   </APIItem>
 </APIReturns>
 </API>

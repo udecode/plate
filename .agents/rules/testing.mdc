@@ -203,12 +203,12 @@ cross-package dev dependencies to support an overbuilt fake runtime.
   owner. If ownership or public shape is disputed, route the decision to
   `best-api` and the relevant layer plan; testing does not decide it.
 
-### `docx`, `docx-io`, and app integration
+### DOCX packages and app integration
 
 - Keep app-owned cross-package integration tests under `apps/www/src/__tests__/package-integration`.
 - Keep buckets local under that folder instead of scattering app-owned integration coverage through `src/lib`.
 - Package tests must not pull app aliases, app kits, or registries into package graphs.
-- Fixture-heavy `docx` and `docx-io` suites are valid reasons to keep `__tests__/`.
+- Fixture-heavy `docx-paste` suites are valid reasons to keep `__tests__/`.
 
 ### `slate`
 
@@ -249,7 +249,7 @@ Keep `__tests__/` when it holds:
 
 - package-local helpers or fixture banks
 - intentionally split multi-file suites like `withAutoformat`
-- fixture-heavy integration suites like `docx` and `docx-io`
+- fixture-heavy integration suites like `docx-paste`
 - app-owned cross-package integration suites under `apps/www/src/__tests__/package-integration`
 
 ## Quick Reference

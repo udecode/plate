@@ -9,11 +9,16 @@ import {
 } from '@platejs/plite';
 import type { DropTargetHookSpec, DropTargetMonitor } from 'react-dnd';
 import * as actualReactDnd from 'react-dnd';
+import * as actualCoreReact from '@platejs/core/react';
 
 import { createPlateEditor, type PlateEditor } from '@platejs/core/react';
 
 import { DndPlugin } from './DndPlugin';
-import type { DragItemNode, ElementDragItemNode } from './useDndNode';
+import type {
+  DragItemNode,
+  ElementDragItemNode,
+  UseDropNodeOptions,
+} from './useDndNode';
 
 let dropSpec:
   | DropTargetHookSpec<DragItemNode, unknown, { isOver: boolean }>
@@ -25,9 +30,20 @@ const useDropMock = mock(
     return [{ isOver: false }, () => null];
   }
 );
+let currentEditor: PlateEditor;
+
+mock.module('@platejs/core/react', () => ({
+  ...actualCoreReact,
+  useEditor: () => currentEditor,
+}));
 
 mock.module('react-dnd', () => ({
   ...actualReactDnd,
+  useDrag: () => [
+    { isAboutToDrag: false, isDragging: false },
+    () => null,
+    () => null,
+  ],
   useDrop: useDropMock,
 }));
 
@@ -35,9 +51,24 @@ afterAll(() => {
   mock.restore();
 });
 
-const { DRAG_ITEM_BLOCK, getHoverDirection, useDropNode } = await import(
+const { DRAG_ITEM_BLOCK, getHoverDirection, useDndNode } = await import(
   `./useDndNode?behavior=${Math.random().toString(36).slice(2)}`
 );
+
+const renderDropNode = (editor: PlateEditor, options: UseDropNodeOptions) => {
+  const { accept, canDropNode, element, nodeRef, ...drop } = options;
+
+  currentEditor = editor;
+
+  return renderHook(() =>
+    useDndNode({
+      canDropNode,
+      drop: { accept, ...drop },
+      element,
+      nodeRef,
+    })
+  );
+};
 
 const getElement = (editor: PlateEditor, path: number[]) => {
   const entry = editor.read.nodes.get(path, {
@@ -125,23 +156,19 @@ describe('Dnd node behavior', () => {
         editorId: editor.id,
         element: dragElement,
       };
-      renderHook(() =>
-        useDropNode(editor, {
-          accept: DRAG_ITEM_BLOCK,
-          element: hoverElement,
-          nodeRef,
-        })
-      );
+      renderDropNode(editor, {
+        accept: DRAG_ITEM_BLOCK,
+        element: hoverElement,
+        nodeRef,
+      });
     });
 
     it('does nothing without a drop direction', () => {
-      renderHook(() =>
-        useDropNode(editor, {
-          accept: DRAG_ITEM_BLOCK,
-          element: hoverElement,
-          nodeRef: { current: null },
-        })
-      );
+      renderDropNode(editor, {
+        accept: DRAG_ITEM_BLOCK,
+        element: hoverElement,
+        nodeRef: { current: null },
+      });
       callDrop(dragItem, monitor);
 
       expect(getTexts(editor)).toEqual(['drag', 'hover', 'other']);
@@ -171,13 +198,11 @@ describe('Dnd node behavior', () => {
     it('keeps a block in place when it is already adjacent', () => {
       const move = spyOn(editor.update.nodes, 'move');
 
-      renderHook(() =>
-        useDropNode(editor, {
-          accept: DRAG_ITEM_BLOCK,
-          element: dragElement,
-          nodeRef,
-        })
-      );
+      renderDropNode(editor, {
+        accept: DRAG_ITEM_BLOCK,
+        element: dragElement,
+        nodeRef,
+      });
       callDrop(
         {
           key: hoverKey,
@@ -193,27 +218,23 @@ describe('Dnd node behavior', () => {
     it('honors the package drop guard', () => {
       const move = spyOn(editor.update.nodes, 'move');
 
-      renderHook(() =>
-        useDropNode(editor, {
-          accept: DRAG_ITEM_BLOCK,
-          canDropNode: () => false,
-          element: hoverElement,
-          nodeRef,
-        })
-      );
+      renderDropNode(editor, {
+        accept: DRAG_ITEM_BLOCK,
+        canDropNode: () => false,
+        element: hoverElement,
+        nodeRef,
+      });
       callDrop(dragItem, monitor);
 
       expect(move).not.toHaveBeenCalled();
     });
 
     it('moves every selected block in the same editor', () => {
-      renderHook(() =>
-        useDropNode(editor, {
-          accept: DRAG_ITEM_BLOCK,
-          element: getElement(editor, [2]),
-          nodeRef,
-        })
-      );
+      renderDropNode(editor, {
+        accept: DRAG_ITEM_BLOCK,
+        element: getElement(editor, [2]),
+        nodeRef,
+      });
       callDrop({ ...dragItem, key: [dragKey, hoverKey] }, monitor);
 
       expect(getTexts(editor)).toEqual(['other', 'drag', 'hover']);
@@ -266,13 +287,11 @@ describe('Dnd node behavior', () => {
         selection: null,
       });
 
-      renderHook(() =>
-        useDropNode(targetEditor, {
-          accept: DRAG_ITEM_BLOCK,
-          element: getElement(targetEditor, [0]),
-          nodeRef,
-        })
-      );
+      renderDropNode(targetEditor, {
+        accept: DRAG_ITEM_BLOCK,
+        element: getElement(targetEditor, [0]),
+        nodeRef,
+      });
       callDrop(
         {
           editor: sourceEditor,
@@ -324,13 +343,11 @@ describe('Dnd node behavior', () => {
         _isOver: true,
         dropTarget: { key: null, line: '' },
       });
-      renderHook(() =>
-        useDropNode(editor, {
-          accept: DRAG_ITEM_BLOCK,
-          element: hoverElement,
-          nodeRef,
-        })
-      );
+      renderDropNode(editor, {
+        accept: DRAG_ITEM_BLOCK,
+        element: hoverElement,
+        nodeRef,
+      });
     });
 
     it('updates the plugin drop target when direction changes', () => {

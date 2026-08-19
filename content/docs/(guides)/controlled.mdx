@@ -36,7 +36,7 @@ model-aware format.
 import type { Value } from 'platejs';
 import { Plate, usePlateEditor } from 'platejs/react';
 
-import { Editor, EditorContainer } from '@/components/ui/editor';
+import { Editor, EditorContainer } from '@/components/editor/editor';
 
 const initialValue: Value = [
   {
@@ -65,10 +65,10 @@ export function MyEditor() {
 Use `onValueChange` when you only need the document value.
 
 ```tsx title="components/editor.tsx" showLineNumbers {15-19,25}
-import type { EditorDocumentValue, Value } from 'platejs';
+import type { EditorDocumentValue, EditorSchemaIdentity, Value } from 'platejs';
 import { Plate, usePlateEditor } from 'platejs/react';
 
-import { Editor, EditorContainer } from '@/components/ui/editor';
+import { Editor, EditorContainer } from '@/components/editor/editor';
 
 const STORAGE_KEY = 'plate-value';
 
@@ -79,8 +79,11 @@ const initialValue: Value = [
   },
 ];
 
-function saveValue(value: EditorDocumentValue) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
+function saveValue(value: EditorDocumentValue, schema: EditorSchemaIdentity) {
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify({ document: value, schema })
+  );
 }
 
 export function MyEditor() {
@@ -93,7 +96,12 @@ export function MyEditor() {
   });
 
   return (
-    <Plate editor={editor} onValueChange={({ value }) => saveValue(value)}>
+    <Plate
+      editor={editor}
+      onValueChange={({ editor, value }) =>
+        saveValue(value, editor.read.schema.identity())
+      }
+    >
       <EditorContainer>
         <Editor />
       </EditorContainer>
@@ -103,8 +111,9 @@ export function MyEditor() {
 ```
 
 `onValueChange` receives the canonical commit context and the complete
-serializable document. Persist `value` as one object so primary `children`,
-named `roots`, and persisted `meta` stay together.
+serializable document. Durable storage should persist `{ document, schema }`
+so primary `children`, named `roots`, persisted `meta`, and source schema
+identity stay together.
 
 ```tsx title="components/editor.tsx"
 <Plate
@@ -187,7 +196,7 @@ import * as React from 'react';
 import type { Value } from 'platejs';
 import { Plate, usePlateEditor } from 'platejs/react';
 
-import { Editor, EditorContainer } from '@/components/ui/editor';
+import { Editor, EditorContainer } from '@/components/editor/editor';
 
 function LoadedEditor({ initialValue }: { initialValue: Value }) {
   const editor = usePlateEditor({
@@ -228,15 +237,16 @@ export function AsyncEditor() {
 ### Initialize Manually
 
 Use `skipInitialization` when another system owns the startup moment, such as
-collaboration or a multi-step loader. The complete replacement runs each
-plugin's `transformInitialValue` before schema fitting, so feature-owned input
-migrations use the same path as synchronous initialization.
+collaboration or a multi-step loader. A complete replacement runs configured
+version steps, then each installed plugin's `prepareDocument`, then schema
+fitting. Plugins use preparation for current-schema invariants, not historical
+migrations.
 
 ```tsx title="components/manual-init-editor.tsx" showLineNumbers {8,13-18}
 import * as React from 'react';
 import { Plate, usePlateEditor } from 'platejs/react';
 
-import { Editor, EditorContainer } from '@/components/ui/editor';
+import { Editor, EditorContainer } from '@/components/editor/editor';
 
 export function ManualInitEditor() {
   const editor = usePlateEditor({
@@ -248,7 +258,7 @@ export function ManualInitEditor() {
       .then((response) => response.json())
       .then((data) => {
         editor.update((tx) => {
-          tx.value.replace({ children: data.content });
+          tx.value.replace(data.persistedDocument);
           const end = tx.points.end([]);
 
           if (end) tx.selection.set(end);

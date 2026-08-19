@@ -690,6 +690,15 @@ export const applyEditableKeyDown = ({
       return keyDownHandled();
     }
 
+    const userKeyDownResult = applyUserKeyDownHandler({
+      editor,
+      event,
+      handler: onKeyDown,
+    });
+    if (userKeyDownResult.handled) {
+      return userKeyDownResult;
+    }
+
     const selection = readRuntimeSelection(editor);
     const selectionRoot = getSelectionRoot(selection);
     const viewRoot = toInternalRoot(editor.read((state) => state.view.root()));
@@ -739,15 +748,6 @@ export const applyEditableKeyDown = ({
 
         return keyDownHandled();
       }
-    }
-
-    const userKeyDownResult = applyUserKeyDownHandler({
-      editor,
-      event,
-      handler: onKeyDown,
-    });
-    if (userKeyDownResult.handled) {
-      return userKeyDownResult;
     }
 
     if (isSelectAllHotkey(nativeEvent)) {

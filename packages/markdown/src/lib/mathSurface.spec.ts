@@ -14,7 +14,7 @@ describe('math package surfaces', () => {
           { text: 'Inline ' },
           {
             children: [{ text: '' }],
-            texExpression: 'x+1',
+            latex: 'x+1',
             type: 'inlineEquation',
           },
           { text: ' math' },
@@ -39,7 +39,7 @@ describe('math package surfaces', () => {
     expect(value.children).toMatchObject([
       {
         children: [{ text: '' }],
-        texExpression: 'x+1',
+        latex: 'x+1',
         type: 'equation',
       },
     ]);

@@ -1,7 +1,7 @@
 ---
 title: Excalidraw
 docs:
-  - route: /docs/components/excalidraw-node
+  - route: /docs/components/excalidraw
     title: Excalidraw 元素
 ---
 
@@ -79,33 +79,8 @@ editor.plugin(BaseExcalidrawPlugin).update.insert(
 </APIParameters>
 </API>
 
-## 钩子函数
+## UI 行为
 
-### `useExcalidrawElement`
-
-Excalidraw 组件的行为钩子。
-
-<API name="useExcalidrawElement">
-<APIState>
-  <APIItem name="element" type="ExcalidrawElement">
-    Excalidraw 元素
-  </APIItem>
-  <APIItem name="libraryItems" type="LibraryItems" optional>
-    在 Excalidraw 组件中显示的库项目
-    - **默认值:** `[]`
-  </APIItem>
-  <APIItem name="scrollToContent" type="boolean" optional>
-    是否滚动到 Excalidraw 组件内部内容
-    - **默认值:** `true`
-  </APIItem>
-</APIState>
-
-<APIReturns type="object">
-  <APIItem name="Excalidraw" type="any">
-    Excalidraw 组件
-  </APIItem>
-  <APIItem name="excalidrawProps" type="ExcalidrawProps">
-    传递给 Excalidraw 组件的属性参数
-  </APIItem>
-</APIReturns>
-</API>
+复制的 registry 元素直接拥有 Excalidraw React 集成。它动态导入 canvas，
+从元素数据构建 `initialData`，在编辑模式保存变化，并在只读模式启用
+`viewModeEnabled`。

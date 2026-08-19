@@ -19,16 +19,20 @@
   "targets": [
     {
       "name": "suggestion-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/suggestion-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for suggestion-kit."
+        }
+      ]
     },
     {
       "name": "editor-kit",
       "files": [],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "definitionFiles": [],
       "diagnostics": [
         {
           "severity": "warning",
@@ -39,15 +43,12 @@
     },
     {
       "name": "editor-ai",
-      "files": [],
+      "files": [
+        "apps/www/src/registry/blocks/editor-ai/components/editor/plate-editor.tsx",
+        "apps/www/src/registry/blocks/editor-ai/page.tsx"
+      ],
       "definitionFiles": ["apps/www/src/registry/registry-blocks.ts"],
-      "diagnostics": [
-        {
-          "severity": "warning",
-          "code": "registry-file-missing",
-          "message": "No exact registry source file found for editor-ai."
-        }
-      ]
+      "diagnostics": []
     }
   ],
   "entries": [

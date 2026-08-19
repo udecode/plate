@@ -6,7 +6,7 @@ jsx;
 
 export const deserializeCsvValue = (
   <fragment>
-    <hh2>CSV</hh2>
+    <hheading level={2}>CSV</hheading>
     <hp>Copy and paste CSV content into a table.</hp>
   </fragment>
 );

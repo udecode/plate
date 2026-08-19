@@ -6,7 +6,7 @@ jsx;
 
 export const blockPlaceholderValue = (
   <fragment>
-    <hh2>Placeholder</hh2>
+    <hheading level={2}>Placeholder</hheading>
     <hp>
       Show a placeholder when selecting an empty block. Try it out on the next
       block:

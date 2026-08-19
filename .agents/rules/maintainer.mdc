@@ -61,10 +61,11 @@ Allowed without asking:
 - classify invalid/support/noise/needs-repro/agent-ready state;
 - run duplicate/claim guards through live GitHub and optional `gitcrawl`;
 - route to a narrower owner skill;
-- after a user-selected non-security public issue reaches a proven fixed state,
-  post one concise issue comment even when the fix exists only locally; state
-  the exact local/commit/PR status and leave the issue open unless closure is
-  separately authorized;
+- after a user-selected non-security public issue receives a complete
+  reporter-valid `patch` packet, post one concise status comment when standing
+  instructions require it. Call uncommitted or unpushed work a local candidate,
+  never a fixed/completed issue; state the exact ref/integration status and
+  leave the issue open unless closure is separately authorized;
 - patch local docs, templates, plans, rules, or tests when the execution owner
   allows it and no public mutation is required;
 - update local maintainer docs/rules/templates when a recurring workflow gap is
@@ -76,7 +77,7 @@ Allowed without asking:
 Approval gates:
 
 - commit, branch, push, PR creation, merge, release, publish;
-- GitHub comment other than the verified-fix status exception above, review
+- GitHub comment other than the status-comment exception above, review
   submission, label, close, reopen, assignment, or milestone mutation;
 - external sends/posts;
 - security disclosure wording or public handling of an unpatched vulnerability;
@@ -268,12 +269,41 @@ When a public Plate behavior bug or regression routes to `patch`, keep live issu
 duplicate/claim checks, public authority, and shipping decisions in
 `maintainer`. Pass the normalized behavior report and issue constraints to
 `patch`, then require its compact evidence packet: classification and root
-cause, durable owner and files, red proof and passing commands, Browser/device
-proof or limitation, architecture-pressure verdict, changeset status, P2
-autoreview result, and unresolved caveat. After that packet proves the issue is
-fixed, re-read live GitHub and post the verified-fix status comment even when
-the patch is local only. Do not duplicate the worker's repair methodology in
+cause; reporter-valid case ID/source refs/exact steps/claim fields; durable owner
+and files; exact red proof; final local ref and file fingerprints; five
+retry-free warm runs when the issue involves native selection/focus/DnD/paint or
+React DOM lifecycle; Browser/Chrome/device proof or limitation;
+architecture-pressure verdict; changeset status; P2 autoreview result; and
+unresolved caveat.
+
+A complete local packet proves only `candidate-local`. It may justify a comment
+that a candidate fix exists locally, but not `fixed`, `completed`, or a
+`completed` label. After the work is pushed, replay the same case on that exact
+pushed ref from a fresh process in a clean matching checkout or immutable CI
+artifact; prove zero tracked or untracked issue-owned runtime-input differences
+and record matching fingerprints. Any commit, rebase, generation, combination,
+or push after a replay invalidates it. Only that clean final-pushed-ref replay
+may justify fixed/completed wording. Explicit authority to add a label never
+waives this truth gate. Do not duplicate the worker's repair methodology in
 this coordinator.
+
+## Reporter Retest Invalidation
+
+A reporter's fresh exact-step retest outranks earlier agent proof. When the
+reporter says the failure remains:
+
+1. classify the prior fixed/completed claim as disproven;
+2. move the item to `needs-repro` and keep it out of completed queue slices;
+3. compare the reporter action and end state with the recorded case fields to
+   find the missing topology, claim field, environment, or final-ref replay;
+4. treat any `completed` label as stale public state requiring correction under
+   the current mutation authority;
+5. route a new bounded `patch` packet. Do not defend the old proof with unit
+   tests, autoreview, or a green proxy route.
+
+When the reporter confirms the headline fix but identifies a related residual
+symptom, record a separate observable case or explicitly split it to a new
+issue. Do not leave a blanket `completed` label on an unresolved workflow.
 
 ## Read Order
 
@@ -359,7 +389,8 @@ Before routing as autonomous, the item must pass:
 - has a current live source;
 - has no active owner/PR/branch/recent claim conflict;
 - has a clear owner skill/package/docs surface;
-- has an honest proof path;
+- has an honest proof path with one exact observable case, named claim fields,
+  and a final-ref replay plan;
 - has enough public intake context for a local maintainer Codex run, or the
   missing context is explicitly requested;
 - does not require external credentials, destructive action, or public mutation
@@ -371,15 +402,17 @@ When fit is unclear, produce a decision-ready brief instead of guessing.
 ## Authority Boundaries
 
 Default is read, classify, route, patch local files when execution owner allows,
-and hand off. The standing verified-fix exception authorizes one transparent
-comment on a user-selected non-security public issue after all proof gates pass,
-including for a local-only patch. Do not mutate any other GitHub or release
-state unless the user explicitly asks or the invoked owner skill requires it.
+and hand off. The standing status-comment exception authorizes one transparent
+comment on a user-selected non-security public issue after the reporter-valid
+packet passes. Local-only work must be described as a candidate. Fixed/completed
+wording requires replay on the final pushed ref. Do not mutate any other
+GitHub or release state unless the user explicitly asks or the invoked owner
+skill requires it.
 
 Hard stops:
 
 - commit, push, PR creation, branch creation, merge, close, label, reopen,
-  comments outside the verified-fix exception, review submission, release,
+  comments outside the status-comment exception, review submission, release,
   publish;
 - external sends/posts;
 - credentials, payment, 2FA, captcha, account signup, or secret handling;

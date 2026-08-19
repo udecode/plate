@@ -6,7 +6,7 @@ import {
   getCompiledPlatePlugin,
   getPlateRuntime,
 } from '../../internal/plugin/compilePlateModel';
-import { usePlateRootProps } from '../hooks';
+import { getPlateEditorInstanceKey } from '../internal/getPlateEditorInstanceKey';
 import { usePlateModelRevision } from '../internal/usePlateModelRevision';
 import { useEditor } from '../stores/plate';
 
@@ -23,14 +23,12 @@ export function PlateRoot({
   children: React.ReactNode;
   id?: string;
 }) {
-  const rootProps = usePlateRootProps({ id });
-
   const editor = useEditor({ id });
 
   usePlateModelRevision(editor);
 
   let abovePlite = (
-    <Plite key={rootProps.key} editor={rootProps.editor}>
+    <Plite key={getPlateEditorInstanceKey(editor)} editor={editor}>
       {children}
     </Plite>
   );

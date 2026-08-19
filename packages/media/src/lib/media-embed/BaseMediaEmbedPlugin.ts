@@ -98,11 +98,7 @@ export const BaseMediaEmbedPlugin = defineBasePlugin(PLUGINS.mediaEmbed, {
             const width =
               typeof node.width === 'number' ? `${node.width}px` : node.width;
 
-            if (
-              !url ||
-              node.isUpload !== undefined ||
-              node.name !== undefined
-            ) {
+            if (!url) {
               return null;
             }
 

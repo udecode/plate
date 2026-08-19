@@ -29,7 +29,7 @@ docs:
 
 The fastest way to add discussion functionality is with the `DiscussionKit`, which includes the pre-configured `discussionPlugin` along with its [Plate UI](/docs/installation/plate-ui) components.
 
-<ComponentSource name="discussion-kit" />
+<ComponentSource name="discussion" />
 
 - [`BlockDiscussion`](/docs/components/block-discussion): Renders discussion UI above nodes
 
@@ -37,7 +37,7 @@ The fastest way to add discussion functionality is with the `DiscussionKit`, whi
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { DiscussionKit } from '@/components/editor/plugins/discussion-kit';
+import { DiscussionKit } from '@/components/editor/discussion';
 
 const editor = createPlateEditor({
   plugins: [
@@ -63,7 +63,7 @@ npm install @platejs/comment @platejs/suggestion
 
 ```tsx
 import { definePlatePlugin } from 'platejs/react';
-import { BlockDiscussion } from '@/components/ui/block-discussion';
+import { BlockDiscussion } from '@/components/editor/block-discussion';
 
 export interface TDiscussion {
   id: string;

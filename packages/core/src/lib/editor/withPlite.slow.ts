@@ -648,11 +648,11 @@ describe('createPlateEditor', () => {
     it('decodes and transforms HTML before fitting its root content', () => {
       let transformedInput: ReturnType<BaseEditor['read']['value']> | undefined;
       const TransformHtmlPlugin = defineBasePlugin('transformHtml', {
-        transformInitialValue: ({ value }) => {
-          transformedInput = value;
+        prepareDocument: ({ document }) => {
+          transformedInput = document;
 
           return {
-            ...value,
+            ...document,
             children: [{ children: [], type: 'paragraph' }],
           };
         },
@@ -710,14 +710,14 @@ describe('createPlateEditor', () => {
             }),
           },
         },
-        transformInitialValue: ({ value }) => ({
-          ...value,
-          children: value.children.map((node) => ({
+        prepareDocument: ({ document }) => ({
+          ...document,
+          children: document.children.map((node) => ({
             ...node,
             transformed: true,
           })),
           roots: Object.fromEntries(
-            Object.entries(value.roots ?? {}).map(([root, children]) => [
+            Object.entries(document.roots ?? {}).map(([root, children]) => [
               root,
               children.map((node) => ({ ...node, transformed: true })),
             ])
@@ -1288,11 +1288,11 @@ describe('createPlateEditor', () => {
       };
     };
     const WrapTextPlugin = defineBasePlugin('wrapText', {
-      transformInitialValue: ({ value: initialValue }) => ({
-        ...initialValue,
-        children: initialValue.children.map(wrapCellText) as Value,
+      prepareDocument: ({ document }) => ({
+        ...document,
+        children: document.children.map(wrapCellText) as Value,
         roots: Object.fromEntries(
-          Object.entries(initialValue.roots ?? {}).map(([root, children]) => [
+          Object.entries(document.roots ?? {}).map(([root, children]) => [
             root,
             children.map(wrapCellText) as Value,
           ])

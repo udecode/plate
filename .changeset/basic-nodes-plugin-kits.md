@@ -2,6 +2,8 @@
 "@platejs/basic-nodes": major
 ---
 
+Require React and React DOM 19.2 or newer.
+
 Remove the Heading, Basic Blocks, and Basic Marks grouping descriptors and
 package-owned preset arrays. The package exports each Base and React capability
 plugin independently. Built-in marks expose semantic read and update methods.
@@ -25,13 +27,15 @@ Toggle headings through their generic text-block commands. Toggle blockquotes
 through `editor.update.blockquote.toggle()`, which owns wrap and unwrap
 semantics.
 
-Add the versioned migration plugin while loading persisted pre-v54 text marks:
+Add the shared v54 document step while loading persisted v53 text marks:
 
 ```tsx
-import { ScriptV54MigrationPlugin } from '@platejs/basic-nodes/migrations';
-import { ScriptPlugin } from '@platejs/basic-nodes/react';
+import { defineDocumentMigrations, migratePlateV54 } from 'platejs/migrations';
 
-const plugins = [ScriptV54MigrationPlugin, ScriptPlugin];
+const migrations = defineDocumentMigrations(EditorSchema, {
+  steps: { 54: migratePlateV54 },
+  unversioned: 53,
+});
 ```
 
-Remove `ScriptV54MigrationPlugin` after every persisted document is resaved.
+Replace six heading plugins with one Heading plugin and required level.

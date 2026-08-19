@@ -87,7 +87,7 @@ Wrap your provider as `YjsProviderLike`, then pass it through the plugin's
 
 ```tsx
 import { useYjsRemoteCursors, YjsPlugin } from "@platejs/yjs/react";
-import { RemoteCursorOverlay } from "@/components/ui/remote-cursor-overlay";
+import { RemoteCursorOverlay } from "@/components/editor/remote-cursor-overlay";
 
 export const yjsPlugin = YjsPlugin.configure({
   initialState: {
@@ -119,7 +119,7 @@ The `RemoteCursorOverlay` requires a positioned container around the editor cont
 
 ```tsx
 import { Plate } from "platejs/react";
-import { EditorContainer } from "@/components/ui/editor";
+import { EditorContainer } from "@/components/editor/editor";
 
 return (
   <Plate editor={editor}>

@@ -45,24 +45,32 @@
   "targets": [
     {
       "name": "footnote-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/footnote-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for footnote-kit."
+        }
+      ]
     },
     {
       "name": "footnote-base-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/footnote-base-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for footnote-base-kit."
+        }
+      ]
     },
     {
       "name": "editor-kit",
       "files": [],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "definitionFiles": [],
       "diagnostics": [
         {
           "severity": "warning",
@@ -73,35 +81,55 @@
     },
     {
       "name": "editor-base-kit",
-      "files": ["apps/www/src/registry/components/editor/editor-base-kit.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for editor-base-kit."
+        }
+      ]
     },
     {
       "name": "markdown-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/markdown-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for markdown-kit."
+        }
+      ]
     },
     {
       "name": "insert-toolbar-button",
-      "files": ["apps/www/src/registry/ui/insert-toolbar-button.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "files": [
+        "apps/www/src/registry/components/editor/insert-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
       "diagnostics": []
     },
     {
       "name": "insert-toolbar-classic-button",
-      "files": ["apps/www/src/registry/ui/insert-toolbar-classic-button.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "files": [
+        "apps/www/src/registry/components/editor/insert-toolbar-classic-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
       "diagnostics": []
     },
     {
       "name": "slash-node",
-      "files": ["apps/www/src/registry/ui/slash-node.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for slash-node."
+        }
+      ]
     },
     {
       "name": "transforms",
@@ -119,11 +147,15 @@
     },
     {
       "name": "autoformat-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/autoformat-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for autoformat-kit."
+        }
+      ]
     }
   ],
   "entries": [

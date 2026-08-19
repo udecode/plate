@@ -47,15 +47,13 @@ describe('listToMdastTree', () => {
       {
         children: [{ text: 'list1' }],
         indent: 1,
-        listStart: 1,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
       {
         children: [{ text: 'list2' }],
         indent: 1,
-        listStart: 1,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
     ];
@@ -91,7 +89,7 @@ describe('listToMdastTree', () => {
       ],
       ordered: false,
       spread: false,
-      start: 1,
+      start: undefined,
       type: 'list',
     });
   });
@@ -101,22 +99,19 @@ describe('listToMdastTree', () => {
       {
         children: [{ text: 'list1' }],
         indent: 1,
-        listStart: 1,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
       {
         children: [{ text: 'list2' }],
         indent: 1,
-        listStart: 1,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
       {
         children: [{ text: 'list3' }],
         indent: 2,
-        listStart: 1,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
     ];
@@ -161,7 +156,7 @@ describe('listToMdastTree', () => {
               ],
               ordered: false,
               spread: false,
-              start: 1,
+              start: undefined,
               type: 'list',
             },
           ],
@@ -171,7 +166,7 @@ describe('listToMdastTree', () => {
       ],
       ordered: false,
       spread: false,
-      start: 1,
+      start: undefined,
       type: 'list',
     });
   });
@@ -181,15 +176,13 @@ describe('listToMdastTree', () => {
       {
         children: [{ text: 'list1' }],
         indent: 1,
-        listStart: 1,
-        listStyleType: 'decimal',
+        listType: 'numbered',
         type: 'paragraph',
       },
       {
         children: [{ text: 'list2' }],
         indent: 1,
-        listStart: 2,
-        listStyleType: 'decimal',
+        listType: 'numbered',
         type: 'paragraph',
       },
     ];
@@ -225,8 +218,36 @@ describe('listToMdastTree', () => {
       ],
       ordered: true,
       spread: false,
-      start: 1,
+      start: undefined,
       type: 'list',
+    });
+  });
+
+  it('serializes a conditional start only when it begins the sequence', () => {
+    const result = listToMdastTree(
+      [
+        {
+          children: [{ text: 'four' }],
+          indent: 1,
+          listStart: 4,
+          listType: 'numbered',
+          type: 'paragraph',
+        },
+        {
+          children: [{ text: 'five' }],
+          indent: 1,
+          listStart: 99,
+          listType: 'numbered',
+          type: 'paragraph',
+        },
+      ],
+      runtimeOptions
+    );
+
+    expect(result).toMatchObject({
+      children: [{}, {}],
+      ordered: true,
+      start: 4,
     });
   });
 
@@ -235,36 +256,31 @@ describe('listToMdastTree', () => {
       {
         children: [{ text: 'level1-1' }],
         indent: 1,
-        listStart: 1,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
       {
         children: [{ text: 'level2-1' }],
         indent: 2,
-        listStart: 1,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
       {
         children: [{ text: 'level3-1' }],
         indent: 3,
-        listStart: 1,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
       {
         children: [{ text: 'level2-2' }],
         indent: 2,
-        listStart: 1,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
       {
         children: [{ text: 'level1-2' }],
         indent: 1,
-        listStart: 1,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
     ];
@@ -290,29 +306,25 @@ describe('listToMdastTree', () => {
       {
         children: [{ text: 'unordered 1' }],
         indent: 1,
-        listStart: 1,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
       {
         children: [{ text: 'ordered 1' }],
         indent: 2,
-        listStart: 1,
-        listStyleType: 'decimal',
+        listType: 'numbered',
         type: 'paragraph',
       },
       {
         children: [{ text: 'ordered 2' }],
         indent: 2,
-        listStart: 2,
-        listStyleType: 'decimal',
+        listType: 'numbered',
         type: 'paragraph',
       },
       {
         children: [{ text: 'unordered sub' }],
         indent: 3,
-        listStart: 1,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
     ];
@@ -333,22 +345,19 @@ describe('listToMdastTree', () => {
       {
         children: [{ text: 'parent bullet' }],
         indent: 1,
-        listStart: 1,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
       {
         children: [{ text: 'child ordered' }],
         indent: 2,
-        listStart: 1,
-        listStyleType: 'decimal',
+        listType: 'numbered',
         type: 'paragraph',
       },
       {
         children: [{ text: 'child bullet' }],
         indent: 2,
-        listStart: 1,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
     ];
@@ -368,14 +377,14 @@ describe('listToMdastTree', () => {
         children: [{ text: 'start from 3' }],
         indent: 1,
         listStart: 3,
-        listStyleType: 'decimal',
+        listType: 'numbered',
         type: 'paragraph',
       },
       {
         children: [{ text: 'nested start from 5' }],
         indent: 2,
         listStart: 5,
-        listStyleType: 'decimal',
+        listType: 'numbered',
         type: 'paragraph',
       },
     ];
@@ -387,6 +396,7 @@ describe('listToMdastTree', () => {
     expect(result.ordered).toBe(true);
     expect(result.start).toBe(3);
     expect(getList(result.children[0], 1).start).toBe(5);
+    expect(getList(result.children[0], 1).children).toHaveLength(1);
   });
 
   it('handle deep nesting followed by shallow items', () => {
@@ -394,36 +404,31 @@ describe('listToMdastTree', () => {
       {
         children: [{ text: 'level 1' }],
         indent: 1,
-        listStart: 1,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
       {
         children: [{ text: 'level 2' }],
         indent: 2,
-        listStart: 1,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
       {
         children: [{ text: 'level 3' }],
         indent: 3,
-        listStart: 1,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
       {
         children: [{ text: 'level 4' }],
         indent: 4,
-        listStart: 1,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
       {
         children: [{ text: 'back to level 1' }],
         indent: 1,
-        listStart: 1,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
     ];
@@ -453,8 +458,7 @@ describe('listToMdastTree', () => {
           { italic: true, text: 'italic', type: 'text' },
         ],
         indent: 1,
-        listStart: 1,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
       {
@@ -467,8 +471,7 @@ describe('listToMdastTree', () => {
           },
         ],
         indent: 2,
-        listStart: 1,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
     ];
@@ -496,16 +499,14 @@ describe('listToMdastTree', () => {
         checked: true,
         children: [{ text: 'todo 1' }],
         indent: 1,
-        listStart: 1,
-        listStyleType: 'todo',
+        listType: 'task',
         type: 'paragraph',
       },
       {
         checked: false,
         children: [{ text: 'todo 2' }],
         indent: 1,
-        listStart: 1,
-        listStyleType: 'todo',
+        listType: 'task',
         type: 'paragraph',
       },
     ];
@@ -522,15 +523,13 @@ describe('listToMdastTree', () => {
       {
         children: [{ text: 'list1' }],
         indent: 1,
-        listStart: 1,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
       {
         children: [{ text: 'list2' }],
         indent: 1,
-        listStart: 1,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
     ];
@@ -556,22 +555,20 @@ describe('listToMdastTree', () => {
       {
         children: [{ text: 'parent' }],
         indent: 1,
-        listStart: 1,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
       {
         children: [{ text: 'unordered child' }],
         indent: 2,
-        listStart: 1,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
       {
         children: [{ text: 'ordered child' }],
         indent: 2,
         listStart: 3,
-        listStyleType: 'decimal',
+        listType: 'numbered',
         type: 'paragraph',
       },
     ];
@@ -596,7 +593,7 @@ describe('listToMdastTree', () => {
         ],
         ordered: false,
         spread: false,
-        start: 1,
+        start: undefined,
         type: 'list',
       },
       {
@@ -628,14 +625,14 @@ describe('listToMdastTree', () => {
         id: 'block-a',
         indent: 1,
         listStart: 7,
-        listStyleType: 'decimal',
+        listType: 'numbered',
         type: 'paragraph',
       },
       {
         children: [{ text: 'second' }],
         indent: 1,
-        listStart: 8,
-        listStyleType: 'decimal',
+        listStart: 99,
+        listType: 'numbered',
         type: 'paragraph',
       },
       {
@@ -643,8 +640,7 @@ describe('listToMdastTree', () => {
         children: [{ text: 'todo' }],
         id: 'block-c',
         indent: 1,
-        listStart: 1,
-        listStyleType: 'todo',
+        listType: 'task',
         type: 'paragraph',
       },
     ];
@@ -687,7 +683,7 @@ describe('listToMdastTree', () => {
               ],
               ordered: true,
               spread: true,
-              start: 1,
+              start: 7,
               type: 'list',
             },
           ],
@@ -711,7 +707,7 @@ describe('listToMdastTree', () => {
           ],
           ordered: true,
           spread: true,
-          start: 2,
+          start: 8,
           type: 'list',
         },
         {
@@ -750,5 +746,51 @@ describe('listToMdastTree', () => {
       ],
       type: 'fragment',
     });
+  });
+
+  it('resets block-id ordinals when list kind changes at one indent', () => {
+    const nodes = [
+      {
+        children: [{ text: 'parent' }],
+        id: 'parent',
+        indent: 1,
+        listType: 'bulleted',
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'one' }],
+        indent: 2,
+        listType: 'numbered',
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'bullet' }],
+        indent: 2,
+        listType: 'bulleted',
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'one again' }],
+        indent: 2,
+        listType: 'numbered',
+        type: 'paragraph',
+      },
+    ];
+    const result = listToMdastTree(
+      nodes,
+      {
+        ...runtimeOptions,
+        blockId: (node) => (typeof node.id === 'string' ? node.id : undefined),
+        withBlockId: true,
+      },
+      true
+    );
+
+    expect(result.children).toMatchObject([
+      { children: [{ ordered: false }] },
+      { ordered: true, start: 1 },
+      { ordered: false },
+      { ordered: true, start: 1 },
+    ]);
   });
 });

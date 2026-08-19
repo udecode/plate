@@ -3,7 +3,7 @@
 import { BaseParagraphPlugin, createBaseEditor } from 'platejs';
 import { jsxt } from '@platejs/test-utils';
 
-import { CodeBlockKit } from '@/registry/components/editor/plugins/code-block-kit';
+import { CodeBlockKit } from '@/registry/components/editor/code-block';
 
 jsxt;
 

@@ -3,5 +3,3 @@
  */
 
 export * from './TogglePlugin';
-export * from './ToggleVisibility';
-export * from './useToggle';

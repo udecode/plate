@@ -4,7 +4,7 @@ import { type Value, BaseParagraphPlugin, createBaseEditor } from 'platejs';
 import { BaseEquationPlugin, BaseInlineEquationPlugin } from '@platejs/math';
 import { jsxt } from '@platejs/test-utils';
 
-import { BaseMathKit } from '@/registry/components/editor/plugins/math-base-kit';
+import { BaseMathKit } from '@/registry/components/editor/math-static';
 
 jsxt;
 
@@ -28,15 +28,13 @@ describe('BaseMathKit', () => {
 
     const editor = createMathEditor(input);
 
-    editor
-      .plugin(BaseInlineEquationPlugin)
-      .update.insert({ texExpression: 'E=mc^2' });
+    editor.plugin(BaseInlineEquationPlugin).update.insert({ latex: 'E=mc^2' });
 
     expect(input.children).toEqual(
       (
         <fragment>
           <hp>
-            Einstein: <hinlineequation texExpression="E=mc^2" />
+            Einstein: <hinlineequation latex="E=mc^2" />
           </hp>
         </fragment>
       ).children
@@ -62,7 +60,7 @@ describe('BaseMathKit', () => {
         type: 'paragraph',
       },
       {
-        texExpression: '',
+        latex: '',
         type: 'equation',
       },
     ]);

@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-18-isolate-docx-file-io",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-18-isolate-docx-file-io.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-18",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Isolate DOCX file actions to the DOCX example",
+  "targets": [
+    {
+      "name": "editor-plugins",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins.generated.ts",
+        "apps/www/src/registry/components/editor/plugins.ts"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "fixed-toolbar",
+      "files": ["apps/www/src/registry/components/editor/fixed-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "docx-demo",
+      "files": [
+        "apps/www/src/registry/examples/docx-demo.tsx",
+        "apps/www/src/registry/examples/values/deserialize-docx-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-18-editor-plugins-isolate-docx-file-actions-10cbaaef",
+      "kind": "wiring",
+      "summary": "Keep DOCX file import and export in the DOCX example while default editors retain DOCX paste support.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["editor-plugins", "fixed-toolbar", "docx-demo"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-18",
+          "entry": "2026-08-18-isolate-docx-file-io",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

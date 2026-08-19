@@ -6,7 +6,7 @@ jsx;
 
 export const cursorOverlayValue = (
   <fragment>
-    <hh2>Cursor Overlay</hh2>
+    <hheading level={2}>Cursor Overlay</hheading>
     <hp>
       Try to drag over text: you will see a colored cursor on the drop target:
       color and other styles are customizable!

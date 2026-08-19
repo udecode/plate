@@ -25,8 +25,7 @@ Break between lists.
       {
         children: [{ text: 'First list item' }],
         indent: 1,
-        listStart: 1,
-        listStyleType: 'decimal',
+        listType: 'numbered',
         type: 'paragraph',
       },
       {
@@ -36,15 +35,14 @@ Break between lists.
       {
         children: [{ text: 'Second list item' }],
         indent: 1,
-        listStart: 2,
-        listStyleType: 'decimal',
+        listRestart: 2,
+        listType: 'numbered',
         type: 'paragraph',
       },
       {
         children: [{ text: 'Third list item' }],
         indent: 1,
-        listStart: 3,
-        listStyleType: 'decimal',
+        listType: 'numbered',
         type: 'paragraph',
       },
     ]);
@@ -55,7 +53,7 @@ Break between lists.
       {
         children: [{ text: 'First list item' }],
         indent: 1,
-        listStyleType: 'decimal',
+        listType: 'numbered',
         type: 'paragraph',
       },
       {
@@ -65,18 +63,36 @@ Break between lists.
       {
         children: [{ text: 'Second list item' }],
         indent: 1,
-        listStart: 2,
-        listStyleType: 'decimal',
+        listRestart: 2,
+        listType: 'numbered',
         type: 'paragraph',
       },
       {
         children: [{ text: 'Third list item' }],
         indent: 1,
-        listStart: 3,
-        listStyleType: 'decimal',
+        listType: 'numbered',
         type: 'paragraph',
       },
     ]);
+  });
+
+  it('preserves an ordered list that starts at zero', () => {
+    const value = editor.api.markdown.deserialize('0. Zero\n1. One');
+
+    expect(value.children).toMatchObject([
+      {
+        children: [{ text: 'Zero' }],
+        indent: 1,
+        listRestart: 0,
+        listType: 'numbered',
+      },
+      {
+        children: [{ text: 'One' }],
+        indent: 1,
+        listType: 'numbered',
+      },
+    ]);
+    expect(editor.api.markdown.serialize({ value })).toBe('0. Zero\n1. One\n');
   });
 
   it('deserializes a single Markdown string containing all list edge cases', () => {
@@ -132,15 +148,13 @@ Break between lists.
       {
         children: [{ text: 'Item A' }],
         indent: 1,
-        listStart: 1,
-        listStyleType: 'decimal',
+        listType: 'numbered',
         type: 'paragraph',
       },
       {
         children: [{ text: 'Item B' }],
         indent: 1,
-        listStart: 2,
-        listStyleType: 'decimal',
+        listType: 'numbered',
         type: 'paragraph',
       },
 
@@ -150,15 +164,13 @@ Break between lists.
       {
         children: [{ text: 'Custom start item' }],
         indent: 1,
-        listStart: 3,
-        listStyleType: 'decimal',
+        listType: 'numbered',
         type: 'paragraph',
       },
       {
         children: [{ text: 'Another item' }],
         indent: 1,
-        listStart: 4,
-        listStyleType: 'decimal',
+        listType: 'numbered',
         type: 'paragraph',
       },
 
@@ -168,20 +180,19 @@ Break between lists.
       {
         children: [{ text: 'Bullet outer' }],
         indent: 1,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
       {
         children: [{ text: 'Nested bullet' }],
         indent: 2,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
       {
         children: [{ text: 'Nested ordered' }],
         indent: 3,
-        listStart: 1,
-        listStyleType: 'decimal',
+        listType: 'numbered',
         type: 'paragraph',
       },
 
@@ -191,7 +202,7 @@ Break between lists.
       {
         children: [{ text: 'A bullet with a blockquote:' }],
         indent: 1,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
       // The blockquote lines become paragraphs at indent + 1 (if your parser merges them),
@@ -217,13 +228,13 @@ Break between lists.
       {
         children: [{ text: 'Star bullet' }],
         indent: 1,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
       {
         children: [{ text: '' }],
         indent: 1,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
       // Extra blank lines produce no tokens
@@ -231,7 +242,7 @@ Break between lists.
       {
         children: [{ text: 'Some item' }],
         indent: 1,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
 
@@ -239,13 +250,13 @@ Break between lists.
       {
         children: [{ text: 'Another bullet' }],
         indent: 1,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
       {
         children: [{ text: 'Sub bullet' }],
         indent: 2,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
       {
@@ -263,29 +274,26 @@ Break between lists.
       {
         children: [{ text: 'a' }],
         indent: 1,
-        listStart: 1,
-        listStyleType: 'decimal',
+        listType: 'numbered',
         type: 'paragraph',
       },
       {
         children: [{ text: 'b' }],
         indent: 2,
-        listStart: 1,
-        listStyleType: 'decimal',
+        listType: 'numbered',
         type: 'paragraph',
       },
       {
         children: [{ text: 'c' }],
         indent: 3,
-        listStart: 1,
-        listStyleType: 'decimal',
+        listType: 'numbered',
         type: 'paragraph',
       },
       // followed by sibling bullet at indent 2
       {
         children: [{ text: 'sibling bullet' }],
         indent: 2,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
     ];

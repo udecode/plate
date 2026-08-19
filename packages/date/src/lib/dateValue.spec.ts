@@ -21,27 +21,23 @@ describe('date values', () => {
   });
 
   it('normalizes legacy date strings into canonical dates', () => {
-    expect(normalizeDateValue('Mon Mar 23 2026')).toEqual({
-      date: '2026-03-23',
-    });
+    expect(normalizeDateValue('Mon Mar 23 2026')).toBe('2026-03-23');
   });
 
-  it('preserves non-normalizable text as raw fallback data', () => {
-    expect(normalizeDateValue('sometime next week')).toEqual({
-      rawDate: 'sometime next week',
-    });
+  it('preserves non-normalizable authored text in the canonical value', () => {
+    expect(normalizeDateValue('sometime next week')).toBe('sometime next week');
   });
 
   it('renders canonical values as relative labels when applicable', () => {
     const now = new Date(2026, 2, 23, 9, 0);
 
-    expect(getDateDisplayLabel({ date: '2026-03-23', now })).toBe('Today');
-    expect(getDateDisplayLabel({ date: '2026-03-22', now })).toBe('Yesterday');
-    expect(getDateDisplayLabel({ date: '2026-03-24', now })).toBe('Tomorrow');
+    expect(getDateDisplayLabel('2026-03-23', { now })).toBe('Today');
+    expect(getDateDisplayLabel('2026-03-22', { now })).toBe('Yesterday');
+    expect(getDateDisplayLabel('2026-03-24', { now })).toBe('Tomorrow');
   });
 
   it('renders raw fallback text literally', () => {
-    expect(getDateDisplayLabel({ rawDate: 'sometime next week' })).toBe(
+    expect(getDateDisplayLabel('sometime next week')).toBe(
       'sometime next week'
     );
   });

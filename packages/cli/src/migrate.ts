@@ -55,7 +55,7 @@ const readGitFile = (path: string, cwd: string) => {
   }
 };
 
-const schemaTypesSnapshot = (source: string) => {
+const schemaTypesSnapshot = (source: string, fingerprint: string) => {
   const start = source.indexOf('export interface EditorText');
   const end = source.indexOf('\nexport type Schema =');
 
@@ -63,7 +63,7 @@ const schemaTypesSnapshot = (source: string) => {
     throw new Error('Invalid generated editor type artifact.');
   }
 
-  return `/* Generated schema type snapshot. Do not edit. */\nimport type { EditorSchemaContract, Element, Text } from 'platejs';\n\n${source.slice(start, end).trim()}\n\nexport type SchemaContract = EditorSchemaContract;\n`;
+  return `/* Generated schema type snapshot. Do not edit. */\nimport type { EditorSchemaContract, Element, Text } from 'platejs';\n\n${source.slice(start, end).trim()}\n\nexport type SchemaContract = EditorSchemaContract;\nexport const fingerprint = ${JSON.stringify(fingerprint)};\n`;
 };
 
 const migrationDirectoryName = (schema: EditorSchemaContract, name: string) => {
@@ -156,9 +156,21 @@ export const createEditorMigration = async (
 
   const fromSchema = `${JSON.stringify(previous, null, 2)}\n`;
   const toSchema = compiled.schemaSource;
-  const fromTypes = schemaTypesSnapshot(previousTypesSource);
-  const toTypes = schemaTypesSnapshot(compiled.typesSource);
-  const migration = `import type { Value as FromValue } from './from';\nimport type { Value as ToValue } from './to';\n\n/** Pure application-owned migration. Plate never runs this automatically. */\nexport const migrate = (_value: FromValue): ToValue => {\n  throw new Error('Implement schema migration: ${name}');\n};\n`;
+  const fromTypes = schemaTypesSnapshot(
+    previousTypesSource,
+    previous.fingerprint
+  );
+  const toTypes = schemaTypesSnapshot(
+    compiled.typesSource,
+    compiled.schema.fingerprint
+  );
+  const fromVersion =
+    previous.identity.kind === 'named' ? previous.identity.version : 'number';
+  const toVersion =
+    compiled.schema.identity.kind === 'named'
+      ? compiled.schema.identity.version
+      : 'number';
+  const migration = `import type { DocumentMigration, EditorDocumentValue } from 'platejs';\n\nimport type { Value as FromValue } from './from';\nimport type { Value as ToValue } from './to';\n\ntype FromDocument = EditorDocumentValue<FromValue>;\ntype ToDocument = EditorDocumentValue<ToValue>;\n\n/** Add this target-version step to the application document migration chain. */\nexport const migrate: DocumentMigration<\n  FromDocument,\n  ToDocument,\n  ${fromVersion},\n  ${toVersion}\n> = ({ document }) => {\n  void document;\n  throw new Error('Implement schema migration: ${name}');\n};\n`;
   const manifest = `${JSON.stringify(
     {
       checksums: {

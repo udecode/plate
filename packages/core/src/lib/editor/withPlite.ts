@@ -5,6 +5,7 @@ import {
   type Editor,
   type EditorDocumentValue,
   type EditorExtensionReference,
+  type PersistedDocumentInput,
   type SnapshotInput,
   type EditorTransactionSpecBuilder,
   type Selection,
@@ -75,6 +76,7 @@ import {
   type EditorSchemaIdentity,
   getEditorSchemaIdentity,
 } from './editorApplicationSchema';
+import { type DocumentMigrations, migrateDocument } from './documentMigrations';
 
 import {
   collectPlatePluginSourceCandidates,
@@ -86,7 +88,10 @@ import {
   restorePlateRuntimeExtensionBindings,
   snapshotPlatePluginSources,
 } from '../../internal/plugin/resolvePlugins';
-import { transformInitialValue } from '../../internal/plugin/pipeTransformInitialValue';
+import {
+  mapDocumentSelection,
+  prepareDocument,
+} from '../../internal/plugin/pipePrepareDocument';
 
 type ProjectInjectedEditor<TEditor, TProjection> = Omit<
   TEditor,
@@ -308,21 +313,30 @@ const SELECTION_OPTION_INDEXES = Object.freeze({
 
 export type EditorValueInput<V extends Value> =
   | EditorDocumentValue<V>
+  | PersistedDocumentInput<V>
   | Readonly<V>
   | V;
 
 const normalizeBaseInitialValue = <V extends Value>(
   editor: BaseEditor,
-  value: unknown
-): EditorDocumentValue<V> => {
+  value: unknown,
+  implicitDocumentIsCurrent: boolean
+): EditorDocumentValue<V> | PersistedDocumentInput<V> => {
   if (value !== undefined) {
     const children = Array.isArray(value)
       ? value
       : value &&
           typeof value === 'object' &&
-          Array.isArray((value as EditorDocumentValue).children)
-        ? (value as EditorDocumentValue).children
-        : null;
+          'document' in value &&
+          value.document &&
+          typeof value.document === 'object' &&
+          Array.isArray((value.document as EditorDocumentValue).children)
+        ? (value.document as EditorDocumentValue).children
+        : value &&
+            typeof value === 'object' &&
+            Array.isArray((value as EditorDocumentValue).children)
+          ? (value as EditorDocumentValue).children
+          : null;
 
     if (!children || children.length === 0) {
       throw new Error(
@@ -332,12 +346,19 @@ const normalizeBaseInitialValue = <V extends Value>(
 
     return (
       Array.isArray(value) ? { children: value as unknown as V } : value
-    ) as EditorDocumentValue<V>;
+    ) as EditorDocumentValue<V> | PersistedDocumentInput<V>;
   }
 
   const currentValue = editor.read.value() as EditorDocumentValue<V>;
 
-  if (currentValue.children.length > 0) return currentValue;
+  if (currentValue.children.length > 0) {
+    return implicitDocumentIsCurrent
+      ? {
+          document: currentValue,
+          schema: editor.read.schema.identity(),
+        }
+      : currentValue;
+  }
 
   const defaultChild = editor.read.schema.createDefaultRootChild();
 
@@ -346,8 +367,11 @@ const normalizeBaseInitialValue = <V extends Value>(
   }
 
   return {
-    ...currentValue,
-    children: [defaultChild] as unknown as V,
+    document: {
+      ...currentValue,
+      children: [defaultChild] as unknown as V,
+    },
+    schema: editor.read.schema.identity(),
   };
 };
 
@@ -356,11 +380,13 @@ const initializeBaseEditor = <V extends Value>(
   tx: EditorTransactionSpecBuilder<Value, any>,
   {
     autoSelect,
+    implicitDocumentIsCurrent,
     initialValue,
     selection,
     shouldNormalizeEditor,
   }: {
     autoSelect?: boolean | 'end' | 'start';
+    implicitDocumentIsCurrent: boolean;
     initialValue?:
       | ((context: { editor: BaseEditor }) => EditorValueInput<V>)
       | EditorValueInput<V>;
@@ -370,15 +396,22 @@ const initializeBaseEditor = <V extends Value>(
 ) => {
   const nextValue = normalizeBaseInitialValue<V>(
     editor,
-    typeof initialValue === 'function' ? initialValue({ editor }) : initialValue
+    typeof initialValue === 'function'
+      ? initialValue({ editor })
+      : initialValue,
+    implicitDocumentIsCurrent
   );
-  const selectionInput =
-    selection ??
-    (autoSelect === true
+  const autoSelection =
+    autoSelect === true
       ? 'end'
       : autoSelect === 'start' || autoSelect === 'end'
         ? autoSelect
-        : null);
+        : undefined;
+  const selectionInput =
+    selection ??
+    autoSelection ??
+    ('document' in nextValue ? nextValue.selection : undefined) ??
+    null;
 
   const wasInitializing = editor.runtime.isNormalizing;
 
@@ -698,6 +731,8 @@ export type BaseEditorOptions<
    * limit is reached, further input will be prevented.
    */
   maxLength?: number;
+  /** Versioned complete-document migrations bound to the named schema. */
+  migrations?: DocumentMigrations;
   /**
    * Array of plugins to be loaded into the editor. Plugins extend the editor's
    * functionality and define custom behavior.
@@ -732,7 +767,7 @@ export type BaseEditorOptions<
    * Useful when the editor state is managed externally (e.g., with Yjs
    * collaboration) or when you want to manually control the initialization
    * process. A later complete `editor.update.value.replace(...)` still runs
-   * every plugin `transformInitialValue` before schema fitting.
+   * every plugin `prepareDocument` before schema fitting.
    *
    * @default false
    */
@@ -744,21 +779,14 @@ type ApplyBaseEditorOptions<
   P extends BasePluginInput = CorePluginDefinition,
 > = Omit<BaseEditorOptions<P>, 'id'> &
   Partial<
-    Pick<
-      AnyBasePlugin,
-      | 'decorate'
-      | 'initialState'
-      | 'inject'
-      | 'override'
-      | 'transformInitialValue'
-    >
+    Pick<AnyBasePlugin, 'decorate' | 'initialState' | 'inject' | 'override'>
   > & {
     /** Root editor API declarations for the synthetic root plugin. */
     api?: BasePluginDefinitionInput['api'];
     /**
-     * One-shot editor document, or primary-root array shorthand. The callback
-     * runs synchronously after the plugin model and schema are compiled, so
-     * feature-owned decoders can use the configured editor.
+     * Complete editor document, persisted document envelope, or primary-root
+     * array shorthand. Versioned migrations and installed plugin preparation
+     * run after the plugin model and schema are compiled.
      *
      * Omit this option to preserve an existing editor document or construct the
      * schema's default primary-root child for a new editor.
@@ -784,7 +812,8 @@ const applyBaseEditor = <
   E extends AnyEditor = AnyEditor,
 >(
   e: E,
-  options: ApplyBaseEditorOptions<V, P>
+  options: ApplyBaseEditorOptions<V, P>,
+  implicitDocumentIsCurrent: boolean
 ): InternalBaseEditorWithInstalledPlugins<
   V,
   InferBaseEditorPlugins<P[]>,
@@ -795,6 +824,7 @@ const applyBaseEditor = <
     autoSelect,
     initialValue,
     maxLength,
+    migrations,
     plugins = [],
     readOnly,
     schema,
@@ -977,26 +1007,77 @@ const applyBaseEditor = <
     restoreSnapshotInputTransform = setEditorSnapshotInputTransform(
       editor,
       (input: SnapshotInput) => {
-        const { selection: inputSelection, ...value } = input;
+        const inputSelection = input.selection;
         const selection =
           inputSelection &&
           inputSelection !== 'start' &&
           inputSelection !== 'end'
             ? inputSelection
             : null;
-        const transformed = transformInitialValue(
+        const inputDocument =
+          'document' in input
+            ? input.document
+            : {
+                children: input.children,
+                ...(input.meta === undefined ? {} : { meta: input.meta }),
+                ...(input.roots === undefined ? {} : { roots: input.roots }),
+              };
+        if ('document' in input && !migrations) {
+          const current = editor.read.schema.identity();
+          const source = input.schema;
+          const matches =
+            source.kind === current.kind &&
+            source.fingerprint === current.fingerprint &&
+            (source.kind === 'derived' ||
+              (current.kind === 'named' &&
+                source.id === current.id &&
+                source.version === current.version));
+
+          if (!matches) {
+            throw new Error(
+              `Persisted document schema ${JSON.stringify(source)} does not match current schema ${JSON.stringify(current)}.`
+            );
+          }
+        }
+        const migration = migrations
+          ? migrateDocument(
+              'document' in input
+                ? input
+                : (inputDocument as EditorDocumentValue),
+              { editor, migrations }
+            )
+          : undefined;
+        const migrated =
+          migration?.document ?? (inputDocument as EditorDocumentValue);
+        const selectionRoot =
+          selection?.anchor.root ?? selection?.focus.root ?? MAIN_ROOT_KEY;
+        const runnerSelection =
+          migration?.selection === 'start' || migration?.selection === 'end'
+            ? undefined
+            : migration?.selection;
+        const migratedSelection =
+          runnerSelection !== undefined
+            ? runnerSelection
+            : mapDocumentSelection(
+                editor,
+                selection,
+                inputDocument as EditorDocumentValue,
+                migrated,
+                selectionRoot
+              );
+        const prepared = prepareDocument(
           editor,
-          value as EditorDocumentValue,
-          selection,
-          selection?.anchor.root ?? selection?.focus.root ?? MAIN_ROOT_KEY
+          migrated,
+          migratedSelection,
+          selectionRoot
         );
 
         return {
-          ...transformed.value,
+          ...prepared.document,
           selection:
             inputSelection === 'start' || inputSelection === 'end'
               ? inputSelection
-              : transformed.selection,
+              : prepared.selection,
         };
       }
     );
@@ -1018,6 +1099,7 @@ const applyBaseEditor = <
             : (tx) =>
                 initializeBaseEditor(editor, tx, {
                   autoSelect,
+                  implicitDocumentIsCurrent,
                   initialValue:
                     typeof initialValue === 'function'
                       ? () =>
@@ -1104,7 +1186,7 @@ type InferCreateBaseEditorPlugins<P extends readonly unknown[]> =
  *
  * ```ts
  * const editor = createBaseEditor({
- *   plugins: [ParagraphPlugin, H1Plugin],
+ *   plugins: [ParagraphPlugin, HeadingPlugin],
  *   initialValue: [{ type: 'paragraph', children: [{ text: 'Hello world!' }] }],
  * });
  *
@@ -1192,6 +1274,7 @@ export function createBaseEditor({
 
   return applyBaseEditor<Value, BasePluginInput>(
     baseEditor,
-    options as unknown as ApplyBaseEditorOptions<Value, BasePluginInput>
+    options as unknown as ApplyBaseEditorOptions<Value, BasePluginInput>,
+    editor === undefined
   ) as unknown as BaseEditor;
 }

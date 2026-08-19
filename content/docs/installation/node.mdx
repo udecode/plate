@@ -38,13 +38,13 @@ React tree.
 ```ts showLineNumbers title="scripts/process-content.ts"
 import type { Value } from 'platejs';
 
-import { BaseBoldPlugin, BaseH1Plugin } from '@platejs/basic-nodes';
+import { BaseBoldPlugin, BaseHeadingPlugin } from '@platejs/basic-nodes';
 import { createBaseEditor } from 'platejs';
 
 const value: Value = [
   {
     children: [{ text: 'Document Title' }],
-    type: 'h1',
+    type: 'heading', level: 1,
   },
   {
     children: [
@@ -57,7 +57,7 @@ const value: Value = [
 ];
 
 const editor = createBaseEditor({
-  plugins: [BaseH1Plugin, BaseBoldPlugin],
+  plugins: [BaseHeadingPlugin, BaseBoldPlugin],
   initialValue: value,
 });
 
@@ -72,12 +72,12 @@ Add `MarkdownPlugin` when the script needs Markdown conversion. Use the
 editor's `markdown` API for both directions.
 
 ```ts showLineNumbers title="scripts/markdown-io.ts"
-import { BaseBoldPlugin, BaseH1Plugin } from '@platejs/basic-nodes';
+import { BaseBoldPlugin, BaseHeadingPlugin } from '@platejs/basic-nodes';
 import { MarkdownPlugin } from '@platejs/markdown';
 import { createBaseEditor } from 'platejs';
 
 const editor = createBaseEditor({
-  plugins: [BaseH1Plugin, BaseBoldPlugin, MarkdownPlugin],
+  plugins: [BaseHeadingPlugin, BaseBoldPlugin, MarkdownPlugin],
 });
 
 const value = editor.api.markdown.deserialize(
@@ -103,15 +103,15 @@ import type { Value } from 'platejs';
 
 import {
   BaseBoldPlugin,
-  BaseH1Plugin,
-  BaseH2Plugin,
+  BaseHeadingPlugin,
+  
 } from '@platejs/basic-nodes';
 import { MarkdownPlugin } from '@platejs/markdown';
 import { createBaseEditor } from 'platejs';
 
 export function normalizeHeadings(value: Value) {
   const editor = createBaseEditor({
-    plugins: [BaseH1Plugin, BaseH2Plugin, BaseBoldPlugin, MarkdownPlugin],
+    plugins: [BaseHeadingPlugin,  BaseBoldPlugin, MarkdownPlugin],
     initialValue: value,
   });
 
@@ -119,7 +119,7 @@ export function normalizeHeadings(value: Value) {
 
   editor.update((tx) => {
     tx.nodes.set(
-      { type: 'h2' },
+      { type: 'heading', level: 2 },
       {
         at: [],
         match: (node) => 'type' in node && node.type === 'h1',

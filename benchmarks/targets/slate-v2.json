@@ -12,6 +12,40 @@
   },
   "targets": [
     {
+      "id": "plite-read-view-lifecycle",
+      "question": "Do warm reads and document commits avoid rebuilding extension read namespaces as installed plugin width grows from 1 to 100?",
+      "owner": "plite",
+      "family": "core-read",
+      "kind": "current",
+      "cwd": ".",
+      "command": "PLITE_READ_VIEW_LIFECYCLE_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-read-view-lifecycle-benchmark.ts --output=tmp/plite-read-view-lifecycle-benchmark.json",
+      "metrics": {
+        "primary": "plite_read_view_lifecycle_width_ratio",
+        "direction": "lower",
+        "unit": "ratio",
+        "printsMetric": true,
+        "upgrade": "Warm reads and 100 document commits must execute zero read factories. The 100-extension p95 must stay within 2x of the one-extension cohort."
+      },
+      "correctness": {
+        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plite/test/read-view-lifecycle-contract.test.ts ./packages/plite/test/extension-namespaces-contract.ts ./packages/plite/test/editor-runtime-view-contract.ts ./packages/plite/test/state-tx-public-api-contract.ts ./benchmarks/editor/benchmarks/plite-read-view-lifecycle-benchmark.test.ts",
+        "policy": "Promotion requires exact configuration and transform invalidation, current direct facades, active-draft reads, cached root projections, method-only groups, and structural benchmark counters."
+      },
+      "artifacts": [
+        {
+          "path": "tmp/plite-read-view-lifecycle-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": [
+          "docs/plans/2026-08-18-cache-editor-read-views-and-cut-hot-path-capability-rebuilding.md"
+        ]
+      },
+      "thresholds": {
+        "promotion": "plite_read_view_lifecycle_width_ratio<=2 and plite_read_view_lifecycle_warm_factory_calls=0 and post-commit factory calls remain equal to initial factory calls"
+      }
+    },
+    {
       "id": "plite-schema-construction",
       "question": "Does a schema-backed sparse edit keep the changed representation span and untouched boundary identities local inside one deep, wide top-level node?",
       "owner": "plite",

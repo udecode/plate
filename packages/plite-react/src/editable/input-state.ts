@@ -135,6 +135,7 @@ export type EditableInputControllerState = {
   repairInducedSelectionOriginVersion?: number;
   selectionChangeOrigin: SelectionChangeOrigin | null;
   selectionSource: SelectionSource;
+  textInputOwnership?: 'model' | 'native' | null;
 };
 
 export type DOMInputRepairTarget = {
@@ -289,6 +290,7 @@ export const createEditableInputControllerState = (
       repairInducedSelectionOriginVersion: 0,
       selectionChangeOrigin: null,
       selectionSource: 'unknown',
+      textInputOwnership: null,
     },
     domInputRuntime
   );

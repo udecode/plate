@@ -1902,22 +1902,10 @@ const PaginationSurface = ({
         ? {
             estimatedBlockSize: 48,
             overscan: pageOverscan,
-            textSync: {
-              projections: 'range-transform',
-              renderLeaf: 'text-invariant',
-            },
             threshold: 1,
             type: 'virtualized',
           }
-        : domStrategyMode === 'staged'
-          ? {
-              textSync: {
-                projections: 'range-transform',
-                renderLeaf: 'text-invariant',
-              },
-              type: 'staged',
-            }
-          : domStrategyMode,
+        : domStrategyMode,
     [domStrategyMode, pageOverscan]
   );
   const usesVirtualizedLayout = effectiveDOMStrategy === 'virtualized';

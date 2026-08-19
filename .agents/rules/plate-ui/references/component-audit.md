@@ -1,109 +1,89 @@
 # Component Audit
 
-These are the strongest patterns to copy from the current repo.
+Audit current source against the laws in `plate-ui`; do not treat an existing
+export or file split as precedent.
 
-## Good package extraction
+## Family shape
 
-### Media
+For each React component family, classify it as one of these:
 
-- App: [media-image-node.tsx](apps/www/src/registry/ui/media-image-node.tsx)
-- Package: [useMediaState.ts](packages/media/src/react/media/useMediaState.ts)
+1. **Direct component** — local hooks, state, derived values, and handlers stay
+   in `<Family>.tsx`.
+2. **Component plus controller** — one `use<Family>.ts[x]` owns a semantic
+   controller shared by multiple family members or surfaces.
+3. **Independent state owner** — a separate private context/store file exists
+   because its lifecycle or consumers extend beyond one family.
 
-Why it works:
+Flag these as migration debt:
 
-- package hook owns real media/editor state
-- app still composes the toolbar, caption, resize handles, and shadcn-style UI
+- `useFooState -> useFoo` or state-hook/prop-hook pipelines;
+- one exported hook per subcomponent;
+- public prop-bag hooks used by one renderer;
+- component or hook factories for a small fixed family;
+- public providers/stores with no independent consumer;
+- hooks defined in plugin descriptor files;
+- `forwardRef` or React 18 compatibility branches;
+- `components/` and `hooks/` directories that only classify one family.
 
-### TOC
+For every public package hook, trace and record terminal consumers rather than
+stopping at the first package import. Classify it as:
 
-- App: [toc-node.tsx](apps/www/src/registry/ui/toc-node.tsx)
-- Package: [useTocElement.ts](packages/toc/src/react/hooks/useTocElement.ts)
+- **public package** — multiple independent terminal owners or a durable
+  headless semantic, DOM, accessibility, or integration subsystem;
+- **package-private** — implementation of a real package subsystem;
+- **registry-local** — every terminal consumer is copied registry UI and the
+  behavior is UI/product composition;
+- **delete** — the hook duplicates a canonical primitive or has no live owner.
 
-Why it works:
+For a mixed row, classify responsibilities separately. Retain only a durable
+subscription/DOM/accessibility/integration lifecycle in the package, with
+required lifecycle inputs and no renderer prop/state bag. Localize derived
+layout, transient state, trivial pure helpers, and event handlers in the copied
+family; record every deleted return field and exported result/helper type.
 
-- package hook owns a stable navigation contract
-- app still renders the rows and local button styling
+When a registry-local hook depends on a package store, provider, hotkey
+controller, or UI-only plugin extension, move that complete state owner in the
+same row. Package wrappers, exports, tests, docs, and multiple subcomponents in
+one family do not increase the terminal-consumer count.
 
-### Equation
+## Package extraction
 
-- App: [equation-node.tsx](apps/www/src/registry/ui/equation-node.tsx)
-- Package: [useEquationElement.ts](packages/math/src/react/hooks/useEquationElement.ts)
+A package extraction is valid when it owns semantic transforms, queries,
+serialization, a controller reused across surfaces, or a headless primitive
+whose contract is DOM behavior and accessibility. It is invalid when it only
+hides copied registry JSX, labels, classes, menu data, or local popover state.
 
-Why it works:
-
-- package hook does one durable thing: KaTeX rendering effect
-- app owns popover composition and local UI
+For a headless primitive such as resizable behavior, verify that the package
+owns pointer/touch/keyboard/RTL/focus/ARIA behavior while the registry owns
+styles, labels, editor persistence, and composition. Private provider/store
+plumbing is not part of the public API.
 
 ## Cross-platform direction
 
-### 10tap reference
+The useful lesson from `../10tap-editor` is the stable command/state contract
+below the UI. Do not copy a monolithic bridge, package-owned product UI, or a
+web prop hook merely because a native adapter might exist later.
 
-- `../10tap-editor/src/types/EditorBridge.ts`
-- `../10tap-editor/src/bridges/core.ts`
-- `../10tap-editor/src/RichText/useEditorBridge.tsx`
+## Base/live split
 
-What to copy:
+Static and live renderer kits stay explicit when they bind different renderer
+owners. Share runtime-neutral policy kits. Do not hide a short component array
+behind a factory.
 
-- stable command/state contract below UI
-- extension-owned capability model
+## Editor access
 
-What not to copy literally:
+Copied registry UI remains host-agnostic:
 
-- monolithic bridge as the only API
-- package-owned UI composition
+- use `useEditorPlugin(plugin)` when a component is plugin-centric;
+- use `editor.plugin(plugin).api/update` for required descriptor capabilities;
+- check `editor.plugin(plugin).installed` before optional capability access;
+- never import a host editor type, authored application definition, or generated
+  runtime plugin array into copied UI.
 
-## Good base/live split
+## Registry wiring
 
-- [footnote-base-kit.tsx](apps/www/src/registry/components/editor/plugins/footnote-base-kit.tsx)
-- [footnote-kit.tsx](apps/www/src/registry/components/editor/plugins/footnote-kit.tsx)
-- [math-base-kit.tsx](apps/www/src/registry/components/editor/plugins/math-base-kit.tsx)
-- [math-kit.tsx](apps/www/src/registry/components/editor/plugins/math-kit.tsx)
-
-Copy this pattern for new surfaces with static + live renderers.
-
-## Good direct editor access
-
-- [comment-node.tsx](apps/www/src/registry/ui/comment-node.tsx)
-- [link-node.tsx](apps/www/src/registry/ui/link-node.tsx)
-
-Copy:
-
-- `useEditorPlugin(plugin)` when the whole file is plugin-centric
-- `editor.plugin(plugin).api` / `editor.plugin(plugin).update` when that is
-  simpler and the descriptor is required
-- `editor.plugin(plugin).installed` before capability or descriptor access when
-  the descriptor is optional; `.type`/`.key` remain safe conventional identity
-  reads when uninstalled
-
-Registry UI is generic by definition, even when its current host uses optional
-generated application types. Do not copy a host editor type, `editor.generated`
-import, authored `editor.ts` import, or root `editor.api.<name>` access into it.
-Root plugin APIs belong to host-owned code; registry code gets inference from
-the descriptor portal. The editor host and examples whose registry metadata
-explicitly depends on `editor-kit` may import the authored `plugins` from
-`editor.ts`. Generated `Editor` and `Value` imports are type-only static
-boundaries; generated modules never supply runtime plugins.
-
-## Registry wiring reminders
-
-- [registry-kits.ts](apps/www/src/registry/registry-kits.ts)
-- [registry-examples.ts](apps/www/src/registry/registry-examples.ts)
-
-Do not forget style deps like `highlight-style` when a component or example uses
-shared highlight tokens.
-
-## Current caution area
-
-There are components in the repo that probably extracted too much into package
-hooks for one UI surface. Treat that as a warning, not a precedent.
-
-Default stance:
-
-- extract semantics
-- keep shadcn composition open
-
-Major-release stance:
-
-- React package hooks that mostly return renderer-specific UI props/state are
-  migration debt
-- future work should avoid them even if older code still contains them
+Audit `registry-features.ts`, `registry-editor.ts`, and
+`registry-examples.ts` together.
+Metadata mirrors surviving source imports and style dependencies. Explicit
+feature kits in examples remain visible teaching/install declarations even
+when the aggregate editor installs the same authored plugin.

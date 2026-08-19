@@ -29,7 +29,7 @@ component to add the menu to an editor toolbar.
 | PDF | `html2canvas-pro` snapshot converted with `pdf-lib` | `plate.pdf` |
 | Image | `html2canvas-pro` snapshot | `plate.png` |
 | Markdown | `editor.api.markdown.serialize()` from `MarkdownPlugin` | `plate.md` |
-| Word | `exportToDocx(editor.children, { editorPlugins })` from `@platejs/docx-io` | `plate.docx` |
+| Word | `exportToDocx(editor.read.children(), { editorPlugins })` from `@platejs/docx-export` | `plate.docx` |
 
 The PDF and image exporters snapshot the current editable DOM. Use them for a
 quick client-side download, not for paginated print layout.
@@ -39,7 +39,7 @@ quick client-side download, not for paginated print layout.
 Word export passes the base static editor kit plus `DocxExportKit` so custom
 nodes can render with DOCX-friendly components.
 
-<ComponentSource name="docx-export-kit" />
+<ComponentSource name="docx-export" />
 
 `DocxExportKit` overrides code blocks, columns, equations, callouts, and table
 of contents rendering for the DOCX conversion path.
@@ -52,6 +52,6 @@ Plate Plus includes a server-side export flow for PDF output with page settings.
 
 ## Related
 
-- [DOCX Import/Export](/docs/docx-io) covers `@platejs/docx-io` options and plugin APIs.
+- [DOCX](/docs/docx) covers `@platejs/docx-export` options and plugin APIs.
 - [Markdown](/docs/markdown) covers Markdown serialization.
 - [Static Rendering](/docs/static) covers static editor rendering and HTML serialization.

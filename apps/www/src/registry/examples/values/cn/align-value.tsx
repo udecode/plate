@@ -6,9 +6,13 @@ jsx;
 
 export const alignValue = (
   <fragment>
-    <hh2 textAlign="right">对齐</hh2>
+    <hheading level={2} textAlign="right">
+      对齐
+    </hheading>
     <hp textAlign="right">在块内对齐文本以创建视觉上吸引人且平衡的布局。</hp>
-    <hh3 textAlign="center">居中</hh3>
+    <hheading level={3} textAlign="center">
+      居中
+    </hheading>
     <hp textAlign="justify">
       通过两端对齐块文本创建整洁和平衡的布局，提供专业和精致的外观。
     </hp>

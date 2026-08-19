@@ -153,7 +153,7 @@ describe('BaseCodeBlockPlugin', () => {
             { children: [{ text: 'const b = 2;' }], type: 'codeLine' },
             { children: [{ text: '' }], type: 'codeLine' },
           ],
-          lang: 'typescript',
+          language: 'typescript',
           type: 'codeBlock',
         },
       ],
@@ -243,13 +243,13 @@ describe('BaseCodeBlockPlugin', () => {
 });
 
 {
-  const createFormatterEditor = (code: string, lang: string) =>
+  const createFormatterEditor = (code: string, language: string) =>
     createBaseEditor({
       plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
       initialValue: [
         {
           children: [{ children: [{ text: code }], type: 'codeLine' }],
-          lang,
+          language,
           type: 'codeBlock',
         },
       ],
@@ -313,7 +313,7 @@ describe('BaseCodeBlockPlugin', () => {
                 type: 'codeLine',
               },
             ],
-            lang: 'json',
+            language: 'json',
             type: 'codeBlock',
           },
         ],
@@ -1107,7 +1107,7 @@ describe('BaseCodeBlockPlugin input rules', () => {
           <hp>
             <htext />
           </hp>
-          <hcodeblock lang="typescript">
+          <hcodeblock language="typescript">
             <hcodeline>const a = "b";</hcodeline>
             <hcodeline>
               const c = "d";
@@ -1596,7 +1596,7 @@ describe('codeBlockToDecorations', () => {
     // Create a code block with plaintext
     const codeBlock: CodeBlockElement = {
       children: [{ children: [{ text: 'const x = 1;' }], type: 'codeLine' }],
-      lang: 'plaintext',
+      language: 'plaintext',
       type: 'codeBlock',
     };
 
@@ -1629,7 +1629,7 @@ describe('codeBlockToDecorations', () => {
     // Create a code block with JavaScript
     const codeBlock: CodeBlockElement = {
       children: [{ children: [{ text: 'const x = 1;' }], type: 'codeLine' }],
-      lang: 'javascript',
+      language: 'javascript',
       type: 'codeBlock',
     };
 
@@ -1690,7 +1690,7 @@ describe('codeBlockToDecorations', () => {
           type: 'codeLine',
         },
       ],
-      lang: 'python',
+      language: 'python',
       type: 'codeBlock',
     };
 
@@ -1720,7 +1720,7 @@ describe('codeBlockToDecorations', () => {
     // Create a code block with auto language
     const codeBlock: CodeBlockElement = {
       children: [{ children: [{ text: 'const x = 1;' }], type: 'codeLine' }],
-      lang: 'auto',
+      language: 'auto',
       type: 'codeBlock',
     };
 
@@ -1770,7 +1770,7 @@ describe('codeBlockToDecorations', () => {
         { children: [{ text: '  return true;' }], type: 'codeLine' },
         { children: [{ text: '}' }], type: 'codeLine' },
       ],
-      lang: 'javascript',
+      language: 'javascript',
       type: 'codeBlock',
     };
 
@@ -1816,7 +1816,7 @@ describe('codeBlockToDecorations', () => {
 
     const codeBlock: CodeBlockElement = {
       children: [{ children: [{ text: 'const x = 1;' }], type: 'codeLine' }],
-      lang: 'javascript',
+      language: 'javascript',
       type: 'codeBlock',
     };
 
@@ -1840,7 +1840,7 @@ describe('codeBlockToDecorations', () => {
 
     const codeBlock: CodeBlockElement = {
       children: [{ children: [{ text: 'SELECT 1' }], type: 'codeLine' }],
-      lang: 'sql',
+      language: 'sql',
       type: 'codeBlock',
     };
 

@@ -13,12 +13,7 @@ import {
   BlockquotePlugin,
   BoldPlugin,
   CodePlugin,
-  H1Plugin,
-  H2Plugin,
-  H3Plugin,
-  H4Plugin,
-  H5Plugin,
-  H6Plugin,
+  HeadingPlugin,
   HighlightPlugin,
   HorizontalRulePlugin,
   ItalicPlugin,
@@ -47,8 +42,6 @@ import {
   Plite,
   definePlatePlugin,
   createPlateEditor,
-  useEditableProps,
-  useEditorReadOnly,
   useEditor,
   useEditorSelector,
   useEditorState,
@@ -380,7 +373,6 @@ type CoreMountCaseId =
   | 'provider-only'
   | 'provider-only-plain-context'
   | 'plite-only'
-  | 'editable-props-only'
   | 'editable-static'
   | 'editable-element-plate-element-no-provider'
   | 'editable-element-plate-element-plugin-only-no-provider'
@@ -439,7 +431,6 @@ type CoreMountCaseId =
   | 'editable-leaf-text-pipe'
   | 'editable-leaf-text-plain-renderers'
   | 'editable-render-pipes'
-  | 'minimal-editable'
   | 'plate-content';
 
 type CoreMountCase = {
@@ -1107,20 +1098,13 @@ const CORE_MOUNT_CASES: CoreMountCase[] = [
     label: 'Provider only',
   },
   {
-    description:
-      'Provider plus Plite and usePliteProps. No Editable or editable-props hook.',
+    description: 'Provider plus Plite. No Editable or PlateContent mount.',
     id: 'plite-only',
     label: 'Plite only',
   },
   {
     description:
-      'Provider plus useEditableProps only. This isolates the editable-props hook stack without Plite or Editable mount.',
-    id: 'editable-props-only',
-    label: 'useEditableProps only',
-  },
-  {
-    description:
-      'Provider plus Plite and Editable with direct static props. No useEditableProps and no PlateContent effect stack.',
+      'Provider plus Plite and Editable with direct static props. No PlateContent effect stack.',
     id: 'editable-static',
     label: 'Editable static props',
   },
@@ -1503,15 +1487,9 @@ const CORE_MOUNT_CASES: CoreMountCase[] = [
   },
   {
     description:
-      'Static Editable baseline plus pipeRenderElement, pipeRenderLeaf, and pipeRenderText together. This is the render-pipe stack without useEditableProps memo and handler wiring.',
+      'Static Editable baseline plus pipeRenderElement, pipeRenderLeaf, and pipeRenderText together. This isolates the render pipes from PlateContent handlers and effects.',
     id: 'editable-render-pipes',
     label: 'Editable + render pipes',
-  },
-  {
-    description:
-      'Provider plus Plite, usePliteProps, useEditableProps, and Editable mount. No PlateContent effect stack.',
-    id: 'minimal-editable',
-    label: 'Minimal editable',
   },
   {
     description:
@@ -1631,12 +1609,8 @@ function getScenarioPlugins(plugins: BenchmarkPlugins): any[] {
   if (plugins === 'basic') {
     return [
       BlockquotePlugin,
-      H1Plugin,
-      H2Plugin,
-      H3Plugin,
-      H4Plugin,
-      H5Plugin,
-      H6Plugin,
+      HeadingPlugin,
+
       HorizontalRulePlugin,
       BoldPlugin,
       CodePlugin,
@@ -1664,7 +1638,7 @@ function getScenarioPlugins(plugins: BenchmarkPlugins): any[] {
   }
 
   if (plugins === 'heading-only') {
-    return [H1Plugin, H2Plugin, H3Plugin, H4Plugin, H5Plugin, H6Plugin];
+    return [HeadingPlugin];
   }
 
   if (plugins === 'highlight-only') {
@@ -2386,74 +2360,6 @@ function FanoutSurface({
         <FanoutSubscribers caseId={caseId} subscriberCount={subscriberCount} />
       </Plate>
     </div>
-  );
-}
-
-function EditablePropsProbe({ config }: { config: BenchmarkConfig }) {
-  const renderElement = React.useCallback(
-    (props: RenderElementProps) => (
-      <BenchmarkElement
-        {...props}
-        elementContentVisibility={config.contentVisibility === 'element'}
-      />
-    ),
-    [config.contentVisibility]
-  );
-  const readOnly = useEditorReadOnly();
-  const editableProps = useEditableProps({
-    domStrategy: getBenchmarkDOMStrategy(config),
-    readOnly,
-    renderElement,
-  });
-
-  consume(
-    editableProps.className,
-    editableProps.decorate,
-    editableProps.domStrategy,
-    editableProps.renderElement,
-    editableProps.renderLeaf,
-    editableProps.renderText
-  );
-
-  return null;
-}
-
-function MinimalEditableMount({
-  config,
-  id,
-}: {
-  config: BenchmarkConfig;
-  id?: string;
-}) {
-  const editor = useEditor({ id });
-  const renderElement = React.useCallback(
-    (props: RenderElementProps) => (
-      <BenchmarkElement
-        {...props}
-        elementContentVisibility={config.contentVisibility === 'element'}
-      />
-    ),
-    [config.contentVisibility]
-  );
-  const readOnly = useEditorReadOnly();
-  const editableProps = useEditableProps({
-    domStrategy: getBenchmarkDOMStrategy(config),
-    id,
-    readOnly,
-    renderElement,
-  });
-
-  if (!editor.read.children() || editor.read.children().length === 0) {
-    return null;
-  }
-
-  return (
-    <Plite editor={editor}>
-      <Editable
-        className="min-h-[70vh] outline-none"
-        {...(editableProps as any)}
-      />
-    </Plite>
   );
 }
 
@@ -3692,8 +3598,6 @@ function CoreMountSurface({
           <Plite editor={editor}>
             <div />
           </Plite>
-        ) : caseId === 'editable-props-only' ? (
-          <EditablePropsProbe config={config} />
         ) : caseId === 'editable-static' ? (
           <BenchmarkEditableMount config={config} id={id} />
         ) : caseId === 'editable-element-plate-element-no-provider' ? (
@@ -4032,8 +3936,6 @@ function CoreMountSurface({
             pipeElement
             pipeLeafText
           />
-        ) : caseId === 'minimal-editable' ? (
-          <MinimalEditableMount config={config} id={id} />
         ) : (
           <PlateContent
             className="min-h-[70vh] outline-none"

@@ -45,39 +45,43 @@
   "targets": [
     {
       "name": "ai-api",
-      "files": [],
+      "files": [
+        "apps/www/src/registry/app/api/ai/command/prompt/common.ts",
+        "apps/www/src/registry/app/api/ai/command/prompt/getChooseToolPrompt.ts",
+        "apps/www/src/registry/app/api/ai/command/prompt/getCommentPrompt.ts",
+        "apps/www/src/registry/app/api/ai/command/prompt/getEditPrompt.ts",
+        "apps/www/src/registry/app/api/ai/command/prompt/getEditTablePrompt.ts",
+        "apps/www/src/registry/app/api/ai/command/prompt/getGeneratePrompt.ts",
+        "apps/www/src/registry/app/api/ai/command/prompt/index.ts",
+        "apps/www/src/registry/app/api/ai/command/route.ts",
+        "apps/www/src/registry/app/api/ai/command/utils.ts"
+      ],
       "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
-      "diagnostics": [
-        {
-          "severity": "warning",
-          "code": "registry-file-missing",
-          "message": "No exact registry source file found for ai-api."
-        }
-      ]
+      "diagnostics": []
     },
     {
       "name": "copilot-api",
-      "files": [],
+      "files": ["apps/www/src/registry/app/api/ai/copilot/route.ts"],
       "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
-      "diagnostics": [
-        {
-          "severity": "warning",
-          "code": "registry-file-missing",
-          "message": "No exact registry source file found for copilot-api."
-        }
-      ]
+      "diagnostics": []
     },
     {
       "name": "ai-menu",
-      "files": ["apps/www/src/registry/ui/ai-menu.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "files": ["apps/www/src/registry/components/editor/ai-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
       "diagnostics": []
     },
     {
       "name": "ai-kit",
-      "files": ["apps/www/src/registry/components/editor/plugins/ai-kit.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for ai-kit."
+        }
+      ]
     },
     {
       "name": "use-chat",
@@ -87,41 +91,57 @@
     },
     {
       "name": "cursor-overlay",
-      "files": ["apps/www/src/registry/ui/cursor-overlay.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "files": ["apps/www/src/registry/components/editor/cursor-overlay.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
       "diagnostics": []
     },
     {
       "name": "block-placeholder-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/block-placeholder-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for block-placeholder-kit."
+        }
+      ]
     },
     {
       "name": "block-selection-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/block-selection-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for block-selection-kit."
+        }
+      ]
     },
     {
       "name": "discussion-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/discussion-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for discussion-kit."
+        }
+      ]
     },
     {
       "name": "tabbable-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/tabbable-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for tabbable-kit."
+        }
+      ]
     },
     {
       "name": "transforms",
@@ -145,276 +165,432 @@
     },
     {
       "name": "block-discussion",
-      "files": ["apps/www/src/registry/ui/block-discussion.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "files": [
+        "apps/www/src/registry/components/editor/block-discussion.tsx",
+        "apps/www/src/registry/lib/block-discussion-index.ts"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
       "diagnostics": []
     },
     {
       "name": "block-draggable",
-      "files": ["apps/www/src/registry/ui/block-draggable.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "block-list",
-      "files": ["apps/www/src/registry/ui/block-list.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "callout-node",
-      "files": ["apps/www/src/registry/ui/callout-node.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "code-block-node",
-      "files": ["apps/www/src/registry/ui/code-block-node.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "code-node",
-      "files": ["apps/www/src/registry/ui/code-node.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "column-node",
-      "files": ["apps/www/src/registry/ui/column-node.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "editor",
-      "files": [
-        "apps/www/src/registry/components/editor/editor.ts",
-        "apps/www/src/registry/ui/editor.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "emoji-node",
-      "files": ["apps/www/src/registry/ui/emoji-node.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "emoji-toolbar-button",
-      "files": ["apps/www/src/registry/ui/emoji-toolbar-button.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "equation-node",
-      "files": ["apps/www/src/registry/ui/equation-node.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "fixed-toolbar",
-      "files": ["apps/www/src/registry/ui/fixed-toolbar.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "floating-toolbar",
-      "files": ["apps/www/src/registry/ui/floating-toolbar.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "font-color-toolbar-button",
-      "files": ["apps/www/src/registry/ui/font-color-toolbar-button.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "font-size-toolbar-button",
-      "files": ["apps/www/src/registry/ui/font-size-toolbar-button.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "heading-node",
-      "files": ["apps/www/src/registry/ui/heading-node.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "inline-combobox",
-      "files": ["apps/www/src/registry/ui/inline-combobox.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "insert-toolbar-button",
-      "files": ["apps/www/src/registry/ui/insert-toolbar-button.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "insert-toolbar-classic-button",
-      "files": ["apps/www/src/registry/ui/insert-toolbar-classic-button.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "link-toolbar",
-      "files": ["apps/www/src/registry/ui/link-toolbar.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "list-classic-node",
-      "files": ["apps/www/src/registry/ui/list-classic-node.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "list-classic-toolbar-button",
-      "files": ["apps/www/src/registry/ui/list-classic-toolbar-button.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "media-embed-node",
-      "files": ["apps/www/src/registry/ui/media-embed-node.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "media-image-node",
-      "files": ["apps/www/src/registry/ui/media-image-node.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "media-placeholder-node",
-      "files": ["apps/www/src/registry/ui/media-placeholder-node.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "media-preview-dialog",
-      "files": ["apps/www/src/registry/ui/media-preview-dialog.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "media-toolbar",
-      "files": ["apps/www/src/registry/ui/media-toolbar.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "media-toolbar-button",
-      "files": ["apps/www/src/registry/ui/media-toolbar-button.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "media-video-node",
-      "files": ["apps/www/src/registry/ui/media-video-node.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "mention-node",
-      "files": ["apps/www/src/registry/ui/mention-node.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "mode-toolbar-button",
-      "files": ["apps/www/src/registry/ui/mode-toolbar-button.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "remote-cursor-overlay",
-      "files": ["apps/www/src/registry/ui/remote-cursor-overlay.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "resize-handle",
-      "files": ["apps/www/src/registry/ui/resize-handle.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "select-editor",
-      "files": ["apps/www/src/registry/ui/select-editor.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "suggestion-node",
-      "files": ["apps/www/src/registry/ui/suggestion-node.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "table-node",
-      "files": ["apps/www/src/registry/ui/table-node.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "table-toolbar-button",
-      "files": ["apps/www/src/registry/ui/table-toolbar-button.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "tag-node",
-      "files": ["apps/www/src/registry/ui/tag-node.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "toc-node",
-      "files": ["apps/www/src/registry/ui/toc-node.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "toc-node-static",
-      "files": ["apps/www/src/registry/ui/toc-node-static.tsx"],
-      "definitionFiles": [],
-      "diagnostics": []
-    },
-    {
-      "name": "toggle-node",
-      "files": ["apps/www/src/registry/ui/toggle-node.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "toggle-node-static",
-      "files": ["apps/www/src/registry/ui/toggle-node-static.tsx"],
-      "definitionFiles": [],
-      "diagnostics": []
-    },
-    {
-      "name": "toolbar",
-      "files": ["apps/www/src/registry/ui/toolbar.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "ai-demo",
       "files": [],
-      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "definitionFiles": [],
       "diagnostics": [
         {
           "severity": "warning",
           "code": "registry-file-missing",
-          "message": "No exact registry source file found for ai-demo."
+          "message": "No exact registry source file found for block-draggable."
         }
       ]
+    },
+    {
+      "name": "block-list",
+      "files": ["apps/www/src/registry/components/editor/block-list.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "callout-node",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for callout-node."
+        }
+      ]
+    },
+    {
+      "name": "code-block-node",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for code-block-node."
+        }
+      ]
+    },
+    {
+      "name": "code-node",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for code-node."
+        }
+      ]
+    },
+    {
+      "name": "column-node",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for column-node."
+        }
+      ]
+    },
+    {
+      "name": "editor",
+      "files": ["apps/www/src/registry/components/editor/editor.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "emoji-node",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for emoji-node."
+        }
+      ]
+    },
+    {
+      "name": "emoji-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/emoji-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "equation-node",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for equation-node."
+        }
+      ]
+    },
+    {
+      "name": "fixed-toolbar",
+      "files": ["apps/www/src/registry/components/editor/fixed-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "floating-toolbar",
+      "files": ["apps/www/src/registry/components/editor/floating-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "font-color-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/font-color-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "font-size-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/font-size-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "heading-node",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for heading-node."
+        }
+      ]
+    },
+    {
+      "name": "inline-combobox",
+      "files": ["apps/www/src/registry/components/editor/inline-combobox.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "insert-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/insert-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "insert-toolbar-classic-button",
+      "files": [
+        "apps/www/src/registry/components/editor/insert-toolbar-classic-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "link-toolbar",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for link-toolbar."
+        }
+      ]
+    },
+    {
+      "name": "list-classic-node",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for list-classic-node."
+        }
+      ]
+    },
+    {
+      "name": "list-classic-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/list-classic-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-embed-node",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for media-embed-node."
+        }
+      ]
+    },
+    {
+      "name": "media-image-node",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for media-image-node."
+        }
+      ]
+    },
+    {
+      "name": "media-placeholder-node",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for media-placeholder-node."
+        }
+      ]
+    },
+    {
+      "name": "media-preview-dialog",
+      "files": [
+        "apps/www/src/registry/components/editor/media-preview-dialog.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-toolbar",
+      "files": ["apps/www/src/registry/components/editor/media-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/media-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-video-node",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for media-video-node."
+        }
+      ]
+    },
+    {
+      "name": "mention-node",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for mention-node."
+        }
+      ]
+    },
+    {
+      "name": "mode-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/mode-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "remote-cursor-overlay",
+      "files": [
+        "apps/www/src/registry/components/editor/remote-cursor-overlay.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "resize-handle",
+      "files": ["apps/www/src/registry/components/editor/resize-handle.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "select-editor",
+      "files": ["apps/www/src/registry/components/editor/select-editor.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "suggestion-node",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for suggestion-node."
+        }
+      ]
+    },
+    {
+      "name": "table-node",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for table-node."
+        }
+      ]
+    },
+    {
+      "name": "table-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/table-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "tag-node",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for tag-node."
+        }
+      ]
+    },
+    {
+      "name": "toc-node",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for toc-node."
+        }
+      ]
+    },
+    {
+      "name": "toc-node-static",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for toc-node-static."
+        }
+      ]
+    },
+    {
+      "name": "toggle-node",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for toggle-node."
+        }
+      ]
+    },
+    {
+      "name": "toggle-node-static",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for toggle-node-static."
+        }
+      ]
+    },
+    {
+      "name": "toolbar",
+      "files": [
+        "apps/www/src/registry/bases/aria/editor/toolbar.tsx",
+        "apps/www/src/registry/bases/base/editor/toolbar.tsx",
+        "apps/www/src/registry/components/editor/toolbar.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ai-demo",
+      "files": [
+        "apps/www/src/registry/components/editor/ai.tsx",
+        "apps/www/src/registry/examples/demo.tsx",
+        "apps/www/src/registry/examples/values/ai-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
     },
     {
       "name": "collaboration-demo",
@@ -454,7 +630,10 @@
     },
     {
       "name": "preview-markdown-demo",
-      "files": ["apps/www/src/registry/examples/preview-markdown-demo.tsx"],
+      "files": [
+        "apps/www/src/registry/examples/preview-markdown-demo.tsx",
+        "apps/www/src/registry/examples/values/preview-md-value.tsx"
+      ],
       "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
       "diagnostics": []
     },

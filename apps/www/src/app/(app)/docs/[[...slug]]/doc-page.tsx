@@ -31,7 +31,7 @@ import { hrefWithLocale } from '@/lib/withLocale';
 import { registry } from '@/registry/registry';
 import { registryExamples } from '@/registry/registry-examples';
 import { proExamples } from '@/registry/registry-pro';
-import { registryUI } from '@/registry/registry-ui';
+import { registryEditor } from '@/registry/registry-editor';
 
 export type DocsLocale = 'cn' | 'en';
 
@@ -81,7 +81,7 @@ function localizeDocsUrl(url: string, locale: DocsLocale) {
 
 function getRegistryStaticParams() {
   return [
-    ...registryUI.map((item) => ({
+    ...registryEditor.map((item) => ({
       slug: ['components', item.name],
     })),
     ...registryExamples.map((item) => ({
@@ -102,7 +102,7 @@ function getRegistryFile({
   if (category === 'component') {
     return {
       docName: name,
-      file: registryUI.find((item) => item.name === name),
+      file: registryEditor.find((item) => item.name === name),
     };
   }
 
@@ -348,7 +348,7 @@ function getRegistryDocs({
   locale: DocsLocale;
   registryNames: Set<string>;
 }) {
-  const usedBy = registryUI.filter(
+  const usedBy = registryEditor.filter(
     (item) =>
       item.meta &&
       Array.isArray(item.meta.examples) &&
@@ -363,7 +363,7 @@ function getRegistryDocs({
           !!fileName && registryNames.has(fileName) && fileName !== docName
       )
       .map((fileName) => {
-        const uiItem = registryUI.find((item) => item.name === fileName);
+        const uiItem = registryEditor.find((item) => item.name === fileName);
 
         if (!uiItem) return null;
 

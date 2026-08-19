@@ -887,12 +887,33 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
   _onTapStop(evt: MouseEvent | TouchEvent | null, silent: boolean): void {
     const { document, features } = this._options;
     const { _singleClick } = this;
+    const clearNativeSelection = () =>
+      document.getSelection()?.removeAllRanges();
+    const releaseNativeSelectionGuard = () =>
+      off(document, 'selectionchange', this._onNativeSelectionChange);
+
+    if (!_singleClick) {
+      evt?.preventDefault();
+      clearNativeSelection();
+
+      const view = document.defaultView;
+
+      if (view && typeof view.requestAnimationFrame === 'function') {
+        view.requestAnimationFrame(() => {
+          clearNativeSelection();
+          releaseNativeSelectionGuard();
+        });
+      } else {
+        releaseNativeSelectionGuard();
+      }
+    } else {
+      releaseNativeSelectionGuard();
+    }
 
     // Remove event handlers
     off(document, ['mousemove', 'touchmove'], this._delayedTapMove);
     off(document, ['touchmove', 'mousemove'], this._onTapMove);
     off(document, ['mouseup', 'touchcancel', 'touchend'], this._onTapStop);
-    off(document, 'selectionchange', this._onNativeSelectionChange);
     off(document, 'wheel', this._onScroll);
 
     // Keep selection until the next time

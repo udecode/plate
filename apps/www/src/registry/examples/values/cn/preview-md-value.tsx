@@ -6,7 +6,7 @@ jsx;
 
 export const previewMdValue = (
   <fragment>
-    <hh2>👀 Markdown 预览</hh2>
+    <hheading level={2}>👀 Markdown 预览</hheading>
     <hp>
       Plate 足够灵活，可以添加基于内容格式化文本的**装饰**。例如，这个编辑器具有
       **Markdown** 预览装饰功能，使得创建一个具有内置 `Markdown`

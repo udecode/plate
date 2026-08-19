@@ -34,8 +34,8 @@ export default function BoundHotkeysProxyProviderProvider({
   );
 
   return (
-    <BoundHotkeysProxyProvider.Provider value={value}>
+    <BoundHotkeysProxyProvider value={value}>
       {children}
-    </BoundHotkeysProxyProvider.Provider>
+    </BoundHotkeysProxyProvider>
   );
 }

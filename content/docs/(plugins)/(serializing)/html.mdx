@@ -19,19 +19,19 @@ owners, so this guide treats each direction separately.
 
 The fastest way to enable HTML serialization is with the `BaseEditorKit`, which includes pre-configured base plugins that support HTML conversion for most common elements and marks.
 
-<ComponentSource name="editor-base-kit" />
+<ComponentSource name="editor-plugins-static" />
 
 ### Add Kit
 
 ```tsx
 import { createBaseEditor } from 'platejs';
 import { renderStaticHtml } from 'platejs/static';
-import { BaseEditorKit } from '@/components/editor/editor-base-kit';
+import { BaseEditorKit } from '@/components/editor/plugins-static';
 
 const editor = createBaseEditor({
   plugins: BaseEditorKit,
   initialValue: [
-    { type: 'h1', children: [{ text: 'Hello World' }] },
+    { type: 'heading', level: 1, children: [{ text: 'Hello World' }] },
     { type: 'paragraph', children: [{ text: 'This content will be serialized to HTML.' }] },
   ],
 });
@@ -70,12 +70,12 @@ Provide a server-side editor instance and configure your Plate components during
 import { createBaseEditor } from 'platejs';
 import { renderStaticHtml } from 'platejs/static'; // Static import
 // Import a server-safe registry kit (NOT from /react package paths)
-import { BaseBasicBlocksKit } from '@/components/editor/plugins/basic-blocks-base-kit';
+import { BaseBasicBlocksKit } from '@/components/editor/basic-blocks-static';
 // Import your STATIC components for rendering
-import { ParagraphElementStatic } from '@/components/ui/paragraph-node-static';
-import { HeadingElementStatic } from '@/components/ui/heading-node-static';
+import { ParagraphElementStatic } from '@/components/editor/paragraph-static';
+import { HeadingElementStatic } from '@/components/editor/heading-static';
 // For a styled static output, you might use a wrapper like EditorStatic
-import { EditorStatic } from '@/components/ui/editor-static';
+import { EditorStatic } from '@/components/editor/editor-static';
 
 // Map plugin names to their STATIC rendering components
 const components = {
@@ -92,7 +92,7 @@ const editor = createBaseEditor({
   ],
   components,
   initialValue: [
-    { type: 'h1', children: [{ text: 'My Title' }] },
+    { type: 'heading', level: 1, children: [{ text: 'My Title' }] },
     { type: 'paragraph', children: [{ text: 'My content.' }] },
   ],
 });
@@ -151,7 +151,7 @@ For server-side serialization, you **must** use static versions of your componen
 
 Refer to the [Static Rendering Guide](/docs/static) for detailed instructions on creating server-safe static components for your Plate elements and marks.
 
-```tsx title="components/ui/paragraph-node-static.tsx"
+```tsx title="components/editor/paragraph-static.tsx"
 import React from 'react';
 import type { BaseParagraphPlugin } from 'platejs';
 import type { PliteElementProps } from 'platejs/static';
@@ -187,7 +187,7 @@ Call the root HTML API from a client-side Plate editor.
 ```tsx title="components/my-html-importer.tsx"
 import { usePlateEditor } from 'platejs/react';
 // Import ALL Plate plugins needed to represent the HTML content
-import { BasicBlocksKit } from '@/components/editor/plugins/basic-blocks-kit';
+import { BasicBlocksKit } from '@/components/editor/basic-blocks';
 // ... and so on for bold, italic, tables, lists, etc.
 
 function MyHtmlImporter({ htmlString }: { htmlString: string }) {
@@ -234,8 +234,8 @@ handles decode and encode.
 | `<code>` (not in `<pre>`), `font-family: Consolas`         | [`CodePlugin`](/docs/code)            | Converts to `code: true` mark (inline code).                             |
 | `<kbd>`                                                    | [`KbdPlugin`](/docs/kbd)             | Converts to `kbd: true` mark.                                            |
 | `<p>`                                                      | [`ParagraphPlugin`](/docs/basic-blocks)       | Converts to paragraph element.                                           |
-| `<h1>` - `<h6>`                                            | [`H1Plugin`–`H6Plugin`](/docs/heading)    | Converts to corresponding heading elements (`h1` - `h6`).                |
-| `<ul>`, `<ol>`, `<li>`                                     | [`ListPlugin`](/docs/list)      | Converts list items to blocks with `indent` and `listStyleType` properties. |
+| `<h1>` - `<h6>`                                            | [`HeadingPlugin`–`HeadingPlugin`](/docs/heading)    | Converts to corresponding heading elements (`h1` - `h6`).                |
+| `<ul>`, `<ol>`, `<li>`                                     | [`ListPlugin`](/docs/list)      | Converts list items to blocks with `indent` and `listStyle` properties. |
 | `<blockquote>`                                             | [`BlockquotePlugin`](/docs/blockquote)      | Converts to blockquote element.                                          |
 | `<pre>` (often with `<code>` inside)                       | [`CodeBlockPlugin`](/docs/code-block)       | Converts to `codeBlock` element. Content split into `codeLine`.          |
 | `<hr>`                                                     | [`HorizontalRulePlugin`](/docs/horizontal-rule)  | Converts to horizontal rule element.                                     |

@@ -19,8 +19,10 @@
   "targets": [
     {
       "name": "mark-toolbar-button",
-      "files": ["apps/www/src/registry/ui/mark-toolbar-button.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "files": [
+        "apps/www/src/registry/components/editor/mark-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
       "diagnostics": []
     }
   ],

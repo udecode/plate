@@ -6,7 +6,7 @@ import path from 'node:path';
 import type { EditorDocumentValue } from 'platejs';
 import { createStaticEditor, renderStaticHtml } from 'platejs/static';
 
-import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
+import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 import {
   EditorClient,
   EditorViewClient,
@@ -29,14 +29,49 @@ import { mediaValue } from '@/registry/examples/values/media-value';
 import { mentionValue } from '@/registry/examples/values/mention-value';
 import { tableValue } from '@/registry/examples/values/table-value';
 import { tocPlaygroundValue } from '@/registry/examples/values/toc-value';
-import { createHtmlDocument } from '@/registry/lib/create-html-document';
-import { EditorStatic } from '@/registry/ui/editor-static';
+import { EditorStatic } from '@/registry/components/editor/editor-static';
 
 const getCachedTailwindCss = React.cache(async () => {
   const cssPath = path.join(process.cwd(), 'public', 'tailwind.css');
 
   return await fs.readFile(cssPath, 'utf8');
 });
+
+const createHtmlDocument = ({
+  editorHtml,
+  katexCDN,
+  tailwindCss,
+  theme,
+}: {
+  editorHtml: string;
+  tailwindCss: string;
+  katexCDN?: string;
+  theme?: string;
+}) => `<!DOCTYPE html>
+<html lang="en"${theme === 'dark' ? ' class="dark"' : ''}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <style>${tailwindCss}</style>
+    ${katexCDN}
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&family=JetBrains+Mono:wght@400..700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --font-sans: 'Inter', 'Inter Fallback';
+        --font-mono: 'JetBrains Mono', 'JetBrains Mono Fallback';
+      }
+    </style>
+  </head>
+  <body>
+    ${editorHtml}
+  </body>
+</html>`;
 
 export default async function PlateToHtmlBlock() {
   const createValue = (): EditorDocumentValue => ({

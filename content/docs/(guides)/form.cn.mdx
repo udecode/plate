@@ -316,8 +316,10 @@ import { Plate, PlateContent, usePlateEditor } from "platejs/react";
  *   )}
  * />
  */
-export interface EditorFieldProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange"> {
+export type EditorFieldProps = Omit<
+  React.ComponentPropsWithRef<"div">,
+  "onChange"
+> & {
   /**
    * 初始 Plate 文档或主根值。
    */
@@ -332,24 +334,25 @@ export interface EditorFieldProps
    * 编辑器为空时显示的占位符文本。
    */
   placeholder?: string;
+};
+
+export function EditorField({
+  initialValue,
+  onChange,
+  placeholder = "在此输入...",
+  ref,
+  ...props
+}: EditorFieldProps) {
+  const editor = usePlateEditor({
+    initialValue: initialValue ?? [{ type: "paragraph", children: [{ text: "" }] }],
+  });
+
+  return (
+    <Plate editor={editor} onValueChange={({ value }) => onChange?.(value)}>
+      <PlateContent {...props} placeholder={placeholder} ref={ref} />
+    </Plate>
+  );
 }
-
-export const EditorField = React.forwardRef<HTMLDivElement, EditorFieldProps>(
-  function EditorField(
-    { initialValue, onChange, placeholder = "在此输入...", ...props },
-    ref
-  ) {
-    const editor = usePlateEditor({
-      initialValue: initialValue ?? [{ type: "paragraph", children: [{ text: "" }] }],
-    });
-
-    return (
-      <Plate editor={editor} onValueChange={({ value }) => onChange?.(value)}>
-        <PlateContent {...props} placeholder={placeholder} ref={ref} />
-      </Plate>
-    );
-  }
-);
 ```
 
 3. 用 `<EditorField>` 替换 `<Textarea>` 块：

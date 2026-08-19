@@ -19,45 +19,67 @@
   "targets": [
     {
       "name": "mark-toolbar-button",
-      "files": ["apps/www/src/registry/ui/mark-toolbar-button.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "files": [
+        "apps/www/src/registry/components/editor/mark-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
       "diagnostics": []
     },
     {
       "name": "font-color-toolbar-button",
-      "files": ["apps/www/src/registry/ui/font-color-toolbar-button.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "files": [
+        "apps/www/src/registry/components/editor/font-color-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
       "diagnostics": []
     },
     {
       "name": "font-size-toolbar-button",
-      "files": ["apps/www/src/registry/ui/font-size-toolbar-button.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "files": [
+        "apps/www/src/registry/components/editor/font-size-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
       "diagnostics": []
     },
     {
       "name": "media-toolbar-button",
-      "files": ["apps/www/src/registry/ui/media-toolbar-button.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "files": [
+        "apps/www/src/registry/components/editor/media-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
       "diagnostics": []
     },
     {
       "name": "more-toolbar-button",
-      "files": ["apps/www/src/registry/ui/more-toolbar-button.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "files": [
+        "apps/www/src/registry/components/editor/more-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
       "diagnostics": []
     },
     {
       "name": "fixed-toolbar-buttons",
-      "files": ["apps/www/src/registry/ui/fixed-toolbar-buttons.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for fixed-toolbar-buttons."
+        }
+      ]
     },
     {
       "name": "floating-toolbar-buttons",
-      "files": ["apps/www/src/registry/ui/floating-toolbar-buttons.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for floating-toolbar-buttons."
+        }
+      ]
     },
     {
       "name": "installation-next-02-marks-demo",
@@ -77,15 +99,11 @@
     },
     {
       "name": "installation-next-demo",
-      "files": [],
+      "files": [
+        "apps/www/src/registry/examples/installation-next-04-value-demo.tsx"
+      ],
       "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
-      "diagnostics": [
-        {
-          "severity": "warning",
-          "code": "registry-file-missing",
-          "message": "No exact registry source file found for installation-next-demo."
-        }
-      ]
+      "diagnostics": []
     }
   ],
   "entries": [

@@ -72,7 +72,7 @@ describe('MarkdownPlugin', () => {
       {
         children: [{ text: 'Item' }],
         indent: 1,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
     ];
@@ -253,14 +253,14 @@ describe('MarkdownPlugin', () => {
           children: [{ text: 'First' }],
           id: 'list-1',
           indent: 1,
-          listStyleType: 'disc',
+          listType: 'bulleted',
           type: 'paragraph',
         },
         {
           children: [{ text: 'Second' }],
           id: 'list-2',
           indent: 1,
-          listStyleType: 'disc',
+          listType: 'bulleted',
           type: 'paragraph',
         },
       ],

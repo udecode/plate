@@ -5,12 +5,7 @@ import {
   BaseBlockquotePlugin,
   BaseBoldPlugin,
   BaseCodePlugin,
-  BaseH1Plugin,
-  BaseH2Plugin,
-  BaseH3Plugin,
-  BaseH4Plugin,
-  BaseH5Plugin,
-  BaseH6Plugin,
+  BaseHeadingPlugin,
   BaseHorizontalRulePlugin,
   BaseItalicPlugin,
   BaseScriptPlugin,
@@ -21,12 +16,7 @@ import {
   BlockquotePlugin,
   BoldPlugin,
   CodePlugin,
-  H1Plugin,
-  H2Plugin,
-  H3Plugin,
-  H4Plugin,
-  H5Plugin,
-  H6Plugin,
+  HeadingPlugin,
   HorizontalRulePlugin,
   ItalicPlugin,
   ScriptPlugin,
@@ -39,12 +29,7 @@ describe('basic node plugin composition', () => {
     const editor = createBaseEditor({
       plugins: [
         BaseBlockquotePlugin,
-        BaseH1Plugin,
-        BaseH2Plugin,
-        BaseH3Plugin,
-        BaseH4Plugin,
-        BaseH5Plugin,
-        BaseH6Plugin,
+        BaseHeadingPlugin,
         BaseHorizontalRulePlugin,
         BaseBoldPlugin,
         BaseCodePlugin,
@@ -61,12 +46,13 @@ describe('basic node plugin composition', () => {
       initialValue: [{ children: [{ text: 'text' }], type: 'paragraph' }],
     });
 
-    editor.plugin(BaseH1Plugin).update.toggle();
+    editor.plugin(BaseHeadingPlugin).update.toggle({ level: 1 });
     editor.update.bold.toggle();
 
     expect(editor.read.children()[0]).toMatchObject({
       children: [{ bold: true, text: 'text' }],
-      type: 'h1',
+      level: 1,
+      type: 'heading',
     });
   });
 
@@ -121,12 +107,7 @@ describe('basic node plugin composition', () => {
     const editor = createPlateEditor({
       plugins: [
         BlockquotePlugin,
-        H1Plugin,
-        H2Plugin,
-        H3Plugin,
-        H4Plugin,
-        H5Plugin,
-        H6Plugin,
+        HeadingPlugin,
         HorizontalRulePlugin,
         BoldPlugin,
         CodePlugin,
@@ -143,12 +124,13 @@ describe('basic node plugin composition', () => {
       initialValue: [{ children: [{ text: 'text' }], type: 'paragraph' }],
     });
 
-    editor.plugin(BaseH6Plugin).update.toggle();
+    editor.plugin(BaseHeadingPlugin).update.toggle({ level: 6 });
     editor.update.italic.toggle();
 
     expect(editor.read.children()[0]).toMatchObject({
       children: [{ italic: true, text: 'text' }],
-      type: 'h6',
+      level: 6,
+      type: 'heading',
     });
   });
 });

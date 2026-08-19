@@ -4,7 +4,7 @@ description: Style keyboard shortcuts and key names.
 docs:
   - route: /docs/basic-marks
     title: Basic Marks
-  - route: /docs/components/kbd-node
+  - route: /docs/components/kbd
     title: Keyboard Input Leaf
   - route: /docs/components/more-toolbar-button
     title: More Toolbar Button
@@ -35,12 +35,12 @@ Keyboard Input applies the `kbd` leaf mark to selected text. Use it for shortcut
 
 `BasicMarksKit` includes `KbdPlugin.configure({ component: KbdLeaf })`. It does not add a shortcut or input rule for keyboard input.
 
-<ComponentSource name="basic-marks-kit" />
+<ComponentSource name="basic-marks" />
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
 
-import { BasicMarksKit } from '@/components/editor/plugins/basic-marks-kit';
+import { BasicMarksKit } from '@/components/editor/basic-marks';
 
 export const editor = createPlateEditor({
   plugins: [...BasicMarksKit],
@@ -51,14 +51,14 @@ export const editor = createPlateEditor({
 
 `KbdLeaf` provides the registry styling for the `<kbd>` element.
 
-<ComponentSource name="kbd-node" />
+<ComponentSource name="kbd" />
 
 ### Add a Toolbar Control
 
 The registry `MoreToolbarButton` toggles keyboard input from the More menu.
 
 ```tsx
-import { MoreToolbarButton } from '@/components/ui/more-toolbar-button';
+import { MoreToolbarButton } from '@/components/editor/more-toolbar-button';
 
 export function FormattingMoreMenu() {
   return <MoreToolbarButton />;
@@ -91,7 +91,7 @@ Attach the registry leaf when you want the same visual treatment as the kit.
 ```tsx
 import { KbdPlugin } from '@platejs/basic-nodes/react';
 
-import { KbdLeaf } from '@/components/ui/kbd-node';
+import { KbdLeaf } from '@/components/editor/kbd';
 
 export const kbdPlugin = KbdPlugin.configure({ component: KbdLeaf });
 ```

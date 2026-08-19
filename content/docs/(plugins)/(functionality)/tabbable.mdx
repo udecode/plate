@@ -21,13 +21,13 @@ title: Tabbable
 
 The fastest way to add the tabbable plugin is with `TabbableKit`. The kit keeps Indent installed and removes only its Tab and Shift+Tab shortcuts so focus navigation owns those keys.
 
-<ComponentSource name="tabbable-kit" />
+<ComponentSource name="tabbable" />
 
 ### Add Kit
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { TabbableKit } from '@/components/editor/plugins/tabbable-kit';
+import { TabbableKit } from '@/components/editor/tabbable';
 
 const editor = createPlateEditor({
   plugins: [

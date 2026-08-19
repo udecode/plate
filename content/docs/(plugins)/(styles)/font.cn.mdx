@@ -35,7 +35,7 @@ docs:
 
 添加字体样式功能最快的方式是使用 `FontKit`，它包含了预配置的字体插件及其 [Plate UI](/docs/installation/plate-ui) 组件。
 
-<ComponentSource name="font-kit" />
+<ComponentSource name="font" />
 
 - 包含所有字体插件（`FontColorPlugin`、`FontBackgroundColorPlugin`、`FontSizePlugin`、`FontFamilyPlugin`），并具有合理的默认值。
 
@@ -45,7 +45,7 @@ docs:
 
 ```tsx
 import { createPlateEditor } from "platejs/react";
-import { FontKit } from "@/components/editor/plugins/font-kit";
+import { FontKit } from "@/components/editor/font";
 
 const editor = createPlateEditor({
   plugins: [

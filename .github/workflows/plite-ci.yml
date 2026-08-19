@@ -29,8 +29,8 @@ on:
       - "apps/www/src/hooks/use-mobile.ts"
       - "apps/www/src/lib/utils.ts"
       - "apps/www/src/registry/hooks/use-mounted.ts"
-      - "apps/www/src/registry/components/editor/plugins/**/*.ts"
-      - "apps/www/src/registry/components/editor/plugins/**/*.tsx"
+      - "apps/www/src/registry/components/editor/**/*.ts"
+      - "apps/www/src/registry/components/editor/**/*.tsx"
       - "apps/www/src/types/**"
       - "apps/www/src/utils/cn.ts"
       - "apps/www/package.json"
@@ -103,8 +103,8 @@ on:
       - "apps/www/src/hooks/use-mobile.ts"
       - "apps/www/src/lib/utils.ts"
       - "apps/www/src/registry/hooks/use-mounted.ts"
-      - "apps/www/src/registry/components/editor/plugins/**/*.ts"
-      - "apps/www/src/registry/components/editor/plugins/**/*.tsx"
+      - "apps/www/src/registry/components/editor/**/*.ts"
+      - "apps/www/src/registry/components/editor/**/*.tsx"
       - "apps/www/src/types/**"
       - "apps/www/src/utils/cn.ts"
       - "apps/www/package.json"
@@ -265,6 +265,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Install Bun prerequisite
+        run: |
+          apt-get update
+          apt-get install --yes --no-install-recommends unzip
+          rm -rf /var/lib/apt/lists/*
+
       - name: Install bun
         uses: oven-sh/setup-bun@v2
         with:
@@ -365,6 +371,12 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Install Bun prerequisite
+        run: |
+          apt-get update
+          apt-get install --yes --no-install-recommends unzip
+          rm -rf /var/lib/apt/lists/*
 
       - name: Install bun
         uses: oven-sh/setup-bun@v2

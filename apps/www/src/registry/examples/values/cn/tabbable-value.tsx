@@ -6,7 +6,7 @@ jsx;
 
 export const tabbableValue = (
   <fragment>
-    <hh2>可Tab</hh2>
+    <hheading level={2}>可Tab</hheading>
     <hp>使用Tabbable插件确保编辑器内的平滑标签导航体验。</hp>
     <hp>
       正确处理空节点的制表顺序，实现无缝导航和交互。如果没有这个插件，空节点内的
@@ -19,13 +19,13 @@ export const tabbableValue = (
       <htext />
     </element>
     <hp>将光标放在这里，然后尝试按 Tab 或 Shift+Tab。</hp>
-    <hp indent={1} listStyleType="disc">
+    <hp indent={1} listType="bulleted">
       列表项 1
     </hp>
-    <hp indent={1} listStyleType="disc">
+    <hp indent={1} listType="bulleted">
       列表项 2
     </hp>
-    <hp indent={1} listStyleType="disc">
+    <hp indent={1} listType="bulleted">
       列表项 3
     </hp>
     <hcodeblock lang="javascript">

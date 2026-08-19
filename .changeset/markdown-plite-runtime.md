@@ -38,6 +38,8 @@ Export `MarkdownPluginState` as the complete mutable state contract for
   the cell's `header` property
 - Round-trip `<sub>` and `<sup>` through one `script: 'sub' | 'sup'` text
   property
+- Map structural ordered-list starts to forced `listRestart` boundaries and
+  serialize active `listStart` or `listRestart` values as MDAST starts
 - Remove `MarkdownPlugin.parser`, `DeserializeMdOptions.memoize`, and
   `DeserializeMdOptions.parser`
 - Remove exported conversion internals: `customMdxDeserialize`,
@@ -65,3 +67,5 @@ editor.api.markdown.serialize({ value: document });
 
 Use `MarkdownNodeName` for custom rule filters. Persisted custom MDX tags must
 match the configured application schema type before conversion.
+
+Serialize semantic list fields and one parameterized heading model.

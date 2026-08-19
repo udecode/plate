@@ -6,7 +6,7 @@ jsx;
 
 export const listValue = (
   <fragment>
-    <hh2>✍️ 列表</hh2>
+    <hheading level={2}>✍️ 列表</hheading>
     <hp>
       <htext />
     </hp>

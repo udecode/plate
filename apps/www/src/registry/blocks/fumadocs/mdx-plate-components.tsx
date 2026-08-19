@@ -48,13 +48,13 @@ const listTypeToBadgeStyles: Record<string, string> = {
 
 export function API({ children, name }: { children: ReactNode; name: string }) {
   return (
-    <APIContext.Provider value={{ name }}>
+    <APIContext value={{ name }}>
       <Card className="mt-6 mb-16 bg-white p-0 dark:bg-zinc-800">
         <CardContent className="space-y-6 py-6 **:[p]:m-0">
           {children}
         </CardContent>
       </Card>
-    </APIContext.Provider>
+    </APIContext>
   );
 }
 
@@ -198,7 +198,7 @@ export function APIList({
   const id = name ? `${name}-${listTypeToId[listType]}` : undefined;
 
   return (
-    <APIContext.Provider value={{ listType, name }}>
+    <APIContext value={{ listType, name }}>
       <section className="flex w-full flex-col items-center">
         <div className="w-full">
           <div className="">
@@ -264,7 +264,7 @@ export function APIList({
           </div>
         </div>
       </section>
-    </APIContext.Provider>
+    </APIContext>
   );
 }
 

@@ -21,6 +21,7 @@ import {
   type EditorViewOptions,
   type ExtensionsOf,
   type NamedRootKey,
+  type NodeKey,
   type Path,
   type RootKey,
   type Selection,
@@ -74,6 +75,7 @@ import {
 import { useGenericSelector } from './use-generic-selector';
 import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
 import {
+  invalidateUnsyncedMountedTextDOM,
   syncChangedTextToDOM,
   syncPliteNodePathBindingsToDOM,
 } from './use-plite-node-ref';
@@ -588,24 +590,49 @@ function OwnedPliteRuntime<
   );
   const syncRuntimeChangesToDOM = useCallback((commit: EditorCommit) => {
     if (mountedViewEditorsRef.current.size === 0) {
-      return { changedTextCount: 0, syncedTextCount: 0 };
+      return {
+        changedTextCount: 0,
+        invalidatedNodeKeys: [] as NodeKey[],
+        requiresGlobalRender: false,
+        syncedTextCount: 0,
+      };
     }
 
     let changedTextCount = 0;
+    const invalidatedNodeKeys = new Set<NodeKey>();
+    let requiresGlobalRender = false;
     let syncedTextCount = 0;
 
     for (const [root, viewEditors] of mountedViewEditorsRef.current) {
       const publicRoot = toPublicRootOption(root);
       const changedTextNodeKeys = commit.changed.nodeKeys('text', publicRoot);
       const changedPathNodeKeys = commit.changed.nodeKeys('path', publicRoot);
+      const historyAffectedNodeKeys = [
+        ...changedTextNodeKeys,
+        ...changedPathNodeKeys,
+        ...commit.changed.nodeKeys('node', publicRoot),
+      ];
       let didSyncEveryView = changedTextNodeKeys.length > 0;
 
       for (const viewEditor of viewEditors) {
         const runtimeEditor = viewEditor as unknown as Editor;
+        if (commit.annotations['history.action'] !== undefined) {
+          invalidateUnsyncedMountedTextDOM(
+            runtimeEditor,
+            historyAffectedNodeKeys
+          ).forEach((nodeKey) => {
+            invalidatedNodeKeys.add(nodeKey);
+          });
+        }
         const textSync = syncChangedTextToDOM(
           runtimeEditor,
-          changedTextNodeKeys
+          changedTextNodeKeys,
+          { allowProjected: changedPathNodeKeys.length === 0 }
         );
+        requiresGlobalRender ||= textSync.requiresGlobalRender;
+        textSync.invalidatedNodeKeys.forEach((nodeKey) => {
+          invalidatedNodeKeys.add(nodeKey);
+        });
 
         if (textSync.syncedTextCount < textSync.changedTextCount) {
           didSyncEveryView = false;
@@ -619,7 +646,12 @@ function OwnedPliteRuntime<
       if (didSyncEveryView) syncedTextCount += changedTextNodeKeys.length;
     }
 
-    return { changedTextCount, syncedTextCount };
+    return {
+      changedTextCount,
+      invalidatedNodeKeys: [...invalidatedNodeKeys],
+      requiresGlobalRender,
+      syncedTextCount,
+    };
   }, []);
 
   useIsomorphicLayoutEffect(() => {
@@ -642,13 +674,12 @@ function OwnedPliteRuntime<
         refreshFocused();
 
         const textSync = syncRuntimeChangesToDOM(commit);
-        const hasUnsyncedTextChange =
-          commit.changed.hasAny('text') &&
-          textSync.changedTextCount > textSync.syncedTextCount;
-
         handleSelectorChange(
-          hasUnsyncedTextChange ? undefined : commit,
-          getSchemaInvalidatedNodeKeys(runtime.editor, commit)
+          textSync.requiresGlobalRender ? undefined : commit,
+          [
+            ...getSchemaInvalidatedNodeKeys(runtime.editor, commit),
+            ...textSync.invalidatedNodeKeys,
+          ]
         );
 
         if (viewEffectQueue.hasEffects()) {
@@ -716,12 +747,12 @@ function OwnedPliteRuntime<
   );
 
   return (
-    <PliteRuntimeContext.Provider
+    <PliteRuntimeContext
       value={value as unknown as PliteRuntimeContextValue<any, any>}
     >
       <EditorAnnouncementLiveRegion editor={runtime.editor} />
       {children}
-    </PliteRuntimeContext.Provider>
+    </PliteRuntimeContext>
   );
 }
 

@@ -2631,8 +2631,8 @@ type PlateOwnInstalledExtension<P> = {
 >;
 
 /** Read methods exposed directly by one plugin portal. */
-export type PlatePluginRead<P extends AnyBasePluginDefinition> = Materialize<
-  PluginRead<Extract<OwnInferencePluginDefinition<P>, AnyBasePluginDefinition>>
+export type PlatePluginRead<P extends AnyBasePluginDefinition> = PluginRead<
+  Extract<OwnInferencePluginDefinition<P>, AnyBasePluginDefinition>
 >;
 
 type PlatePluginUpdateMethods<

@@ -19,14 +19,20 @@
   "targets": [
     {
       "name": "block-draggable",
-      "files": ["apps/www/src/registry/ui/block-draggable.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for block-draggable."
+        }
+      ]
     },
     {
       "name": "block-selection",
-      "files": ["apps/www/src/registry/ui/block-selection.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "files": ["apps/www/src/registry/components/editor/block-selection.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
       "diagnostics": []
     }
   ],

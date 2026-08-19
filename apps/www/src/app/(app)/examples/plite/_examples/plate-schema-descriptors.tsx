@@ -221,7 +221,7 @@ const PlateSchemaDescriptorControls = () => {
         {
           children: [{ text: 'Modern list item' }],
           indent: 1,
-          listStyleType: 'disc',
+          listType: 'bulleted',
           type: 'paragraph',
         },
         {
@@ -229,11 +229,11 @@ const PlateSchemaDescriptorControls = () => {
             {
               children: [
                 {
-                  background: '#fef3c7',
+                  backgroundColor: '#fef3c7',
                   borders: {
                     bottom: {
                       color: '#92400e',
-                      size: 2,
+                      width: 2,
                       style: 'solid',
                     },
                   },
@@ -243,15 +243,14 @@ const PlateSchemaDescriptorControls = () => {
                       type: 'paragraph',
                     },
                   ],
-                  size: 180,
                   type: 'tableCell',
                 },
               ],
-              size: 44,
+              height: 44,
               type: 'tableRow',
             },
           ],
-          colSizes: [180],
+          columnWidths: [180],
           marginLeft: 12,
           type: 'table',
         },
@@ -266,14 +265,14 @@ const PlateSchemaDescriptorControls = () => {
               type: editor.plugin(CodeLinePlugin).schema.type,
             },
           ],
-          lang: 'typescript',
+          language: 'typescript',
           type: editor.plugin(CodeBlockPlugin).schema.type,
         },
         {
           alt: 'Plate codec image',
           children: [{ text: 'Image caption' }],
-          initialHeight: 180,
-          initialWidth: 320,
+          naturalHeight: 180,
+          naturalWidth: 320,
           type: editor.plugin(ImagePlugin).schema.type,
           url: 'https://example.com/plate-codec.png',
           width: '50%',

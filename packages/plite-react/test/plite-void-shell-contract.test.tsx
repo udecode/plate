@@ -85,9 +85,9 @@ test('PliteInlineVoidShell uses the mounted root platform', () => {
 
   try {
     const rendered = render(
-      <EditableDOMRuntimeContext.Provider value={runtime}>
+      <EditableDOMRuntimeContext value={runtime}>
         <InlineVoidFixture />
-      </EditableDOMRuntimeContext.Provider>
+      </EditableDOMRuntimeContext>
     );
     const inlineVoid =
       rendered.getByTestId('void-content').parentElement!.parentElement!;

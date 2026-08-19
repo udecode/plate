@@ -6,7 +6,7 @@ jsx;
 
 export const previewMdValue = (
   <fragment>
-    <hh2>👀 Preview Markdown</hh2>
+    <hheading level={2}>👀 Preview Markdown</hheading>
     <hp>
       Plate is flexible enough to add **decorations** that can format text based
       on its content. For example, this editor has **Markdown** preview

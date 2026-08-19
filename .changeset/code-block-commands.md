@@ -2,6 +2,8 @@
 "@platejs/code-block": major
 ---
 
+Require React and React DOM 19.2 or newer.
+
 Export `CodeHighlightPluginState` as the complete mutable state contract for
 `BaseCodeHighlightPlugin`.
 
@@ -44,3 +46,5 @@ const plugins = [
   }),
 ];
 ```
+
+Store code block language in the `language` property.

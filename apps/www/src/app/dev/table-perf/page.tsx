@@ -13,10 +13,10 @@ import { Plate, type PlateEditor, usePlateEditor } from 'platejs/react';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import { TablePlugin } from '@platejs/table/react';
 
-import { BasicBlocksKit } from '@/registry/components/editor/plugins/basic-blocks-kit';
-import { DndKit } from '@/registry/components/editor/plugins/dnd-kit';
-import { TableKit } from '@/registry/components/editor/plugins/table-kit';
-import { Editor, EditorContainer } from '@/registry/ui/editor';
+import { BasicBlocksKit } from '@/registry/components/editor/basic-blocks';
+import { DndKit } from '@/registry/components/editor/dnd';
+import { TableKit } from '@/registry/components/editor/table';
+import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 
 import type {
   TablePerfBenchmarkName,
@@ -70,7 +70,7 @@ const createTable = (rows: number, cols: number): TableElement => ({
       type: 'tableRow',
     })
   ),
-  colSizes: Array.from({ length: cols }, () => 100),
+  columnWidths: Array.from({ length: cols }, () => 100),
   type: 'table',
 });
 
@@ -330,7 +330,7 @@ export default function TablePerfPage() {
       const startedAt = performance.now();
       editor
         .plugin(TablePlugin)
-        .update.setColumnSize({ colIndex: 0, width: finalWidth }, { at: [0] });
+        .update.setColumnWidth({ colIndex: 0, width: finalWidth }, { at: [0] });
       await nextPaint();
 
       if (index >= WARMUP_RUNS) {

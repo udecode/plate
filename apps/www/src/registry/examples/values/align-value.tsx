@@ -6,12 +6,16 @@ jsx;
 
 export const alignValue = (
   <fragment>
-    <hh2 textAlign="right">Alignment</hh2>
+    <hheading level={2} textAlign="right">
+      Alignment
+    </hheading>
     <hp textAlign="right">
       Align text within blocks to create visually appealing and balanced
       layouts.
     </hp>
-    <hh3 textAlign="center">Center</hh3>
+    <hheading level={3} textAlign="center">
+      Center
+    </hheading>
     <hp textAlign="justify">
       Create clean and balanced layouts by justifying block text, providing a
       professional and polished look.

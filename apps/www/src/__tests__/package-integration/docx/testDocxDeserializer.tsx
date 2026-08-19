@@ -6,12 +6,7 @@ import {
   BlockquotePlugin,
   BoldPlugin,
   CodePlugin,
-  H1Plugin,
-  H2Plugin,
-  H3Plugin,
-  H4Plugin,
-  H5Plugin,
-  H6Plugin,
+  HeadingPlugin,
   ItalicPlugin,
   ScriptPlugin,
   StrikethroughPlugin,
@@ -29,7 +24,7 @@ import { TablePlugin } from '@platejs/table/react';
 import { jsx } from '@platejs/test-utils';
 import { BaseParagraphPlugin } from 'platejs';
 
-import { DocxPlugin } from '@platejs/docx';
+import { DocxPastePlugin } from '@platejs/docx-paste';
 import { readTestFile } from './readTestFile';
 import { createBaseEditor } from '../../../../../../packages/core/src/lib/editor';
 
@@ -37,7 +32,7 @@ import { createBaseEditor } from '../../../../../../packages/core/src/lib/editor
 jsx;
 
 const targetPluginConfig = {
-  targetPlugins: [BaseParagraphPlugin, H1Plugin, H2Plugin, H3Plugin],
+  targetPlugins: [BaseParagraphPlugin, HeadingPlugin, HeadingPlugin],
 };
 
 export const createClipboardData = (html: string, rtf?: string): DataTransfer =>
@@ -76,12 +71,8 @@ export const testDocxDeserializer = ({
         CodeBlockPlugin,
         LinkPlugin,
         BlockquotePlugin,
-        H1Plugin,
-        H2Plugin,
-        H3Plugin,
-        H4Plugin,
-        H5Plugin,
-        H6Plugin,
+        HeadingPlugin,
+
         BoldPlugin,
         CodePlugin,
         ItalicPlugin,
@@ -95,7 +86,7 @@ export const testDocxDeserializer = ({
         IndentPlugin.configure(targetPluginConfig),
         BaseListPlugin.configure(targetPluginConfig),
         JuicePlugin,
-        DocxPlugin,
+        DocxPastePlugin,
       ],
       selection: input.selection,
       initialValue: input.children,

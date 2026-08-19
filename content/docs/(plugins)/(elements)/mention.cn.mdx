@@ -3,7 +3,7 @@ title: 提及功能
 docs:
   - route: /docs/combobox
     title: 组合框
-  - route: /docs/components/mention-node
+  - route: /docs/components/mention
     title: 提及节点
 ---
 
@@ -28,16 +28,16 @@ docs:
 
 最快捷的添加提及功能方式是使用 `MentionKit`，它包含预配置的 `MentionPlugin` 和 `MentionInputPlugin` 以及它们的 [Plate UI](/docs/installation/plate-ui) 组件。
 
-<ComponentSource name="mention-kit" />
+<ComponentSource name="mention" />
 
-- [`MentionElement`](/docs/components/mention-node): 渲染提及元素
-- [`MentionInputElement`](/docs/components/mention-node): 渲染提及输入组合框
+- [`MentionElement`](/docs/components/mention): 渲染提及元素
+- [`MentionInputElement`](/docs/components/mention): 渲染提及输入组合框
 
 ### 添加套件
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { MentionKit } from '@/components/editor/plugins/mention-kit';
+import { MentionKit } from '@/components/editor/mention';
 
 const editor = createPlateEditor({
   plugins: [
@@ -82,7 +82,7 @@ const editor = createPlateEditor({
 ```tsx
 import { MentionPlugin, MentionInputPlugin } from '@platejs/mention/react';
 import { createPlateEditor } from 'platejs/react';
-import { MentionElement, MentionInputElement } from '@/components/ui/mention-node';
+import { MentionElement, MentionInputElement } from '@/components/editor/mention';
 
 const editor = createPlateEditor({
   plugins: [

@@ -27,7 +27,7 @@ import { type UIMessage, DefaultChatTransport } from 'ai';
 import { PLUGINS, nanoid } from 'platejs';
 import { type PlateEditor, useEditor, usePluginStore } from 'platejs/react';
 
-import { discussionPlugin } from './plugins/discussion-kit';
+import { discussionPlugin } from './discussion';
 
 export type AIChatTransportPluginState = {
   chatOptions: {
@@ -1405,7 +1405,7 @@ const mdxChunks = [
     },
     // {
     //  delay,
-    //   texts: '<columnGroup layout="[50,50]">\n',
+    //   texts: '<columnGroup>\n',
     // },
     // {
     //  delay,
@@ -1482,7 +1482,7 @@ const mdxChunks = [
     {
       delay,
       texts:
-        'src="https://s26.q4cdn.com/900411403/files/doc_downloads/test.pdf" width="80%" isUpload="true" />\n\n',
+        'src="https://s26.q4cdn.com/900411403/files/doc_downloads/test.pdf" width="80%" />\n\n',
     },
     {
       delay,
@@ -1604,7 +1604,7 @@ const mdxChunks = [
     {
       delay,
       texts:
-        'src="https://videos.pexels.com/video-files/6769791/6769791-uhd_2560_1440_24fps.mp4" width="80%" isUpload="true" />',
+        'provider="file" src="https://videos.pexels.com/video-files/6769791/6769791-uhd_2560_1440_24fps.mp4" width="80%" />',
     },
   ],
 ];

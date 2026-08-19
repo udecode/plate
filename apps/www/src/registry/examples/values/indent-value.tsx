@@ -6,7 +6,7 @@ jsx;
 
 export const indentValue = (
   <fragment>
-    <hh2>Indentation</hh2>
+    <hheading level={2}>Indentation</hheading>
     <hp indent={1}>
       Easily control the indentation of specific blocks to highlight important
       information and improve visual structure.

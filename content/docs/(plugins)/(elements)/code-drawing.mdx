@@ -1,7 +1,7 @@
 ---
 title: Code Drawing
 docs:
-  - route: /docs/components/code-drawing-node
+  - route: /docs/components/code-drawing
     title: Code Drawing Node
 ---
 
@@ -11,10 +11,10 @@ docs:
 
 ## Features
 
-- Support for multiple diagram types: PlantUml, Graphviz, Flowchart, and Mermaid
+- Support for PlantUML, Graphviz, Flowchart, and Mermaid diagram languages
 - Inline code editing with code-block-like styling
 - Real-time preview with debounced rendering (500ms)
-- Multiple view modes: Both (code and preview), Code only, Image only
+- Three persisted views: split, code, and preview
 - Responsive layout: horizontal on desktop (code left, preview right), vertical on mobile (preview top, code bottom)
 - Border separator between code editor and preview in Both mode
 - Toolbar controls: language selector and view mode selector (always visible on mobile, hover to show on desktop)
@@ -31,9 +31,9 @@ docs:
 
 The fastest way to add code drawing functionality is with the `CodeDrawingKit`, which includes the pre-configured `CodeDrawingPlugin` with its [Plate UI](/docs/installation/plate-ui) components.
 
-<ComponentSource name="code-drawing-kit" />
+<ComponentSource name="code-drawing" />
 
-- [`CodeDrawingElement`](/docs/components/code-drawing-node): Renders code drawing elements with inline editing and preview.
+- [`CodeDrawingElement`](/docs/components/code-drawing): Renders code drawing elements with inline editing and preview.
 
 ### Add Kit
 
@@ -41,7 +41,7 @@ Add the kit to your plugins:
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { CodeDrawingKit } from '@/components/editor/plugins/code-drawing-kit';
+import { CodeDrawingKit } from '@/components/editor/code-drawing';
 
 const editor = createPlateEditor({
   plugins: [
@@ -86,7 +86,7 @@ Configure the code drawing plugin with custom components.
 ```tsx
 import { CodeDrawingPlugin } from '@platejs/code-drawing/react';
 import { createPlateEditor } from 'platejs/react';
-import { CodeDrawingElement } from '@/components/ui/code-drawing-node';
+import { CodeDrawingElement } from '@/components/editor/code-drawing';
 
 const editor = createPlateEditor({
   plugins: [
@@ -96,7 +96,7 @@ const editor = createPlateEditor({
 });
 ```
 
-- `component`: Assigns [`CodeDrawingElement`](/docs/components/code-drawing-node) to render code drawing elements.
+- `component`: Assigns [`CodeDrawingElement`](/docs/components/code-drawing) to render code drawing elements.
 
 ### Add Toolbar Button
 
@@ -118,7 +118,7 @@ const insertItem = {
 
 ### CodeDrawingPlugin
 
-Plugin for rendering code drawings (PlantUml, Graphviz, Flowchart, Mermaid) with inline editing and preview capabilities.
+Plugin for rendering code drawings with inline editing and preview capabilities.
 
 ## API
 
@@ -128,35 +128,30 @@ Inserts a code drawing element at the current selection.
 
 <API name="editor.plugin(BaseCodeDrawingPlugin).update.insert">
 <APIParameters>
-<APIItem name="props" type="NodeProps<CodeDrawingElement>" optional>
-Props for the code drawing element.
+<APIItem name="input" type="Partial<Pick<CodeDrawingElement, 'code' | 'language' | 'view'>>" optional>
+Construction values for the code drawing element. Schema defaults make every canonical field present.
 <APISubList>
-<APISubListItem parent="props" name="data" type="CodeDrawingData" optional>
-The data for the code drawing element.
-<APISubList>
-<APISubListItem parent="data" name="drawingType" type="CodeDrawingType" optional>
-The type of diagram to render.
+<APISubListItem parent="input" name="language" type="CodeDrawingLanguage" optional>
+The diagram language.
 
-- **Default:** `'Mermaid'`
+- **Default:** `'mermaid'`
 
-- **Options:** `'PlantUml'`, `'Graphviz'`, `'Flowchart'`, `'Mermaid'`
+- **Options:** `'flowchart'`, `'graphviz'`, `'mermaid'`, `'plantuml'`
 
 </APISubListItem>
-<APISubListItem parent="data" name="drawingMode" type="ViewMode" optional>
-The view mode for the code drawing.
+<APISubListItem parent="input" name="view" type="CodeDrawingView" optional>
+The persisted presentation view.
 
-- **Default:** `'Both'`
+- **Default:** `'split'`
 
-- **Options:** `'Both'`, `'Code'`, `'Image'`
+- **Options:** `'code'`, `'preview'`, `'split'`
 
 </APISubListItem>
-<APISubListItem parent="data" name="code" type="string" optional>
+<APISubListItem parent="input" name="code" type="string" optional>
 The code content for the diagram.
 
 - **Default:** `''`
 
-</APISubListItem>
-</APISubList>
 </APISubListItem>
 </APISubList>
 </APIItem>
@@ -166,38 +161,6 @@ select the drawing. Without a reference or selection, the command appends the
 drawing to the document.
 </APIItem>
 </APIParameters>
-</API>
-
-## Hooks
-
-### `useCodeDrawingElement`
-
-A hook for a code drawing element that handles rendering and state management.
-
-<API name="useCodeDrawingElement">
-<APIParameters>
-<APIItem name="element" type="CodeDrawingElement">
-The code drawing element.
-</APIItem>
-</APIParameters>
-
-<APIReturns>
-<APIItem name="loading" type="boolean">
-Whether the diagram is currently being rendered.
-</APIItem>
-<APIItem name="error" type="string | null">
-The error message if rendering failed, or `null` if there's no error.
-</APIItem>
-<APIItem name="image" type="string">
-The rendered image data URL.
-</APIItem>
-<APIItem name="updateNode" type="(data: Partial<CodeDrawingData>) => void">
-Function to update the code drawing element's data.
-</APIItem>
-<APIItem name="removeNode" type="() => void">
-Function to remove the code drawing element.
-</APIItem>
-</APIReturns>
 </API>
 
 ## Types
@@ -212,60 +175,42 @@ The code drawing element type.
 The serialized element type. Its default is `codeDrawing`; read the installed
 value from `editor.plugin(BaseCodeDrawingPlugin).schema.type`.
 </APIItem>
-<APIItem name="data" type="CodeDrawingData" optional>
-The data for the code drawing element.
+<APIItem name="code" type="string">
+The diagram source. Defaults to an empty string.
+</APIItem>
+<APIItem name="language" type="CodeDrawingLanguage">
+The lowercase diagram-language identifier. Defaults to `mermaid`.
+</APIItem>
+<APIItem name="view" type="CodeDrawingView">
+The persisted presentation view. Defaults to `split`.
 </APIItem>
 </APIAttributes>
 </API>
 
-### `CodeDrawingData`
-
-The data structure for code drawing elements.
-
-<API name="CodeDrawingData">
-<APIAttributes>
-<APIItem name="drawingType" type="CodeDrawingType" optional>
-The type of diagram to render.
-
-- **Options:** `'PlantUml'`, `'Graphviz'`, `'Flowchart'`, `'Mermaid'`
-
-</APIItem>
-<APIItem name="drawingMode" type="ViewMode" optional>
-The view mode for the code drawing.
-
-- **Options:** `'Both'`, `'Code'`, `'Image'`
-
-</APIItem>
-<APIItem name="code" type="string" optional>
-The code content for the diagram.
-</APIItem>
-</APIAttributes>
-</API>
-
-### `CodeDrawingType`
+### `CodeDrawingLanguage`
 
 The type of diagram supported.
 
-<API name="CodeDrawingType">
+<API name="CodeDrawingLanguage">
 <APIReturns>
-<APIItem type="'PlantUml' | 'Graphviz' | 'Flowchart' | 'Mermaid'">
-The diagram type.
+<APIItem type="'flowchart' | 'graphviz' | 'mermaid' | 'plantuml'">
+The persisted diagram language.
 </APIItem>
 </APIReturns>
 </API>
 
-### `ViewMode`
+### `CodeDrawingView`
 
 The view mode for code drawing elements.
 
-<API name="ViewMode">
+<API name="CodeDrawingView">
 <APIReturns>
-<APIItem type="'Both' | 'Code' | 'Image'">
+<APIItem type="'code' | 'preview' | 'split'">
 The view mode.
 
-- `'Both'`: Shows both code editor and preview side by side (horizontal on desktop, vertical on mobile with preview on top)
-- `'Code'`: Shows only the code editor
-- `'Image'`: Shows only the rendered preview
+- `'split'`: Shows code and preview together.
+- `'code'`: Shows only the code editor.
+- `'preview'`: Shows only the rendered preview.
 
 </APIItem>
 </APIReturns>
@@ -275,12 +220,12 @@ The view mode.
 
 ### `renderCodeDrawing`
 
-Renders a diagram from code based on the drawing type.
+Renders a diagram from code based on its language.
 
 <API name="renderCodeDrawing">
 <APIParameters>
-<APIItem name="type" type="CodeDrawingType">
-The type of diagram to render.
+<APIItem name="language" type="CodeDrawingLanguage">
+The diagram language to render.
 </APIItem>
 <APIItem name="content" type="string">
 The code content for the diagram.

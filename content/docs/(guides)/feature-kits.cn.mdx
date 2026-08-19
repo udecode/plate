@@ -39,9 +39,9 @@ description: 了解如何使用预配置插件和UI组件的功能套件快速�
 [`BasicBlocksKit`](/docs/basic-blocks#installation)包含以下插件和组件：
 
 - `ParagraphPlugin`及`ParagraphElement`
-- `H1Plugin`及`H1Element`
-- `H2Plugin`及`H2Element`
-- `H3Plugin`及`H3Element`
+- `HeadingPlugin`及`HeadingElement`
+- `HeadingPlugin`及`HeadingElement`
+- `HeadingPlugin`及`HeadingElement`
 - `BlockquotePlugin`及`BlockquoteElement`
 - `HorizontalRulePlugin`及`HrElement`
 
@@ -49,7 +49,7 @@ description: 了解如何使用预配置插件和UI组件的功能套件快速�
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { BasicBlocksKit } from '@/components/editor/plugins/basic-blocks-kit';
+import { BasicBlocksKit } from '@/components/editor/basic-blocks';
 
 const editor = createPlateEditor({
   plugins: [

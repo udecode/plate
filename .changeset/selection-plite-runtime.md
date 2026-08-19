@@ -2,6 +2,8 @@
 "@platejs/selection": major
 ---
 
+Require React and React DOM 19.2 or newer.
+
 - Move block-selection mutations to explicit Plite transactions
 - Track block and menu selections with editor-scoped `NodeKey` values rather
   than persisted element properties.
@@ -20,6 +22,12 @@
 - Use `@platejs/cursor` as the sole cursor geometry, overlay-state, and
   positioning-hook owner
 - Treat data and header cells as one `tableCell` selection type
+- Keep only `useBlockSelected` as a public block-selection hook;
+  selection-area wiring stays inside `BlockSelection`, selected-node queries
+  use `editor.plugin(BlockSelectionPlugin).read.getNodes()`, and copied UI
+  combines text and block selection through primitive selectors
+- Keep the package selection-area DOM structural; copied registry CSS owns its
+  color, border, and stacking treatment
 
 **Migration:** Use `editor.plugin(BlockSelectionPlugin).api` for UI and
 clipboard services, `.read` for selected-node queries, `.store.get` for state

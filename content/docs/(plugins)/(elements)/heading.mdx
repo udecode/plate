@@ -1,16 +1,14 @@
 ---
 title: Heading
-description: H1 through H6 block elements with shortcuts, input rules, and static renderers.
+description: One semantic heading element with levels 1 through 6.
 docs:
-  - route: /docs/components/heading-node
+  - route: /docs/components/heading
     title: Heading Element
   - route: /docs/basic-blocks
     title: Basic Blocks
-  - route: https://pro.platejs.org/docs/components/heading-node
-    title: Plus
 ---
 
-Heading adds six block element types, `h1` through `h6`, for document structure. Each level is its own plugin with the same block behavior, HTML parser, toggle transform, and optional Markdown shorthand rule. This page covers registry setup, manual setup, value shape, shortcuts, input rules, and Markdown serialization.
+Heading uses one element type and one plugin. The required level property selects H1 through H6 rendering and Markdown depth.
 
 <ComponentPreview name="basic-blocks-demo" />
 
@@ -18,264 +16,85 @@ Heading adds six block element types, `h1` through `h6`, for document structure.
 
 ## Features
 
-- Block `h1` through `h6` elements.
-- Individual `H1Plugin` through `H6Plugin` exports.
-- Registry `BasicBlocksKit` and `BaseBasicBlocksKit` presets include all six levels.
-- Generic `editor.plugin(H1Plugin).update.toggle()` through `editor.plugin(H6Plugin).update.toggle()` commands.
-- `# ` through `###### ` input rules with `HeadingRules.markdown()`.
-- `mod+alt+1` through `mod+alt+6` shortcuts in the registry kit.
-- Editable and static registry heading components.
+- One HeadingPlugin and BaseHeadingPlugin capability.
+- Required level from 1 through 6.
+- One HTML and MDAST codec.
+- Markdown shortcuts from # through ######.
+- Registry shortcuts from mod+alt+1 through mod+alt+6.
 
 </PackageInfo>
 
-## Fast Path
+## Kit Usage
 
-<Steps>
+BasicBlocksKit includes HeadingPlugin, the dynamic HeadingElement, all six keyboard shortcuts, and HeadingRules.markdown().
 
-### Add Basic Blocks
-
-`BasicBlocksKit` installs paragraph, H1-H6, blockquote, and horizontal rule
-plugins. Every heading level includes `HeadingRules.markdown()`, `H*Element`,
-a reset-on-empty break rule, and a `mod+alt+<level>` shortcut.
-
-<ComponentSource name="basic-blocks-kit" />
-
-```tsx
-import { createPlateEditor } from 'platejs/react';
-
+~~~tsx
 import { BasicBlocksKit } from '@/components/editor/plugins/basic-blocks-kit';
-
-export const editor = createPlateEditor({
-  plugins: BasicBlocksKit,
-});
-```
-
-### Render Headings
-
-`heading-node` exports `H1Element` through `H6Element`. Each component renders a `PlateElement` with the matching heading tag and navigation-highlight styles.
-
-<ComponentSource name="heading-node" />
-
-### Add Static Rendering
-
-Use `BaseBasicBlocksKit` when rendering read-only content with `platejs/static`.
-
-<ComponentSource name="basic-blocks-base-kit" />
-
-</Steps>
-
-## Ownership
-
-| Layer | Owner | What It Does |
-|-------|-------|--------------|
-| `@platejs/basic-nodes` | Package | Exports base H1-H6 plugins, `HeadingRules`, and shared heading rules. |
-| `@platejs/basic-nodes/react` | Package | Exports `H1Plugin` through `H6Plugin`. |
-| `basic-blocks-kit` | Registry | Configures paragraph, H1-H6, blockquote, and horizontal rule plugins inline. |
-| `basic-blocks-base-kit` | Registry | Adds static components for the same block family, including H1-H6. |
-| `heading-node` | Registry UI | Renders editable and static heading components. |
-| Toolbar and slash UI | Registry UI | Provides H1-H6 turn-into items, H1-H3 insert items, and H1-H3 slash-command items. |
-| `@platejs/markdown` | Package | Serializes and deserializes `h1` through `h6` as Markdown headings. |
-
-The package exports six independent capabilities. The registry keeps their
-default configuration inside the one Basic Blocks owner; apps that need a
-subset install individual heading plugins.
-
-## Manual Setup
-
-<Steps>
-
-### Install Package
-
-```bash
-npm install @platejs/basic-nodes
-```
-
-### Add Individual Levels
-
-Use individual level plugins when you want registry components, shortcuts, or per-level configuration.
-
-```tsx
-import { HeadingRules } from '@platejs/basic-nodes';
-import {
-  H1Plugin,
-  H2Plugin,
-  H3Plugin,
-  H4Plugin,
-  H5Plugin,
-  H6Plugin,
-} from '@platejs/basic-nodes/react';
 import { createPlateEditor } from 'platejs/react';
 
-import {
-  H1Element,
-  H2Element,
-  H3Element,
-  H4Element,
-  H5Element,
-  H6Element,
-} from '@/components/ui/heading-node';
-
-export const editor = createPlateEditor({
-  plugins: [
-    H1Plugin.configure({
-      component: H1Element,
-      inputRules: [HeadingRules.markdown()],
-      rules: { break: { empty: 'reset' } },
-      shortcuts: { toggle: { keys: 'mod+alt+1' } },
-    }),
-    H2Plugin.configure({
-      component: H2Element,
-      inputRules: [HeadingRules.markdown()],
-      rules: { break: { empty: 'reset' } },
-      shortcuts: { toggle: { keys: 'mod+alt+2' } },
-    }),
-    H3Plugin.configure({
-      component: H3Element,
-      inputRules: [HeadingRules.markdown()],
-      rules: { break: { empty: 'reset' } },
-      shortcuts: { toggle: { keys: 'mod+alt+3' } },
-    }),
-    H4Plugin.configure({
-      component: H4Element,
-      inputRules: [HeadingRules.markdown()],
-      rules: { break: { empty: 'reset' } },
-      shortcuts: { toggle: { keys: 'mod+alt+4' } },
-    }),
-    H5Plugin.configure({
-      component: H5Element,
-      inputRules: [HeadingRules.markdown()],
-      rules: { break: { empty: 'reset' } },
-      shortcuts: { toggle: { keys: 'mod+alt+5' } },
-    }),
-    H6Plugin.configure({
-      component: H6Element,
-      inputRules: [HeadingRules.markdown()],
-      rules: { break: { empty: 'reset' } },
-      shortcuts: { toggle: { keys: 'mod+alt+6' } },
-    }),
-  ],
+const editor = createPlateEditor({
+  plugins: [...BasicBlocksKit],
 });
-```
+~~~
 
-### Use The Registry Base Kit
+## Manual Usage
 
-Spread `BaseBasicBlocksKit` for the standard static block family. For a smaller
-schema, list only the individual package plugins.
+~~~tsx
+import { HeadingRules } from '@platejs/basic-nodes';
+import { HeadingPlugin } from '@platejs/basic-nodes/react';
 
-```tsx
-import {
-  BaseH1Plugin,
-  BaseH3Plugin,
-  BaseH5Plugin,
-} from '@platejs/basic-nodes';
-import { createBaseEditor } from 'platejs';
+const plugins = [
+  HeadingPlugin.configure({
+    component: HeadingElement,
+    inputRules: [HeadingRules.markdown()],
+  }),
+];
+~~~
 
-import { BaseBasicBlocksKit } from '@/components/editor/plugins/basic-blocks-base-kit';
+A renderer reads element.level and chooses the matching intrinsic element.
 
-export const basicBlocksEditor = createBaseEditor({
-  plugins: [...BaseBasicBlocksKit],
-});
+~~~tsx
+import type { PlateElementProps } from 'platejs/react';
+import { HeadingPlugin } from '@platejs/basic-nodes/react';
+import { PlateElement } from 'platejs/react';
 
-export const selectedHeadingsEditor = createBaseEditor({
-  plugins: [BaseH1Plugin, BaseH3Plugin, BaseH5Plugin],
-});
-```
+export function HeadingElement(
+  props: PlateElementProps<typeof HeadingPlugin>
+) {
+  const tag = `h${props.element.level}` as const;
 
-</Steps>
+  return <PlateElement as={tag} {...props} />;
+}
+~~~
 
-## Value Shape
+## Value
 
-Headings are normal block elements. The heading level is the node `type`.
-
-```tsx
+~~~ts
 const value = [
   {
-    children: [{ text: 'Installation' }],
-    type: 'h1',
-  },
-  {
-    children: [{ text: 'Install packages' }],
-    type: 'h2',
-  },
-  {
-    children: [{ text: 'Configure editor plugins' }],
-    type: 'h3',
+    type: 'heading',
+    level: 2,
+    children: [{ text: 'Document model' }],
   },
 ];
-```
+~~~
 
-| Type | HTML Parser | Default Render Tag |
-|------|-------------|--------------------|
-| `h1` | `H1` | `<h1>` |
-| `h2` | `H2` | `<h2>` |
-| `h3` | `H3` | `<h3>` |
-| `h4` | `H4` | `<h4>` |
-| `h5` | `H5` | `<h5>` |
-| `h6` | `H6` | `<h6>` |
+level is semantic Plate data. The HTML codec maps it to an h1 through h6 tag. The Markdown codec maps it to MDAST depth.
 
-The registry `BaseBasicBlocksKit` installs all six heading element types with
-static renderers alongside the other basic blocks. Install individual
-`BaseH*Plugin` descriptors when your document schema supports only a subset.
+## Commands
 
-## Editing Behavior
+~~~ts
+editor.plugin(HeadingPlugin).update.toggle({ level: 2 });
+~~~
 
-All heading levels share the same base behavior.
-
-| Behavior | Source |
-|----------|--------|
-| Toggle command | Text-block plugins expose `editor.plugin(Plugin).update.toggle()`, and same-name shortcuts call it automatically. |
-| Enter split | Base rules set `break.splitReset: true`; the registry kit also resets an empty heading on break. |
-| Backspace at start | Base rules set `delete.start: 'reset'`. |
-| Empty merge | Base rules set `merge.removeEmpty: true`. |
-| HTML paste | Each level deserializes its matching `H1` through `H6` tag. |
-
-## Input Rules And Shortcuts
-
-`HeadingRules.markdown()` creates a block-start input rule for the configured plugin name.
-
-| Input | Result |
-|-------|--------|
-| `# ` | H1 |
-| `## ` | H2 |
-| `### ` | H3 |
-| `#### ` | H4 |
-| `##### ` | H5 |
-| `###### ` | H6 |
-
-The registry kit binds `mod+alt+1` through `mod+alt+6` to the matching generic
-toggle command.
-
-## Registry UI
-
-| Surface | Heading Levels |
-|---------|----------------|
-| Turn Into toolbar | H1-H6 |
-| Insert toolbar | H1-H3 |
-| Slash command | H1-H3 |
-| Editable element | `H1Element` through `H6Element` |
-| Static element | `H1ElementStatic` through `H6ElementStatic` |
-
-Static heading elements preserve an `id` field by rendering an internal anchor span. That anchor is used by DOCX table-of-contents links.
-
-## Markdown
-
-`@platejs/markdown` maps Markdown heading depth to the matching Plate heading type.
-
-```mdx
-# H1
-## H2
-### H3
-```
-
-Serialization uses the node type to choose Markdown depth. For example, `type: 'h2'` serializes as `##`.
+Calling toggle with the active level resets the selected heading to the root default block. Calling it with another level changes the level on the same heading type.
 
 ## API Reference
 
-| API | Package | Use |
-|-----|---------|-----|
-| `BaseH1Plugin` through `BaseH6Plugin` | `@platejs/basic-nodes` | Headless heading level plugins. |
-| `BaseBasicBlocksKit` | `@/components/editor/plugins/basic-blocks-base-kit` | App-owned static preset containing the basic block family, including H1-H6. |
-| `HeadingRules.markdown()` | `@platejs/basic-nodes` | Creates the `# ` through `###### ` block-start input rules. |
-| `H1Plugin` through `H6Plugin` | `@platejs/basic-nodes/react` | React heading level plugins. |
-| `BasicBlocksKit` | `@/components/editor/plugins/basic-blocks-kit` | App-owned React preset containing the basic block family, including H1-H6. |
-| `editor.plugin(H1Plugin).update.toggle()` through `editor.plugin(H6Plugin).update.toggle()` | `@platejs/core` plugin updates | Toggle selected blocks to the matching heading type. |
+| API | Purpose |
+| --- | --- |
+| BaseHeadingPlugin | Headless heading schema, behavior, codecs, and update. |
+| HeadingPlugin | React adapter for BaseHeadingPlugin. |
+| HeadingRules.markdown() | One block-start rule for # through ######. |
+| HeadingLevel | 1, 2, 3, 4, 5, or 6. |
+

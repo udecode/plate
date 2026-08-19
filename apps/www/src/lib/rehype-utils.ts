@@ -59,6 +59,10 @@ function getSeenKey(name: string, isShadcn?: boolean) {
 }
 
 export function fixImport(content: string) {
+  const direct = content
+    .replaceAll('@/registry/components/', '@/components/')
+    .replaceAll('@/registry/hooks/', '@/hooks/')
+    .replaceAll('@/registry/lib/', '@/lib/');
   const regex =
     /@\/(.+?)\/((?:.*?\/)?(?:components|ui|hooks|lib|example))\/([\w-]+)/g;
 
@@ -84,7 +88,7 @@ export function fixImport(content: string) {
     return match;
   };
 
-  return content.replaceAll(regex, replacement);
+  return direct.replaceAll(regex, replacement);
 }
 
 export function getNodeAttributeByName(node: UnistNode, name: string) {

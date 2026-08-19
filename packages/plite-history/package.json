@@ -45,7 +45,7 @@
     "lint": "plate-pkg p:lint",
     "lint:fix": "plate-pkg p:lint:fix",
     "test": "bun test --preload ../../config/plite-source-test-setup.ts",
-    "typecheck": "tsc --project tsconfig.json --noEmit"
+    "typecheck": "plate-pkg p:typecheck"
   },
   "devDependencies": {
     "lodash": "^4.17.21",

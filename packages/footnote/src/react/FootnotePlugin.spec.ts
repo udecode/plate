@@ -35,7 +35,7 @@ describe('FootnotePlugin', () => {
             { text: 'a' },
             {
               children: [{ text: '' }],
-              identifier: '1',
+              ref: '1',
               type: 'footnoteReference',
             },
             { text: 'b' },
@@ -44,14 +44,14 @@ describe('FootnotePlugin', () => {
         },
         {
           children: [{ children: [{ text: 'body' }], type: 'paragraph' }],
-          identifier: '1',
+          ref: '1',
           type: 'footnoteDefinition',
         },
       ],
     });
 
     editor.update((tx) => {
-      expect(tx.footnote.focusDefinition({ identifier: '1' })).toBe(true);
+      expect(tx.footnote.focusDefinition({ ref: '1' })).toBe(true);
       expect(tx.selection()).toEqual({
         kind: 'text',
         anchor: { offset: 0, path: [1, 0, 0] },
@@ -79,7 +79,7 @@ describe('FootnotePlugin', () => {
     });
 
     editor.update((tx) => {
-      expect(tx.footnote.focusReference({ identifier: '1' })).toBe(true);
+      expect(tx.footnote.focusReference({ ref: '1' })).toBe(true);
       expect(tx.selection()).toEqual({
         kind: 'text',
         anchor: { offset: 0, path: [0, 2] },

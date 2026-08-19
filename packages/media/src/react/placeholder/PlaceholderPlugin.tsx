@@ -4,14 +4,13 @@ import type {
   PluginReference,
 } from '@platejs/core';
 import { toPlatePlugin } from '@platejs/core/react';
-import { createAtomStore } from '@platejs/core/react/internal';
 import { NodeApi, type Path, PathApi, type NodeKey } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
 
 import type {
   AlignedMediaInsertInput,
+  FileInsertInput,
   ImageInsertInput,
-  MediaInsertInput,
   ProviderMediaInsertInput,
 } from '../../lib/BaseMediaPlugin';
 import { BasePlaceholderPlugin } from '../../lib/placeholder/BasePlaceholderPlugin';
@@ -19,11 +18,6 @@ import { AudioPlugin, FilePlugin, ImagePlugin, VideoPlugin } from '../plugins';
 import { lookup } from './internal/mimeTypes';
 
 const fileSizePattern = /^(\d+)(\.\d+)?\s*(B|KB|MB|GB)$/i;
-
-export const { PlaceholderProvider } = createAtomStore(
-  {},
-  { name: 'placeholder' as const }
-);
 
 export const ALLOWED_FILE_TYPES = [
   'image',
@@ -142,45 +136,15 @@ const initialState: PlaceholderPluginState = {
   disableEmptyPlaceholder: false,
   disableFileDrop: false,
   error: null,
-  maxFileCount: 5,
+  maxFileCount: Number.POSITIVE_INFINITY,
   multiple: true,
   uploadConfig: {
-    audio: {
-      maxFileCount: 1,
-      maxFileSize: '8MB',
-      mediaType: 'audio',
-      minFileCount: 1,
-    },
-    blob: {
-      maxFileCount: 1,
-      maxFileSize: '8MB',
-      mediaType: 'file',
-      minFileCount: 1,
-    },
-    image: {
-      maxFileCount: 3,
-      maxFileSize: '4MB',
-      mediaType: 'image',
-      minFileCount: 1,
-    },
-    pdf: {
-      maxFileCount: 1,
-      maxFileSize: '4MB',
-      mediaType: 'file',
-      minFileCount: 1,
-    },
-    text: {
-      maxFileCount: 1,
-      maxFileSize: '64KB',
-      mediaType: 'file',
-      minFileCount: 1,
-    },
-    video: {
-      maxFileCount: 1,
-      maxFileSize: '16MB',
-      mediaType: 'video',
-      minFileCount: 1,
-    },
+    audio: { mediaType: 'audio' },
+    blob: { mediaType: 'file' },
+    image: { mediaType: 'image' },
+    pdf: { mediaType: 'file' },
+    text: { mediaType: 'file' },
+    video: { mediaType: 'video' },
   },
   uploadingFiles: {},
 };
@@ -417,8 +381,8 @@ export const PlaceholderPlugin = toPlatePlugin(BasePlaceholderPlugin, {
           ...input
         }:
           | (AlignedMediaInsertInput & { plugin: PlaceholderMediaPlugin })
+          | (FileInsertInput & { plugin: PlaceholderMediaPlugin })
           | (ImageInsertInput & { plugin: PlaceholderMediaPlugin })
-          | (MediaInsertInput & { plugin: PlaceholderMediaPlugin })
           | (ProviderMediaInsertInput & { plugin: PlaceholderMediaPlugin }),
         {
           at,

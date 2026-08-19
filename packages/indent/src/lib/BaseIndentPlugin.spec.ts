@@ -19,6 +19,23 @@ import { createPlateEditor } from '@platejs/core/react';
 import { BaseIndentPlugin } from './BaseIndentPlugin';
 
 describe('BaseIndentPlugin', () => {
+  it('accepts non-negative integer levels and rejects fractional indentation', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseParagraphPlugin, BaseIndentPlugin],
+    });
+    const document = (indent: number) => ({
+      children: [
+        { children: [{ text: 'Paragraph' }], indent, type: 'paragraph' },
+      ],
+    });
+
+    expect(() => editor.read.schema.assertDocument(document(2))).not.toThrow();
+    expect(() => editor.read.schema.assertDocument(document(0))).not.toThrow();
+    expect(() => editor.read.schema.assertDocument(document(1.5))).toThrow(
+      /indent.*validation/i
+    );
+  });
+
   it('exposes the default state and injected node-prop contract', () => {
     const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, BaseIndentPlugin],

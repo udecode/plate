@@ -6,11 +6,18 @@
     "src/app/dev/editor-perf/**/*.tsx",
     "src/__tests__/package-integration/**/*.ts",
     "src/__tests__/package-integration/**/*.tsx",
-    "src/registry/components/editor/plugins/**/*.ts",
-    "src/registry/components/editor/plugins/**/*.tsx",
+    "src/registry/components/editor/**/*.ts",
+    "src/registry/components/editor/**/*.tsx",
     "src/types/**/*.d.ts",
     "../../packages/*/src/**/*.d.ts",
     "../../packages/udecode/*/src/**/*.d.ts"
   ],
-  "exclude": ["node_modules", "__registry__", "**/blocks/fumadocs"]
+  "exclude": [
+    "node_modules",
+    "__registry__",
+    "**/blocks/fumadocs",
+    "src/registry/components/editor/**/*.spec.*",
+    "src/registry/components/editor/**/*.test.*",
+    "src/registry/components/editor/**/*.slow.*"
+  ]
 }

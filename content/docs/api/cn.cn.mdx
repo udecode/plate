@@ -3,80 +3,54 @@ title: cn
 description: \@udecode/cn 的 API 参考文档。
 ---
 
-`@udecode/cn` 包含用于 React 和 Tailwind 的工具函数。
+`@udecode/cn` 导出一个 class name 工具，并重新导出
+`@udecode/react-utils`。
 
-### `cn`
+## 安装
 
-条件性地添加 Tailwind CSS 类而不产生冲突。
+```bash
+npm install @udecode/cn
+```
+
+## 使用
+
+```tsx
+import { cn } from '@udecode/cn';
+
+export function Button({
+  active,
+  className,
+  ...props
+}: React.ComponentProps<'button'> & { active?: boolean }) {
+  return (
+    <button
+      className={cn(
+        'inline-flex rounded-md px-3 py-2',
+        active && 'bg-accent',
+        className
+      )}
+      {...props}
+    />
+  );
+}
+```
+
+直接编写具体组件。默认属性、variant 和 React 19 `ref` 属性应保留在组件
+所有者中，而不是隐藏在组件工厂里。
+
+## API
 
 <API name="cn">
 <APIParameters>
   <APIItem name="...inputs" type="CxOptions">
-    使用 `clsx` 和 `tailwind-merge` 设置的类值。
+    `class-variance-authority` 的 `cx` 支持的条件 class 值。
   </APIItem>
 </APIParameters>
-
 <APIReturns type="string">
-  合并后的 className。
+  由 `cx` 合并并通过 `tailwind-merge` 规范化的 class name。
 </APIReturns>
 </API>
 
-### `withCn`
+## 相关 API
 
-为组件设置默认的 `className`。
-
-<API name="withCn">
-<APIParameters>
-  <APIItem name="Component" type="React.ComponentType">
-    需要添加属性的组件。
-  </APIItem>
-  <APIItem name="...inputs" type="CxOptions">
-    使用 `cn` 设置的默认 `className`。
-  </APIItem>
-</APIParameters>
-
-<APIReturns type="React.ComponentType">
-  包含默认 `className` 的新组件。
-</APIReturns>
-</API>
-
-### `withProps`
-
-为组件设置默认属性。
-
-<API name="withProps">
-<APIParameters>
-  <APIItem name="Component" type="React.ComponentType | ElementType">
-    需要添加属性的组件。
-  </APIItem>
-  <APIItem name="props" type="Partial<T>">
-    要添加到组件的属性。
-  </APIItem>
-</APIParameters>
-
-<APIReturns type="React.ComponentType">
-  包含默认属性的新组件。
-</APIReturns>
-</API>
-
-### `withVariants`
-
-使用 `class-variance-authority` 的变体为组件设置默认 `className`。
-
-<API name="withVariants">
-<APIParameters>
-  <APIItem name="Component" type="React.ComponentType | ElementType">
-    需要添加属性的组件。
-  </APIItem>
-  <APIItem name="variants" type="V extends ReturnType<typeof cva>">
-    作为默认 `className` 的变体。
-  </APIItem>
-  <APIItem name="onlyVariantsProps" type="(keyof VariantProps<V>)[]">
-    要从 `Component` 中排除的属性。设置仅用于变体的属性。
-  </APIItem>
-</APIParameters>
-
-<APIReturns type="React.ComponentType">
-  包含默认 `className` 的新组件。
-</APIReturns>
-</API>
+- [React 工具](/docs/api/react-utils) 介绍此包重新导出的 React 工具。

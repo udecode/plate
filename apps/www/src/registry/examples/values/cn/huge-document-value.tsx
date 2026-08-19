@@ -14,7 +14,9 @@ export const createHugeDocumentValue = () => {
 
   for (let h = 0; h < HEADINGS; h++) {
     hugeDocument.push(
-      <hh1>我们想要通过这种方式来展示和测试大型文档的性能。</hh1>
+      <hheading level={1}>
+        我们想要通过这种方式来展示和测试大型文档的性能。
+      </hheading>
     );
 
     for (let p = 0; p < PARAGRAPHS; p++) {

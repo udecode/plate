@@ -80,27 +80,33 @@ export const appBuildEntries = [
   path.join(repoRoot, 'apps/www/src/lib/utils.ts'),
   path.join(
     repoRoot,
-    'apps/www/src/registry/components/editor/plugins/basic-blocks-kit.tsx'
+    'apps/www/src/registry/components/editor/basic-blocks.tsx'
   ),
   path.join(
     repoRoot,
-    'apps/www/src/registry/components/editor/plugins/basic-marks-kit.tsx'
+    'apps/www/src/registry/components/editor/basic-marks.tsx'
   ),
   path.join(
     repoRoot,
-    'apps/www/src/registry/components/editor/plugins/basic-nodes-kit.tsx'
+    'apps/www/src/registry/components/editor/basic-nodes.tsx'
   ),
   path.join(repoRoot, 'apps/www/src/registry/examples/collaboration-demo.tsx'),
   path.join(repoRoot, 'apps/www/src/registry/hooks/use-mounted.ts'),
-  path.join(repoRoot, 'apps/www/src/registry/ui/blockquote-node.tsx'),
-  path.join(repoRoot, 'apps/www/src/registry/ui/code-node.tsx'),
-  path.join(repoRoot, 'apps/www/src/registry/ui/editor.tsx'),
-  path.join(repoRoot, 'apps/www/src/registry/ui/heading-node.tsx'),
-  path.join(repoRoot, 'apps/www/src/registry/ui/highlight-node.tsx'),
-  path.join(repoRoot, 'apps/www/src/registry/ui/hr-node.tsx'),
-  path.join(repoRoot, 'apps/www/src/registry/ui/kbd-node.tsx'),
-  path.join(repoRoot, 'apps/www/src/registry/ui/paragraph-node.tsx'),
-  path.join(repoRoot, 'apps/www/src/registry/ui/remote-cursor-overlay.tsx'),
+  path.join(repoRoot, 'apps/www/src/registry/components/editor/blockquote.tsx'),
+  path.join(repoRoot, 'apps/www/src/registry/components/editor/code.tsx'),
+  path.join(repoRoot, 'apps/www/src/registry/components/editor/editor.tsx'),
+  path.join(repoRoot, 'apps/www/src/registry/components/editor/heading.tsx'),
+  path.join(repoRoot, 'apps/www/src/registry/components/editor/highlight.tsx'),
+  path.join(
+    repoRoot,
+    'apps/www/src/registry/components/editor/horizontal-rule.tsx'
+  ),
+  path.join(repoRoot, 'apps/www/src/registry/components/editor/kbd.tsx'),
+  path.join(repoRoot, 'apps/www/src/registry/components/editor/paragraph.tsx'),
+  path.join(
+    repoRoot,
+    'apps/www/src/registry/components/editor/remote-cursor-overlay.tsx'
+  ),
   path.join(repoRoot, 'apps/www/src/types'),
   path.join(repoRoot, 'apps/www/src/utils/cn.ts'),
   path.join(repoRoot, 'package.json'),

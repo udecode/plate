@@ -2,6 +2,11 @@
 "@platejs/emoji": major
 ---
 
+Require React and React DOM 19.2 or newer.
+
+Keep emoji picker state, search, category focus, preview, and frequent storage
+in the copied `emoji-toolbar-button` registry item.
+
 Export `EmojiPluginState` as the complete mutable state contract for
 `BaseEmojiPlugin`.
 
@@ -16,8 +21,7 @@ capability name and persisted element type are both `emojiInput`.
 Always render the frequent section when `showFrequent.value` is enabled,
 including before category data is populated.
 
-Keep picker consumers on `useEmojiPicker`, `useEmojiDropdownMenuState`,
-`EmojiFloatingLibrary`, and `FrequentEmojiStorage`. Remove the exported
-observer, reducer, local-storage, floating-grid, and floating-grid-builder
-implementation helpers. Replace the removed `EmojiInputConfig` type with
-`DefinitionOf<typeof BaseEmojiPlugin>`.
+Keep the package React surface limited to `EmojiPlugin` and
+`EmojiInputPlugin`. Copy `emoji-toolbar-button` for the complete picker and
+`emoji-node` for inline search. Replace the removed `EmojiInputConfig` type
+with `DefinitionOf<typeof BaseEmojiPlugin>`.

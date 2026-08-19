@@ -1,3 +1,4 @@
+import type { Text } from '@platejs/plite';
 import type { PliteProjectionSlice } from './projection-store';
 
 export type DOMTextSyncOptOutReason =
@@ -17,47 +18,76 @@ export type DOMTextSyncCapability =
       reason: DOMTextSyncOptOutReason;
     };
 
-export type DOMTextSyncOptions = {
-  /**
-   * Allows Plite-owned DOM text sync through projection wrappers by updating
-   * rendered leaf ranges in place.
-   */
-  projections?: 'range-transform';
-  /**
-   * Allows direct DOM text sync through a custom `renderLeaf` only when the
-   * renderer's DOM shape and attributes do not depend on `leaf.text`.
-   */
-  renderLeaf?: 'text-invariant';
+export type DOMTextSyncRendererCapabilityContext = Readonly<{
+  marks: Omit<Text, 'text'>;
+  projections: readonly PliteProjectionSlice<unknown>[];
+}>;
+
+const DOM_TEXT_SYNC_RENDERER_CAPABILITY = Symbol.for(
+  '@platejs/plite-react/dom-text-sync-renderer-capability'
+);
+
+/** @internal Publish renderer-owned DOM text-sync capability. */
+export const setDOMTextSyncRendererCapability = <TRenderer extends object>(
+  renderer: TRenderer,
+  resolve: (context: DOMTextSyncRendererCapabilityContext) => boolean
+): TRenderer => {
+  Object.defineProperty(renderer, DOM_TEXT_SYNC_RENDERER_CAPABILITY, {
+    configurable: false,
+    enumerable: false,
+    value: resolve,
+    writable: false,
+  });
+
+  return renderer;
 };
+
+const hasDOMTextSyncRendererCapability = (
+  renderer: unknown,
+  context: DOMTextSyncRendererCapabilityContext
+) =>
+  typeof renderer === 'function' &&
+  ((
+    Reflect.get(renderer, DOM_TEXT_SYNC_RENDERER_CAPABILITY) as
+      | ((value: DOMTextSyncRendererCapabilityContext) => boolean)
+      | undefined
+  )?.(context) ??
+    false);
 
 export const getDOMTextSyncCapability = ({
   hasText,
+  marks = {},
   projections,
   renderLeaf,
   renderSegment,
   renderText,
-  textSync,
 }: {
   hasText: boolean;
+  marks?: Omit<Text, 'text'>;
   projections: readonly PliteProjectionSlice<unknown>[];
   renderLeaf?: unknown;
   renderSegment?: unknown;
   renderText?: unknown;
-  textSync?: DOMTextSyncOptions | null;
 }): DOMTextSyncCapability => {
   if (!hasText) {
     return { enabled: false, reason: 'empty-text' };
-  }
-
-  if (renderLeaf && textSync?.renderLeaf !== 'text-invariant') {
-    return { enabled: false, reason: 'custom-leaf' };
   }
 
   if (renderSegment) {
     return { enabled: false, reason: 'custom-segment' };
   }
 
-  if (renderText) {
+  if (
+    renderLeaf &&
+    !hasDOMTextSyncRendererCapability(renderLeaf, { marks, projections })
+  ) {
+    return { enabled: false, reason: 'custom-leaf' };
+  }
+
+  if (
+    renderText &&
+    !hasDOMTextSyncRendererCapability(renderText, { marks, projections })
+  ) {
     return { enabled: false, reason: 'custom-text' };
   }
 
@@ -70,22 +100,23 @@ export const getDOMTextSyncCapability = ({
 
 export const canUseProjectedDOMTextSync = ({
   hasText,
+  marks = {},
   projections,
   renderLeaf,
   renderSegment,
   renderText,
-  textSync,
 }: {
   hasText: boolean;
+  marks?: Omit<Text, 'text'>;
   projections: readonly PliteProjectionSlice<unknown>[];
   renderLeaf?: unknown;
   renderSegment?: unknown;
   renderText?: unknown;
-  textSync?: DOMTextSyncOptions | null;
 }) =>
   hasText &&
   projections.length > 0 &&
-  textSync?.projections === 'range-transform' &&
-  (!renderLeaf || textSync.renderLeaf === 'text-invariant') &&
   !renderSegment &&
-  !renderText;
+  (!renderLeaf ||
+    hasDOMTextSyncRendererCapability(renderLeaf, { marks, projections })) &&
+  (!renderText ||
+    hasDOMTextSyncRendererCapability(renderText, { marks, projections }));

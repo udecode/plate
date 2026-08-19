@@ -1,10 +1,17 @@
-# Plate Docx serializer plugin
+# Plate DOCX
 
-This package implements the docx deserializer for Plate.
+Paste content from Microsoft Word, import `.docx` files, and export Plate
+documents as `.docx` files.
+
+Install a focused package when you need one capability:
+
+- `@platejs/docx-paste`
+- `@platejs/docx-import`
+- `@platejs/docx-export`
 
 ## Documentation
 
-[comment]: <> (Check out [Serializing HTML]&#40;https://platejs.org/docs/html&#41;.)
+[DOCX documentation](https://platejs.org/docs/docx)
 
 ## License
 

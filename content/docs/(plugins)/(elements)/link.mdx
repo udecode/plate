@@ -3,9 +3,9 @@ title: Link
 docs:
   - route: https://pro.platejs.org/docs/examples/link
     title: Plus
-  - route: /docs/components/link-node
+  - route: /docs/components/link
     title: Link Element
-  - route: /docs/components/link-toolbar
+  - route: /docs/components/link
     title: Link Floating Toolbar
   - route: /docs/components/link-toolbar-button
     title: Link Toolbar Button
@@ -31,10 +31,10 @@ docs:
 
 The fastest way to add link functionality is with the `LinkKit`, which includes pre-configured `LinkPlugin` with floating toolbar, autolink rules, and [Plate UI](/docs/installation/plate-ui) components.
 
-<ComponentSource name="link-kit" />
+<ComponentSource name="link" />
 
-- [`LinkElement`](/docs/components/link-node): Renders link elements.
-- [`LinkFloatingToolbar`](/docs/components/link-toolbar): Provides floating toolbar for link editing.
+- [`LinkElement`](/docs/components/link): Renders link elements.
+- [`LinkFloatingToolbar`](/docs/components/link): Provides floating toolbar for link editing.
 
 ### Add Kit
 
@@ -42,7 +42,7 @@ Add the kit to your plugins:
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { LinkKit } from '@/components/editor/plugins/link-kit';
+import { LinkKit } from '@/components/editor/link';
 
 const editor = createPlateEditor({
   plugins: [
@@ -88,8 +88,8 @@ Configure the plugin with floating toolbar and custom components.
 ```tsx
 import { LinkPlugin } from '@platejs/link/react';
 import { createPlateEditor } from 'platejs/react';
-import { LinkElement } from '@/components/ui/link-node';
-import { LinkFloatingToolbar } from '@/components/ui/link-toolbar';
+import { LinkElement } from '@/components/editor/link';
+import { LinkFloatingToolbar } from '@/components/editor/link';
 
 const editor = createPlateEditor({
   plugins: [
@@ -104,9 +104,9 @@ const editor = createPlateEditor({
 });
 ```
 
-- `render.afterEditable`: Renders [`LinkFloatingToolbar`](/docs/components/link-toolbar) after the editable area for link editing.
+- `render.afterEditable`: Renders [`LinkFloatingToolbar`](/docs/components/link) after the editable area for link editing.
 - `.configure({ component: LinkElement })`: Renders link elements with
-  [`LinkElement`](/docs/components/link-node).
+  [`LinkElement`](/docs/components/link).
 
 ### Input Rules
 
@@ -154,15 +154,13 @@ You can add [`LinkToolbarButton`](/docs/components/link-toolbar-button) to your 
 
 Plugin for link formatting.
 
-URL parsing, callbacks, UI state, and interaction behavior share one options
-bag:
+URL parsing and headless interaction behavior share one state contract:
 
 ```tsx
 LinkPlugin.configure({
   initialState: {
     allowedSchemes: ['http', 'https', 'mailto', 'tel'],
     dangerouslySkipSanitization: false,
-    triggerFloatingLinkHotkeys: 'meta+k, ctrl+k',
   },
 });
 ```
@@ -177,9 +175,6 @@ Options:
   Default: `false`.
 
 <APIOptions type="object">
-<APIItem name="forceSubmit" type="boolean" optional>
-Determines whether to force the submission of the link form.
-</APIItem>
 <APIItem name="rangeBeforeOptions" type="RangeBeforeOptions" optional>
 Allows custom configurations for rangeBeforeOptions.
 - **Default:**
@@ -190,10 +185,6 @@ Allows custom configurations for rangeBeforeOptions.
   afterMatch: true,
 }
 ```
-</APIItem>
-<APIItem name="triggerFloatingLinkHotkeys" type="string | string[]" optional>
-Hotkeys to trigger floating link.
-- **Default:** **`'meta+k, ctrl+k'`**
 </APIItem>
 <APIItem name="defaultLinkAttributes" type="AnchorHTMLAttributes&lt;HTMLAnchorElement&gt;" optional>
 Default HTML attributes for link elements.
@@ -210,11 +201,8 @@ Callback function to validate a URL.
 <APIItem name="getUrlHref" type="(url: string) => string | undefined" optional>
 Callback function to optionally get the href for a URL. It returns an optional link that is different from the text content. For example, returns `https://google.com` for `google.com`.
 </APIItem>
-<APIItem name="transformInput" type="(url: string | null) => string | undefined" optional>
+<APIItem name="transformInput" type="(url: string) => string | undefined" optional>
 Callback function to optionally transform the submitted URL provided by the user to the URL input before validation.
-</APIItem>
-<APIItem name="getLinkUrl" type="(prevUrl: string | null) => Promise<string | null>" optional>
-On keyboard shortcut or toolbar mousedown, this function is called to get the link URL. The default behavior is to use the browser's native `prompt`.
 </APIItem>
 </APIOptions>
 </API>
@@ -253,11 +241,6 @@ if (api.validateUrl(url)) {
 | --- | --- |
 | `api.getAttributes(link)` | Returns sanitized anchor attributes for a link element. |
 | `api.validateUrl(url)` | Validates a URL against the plugin configuration and runtime `isUrl` option. |
-| `api.encodeUrl(url)` / `api.decodeUrl(url)` | Converts URLs for floating-link input without throwing on malformed escapes. |
-| `api.show(mode, editorId)` / `api.hide()` / `api.reset()` | Controls floating-link state. |
-| `api.submit()` | Validates and upserts the floating-link form value. |
-| `api.trigger(options?)` | Opens insert mode or enters edit mode for the active link. |
-| `api.triggerEdit()` / `api.triggerInsert(options?)` | Runs a specific floating-link trigger. |
 
 ### `CreateLinkNodeOptions`
 
@@ -284,204 +267,23 @@ Options for creating a new link node.
 </APIOptions>
 </API>
 
-## API Components
+## Registry Link Toolbar
 
-### `FloatingLinkNewTabInput`
+The copied `link-toolbar` item owns floating state, positioning, hotkeys,
+outside clicks, URL input, and toolbar commands. It exports the app-local
+`linkPlugin` descriptor and `LinkFloatingToolbar` component.
 
-The input component for controlling whether a link opens in a new tab.
+<ComponentSource name="link-toolbar" />
 
-<API name="FloatingLinkNewTabInput">
-<APIState>
-  <APIItem name="checked" type="boolean">
-    Whether the link should open in a new tab.
-  </APIItem>
-  <APIItem name="setChecked" type="React.Dispatch<React.SetStateAction<boolean>>">
-    Function to update the checked state.
-  </APIItem>
-  <APIItem name="ref" type="RefObject<HTMLInputElement>">
-    Reference to the input element.
-  </APIItem>
-</APIState>
-</API>
+Use that exact descriptor when another copied UI surface opens the toolbar.
 
-### `FloatingLinkUrlInput`
+```tsx
+import { linkPlugin } from '@/components/editor/link';
 
-The input component for entering and editing link URLs.
+const link = editor.plugin(linkPlugin);
 
-<API name="FloatingLinkUrlInput">
-<APIState>
-  <APIItem name="ref" type="RefObject<HTMLInputElement>">
-    Reference to the input element.
-  </APIItem>
-</APIState>
-</API>
-
-### `LinkOpenButton`
-
-The button component for opening the link URL.
-
-<API name="LinkOpenButton">
-<APIState>
-  <APIItem name="element" type="LinkElement">
-    The link element containing the URL to open.
-  </APIItem>
-</APIState>
-</API>
-
-### `useFloatingLinkEdit`
-
-The behavior hook for the floating link edit functionality.
-
-<API name="useFloatingLinkEdit">
-<APIState>
-  <APIItem name="floating" type="object" optional>
-    The virtual floating returned object.
-  </APIItem>
-</APIState>
-
-<APIReturns type="object">
-  <APIItem name="ref" type="function">
-    The ref callback for the floating element.
-  </APIItem>
-  <APIItem name="props" type="object">
-    Props for the floating element.
-    <APISubList>
-      <APISubListItem parent="props" name="style" type="object">
-        The style of the floating link.
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-  <APIItem name="editButtonProps" type="object">
-    Props for the edit button.
-    <APISubList>
-      <APISubListItem parent="editButtonProps" name="onClick" type="function">
-        The function to call when the edit button is clicked.
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-  <APIItem name="unlinkButtonProps" type="object">
-    Props for the unlink button.
-    <APISubList>
-      <APISubListItem parent="unlinkButtonProps" name="onClick" type="function">
-        The function to call when the unlink button is clicked.
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-</APIReturns>
-</API>
-
-### `useFloatingLinkEnter`
-
-Listens for the Enter key press event and submits the floating link in the editor.
-
-### `useFloatingLinkEscape`
-
-Listens for the Escape key press event and handles the behavior of the floating link in the editor.
-
-### `useFloatingLinkInsert`
-
-The behavior hook for inserting a link.
-
-<API name="useFloatingLinkInsert">
-<APIState>
-  <APIItem name="floating" type="ReturnType<typeof useFloatingLinkInsertState>">
-    The virtual floating returned object.
-  </APIItem>
-  <APIItem name="refClickOutside" type="React.Ref">
-    The ref of the floating element.
-  </APIItem>
-</APIState>
-
-<APIReturns type="object">
-  <APIItem name="ref" type="function">
-    The ref callback for the floating element.
-  </APIItem>
-  <APIItem name="props" type="object">
-    Props for the floating element.
-    <APISubList>
-      <APISubListItem parent="props" name="style" type="object">
-        The style of the floating link.
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-  <APIItem name="textInputProps" type="object">
-    Props for the text input.
-    <APISubList>
-      <APISubListItem parent="textInputProps" name="onChange" type="function">
-        The function to call when the text input value changes.
-      </APISubListItem>
-      <APISubListItem parent="textInputProps" name="defaultValue" type="string">
-        The default value of the text input.
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-</APIReturns>
-</API>
-
-### `useLink`
-
-The behavior hook for the link element.
-
-<API name="useLink">
-<APIOptions type="UseLinkOptions">
-  <APIItem name="element" type="LinkElement">
-    The link element.
-  </APIItem>
-</APIOptions>
-
-<APIReturns type="object">
-  <APIItem name="props" type="object">
-    Props for the link element.
-    <APISubList>
-      <APISubListItem parent="props" name="onMouseOver" type="function">
-        The function to call when the mouse is over the link.
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-</APIReturns>
-</API>
-
-### `useLinkToolbarButton`
-
-The behavior hook for the link toolbar button.
-
-<API name="useLinkToolbarButton">
-<APIState>
-  <APIItem name="pressed" type="boolean">
-    Whether the selection is in a link.
-  </APIItem>
-</APIState>
-
-<APIReturns type="object">
-  <APIItem name="props" type="object">
-    Props for the toolbar button.
-    <APISubList>
-      <APISubListItem parent="props" name="pressed" type="boolean">
-        Whether the link is pressed.
-      </APISubListItem>
-      <APISubListItem parent="props" name="onClick" type="function">
-        The function to call when the button is clicked.
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-</APIReturns>
-</API>
-
-### `useVirtualFloatingLink`
-
-Custom hook for managing virtual floating of a link.
-
-<API name="useVirtualFloatingLink">
-<APIOptions type="object">
-  <APIItem name="editorId" type="string">
-    The ID of the editor to which the link belongs.
-  </APIItem>
-  <APIItem name="floatingOptions" type="UseVirtualFloatingOptions" optional>
-    Options for virtual floating.
-  </APIItem>
-</APIOptions>
-
-<APIReturns type="UseVirtualFloatingReturn">
-  The return value of the `useVirtualFloating` hook.
-</APIReturns>
-</API>
+link.api.trigger({ focused: true });
+link.api.triggerEdit();
+link.api.triggerInsert({ focused: true });
+link.api.submit();
+```

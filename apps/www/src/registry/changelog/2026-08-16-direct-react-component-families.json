@@ -1,0 +1,536 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-16-direct-react-component-families",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-16-direct-react-component-families.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-16",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Keep component behavior locally owned",
+  "targets": [
+    {
+      "name": "ai-menu",
+      "files": ["apps/www/src/registry/components/editor/ai-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-draggable",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for block-draggable."
+        }
+      ]
+    },
+    {
+      "name": "block-list",
+      "files": ["apps/www/src/registry/components/editor/block-list.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "callout-node",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for callout-node."
+        }
+      ]
+    },
+    {
+      "name": "caption",
+      "files": ["apps/www/src/registry/components/editor/caption.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-drawing-node",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for code-drawing-node."
+        }
+      ]
+    },
+    {
+      "name": "column-node",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for column-node."
+        }
+      ]
+    },
+    {
+      "name": "comment",
+      "files": ["apps/www/src/registry/components/editor/comment.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "emoji-node",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for emoji-node."
+        }
+      ]
+    },
+    {
+      "name": "emoji-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/emoji-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "equation-node",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for equation-node."
+        }
+      ]
+    },
+    {
+      "name": "excalidraw-node",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for excalidraw-node."
+        }
+      ]
+    },
+    {
+      "name": "export-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/export-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "floating-toolbar",
+      "files": ["apps/www/src/registry/components/editor/floating-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "font-color-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/font-color-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "import-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/import-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "indent-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/indent-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "inline-combobox",
+      "files": ["apps/www/src/registry/components/editor/inline-combobox.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "link-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/link-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "link-toolbar",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for link-toolbar."
+        }
+      ]
+    },
+    {
+      "name": "list-classic-node",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for list-classic-node."
+        }
+      ]
+    },
+    {
+      "name": "list-classic-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/list-classic-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "list-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/list-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-audio-node",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for media-audio-node."
+        }
+      ]
+    },
+    {
+      "name": "media-embed-node",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for media-embed-node."
+        }
+      ]
+    },
+    {
+      "name": "media-file-node",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for media-file-node."
+        }
+      ]
+    },
+    {
+      "name": "media-image-node",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for media-image-node."
+        }
+      ]
+    },
+    {
+      "name": "media-placeholder-node",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for media-placeholder-node."
+        }
+      ]
+    },
+    {
+      "name": "media-preview-dialog",
+      "files": [
+        "apps/www/src/registry/components/editor/media-preview-dialog.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-toolbar",
+      "files": ["apps/www/src/registry/components/editor/media-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-upload-toast",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for media-upload-toast."
+        }
+      ]
+    },
+    {
+      "name": "media-video-node",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for media-video-node."
+        }
+      ]
+    },
+    {
+      "name": "remote-cursor-overlay",
+      "files": [
+        "apps/www/src/registry/components/editor/remote-cursor-overlay.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "resize-handle",
+      "files": ["apps/www/src/registry/components/editor/resize-handle.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "select-editor",
+      "files": ["apps/www/src/registry/components/editor/select-editor.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "table-node",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for table-node."
+        }
+      ]
+    },
+    {
+      "name": "table-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/table-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "toc-node",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for toc-node."
+        }
+      ]
+    },
+    {
+      "name": "toggle-node",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for toggle-node."
+        }
+      ]
+    },
+    {
+      "name": "toggle-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/toggle-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "toolbar",
+      "files": [
+        "apps/www/src/registry/bases/aria/editor/toolbar.tsx",
+        "apps/www/src/registry/bases/base/editor/toolbar.tsx",
+        "apps/www/src/registry/components/editor/toolbar.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "emoji-kit",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for emoji-kit."
+        }
+      ]
+    },
+    {
+      "name": "link-kit",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for link-kit."
+        }
+      ]
+    },
+    {
+      "name": "list-classic-kit",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for list-classic-kit."
+        }
+      ]
+    },
+    {
+      "name": "media-kit",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for media-kit."
+        }
+      ]
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-16-block-list-direct-react-19-families-43530ad8",
+      "kind": "behavior",
+      "summary": "Keep interaction state and behavior inside direct React 19 component families.",
+      "details": [],
+      "migrationNotes": ["Rename the FloatingToolbar state prop to options."],
+      "targets": [
+        "ai-menu",
+        "block-draggable",
+        "block-list",
+        "callout-node",
+        "caption",
+        "code-drawing-node",
+        "column-node",
+        "comment",
+        "emoji-node",
+        "emoji-toolbar-button",
+        "equation-node",
+        "excalidraw-node",
+        "export-toolbar-button",
+        "floating-toolbar",
+        "font-color-toolbar-button",
+        "import-toolbar-button",
+        "indent-toolbar-button",
+        "inline-combobox",
+        "link-toolbar-button",
+        "link-toolbar",
+        "list-classic-node",
+        "list-classic-toolbar-button",
+        "list-toolbar-button",
+        "media-audio-node",
+        "media-embed-node",
+        "media-file-node",
+        "media-image-node",
+        "media-placeholder-node",
+        "media-preview-dialog",
+        "media-toolbar",
+        "media-upload-toast",
+        "media-video-node",
+        "remote-cursor-overlay",
+        "resize-handle",
+        "select-editor",
+        "table-node",
+        "table-toolbar-button",
+        "toc-node",
+        "toggle-node",
+        "toggle-toolbar-button",
+        "toolbar"
+      ],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-16",
+          "entry": "2026-08-16-direct-react-component-families",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-08-16-local-ui-plugin-owners-84ed139c",
+      "kind": "wiring",
+      "summary": "Install the exact app-local descriptors owned by their copied UI families.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["emoji-kit", "link-kit", "list-classic-kit", "media-kit"],
+      "source": {
+        "line": 14,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-08-16",
+          "entry": "2026-08-16-direct-react-component-families",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

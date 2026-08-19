@@ -1,7 +1,7 @@
 ---
 title: 多选
 docs:
-  - route: /docs/components/tag-node
+  - route: /docs/components/tag
   - route: /docs/components/select-editor
 ---
 
@@ -55,7 +55,7 @@ const editor = createPlateEditor({
 ```tsx
 import { MultiSelectPlugin } from '@platejs/tag/react';
 import { createPlateEditor } from 'platejs/react';
-import { TagElement } from '@/components/ui/tag-node';
+import { TagElement } from '@/components/editor/tag';
 
 const editor = createPlateEditor({
   plugins: [
@@ -66,7 +66,7 @@ const editor = createPlateEditor({
 ```
 
 - `MultiSelectPlugin`：扩展 TagPlugin 并将编辑器限制为仅包含标签元素
-- `component`：分配 [`TagElement`](/docs/components/tag-node) 来渲染标签组件
+- `component`：分配 [`TagElement`](/docs/components/tag) 来渲染标签组件
 
 ### 添加 SelectEditor
 
@@ -76,14 +76,14 @@ const editor = createPlateEditor({
 
 ```tsx
 import { MultiSelectPlugin } from '@platejs/tag/react';
-import { TagElement } from '@/components/ui/tag-node';
+import { TagElement } from '@/components/editor/tag';
 import {
   SelectEditor,
   SelectEditorContent,
   SelectEditorInput,
   SelectEditorCombobox,
   type SelectItem,
-} from '@/components/ui/select-editor';
+} from '@/components/editor/select-editor';
 
 // 定义你的项目
 const ITEMS: SelectItem[] = [
@@ -172,65 +172,12 @@ export default function MySelectEditor() {
 </APIReturns>
 </API>
 
-## Hooks
+## Registry UI
 
-### useSelectedItems
+复制的 `select-editor` 组件负责搜索过滤、新标签创建、组合框清理和值变更
+通知。产品需要不同的标签选择行为时，直接修改该文件。
 
-获取编辑器中当前选中的标签项目的 Hook。
-
-<API name="useSelectedItems">
-<APIReturns type="TagItem[]">
-  具有值和属性的选中标签项目数组。
-</APIReturns>
-</API>
-
-### useSelectableItems
-
-获取可选择的可用项目的 Hook，通过搜索过滤并排除已选中的项目。
-
-<API name="useSelectableItems">
-<APIOptions type="options">
-  <APIItem name="allowNew" type="boolean" optional>
-    是否允许创建新项目。
-    - **默认值：** `true`
-  </APIItem>
-  <APIItem name="filter" type="(value: string, search: string) => boolean" optional>
-    项目的自定义过滤函数。
-  </APIItem>
-  <APIItem name="items" type="T[]" optional>
-    可用项目数组。
-  </APIItem>
-  <APIItem name="newItemFilter" type="(search: string) => boolean" optional>
-    新项目的过滤函数。
-  </APIItem>
-  <APIItem name="newItemPosition" type="'end' | 'start'" optional>
-    新项目在列表中的位置。
-    - **默认值：** `'end'`
-  </APIItem>
-</APIOptions>
-
-<APIReturns type="T[]">
-  过滤后的可选项目数组。
-</APIReturns>
-</API>
-
-### useSelectEditorCombobox
-
-处理编辑器中组合框行为的 Hook，包括文本清理和项目选择。
-
-<API name="useSelectEditorCombobox">
-<APIOptions type="options">
-  <APIItem name="open" type="boolean">
-    组合框是否打开。
-  </APIItem>
-  <APIItem name="selectFirstItem" type="() => void">
-    选择第一个组合框项目的函数。
-  </APIItem>
-  <APIItem name="onValueChange" type="(items: TagItem[]) => void" optional>
-    选中项目更改时的回调。
-  </APIItem>
-</APIOptions>
-</API>
+<ComponentSource name="select-editor" />
 
 ## 类型
 

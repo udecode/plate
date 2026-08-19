@@ -5,7 +5,8 @@ export const playgroundValue: EditorDocumentValue = {
     // Intro
     {
       children: [{ text: '欢迎来到 Plate 演示平台！' }],
-      type: 'h1',
+      level: 1,
+      type: 'heading',
     },
     {
       children: [
@@ -30,7 +31,8 @@ export const playgroundValue: EditorDocumentValue = {
     // Suggestions & Comments Section
     {
       children: [{ text: '协作编辑' }],
-      type: 'h2',
+      level: 2,
+      type: 'heading',
     },
     {
       children: [
@@ -128,7 +130,8 @@ export const playgroundValue: EditorDocumentValue = {
     // AI Section
     {
       children: [{ text: 'AI 辅助编辑' }],
-      type: 'h2',
+      level: 2,
+      type: 'heading',
     },
     {
       children: [
@@ -149,19 +152,20 @@ export const playgroundValue: EditorDocumentValue = {
     {
       children: [{ text: '生成内容（继续写作、总结、解释）' }],
       indent: 1,
-      listStyleType: 'disc',
+      listType: 'bulleted',
       type: 'paragraph',
     },
     {
       children: [{ text: '编辑现有文本（改进、修正语法、改变语气）' }],
       indent: 1,
-      listStyleType: 'disc',
+      listType: 'bulleted',
       type: 'paragraph',
     },
     // Core Features Section (Combined)
     {
       children: [{ text: '丰富的内容编辑' }],
-      type: 'h2',
+      level: 2,
+      type: 'heading',
     },
     {
       children: [
@@ -244,7 +248,7 @@ export const playgroundValue: EditorDocumentValue = {
             },
           ],
           indent: 1,
-          listStyleType: 'disc',
+          listType: 'bulleted',
           type: 'paragraph',
         },
         {
@@ -268,7 +272,7 @@ export const playgroundValue: EditorDocumentValue = {
         },
         { children: [{ text: '}' }], type: 'codeLine' },
       ],
-      lang: 'javascript',
+      language: 'javascript',
       type: 'codeBlock',
     },
     {
@@ -286,7 +290,12 @@ export const playgroundValue: EditorDocumentValue = {
           url: '/docs/mention',
         },
         { text: ' 用户，如 ' },
-        { children: [{ text: '' }], type: 'mention', value: 'Alice' },
+        {
+          children: [{ text: '' }],
+          label: 'Alice',
+          ref: 'alice',
+          type: 'mention',
+        },
         { text: '，或插入 ' },
         {
           children: [{ text: '表情符号' }],
@@ -306,7 +315,8 @@ export const playgroundValue: EditorDocumentValue = {
     // Table Section
     {
       children: [{ text: 'Plate 的比较优势' }],
-      type: 'h3',
+      level: 3,
+      type: 'heading',
     },
     {
       children: [
@@ -543,7 +553,8 @@ export const playgroundValue: EditorDocumentValue = {
     // Media Section
     {
       children: [{ text: '图片和媒体' }],
-      type: 'h3',
+      level: 3,
+      type: 'heading',
     },
     {
       children: [
@@ -578,7 +589,6 @@ export const playgroundValue: EditorDocumentValue = {
     },
     {
       children: [{ text: '' }],
-      isUpload: true,
       name: 'sample.pdf',
       type: 'file',
       url: 'https://s26.q4cdn.com/900411403/files/doc_downloads/test.pdf',
@@ -590,7 +600,8 @@ export const playgroundValue: EditorDocumentValue = {
     },
     {
       children: [{ text: '目录' }],
-      type: 'h3',
+      level: 3,
+      type: 'heading',
     },
     {
       children: [{ text: '' }],

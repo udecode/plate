@@ -19,34 +19,56 @@
   "targets": [
     {
       "name": "docx-export-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/docx-export-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for docx-export-kit."
+        }
+      ]
     },
     {
       "name": "heading-node-static",
-      "files": ["apps/www/src/registry/ui/heading-node-static.tsx"],
+      "files": [],
       "definitionFiles": [],
-      "diagnostics": []
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for heading-node-static."
+        }
+      ]
     },
     {
       "name": "toc-node",
-      "files": ["apps/www/src/registry/ui/toc-node.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for toc-node."
+        }
+      ]
     },
     {
       "name": "toc-node-static",
-      "files": ["apps/www/src/registry/ui/toc-node-static.tsx"],
+      "files": [],
       "definitionFiles": [],
-      "diagnostics": []
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for toc-node-static."
+        }
+      ]
     },
     {
       "name": "editor-kit",
       "files": [],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "definitionFiles": [],
       "diagnostics": [
         {
           "severity": "warning",
@@ -57,15 +79,12 @@
     },
     {
       "name": "editor-ai",
-      "files": [],
+      "files": [
+        "apps/www/src/registry/blocks/editor-ai/components/editor/plate-editor.tsx",
+        "apps/www/src/registry/blocks/editor-ai/page.tsx"
+      ],
       "definitionFiles": ["apps/www/src/registry/registry-blocks.ts"],
-      "diagnostics": [
-        {
-          "severity": "warning",
-          "code": "registry-file-missing",
-          "message": "No exact registry source file found for editor-ai."
-        }
-      ]
+      "diagnostics": []
     }
   ],
   "entries": [

@@ -46,6 +46,19 @@ export type Alignment =
   | 'right'
   | 'start';
 
+const ALIGNMENTS = [
+  'center',
+  'end',
+  'justify',
+  'left',
+  'right',
+  'start',
+] as const satisfies readonly Alignment[];
+
+const isAlignment = (value: unknown): value is Alignment =>
+  typeof value === 'string' &&
+  ALIGNMENTS.some((alignment) => alignment === value);
+
 export type TextIndentPluginState = {
   offset: number;
   unit: string;
@@ -358,7 +371,7 @@ export const BaseLineHeightPlugin = defineBasePlugin(PLUGINS.lineHeight, {
 export const BaseTextAlignPlugin = defineBasePlugin(PLUGINS.textAlign, {
   schema: ({ targetElementTypes }) => ({
     properties: {
-      textAlign: schema.elementProperty(property.string(), {
+      textAlign: schema.elementProperty(property.enum(ALIGNMENTS), {
         target: target.types(targetElementTypes),
         typeChange: 'preserve-if-allowed',
       }),
@@ -368,12 +381,15 @@ export const BaseTextAlignPlugin = defineBasePlugin(PLUGINS.textAlign, {
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       'text/html': {
-        decode: ({ element }) => element.style.textAlign || undefined,
+        decode: ({ element }) =>
+          isAlignment(element.style.textAlign)
+            ? element.style.textAlign
+            : undefined,
         encode: ({ value }) => ({ style: { textAlign: value } }),
         match: [
           {
             style: {
-              textAlign: ['start', 'left', 'center', 'right', 'end', 'justify'],
+              textAlign: [...ALIGNMENTS],
             },
           },
         ],
@@ -384,7 +400,7 @@ export const BaseTextAlignPlugin = defineBasePlugin(PLUGINS.textAlign, {
     nodeProps: {
       defaultNodeValue: 'start',
       styleKey: 'textAlign',
-      validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],
+      validNodeValues: ALIGNMENTS,
     },
   },
   update: ({ editor, plugin, tx }) => ({

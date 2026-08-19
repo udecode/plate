@@ -88,6 +88,9 @@ Plugin descriptors or dynamic names targeted by the plugin's schema contribution
   State-bound reads owned by the plugin. Plate publishes them under
   `editor.read[name]` and through `editor.plugin(MyPlugin).read`. Declare
   `read` as a factory, even when the returned methods need no authoring context.
+  Plate constructs the namespace once per plugin configuration. Return methods
+  or nested method records; compute document values when a method runs. Stable
+  constants and host services belong in `api`.
 </APIItem>
 
 <APIItem name="selectors" type="PluginSelectors<InferPluginStoreState<D>>">
@@ -317,9 +320,9 @@ No implicit capability-name or schema-identity match is applied. Without this
 callback, Plate uses the rules owned by the plugin compiled for the element's
 persisted type.
 
-**Example:** `matchRules: ({ node }) => Boolean(node.listStyleType)`
+**Example:** `matchRules: ({ node }) => Boolean(node.listType)`
 
-Example: List plugin sets `match: ({ node }) => !!node.listStyleType` to override paragraph behavior when the paragraph is a list item.
+Example: List plugin sets `match: ({ node }) => !!node.listType` to override paragraph behavior when the paragraph is a list item.
 
 </APISubListItem>
 <APISubListItem parent="rules" name="merge.removeEmpty" type="boolean" optional>
@@ -497,11 +500,14 @@ Specifies the HTML tag name used when no component is bound through
 </APIItem>
 
 <APIItem
-  name="transformInitialValue"
-  type="TransformInitialValue<WithAnyName<D>>"
+  name="prepareDocument"
+  type="PrepareDocument<WithAnyName<D>>"
   optional
 >
-  Transforms document input before schema fitting during editor initialization.
+  Prepares complete document input after application migrations and before
+  schema fitting. It runs during initialization and complete
+  `editor.update.value.replace(...)` loads. Use it for installed current-schema
+  invariants, not source-version migrations.
 </APIItem>
 
 <APIItem name="useHooks" type="() => void" optional>
@@ -518,31 +524,31 @@ type EditOnlyConfig = {
   render?: boolean; // default: true
   on?: boolean; // default: true
   inject?: boolean; // default: true
-  transformInitialValue?: boolean; // default: false
+  prepareDocument?: boolean; // default: false
 };
 ```
 
 When set to `true` (boolean):
 
 - `render`, `on`, and `inject.nodeProps` are only active when editor is not read-only
-- `transformInitialValue` remains active regardless of read-only state
+- `prepareDocument` remains active regardless of read-only state
 
 When set to an object:
 
 - Each property can be individually configured
-- Properties default to being edit-only (`true`) except `transformInitialValue` which defaults to always active (`false`)
+- Properties default to being edit-only (`true`) except `prepareDocument` which defaults to always active (`false`)
 - Set a property to `false` to make it always active regardless of read-only state
-- For `transformInitialValue`, set to `true` to make it edit-only
+- For `prepareDocument`, set to `true` to make it edit-only
 
 Examples:
 
 ```ts
-// All features (except transformInitialValue) are edit-only
+// All features (except prepareDocument) are edit-only
 editOnly: true;
 
-// transformInitialValue is edit-only, others remain edit-only by default
+// prepareDocument is edit-only, others remain edit-only by default
 editOnly: {
-  transformInitialValue: true;
+  prepareDocument: true;
 }
 
 // render is always active, others follow default behavior
@@ -568,7 +574,7 @@ declared before this call read the configured values, while the configuration
 remains the final override.
 
 ```ts
-H1Plugin.configure({
+HeadingPlugin.configure({
   rules: { break: { empty: 'reset' } },
 });
 ```

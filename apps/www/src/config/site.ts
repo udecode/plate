@@ -35,8 +35,8 @@ export const siteConfig = {
   ogImage: 'https://platejs.org/og.png',
   registryUrl:
     process.env.NODE_ENV === 'development'
-      ? 'http://localhost:3000/rd/'
-      : 'https://platejs.org/r/',
+      ? 'http://localhost:3000/rd/new-york/'
+      : 'https://platejs.org/r/new-york/',
   url:
     process.env.NODE_ENV === 'development'
       ? 'http://localhost:3000'

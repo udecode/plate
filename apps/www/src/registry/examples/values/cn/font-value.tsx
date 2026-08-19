@@ -6,7 +6,7 @@ jsx;
 
 export const fontValue = (
   <fragment>
-    <hh2>颜色</hh2>
+    <hheading level={2}>颜色</hheading>
     <hp>
       添加{' '}
       <htext color="white" backgroundColor="#df4538">

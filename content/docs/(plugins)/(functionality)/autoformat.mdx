@@ -37,13 +37,13 @@ For the full runtime — dispatch, ownership, selection context, and custom rule
 
 The fastest way to add common text substitutions is with `AutoformatKit`.
 
-<ComponentSource name="autoformat-kit" />
+<ComponentSource name="autoformat" />
 
 ### Add Kit
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { AutoformatKit } from '@/components/editor/plugins/autoformat-kit';
+import { AutoformatKit } from '@/components/editor/autoformat';
 
 const editor = createPlateEditor({
   plugins: [
@@ -71,7 +71,7 @@ import {
 } from '@platejs/basic-nodes';
 import {
   BlockquotePlugin,
-  H1Plugin,
+  HeadingPlugin,
   HorizontalRulePlugin,
 } from '@platejs/basic-nodes/react';
 import { CodeBlockRules } from '@platejs/code-block';
@@ -89,7 +89,7 @@ import { EquationPlugin, InlineEquationPlugin } from '@platejs/math/react';
 
 const editor = createPlateEditor({
   plugins: [
-    H1Plugin.configure({
+    HeadingPlugin.configure({
       inputRules: [HeadingRules.markdown()],
     }),
     BlockquotePlugin.configure({

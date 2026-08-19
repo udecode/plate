@@ -97,7 +97,7 @@ import {
   InlineComboboxEmpty,
   InlineComboboxInput,
   InlineComboboxItem,
-} from '@/components/ui/inline-combobox';
+} from '@/components/editor/inline-combobox';
 import { cn } from '@/lib/utils';
 
 const tags = [
@@ -229,83 +229,9 @@ const editor = createPlateEditor({
 </APIOptions>
 </API>
 
-## 钩子函数
+## Registry UI
 
-### useComboboxInput
+复制的 `inline-combobox` 组件负责输入聚焦、取消、键盘导航和撤销/重做转发。
+产品需要不同的组合框交互时，直接修改该组件。
 
-管理组合框输入行为和键盘交互的钩子。
-
-<API name="useComboboxInput">
-<APIOptions>
-  <APIItem name="ref" type="RefObject<HTMLElement>">
-    输入元素的引用。
-  </APIItem>
-  <APIItem name="autoFocus" type="boolean" optional>
-    挂载时自动聚焦输入。
-    - **默认:** `true`
-  </APIItem>
-  <APIItem name="cancelInputOnArrowLeftRight" type="boolean" optional>
-    方向键取消输入。
-    - **默认:** `true`
-  </APIItem>
-  <APIItem name="cancelInputOnBackspace" type="boolean" optional>
-    起始位置退格键取消输入。
-    - **默认:** `true`
-  </APIItem>
-  <APIItem name="cancelInputOnBlur" type="boolean" optional>
-    失去焦点时取消输入。
-    - **默认:** `true`
-  </APIItem>
-  <APIItem name="cancelInputOnDeselect" type="boolean" optional>
-    取消选择时取消输入。
-    - **默认:** `true`
-  </APIItem>
-  <APIItem name="cancelInputOnEscape" type="boolean" optional>
-    Escape键取消输入。
-    - **默认:** `true`
-  </APIItem>
-  <APIItem name="cursorState" type="ComboboxInputCursorState" optional>
-    当前光标位置状态。
-  </APIItem>
-  <APIItem name="forwardUndoRedoToEditor" type="boolean" optional>
-    将撤销/重做转发给编辑器。
-    - **默认:** `true`
-  </APIItem>
-  <APIItem name="onCancelInput" type="(cause: CancelComboboxInputCause) => void" optional>
-    输入取消时的回调函数。
-  </APIItem>
-</APIOptions>
-
-<APIReturns>
-  <APIItem name="cancelInput" type="(cause?: CancelComboboxInputCause, focusEditor?: boolean) => void">
-    取消输入的函数。
-  </APIItem>
-  <APIItem name="props" type="object">
-    输入元素的属性。
-  </APIItem>
-  <APIItem name="removeInput" type="(focusEditor?: boolean) => void">
-    移除输入节点的函数。
-  </APIItem>
-</APIReturns>
-</API>
-
-### useHTMLInputCursorState
-
-跟踪HTML输入元素中光标位置的钩子。
-
-<API name="useHTMLInputCursorState">
-<APIParameters>
-  <APIItem name="ref" type="RefObject<HTMLInputElement>">
-    要跟踪的输入元素的引用。
-  </APIItem>
-</APIParameters>
-
-<APIReturns>
-  <APIItem name="atStart" type="boolean">
-    光标是否在输入起始位置。
-  </APIItem>
-  <APIItem name="atEnd" type="boolean">
-    光标是否在输入结束位置。
-  </APIItem>
-</APIReturns>
-</API>
+<ComponentSource name="inline-combobox" />

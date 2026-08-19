@@ -1,20 +1,25 @@
 ---
-description: Build or refactor Plate registry UI with open-code ownership, copied-item boundaries, kit wiring, React discipline, and browser proof.
+description: Master Plate React/UI architecture for package primitives, component families, copied registry UI, kit wiring, and browser proof.
 ---
 
 # Plate UI
 
-Repo-specific companion to the `shadcn` skill.
+This is the sole owner of Plate-specific React and component architecture.
+Package and migration skills route here instead of maintaining another hook,
+component, or React rulebook.
 
 Use the `shadcn` skill for CLI, upstream docs, and generic shadcn/ui rules.
-Use this skill for Plate-specific component authorship: open-code preservation,
-package extraction boundaries, base/live kit split, cross-platform layering,
-and registry wiring.
+Use the Vercel React skills for selected implementation tactics. Use this skill
+for the final Plate decision: public component shape, component-family
+topology, package extraction boundaries, base/live kit split, cross-platform
+layering, open-code preservation, and registry wiring.
 
 ## Repo Surfaces
 
-- `apps/www/src/registry/ui` — live component and node renderers
-- `apps/www/src/registry/components/editor/plugins` — base/live kit wiring
+- `apps/www/src/registry/components/editor` — flat copied editor features,
+  live/static components, and app-owned kit values
+- `apps/www/src/registry/bases/{base,aria}/editor` — primitive-specific source
+  variants that install over the same flat editor targets
 - `apps/www/src/registry/registry-*.ts` — registry metadata and dependencies
 - `packages/*` — upstream semantic owners; package edits route to
   `plate-plugin-creator`
@@ -25,12 +30,13 @@ and registry wiring.
 | ---------------------- | -------------------------------------------------------------------- |
 | `vision` / `best-api`  | durable doctrine and reusable public call shape                      |
 | `plate-plugin-creator` | package plugin mechanics and package proof                           |
-| `plate-ui`             | copied registry UI, app-local composition, wiring, and browser proof |
+| `plate-ui`             | all Plate React/component law, copied UI, wiring, and browser proof   |
 | `docs-creator`         | current-state public teaching                                        |
 
-Continue here only when the component or copied registry item is the owner.
-Stop at the package boundary; do not use this skill to redesign plugin builders,
-schema law, or application typing.
+Continue here whenever a Plate package or registry task makes a React,
+component, hook, provider, store, primitive, or composition decision. Package
+implementation and proof still route to `plate-plugin-creator`; plugin builders,
+schema law, and application typing remain outside this skill.
 
 ## Principles
 
@@ -54,6 +60,18 @@ schema law, or application typing.
 9. **Application typing is not UI architecture.** Registry items consume
    ordinary plugin arrays and editor APIs; copied UI never owns its host's
    application contract.
+10. **Direct components are the default.** A component family gets zero or one
+    semantic controller hook, never a state-hook/prop-hook pipeline or one hook
+    per subcomponent.
+11. **React APIs are modern by construction.** Use React 19.2 forms directly;
+    do not preserve React 18 branches, `forwardRef`, or compatibility wrappers.
+12. **One installed editor namespace.** Plate registry source installs under
+    `components/editor`; `components/ui` belongs only to shadcn primitives.
+13. **Kit is a value, not topology.** Feature files/items use the feature name;
+    their app-owned plugin tuple is `FooKit`, including one-descriptor features.
+14. **Variants resolve before install.** Radix, Base UI, and React Aria source
+    variants expose one editor-facing contract and write to one target. Never
+    branch on the primitive library at runtime.
 
 ## Critical Rules
 
@@ -67,7 +85,30 @@ schema law, or application typing.
 ### Ownership & Extraction → [ownership.md](./rules/ownership.md)
 
 - Extract package code for transforms, queries, serialization, stable controllers, and public hooks reused across surfaces.
+- Trace reuse through wrappers to terminal product consumers. A package import,
+  export, docs page, test, or package component that only forwards behavior to
+  copied registry UI does not establish independent package ownership.
+- Search terminal consumers outside `apps/www/src/registry` before deleting a
+  registry hook or helper. Host documentation components and installed target
+  imports count as independent owners; registry tests and metadata do not.
+- When every terminal consumer is copied registry UI, move its UI-only hook,
+  store, provider, hotkey controller, and plugin extension together into that
+  registry component family or kit. Do not leave the state owner in npm after
+  moving only its renderer adapter.
+- Publish a package React hook only for multiple independent terminal owners or
+  a durable headless semantic, DOM, accessibility, or integration subsystem.
+  Multiple subcomponents or registry files inside one family are one owner.
+- If a hook mixes such a durable lifecycle with one renderer's state or props,
+  split it. Keep only subscription/observer/imperative DOM/cleanup behavior in
+  the package with the smallest required lifecycle input; a side-effect-only
+  adapter returns `void`. Derive layout and visual state during render, and keep
+  transient overrides, rounding, refs/styles returned only as props, and event
+  handlers in the copied component family.
 - Keep one-off shadcn composition, labels, popover state, and local visual treatment in the app component.
+- Keep application endpoints, visible copy, upload quotas, arbitrary media
+  limits, feature-specific accessibility labels, colors, borders, and stacking
+  policy in copied registry source. Packages expose neutral mechanics and
+  configurable contracts, not Plate's example-product defaults.
 - Never create a package hook just to hide JSX, avoid typing work, or move logic used by one component only.
 - If extraction makes the component harder to compare with upstream shadcn/open code, keep it local.
 - Package cleanup must not paste a package-owned transform, query, navigation
@@ -144,15 +185,25 @@ schema law, or application typing.
 ### React Performance & Effects → [react-performance.md](./rules/react-performance.md)
 
 - Target React `>=19.2`. Do not preserve React 18 compatibility patterns unless the user explicitly asks.
+- Receive `ref` as a normal prop and use provider shorthand where it improves
+  the component. Do not add `forwardRef` or React 18 branches.
 - Effects are escape hatches, not state calculators.
 - Derive during render unless synchronizing with a real external system.
 - Put interaction logic in event handlers, not in effects watching state.
 - Do not subscribe to fast-changing editor state unless the rendered output truly depends on it.
+- Editable `onKeyDown` handlers run before built-in editor commands. Return
+  `true` when copied UI claims the key; `preventDefault()` alone does not mark
+  the Plate handler pipeline as handled.
 - Do not define nested components inside components.
+
+## Component Family Law → [component-family.md](./rules/component-family.md)
+
+Read this reference for component families, registry feature variants, headless primitives, direct components/factories, and the Vercel advisory boundary.
 
 ### Registry Wiring → [registry.md](./rules/registry.md)
 
-- Update `registry-kits.ts`, `registry-ui.ts`, and `registry-examples.ts` together.
+- Update `registry-features.ts`, `registry-editor.ts`, and
+  `registry-examples.ts` together.
 - Add explicit `registryDependencies` for every shared UI/style dependency.
 - After source ownership is correct, declare every surviving direct runtime
   package and registry dependency. Metadata mirrors source; it never grants a
@@ -183,7 +234,8 @@ schema law, or application typing.
 ### Shadcn Proofing → [shadcn-proofing.md](./rules/shadcn-proofing.md)
 
 - Keep `asChild`, `data-slot`, `data-state`, variants, and file shape recognizable.
-- Prefer one readable file with local subparts over scattering tiny hooks.
+- Prefer one readable family file with local subparts over scattering tiny
+  hooks, factories, providers, or wrappers.
 - Review custom code like an upstream diff: would this still feel like open source, or like framework sludge?
 
 ## Reusable Hook API Gate
@@ -206,7 +258,8 @@ Extract to a package only if at least one is true:
 
 1. The code owns document semantics, serialization, transforms, or navigation contracts.
 2. Multiple UI surfaces or platforms need the same behavior contract.
-3. The code is a stable controller/hook whose output is not tied to one shadcn component's markup.
+3. The code is a stable semantic controller reused by multiple family members
+   or surfaces and its output is not tied to one shadcn component's markup.
 4. The same logic would otherwise be duplicated across packages or adapters.
 5. A future native consumer could plausibly use the same conceptual contract.
 
@@ -221,13 +274,15 @@ Keep it local if any of these are true:
 ## Key Patterns
 
 ```tsx
-// Good: package owns stable semantics, UI composes locally.
-const { align, focused, readOnly, selected } = useMediaState();
-return (
-  <MediaToolbar plugin={ImagePlugin}>
-    <PlateElement {...props}>...</PlateElement>
-  </MediaToolbar>
-);
+// Good: simple component owns its own renderer behavior directly.
+function MediaImage(props: PlateElementProps<typeof ImagePlugin>) {
+  const selected = useSelected();
+
+  return <PlateElement {...props} data-selected={selected || undefined} />;
+}
+
+// Good: one reusable family controller coordinates complex siblings.
+const tableResize = useTableResizeController();
 
 // Good: host-owned app code outside copied registry UI uses its inferred editor.
 const api = editor.api.comment;
@@ -281,28 +336,34 @@ const { dialogTitle, menuItems, onOpenChange, popoverOpen } =
 ## Workflow
 
 1. Start with the `shadcn` skill. Run the normal `shadcn` docs/search workflow first.
-2. Search Plate for the closest analog in `apps/www/src/registry/ui`, `apps/www/src/registry/components/editor/plugins`, and the relevant `packages/*`.
+2. Search Plate for the closest analog in
+   `apps/www/src/registry/components/editor`, the applicable
+   `apps/www/src/registry/bases/*/editor` variant, and the relevant `packages/*`.
 3. Decide ownership with the extraction test before writing code.
 4. Decide the three layers before coding:
    - semantic core
    - platform adapter
    - local open-code UI
-5. Apply the React checks before writing state/effects:
+5. Choose the component-family shape before writing state/effects:
+   - direct component by default
+   - one terminal `use<Family>` only for a real semantic controller
+   - one private context only when sibling coordination needs it
+6. Apply the React checks before writing state/effects:
    - can this be derived during render?
    - should this stay in an event handler?
    - am I subscribing to more editor state than the UI actually renders?
-6. Build the component as open code first.
-7. Extract only the boundaries that survive the test.
-8. Share runtime-neutral kits; wire base/live renderer kits and registry deps
+7. Build the component as open code first.
+8. Extract only the boundaries that survive the test.
+9. Share runtime-neutral kits; wire base/live renderer kits and registry deps
    only where the renderer ownership actually differs.
-9. Apply the registry changelog decision:
+10. Apply the registry changelog decision:
    - user-visible registry change: add or update a registry changelog entry,
      run the generator, and run the registry changelog check
    - not user-visible: record `N/A: <reason>`
-10. If package exports changed, run `pnpm brl`.
-11. If the work changed a reusable API or canonical consumer pattern, run the
+11. If package exports changed, run `pnpm brl`.
+12. If the work changed a reusable API or canonical consumer pattern, run the
     automatic `best-api repair` chain before closeout.
-12. Verify the smallest honest surface:
+13. Verify the smallest honest surface:
 
 - component spec for UI-only changes
 - package build/typecheck when package code changed
@@ -311,13 +372,6 @@ const { dialogTitle, menuItems, onOpenChange, popoverOpen } =
 ## Audit References
 
 - [component-audit.md](./references/component-audit.md) — concrete good patterns and anti-patterns from this repo
-
-## Comprehensive References
-
-Load these only when the task needs the detail:
-
-- `.agents/rules/plate-ui/references/components.md` — comprehensive component architecture reference: accessibility, `asChild`, composition, data attributes, artifact taxonomy, polymorphism, controlled/uncontrolled state, and component typing.
-- `.agents/rules/plate-ui/references/react.md` — comprehensive React reference: React Compiler, manual memoization escape hatches, Effects, `useEffectEvent`, ref access, derived state, Tailwind v4 syntax, data attributes, and UI constraints.
 
 ## Detailed References
 

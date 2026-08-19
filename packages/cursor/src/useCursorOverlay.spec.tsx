@@ -170,7 +170,7 @@ describe('cursor overlay hooks', () => {
   });
 
   it('coalesces scheduled renders even when the frame id is zero', async () => {
-    const { useRequestReRender } = await importHooks();
+    const { useCursorOverlayPositions } = await importHooks();
     const originalRequestAnimationFrame = globalThis.requestAnimationFrame;
     let frameCallback: FrameRequestCallback | undefined;
     let renderCount = 0;
@@ -184,12 +184,12 @@ describe('cursor overlay hooks', () => {
     const { result } = renderHook(() => {
       renderCount++;
 
-      return useRequestReRender();
+      return useCursorOverlayPositions({ refreshOnResize: false });
     });
 
     act(() => {
-      result.current();
-      result.current();
+      result.current.refresh();
+      result.current.refresh();
     });
 
     expect(renderCount).toBe(1);
@@ -203,7 +203,7 @@ describe('cursor overlay hooks', () => {
   });
 
   it('cancels a pending frame before an immediate render', async () => {
-    const { useRequestReRender } = await importHooks();
+    const { useCursorOverlayPositions } = await importHooks();
     const originalCancelAnimationFrame = globalThis.cancelAnimationFrame;
     const originalRequestAnimationFrame = globalThis.requestAnimationFrame;
     const cancelAnimationFrame = mock();
@@ -215,12 +215,12 @@ describe('cursor overlay hooks', () => {
     const { result } = renderHook(() => {
       renderCount++;
 
-      return useRequestReRender();
+      return useCursorOverlayPositions({ refreshOnResize: false });
     });
 
     act(() => {
-      result.current();
-      result.current(true);
+      result.current.refresh();
+      result.current.refresh(true);
     });
 
     expect(cancelAnimationFrame).toHaveBeenCalledWith(7);

@@ -6,7 +6,7 @@ jsx;
 
 export const deserializeMdValue = (
   <fragment>
-    <hh2>Markdown</hh2>
+    <hheading level={2}>Markdown</hheading>
     <hp>
       Copy and paste Markdown content from popular Markdown editors like{' '}
       <ha url="https://markdown-it.github.io/">markdown-it.github.io/</ha> into

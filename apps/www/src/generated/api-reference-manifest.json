@@ -1409,11 +1409,11 @@
           "name": "EditorExtensionReadFactory",
           "route": null,
           "runtime": false,
-          "signature": "type EditorExtensionReadFactory<TEditor extends BaseEditor<any, any> = Editor, TResult = unknown> = BivariantMethod<[context: EditorExtensionReadFactoryContext<TEditor>], TResult>;",
+          "signature": "type EditorExtensionReadFactory<TEditor extends BaseEditor<any, any> = Editor, TResult extends EditorReadMethodTree = EditorReadMethodTree> = BivariantMethod<[context: EditorExtensionReadFactoryContext<TEditor>], TResult>;",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
             "TEditor extends BaseEditor<any, any> = Editor",
-            "TResult = unknown"
+            "TResult extends EditorReadMethodTree = EditorReadMethodTree"
           ]
         },
         "@platejs/plite:EditorExtensionReadFactoryContext": {
@@ -1545,7 +1545,7 @@
           "name": "EditorExtensionTypes",
           "route": null,
           "runtime": false,
-          "signature": "type EditorExtensionTypes = {\n  api?: Record<string, unknown>;\n  read?: Record<string, unknown>;\n  update?: Record<string, unknown>;\n};",
+          "signature": "type EditorExtensionTypes = {\n  api?: Record<string, unknown>;\n  read?: EditorReadMethodTree;\n  update?: Record<string, unknown>;\n};",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
@@ -1752,7 +1752,7 @@
           "name": "EditorLifecycleError",
           "route": null,
           "runtime": false,
-          "signature": "type EditorLifecycleError<TEditor = Editor> = Readonly<{\n  cause: unknown;\n  editor: TEditor;\n  extensionName: string;\n  phase: 'afterPublish' | 'cleanup';\n}> | Readonly<{\n  cause: unknown;\n  editor: TEditor;\n  extensionName: string;\n  format: string;\n  key: string;\n  phase: 'parse' | 'query' | 'serialize';\n  source: 'host-codec';\n}>;",
+          "signature": "type EditorLifecycleError<TEditor = Editor> = Readonly<{\n  cause: unknown;\n  editor: TEditor;\n  extensionName: string;\n  phase: 'afterPublish' | 'cleanup' | 'commit-listener';\n}> | Readonly<{\n  cause: unknown;\n  editor: TEditor;\n  extensionName: string;\n  format: string;\n  key: string;\n  phase: 'parse' | 'query' | 'serialize';\n  source: 'host-codec';\n}>;",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
             "TEditor = Editor"
@@ -2037,6 +2037,18 @@
             "TRead extends EditorReadDescriptor<any, any, any>"
           ]
         },
+        "@platejs/plite:EditorReadMethodRecord": {
+          "aliases": [],
+          "documentation": "",
+          "entrypoint": "@platejs/plite",
+          "kind": "type",
+          "name": "EditorReadMethodRecord",
+          "route": null,
+          "runtime": false,
+          "signature": "type EditorReadMethodRecord = Readonly<{\n  [key: string]: EditorReadMethodTree;\n}>;",
+          "source": "packages/plite/src/interfaces/editor.ts",
+          "typeParameters": []
+        },
         "@platejs/plite:EditorReadMethods": {
           "aliases": [],
           "documentation": "",
@@ -2051,6 +2063,18 @@
             "V extends Value = Value",
             "TExtensions extends readonly unknown[] = readonly []"
           ]
+        },
+        "@platejs/plite:EditorReadMethodTree": {
+          "aliases": [],
+          "documentation": "",
+          "entrypoint": "@platejs/plite",
+          "kind": "type",
+          "name": "EditorReadMethodTree",
+          "route": null,
+          "runtime": false,
+          "signature": "type EditorReadMethodTree = ((...args: any[]) => unknown) | EditorReadMethodRecord;",
+          "source": "packages/plite/src/interfaces/editor.ts",
+          "typeParameters": []
         },
         "@platejs/plite:EditorReadRegistration": {
           "aliases": [],
@@ -4575,6 +4599,20 @@
           "source": "packages/plite/src/interfaces/path.ts",
           "typeParameters": []
         },
+        "@platejs/plite:PersistedDocumentInput": {
+          "aliases": [],
+          "documentation": "Application persistence envelope for one complete external document.",
+          "entrypoint": "@platejs/plite",
+          "kind": "type",
+          "name": "PersistedDocumentInput",
+          "route": null,
+          "runtime": false,
+          "signature": "type PersistedDocumentInput<V extends Value = Value> = Readonly<{\n  document: EditorDocumentValue<V>;\n  schema: EditorSchemaIdentity;\n  selection?: SnapshotSelectionInput;\n}>;",
+          "source": "packages/plite/src/interfaces/editor.ts",
+          "typeParameters": [
+            "V extends Value = Value"
+          ]
+        },
         "@platejs/plite:Point": {
           "aliases": [],
           "documentation": "",
@@ -6104,7 +6142,7 @@
           "name": "SnapshotInput",
           "route": null,
           "runtime": false,
-          "signature": "type SnapshotInput<V extends Value = Value> = Readonly<{\n  children: V | readonly Descendant[];\n  meta?: Readonly<Record<string, unknown>>;\n  roots?: Readonly<Record<RootKey, V | readonly Descendant[]>>;\n  selection?: SnapshotSelectionInput;\n}>;",
+          "signature": "type SnapshotInput<V extends Value = Value> = PersistedDocumentInput<V> | Readonly<{\n  children: V | readonly Descendant[];\n  meta?: Readonly<Record<string, unknown>>;\n  roots?: Readonly<Record<RootKey, V | readonly Descendant[]>>;\n  selection?: SnapshotSelectionInput;\n}>;",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
             "V extends Value = Value"
@@ -7088,6 +7126,30 @@
             "TEditor = Editor"
           ]
         },
+        "@platejs/plite/internal:EditorCommandEvaluation": {
+          "aliases": [],
+          "documentation": "",
+          "entrypoint": "@platejs/plite/internal",
+          "kind": "type",
+          "name": "EditorCommandEvaluation",
+          "route": null,
+          "runtime": false,
+          "signature": "type EditorCommandEvaluation = Readonly<{\n  /** Installed extension names that materially changed the default result. */\n  materialHandlers: readonly string[];\n  /** True only when every installed handler delegated the original input unchanged. */\n  nativeEquivalent: boolean;\n  result: EditorCommandResult;\n}>;",
+          "source": "packages/plite/src/core/command-registry.ts",
+          "typeParameters": []
+        },
+        "@platejs/plite/internal:EditorCommandNativeProbe": {
+          "aliases": [],
+          "documentation": "",
+          "entrypoint": "@platejs/plite/internal",
+          "kind": "type",
+          "name": "EditorCommandNativeProbe",
+          "route": null,
+          "runtime": false,
+          "signature": "type EditorCommandNativeProbe = Readonly<{\n  materialHandlers: readonly string[];\n  nativeEquivalent: boolean;\n}>;",
+          "source": "packages/plite/src/core/command-registry.ts",
+          "typeParameters": []
+        },
         "@platejs/plite/internal:editorCommands": {
           "aliases": [],
           "documentation": "Typed semantic command tokens exposed to extension command handlers.",
@@ -7318,6 +7380,18 @@
           "runtime": true,
           "signature": "encodeVersionedValue: <TValue>(codec: EditorValueCodec<TValue>, value: TValue, label: string) => SerializedEditorValue",
           "source": "packages/plite/src/core/value-codec.ts",
+          "typeParameters": []
+        },
+        "@platejs/plite/internal:evaluateCommand": {
+          "aliases": [],
+          "documentation": "",
+          "entrypoint": "@platejs/plite/internal",
+          "kind": "const",
+          "name": "evaluateCommand",
+          "route": null,
+          "runtime": true,
+          "signature": "evaluateCommand: <TCommand extends EditorCommandDescriptor>(editor: AnyEditor<any, any>, command: TCommand, ...input: [EditorCommandInput<TCommand>] extends [void] ? [] | [input: EditorCommandInput<TCommand>] : [input: EditorCommandInput<TCommand>]) => EditorCommandEvaluation",
+          "source": "packages/plite/src/core/command-registry.ts",
           "typeParameters": []
         },
         "@platejs/plite/internal:failInvariant": {
@@ -8590,6 +8664,18 @@
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": []
         },
+        "@platejs/plite/internal:probeCommandNativeEquivalent": {
+          "aliases": [],
+          "documentation": "",
+          "entrypoint": "@platejs/plite/internal",
+          "kind": "const",
+          "name": "probeCommandNativeEquivalent",
+          "route": null,
+          "runtime": true,
+          "signature": "probeCommandNativeEquivalent: <TCommand extends EditorCommandDescriptor>(editor: AnyEditor<any, any>, command: TCommand, ...input: [EditorCommandInput<TCommand>] extends [void] ? [] | [input: EditorCommandInput<TCommand>] : [input: EditorCommandInput<TCommand>]) => EditorCommandNativeProbe",
+          "source": "packages/plite/src/core/command-registry.ts",
+          "typeParameters": []
+        },
         "@platejs/plite/internal:projectRange": {
           "aliases": [],
           "documentation": "",
@@ -8719,7 +8805,7 @@
           "route": null,
           "runtime": true,
           "signature": "reportEditorLifecycleError: <TEditor extends BaseEditor<any, any>>(error: EditorLifecycleError<TEditor>) => void",
-          "source": "packages/plite/src/core/editor-extension.ts",
+          "source": "packages/plite/src/core/lifecycle-error.ts",
           "typeParameters": []
         },
         "@platejs/plite/internal:reset": {
@@ -9223,6 +9309,18 @@
           "route": null,
           "runtime": true,
           "signature": "withEditorUpdateRootScope: <T>(editor: AnyEditor, root: string | null | undefined, fn: () => T) => T",
+          "source": "packages/plite/src/core/public-state.ts",
+          "typeParameters": []
+        },
+        "@platejs/plite/internal:withTransactionSpecDraftRead": {
+          "aliases": [],
+          "documentation": "Allow one internal state read to observe the active command-spec draft.",
+          "entrypoint": "@platejs/plite/internal",
+          "kind": "const",
+          "name": "withTransactionSpecDraftRead",
+          "route": null,
+          "runtime": true,
+          "signature": "withTransactionSpecDraftRead: <T>(editor: AnyEditor, fn: () => T) => T",
           "source": "packages/plite/src/core/public-state.ts",
           "typeParameters": []
         },

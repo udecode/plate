@@ -6,19 +6,21 @@ jsx;
 
 export const pluginRulesValue = (
   <fragment>
-    <hh2>Plugin Rules</hh2>
+    <hheading level={2}>Plugin Rules</hheading>
     <hp>
       Plugin rules control how blocks respond to Enter, Backspace, selection,
       and normalization.
     </hp>
 
-    <hh3>Break Rules</hh3>
+    <hheading level={3}>Break Rules</hheading>
 
     <hp>
       <htext bold>Heading splitReset:</htext> Press Enter in middle of heading
       to split and reset new block to paragraph.
     </hp>
-    <hh3>Press Enter after "Press" to see splitReset behavior</hh3>
+    <hheading level={3}>
+      Press Enter after "Press" to see splitReset behavior
+    </hheading>
 
     <hp>
       <htext bold>Blockquote containers:</htext> Blockquotes wrap nested blocks
@@ -29,7 +31,7 @@ export const pluginRulesValue = (
         Blockquotes are containers now. Split this paragraph or add nested
         blocks inside the quote.
       </hp>
-      <hp indent={1} listStyleType="disc">
+      <hp indent={1} listType="bulleted">
         Quoted list items stay inside the same blockquote container.
       </hp>
       <hblockquote>
@@ -37,7 +39,7 @@ export const pluginRulesValue = (
       </hblockquote>
     </hblockquote>
 
-    <hh3>Delete Rules</hh3>
+    <hheading level={3}>Delete Rules</hheading>
 
     <hp>
       <htext bold>Code block reset:</htext> Backspace in empty code block resets
@@ -54,11 +56,11 @@ export const pluginRulesValue = (
       <htext bold>List items:</htext> Backspace at start removes list
       formatting.
     </hp>
-    <hp indent={1} listStyleType="disc">
+    <hp indent={1} listType="bulleted">
       Press Backspace at start to remove list formatting
     </hp>
 
-    <hh3>Selection Rules</hh3>
+    <hheading level={3}>Selection Rules</hheading>
 
     <hp>
       <htext bold>Hard affinity (code):</htext> Use arrow keys around{' '}
@@ -77,7 +79,7 @@ export const pluginRulesValue = (
       <ha url="https://example.com">this link</ha> to test directional behavior.
     </hp>
 
-    <hh3>Normalize Rules</hh3>
+    <hheading level={3}>Normalize Rules</hheading>
 
     <hp>
       <htext bold>Empty link removal:</htext> Delete all text from{' '}
@@ -85,7 +87,7 @@ export const pluginRulesValue = (
       automatically removed.
     </hp>
 
-    <hh3>Merge Rules</hh3>
+    <hheading level={3}>Merge Rules</hheading>
 
     <hp>
       <htext bold>Void elements:</htext>
@@ -98,6 +100,8 @@ export const pluginRulesValue = (
     <hp>
       <text />
     </hp>
-    <hh2>Backspace at start removes empty paragraph above</hh2>
+    <hheading level={2}>
+      Backspace at start removes empty paragraph above
+    </hheading>
   </fragment>
 );

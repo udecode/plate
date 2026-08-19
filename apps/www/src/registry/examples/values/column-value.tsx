@@ -6,9 +6,9 @@ jsx;
 
 export const columnValue = (
   <fragment>
-    <hh2>Column</hh2>
+    <hheading level={2}>Column</hheading>
     <hp>Create column and the border will hidden when viewing</hp>
-    <hcolumngroup layout={[50, 50]}>
+    <hcolumngroup>
       <hcolumn width="50%">
         <hp>left 1</hp>
         <hp>left 2</hp>

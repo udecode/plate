@@ -9,10 +9,10 @@ import { Plate, usePlateEditor } from 'platejs/react';
 
 import { useLocale } from '@/hooks/useLocale';
 import { getI18nValues } from '@/i18n/getI18nValues';
-import { EditorKit } from '@/registry/components/editor/editor';
-import { CodeDrawingKit } from '@/registry/components/editor/plugins/code-drawing-kit';
-import { ExcalidrawKit } from '@/registry/components/editor/plugins/excalidraw-kit';
-import { Editor, EditorContainer } from '@/registry/ui/editor';
+import { EditorKit } from '@/registry/components/editor/plugins';
+import { CodeDrawingKit } from '@/registry/components/editor/code-drawing';
+import { ExcalidrawKit } from '@/registry/components/editor/excalidraw';
+import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 
 export default function PlaygroundDemo({
   id,

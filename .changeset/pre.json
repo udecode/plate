@@ -18,7 +18,6 @@
     "@platejs/diff": "53.0.0",
     "@platejs/dnd": "53.1.0",
     "@platejs/docx": "53.0.0",
-    "@platejs/docx-io": "53.1.0",
     "@platejs/emoji": "53.1.7",
     "@platejs/excalidraw": "53.0.0",
     "@platejs/find-replace": "53.0.0",

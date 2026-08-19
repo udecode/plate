@@ -149,16 +149,6 @@ export const BaseColumnPlugin = defineBasePlugin(PLUGINS.columnGroup, {
   schema: {
     element: {
       content: schema.content.element(BaseColumnItemPlugin, { min: 2 }),
-      properties: {
-        layout: property.json({
-          validate: (value): value is readonly number[] =>
-            Array.isArray(value) &&
-            value.every(
-              (width) => typeof width === 'number' && Number.isFinite(width)
-            ),
-          validationVersion: 1,
-        }),
-      },
     },
   },
   codecs: ({ defineCodecs, schema: { type } }) =>

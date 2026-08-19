@@ -19,7 +19,7 @@ describe(getDocxTestName(name), () => {
   testDocxDeserializer({
     expected: (
       <editor>
-        <hh1>
+        <hheading level={1}>
           <htext
             color="#345A8A"
             fontFamily="Calibri, sans-serif"
@@ -27,8 +27,8 @@ describe(getDocxTestName(name), () => {
           >
             A Test of Headers
           </htext>
-        </hh1>
-        <hh2>
+        </hheading>
+        <hheading level={2}>
           <htext
             color="#4F81BD"
             fontFamily="Calibri, sans-serif"
@@ -36,13 +36,13 @@ describe(getDocxTestName(name), () => {
           >
             Second Level
           </htext>
-        </hh2>
+        </hheading>
         <hp>
           <htext fontFamily="Cambria, serif" fontSize="12pt">
             Some plain text.
           </htext>
         </hp>
-        <hh3>
+        <hheading level={3}>
           <htext
             color="#4F81BD"
             fontFamily="Calibri, sans-serif"
@@ -50,13 +50,13 @@ describe(getDocxTestName(name), () => {
           >
             Third level
           </htext>
-        </hh3>
+        </hheading>
         <hp>
           <htext fontFamily="Cambria, serif" fontSize="12pt">
             Some more plain text.
           </htext>
         </hp>
-        <hh4>
+        <hheading level={4}>
           <htext
             color="#4F81BD"
             fontFamily="Calibri, sans-serif"
@@ -64,13 +64,13 @@ describe(getDocxTestName(name), () => {
           >
             Fourth level
           </htext>
-        </hh4>
+        </hheading>
         <hp>
           <htext fontFamily="Cambria, serif" fontSize="12pt">
             Some more plain text.
           </htext>
         </hp>
-        <hh5>
+        <hheading level={5}>
           <htext
             color="#4F81BD"
             fontFamily="Calibri, sans-serif"
@@ -79,13 +79,13 @@ describe(getDocxTestName(name), () => {
           >
             Fifth level
           </htext>
-        </hh5>
+        </hheading>
         <hp>
           <htext fontFamily="Cambria, serif" fontSize="12pt">
             Some more plain text.
           </htext>
         </hp>
-        <hh6>
+        <hheading level={6}>
           <htext
             color="#4F81BD"
             fontFamily="Calibri, sans-serif"
@@ -93,7 +93,7 @@ describe(getDocxTestName(name), () => {
           >
             Sixth level
           </htext>
-        </hh6>
+        </hheading>
         <hp>
           <htext fontFamily="Cambria, serif" fontSize="12pt">
             Some more plain text.

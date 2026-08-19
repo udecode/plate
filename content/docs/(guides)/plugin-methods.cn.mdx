@@ -171,7 +171,7 @@ codec map，也不要手动添加 `target`。
 ```tsx title="plugins.tsx" showLineNumbers
 import { ParagraphPlugin } from 'platejs/react';
 
-import { ParagraphElement } from '@/components/ui/paragraph-node';
+import { ParagraphElement } from '@/components/editor/paragraph';
 
 export const AppParagraphPlugin = ParagraphPlugin.configure({
   component: ParagraphElement,
@@ -188,9 +188,9 @@ export const AppParagraphPlugin = ParagraphPlugin.configure({
 应用或 registry 安装插件时，用一次 `.configure()` 修改作者已经声明的字段。
 
 ```tsx title="plugins.tsx" showLineNumbers
-import { H1Plugin } from '@platejs/basic-nodes/react';
+import { HeadingPlugin } from '@platejs/basic-nodes/react';
 
-export const AppH1Plugin = H1Plugin.configure({
+export const AppHeadingPlugin = HeadingPlugin.configure({
   initialState: {
     levels: [1, 2],
   },

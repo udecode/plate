@@ -20,8 +20,6 @@ import { PLUGINS } from '@platejs/utils';
 import { isUrl as defaultIsUrl } from '@udecode/utils';
 
 export const mediaElementProperties = {
-  isUpload: property.boolean(),
-  name: property.string(),
   url: property.string({ required: true }),
   width: property.json({
     validate: (value): value is number | string =>
@@ -53,9 +51,11 @@ export type MediaInsertInput = {
    */
   caption?: string | readonly Descendant[];
   id?: string;
-  isUpload?: boolean;
-  name?: string;
   width?: number | string;
+};
+
+export type FileInsertInput = MediaInsertInput & {
+  name?: string;
 };
 
 export type AlignedMediaInsertInput = MediaInsertInput & {
@@ -64,8 +64,8 @@ export type AlignedMediaInsertInput = MediaInsertInput & {
 
 export type ImageInsertInput = AlignedMediaInsertInput & {
   alt?: string;
-  initialHeight?: number;
-  initialWidth?: number;
+  naturalHeight?: number;
+  naturalWidth?: number;
 };
 
 export type ProviderMediaInsertInput = AlignedMediaInsertInput & {
@@ -76,11 +76,13 @@ export type ProviderMediaInsertInput = AlignedMediaInsertInput & {
 type MediaInsertInputForPlugin<K extends string> =
   K extends typeof PLUGINS.image
     ? ImageInsertInput
-    : K extends typeof PLUGINS.mediaEmbed | typeof PLUGINS.video
-      ? ProviderMediaInsertInput
-      : K extends typeof PLUGINS.audio
-        ? AlignedMediaInsertInput
-        : MediaInsertInput;
+    : K extends typeof PLUGINS.file
+      ? FileInsertInput
+      : K extends typeof PLUGINS.mediaEmbed | typeof PLUGINS.video
+        ? ProviderMediaInsertInput
+        : K extends typeof PLUGINS.audio
+          ? AlignedMediaInsertInput
+          : MediaInsertInput;
 
 type MediaElementPluginDefinition = BasePluginDefinition &
   Readonly<{ schema: Readonly<{ element: SchemaElement }> }>;
@@ -272,7 +274,10 @@ export const BaseFilePlugin = defineBasePlugin(PLUGINS.file, {
     element: schema.element.textBlock({
       isolating: true,
       keyboardSelectable: true,
-      properties: mediaElementProperties,
+      properties: {
+        ...mediaElementProperties,
+        name: property.string(),
+      },
     }),
   },
   codecs: ({ defineCodecs, schema: { type } }) =>

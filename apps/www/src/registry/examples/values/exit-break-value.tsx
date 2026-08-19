@@ -8,31 +8,31 @@ jsx;
 
 export const trailingBlockValue = (
   <fragment>
-    <hh2>Trailing Block</hh2>
+    <hheading level={2}>Trailing Block</hheading>
     <hp>Always have a trailing paragraph at the end of your editor.</hp>
   </fragment>
 );
 
 export const exitBreakValue = (
   <fragment>
-    <hh2>Exit Break</hh2>
+    <hheading level={2}>Exit Break</hheading>
     <hp>
       Exit from nested block structures using keyboard shortcuts. The plugin
       automatically determines the appropriate exit point:
     </hp>
 
-    <hp indent={1} listStyleType="disc">
+    <hp indent={1} listType="bulleted">
       ⌘⏎ – Exit and insert a new block after the current structure
     </hp>
-    <hp indent={1} listStyleType="disc">
+    <hp indent={1} listType="bulleted">
       ⌘⇧⏎ – Exit and insert a new block before the current structure
     </hp>
-    <hp indent={1} listStyleType="disc">
+    <hp indent={1} listType="bulleted">
       Automatic – Finds the nearest ancestor that allows paragraph siblings
     </hp>
 
     <hp>Exit breaks work intelligently in nested structures like tables:</hp>
-    <hcolumngroup layout={[50, 50]}>
+    <hcolumngroup>
       <hcolumn width="50%">{createTable()}</hcolumn>
       <hcolumn width="50%">
         <hcodeblock>

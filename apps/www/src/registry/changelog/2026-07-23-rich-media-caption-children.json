@@ -19,71 +19,136 @@
   "targets": [
     {
       "name": "caption",
-      "files": ["apps/www/src/registry/ui/caption.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "files": ["apps/www/src/registry/components/editor/caption.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
       "diagnostics": []
     },
     {
       "name": "media-base-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/media-base-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for media-base-kit."
+        }
+      ]
     },
     {
       "name": "media-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/media-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for media-kit."
+        }
+      ]
     },
     {
       "name": "media-image-node",
-      "files": ["apps/www/src/registry/ui/media-image-node.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for media-image-node."
+        }
+      ]
     },
     {
       "name": "media-video-node",
-      "files": ["apps/www/src/registry/ui/media-video-node.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for media-video-node."
+        }
+      ]
     },
     {
       "name": "media-audio-node",
-      "files": ["apps/www/src/registry/ui/media-audio-node.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for media-audio-node."
+        }
+      ]
     },
     {
       "name": "media-file-node",
-      "files": ["apps/www/src/registry/ui/media-file-node.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for media-file-node."
+        }
+      ]
     },
     {
       "name": "media-embed-node",
-      "files": ["apps/www/src/registry/ui/media-embed-node.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for media-embed-node."
+        }
+      ]
     },
     {
       "name": "media-placeholder-node",
-      "files": ["apps/www/src/registry/ui/media-placeholder-node.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for media-placeholder-node."
+        }
+      ]
     },
     {
       "name": "media-toolbar-button",
-      "files": ["apps/www/src/registry/ui/media-toolbar-button.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "files": [
+        "apps/www/src/registry/components/editor/media-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
       "diagnostics": []
     },
     {
       "name": "plate-to-html",
-      "files": ["apps/www/src/registry/components/editor/plate-to-html.tsx"],
+      "files": [
+        "apps/www/src/registry/blocks/plate-to-html/page.tsx",
+        "apps/www/src/registry/components/editor/plate-to-html.tsx",
+        "apps/www/src/registry/examples/values/align-value.tsx",
+        "apps/www/src/registry/examples/values/basic-blocks-value.tsx",
+        "apps/www/src/registry/examples/values/basic-marks-value.tsx",
+        "apps/www/src/registry/examples/values/column-value.tsx",
+        "apps/www/src/registry/examples/values/date-value.tsx",
+        "apps/www/src/registry/examples/values/discussion-value.tsx",
+        "apps/www/src/registry/examples/values/equation-value.tsx",
+        "apps/www/src/registry/examples/values/font-value.tsx",
+        "apps/www/src/registry/examples/values/indent-value.tsx",
+        "apps/www/src/registry/examples/values/line-height-value.tsx",
+        "apps/www/src/registry/examples/values/link-value.tsx",
+        "apps/www/src/registry/examples/values/list-value.tsx",
+        "apps/www/src/registry/examples/values/media-value.tsx",
+        "apps/www/src/registry/examples/values/mention-value.tsx",
+        "apps/www/src/registry/examples/values/table-value.tsx",
+        "apps/www/src/registry/examples/values/toc-value.tsx"
+      ],
       "definitionFiles": ["apps/www/src/registry/registry-blocks.ts"],
       "diagnostics": []
     }
@@ -96,7 +161,7 @@
       "details": [],
       "migrationNotes": [
         "Remove CaptionPlugin from media kits and render each media element's direct children as its caption; use [{ text: '' }] when the caption is absent.",
-        "For persisted caption properties, add MediaV54MigrationPlugin from @platejs/media/migrations before media plugins until every document is resaved."
+        "For persisted v53 media captions, add migratePlateV54 to the app's defineDocumentMigrations chain."
       ],
       "targets": [
         "caption",

@@ -3,6 +3,7 @@ import type {
   SchemaPropertyHandle,
   Value,
 } from '@platejs/plite';
+import { withTransactionSpecDraftRead } from '@platejs/plite/internal';
 
 import type {
   BaseEditor,
@@ -47,6 +48,19 @@ import {
 
 const isPluginBaseDescriptor = (value: unknown): value is AnyBasePlugin =>
   isNominalPluginDescriptor(value) && isResolvedPluginDescriptor(value);
+
+type PluginAccessCache = {
+  authoring: Map<
+    AnyBasePlugin | AnyPluginBase | PluginReference | string,
+    AnyBasePluginContext
+  >;
+  portal: Map<
+    AnyBasePlugin | AnyPluginBase | PluginReference | string,
+    AnyBasePluginPortal
+  >;
+};
+
+const PLUGIN_ACCESS_CACHE = new WeakMap<object, PluginAccessCache>();
 
 export function createPluginPortal<
   V extends Value,
@@ -96,6 +110,17 @@ const createPluginAccess = (
       'Plate plugin lookup requires a plugin descriptor or plugin name string.'
     );
   }
+
+  let cache = PLUGIN_ACCESS_CACHE.get(editor);
+
+  if (!cache) {
+    cache = { authoring: new Map(), portal: new Map() };
+    PLUGIN_ACCESS_CACHE.set(editor, cache);
+  }
+  const accessCache = authoring ? cache.authoring : cache.portal;
+  const cached = accessCache.get(input);
+
+  if (cached) return cached;
 
   const descriptor = typeof input === 'string' ? undefined : input;
   const name = typeof input === 'string' ? input : input.name;
@@ -349,7 +374,7 @@ const createPluginAccess = (
           if (key === 'then' || key === 'toJSON' || typeof key === 'symbol') {
             return;
           }
-          if (key in target) {
+          if (key === 'toString' || key === 'valueOf') {
             return Reflect.get(target, key, receiver);
           }
 
@@ -385,6 +410,31 @@ const createPluginAccess = (
 
     return getCompiledPlatePluginApi(editor, plugin) ?? {};
   };
+  const resolveOwnCapabilityPath = (
+    source: unknown,
+    path: readonly PropertyKey[]
+  ) => {
+    let owner: unknown = source;
+    let value: unknown = source;
+
+    for (const key of path) {
+      owner = value;
+      if (
+        (typeof value !== 'object' || value === null) &&
+        typeof value !== 'function'
+      ) {
+        return { owner: undefined, value: undefined };
+      }
+      const descriptor = Object.getOwnPropertyDescriptor(value, key);
+
+      if (!descriptor || !('value' in descriptor)) {
+        return { owner: undefined, value: undefined };
+      }
+      value = descriptor.value;
+    }
+
+    return { owner, value };
+  };
   const createUpdateFacade = (
     path: readonly PropertyKey[],
     policy?: EditorUpdatePolicy
@@ -400,24 +450,11 @@ const createPluginAccess = (
         }
         const callback = (transaction: Record<PropertyKey, unknown>) => {
           const ownGroup = transaction[getPlugin().name];
-          const resolve = (source: unknown) => {
-            let owner: unknown = source;
-            let value: unknown = source;
-
-            for (const key of path) {
-              owner = value;
-              value =
-                value &&
-                (typeof value === 'object' || typeof value === 'function')
-                  ? (value as Record<PropertyKey, unknown>)[key]
-                  : undefined;
-            }
-
-            return { owner, value };
-          };
-          const own = resolve(ownGroup);
+          const own = resolveOwnCapabilityPath(ownGroup, path);
           const { owner, value } =
-            typeof own?.value === 'function' ? own : resolve(transaction);
+            typeof own?.value === 'function'
+              ? own
+              : resolveOwnCapabilityPath(transaction, path);
 
           if (typeof value !== 'function') {
             throw new TypeError(
@@ -437,67 +474,48 @@ const createPluginAccess = (
         return result;
       },
       {
-        get(target, key, receiver) {
+        get(_target, key) {
           if (key === 'then' || key === 'toJSON' || typeof key === 'symbol') {
             return;
           }
-          if (key in target) {
-            return Reflect.get(target, key, receiver);
-          }
-
           return createUpdateFacade([...path, key], policy);
         },
       }
     );
   const createReadFacade = (path: readonly PropertyKey[]): unknown =>
     new Proxy(
-      (...args: unknown[]) => {
-        const editorRead = Reflect.get(editor, 'read');
-        let owner: unknown =
-          editorRead &&
-          (typeof editorRead === 'object' || typeof editorRead === 'function')
-            ? Reflect.get(editorRead, getPlugin().name)
-            : undefined;
-        let value = owner;
+      (...args: unknown[]) =>
+        withTransactionSpecDraftRead(editor as BaseEditor, () => {
+          const editorRead = Reflect.get(editor, 'read');
+          if (typeof editorRead !== 'function') {
+            throw new TypeError('Plate editor read API is not callable.');
+          }
 
-        for (const key of path) {
-          owner = value;
-          value =
-            value && (typeof value === 'object' || typeof value === 'function')
-              ? (value as Record<PropertyKey, unknown>)[key]
-              : undefined;
-        }
+          return Reflect.apply(editorRead, editor, [
+            (state: Record<PropertyKey, unknown>) => {
+              const group = state[getPlugin().name];
+              const { owner, value } = resolveOwnCapabilityPath(group, path);
 
-        if (typeof value !== 'function') {
-          throw new TypeError(
-            `Plugin read method "${path.map(String).join('.')}" is not callable.`
-          );
-        }
+              if (typeof value !== 'function') {
+                throw new TypeError(
+                  `Plugin read method "${path.map(String).join('.')}" is not callable.`
+                );
+              }
 
-        return Reflect.apply(value, owner, args);
-      },
+              return Reflect.apply(value, owner, args);
+            },
+          ]);
+        }),
       {
-        get(target, key, receiver) {
+        get(_target, key) {
           if (key === 'then' || key === 'toJSON' || typeof key === 'symbol') {
             return;
           }
-          if (key in target) {
-            return Reflect.get(target, key, receiver);
-          }
-
           return createReadFacade([...path, key]);
         },
       }
     );
-  const read = new Proxy(Object.create(null) as Record<PropertyKey, unknown>, {
-    get(_target, key) {
-      if (key === 'then' || key === 'toJSON' || typeof key === 'symbol') {
-        return;
-      }
-
-      return createReadFacade([key]);
-    },
-  });
+  const read = createReadFacade([]);
   const createScopedUpdateFacade = (policy?: EditorUpdatePolicy): unknown =>
     new Proxy(
       (nextPolicy: EditorUpdatePolicy) => createScopedUpdateFacade(nextPolicy),
@@ -636,7 +654,7 @@ const createPluginAccess = (
     },
   });
 
-  return new Proxy(context, {
+  const access = new Proxy(context, {
     get(target, key, receiver) {
       if (Reflect.has(target, key)) {
         return Reflect.get(target, key, receiver);
@@ -685,4 +703,8 @@ const createPluginAccess = (
       return authoring ? Reflect.set(target, key, value, receiver) : false;
     },
   }) as AnyBasePluginContext | AnyBasePluginPortal;
+
+  accessCache.set(input, access as never);
+
+  return access;
 };

@@ -1,4 +1,4 @@
-import type { ListElement } from '@platejs/list';
+import type { Element } from '@platejs/plite';
 
 import type { MdList, MdListItem, MdRootContent } from '../mdast';
 import type { SerializeMdContext } from '../types';
@@ -12,23 +12,40 @@ export type MdListFragment = {
   type: 'fragment';
 };
 
+type SerializableListElement = Element & {
+  checked?: boolean;
+  indent?: number;
+  listRestart?: number;
+  listStart?: number;
+  listStyle?: string;
+  listType: string;
+};
+
+export const getSerializableListStyle = (
+  node: Pick<SerializableListElement, 'listStyle' | 'listType'>
+) =>
+  (node.listType === 'numbered' && node.listStyle === 'decimal') ||
+  (node.listType === 'bulleted' && node.listStyle === 'disc')
+    ? undefined
+    : node.listStyle;
+
 export function listToMdastTree(
-  nodes: readonly ListElement[],
+  nodes: readonly SerializableListElement[],
   options: SerializeMdContext,
   isBlock?: false
 ): MdList;
 export function listToMdastTree(
-  nodes: readonly ListElement[],
+  nodes: readonly SerializableListElement[],
   options: SerializeMdContext,
   isBlock: true
 ): MdList | MdListFragment;
 export function listToMdastTree(
-  nodes: readonly ListElement[],
+  nodes: readonly SerializableListElement[],
   options: SerializeMdContext,
   isBlock?: boolean
 ): MdList | MdListFragment;
 export function listToMdastTree(
-  nodes: readonly ListElement[],
+  nodes: readonly SerializableListElement[],
   options: SerializeMdContext,
   isBlock = false
 ): MdList | MdListFragment {
@@ -47,9 +64,9 @@ export function listToMdastTree(
   // Normal list processing
   const root: MdList = {
     children: [],
-    ordered: nodes[0].listStyleType === 'decimal',
+    ordered: nodes[0].listType === 'numbered',
     spread: options.spread ?? false,
-    start: nodes[0].listStart,
+    start: nodes[0].listRestart ?? nodes[0].listStart,
     type: 'list',
   };
 
@@ -58,19 +75,21 @@ export function listToMdastTree(
     indent: number;
     list: MdList;
     parent: MdListItem | null;
-    styleType: ListElement['listStyleType'];
+    listStyle: SerializableListElement['listStyle'];
+    listType: SerializableListElement['listType'];
   }[] = [
     {
-      indent: nodes[0].indent,
+      indent: nodes[0].indent ?? 1,
       list: root,
       parent: null,
-      styleType: nodes[0].listStyleType,
+      listStyle: getSerializableListStyle(nodes[0]),
+      listType: nodes[0].listType,
     },
   ];
 
   for (let i = 0; i < nodes.length; i++) {
     const node = nodes[i];
-    const currentIndent = node.indent;
+    const currentIndent = node.indent ?? 1;
 
     // Find the appropriate parent list for the current indentation level
     while (
@@ -85,18 +104,24 @@ export function listToMdastTree(
       throw new Error('Stack should never be empty');
     }
 
-    const hasSameIndentStyleChange =
+    const hasExplicitRestart =
+      node.listType === 'numbered' &&
+      typeof node.listRestart === 'number' &&
+      stackTop.list.children.length > 0;
+    const hasSameIndentBoundary =
       stackTop.indent === currentIndent &&
-      stackTop.styleType !== node.listStyleType &&
+      (stackTop.listType !== node.listType ||
+        stackTop.listStyle !== getSerializableListStyle(node) ||
+        hasExplicitRestart) &&
       !!stackTop.parent;
 
-    if (hasSameIndentStyleChange) {
+    if (hasSameIndentBoundary) {
       // Split sibling list when style switches at same indent
       const siblingList: MdList = {
         children: [],
-        ordered: node.listStyleType === 'decimal',
+        ordered: node.listType === 'numbered',
         spread: options.spread ?? false,
-        start: node.listStart,
+        start: node.listRestart ?? node.listStart,
         type: 'list',
       };
 
@@ -107,7 +132,8 @@ export function listToMdastTree(
         indent: currentIndent,
         list: siblingList,
         parent: stackTop.parent,
-        styleType: node.listStyleType,
+        listStyle: getSerializableListStyle(node),
+        listType: node.listType,
       };
 
       stackTop = indentStack.at(-1)!;
@@ -129,7 +155,7 @@ export function listToMdastTree(
     };
 
     // Add checked property for todo lists
-    if (node.listStyleType === 'todo' && node.checked !== undefined) {
+    if (node.listType === 'task' && node.checked !== undefined) {
       listItem.checked = node.checked;
     }
 
@@ -138,13 +164,13 @@ export function listToMdastTree(
 
     // Check if the next node has a higher indentation level
     const nextNode = nodes[i + 1];
-    if (nextNode && nextNode.indent > currentIndent) {
+    if (nextNode && (nextNode.indent ?? 1) > currentIndent) {
       // Create a new nested list for the next indentation level
       const nestedList: MdList = {
         children: [],
-        ordered: nextNode.listStyleType === 'decimal',
+        ordered: nextNode.listType === 'numbered',
         spread: options.spread ?? false,
-        start: nextNode.listStart,
+        start: nextNode.listRestart ?? nextNode.listStart,
         type: 'list',
       };
 
@@ -153,10 +179,11 @@ export function listToMdastTree(
 
       // Push the new indentation level to the stack
       indentStack.push({
-        indent: nextNode.indent,
+        indent: nextNode.indent ?? 1,
         list: nestedList,
         parent: listItem,
-        styleType: nextNode.listStyleType,
+        listStyle: getSerializableListStyle(nextNode),
+        listType: nextNode.listType,
       });
     }
   }
@@ -169,10 +196,11 @@ export function listToMdastTree(
  * preserves list numbering while allowing individual block wrapping
  */
 function processListWithBlockIds(
-  nodes: readonly ListElement[],
+  nodes: readonly SerializableListElement[],
   options: SerializeMdContext
 ): MdListFragment {
   const fragments: MdRootContent[] = [];
+  const ordinals = getListOrdinals(nodes);
 
   // Process each node individually
   for (let i = 0; i < nodes.length; i++) {
@@ -181,10 +209,10 @@ function processListWithBlockIds(
     // Create a single-item list for this node
     const singleList: MdList = {
       children: [],
-      ordered: node.listStyleType === 'decimal',
+      ordered: node.listType === 'numbered',
       spread: options.spread ?? false,
       // For ordered lists, preserve the correct number
-      start: node.listStyleType === 'decimal' ? i + 1 : undefined,
+      start: ordinals[i],
       type: 'list',
     };
 
@@ -204,7 +232,7 @@ function processListWithBlockIds(
     };
 
     // Add checked property for todo lists
-    if (node.listStyleType === 'todo' && node.checked !== undefined) {
+    if (node.listType === 'task' && node.checked !== undefined) {
       listItem.checked = node.checked;
     }
 
@@ -225,3 +253,49 @@ function processListWithBlockIds(
     type: 'fragment',
   };
 }
+
+const getListOrdinals = (nodes: readonly SerializableListElement[]) => {
+  const counters = new Map<string, number>();
+  const activeSequenceByIndent = new Map<number, string>();
+  const ordinals: Array<number | undefined> = [];
+
+  for (const node of nodes) {
+    const indent = node.indent ?? 1;
+
+    for (const key of counters.keys()) {
+      if (Number(key.split(':', 1)[0]) > indent) counters.delete(key);
+    }
+    for (const activeIndent of activeSequenceByIndent.keys()) {
+      if (activeIndent > indent) activeSequenceByIndent.delete(activeIndent);
+    }
+
+    const listStyle = getSerializableListStyle(node);
+    const sequence = `${node.listType}:${listStyle ?? ''}`;
+    const continues = activeSequenceByIndent.get(indent) === sequence;
+
+    if (!continues) {
+      for (const key of counters.keys()) {
+        if (key.startsWith(`${indent}:`)) counters.delete(key);
+      }
+      activeSequenceByIndent.set(indent, sequence);
+    }
+
+    if (node.listType !== 'numbered') {
+      ordinals.push(undefined);
+      continue;
+    }
+
+    const key = `${indent}:${node.listType}:${listStyle ?? ''}`;
+    const ordinal =
+      typeof node.listRestart === 'number'
+        ? node.listRestart
+        : !continues && typeof node.listStart === 'number'
+          ? node.listStart
+          : (counters.get(key) ?? 0) + 1;
+
+    counters.set(key, ordinal);
+    ordinals.push(ordinal);
+  }
+
+  return ordinals;
+};

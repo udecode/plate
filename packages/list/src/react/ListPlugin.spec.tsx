@@ -11,12 +11,14 @@ describe('ListPlugin rendering', () => {
       {
         children: [{ text: 'Item' }],
         listStart: 4,
-        listStyleType: 'decimal',
+        listStyle: 'decimal',
+        listType: 'numbered',
         type: 'paragraph',
       },
       {
         children: [{ text: 'Bullet' }],
-        listStyleType: 'disc',
+        listStyle: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
       {

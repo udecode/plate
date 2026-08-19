@@ -40,7 +40,7 @@ pnpm build
 pnpm turbo typecheck --filter=./packages/<name>
 ```
 
-This cleared the false failures for `@platejs/selection` and `@platejs/docx-io`.
+This cleared the false failures for `@platejs/selection` and `@platejs/docx-export`.
 
 ## Prevention
 

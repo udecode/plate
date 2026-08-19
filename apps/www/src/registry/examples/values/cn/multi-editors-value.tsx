@@ -11,7 +11,7 @@ export const createMultiEditorsValue = () => {
 
   for (let h = 0; h < 300; h++) {
     const multiEditor: Element[] = [];
-    multiEditor.push(<hh1>这是一个示例标题文本。</hh1>);
+    multiEditor.push(<hheading level={1}>这是一个示例标题文本。</hheading>);
 
     for (let p = 0; p < 2; p++) {
       multiEditor.push(

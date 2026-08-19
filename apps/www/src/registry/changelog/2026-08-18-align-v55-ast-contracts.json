@@ -1,0 +1,203 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-18-align-v55-ast-contracts",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-18-align-v55-ast-contracts.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-18",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "rename",
+  "summary": "Adopt the v55 editor document profile",
+  "targets": [
+    {
+      "name": "date",
+      "files": ["apps/www/src/registry/components/editor/date.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "date-static",
+      "files": ["apps/www/src/registry/components/editor/date-static.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "mention",
+      "files": ["apps/www/src/registry/components/editor/mention.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "mention-static",
+      "files": ["apps/www/src/registry/components/editor/mention-static.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "footnote",
+      "files": ["apps/www/src/registry/components/editor/footnote.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "footnote-static",
+      "files": ["apps/www/src/registry/components/editor/footnote-static.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-discussion",
+      "files": [
+        "apps/www/src/registry/components/editor/block-discussion.tsx",
+        "apps/www/src/registry/lib/block-discussion-index.ts"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-drawing",
+      "files": ["apps/www/src/registry/components/editor/code-drawing.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-drawing-static",
+      "files": [
+        "apps/www/src/registry/components/editor/code-drawing-static.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "math",
+      "files": ["apps/www/src/registry/components/editor/math.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "math-static",
+      "files": ["apps/www/src/registry/components/editor/math-static.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "column",
+      "files": ["apps/www/src/registry/components/editor/column.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media",
+      "files": ["apps/www/src/registry/components/editor/media.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "table",
+      "files": ["apps/www/src/registry/components/editor/table.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "list",
+      "files": ["apps/www/src/registry/components/editor/list.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor-plugins",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins.generated.ts",
+        "apps/www/src/registry/components/editor/plugins.ts"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor-ai",
+      "files": [
+        "apps/www/src/registry/blocks/editor-ai/components/editor/plate-editor.tsx",
+        "apps/www/src/registry/blocks/editor-ai/page.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-blocks.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-18-date-align-editor-nodes-v55-96cac366",
+      "kind": "rename",
+      "summary": "Store dates under one `value` and persisted associations under `ref`.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "date",
+        "date-static",
+        "mention",
+        "mention-static",
+        "footnote",
+        "footnote-static",
+        "block-discussion"
+      ],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-18",
+          "entry": "2026-08-18-align-v55-ast-contracts",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-08-18-code-drawing-v55-fields-50af8491",
+      "kind": "rename",
+      "summary": "Use flat lowercase drawing fields and store equation source under `latex`.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["code-drawing", "code-drawing-static", "math", "math-static"],
+      "source": {
+        "line": 14,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-08-18",
+          "entry": "2026-08-18-align-v55-ast-contracts",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-08-18-editor-profile-v55-68fbd5c2",
+      "kind": "rename",
+      "summary": "Apply the v55 migration, field ownership, and numeric-domain contracts.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "column",
+        "media",
+        "table",
+        "list",
+        "editor-plugins",
+        "editor-ai"
+      ],
+      "source": {
+        "line": 16,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-08-18",
+          "entry": "2026-08-18-align-v55-ast-contracts",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

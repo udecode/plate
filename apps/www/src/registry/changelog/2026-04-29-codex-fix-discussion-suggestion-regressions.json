@@ -45,125 +45,219 @@
   "targets": [
     {
       "name": "block-discussion",
-      "files": ["apps/www/src/registry/ui/block-discussion.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "files": [
+        "apps/www/src/registry/components/editor/block-discussion.tsx",
+        "apps/www/src/registry/lib/block-discussion-index.ts"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
       "diagnostics": []
     },
     {
       "name": "discussion-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/discussion-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for discussion-kit."
+        }
+      ]
     },
     {
       "name": "comment-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/comment-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for comment-kit."
+        }
+      ]
     },
     {
       "name": "suggestion",
-      "files": ["apps/www/src/registry/lib/suggestion.ts"],
-      "definitionFiles": ["apps/www/src/registry/registry-lib.ts"],
+      "files": [
+        "apps/www/src/registry/components/editor/suggestion.tsx",
+        "apps/www/src/registry/lib/suggestion.ts"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
       "diagnostics": []
     },
     {
       "name": "suggestion-base-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/suggestion-base-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for suggestion-base-kit."
+        }
+      ]
     },
     {
       "name": "suggestion-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/suggestion-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for suggestion-kit."
+        }
+      ]
     },
     {
       "name": "suggestion-node",
-      "files": ["apps/www/src/registry/ui/suggestion-node.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for suggestion-node."
+        }
+      ]
     },
     {
       "name": "block-list",
-      "files": ["apps/www/src/registry/ui/block-list.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "files": ["apps/www/src/registry/components/editor/block-list.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
       "diagnostics": []
     },
     {
       "name": "code-drawing-node",
-      "files": ["apps/www/src/registry/ui/code-drawing-node.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for code-drawing-node."
+        }
+      ]
     },
     {
       "name": "date-node",
-      "files": ["apps/www/src/registry/ui/date-node.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for date-node."
+        }
+      ]
     },
     {
       "name": "equation-node",
-      "files": ["apps/www/src/registry/ui/equation-node.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for equation-node."
+        }
+      ]
     },
     {
       "name": "excalidraw-node",
-      "files": ["apps/www/src/registry/ui/excalidraw-node.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for excalidraw-node."
+        }
+      ]
     },
     {
       "name": "media-audio-node",
-      "files": ["apps/www/src/registry/ui/media-audio-node.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for media-audio-node."
+        }
+      ]
     },
     {
       "name": "media-embed-node",
-      "files": ["apps/www/src/registry/ui/media-embed-node.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for media-embed-node."
+        }
+      ]
     },
     {
       "name": "media-file-node",
-      "files": ["apps/www/src/registry/ui/media-file-node.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for media-file-node."
+        }
+      ]
     },
     {
       "name": "media-image-node",
-      "files": ["apps/www/src/registry/ui/media-image-node.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for media-image-node."
+        }
+      ]
     },
     {
       "name": "media-video-node",
-      "files": ["apps/www/src/registry/ui/media-video-node.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for media-video-node."
+        }
+      ]
     },
     {
       "name": "mention-node",
-      "files": ["apps/www/src/registry/ui/mention-node.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for mention-node."
+        }
+      ]
     },
     {
       "name": "link-node",
-      "files": ["apps/www/src/registry/ui/link-node.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for link-node."
+        }
+      ]
     }
   ],
   "entries": [

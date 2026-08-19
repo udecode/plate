@@ -1,7 +1,7 @@
 ---
 title: Callout
 docs:
-  - route: https://pro.platejs.org/docs/components/callout-node
+  - route: https://pro.platejs.org/docs/components/callout
     title: Plus
   - route: /docs/components/callout
     title: Callout Element
@@ -27,9 +27,9 @@ docs:
 
 The fastest way to add the callout plugin is with the `CalloutKit`, which includes pre-configured `CalloutPlugin` with the [Plate UI](/docs/installation/plate-ui) component.
 
-<ComponentSource name="callout-kit" />
+<ComponentSource name="callout" />
 
-- [`CalloutElement`](/docs/components/callout-node): Renders callout elements.
+- [`CalloutElement`](/docs/components/callout): Renders callout elements.
 
 ### Add Kit
 
@@ -37,7 +37,7 @@ Add the kit to your plugins:
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { CalloutKit } from '@/components/editor/plugins/callout-kit';
+import { CalloutKit } from '@/components/editor/callout';
 
 const editor = createPlateEditor({
   plugins: [
@@ -82,7 +82,7 @@ You can configure the `CalloutPlugin` with a custom component to render callout 
 ```tsx
 import { CalloutPlugin } from '@platejs/callout/react';
 import { createPlateEditor } from 'platejs/react';
-import { CalloutElement } from '@/components/ui/callout-node';
+import { CalloutElement } from '@/components/editor/callout';
 
 const editor = createPlateEditor({
   plugins: [
@@ -92,7 +92,7 @@ const editor = createPlateEditor({
 });
 ```
 
-- `component`: Assigns [`CalloutElement`](/docs/components/callout-node) to render callout elements.
+- `component`: Assigns [`CalloutElement`](/docs/components/callout) to render callout elements.
 
 </Steps>
 
@@ -130,51 +130,6 @@ Insert a callout element into the editor.
   Standard insertion options such as `at` and `select`.
 </APIItem>
 </APIParameters>
-</API>
-
-## Hooks
-
-### `useCalloutEmojiPicker`
-
-Manage the emoji picker functionality for callouts.
-
-<API name="useCalloutEmojiPicker">
-<APIOptions type="UseCalloutEmojiPickerOptions">
-  <APIItem name="isOpen" type="boolean">
-    Whether the emoji picker is open.
-  </APIItem>
-  <APIItem name="setIsOpen" type="(isOpen: boolean) => void">
-    Function to set the open state of the emoji picker.
-  </APIItem>
-</APIOptions>
-
-<APIReturns type="object">
-  <APIItem name="emojiToolbarDropdownProps" type="object">
-    Props for the emoji toolbar dropdown.
-    <APISubList>
-      <APISubListItem parent="emojiToolbarDropdownProps" name="isOpen" type="boolean">
-        Whether the emoji picker is open.
-      </APISubListItem>
-      <APISubListItem parent="emojiToolbarDropdownProps" name="setIsOpen" type="(v: boolean) => void">
-        Function to set the open state of the emoji picker, respecting read-only mode.
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-  <APIItem name="props" type="object">
-    Props for the emoji picker component.
-    <APISubList>
-      <APISubListItem parent="props" name="isOpen" type="boolean">
-        Whether the emoji picker is open.
-      </APISubListItem>
-      <APISubListItem parent="props" name="setIsOpen" type="(isOpen: boolean) => void">
-        Function to set the open state of the emoji picker.
-      </APISubListItem>
-      <APISubListItem parent="props" name="onSelectEmoji" type="(options: { emojiValue?: any; icon?: any }) => void">
-        Function called when an emoji is selected. It updates the callout's icon and closes the picker.
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-</APIReturns>
 </API>
 
 ## Types

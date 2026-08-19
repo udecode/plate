@@ -344,9 +344,9 @@ lock.
 - `registry-changelog`: user-visible Plate registry UI, kit, example,
   metadata, copied-code install shape, or generated registry changelog work
   needs a registry changelog entry or a concrete N/A reason.
-- `plate-ui`: authoring or refactoring Plate registry UI/components, static/live
-  renderers, kits, registry wiring, or ownership/extraction decisions under
-  `apps/www/src/registry/**`.
+- `plate-ui`: every Plate-specific React/component shape decision across
+  packages and registry source, plus static/live renderers, copied UI, kits,
+  registry wiring, browser proof, and UI ownership/extraction.
 - `docs-creator`: mandatory for non-trivial docs/content work, new or rewritten
   pages, plugin/API/spec/serialization docs, route moves, example changes,
   public docs under `content/**`, or docs with source-backed ownership/API

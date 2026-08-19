@@ -2,7 +2,7 @@ const DEFAULT = {
   inject: true,
   on: true,
   render: true,
-  transformInitialValue: false,
+  prepareDocument: false,
 };
 
 type EditOnlyPlugin = {
@@ -18,7 +18,7 @@ type EditOnlyPlugin = {
  * @param plugin The plugin to check
  * @param isReadOnly Whether the editor is in read-only mode
  * @param feature The feature to check ('render' | 'on' | 'inject' |
- *   'transformInitialValue')
+ *   'prepareDocument')
  * @returns True if the feature should be disabled
  */
 export const isEditOnly = (

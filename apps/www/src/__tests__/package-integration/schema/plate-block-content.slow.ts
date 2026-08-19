@@ -62,7 +62,12 @@ describe('Plate block-content eligibility', () => {
     }
 
     for (const containerPlugin of normalFlowContainerPlugins) {
-      const container = editor.read.schema.create(containerPlugin);
+      const container =
+        containerPlugin === BaseFootnoteDefinitionPlugin
+          ? editor.read.schema.create(BaseFootnoteDefinitionPlugin, {
+              ref: '1',
+            })
+          : editor.read.schema.create(containerPlugin);
       const allowedTypes =
         editor.read.schema.element(containerPlugin)?.content
           ?.allowedElementTypes;

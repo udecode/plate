@@ -5,7 +5,7 @@ describe('column package surfaces', () => {
 
   it('round-trips a column group through the markdown package surfaces', () => {
     const editor = createColumnEditor();
-    const input = `<columnGroup layout="[50,50]">
+    const input = `<columnGroup>
   <column width="50%">
     Left column
   </column>
@@ -42,7 +42,6 @@ describe('column package surfaces', () => {
             width: '50%',
           },
         ],
-        layout: [50, 50],
         type: 'columnGroup',
       },
     ]);

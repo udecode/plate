@@ -1,5 +1,12 @@
 import assert from 'node:assert/strict';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  mkdirSync,
+  mkdtempSync,
+  rmSync,
+  symlinkSync,
+  unlinkSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, test } from 'node:test';
@@ -8,12 +15,16 @@ import {
   classifyPackage,
   computeDoctrineFingerprint,
   computePackageFingerprint,
+  doctrinePaths,
   getPackageStatuses,
   haveMatchingRequiredResources,
   haveMatchingRequiredSkills,
   haveMatchingSkillSource,
+  requiredGeneratedResources,
+  requiredGeneratedSkills,
   readReviewedPackageSlugs,
   readDeclaredDoctrineVersion,
+  selectDoctrineBaseRef,
   validateRegistry,
 } from './version.mjs';
 
@@ -25,6 +36,7 @@ const createRoot = (slug = 'alpha') => {
 
   temporaryRoots.push(root);
   mkdirSync(join(packageDirectory, 'src'), { recursive: true });
+  mkdirSync(join(root, '.agents/skills/auto/references'), { recursive: true });
   writeFileSync(
     join(packageDirectory, 'package.json'),
     JSON.stringify({ name: `@platejs/${slug}` })
@@ -88,23 +100,36 @@ test('reads the visible doctrine version and fingerprints doctrine sources', () 
   const root = mkdtempSync(join(tmpdir(), 'plate-next-doctrine-'));
 
   temporaryRoots.push(root);
-  mkdirSync(join(root, '.agents/rules'), { recursive: true });
-  mkdirSync(join(root, '.agents/rules/plate-plugin-creator/references'), {
-    recursive: true,
-  });
-  mkdirSync(join(root, '.agents/rules/plate-plugin-creator/rules'), {
-    recursive: true,
-  });
-  mkdirSync(join(root, '.agents/rules/plate-ui/rules'), {
-    recursive: true,
-  });
-  mkdirSync(join(root, '.agents/rules/plate-ui/references'), {
-    recursive: true,
-  });
-  mkdirSync(join(root, '.agents/rules/plate-next/scripts'), {
-    recursive: true,
-  });
-  mkdirSync(join(root, 'docs/plans/templates'), { recursive: true });
+  for (const doctrinePath of doctrinePaths) {
+    const target = join(root, doctrinePath);
+
+    mkdirSync(join(target, '..'), { recursive: true });
+    writeFileSync(target, `${doctrinePath}\n`);
+  }
+  const history = {
+    schemaVersion: 1,
+    versions: [
+      {
+        date: null,
+        doctrineFingerprint: null,
+        migrationChecks: ['legacy'],
+        summary: 'legacy',
+        version: 0,
+      },
+      {
+        date: '2026-08-17',
+        doctrineFingerprint: `sha256:${'1'.repeat(64)}`,
+        migrationChecks: ['current'],
+        summary: 'current',
+        version: 3,
+      },
+    ],
+  };
+
+  writeFileSync(
+    join(root, '.agents/rules/plate-next/versions.json'),
+    JSON.stringify(history)
+  );
   writeFileSync(
     join(root, '.agents/rules/plate-next.mdc'),
     'Current doctrine version: `3`.\n'
@@ -113,40 +138,6 @@ test('reads the visible doctrine version and fingerprints doctrine sources', () 
     join(root, '.agents/rules/plate-plugin-creator.mdc'),
     'plugin authoring doctrine\n'
   );
-  writeFileSync(
-    join(
-      root,
-      '.agents/rules/plate-plugin-creator/references/plugin-authoring-audit.md'
-    ),
-    'authoring audit\n'
-  );
-  writeFileSync(
-    join(root, '.agents/rules/plate-plugin-creator/rules/creation-flow.md'),
-    'creation flow\n'
-  );
-  writeFileSync(
-    join(root, '.agents/rules/plate-plugin-creator/rules/typing.md'),
-    'typing law\n'
-  );
-  writeFileSync(join(root, '.agents/rules/plate-ui.mdc'), 'ui doctrine\n');
-  writeFileSync(
-    join(root, '.agents/rules/plate-ui/references/component-audit.md'),
-    'component audit\n'
-  );
-  writeFileSync(
-    join(root, '.agents/rules/plate-ui/rules/component-shape.md'),
-    'component shape\n'
-  );
-  writeFileSync(
-    join(root, '.agents/rules/plate-ui/rules/registry.md'),
-    'registry wiring\n'
-  );
-  writeFileSync(
-    join(root, '.agents/rules/plate-next/scripts/sync-resources.mjs'),
-    'sync resources\n'
-  );
-  writeFileSync(join(root, 'docs/plans/templates/plate-next.md'), 'template\n');
-
   const before = computeDoctrineFingerprint(root);
 
   assert.equal(
@@ -157,6 +148,32 @@ test('reads the visible doctrine version and fingerprints doctrine sources', () 
   writeFileSync(
     join(root, '.agents/rules/plate-plugin-creator.mdc'),
     'updated plugin authoring doctrine\n'
+  );
+  assert.notEqual(computeDoctrineFingerprint(root), before);
+  writeFileSync(
+    join(root, '.agents/rules/plate-plugin-creator.mdc'),
+    'plugin authoring doctrine\n'
+  );
+
+  history.versions[0].summary = 'tampered legacy';
+  writeFileSync(
+    join(root, '.agents/rules/plate-next/versions.json'),
+    JSON.stringify(history)
+  );
+  assert.notEqual(computeDoctrineFingerprint(root), before);
+
+  history.versions[0].summary = 'legacy';
+  history.versions[1].doctrineFingerprint = `sha256:${'2'.repeat(64)}`;
+  writeFileSync(
+    join(root, '.agents/rules/plate-next/versions.json'),
+    JSON.stringify(history)
+  );
+  assert.equal(computeDoctrineFingerprint(root), before);
+
+  history.versions[1].migrationChecks = ['tampered current'];
+  writeFileSync(
+    join(root, '.agents/rules/plate-next/versions.json'),
+    JSON.stringify(history)
   );
   assert.notEqual(computeDoctrineFingerprint(root), before);
   assert.equal(
@@ -180,25 +197,21 @@ test('reads the visible doctrine version and fingerprints doctrine sources', () 
     ),
     false
   );
+  assert.equal(
+    haveMatchingSkillSource(
+      "---\nargument-hint: '[sync]'\n---\n# Plate Next\nbody\n",
+      "---\nargument-hint: '[sync]'\nname: plate-next\nmetadata:\n  skiller:\n    source: .agents/rules/plate-next.mdc\n---\nextra instruction\n# Plate Next\nbody\n"
+    ),
+    false
+  );
 });
 
 test('requires exact generated doctrine resources', () => {
   const root = createRoot();
-  const pairs = [
-    [
-      'plate-plugin-creator/references/plugin-authoring-audit.md',
-      'authoring audit\n',
-    ],
-    ['plate-plugin-creator/rules/creation-flow.md', 'creation flow\n'],
-    ['plate-plugin-creator/rules/typing.md', 'typing law\n'],
-    ['plate-ui/references/component-audit.md', 'component audit\n'],
-    ['plate-ui/rules/component-shape.md', 'component shape\n'],
-    ['plate-ui/rules/registry.md', 'registry wiring\n'],
-  ];
-
-  for (const [path, value] of pairs) {
-    const source = join(root, '.agents/rules', path);
-    const generated = join(root, '.agents/skills', path);
+  for (const [sourcePath, generatedPath] of requiredGeneratedResources) {
+    const source = join(root, sourcePath);
+    const generated = join(root, generatedPath);
+    const value = `${sourcePath}\n`;
 
     mkdirSync(join(source, '..'), { recursive: true });
     mkdirSync(join(generated, '..'), { recursive: true });
@@ -217,7 +230,7 @@ test('requires exact generated doctrine resources', () => {
 
   writeFileSync(
     join(root, '.agents/skills/plate-plugin-creator/rules/typing.md'),
-    'typing law\n'
+    '.agents/rules/plate-plugin-creator/rules/typing.md\n'
   );
   writeFileSync(
     join(root, '.agents/skills/plate-ui/rules/component-shape.md'),
@@ -228,7 +241,7 @@ test('requires exact generated doctrine resources', () => {
 
   writeFileSync(
     join(root, '.agents/skills/plate-ui/rules/component-shape.md'),
-    'component shape\n'
+    '.agents/rules/plate-ui/rules/component-shape.md\n'
   );
   writeFileSync(
     join(root, '.agents/skills/plate-ui/references/component-audit.md'),
@@ -236,44 +249,29 @@ test('requires exact generated doctrine resources', () => {
   );
 
   assert.equal(haveMatchingRequiredResources(root), false);
+
+  writeFileSync(
+    join(root, '.agents/skills/plate-ui/references/component-audit.md'),
+    '.agents/rules/plate-ui/references/component-audit.md\n'
+  );
+  assert.equal(haveMatchingRequiredResources(root), true);
+
+  writeFileSync(
+    join(root, '.agents/skills/auto/references/regression-methodology.md'),
+    'retired resource\n'
+  );
+
+  assert.equal(haveMatchingRequiredResources(root), false);
 });
 
 test('requires exact generated doctrine skill bodies', () => {
   const root = createRoot();
-  const pairs = [
-    {
-      generatedPath: '.agents/skills/plate-next/SKILL.md',
-      heading: '# Plate Next',
-      name: 'plate-next',
-      sourcePath: '.agents/rules/plate-next.mdc',
-    },
-    {
-      generatedPath: '.agents/skills/plate-plugin-creator/SKILL.md',
-      heading: '# Plate Plugin Creator',
-      name: 'plate-plugin-creator',
-      sourcePath: '.agents/rules/plate-plugin-creator.mdc',
-    },
-    {
-      generatedPath: '.agents/skills/best-api/SKILL.md',
-      heading: '# Best API',
-      name: 'best-api',
-      sourcePath: '.agents/rules/best-api.mdc',
-    },
-    {
-      generatedPath: '.agents/skills/docs-creator/SKILL.md',
-      heading: '# Docs Creator',
-      name: 'docs-creator',
-      sourcePath: '.agents/rules/docs-creator.mdc',
-    },
-    {
-      generatedPath: '.agents/skills/plate-ui/SKILL.md',
-      heading: '# Plate UI',
-      name: 'plate-ui',
-      sourcePath: '.agents/rules/plate-ui.mdc',
-    },
-  ];
-
-  for (const { generatedPath, heading, name, sourcePath } of pairs) {
+  for (const {
+    generatedPath,
+    heading,
+    name,
+    sourcePath,
+  } of requiredGeneratedSkills) {
     const source = join(root, sourcePath);
     const generated = join(root, generatedPath);
     const description = `${name} doctrine`;
@@ -349,6 +347,94 @@ test('rejects an unversioned doctrine edit and stale generated output', () => {
   );
 });
 
+test('requires a version increment from the immutable base', () => {
+  const root = createRoot();
+  const baseRegistry = createRegistry();
+  const registry = createRegistry();
+  const changedFingerprint = `sha256:${'1'.repeat(64)}`;
+
+  registry.versions[1].doctrineFingerprint = changedFingerprint;
+  assert.ok(
+    validateRegistry({
+      baseRegistry,
+      currentDoctrineFingerprint: changedFingerprint,
+      declaredVersion: 1,
+      registry,
+      reviewedSlugs: ['alpha'],
+      root,
+    }).some((error) => error.includes('without a doctrine version increment'))
+  );
+
+  registry.latestVersion = 2;
+  registry.versions.push({
+    date: '2026-08-17',
+    doctrineFingerprint: changedFingerprint,
+    migrationChecks: ['Apply changed doctrine.'],
+    summary: 'Changed doctrine.',
+    version: 2,
+  });
+  assert.ok(
+    validateRegistry({
+      baseRegistry,
+      currentDoctrineFingerprint: changedFingerprint,
+      declaredVersion: 2,
+      registry,
+      reviewedSlugs: ['alpha'],
+      root,
+    }).some((error) => error.includes('exact prefix'))
+  );
+
+  registry.versions[1] = structuredClone(baseRegistry.versions[1]);
+
+  assert.deepEqual(
+    validateRegistry({
+      baseRegistry,
+      currentDoctrineFingerprint: changedFingerprint,
+      declaredVersion: 2,
+      registry,
+      reviewedSlugs: ['alpha'],
+      root,
+    }),
+    []
+  );
+});
+
+test('selects an immutable doctrine base', () => {
+  assert.equal(
+    selectDoctrineBaseRef({
+      dirty: true,
+      override: undefined,
+      versionCommits: ['current', 'previous'],
+    }),
+    'HEAD'
+  );
+  assert.equal(
+    selectDoctrineBaseRef({
+      dirty: false,
+      override: undefined,
+      versionCommits: ['current', 'previous'],
+    }),
+    'previous'
+  );
+  assert.equal(
+    selectDoctrineBaseRef({
+      dirty: false,
+      override: 'origin/next',
+      versionCommits: [],
+    }),
+    'origin/next'
+  );
+  assert.throws(
+    () =>
+      selectDoctrineBaseRef({
+        dirty: false,
+        override: undefined,
+        versionCommits: ['current'],
+      }),
+    /PLATE_NEXT_BASE/
+  );
+});
+
 test('reports malformed version history without throwing', () => {
   const root = createRoot();
   const registry = createRegistry();
@@ -378,6 +464,9 @@ test('keeps retired packages in history but out of the active enrollment', () =>
   const root = createRoot();
   const registry = createRegistry();
 
+  mkdirSync(join(root, 'docs/plans'), { recursive: true });
+  writeFileSync(join(root, 'docs/plans/delete-caption.md'), '# Evidence\n');
+
   registry.retiredPackages.caption = {
     appliedVersion: 0,
     evidence: 'docs/plans/delete-caption.md',
@@ -398,6 +487,32 @@ test('keeps retired packages in history but out of the active enrollment', () =>
   );
 });
 
+test('requires existing repo-relative evidence plans', () => {
+  const root = createRoot();
+  const current = computePackageFingerprint(root, 'alpha');
+  const registry = createRegistry({
+    appliedVersion: 1,
+    evidence: 'missing.md',
+    fingerprint: current.fingerprint,
+    verifiedAt: '2026-07-25',
+  });
+
+  assert.ok(
+    validateRegistry({ registry, reviewedSlugs: ['alpha'], root }).some(
+      (error) => error.includes('existing repo-relative docs/plans')
+    )
+  );
+
+  mkdirSync(join(root, 'docs/plans'), { recursive: true });
+  writeFileSync(join(root, 'docs/plans/alpha.md'), '# Evidence\n');
+  registry.packages.alpha.evidence = 'docs/plans/alpha.md';
+
+  assert.deepEqual(
+    validateRegistry({ registry, reviewedSlugs: ['alpha'], root }),
+    []
+  );
+});
+
 test('fingerprint ignores generated output and changes with package source', () => {
   const root = createRoot();
   const packageDirectory = join(root, 'packages/alpha');
@@ -409,6 +524,14 @@ test('fingerprint ignores generated output and changes with package source', () 
 
   assert.deepEqual(computePackageFingerprint(root, 'alpha'), before);
 
+  const originalLocaleCompare = String.prototype.localeCompare;
+  try {
+    String.prototype.localeCompare = () => -1;
+    assert.deepEqual(computePackageFingerprint(root, 'alpha'), before);
+  } finally {
+    String.prototype.localeCompare = originalLocaleCompare;
+  }
+
   writeFileSync(
     join(packageDirectory, 'src/index.ts'),
     'export const value = 2;\n'
@@ -418,6 +541,32 @@ test('fingerprint ignores generated output and changes with package source', () 
     computePackageFingerprint(root, 'alpha').fingerprint,
     before.fingerprint
   );
+});
+
+test('fingerprint includes symlink targets and unambiguous record framing', () => {
+  const root = createRoot();
+  const packageDirectory = join(root, 'packages/alpha');
+  const link = join(packageDirectory, 'entry-link');
+
+  symlinkSync('src/index.ts', link);
+  const linked = computePackageFingerprint(root, 'alpha');
+  unlinkSync(link);
+  symlinkSync('package.json', link);
+  const relinked = computePackageFingerprint(root, 'alpha');
+
+  assert.notEqual(relinked.fingerprint, linked.fingerprint);
+  assert.ok(relinked.files.includes('entry-link'));
+
+  unlinkSync(link);
+  writeFileSync(join(packageDirectory, 'a'), 'X\0b\0Y');
+  writeFileSync(join(packageDirectory, 'b'), 'Z');
+  const first = computePackageFingerprint(root, 'alpha');
+
+  writeFileSync(join(packageDirectory, 'a'), 'X');
+  writeFileSync(join(packageDirectory, 'b'), 'Y\0b\0Z');
+  const second = computePackageFingerprint(root, 'alpha');
+
+  assert.notEqual(second.fingerprint, first.fingerprint);
 });
 
 test('classifies stale, current, and source-drifted packages', () => {

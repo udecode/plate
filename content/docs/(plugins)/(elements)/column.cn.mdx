@@ -1,7 +1,7 @@
 ---
 title: 分栏
 docs:
-  - route: /docs/components/column-node
+  - route: /docs/components/column
     title: 分栏节点
 ---
 
@@ -25,10 +25,10 @@ docs:
 
 最快捷的方式是使用 `ColumnKit`，它包含预配置的 `ColumnPlugin` 和 `ColumnItemPlugin` 以及 [Plate UI](/docs/installation/plate-ui) 组件。
 
-<ComponentSource name="column-kit" />
+<ComponentSource name="column" />
 
-- [`ColumnGroupElement`](/docs/components/column-node): 渲染分栏组容器
-- [`ColumnElement`](/docs/components/column-node): 渲染单个分栏项
+- [`ColumnGroupElement`](/docs/components/column): 渲染分栏组容器
+- [`ColumnElement`](/docs/components/column): 渲染单个分栏项
 
 ### 添加套件
 
@@ -36,7 +36,7 @@ docs:
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { ColumnKit } from '@/components/editor/plugins/column-kit';
+import { ColumnKit } from '@/components/editor/column';
 
 const editor = createPlateEditor({
   plugins: [
@@ -81,7 +81,7 @@ const editor = createPlateEditor({
 ```tsx
 import { ColumnPlugin, ColumnItemPlugin } from '@platejs/layout/react';
 import { createPlateEditor } from 'platejs/react';
-import { ColumnGroupElement, ColumnElement } from '@/components/ui/column-node';
+import { ColumnGroupElement, ColumnElement } from '@/components/editor/column';
 
 const editor = createPlateEditor({
   plugins: [
@@ -92,7 +92,7 @@ const editor = createPlateEditor({
 });
 ```
 
-- `component`: 指定 [`ColumnGroupElement`](/docs/components/column-node) 渲染分栏组容器，[`ColumnElement`](/docs/components/column-node) 渲染单个分栏。
+- `component`: 指定 [`ColumnGroupElement`](/docs/components/column) 渲染分栏组容器，[`ColumnElement`](/docs/components/column) 渲染单个分栏。
 
 ### 转换为工具栏按钮
 

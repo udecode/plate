@@ -9,9 +9,9 @@ import remarkEmoji from 'remark-emoji';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
-import { EditorKit } from '@/registry/components/editor/editor';
+import { EditorKit } from '@/registry/components/editor/plugins';
 import { useDebounce } from '@/registry/hooks/use-debounce';
-import { Editor, EditorContainer } from '@/registry/ui/editor';
+import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 
 const initialMarkdown = `## Basic Markdown
 
@@ -75,7 +75,7 @@ $$
 
 Multi-column layout features enable richer page designs and content layouts.
 
-<columnGroup layout="[50,50]">
+<columnGroup>
 <column width="50%">
 left
 </column>
@@ -86,13 +86,13 @@ left
 </columnGroup>
 
 PDF embedding makes document referencing simple and intuitive.
-<file name="sample.pdf" src="https://s26.q4cdn.com/900411403/files/doc_downloads/test.pdf" width="80%" isUpload="true" />
+<file name="sample.pdf" src="https://s26.q4cdn.com/900411403/files/doc_downloads/test.pdf" width="80%" />
 
 Audio players can be embedded directly into documents, supporting online audio resources.
 <audio textAlign="center" src="https://samplelib.com/lib/preview/mp3/sample-3s.mp3" width="80%" />
 
 Video playback features support embedding various online video resources, enriching document content.
-<video textAlign="center" src="https://videos.pexels.com/video-files/6769791/6769791-uhd_2560_1440_24fps.mp4" width="80%" isUpload="true" />
+<video provider="file" textAlign="center" src="https://videos.pexels.com/video-files/6769791/6769791-uhd_2560_1440_24fps.mp4" width="80%" />
 
 :smile: :heart:
 `;

@@ -36,19 +36,19 @@ surfaces that need a non-interactive Plate view.
 
 The fastest way to enable static rendering is with the `BaseEditorKit`, which includes pre-configured base plugins that work seamlessly with server-side rendering.
 
-<ComponentSource name="editor-base-kit" />
+<ComponentSource name="editor-plugins-static" />
 
 ### Add Kit
 
 ```tsx
 import { createBaseEditor } from 'platejs';
 import { PlateStatic } from 'platejs/static';
-import { BaseEditorKit } from '@/components/editor/editor-base-kit';
+import { BaseEditorKit } from '@/components/editor/plugins-static';
 
 const editor = createBaseEditor({
   plugins: BaseEditorKit,
   initialValue: [
-    { type: 'h1', children: [{ text: 'Server-Rendered Title' }] },
+    { type: 'heading', level: 1, children: [{ text: 'Server-Rendered Title' }] },
     { type: 'paragraph', children: [{ text: 'This content is rendered statically.' }] },
   ],
 });
@@ -77,7 +77,7 @@ Initialize a Plite editor instance using `createBaseEditor` with your required p
 
 ```tsx title="lib/plate-static-editor.ts"
 import { createBaseEditor } from 'platejs';
-import { BaseBasicBlocksKit } from '@/components/editor/plugins/basic-blocks-base-kit';
+import { BaseBasicBlocksKit } from '@/components/editor/basic-blocks-static';
 // Import any other desired base plugins, such as MarkdownPlugin.
 // Ensure you are NOT importing from /react subpaths for server environments.
 
@@ -99,7 +99,7 @@ const editor = createBaseEditor({
 
 If your interactive editor uses client-side components (e.g., with `use client` or event handlers), you **must** create static, server-safe equivalents. These components should render pure HTML without browser-specific logic.
 
-```tsx title="components/ui/paragraph-node-static.tsx"
+```tsx title="components/editor/paragraph-static.tsx"
 import React from 'react';
 import type { BaseParagraphPlugin } from 'platejs';
 import type { PliteElementProps } from 'platejs/static';
@@ -122,8 +122,8 @@ Create an object that maps persisted element types or property keys to their
 corresponding static React components, then pass it to the editor.
 
 ```ts title="components/static-components.ts"
-import { ParagraphElementStatic } from './ui/paragraph-node-static';
-import { HeadingElementStatic } from './ui/heading-node-static';
+import { ParagraphElementStatic } from './ui/paragraph-static';
+import { HeadingElementStatic } from './ui/heading-static';
 // ... import other static components
 
 export const staticComponents = {
@@ -140,13 +140,13 @@ Use the `<PlateStatic>` component, providing the `editor` instance configured wi
 ```tsx title="app/my-static-page/page.tsx (RSC Example)"
 import { createBaseEditor } from 'platejs';
 import { PlateStatic } from 'platejs/static';
-import { BaseBasicBlocksKit } from '@/components/editor/plugins/basic-blocks-base-kit';
+import { BaseBasicBlocksKit } from '@/components/editor/basic-blocks-static';
 import { staticComponents } from '@/components/static-components';
 
 export default async function MyStaticPage() {
   // Example: Fetch or define editor value
   const initialValue = [
-    { type: 'h1', children: [{ text: 'Server-Rendered Title' }] },
+    { type: 'heading', level: 1, children: [{ text: 'Server-Rendered Title' }] },
     { type: 'paragraph', children: [{ text: 'Content rendered statically.' }] },
   ];
 
@@ -182,7 +182,7 @@ For cases where you need **minimal interactivity** with static content, use `<Pl
 
 ```tsx title="app/document/page.tsx"
 import { createStaticEditor, PlateStatic } from 'platejs/static';
-import { BaseEditorKit } from '@/components/editor/editor-base-kit';
+import { BaseEditorKit } from '@/components/editor/plugins-static';
 import { InteractiveViewer } from './interactive-viewer';
 
 export default async function DocumentPage() {
@@ -218,7 +218,7 @@ export default async function DocumentPage() {
 
 import { usePlateViewEditor } from 'platejs/react';
 import { PlateView } from 'platejs/react';
-import { BaseEditorKit } from '@/components/editor/editor-base-kit';
+import { BaseEditorKit } from '@/components/editor/plugins-static';
 
 export function InteractiveViewer({ value }) {
   const editor = usePlateViewEditor({
@@ -261,13 +261,13 @@ In a Next.js App Router (or similar RSC environment), `<PlateStatic>` can be use
 ```tsx title="app/preview/page.tsx (RSC)"
 import { createBaseEditor } from 'platejs';
 import { PlateStatic } from 'platejs/static';
-import { BaseBasicBlocksKit } from '@/components/editor/plugins/basic-blocks-base-kit';
+import { BaseBasicBlocksKit } from '@/components/editor/basic-blocks-static';
 import { staticComponents } from '@/components/static-components'; // Your static components mapping
 
 export default async function Page() {
   // Fetch or define content server-side
   const serverContent = [
-    { type: 'h1', children: [{ text: 'Rendered on the Server! 🎉' }] },
+    { type: 'heading', level: 1, children: [{ text: 'Rendered on the Server! 🎉' }] },
     { type: 'paragraph', children: [{ text: 'This content is static and server-rendered.' }] },
   ];
 
@@ -296,7 +296,7 @@ not a semantic HTML codec.
 ```ts title="lib/html-serializer.ts"
 import { createBaseEditor } from 'platejs';
 import { renderStaticHtml } from 'platejs/static';
-import { BaseBasicBlocksKit } from '@/components/editor/plugins/basic-blocks-base-kit';
+import { BaseBasicBlocksKit } from '@/components/editor/basic-blocks-static';
 import { staticComponents } from '@/components/static-components';
 
 async function getDocumentAsHtml(value: any[]) {
@@ -315,7 +315,7 @@ async function getDocumentAsHtml(value: any[]) {
 }
 
 // Example Usage:
-// const value = [ { type: 'h1', children: [{ text: 'My Document' }] } ];
+// const value = [ { type: 'heading', level: 1, children: [{ text: 'My Document' }] } ];
 // getDocumentAsHtml(value).then(console.log);
 ```
 For more details, see the [HTML Serialization guide](/docs/html).

@@ -117,9 +117,7 @@ const SearchHighlightingEditor = memo(
   )
 );
 
-interface HighlightLeaf extends CustomText {
-  highlight?: boolean;
-}
+type HighlightLeaf = Omit<CustomText, 'text'>;
 
 type SearchLeafProps = Parameters<NonNullable<EditableProps['renderLeaf']>>[0];
 

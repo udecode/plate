@@ -30,9 +30,9 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { BasicNodesKit } from '@/registry/components/editor/plugins/basic-nodes-kit';
-import { Editor, EditorContainer } from '@/registry/ui/editor';
-import { RemoteCursorOverlay } from '@/registry/ui/remote-cursor-overlay';
+import { BasicNodesKit } from '@/registry/components/editor/basic-nodes';
+import { Editor, EditorContainer } from '@/registry/components/editor/editor';
+import { RemoteCursorOverlay } from '@/registry/components/editor/remote-cursor-overlay';
 
 const ROOT_NAME = 'plate-collaboration-demo';
 const SCHEMA = {

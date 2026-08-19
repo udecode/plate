@@ -6,7 +6,7 @@ jsx;
 
 export const basicBlocksValue = (
   <fragment>
-    <hh2>块</hh2>
+    <hheading level={2}>块</hheading>
     <hp>轻松创建从 H1 到 H6 的各级标题，以构建你的内容结构，使其更有条理。</hp>
     <hblockquote>
       <hp>引用块可以在同一个容器中组合多个段落、引用列表和回复内容。</hp>

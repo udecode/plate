@@ -53,7 +53,6 @@ type PlateEditorOptions<
         | 'decorate'
         | 'inject'
         | 'on'
-        | 'transformInitialValue'
         | 'initialState'
         | 'override'
         | 'render'
@@ -177,7 +176,7 @@ export type CreatePlateEditorOptions<
  *
  * ```ts
  * const editor = createPlateEditor({
- *   plugins: [ParagraphPlugin, H1Plugin],
+ *   plugins: [ParagraphPlugin, HeadingPlugin],
  *   initialValue: [{ type: 'paragraph', children: [{ text: 'Hello world!' }] }],
  * });
  *

@@ -19,45 +19,75 @@
   "targets": [
     {
       "name": "code-drawing-demo",
-      "files": ["apps/www/src/registry/examples/code-drawing-demo.tsx"],
+      "files": [
+        "apps/www/src/registry/examples/code-drawing-demo.tsx",
+        "apps/www/src/registry/examples/values/code-drawing-value.tsx"
+      ],
       "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
       "diagnostics": []
     },
     {
       "name": "excalidraw-demo",
-      "files": ["apps/www/src/registry/examples/excalidraw-demo.tsx"],
+      "files": [
+        "apps/www/src/registry/examples/excalidraw-demo.tsx",
+        "apps/www/src/registry/examples/values/excalidraw-value.tsx"
+      ],
       "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
       "diagnostics": []
     },
     {
       "name": "cursor-overlay",
-      "files": ["apps/www/src/registry/ui/cursor-overlay.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "files": ["apps/www/src/registry/components/editor/cursor-overlay.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
       "diagnostics": []
     },
     {
       "name": "ghost-text",
-      "files": ["apps/www/src/registry/ui/ghost-text.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for ghost-text."
+        }
+      ]
     },
     {
       "name": "media-image-node",
-      "files": ["apps/www/src/registry/ui/media-image-node.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for media-image-node."
+        }
+      ]
     },
     {
       "name": "media-video-node",
-      "files": ["apps/www/src/registry/ui/media-video-node.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for media-video-node."
+        }
+      ]
     },
     {
       "name": "table-node",
-      "files": ["apps/www/src/registry/ui/table-node.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for table-node."
+        }
+      ]
     }
   ],
   "entries": [

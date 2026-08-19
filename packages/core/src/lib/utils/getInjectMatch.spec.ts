@@ -120,6 +120,7 @@ describe('getInjectMatch', () => {
     expect(
       targetMatch({ children: [{ text: 'leaf' }], type: 'quote' } as any, [0])
     ).toBe(false);
+    expect(targetMatch({ text: 'leaf' } as any, [0, 0])).toBe(false);
     expect(
       excludeMatch({ children: [{ text: 'leaf' }], type: 'quote' } as any, [0])
     ).toBe(false);

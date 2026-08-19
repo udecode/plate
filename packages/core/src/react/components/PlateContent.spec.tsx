@@ -5,17 +5,20 @@ import React from 'react';
 import {
   ContentSlice,
   defineStateField,
+  editorCommands,
   property,
   schema,
   target,
   valueCodecs,
 } from '@platejs/plite';
+import { evaluateCommand } from '@platejs/plite/internal';
 import { useEditorViewState } from '@platejs/plite-react';
 
 import { act, render, waitFor } from '@testing-library/react';
 
 import { defineBasePlugin } from '../../lib';
 import { createPlateEditor } from '../editor';
+import { definePlatePlugin } from '../plugin';
 import { useEditor } from '../stores';
 import { Plate } from './Plate';
 import { PlateContainer } from './PlateContainer';
@@ -82,6 +85,157 @@ const CommitFromLayoutEffect = ({ text }: { text?: string }) => {
 };
 
 describe('PlateContent', () => {
+  it('keeps plain text DOM-synced when inactive Plate marks are installed', () => {
+    const editor = createPlateEditor({
+      plugins: [AtomicParserBPlugin],
+      initialValue: value,
+    });
+    const { container } = render(
+      <Plate editor={editor}>
+        <PlateContent />
+      </Plate>
+    );
+
+    const textHost = container.querySelector('[data-plite-node="text"]');
+
+    expect({
+      reason: textHost?.getAttribute('data-plite-dom-sync-reason'),
+      synced: textHost?.getAttribute('data-plite-dom-sync'),
+    }).toEqual({ reason: null, synced: 'true' });
+  });
+
+  it('keeps internally compiled simple mark leaves DOM-synced', () => {
+    const editor = createPlateEditor({
+      plugins: [AtomicParserBPlugin],
+      initialValue: [
+        {
+          children: [{ atomicParserB: true, text: 'one' }],
+          type: 'paragraph',
+        },
+      ],
+    });
+    const { container } = render(
+      <Plate editor={editor}>
+        <PlateContent />
+      </Plate>
+    );
+    const textHost = container.querySelector('[data-plite-node="text"]');
+
+    expect({
+      reason: textHost?.getAttribute('data-plite-dom-sync-reason'),
+      synced: textHost?.getAttribute('data-plite-dom-sync'),
+    }).toEqual({ reason: null, synced: 'true' });
+  });
+
+  it('fails closed only where a custom Plate text component is active', () => {
+    const CustomMarkPlugin = definePlatePlugin('customMark', {
+      component: ({ children }) => <strong>{children}</strong>,
+      render: { isDecoration: false },
+      schema: {
+        mark: property.boolean({ default: false, omitDefault: true }),
+      },
+    });
+    const editor = createPlateEditor({
+      plugins: [CustomMarkPlugin],
+      initialValue: [
+        {
+          children: [{ customMark: true, text: 'active' }],
+          type: 'paragraph',
+        },
+        { children: [{ text: 'inactive' }], type: 'paragraph' },
+      ],
+    });
+    const { container } = render(
+      <Plate editor={editor}>
+        <PlateContent />
+      </Plate>
+    );
+    const textHosts = container.querySelectorAll('[data-plite-node="text"]');
+
+    expect({
+      reason: textHosts[0]?.getAttribute('data-plite-dom-sync-reason'),
+      synced: textHosts[0]?.getAttribute('data-plite-dom-sync'),
+    }).toEqual({ reason: 'custom-text', synced: null });
+    expect({
+      reason: textHosts[1]?.getAttribute('data-plite-dom-sync-reason'),
+      synced: textHosts[1]?.getAttribute('data-plite-dom-sync'),
+    }).toEqual({ reason: null, synced: 'true' });
+  });
+
+  it('fails closed where arbitrary text props are active', () => {
+    const TextPropsPlugin = definePlatePlugin('textProps', {
+      render: {
+        isDecoration: false,
+        textProps: { onBeforeInput: () => {} },
+      },
+      schema: {
+        mark: property.boolean({ default: false, omitDefault: true }),
+      },
+    });
+    const editor = createPlateEditor({
+      plugins: [TextPropsPlugin],
+      initialValue: [
+        {
+          children: [{ text: 'active', textProps: true }],
+          type: 'paragraph',
+        },
+        { children: [{ text: 'inactive' }], type: 'paragraph' },
+      ],
+    });
+    const { container } = render(
+      <Plate editor={editor}>
+        <PlateContent />
+      </Plate>
+    );
+    const textHosts = container.querySelectorAll('[data-plite-node="text"]');
+
+    expect(textHosts[0]?.getAttribute('data-plite-dom-sync-reason')).toBe(
+      'custom-text'
+    );
+    expect(textHosts[1]?.getAttribute('data-plite-dom-sync')).toBe('true');
+  });
+
+  it('fails closed for text-capable arbitrary injected props', () => {
+    const InputInjectPlugin = definePlatePlugin('inputInject', {
+      inject: {
+        isLeaf: true,
+        nodeProps: {
+          transformProps: ({ props }) => ({
+            ...props,
+            onBeforeInput: () => {},
+          }),
+        },
+      },
+    });
+    const editor = createPlateEditor({
+      plugins: [InputInjectPlugin],
+      initialValue: value,
+    });
+    const { container } = render(
+      <Plate editor={editor}>
+        <PlateContent />
+      </Plate>
+    );
+    const textHost = container.querySelector('[data-plite-node="text"]');
+
+    expect(textHost?.getAttribute('data-plite-dom-sync-reason')).toBe(
+      'custom-leaf'
+    );
+  });
+
+  it('keeps ordinary Plate command middleware native-equivalent', () => {
+    const editor = createPlateEditor({ initialValue: value });
+
+    editor.update.selection.set({ path: [0, 0], offset: 3 });
+
+    const evaluation = evaluateCommand(editor, editorCommands.insertText, {
+      text: 'x',
+    });
+
+    expect(evaluation.materialHandlers).toEqual([]);
+    expect(evaluation.nativeEquivalent).toBe(true);
+  });
+
   it('owns default placeholder presentation above Plite structure', async () => {
     const editor = createPlateEditor({
       initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],

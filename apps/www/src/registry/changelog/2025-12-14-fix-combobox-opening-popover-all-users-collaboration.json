@@ -45,8 +45,8 @@
   "targets": [
     {
       "name": "inline-combobox",
-      "files": ["apps/www/src/registry/ui/inline-combobox.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "files": ["apps/www/src/registry/components/editor/inline-combobox.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
       "diagnostics": []
     }
   ],

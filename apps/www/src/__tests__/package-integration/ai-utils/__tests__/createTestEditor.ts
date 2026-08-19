@@ -5,9 +5,7 @@ import {
   BaseBlockquotePlugin,
   BaseBoldPlugin,
   BaseCodePlugin,
-  BaseH1Plugin,
-  BaseH2Plugin,
-  BaseH3Plugin,
+  BaseHeadingPlugin,
   BaseHighlightPlugin,
   BaseHorizontalRulePlugin,
   BaseItalicPlugin,
@@ -28,13 +26,12 @@ import {
   BaseTableRowPlugin,
   BaseTableCellPlugin,
 } from '@platejs/table';
-import { MarkdownKit } from '@/registry/components/editor/plugins/markdown-kit';
+import { MarkdownKit } from '@/registry/components/editor/markdown';
 
 const BasePlugins = [
   BaseParagraphPlugin,
-  BaseH1Plugin,
-  BaseH2Plugin,
-  BaseH3Plugin,
+  BaseHeadingPlugin,
+
   BaseBlockquotePlugin,
   BaseHorizontalRulePlugin,
   BaseCodeBlockPlugin,

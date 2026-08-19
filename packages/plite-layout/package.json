@@ -47,7 +47,7 @@
     "lint": "plate-pkg p:lint",
     "lint:fix": "plate-pkg p:lint:fix",
     "test": "bun test --preload ../../config/plite-source-test-setup.ts ./test",
-    "typecheck": "tsc --project tsconfig.json --noEmit"
+    "typecheck": "plate-pkg p:typecheck"
   },
   "dependencies": {
     "@chenglou/pretext": "^0.0.7"

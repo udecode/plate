@@ -245,6 +245,9 @@ export const InputRulesPlugin = defineBasePlugin('inputRules', {
         const commandOptions = input.options
           ? { ...input.options, at: resolvedTarget }
           : undefined;
+
+        if (rules.length === 0) return next();
+
         let handled = false;
         let continuation: typeof input | undefined;
         const prefix = state.transaction((tx) => {
@@ -300,11 +303,10 @@ export const InputRulesPlugin = defineBasePlugin('inputRules', {
           }
         });
 
-        if (handled && !continuation) return prefix;
+        if (!handled && !continuation) return next();
+        if (!continuation) return prefix;
 
-        return continuation
-          ? next.after(prefix, continuation)
-          : next.after(prefix);
+        return next.after(prefix, continuation);
       }),
     ],
   };

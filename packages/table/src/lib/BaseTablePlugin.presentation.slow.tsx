@@ -14,7 +14,7 @@ import assert from 'node:assert/strict';
 describe('table presentation slow contracts', () => {
   jsxt;
 
-  describe('setBorderSize', () => {
+  describe('setBorderWidth', () => {
     const createEditorInstance = (input: TestEditor) =>
       createTestTableEditor({
         plugins: getTestTablePlugins(),
@@ -54,7 +54,7 @@ describe('table presentation slow contracts', () => {
           <editor>
             <htable>
               <htr>
-                <htd borders={{ top: { size: 2 } }}>
+                <htd borders={{ top: { width: 2 } }}>
                   <hp>
                     11
                     <cursor />
@@ -79,7 +79,7 @@ describe('table presentation slow contracts', () => {
         const editor = createEditorInstance(input);
         editor
           .plugin(BaseTablePlugin)
-          .update.setBorderSize(2, { border: 'top' });
+          .update.setBorderWidth(2, { border: 'top' });
 
         expect(editor.read.children()).toMatchObject(output.children!);
       });
@@ -106,7 +106,7 @@ describe('table presentation slow contracts', () => {
         editor.subscribeCommit(() => commits++);
         editor
           .plugin(BaseTablePlugin)
-          .update.setBorderSize(2, { border: 'all' });
+          .update.setBorderWidth(2, { border: 'all' });
 
         expect(editor.read.children()).toMatchObject(
           (
@@ -115,10 +115,10 @@ describe('table presentation slow contracts', () => {
                 <htr>
                   <htd
                     borders={{
-                      bottom: { size: 2 },
-                      left: { size: 2 },
-                      right: { size: 2 },
-                      top: { size: 2 },
+                      bottom: { width: 2 },
+                      left: { width: 2 },
+                      right: { width: 2 },
+                      top: { width: 2 },
                     }}
                   >
                     <hp>
@@ -165,7 +165,7 @@ describe('table presentation slow contracts', () => {
           <editor>
             <htable>
               <htr>
-                <htd borders={{ left: { size: 2 } }}>
+                <htd borders={{ left: { width: 2 } }}>
                   <hp>
                     11
                     <cursor />
@@ -190,7 +190,7 @@ describe('table presentation slow contracts', () => {
         const editor = createEditorInstance(input);
         editor
           .plugin(BaseTablePlugin)
-          .update.setBorderSize(2, { border: 'left' });
+          .update.setBorderWidth(2, { border: 'left' });
 
         expect(editor.read.children()).toMatchObject(output.children!);
       });
@@ -235,7 +235,7 @@ describe('table presentation slow contracts', () => {
                   </htd>
                 </htr>
                 <htr>
-                  <htd borders={{ left: { size: 3 } }}>
+                  <htd borders={{ left: { width: 3 } }}>
                     <hp>
                       21
                       <cursor />
@@ -252,7 +252,7 @@ describe('table presentation slow contracts', () => {
           const editor = createEditorInstance(input);
           editor
             .plugin(BaseTablePlugin)
-            .update.setBorderSize(3, { border: 'left' });
+            .update.setBorderWidth(3, { border: 'left' });
 
           expect(editor.read.children()).toMatchObject(output.children!);
         });
@@ -291,7 +291,7 @@ describe('table presentation slow contracts', () => {
               <editor>
                 <htable>
                   <htr>
-                    <htd borders={{ bottom: { size: 2 } }}>
+                    <htd borders={{ bottom: { width: 2 } }}>
                       <hp>11</hp>
                     </htd>
                     <htd>
@@ -316,7 +316,7 @@ describe('table presentation slow contracts', () => {
             const editor = createEditorInstance(input);
             editor
               .plugin(BaseTablePlugin)
-              .update.setBorderSize(2, { border: 'top' });
+              .update.setBorderWidth(2, { border: 'top' });
 
             expect(editor.read.children()).toMatchObject(output.children!);
           });
@@ -357,7 +357,7 @@ describe('table presentation slow contracts', () => {
                     <htd>
                       <hp>11</hp>
                     </htd>
-                    <htd borders={{ right: { size: 1 } }}>
+                    <htd borders={{ right: { width: 1 } }}>
                       <hp>
                         12
                         <cursor />
@@ -379,7 +379,7 @@ describe('table presentation slow contracts', () => {
             const editor = createEditorInstance(input);
             editor
               .plugin(BaseTablePlugin)
-              .update.setBorderSize(1, { border: 'right' });
+              .update.setBorderWidth(1, { border: 'right' });
 
             expect(editor.read.children()).toMatchObject(output.children!);
           });
@@ -416,7 +416,7 @@ describe('table presentation slow contracts', () => {
                 <editor>
                   <htable>
                     <htr>
-                      <htd borders={{ right: { size: 2 } }}>
+                      <htd borders={{ right: { width: 2 } }}>
                         <hp>11</hp>
                       </htd>
                       <htd>
@@ -441,7 +441,7 @@ describe('table presentation slow contracts', () => {
               const editor = createEditorInstance(input);
               editor
                 .plugin(BaseTablePlugin)
-                .update.setBorderSize(2, { border: 'left' });
+                .update.setBorderWidth(2, { border: 'left' });
 
               expect(editor.read.children()).toMatchObject(output.children!);
             });
@@ -491,7 +491,7 @@ describe('table presentation slow contracts', () => {
                     <htd>
                       <hp>21</hp>
                     </htd>
-                    <htd borders={{ bottom: { size: 4 } }}>
+                    <htd borders={{ bottom: { width: 4 } }}>
                       <hp>
                         22
                         <cursor />
@@ -505,7 +505,7 @@ describe('table presentation slow contracts', () => {
             const editor = createEditorInstance(input);
             editor
               .plugin(BaseTablePlugin)
-              .update.setBorderSize(4, { border: 'bottom' });
+              .update.setBorderWidth(4, { border: 'bottom' });
 
             expect(editor.read.children()).toMatchObject(output.children!);
           });
@@ -556,7 +556,7 @@ describe('table presentation slow contracts', () => {
           <editor>
             <htable>
               <htr>
-                <htd background="red">
+                <htd backgroundColor="red">
                   <hp>
                     11
                     <cursor />
@@ -598,10 +598,10 @@ describe('table presentation slow contracts', () => {
           <editor>
             <htable>
               <htr>
-                <htd background="red">
+                <htd backgroundColor="red">
                   <hp>11</hp>
                 </htd>
-                <htd background="red">
+                <htd backgroundColor="red">
                   <hp>12</hp>
                 </htd>
               </htr>
@@ -634,13 +634,13 @@ describe('table presentation slow contracts', () => {
           <editor>
             <htable>
               <htr>
-                <htd background="red">
+                <htd backgroundColor="red">
                   <hp>
                     11
                     <cursor />
                   </hp>
                 </htd>
-                <htd background="red">
+                <htd backgroundColor="red">
                   <hp>12</hp>
                 </htd>
               </htr>
@@ -655,7 +655,7 @@ describe('table presentation slow contracts', () => {
                 <htd>
                   <hp>11</hp>
                 </htd>
-                <htd background="red">
+                <htd backgroundColor="red">
                   <hp>12</hp>
                 </htd>
               </htr>
@@ -676,10 +676,10 @@ describe('table presentation slow contracts', () => {
           <editor>
             <htable>
               <htr>
-                <htd background="red">
+                <htd backgroundColor="red">
                   <hp>11</hp>
                 </htd>
-                <htd background="blue">
+                <htd backgroundColor="blue">
                   <hp>12</hp>
                 </htd>
               </htr>
@@ -838,8 +838,8 @@ describe('table presentation slow contracts', () => {
     ) =>
       editor.plugin(BaseTableCellPlugin).update.set({ borders }, { at: path });
 
-    const visible = { size: 1 };
-    const hidden = { size: 0 };
+    const visible = { width: 1 };
+    const hidden = { width: 0 };
 
     describe('getSelectedCellsBorders', () => {
       it('returns defaults outside a table and reads the current cell', () => {

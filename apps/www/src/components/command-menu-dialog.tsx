@@ -59,16 +59,16 @@ const DOC_SEARCH_DEBOUNCE_MS = 300;
 const MIN_DOC_SEARCH_LENGTH = 2;
 const commandMenuCopyableRegistryNames = new Set(
   `
-  ai-kit align-kit autoformat-classic-kit autoformat-kit basic-blocks-kit
-  basic-marks-kit basic-nodes-kit block-menu-kit block-placeholder-kit
-  block-selection-kit callout-kit code-block-kit code-drawing-kit column-kit
-  comment-kit copilot-kit cursor-overlay-kit date-kit discussion-kit dnd-kit
-  docx-kit docx-export-kit editor-base-kit editor-kit emoji-kit exit-break-kit
-  fixed-toolbar-classic-kit fixed-toolbar-kit floating-toolbar-kit
-  floating-toolbar-classic-kit footnote-kit font-kit indent-kit
-  line-height-kit link-kit list-classic-kit list-kit markdown-kit math-kit
-  media-kit media-uploadthing-kit mention-kit slash-kit suggestion-kit
-  tabbable-kit table-kit toc-kit toggle-kit
+  ai align autoformat-classic autoformat basic-blocks
+  basic-marks basic-nodes block-menu block-placeholder
+  block-selection callout code-block code-drawing column
+  comment copilot cursor-overlay date discussion dnd
+  docx docx-export editor-static editor-plugins emoji exit-break
+  fixed-toolbar-classic fixed-toolbar floating-toolbar
+  floating-toolbar-classic footnote font indent
+  line-height link list-classic list markdown math
+  media media-uploadthing mention slash suggestion
+  tabbable table toc toggle
   ai-demo align-demo autoformat-demo basic-blocks-demo basic-marks-demo
   basic-nodes-demo block-menu-demo block-selection-demo callout-demo
   code-block-demo code-drawing-demo collaboration-demo column-demo
@@ -80,22 +80,22 @@ const commandMenuCopyableRegistryNames = new Set(
   markdown-demo media-demo mention-demo plugin-rules-demo preview-markdown-demo
   select-editor-demo single-block-demo slash-command-demo tabbable-demo
   table-demo toc-demo toggle-demo version-history-demo
-  ai-node ai-toolbar-button blockquote-node callout-node caption code-block-node
-  code-drawing-node code-node column-node comment-node date-node editor
-  equation-node excalidraw-node fixed-toolbar floating-toolbar font-size-toolbar-button
-  heading-node highlight-node hr-node kbd-node link-node list-classic-node
-  media-image-node media-toolbar mention-node paragraph-node slash-node
-  suggestion-node table-node toc-node toggle-node toolbar
+  ai ai-toolbar-button blockquote callout caption code-block
+  code-drawing code column comment-node date editor
+  math excalidraw fixed-toolbar floating-toolbar font-size-toolbar-button
+  heading highlight horizontal-rule kbd link list-classic
+  media-image media-toolbar mention paragraph slash
+  suggestion table toc toggle toolbar
   `
     .trim()
     .split(/\s+/)
 );
 const commandMenuRegistryNameAliases: Record<string, string> = {
   'collaboration-example': 'collaboration-demo',
-  'horizontal-rule': 'hr-node',
+  'horizontal-rule': 'horizontal-rule',
   'preview-markdown': 'preview-markdown-demo',
-  'text-align': 'align-kit',
-  'slash-command': 'slash-kit',
+  'text-align': 'align',
+  'slash-command': 'slash',
 };
 const selectedMutationObserverOptions: MutationObserverInit = {
   attributeFilter: ['aria-selected'],

@@ -31,19 +31,19 @@ Forced Layout is the `NormalizeTypesPlugin` pattern for pinning document positio
 Add `NormalizeTypesPlugin` when specific paths must exist or hold a specific block type.
 
 ```tsx
-import { H1Plugin } from '@platejs/basic-nodes/react';
+import { HeadingPlugin } from '@platejs/basic-nodes/react';
 import { NormalizeTypesPlugin, PLUGINS } from 'platejs';
 import { createPlateEditor } from 'platejs/react';
 
 export const editor = createPlateEditor({
   plugins: [
-    H1Plugin,
+    HeadingPlugin,
     NormalizeTypesPlugin.configure(({ editor }) => ({
       initialState: {
         rules: [
           {
             path: [0],
-            strictType: editor.plugin(PLUGINS.h1).schema.type,
+            strictType: editor.plugin(PLUGINS.heading).schema.type,
           },
           {
             path: [1],
@@ -68,7 +68,7 @@ This keeps the first block as an H1 and inserts a paragraph at path `[1]` when t
 | `tx.nodes.insert` / `tx.nodes.set` | Plite transaction | Inserts missing nodes or corrects a strict type. |
 | Playground demo | Registry example | Enables a first-block H1 rule when the playground id is `forced-layout`. |
 
-There is no `ForcedLayoutPlugin` and no `forced-layout-kit`. The public plugin is `NormalizeTypesPlugin`.
+There is no `ForcedLayoutPlugin` and no `forced-layout`. The public plugin is `NormalizeTypesPlugin`.
 
 ## Rule Semantics
 

@@ -20,8 +20,8 @@ description: \@platejs/core 的 API 参考文档。
   <APIItem name="plugins" type="P[]" optional>
     编辑器插件数组。
   </APIItem>
-  <APIItem name="value" type="V" optional>
-    编辑器的初始值。
+  <APIItem name="initialValue" type="EditorValueInput | ((context: { editor: PlateEditor }) => EditorValueInput)" optional>
+    同步初始文档、持久化的 `{ document, schema }` envelope 或主 root 数组。
   </APIItem>
   <APIItem name="autoSelect" type="'end' | 'start' | boolean" optional>
     初始化后是否选中编辑器。
@@ -33,8 +33,14 @@ description: \@platejs/core 的 API 参考文档。
   <APIItem name="maxLength" type="number" optional>
     限制用户输入、片段插入和节点插入的最大字符数。
   </APIItem>
+  <APIItem name="migrations" type="DocumentMigrations" optional>
+    应用拥有的目标版本迁移链。Plate 在插件文档准备和 schema 适配前运行每个所需步骤。
+  </APIItem>
   <APIItem name="selection" type="TSelection" optional>
     编辑器的初始选区。
+  </APIItem>
+  <APIItem name="schema" type="EditorApplicationSchema" optional>
+    应用 schema policy 和可选命名谱系。迁移计划要求 `id` 和 `version` 精确匹配。
   </APIItem>
   <APIItem name="shouldNormalizeEditor" type="boolean" optional>
     当 `true` 时，将规范化传递给 `editor` 的初始 `value`。
@@ -52,10 +58,6 @@ description: \@platejs/core 的 API 参考文档。
   </APIItem>
   <APIItem name="inject" type="object" optional>
     编辑器的注入配置。
-  </APIItem>
-  <APIItem name="transformInitialValue" type="function" optional>
-    在 schema 适配前转换完整文档输入。编辑器初始化和
-    `editor.update.value.replace(...)` 加载都会运行该函数。
   </APIItem>
   <APIItem name="options" type="object" optional>
     编辑器的附加选项。
@@ -86,6 +88,51 @@ description: \@platejs/core 的 API 参考文档。
 </API>
 
 有关编辑器配置的更多详情，请参阅[编辑器配置](/docs/editor)指南。
+
+### `defineDocumentMigrations`
+
+为命名应用 schema 定义一条目标版本迁移链。每个数字 key 表示对应步骤生成的 schema
+版本。
+
+```ts
+import { defineDocumentMigrations } from 'platejs/migrations';
+
+import { fingerprint as v1Fingerprint } from './migrations/v2-add-section/from';
+import { fingerprint as v2Fingerprint } from './migrations/v3-add-caption/from';
+
+const migrations = defineDocumentMigrations(EditorSchema, {
+  sourceFingerprints: {
+    1: v1Fingerprint,
+    2: v2Fingerprint,
+  },
+  steps: {
+    2: migrateDocumentV2,
+    3: migrateDocumentV3,
+  },
+  unversioned: 1,
+});
+```
+
+`sourceFingerprints` 将每个受支持的历史 envelope 版本绑定到生成的 schema 指纹。
+`unversioned` 为没有持久化 schema 身份的原始文档指定显式源版本。缺失中间步骤或历史
+身份漂移都会报错。
+
+### `migrateDocument`
+
+对一个完整文档运行所有必需迁移步骤，但不将结果发布到编辑器。编辑器运行时加载和
+`plate migrate run` 使用同一个 runner。
+
+```ts
+import { migrateDocument } from 'platejs/migrations';
+
+const result = migrateDocument(persisted, {
+  editor,
+  migrations: EditorMigrations,
+});
+```
+
+结果包含 `document`、映射后的 `selection`、`source`、`target` 和升序 `applied` 版本
+列表。schema 谱系不同、源版本更新或指纹漂移都会报错。
 
 ### `definePlatePlugin`
 
@@ -319,40 +366,6 @@ description: \@platejs/core 的 API 参考文档。
   <APIReturns type="number">编辑器选区的当前版本。</APIReturns>
 </API>
 
-### `useSelectionCollapsed`
-
-<API name="useSelectionCollapsed">
-  <APIReturns type="boolean">当前选区是否折叠。</APIReturns>
-</API>
-
-### `useSelectionExpanded`
-
-<API name="useSelectionExpanded">
-  <APIReturns type="boolean">当前选区是否展开。</APIReturns>
-</API>
-
-### `useSelectionWithinBlock`
-
-<API name="useSelectionWithinBlock">
-  <APIReturns type="boolean">当前选区是否在单个块内。</APIReturns>
-</API>
-
-### `useSelectionAcrossBlocks`
-
-<API name="useSelectionAcrossBlocks">
-  <APIReturns type="boolean">当前选区是否跨越多个块。</APIReturns>
-</API>
-
-### `useSelectionFragment`
-
-返回当前选区的片段，可选择解构结构节点。
-
-<API name="useSelectionFragment">
-  <APIReturns type="Element[]">
-    当前选区的片段。如果选区未展开或未找到片段，则返回空数组。
-  </APIReturns>
-</API>
-
 ### `useSelectionFragmentProp`
 
 返回从当前选区片段派生的属性值。
@@ -539,7 +552,7 @@ elementState.api.isEmpty({
 
 elementState.api.isEmpty({
   children: [{ text: "" }],
-  listStyleType: "disc",
+  listType: "bulleted",
   type: "paragraph",
 }); // false
 

@@ -2,6 +2,10 @@
 "@platejs/layout": major
 ---
 
+Require React and React DOM 19.2 or newer.
+
+Remove the one-consumer `useDebouncePopoverOpen` React hook.
+
 Own group mutations through `BaseColumnPlugin` and item mutations through
 `BaseColumnItemPlugin`:
 
@@ -17,3 +21,6 @@ operations are available as `editor.update.column`.
 Remove the standalone column query, transform, resize, and width-helper
 exports. `BaseColumnPlugin` owns the `columnGroup` schema and installs
 `BaseColumnItemPlugin`. Group elements persist under `columnGroup`.
+
+Remove the unused `columnGroup.layout` property. Each child Column remains the
+sole owner of its persisted `width`.

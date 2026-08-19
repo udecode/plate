@@ -72,7 +72,7 @@ Text with custom line height
 
 <mediaEmbed src="https://www.youtube.com/watch?v=example" />
 
-<columnGroup layout="[50,50]">
+<columnGroup>
   <column width="50%">
     Left column
   </column>

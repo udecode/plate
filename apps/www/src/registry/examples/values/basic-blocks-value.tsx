@@ -6,17 +6,17 @@ jsx;
 
 export const basicBlocksValue = (
   <fragment>
-    <hh1>Heading 1</hh1>
+    <hheading level={1}>Heading 1</hheading>
     <hp>
       This is a top-level heading, typically used for main titles and major
       section headers.
     </hp>
-    <hh2>Heading 2</hh2>
+    <hheading level={2}>Heading 2</hheading>
     <hp>
       Secondary headings help organize content into clear sections and
       subsections.
     </hp>
-    <hh3>Heading 3</hh3>
+    <hheading level={3}>Heading 3</hheading>
     <hp>
       Third-level headings provide further content structure and hierarchy.
     </hp>

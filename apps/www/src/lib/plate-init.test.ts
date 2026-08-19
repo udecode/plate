@@ -31,7 +31,7 @@ describe('Plate init bootstrap', () => {
 
   it('keeps the bootstrap components config aligned with Plate templates', () => {
     expect(plateComponentsJsonConfig.registries).toEqual({
-      '@plate': 'https://platejs.org/r/{name}.json',
+      '@plate': 'https://platejs.org/r/{style}/{name}.json',
     });
     expect(plateComponentsJsonConfig.aliases.ui).toBe('@/components/ui');
     expect(plateComponentsJsonConfig.iconLibrary).toBe('lucide');
@@ -40,7 +40,7 @@ describe('Plate init bootstrap', () => {
   it('documents the same namespace used by the registry base item', () => {
     const markdown = buildPlateInitInstructions();
     const registryConfigIndex = markdown.indexOf(
-      '"@plate": "https://platejs.org/r/{name}.json"'
+      '"@plate": "https://platejs.org/r/{style}/{name}.json"'
     );
     const addCommandIndex = markdown.indexOf(
       'npx shadcn@latest add @plate/editor-basic'
@@ -51,7 +51,9 @@ describe('Plate init bootstrap', () => {
     );
     expect(markdown).toContain('npx shadcn@latest add @plate/editor-basic');
     expect(markdown).toContain('add the Plate registry to `components.json`');
-    expect(markdown).toContain('"@plate": "https://platejs.org/r/{name}.json"');
+    expect(markdown).toContain(
+      '"@plate": "https://platejs.org/r/{style}/{name}.json"'
+    );
     expect(registryConfigIndex).toBeGreaterThan(-1);
     expect(addCommandIndex).toBeGreaterThan(-1);
     expect(registryConfigIndex).toBeLessThan(addCommandIndex);

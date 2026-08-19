@@ -19,8 +19,10 @@
   "targets": [
     {
       "name": "list-toolbar-button",
-      "files": ["apps/www/src/registry/ui/list-toolbar-button.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "files": [
+        "apps/www/src/registry/components/editor/list-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
       "diagnostics": []
     }
   ],

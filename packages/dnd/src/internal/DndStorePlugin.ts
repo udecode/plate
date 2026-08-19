@@ -5,7 +5,7 @@ import type { Path, NodeKey } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
 import type { DropTargetMonitor } from 'react-dnd';
 
-import type { ScrollerProps } from '../DndScroller';
+import type { DndScrollerOptions } from '../DndScroller';
 import type {
   DragItemNode,
   DropLineDirection,
@@ -24,7 +24,7 @@ export type DndPluginState = {
   enableScroller: boolean;
   isDragging: boolean;
   multiplePreviewRef: React.RefObject<HTMLDivElement | null> | null;
-  scrollerProps: Partial<ScrollerProps>;
+  scrollerProps: Partial<DndScrollerOptions>;
   onDropFiles?: (props: {
     key: NodeKey;
     dragItem: FileDragItemNode;

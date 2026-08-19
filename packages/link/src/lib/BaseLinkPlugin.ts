@@ -30,15 +30,10 @@ export type BaseLinkPluginState = {
   /** Skips sanitation of links. */
   dangerouslySkipSanitization: boolean;
   defaultLinkAttributes: React.AnchorHTMLAttributes<HTMLAnchorElement>;
-  forceSubmit?: boolean;
   /** Keeps selected text on pasting links by default. */
   keepSelectedTextOnPaste: boolean;
   /** Configures the range used to find text before the selection. */
   rangeBeforeOptions: Parameters<BaseEditor['read']['points']['before']>[1];
-  /** Hotkeys that trigger the floating link UI. */
-  triggerFloatingLinkHotkeys: readonly string[] | string;
-  /** Resolves a URL for the keyboard shortcut and toolbar action. */
-  getLinkUrl?: (prevUrl: string | null) => Promise<string | null>;
   /** Resolves an href that differs from the displayed URL. */
   getUrlHref?: (url: string) => string | undefined;
   /** Validates link text. */
@@ -137,7 +132,6 @@ const initialState: BaseLinkPluginState = {
     matchString: ' ',
     skipInvalid: true,
   },
-  triggerFloatingLinkHotkeys: 'meta+k, ctrl+k',
 };
 
 /** Enables support for hyperlinks. */

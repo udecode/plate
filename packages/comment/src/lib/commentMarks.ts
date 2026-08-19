@@ -1,5 +1,7 @@
 import { type Node, type Text, TextApi } from '@platejs/plite';
 
+type TextProperties = Omit<Text, 'text'>;
+
 export const getCommentKey = (id: string): `comment_${string}` =>
   `comment_${id}`;
 
@@ -12,10 +14,10 @@ export const getTransientCommentKey = () => 'commentTransient' as const;
 
 export const isCommentKey = (key: string) => key.startsWith('comment_');
 
-export const getCommentKeys = (node: Text) =>
+export const getCommentKeys = (node: TextProperties) =>
   Object.keys(node).filter(isCommentKey);
 
-export const getCommentCount = (node: Text) =>
+export const getCommentCount = (node: TextProperties) =>
   getCommentKeys(node).filter((key) => key !== getDraftCommentKey()).length;
 
 /** Whether the node has a comment id. */

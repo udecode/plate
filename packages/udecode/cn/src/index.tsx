@@ -2,6 +2,3 @@
 
 export * from '@udecode/react-utils';
 export * from './cn';
-export * from './withCn';
-export * from './withProps';
-export * from './withVariants';

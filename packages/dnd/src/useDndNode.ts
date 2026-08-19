@@ -21,7 +21,8 @@ import {
   PathApi,
   type NodeKey,
 } from '@platejs/plite';
-import { DndStorePlugin, type DndPluginState } from './internal/DndStorePlugin';
+import { useDndPluginStore } from './internal/DndStore';
+import { DndStorePlugin } from './internal/DndStorePlugin';
 
 export const DRAG_ITEM_BLOCK = 'block';
 
@@ -105,86 +106,14 @@ export type UseDndNodeOptions = Pick<UseDropNodeOptions, 'element'> &
     ) => boolean | void;
   };
 
+export type UseDraggableOptions = UseDndNodeOptions;
+
 export type DraggableState = {
   isAboutToDrag: boolean;
   isDragging: boolean;
   nodeRef: React.RefObject<HTMLDivElement | null>;
   previewRef: React.RefObject<HTMLDivElement | null>;
   handleRef: React.RefCallback<HTMLElement>;
-};
-
-export const useDndPluginStore = <K extends keyof DndPluginState>(key: K) => {
-  const editor = useEditor();
-  const store = editor.plugin(DndStorePlugin).store;
-
-  return React.useSyncExternalStore(
-    store.subscribe,
-    () => store.get()[key],
-    () => store.get()[key]
-  );
-};
-
-export const useDndPlugin = () => {
-  const editor = useEditor();
-  const store = editor.plugin(DndStorePlugin).store;
-
-  React.useEffect(() => {
-    const handleDragLeave = (event: DragEvent) => {
-      // This event fires for every element that receives a drag leave event. As soon as it is fired on the
-      // editable dom node, or above, we will unset the drop target, and therefore hide the drop line.
-      // In other words, whenever the drag is not happening inside the editor anymore, we will hide the
-      // drop line which makes sense, since a potential drop would not insert anything into the editor.
-      // This will also apply, if the user move the drag operation outside the document.
-      if (!(event.target instanceof Node)) return;
-
-      const editorDOMNode = editor.api.dom.resolveDOMNode(editor);
-
-      if (!editorDOMNode) return;
-
-      const targetElement =
-        event.target instanceof HTMLElement
-          ? event.target
-          : event.target.parentElement;
-      const relatedTarget = event.relatedTarget;
-      const relatedElement =
-        relatedTarget instanceof HTMLElement
-          ? relatedTarget
-          : relatedTarget instanceof Node
-            ? relatedTarget.parentElement
-            : null;
-      const targetBlock = targetElement?.closest('[data-plite-node-key]');
-      const relatedBlock = relatedElement?.closest('[data-plite-node-key]');
-      const isLeavingEditor = !(
-        event.target === editorDOMNode || editorDOMNode.contains(event.target)
-      );
-      const isLeavingBlockForEditorWhitespace =
-        !!targetBlock &&
-        !relatedBlock &&
-        (!relatedTarget ||
-          (relatedTarget instanceof Node &&
-            editorDOMNode.contains(relatedTarget)));
-
-      if (isLeavingEditor || isLeavingBlockForEditorWhitespace) {
-        store.set({ dropTarget: undefined });
-      }
-    };
-    // We listen for the drop event on the document and not only inside the editor, because we want to
-    // remove the dropTarget, and therefore hide the drop line, also when the drop happened outside of
-    // the editor. Needed, if the drag did not start inside the editor, but for example by dragging a
-    // file from the filesystem
-    const handleDrop = () => {
-      store.set({ _isOver: false });
-      store.set({ dropTarget: undefined });
-    };
-
-    document.addEventListener('dragleave', handleDragLeave, true);
-    document.addEventListener('drop', handleDrop, true);
-
-    return () => {
-      document.removeEventListener('dragleave', handleDragLeave, true);
-      document.removeEventListener('drop', handleDrop, true);
-    };
-  }, [editor, store]);
 };
 
 export type GetHoverDirectionOptions = {
@@ -420,7 +349,7 @@ const useInertDragNode = (): ReturnType<typeof useDomDragNode> => [
   noopConnector,
 ];
 
-export const useDragNode = canUseDomDnd() ? useDomDragNode : useInertDragNode;
+const useDragNode = canUseDomDnd() ? useDomDragNode : useInertDragNode;
 
 const useDomDropNode = (
   editor: PlateEditor,
@@ -653,7 +582,7 @@ const useInertDropNode = (): ReturnType<typeof useDomDropNode> => [
   noopConnector,
 ];
 
-export const useDropNode = canUseDomDnd() ? useDomDropNode : useInertDropNode;
+const useDropNode = canUseDomDnd() ? useDomDropNode : useInertDropNode;
 
 export const useDndNode = ({
   canDropNode,
@@ -702,7 +631,7 @@ export const useDndNode = ({
   return { dragRef, isAboutToDrag, isDragging, isOver };
 };
 
-export const useDraggable = (props: UseDndNodeOptions): DraggableState => {
+export const useDraggable = (props: UseDraggableOptions): DraggableState => {
   const {
     orientation = 'vertical',
     type = DRAG_ITEM_BLOCK,

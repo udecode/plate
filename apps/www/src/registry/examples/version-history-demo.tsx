@@ -29,7 +29,7 @@ import {
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { BasicMarksKit } from '@/registry/components/editor/plugins/basic-marks-kit';
+import { BasicMarksKit } from '@/registry/components/editor/basic-marks';
 
 const InlinePlugin = definePlatePlugin('inline', {
   schema: {

@@ -3,7 +3,7 @@ title: Emoji
 docs:
   - route: /docs/combobox
     title: 组合框
-  - route: /docs/components/emoji-node
+  - route: /docs/components/emoji
     title: Emoji输入元素
   - route: /docs/components/emoji-dropdown-menu
     title: Emoji工具栏按钮
@@ -29,15 +29,15 @@ docs:
 
 最快捷的添加表情功能方式是使用`EmojiKit`，它包含预配置的`EmojiPlugin`和`EmojiInputPlugin`以及它们的[Plate UI](/docs/installation/plate-ui)组件。
 
-<ComponentSource name="emoji-kit" />
+<ComponentSource name="emoji" />
 
-- [`EmojiInputElement`](/docs/components/emoji-node): 渲染表情输入组合框
+- [`EmojiInputElement`](/docs/components/emoji): 渲染表情输入组合框
 
 ### 添加套件
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { EmojiKit } from '@/components/editor/plugins/emoji-kit';
+import { EmojiKit } from '@/components/editor/emoji';
 
 const editor = createPlateEditor({
   plugins: [
@@ -61,16 +61,16 @@ npm install @platejs/emoji @emoji-mart/data
 
 ### 添加插件
 
-`EmojiPlugin` 会把 `EmojiInputPlugin` 作为必需依赖安装。
+`emojiPlugin` 使用完整的 emoji-mart 数据集配置包插件。
 
 ```tsx
-import { EmojiPlugin } from '@platejs/emoji/react';
+import { emojiPlugin } from '@/components/editor/emoji';
 import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
     // ...其他插件,
-    EmojiPlugin,
+    emojiPlugin,
   ],
 });
 ```
@@ -80,17 +80,18 @@ const editor = createPlateEditor({
 需要替换依赖的组件或配置时，把完整的 `EmojiInputPlugin` 描述符加入同一数组。
 
 ```tsx
-import { EmojiPlugin, EmojiInputPlugin } from '@platejs/emoji/react';
+import { EmojiInputPlugin } from '@platejs/emoji/react';
 import { createPlateEditor } from 'platejs/react';
-import { EmojiInputElement } from '@/components/ui/emoji-node';
-import emojiMartData from '@emoji-mart/data';
+import {
+  EmojiInputElement,
+  emojiPlugin,
+} from '@/components/editor/emoji';
 
 const editor = createPlateEditor({
   plugins: [
     // ...其他插件,
-    EmojiPlugin.configure({
+    emojiPlugin.configure({
       initialState: {
-        data: emojiMartData,
         trigger: ':',
         triggerPreviousCharPattern: /^\s?$/,
         createEmojiNode: (emoji) => ({ text: emoji.skins[0].native }),
@@ -101,15 +102,34 @@ const editor = createPlateEditor({
 });
 ```
 
-- `options.data`: 来自@emoji-mart/data包的表情数据
-- `options.trigger`: 触发表情组合框的字符（默认：`:`）
-- `options.triggerPreviousCharPattern`: 匹配触发字符前一个字符的正则表达式
-- `options.createEmojiNode`: 选择表情时创建表情节点的函数。默认插入Unicode字符作为文本
+- `initialState.data`: 来自@emoji-mart/data包的表情数据
+- `initialState.trigger`: 触发表情组合框的字符（默认：`:`）
+- `initialState.triggerPreviousCharPattern`: 匹配触发字符前一个字符的正则表达式
+- `initialState.createEmojiNode`: 选择表情时创建表情节点的函数。默认插入Unicode字符作为文本
 - `component`: 为表情输入组合框分配UI组件
 
 ### 添加工具栏按钮
 
 您可以在[工具栏](/docs/toolbar)中添加[`EmojiToolbarButton`](/docs/components/emoji-toolbar-button)来插入表情符号。
+
+`EmojiPicker` 自行管理弹出层、搜索、分类焦点、预览、选择和常用表情。`EmojiToolbarButton` 只提供工具栏触发器。
+
+```tsx
+import { Button } from '@/components/ui/button';
+import {
+  EmojiPicker,
+  EmojiPickerTrigger,
+} from '@/components/editor/emoji-picker';
+
+<EmojiPicker onSelectEmoji={setIcon}>
+  <EmojiPickerTrigger>
+    <Button>选择图标</Button>
+  </EmojiPickerTrigger>
+</EmojiPicker>;
+```
+
+<ComponentSource name="emoji-picker" />
+<ComponentSource name="emoji-toolbar-button" />
 
 </Steps>
 

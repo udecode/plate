@@ -5,7 +5,7 @@ import path from 'node:path';
 import test from 'node:test';
 
 import { getWorkspaceSourceEntries } from '../../config/workspace-source-entries.mjs';
-import { repoRoot } from './check-plite.mjs';
+import { plitePackages, repoRoot } from './check-plite.mjs';
 
 const require = createRequire(import.meta.url);
 const {
@@ -119,6 +119,44 @@ test('package typecheck gets source paths without exposing them to Bun', () => {
     /^pnpm --workspace-concurrency=8 /
   );
   assert.doesNotMatch(rootManifest.scripts['plite:typecheck'], /--parallel/);
+});
+
+test('every Plite package typechecks against workspace source', () => {
+  for (const { root } of plitePackages) {
+    const manifest = JSON.parse(
+      readFileSync(path.join(repoRoot, root, 'package.json'), 'utf8')
+    );
+
+    assert.match(
+      manifest.scripts?.typecheck ?? '',
+      /^plate-pkg p:typecheck(?:\s|$)/u,
+      root
+    );
+  }
+});
+
+test('Playwright containers install Bun prerequisites before setup', () => {
+  const workflow = readFileSync(
+    path.join(repoRoot, '.github/workflows/plite-ci.yml'),
+    'utf8'
+  );
+
+  for (const jobName of ['browser-chromium', 'browser-matrix-linux']) {
+    const job = workflow.match(
+      new RegExp(
+        `\\n  ${jobName}:(?<body>[\\s\\S]*?)(?=\\n  [a-z][a-z0-9-]*:|$)`,
+        'u'
+      )
+    )?.groups?.body;
+
+    assert.ok(job, `missing ${jobName} job`);
+    assert.match(job, /container: mcr\.microsoft\.com\/playwright/u);
+    assert.ok(
+      job.indexOf('apt-get install --yes --no-install-recommends unzip') <
+        job.indexOf('uses: oven-sh/setup-bun@v2'),
+      `${jobName} must install unzip before setup-bun`
+    );
+  }
 });
 
 test('type-test fixtures resolve the Plite React internal entry from source', () => {

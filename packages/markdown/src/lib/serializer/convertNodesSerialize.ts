@@ -11,7 +11,7 @@ import type { MdRootContent } from '../mdast';
 import type { SerializeMdContext } from '../types';
 
 import { convertTextsSerialize } from './convertTextsSerialize';
-import { listToMdastTree } from './listToMdastTree';
+import { getSerializableListStyle, listToMdastTree } from './listToMdastTree';
 import { wrapWithBlockId } from './wrapWithBlockId';
 
 export const convertNodesSerialize = (
@@ -56,10 +56,18 @@ export const convertNodesSerialize = (
         const hasDifferentListStyle =
           isNextIndent &&
           firstList &&
-          next.listStyleType !== firstList.listStyleType &&
-          next.indent === firstList.indent;
+          (next.listType !== firstList.listType ||
+            getSerializableListStyle(next) !==
+              getSerializableListStyle(firstList)) &&
+          (next.indent ?? 1) === (firstList.indent ?? 1);
+        const hasExplicitRestart =
+          isNextIndent &&
+          firstList &&
+          next.listType === 'numbered' &&
+          typeof next.listRestart === 'number' &&
+          (next.indent ?? 1) === (firstList.indent ?? 1);
 
-        if (!isNextIndent || hasDifferentListStyle) {
+        if (!isNextIndent || hasDifferentListStyle || hasExplicitRestart) {
           // Pass the original nodes and isBlock flag to listToMdastTree
           // so it can handle wrapping individual items with block IDs
           const result = listToMdastTree(listBlock, options, isBlock);
@@ -94,11 +102,7 @@ export const buildMdastNode = (
   const type = node.type;
   let fallbackType = type;
 
-  if (
-    [PLUGINS.h1, PLUGINS.h2, PLUGINS.h3, PLUGINS.h4, PLUGINS.h5, PLUGINS.h6]
-      .map((name) => options.registry.type(name))
-      .some((headingType) => headingType === type)
-  ) {
+  if (options.registry.type(PLUGINS.heading) === type) {
     fallbackType = 'heading';
   }
 
@@ -135,8 +139,7 @@ const isListElement = (
   !!node &&
   !TextApi.isText(node) &&
   node.type === paragraphType &&
-  typeof node.listStyleType === 'string' &&
-  typeof node.indent === 'number';
+  typeof node.listType === 'string';
 
 const shouldIncludeText = (
   text: Text,

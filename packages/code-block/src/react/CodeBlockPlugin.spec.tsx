@@ -223,7 +223,7 @@ const createBaseEditor = <const P extends readonly BasePluginInput[]>(
 
       installRefreshDecorationsProbe(editor, refreshDecorations);
 
-      editor.update.nodes.set({ lang: 'json' }, { at: [0] });
+      editor.update.nodes.set({ language: 'json' }, { at: [0] });
 
       expect(refreshDecorations).toHaveBeenCalledTimes(1);
     });
@@ -231,7 +231,7 @@ const createBaseEditor = <const P extends readonly BasePluginInput[]>(
     it('refreshes when the language changes to plaintext', () => {
       const input = (
         <editor>
-          <hcodeblock lang="javascript">
+          <hcodeblock language="javascript">
             <hcodeline>aa</hcodeline>
           </hcodeblock>
         </editor>
@@ -250,7 +250,7 @@ const createBaseEditor = <const P extends readonly BasePluginInput[]>(
 
       installRefreshDecorationsProbe(editor, refreshDecorations);
 
-      editor.update.nodes.set({ lang: 'plaintext' }, { at: [0] });
+      editor.update.nodes.set({ language: 'plaintext' }, { at: [0] });
 
       expect(refreshDecorations).toHaveBeenCalledTimes(1);
     });
@@ -271,7 +271,7 @@ const createBaseEditor = <const P extends readonly BasePluginInput[]>(
 
       installRefreshDecorationsProbe(editor, refreshDecorations);
 
-      editor.update.nodes.set({ lang: 'json' }, { at: [0] });
+      editor.update.nodes.set({ language: 'json' }, { at: [0] });
 
       expect(refreshDecorations).not.toHaveBeenCalled();
     });
@@ -279,7 +279,7 @@ const createBaseEditor = <const P extends readonly BasePluginInput[]>(
     it('does not refresh for unrelated code block properties', () => {
       const input = (
         <editor>
-          <hcodeblock lang="javascript">
+          <hcodeblock language="javascript">
             <hcodeline>aa</hcodeline>
           </hcodeblock>
         </editor>
@@ -308,7 +308,7 @@ const createBaseEditor = <const P extends readonly BasePluginInput[]>(
       const value = [
         {
           children: [{ children: [{ text: 'aa' }], type: 'codeLine' }],
-          lang: 'javascript',
+          language: 'javascript',
           type: 'codeBlock',
         },
       ];
@@ -317,7 +317,7 @@ const createBaseEditor = <const P extends readonly BasePluginInput[]>(
         initialValue: value,
       });
 
-      source.update.nodes.set({ lang: 'json' }, { at: [0] });
+      source.update.nodes.set({ language: 'json' }, { at: [0] });
 
       const change = DocumentChange.fromJSON(
         source.read.lastCommit()!.changes.toJSON()

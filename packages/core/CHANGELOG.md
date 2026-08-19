@@ -16,7 +16,7 @@
 
 ### Patch Changes
 
-- [#4987](https://github.com/udecode/plate/pull/4987) by [@zbeyens](https://github.com/zbeyens) – Add `transformInitialValue` and `nodeId.initialValueIds` while keeping `normalizeInitialValue` as a deprecated alias
+- [#4987](https://github.com/udecode/plate/pull/4987) by [@zbeyens](https://github.com/zbeyens) – Add `prepareDocument` and `nodeId.initialValueIds` while keeping `normalizeInitialValue` as a deprecated alias
 
 - [#4987](https://github.com/udecode/plate/pull/4987) by [@zbeyens](https://github.com/zbeyens) – Improve large-document mount and render performance across core element, mark, and `nodeId` paths
 

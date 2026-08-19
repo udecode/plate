@@ -3,9 +3,9 @@ title: 斜杠命令
 docs:
   - route: /docs/combobox
     title: 组合框
-  - route: components/slash-node
+  - route: components/slash
     title: 斜杠输入元素
-  - route: https://pro.platejs.org/docs/components/slash-node
+  - route: https://pro.platejs.org/docs/components/slash
     title: 斜杠输入元素
 ---
 
@@ -30,15 +30,15 @@ docs:
 
 添加斜杠命令功能最快的方式是使用 `SlashKit`，它包含预配置的 `SlashPlugin` 和 `SlashInputPlugin` 以及它们的 [Plate UI](/docs/installation/plate-ui) 组件。
 
-<ComponentSource name="slash-kit" />
+<ComponentSource name="slash" />
 
-- [`SlashInputElement`](/docs/components/slash-node): 渲染带有预定义选项的斜杠命令组合框
+- [`SlashInputElement`](/docs/components/slash): 渲染带有预定义选项的斜杠命令组合框
 
 ### 添加套件
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { SlashKit } from '@/components/editor/plugins/slash-kit';
+import { SlashKit } from '@/components/editor/slash';
 
 const editor = createPlateEditor({
   plugins: [
@@ -87,7 +87,7 @@ import {
 } from '@platejs/slash-command/react';
 import { PLUGINS } from 'platejs';
 import { createPlateEditor } from 'platejs/react';
-import { SlashInputElement } from '@/components/ui/slash-node';
+import { SlashInputElement } from '@/components/editor/slash';
 
 const editor = createPlateEditor({
   plugins: [

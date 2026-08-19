@@ -35,7 +35,7 @@ docs:
 
 The fastest way to add font styling functionality is with the `FontKit`, which includes pre-configured font plugins with their [Plate UI](/docs/installation/plate-ui) components.
 
-<ComponentSource name="font-kit" />
+<ComponentSource name="font" />
 
 - Includes all font plugins (`FontColorPlugin`, `FontBackgroundColorPlugin`, `FontSizePlugin`, `FontFamilyPlugin`) with sensible defaults.
 
@@ -45,7 +45,7 @@ Add the kit to your plugins:
 
 ```tsx
 import { createPlateEditor } from "platejs/react";
-import { FontKit } from "@/components/editor/plugins/font-kit";
+import { FontKit } from "@/components/editor/font";
 
 const editor = createPlateEditor({
   plugins: [

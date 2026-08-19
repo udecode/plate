@@ -276,46 +276,43 @@ export const AffinityPlugin = defineBasePlugin('affinity', {
         });
       }),
       around(editorCommands.insertText, ({ state, next }) => {
-        const prefix = state.transaction((tx) => {
-          const selection = state.selection();
+        const selection = state.selection();
 
-          if (!selection || RangeApi.isExpanded(selection)) return;
+        if (!selection || RangeApi.isExpanded(selection)) return next();
 
-          const textPath = selection.focus.path;
-          const textCandidate = state.nodes.get(textPath)?.[0];
-          const textNode =
-            textCandidate && TextApi.isText(textCandidate)
-              ? textCandidate
-              : undefined;
-
-          if (!textNode) return;
-
-          const marks = Object.keys(NodeApi.extractProps(textNode));
-          const outwardMarks = marks.filter(
-            (key) =>
-              getCompiledPlatePluginByKey(editor, key)?.rules.selection
-                ?.affinity === 'outward'
-          );
-
-          if (
-            !outwardMarks.length ||
-            !state.points.isEnd(selection.focus, textPath)
-          ) {
-            return;
-          }
-
-          const nextPoint = state.points.after(textPath);
-          const nextCandidate = nextPoint
-            ? state.nodes.get(nextPoint.path)?.[0]
+        const textPath = selection.focus.path;
+        const textCandidate = state.nodes.get(textPath)?.[0];
+        const textNode =
+          textCandidate && TextApi.isText(textCandidate)
+            ? textCandidate
             : undefined;
-          const nextTextNode =
-            nextCandidate && TextApi.isText(nextCandidate)
-              ? nextCandidate
-              : null;
-          const marksToRemove = outwardMarks.filter(
-            (markKey) => textNode[markKey] && !nextTextNode?.[markKey]
-          );
 
+        if (!textNode) return next();
+
+        const marks = Object.keys(NodeApi.extractProps(textNode));
+        const outwardMarks = marks.filter(
+          (key) =>
+            getCompiledPlatePluginByKey(editor, key)?.rules.selection
+              ?.affinity === 'outward'
+        );
+
+        if (
+          !outwardMarks.length ||
+          !state.points.isEnd(selection.focus, textPath)
+        ) {
+          return next();
+        }
+
+        const nextPoint = state.points.after(textPath);
+        const nextCandidate = nextPoint
+          ? state.nodes.get(nextPoint.path)?.[0]
+          : undefined;
+        const nextTextNode =
+          nextCandidate && TextApi.isText(nextCandidate) ? nextCandidate : null;
+        const marksToRemove = outwardMarks.filter(
+          (markKey) => textNode[markKey] && !nextTextNode?.[markKey]
+        );
+        const prefix = state.transaction((tx) => {
           outwardMarks.forEach((markKey) => {
             tx.marks.add(markKey, textNode[markKey]);
           });

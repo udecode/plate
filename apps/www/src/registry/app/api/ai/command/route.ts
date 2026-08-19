@@ -21,7 +21,7 @@ import type { MarkdownEditor } from '@platejs/markdown';
 import { type Selection, type Value, createBaseEditor, nanoid } from 'platejs';
 import { z } from 'zod';
 
-import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
+import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 import { markdownJoinerTransform } from '@/registry/lib/markdown-joiner-transform';
 
 import {

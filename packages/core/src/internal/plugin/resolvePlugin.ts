@@ -1,6 +1,9 @@
 import type { BaseEditor } from '../../lib/editor';
 import type { AnyBasePlugin } from '../../lib/plugin/BasePlugin';
-import type { EditorExtensionReference } from '@platejs/plite';
+import type {
+  EditorExtensionReference,
+  EditorReadMethodTree,
+} from '@platejs/plite';
 
 import { isEditorExtension } from '@platejs/plite/internal';
 
@@ -26,7 +29,7 @@ type PluginContribution = Record<PropertyKey, unknown> & {
   codecs?: Readonly<Record<PropertyKey, unknown>>;
   name?: string;
   on?: Readonly<Record<PropertyKey, unknown>>;
-  read?: (context: object) => object;
+  read?: (context: object) => EditorReadMethodTree;
   update?: (context: object) => object;
 };
 

@@ -51,22 +51,26 @@ export const BaseTocPlugin = defineBasePlugin(PLUGINS.toc, {
       if (queryHeading) return queryHeading(state);
 
       const headings: Heading[] = [];
-      const headingDepthByType = new Map(
-        [PLUGINS.h1, PLUGINS.h2, PLUGINS.h3, PLUGINS.h4, PLUGINS.h5, PLUGINS.h6]
-          .map((name, index) => [editor.plugin(name), index + 1] as const)
-          .filter(([plugin]) => plugin.installed)
-          .map(([plugin, depth]) => [plugin.schema.type, depth] as const)
-      );
+      const heading = editor.plugin(PLUGINS.heading);
+
+      if (!heading.installed) return headings;
 
       for (const [node] of state.nodes.entries({
         at: [],
-        type: [...headingDepthByType.keys()],
+        type: heading.schema.type,
       })) {
         const title = NodeApi.string(node);
+        const depth = node.level;
 
-        if (title) {
+        if (
+          title &&
+          typeof depth === 'number' &&
+          Number.isInteger(depth) &&
+          depth >= 1 &&
+          depth <= 6
+        ) {
           headings.push({
-            depth: headingDepthByType.get(node.type)!,
+            depth,
             key: state.key(node),
             title,
             type: node.type,

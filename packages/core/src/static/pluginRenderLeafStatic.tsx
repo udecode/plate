@@ -7,7 +7,7 @@ import type {
   AnyBasePluginPortal,
   AnyPluginBase,
   BaseEditor,
-  RenderLeafProps,
+  StaticRenderLeafProps as RenderLeafProps,
 } from '../lib';
 import {
   getCompiledPlateModelBinding,

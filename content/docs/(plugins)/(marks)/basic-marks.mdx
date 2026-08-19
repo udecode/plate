@@ -73,12 +73,12 @@ Use `highlight` for marked text.
 
 `BasicMarksKit` is the full client-side registry kit. It includes mark plugins, input rules, `CodeLeaf`, `HighlightLeaf`, and `KbdLeaf`.
 
-<ComponentSource name="basic-marks-kit" />
+<ComponentSource name="basic-marks" />
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
 
-import { BasicMarksKit } from '@/components/editor/plugins/basic-marks-kit';
+import { BasicMarksKit } from '@/components/editor/basic-marks';
 
 export const editor = createPlateEditor({
   plugins: [...BasicMarksKit],
@@ -93,7 +93,7 @@ Use `MarkToolbarButton` for direct mark toggles.
 import { BoldPlugin } from '@platejs/basic-nodes/react';
 import { BoldIcon } from 'lucide-react';
 
-import { MarkToolbarButton } from '@/components/ui/mark-toolbar-button';
+import { MarkToolbarButton } from '@/components/editor/mark-toolbar-button';
 
 export function BoldToolbarButton() {
   return (

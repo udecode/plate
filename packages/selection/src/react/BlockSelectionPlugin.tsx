@@ -30,7 +30,7 @@ import { definePlatePlugin } from '@platejs/core/react';
 import copyToClipboard from 'copy-to-clipboard';
 
 import type { PartialSelectionAreaOptions } from '../SelectionArea';
-import { BlockSelectionAfterEditable } from './BlockSelection';
+import { BlockSelectionAfterEditable } from './BlockSelection.internal';
 import { BlockMenuPlugin } from './BlockMenuPlugin';
 
 const BLOCK_SELECTION_PRESERVE_TAG = 'block-selection-preserve';

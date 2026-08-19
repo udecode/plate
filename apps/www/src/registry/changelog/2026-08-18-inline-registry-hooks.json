@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-18-inline-registry-hooks",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-18-inline-registry-hooks.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-18",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Colocate registry component state",
+  "targets": [
+    {
+      "name": "uploadthing",
+      "files": ["apps/www/src/registry/lib/uploadthing.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-lib.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-placeholder",
+      "files": [
+        "apps/www/src/registry/components/editor/media-placeholder.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-discussion",
+      "files": [
+        "apps/www/src/registry/components/editor/block-discussion.tsx",
+        "apps/www/src/registry/lib/block-discussion-index.ts"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "emoji-picker",
+      "files": ["apps/www/src/registry/components/editor/emoji-picker.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-18-uploadthing-colocate-upload-state-8cc6343e",
+      "kind": "wiring",
+      "summary": "Keep UploadThing server routing in `uploadthing` and colocate client upload state in `media-placeholder`.",
+      "details": [],
+      "migrationNotes": [
+        "Keep custom upload state in your media placeholder component; `uploadthing` installs only the server router."
+      ],
+      "targets": ["uploadthing", "media-placeholder"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-18",
+          "entry": "2026-08-18-inline-registry-hooks",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-08-18-component-families-inline-state-a2902f17",
+      "kind": "wiring",
+      "summary": "Keep single-consumer subscription and picker state inside their owning component families.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["block-discussion", "emoji-picker"],
+      "source": {
+        "line": 15,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-08-18",
+          "entry": "2026-08-18-inline-registry-hooks",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

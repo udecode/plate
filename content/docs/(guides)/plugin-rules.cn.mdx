@@ -50,7 +50,7 @@ description: 配置常见的编辑行为。
 将当前块转换为默认段落，同时保留内容。自定义属性将被移除。
 
 ```tsx
-<h3 listStyleType="disc">
+<h3 listStyle="disc">
   |
 </h3>
 ```
@@ -196,11 +196,11 @@ CalloutPlugin.configure({
 **标题拆分时重置：**
 
 ```tsx
-import { H1Plugin } from '@platejs/heading/react';
+import { HeadingPlugin } from '@platejs/heading/react';
 
 const plugins = [
   // ...其他插件
-  H1Plugin.configure({
+  HeadingPlugin.configure({
     rules: {
       break: {
         splitReset: true,
@@ -304,9 +304,9 @@ const plugins = [
 ### 配置
 
 ```tsx
-import { H1Plugin } from '@platejs/basic-nodes/react';
+import { HeadingPlugin } from '@platejs/basic-nodes/react';
 
-H1Plugin.configure({
+HeadingPlugin.configure({
   rules: {
     delete: {
       // 在块起始处按下 Backspace 时的操作
@@ -372,7 +372,7 @@ const plugins = [
     rules: {
       delete: { start: 'reset' },
       match: ({ rule, node }) => {
-        return rule === 'delete.start' && Boolean(node.listStyleType);
+        return rule === 'delete.start' && Boolean(node.listStyle);
       },
     },
   }),
@@ -381,7 +381,7 @@ const plugins = [
 
 在列表项起始处按下 `Backspace` 前：
 ```tsx
-<p listStyleType="disc">
+<p listStyle="disc">
   |List item content
 </p>
 ```
@@ -415,11 +415,11 @@ ParagraphPlugin.configure({
 默认情况下，只有段落和标题插件启用移除功能。大多数其他插件使用 `false`：
 
 ```tsx
-import { H1Plugin, ParagraphPlugin } from 'platejs/react';
+import { HeadingPlugin, ParagraphPlugin } from 'platejs/react';
 
 const plugins = [
   // ...其他插件
-  H1Plugin, // 默认 rules.merge: { removeEmpty: true }
+  HeadingPlugin, // 默认 rules.merge: { removeEmpty: true }
   ParagraphPlugin, // 默认 rules.merge: { removeEmpty: true }
 ];
 ```
@@ -626,11 +626,11 @@ editor.update((tx) => tx.codeBlock.unwrap());
 您可以组合不同的规则来实现全面的块行为：
 
 ```tsx
-import { H1Plugin } from '@platejs/heading/react';
+import { HeadingPlugin } from '@platejs/heading/react';
 
 const plugins = [
   // ...其他插件
-  H1Plugin.configure({
+  HeadingPlugin.configure({
     rules: {
       break: {
         empty: 'reset',

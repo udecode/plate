@@ -25,9 +25,9 @@ docs:
 
 最快捷的方式是使用 `BasicMarksKit` 来添加代码插件，该套件包含预配置的 `CodePlugin` 以及其他基础标记及其 [Plate UI](/docs/installation/plate-ui) 组件。
 
-<ComponentSource name="basic-marks-kit" />
+<ComponentSource name="basic-marks" />
 
-- [`CodeLeaf`](/docs/components/code-node): 渲染内联代码元素
+- [`CodeLeaf`](/docs/components/code): 渲染内联代码元素
 
 ### 添加套件
 
@@ -35,7 +35,7 @@ docs:
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { BasicMarksKit } from '@/components/editor/plugins/basic-marks-kit';
+import { BasicMarksKit } from '@/components/editor/basic-marks';
 
 const editor = createPlateEditor({
   plugins: [
@@ -80,7 +80,7 @@ const editor = createPlateEditor({
 ```tsx
 import { CodePlugin } from '@platejs/basic-nodes/react';
 import { createPlateEditor } from 'platejs/react';
-import { CodeLeaf } from '@/components/ui/code-node';
+import { CodeLeaf } from '@/components/editor/code';
 
 const editor = createPlateEditor({
   plugins: [
@@ -93,7 +93,7 @@ const editor = createPlateEditor({
 });
 ```
 
-- `.configure({ component })`: 指定 [`CodeLeaf`](/docs/components/code-node) 来渲染内联代码元素
+- `.configure({ component })`: 指定 [`CodeLeaf`](/docs/components/code) 来渲染内联代码元素
 - `shortcuts.toggle`: 定义用于切换代码格式的键盘[快捷键](/docs/plugin-shortcuts)
 
 ### 添加工具栏按钮

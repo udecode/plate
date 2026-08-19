@@ -15,7 +15,7 @@ describe('editor.api.markdown.deserialize - mention link format', () => {
     expect(value.children).toEqual([
       <hp>
         <htext>Hello </htext>
-        <hmention key="john_doe" value="John Doe">
+        <hmention label="John Doe" ref="john_doe">
           <htext />
         </hmention>
         <htext>, how are you?</htext>
@@ -32,7 +32,7 @@ describe('editor.api.markdown.deserialize - mention link format', () => {
     expect(value.children).toEqual([
       <hp>
         <htext>CC: </htext>
-        <hmention key="jane smith" value="Jane Smith">
+        <hmention label="Jane Smith" ref="jane smith">
           <htext />
         </hmention>
       </hp>,
@@ -48,15 +48,15 @@ describe('editor.api.markdown.deserialize - mention link format', () => {
 
     expect(value.children).toEqual([
       <hp>
-        <hmention value="alice">
+        <hmention ref="alice">
           <htext />
         </hmention>
         <htext> mentioned </htext>
-        <hmention key="bob_johnson" value="Bob Johnson">
+        <hmention label="Bob Johnson" ref="bob_johnson">
           <htext />
         </hmention>
         <htext> and </htext>
-        <hmention value="charlie">
+        <hmention ref="charlie">
           <htext />
         </hmention>
       </hp>,
@@ -72,11 +72,11 @@ describe('editor.api.markdown.deserialize - mention link format', () => {
 
     expect(value.children).toEqual([
       <hp>
-        <hmention key="team_lead" value="Team Lead">
+        <hmention label="Team Lead" ref="team_lead">
           <htext />
         </hmention>
         <htext> assigned this to </htext>
-        <hmention key="qa_team" value="QA Team">
+        <hmention label="QA Team" ref="qa_team">
           <htext />
         </hmention>
       </hp>,
@@ -92,11 +92,11 @@ describe('editor.api.markdown.deserialize - mention link format', () => {
 
     expect(value.children).toEqual([
       <hp>
-        <hmention key="user-123" value="User 123">
+        <hmention label="User 123" ref="user-123">
           <htext />
         </hmention>
         <htext> and </htext>
-        <hmention key="dev.team" value="Dev Team">
+        <hmention label="Dev Team" ref="dev.team">
           <htext />
         </hmention>
       </hp>,
@@ -132,11 +132,11 @@ describe('editor.api.markdown.deserialize - mention link format', () => {
           <htext>@docs</htext>
         </ha>
         <htext> and </htext>
-        <hmention key="alice" value="Alice">
+        <hmention label="Alice" ref="alice">
           <htext />
         </hmention>
         <htext> plus </htext>
-        <hmention value="bob">
+        <hmention ref="bob">
           <htext />
         </hmention>
       </hp>,

@@ -83,7 +83,7 @@ const editor = createPlateEditor({
 
 ```tsx
 import { useYjsRemoteCursors, YjsPlugin } from "@platejs/yjs/react";
-import { RemoteCursorOverlay } from "@/components/ui/remote-cursor-overlay";
+import { RemoteCursorOverlay } from "@/components/editor/remote-cursor-overlay";
 
 export const yjsPlugin = YjsPlugin.configure({
   initialState: {
@@ -110,7 +110,7 @@ export const yjsPlugin = YjsPlugin.configure({
 
 ```tsx
 import { Plate } from "platejs/react";
-import { EditorContainer } from "@/components/ui/editor";
+import { EditorContainer } from "@/components/editor/editor";
 
 return (
   <Plate editor={editor}>

@@ -462,9 +462,8 @@ tx.nodes.insert({ type: codeBlockType, children: [{ text: '' }] });
 editor.plugin(BoldPlugin).update.set(true);
 ```
 
-There are no grouped heading aliases: spell out `PLUGINS.h1` through
-`PLUGINS.h6` where a group is actually needed, and list those items directly
-instead of spreading a literal array. Function and property names must
+There are no rank-shaped heading capabilities or grouped aliases. Use
+`PLUGINS.heading`; persisted `level` carries rank. Function and property names must
 keep roles honest: use `plugin` for an exact descriptor-or-string lookup input
 and `name` after runtime normalization for capability work. Exact element and
 primary-mark portals expose `schema.type` and `schema.key`; behavior and

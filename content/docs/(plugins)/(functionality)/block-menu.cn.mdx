@@ -1,12 +1,12 @@
 ---
 title: 块菜单
 docs:
-  - route: /docs/components/block-context-menu
+  - route: /docs/components/block-menu
     title: 块上下文菜单
   - route: https://pro.platejs.org/docs/components/block-menu
     title: 块菜单
 
-  - route: https://pro.platejs.org/docs/components/block-context-menu
+  - route: https://pro.platejs.org/docs/components/block-menu
     title: 块上下文菜单
 
 ---
@@ -33,15 +33,15 @@ docs:
 
 最快捷的方式是使用 `BlockMenuKit`，它包含预配置的 `BlockMenuPlugin` 以及 `BlockSelectionPlugin` 和它们的 [Plate UI](/docs/installation/plate-ui) 组件。
 
-<ComponentSource name="block-menu-kit" />
+<ComponentSource name="block-menu" />
 
-- [`BlockContextMenu`](/docs/components/block-context-menu): 渲染上下文菜单界面
+- [`BlockContextMenu`](/docs/components/block-menu): 渲染上下文菜单界面
 
 ### 添加套件
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { BlockMenuKit } from '@/components/editor/plugins/block-menu-kit';
+import { BlockMenuKit } from '@/components/editor/block-menu';
 
 const editor = createPlateEditor({
   plugins: [
@@ -91,7 +91,7 @@ const editor = createPlateEditor({
 ```tsx
 import { BlockSelectionPlugin, BlockMenuPlugin } from '@platejs/selection/react';
 import { createPlateEditor } from 'platejs/react';
-import { BlockContextMenu } from '@/components/ui/block-context-menu';
+import { BlockContextMenu } from '@/components/editor/block-menu';
 
 const editor = createPlateEditor({
   plugins: [
@@ -109,7 +109,7 @@ const editor = createPlateEditor({
 ```
 
 - `BlockSelectionPlugin.initialState.enableContextMenu`: 启用上下文菜单功能
-- `BlockMenuPlugin.render.aboveEditable`: 指定 [`BlockContextMenu`](/docs/components/block-context-menu) 组件来渲染上下文菜单
+- `BlockMenuPlugin.render.aboveEditable`: 指定 [`BlockContextMenu`](/docs/components/block-menu) 组件来渲染上下文菜单
 
 #### 控制上下文菜单行为
 

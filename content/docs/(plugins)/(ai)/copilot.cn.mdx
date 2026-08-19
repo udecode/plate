@@ -2,9 +2,9 @@
 title: Copilot
 description: AI 驱动的文本补全建议。
 docs:
-  - route: /docs/components/ghost-text
+  - route: /docs/components/copilot
     title: 幽灵文本
-  - route: https://pro.platejs.org/docs/components/ghost-text
+  - route: https://pro.platejs.org/docs/components/copilot
     title: 幽灵文本
 ---
 
@@ -31,15 +31,15 @@ docs:
 
 添加 Copilot 功能最快的方式是使用 `CopilotKit`，它包含预配置的 `CopilotPlugin` 以及 `MarkdownKit` 和它们的 [Plate UI](/docs/installation/plate-ui) 组件。
 
-<ComponentSource name="copilot-kit" />
+<ComponentSource name="copilot" />
 
-- [`GhostText`](/docs/components/ghost-text): 渲染幽灵文本建议。
+- [`GhostText`](/docs/components/copilot): 渲染幽灵文本建议。
 
 ### 添加套件
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { CopilotKit } from '@/components/editor/plugins/copilot-kit';
+import { CopilotKit } from '@/components/editor/copilot';
 
 const editor = createPlateEditor({
   plugins: [
@@ -112,7 +112,7 @@ import {
   MarkdownPlugin,
   stripMarkdown,
 } from '@platejs/markdown';
-import { GhostText } from '@/components/ui/ghost-text';
+import { GhostText } from '@/components/editor/copilot';
 
 const plugins = [
   // ...其他插件,
@@ -152,8 +152,8 @@ const plugins = [
 ];
 ```
 
-- `completeOptions`: 配置 Vercel AI SDK `useCompletion` 钩子。
-  - `api`: AI 补全路由的端点。
+- `completeOptions`: 配置补全传输。
+  - `api`: 必需的 AI 补全路由端点。
   - `onError`: 处理错误的回调（用于开发期间的模拟）。
   - `onFinish`: 处理完成建议的回调。此处将建议设置到编辑器中。
 - `debounceDelay`: 用户停止输入后自动触发建议的延迟时间（毫秒）。
@@ -417,8 +417,8 @@ export async function POST(req: NextRequest) {
       - 上方块以空格结尾
       - 无现有建议
   </APIItem>
-  <APIItem name="completeOptions" type="Partial<CompleteOptions>">
-    AI 补全配置选项。参见 [AI SDK useCompletion 参数](https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-completion#parameters)。
+  <APIItem name="completeOptions" type="CopilotCompleteOptions | null">
+    AI 补全传输配置。触发补全前必须配置明确的 `api`。
   </APIItem>
   <APIItem name="debounceDelay" type="number" optional>
     自动触发建议的防抖延迟。

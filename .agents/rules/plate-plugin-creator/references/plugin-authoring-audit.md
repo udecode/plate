@@ -77,18 +77,22 @@ builder inference can own them.
 
 ## React Family Colocation
 
-- [FloatingLink.tsx](../../../../packages/link/src/react/FloatingLink.tsx)
-- [useFloatingLink.ts](../../../../packages/link/src/react/useFloatingLink.ts)
-
-Copy:
+Use `plate-ui` for the exact component law. Audit current families rather than
+copying their historical split:
 
 - one component-family file owns the main component, subcomponents, variants,
-  render helpers, and component-local constants;
-- one hook-family file owns every related public and private hook, including
-  subcomponent-only hooks;
-- providers and stores remain separate only for independently owned state or
-  lifecycle;
-- app wrappers composing that family do not establish another source owner.
+  render helpers, component-local constants, and simple local hooks;
+- zero or one `use<Family>` semantic controller may coordinate multiple family
+  members or surfaces;
+- one hook per subcomponent, state-hook/prop-hook pipelines, and public prop-bag
+  hooks are migration debt;
+- a hook that mixes package-worthy DOM lifecycle with renderer state is split:
+  keep only required lifecycle input plus subscription/projection/cleanup in
+  the package (returning `void` when side-effect-only), and localize layout,
+  transient overrides, trivial helpers, and event handlers;
+- providers and stores remain separate only for independent lifecycle or
+  cross-family reuse;
+- app wrappers composing a family do not establish another source owner.
 
 Do not copy an editor-accepting helper signature from a family file when plugin
 builder context or a scoped API can own the behavior.

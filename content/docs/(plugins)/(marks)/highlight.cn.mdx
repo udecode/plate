@@ -25,9 +25,9 @@ docs:
 
 最快捷添加高亮插件的方式是使用 `BasicMarksKit`，它包含预配置的 `HighlightPlugin` 以及其他基础标记及其 [Plate UI](/docs/installation/plate-ui) 组件。
 
-<ComponentSource name="basic-marks-kit" />
+<ComponentSource name="basic-marks" />
 
-- [`HighlightLeaf`](/docs/components/highlight-node): 渲染高亮文本元素
+- [`HighlightLeaf`](/docs/components/highlight): 渲染高亮文本元素
 
 ### 添加套件
 
@@ -35,7 +35,7 @@ docs:
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { BasicMarksKit } from '@/components/editor/plugins/basic-marks-kit';
+import { BasicMarksKit } from '@/components/editor/basic-marks';
 
 const editor = createPlateEditor({
   plugins: [
@@ -80,7 +80,7 @@ const editor = createPlateEditor({
 ```tsx
 import { HighlightPlugin } from '@platejs/basic-nodes/react';
 import { createPlateEditor } from 'platejs/react';
-import { HighlightLeaf } from '@/components/ui/highlight-node';
+import { HighlightLeaf } from '@/components/editor/highlight';
 
 const editor = createPlateEditor({
   plugins: [
@@ -93,7 +93,7 @@ const editor = createPlateEditor({
 });
 ```
 
-- `.configure({ component })`: 分配 [`HighlightLeaf`](/docs/components/highlight-node) 来渲染高亮文本元素
+- `.configure({ component })`: 分配 [`HighlightLeaf`](/docs/components/highlight) 来渲染高亮文本元素
 - `shortcuts.toggle`: 定义用于切换高亮格式的键盘[快捷键](/docs/plugin-shortcuts)
 
 ### 添加工具栏按钮

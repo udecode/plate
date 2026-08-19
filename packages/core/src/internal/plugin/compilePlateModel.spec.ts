@@ -994,6 +994,19 @@ describe('compilePlateModel', () => {
         plugins: [MarkPlugin, createDependentPlugin('markOwner', MarkPlugin)],
       })
     ).toThrow('schema reference "markTarget" does not own an element type');
+    expect(() =>
+      createBaseEditor({
+        plugins: [
+          MarkPlugin,
+          defineBasePlugin('markInjection', {
+            targetPlugins: [MarkPlugin],
+            inject: { nodeProps: { transformProps: ({ props }) => props } },
+          }),
+        ],
+      })
+    ).toThrow(
+      'Plate plugin "markInjection" targetPlugins entry "markTarget" does not own an element type.'
+    );
   });
 
   it('keeps literal target names unchanged', () => {

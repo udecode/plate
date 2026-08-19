@@ -51,7 +51,7 @@ After pressing `Backspace`:
 Converts the current block to a default paragraph while preserving content. Custom properties are removed.
 
 ```tsx
-<h3 listStyleType="disc">
+<h3 listStyle="disc">
   |
 </h3>
 ```
@@ -195,11 +195,11 @@ Each property controls a specific scenario:
 **Reset heading on break:**
 
 ```tsx
-import { H1Plugin } from '@platejs/basic-nodes/react';
+import { HeadingPlugin } from '@platejs/basic-nodes/react';
 
 const plugins = [
   // ...otherPlugins,
-  H1Plugin.configure({
+  HeadingPlugin.configure({
     rules: {
       break: {
         splitReset: true,
@@ -303,9 +303,9 @@ Controls what happens when users press `Backspace` at specific positions.
 ### Configuration
 
 ```tsx
-import { H1Plugin } from '@platejs/basic-nodes/react';
+import { HeadingPlugin } from '@platejs/basic-nodes/react';
 
-H1Plugin.configure({
+HeadingPlugin.configure({
   rules: {
     delete: {
       // Action when Backspace is pressed at block start
@@ -370,7 +370,7 @@ const plugins = [
     rules: {
       delete: { start: 'reset' },
       match: ({ rule, node }) => {
-        return rule === 'delete.start' && Boolean(node.listStyleType);
+        return rule === 'delete.start' && Boolean(node.listStyle);
       },
     },
   }),
@@ -379,7 +379,7 @@ const plugins = [
 
 Before pressing `Backspace` at start of list item:
 ```tsx
-<p listStyleType="disc">
+<p listStyle="disc">
   |List item content
 </p>
 ```
@@ -413,12 +413,12 @@ ParagraphPlugin.configure({
 Only paragraph and heading plugins enable removal by default. Most other plugins use `false`:
 
 ```tsx
-import { H1Plugin } from '@platejs/basic-nodes/react';
+import { HeadingPlugin } from '@platejs/basic-nodes/react';
 import { ParagraphPlugin } from 'platejs/react';
 
 const plugins = [
   // ...otherPlugins,
-  H1Plugin, // rules.merge: { removeEmpty: true } by default
+  HeadingPlugin, // rules.merge: { removeEmpty: true } by default
   ParagraphPlugin, // rules.merge: { removeEmpty: true } by default
 ];
 ```
@@ -622,11 +622,11 @@ editor.update((tx) => {
 You can combine different rules for comprehensive block behavior:
 
 ```tsx
-import { H1Plugin } from '@platejs/basic-nodes/react';
+import { HeadingPlugin } from '@platejs/basic-nodes/react';
 
 const plugins = [
   // ...otherPlugins,
-  H1Plugin.configure({
+  HeadingPlugin.configure({
     rules: {
       break: {
         empty: 'reset',

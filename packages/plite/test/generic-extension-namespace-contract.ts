@@ -33,7 +33,7 @@ const LinkExtension = defineExtension('link', {
       canOpen: () => state.selection() != null,
     },
     selectedHref: () => null as string | null,
-    value: [...state.children()] as CustomValue,
+    value: () => [...state.children()] as CustomValue,
   }),
   update: ({ tx }) => ({
     nested: {
@@ -216,12 +216,12 @@ const editor = createEditor({
 const selectedHref: string | null = editor.read((state) =>
   state.link.selectedHref()
 );
-const customValue: CustomValue = editor.read((state) => state.link.value);
+const customValue: CustomValue = editor.read((state) => state.link.value());
 const canOpen: boolean = editor.read((state) => state.link.nested.canOpen());
 const tableRowCount: number = editor.read((state) => state.table.rowCount());
 const isInTable: boolean = editor.read((state) => state.table.isInTable());
 const directSelectedHref: string | null = editor.read.link.selectedHref();
-const directCustomValue: CustomValue = editor.read.link.value;
+const directCustomValue: CustomValue = editor.read.link.value();
 const directCanOpen: boolean = editor.read.link.nested.canOpen();
 const directTableRowCount: number = editor.read.table.rowCount();
 const directIsInTable: boolean = editor.read.table.isInTable();

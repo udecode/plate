@@ -19,8 +19,10 @@
   "targets": [
     {
       "name": "table-toolbar-button",
-      "files": ["apps/www/src/registry/ui/table-toolbar-button.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "files": [
+        "apps/www/src/registry/components/editor/table-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
       "diagnostics": []
     }
   ],

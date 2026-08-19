@@ -3,6 +3,7 @@ import { describe, it } from 'node:test';
 
 import {
   createEditor,
+  createEditorView,
   defineEditorSchema,
   schema,
   type EditorSchemaIdentity,
@@ -10,6 +11,7 @@ import {
 import {
   compileEditorSchemaContributions,
   EditorSchemaCompileError,
+  setEditorSnapshotInputTransform,
   type EditorSchemaContributionRecord,
 } from '@platejs/plite/internal';
 
@@ -105,6 +107,136 @@ describe('schema identity contract', () => {
         return true;
       }
     );
+  });
+
+  it('accepts an exact persisted envelope and rejects stale lineage before fitting', () => {
+    const ArticleSchema = defineEditorSchema('schema:article-envelope', {
+      elements: { paragraph: schema.element.textBlock() },
+      id: 'article-envelope',
+      root: schema.content.type('paragraph'),
+      version: 2,
+    });
+    const editor = createEditor({
+      extensions: [ArticleSchema],
+      initialValue: [{ children: [{ text: 'before' }], type: 'paragraph' }],
+    });
+    const document = {
+      children: [{ children: [{ text: 'after' }], type: 'paragraph' }],
+    } as const;
+
+    editor.update.value.replace({
+      document,
+      schema: editor.read.schema.identity(),
+    });
+    assert.equal(editor.read.children()[0]?.children[0]?.text, 'after');
+    assert.throws(
+      () =>
+        editor.update.value.replace({
+          document: { ...document, selection: 'end' } as never,
+          schema: editor.read.schema.identity(),
+        }),
+      /Persisted document field "selection" is not supported/
+    );
+    assert.throws(
+      () =>
+        editor.update.value.replace({
+          document,
+          schema: editor.read.schema.identity(),
+          sourceVersion: 2,
+        } as never),
+      /Persisted document envelope field "sourceVersion" is not supported/
+    );
+    assert.throws(
+      () =>
+        editor.update.value.replace({
+          document,
+          schema: {
+            ...editor.read.schema.identity(),
+            sourceVersion: 2,
+          },
+        } as never),
+      /Persisted document schema field "sourceVersion" is not supported/
+    );
+    assert.throws(
+      () =>
+        editor.update.value.replace({
+          document,
+          schema: {
+            ...editor.read.schema.identity(),
+            fingerprint: 'stale',
+          },
+        }),
+      /does not match current schema/
+    );
+  });
+
+  it('does not confuse direct snapshots with application document metadata', () => {
+    const editor = createEditor();
+
+    editor.update.value.replace({
+      children: [{ children: [{ text: 'after' }], type: 'paragraph' }],
+      document: { application: true },
+    } as never);
+
+    assert.equal(editor.read.text.string([]), 'after');
+  });
+
+  it('rejects persisted envelopes with unsupported direct snapshot fields', () => {
+    const editor = createEditor();
+
+    assert.throws(
+      () =>
+        editor.update.value.replace({
+          children: [],
+          document: { children: [] },
+          schema: editor.read.schema.identity(),
+        } as never),
+      /Persisted document envelope field "children" is not supported/
+    );
+  });
+
+  it('rejects persisted envelopes from views before host transforms run', () => {
+    const editor = createEditor();
+    const view = createEditorView(editor);
+    const envelope = {
+      document: {
+        children: [{ children: [{ text: 'after' }], type: 'paragraph' }],
+      },
+      schema: editor.read.schema.identity(),
+    } as const;
+    const restore = setEditorSnapshotInputTransform(editor, (input) =>
+      typeof input === 'object' && input && 'document' in input
+        ? input.document
+        : input
+    );
+
+    assert.throws(
+      () => view.update.value.replace(envelope),
+      /can replace only the complete editor/
+    );
+    restore();
+
+    const restoreEnvelopeTransform = setEditorSnapshotInputTransform(
+      editor,
+      (input) =>
+        ({
+          document: {
+            children: (input as { children: unknown }).children,
+          },
+          schema: editor.read.schema.identity(),
+        }) as never
+    );
+
+    assert.throws(
+      () =>
+        view.update.value.replace({
+          children: [
+            { children: [{ text: 'transformed' }], type: 'paragraph' },
+          ],
+        }),
+      /can replace only the complete editor/
+    );
+    restoreEnvelopeTransform();
   });
 
   it('rejects multiple root-owning schema definitions', () => {

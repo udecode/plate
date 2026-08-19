@@ -23,6 +23,21 @@ export const pipeDecorate = (
   )
     return;
 
+  const pluginDecorators = getPlateRuntime(editor).pluginCache.decorate.flatMap(
+    (name) => {
+      const plugin = getCompiledPlatePlugin(editor, name);
+
+      return plugin && typeof plugin.decorate === 'function'
+        ? [
+            {
+              context: createPluginContext(editor, plugin),
+              decorate: plugin.decorate,
+            },
+          ]
+        : [];
+    }
+  );
+
   return (entry: NodeEntry) => {
     let ranges: Range[] = [];
 
@@ -30,14 +45,9 @@ export const pipeDecorate = (
       if (newRanges?.length) ranges = [...ranges, ...newRanges];
     };
 
-    getPlateRuntime(editor).pluginCache.decorate.forEach((name) => {
-      const plugin = getCompiledPlatePlugin(editor, name)!;
-      if (typeof plugin.decorate !== 'function') return;
-      const nextRanges: unknown = Reflect.apply(plugin.decorate, undefined, [
-        {
-          ...createPluginContext(editor, plugin),
-          entry,
-        },
+    pluginDecorators.forEach(({ context, decorate }) => {
+      const nextRanges: unknown = Reflect.apply(decorate, undefined, [
+        Object.assign(Object.create(context), { entry }),
       ]);
 
       if (Array.isArray(nextRanges)) addRanges(nextRanges);

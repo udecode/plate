@@ -1,7 +1,9 @@
 ---
-title: DOCX Paste
-description: Paste content from Microsoft Word with automatic formatting.
+title: DOCX
+description: Paste from Word, import DOCX files, and export Plate content as DOCX.
 ---
+
+DOCX support has three directions: paste Word clipboard content into Plate, import a `.docx` file into Plate nodes, and export Plate nodes as a `.docx` file. Each direction has a focused package, while `@platejs/docx` reexports all three public APIs.
 
 <ComponentPreview name="docx-demo" />
 
@@ -9,43 +11,30 @@ description: Paste content from Microsoft Word with automatic formatting.
 
 ## Features
 
-- Convert pasted DOCX content to Plate format
-- Clean and normalize DOCX HTML content for Plate compatibility
-- Support for list styles and nested indentation from Word documents
+- Normalize HTML and RTF pasted from Microsoft Word
+- Import `.docx` files with comments and conversion warnings
+- Export Plate content with document styles, page settings, tables, lists, and images
 
 </PackageInfo>
 
-<Callout type="info">
-  Looking for DOCX file import/export? See [DOCX Import/Export](/docs/docx-io).
+<Callout type="info" title="Client boundary">
+  Paste, file import, and file download use browser APIs. Keep these operations in client code. DOCX export also uses React static rendering, so pass the same plugin descriptors and static components that define your document output.
 </Callout>
+
+## Ownership
+
+| Surface | Owner | Use it for |
+| --- | --- | --- |
+| DOCX facade | `@platejs/docx` | Importing paste, import, and export APIs from one package |
+| `DocxPastePlugin` | `@platejs/docx-paste` | Paste from Word |
+| `DocxImportPlugin` | `@platejs/docx-import` | Converting a `.docx` buffer into Plate nodes |
+| `DocxExportPlugin`, `exportToDocx` | `@platejs/docx-export` | Converting Plate nodes into a DOCX blob |
+| Registry `DocxKit` | App-local copied code | Choosing and ordering the complete DOCX plugin preset |
+| Registry `DocxExportKit` | App-local copied code | Providing DOCX-specific static renderers |
 
 ## Kit Usage
 
-<Steps>
-
-### Installation
-
-The fastest way to add DOCX import functionality is with the `DocxKit`, which includes pre-configured `DocxPlugin` and `JuicePlugin` for handling DOCX content and CSS processing.
-
-<ComponentSource name="docx-kit" />
-
-### Add Kit
-
-```tsx
-import { createPlateEditor } from 'platejs/react';
-import { DocxKit } from '@/components/editor/plugins/docx-kit';
-
-const editor = createPlateEditor({
-  plugins: [
-    // ...otherPlugins,
-    ...DocxKit,
-  ],
-});
-```
-
-</Steps>
-
-## Manual Usage
+The registry kit is the fastest complete setup. The app-local array installs `JuicePlugin`, `DocxPastePlugin`, `DocxImportPlugin`, and `DocxExportPlugin`. `JuicePlugin` inlines pasted CSS before Plate decodes it.
 
 <Steps>
 
@@ -55,62 +44,162 @@ const editor = createPlateEditor({
 npm install @platejs/docx @platejs/juice
 ```
 
-### Add Plugins
+### Add Kit
 
-```tsx
-import { DocxPlugin } from '@platejs/docx';
-import { JuicePlugin } from '@platejs/juice';
+<ComponentSource name="docx" />
+
+```tsx title="components/editor/editor.tsx"
 import { createPlateEditor } from 'platejs/react';
+import { DocxKit } from '@/components/editor/docx';
 
 const editor = createPlateEditor({
-  plugins: [
-    // ...otherPlugins,
-    JuicePlugin,
-    DocxPlugin,
-  ],
+  plugins: [...DocxKit],
 });
 ```
-
-### Configure Plugins
-
-```tsx
-import { DocxPlugin } from '@platejs/docx';
-import { JuicePlugin } from '@platejs/juice';
-import { createPlateEditor } from 'platejs/react';
-
-const editor = createPlateEditor({
-  plugins: [
-    // ...otherPlugins,
-    JuicePlugin, // Inlines CSS properties into style attributes
-    DocxPlugin, // Handles DOCX content transformation
-  ],
-});
-```
-
-- `DocxPlugin`: Processes pasted DOCX content and converts it to Plate format
-- `JuicePlugin`: Inlines CSS properties into the `style` attribute for better compatibility
 
 </Steps>
 
-## Usage
+## Paste from Word
 
-### DOCX to Plate
+Install only `@platejs/docx-paste` when clipboard input is the only DOCX capability you need. `JuicePlugin` preserves styles defined in Word's pasted HTML.
 
-When users paste content from Microsoft Word, the DOCX plugin automatically:
+```bash
+npm install @platejs/docx-paste @platejs/juice
+```
 
-1. Detects DOCX content in the clipboard
-2. Cleans and normalizes the HTML structure
-3. Preserves indentation and list formatting
-4. Converts DOCX-specific elements to Plate format
+```tsx title="components/editor/editor.tsx"
+import { DocxPastePlugin } from '@platejs/docx-paste';
+import { JuicePlugin } from '@platejs/juice';
+import { createPlateEditor } from 'platejs/react';
 
-The plugin works seamlessly with the paste functionality - no additional code is needed once installed.
+const editor = createPlateEditor({
+  plugins: [JuicePlugin, DocxPastePlugin],
+});
+```
 
-## Plugins
+Once installed, `DocxPastePlugin` detects Word HTML in clipboard data, cleans the HTML and RTF, and lets the installed Plate codecs decode the result.
 
-### DocxPlugin
+## Import DOCX
 
-Plugin for processing DOCX content during paste operations.
+`DocxImportPlugin` converts a DOCX `ArrayBuffer` into nodes, comments, and warnings. The editor's installed HTML codecs determine the resulting Plate nodes.
 
-### JuicePlugin
+```bash
+npm install @platejs/docx-import
+```
 
-Plugin for inlining CSS properties into HTML elements. Converts external CSS styles to inline `style` attributes. This is essential for DOCX processing as it ensures styling information is preserved when content is pasted from Word documents.
+```tsx title="components/editor/editor.tsx"
+import { DocxImportPlugin } from '@platejs/docx-import';
+import { createPlateEditor } from 'platejs/react';
+import { BaseEditorKit } from '@/components/editor/plugins-static';
+
+const editor = createPlateEditor({
+  plugins: [...BaseEditorKit, DocxImportPlugin],
+});
+
+export async function importDocx(file: File) {
+  const result = await editor
+    .plugin(DocxImportPlugin)
+    .api.import(await file.arrayBuffer());
+
+  editor.update.fragment.replace(result.nodes);
+
+  return {
+    comments: result.comments,
+    warnings: result.warnings,
+  };
+}
+```
+
+Each imported comment contains its Word comment `id`, extracted `text`, and `references` into the returned node snapshot.
+
+## Export DOCX
+
+`DocxExportPlugin` owns editor-bound export. Pass the document snapshot explicitly so the operation is deterministic.
+
+```bash
+npm install @platejs/docx-export
+```
+
+```tsx title="components/editor/editor.tsx"
+import { DocxExportPlugin, downloadDocx } from '@platejs/docx-export';
+import { createPlateEditor } from 'platejs/react';
+import { BaseEditorKit } from '@/components/editor/plugins-static';
+import { DocxExportKit } from '@/components/editor/docx-export';
+
+const editorPlugins = [...BaseEditorKit, ...DocxExportKit] as const;
+const editor = createPlateEditor({
+  plugins: [...editorPlugins, DocxExportPlugin],
+});
+
+export async function downloadEditorDocx() {
+  const blob = await editor
+    .plugin(DocxExportPlugin)
+    .api.toBlob(editor.read.children(), {
+      editorPlugins,
+      orientation: 'portrait',
+    });
+
+  downloadDocx(blob, 'document.docx');
+}
+```
+
+Use `exportToDocx` when you do not need an installed plugin portal:
+
+```tsx
+import { downloadDocx, exportToDocx } from '@platejs/docx-export';
+
+const blob = await exportToDocx(editor.read.children(), {
+  editorPlugins,
+  margins: { bottom: 1440, left: 1440, right: 1440, top: 1440 },
+});
+
+downloadDocx(blob, 'document.docx');
+```
+
+### DOCX Export Kit
+
+The app-local `DocxExportKit` supplies static renderers for code blocks, columns, equations, callouts, headings, and tables of contents.
+
+<ComponentSource name="docx-export" />
+
+## API Reference
+
+### `@platejs/docx`
+
+The facade reexports `DocxPastePlugin`, `DocxImportPlugin`, `DocxExportPlugin`, and the focused packages' operations and types. Applications own plugin membership and order through their local plugin arrays.
+
+### `DocxImportPlugin`
+
+`editor.plugin(DocxImportPlugin).api.import(arrayBuffer, options?)` returns:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `nodes` | `Descendant[]` | Plate nodes decoded by the installed HTML codecs |
+| `comments` | `DocxComment[]` | Comment text and references into `nodes` |
+| `warnings` | `string[]` | Conversion and decode warnings |
+
+`options.rtf` accepts matching RTF clipboard data when the caller has it.
+
+### `DocxExportPlugin`
+
+`editor.plugin(DocxExportPlugin).api.toBlob(value, options?)` returns a DOCX `Blob` for the explicit node snapshot.
+
+### `exportToDocx`
+
+`exportToDocx(value, options?)` returns a DOCX `Blob` without installing `DocxExportPlugin`.
+
+| Option | Type | Description |
+| --- | --- | --- |
+| `allowRemoteImages` | `boolean` | Fetch remote HTTP images during export |
+| `customStyles` | `string` | Append CSS to the default DOCX styles |
+| `editorPlugins` | `readonly BasePluginInput[]` | Descriptors used for static HTML rendering |
+| `editorStaticComponent` | `React.ComponentType<PlateStaticProps>` | Static editor wrapper |
+| `fontFamily` | `string` | Document body font |
+| `margins` | `DocxExportMargins` | Page margins in twentieths of a point |
+| `orientation` | `'landscape' \| 'portrait'` | Page orientation |
+| `pageSize` | `PageSize` | Page width and height in twentieths of a point |
+| `title` | `string` | Document metadata title |
+
+### `downloadDocx`
+
+`downloadDocx(blob, filename)` triggers a browser download and appends `.docx` when needed.

@@ -3,6 +3,7 @@ import type React from 'react';
 import type {
   DecoratedRange,
   DefinitionOf as PliteDefinitionOf,
+  EditorDocumentValue,
   EditorCommitContext,
   EditorExtensionReference,
   EditorNodeChangeContext,
@@ -125,11 +126,11 @@ type AnyPlatePluginRender = Omit<
 
 type AnyPlatePluginRuntime = Omit<
   AnyBasePlugin,
-  'editOnly' | 'render' | 'transformInitialValue' | 'useHooks'
+  'editOnly' | 'render' | 'prepareDocument' | 'useHooks'
 > & {
   editOnly?: EditOnlyConfig | boolean;
   render: AnyPlatePluginRender;
-  transformInitialValue?: ErasedPlateCallback<Value> | null;
+  prepareDocument?: ErasedPlateCallback<EditorDocumentValue> | null;
   useHooks?: ErasedPlateCallback<void> | null;
 } & PluginReference;
 
@@ -243,9 +244,11 @@ export type TextNodeProps<
     ) => AnyObject | undefined)
   | AnyObject;
 
-export type TransformInitialValue<
+export type PrepareDocument<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
-> = (context: PlatePluginContext<C> & { value: Value }) => Value;
+> = (
+  context: PlatePluginContext<C> & { document: EditorDocumentValue }
+) => EditorDocumentValue;
 
 export type UseHooks<C extends AnyBasePluginDefinition = BasePluginDefinition> =
   (context: PlatePluginContext<C>) => void;
@@ -388,7 +391,7 @@ type PlatePluginAuthorFields<C extends AnyBasePluginDefinition> = Omit<
   | 'read'
   | 'render'
   | 'shortcuts'
-  | 'transformInitialValue'
+  | 'prepareDocument'
   | 'update'
   | 'useHooks'
 > & {
@@ -411,7 +414,7 @@ type PlatePluginAuthorFields<C extends AnyBasePluginDefinition> = Omit<
   ) => InferRead<C>;
   render?: PlatePluginAuthorRender<C>;
   shortcuts?: PlateShortcutRecord;
-  transformInitialValue?: TransformInitialValue<WithAnyName<C>>;
+  prepareDocument?: PrepareDocument<WithAnyName<C>>;
   update?: (
     context: PlatePluginContext<C> & {
       context: EditorUpdateContext;
@@ -538,7 +541,7 @@ export type PlatePluginConfiguration<C extends AnyBasePluginDefinition> = Omit<
   | 'on'
   | 'render'
   | 'shortcuts'
-  | 'transformInitialValue'
+  | 'prepareDocument'
   | 'useHooks'
 > & {
   component?: NodeComponent;
@@ -547,7 +550,7 @@ export type PlatePluginConfiguration<C extends AnyBasePluginDefinition> = Omit<
   on?: PlatePluginOn<C> | null;
   render?: PlatePluginAuthorRender<C>;
   shortcuts?: PlateShortcutRecord;
-  transformInitialValue?: TransformInitialValue<WithAnyName<C>> | null;
+  prepareDocument?: PrepareDocument<WithAnyName<C>> | null;
   useHooks?: UseHooks<WithAnyName<C>> | null;
 };
 
@@ -556,7 +559,7 @@ type PlatePluginContextualFields<C extends AnyBasePluginDefinition> = {
   inject: PlatePluginInject<C>;
   on: PlatePluginOn<C>;
   render: PlatePluginRender<C>;
-  transformInitialValue?: TransformInitialValue<WithAnyName<C>>;
+  prepareDocument?: PrepareDocument<WithAnyName<C>>;
   useHooks?: UseHooks<WithAnyName<C>>;
 };
 
@@ -584,7 +587,7 @@ type PlatePluginDescriptor<
   | 'inject'
   | 'on'
   | 'render'
-  | 'transformInitialValue'
+  | 'prepareDocument'
   | 'useHooks'
 > &
   PlatePluginRuntimeShell &

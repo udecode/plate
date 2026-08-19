@@ -4,9 +4,9 @@ import * as React from 'react';
 
 import { Plate, usePlateEditor } from 'platejs/react';
 
-import { EditorKit } from '@/registry/components/editor/editor';
+import { EditorKit } from '@/registry/components/editor/plugins';
 import { SettingsDialog } from '@/registry/components/editor/settings-dialog';
-import { Editor, EditorContainer } from '@/registry/ui/editor';
+import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 
 export function PlateEditor() {
   const editor = usePlateEditor({
@@ -29,7 +29,8 @@ const value = {
   children: [
     {
       children: [{ text: 'Welcome to the Plate Playground!' }],
-      type: 'h1',
+      level: 1,
+      type: 'heading',
     },
     {
       children: [
@@ -54,7 +55,8 @@ const value = {
     // Suggestions & Comments Section
     {
       children: [{ text: 'Collaborative Editing' }],
-      type: 'h2',
+      level: 2,
+      type: 'heading',
     },
     {
       children: [
@@ -152,7 +154,8 @@ const value = {
     // AI Section
     {
       children: [{ text: 'AI-Powered Editing' }],
-      type: 'h2',
+      level: 2,
+      type: 'heading',
     },
     {
       children: [
@@ -175,7 +178,7 @@ const value = {
         { text: 'Generate content (continue writing, summarize, explain)' },
       ],
       indent: 1,
-      listStyleType: 'disc',
+      listType: 'bulleted',
       type: 'paragraph',
     },
     {
@@ -183,13 +186,14 @@ const value = {
         { text: 'Edit existing text (improve, fix grammar, change tone)' },
       ],
       indent: 1,
-      listStyleType: 'disc',
+      listType: 'bulleted',
       type: 'paragraph',
     },
     // Core Features Section (Combined)
     {
       children: [{ text: 'Rich Content Editing' }],
-      type: 'h2',
+      level: 2,
+      type: 'heading',
     },
     {
       children: [
@@ -272,7 +276,7 @@ const value = {
             },
           ],
           indent: 1,
-          listStyleType: 'disc',
+          listType: 'bulleted',
           type: 'paragraph',
         },
         {
@@ -296,7 +300,7 @@ const value = {
         },
         { children: [{ text: '}' }], type: 'codeLine' },
       ],
-      lang: 'javascript',
+      language: 'javascript',
       type: 'codeBlock',
     },
     {
@@ -314,7 +318,12 @@ const value = {
           url: '/docs/mention',
         },
         { text: ' users like ' },
-        { children: [{ text: '' }], type: 'mention', value: 'Alice' },
+        {
+          children: [{ text: '' }],
+          label: 'Alice',
+          ref: 'alice',
+          type: 'mention',
+        },
         { text: ', or insert ' },
         {
           children: [{ text: 'emojis' }],
@@ -334,7 +343,8 @@ const value = {
     // Table Section
     {
       children: [{ text: 'How Plate Compares' }],
-      type: 'h3',
+      level: 3,
+      type: 'heading',
     },
     {
       children: [
@@ -586,7 +596,8 @@ const value = {
     // Media Section
     {
       children: [{ text: 'Images and Media' }],
-      type: 'h3',
+      level: 3,
+      type: 'heading',
     },
     {
       children: [
@@ -621,7 +632,6 @@ const value = {
     },
     {
       children: [{ text: '' }],
-      isUpload: true,
       name: 'sample.pdf',
       type: 'file',
       url: 'https://s26.q4cdn.com/900411403/files/doc_downloads/test.pdf',
@@ -633,7 +643,8 @@ const value = {
     },
     {
       children: [{ text: 'Table of Contents' }],
-      type: 'h3',
+      level: 3,
+      type: 'heading',
     },
     {
       children: [{ text: '' }],

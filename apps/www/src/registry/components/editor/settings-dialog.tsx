@@ -248,18 +248,22 @@ export function SettingsDialog() {
     setOpen(false);
 
     // Update AI complete options
-    const completeOptions =
-      editor.plugin(CopilotPlugin).store.get().completeOptions ?? {};
-    editor.plugin(CopilotPlugin).store.set({
-      completeOptions: {
-        ...completeOptions,
-        body: {
-          ...completeOptions.body,
-          apiKey: tempKeys.aiGatewayApiKey,
-          model: tempModel.value,
+    const completeOptions = editor
+      .plugin(CopilotPlugin)
+      .store.get().completeOptions;
+
+    if (completeOptions) {
+      editor.plugin(CopilotPlugin).store.set({
+        completeOptions: {
+          ...completeOptions,
+          body: {
+            ...completeOptions.body,
+            apiKey: tempKeys.aiGatewayApiKey,
+            model: tempModel.value,
+          },
         },
-      },
-    });
+      });
+    }
   };
 
   const toggleKeyVisibility = (key: string) => {

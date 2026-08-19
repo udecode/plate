@@ -3,7 +3,7 @@ title: 评论
 docs:
   - route: https://pro.platejs.org/docs/examples/discussion
     title: Plus
-  - route: /docs/components/comment-node
+  - route: /docs/components/comment
     title: Comment Leaf
   - route: /docs/components/comment-toolbar-button
     title: Comment Toolbar Button
@@ -33,16 +33,16 @@ docs:
 
 添加评论功能最快的方式是使用 `CommentKit`,它包含预配置的 `commentPlugin` 和相关组件,以及对应的 [Plate UI](/docs/installation/plate-ui) 组件。
 
-<ComponentSource name="comment-kit" />
+<ComponentSource name="comment" />
 
-- [`CommentLeaf`](/docs/components/comment-node): 渲染评论文本标记
+- [`CommentLeaf`](/docs/components/comment): 渲染评论文本标记
 - [`BlockDiscussion`](/docs/components/block-discussion): 渲染带有评论集成的讨论 UI
 
 ### 添加 Kit
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { CommentKit } from '@/components/editor/plugins/comment-kit';
+import { CommentKit } from '@/components/editor/comment';
 
 const editor = createPlateEditor({
   plugins: [
@@ -72,7 +72,7 @@ npm install @platejs/comment @platejs/plite-dom
 import { isString } from '@platejs/plite-dom';
 import { TextApi, type Path } from 'platejs';
 import { BaseCommentPlugin, getDraftCommentKey } from '@platejs/comment';
-import { CommentLeaf } from '@/components/ui/comment-node';
+import { CommentLeaf } from '@/components/editor/comment';
 
 const initialState: {
   activeId: string | null;
@@ -94,7 +94,7 @@ export const commentPlugin = BaseCommentPlugin.configure({
 - `initialState.commentingBlock`: 当前正在评论的块的路径
 - `initialState.hoverId`: 当前悬停的评论 ID,用于悬停效果
 - `component: CommentLeaf`：使用
-  [`CommentLeaf`](/docs/components/comment-node) 渲染评论文本标记
+  [`CommentLeaf`](/docs/components/comment) 渲染评论文本标记
 
 ### 添加点击处理器
 
@@ -216,7 +216,7 @@ const editor = createPlateEditor({
 评论插件与[讨论插件](/docs/discussion)配合使用,实现完整的协作功能:
 
 ```tsx
-import { discussionPlugin } from '@/components/editor/plugins/discussion-kit';
+import { discussionPlugin } from '@/components/editor/discussion';
 
 const editor = createPlateEditor({
   plugins: [

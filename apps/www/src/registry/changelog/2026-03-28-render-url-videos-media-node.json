@@ -45,33 +45,33 @@
   "targets": [
     {
       "name": "media-video-node",
-      "files": ["apps/www/src/registry/ui/media-video-node.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for media-video-node."
+        }
+      ]
     },
     {
       "name": "editor-ai",
-      "files": [],
+      "files": [
+        "apps/www/src/registry/blocks/editor-ai/components/editor/plate-editor.tsx",
+        "apps/www/src/registry/blocks/editor-ai/page.tsx"
+      ],
       "definitionFiles": ["apps/www/src/registry/registry-blocks.ts"],
-      "diagnostics": [
-        {
-          "severity": "warning",
-          "code": "registry-file-missing",
-          "message": "No exact registry source file found for editor-ai."
-        }
-      ]
+      "diagnostics": []
     },
     {
       "name": "editor-basic",
-      "files": [],
+      "files": [
+        "apps/www/src/registry/blocks/editor-basic/components/editor/plate-editor.tsx",
+        "apps/www/src/registry/blocks/editor-basic/page.tsx"
+      ],
       "definitionFiles": ["apps/www/src/registry/registry-blocks.ts"],
-      "diagnostics": [
-        {
-          "severity": "warning",
-          "code": "registry-file-missing",
-          "message": "No exact registry source file found for editor-basic."
-        }
-      ]
+      "diagnostics": []
     },
     {
       "name": "plite-to-html",

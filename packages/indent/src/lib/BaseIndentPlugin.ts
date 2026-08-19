@@ -46,14 +46,23 @@ const initialState: IndentPluginState = {
   unit: 'px',
 };
 
+const isNonNegativeSafeInteger = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isSafeInteger(value) && value >= 0;
+
 export const BaseIndentPlugin = defineBasePlugin(PLUGINS.indent, {
   initialState,
   schema: ({ targetElementTypes }) => ({
     properties: {
-      indent: schema.elementProperty(property.number(), {
-        target: target.types(targetElementTypes),
-        typeChange: 'preserve-if-allowed',
-      }),
+      indent: schema.elementProperty(
+        property.number({
+          validate: isNonNegativeSafeInteger,
+          validationVersion: 1,
+        }),
+        {
+          target: target.types(targetElementTypes),
+          typeChange: 'preserve-if-allowed',
+        }
+      ),
     },
   }),
   targetPlugins: [BaseParagraphPlugin],

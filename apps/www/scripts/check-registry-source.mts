@@ -6,6 +6,7 @@ import { registrySchema } from 'shadcn/schema';
 
 import registryShadcnData from '../registry-shadcn.json';
 import { createPlateRegistry, registry } from '../src/registry/registry';
+import { registryFeatures } from '../src/registry/registry-features';
 import {
   toPublicRegistryDependencySpecifier,
   toRegistryDependencySpecifier,
@@ -16,7 +17,7 @@ const JSON_SUFFIX_REGEX = /\.json$/;
 const IMPORTABLE_SOURCE_FILE_REGEX = /\.[cm]?[jt]sx?$/;
 const EDITOR_COMPONENT_PATH_SEGMENT = 'components/editor/';
 const EDITOR_COMPONENT_TARGET_PREFIX = '@components/editor/';
-const PLATE_PUBLIC_REGISTRY_BASE_URL = 'https://platejs.org/r';
+const PLATE_PUBLIC_REGISTRY_BASE_URL = 'https://platejs.org/r/new-york';
 const SOURCE_EXTENSIONS = ['.ts', '.tsx', '.js', '.jsx', '.json'] as const;
 const BASELINE_PACKAGES = new Set([
   'class-variance-authority',
@@ -30,6 +31,50 @@ const BASELINE_PACKAGES = new Set([
   'tailwind-merge',
 ]);
 const HOST_PROVIDED_ALIASES = new Set(['@/lib/utils']);
+const REMOVED_FAMILY_ITEM_NAMES = new Set([
+  'ai-chat-editor',
+  'ai-node',
+  'block-context-menu',
+  'block-draggable',
+  'block-suggestion',
+  'blockquote-node',
+  'callout-node',
+  'code-node',
+  'code-block-node',
+  'code-drawing-node',
+  'column-node',
+  'comment-node-static',
+  'date-node',
+  'emoji-node',
+  'equation-node',
+  'excalidraw-node',
+  'fixed-toolbar-buttons',
+  'floating-toolbar-buttons',
+  'footnote-node',
+  'ghost-text',
+  'heading-node',
+  'highlight-node',
+  'hr-node',
+  'kbd-node',
+  'link-node',
+  'list-classic-node',
+  'media-audio-node',
+  'media-embed-node',
+  'media-file-node',
+  'media-image-node',
+  'media-placeholder-node',
+  'media-video-node',
+  'media-upload-toast',
+  'mention-node',
+  'slash-node',
+  'suggestion-node',
+  'paragraph-node',
+  'search-highlight-node',
+  'table-node',
+  'tag-node',
+  'toc-node',
+  'toggle-node',
+]);
 
 const sourceRegistry = createPlateRegistry('https://platejs.org');
 const normalizedRegistry = registrySchema.parse({
@@ -68,6 +113,7 @@ const runtimeItemsByName = new Map(
 );
 const unbackedBaseKitDependencies: string[] = [];
 const liveKitBaseImports: string[] = [];
+const shallowFeatureSplits: string[] = [];
 
 type RegistryDependencyTarget =
   | { kind: 'plate'; name: string }
@@ -278,6 +324,69 @@ for (const item of sourceRegistry.items) {
     }
   }
 }
+
+for (const item of registryFeatures) {
+  if (item.name.includes('-classic')) continue;
+
+  const featureName = item.name.replace(/-static$/, '');
+  const staticSuffix = item.name.endsWith('-static') ? '-static' : '';
+
+  for (const file of item.files ?? []) {
+    const fileName = file.path
+      .split('/')
+      .at(-1)
+      ?.replace(/\.[^.]+$/, '');
+
+    if (fileName && REMOVED_FAMILY_ITEM_NAMES.has(fileName)) {
+      shallowFeatureSplits.push(`${item.name}:${file.path}`);
+    }
+
+    for (const specifier of getRegistryFileImportSources(file.path)) {
+      const importedName = specifier
+        .split('/')
+        .at(-1)
+        ?.replace(/\.[^.]+$/, '');
+      const isGenericFamilySplit = [
+        `${featureName}-node${staticSuffix}`,
+        `${featureName}-buttons`,
+        `${featureName}-toast`,
+      ].includes(importedName ?? '');
+
+      if (
+        importedName &&
+        (REMOVED_FAMILY_ITEM_NAMES.has(importedName) || isGenericFamilySplit)
+      ) {
+        shallowFeatureSplits.push(`${item.name}:${file.path} -> ${specifier}`);
+      }
+    }
+  }
+}
+
+for (const itemName of REMOVED_FAMILY_ITEM_NAMES) {
+  if (itemsByName.has(itemName)) shallowFeatureSplits.push(itemName);
+}
+
+for (const item of sourceRegistry.items) {
+  if (/-node$/.test(item.name)) {
+    shallowFeatureSplits.push(item.name);
+  }
+
+  for (const file of item.files ?? []) {
+    const fileName = file.path.split('/').at(-1) ?? '';
+
+    if (/-node(?:-static)?\.[cm]?[jt]sx?$/.test(fileName)) {
+      shallowFeatureSplits.push(`${item.name}:${file.path}`);
+    }
+  }
+}
+
+assert(
+  shallowFeatureSplits.length === 0,
+  [
+    'Expected modern registry items and files to use semantic feature names without -node implementation suffixes or shallow sibling owners.',
+    ...shallowFeatureSplits,
+  ].join('\n')
+);
 
 assert(
   unbackedBaseKitDependencies.length === 0 && liveKitBaseImports.length === 0,
@@ -563,7 +672,7 @@ assert(
 const publicEditorBasic = publicItemsByName.get('editor-basic');
 assert(
   publicEditorBasic?.registryDependencies?.includes(
-    'https://platejs.org/r/plate-ui.json'
+    'https://platejs.org/r/new-york/plate-ui.json'
   ),
   'Expected public editor-basic to keep direct URL installs on the same Plate registry base'
 );
@@ -593,15 +702,15 @@ for (const item of normalizedRegistry.items) {
   }
 }
 
-const editorBaseKit = itemsByName.get('editor-base-kit');
-const editorBaseKitFile = editorBaseKit?.files?.[0];
+const staticEditorPlugins = itemsByName.get('editor-plugins-static');
+const staticEditorPluginsFile = staticEditorPlugins?.files?.[0];
 assert(
-  editorBaseKitFile?.target === '@components/editor/editor-base-kit.tsx',
-  'Expected editor-base-kit to install in the configured components editor directory so its relative plugin imports resolve'
+  staticEditorPluginsFile?.target === '@components/editor/plugins-static.ts',
+  'Expected static editor plugins to install in the configured components editor directory'
 );
 
-for (const dependency of editorBaseKit?.registryDependencies ?? []) {
-  if (!dependency.startsWith('@plate/') || !dependency.endsWith('-kit')) {
+for (const dependency of staticEditorPlugins?.registryDependencies ?? []) {
+  if (!dependency.startsWith('@plate/')) {
     continue;
   }
 
@@ -612,8 +721,9 @@ for (const dependency of editorBaseKit?.registryDependencies ?? []) {
   assert(
     dependencyFile?.path &&
       dependencyFile.target === toEditorComponentTarget(dependencyFile.path) &&
-      dependencyFile.target.startsWith('@components/editor/plugins/'),
-    `Expected editor-base-kit dependency ${dependency} to install under the configured components editor plugins directory`
+      dependencyFile.target.startsWith('@components/editor/') &&
+      !dependencyFile.target.includes('/plugins/'),
+    `Expected static editor dependency ${dependency} to install flat in the configured components editor directory`
   );
 }
 
@@ -635,10 +745,10 @@ assert(
   'Expected editor-basic plate-editor to install under the configured components editor directory'
 );
 
-const excalidrawNode = itemsByName.get('excalidraw-node');
+const excalidraw = itemsByName.get('excalidraw');
 assert(
-  excalidrawNode?.meta?.examples?.includes('excalidraw-demo'),
-  'Expected excalidraw-node to expose its existing registry demo'
+  excalidraw?.meta?.examples?.includes('excalidraw-demo'),
+  'Expected excalidraw to expose its existing registry demo'
 );
 
 for (const item of normalizedRegistry.items) {

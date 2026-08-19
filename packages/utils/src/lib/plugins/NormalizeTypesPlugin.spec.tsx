@@ -18,9 +18,9 @@ describe('NormalizeTypesPlugin', () => {
       output: (
         <editor>
           <element type="element">
-            <hh1>
+            <element type="h1">
               <htext />
-            </hh1>
+            </element>
             <hp>
               <htext />
             </hp>
@@ -36,15 +36,15 @@ describe('NormalizeTypesPlugin', () => {
     {
       input: (
         <editor>
-          <hh1>test</hh1>
+          <element type="h1">test</element>
         </editor>
       ) as TestEditor,
       output: (
         <editor>
-          <hh1>test</hh1>
-          <hh2>
+          <element type="h1">test</element>
+          <element type="h2">
             <htext />
-          </hh2>
+          </element>
         </editor>
       ) as TestEditor,
       rules: [{ path: [1], type: 'h2' }],
@@ -53,16 +53,16 @@ describe('NormalizeTypesPlugin', () => {
     {
       input: (
         <editor>
-          <hh2>test</hh2>
-          <hh2>test</hh2>
-          <hh2>test</hh2>
+          <element type="h2">test</element>
+          <element type="h2">test</element>
+          <element type="h2">test</element>
         </editor>
       ) as TestEditor,
       output: (
         <editor>
-          <hh2>test</hh2>
-          <hh2>test</hh2>
-          <hh2>test</hh2>
+          <element type="h2">test</element>
+          <element type="h2">test</element>
+          <element type="h2">test</element>
         </editor>
       ) as TestEditor,
       rules: [{ path: [0], type: 'h1' }],
@@ -71,15 +71,15 @@ describe('NormalizeTypesPlugin', () => {
     {
       input: (
         <editor>
-          <hh1>test</hh1>
+          <element type="h1">test</element>
         </editor>
       ) as TestEditor,
       output: (
         <editor>
-          <hh1>test</hh1>
-          <hh2>
+          <element type="h1">test</element>
+          <element type="h2">
             <htext />
-          </hh2>
+          </element>
         </editor>
       ) as TestEditor,
       rules: [{ path: [1], strictType: 'h2' }],
@@ -88,16 +88,16 @@ describe('NormalizeTypesPlugin', () => {
     {
       input: (
         <editor>
-          <hh2>test</hh2>
-          <hh2>test</hh2>
-          <hh2>test</hh2>
+          <element type="h2">test</element>
+          <element type="h2">test</element>
+          <element type="h2">test</element>
         </editor>
       ) as TestEditor,
       output: (
         <editor>
-          <hh1>test</hh1>
-          <hh2>test</hh2>
-          <hh2>test</hh2>
+          <element type="h1">test</element>
+          <element type="h2">test</element>
+          <element type="h2">test</element>
         </editor>
       ) as TestEditor,
       rules: [{ path: [0], strictType: 'h1' }],

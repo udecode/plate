@@ -4,7 +4,7 @@ description: Inline markable void mentions backed by trigger combobox input.
 docs:
   - route: /docs/combobox
     title: Combobox
-  - route: /docs/components/mention-node
+  - route: /docs/components/mention
     title: Mention Nodes
   - route: /docs/components/inline-combobox
     title: Inline Combobox
@@ -18,7 +18,7 @@ Mention turns trigger text such as `@` into an inline combobox input and inserts
 
 ## Features
 
-- Inline void `mention` nodes with `value` and optional `key`.
+- Inline void `mention` nodes with required `ref` and optional `label`.
 - Inline void `mentionInput` nodes created by trigger text.
 - Trigger combobox support from `@platejs/combobox`.
 - Configurable trigger strings, regexes, and trigger queries.
@@ -36,12 +36,12 @@ Mention turns trigger text such as `@` into an inline combobox input and inserts
 
 `MentionKit` installs `MentionPlugin`, `MentionInputPlugin`, the registry mention nodes, and a trigger rule that allows `@` at the start of a line, after whitespace, or after quotes.
 
-<ComponentSource name="mention-kit" />
+<ComponentSource name="mention" />
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
 
-import { MentionKit } from '@/components/editor/plugins/mention-kit';
+import { MentionKit } from '@/components/editor/mention';
 
 export const editor = createPlateEditor({
   plugins: MentionKit,
@@ -50,15 +50,15 @@ export const editor = createPlateEditor({
 
 ### Render Mentions
 
-`mention-node` renders both the selected mention and the temporary combobox input. The demo data lives in that registry UI file, so replace it with your app users, pages, or records.
+`mention` renders both the selected mention and the temporary combobox input. The demo data lives in that registry UI file, so replace it with your app users, pages, or records.
 
-<ComponentSource name="mention-node" />
+<ComponentSource name="mention" />
 
 ### Add Static Rendering
 
-`mention-base-kit` uses `BaseMentionPlugin` with the static mention node for read-only output.
+`mention-static` uses `BaseMentionPlugin` with the static mention node for read-only output.
 
-<ComponentSource name="mention-base-kit" />
+<ComponentSource name="mention-static" />
 
 </Steps>
 
@@ -69,9 +69,9 @@ export const editor = createPlateEditor({
 | `@platejs/mention` | Package | Exports `BaseMentionPlugin`, `BaseMentionInputPlugin`, and the scoped mention update. |
 | `@platejs/mention/react` | Package | Exports `MentionPlugin` and `MentionInputPlugin`. |
 | `@platejs/combobox` | Package | Provides trigger options and combobox input hooks. |
-| `mention-kit` | Registry | Adds mention plugins with editable mention and input components. |
-| `mention-base-kit` | Registry | Adds `BaseMentionPlugin.configure({ component: MentionElementStatic })`. |
-| `mention-node` | Registry UI | Renders mention atoms, the inline combobox input, and demo items. |
+| `mention` | Registry | Adds mention plugins with editable mention and input components. |
+| `mention-static` | Registry | Adds `BaseMentionPlugin.configure({ component: MentionElementStatic })`. |
+| `mention` | Registry UI | Renders mention atoms, the inline combobox input, and demo items. |
 | `inline-combobox` | Registry UI | Renders the Ariakit-backed popover, input, groups, items, and empty state. |
 | `@platejs/markdown` | Package | Serializes mentions as `mention:` links and deserializes mention links or bare mentions. |
 
@@ -96,7 +96,7 @@ import { createPlateEditor } from 'platejs/react';
 import {
   MentionElement,
   MentionInputElement,
-} from '@/components/ui/mention-node';
+} from '@/components/editor/mention';
 
 export const editor = createPlateEditor({
   plugins: [
@@ -117,14 +117,15 @@ Call the installed mention update from your combobox item renderer. It inserts t
 
 ```tsx
 <InlineComboboxItem
-  value={item.text}
+  value={item.label}
   onClick={() =>
     editor.plugin(MentionPlugin).update.insert({
-      value: item.text,
+      label: item.label,
+      ref: item.ref,
     })
   }
 >
-  {item.text}
+  {item.label}
 </InlineComboboxItem>;
 ```
 
@@ -143,9 +144,9 @@ const value = [
       { text: 'Assigned to ' },
       {
         children: [{ text: '' }],
-        key: 'user_123',
+        label: 'Jane Smith',
+        ref: 'user_123',
         type: 'mention',
-        value: 'Jane Smith',
       },
       { text: '.' },
     ],
@@ -157,8 +158,8 @@ const value = [
 | Field | Type | Notes |
 |-------|------|-------|
 | `type` | `'mention'` | Inline void mention node. |
-| `value` | `string` | Display text rendered by the registry node. |
-| `key` | `unknown` | Optional stable id used by selection handlers and Markdown serialization. |
+| `ref` | `string` | Required persisted association with the mentioned entity. |
+| `label` | `string` | Optional visible text; rendering falls back to `ref`. |
 | `children` | `[{ text: '' }]` | Empty child required for Plite inline void nodes. |
 
 The mention element declares `schema.element.void: 'markable-inline'`, so marks
@@ -191,7 +192,7 @@ If `editor.runtime.userId` exists, the combobox input stores that `userId` so on
 
 ## Markdown
 
-`@platejs/markdown` serializes mentions as link-style `mention:` URLs. It uses `key` for the URL when present and `value` for the visible text.
+`@platejs/markdown` serializes `ref` in the link-style `mention:` URL and uses `label ?? ref` as visible text.
 
 ```md
 Hello [Jane Smith](mention:user_123).
@@ -207,5 +208,5 @@ Deserialization supports link-style mentions and bare `@alice` text. Normal link
 | `BaseMentionInputPlugin` | `@platejs/mention` | Required inline void input node inserted while the combobox is active. |
 | `MentionPlugin` | `@platejs/mention/react` | React mention plugin with a required `MentionInputPlugin` dependency. |
 | `MentionInputPlugin` | `@platejs/mention/react` | React mention input dependency; add it directly to replace its component or configuration. |
-| `editor.plugin(MentionPlugin).update.insert({ key, value })` | `BaseMentionPlugin` update | Inserts the mention node at the current selection. |
-| `useComboboxInput` | `@platejs/combobox/react` | Handles focus, cancellation, arrow/backspace/escape behavior, and undo/redo forwarding for custom input UI. |
+| `editor.plugin(MentionPlugin).update.insert({ ref, label? })` | `BaseMentionPlugin` update | Inserts the mention node at the current selection. |
+| `inline-combobox` | Copied registry UI | Handles focus, cancellation, arrow/backspace/escape behavior, and undo/redo forwarding for the mention input. |

@@ -11,8 +11,10 @@ describe('extension portal', () => {
   it('applies an update policy to one descriptor-scoped method', () => {
     const WriterExtension = defineExtension('writer', {
       update: ({ tx }) => ({
-        append() {
-          tx.text.insert('!', { at: { offset: 4, path: [0, 0] } });
+        nested: {
+          append() {
+            tx.text.insert('!', { at: { offset: 4, path: [0, 0] } });
+          },
         },
       }),
     });
@@ -26,9 +28,29 @@ describe('extension portal', () => {
       commit = nextCommit;
     });
 
-    editor.extension(WriterExtension).update({ tags: 'scoped' }).append();
+    editor
+      .extension(WriterExtension)
+      .update({ tags: 'scoped' })
+      .nested.append();
 
     assert.equal(editor.read.text.string([]), 'test!');
     assert.deepEqual(commit?.tags, ['scoped']);
+  });
+
+  it('rejects update method names reserved by JavaScript protocols', () => {
+    const ReservedExtension = defineExtension('reservedUpdateMethods', {
+      update: () => ({
+        nested: {
+          then: () => {},
+          toJSON: () => {},
+        },
+      }),
+    });
+    const editor = createEditor({ extensions: [ReservedExtension] });
+
+    assert.throws(
+      () => editor.update(() => {}),
+      /method "nested\.(?:then|toJSON)" uses a reserved protocol name/
+    );
   });
 });

@@ -4,7 +4,7 @@ import type { CursorData, CursorState } from '@platejs/cursor';
 import { definePlatePlugin } from '@platejs/core/react';
 import { PLUGINS } from '@platejs/utils';
 
-import { useCursorOverlayPlugin } from './useCursorOverlay';
+import { useCursorOverlayPlugin } from './useCursorOverlay.internal';
 
 export type CursorOverlayPluginState = {
   cursors: Record<string, CursorState<CursorData>>;

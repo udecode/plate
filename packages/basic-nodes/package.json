@@ -20,7 +20,6 @@
   "sideEffects": false,
   "exports": {
     ".": "./dist/index.js",
-    "./migrations": "./dist/migrations/index.js",
     "./react": "./dist/react/index.js",
     "./package.json": "./package.json"
   },
@@ -45,8 +44,8 @@
     "@platejs/test-utils": "workspace:^"
   },
   "peerDependencies": {
-    "react": ">=18.0.0",
-    "react-dom": ">=18.0.0"
+    "react": ">=19.2.0",
+    "react-dom": ">=19.2.0"
   },
   "publishConfig": {
     "access": "public"

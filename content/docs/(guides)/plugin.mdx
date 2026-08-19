@@ -106,9 +106,9 @@ The `rules` property allows you to configure common editing behaviors like break
 For example, you can define what happens when a user presses `Enter` in an empty heading, or `Backspace` at the start of a blockquote.
 
 ```ts
-import { H1Plugin } from "@platejs/basic-nodes/react";
+import { HeadingPlugin } from "@platejs/basic-nodes/react";
 
-H1Plugin.configure({
+HeadingPlugin.configure({
   rules: {
     break: { empty: "reset" },
   },

@@ -36,4 +36,35 @@ describe('pipeDecorate', () => {
 
     expect(decorate(entry)).toEqual([rangeFromPlugin, rangeFromProp]);
   });
+
+  it('reuses the plugin context across decorated entries', () => {
+    const contexts: object[] = [];
+    const HighlightPlugin = defineBasePlugin('highlight', {
+      decorate: (context) => {
+        contexts.push(context);
+
+        return [];
+      },
+    });
+    const editor = createBaseEditor({ plugins: [HighlightPlugin] });
+    const decorate = pipeDecorate(editor)!;
+    const first = [
+      { children: [{ text: 'alpha' }], type: 'paragraph' },
+      [0],
+    ] satisfies NodeEntry<Element>;
+    const second = [
+      { children: [{ text: 'beta' }], type: 'paragraph' },
+      [1],
+    ] satisfies NodeEntry<Element>;
+
+    decorate(first);
+    decorate(second);
+
+    expect(contexts).toHaveLength(2);
+    expect(Object.getPrototypeOf(contexts[0]!)).toBe(
+      Object.getPrototypeOf(contexts[1]!)
+    );
+    expect(Reflect.get(contexts[0]!, 'entry')).toBe(first);
+    expect(Reflect.get(contexts[1]!, 'entry')).toBe(second);
+  });
 });

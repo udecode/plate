@@ -31,30 +31,28 @@ export const parseCanonicalDateValue = (value: string) => {
 
 export const normalizeDateValue = (value?: Date | string) => {
   if (value instanceof Date) {
-    if (!isValidDate(value)) return {};
+    if (!isValidDate(value)) return;
 
-    return { date: formatDateValue(value) };
+    return formatDateValue(value);
   }
 
-  if (!value) return {};
+  if (!value) return;
 
   const trimmed = value.trim();
 
-  if (!trimmed) return {};
+  if (!trimmed) return;
 
   if (CANONICAL_DATE_REGEX.test(trimmed)) {
-    return parseCanonicalDateValue(trimmed)
-      ? { date: trimmed }
-      : { rawDate: trimmed };
+    return trimmed;
   }
 
   if (LEGACY_DATE_REGEX.test(trimmed)) {
     const parsed = new Date(trimmed);
 
-    if (isValidDate(parsed)) return { date: formatDateValue(parsed) };
+    if (isValidDate(parsed)) return formatDateValue(parsed);
   }
 
-  return { rawDate: trimmed };
+  return trimmed;
 };
 
 const isSameCalendarDay = (a: Date, b: Date) =>
@@ -62,21 +60,13 @@ const isSameCalendarDay = (a: Date, b: Date) =>
   a.getMonth() === b.getMonth() &&
   a.getDate() === b.getDate();
 
-export const getDateDisplayLabel = ({
-  date,
-  now = new Date(),
-  rawDate,
-}: {
-  date?: string;
-  now?: Date;
-  rawDate?: string;
-}) => {
-  if (rawDate) return rawDate;
-  if (!date) return;
+export const getDateDisplayLabel = (
+  value: string,
+  { now = new Date() }: { now?: Date } = {}
+) => {
+  const parsed = parseCanonicalDateValue(value);
 
-  const parsed = parseCanonicalDateValue(date);
-
-  if (!parsed) return date;
+  if (!parsed) return value;
 
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12);
   const yesterday = new Date(today);

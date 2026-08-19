@@ -45,19 +45,19 @@
   "targets": [
     {
       "name": "table-demo",
-      "files": [],
+      "files": [
+        "apps/www/src/registry/examples/demo.tsx",
+        "apps/www/src/registry/examples/values/table-value.tsx"
+      ],
       "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
-      "diagnostics": [
-        {
-          "severity": "warning",
-          "code": "registry-file-missing",
-          "message": "No exact registry source file found for table-demo."
-        }
-      ]
+      "diagnostics": []
     },
     {
       "name": "table-nomerge-demo",
-      "files": ["apps/www/src/registry/examples/table-nomerge-demo.tsx"],
+      "files": [
+        "apps/www/src/registry/examples/table-nomerge-demo.tsx",
+        "apps/www/src/registry/examples/values/table-value.tsx"
+      ],
       "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
       "diagnostics": []
     }

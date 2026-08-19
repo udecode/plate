@@ -13,7 +13,7 @@ const inlineContent = schema.content.any(
   { default: 'text', min: 1 }
 );
 
-const CustomH1Plugin = defineBasePlugin('customH1', {
+const CustomHeadingPlugin = defineBasePlugin('customH1', {
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       'text/markdown': {
@@ -180,7 +180,7 @@ describe('feature-owned Markdown codecs', () => {
     ];
 
     const editor = createBaseEditor({
-      plugins: [MarkdownPlugin, CustomH1Plugin, CustomParagraphPlugin],
+      plugins: [MarkdownPlugin, CustomHeadingPlugin, CustomParagraphPlugin],
     });
 
     const result = editor.api.markdown.serialize({
@@ -200,7 +200,7 @@ describe('feature-owned Markdown codecs', () => {
     const editor = createBaseEditor({
       plugins: [
         MarkdownPlugin,
-        CustomH1Plugin,
+        CustomHeadingPlugin,
         CustomParagraphPlugin,
         CustomBoldPlugin,
       ],
@@ -225,7 +225,7 @@ describe('feature-owned Markdown codecs', () => {
     ];
 
     const editor = createBaseEditor({
-      plugins: [MarkdownPlugin, CustomH1Plugin, CustomParagraphPlugin],
+      plugins: [MarkdownPlugin, CustomHeadingPlugin, CustomParagraphPlugin],
     });
 
     const result = editor.api.markdown.deserialize(
@@ -249,7 +249,7 @@ describe('feature-owned Markdown codecs', () => {
     const editor = createBaseEditor({
       plugins: [
         MarkdownPlugin,
-        CustomH1Plugin,
+        CustomHeadingPlugin,
         CustomParagraphPlugin,
         CustomBoldPlugin,
       ],
@@ -299,7 +299,7 @@ describe('feature-owned Markdown codecs', () => {
 
     const inlineEquation = paragraph.children[0];
     expect(inlineEquation.type).toBe('inlineEquation');
-    expect(inlineEquation.texExpression).toBe('a=b');
+    expect(inlineEquation.latex).toBe('a=b');
   });
 
   it('converts footnote definitions into dedicated nodes', () => {
@@ -319,7 +319,7 @@ describe('feature-owned Markdown codecs', () => {
           type: 'paragraph',
         },
       ],
-      identifier: '1',
+      ref: '1',
       type: 'footnoteDefinition',
     });
   });

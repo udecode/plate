@@ -7,6 +7,7 @@
 - Define literal string domains with `property.enum(...)`
 - Bind structural slice fitting to each compiled schema revision through one private, immutable fitter artifact
 - Publish derived schema identities as `{ kind: 'derived', fingerprint }` and application-named lineage as `{ kind: 'named', id, version, fingerprint }`; fingerprints cover compiled semantics only
+- Accept persisted complete-document envelopes with exact schema identity at the root editor boundary and reject them from scoped editor views
 - Report schema failures through `EditorSchemaValidationError` with root, path, node, property, and contributor provenance
 - Add immutable `{ content, openStart, openEnd, roots? }` `ContentSlice` values with contextual `state.slice` fitting, closed `fragment.replace`, open `slice.replace`, and detached-parent `fitContent`
 - Carry element-owned named roots through content slices, enforce one owner for exclusive roots, preserve shared aliases, remap copies deterministically, and apply owner/root cleanup, cut, undo, and redo atomically
@@ -15,6 +16,7 @@
   extension set atomically, and restore every document, field, anchor, and
   registry fact when activation fails
 - Define semantic commands with `defineCommand` and register pure `false | TransactionSpec` handlers through extension `commands: ({ handle, around }) => [...]` factories
+- Let host input runtimes probe pure command handlers without publishing, so pass-through policy preserves native input and material policy fails closed
 - Dispatch command-backed updates through immutable transaction specs, including extension-aware `state.transaction(...)` builders and `tx.command`
 - Expose frozen snapshot identities through `snapshot.index.entries()`, `keyAt()`, and `pathOf()` with bounded lazy structural mapping
 - Give every live descendant, including text, an editor-scoped `NodeKey`.
@@ -39,6 +41,9 @@
   core-only extension tuple. Use the explicit internal `AnyEditor` boundary
   when runtime infrastructure intentionally erases installed capabilities.
 - Publish one-shot `editor.read.*` and `editor.update.*` APIs with callback forms for grouped work
+- Build extension read method trees once per published configuration, keep
+  their methods live across document commits and transaction drafts, and
+  reject document-derived read data properties
 - Infer update callback transactions exclusively from the editor's installed
   extensions, infer command dispatch from the command descriptor, and return
   `unknown` when a schema property is addressed by a raw string instead of a

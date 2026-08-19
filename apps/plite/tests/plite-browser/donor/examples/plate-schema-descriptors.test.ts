@@ -142,10 +142,9 @@ test('projects rich Plate descriptors to standalone HTML while the fragment enve
       const richText = nodes.find(
         (node) => node.text === 'Rich descriptor text'
       );
-      const listItem = nodes.find((node) => node.listStyleType === 'disc');
+      const listItem = nodes.find((node) => node.listType === 'bulleted');
       const table = byType('table');
       const row = byType('tableRow');
-      const cell = byType('tableCell');
       const codeBlock = byType('codeBlock');
       const codeLines = nodes.filter((node) => node.type === 'codeLine');
       const link = byType('link');
@@ -154,7 +153,7 @@ test('projects rich Plate descriptors to standalone HTML while the fragment enve
 
       return {
         code: {
-          lang: codeBlock?.lang,
+          language: codeBlock?.language,
           lines: codeLines.map((line) =>
             collectNodes(line.children)
               .map((node) => node.text)
@@ -163,8 +162,8 @@ test('projects rich Plate descriptors to standalone HTML while the fragment enve
         },
         image: {
           alt: image?.alt,
-          initialHeight: image?.initialHeight,
-          initialWidth: image?.initialWidth,
+          naturalHeight: image?.naturalHeight,
+          naturalWidth: image?.naturalWidth,
           url: image?.url,
           width: image?.width,
         },
@@ -174,7 +173,8 @@ test('projects rich Plate descriptors to standalone HTML while the fragment enve
         },
         list: {
           indent: listItem?.indent,
-          listStyleType: listItem?.listStyleType,
+          listStyle: listItem?.listStyle ?? null,
+          listType: listItem?.listType,
         },
         mark: {
           bold: richText?.bold,
@@ -187,10 +187,9 @@ test('projects rich Plate descriptors to standalone HTML while the fragment enve
           width: media?.width,
         },
         table: {
-          cellSize: cell?.size,
-          colSizes: table?.colSizes,
+          columnWidths: table?.columnWidths,
           marginLeft: table?.marginLeft,
-          rowSize: row?.size,
+          rowHeight: row?.height,
         },
       };
     };
@@ -229,7 +228,7 @@ test('projects rich Plate descriptors to standalone HTML while the fragment enve
     );
     expect(payload.html).toContain('<ul');
     expect(payload.html).toContain('<li');
-    expect(payload.html).toContain('data-list-style-type="disc"');
+    expect(payload.html).toContain('data-list-type="bulleted"');
     expect(payload.html).toContain('<table');
     expect(payload.html).toContain('<colgroup');
     expect(payload.html).toContain('<tr');
@@ -262,13 +261,13 @@ test('projects rich Plate descriptors to standalone HTML while the fragment enve
 
     await expect.poll(readProjection).toEqual({
       code: {
-        lang: 'typescript',
+        language: 'typescript',
         lines: ['const codec = true;', ''],
       },
       image: {
         alt: 'Plate codec image',
-        initialHeight: 180,
-        initialWidth: 320,
+        naturalHeight: 180,
+        naturalWidth: 320,
         url: 'https://example.com/plate-codec.png',
         width: '50%',
       },
@@ -278,7 +277,8 @@ test('projects rich Plate descriptors to standalone HTML while the fragment enve
       },
       list: {
         indent: 1,
-        listStyleType: 'disc',
+        listStyle: null,
+        listType: 'bulleted',
       },
       mark: {
         bold: true,
@@ -291,10 +291,9 @@ test('projects rich Plate descriptors to standalone HTML while the fragment enve
         width: '480px',
       },
       table: {
-        cellSize: 180,
-        colSizes: [180],
+        columnWidths: [180],
         marginLeft: 12,
-        rowSize: 44,
+        rowHeight: 44,
       },
     });
 

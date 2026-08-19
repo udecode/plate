@@ -59,11 +59,14 @@ export const waitForSelectionRange = async (root: Locator) => {
             ? rootNode.getSelection()
             : element.ownerDocument.getSelection();
         const documentSelection = element.ownerDocument.getSelection();
+        const isInsideRoot = (selection: Selection | null) =>
+          !!selection?.rangeCount &&
+          !!selection.anchorNode &&
+          !!selection.focusNode &&
+          element.contains(selection.anchorNode) &&
+          element.contains(selection.focusNode);
 
-        return (
-          (rootSelection?.rangeCount ?? 0) > 0 ||
-          (documentSelection?.rangeCount ?? 0) > 0
-        );
+        return isInsideRoot(rootSelection) || isInsideRoot(documentSelection);
       })
     )
     .toBe(true);
@@ -97,7 +100,9 @@ export const waitForSelectionIfPresent = async (root: Locator) => {
     return;
   }
 
-  await waitForSelectionSync(root);
+  await waitForSelectionSync(root, undefined, {
+    allowMissingNativeSelection: true,
+  });
 };
 
 export const setSelectionWithHandle = async (

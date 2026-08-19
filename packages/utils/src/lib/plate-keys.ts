@@ -28,8 +28,9 @@ export const PLUGINS = {
   debug: 'debug',
   dnd: 'dnd',
   dom: 'dom',
-  docx: 'docx',
-  docxIO: 'docxIO',
+  docxExport: 'docxExport',
+  docxImport: 'docxImport',
+  docxPaste: 'docxPaste',
   elementState: 'elementState',
   emoji: 'emoji',
   emojiInput: 'emojiInput',
@@ -46,12 +47,7 @@ export const PLUGINS = {
   footnote: 'footnote',
   footnoteDefinition: 'footnoteDefinition',
   footnoteInput: 'footnoteInput',
-  h1: 'h1',
-  h2: 'h2',
-  h3: 'h3',
-  h4: 'h4',
-  h5: 'h5',
-  h6: 'h6',
+  heading: 'heading',
   highlight: 'highlight',
   history: 'history',
   horizontalRule: 'horizontalRule',
@@ -105,101 +101,3 @@ export const PLUGINS = {
 } as const;
 
 export type PluginName = (typeof PLUGINS)[keyof typeof PLUGINS];
-
-export type PlateAstIdentityMigration = Readonly<{
-  properties?: Readonly<Record<string, string>>;
-  types: Readonly<Record<string, string>>;
-}>;
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  value !== null && typeof value === 'object' && !Array.isArray(value);
-
-/**
- * Rewrite explicitly declared persisted Plate identities before editor creation.
- * Unknown identities and nested domain JSON are preserved.
- */
-export const migratePlateAstIdentities = <T>(
-  value: T,
-  migration: PlateAstIdentityMigration
-): T => {
-  const migrateNode = (
-    node: unknown,
-    root: string,
-    path: readonly number[]
-  ): unknown => {
-    if (!isRecord(node)) return node;
-
-    const next: Record<string, unknown> = {};
-
-    for (const [key, propertyValue] of Object.entries(node)) {
-      const migratedKey = migration.properties?.[key] ?? key;
-
-      if (migratedKey !== key && Object.hasOwn(node, migratedKey)) {
-        throw new Error(
-          `Plate AST identity migration collision at root "${root}" path [${path.join(', ')}]: properties "${key}" and "${migratedKey}" are both present.`
-        );
-      }
-
-      if (key === 'children' && Array.isArray(propertyValue)) {
-        next.children = propertyValue.map((child, index) =>
-          migrateNode(child, root, [...path, index])
-        );
-      } else if (key === 'type' && typeof propertyValue === 'string') {
-        next.type = migration.types[propertyValue] ?? propertyValue;
-      } else {
-        if (Object.hasOwn(next, migratedKey)) {
-          throw new Error(
-            `Plate AST identity migration collision at root "${root}" path [${path.join(', ')}]: multiple properties target "${migratedKey}".`
-          );
-        }
-
-        next[migratedKey] = propertyValue;
-      }
-    }
-
-    return next;
-  };
-
-  const migrateRoot = (rootValue: unknown, root: string): unknown => {
-    if (!Array.isArray(rootValue)) {
-      throw new Error(
-        `Plate AST identity migration expected root "${root}" to be an array.`
-      );
-    }
-
-    return rootValue.map((node, index) => migrateNode(node, root, [index]));
-  };
-
-  if (Array.isArray(value)) {
-    return migrateRoot(value, 'main') as T;
-  }
-
-  if (!isRecord(value) || !Array.isArray(value.children)) {
-    throw new Error(
-      'Plate AST identity migration expected a value array or document object with children.'
-    );
-  }
-
-  const roots = value.roots;
-  const migratedRoots =
-    roots === undefined
-      ? undefined
-      : isRecord(roots)
-        ? Object.fromEntries(
-            Object.entries(roots).map(([root, rootValue]) => [
-              root,
-              migrateRoot(rootValue, root),
-            ])
-          )
-        : (() => {
-            throw new Error(
-              'Plate AST identity migration expected document roots to be an object.'
-            );
-          })();
-
-  return {
-    ...value,
-    children: migrateRoot(value.children, 'main'),
-    ...(migratedRoots === undefined ? {} : { roots: migratedRoots }),
-  } as T;
-};

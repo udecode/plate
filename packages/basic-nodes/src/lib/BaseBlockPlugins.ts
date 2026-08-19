@@ -131,7 +131,7 @@ export const BaseBlockquotePlugin = defineBasePlugin(PLUGINS.blockquote, {
 
       const isLiftable =
         node.type === editor.plugin(PLUGINS.paragraph).schema.type &&
-        !node.listStyleType &&
+        !node.listType &&
         !!editor.read.nodes.above({
           at: path,
           type: plugin,
@@ -173,7 +173,7 @@ export const BaseBlockquotePlugin = defineBasePlugin(PLUGINS.blockquote, {
             ElementApi.isElement(node) &&
             !node.indent &&
             node.type === paragraphType &&
-            !node.listStyleType &&
+            !node.listType &&
             !!tx.nodes.above({
               at: path,
               type: plugin,

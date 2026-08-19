@@ -1,5 +1,5 @@
 ---
-description: Autogoal-backed planning, status, review, dashboard, apply, and tracking for upstream shadcn docs syncs into Plate docs. Use when the user asks for `sync-shadcn`, `sync-shadcn status`, `sync-shadcn review`, `sync-shadcn dashboard`, `sync-shadcn apply`, a scoped `sync-shadcn <feature>` lane, to sync shadcn docs, audit newer shadcn docs changes, compare `../shadcn/apps/v4` with `apps/www`, update the shadcn sync baseline, or decide what to adopt, fork, defer, or exclude from upstream shadcn.
+description: Sync upstream shadcn docs into Plate with status, planning, review, dashboards, apply, and baseline tracking.
 name: sync-shadcn
 metadata:
   skiller:

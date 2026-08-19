@@ -492,7 +492,7 @@ describe('Plate model publication', () => {
     expect(Object.isFrozen(pluginCache.render.aboveEditable)).toBe(true);
     expect(Object.isFrozen(pluginCache.rules)).toBe(true);
     expect(Object.isFrozen(pluginCache.rules.match)).toBe(true);
-    expect(Object.isFrozen(pluginCache.transformInitialValue)).toBe(true);
+    expect(Object.isFrozen(pluginCache.prepareDocument)).toBe(true);
     expect(Object.isFrozen(pluginCache.useHooks)).toBe(true);
     expect(() =>
       Object.defineProperty(pluginCache.node, 'mutated', { value: 'mutated' })

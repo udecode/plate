@@ -3,6 +3,7 @@
 ## Contents
 
 - React floor
+- React 19 component forms
 - Effects are escape hatches
 - Derive during render
 - Event handlers before effects
@@ -19,6 +20,15 @@ Target React `>=19.2`.
 Do **not** add backward-compat code for React 18-era behavior, legacy
 workarounds, or older hook patterns unless the user explicitly asks for
 compatibility work.
+
+## React 19 component forms
+
+- Receive `ref` as a normal prop. Do not introduce `forwardRef`.
+- Use provider shorthand when it keeps the owner clear.
+- Use `use()` where conditional context/resource reads are the honest React 19
+  form.
+- Do not add React 18 branches or a standalone compatibility runtime without
+  artifact proof that the supported build still needs it.
 
 ---
 
@@ -101,7 +111,7 @@ Prefer:
 
 - package/controller selectors that return stable booleans or small slices
 - `useEditorSelector` with the smallest honest output
-- resolving a node path lazily from its stable element/runtime identity inside
+- resolving a node path lazily from its stable element/node key inside
   the interaction that needs it
 - local derived booleans instead of raw state objects
 
@@ -146,9 +156,14 @@ function Toolbar() {
 
 Do not wrap simple expressions or cheap booleans in `useMemo`.
 
-Use `useMemo` when:
+Use `useMemo` when profiling or a strict external identity contract proves it
+helps, such as:
 
 - the work is actually expensive
 - or it protects a meaningful child render boundary
 
 Do not add memoization just to feel clever.
+
+For deeper tactics, load only the exact relevant files from
+`vercel-react-best-practices`. Its split-hook and context advice never overrides
+the public component-family topology owned by `plate-ui`.

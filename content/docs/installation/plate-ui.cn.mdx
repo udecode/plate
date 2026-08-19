@@ -73,8 +73,8 @@ npx shadcn@latest add @plate/fixed-toolbar @plate/mark-toolbar-button
 
 ```tsx showLineNumbers title="components/editor.tsx"
 import { Plate } from "platejs/react";
-import { FixedToolbar } from "@/components/ui/fixed-toolbar";
-import { MarkToolbarButton } from "@/components/ui/mark-toolbar-button";
+import { FixedToolbar } from "@/components/editor/fixed-toolbar";
+import { MarkToolbarButton } from "@/components/editor/mark-toolbar-button";
 // ... other imports
 
 export function MyEditor() {
@@ -126,7 +126,7 @@ npx skills add sync-plate-ui
 ### 提示 agent
 
 ```text
-Use sync-plate-ui to sync code-block-node from:
+Use sync-plate-ui to sync code-block from:
 https://platejs.org/registry/changelog/index.json
 ```
 
@@ -149,10 +149,10 @@ https://platejs.org/registry/changelog/index.json
 
 ```bash
 # Install the complete AI feature suite, including configuration and UI
-npx shadcn@latest add @plate/ai-kit
+npx shadcn@latest add @plate/ai
 
 # Install drag and drop functionality with all its parts
-npx shadcn@latest add @plate/dnd-kit
+npx shadcn@latest add @plate/dnd
 ```
 
 <Callout type="note">
@@ -167,10 +167,10 @@ npx shadcn@latest add @plate/dnd-kit
 
 ```bash
 # Install the component for rendering blockquotes
-npx shadcn@latest add @plate/blockquote-node
+npx shadcn@latest add @plate/blockquote
 
 # Install the component for rendering code text
-npx shadcn@latest add @plate/code-node
+npx shadcn@latest add @plate/code
 ```
 
 #### 工具栏组件
@@ -197,7 +197,7 @@ npx shadcn@latest add @plate/font-color-toolbar-button
 npx shadcn@latest add @plate/ai-menu
 
 # Install a draggable component for reordering blocks
-npx shadcn@latest add @plate/block-draggable
+npx shadcn@latest add @plate/dnd
 ```
 
 这些组件通常包含在各自的功能套件中，但也可以单独安装用于自定义设置。

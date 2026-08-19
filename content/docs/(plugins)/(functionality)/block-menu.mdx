@@ -4,7 +4,7 @@ description: Context-menu actions for selected editor blocks.
 docs:
   - route: /docs/block-selection
     title: Block Selection
-  - route: /docs/components/block-context-menu
+  - route: /docs/components/block-menu
     title: Block Context Menu
   - route: /docs/examples/block-menu
     title: Demo
@@ -37,12 +37,12 @@ Block Menu adds a right-click menu on top of block selection. `BlockMenuPlugin` 
 
 `BlockMenuKit` spreads `BlockSelectionKit` and renders `BlockContextMenu` above the editable.
 
-<ComponentSource name="block-menu-kit" />
+<ComponentSource name="block-menu" />
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
 
-import { BlockMenuKit } from '@/components/editor/plugins/block-menu-kit';
+import { BlockMenuKit } from '@/components/editor/block-menu';
 
 export const editor = createPlateEditor({
   plugins: BlockMenuKit,
@@ -51,9 +51,9 @@ export const editor = createPlateEditor({
 
 ### Render The Menu
 
-`block-context-menu` is the registry UI used by the kit.
+`block-menu` is the registry UI used by the kit.
 
-<ComponentSource name="block-context-menu" />
+<ComponentSource name="block-menu" />
 
 ### Try The Plus Menu
 
@@ -99,8 +99,8 @@ Use `BlockSelectionKit` when you want to keep the registry selection behavior bu
 import { BlockMenuPlugin } from '@platejs/selection/react';
 import { createPlateEditor } from 'platejs/react';
 
-import { BlockSelectionKit } from '@/components/editor/plugins/block-selection-kit';
-import { BlockContextMenu } from '@/components/ui/block-context-menu';
+import { BlockSelectionKit } from '@/components/editor/block-selection';
+import { BlockContextMenu } from '@/components/editor/block-menu';
 
 export const editor = createPlateEditor({
   plugins: [
@@ -121,7 +121,7 @@ import {
 } from '@platejs/selection/react';
 import { createPlateEditor } from 'platejs/react';
 
-import { BlockContextMenu } from '@/components/ui/block-context-menu';
+import { BlockContextMenu } from '@/components/editor/block-menu';
 
 export const editor = createPlateEditor({
   plugins: [

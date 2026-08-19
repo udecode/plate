@@ -14,7 +14,6 @@
       "@platejs/callout/react": ["../../packages/callout/src/react"],
       "@platejs/code-block/react": ["../../packages/code-block/src/react"],
       "@platejs/code-drawing/react": ["../../packages/code-drawing/src/react"],
-      "@platejs/combobox/react": ["../../packages/combobox/src/react"],
       "@platejs/comment/react": ["../../packages/comment/src/react"],
       "@platejs/core/react": ["../../packages/core/src/react"],
       "@platejs/core/react/internal": [

@@ -1,7 +1,4 @@
-import {
-  type CodeDrawingType,
-  CODE_DRAWING_TYPE,
-} from './BaseCodeDrawingPlugin';
+import type { CodeDrawingLanguage } from './BaseCodeDrawingPlugin';
 
 const mermaidInitialize = mock();
 const mermaidRender = mock(async (id: string, content: string) => ({
@@ -89,7 +86,7 @@ describe('renderPlantUml', () => {
 
   it('encodes the diagram, fetches the svg, and returns a data url', async () => {
     const result = await renderCodeDrawing(
-      CODE_DRAWING_TYPE.PlantUml,
+      'plantuml',
       '@startuml\nAlice -> Bob\n@enduml'
     );
 
@@ -109,7 +106,7 @@ describe('renderPlantUml', () => {
 
     try {
       await expect(
-        renderCodeDrawing(CODE_DRAWING_TYPE.PlantUml, '@startuml\nA\n@enduml')
+        renderCodeDrawing('plantuml', '@startuml\nA\n@enduml')
       ).rejects.toThrow('Failed to fetch PlantUml SVG');
       expect(consoleErrorMock).toHaveBeenCalled();
     } finally {
@@ -125,14 +122,8 @@ describe('renderMermaid', () => {
   });
 
   it('initializes mermaid once and returns data urls for repeated renders', async () => {
-    const first = await renderCodeDrawing(
-      CODE_DRAWING_TYPE.Mermaid,
-      'graph TD; A-->B'
-    );
-    const second = await renderCodeDrawing(
-      CODE_DRAWING_TYPE.Mermaid,
-      'graph TD; B-->C'
-    );
+    const first = await renderCodeDrawing('mermaid', 'graph TD; A-->B');
+    const second = await renderCodeDrawing('mermaid', 'graph TD; B-->C');
 
     expect(mermaidInitialize).toHaveBeenCalledTimes(1);
     expect(mermaidInitialize).toHaveBeenCalledWith({ startOnLoad: false });
@@ -146,22 +137,17 @@ describe('renderMermaid', () => {
 
 describe('renderCodeDrawing', () => {
   it('returns an empty string for blank content', async () => {
-    await expect(
-      renderCodeDrawing(CODE_DRAWING_TYPE.Mermaid, '   ')
-    ).resolves.toBe('');
+    await expect(renderCodeDrawing('mermaid', '   ')).resolves.toBe('');
   });
 
   it('throws for unsupported drawing types', async () => {
     await expect(
-      renderCodeDrawing('Nope' as CodeDrawingType, 'content')
-    ).rejects.toThrow('Unsupported drawing type: Nope');
+      renderCodeDrawing('Nope' as CodeDrawingLanguage, 'content')
+    ).rejects.toThrow('Unsupported drawing language: Nope');
   });
 
   it('renders graphviz through the extensionless full.render fallback', async () => {
-    const result = await renderCodeDrawing(
-      CODE_DRAWING_TYPE.Graphviz,
-      'digraph { a -> b }'
-    );
+    const result = await renderCodeDrawing('graphviz', 'digraph { a -> b }');
 
     expect(graphvizRenderString).toHaveBeenCalledWith('digraph { a -> b }', {
       engine: 'dot',
@@ -172,10 +158,7 @@ describe('renderCodeDrawing', () => {
 
   it('renders flowcharts with a temporary dom node and cleans it up', async () => {
     const before = document.body.childElementCount;
-    const result = await renderCodeDrawing(
-      CODE_DRAWING_TYPE.Flowchart,
-      'st=>start: Start'
-    );
+    const result = await renderCodeDrawing('flowchart', 'st=>start: Start');
 
     expect(flowchartParse).toHaveBeenCalledWith('st=>start: Start');
     expect(flowchartDrawSVG).toHaveBeenCalled();
@@ -185,10 +168,10 @@ describe('renderCodeDrawing', () => {
 
   it('dispatches graphviz and flowchart rendering by drawing type', async () => {
     await expect(
-      renderCodeDrawing(CODE_DRAWING_TYPE.Graphviz, 'digraph { a -> b }')
+      renderCodeDrawing('graphviz', 'digraph { a -> b }')
     ).resolves.toStartWith('data:image/svg+xml;base64,');
     await expect(
-      renderCodeDrawing(CODE_DRAWING_TYPE.Flowchart, 'st=>start: Start')
+      renderCodeDrawing('flowchart', 'st=>start: Start')
     ).resolves.toStartWith('data:image/svg+xml;base64,');
   });
 });

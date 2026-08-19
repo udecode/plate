@@ -1,9 +1,9 @@
 ---
 title: 链接
 docs:
-  - route: /docs/components/link-node
+  - route: /docs/components/link
     title: 链接元素
-  - route: /docs/components/link-toolbar
+  - route: /docs/components/link
     title: 链接浮动工具栏
   - route: /docs/components/link-toolbar-button
     title: 链接工具栏按钮
@@ -27,10 +27,10 @@ docs:
 
 最快捷添加链接功能的方式是使用 `LinkKit`，它包含预配置的 `LinkPlugin` 以及浮动工具栏和 [Plate UI](/docs/installation/plate-ui) 组件。
 
-<ComponentSource name="link-kit" />
+<ComponentSource name="link" />
 
-- [`LinkElement`](/docs/components/link-node): 渲染链接元素
-- [`LinkFloatingToolbar`](/docs/components/link-toolbar): 提供链接编辑的浮动工具栏
+- [`LinkElement`](/docs/components/link): 渲染链接元素
+- [`LinkFloatingToolbar`](/docs/components/link): 提供链接编辑的浮动工具栏
 
 ### 添加套件
 
@@ -38,7 +38,7 @@ docs:
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { LinkKit } from '@/components/editor/plugins/link-kit';
+import { LinkKit } from '@/components/editor/link';
 
 const editor = createPlateEditor({
   plugins: [
@@ -83,8 +83,8 @@ const editor = createPlateEditor({
 ```tsx
 import { LinkPlugin } from '@platejs/link/react';
 import { createPlateEditor } from 'platejs/react';
-import { LinkElement } from '@/components/ui/link-node';
-import { LinkFloatingToolbar } from '@/components/ui/link-toolbar';
+import { LinkElement } from '@/components/editor/link';
+import { LinkFloatingToolbar } from '@/components/editor/link';
 
 const editor = createPlateEditor({
   plugins: [
@@ -99,9 +99,9 @@ const editor = createPlateEditor({
 });
 ```
 
-- `render.afterEditable`: 在可编辑区域后渲染 [`LinkFloatingToolbar`](/docs/components/link-toolbar) 用于链接编辑
+- `render.afterEditable`: 在可编辑区域后渲染 [`LinkFloatingToolbar`](/docs/components/link) 用于链接编辑
 - `.configure({ component: LinkElement })`：使用
-  [`LinkElement`](/docs/components/link-node) 渲染链接元素
+  [`LinkElement`](/docs/components/link) 渲染链接元素
 
 ### Input Rules
 
@@ -146,14 +146,13 @@ const editor = createPlateEditor({
 
 链接格式化插件。
 
-URL 解析、回调函数、UI 状态和交互行为共享同一个 options 对象：
+URL 解析和无头交互行为共享同一个状态契约：
 
 ```tsx
 LinkPlugin.configure({
   initialState: {
     allowedSchemes: ['http', 'https', 'mailto', 'tel'],
     dangerouslySkipSanitization: false,
-    triggerFloatingLinkHotkeys: 'meta+k, ctrl+k',
   },
 });
 ```
@@ -168,9 +167,6 @@ LinkPlugin.configure({
   默认值：`false`。
 
 <APIOptions type="object">
-<APIItem name="forceSubmit" type="boolean" optional>
-决定是否强制提交链接表单。
-</APIItem>
 <APIItem name="rangeBeforeOptions" type="RangeBeforeOptions" optional>
 允许自定义 rangeBeforeOptions 配置。
 - **默认值:**
@@ -181,10 +177,6 @@ LinkPlugin.configure({
   afterMatch: true,
 }
 ```
-</APIItem>
-<APIItem name="triggerFloatingLinkHotkeys" type="string | string[]" optional>
-触发浮动链接的热键。
-- **默认值:** **`'meta+k, ctrl+k'`**
 </APIItem>
 <APIItem name="defaultLinkAttributes" type="AnchorHTMLAttributes&lt;HTMLAnchorElement&gt;" optional>
 链接元素的默认HTML属性。
@@ -201,11 +193,8 @@ LinkPlugin.configure({
 <APIItem name="getUrlHref" type="(url: string) => string | undefined" optional>
 可选获取URL href的回调函数。返回与文本内容不同的可选链接。例如，为 `google.com` 返回 `https://google.com`。
 </APIItem>
-<APIItem name="transformInput" type="(url: string | null) => string | undefined" optional>
+<APIItem name="transformInput" type="(url: string) => string | undefined" optional>
 在验证前可选转换用户提交的URL输入的回调函数。
-</APIItem>
-<APIItem name="getLinkUrl" type="(prevUrl: string | null) => Promise<string | null>" optional>
-当使用键盘快捷键或工具栏鼠标按下时，调用此函数获取链接URL。默认行为是使用浏览器的原生 `prompt`。
 </APIItem>
 </APIOptions>
 </API>
@@ -244,11 +233,6 @@ if (api.validateUrl(url)) {
 | --- | --- |
 | `api.getAttributes(link)` | 返回链接元素经过清理的锚点属性。 |
 | `api.validateUrl(url)` | 根据插件配置和运行时 `isUrl` 选项验证 URL。 |
-| `api.encodeUrl(url)` / `api.decodeUrl(url)` | 转换浮动链接输入，遇到错误转义时不会抛出异常。 |
-| `api.show(mode, editorId)` / `api.hide()` / `api.reset()` | 控制浮动链接状态。 |
-| `api.submit()` | 验证并更新浮动链接表单值。 |
-| `api.trigger(options?)` | 打开插入模式，或编辑当前链接。 |
-| `api.triggerEdit()` / `api.triggerInsert(options?)` | 运行指定的浮动链接触发器。 |
 
 ### `CreateLinkNodeOptions`
 
@@ -275,204 +259,23 @@ if (api.validateUrl(url)) {
 </APIOptions>
 </API>
 
-## API 组件
+## Registry 链接工具栏
 
-### `FloatingLinkNewTabInput`
+复制的 `link-toolbar` 项负责浮动状态、定位、热键、外部点击、URL 输入和
+工具栏命令。它导出应用本地的 `linkPlugin` 描述符和
+`LinkFloatingToolbar` 组件。
 
-控制链接是否在新标签页中打开的输入组件。
+<ComponentSource name="link-toolbar" />
 
-<API name="FloatingLinkNewTabInput">
-<APIState>
-  <APIItem name="checked" type="boolean">
-    链接是否应在新标签页中打开。
-  </APIItem>
-  <APIItem name="setChecked" type="React.Dispatch<React.SetStateAction<boolean>>">
-    更新选中状态的函数。
-  </APIItem>
-  <APIItem name="ref" type="RefObject<HTMLInputElement>">
-    输入元素的引用。
-  </APIItem>
-</APIState>
-</API>
+其他复制 UI 需要打开工具栏时，使用这个精确描述符。
 
-### `FloatingLinkUrlInput`
+```tsx
+import { linkPlugin } from '@/components/editor/link';
 
-用于输入和编辑链接URL的输入组件。
+const link = editor.plugin(linkPlugin);
 
-<API name="FloatingLinkUrlInput">
-<APIState>
-  <APIItem name="ref" type="RefObject<HTMLInputElement>">
-    输入元素的引用。
-  </APIItem>
-</APIState>
-</API>
-
-### `LinkOpenButton`
-
-用于打开链接URL的按钮组件。
-
-<API name="LinkOpenButton">
-<APIState>
-  <APIItem name="element" type="LinkElement">
-    包含要打开URL的链接元素。
-  </APIItem>
-</APIState>
-</API>
-
-### `useFloatingLinkEdit`
-
-浮动链接编辑功能的行为钩子。
-
-<API name="useFloatingLinkEdit">
-<APIState>
-  <APIItem name="floating" type="object" optional>
-    虚拟浮动返回对象。
-  </APIItem>
-</APIState>
-
-<APIReturns type="object">
-  <APIItem name="ref" type="function">
-    浮动元素的引用回调。
-  </APIItem>
-  <APIItem name="props" type="object">
-    浮动元素的属性。
-    <APISubList>
-      <APISubListItem parent="props" name="style" type="object">
-        浮动链接的样式。
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-  <APIItem name="editButtonProps" type="object">
-    编辑按钮的属性。
-    <APISubList>
-      <APISubListItem parent="editButtonProps" name="onClick" type="function">
-        点击编辑按钮时调用的函数。
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-  <APIItem name="unlinkButtonProps" type="object">
-    取消链接按钮的属性。
-    <APISubList>
-      <APISubListItem parent="unlinkButtonProps" name="onClick" type="function">
-        点击取消链接按钮时调用的函数。
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-</APIReturns>
-</API>
-
-### `useFloatingLinkEnter`
-
-监听Enter键按下事件并提交编辑器中的浮动链接。
-
-### `useFloatingLinkEscape`
-
-监听Escape键按下事件并处理编辑器中浮动链接的行为。
-
-### `useFloatingLinkInsert`
-
-插入链接的行为钩子。
-
-<API name="useFloatingLinkInsert">
-<APIState>
-  <APIItem name="floating" type="ReturnType<typeof useFloatingLinkInsertState>">
-    虚拟浮动返回对象。
-  </APIItem>
-  <APIItem name="refClickOutside" type="React.Ref">
-    浮动元素的引用。
-  </APIItem>
-</APIState>
-
-<APIReturns type="object">
-  <APIItem name="ref" type="function">
-    浮动元素的引用回调。
-  </APIItem>
-  <APIItem name="props" type="object">
-    浮动元素的属性。
-    <APISubList>
-      <APISubListItem parent="props" name="style" type="object">
-        浮动链接的样式。
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-  <APIItem name="textInputProps" type="object">
-    文本输入的属性。
-    <APISubList>
-      <APISubListItem parent="textInputProps" name="onChange" type="function">
-        文本输入值变化时调用的函数。
-      </APISubListItem>
-      <APISubListItem parent="textInputProps" name="defaultValue" type="string">
-        文本输入的默认值。
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-</APIReturns>
-</API>
-
-### `useLink`
-
-链接元素的行为钩子。
-
-<API name="useLink">
-<APIOptions type="UseLinkOptions">
-  <APIItem name="element" type="LinkElement">
-    链接元素。
-  </APIItem>
-</APIOptions>
-
-<APIReturns type="object">
-  <APIItem name="props" type="object">
-    链接元素的属性。
-    <APISubList>
-      <APISubListItem parent="props" name="onMouseOver" type="function">
-        鼠标悬停在链接上时调用的函数。
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-</APIReturns>
-</API>
-
-### `useLinkToolbarButton`
-
-链接工具栏按钮的行为钩子。
-
-<API name="useLinkToolbarButton">
-<APIState>
-  <APIItem name="pressed" type="boolean">
-    选择是否在链接中。
-  </APIItem>
-</APIState>
-
-<APIReturns type="object">
-  <APIItem name="props" type="object">
-    工具栏按钮的属性。
-    <APISubList>
-      <APISubListItem parent="props" name="pressed" type="boolean">
-        链接是否被按下。
-      </APISubListItem>
-      <APISubListItem parent="props" name="onClick" type="function">
-        点击按钮时调用的函数。
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-</APIReturns>
-</API>
-
-### `useVirtualFloatingLink`
-
-用于管理链接虚拟浮动的自定义钩子。
-
-<API name="useVirtualFloatingLink">
-<APIOptions type="object">
-  <APIItem name="editorId" type="string">
-    链接所属编辑器的 ID。
-  </APIItem>
-  <APIItem name="floatingOptions" type="UseVirtualFloatingOptions" optional>
-    虚拟浮动的选项。
-  </APIItem>
-</APIOptions>
-
-<APIReturns type="UseVirtualFloatingReturn">
-  `useVirtualFloating` 钩子的返回值。
-</APIReturns>
-</API>
+link.api.trigger({ focused: true });
+link.api.triggerEdit();
+link.api.triggerInsert({ focused: true });
+link.api.submit();
+```

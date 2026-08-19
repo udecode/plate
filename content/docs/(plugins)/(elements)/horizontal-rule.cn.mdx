@@ -1,7 +1,7 @@
 ---
 title: 水平分隔线
 docs:
-  - route: /docs/components/hr-node
+  - route: /docs/components/horizontal-rule
     title: Hr 元素
 ---
 
@@ -25,9 +25,9 @@ docs:
 
 添加水平分隔线插件最快的方式是使用 `BasicBlocksKit`，该套件包含预配置的 `HorizontalRulePlugin` 以及其他基础块元素及其 [Plate UI](/docs/installation/plate-ui) 组件。
 
-<ComponentSource name="basic-blocks-kit" />
+<ComponentSource name="basic-blocks" />
 
-- [`HrElement`](/docs/components/hr-node): 渲染水平分隔线元素
+- [`HrElement`](/docs/components/horizontal-rule): 渲染水平分隔线元素
 
 ### 添加套件
 
@@ -35,7 +35,7 @@ docs:
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { BasicBlocksKit } from '@/components/editor/plugins/basic-blocks-kit';
+import { BasicBlocksKit } from '@/components/editor/basic-blocks';
 
 const editor = createPlateEditor({
   plugins: [

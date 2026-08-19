@@ -27,7 +27,7 @@ docs:
 
 添加讨论功能最快的方法是使用 `DiscussionKit`,它包含预配置的 `discussionPlugin` 及其 [Plate UI](/docs/installation/plate-ui) 组件。
 
-<ComponentSource name="discussion-kit" />
+<ComponentSource name="discussion" />
 
 - [`BlockDiscussion`](/docs/components/block-discussion): 在节点上方渲染讨论 UI
 
@@ -35,7 +35,7 @@ docs:
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { DiscussionKit } from '@/components/editor/plugins/discussion-kit';
+import { DiscussionKit } from '@/components/editor/discussion';
 
 const editor = createPlateEditor({
   plugins: [
@@ -61,7 +61,7 @@ npm install @platejs/comment @platejs/suggestion
 
 ```tsx
 import { definePlatePlugin } from 'platejs/react';
-import { BlockDiscussion } from '@/components/ui/block-discussion';
+import { BlockDiscussion } from '@/components/editor/block-discussion';
 
 export interface TDiscussion {
   id: string;

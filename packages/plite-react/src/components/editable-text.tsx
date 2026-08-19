@@ -4,11 +4,11 @@ import React, {
   type Ref,
   useCallback,
   useContext,
+  useRef,
 } from 'react';
 import type { Path, NodeKey, Text as PliteTextNode } from '@platejs/plite';
 import {
   PliteContentRootOwnerContext,
-  PliteDOMTextSyncContext,
   PliteEditableRootContext,
 } from '../context';
 import {
@@ -17,12 +17,14 @@ import {
   getDOMTextSyncCapability,
 } from '../dom-text-sync';
 import { getNodeKey as editorGetNodeKey } from '../editable/runtime-editor-api';
+import { readTextByKey } from '../editable/runtime-live-state';
 import { useEditor } from '../hooks/use-editor';
 import {
   type EditorTextSelectorContext,
   useMountedTextRenderSelector,
 } from '../hooks/use-node-selector';
 import {
+  getDOMTextRenderRevision,
   usePliteNodeKeyDOMValue,
   usePliteNodeRef,
 } from '../hooks/use-plite-node-ref';
@@ -56,12 +58,14 @@ const EMPTY_BOUND_TEXT = Object.freeze({
   path: null,
   nodeKey: null,
   pliteNode: null,
+  renderRevision: 0,
   text: '',
 }) as {
   marks: Omit<PliteTextNode, 'text'>;
   path: Path | null;
   nodeKey: NodeKey | null;
   pliteNode: PliteTextNode | null;
+  renderRevision: number;
   text: string;
 };
 
@@ -129,6 +133,7 @@ const sameBoundText = (
     path: Path | null;
     nodeKey: NodeKey | null;
     pliteNode: PliteTextNode | null;
+    renderRevision: number;
     text: string;
   } | null,
   right: {
@@ -136,12 +141,14 @@ const sameBoundText = (
     path: Path | null;
     nodeKey: NodeKey | null;
     pliteNode: PliteTextNode | null;
+    renderRevision: number;
     text: string;
   }
 ) =>
   left != null &&
   left.pliteNode === right.pliteNode &&
   left.nodeKey === right.nodeKey &&
+  left.renderRevision === right.renderRevision &&
   left.text === right.text &&
   samePathOrRuntimeStable({
     leftPath: left.path,
@@ -168,19 +175,21 @@ export type RenderLeafProps<T = unknown> = {
     'data-plite-leaf-start'?: number;
   };
   children: ReactNode;
-  leaf: PliteTextNode;
+  leaf: Omit<PliteTextNode, 'text'>;
   leafPosition?: {
     end: number;
     isFirst?: true;
     isLast?: true;
     start: number;
   };
-  segment: EditableTextSegment<T>;
-  text: PliteTextNode;
+  path?: Path;
+  segment: Pick<EditableTextSegment<T>, 'marks' | 'slices'>;
+  text: Omit<PliteTextNode, 'text'>;
 };
 
 export type RenderTextProps = {
   attributes: {
+    'data-plite-dom-sync'?: true;
     'data-plite-node': 'text';
     'data-plite-dom-sync-reason'?: DOMTextSyncOptOutReason;
     'data-plite-path'?: string;
@@ -354,6 +363,13 @@ const assignRef = (
   }
 };
 
+type RenderEditableTextProps<T> = EditableTextProps<T> & {
+  projections: readonly PliteProjectionSlice<T>[];
+  resolvedMarks: Omit<PliteTextNode, 'text'>;
+  resolvedText: string;
+  renderRevision?: number;
+};
+
 const RenderEditableText = <T,>({
   placeholder,
   placeholderAs,
@@ -363,6 +379,7 @@ const RenderEditableText = <T,>({
   path,
   projections,
   ref: textRef,
+  renderRevision = 0,
   renderLeaf,
   renderPlaceholder,
   renderSegment,
@@ -371,31 +388,26 @@ const RenderEditableText = <T,>({
   resolvedText,
   nodeKey,
   zeroWidth,
-}: EditableTextProps<T> & {
-  projections: readonly PliteProjectionSlice<T>[];
-  resolvedMarks: Omit<PliteTextNode, 'text'>;
-  resolvedText: string;
-}) => {
+}: RenderEditableTextProps<T>) => {
   const editableRoot = useContext(PliteEditableRootContext);
   const contentRootOwner = useContext(PliteContentRootOwnerContext);
-  const textSync = useContext(PliteDOMTextSyncContext);
   const nodeKeyDOMValue = usePliteNodeKeyDOMValue(nodeKey ?? null);
   const hasText = resolvedText.length > 0;
   const domTextSync = getDOMTextSyncCapability({
     hasText,
+    marks: resolvedMarks,
     projections,
     renderLeaf,
     renderSegment,
     renderText,
-    textSync,
   });
   const projectedDOMTextSync = canUseProjectedDOMTextSync({
     hasText,
+    marks: resolvedMarks,
     projections,
     renderLeaf,
     renderSegment,
     renderText,
-    textSync,
   });
   const segments =
     hasText || projections.some((slice) => slice.start === slice.end)
@@ -414,6 +426,7 @@ const RenderEditableText = <T,>({
     ...resolvedMarks,
   };
   const textAttributes = {
+    'data-plite-dom-sync': domTextSync.enabled ? (true as const) : undefined,
     'data-plite-dom-sync-reason': domTextSync.reason ?? undefined,
     'data-plite-node': 'text' as const,
     'data-plite-path': path ? path.join(',') : undefined,
@@ -462,9 +475,10 @@ const RenderEditableText = <T,>({
             ) : (
               segmentContent
             );
-          const leafNode = {
-            text: segment.text,
-            ...segment.marks,
+          const leafNode = segment.marks;
+          const leafSegment = {
+            marks: segment.marks,
+            slices: segment.slices,
           };
           const leafPosition =
             segments.length > 1
@@ -479,7 +493,7 @@ const RenderEditableText = <T,>({
           const leafAttributes = getLeafAttributes(leafPosition);
 
           return (
-            <React.Fragment key={`segment-${index}`}>
+            <React.Fragment key={`${renderRevision}:segment-${index}`}>
               {renderLeaf ? (
                 <RenderCallback
                   props={{
@@ -487,8 +501,9 @@ const RenderEditableText = <T,>({
                     children: decoratedSegmentContent,
                     leaf: leafNode,
                     leafPosition,
-                    segment,
-                    text: textNode,
+                    path,
+                    segment: leafSegment,
+                    text: resolvedMarks,
                   }}
                   render={renderLeaf}
                 />
@@ -547,9 +562,10 @@ const RenderEditableText = <T,>({
           ) : (
             zeroWidthString
           );
-          const leafNode = {
-            text: '',
-            ...resolvedMarks,
+          const leafNode = resolvedMarks;
+          const leafSegment = {
+            marks: segment.marks,
+            slices: segment.slices,
           };
           const leafAttributes = getLeafAttributes();
 
@@ -559,8 +575,9 @@ const RenderEditableText = <T,>({
                 attributes: leafAttributes,
                 children: content,
                 leaf: leafNode,
-                segment,
-                text: textNode,
+                path,
+                segment: leafSegment,
+                text: resolvedMarks,
               }}
               render={renderLeaf}
             />
@@ -596,6 +613,73 @@ const RenderEditableText = <T,>({
   );
 };
 
+const RevisionedProjectedEditableText = <T,>({
+  editor,
+  nodeKey,
+  ...props
+}: RenderEditableTextProps<T> & {
+  editor: ReturnType<typeof useEditor>;
+}) => {
+  const selectProjectedText = useCallback(
+    ({ text }: EditorTextSelectorContext) => {
+      const renderRevision = nodeKey
+        ? getDOMTextRenderRevision(editor, [nodeKey])
+        : 0;
+
+      return {
+        renderRevision,
+        resolvedMarks: text ? getTextMarks(text) : props.resolvedMarks,
+        resolvedText: text?.text ?? props.resolvedText,
+      };
+    },
+    [editor, nodeKey, props.resolvedMarks, props.resolvedText]
+  );
+  const projectedText = useMountedTextRenderSelector(
+    selectProjectedText,
+    (left, right) =>
+      left != null &&
+      left.renderRevision === right.renderRevision &&
+      left.resolvedText === right.resolvedText &&
+      sameMarks(left.resolvedMarks, right.resolvedMarks),
+    { nodeKey }
+  );
+  const currentBinding = readTextByKey(editor, nodeKey ?? null);
+  const currentText = currentBinding.text;
+  const resolvedMarks = currentText
+    ? getTextMarks(currentText)
+    : projectedText.resolvedMarks;
+  const resolvedText = currentText?.text ?? projectedText.resolvedText;
+  const renderIdentity = useRef<{
+    revision: number;
+    sourceRevision: number;
+    sourceText: string;
+  } | null>(null);
+  const previousRenderIdentity = renderIdentity.current;
+
+  const nextRenderIdentity =
+    !previousRenderIdentity ||
+    previousRenderIdentity.sourceRevision !== projectedText.renderRevision ||
+    previousRenderIdentity.sourceText !== resolvedText
+      ? {
+          revision: (previousRenderIdentity?.revision ?? -1) + 1,
+          sourceRevision: projectedText.renderRevision,
+          sourceText: resolvedText,
+        }
+      : previousRenderIdentity;
+
+  renderIdentity.current = nextRenderIdentity;
+
+  return (
+    <RenderEditableText
+      {...props}
+      nodeKey={nodeKey}
+      renderRevision={nextRenderIdentity.revision}
+      resolvedMarks={resolvedMarks}
+      resolvedText={resolvedText}
+    />
+  );
+};
+
 const BoundEditableText = <T,>({
   marks,
   path,
@@ -623,10 +707,13 @@ const BoundEditableText = <T,>({
         path: resolvedPath,
         nodeKey: resolvedNodeKey,
         pliteNode: node,
+        renderRevision: resolvedNodeKey
+          ? getDOMTextRenderRevision(editor, [resolvedNodeKey])
+          : 0,
         text: text ?? node?.text ?? '',
       };
     },
-    [marks, path, nodeKey, text]
+    [editor, marks, path, nodeKey, text]
   );
   const boundText = useMountedTextRenderSelector(
     selectBoundText,
@@ -660,6 +747,7 @@ const BoundEditableText = <T,>({
       ref={combinedRef}
       resolvedMarks={boundText.marks}
       resolvedText={boundText.text}
+      renderRevision={boundText.renderRevision}
       nodeKey={resolvedNodeKey}
     />
   );
@@ -674,6 +762,7 @@ const ProjectedEditableText = <T,>({
   text = '',
   ...props
 }: EditableTextProps<T>) => {
+  const editor = useEditor();
   const boundRef = usePliteNodeRef(nodeKey, { path, pliteNode });
   const projections = usePliteProjectionEntries(
     nodeKey
@@ -687,16 +776,28 @@ const ProjectedEditableText = <T,>({
     [boundRef, ref]
   );
 
-  return (
-    <RenderEditableText
-      {...props}
-      path={path}
-      projections={projections}
-      ref={combinedRef}
-      resolvedMarks={marks}
-      resolvedText={text}
-      nodeKey={nodeKey}
-    />
+  const renderProps = {
+    ...props,
+    path,
+    projections,
+    ref: combinedRef,
+    resolvedMarks: marks,
+    resolvedText: text,
+    nodeKey,
+  } satisfies RenderEditableTextProps<T>;
+  const requiresModelRender = !getDOMTextSyncCapability({
+    hasText: text.length > 0,
+    marks,
+    projections,
+    renderLeaf: props.renderLeaf,
+    renderSegment: props.renderSegment,
+    renderText: props.renderText,
+  }).enabled;
+
+  return requiresModelRender ? (
+    <RevisionedProjectedEditableText {...renderProps} editor={editor} />
+  ) : (
+    <RenderEditableText {...renderProps} />
   );
 };
 

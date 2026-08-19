@@ -146,6 +146,13 @@ export const createEditorHarness = (
           [],
           'This editor surface does not expose getBlockTexts'
         ),
+      modelValue: async () =>
+        evaluateHarnessHandle(
+          root,
+          'getValue',
+          [],
+          'This editor surface does not expose getValue'
+        ),
       text: async () => (await root.textContent()) ?? '',
       blockTexts: async () => getBlockTexts(root),
       renderedDOMShape: async () => getRenderedBlockDOMShapes(root),

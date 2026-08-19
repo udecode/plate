@@ -3,4 +3,3 @@
  */
 
 export * from './MultiSelectPlugin';
-export * from './useTag';

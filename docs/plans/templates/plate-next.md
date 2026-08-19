@@ -144,13 +144,12 @@ Constraints:
   file and every standalone production function accepting `tx`; inline/delete
   single-owner rows or record concrete multiple-consumer/independent-boundary
   evidence.
-- React colocation is family-owned. One component family belongs in one
-  `<Family>.tsx` file; one hook family belongs in one `use<Family>.ts` file.
-  Related exported primitives/state/behavior hooks may share that file.
-  Sibling use inside the family is internal composition, not independent
-  reuse. Keep feature-package React roots flat by default and reject
-  `components/`, `hooks/`, nested family folders, or nested barrels that only
-  classify one owner.
+- React colocation follows `plate-ui`. Start with one `<Family>.tsx` direct
+  component owner; add at most one `use<Family>.ts[x]` semantic controller for
+  real shared lifecycle. Cut state-hook/prop-hook pipelines, subcomponent hook
+  exports, and public one-renderer prop bags. Keep feature-package React roots
+  flat and reject taxonomy-only `components/`, `hooks/`, nested family folders,
+  or nested barrels.
 - A separate React file needs reuse across durable families, a standalone
   public owner, or an independent provider/store/lifecycle boundary. A public
   export name, file size, or two sibling consumers inside one family is not

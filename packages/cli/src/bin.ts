@@ -1,12 +1,14 @@
 #!/usr/bin/env node
 
 import { createRequire } from 'node:module';
+import { readFileSync } from 'node:fs';
 import { relative } from 'node:path';
 
 import { Command } from 'commander';
 
 import { generateEditors } from './generate';
 import { createEditorMigration } from './migrate';
+import { runEditorMigrationInput, runEditorMigrations } from './run-migration';
 import { watchEditors } from './watch';
 
 const DEFAULT_ENTRY = 'src/editor.ts';
@@ -97,9 +99,11 @@ program
     }
   );
 
-program
+const migrateCommand = program
   .command('migrate')
-  .description('Scaffold an explicit typed editor schema migration.')
+  .description('Create or run typed editor schema migrations.');
+
+migrateCommand
   .command('new')
   .argument('<name>', 'lowercase kebab-case migration name')
   .option('--entry <path>', 'editor module file', DEFAULT_ENTRY)
@@ -113,6 +117,71 @@ program
       process.stdout.write(`  ${displayPath(path)}\n`);
     });
   });
+
+migrateCommand
+  .command('run')
+  .description(
+    'Dry-run, check, or write document migrations to the current schema.'
+  )
+  .argument('[files...]', 'JSON document files', [])
+  .option('--entry <path>', 'editor module file', DEFAULT_ENTRY)
+  .option('--check', 'exit nonzero when files require migration')
+  .option('--stdin', 'read one JSON document from standard input')
+  .option('--write', 'atomically replace changed files')
+  .action(
+    async (
+      files: string[],
+      options: Readonly<{
+        check?: boolean;
+        entry: string;
+        stdin?: boolean;
+        write?: boolean;
+      }>
+    ) => {
+      if (options.stdin) {
+        if (files.length > 0) {
+          throw new Error(
+            'plate migrate run --stdin cannot include file paths.'
+          );
+        }
+        if (options.write) {
+          throw new Error('plate migrate run --stdin cannot use --write.');
+        }
+        const result = await runEditorMigrationInput(
+          options.entry,
+          readFileSync(0, 'utf8'),
+          options
+        );
+
+        if (options.check) {
+          process.stderr.write(
+            `${result.changed ? 'change' : 'current'} stdin${result.applied.length > 0 ? ` (${result.applied.join(' -> ')})` : ''}\n`
+          );
+          if (result.changed) process.exitCode = 1;
+        } else {
+          process.stdout.write(result.outputText);
+        }
+
+        return;
+      }
+      const result = await runEditorMigrations(options.entry, files, options);
+      const verb = options.write
+        ? 'Migrated'
+        : options.check
+          ? 'Checked'
+          : 'Would migrate';
+
+      process.stdout.write(
+        `${verb} ${result.changed} of ${result.files.length} document${result.files.length === 1 ? '' : 's'}\n`
+      );
+      result.files.forEach(({ applied, changed, path }) => {
+        process.stdout.write(
+          `  ${changed ? 'change' : 'current'} ${displayPath(path)}${applied.length > 0 ? ` (${applied.join(' -> ')})` : ''}\n`
+        );
+      });
+      if (options.check && result.changed > 0) process.exitCode = 1;
+    }
+  );
 
 program.parseAsync().catch((error) => {
   process.stderr.write(

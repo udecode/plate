@@ -223,13 +223,13 @@ describe('pluginInjectNodeProps', () => {
       targetPlugins: [BaseParagraphPlugin],
       inject: {
         nodeProps: {
-          nodeKey: 'listStyleType',
-          query: ({ nodeProps }) => !!nodeProps.element?.listStyleType,
+          nodeKey: 'markerStyle',
+          query: ({ nodeProps }) => !!nodeProps.element?.markerStyle,
           transformProps: ({ props, value }) => ({
             ...props,
             style: {
               ...props.style,
-              listStyleType: value,
+              markerStyle: value,
             },
           }),
         },
@@ -251,16 +251,16 @@ describe('pluginInjectNodeProps', () => {
         {
           element: {
             children: [{ text: 'hello' }],
-            listStyleType: 'disc',
+            markerStyle: 'disc',
             type: 'paragraph',
           },
         },
         getPath
       )
     ).toEqual({
-      className: 'plite-listStyleType-disc',
+      className: 'plite-markerStyle-disc',
       style: {
-        listStyleType: 'disc',
+        markerStyle: 'disc',
       },
     });
 

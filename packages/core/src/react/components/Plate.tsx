@@ -139,26 +139,29 @@ function PlateInner({
 
       const { onCommit, onSelectionChange, onValueChange } =
         observersRef.current;
+      if (!onCommit && !onSelectionChange && !onValueChange) return;
+
       const documentChanged = commit.changed.hasAny('document');
       const stateChanged = commit.dirtyStateKeys.length > 0;
-      const value =
-        documentChanged || stateChanged
+      const value = onValueChange
+        ? documentChanged || stateChanged
           ? currentEditor.read.value()
-          : (lastDocumentValueRef.current ?? currentEditor.read.value());
+          : (lastDocumentValueRef.current ?? currentEditor.read.value())
+        : null;
       const persistedMetaChanged =
+        !!value &&
         stateChanged &&
         !isEqual(lastDocumentValueRef.current?.meta, value.meta);
 
-      if (documentChanged || stateChanged) {
+      if (value && (documentChanged || stateChanged)) {
         lastDocumentValueRef.current = value;
       }
-      if (!onCommit && !onSelectionChange && !onValueChange) return;
 
       const context = { commit, editor: currentEditor, snapshot };
 
       onCommit?.(context);
 
-      if (documentChanged || persistedMetaChanged) {
+      if (value && (documentChanged || persistedMetaChanged)) {
         onValueChange?.({
           ...context,
           value,

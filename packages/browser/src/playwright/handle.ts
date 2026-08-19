@@ -10,6 +10,7 @@ type PliteBrowserHarnessHandle = {
   getBlockText: (index: number) => string | null;
   getBlockTexts: () => string[];
   getText: () => string;
+  getValue: () => unknown;
   importDOMSelection: () => SelectionSnapshot | null;
   insertBreak: () => void;
   insertText: (text: string) => void;

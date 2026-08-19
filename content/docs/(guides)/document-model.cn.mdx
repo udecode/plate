@@ -1,0 +1,135 @@
+---
+title: Plate 文档模型
+description: Plate 文档、节点、Schema、迁移和格式适配器的规范 JSON 合约。
+---
+
+Plate 保存编辑器原生 JSON。Plite 定义树结构，Plate 插件添加由 Schema 校验的属性，Codec 负责与外部格式互转。
+
+## 核心树
+
+~~~ts
+type Text = { text: string };
+type Element = {
+  type: string;
+  children: Array<Element | Text>;
+};
+type EditorDocumentValue = {
+  children: Element[];
+  roots?: Record<string, Element[]>;
+  meta?: Record<string, unknown>;
+};
+~~~
+
+功能属性平铺在所属节点上。运行时 NodeKey 不写入文档。
+
+## 应用 Schema
+
+~~~ts
+type PersistedDocumentInput = {
+  document: EditorDocumentValue;
+  schema: { id: string; version: number; fingerprint: string };
+  selection?: Selection | 'start' | 'end';
+};
+~~~
+
+defineDocumentMigrations 将递增迁移链绑定到应用 Schema。运行时和 CLI 都在 Schema 修复前调用同一个 migrateDocument。Plate v55 依次运行 migratePlateV54 和 migratePlateV55；已有 v54 文档只运行 v55 步骤。
+
+## 代表性功能结构
+
+Plate 包定义局部节点结构，应用安装的插件元组和 Schema 决定完整语法。需要提交精确 `Value` 类型时使用 `plate generate`。
+
+~~~ts
+type HeadingElement = {
+  type: 'heading';
+  level: 1 | 2 | 3 | 4 | 5 | 6;
+  children: Text[];
+};
+type CodeBlockElement = {
+  type: 'codeBlock';
+  language?: string;
+  children: CodeLineElement[];
+};
+type TableElement = {
+  type: 'table';
+  columnWidths?: Array<number | null>;
+  children: TableRowElement[];
+};
+type TableRowElement = {
+  type: 'tableRow';
+  height?: number;
+  children: TableCellElement[];
+};
+type TableCellElement = {
+  type: 'tableCell';
+  backgroundColor?: string;
+  borders?: Partial<Record<
+    'top' | 'right' | 'bottom' | 'left',
+    { color?: string; style?: string; width?: number }
+  >>;
+  colSpan?: number;
+  rowSpan?: number;
+  header?: boolean;
+  children: Element[];
+};
+type ListItemProperties = {
+  listType: 'bulleted' | 'numbered' | 'task';
+  listStyle?: string;
+  listStart?: number;
+  listRestart?: number;
+  checked?: boolean;
+  indent?: number;
+};
+type DateElement = {
+  type: 'date';
+  value: string;
+  children: Text[];
+};
+type MentionElement = {
+  type: 'mention';
+  ref: string;
+  label?: string;
+  children: Text[];
+};
+type FootnoteReferenceElement = {
+  type: 'footnoteReference';
+  ref: string;
+  children: Text[];
+};
+type EquationElement = {
+  type: 'equation' | 'inlineEquation';
+  latex: string;
+  children: Text[];
+};
+type ImageElement = {
+  type: 'image';
+  url: string;
+  naturalWidth?: number;
+  naturalHeight?: number;
+  children: Text[];
+};
+type VideoElement = {
+  type: 'video';
+  url: string;
+  provider?: string;
+  children: Text[];
+};
+~~~
+
+listStart 保存条件作者意图：仅在该项是有序序列第一项时生效，被忽略时仍保留。listRestart 强制该项开启新序列。editor.read.list.ordinal(element) 计算显示编号，普通编辑不会重写后续节点。
+
+列表起始值和重启值是有符号安全整数。元素 `id` 标识一个持久化节点实例，`ref` 表示持久化关联，运行时身份继续使用 `NodeKey`。
+
+表格列宽只有一个所有者：TableElement.columnWidths。HTML 单元格宽度在导入时归一到该数组，`null` 表示未知宽度。图片的 naturalWidth 和 naturalHeight 保存源图片尺寸；媒体 width 保存用户选择的渲染宽度。媒体标题直接存于 children；上传进度和临时占位符属于应用状态。
+
+## 与标准的关系
+
+| 模型 | Plate 的关系 |
+| --- | --- |
+| Slate | 使用相同的实用后代结构，并增加编译后的应用 Schema。 |
+| ProseMirror | 采用相同的 Schema 优先原则，但保留扁平的编辑器原生 JSON。 |
+| UNIST | 只共享树术语；Plate 不要求 position 或 data。 |
+| MDAST | Markdown 外部 AST。Codec 将 heading.level 映射到 depth，将 codeBlock.language 映射到 lang。 |
+| Portable Text | 可移植性参考，不是 Plate 的存储格式。 |
+| Block Protocol | 块嵌入协议，不是富文本 AST 合约。 |
+
+Plate 文档有意保持 Plate 原生。兼容性由 Codec 或适配器提供。

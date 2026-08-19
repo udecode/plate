@@ -6,7 +6,7 @@ jsx;
 
 export const basicMarksValue = (
   <fragment>
-    <hh2>Text Formatting</hh2>
+    <hheading level={2}>Text Formatting</hheading>
     <hp>
       Add style and emphasis to your text using various formatting options.
     </hp>

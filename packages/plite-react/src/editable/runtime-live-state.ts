@@ -41,6 +41,21 @@ export const readRuntimeText = (
   return TextApi.isText(node) ? node : null;
 };
 
+export const readPathByNodeKey = (
+  editor: Editor,
+  nodeKey: NodeKey | null
+): Path | null => {
+  if (!nodeKey) {
+    return null;
+  }
+
+  return (
+    editorGetPathByNodeKey(editor, nodeKey) ??
+    editorGetSnapshot(editor).index.pathOf(nodeKey) ??
+    null
+  );
+};
+
 export const readNodeByKey = (
   editor: Editor,
   nodeKey: NodeKey | null
@@ -50,10 +65,7 @@ export const readNodeByKey = (
   }
 
   const snapshot = editorGetSnapshot(editor);
-  const path =
-    editorGetPathByNodeKey(editor, nodeKey) ??
-    snapshot.index.pathOf(nodeKey) ??
-    null;
+  const path = readPathByNodeKey(editor, nodeKey);
 
   if (!path) {
     return { node: null, path: null, nodeKey };

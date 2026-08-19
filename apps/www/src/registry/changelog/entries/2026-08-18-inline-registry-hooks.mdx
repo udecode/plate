@@ -1,0 +1,15 @@
+---
+id: 2026-08-18-inline-registry-hooks
+date: 2026-08-18
+status: draft
+kind: wiring
+summary: "Colocate registry component state"
+change: {"type":"source","date":"2026-08-18","commits":[]}
+release: {"status":"unresolved"}
+diagnostics: []
+---
+<!-- entry: {"id":"2026-08-18-uploadthing-colocate-upload-state-8cc6343e","kind":"wiring","migrationNotes":["Keep custom upload state in your media placeholder component; `uploadthing` installs only the server router."]} -->
+- **`uploadthing`**, **`media-placeholder`**: Keep UploadThing server routing in `uploadthing` and colocate client upload state in `media-placeholder`.
+
+<!-- entry: {"id":"2026-08-18-component-families-inline-state-a2902f17","kind":"wiring","migrationNotes":[]} -->
+- **`block-discussion`**, **`emoji-picker`**: Keep single-consumer subscription and picker state inside their owning component families.

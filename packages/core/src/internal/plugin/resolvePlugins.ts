@@ -1,6 +1,7 @@
 import type {
   EditorExtensionDefinitionInput,
   EditorExtensionReference,
+  EditorReadMethodTree,
   EditorStateSchemaApi,
 } from '@platejs/plite';
 import {
@@ -51,6 +52,7 @@ import {
   setPluginStore,
 } from './pluginStore';
 import { compilePlateShortcuts } from './compilePlateShortcuts';
+import { mergePluginCapabilities } from './mergePluginCapabilities';
 import {
   setPlateRuntimeCandidate,
   type PlatePluginCache,
@@ -251,7 +253,7 @@ const createMutablePlatePluginCache = (): MutablePlatePluginCache => ({
     belowRootNodes: [],
   },
   rules: { match: [] },
-  transformInitialValue: [],
+  prepareDocument: [],
   useHooks: [],
 });
 
@@ -840,8 +842,8 @@ export const createPlateModelPublication = (
       pluginCache.render.belowRootNodes.push(plugin.name);
     }
     if (plugin.rules?.match) pluginCache.rules.match.push(plugin.name);
-    if (plugin.transformInitialValue) {
-      pluginCache.transformInitialValue.push(plugin.name);
+    if (plugin.prepareDocument) {
+      pluginCache.prepareDocument.push(plugin.name);
     }
     if (plugin.decorate) pluginCache.decorate.push(plugin.name);
     if (plugin.useHooks) pluginCache.useHooks.push(plugin.name);
@@ -882,7 +884,7 @@ export const createPlateModelPublication = (
       belowRootNodes: freezeList(pluginCache.render.belowRootNodes),
     }),
     rules: Object.freeze({ match: freezeList(pluginCache.rules.match) }),
-    transformInitialValue: freezeList(pluginCache.transformInitialValue),
+    prepareDocument: freezeList(pluginCache.prepareDocument),
     useHooks: freezeList(pluginCache.useHooks),
   });
   const shortcutRuntime = snapshotApiValue(
@@ -1000,8 +1002,9 @@ const isApiRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
 const resolvePluginCapability = (
-  editor: BaseEditor,
-  plugin: AnyBasePlugin,
+  owner: string,
+  kind: 'read' | 'update',
+  pluginContext: object,
   contributions: readonly ResolvedPluginCapabilityContribution[],
   context: object
 ) => {
@@ -1009,18 +1012,18 @@ const resolvePluginCapability = (
     Reflect.apply(factory, undefined, [
       kind === 'native'
         ? context
-        : Object.assign(
-            Object.create(createPluginContext(editor, plugin)),
-            context
-          ),
+        : Object.assign(Object.create(pluginContext), context),
     ])
   );
 
-  if (values.every(isApiRecord)) {
-    return mergePlugins({}, ...values);
-  }
-
-  return values.at(-1);
+  return mergePluginCapabilities(
+    {
+      kind,
+      ...(kind === 'read' ? { mapMethod: txRead } : {}),
+      owner,
+    },
+    ...values
+  );
 };
 
 const createPluginLifecycleHandlers = (
@@ -1111,6 +1114,7 @@ export const createPlateRuntimeExtensions = (
         ),
     ];
     const on = createPluginLifecycleHandlers(editor, plugin);
+    const pluginContext = createPluginContext(editor, plugin);
     const stateFields = plugin.stateFields ?? [];
     const effectTypes = plugin.effectTypes ?? [];
     const binding = model.byName[plugin.name];
@@ -1134,7 +1138,11 @@ export const createPlateRuntimeExtensions = (
               let resolvedApi: Record<PropertyKey, unknown> = {};
 
               if (apiContributions.length === 0) {
-                resolvedApi = mergePlugins(resolvedApi, frozenPluginApi);
+                resolvedApi = mergePluginCapabilities(
+                  { kind: 'api', owner: plugin.name },
+                  resolvedApi,
+                  frozenPluginApi
+                ) as Record<PropertyKey, unknown>;
               } else {
                 for (const contribution of apiContributions) {
                   const value =
@@ -1149,7 +1157,11 @@ export const createPlateRuntimeExtensions = (
                       `Plate plugin "${plugin.name}" API factories must return an object.`
                     );
                   }
-                  resolvedApi = mergePlugins(resolvedApi, value);
+                  resolvedApi = mergePluginCapabilities(
+                    { kind: 'api', owner: plugin.name },
+                    resolvedApi,
+                    value
+                  ) as Record<PropertyKey, unknown>;
                 }
               }
 
@@ -1165,31 +1177,27 @@ export const createPlateRuntimeExtensions = (
               const authoredRead =
                 capabilities.read.length > 0
                   ? resolvePluginCapability(
-                      editor,
-                      plugin,
+                      plugin.name,
+                      'read',
+                      pluginContext,
                       capabilities.read,
                       context
                     )
                   : typeof plugin.read === 'function'
                     ? Reflect.apply(plugin.read, undefined, [
-                        Object.assign(
-                          Object.create(createPluginContext(editor, plugin)),
-                          context
-                        ),
+                        Object.assign(Object.create(pluginContext), context),
                       ])
                     : {};
 
               if (!markKey) {
-                return isApiRecord(authoredRead)
-                  ? Object.fromEntries(
-                      Object.entries(authoredRead).map(([name, value]) => [
-                        name,
-                        typeof value === 'function'
-                          ? txRead(value as (...args: never[]) => unknown)
-                          : value,
-                      ])
-                    )
-                  : authoredRead;
+                return mergePluginCapabilities(
+                  {
+                    kind: 'read',
+                    mapMethod: txRead,
+                    owner: plugin.name,
+                  },
+                  authoredRead
+                ) as EditorReadMethodTree;
               }
 
               if (!isApiRecord(authoredRead)) {
@@ -1211,16 +1219,15 @@ export const createPlateRuntimeExtensions = (
                 value: () => context.state.marks()?.[markKey],
               };
 
-              return Object.fromEntries(
-                Object.entries(mergePlugins(defaultRead, authoredRead)).map(
-                  ([name, value]) => [
-                    name,
-                    typeof value === 'function'
-                      ? txRead(value as (...args: never[]) => unknown)
-                      : value,
-                  ]
-                )
-              );
+              return mergePluginCapabilities(
+                {
+                  kind: 'read',
+                  mapMethod: txRead,
+                  owner: plugin.name,
+                },
+                defaultRead,
+                authoredRead
+              ) as EditorReadMethodTree;
             },
           }
         : {}),
@@ -1233,17 +1240,15 @@ export const createPlateRuntimeExtensions = (
               const authoredUpdate =
                 capabilities.update.length > 0
                   ? resolvePluginCapability(
-                      editor,
-                      plugin,
+                      plugin.name,
+                      'update',
+                      pluginContext,
                       capabilities.update,
                       context
                     )
                   : typeof plugin.update === 'function'
                     ? Reflect.apply(plugin.update, undefined, [
-                        Object.assign(
-                          Object.create(createPluginContext(editor, plugin)),
-                          context
-                        ),
+                        Object.assign(Object.create(pluginContext), context),
                       ])
                     : {};
 
@@ -1344,7 +1349,11 @@ export const createPlateRuntimeExtensions = (
                   : {}),
               };
 
-              return mergePlugins(defaultUpdate, authoredUpdate);
+              return mergePluginCapabilities(
+                { kind: 'update', owner: plugin.name },
+                defaultUpdate,
+                authoredUpdate
+              );
             },
           }
         : {}),

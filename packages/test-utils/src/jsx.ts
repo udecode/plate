@@ -64,12 +64,7 @@ declare global {
       hfile: HyperscriptIntrinsicAttributes;
       hfootnoteDefinition: HyperscriptIntrinsicAttributes;
       hfootnoteReference: HyperscriptIntrinsicAttributes;
-      hh1: HyperscriptIntrinsicAttributes;
-      hh2: HyperscriptIntrinsicAttributes;
-      hh3: HyperscriptIntrinsicAttributes;
-      hh4: HyperscriptIntrinsicAttributes;
-      hh5: HyperscriptIntrinsicAttributes;
-      hh6: HyperscriptIntrinsicAttributes;
+      hheading: HyperscriptIntrinsicAttributes;
       himg: HyperscriptIntrinsicAttributes;
       hinlineequation: HyperscriptIntrinsicAttributes;
       hli: HyperscriptIntrinsicAttributes;
@@ -123,12 +118,7 @@ export const elements = {
   hfile: { type: 'file' },
   hfootnoteDefinition: { type: 'footnoteDefinition' },
   hfootnoteReference: { type: 'footnoteReference' },
-  hh1: { type: 'h1' },
-  hh2: { type: 'h2' },
-  hh3: { type: 'h3' },
-  hh4: { type: 'h4' },
-  hh5: { type: 'h5' },
-  hh6: { type: 'h6' },
+  hheading: { type: 'heading' },
   himg: { type: 'image' },
   hinlineequation: { type: 'inlineEquation' },
   hli: { type: 'listItem' },

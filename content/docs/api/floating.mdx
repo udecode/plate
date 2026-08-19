@@ -16,8 +16,7 @@ npm install @platejs/floating
 | Surface | Owner | Use |
 | --- | --- | --- |
 | `useVirtualFloating` | `@platejs/floating` | `useFloating` with a controlled virtual reference element. |
-| `useFloatingToolbarState` | `@platejs/floating` | Builds toolbar state from editor focus, selection, read-only state, and Floating UI options. |
-| `useFloatingToolbar` | `@platejs/floating` | Turns toolbar state into DOM props, ref, outside-click ref, and hidden state. |
+| `floating-toolbar` | Copied registry UI | Coordinates toolbar visibility, positioning, DOM refs, and outside clicks. |
 | Rect utilities | `@platejs/floating` | Convert editor ranges, DOM selection, and client rect arrays into Floating UI-compatible rects. |
 | Floating UI exports | `@platejs/floating` | Re-exported middleware and hooks from `@floating-ui/react`. |
 
@@ -88,90 +87,12 @@ export function SelectionPopover({
 
 ## Floating Toolbar
 
-Floating toolbar setup is split into two hooks. Build state first, then pass that state to `useFloatingToolbar`.
+The copied `floating-toolbar` component owns editor focus, selection,
+read-only policy, outside clicks, and toolbar positioning. Copy it when your
+product needs that complete interaction; use `useVirtualFloating` directly for
+a different floating surface.
 
-```tsx title="Floating toolbar state"
-import {
-  flip,
-  offset,
-  useFloatingToolbar,
-  useFloatingToolbarState,
-} from '@platejs/floating';
-import { useEditorId, useEventEditorValue } from 'platejs/react';
-
-export function ToolbarShell() {
-  const editorId = useEditorId();
-  const focusedEditorId = useEventEditorValue('focus');
-
-  const state = useFloatingToolbarState({
-    editorId,
-    focusedEditorId,
-    floatingOptions: {
-      middleware: [offset(12), flip({ padding: 12 })],
-      placement: 'top',
-    },
-  });
-
-  const { clickOutsideRef, hidden, props, ref } = useFloatingToolbar(state);
-
-  if (hidden) return null;
-
-  return (
-    <div ref={clickOutsideRef}>
-      <div ref={ref} {...props}>
-        Toolbar
-      </div>
-    </div>
-  );
-}
-```
-
-<API name="useFloatingToolbarState">
-<APIOptions type="FloatingToolbarState & { editorId: string; focusedEditorId: string | null }">
-  <APIItem name="editorId" type="string" required>
-    Current editor id.
-  </APIItem>
-  <APIItem name="focusedEditorId" type="string | null" required>
-    Focused editor id from `useEventEditorValue('focus')`.
-  </APIItem>
-  <APIItem name="floatingOptions" type="UseVirtualFloatingOptions" optional>
-    Options passed to `useVirtualFloating`.
-  </APIItem>
-  <APIItem name="hideToolbar" type="boolean" optional>
-    Force the toolbar closed.
-  </APIItem>
-  <APIItem name="showWhenReadOnly" type="boolean" optional>
-    Allow the toolbar to show when the editor is read-only.
-  </APIItem>
-</APIOptions>
-<APIReturns type="ReturnType<typeof useFloatingToolbarState>">
-  Internal toolbar state for `useFloatingToolbar`.
-</APIReturns>
-</API>
-
-<API name="useFloatingToolbar">
-<APIOptions type="ReturnType<typeof useFloatingToolbarState>">
-  <APIItem name="state" type="ReturnType<typeof useFloatingToolbarState>" required>
-    State returned by `useFloatingToolbarState`.
-  </APIItem>
-</APIOptions>
-<APIReturns type="object">
-  <APIItem name="clickOutsideRef" type="React.RefObject<HTMLElement>">
-    Ref from `useOnClickOutside`. It closes the toolbar and ignores `.ignore-click-outside/toolbar`.
-  </APIItem>
-  <APIItem name="hidden" type="boolean">
-    `true` when the toolbar should not render.
-  </APIItem>
-  <APIItem name="props" type="{ style: React.CSSProperties }">
-    Props to spread on the toolbar root.
-  </APIItem>
-  <APIItem name="ref" type="UseFloatingReturn['refs']['setFloating']">
-    Floating element ref callback.
-  </APIItem>
-</APIReturns>
-</API>
-
-The toolbar opens only for an expanded selection with text. It stays hidden while the mouse is down, when `hideToolbar` is true, when a different editor owns focus, or when the editor is read-only and `showWhenReadOnly` is not set.
+<ComponentSource name="floating-toolbar" />
 
 ## Rectangle Utilities
 

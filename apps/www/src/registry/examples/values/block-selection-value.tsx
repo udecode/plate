@@ -6,7 +6,7 @@ jsx;
 
 export const blockSelectionValue = (
   <fragment>
-    <hh2>Block Selection</hh2>
+    <hheading level={2}>Block Selection</hheading>
     <hp>
       <htext>
         Block selection allows you to select multiple blocks at once.You can
@@ -14,14 +14,14 @@ export const blockSelectionValue = (
       </htext>
     </hp>
     <hp>Key features of block selection:</hp>
-    <hp indent={1} listStyleType="disc">
+    <hp indent={1} listType="bulleted">
       <htext>Select multiple blocks.</htext>
     </hp>
-    <hp indent={1} listStyleType="disc">
+    <hp indent={1} listType="bulleted">
       Keep pressing Shift to keep the previous selection. That way, you can
       select non-contiguous blocks.
     </hp>
-    <hp indent={1} listStyleType="disc">
+    <hp indent={1} listType="bulleted">
       <htext>Perform bulk actions on selected blocks</htext>
     </hp>
   </fragment>

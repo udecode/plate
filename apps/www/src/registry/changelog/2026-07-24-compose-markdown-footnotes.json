@@ -19,16 +19,20 @@
   "targets": [
     {
       "name": "markdown-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/markdown-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for markdown-kit."
+        }
+      ]
     },
     {
       "name": "editor-kit",
       "files": [],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "definitionFiles": [],
       "diagnostics": [
         {
           "severity": "warning",
@@ -39,177 +43,276 @@
     },
     {
       "name": "editor-ai",
-      "files": [],
+      "files": [
+        "apps/www/src/registry/blocks/editor-ai/components/editor/plate-editor.tsx",
+        "apps/www/src/registry/blocks/editor-ai/page.tsx"
+      ],
       "definitionFiles": ["apps/www/src/registry/registry-blocks.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor-base-kit",
+      "files": [],
+      "definitionFiles": [],
       "diagnostics": [
         {
           "severity": "warning",
           "code": "registry-file-missing",
-          "message": "No exact registry source file found for editor-ai."
+          "message": "No exact registry source file found for editor-base-kit."
         }
       ]
     },
     {
-      "name": "editor-base-kit",
-      "files": ["apps/www/src/registry/components/editor/editor-base-kit.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
-    },
-    {
       "name": "align-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/align-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for align-kit."
+        }
+      ]
     },
     {
       "name": "basic-blocks-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/basic-blocks-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for basic-blocks-kit."
+        }
+      ]
     },
     {
       "name": "basic-marks-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/basic-marks-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for basic-marks-kit."
+        }
+      ]
     },
     {
       "name": "callout-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/callout-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for callout-kit."
+        }
+      ]
     },
     {
       "name": "code-block-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/code-block-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for code-block-kit."
+        }
+      ]
     },
     {
       "name": "code-drawing-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/code-drawing-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for code-drawing-kit."
+        }
+      ]
     },
     {
       "name": "column-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/column-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for column-kit."
+        }
+      ]
     },
     {
       "name": "comment-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/comment-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for comment-kit."
+        }
+      ]
     },
     {
       "name": "date-kit",
-      "files": ["apps/www/src/registry/components/editor/plugins/date-kit.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for date-kit."
+        }
+      ]
     },
     {
       "name": "font-kit",
-      "files": ["apps/www/src/registry/components/editor/plugins/font-kit.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for font-kit."
+        }
+      ]
     },
     {
       "name": "line-height-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/line-height-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for line-height-kit."
+        }
+      ]
     },
     {
       "name": "link-kit",
-      "files": ["apps/www/src/registry/components/editor/plugins/link-kit.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for link-kit."
+        }
+      ]
     },
     {
       "name": "list-kit",
-      "files": ["apps/www/src/registry/components/editor/plugins/list-kit.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for list-kit."
+        }
+      ]
     },
     {
       "name": "math-kit",
-      "files": ["apps/www/src/registry/components/editor/plugins/math-kit.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for math-kit."
+        }
+      ]
     },
     {
       "name": "media-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/media-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for media-kit."
+        }
+      ]
     },
     {
       "name": "mention-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/mention-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for mention-kit."
+        }
+      ]
     },
     {
       "name": "suggestion-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/suggestion-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for suggestion-kit."
+        }
+      ]
     },
     {
       "name": "table-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/table-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for table-kit."
+        }
+      ]
     },
     {
       "name": "toc-kit",
-      "files": ["apps/www/src/registry/components/editor/plugins/toc-kit.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for toc-kit."
+        }
+      ]
     },
     {
       "name": "toggle-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/toggle-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for toggle-kit."
+        }
+      ]
     },
     {
       "name": "tabbable-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/tabbable-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for tabbable-kit."
+        }
+      ]
     }
   ],
   "entries": [

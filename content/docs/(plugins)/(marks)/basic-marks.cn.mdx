@@ -56,11 +56,11 @@ docs:
 
 `BasicMarksKit` 集成了加粗、斜体、下划线、删除线、代码、下标、上标、高亮和键盘键标记的插件，以及来自 [Plate UI](/docs/installation/plate-ui) 的相应 UI 组件。同时也注册了这些 mark family 自带的 Markdown input rules。
 
-<ComponentSource name="basic-marks-kit" />
+<ComponentSource name="basic-marks" />
 
-- [`CodeLeaf`](/docs/components/code-node): 渲染内联代码元素。
-- [`HighlightLeaf`](/docs/components/highlight-node): 渲染高亮文本元素。
-- [`KbdLeaf`](/docs/components/kbd-node): 渲染键盘快捷键元素。
+- [`CodeLeaf`](/docs/components/code): 渲染内联代码元素。
+- [`HighlightLeaf`](/docs/components/highlight): 渲染高亮文本元素。
+- [`KbdLeaf`](/docs/components/kbd): 渲染键盘快捷键元素。
 
 ### 添加套件
 
@@ -68,7 +68,7 @@ docs:
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { BasicMarksKit } from '@/components/editor/plugins/basic-marks-kit';
+import { BasicMarksKit } from '@/components/editor/basic-marks';
 
 const editor = createPlateEditor({
   plugins: [

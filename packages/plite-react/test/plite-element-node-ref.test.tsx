@@ -35,15 +35,15 @@ describe('PliteElement node ref binding', () => {
     }
 
     const renderElement = (testId: string) => (
-      <EditorContext.Provider value={editor}>
-        <NodeKeyContext.Provider value={nodeKey}>
-          <ElementPathContext.Provider value={[0]}>
-            <ElementContext.Provider value={readElement(editor, [0])}>
+      <EditorContext value={editor}>
+        <NodeKeyContext value={nodeKey}>
+          <ElementPathContext value={[0]}>
+            <ElementContext value={readElement(editor, [0])}>
               <PliteElement data-testid={testId}>content</PliteElement>
-            </ElementContext.Provider>
-          </ElementPathContext.Provider>
-        </NodeKeyContext.Provider>
-      </EditorContext.Provider>
+            </ElementContext>
+          </ElementPathContext>
+        </NodeKeyContext>
+      </EditorContext>
     );
 
     const first = render(renderElement('first'));
@@ -74,15 +74,15 @@ describe('PliteElement node ref binding', () => {
     }
 
     const renderElement = (path: number[]) => (
-      <EditorContext.Provider value={editor}>
-        <NodeKeyContext.Provider value={nodeKey}>
-          <ElementPathContext.Provider value={path}>
-            <ElementContext.Provider value={readElement(editor, path)}>
+      <EditorContext value={editor}>
+        <NodeKeyContext value={nodeKey}>
+          <ElementPathContext value={path}>
+            <ElementContext value={readElement(editor, path)}>
               <PliteElement data-testid="bound-element">content</PliteElement>
-            </ElementContext.Provider>
-          </ElementPathContext.Provider>
-        </NodeKeyContext.Provider>
-      </EditorContext.Provider>
+            </ElementContext>
+          </ElementPathContext>
+        </NodeKeyContext>
+      </EditorContext>
     );
 
     const rendered = render(renderElement([0]));
@@ -117,15 +117,15 @@ describe('PliteElement node ref binding', () => {
     }
 
     render(
-      <EditorContext.Provider value={editor}>
-        <NodeKeyContext.Provider value={nodeKey}>
-          <ElementPathContext.Provider value={[0]}>
-            <ElementContext.Provider value={readElement(editor, [0])}>
+      <EditorContext value={editor}>
+        <NodeKeyContext value={nodeKey}>
+          <ElementPathContext value={[0]}>
+            <ElementContext value={readElement(editor, [0])}>
               <PliteElement data-testid="bound-element">content</PliteElement>
-            </ElementContext.Provider>
-          </ElementPathContext.Provider>
-        </NodeKeyContext.Provider>
-      </EditorContext.Provider>
+            </ElementContext>
+          </ElementPathContext>
+        </NodeKeyContext>
+      </EditorContext>
     );
 
     const element = getPliteNodeElementByPath(editor, [0]);

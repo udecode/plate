@@ -3,7 +3,7 @@ title: 表格
 docs:
   - route: /docs/components/table-toolbar-button
     title: 表格工具栏按钮
-  - route: /docs/components/table-node
+  - route: /docs/components/table
     title: 表格节点
 ---
 
@@ -31,11 +31,11 @@ docs:
 
 最快捷的表格功能集成方式是使用 `TableKit`，它包含预配置的 `TablePlugin`、`TableRowPlugin` 和 `TableCellPlugin` 及其 [Plate UI](/docs/installation/plate-ui) 组件。
 
-<ComponentSource name="table-kit" />
+<ComponentSource name="table" />
 
-- [`TableElement`](/docs/components/table-node): 渲染表格容器
-- [`TableRowElement`](/docs/components/table-node): 渲染表格行
-- [`TableCellElement`](/docs/components/table-node): 根据节点的 `header` 属性将 `tableCell` 渲染为 `<td>` 或 `<th>`
+- [`TableElement`](/docs/components/table): 渲染表格容器
+- [`TableRowElement`](/docs/components/table): 渲染表格行
+- [`TableCellElement`](/docs/components/table): 根据节点的 `header` 属性将 `tableCell` 渲染为 `<td>` 或 `<th>`
 
 ### 添加套件
 
@@ -43,7 +43,7 @@ docs:
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { TableKit } from '@/components/editor/plugins/table-kit';
+import { TableKit } from '@/components/editor/table';
 
 const editor = createPlateEditor({
   plugins: [
@@ -98,7 +98,7 @@ import {
   TableCellElement,
   TableElement,
   TableRowElement,
-} from '@/components/ui/table-node';
+} from '@/components/editor/table';
 
 const editor = createPlateEditor({
   plugins: [
@@ -117,16 +117,16 @@ const editor = createPlateEditor({
 });
 ```
 
-- `.configure({ component })`: 指定 [`TableElement`](/docs/components/table-node) 渲染表格容器
+- `.configure({ component })`: 指定 [`TableElement`](/docs/components/table) 渲染表格容器
 - `component`: 为表格行和单元格分配组件。`TableCellElement` 读取 `element.header` 来渲染表头单元格
 - `initialState.initialTableWidth`: 设置新建表格的初始宽度
 - `initialState.disableMerge`: 禁用单元格合并功能
 - `initialState.minColumnWidth`: 设置表格列的最小宽度
 
-列宽仅存储在表格的 `colSizes` 中。表格渲染器通过
-`useTableColSizes` 读取该数组；拖动预览使用临时覆盖值，然后通过
-`editor.plugin(TablePlugin).update.setColumnSize` 提交。行高调整使用相同方式，
-并写入每一行的 `size`。
+列宽仅存储在表格的 `columnWidths` 中。表格渲染器通过
+表格渲染器读取该数组；拖动预览使用临时覆盖值，然后通过
+`editor.plugin(TablePlugin).update.setColumnWidth` 提交。行高调整使用相同方式，
+并写入每一行的 `height`。
 
 ### 添加工具栏按钮
 
@@ -171,7 +171,7 @@ const editor = createPlateEditor({
     禁用当表格只有一列时取消设置第一列宽度。设置为 `true` 可在单列情况下调整表格宽度，保持 `false` 可实现全宽表格
   </APIItem>
   <APIItem name="initialTableWidth" type="number" optional>
-    若定义此值，标准化器会将每个未定义的表格 `colSizes` 设置为该值除以列数（注意：暂不支持合并单元格）
+    若定义此值，标准化器会将每个未定义的表格 `columnWidths` 设置为该值除以列数（注意：暂不支持合并单元格）
   </APIItem>
   <APIItem name="minColumnWidth" type="number" optional>
     表格列的最小宽度
@@ -342,7 +342,7 @@ const editor = createPlateEditor({
 <APIItem name="element" type="TableCellElement">
 要获取尺寸的表格单元格元素
 </APIItem>
-<APIItem name="colSizes" type="number[]" optional>
+<APIItem name="columnWidths" type="(number | null)[]" optional>
 列宽数组。若未提供，将使用表格的覆盖列宽设置
 </APIItem>
 <APIItem name="cellIndices" type="CellIndices" optional>
@@ -747,11 +747,11 @@ const editor = createPlateEditor({
 </APIOptions>
 </API>
 
-### `editor.plugin(TablePlugin).update.setColumnSize`
+### `editor.plugin(TablePlugin).update.setColumnWidth`
 
 设置表格中特定列的宽度。
 
-<API name="setColumnSize">
+<API name="setColumnWidth">
 <APIParameters>
 <APIItem name="value" type="{ colIndex: number; width: number }">
 要应用的列索引和宽度。
@@ -777,11 +777,11 @@ const editor = createPlateEditor({
 </APIParameters>
 </API>
 
-### `editor.plugin(TablePlugin).update.setRowSize`
+### `editor.plugin(TablePlugin).update.setRowHeight`
 
 设置表格行的大小（高度）。
 
-<API name="setRowSize">
+<API name="setRowHeight">
 <APIParameters>
 <APIItem name="value" type="{ height: number; rowIndex: number }">
 要应用的行索引和高度。
@@ -794,246 +794,26 @@ const editor = createPlateEditor({
 
 ## Hooks
 
-### `useTableCellElementResizable`
+### `useTableSelectionDOM`
 
-提供表格单元格元素调整大小功能的 hook。
+将结构化单元格选区同步到自定义表格渲染器。该 hook 会更新选中单元格的属性、隐藏锚点单元格中的光标，并在选区变化或渲染器卸载时恢复光标。
 
-<API name="useTableCellElementResizable">
-<APIOptions type="TableCellElementResizableOptions">
-<APIItem name="colIndex" type="number">
-列索引。
-</APIItem>
-<APIItem name="colSpan" type="number">
-此单元格跨越的列数。
-</APIItem>
-<APIItem name="rowIndex" type="number">
-行索引。
-</APIItem>
-<APIItem name="step" type="number" optional>
-按步长而不是像素调整大小。
-</APIItem>
-<APIItem name="stepX" type="number" optional>
-水平调整大小的步长。
-</APIItem>
-<APIItem name="stepY" type="number" optional>
-垂直调整大小的步长。
+列宽、单元格布局和指针事件应在渲染器中通过 `TablePlugin` 读取方法和 Core selector hook 直接组合。
 
-- **默认值:** `step`
-
-</APIItem>
-</APIOptions>
-
-<APIReturns>
-  <APIItem name="bottomProps" type="ResizeHandleProps">
-    底部调整大小手柄的属性，包括调整方向和处理器。
-  </APIItem>
-  <APIItem name="hiddenLeft" type="boolean">
-    是否应该隐藏左侧调整大小手柄。如果不是第一列或左边距被禁用则为 true。
-  </APIItem>
-  <APIItem name="leftProps" type="ResizeHandleProps">
-    左侧调整大小手柄的属性，包括调整方向和处理器。
-  </APIItem>
-  <APIItem name="rightProps" type="ResizeHandleProps">
-    右侧调整大小手柄的属性，包括调整方向、初始大小和处理器。
-  </APIItem>
-</APIReturns>
-</API>
-
-### `useTableStore`
-
-表格存储存储表格插件的状态。
-
-<API name="useTableStore">
-<APIAttributes>
-  <APIItem name="colSizeOverrides" type="TableStoreSizeOverrides">
-    列大小覆盖。
-  </APIItem>
-  <APIItem name="rowSizeOverrides" type="TableStoreSizeOverrides">
-    行大小覆盖。
-  </APIItem>
-  <APIItem name="marginLeftOverride" type="number | null">
-    左边距覆盖。
-  </APIItem>
-  <APIItem name="selectedCells" type="Element[] | null">
-    选中的单元格。
-  </APIItem>
-  <APIItem name="selectedTables" type="Element[] | null">
-    选中的表格。
-  </APIItem>
-</APIAttributes>
-</API>
-
-### `useIsCellSelected`
-
-检查表格单元格是否被选中的自定义 hook。
-
-<API name="useIsCellSelected">
+<API name="useTableSelectionDOM">
 <APIParameters>
-  <APIItem name="element" type="Element">
-    要检查的表格单元格元素。
+  <APIItem name="tableRef" type="React.RefObject&lt;HTMLTableElement | null&gt;">
+    指向已渲染 `<table>` 的 ref；其中的单元格包含 `data-table-cell-key` 属性。
   </APIItem>
 </APIParameters>
+<APIReturns type="void" />
 </API>
 
-### `useSelectedCells`
+### `editor.plugin(TablePlugin).read.canMerge()`
 
-管理表格中单元格选择的 hook。
+当前可编辑选区是完整的矩形多单元格选区时返回 `true`。
 
-它跟踪当前选中的单元格，并根据编辑器选择的变化更新它们。
+### `editor.plugin(TablePlugin).read.canSplit()`
 
-### `useTableBordersDropdownMenuContentState`
-
-表格边框下拉菜单内容的状态 hook。
-
-<API name="useTableBordersDropdownMenuContentState">
-<APIReturns>
-一个具有以下属性的对象：
-<APIItem name="hasBottomBorder" type="boolean">
-  指示选中的表格单元格是否有底部边框。
-</APIItem>
-<APIItem name="hasTopBorder" type="boolean">
-  指示选中的表格单元格是否有顶部边框。
-</APIItem>
-<APIItem name="hasLeftBorder" type="boolean">
-  指示选中的表格单元格是否有左侧边框。
-</APIItem>
-<APIItem name="hasRightBorder" type="boolean">
-  指示选中的表格单元格是否有右侧边框。
-</APIItem>
-<APIItem name="hasNoBorders" type="boolean">
-  指示选中的表格单元格是否没有边框。
-</APIItem>
-<APIItem name="hasOuterBorders" type="boolean">
-  指示选中的表格单元格是否有外部边框（即所有边都有边框）。
-</APIItem>
-<APIItem
-  name="getOnSelectTableBorder"
-  type="function"
->
-  返回特定边框类型的 `onSelectTableBorder` 处理程序的工厂函数。
-
-- `onSelectTableBorder` 处理程序负责为选中的表格单元格设置边框样式。
-
-</APIItem>
-</APIReturns>
-</API>
-
-### `useTableColSizes`
-
-返回应用了临时调整大小覆盖值的表格列宽。
-
-<API name="useTableColSizes">
-<APIOptions>
-<APIItem name="disableOverrides" type="boolean" optional>
-如果为 `true`，则禁用对列大小应用覆盖。
-- **默认值：** `false`
-</APIItem>
-<APIItem name="transformColSizes" type="(colSizes: number[]) => number[]" optional>
-转换当前渲染器使用的已解析列宽。
-</APIItem>
-</APIOptions>
-
-<APIReturns>
-  <APIItem name="overriddenColSizes" type="number[]">
-    应用了覆盖的表格列大小。
-  </APIItem>
-</APIReturns>
-</API>
-
-### `useTableElement`
-
-解析表格左边距，并在按下表格时折叠当前单元格选择的 hook。
-
-<API name="useTableElement">
-<APIReturns>
-  <APIItem name="marginLeft" type="number">
-    表格的左边距，考虑覆盖和插件选项。
-  </APIItem>
-  <APIItem name="props" type="object">
-    表格元素的属性：
-    <APISubList>
-      <APISubListItem parent="props" name="onMouseDown" type="function">
-        当单元格被选中时点击表格时折叠选择的处理程序。
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-</APIReturns>
-</API>
-### `useTableCellElement`
-
-为表格单元格提供状态和功能的表格单元格元素 hook。
-
-<API name="useTableCellElement">
-<APIReturns>
-  <APIItem name="borders" type="BorderStylesDefault">
-    表格单元格的边框样式。
-  </APIItem>
-  <APIItem name="colIndex" type="number">
-    结束列索引（考虑 colSpan）。
-  </APIItem>
-  <APIItem name="colSpan" type="number">
-    此单元格跨越的列数。
-  </APIItem>
-  <APIItem name="isSelectingCell" type="boolean">
-    是否正在选择单元格。
-  </APIItem>
-  <APIItem name="minHeight" type="number | undefined">
-    单元格的最小高度。
-  </APIItem>
-  <APIItem name="rowIndex" type="number">
-    结束行索引（考虑 rowSpan）。
-  </APIItem>
-  <APIItem name="selected" type="boolean">
-    此单元格当前是否被选中。
-  </APIItem>
-  <APIItem name="width" type="number | string">
-    单元格的宽度。
-  </APIItem>
-</APIReturns>
-</API>
-
-### `useTableCellBorders`
-
-返回表格单元格边框样式的 hook。
-
-<API name="useTableCellBorders">
-<APIReturns>
-  <APIItem type="BorderStylesDefault">
-    包含单元格边框样式的对象：
-    <APISubList>
-      <APISubListItem parent="return" name="bottom" type="Required<TableCellBorder>">
-        底部边框样式。
-      </APISubListItem>
-      <APISubListItem parent="return" name="right" type="Required<TableCellBorder>">
-        右侧边框样式。
-      </APISubListItem>
-      <APISubListItem parent="return" name="left" type="Required<TableCellBorder>" optional>
-        左侧边框样式。仅在第一列的单元格中存在。
-      </APISubListItem>
-      <APISubListItem parent="return" name="top" type="Required<TableCellBorder>" optional>
-        顶部边框样式。仅在第一行的单元格中存在。
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-</APIReturns>
-</API>
-
-### `useTableCellSize`
-
-返回表格单元格大小（宽度和最小高度）的 hook。
-
-<API name="useTableCellSize">
-<APIReturns>
-  <APIItem type="object">
-    包含以下内容的对象：
-    <APISubList>
-      <APISubListItem parent="return" name="width" type="number">
-        单元格的总宽度，通过对其跨越的所有列的宽度求和计算得出。
-      </APISubListItem>
-      <APISubListItem parent="return" name="minHeight" type="number | undefined">
-        单元格的最小高度，从行的 size 属性派生。
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-</APIReturns>
-</API>
+当前可编辑选区位于具有行跨度或列跨度的单个单元格内时返回 `true`。
+Registry 控件还会应用实时 `disableMerge` 选项。

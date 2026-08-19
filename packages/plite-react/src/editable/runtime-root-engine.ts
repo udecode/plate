@@ -12,7 +12,8 @@ import type {
   EditableKeyDownHandler,
 } from '../components/editable';
 import { useFlushDeferredSelectorsOnRender } from '../hooks/use-editor-selector';
-import type { ReactRuntimeEditor } from '../plugin/react-editor';
+import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
+import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { usePendingInsertionMarksEffect } from './composition-state';
 import { useEditableRootRef } from './input-router';
 import { useProjectionDOMRepairBridge } from './projection-repair-bridge';
@@ -118,8 +119,10 @@ export const useEditableRootRuntime = ({
   } = rootRuntimeState;
   const { domPhaseScheduler, inputController, rootRef } = runtime;
 
-  IS_READ_ONLY.set(editor, readOnly);
-  setEditorReadOnly(editor, readOnly);
+  useIsomorphicLayoutEffect(() => {
+    IS_READ_ONLY.set(editor, readOnly);
+    setEditorReadOnly(editor, readOnly);
+  }, [editor, readOnly]);
 
   useEffect(() => {
     if (rootRef.current && autoFocus) {
@@ -145,6 +148,14 @@ export const useEditableRootRuntime = ({
     partialDOMBackedSelection,
     runtime,
     scrollSelectionIntoView,
+  });
+  runtime.updateSelectionExportAfterDOMCommitHandler(() => {
+    if (!ReactEditor.isFocused(editor)) return;
+
+    syncDOMSelectionToEditor({
+      forceModelExport: true,
+      preserveScroll: true,
+    });
   });
   useEditableRootSelectionExport({
     runtime,

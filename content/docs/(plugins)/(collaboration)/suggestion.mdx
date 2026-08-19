@@ -3,11 +3,11 @@ title: Suggestion
 docs:
   - route: https://pro.platejs.org/docs/examples/discussion
     title: Plus
-  - route: /docs/components/suggestion-node
+  - route: /docs/components/suggestion
     title: Suggestion Leaf
   - route: /docs/components/suggestion-toolbar-button
     title: Suggestion Toolbar Button
-  - route: /docs/components/block-suggestion
+  - route: /docs/components/block-discussion
     title: Block suggestion
   - route: /docs/components/block-discussion
     title: Block discussion
@@ -35,17 +35,17 @@ docs:
 
 The fastest way to add suggestion functionality is with the `SuggestionKit`, which includes pre-configured `SuggestionPlugin` and related components along with their [Plate UI](/docs/installation/plate-ui) components.
 
-<ComponentSource name="suggestion-kit" />
+<ComponentSource name="suggestion" />
 
-- [`SuggestionLeaf`](/docs/components/suggestion-node): Renders suggestion text marks
-- [`BlockSuggestion`](/docs/components/block-suggestion): Renders block-level suggestions
-- [`SuggestionLineBreak`](/docs/components/suggestion-node): Handles line breaks in suggestions
+- [`SuggestionLeaf`](/docs/components/suggestion): Renders suggestion text marks
+- [`BlockSuggestion`](/docs/components/block-discussion): Renders block-level suggestions
+- [`SuggestionLineBreak`](/docs/components/suggestion): Handles line breaks in suggestions
 
 ### Add Kit
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { SuggestionKit } from '@/components/editor/plugins/suggestion-kit';
+import { SuggestionKit } from '@/components/editor/suggestion';
 
 const editor = createPlateEditor({
   plugins: [
@@ -74,8 +74,8 @@ Create the suggestion plugin with extended configuration for state management:
 ```tsx
 import { isEditor, isElement, isString } from '@platejs/plite-dom';
 import { SuggestionPlugin } from '@platejs/suggestion/react';
-import { BlockSuggestion } from '@/components/ui/block-suggestion';
-import { SuggestionLeaf } from '@/components/ui/suggestion-node';
+import { BlockSuggestion } from '@/components/editor/block-discussion';
+import { SuggestionLeaf } from '@/components/editor/suggestion';
 
 export const suggestionPlugin = SuggestionPlugin.configure({
   component: SuggestionLeaf,
@@ -97,8 +97,8 @@ export const suggestionPlugin = SuggestionPlugin.configure({
 - `SuggestionPlugin` owns the active and hovered suggestion state used by renderers
 - `initialState.currentUserId`: ID of the current user creating suggestions
 - `.configure({ component: SuggestionLeaf })`: Renders suggestion text marks with
-  [`SuggestionLeaf`](/docs/components/suggestion-node)
-- `render.belowRootNodes`: Renders [`BlockSuggestion`](/docs/components/block-suggestion) for block-level suggestions
+  [`SuggestionLeaf`](/docs/components/suggestion)
+- `render.belowRootNodes`: Renders [`BlockSuggestion`](/docs/components/block-discussion) for block-level suggestions
 
 ### Add Click Handler
 
@@ -160,7 +160,7 @@ The click handler tracks which suggestion is currently active:
 
 ```tsx
 import { createPlateEditor, definePlatePlugin } from 'platejs/react';
-import { SuggestionLineBreak } from '@/components/ui/suggestion-node';
+import { SuggestionLineBreak } from '@/components/editor/suggestion';
 
 const suggestionLineBreakPlugin = definePlatePlugin('suggestionLineBreak', {
   render: { belowNodes: SuggestionLineBreak as any },
@@ -175,7 +175,7 @@ const editor = createPlateEditor({
 });
 ```
 
-- `render.belowNodes`: Renders [`SuggestionLineBreak`](/docs/components/suggestion-node) below nodes to handle line break suggestions
+- `render.belowNodes`: Renders [`SuggestionLineBreak`](/docs/components/suggestion) below nodes to handle line break suggestions
 
 ### Enable Suggestion Mode
 

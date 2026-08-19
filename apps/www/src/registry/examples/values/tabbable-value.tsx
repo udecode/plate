@@ -6,7 +6,7 @@ jsx;
 
 export const tabbableValue = (
   <fragment>
-    <hh2>Tabbable</hh2>
+    <hheading level={2}>Tabbable</hheading>
     <hp>
       Ensure a smooth tab navigation experience within your editor with the
       Tabbable plugin.
@@ -23,13 +23,13 @@ export const tabbableValue = (
       <htext />
     </element>
     <hp>Place your cursor here and try pressing tab or shift+tab.</hp>
-    <hp indent={1} listStyleType="disc">
+    <hp indent={1} listType="bulleted">
       List item 1
     </hp>
-    <hp indent={1} listStyleType="disc">
+    <hp indent={1} listType="bulleted">
       List item 2
     </hp>
-    <hp indent={1} listStyleType="disc">
+    <hp indent={1} listType="bulleted">
       List item 3
     </hp>
     <hcodeblock lang="javascript">

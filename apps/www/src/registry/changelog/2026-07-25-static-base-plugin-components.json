@@ -19,139 +19,207 @@
   "targets": [
     {
       "name": "basic-blocks-base-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/basic-blocks-base-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for basic-blocks-base-kit."
+        }
+      ]
     },
     {
       "name": "basic-marks-base-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/basic-marks-base-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for basic-marks-base-kit."
+        }
+      ]
     },
     {
       "name": "callout-base-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/callout-base-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for callout-base-kit."
+        }
+      ]
     },
     {
       "name": "code-block-base-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/code-block-base-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for code-block-base-kit."
+        }
+      ]
     },
     {
       "name": "code-drawing-base-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/code-drawing-base-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for code-drawing-base-kit."
+        }
+      ]
     },
     {
       "name": "column-base-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/column-base-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for column-base-kit."
+        }
+      ]
     },
     {
       "name": "comment-base-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/comment-base-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for comment-base-kit."
+        }
+      ]
     },
     {
       "name": "date-base-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/date-base-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for date-base-kit."
+        }
+      ]
     },
     {
       "name": "footnote-base-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/footnote-base-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for footnote-base-kit."
+        }
+      ]
     },
     {
       "name": "link-base-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/link-base-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for link-base-kit."
+        }
+      ]
     },
     {
       "name": "math-base-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/math-base-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for math-base-kit."
+        }
+      ]
     },
     {
       "name": "media-base-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/media-base-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for media-base-kit."
+        }
+      ]
     },
     {
       "name": "mention-base-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/mention-base-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for mention-base-kit."
+        }
+      ]
     },
     {
       "name": "suggestion-base-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/suggestion-base-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for suggestion-base-kit."
+        }
+      ]
     },
     {
       "name": "table-base-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/table-base-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for table-base-kit."
+        }
+      ]
     },
     {
       "name": "toc-base-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/toc-base-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for toc-base-kit."
+        }
+      ]
     },
     {
       "name": "toggle-base-kit",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins/toggle-base-kit.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for toggle-base-kit."
+        }
+      ]
     }
   ],
   "entries": [

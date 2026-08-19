@@ -86,6 +86,10 @@ const readOnly = useEditorRuntimeState(editor, (state) =>
 Inside provider descendants, prefer `useEditorState`. It reads the same state
 but gets the editor from context.
 
+Commit subscriptions invalidate this selector synchronously. `equalityFn` and
+`shouldUpdate` suppress unnecessary renders. Use a provider selector's explicit
+`deferred` option when delayed delivery is an intentional product choice.
+
 #### `useStateFieldValue<T>(field, options?): T`
 
 Subscribe to one `defineStateField` value.

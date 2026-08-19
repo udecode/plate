@@ -9,6 +9,16 @@ import { BaseDatePlugin } from './BaseDatePlugin';
 jsxt;
 
 describe('BaseDatePlugin', () => {
+  it('requires a non-empty persisted value', () => {
+    const editor = createBaseEditor({ plugins: [BaseDatePlugin] });
+
+    expect(() =>
+      editor.read.schema.assertDocument({
+        children: [{ children: [{ text: '' }], type: 'date', value: '   ' }],
+      })
+    ).toThrow(/value.*validation/i);
+  });
+
   it('configure date as void inline element', () => {
     const editor = createBaseEditor({
       plugins: [BaseDatePlugin],
@@ -19,11 +29,11 @@ describe('BaseDatePlugin', () => {
       BaseDatePlugin,
       editor.plugin(BaseDatePlugin).schema.type
     );
-    const date = schema.handle.property(dateElement, 'date');
+    const value = schema.handle.property(dateElement, 'value');
 
     expect(editor.read.schema.isVoid(element)).toBe(true);
     expect(editor.read.schema.isInline(element)).toBe(true);
-    expect(editor.read.schema.property(date)?.value.kind).toBe('string');
+    expect(editor.read.schema.property(value)?.value.kind).toBe('string');
   });
 
   it('does not force date elements to opt out of keyboard entry', () => {
@@ -59,7 +69,7 @@ describe('BaseDatePlugin', () => {
             { text: 'hi ' },
             {
               children: [{ text: '' }],
-              date: '2024-01-01',
+              value: '2024-01-01',
               type: 'date',
             },
             { text: ' after' },
@@ -98,7 +108,7 @@ describe('BaseDatePlugin', () => {
             { text: 'hi ' },
             {
               children: [{ text: '' }],
-              date: '2024-01-01',
+              value: '2024-01-01',
               type: 'date',
             },
             { text: ' after' },
@@ -137,7 +147,7 @@ describe('BaseDatePlugin', () => {
             { text: 'hi ' },
             {
               children: [{ text: '' }],
-              date: '2024-01-01',
+              value: '2024-01-01',
               type: 'date',
             },
             { text: ' after' },
@@ -170,7 +180,7 @@ describe('BaseDatePlugin', () => {
             { text: 'hi ' },
             {
               children: [{ text: '' }],
-              date: '2024-01-01',
+              value: '2024-01-01',
               type: 'date',
             },
             { text: ' after' },
@@ -204,7 +214,7 @@ describe('BaseDatePlugin', () => {
       initialValue: [{ children: [{ text: 'hi' }], type: 'paragraph' }],
     });
 
-    editor.update.date.insert({ date: 'Mon Mar 23 2026' });
+    editor.update.date.insert({ value: 'Mon Mar 23 2026' });
 
     expect(editor.read.children()).toMatchObject([
       {
@@ -212,7 +222,7 @@ describe('BaseDatePlugin', () => {
           { text: 'hi' },
           {
             children: [{ text: '' }],
-            date: '2026-03-23',
+            value: '2026-03-23',
             type: 'date',
           },
           { text: ' ' },
@@ -236,7 +246,7 @@ describe('BaseDatePlugin', () => {
             { text: 'a' },
             {
               children: [{ text: '' }],
-              date: '2025-01-01',
+              value: '2025-01-01',
               type: 'date',
             },
             { text: 'b' },
@@ -246,15 +256,15 @@ describe('BaseDatePlugin', () => {
       ],
     });
 
-    editor.update.date.insert({ date: 'Mon Mar 23 2026' }, { at: [0, 1] });
+    editor.update.date.insert({ value: 'Mon Mar 23 2026' }, { at: [0, 1] });
 
     expect(editor.read.children()).toMatchObject([
       {
         children: [
           { text: 'a' },
-          { date: '2026-03-23', type: 'date' },
+          { value: '2026-03-23', type: 'date' },
           { text: ' ' },
-          { date: '2025-01-01', type: 'date' },
+          { value: '2025-01-01', type: 'date' },
           { text: 'b' },
         ],
       },
@@ -272,12 +282,12 @@ describe('BaseDatePlugin', () => {
       initialValue: [{ children: [{ text: 'x' }], type: 'paragraph' }],
     });
 
-    editor.update.date.insert({ date: 'sometime next week' });
+    editor.update.date.insert({ value: 'sometime next week' });
 
     expect(editor.read.children()[0]).toMatchObject({
       children: [
         { text: 'x' },
-        { rawDate: 'sometime next week', type: 'date' },
+        { value: 'sometime next week', type: 'date' },
         { text: ' ' },
       ],
     });

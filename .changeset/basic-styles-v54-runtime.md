@@ -2,6 +2,8 @@
 "@platejs/basic-styles": major
 ---
 
+Require React and React DOM 19.2 or newer.
+
 Export `TextIndentPluginState` as the complete mutable state contract for
 `BaseTextIndentPlugin`.
 
@@ -11,6 +13,8 @@ Export `TextIndentPluginState` as the complete mutable state contract for
   background colors
 - Register validated font, alignment, indentation, and line-height properties
   with schema-owned persisted keys
+- Restrict `textAlign` to `start`, `left`, `center`, `right`, `end`, or
+  `justify`
 - Decode and encode style properties through schema-inferred
   `codecs: ({ defineCodecs }) =>
   defineCodecs({ 'text/html': ... })` constructor declarations

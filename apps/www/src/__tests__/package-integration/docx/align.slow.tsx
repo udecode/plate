@@ -11,8 +11,12 @@ describe(getDocxTestName(name), () => {
   testDocxDeserializer({
     expected: (
       <editor>
-        <hh1 textAlign="center">Aligned Headers</hh1>
-        <hh2 textAlign="right">Second Level</hh2>
+        <hheading level={1} textAlign="center">
+          Aligned Headers
+        </hheading>
+        <hheading level={2} textAlign="right">
+          Second Level
+        </hheading>
         <hp textAlign="justify">
           Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
           eiusmod tempor incididunt ut labore et dolore magna aliqua.

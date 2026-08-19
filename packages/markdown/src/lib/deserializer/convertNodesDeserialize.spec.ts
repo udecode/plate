@@ -52,7 +52,8 @@ describe('convertNodesDeserialize', () => {
 
   const mockHeadingNodeSlate = {
     children: [{ text: 'Title' }],
-    type: 'h1',
+    level: 1,
+    type: 'heading',
   };
 
   const mockThematicBreakNodeSlate = {

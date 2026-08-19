@@ -144,7 +144,7 @@ describe('AIChatPlugin update.insertChunk', () => {
             { text: '' },
             {
               children: [{ text: '' }],
-              texExpression: 'a^2 + b^2 = c^2',
+              latex: 'a^2 + b^2 = c^2',
               type: 'inlineEquation',
             },
             { text: '' },
@@ -186,7 +186,7 @@ describe('AIChatPlugin update.insertChunk', () => {
           <hp>
             <htext>chunk1</htext>
           </hp>
-          <hp indent={1} listStyleType="disc">
+          <hp indent={1} listType="bulleted">
             <htext bold>chunk2</htext>
           </hp>
           <hp>
@@ -203,18 +203,13 @@ describe('AIChatPlugin update.insertChunk', () => {
 
       const output = (
         <fragment>
-          <hp indent={1} listStyleType="decimal">
+          <hp indent={1} listType="numbered">
             <htext>1</htext>
           </hp>
           <hp>
             <htext>xxx</htext>
           </hp>
-          <hp
-            indent={1}
-            listRestartPolite={2}
-            listStart={2}
-            listStyleType="decimal"
-          >
+          <hp indent={1} listRestart={2} listType="numbered">
             <htext>2</htext>
           </hp>
         </fragment>

@@ -5,7 +5,7 @@ docs:
     title: Plus
   - route: /docs/combobox
     title: Combobox
-  - route: /docs/components/slash-node
+  - route: /docs/components/slash
     title: Slash Nodes
 ---
 
@@ -30,15 +30,15 @@ docs:
 
 The fastest way to add slash command functionality is with the `SlashKit`, which includes pre-configured `SlashPlugin` and `SlashInputPlugin` along with their [Plate UI](/docs/installation/plate-ui) components.
 
-<ComponentSource name="slash-kit" />
+<ComponentSource name="slash" />
 
-- [`SlashInputElement`](/docs/components/slash-node): Renders the slash command combobox with predefined options
+- [`SlashInputElement`](/docs/components/slash): Renders the slash command combobox with predefined options
 
 ### Add Kit
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { SlashKit } from '@/components/editor/plugins/slash-kit';
+import { SlashKit } from '@/components/editor/slash';
 
 const editor = createPlateEditor({
   plugins: [
@@ -87,7 +87,7 @@ import {
 } from '@platejs/slash-command/react';
 import { PLUGINS } from 'platejs';
 import { createPlateEditor } from 'platejs/react';
-import { SlashInputElement } from '@/components/ui/slash-node';
+import { SlashInputElement } from '@/components/editor/slash';
 
 const editor = createPlateEditor({
   plugins: [

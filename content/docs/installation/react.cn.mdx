@@ -24,7 +24,7 @@ npx shadcn@latest add @plate/editor
 ```tsx showLineNumbers title="src/App.tsx"
 import { Plate, usePlateEditor } from 'platejs/react';
 
-import { Editor, EditorContainer } from '@/components/ui/editor';
+import { Editor, EditorContainer } from '@/components/editor/editor';
 
 export default function App() {
   const editor = usePlateEditor();
@@ -50,11 +50,11 @@ export default function App() {
 通过文本格式化功能增强编辑器。添加 **Basic Nodes Kit**、[FixedToolbar](/docs/components/fixed-toolbar) 和 [MarkToolbarButton](/docs/components/mark-toolbar-button) 组件：
 
 ```bash
-npx shadcn@latest add @plate/basic-nodes-kit @plate/fixed-toolbar @plate/mark-toolbar-button
+npx shadcn@latest add @plate/basic-nodes @plate/fixed-toolbar @plate/mark-toolbar-button
 ```
 
 <Callout type="info">
-  `basic-nodes-kit` 包含所有基础插件（粗体、斜体、下划线、标题、引用块等）及后续步骤中将用到的组件。
+  `basic-nodes` 包含所有基础插件（粗体、斜体、下划线、标题、引用块等）及后续步骤中将用到的组件。
 </Callout>
 
 更新 `src/App.tsx` 以包含这些组件和基础标记插件。
@@ -74,9 +74,9 @@ import {
   usePlateEditor,
 } from 'platejs/react';
 
-import { Editor, EditorContainer } from '@/components/ui/editor';
-import { FixedToolbar } from '@/components/ui/fixed-toolbar';
-import { MarkToolbarButton } from '@/components/ui/mark-toolbar-button';
+import { Editor, EditorContainer } from '@/components/editor/editor';
+import { FixedToolbar } from '@/components/editor/fixed-toolbar';
+import { MarkToolbarButton } from '@/components/editor/mark-toolbar-button';
 
 const initialValue: Value = [
   {
@@ -127,9 +127,9 @@ import type { Value } from 'platejs';
 import {
   BlockquotePlugin,
   BoldPlugin,
-  H1Plugin,
-  H2Plugin,
-  H3Plugin,
+  HeadingPlugin,
+  
+  
   ItalicPlugin,
   UnderlinePlugin,
 } from '@platejs/basic-nodes/react';
@@ -138,17 +138,17 @@ import {
   usePlateEditor,
 } from 'platejs/react';
 
-import { BlockquoteElement } from '@/components/ui/blockquote-node';
-import { Editor, EditorContainer } from '@/components/ui/editor';
-import { FixedToolbar } from '@/components/ui/fixed-toolbar';
-import { H1Element, H2Element, H3Element } from '@/components/ui/heading-node';
-import { MarkToolbarButton } from '@/components/ui/mark-toolbar-button';
-import { ToolbarButton } from '@/components/ui/toolbar'; // 通用工具栏按钮
+import { BlockquoteElement } from '@/components/editor/blockquote';
+import { Editor, EditorContainer } from '@/components/editor/editor';
+import { FixedToolbar } from '@/components/editor/fixed-toolbar';
+import { HeadingElement,  HeadingElement } from '@/components/editor/heading';
+import { MarkToolbarButton } from '@/components/editor/mark-toolbar-button';
+import { ToolbarButton } from '@/components/editor/toolbar'; // 通用工具栏按钮
 
 const initialValue: Value = [
   {
     children: [{ text: 'Title' }],
-    type: 'h3',
+    type: 'heading', level: 3,
   },
   {
     children: [
@@ -175,9 +175,9 @@ export default function App() {
       BoldPlugin,
       ItalicPlugin,
       UnderlinePlugin,
-      H1Plugin.configure({ component: H1Element }),
-      H2Plugin.configure({ component: H2Element }),
-      H3Plugin.configure({ component: H3Element }),
+      HeadingPlugin.configure({ component: HeadingElement }),
+      HeadingPlugin.configure({ component: HeadingElement }),
+      HeadingPlugin.configure({ component: HeadingElement }),
       BlockquotePlugin.configure({ component: BlockquoteElement }),
     ],
     initialValue,
@@ -187,9 +187,9 @@ export default function App() {
     <Plate editor={editor}>
       <FixedToolbar className="flex justify-start gap-1 rounded-t-lg">
         {/* 元素工具栏按钮 */}
-        <ToolbarButton onClick={() => editor.plugin(H1Plugin).update.toggle()}>H1</ToolbarButton>
-        <ToolbarButton onClick={() => editor.plugin(H2Plugin).update.toggle()}>H2</ToolbarButton>
-        <ToolbarButton onClick={() => editor.plugin(H3Plugin).update.toggle()}>H3</ToolbarButton>
+        <ToolbarButton onClick={() => editor.plugin(HeadingPlugin).update.toggle({ level: 1 })}>H1</ToolbarButton>
+        <ToolbarButton onClick={() => editor.plugin(HeadingPlugin).update.toggle({ level: 2 })}>H2</ToolbarButton>
+        <ToolbarButton onClick={() => editor.plugin(HeadingPlugin).update.toggle({ level: 3 })}>H3</ToolbarButton>
         <ToolbarButton onClick={() => editor.plugin(BlockquotePlugin).update.toggle()}>Quote</ToolbarButton>
         {/* 标记工具栏按钮 */}
         <MarkToolbarButton nodeType="bold" tooltip="Bold (⌘+B)">B</MarkToolbarButton>
@@ -227,9 +227,9 @@ import type { Value } from 'platejs';
 import {
   BlockquotePlugin,
   BoldPlugin,
-  H1Plugin,
-  H2Plugin,
-  H3Plugin,
+  HeadingPlugin,
+  
+  
   ItalicPlugin,
   UnderlinePlugin,
 } from '@platejs/basic-nodes/react';
@@ -238,17 +238,17 @@ import {
   usePlateEditor,
 } from 'platejs/react';
 
-import { BlockquoteElement } from '@/components/ui/blockquote-node';
-import { Editor, EditorContainer } from '@/components/ui/editor';
-import { FixedToolbar } from '@/components/ui/fixed-toolbar';
-import { H1Element, H2Element, H3Element } from '@/components/ui/heading-node';
-import { MarkToolbarButton } from '@/components/ui/mark-toolbar-button';
-import { ToolbarButton } from '@/components/ui/toolbar';
+import { BlockquoteElement } from '@/components/editor/blockquote';
+import { Editor, EditorContainer } from '@/components/editor/editor';
+import { FixedToolbar } from '@/components/editor/fixed-toolbar';
+import { HeadingElement,  HeadingElement } from '@/components/editor/heading';
+import { MarkToolbarButton } from '@/components/editor/mark-toolbar-button';
+import { ToolbarButton } from '@/components/editor/toolbar';
 
 const initialValue: Value = [
   {
     children: [{ text: 'Title' }],
-    type: 'h3',
+    type: 'heading', level: 3,
   },
   {
     children: [
@@ -275,9 +275,9 @@ export default function App() {
       BoldPlugin,
       ItalicPlugin,
       UnderlinePlugin,
-      H1Plugin.configure({ component: H1Element }),
-      H2Plugin.configure({ component: H2Element }),
-      H3Plugin.configure({ component: H3Element }),
+      HeadingPlugin.configure({ component: HeadingElement }),
+      HeadingPlugin.configure({ component: HeadingElement }),
+      HeadingPlugin.configure({ component: HeadingElement }),
       BlockquotePlugin.configure({ component: BlockquoteElement }),
     ],
     initialValue: () => {
@@ -294,9 +294,9 @@ export default function App() {
       }}
     >
       <FixedToolbar className="flex justify-start gap-1 rounded-t-lg">
-        <ToolbarButton onClick={() => editor.plugin(H1Plugin).update.toggle()}>H1</ToolbarButton>
-        <ToolbarButton onClick={() => editor.plugin(H2Plugin).update.toggle()}>H2</ToolbarButton>
-        <ToolbarButton onClick={() => editor.plugin(H3Plugin).update.toggle()}>H3</ToolbarButton>
+        <ToolbarButton onClick={() => editor.plugin(HeadingPlugin).update.toggle({ level: 1 })}>H1</ToolbarButton>
+        <ToolbarButton onClick={() => editor.plugin(HeadingPlugin).update.toggle({ level: 2 })}>H2</ToolbarButton>
+        <ToolbarButton onClick={() => editor.plugin(HeadingPlugin).update.toggle({ level: 3 })}>H3</ToolbarButton>
         <ToolbarButton onClick={() => editor.plugin(BlockquotePlugin).update.toggle()}>Quote</ToolbarButton>
         <MarkToolbarButton nodeType="bold" tooltip="Bold (⌘+B)">B</MarkToolbarButton>
         <MarkToolbarButton nodeType="italic" tooltip="Italic (⌘+I)">I</MarkToolbarButton>

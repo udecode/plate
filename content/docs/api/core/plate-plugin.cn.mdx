@@ -303,9 +303,9 @@ update method。
 不会隐式匹配 capability name 或 schema identity。没有此 callback 时，Plate
 使用为该元素持久化 type 编译的插件所拥有的规则。
 
-**示例:** `matchRules: ({ node }) => Boolean(node.listStyleType)`
+**示例:** `matchRules: ({ node }) => Boolean(node.listStyle)`
 
-示例：列表插件设置 `match: ({ node }) => !!node.listStyleType` 以在段落是列表项时覆盖段落行为。
+示例：列表插件设置 `match: ({ node }) => !!node.listStyle` 以在段落是列表项时覆盖段落行为。
 
 </APISubListItem>
 <APISubListItem parent="rules" name="merge.removeEmpty" type="boolean" optional>
@@ -475,11 +475,13 @@ update method。
 </APIItem>
 
 <APIItem
-  name="transformInitialValue"
-  type="TransformInitialValue<WithAnyName<D>>"
+  name="prepareDocument"
+  type="PrepareDocument<WithAnyName<D>>"
   optional
 >
-  在 editor initialization 期间、schema fitting 之前转换 document input。
+  在应用迁移之后、schema fitting 之前准备完整 document input。editor initialization
+  和完整 `editor.update.value.replace(...)` 加载都会运行。用于已安装插件的当前 schema
+  不变量，不用于源版本迁移。
 </APIItem>
 
 <APIItem name="useHooks" type="() => void" optional>
@@ -496,31 +498,31 @@ type EditOnlyConfig = {
   render?: boolean; // 默认: true
   on?: boolean; // 默认: true
   inject?: boolean; // 默认: true
-  transformInitialValue?: boolean; // 默认: false
+  prepareDocument?: boolean; // 默认: false
 };
 ```
 
 当设置为 `true`（布尔值）时：
 
 - `render`、`on` 和 `inject.nodeProps` 仅在编辑器非只读时激活
-- `transformInitialValue` 无论只读状态如何都保持激活
+- `prepareDocument` 无论只读状态如何都保持激活
 
 当设置为对象时：
 
 - 每个属性可以单独配置
-- 属性默认是仅编辑的（`true`），除了 `transformInitialValue` 默认始终激活（`false`）
+- 属性默认是仅编辑的（`true`），除了 `prepareDocument` 默认始终激活（`false`）
 - 将属性设置为 `false` 使其始终激活，无论只读状态如何
-- 对于 `transformInitialValue`，设置为 `true` 使其仅在编辑时激活
+- 对于 `prepareDocument`，设置为 `true` 使其仅在编辑时激活
 
 示例：
 
 ```ts
-// 所有功能（除 transformInitialValue 外）都是仅编辑的
+// 所有功能（除 prepareDocument 外）都是仅编辑的
 editOnly: true;
 
-// transformInitialValue 是仅编辑的，其他保持默认行为
+// prepareDocument 是仅编辑的，其他保持默认行为
 editOnly: {
-  transformInitialValue: true;
+  prepareDocument: true;
 }
 
 // render 始终激活，其他遵循默认行为
@@ -543,7 +545,7 @@ editOnly: {
 `shortcuts`。此前声明的运行时扩展可以读取配置值，重叠字段最终仍以用户配置为准。
 
 ```ts
-H1Plugin.configure({
+HeadingPlugin.configure({
   rules: { break: { empty: 'reset' } },
 });
 ```

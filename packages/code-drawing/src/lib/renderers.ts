@@ -1,4 +1,4 @@
-import type { CodeDrawingType } from './BaseCodeDrawingPlugin';
+import type { CodeDrawingLanguage } from './BaseCodeDrawingPlugin';
 
 /**
  * Convert SVG string to data URL
@@ -120,23 +120,23 @@ async function renderMermaid(content: string): Promise<string> {
  * Render code drawing based on type
  */
 export async function renderCodeDrawing(
-  type: CodeDrawingType,
+  language: CodeDrawingLanguage,
   content: string
 ): Promise<string> {
   if (!content || !content.trim()) {
     return '';
   }
 
-  switch (type) {
-    case 'PlantUml':
+  switch (language) {
+    case 'plantuml':
       return renderPlantUml(content);
-    case 'Graphviz':
+    case 'graphviz':
       return renderGraphviz(content);
-    case 'Flowchart':
+    case 'flowchart':
       return renderFlowchart(content);
-    case 'Mermaid':
+    case 'mermaid':
       return renderMermaid(content);
     default:
-      throw new Error(`Unsupported drawing type: ${type}`);
+      throw new Error(`Unsupported drawing language: ${language}`);
   }
 }

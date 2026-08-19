@@ -84,7 +84,7 @@ describe('CopilotPlugin triggerSuggestion', () => {
         })
     ) as unknown as typeof fetch;
     editor.plugin(CopilotPlugin).store.set({
-      completeOptions: { fetch: fetchCompletion },
+      completeOptions: { api: '/completion', fetch: fetchCompletion },
       getPrompt: () => 'Prompt',
       triggerQuery: () => true,
     });
@@ -119,6 +119,7 @@ describe('CopilotPlugin triggerSuggestion', () => {
 
     editor.plugin(CopilotPlugin).store.set({
       completeOptions: {
+        api: '/completion',
         fetch: fetchCompletion,
         headers: [['X-Test', 'value']],
       },

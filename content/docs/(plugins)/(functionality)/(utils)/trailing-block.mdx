@@ -73,16 +73,16 @@ The default is already `editor.plugin(PLUGINS.paragraph).schema.type`, so most e
 Use `match` to limit insertion based on the current last block.
 
 ```tsx
-import { H1Plugin } from '@platejs/basic-nodes/react';
+import { HeadingPlugin } from '@platejs/basic-nodes/react';
 import { PLUGINS, TrailingBlockPlugin } from 'platejs';
 
 export const trailingBlockPlugins = [
-  H1Plugin,
+  HeadingPlugin,
   TrailingBlockPlugin.configure(({ editor }) => ({
     initialState: {
       match: (node) =>
         ElementApi.isElement(node) &&
-        node.type === editor.plugin(PLUGINS.h1).schema.type,
+        node.type === editor.plugin(PLUGINS.heading).schema.type,
       type: editor.plugin(PLUGINS.paragraph).schema.type,
     },
   })),

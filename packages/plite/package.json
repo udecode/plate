@@ -60,7 +60,7 @@
     "lint": "plate-pkg p:lint",
     "lint:fix": "plate-pkg p:lint:fix",
     "test": "bun test --preload ../../config/plite-source-test-setup.ts",
-    "typecheck": "tsc --project tsconfig.json --noEmit && tsc --project tsconfig.test.json --noEmit"
+    "typecheck": "plate-pkg p:typecheck && node ../../tooling/scripts/typecheck-package-source.mjs tsconfig.test.json --noEmit"
   },
   "devDependencies": {
     "@plate/scripts": "workspace:*",

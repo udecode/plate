@@ -530,6 +530,63 @@ test('infers exact registry files and definitions only', () => {
   ]);
 });
 
+test('infers explicit registry files when the item name differs from the source filename', () => {
+  const hints = inferRegistryHints('editor-plugins', {
+    registryDefinitions: [
+      {
+        content: `export const items = [{
+          files: [
+            { path: 'components/editor/plugins.ts', type: 'registry:component' },
+            { path: 'components/editor/plugins.generated.ts', type: 'registry:component' },
+            { path: 'components/editor/plugins.schema.json', type: 'registry:file' },
+          ],
+          name: 'editor-plugins',
+          type: 'registry:component',
+        }] as const;`,
+        path: 'apps/www/src/registry/registry-features.ts',
+      },
+    ],
+    registryFiles: [
+      'apps/www/src/registry/components/editor/plugins.ts',
+      'apps/www/src/registry/components/editor/plugins.generated.ts',
+      'apps/www/src/registry/components/editor/plugins.schema.json',
+      'apps/www/src/registry/registry-features.ts',
+    ],
+  });
+
+  assert.deepEqual(hints.files, [
+    'apps/www/src/registry/components/editor/plugins.generated.ts',
+    'apps/www/src/registry/components/editor/plugins.ts',
+  ]);
+  assert.deepEqual(hints.definitionFiles, [
+    'apps/www/src/registry/registry-features.ts',
+  ]);
+});
+
+test('resolves explicit registry files against a configured registry root', () => {
+  const hints = inferRegistryHints('editor-plugins', {
+    registryDefinitions: [
+      {
+        content: `export const items = [{
+          files: [{ path: 'components/editor/plugins.ts' }],
+          name: 'editor-plugins',
+        }];`,
+        path: 'custom/registry/registry.ts',
+      },
+    ],
+    registryFiles: [
+      'custom/registry/components/editor/plugins.ts',
+      'custom/registry/registry.ts',
+    ],
+    registryRoot: 'custom/registry',
+  });
+
+  assert.deepEqual(hints.files, [
+    'custom/registry/components/editor/plugins.ts',
+  ]);
+  assert.deepEqual(hints.definitionFiles, ['custom/registry/registry.ts']);
+});
+
 test('does not guess release dependencies for ambiguous dates', () => {
   const rows = parseComponentChangelog(`
 ## April 2026 #30

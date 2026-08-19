@@ -162,6 +162,26 @@ describe('SelectionArea', () => {
     selection.destroy();
   });
 
+  it('clears the final native range when a drag stops', () => {
+    const { container, selectable, selection } = createSelectionHarness();
+    const nativeSelection = document.getSelection()!;
+    const range = document.createRange();
+    const stopEvent = new MouseEvent('mouseup', { cancelable: true });
+
+    selectable.textContent = 'Selectable';
+    range.selectNodeContents(selectable);
+    nativeSelection.addRange(range);
+    (selection as any)._container = container;
+    (selection as any)._singleClick = false;
+
+    (selection as any)._onTapStop(stopEvent, false);
+
+    expect(nativeSelection.rangeCount).toBe(0);
+    expect(stopEvent.defaultPrevented).toBe(true);
+
+    selection.destroy();
+  });
+
   it('positions but does not own a supplied selection area element', () => {
     const area = document.createElement('div');
 

@@ -13,14 +13,14 @@ describe('markdown task lists', () => {
         checked: false,
         children: [{ text: 'open' }],
         indent: 1,
-        listStyleType: 'todo',
+        listType: 'task',
         type: 'paragraph',
       },
       {
         checked: true,
         children: [{ text: 'done' }],
         indent: 1,
-        listStyleType: 'todo',
+        listType: 'task',
         type: 'paragraph',
       },
     ]);

@@ -122,7 +122,7 @@ Those imports are intentional. This repo uses bundler-managed CSS side effects a
 
 ### 5. Fix the one real TS6 code regression
 
-In [`packages/docx-io/src/lib/html-to-docx.ts`](packages/docx-io/src/lib/html-to-docx.ts), `new Blob([buffer])` started failing because TS6 no longer accepts the `Uint8Array<ArrayBufferLike>` result directly as a `BlobPart`.
+In [`packages/docx-export/src/lib/html-to-docx.ts`](packages/docx-export/src/lib/html-to-docx.ts), `new Blob([buffer])` started failing because TS6 no longer accepts the `Uint8Array<ArrayBufferLike>` result directly as a `BlobPart`.
 
 Copy it into a plain `Uint8Array` first:
 

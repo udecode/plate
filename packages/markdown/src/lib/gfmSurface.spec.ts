@@ -88,7 +88,7 @@ describe('gfm package surfaces', () => {
         children: [
           {
             children: [{ text: '' }],
-            identifier: '1',
+            ref: '1',
             type: 'footnoteReference',
           },
         ],
@@ -101,7 +101,7 @@ describe('gfm package surfaces', () => {
             type: 'paragraph',
           },
         ],
-        identifier: '1',
+        ref: '1',
         type: 'footnoteDefinition',
       },
     ]);

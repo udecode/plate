@@ -180,6 +180,10 @@ Add only what the scope triggers:
   domain; one helper does not earn permanent machinery for a limit that
   adjacent validation, construction, serialization, storage, or callers cannot
   carry.
+- Fast-path architecture: derive eligibility from evaluated material behavior,
+  keep capability declarations with the owning runtime, fail closed for
+  unknown behavior, and prove native/model parity without app-owned safety
+  flags.
 - Docs, behavior law, migration, release, or collaboration rows: include only
   when those owners change.
 

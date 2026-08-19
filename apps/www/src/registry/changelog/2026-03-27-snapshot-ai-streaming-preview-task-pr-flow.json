@@ -45,21 +45,25 @@
   "targets": [
     {
       "name": "ai-kit",
-      "files": ["apps/www/src/registry/components/editor/plugins/ai-kit.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "ai-demo",
       "files": [],
-      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "definitionFiles": [],
       "diagnostics": [
         {
           "severity": "warning",
           "code": "registry-file-missing",
-          "message": "No exact registry source file found for ai-demo."
+          "message": "No exact registry source file found for ai-kit."
         }
       ]
+    },
+    {
+      "name": "ai-demo",
+      "files": [
+        "apps/www/src/registry/components/editor/ai.tsx",
+        "apps/www/src/registry/examples/demo.tsx",
+        "apps/www/src/registry/examples/values/ai-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
     }
   ],
   "entries": [

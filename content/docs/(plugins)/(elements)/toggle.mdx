@@ -1,7 +1,7 @@
 ---
 title: Toggle
 docs:
-  - route: /docs/components/toggle-node
+  - route: /docs/components/toggle
     title: Toggle Element
   - route: /docs/components/toggle-toolbar-button
     title: Toggle Button
@@ -26,10 +26,10 @@ docs:
 
 The fastest way to add toggle functionality is with the `ToggleKit`, which includes pre-configured `TogglePlugin` with indent support and their [Plate UI](/docs/installation/plate-ui) components.
 
-<ComponentSource name="toggle-kit" />
+<ComponentSource name="toggle" />
 
 - [`IndentKit`](/docs/indent): Provides indent support for toggle elements.
-- [`ToggleElement`](/docs/components/toggle-node): Renders toggle elements.
+- [`ToggleElement`](/docs/components/toggle): Renders toggle elements.
 
 ### Add Kit
 
@@ -37,7 +37,7 @@ Add the kit to your plugins:
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { ToggleKit } from '@/components/editor/plugins/toggle-kit';
+import { ToggleKit } from '@/components/editor/toggle';
 
 const editor = createPlateEditor({
   plugins: [
@@ -86,14 +86,14 @@ import { IndentPlugin } from '@platejs/indent/react';
 import { TogglePlugin } from '@platejs/toggle/react';
 import { PLUGINS } from 'platejs';
 import { createPlateEditor } from 'platejs/react';
-import { ToggleElement } from '@/components/ui/toggle-node';
+import { ToggleElement } from '@/components/editor/toggle';
 
 const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
     IndentPlugin.configure({
       targetPlugins: [
-        PLUGINS.h1, PLUGINS.h2, PLUGINS.h3, PLUGINS.h4, PLUGINS.h5, PLUGINS.h6,
+        PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.heading,
         PLUGINS.paragraph,
         PLUGINS.toggle,
       ],
@@ -103,7 +103,7 @@ const editor = createPlateEditor({
 });
 ```
 
-- `component`: Assigns [`ToggleElement`](/docs/components/toggle-node) to render toggle elements.
+- `component`: Assigns [`ToggleElement`](/docs/components/toggle) to render toggle elements.
 - `IndentPlugin.targetPlugins`: Configures which element plugin names support indentation, including toggles.
 
 ### Add Toolbar Button

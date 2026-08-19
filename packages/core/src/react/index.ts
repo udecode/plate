@@ -7,7 +7,6 @@ export * from './components/PlateContent';
 export * from './components/PlateRoot';
 export * from './components/PlateView';
 export * from './components/plate-nodes';
-export * from './components/withHOC';
 export type {
   PlateEditor,
   PlateEditorReference,
@@ -23,7 +22,6 @@ export {
   createPlateEditor,
   type CreatePlateEditorOptions,
 } from './editor/withPlate';
-export * from './hooks/index';
 export type {
   DOMHandler,
   DOMHandlerProp,
@@ -54,7 +52,7 @@ export type {
   Shortcut,
   Shortcuts,
   TextNodeProps,
-  TransformInitialValue,
+  PrepareDocument,
   TransformOptions,
   UseHooks,
   ValidatedPlateShortcuts,

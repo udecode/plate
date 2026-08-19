@@ -25,9 +25,11 @@ Build new component capabilities in three layers:
    - React effects
    - DOM observers
    - store/context binding
-   - stable view-model hooks that could plausibly have a native sibling
+   - one terminal semantic controller when multiple family members or surfaces
+     need the same lifecycle
+   - headless DOM primitives whose behavior and accessibility are reusable
 
-3. **Open UI (`apps/www/src/registry/ui`)**
+3. **Open UI (`apps/www/src/registry/components/editor`)**
    - shadcn composition
    - local labels/copy
    - menu/popover/dialog state
@@ -38,16 +40,16 @@ Build new component capabilities in three layers:
 
 ## What React packages may own
 
-React package hooks are valid when they expose a stable capability contract,
-not one component's private renderer glue.
+React package hooks are valid when one terminal controller exposes a stable
+capability contract reused by independent families/surfaces, or when the hook
+owns a durable semantic, DOM, accessibility, or integration lifecycle. A
+domain-sounding name does not rescue a prop bag used by one component.
 
-Good:
-
-- `useMediaState`
-- `useTocElementState`
-- `useEquationElement`
-
-These own state/effects with clear domain meaning.
+Split mixed hooks. Keep reusable subscription, observer, imperative DOM
+projection, and cleanup in a minimal package hook; a side-effect-only adapter
+takes the required ref/controller and returns `void`. The open UI derives
+renderer state and owns transient overrides, rounding, styles/refs used only as
+props, and event handlers. A pure calculation with one family owner stays local.
 
 ---
 
@@ -61,9 +63,13 @@ Do **not** put these in package React hooks:
 - one renderer's class decisions
 - one component's local recovery buttons
 - a bag of props that only one renderer consumes
+- `useFooState -> useFoo`, `stateHook -> propsHook`, or one hook per
+  subcomponent
+- a public provider/store for state private to one component family
 
-If the hook mostly exists to make one TSX file shorter, it does not belong in
-the package.
+If the hook mostly exists to make one TSX file shorter, inline it. If complex
+siblings share real lifecycle, use one private family context backed by one
+`use<Family>` controller.
 
 ---
 

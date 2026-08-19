@@ -18,8 +18,7 @@ Use this when a Plate plan claims speed, responsiveness, large-document readines
 
 | Source | Owns | Use in this pass |
 | --- | --- | --- |
-| `vercel-react-best-practices` | React/Next waterfalls, bundles, server/client fetching, rerenders, rendering, JS micro-opts, React runtime primitives | Load exact rule files for local micro-tactics. Do not paste the whole Vercel catalog into the plan. |
-| `react-useeffect` | Effect law, subscriptions, event/effect alternatives | Use when repeated units attach effects, listeners, observers, store subscriptions, or changing React context dependencies. |
+| `vercel-react-best-practices` | React/Next waterfalls, bundles, effects, subscriptions, rerenders, rendering, JS micro-opts, React runtime primitives | Load exact rule files for local micro-tactics. For Plate component shape and public ownership, route to `plate-ui`; do not paste the whole Vercel catalog into the plan. |
 | Chrome DevTools, Lighthouse, web.dev docs | Browser traces, Core Web Vitals, network chains, layout shifts, long tasks | Use when load, hydration, layout, or input latency needs browser proof. |
 | `performance` | Big-O, cache shape, memory pressure, 10x/100x/1000x projections, cohorts, repeated-unit budgets, p95/p99 interactions, memory tags, degradation, native behavior proof, RUM/dashboard gaps | Record the final performance-lane verdict. |
 

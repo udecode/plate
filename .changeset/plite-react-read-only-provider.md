@@ -11,6 +11,15 @@ shell components outside a `<Plite>` root.
   changes
 - Coordinate DOM reads, writes, selection repair, Android input latency, and
   external mutation recovery through one bounded scheduler per mounted root
+- Keep printable single-character typing native for internally proven live
+  leaf pipelines and pass-through command middleware; use model input for
+  unknown custom renderers and material commands
+- Invalidate explicit runtime-state chrome selectors synchronously while
+  preserving equality and commit-filter suppression
+- Run public keydown handlers before built-in editor commands so a handled
+  event can override undo, redo, Enter, and other runtime commands
+- Remount unsynchronized custom text shells after structural history repair
+  while retaining derived projected DOM text sync for safe renderers
 - Re-export the model-owned caret after composition repair renders only while
   the focused snapshot version and selection remain current
 - Keep `NodeSelection` model-only with no native browser range, and expose exact

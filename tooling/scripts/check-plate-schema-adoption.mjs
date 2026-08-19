@@ -258,7 +258,8 @@ const internalPliteContractTypeSymbols = new Set([
   'InternalEditorExtensionTypeProviderOf',
   'InternalEditorExtensionWitnessFor',
 ]);
-const liveRegistryNodeModulePattern = /^@\/registry\/ui\/.*-node$/;
+const liveRegistryNodeModulePattern =
+  /^(?:@\/registry\/components\/editor\/|\.\/)(?:block-list|blockquote|callout|caption|code|code-block|code-drawing|column|comment|date|footnote|heading|highlight|horizontal-rule|kbd|link|math|media-audio|media-embed|media-file|media-image|media-video|mention|paragraph|suggestion|table|toc|toggle)$/;
 const historicalOrGeneratedSourcePattern =
   /(?:^|\/)(?:generated|historical)(?:\/|$)|^(?:apps\/www\/public|templates)\//;
 const intentionalProductionExtendStageChains = new Map([

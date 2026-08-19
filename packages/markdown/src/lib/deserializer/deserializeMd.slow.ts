@@ -105,13 +105,13 @@ describe('editor.api.markdown.deserialize', () => {
             {
               children: [{ text: 'aaa' }],
               indent: 1,
-              listStyleType: 'disc',
+              listType: 'bulleted',
               type: 'paragraph',
             },
             {
               children: [{ text: 'bbb' }],
               indent: 1,
-              listStyleType: 'disc',
+              listType: 'bulleted',
               type: 'paragraph',
             },
           ],
@@ -174,7 +174,7 @@ describe('editor.api.markdown.deserialize', () => {
               type: 'codeLine',
             },
           ],
-          lang: 'ts',
+          language: 'ts',
           type: 'codeBlock',
         },
       ],
@@ -192,15 +192,18 @@ describe('editor.api.markdown.deserialize', () => {
       children: [
         {
           children: [{ text: 'Title' }],
-          type: 'h1',
+          level: 1,
+          type: 'heading',
         },
         {
           children: [{ text: 'Deep title' }],
-          type: 'h4',
+          level: 4,
+          type: 'heading',
         },
         {
           children: [{ text: 'Deepest title' }],
-          type: 'h6',
+          level: 6,
+          type: 'heading',
         },
       ],
     });

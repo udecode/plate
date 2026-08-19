@@ -67,12 +67,12 @@ const ControlledFocusedContext = ({
   const [focused, setFocused] = React.useState(initialFocused);
 
   return (
-    <FocusedContext.Provider value={focused}>
+    <FocusedContext value={focused}>
       <button onClick={() => setFocused(!focused)} type="button">
         {focused ? 'unfocus' : 'focus'}
       </button>
       {children}
-    </FocusedContext.Provider>
+    </FocusedContext>
   );
 };
 

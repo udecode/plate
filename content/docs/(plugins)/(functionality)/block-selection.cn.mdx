@@ -31,7 +31,7 @@ docs:
 
 添加块选择最快的方式是使用 `BlockSelectionKit`，它包含预配置的 `BlockSelectionPlugin` 和 [`BlockSelection`](/docs/components/block-selection) UI 组件。
 
-<ComponentSource name="block-selection-kit" />
+<ComponentSource name="block-selection" />
 
 - [`BlockSelection`](/docs/components/block-selection)：在选中的块周围渲染选择矩形。
 
@@ -41,7 +41,7 @@ docs:
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { BlockSelectionKit } from '@/components/editor/plugins/block-selection-kit';
+import { BlockSelectionKit } from '@/components/editor/block-selection';
 
 const editor = createPlateEditor({
   plugins: [
@@ -447,56 +447,8 @@ render: {
 
 ## Hooks
 
-### `useBlockSelectable`
-
-提供使块元素可选择的 props 的 hook，包括上下文菜单行为。
-
-<API name="useBlockSelectable">
-  <APIReturns type="object">
-    <APIItem name="props" type="object">
-      要展开到块元素上的 props。
-      <APISubList>
-        <APISubListItem parent="props" name="className" type="string">
-          选择功能所需的类。- **默认值:**
-          `'plite-selectable'`
-        </APISubListItem>
-        <APISubListItem
-          parent="props"
-          name="onContextMenu"
-          type="(event: React.MouseEvent) => void"
-        >
-          处理右键上下文菜单行为：- 为选中的块打开上下文菜单 - 为 void 元素打开 - 为带有
-          `data-plate-open-context-menu="true"` 的元素打开 - 使用 Shift 键添加块到选择以进行多选
-        </APISubListItem>
-      </APISubList>
-    </APIItem>
-  </APIReturns>
-</API>
-
 ### `useBlockSelected`
 
 <API name="useBlockSelected">
   <APIReturns type="boolean">上下文块是否被选中。</APIReturns>
 </API>
-
-### `useBlockSelectionNodes`
-
-<API name="useBlockSelectionNodes">
-  <APIReturns type="NodeEntry[]">选中块条目的数组。</APIReturns>
-</API>
-
-### `useBlockSelectionFragment`
-
-<API name="useBlockSelectionFragment">
-  <APIReturns type="Node[]">选中块节点的数组。</APIReturns>
-</API>
-
-### `useBlockSelectionFragmentProp`
-
-<API name="useBlockSelectionFragmentProp">
-  <APIReturns type="Node[]">选中块的 fragment prop。</APIReturns>
-</API>
-
-### `useSelectionArea`
-
-初始化和管理选择区域功能。

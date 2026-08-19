@@ -1,7 +1,7 @@
 ---
 title: 折叠开关
 docs:
-  - route: /docs/components/toggle-node
+  - route: /docs/components/toggle
     title: 折叠元素
   - route: /docs/components/toggle-toolbar-button
     title: 折叠按钮
@@ -26,10 +26,10 @@ docs:
 
 最快捷的方式是使用 `ToggleKit`，它包含预配置的 `TogglePlugin`（支持缩进）及其 [Plate UI](/docs/installation/plate-ui) 组件。
 
-<ComponentSource name="toggle-kit" />
+<ComponentSource name="toggle" />
 
 - [`IndentKit`](/docs/indent): 为折叠元素提供缩进支持
-- [`ToggleElement`](/docs/components/toggle-node): 渲染折叠元素
+- [`ToggleElement`](/docs/components/toggle): 渲染折叠元素
 
 ### 添加套件
 
@@ -37,7 +37,7 @@ docs:
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { ToggleKit } from '@/components/editor/plugins/toggle-kit';
+import { ToggleKit } from '@/components/editor/toggle';
 
 const editor = createPlateEditor({
   plugins: [
@@ -86,14 +86,14 @@ import { IndentPlugin } from '@platejs/indent/react';
 import { TogglePlugin } from '@platejs/toggle/react';
 import { PLUGINS } from 'platejs';
 import { createPlateEditor } from 'platejs/react';
-import { ToggleElement } from '@/components/ui/toggle-node';
+import { ToggleElement } from '@/components/editor/toggle';
 
 const editor = createPlateEditor({
   plugins: [
     // ...其他插件,
     IndentPlugin.configure({
       targetPlugins: [
-        PLUGINS.h1, PLUGINS.h2, PLUGINS.h3, PLUGINS.h4, PLUGINS.h5, PLUGINS.h6,
+        PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.heading,
         PLUGINS.paragraph,
         PLUGINS.toggle,
       ],
@@ -103,7 +103,7 @@ const editor = createPlateEditor({
 });
 ```
 
-- `component`: 指定 [`ToggleElement`](/docs/components/toggle-node) 渲染折叠元素
+- `component`: 指定 [`ToggleElement`](/docs/components/toggle) 渲染折叠元素
 - `IndentPlugin.targetPlugins`: 配置支持缩进的元素插件名称（包括折叠项）
 
 ### 添加工具栏按钮

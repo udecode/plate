@@ -328,12 +328,42 @@ describe('Android input manager phase scheduling', () => {
 });
 
 describe('Android input manager command-handler flush policy', () => {
-  it('flushes stored text diffs when an insertText command handler is registered', () => {
+  it('keeps pass-through insertText handlers on the deferred native path', () => {
     const editor = createEditor({
       extensions: [
         defineExtension('insert-text-command', {
           commands: ({ handle }) => [
             handle(editorCommands.insertText, (_context) => false),
+          ],
+        }),
+      ],
+      initialSelection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
+      initialValue: [{ type: 'paragraph', children: [{ text: '' }] }],
+    });
+
+    expect(
+      shouldFlushStoredTextDiffForInsertTextHandler(editor as never, {
+        start: 0,
+        end: 0,
+        text: ' ',
+      })
+    ).toBe(false);
+  });
+
+  it('flushes stored text diffs when insertText policy is material', () => {
+    const editor = createEditor({
+      extensions: [
+        defineExtension('insert-text-command', {
+          commands: ({ handle }) => [
+            handle(editorCommands.insertText, ({ state }) =>
+              state.transaction((tx) => {
+                tx.tags.add('material-insert-text');
+              })
+            ),
           ],
         }),
       ],
@@ -349,7 +379,14 @@ describe('Android input manager command-handler flush policy', () => {
   });
 
   it('keeps plain editors on the deferred pending-diff path', () => {
-    const editor = createEditor();
+    const editor = createEditor({
+      initialSelection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
+      initialValue: [{ type: 'paragraph', children: [{ text: '' }] }],
+    });
 
     expect(
       shouldFlushStoredTextDiffForInsertTextHandler(editor as never, {
@@ -369,6 +406,12 @@ describe('Android input manager command-handler flush policy', () => {
           ],
         }),
       ],
+      initialSelection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
+      initialValue: [{ type: 'paragraph', children: [{ text: '' }] }],
     });
 
     expect(
@@ -389,6 +432,12 @@ describe('Android input manager command-handler flush policy', () => {
           ],
         }),
       ],
+      initialSelection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
+      initialValue: [{ type: 'paragraph', children: [{ text: '' }] }],
     });
 
     expect(

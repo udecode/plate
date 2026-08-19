@@ -50,3 +50,7 @@
 - Avoid reevaluating published plugin schema factories during plugin access
 - Fix `PlateElement` and `PliteElement` composition across descriptor-owned
   component families
+- Keep ordinary text input native when Plate renderers and command middleware
+  are behaviorally inert
+- Reuse plugin access and compiled decoration contexts so rich editor chrome
+  stays inside frame budgets

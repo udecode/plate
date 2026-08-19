@@ -375,9 +375,15 @@ importers:
       '@platejs/docx':
         specifier: workspace:^
         version: link:../../packages/docx
-      '@platejs/docx-io':
+      '@platejs/docx-export':
         specifier: workspace:^
-        version: link:../../packages/docx-io
+        version: link:../../packages/docx-export
+      '@platejs/docx-import':
+        specifier: workspace:^
+        version: link:../../packages/docx-import
+      '@platejs/docx-paste':
+        specifier: workspace:^
+        version: link:../../packages/docx-paste
       '@platejs/emoji':
         specifier: workspace:^
         version: link:../../packages/emoji
@@ -561,6 +567,15 @@ importers:
       '@udecode/cn':
         specifier: workspace:^
         version: link:../../packages/udecode/cn
+      '@udecode/react-hotkeys':
+        specifier: workspace:^
+        version: link:../../packages/udecode/react-hotkeys
+      '@udecode/react-utils':
+        specifier: workspace:^
+        version: link:../../packages/udecode/react-utils
+      '@udecode/utils':
+        specifier: workspace:^
+        version: link:../../packages/udecode/utils
       '@uploadthing/react':
         specifier: 7.3.1
         version: 7.3.1(next@16.2.6(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(sass@1.89.2))(react@19.2.4)(uploadthing@7.7.2(express@5.2.1)(next@16.2.6(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(sass@1.89.2))(tailwindcss@4.1.8))
@@ -624,6 +639,9 @@ importers:
       jotai:
         specifier: 2.8.4
         version: 2.8.4(@types/react@19.2.7)(react@19.2.4)
+      katex:
+        specifier: 0.16.22
+        version: 0.16.22
       lodash:
         specifier: 4.17.21
         version: 4.17.21
@@ -760,6 +778,9 @@ importers:
         specifier: 3.25.61
         version: 3.25.61
     devDependencies:
+      '@base-ui/react':
+        specifier: 1.6.0
+        version: 1.6.0(@types/react@19.2.7)(date-fns@4.1.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@platejs/cli':
         specifier: workspace:*
         version: link:../../packages/cli
@@ -769,6 +790,9 @@ importers:
       '@tailwindcss/cli':
         specifier: 4.1.8
         version: 4.1.8
+      '@types/katex':
+        specifier: 0.16.7
+        version: 0.16.7
       '@types/mdast':
         specifier: ^4.0.4
         version: 4.0.4
@@ -814,6 +838,9 @@ importers:
       puppeteer:
         specifier: 24.10.0
         version: 24.10.0(typescript@6.0.2)
+      react-aria-components:
+        specifier: 1.20.0
+        version: 1.20.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       rehype:
         specifier: 12.0.1
         version: 12.0.1
@@ -1127,9 +1154,6 @@ importers:
       '@platejs/plite':
         specifier: workspace:^
         version: link:../plite
-      react-compiler-runtime:
-        specifier: ^1.0.0
-        version: 1.0.0(react@19.2.4)
     devDependencies:
       '@plate/scripts':
         specifier: workspace:*
@@ -1357,21 +1381,21 @@ importers:
 
   packages/docx:
     dependencies:
-      '@platejs/core':
+      '@platejs/docx-export':
         specifier: workspace:^
-        version: link:../core
-      '@platejs/utils':
+        version: link:../docx-export
+      '@platejs/docx-import':
         specifier: workspace:^
-        version: link:../utils
-      validator:
-        specifier: ^13.15.15
-        version: 13.15.26
+        version: link:../docx-import
+      '@platejs/docx-paste':
+        specifier: workspace:^
+        version: link:../docx-paste
     devDependencies:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
 
-  packages/docx-io:
+  packages/docx-export:
     dependencies:
       '@platejs/core':
         specifier: workspace:^
@@ -1379,6 +1403,9 @@ importers:
       '@platejs/plite':
         specifier: workspace:^
         version: link:../plite
+      '@platejs/utils':
+        specifier: workspace:^
+        version: link:../utils
       color-name:
         specifier: ^2.0.0
         version: 2.1.0
@@ -1397,9 +1424,6 @@ importers:
       lodash:
         specifier: ^4.17.21
         version: 4.17.23
-      mammoth:
-        specifier: ^1.9.0
-        version: 1.11.0
       mime-types:
         specifier: ^2.1.35
         version: 2.1.35
@@ -1419,15 +1443,56 @@ importers:
       '@platejs/basic-nodes':
         specifier: workspace:*
         version: link:../basic-nodes
-      '@platejs/docx':
-        specifier: workspace:*
-        version: link:../docx
       '@platejs/test-utils':
         specifier: workspace:^
         version: link:../test-utils
+
+  packages/docx-import:
+    dependencies:
+      '@platejs/core':
+        specifier: workspace:^
+        version: link:../core
+      '@platejs/docx-paste':
+        specifier: workspace:^
+        version: link:../docx-paste
+      '@platejs/plite':
+        specifier: workspace:^
+        version: link:../plite
       '@platejs/utils':
         specifier: workspace:^
         version: link:../utils
+      mammoth:
+        specifier: ^1.9.0
+        version: 1.11.0
+    devDependencies:
+      '@plate/scripts':
+        specifier: workspace:*
+        version: link:../plate-scripts
+      '@platejs/basic-nodes':
+        specifier: workspace:*
+        version: link:../basic-nodes
+      '@platejs/test-utils':
+        specifier: workspace:^
+        version: link:../test-utils
+
+  packages/docx-paste:
+    dependencies:
+      '@platejs/core':
+        specifier: workspace:^
+        version: link:../core
+      '@platejs/plite':
+        specifier: workspace:^
+        version: link:../plite
+      '@platejs/utils':
+        specifier: workspace:^
+        version: link:../utils
+      validator:
+        specifier: ^13.15.15
+        version: 13.15.26
+    devDependencies:
+      '@plate/scripts':
+        specifier: workspace:*
+        version: link:../plate-scripts
 
   packages/emoji:
     dependencies:
@@ -1907,9 +1972,6 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
-      platejs:
-        specifier: workspace:^
-        version: link:../plate
 
   packages/mention:
     dependencies:
@@ -2301,9 +2363,6 @@ importers:
       mutative:
         specifier: ^1.1.0
         version: 1.3.0
-      platejs:
-        specifier: workspace:^
-        version: link:../plate
 
   packages/tag:
     dependencies:
@@ -2786,6 +2845,10 @@ packages:
     resolution: {integrity: sha512-05WQkdpL9COIMz4LjTxGpPNCdlpyimKppYNoJ5Di5EUObifl8t4tuLuUBBZEpoLYOmfvIWrsp9fCl0HoPRVTdA==}
     engines: {node: '>=6.9.0'}
 
+  '@babel/runtime@7.29.7':
+    resolution: {integrity: sha512-Nq8OhGWiZIZGV6hLHoyAKLLcJihP/xFeBMGJoUrxTX2psI8dCifzLhZISFb+VWS3wFMRDmCGw5R+dOySCqPLhw==}
+    engines: {node: '>=6.9.0'}
+
   '@babel/template@7.28.6':
     resolution: {integrity: sha512-YA6Ma2KsCdGb+WC6UpBVFJGXL58MDA6oyONbjyF/+5sBgxY/dwkhLogbMT2GXXyU84/IhRw/2D1Os1B/giz+BQ==}
     engines: {node: '>=6.9.0'}
@@ -2809,6 +2872,33 @@ packages:
   '@babel/types@8.0.4':
     resolution: {integrity: sha512-eY+Yn3dCqTGmyiq2QRU66lA5FL8lqqqvecHt0fF3uHONIa7ToYsaCiWV8lOKqAs0Rb2SjixiKFROngnulPtt2g==}
     engines: {node: ^22.18.0 || >=24.11.0}
+
+  '@base-ui/react@1.6.0':
+    resolution: {integrity: sha512-/jzjTWJYXhRFO45Bev9lc3cHbmjzCMpUqbMZ2AgKy/z25mY9B6shGSNcXcjQar9n5doM0KYW1W8fcFv2jZBuMw==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      '@date-fns/tz': ^1.2.0
+      '@types/react': ^17 || ^18 || ^19
+      date-fns: ^4.0.0
+      react: ^17 || ^18 || ^19
+      react-dom: ^17 || ^18 || ^19
+    peerDependenciesMeta:
+      '@date-fns/tz':
+        optional: true
+      '@types/react':
+        optional: true
+      date-fns:
+        optional: true
+
+  '@base-ui/utils@0.3.1':
+    resolution: {integrity: sha512-gFFiltORVmW/N6IILTGxizP3PBpVpysqML1ALY5Vk0mH+7faVkCknOU31goYHN5Aoek2dkjxva1XOD2Ce9WuIg==}
+    peerDependencies:
+      '@types/react': ^17 || ^18 || ^19
+      react: ^17 || ^18 || ^19
+      react-dom: ^17 || ^18 || ^19
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
 
   '@biomejs/biome@2.5.0':
     resolution: {integrity: sha512-4kURkd9hAPrdDM3C9n82ycYgx8hvQcW6MjKTEejruj8rK0N8P3OPpdy8BvI8kt3KWY4ycF5XtDOrktetEfhfuw==}
@@ -3805,6 +3895,15 @@ packages:
     peerDependenciesMeta:
       '@types/node':
         optional: true
+
+  '@internationalized/date@3.12.3':
+    resolution: {integrity: sha512-fuLX+3ZKLsxI73y8b01EG/WjHb6gE6weCqlfawPO27kBWGMh9G1yH6Csv1uU7/cac9H2GHmOMt6CjmuQ1aia4Q==}
+
+  '@internationalized/number@3.6.7':
+    resolution: {integrity: sha512-3ji1fcrT+FPAK86UqEhB/psHixYo6niWPJtt7+qRaYFynt/BaJG8GhAPimtWUpEiVSTq8ZM8L5psMxGquiB/Vg==}
+
+  '@internationalized/string@3.2.10':
+    resolution: {integrity: sha512-PDx6//vHSpRnHfxqMqto11zQvhsaU74O3mKv2F/0eicGZcl9NLjQmGlbHz/LsJh5tLKp4A4L7ZVTzN1/MmMTvA==}
 
   '@isaacs/cliui@9.0.0':
     resolution: {integrity: sha512-AokJm4tuBHillT+FpMtxQ60n8ObyXBatq7jD2/JA9dxbDDokKQm8KMht5ibGzLVU9IJDIKK4TPKgMHEYMn3lMg==}
@@ -5957,6 +6056,11 @@ packages:
 
   '@react-dnd/shallowequal@4.0.2':
     resolution: {integrity: sha512-/RVXdLvJxLg4QKvMoM5WlwNR9ViO9z8B/qPcc+C0Sa/teJY7QG7kJ441DwzOjMYEY7GmU4dj5EcGHIkKZiQZCA==}
+
+  '@react-types/shared@3.36.1':
+    resolution: {integrity: sha512-AzsuD9OfxTOZMMvTRhlN3oHBwOmFN7tDh27LzqmHt4+uOgPhJT7ZM7/kVs/8/o0WxayMUIk3hBmCFRHv1FUoag==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
 
   '@roarr/cli@5.12.4':
     resolution: {integrity: sha512-XvH6UvwMjP0inpu+R7mRDb+JCGas5xamZ+vJP7A4OlwJtm4phLKG7BY7CQf/IuVjOWjujsh3/qLesFkS6SZslA==}
@@ -9112,10 +9216,6 @@ packages:
   hash.js@1.1.7:
     resolution: {integrity: sha512-taOaskGt4z4SOANNseOviYDvjEJinIkRgmp7LbKP2YTTmVxWBl87s/uzK9r+44BclBSp2X7K1hqeNfz9JbBeXA==}
 
-  hasown@2.0.2:
-    resolution: {integrity: sha512-0hJU9SCPvmMzIBdZFqNPXWa6dqh7WdH0cII9y+CyS8rG3nL48Bclra9HmKhVVUHyPWNH5Y7xDwAB7bfgSjkUMQ==}
-    engines: {node: '>= 0.4'}
-
   hasown@2.0.4:
     resolution: {integrity: sha512-T2UbfbBEF32wiepXIsMlTW9+dDYC6wMh/t/vYA4tuOMKqWz/n3vr1NFSxQiyP+zk2mXsoMA/i/7qV6LKut1t1A==}
     engines: {node: '>= 0.4'}
@@ -11085,6 +11185,18 @@ packages:
     resolution: {integrity: sha512-K5zQjDllxWkf7Z5xJdV0/B0WTNqx6vxG70zJE4N0kBs4LovmEYWJzQGxC9bS9RAKu3bgM40lrd5zoLJ12MQ5BA==}
     engines: {node: '>= 0.10'}
 
+  react-aria-components@1.20.0:
+    resolution: {integrity: sha512-BMbpIgoV9aELeBrB0Y120NgoigHb5OdcJwc+4e7uSnbTbamea6lo+gqcc4LAxzMaK3Jf+7LI1oCDE6yANsmxIQ==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
+      react-dom: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
+
+  react-aria@3.51.0:
+    resolution: {integrity: sha512-AyWLw0XR38cFPwBu/ErgGaVrc5dupLEKmRlMXTGvFKOtbaGRQ2+yQJkjVhpdHhoRhU4+G+tJDFeHDTS8tK3bfQ==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
+      react-dom: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
+
   react-compiler-runtime@1.0.0:
     resolution: {integrity: sha512-rRfjYv66HlG8896yPUDONgKzG5BxZD1nV9U6rkm+7VCuvQc903C4MjcoZR4zPw53IKSOX9wMQVpA1IAbRtzQ7w==}
     peerDependencies:
@@ -11182,6 +11294,11 @@ packages:
     peerDependencies:
       react: ^16.14.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc
       react-dom: ^16.14.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc
+
+  react-stately@3.49.0:
+    resolution: {integrity: sha512-13iNq2KzBrRAzxRc+n53hgROfIistiYY/sPtIhCw1qUB7/kmo+X1xEU2uiS5zcCIrc55AUPwoHqOIIpKWSwB9A==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
 
   react-style-singleton@2.2.3:
     resolution: {integrity: sha512-b6jSvxvVnyptAiLjbkWLE/lOnR4lfTtDAl+eUC7RZy+QQWc6wRzIV2CE6xBuMmDxc2qIihtDCZD5NPOFl7fRBQ==}
@@ -11362,6 +11479,9 @@ packages:
 
   requires-port@1.0.0:
     resolution: {integrity: sha512-KigOCHcocU3XODJxsu8i/j8T9tzT4adHiecwORRQ0ZZFcp7ahwXuRU1m+yuO90C5ZUyGeGfocHDI14M3L3yDAQ==}
+
+  reselect@5.2.0:
+    resolution: {integrity: sha512-AgZ3UOZm3YndfrJ4OYjgrT7bmCm/1iqkjvEfH/oYjzh6PD2qw4QuT3jjnXIrpdt4MTpMXclMT3lXbmRY+XRakw==}
 
   resolve-from@4.0.0:
     resolution: {integrity: sha512-pb/MYmXstAkysRFx8piNI1tGFNQIFA3vkE3Gq4EuA1dF6gHp/+vgZqsCGJapvy8N3Q+4o7FwvquPJcnZ7RYy4g==}
@@ -13227,6 +13347,8 @@ snapshots:
 
   '@babel/runtime@7.28.6': {}
 
+  '@babel/runtime@7.29.7': {}
+
   '@babel/template@7.28.6':
     dependencies:
       '@babel/code-frame': 7.29.0
@@ -13270,6 +13392,30 @@ snapshots:
     dependencies:
       '@babel/helper-string-parser': 8.0.0
       '@babel/helper-validator-identifier': 8.0.4
+
+  '@base-ui/react@1.6.0(@types/react@19.2.7)(date-fns@4.1.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
+    dependencies:
+      '@babel/runtime': 7.29.7
+      '@base-ui/utils': 0.3.1(@types/react@19.2.7)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@floating-ui/react-dom': 2.1.8(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@floating-ui/utils': 0.2.11
+      react: 19.2.4
+      react-dom: 19.2.4(react@19.2.4)
+      use-sync-external-store: 1.6.0(react@19.2.4)
+    optionalDependencies:
+      '@types/react': 19.2.7
+      date-fns: 4.1.0
+
+  '@base-ui/utils@0.3.1(@types/react@19.2.7)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
+    dependencies:
+      '@babel/runtime': 7.29.7
+      '@floating-ui/utils': 0.2.11
+      react: 19.2.4
+      react-dom: 19.2.4(react@19.2.4)
+      reselect: 5.2.0
+      use-sync-external-store: 1.6.0(react@19.2.4)
+    optionalDependencies:
+      '@types/react': 19.2.7
 
   '@biomejs/biome@2.5.0':
     optionalDependencies:
@@ -14158,6 +14304,18 @@ snapshots:
   '@inquirer/type@3.0.10(@types/node@24.12.0)':
     optionalDependencies:
       '@types/node': 24.12.0
+
+  '@internationalized/date@3.12.3':
+    dependencies:
+      '@swc/helpers': 0.5.19
+
+  '@internationalized/number@3.6.7':
+    dependencies:
+      '@swc/helpers': 0.5.19
+
+  '@internationalized/string@3.2.10':
+    dependencies:
+      '@swc/helpers': 0.5.19
 
   '@isaacs/cliui@9.0.0': {}
 
@@ -16412,6 +16570,10 @@ snapshots:
   '@react-dnd/invariant@4.0.2': {}
 
   '@react-dnd/shallowequal@4.0.2': {}
+
+  '@react-types/shared@3.36.1(react@19.2.4)':
+    dependencies:
+      react: 19.2.4
 
   '@roarr/cli@5.12.4':
     dependencies:
@@ -19588,10 +19750,6 @@ snapshots:
       inherits: 2.0.4
       minimalistic-assert: 1.0.1
 
-  hasown@2.0.2:
-    dependencies:
-      function-bind: 1.1.2
-
   hasown@2.0.4:
     dependencies:
       function-bind: 1.1.2
@@ -20035,7 +20193,7 @@ snapshots:
       call-bound: 1.0.4
       gopd: 1.2.0
       has-tostringtag: 1.0.2
-      hasown: 2.0.2
+      hasown: 2.0.4
 
   is-regexp@3.1.0: {}
 
@@ -22103,6 +22261,32 @@ snapshots:
       iconv-lite: 0.7.2
       unpipe: 1.0.0
 
+  react-aria-components@1.20.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
+    dependencies:
+      '@internationalized/date': 3.12.3
+      '@internationalized/string': 3.2.10
+      '@react-types/shared': 3.36.1(react@19.2.4)
+      '@swc/helpers': 0.5.19
+      client-only: 0.0.1
+      react: 19.2.4
+      react-aria: 3.51.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      react-dom: 19.2.4(react@19.2.4)
+      react-stately: 3.49.0(react@19.2.4)
+
+  react-aria@3.51.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
+    dependencies:
+      '@internationalized/date': 3.12.3
+      '@internationalized/number': 3.6.7
+      '@internationalized/string': 3.2.10
+      '@react-types/shared': 3.36.1(react@19.2.4)
+      '@swc/helpers': 0.5.19
+      aria-hidden: 1.2.6
+      clsx: 2.1.1
+      react: 19.2.4
+      react-dom: 19.2.4(react@19.2.4)
+      react-stately: 3.49.0(react@19.2.4)
+      use-sync-external-store: 1.6.0(react@19.2.4)
+
   react-compiler-runtime@1.0.0(react@19.2.4):
     dependencies:
       react: 19.2.4
@@ -22204,6 +22388,16 @@ snapshots:
     dependencies:
       react: 19.2.4
       react-dom: 19.2.4(react@19.2.4)
+
+  react-stately@3.49.0(react@19.2.4):
+    dependencies:
+      '@internationalized/date': 3.12.3
+      '@internationalized/number': 3.6.7
+      '@internationalized/string': 3.2.10
+      '@react-types/shared': 3.36.1(react@19.2.4)
+      '@swc/helpers': 0.5.19
+      react: 19.2.4
+      use-sync-external-store: 1.6.0(react@19.2.4)
 
   react-style-singleton@2.2.3(@types/react@19.2.7)(react@19.2.4):
     dependencies:
@@ -22506,6 +22700,8 @@ snapshots:
   require-from-string@2.0.2: {}
 
   requires-port@1.0.0: {}
+
+  reselect@5.2.0: {}
 
   resolve-from@4.0.0: {}
 

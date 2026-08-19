@@ -4,12 +4,7 @@ import {
   BlockquotePlugin,
   BoldPlugin,
   CodePlugin,
-  H1Plugin,
-  H2Plugin,
-  H3Plugin,
-  H4Plugin,
-  H5Plugin,
-  H6Plugin,
+  HeadingPlugin,
   ItalicPlugin,
   ScriptPlugin,
   StrikethroughPlugin,
@@ -18,7 +13,7 @@ import {
 import { HorizontalRulePlugin } from '@platejs/basic-nodes/react';
 import { TextAlignPlugin } from '@platejs/basic-styles/react';
 import { LineHeightPlugin } from '@platejs/basic-styles/react';
-import { DocxPlugin } from '@platejs/docx';
+import { DocxPastePlugin } from '@platejs/docx-paste';
 import { IndentPlugin } from '@platejs/indent/react';
 import { JuicePlugin } from '@platejs/juice';
 import { LinkPlugin } from '@platejs/link/react';
@@ -37,17 +32,13 @@ import { BaseListPlugin } from '../../../../../../packages/list/src/lib/BaseList
 jsxt;
 
 const targetPluginConfig = {
-  targetPlugins: [BaseParagraphPlugin, H1Plugin, H2Plugin, H3Plugin],
+  targetPlugins: [BaseParagraphPlugin, HeadingPlugin, HeadingPlugin],
 };
 
 const basicNodePlugins = [
   BlockquotePlugin,
-  H1Plugin,
-  H2Plugin,
-  H3Plugin,
-  H4Plugin,
-  H5Plugin,
-  H6Plugin,
+  HeadingPlugin,
+
   HorizontalRulePlugin,
   BoldPlugin,
   CodePlugin,
@@ -57,6 +48,20 @@ const basicNodePlugins = [
   UnderlinePlugin,
 ] as const;
 
+const listTestPlugins: BasePluginInput[] = [
+  ImagePlugin,
+  HorizontalRulePlugin,
+  LinkPlugin,
+  TablePlugin,
+  ...basicNodePlugins,
+  LineHeightPlugin.configure(targetPluginConfig),
+  TextAlignPlugin.configure(targetPluginConfig),
+  IndentPlugin.configure(targetPluginConfig),
+  BaseListPlugin.configure(targetPluginConfig),
+  JuicePlugin,
+  DocxPastePlugin,
+];
+
 const createClipboardData = (html: string, rtf?: string): DataTransfer =>
   ({
     files: [],
@@ -65,7 +70,7 @@ const createClipboardData = (html: string, rtf?: string): DataTransfer =>
     types: rtf ? ['text/html', 'text/rtf'] : ['text/html'],
   }) as any;
 
-const insertData = (editor: BaseEditor, data: DataTransfer) => {
+const insertData = (editor: Pick<BaseEditor, 'api'>, data: DataTransfer) => {
   editor.api.dom.clipboard.insertData(data);
 };
 
@@ -79,19 +84,7 @@ describe('when insertData disc and decimal from gdocs', () => {
       </editor>
     ) as any;
     const editor = createBaseEditor({
-      plugins: [
-        ImagePlugin as BasePluginInput,
-        HorizontalRulePlugin as BasePluginInput,
-        LinkPlugin as BasePluginInput,
-        TablePlugin as BasePluginInput,
-        ...basicNodePlugins,
-        LineHeightPlugin.configure(targetPluginConfig) as BasePluginInput,
-        TextAlignPlugin.configure(targetPluginConfig) as BasePluginInput,
-        IndentPlugin.configure(targetPluginConfig) as BasePluginInput,
-        BaseListPlugin.configure(targetPluginConfig),
-        JuicePlugin,
-        DocxPlugin,
-      ],
+      plugins: listTestPlugins,
       selection: e.selection,
       initialValue: e.children,
     });
@@ -111,7 +104,7 @@ describe('when insertData disc and decimal from gdocs', () => {
           },
         ],
         indent: 1,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
       {
@@ -121,7 +114,7 @@ describe('when insertData disc and decimal from gdocs', () => {
           },
         ],
         indent: 2,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
       {
@@ -131,7 +124,7 @@ describe('when insertData disc and decimal from gdocs', () => {
           },
         ],
         indent: 1,
-        listStyleType: 'decimal',
+        listType: 'numbered',
         type: 'paragraph',
       },
       {
@@ -141,7 +134,8 @@ describe('when insertData disc and decimal from gdocs', () => {
           },
         ],
         indent: 2,
-        listStyleType: 'lower-alpha',
+        listStyle: 'lower-alpha',
+        listType: 'numbered',
         type: 'paragraph',
       },
       {
@@ -151,7 +145,7 @@ describe('when insertData disc and decimal from gdocs', () => {
           },
         ],
         indent: 4,
-        listStyleType: 'decimal',
+        listType: 'numbered',
         type: 'paragraph',
       },
     ]);
@@ -168,19 +162,7 @@ describe('when insertData with nested ul inside li', () => {
       </editor>
     ) as any;
     const editor = createBaseEditor({
-      plugins: [
-        ImagePlugin,
-        HorizontalRulePlugin,
-        LinkPlugin,
-        TablePlugin,
-        ...basicNodePlugins,
-        LineHeightPlugin.configure(targetPluginConfig),
-        TextAlignPlugin.configure(targetPluginConfig),
-        IndentPlugin.configure(targetPluginConfig),
-        BaseListPlugin.configure(targetPluginConfig),
-        JuicePlugin,
-        DocxPlugin,
-      ],
+      plugins: listTestPlugins,
       selection: e.selection,
       initialValue: e.children,
     });
@@ -211,7 +193,7 @@ describe('when insertData with nested ul inside li', () => {
           },
         ],
         indent: 1,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
       {
@@ -221,7 +203,7 @@ describe('when insertData with nested ul inside li', () => {
           },
         ],
         indent: 2,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
       {
@@ -231,7 +213,7 @@ describe('when insertData with nested ul inside li', () => {
           },
         ],
         indent: 3,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
       {
@@ -241,7 +223,7 @@ describe('when insertData with nested ul inside li', () => {
           },
         ],
         indent: 1,
-        listStyleType: 'disc',
+        listType: 'bulleted',
         type: 'paragraph',
       },
     ]);

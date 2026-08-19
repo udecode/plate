@@ -25,6 +25,7 @@ export const getInjectMatch = <E extends BaseEditor>(
 
     const element = ElementApi.isElement(node) ? node : undefined;
 
+    if (plugin.targetPlugins.length > 0 && !element) return false;
     if (_isElement && !element) return false;
     if (_isBlock && (!element || !editor.read.schema.isBlock(element))) {
       return false;

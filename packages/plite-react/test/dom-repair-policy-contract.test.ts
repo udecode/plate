@@ -1134,7 +1134,7 @@ test('completed projected text insert repair does not schedule repair retries', 
   }
 });
 
-test('text insert caret repair keeps existing model authority for plain DOM text', () => {
+test('model-owned text insert caret repair keeps authority for plain DOM text', () => {
   const editor = createReactEditor();
   const root = mountEditorRoot(editor);
   const inputController = {
@@ -1143,6 +1143,7 @@ test('text insert caret repair keeps existing model authority for plain DOM text
   };
 
   inputController.state.selectionSource = 'model-owned';
+  inputController.state.textInputOwnership = 'model';
   inputController.state.pendingNativeTextInputRepairOffset = 2;
   inputController.state.pendingNativeTextInputRepairPathKey = '0,0';
 

@@ -16,13 +16,15 @@ Keep the component source close to normal shadcn expectations:
 - obvious `asChild` / `data-slot` / `data-state`
 - variants and classes near the JSX that uses them
 - no abstraction maze for simple UI
+- stable kebab-case `data-slot` identity and `data-state` for interaction state
+- semantic HTML, keyboard behavior, focus, and ARIA in the interaction owner
 
 ---
 
 ## Prefer readable files over abstraction churn
 
-A component file is allowed to be a little long if the alternative is hiding
-everything behind package hooks and helper wrappers.
+A component file is allowed to be long if the alternative is hiding everything
+behind package hooks, prop factories, providers, HOCs, or helper wrappers.
 
 Long but readable open code beats "clean" indirection that nobody can diff
 against upstream.

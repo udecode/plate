@@ -50,8 +50,7 @@ export const BaseTogglePlugin = defineBasePlugin(PLUGINS.toggle, {
 
         const indentValue = node.indent;
         const indent = typeof indentValue === 'number' ? indentValue : 0;
-        const adjustedIndent =
-          node.listStyleType && indent ? indent - 1 : indent;
+        const adjustedIndent = node.listType && indent ? indent - 1 : indent;
 
         if (index === togglePath[0] && node.type === type) {
           inside = true;

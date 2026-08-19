@@ -96,6 +96,28 @@ import type { InternalEditorUpdateOptions } from './core/update-policy';
 
 let nextEditorId = 0;
 const PENDING_SCHEMA_BOOTSTRAP = new WeakSet<AnyEditor>();
+const SCHEMA_BOOTSTRAP_DOCUMENT_CHANGED = new WeakSet<AnyEditor>();
+const SCHEMA_BOOTSTRAP_CLEANUPS = new WeakMap<AnyEditor, () => void>();
+
+const disarmSchemaBootstrap = (editor: AnyEditor) => {
+  PENDING_SCHEMA_BOOTSTRAP.delete(editor);
+  SCHEMA_BOOTSTRAP_DOCUMENT_CHANGED.delete(editor);
+  SCHEMA_BOOTSTRAP_CLEANUPS.get(editor)?.();
+  SCHEMA_BOOTSTRAP_CLEANUPS.delete(editor);
+};
+
+const armSchemaBootstrap = (editor: AnyEditor) => {
+  PENDING_SCHEMA_BOOTSTRAP.add(editor);
+  const cleanup = subscribeCommit(editor, (commit) => {
+    if (commit.changes.empty) return;
+
+    SCHEMA_BOOTSTRAP_DOCUMENT_CHANGED.add(editor);
+    cleanup();
+    SCHEMA_BOOTSTRAP_CLEANUPS.delete(editor);
+  });
+
+  SCHEMA_BOOTSTRAP_CLEANUPS.set(editor, cleanup);
+};
 
 /** Extension tuple inferred from a `createEditor` options object. */
 export type EditorExtensionsFromOptions<TOptions> = TOptions extends {
@@ -285,7 +307,7 @@ const publishInitialEditorExtensions = <TEditor extends AnyEditor>(
   publication.afterPublish();
 
   if (getExtensionRegistry(editor).schemaContributions.records.size > 0) {
-    PENDING_SCHEMA_BOOTSTRAP.delete(editor);
+    disarmSchemaBootstrap(editor);
   }
 };
 
@@ -308,17 +330,16 @@ export const initializeEditorExtensions = <TEditor extends AnyEditor>(
     );
   }
   if (getExtensionRegistry(editor).schemaContributions.records.size > 0) {
-    PENDING_SCHEMA_BOOTSTRAP.delete(editor);
+    disarmSchemaBootstrap(editor);
     throw new Error('Editor schema is already initialized.');
   }
-  const lastCommit = getLastCommit(editor);
   const document = getEditorDocumentValue(editor);
   const hasDocument =
     document.children.length > 0 ||
     Object.values(document.roots ?? {}).some((children) => children.length > 0);
 
-  if (lastCommit && !lastCommit.changes.empty) {
-    PENDING_SCHEMA_BOOTSTRAP.delete(editor);
+  if (SCHEMA_BOOTSTRAP_DOCUMENT_CHANGED.has(editor)) {
+    disarmSchemaBootstrap(editor);
     throw new Error(
       'Editor schema initialization requires an unchanged document.'
     );
@@ -478,19 +499,54 @@ const createEditorImplementation = <
       return capability;
     };
     const createPortal = (
-      name: string,
-      installedApi: EditorExtensionApiMap
+      requested: EditorExtensionReference,
+      enforceIdentity: boolean
     ) => {
+      const name = requested.name;
       const update = createEditorExtensionUpdatePortal(
         editor as AnyEditor,
-        name
+        name,
+        enforceIdentity ? requested : undefined
       );
+      const assertCurrentDescriptor = () => {
+        if (
+          enforceIdentity &&
+          getCandidateEditorExtensionApi(editor as AnyEditor, requested) ===
+            undefined &&
+          resolveInstalledEditorExtension(editor as AnyEditor, requested) !==
+            requested
+        ) {
+          throw new Error(
+            `Editor extension "${name}" descriptor is no longer installed.`
+          );
+        }
+      };
 
       return Object.freeze({
         get api() {
+          const candidateApi = getCandidateEditorExtensionApi(
+            editor as AnyEditor,
+            extension
+          );
+
+          if (candidateApi) return resolveValue(candidateApi);
+
+          assertCurrentDescriptor();
+          const installedApi = getInstalledEditorExtensionApi(
+            editor as AnyEditor,
+            name
+          );
+
+          if (!installedApi) {
+            throw new Error(
+              `Editor extension "${name}" is not installed on this editor.`
+            );
+          }
+
           return resolveValue(installedApi);
         },
         get read() {
+          assertCurrentDescriptor();
           const capability = Reflect.get(read, name);
 
           if (capability === undefined) {
@@ -512,7 +568,7 @@ const createEditorImplementation = <
     );
 
     if (candidateApi) {
-      return createPortal(extension.name, candidateApi);
+      return createPortal(extension, true);
     }
     const installedExtension = resolveInstalledEditorExtension(
       editor as AnyEditor,
@@ -525,11 +581,7 @@ const createEditorImplementation = <
       );
     }
 
-    const installedName = installedExtension.name;
-    const installedApi =
-      getInstalledEditorExtensionApi(editor as AnyEditor, installedName) ?? {};
-
-    return createPortal(installedName, installedApi);
+    return createPortal(installedExtension, true);
   };
 
   const read = createEditorReadApi<V, TExtensions>((fn) =>
@@ -603,7 +655,7 @@ const createEditorImplementation = <
   );
   const initialState = initializePublicState(editor, options);
 
-  PENDING_SCHEMA_BOOTSTRAP.add(editor);
+  armSchemaBootstrap(editor);
 
   if (options.extensions) {
     publishInitialEditorExtensions(

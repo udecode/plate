@@ -67,6 +67,7 @@ it('renders simple hard-affinity leaves without spacers when inactive', () => {
       children: 'test content',
       leaf: text,
       leafPosition: { end: 0, start: 12 } as any,
+      path: [0, 0],
       text,
     } as any);
 
@@ -147,6 +148,7 @@ it('renders boundary spacers only for the active hard-affinity edge', () => {
       children: 'test content',
       leaf: text,
       leafPosition: { end: 0, start: 12 } as any,
+      path: [0, 0],
       text,
     } as any);
 

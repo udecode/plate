@@ -38,7 +38,7 @@ const createValue = (id?: string) =>
 const ListStylePropertyPlugin = defineBasePlugin('listStyleProperty', {
   schema: () => ({
     properties: {
-      listStyleType: schema.elementProperty(property.string(), {
+      markerStyle: schema.elementProperty(property.string(), {
         target: target.element(BaseParagraphPlugin),
       }),
     },
@@ -332,8 +332,8 @@ describe('pipeRenderElement', () => {
           targetPlugins: [BaseParagraphPlugin],
           inject: {
             nodeProps: {
-              nodeKey: 'listStyleType',
-              query: ({ nodeProps }) => !!nodeProps.element?.listStyleType,
+              nodeKey: 'markerStyle',
+              query: ({ nodeProps }) => !!nodeProps.element?.markerStyle,
               styleKey: 'listStyleType',
             },
           },
@@ -342,7 +342,7 @@ describe('pipeRenderElement', () => {
       initialValue: [
         {
           children: [{ text: 'Body' }],
-          listStyleType: 'disc',
+          markerStyle: 'disc',
           type: 'paragraph',
         },
       ] as any,
@@ -362,8 +362,8 @@ describe('pipeRenderElement', () => {
           targetPlugins: [BaseParagraphPlugin],
           inject: {
             nodeProps: {
-              nodeKey: 'listStyleType',
-              query: ({ nodeProps }) => !!nodeProps.element?.listStyleType,
+              nodeKey: 'markerStyle',
+              query: ({ nodeProps }) => !!nodeProps.element?.markerStyle,
               transformProps: ({ props }) => {
                 // eslint-disable-next-line react-hooks/rules-of-hooks
                 const element = useElement();
@@ -383,7 +383,7 @@ describe('pipeRenderElement', () => {
       initialValue: [
         {
           children: [{ text: 'Body' }],
-          listStyleType: 'disc',
+          markerStyle: 'disc',
           type: 'paragraph',
         },
       ] as any,
@@ -404,8 +404,8 @@ describe('pipeRenderElement', () => {
           targetPlugins: [BaseParagraphPlugin],
           inject: {
             nodeProps: {
-              nodeKey: 'listStyleType',
-              query: ({ nodeProps }) => !!nodeProps.element?.listStyleType,
+              nodeKey: 'markerStyle',
+              query: ({ nodeProps }) => !!nodeProps.element?.markerStyle,
               transformProps: ({ props }) => {
                 // eslint-disable-next-line react-hooks/rules-of-hooks
                 const type = useElementSelector(([element]) => element.type);
@@ -422,7 +422,7 @@ describe('pipeRenderElement', () => {
       initialValue: [
         {
           children: [{ text: 'Body' }],
-          listStyleType: 'disc',
+          markerStyle: 'disc',
           type: 'paragraph',
         },
       ] as any,
@@ -442,8 +442,8 @@ describe('pipeRenderElement', () => {
           targetPlugins: [BaseParagraphPlugin],
           inject: {
             nodeProps: {
-              nodeKey: 'listStyleType',
-              query: ({ nodeProps }) => !!nodeProps.element?.listStyleType,
+              nodeKey: 'markerStyle',
+              query: ({ nodeProps }) => !!nodeProps.element?.markerStyle,
               transformProps: ({ props, value }) => ({
                 ...props,
                 role: 'listitem',
@@ -467,7 +467,7 @@ describe('pipeRenderElement', () => {
       initialValue: [
         {
           children: [{ text: 'Body' }],
-          listStyleType: 'disc',
+          markerStyle: 'disc',
           type: 'paragraph',
         },
       ] as any,
@@ -489,8 +489,8 @@ describe('pipeRenderElement', () => {
           targetPlugins: [BaseParagraphPlugin],
           inject: {
             nodeProps: {
-              nodeKey: 'listStyleType',
-              query: ({ nodeProps }) => !!nodeProps.element?.listStyleType,
+              nodeKey: 'markerStyle',
+              query: ({ nodeProps }) => !!nodeProps.element?.markerStyle,
               transformProps: ({ props, value }) => ({
                 ...props,
                 role: 'listitem',
@@ -526,7 +526,7 @@ describe('pipeRenderElement', () => {
       initialValue: [
         {
           children: [{ text: 'Body' }],
-          listStyleType: 'disc',
+          markerStyle: 'disc',
           type: 'paragraph',
         },
       ] as any,

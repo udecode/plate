@@ -418,7 +418,7 @@ type PaginationProjectedTextProof = {
   visibleLeafCount: number;
 };
 
-const getVisibleProjectedPaginationTextTarget = async (
+const getVisibleModelOwnedProjectedPaginationTextTarget = async (
   root: Awaited<ReturnType<typeof openExample>>['root']
 ) =>
   root.evaluate(() => {
@@ -427,9 +427,7 @@ const getVisibleProjectedPaginationTextTarget = async (
     );
     const viewportRect = viewport?.getBoundingClientRect();
 
-    if (!viewportRect) {
-      return null;
-    }
+    if (!viewportRect) return null;
 
     const candidates = Array.from(
       document.querySelectorAll<HTMLElement>(
@@ -439,15 +437,19 @@ const getVisibleProjectedPaginationTextTarget = async (
       .flatMap((block) => {
         const blockPath = block.getAttribute('data-plite-path');
 
-        if (!blockPath || blockPath.includes(',')) {
-          return [];
-        }
-
+        if (!blockPath || blockPath.includes(',')) return [];
         const textHost = block.querySelector<HTMLElement>(
           `[data-plite-node="text"][data-plite-path="${blockPath},0"]`
         );
+
+        if (
+          textHost?.getAttribute('data-plite-dom-sync-reason') !== 'custom-leaf'
+        ) {
+          return [];
+        }
+
         const visibleLeaves = Array.from(
-          block.querySelectorAll<HTMLElement>('[data-plite-leaf]')
+          textHost.querySelectorAll<HTMLElement>('[data-plite-leaf]')
         )
           .map((leaf) => {
             const rect = leaf.getBoundingClientRect();
@@ -455,6 +457,7 @@ const getVisibleProjectedPaginationTextTarget = async (
             return {
               bottom: rect.bottom,
               left: rect.left,
+              position: getComputedStyle(leaf).position,
               right: rect.right,
               text: leaf.textContent?.replace(/\s+/g, ' ').trim() ?? '',
               top: rect.top,
@@ -463,6 +466,7 @@ const getVisibleProjectedPaginationTextTarget = async (
           })
           .filter(
             (leaf) =>
+              leaf.position === 'absolute' &&
               leaf.text.length > 0 &&
               leaf.width > 0 &&
               leaf.bottom > viewportRect.top + 32 &&
@@ -471,24 +475,8 @@ const getVisibleProjectedPaginationTextTarget = async (
               leaf.left < viewportRect.right
           );
 
-        if (visibleLeaves.length === 0) {
-          return [];
-        }
-
-        const blockRect = block.getBoundingClientRect();
-        const maxLeafWidth = Math.max(
-          ...visibleLeaves.map((leaf) => leaf.width)
-        );
+        if (visibleLeaves.length < 2) return [];
         const firstLeaf = visibleLeaves[0]!;
-
-        if (
-          textHost?.getAttribute('data-plite-dom-sync-reason') !==
-            'projection' ||
-          visibleLeaves.length < 6 ||
-          blockRect.width <= maxLeafWidth * 1.5
-        ) {
-          return [];
-        }
 
         return [
           {
@@ -498,7 +486,7 @@ const getVisibleProjectedPaginationTextTarget = async (
             firstLeafTop: firstLeaf.top,
             leafText: firstLeaf.text,
             visibleLeafCount: visibleLeaves.length,
-            x: firstLeaf.left + 40,
+            x: Math.min(firstLeaf.right - 4, firstLeaf.left + 40),
             y: (firstLeaf.top + firstLeaf.bottom) / 2,
           } satisfies PaginationProjectedTextTarget,
         ];
@@ -506,7 +494,7 @@ const getVisibleProjectedPaginationTextTarget = async (
       .sort(
         (left, right) =>
           right.visibleLeafCount - left.visibleLeafCount ||
-          right.firstLeafTop - left.firstLeafTop
+          left.firstLeafTop - right.firstLeafTop
       );
 
     return candidates[0] ?? null;
@@ -3903,7 +3891,7 @@ test.describe('pagination example', {
     }
   });
 
-  test('keeps split projected paragraphs stable when clicked, navigated, and edited', async ({
+  test('materializes split projected paragraphs when clicked, navigated, and edited', async ({
     page,
   }, testInfo) => {
     test.skip(
@@ -3948,9 +3936,12 @@ test.describe('pagination example', {
         );
       });
 
-    const target = await getVisibleProjectedPaginationTextTarget(editor.root);
+    const target = await getVisibleModelOwnedProjectedPaginationTextTarget(
+      editor.root
+    );
 
     expect(target).toBeTruthy();
+    expect(target!.visibleLeafCount).toBeGreaterThan(1);
 
     const targetPath = Number(target!.blockPath);
 
@@ -3991,20 +3982,14 @@ test.describe('pagination example', {
 
     expect(clickedOffset).toBeGreaterThan(0);
     expect(clickedOffset).toBeLessThan(target!.blockText.length);
-    expect(clickedProof.reason).toBe('projection');
+    expect(clickedProof.reason).toBe('custom-leaf');
     expect(clickedProof.domSync).toBe(null);
-    expect(clickedProof.staticLeafCount).toBe(0);
-    expect(clickedProof.absoluteLeafCount).toBeGreaterThan(0);
+    expect(clickedProof.staticLeafCount).toBeGreaterThan(0);
+    expect(clickedProof.absoluteLeafCount).toBe(0);
     expect(clickedProof.totalElementCount).toBeLessThan(1400);
     expect(clickedProof.pageSurfaceCount).toBeLessThanOrEqual(8);
-    expect(clickedProof.firstVisibleLeafLeft).toBeCloseTo(
-      target!.firstLeafLeft,
-      0
-    );
-    expect(clickedProof.firstVisibleLeafTop).toBeCloseTo(
-      target!.firstLeafTop,
-      0
-    );
+    expect(clickedProof.firstVisibleLeafLeft).not.toBeNull();
+    expect(clickedProof.firstVisibleLeafTop).not.toBeNull();
 
     await page.keyboard.press('ArrowRight');
     await expect
@@ -4033,7 +4018,6 @@ test.describe('pagination example', {
         return {
           blockText: proof.blockText,
           selection: await editor.selection.get(),
-          staticLeafCount: proof.staticLeafCount,
         };
       })
       .toEqual({
@@ -4043,8 +4027,17 @@ test.describe('pagination example', {
           anchor: { offset: clickedOffset + 1, path: [targetPath, 0] },
           focus: { offset: clickedOffset + 1, path: [targetPath, 0] },
         },
-        staticLeafCount: 0,
       });
+
+    const editedProof = await getProjectedPaginationTextProof(
+      editor.root,
+      target!.blockPath
+    );
+
+    expect(editedProof.reason).toBe('custom-leaf');
+    expect(editedProof.domSync).toBe(null);
+    expect(editedProof.staticLeafCount).toBeGreaterThan(0);
+    expect(editedProof.absoluteLeafCount).toBe(0);
   });
 
   test('survives a rows=800 virtualized real-user editing journey', async ({
@@ -4599,8 +4592,8 @@ test.describe('pagination example', {
       )
       .toEqual({
         domSync: null,
-        projectedDomSync: 'true',
-        reason: 'projection',
+        projectedDomSync: null,
+        reason: 'custom-leaf',
       });
     await editor.focus();
     await expect

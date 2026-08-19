@@ -7,6 +7,7 @@ import {
   valueCodecs,
 } from '@platejs/plite';
 import { getLastCommit as editorGetLastCommit } from '@platejs/plite/internal';
+import { history } from '@platejs/plite-history';
 
 import {
   createReactEditor,
@@ -80,5 +81,44 @@ describe('plite-react state field selector contract', () => {
       'skip-selection-focus',
       'skip-scroll-into-view',
     ]);
+  });
+
+  test('useStateFieldValue updates after state-field history undo', async () => {
+    const editor = createReactEditor({
+      extensions: [
+        history(),
+        defineExtension('document-title-history', {
+          stateFields: [documentTitle],
+        }),
+      ],
+      initialValue: {
+        children: [paragraph('body')],
+        meta: { [documentTitle.key]: documentTitle.serialize('Q2 Plan') },
+      },
+    });
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <Plite editor={editor}>{children}</Plite>
+    );
+    const { result } = renderHook(
+      () => ({
+        setValue: useSetStateField(documentTitle),
+        value: useStateFieldValue(documentTitle),
+      }),
+      { wrapper }
+    );
+
+    await act(async () => {
+      result.current.setValue('Q3 Plan', { history: 'new-batch' });
+    });
+    expect(result.current.value).toBe('Q3 Plan');
+
+    await act(async () => {
+      editor.update.history.undo();
+    });
+    expect(editor.read.getField(documentTitle)).toBe('Q2 Plan');
+    expect(editor.read.lastCommit()?.dirtyStateKeys).toContain(
+      documentTitle.key
+    );
+    expect(result.current.value).toBe('Q2 Plan');
   });
 });

@@ -336,7 +336,6 @@ const expectedPliteReactRuntimeRootExports = [
 const documentedAsGroupedRootTypeExports = [
   'CreateReactEditorOptions',
   'DOMStrategyType',
-  'DOMTextSyncOptions',
   'EditableDecorate',
   'EditableDOMBeforeInputHandler',
   'EditableDOMCoverageBoundaryMaterializePayload',

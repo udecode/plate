@@ -420,6 +420,37 @@ describe('planTableMutation', () => {
     expect(Object.isFrozen(result)).toBe(true);
   });
 
+  it('drops widths beyond the logical grid before column mutations', () => {
+    const input = {
+      ...table([[cell('a'), cell('b')]]),
+      columnWidths: [80, 120, 999],
+    };
+    const inserted = planTableMutation(context(input), {
+      anchorKey: 'b',
+      before: true,
+      createCell,
+      initialTableWidth: 200,
+      kind: 'insert-column',
+    });
+
+    expect(inserted.kind).toBe('plan');
+    if (inserted.kind !== 'plan') return;
+
+    expect(apply(input, inserted)).toMatchObject({
+      columnWidths: [50, 75, 75],
+    });
+
+    const removed = planTableMutation(context(input), {
+      anchorKey: 'a',
+      kind: 'remove-column',
+    });
+
+    expect(removed.kind).toBe('plan');
+    if (removed.kind !== 'plan') return;
+
+    expect(apply(input, removed)).toMatchObject({ columnWidths: [120] });
+  });
+
   it('keeps generated command sequences deterministic and structurally valid', () => {
     const seeds = Array.from({ length: 32 }, (_, index) => index + 1);
 

@@ -22,6 +22,7 @@ import {
   createReactEditor,
   Editable,
   Plite,
+  type RenderElementProps,
   useEditor,
   useEditorSelector,
   useEditorState,
@@ -1363,9 +1364,7 @@ describe('plite-react provider hooks contract', () => {
       wrapper: ({ children }) => (
         <Plite editor={editor}>
           <Editable />
-          <NodeKeyContext.Provider value={nodeKey}>
-            {children}
-          </NodeKeyContext.Provider>
+          <NodeKeyContext value={nodeKey}>{children}</NodeKeyContext>
         </Plite>
       ),
     });
@@ -1378,6 +1377,55 @@ describe('plite-react provider hooks contract', () => {
 
     expect(editorGetPathByNodeKey(editor, nodeKey)).toEqual([1]);
     expect(result.current).toEqual([1]);
+  });
+
+  test('useElementPath resolves a newly inserted rendered element from the snapshot index', async () => {
+    const editor = createReactEditor({
+      initialValue: [
+        { id: 'initial', type: 'block', children: [{ text: 'one' }] },
+      ],
+    });
+    const PathElement = ({
+      attributes,
+      children,
+      element,
+    }: RenderElementProps) => {
+      const path = useElementPath();
+
+      return (
+        <div
+          {...attributes}
+          data-testid={`path-${String(
+            (element as { id?: unknown }).id ?? 'unknown'
+          )}`}
+        >
+          <span>{path?.join('.') ?? 'missing'}</span>
+          {children}
+        </div>
+      );
+    };
+    const rendered = render(
+      <Plite editor={editor}>
+        <Editable renderElement={(props) => <PathElement {...props} />} />
+      </Plite>
+    );
+
+    await act(async () => {
+      editor.update((tx) => {
+        tx.nodes.insert(
+          {
+            id: 'inserted',
+            type: 'block',
+            children: [{ text: 'two' }],
+          },
+          { at: [1] }
+        );
+      });
+    });
+
+    await waitFor(() =>
+      expect(rendered.getByTestId('path-inserted').textContent).toBe('1two')
+    );
   });
 
   test('useElementPath skips text-only commits', async () => {
@@ -1407,9 +1455,9 @@ describe('plite-react provider hooks contract', () => {
         <Plite editor={editor}>
           <Editable />
           {nodeKeys.map((nodeKey) => (
-            <NodeKeyContext.Provider key={nodeKey} value={nodeKey}>
+            <NodeKeyContext key={nodeKey} value={nodeKey}>
               <PathProbe nodeKey={nodeKey} />
-            </NodeKeyContext.Provider>
+            </NodeKeyContext>
           ))}
         </Plite>
       );

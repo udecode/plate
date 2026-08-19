@@ -11,7 +11,6 @@ import { BaseDatePlugin } from '@platejs/date';
 import { BaseExcalidrawPlugin } from '@platejs/excalidraw';
 import { BaseFootnotePlugin } from '@platejs/footnote';
 import { BaseColumnPlugin } from '@platejs/layout';
-import { LinkPlugin } from '@platejs/link/react';
 import { BaseEquationPlugin, BaseInlineEquationPlugin } from '@platejs/math';
 import { BasePlaceholderPlugin } from '@platejs/media';
 import { insertMediaUrl } from '@platejs/media/react';
@@ -19,10 +18,23 @@ import { BaseSuggestionPlugin } from '@platejs/suggestion';
 import { BaseTablePlugin } from '@platejs/table';
 import { BaseTocPlugin } from '@platejs/toc';
 import { ElementApi, PathApi } from 'platejs';
+import { linkPlugin } from '@/registry/components/editor/link';
 
 const ACTION_THREE_COLUMNS = 'action_three_columns';
 const ACTION_FOOTNOTE = 'action_footnote';
 const LIST_ACTIONS = new Set(['decimal', 'disc', 'todo']);
+const HEADING_ACTION_RE = /^heading-([1-6])$/;
+const getHeadingLevel = (action: string) => {
+  const match = HEADING_ACTION_RE.exec(action);
+
+  return match ? Number(match[1]) : undefined;
+};
+const getListType = (action: string) =>
+  action === 'todo'
+    ? ('task' as const)
+    : action === 'decimal'
+      ? ('numbered' as const)
+      : ('bulleted' as const);
 
 const toggleCodeBlock = (editor: PlateEditor) =>
   editor.plugin(BaseCodeBlockPlugin).update.toggle();
@@ -55,6 +67,9 @@ const getActionType = (editor: PlateEditor, action: string) => {
   }
   if (action === ACTION_THREE_COLUMNS) {
     return editor.plugin(BaseColumnPlugin).schema.type;
+  }
+  if (getHeadingLevel(action)) {
+    return editor.plugin(PLUGINS.heading).schema.type;
   }
 
   const plugin = editor.plugin(action);
@@ -95,7 +110,7 @@ const insertInlineMap: Record<string, (editor: PlateEditor) => void> = {
   [PLUGINS.inlineEquation]: (editor) =>
     editor.plugin(BaseInlineEquationPlugin).update.insert({}, { select: true }),
   [PLUGINS.link]: (editor) => {
-    const link = editor.plugin(LinkPlugin);
+    const link = editor.plugin(linkPlugin);
 
     link.store.set({ text: editor.read.text.string() });
     link.api.show('insert', editor.id);
@@ -267,12 +282,13 @@ export const insertBlock = (
     return;
   }
   editor.update((tx) => {
+    const headingLevel = getHeadingLevel(action);
     const insertByAction: Record<string, () => void> = {
       todo: () =>
         tx.nodes.insert(
           createBlock({
             indent: 1,
-            listStyleType: action,
+            listType: getListType(action),
             type: editor.plugin(PLUGINS.paragraph).schema.type,
           }),
           { select: true }
@@ -281,7 +297,7 @@ export const insertBlock = (
         tx.nodes.insert(
           createBlock({
             indent: 1,
-            listStyleType: action,
+            listType: getListType(action),
             type: editor.plugin(PLUGINS.paragraph).schema.type,
           }),
           { select: true }
@@ -290,13 +306,19 @@ export const insertBlock = (
         tx.nodes.insert(
           createBlock({
             indent: 1,
-            listStyleType: action,
+            listType: getListType(action),
             type: editor.plugin(PLUGINS.paragraph).schema.type,
           }),
           { select: true }
         ),
     };
-    const insert = insertByAction[action];
+    const insert = headingLevel
+      ? () =>
+          tx.nodes.insert(
+            createBlock({ level: headingLevel, type: actionType }),
+            { select: true }
+          )
+      : insertByAction[action];
 
     if (insert) {
       insert();
@@ -350,16 +372,35 @@ export const applyBlockAction = (
     const setEntry = (entry: NodeEntry<Element>) => {
       const [node, path] = entry;
 
-      if (node.listStyleType) {
-        const properties: string[] = ['listStyleType', 'indent'];
+      if (node.listType) {
+        const properties: string[] = [
+          'checked',
+          'indent',
+          'listRestart',
+          'listStart',
+          'listStyle',
+          'listType',
+        ];
 
         tx.nodes.unset(properties, { at: path });
+      }
+      const headingLevel = getHeadingLevel(action);
+
+      if (headingLevel) {
+        tx.nodes.set(
+          {
+            level: headingLevel,
+            type: editor.plugin(PLUGINS.heading).schema.type,
+          },
+          { at: path }
+        );
+        return;
       }
       if (action === 'todo' || action === 'decimal' || action === 'disc') {
         tx.nodes.set(
           {
             indent: 1,
-            listStyleType: action,
+            listType: getListType(action),
             type: editor.plugin(PLUGINS.paragraph).schema.type,
           },
           { at: path }
@@ -414,14 +455,17 @@ export const applyBlockAction = (
 };
 
 export const getBlockType = (block: Element) => {
-  if (block.listStyleType) {
-    if (block.listStyleType === 'decimal') {
+  if (block.listType) {
+    if (block.listType === 'numbered') {
       return 'decimal';
     }
-    if (block.listStyleType === 'todo') {
+    if (block.listType === 'task') {
       return 'todo';
     }
     return 'disc';
+  }
+  if (block.type === PLUGINS.heading && typeof block.level === 'number') {
+    return `heading-${block.level}`;
   }
 
   return block.type;

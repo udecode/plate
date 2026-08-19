@@ -3,4 +3,3 @@
  */
 
 export * from './EquationPlugin';
-export * from './useEquation';

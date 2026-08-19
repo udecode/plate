@@ -1,4 +1,7 @@
-import { getDOMTextSyncCapability } from '../src/dom-text-sync';
+import {
+  getDOMTextSyncCapability,
+  setDOMTextSyncRendererCapability,
+} from '../src/dom-text-sync';
 
 test('DOM text sync capability names opt-out reasons', () => {
   expect(
@@ -18,10 +21,10 @@ test('DOM text sync capability names opt-out reasons', () => {
   expect(
     getDOMTextSyncCapability({
       hasText: true,
-      projections: [{ key: 'p' } as any],
-      textSync: { projections: 'range-transform' },
+      projections: [],
+      renderSegment: () => null,
     })
-  ).toEqual({ enabled: false, reason: 'projection' });
+  ).toEqual({ enabled: false, reason: 'custom-segment' });
 
   expect(
     getDOMTextSyncCapability({
@@ -31,22 +34,18 @@ test('DOM text sync capability names opt-out reasons', () => {
     })
   ).toEqual({ enabled: false, reason: 'custom-leaf' });
 
-  expect(
-    getDOMTextSyncCapability({
-      hasText: true,
-      projections: [],
-      renderLeaf: () => null,
-      textSync: { renderLeaf: 'text-invariant' },
-    })
-  ).toEqual({ enabled: true, reason: null });
+  const safeLeaf = setDOMTextSyncRendererCapability(
+    () => null,
+    () => true
+  );
 
   expect(
     getDOMTextSyncCapability({
       hasText: true,
       projections: [],
-      renderSegment: () => null,
+      renderLeaf: safeLeaf,
     })
-  ).toEqual({ enabled: false, reason: 'custom-segment' });
+  ).toEqual({ enabled: true, reason: null });
 
   expect(
     getDOMTextSyncCapability({

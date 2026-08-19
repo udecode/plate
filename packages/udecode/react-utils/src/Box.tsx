@@ -1,7 +1,18 @@
-import type React from 'react';
+import { Slot } from '@radix-ui/react-slot';
+import * as React from 'react';
 
-import { createSlotComponent } from './createSlotComponent';
+export type BoxProps = React.ComponentPropsWithRef<'div'> & {
+  as?: React.ElementType;
+  asChild?: boolean;
+};
 
-export const Box = createSlotComponent('div');
+export function Box({
+  as: Component = 'div',
+  asChild = false,
+  ref,
+  ...props
+}: BoxProps) {
+  const Comp = asChild ? Slot : Component;
 
-export type BoxProps = React.ComponentPropsWithRef<typeof Box>;
+  return <Comp ref={ref} {...props} />;
+}

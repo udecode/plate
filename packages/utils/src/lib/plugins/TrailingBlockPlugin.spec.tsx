@@ -45,14 +45,14 @@ describe('TrailingBlockPlugin', () => {
     {
       input: (
         <editor>
-          <hh1>test</hh1>
-          <hh1>test2</hh1>
+          <element type="h1">test</element>
+          <element type="h1">test2</element>
         </editor>
       ) as TestEditor,
       output: (
         <editor>
-          <hh1>test</hh1>
-          <hh1>test2</hh1>
+          <element type="h1">test</element>
+          <element type="h1">test2</element>
           <hdefault>
             <htext />
           </hdefault>
@@ -73,16 +73,16 @@ describe('TrailingBlockPlugin', () => {
       input: (
         <editor>
           <element type="element">
-            <hh1>test</hh1>
-            <hh1>test2</hh1>
+            <element type="h1">test</element>
+            <element type="h1">test2</element>
           </element>
         </editor>
       ) as TestEditor,
       output: (
         <editor>
           <element type="element">
-            <hh1>test</hh1>
-            <hh1>test2</hh1>
+            <element type="h1">test</element>
+            <element type="h1">test2</element>
             <hdefault>
               <htext />
             </hdefault>
@@ -102,14 +102,14 @@ describe('TrailingBlockPlugin', () => {
     {
       input: (
         <editor>
-          <hh1>test</hh1>
-          <hh1>test2</hh1>
+          <element type="h1">test</element>
+          <element type="h1">test2</element>
         </editor>
       ) as TestEditor,
       output: (
         <editor>
-          <hh1>test</hh1>
-          <hh1>test2</hh1>
+          <element type="h1">test</element>
+          <element type="h1">test2</element>
         </editor>
       ) as TestEditor,
       plugins: [
@@ -126,15 +126,15 @@ describe('TrailingBlockPlugin', () => {
     {
       input: (
         <editor>
-          <hh1>test</hh1>
-          <hh1>test2</hh1>
+          <element type="h1">test</element>
+          <element type="h1">test2</element>
           <hdefault>default</hdefault>
         </editor>
       ) as TestEditor,
       output: (
         <editor>
-          <hh1>test</hh1>
-          <hh1>test2</hh1>
+          <element type="h1">test</element>
+          <element type="h1">test2</element>
           <hdefault>default</hdefault>
         </editor>
       ) as TestEditor,

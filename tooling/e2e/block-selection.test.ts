@@ -29,7 +29,10 @@ test('drags from the editor gutter to select whole blocks', async ({
     '[data-plite-editor="true"][contenteditable="true"]'
   );
   const heading = editor.locator('h1').first();
-  const blocks = editor.locator('.plite-selectable[data-block-id]');
+  const blocks = editor.locator('.plite-selectable[data-plite-node-key]');
+  const floatingToolbar = page.getByRole('toolbar').filter({
+    has: page.getByRole('button', { exact: true, name: 'Ask AI' }),
+  });
 
   try {
     await page.goto('/');
@@ -97,6 +100,10 @@ test('drags from the editor gutter to select whole blocks', async ({
     await expect
       .poll(() => editor.locator('[data-slot="block-selection"]').count())
       .toBeGreaterThanOrEqual(2);
+    await expect
+      .poll(() => page.evaluate(() => window.getSelection()?.toString() ?? ''))
+      .toBe('');
+    await expect(floatingToolbar).toHaveCount(0);
     runtimeErrors.assertNone();
   } finally {
     runtimeErrors.stop();

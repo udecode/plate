@@ -51,7 +51,7 @@ import type {
 import { applyEditableCommand } from '../../editable/mutation-controller';
 import {
   editorCommands,
-  hasCommandHandler,
+  probeCommandNativeEquivalent,
   range as editorRange,
   leaf as editorLeaf,
   next as editorNext,
@@ -100,7 +100,10 @@ export const shouldFlushStoredTextDiffForInsertTextHandler = (
   editor: ReactRuntimeEditor,
   diff: StringDiff
 ) =>
-  diff.text.length > 0 && hasCommandHandler(editor, editorCommands.insertText);
+  diff.text.length > 0 &&
+  !probeCommandNativeEquivalent(editor, editorCommands.insertText, {
+    text: diff.text,
+  }).nativeEquivalent;
 
 export type CreateAndroidInputManagerOptions = {
   editor: ReactRuntimeEditor;

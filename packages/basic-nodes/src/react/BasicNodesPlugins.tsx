@@ -7,12 +7,7 @@ import {
   BaseBlockquotePlugin,
   BaseBoldPlugin,
   BaseCodePlugin,
-  BaseH1Plugin,
-  BaseH2Plugin,
-  BaseH3Plugin,
-  BaseH4Plugin,
-  BaseH5Plugin,
-  BaseH6Plugin,
+  BaseHeadingPlugin,
   BaseHighlightPlugin,
   BaseHorizontalRulePlugin,
   BaseItalicPlugin,
@@ -30,12 +25,7 @@ export const BoldPlugin = toPlatePlugin(BaseBoldPlugin, {
 
 export const CodePlugin = toPlatePlugin(BaseCodePlugin);
 
-export const H1Plugin = toPlatePlugin(BaseH1Plugin);
-export const H2Plugin = toPlatePlugin(BaseH2Plugin);
-export const H3Plugin = toPlatePlugin(BaseH3Plugin);
-export const H4Plugin = toPlatePlugin(BaseH4Plugin);
-export const H5Plugin = toPlatePlugin(BaseH5Plugin);
-export const H6Plugin = toPlatePlugin(BaseH6Plugin);
+export const HeadingPlugin = toPlatePlugin(BaseHeadingPlugin);
 
 export const HighlightPlugin = toPlatePlugin(BaseHighlightPlugin);
 export const HorizontalRulePlugin = toPlatePlugin(BaseHorizontalRulePlugin);

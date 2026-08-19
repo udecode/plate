@@ -58,13 +58,13 @@ function ElementContent({
   getPlateRuntime(editor).pluginCache.render.belowNodes.forEach((name) => {
     const wrapperContext = createPluginContext(editor, name);
     const { plugin } = wrapperContext;
-    const withHOC = plugin.render.belowNodes!;
+    const renderBelow = plugin.render.belowNodes!;
 
     // belowNodes can have hooks
-    const hoc = withHOC({ ...props, ...wrapperContext } as any);
+    const wrap = renderBelow({ ...props, ...wrapperContext } as any);
 
-    if (hoc && !isEditOnly(readOnly, plugin, 'render')) {
-      children = hoc({ ...props, children } as any);
+    if (wrap && !isEditOnly(readOnly, plugin, 'render')) {
+      children = wrap({ ...props, children } as any);
     }
   });
 
@@ -81,13 +81,13 @@ function ElementContent({
   getPlateRuntime(editor).pluginCache.render.aboveNodes.forEach((name) => {
     const wrapperContext = createPluginContext(editor, name);
     const { plugin } = wrapperContext;
-    const withHOC = plugin.render.aboveNodes!;
+    const renderAbove = plugin.render.aboveNodes!;
 
     // aboveNodes can have hooks
-    const hoc = withHOC({ ...props, ...wrapperContext } as any);
+    const wrap = renderAbove({ ...props, ...wrapperContext } as any);
 
-    if (hoc && !isEditOnly(readOnly, plugin, 'render')) {
-      component = hoc({ ...props, children: component } as any);
+    if (wrap && !isEditOnly(readOnly, plugin, 'render')) {
+      component = wrap({ ...props, children: component } as any);
     }
   });
 

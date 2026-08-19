@@ -74,7 +74,7 @@ export const excalidrawInitialData: Partial<
 
 export const excalidrawValue = (
   <fragment>
-    <hh2>Excalidraw</hh2>
+    <hheading level={2}>Excalidraw</hheading>
     <hp>
       Unleash your creativity with the Excalidraw plugin, which enables you to
       embed and draw diagrams directly within your editor.

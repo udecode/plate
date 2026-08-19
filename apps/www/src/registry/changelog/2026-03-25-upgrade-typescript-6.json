@@ -45,9 +45,15 @@
   "targets": [
     {
       "name": "code-drawing-node",
-      "files": ["apps/www/src/registry/ui/code-drawing-node.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for code-drawing-node."
+        }
+      ]
     }
   ],
   "entries": [

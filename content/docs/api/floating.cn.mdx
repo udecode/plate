@@ -58,38 +58,13 @@ Creates a floating element with a controlled virtual element, typically used to 
 </APIReturns>
 </API>
 
-### `useFloatingToolbar`
+## Floating Toolbar
 
-Creates a floating toolbar that appears when text is selected in the editor.
+复制的 `floating-toolbar` 组件负责编辑器焦点、选择、只读策略、外部点击和
+工具栏定位。完整交互请复制该组件；其他浮动界面直接组合
+`useVirtualFloating`。
 
-<API name="useFloatingToolbar">
-<APIOptions type="FloatingToolbarState">
-  <APIItem name="floatingOptions" type="UseVirtualFloatingOptions" optional>
-    Options passed to `useVirtualFloating`.
-  </APIItem>
-  <APIItem name="hideToolbar" type="boolean" optional>
-    Force hide the toolbar.
-  </APIItem>
-  <APIItem name="showWhenReadOnly" type="boolean" optional>
-    Show toolbar in read-only mode.
-  </APIItem>
-</APIOptions>
-
-<APIReturns type="object">
-  <APIItem name="clickOutsideRef" type="React.RefObject">
-    Ref to detect clicks outside the toolbar.
-  </APIItem>
-  <APIItem name="hidden" type="boolean">
-    Whether the toolbar should be hidden.
-  </APIItem>
-  <APIItem name="props" type="object">
-    Props to spread on the toolbar element.
-  </APIItem>
-  <APIItem name="ref" type="React.RefObject">
-    Ref to attach to the toolbar element.
-  </APIItem>
-</APIReturns>
-</API>
+<ComponentSource name="floating-toolbar" />
 
 ## API
 

@@ -18,6 +18,7 @@ import {
   BaseAudioPlugin,
   BaseFilePlugin,
   BaseVideoPlugin,
+  type FileInsertInput,
   type ImageInsertInput,
   type ProviderMediaInsertInput,
 } from './BaseMediaPlugin';
@@ -65,6 +66,26 @@ type _audioInsertOmitsAlt = AssertFalse<
     ? true
     : false
 >;
+type _audioInsertOmitsName = AssertFalse<
+  'name' extends keyof Parameters<
+    DefinitionOf<typeof BaseAudioPlugin>['update']['insert']
+  >[0]
+    ? true
+    : false
+>;
+type _fileInsertInputIsExact = AssertTrue<
+  IsEqual<
+    Parameters<DefinitionOf<typeof BaseFilePlugin>['update']['insert']>[0],
+    FileInsertInput
+  >
+>;
+type _fileInsertHasName = AssertTrue<
+  'name' extends keyof Parameters<
+    DefinitionOf<typeof BaseFilePlugin>['update']['insert']
+  >[0]
+    ? true
+    : false
+>;
 type _imageInsertInputIsExact = AssertTrue<
   IsEqual<
     Parameters<DefinitionOf<typeof BaseImagePlugin>['update']['insert']>[0],
@@ -73,6 +94,13 @@ type _imageInsertInputIsExact = AssertTrue<
 >;
 type _imageInsertHasAlt = AssertTrue<
   'alt' extends keyof Parameters<
+    DefinitionOf<typeof BaseImagePlugin>['update']['insert']
+  >[0]
+    ? true
+    : false
+>;
+type _imageInsertOmitsName = AssertFalse<
+  'name' extends keyof Parameters<
     DefinitionOf<typeof BaseImagePlugin>['update']['insert']
   >[0]
     ? true
@@ -88,6 +116,13 @@ type _embedInsertInputIsExact = AssertTrue<
 >;
 type _embedInsertHasProvider = AssertTrue<
   'provider' extends keyof Parameters<
+    DefinitionOf<typeof BaseMediaEmbedPlugin>['update']['insert']
+  >[0]
+    ? true
+    : false
+>;
+type _embedInsertOmitsName = AssertFalse<
+  'name' extends keyof Parameters<
     DefinitionOf<typeof BaseMediaEmbedPlugin>['update']['insert']
   >[0]
     ? true
@@ -349,6 +384,74 @@ describe('Base media plugin contracts', () => {
     expect(
       editor.api.html.deserialize({ element: '<img alt="missing" />' })
     ).toEqual([]);
+    expect(
+      editor.api.html.deserialize({
+        element:
+          '<img alt="Sized" height="180" src="https://platejs.org/image.png" width="320" />',
+      })
+    ).toEqual([
+      {
+        alt: 'Sized',
+        children: [{ text: '' }],
+        type: 'image',
+        url: 'https://platejs.org/image.png',
+        width: 320,
+      },
+    ]);
+    expect(
+      editor.api.html.deserialize({
+        element:
+          '<figure class="plate-image"><img alt="Sized" height="180" src="https://platejs.org/image.png" width="320" /><figcaption>Caption</figcaption></figure>',
+      })
+    ).toEqual([
+      {
+        alt: 'Sized',
+        children: [{ text: 'Caption' }],
+        type: 'image',
+        url: 'https://platejs.org/image.png',
+        width: 320,
+      },
+    ]);
+    expect(
+      editor.api.html.deserialize({
+        element:
+          '<img data-plate-natural-height="360" data-plate-natural-width="640" height="360" src="https://platejs.org/image.png" width="640" />',
+      })
+    ).toEqual([
+      {
+        children: [{ text: '' }],
+        naturalHeight: 360,
+        naturalWidth: 640,
+        type: 'image',
+        url: 'https://platejs.org/image.png',
+      },
+    ]);
+    expect(
+      editor.api.html.deserialize({
+        element:
+          '<img data-plate-natural-height="180" height="180" src="https://platejs.org/image.png" width="320" />',
+      })
+    ).toEqual([
+      {
+        children: [{ text: '' }],
+        naturalHeight: 180,
+        type: 'image',
+        url: 'https://platejs.org/image.png',
+        width: 320,
+      },
+    ]);
+    expect(
+      editor.api.html.deserialize({
+        element:
+          '<img data-plate-natural-height="180.5" data-plate-natural-width="320.5" src="https://platejs.org/image.png" />',
+      })
+    ).toEqual([
+      {
+        children: [{ text: '' }],
+        type: 'image',
+        url: 'https://platejs.org/image.png',
+      },
+    ]);
   });
 
   it('encodes a visible image and caption with standard media attributes', () => {
@@ -360,8 +463,8 @@ describe('Base media plugin contracts', () => {
         {
           alt: 'Plate',
           children: [{ text: 'Image caption' }],
-          initialHeight: 360,
-          initialWidth: 640,
+          naturalHeight: 360,
+          naturalWidth: 640,
           type: 'image',
           url: 'https://platejs.org/image.png',
           width: '50%',
@@ -383,6 +486,8 @@ describe('Base media plugin contracts', () => {
     expect(image?.getAttribute('alt')).toBe('Plate');
     expect(image?.getAttribute('height')).toBe('360');
     expect(image?.getAttribute('width')).toBe('640');
+    expect(image?.dataset.plateNaturalHeight).toBe('360');
+    expect(image?.dataset.plateNaturalWidth).toBe('640');
     expect(image?.style.width).toBe('50%');
     expect(figure?.querySelector(':scope > figcaption')?.textContent).toBe(
       'Image caption'
@@ -395,8 +500,8 @@ describe('Base media plugin contracts', () => {
       {
         alt: 'Plate',
         children: [{ text: 'Image caption' }],
-        initialHeight: 360,
-        initialWidth: 640,
+        naturalHeight: 360,
+        naturalWidth: 640,
         type: 'image',
         url: 'https://platejs.org/image.png',
         width: '50%',

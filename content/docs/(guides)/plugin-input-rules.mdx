@@ -68,12 +68,12 @@ Use the same kits you already use for nodes and marks. Each kit registers its ow
 ```tsx showLineNumbers
 import { createPlateEditor } from 'platejs/react';
 
-import { BasicBlocksKit } from '@/components/editor/plugins/basic-blocks-kit';
-import { BasicMarksKit } from '@/components/editor/plugins/basic-marks-kit';
-import { CodeBlockKit } from '@/components/editor/plugins/code-block-kit';
-import { LinkKit } from '@/components/editor/plugins/link-kit';
-import { ListKit } from '@/components/editor/plugins/list-kit';
-import { MathKit } from '@/components/editor/plugins/math-kit';
+import { BasicBlocksKit } from '@/components/editor/basic-blocks';
+import { BasicMarksKit } from '@/components/editor/basic-marks';
+import { CodeBlockKit } from '@/components/editor/code-block';
+import { LinkKit } from '@/components/editor/link';
+import { ListKit } from '@/components/editor/list';
+import { MathKit } from '@/components/editor/math';
 
 const editor = createPlateEditor({
   plugins: [
@@ -101,7 +101,7 @@ the patterns.
 ```tsx showLineNumbers
 import { createPlateEditor } from 'platejs/react';
 
-import { AutoformatKit } from '@/components/editor/plugins/autoformat-kit';
+import { AutoformatKit } from '@/components/editor/autoformat';
 
 const editor = createPlateEditor({
   plugins: [...AutoformatKit],
@@ -142,21 +142,21 @@ heading to a different type, provide an app-owned rule for that type instead.
 ```tsx showLineNumbers
 import { HeadingRules } from '@platejs/basic-nodes';
 import {
-  H1Plugin,
-  H2Plugin,
-  H3Plugin,
-  H4Plugin,
-  H5Plugin,
-  H6Plugin,
+  HeadingPlugin,
+  
+  
+  
+  
+  
 } from '@platejs/basic-nodes/react';
 
 export const HeadingInputRulesKit = [
-  H1Plugin.configure({ inputRules: [HeadingRules.markdown()] }),
-  H2Plugin.configure({ inputRules: [HeadingRules.markdown()] }),
-  H3Plugin.configure({ inputRules: [HeadingRules.markdown()] }),
-  H4Plugin.configure({ inputRules: [HeadingRules.markdown()] }),
-  H5Plugin.configure({ inputRules: [HeadingRules.markdown()] }),
-  H6Plugin.configure({ inputRules: [HeadingRules.markdown()] }),
+  HeadingPlugin.configure({ inputRules: [HeadingRules.markdown()] }),
+  HeadingPlugin.configure({ inputRules: [HeadingRules.markdown()] }),
+  HeadingPlugin.configure({ inputRules: [HeadingRules.markdown()] }),
+  HeadingPlugin.configure({ inputRules: [HeadingRules.markdown()] }),
+  HeadingPlugin.configure({ inputRules: [HeadingRules.markdown()] }),
+  HeadingPlugin.configure({ inputRules: [HeadingRules.markdown()] }),
 ] as const;
 ```
 
@@ -454,12 +454,12 @@ A few details worth knowing:
 
 ### Use AutoformatKit As A Starting Point
 
-The `autoformat-kit.tsx` file in Plate's registry wires up a full set of
+The `autoformat.tsx` file in Plate's registry wires up a full set of
 substitutions — arrows, comparisons, equalities, fractions, legal symbols, smart
 quotes, sub/superscript numerals — all gated against code blocks. Copy it into
 your app and edit the patterns.
 
-```tsx showLineNumbers title="autoformat-kit.tsx"
+```tsx showLineNumbers title="autoformat.tsx"
 import {
   defineBasePlugin,
   createTextSubstitutionInputRule,
@@ -540,11 +540,11 @@ rule and replace the field:
 ```tsx showLineNumbers
 import { HeadingRules } from '@platejs/basic-nodes';
 import { LinkRules } from '@platejs/link';
-import { H1Plugin } from '@platejs/basic-nodes/react';
+import { HeadingPlugin } from '@platejs/basic-nodes/react';
 import { LinkPlugin } from '@platejs/link/react';
 
 export const CustomInputRulesKit = [
-  H1Plugin.configure({ inputRules: [HeadingRules.markdown()] }),
+  HeadingPlugin.configure({ inputRules: [HeadingRules.markdown()] }),
   LinkPlugin.configure({
     inputRules: [
       LinkRules.markdown(),

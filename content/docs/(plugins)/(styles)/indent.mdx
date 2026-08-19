@@ -26,7 +26,7 @@ docs:
 
 The fastest way to add indent functionality is with the `IndentKit`, which includes pre-configured `IndentPlugin` targeting paragraph, heading, blockquote, code block, and toggle elements.
 
-<ComponentSource name="indent-kit" />
+<ComponentSource name="indent" />
 
 - Configures `Paragraph`, `Heading`, `Blockquote`, `CodeBlock`, and `Toggle` elements to support the `indent` property.
 - Sets a custom offset of `24px` for indentation spacing.
@@ -38,7 +38,7 @@ Add the kit to your plugins:
 
 ```tsx
 import { createPlateEditor } from "platejs/react";
-import { IndentKit } from "@/components/editor/plugins/indent-kit";
+import { IndentKit } from "@/components/editor/indent";
 
 const editor = createPlateEditor({
   plugins: [
@@ -90,7 +90,7 @@ const editor = createPlateEditor({
     // ...otherPlugins,
     IndentPlugin.configure({
       targetPlugins: [
-        PLUGINS.h1, PLUGINS.h2, PLUGINS.h3, PLUGINS.h4, PLUGINS.h5, PLUGINS.h6,
+        PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.heading,
         PLUGINS.paragraph,
         PLUGINS.blockquote,
       ],
@@ -217,40 +217,13 @@ Used to provide options for setting the indentation of a block of text.
   </APIOptions>
 </API>
 
-## Hooks
+## Toolbar Buttons
 
-### `useIndentButton`
+Toolbar components call the descriptor-scoped updates directly:
 
-A behavior hook for the indent button component.
+```tsx
+const { update } = useEditorPlugin(IndentPlugin);
 
-<API name="useIndentButton">
-  <APIReturns type="object">
-    <APIItem name="props" type="object">
-      Props for the indent button.
-      <APISubList>
-        <APISubListItem parent="props" name="onClick" type="function">
-          Callback to handle click event. Indents selected content and focuses
-          editor.
-        </APISubListItem>
-      </APISubList>
-    </APIItem>
-  </APIReturns>
-</API>
-
-### `useOutdentButton`
-
-A behavior hook for the outdent button component.
-
-<API name="useOutdentButton">
-  <APIReturns type="object">
-    <APIItem name="props" type="object">
-      Props for the outdent button.
-      <APISubList>
-        <APISubListItem parent="props" name="onClick" type="function">
-          Callback to handle click event. Outdents selected content and focuses
-          editor.
-        </APISubListItem>
-      </APISubList>
-    </APIItem>
-  </APIReturns>
-</API>
+<ToolbarButton onClick={() => update.increase()}>Indent</ToolbarButton>
+<ToolbarButton onClick={() => update.decrease()}>Outdent</ToolbarButton>
+```

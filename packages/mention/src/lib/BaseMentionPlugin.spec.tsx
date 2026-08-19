@@ -7,6 +7,22 @@ import { BaseMentionInputPlugin, BaseMentionPlugin } from './BaseMentionPlugin';
 import { MentionInputPlugin, MentionPlugin } from '../react/MentionPlugin';
 
 describe('BaseMentionPlugin', () => {
+  it('requires a non-empty persisted ref', () => {
+    const editor = createBaseEditor({ plugins: [BaseMentionPlugin] });
+
+    expect(() =>
+      editor.read.schema.assertDocument({
+        children: [
+          {
+            children: [{ text: '' }],
+            ref: '   ',
+            type: 'mention',
+          },
+        ],
+      })
+    ).toThrow(/ref.*validation/i);
+  });
+
   it('declares the input as an exact required Base and React dependency', () => {
     expect(BaseMentionPlugin.dependencies).toEqual([BaseMentionInputPlugin]);
     expect(MentionPlugin.dependencies).toEqual([MentionInputPlugin]);
@@ -62,7 +78,7 @@ describe('BaseMentionPlugin', () => {
       voidKind: 'inline',
     });
 
-    editor.update.mention.insert({ key: 'u1', value: 'Ada' });
+    editor.update.mention.insert({ ref: 'u1', label: 'Ada' });
 
     const entry = editor.read.nodes.get([0], {
       match: ElementApi.isElement,
@@ -73,11 +89,30 @@ describe('BaseMentionPlugin', () => {
     expect(children[0]).toEqual({ text: 'he' });
     expect(children[1]).toMatchObject({
       children: [{ text: '' }],
-      key: 'u1',
+      ref: 'u1',
       type: 'mention',
-      value: 'Ada',
+      label: 'Ada',
     });
     expect(children[2]).toEqual({ text: 'llo' });
+  });
+
+  it('rejects blank mention refs before insertion', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseMentionPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
+    });
+
+    expect(() => editor.update.mention.insert({ ref: '   ' })).toThrow(
+      /mention ref must be a non-empty string/i
+    );
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: '' }], type: 'paragraph' },
+    ]);
   });
 
   it('round-trips mention identity through HTML clipboard data', () => {
@@ -94,9 +129,9 @@ describe('BaseMentionPlugin', () => {
             { text: 'before ' },
             {
               children: [{ text: '' }],
-              key: 'user-1',
+              ref: 'user-1',
               type: 'mention',
-              value: 'Ada',
+              label: 'Ada',
             },
             { text: ' after' },
           ],
@@ -113,8 +148,8 @@ describe('BaseMentionPlugin', () => {
       .parseFromString(html, 'text/html')
       .body.querySelector('[data-plate-mention]');
 
-    expect(element?.getAttribute('data-plate-mention-key')).toBe('user-1');
-    expect(element?.getAttribute('data-plate-mention-value')).toBe('Ada');
+    expect(element?.getAttribute('data-plate-mention-ref')).toBe('user-1');
+    expect(element?.getAttribute('data-plate-mention-label')).toBe('Ada');
     expect(element?.textContent).toBe('@Ada');
 
     expect(editor.api.html.deserialize({ element: html })).toEqual([
@@ -123,12 +158,28 @@ describe('BaseMentionPlugin', () => {
           { text: '' },
           {
             children: [{ text: '' }],
-            key: 'user-1',
+            ref: 'user-1',
             type: 'mention',
-            value: 'Ada',
+            label: 'Ada',
           },
           { text: '' },
         ],
+        type: 'paragraph',
+      },
+    ]);
+  });
+
+  it('ignores blank mention refs from external codecs', () => {
+    const editor = createBaseEditor({ plugins: [BaseMentionPlugin] });
+
+    expect(
+      editor.api.html.deserialize({
+        element:
+          '<span data-plate-mention data-plate-mention-ref=" ">@blank</span>',
+      })
+    ).toEqual([
+      {
+        children: [{ text: '@blank' }],
         type: 'paragraph',
       },
     ]);
@@ -194,7 +245,7 @@ describe('BaseMentionPlugin', () => {
       initialValue: [{ children: [{ text: 'hi' }], type: 'paragraph' }],
     });
 
-    editor.plugin(MentionPlugin).update.insert({ key: 'u1', value: 'Ada' });
+    editor.plugin(MentionPlugin).update.insert({ ref: 'u1', label: 'Ada' });
 
     const entry = editor.read.nodes.get([0], {
       match: ElementApi.isElement,
@@ -204,9 +255,9 @@ describe('BaseMentionPlugin', () => {
 
     expect(children[1]).toMatchObject({
       children: [{ text: '' }],
-      key: 'u1',
+      ref: 'u1',
       type: 'mention',
-      value: 'Ada',
+      label: 'Ada',
     });
     expect(children[2]).toEqual({ text: ' ' });
     expect(editor.read.selection()).toEqual({
@@ -230,7 +281,7 @@ describe('BaseMentionPlugin', () => {
       initialValue: [{ children: [{ text: 'hello' }], type: 'paragraph' }],
     });
 
-    editor.plugin(MentionPlugin).update.insert({ key: 'u1', value: 'Ada' });
+    editor.plugin(MentionPlugin).update.insert({ ref: 'u1', label: 'Ada' });
 
     const entry = editor.read.nodes.get([0], {
       match: ElementApi.isElement,
@@ -241,9 +292,9 @@ describe('BaseMentionPlugin', () => {
       { text: 'he' },
       {
         children: [{ text: '' }],
-        key: 'u1',
+        ref: 'u1',
         type: 'mention',
-        value: 'Ada',
+        label: 'Ada',
       },
       { text: 'llo' },
     ]);
@@ -263,9 +314,9 @@ describe('BaseMentionPlugin', () => {
             { text: 'hi ' },
             {
               children: [{ text: '' }],
-              key: 'u1',
+              ref: 'u1',
               type: 'mention',
-              value: 'Ada',
+              label: 'Ada',
             },
             { text: ' after' },
           ],
@@ -303,9 +354,9 @@ describe('BaseMentionPlugin', () => {
             { text: 'hi ' },
             {
               children: [{ text: '' }],
-              key: 'u1',
+              ref: 'u1',
               type: 'mention',
-              value: 'Ada',
+              label: 'Ada',
             },
             { text: ' after' },
           ],
@@ -343,9 +394,9 @@ describe('BaseMentionPlugin', () => {
             { text: 'hi ' },
             {
               children: [{ text: '' }],
-              key: 'u1',
+              ref: 'u1',
               type: 'mention',
-              value: 'Ada',
+              label: 'Ada',
             },
             { text: ' after' },
           ],
@@ -377,9 +428,9 @@ describe('BaseMentionPlugin', () => {
             { text: 'hi ' },
             {
               children: [{ text: '' }],
-              key: 'u1',
+              ref: 'u1',
               type: 'mention',
-              value: 'Ada',
+              label: 'Ada',
             },
             { text: ' after' },
           ],

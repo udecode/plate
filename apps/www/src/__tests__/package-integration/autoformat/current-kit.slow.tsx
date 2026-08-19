@@ -5,7 +5,7 @@ import { BaseCodeBlockPlugin } from '@platejs/code-block';
 import { createBaseEditor } from 'platejs';
 import { jsxt } from '@platejs/test-utils';
 
-import { AutoformatKit } from '@/registry/components/editor/plugins/autoformat-kit';
+import { AutoformatKit } from '@/registry/components/editor/autoformat';
 
 jsxt;
 

@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-17-automatic-document-migrations",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-17-automatic-document-migrations.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-17",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Configure automatic document migrations",
+  "targets": [
+    {
+      "name": "editor-plugins",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins.generated.ts",
+        "apps/www/src/registry/components/editor/plugins.ts"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor-default",
+      "files": ["apps/www/src/registry/examples/editor-default.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "document-migration-demo",
+      "files": ["apps/www/src/registry/examples/document-migration-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-17-editor-plugins-configure-automatic-document-migrations-06367ce5",
+      "kind": "wiring",
+      "summary": "Bind the copied editor to a named schema and run its v53-to-v54 document migration before rendering.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "editor-plugins",
+        "editor-default",
+        "document-migration-demo"
+      ],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-17",
+          "entry": "2026-08-17-automatic-document-migrations",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -1,11 +1,11 @@
 ---
 title: 数学公式
 docs:
-  - route: /docs/components/equation-node
+  - route: /docs/components/math
     title: 公式元素
   - route: /docs/components/equation-toolbar-button
     title: 公式工具栏按钮
-  - route: https://pro.platejs.org/docs/components/equation-node
+  - route: https://pro.platejs.org/docs/components/math
     title: 公式元素
   - route: https://pro.platejs.org/docs/components/equation-toolbar-button
     title: 公式工具栏按钮
@@ -32,10 +32,10 @@ docs:
 
 最快捷的方式是使用`MathKit`套件，它包含预配置的`EquationPlugin`和`InlineEquationPlugin`、对应的 `$...$` 与 `$$` input rules，以及[Plate UI](/docs/installation/plate-ui)组件。
 
-<ComponentSource name="math-kit" />
+<ComponentSource name="math" />
 
-- [`EquationElement`](/docs/components/equation-node): 渲染块级公式元素
-- [`InlineEquationElement`](/docs/components/equation-node): 渲染行内公式元素
+- [`EquationElement`](/docs/components/math): 渲染块级公式元素
+- [`InlineEquationElement`](/docs/components/math): 渲染行内公式元素
 
 ### 添加套件
 
@@ -43,7 +43,7 @@ docs:
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { MathKit } from '@/components/editor/plugins/math-kit';
+import { MathKit } from '@/components/editor/math';
 
 const editor = createPlateEditor({
   plugins: [
@@ -91,7 +91,7 @@ const editor = createPlateEditor({
 import { MathRules } from '@platejs/math';
 import { EquationPlugin, InlineEquationPlugin } from '@platejs/math/react';
 import { createPlateEditor } from 'platejs/react';
-import { EquationElement, InlineEquationElement } from '@/components/ui/equation-node';
+import { EquationElement, InlineEquationElement } from '@/components/editor/math';
 
 const editor = createPlateEditor({
   plugins: [
@@ -109,8 +109,8 @@ const editor = createPlateEditor({
 ```
 
 - `.configure({ component })`：使用
-  [`EquationElement`](/docs/components/equation-node) 渲染块级公式，使用
-  [`InlineEquationElement`](/docs/components/equation-node) 渲染行内公式。
+  [`EquationElement`](/docs/components/math) 渲染块级公式，使用
+  [`InlineEquationElement`](/docs/components/math) 渲染行内公式。
 - `MathRules.markdown({ variant: '$' })`：启用行内公式 Markdown 快捷输入。
 - `MathRules.markdown({ variant: '$$', on: 'break' | 'match' })`：启用块级公式 Markdown 快捷输入，并显式选择提交时机。
 
@@ -158,7 +158,7 @@ const editor = createPlateEditor({
 <API name="editor.plugin(BaseInlineEquationPlugin).update.insert">
 <APIParameters>
 <APIItem name="input" type="object" optional>
-  <APIItem name="texExpression" type="string" optional>
+  <APIItem name="latex" type="string" optional>
     要插入的LaTeX表达式。如未提供则使用当前选中文本。
   </APIItem>
 </APIItem>

@@ -61,8 +61,8 @@ export const findCodeBlockLanguageChange = <
         ElementApi.isElement(afterNode) && afterNode.type === codeBlockType
           ? afterNode
           : undefined;
-      const beforeLanguage = before?.lang;
-      const afterLanguage = after?.lang;
+      const beforeLanguage = before?.language;
+      const afterLanguage = after?.language;
 
       if (
         (beforeLanguage !== undefined || afterLanguage !== undefined) &&

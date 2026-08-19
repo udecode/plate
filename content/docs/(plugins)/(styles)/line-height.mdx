@@ -33,12 +33,12 @@ docs:
 
 Use `LineHeightKit` for the Plate UI setup. It targets paragraphs and all heading levels, with valid values `1`, `1.2`, `1.5`, `2`, and `3`.
 
-<ComponentSource name="line-height-kit" />
+<ComponentSource name="line-height" />
 
 ```tsx
 import { createPlateEditor } from "platejs/react";
 
-import { LineHeightKit } from "@/components/editor/plugins/line-height-kit";
+import { LineHeightKit } from "@/components/editor/line-height";
 
 export const editor = createPlateEditor({
   plugins: [...LineHeightKit],
@@ -50,7 +50,7 @@ export const editor = createPlateEditor({
 `LineHeightToolbarButton` reads `defaultNodeValue` and `validNodeValues` from the plugin inject props.
 
 ```tsx
-import { LineHeightToolbarButton } from "@/components/ui/line-height-toolbar-button";
+import { LineHeightToolbarButton } from "@/components/editor/line-height-toolbar-button";
 
 export function LineHeightControls() {
   return <LineHeightToolbarButton />;
@@ -82,7 +82,7 @@ export const editor = createPlateEditor({
   plugins: [
     LineHeightPlugin.configure({
       targetPlugins: [
-        PLUGINS.h1, PLUGINS.h2, PLUGINS.h3, PLUGINS.h4, PLUGINS.h5, PLUGINS.h6,
+        PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.heading,
         PLUGINS.paragraph,
       ],
       inject: {
@@ -127,7 +127,7 @@ The package owns line-height storage and parsing. The registry owns the dropdown
 | Plugin name               | `PLUGINS.lineHeight`                                |
 | Stored property           | `lineHeight`                                     |
 | Default target plugins    | `[BaseParagraphPlugin]`                          |
-| Registry target plugins   | `[PLUGINS.h1, PLUGINS.h2, PLUGINS.h3, PLUGINS.h4, PLUGINS.h5, PLUGINS.h6, PLUGINS.paragraph]`            |
+| Registry target plugins   | `[PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.paragraph]`            |
 | Default node value        | `1.5`                                            |
 | Registry valid values     | `[1, 1.2, 1.5, 2, 3]`                            |
 | HTML parser               | Reads `element.style.lineHeight`.                |

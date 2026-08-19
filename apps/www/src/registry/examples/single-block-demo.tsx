@@ -11,8 +11,8 @@ import { Plate, usePlateEditor } from 'platejs/react';
 
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { BasicBlocksKit } from '@/registry/components/editor/plugins/basic-blocks-kit';
-import { Editor, EditorContainer } from '@/registry/ui/editor';
+import { BasicBlocksKit } from '@/registry/components/editor/basic-blocks';
+import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 
 export default function SingleBlockDemo() {
   const [isSingleBlock, setIsSingleBlock] = React.useState(true);

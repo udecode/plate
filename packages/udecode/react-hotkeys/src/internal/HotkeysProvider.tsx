@@ -77,7 +77,7 @@ export const HotkeysProvider = ({
   }, []);
 
   return (
-    <HotkeysContext.Provider
+    <HotkeysContext
       value={{
         activeScopes: internalActiveScopes,
         disableScope,
@@ -92,6 +92,6 @@ export const HotkeysProvider = ({
       >
         {children}
       </BoundHotkeysProxyProviderProvider>
-    </HotkeysContext.Provider>
+    </HotkeysContext>
   );
 };

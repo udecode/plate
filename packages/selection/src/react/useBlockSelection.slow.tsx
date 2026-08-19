@@ -1,13 +1,17 @@
-import { renderHook } from '@testing-library/react';
+import React from 'react';
+
+import { render } from '@testing-library/react';
 import * as actualCoreReact from '@platejs/core/react';
 
 const useEditorPluginMock = mock();
 const useEditorMock = mock();
+const usePluginStoreMock = mock();
 
 mock.module('@platejs/core/react', () => ({
   ...actualCoreReact,
   useEditor: useEditorMock,
   useEditorPlugin: useEditorPluginMock,
+  usePluginStore: usePluginStoreMock,
 }));
 
 class SelectionAreaMock {
@@ -35,13 +39,16 @@ mock.module('../SelectionArea', () => ({
 }));
 
 const loadModule = async () =>
-  import(`./useBlockSelection?test=${Math.random().toString(36).slice(2)}`);
+  import(
+    `./BlockSelection.internal?test=${Math.random().toString(36).slice(2)}`
+  );
 
 describe('useSelectionArea', () => {
   afterEach(() => {
     mock.restore();
     useEditorMock.mockReset();
     useEditorPluginMock.mockReset();
+    usePluginStoreMock.mockReset();
     lastSelectionArea = null;
   });
 
@@ -67,10 +74,12 @@ describe('useSelectionArea', () => {
       },
       update: { selection: { clear: clearSelection } },
     });
+    usePluginStoreMock.mockReturnValue(false);
     useEditorPluginMock.mockReturnValue({
       api: {
         clear,
       },
+      update: {},
       store: {
         get: mock(() => ({
           areaOptions: {},
@@ -81,8 +90,8 @@ describe('useSelectionArea', () => {
       },
     });
 
-    const { useSelectionArea } = await loadModule();
-    renderHook(() => useSelectionArea());
+    const { BlockSelectionAfterEditable } = await loadModule();
+    render(<BlockSelectionAfterEditable />);
 
     expect(lastSelectionArea!.options).toMatchObject({
       selectionAreaClass: 'plite-selection-area',
@@ -121,16 +130,18 @@ describe('useSelectionArea', () => {
       id: 'editor',
       api: { dom: { editable: () => null, scroll: () => null } },
     });
+    usePluginStoreMock.mockReturnValue(false);
     useEditorPluginMock.mockReturnValue({
       api: { clear: mock() },
+      update: {},
       store: {
         get: mock(() => ({ areaOptions })),
         set: mock(),
       },
     });
 
-    const { useSelectionArea } = await loadModule();
-    renderHook(() => useSelectionArea());
+    const { BlockSelectionAfterEditable } = await loadModule();
+    render(<BlockSelectionAfterEditable />);
 
     const options = lastSelectionArea!.options as {
       behaviour: { triggers: Array<{ modifiers: string[] }> };
@@ -159,16 +170,18 @@ describe('useSelectionArea', () => {
       id: 'editor',
       api: { dom: { editable: () => root } },
     });
+    usePluginStoreMock.mockReturnValue(false);
     useEditorPluginMock.mockReturnValue({
       api: { clear: mock() },
+      update: {},
       store: {
         get: mock(() => ({ areaOptions: {} })),
         set: mock(),
       },
     });
 
-    const { useSelectionArea } = await loadModule();
-    renderHook(() => useSelectionArea());
+    const { BlockSelectionAfterEditable } = await loadModule();
+    render(<BlockSelectionAfterEditable />);
 
     const options = lastSelectionArea!.options as {
       boundaries: HTMLElement;

@@ -19,6 +19,8 @@ import type {
 } from './PluginDefinition';
 import type {
   EditorExtensionReference,
+  EditorReadMethodRecord,
+  EditorReadMethodTree,
   EditorSelectionSpec,
   EditorUpdateContext,
   SelectionValue,
@@ -142,7 +144,7 @@ type BasePluginConstructorPresenceKey =
   | 'render'
   | 'rules'
   | 'stateFields'
-  | 'transformInitialValue'
+  | 'prepareDocument'
   | 'useHooks'
   | 'validate';
 
@@ -488,7 +490,9 @@ const defineBasePluginRuntime = (definition: unknown): MutableBasePlugin => {
     },
     {
       ...staticDefinition,
-      ...(typeof initialState === 'function' ? {} : { initialState }),
+      ...(initialState === undefined || typeof initialState === 'function'
+        ? {}
+        : { initialState }),
     }
   ) as unknown as MutableBasePlugin;
 
@@ -582,6 +586,15 @@ type BasePluginConstructorSelection<
     ? Extract<TSelection, SelectionValue>
     : never;
 
+type BasePluginConstructorRead<
+  TKeys extends BasePluginConstructorKey,
+  TSchema extends PluginSchemaDeclaration,
+> = 'schema' extends TKeys
+  ? TSchema extends Readonly<{ mark: unknown }>
+    ? EditorReadMethodRecord
+    : EditorReadMethodTree
+  : EditorReadMethodTree;
+
 export function defineBasePlugin<
   const N extends string,
   const TKeys extends BasePluginConstructorKey,
@@ -603,7 +616,10 @@ export function defineBasePlugin<
     | PluginReference
     | string
   )[] = readonly [],
-  const TRead extends object = {},
+  const TRead extends BasePluginConstructorRead<
+    TKeys,
+    TSchema
+  > = BasePluginConstructorRead<TKeys, TSchema>,
   const TSelectionKinds extends
     readonly EditorSelectionSpec<any>[] = readonly [],
   const TSelectors extends PluginSelectors<S> = {},

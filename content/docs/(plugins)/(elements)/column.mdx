@@ -1,7 +1,7 @@
 ---
 title: Column
 docs:
-  - route: /docs/components/column-node
+  - route: /docs/components/column
     title: Column Nodes
 ---
 
@@ -25,10 +25,10 @@ docs:
 
 The fastest way to add column functionality is with the `ColumnKit`, which includes pre-configured `ColumnPlugin` and `ColumnItemPlugin` with [Plate UI](/docs/installation/plate-ui) components.
 
-<ComponentSource name="column-kit" />
+<ComponentSource name="column" />
 
-- [`ColumnGroupElement`](/docs/components/column-node): Renders column group containers.
-- [`ColumnElement`](/docs/components/column-node): Renders individual column items.
+- [`ColumnGroupElement`](/docs/components/column): Renders column group containers.
+- [`ColumnElement`](/docs/components/column): Renders individual column items.
 
 ### Add Kit
 
@@ -36,7 +36,7 @@ Add the kit to your plugins:
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { ColumnKit } from '@/components/editor/plugins/column-kit';
+import { ColumnKit } from '@/components/editor/column';
 
 const editor = createPlateEditor({
   plugins: [
@@ -81,7 +81,7 @@ Configure the group and add a complete `ColumnItemPlugin` descriptor when you ne
 ```tsx
 import { ColumnPlugin, ColumnItemPlugin } from '@platejs/layout/react';
 import { createPlateEditor } from 'platejs/react';
-import { ColumnGroupElement, ColumnElement } from '@/components/ui/column-node';
+import { ColumnGroupElement, ColumnElement } from '@/components/editor/column';
 
 const editor = createPlateEditor({
   plugins: [
@@ -92,7 +92,7 @@ const editor = createPlateEditor({
 });
 ```
 
-- `component`: Assigns [`ColumnGroupElement`](/docs/components/column-node) to render column group containers and [`ColumnElement`](/docs/components/column-node) to render individual columns.
+- `component`: Assigns [`ColumnGroupElement`](/docs/components/column) to render column group containers and [`ColumnElement`](/docs/components/column) to render individual columns.
 
 ### Turn Into Toolbar Button
 
