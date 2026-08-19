@@ -92,10 +92,10 @@ Blocked condition:
 Task state:
 - task_type: ordinary tracker-backed runtime bug
 - task_complexity: normal, non-trivial and auditable
-- current_phase: PR / tracker sync
-- current_phase_status: in_progress
-- next_phase: closeout
-- goal_status: active
+- current_phase: closeout
+- current_phase_status: complete
+- next_phase: final response
+- goal_status: verification_pending
 
 Current verdict:
 - verdict: verified fix ready to ship
@@ -237,45 +237,45 @@ Work Checklist:
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
-| Named verification threshold | pending | Run the command, proof, source audit, or artifact check named in this plan | pending |
-| Pre-solution issue challenge verdict | pending | Record reporter claim, suggested fix, repro verdict, validity verdict, durable boundary, and hard-stop/pivot decision before implementation | pending |
-| Repro escalation ladder | pending | For bug/behavior claims, record test/source-level, Playwright, Browser, and screenshot/visual-proof outcomes or N/A/blocker reasons before `not reproduced` | pending |
-| Bug reproduced before fix | pending | Record failing test/repro or N/A with reason | pending |
-| Targeted behavior verification | pending | Run focused test/proof for changed behavior or record N/A | pending |
-| TypeScript or typed config changed | pending | Run relevant typecheck | pending |
-| Package exports or file layout changed | pending | Run `pnpm brl` before final verification and keep generated barrel updates | pending |
-| Package manifests, lockfile, or install graph changed | pending | Run `pnpm install` and relevant package checks | pending |
-| Agent rules or skills changed | pending | Run `pnpm install` and verify generated skill sync | pending |
-| Workspace authority proof | pending | Run verification in the owning repo/package/app/route/tool and record cwd; do not count the wrong workspace as proof | pending |
-| Browser surface changed | pending | Capture Browser Use proof or record explicit waiver/blocker | pending |
-| Browser final proof | pending | Attach screenshot or exact browser verification caveat when browser proof applies | pending |
-| CI-controlled template output changed | pending | Restore generated template output or record why it is intentionally kept | pending |
-| Package behavior or public API changed | pending | Add a changeset or record why no changeset applies | pending |
-| User-visible registry output changed | pending | Use the registry-changelog pack: add/update `apps/www/src/registry/changelog/entries/*.mdx`, run `node tooling/scripts/generate-ui-changelog-entries.mjs --write`, run `node tooling/scripts/generate-ui-changelog-entries.mjs --check`, or record N/A | pending |
-| Docs or content changed | pending | For docs-heavy work, use `--template docs`; for supporting public docs/content/API/example changes, load `docs-creator` and close the docs pack; for typo/link-only edits, record the explicit reason and proportional proof | pending |
-| High-risk mini gate | pending | For public API/runtime/package-boundary/browser/agent-action/command-contract changes, record realistic failure mode, proof plan, and why the chosen boundary is right; otherwise N/A | pending |
-| Agent-native review for agent/tooling changes | pending | For `.agents/**`, `.claude/**`, `.codex/**`, skills, hooks, commands, prompts, or user-action tooling, load `.agents/skills/agent-native-reviewer/SKILL.md` and close accepted/actionable findings, or record N/A | pending |
-| Local install corruption suspected | pending | Run `pnpm run reinstall` once, rerun the exact failing command, or record N/A | pending |
-| Autoreview for non-trivial implementation changes | pending | Load `.agents/skills/autoreview/SKILL.md`; use dirty local `--mode local`, branch/PR `--mode branch --base <base>`, or committed slice `--mode commit --commit <ref>` until no accepted/actionable findings, or record N/A for docs-only/trivial/no local patch | pending |
-| PR create or update | pending | Run `check` before PR work and sync PR body to the task-style final handoff | pending |
-| Task-style PR body verified | pending | Verify the PR body with `gh pr view --json body`; it must preserve auto-release blocks when applicable, must not include a current-PR self-link, and must use the kitcn PR #270 emoji format: `🐛 Fixes ...`, `🟢 95-100% confidence`, `Phase / 🧪 Tests / 🌐 Browser` table, and bold emoji Outcome/Caveat/Design/Verified sections | pending |
-| PR proof image hosting | pending | If PR body needs browser proof, replace local image paths with hosted GitHub URLs or record N/A | pending |
-| Tracker sync-back | pending | Post concise issue/Linear sync after PR exists, or record N/A/blocker | pending |
-| Final handoff contract | pending | Fill the final handoff fields below with exact PR/issue/confidence/tests/browser/outcome/caveats/design/verification content or N/A reason | pending |
-| Final lint | pending | Run `pnpm lint:fix` or scoped equivalent | pending |
-| Output budget discipline | pending | Verify no unbounded high-volume command output was streamed, or record the accidental output and recovery | pending |
-| Timed checkpoint | pending | If duration was requested, keep improving until elapsed, then finish the current loop cleanly; otherwise N/A | pending |
-| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/5043-fix-multiline-paste-crash.md` | pending |
-| Browser interaction proof | pending | Exercise the target route/interaction with the approved browser tool or record blocker | pending |
-| Browser console/network check | pending | Record console/network state or why it is not applicable | pending |
-| Browser final proof artifact | pending | Record screenshot/trace/route proof or exact caveat | pending |
-| Public API / package boundary proof | pending | Source-audit public API, exports, and package boundary impact | pending |
-| Release artifact classification | pending | Record whether the change is published package behavior/API/types/config/runtime, registry-only, or no published user-visible delta | pending |
-| Published package changeset | pending | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/slate`, `@platejs/core`, or `platejs` | pending |
-| Registry changelog | pending | If the change is registry-only under `apps/www/src/registry/**`, use the `registry-changelog` pack and do not add a package changeset | pending |
-| No release artifact | pending | If no artifact is needed, record the exact reason: internal-only, docs-only, agent-only, test-only, or no user-visible delta from `main` | pending |
-| Package typecheck/build/test | pending | Run owning package checks or record N/A with reason | pending |
-| Barrel/export generation | pending | Run `pnpm brl` when exports or exported file layout changed, otherwise N/A | pending |
+| Named verification threshold | yes | Run named proof | Focused 9/9, core typecheck 5/5, browser exact, autoreview clean, `pnpm check` exit 0 |
+| Pre-solution issue challenge verdict | yes | Record verdict | Valid issue; “no crash” tightened to exact cap and no retained overflow; PR #5100 guard rejected |
+| Repro escalation ladder | yes | Record each applicable level | Source test red; Playwright N/A; approved Browser red/green; visual screenshot N/A for nonvisual claim |
+| Bug reproduced before fix | yes | Record failing repro | Faithful test threw exact `node.text` TypeError; 7 pass, 1 fail |
+| Targeted behavior verification | yes | Run focused proof | Final focused suite 9 pass, 0 fail |
+| TypeScript or typed config changed | yes | Run typecheck | Core 5/5 and full package typecheck 54/54 |
+| Package exports or file layout changed | no | N/A | No exports or public file layout changed; `pnpm brl` not required |
+| Package manifests, lockfile, or install graph changed | no | N/A | No manifest or lockfile changes |
+| Agent rules or skills changed | no | N/A | No agent/tooling files changed |
+| Workspace authority proof | yes | Verify in owner | Commands ran in repo/core; Browser ran local www route against rebuilt core dist; GitHub readback via `gh` |
+| Browser surface changed | yes | Capture proof | Local full EditorKit exact paste passed |
+| Browser final proof | yes | Record exact caveat/artifact | One DOM child, exact 20-character text, zero fresh console errors; screenshot waived because behavior is nonvisual |
+| CI-controlled template output changed | no | N/A | No `templates/**` changes; temporary playground config restored |
+| Package behavior or public API changed | yes | Add changeset | `.changeset/core-fix-multiline-max-length.md` patches `@platejs/core` |
+| User-visible registry output changed | no | N/A | No final registry diff; registry changelog not applicable |
+| Docs or content changed | no | N/A | Only internal goal ledger changed; no public docs/content/API examples |
+| High-risk mini gate | yes | Record risk/boundary/proof | Failure modes: cross-block merge crash, 21/20 leak, retained blank blocks; owner is LengthPlugin; tests + full EditorKit Browser prove boundary |
+| Agent-native review for agent/tooling changes | no | N/A | No agent/tooling changes |
+| Local install corruption suspected | no | N/A | No install-corruption signal; artifact-facing stale dist fixed by core build |
+| Autoreview for non-trivial implementation changes | yes | Run until clean | First P2 accepted/fixed; final local autoreview clean with zero findings |
+| PR create or update | yes | Run check and create | `pnpm check` exit 0 before PR; https://github.com/udecode/plate/pull/5101 |
+| Task-style PR body verified | yes | Read back body | `gh pr view 5101 --json body`: auto-release, issue/confidence, exact table, and four required sections present; no self-link |
+| PR proof image hosting | no | N/A | No image used; exact DOM/console proof is textual |
+| Tracker sync-back | yes | Comment issue | https://github.com/udecode/plate/issues/5043#issuecomment-5348836498 |
+| Final handoff contract | yes | Fill fields | Completed below with PR, issue, confidence, flow, browser, outcome, caveat, design, and verification |
+| Final lint | yes | Run lint | `pnpm lint:fix`: 3,286 files; final formatting applied; `pnpm check` lint has 0 errors |
+| Output budget discipline | yes | Audit output | Commands capped; one buffered dev-server flood recorded and subsequent server shutdown capped |
+| Timed checkpoint | no | N/A | No duration requested |
+| Goal plan complete | yes | Run checker | `check-complete.mjs` exit 0 after all plan phases closed |
+| Browser interaction proof | yes | Exercise paste | Approved in-app Browser on local `/blocks/playground`; exact multiline paste passed |
+| Browser console/network check | yes | Record state | Zero fresh console errors; no relevant network failures |
+| Browser final proof artifact | yes | Record route/DOM caveat | Local route, one DOM child, exact 20 characters; screenshot N/A for nonvisual behavior |
+| Public API / package boundary proof | yes | Audit impact | `@platejs/core` runtime behavior only; no export, type, manifest, or public shape change |
+| Release artifact classification | yes | Classify | Published `@platejs/core` runtime bug fix |
+| Published package changeset | yes | Add patch changeset | One-package patch changeset; no forbidden `minor` |
+| Registry changelog | no | N/A | Not registry-only and no registry diff |
+| No release artifact | no | N/A | Release artifact is required and present |
+| Package typecheck/build/test | yes | Run owner checks | Core typecheck 5/5; core build passed; focused 9/9; full check exit 0 |
+| Barrel/export generation | no | N/A | No exports or exported file layout changed |
 
 Phase / pass table:
 | Phase | Status | Evidence | Next |
@@ -283,8 +283,8 @@ Phase / pass table:
 | Intake and source read | complete | issue, skills, owner files, focused solutions search, branch and red repro recorded | implementation |
 | Implementation | complete | leaf-scoped convergent trim; exact crash/invariant/structure regressions green | verification |
 | Verification | complete | focused 9/9; core typecheck 5/5; browser one block/20 chars/no errors; autoreview clean; `pnpm check` exit 0 | PR / tracker sync |
-| PR / tracker sync | in_progress | full check passed; ready to commit/push/create | closeout |
-| Closeout | pending | | final response |
+| PR / tracker sync | complete | PR #5101 open/mergeable with verified body; issue comment posted | closeout |
+| Closeout | complete | PR/issue/body synced; plan checker exit 0; final CI watch follows the last push | final response |
 
 Findings:
 - Issue #5043 has no comments or video evidence.
@@ -359,21 +359,21 @@ Verification evidence:
   completed with zero failures.
 
 Final handoff contract:
-- PR line: pending
-- Issue / tracker line: pending
-- Confidence line: pending
+- PR line: https://github.com/udecode/plate/pull/5101
+- Issue / tracker line: #5043 synced at https://github.com/udecode/plate/issues/5043#issuecomment-5348836498
+- Confidence line: 99%
 - Flow table:
-  - Reproduced: tests pending, browser pending
-  - Verified: tests pending, browser pending
-- Browser check: pending
-- Outcome: pending
-- Caveat: pending
+  - Reproduced: faithful test exact TypeError; local old artifact full EditorKit crash
+  - Verified: focused 9/9, full check exit 0; Browser one block / 20 chars / zero errors
+- Browser check: approved in-app Browser on local `/blocks/playground` with rebuilt core
+- Outcome: multiline overflow paste is crash-free, exactly capped, and drops overflow paragraphs
+- Caveat: nested schemas retain required empty structural blocks; plain-text top-level overflow is fully discarded
 - Design:
-  - Chosen boundary: pending
-  - Why not quick patch: pending
-  - Why not broader change: pending
-- Verified: pending
-- PR body verified: pending
+  - Chosen boundary: LengthPlugin leaf-scoped trim plus atomic top-level empty-block removal
+  - Why not quick patch: unconditional re-entrancy return leaks 21/20 and misses convergence
+  - Why not broader change: no Slate transform or public API redesign is needed
+- Verified: focused/package/full/browser/autoreview gates green
+- PR body verified: exact `gh pr view 5101 --json body` readback matches task format
 
 Task-style PR body contract:
 - Preserve any existing `<!-- auto-release:start -->` block. If a changeset is
@@ -396,10 +396,10 @@ Task-style PR body contract:
   of that output.
 
 Final handoff / sync:
-- PR: pending
-- Issue / tracker: pending
-- Browser proof: pending
-- Caveats: pending
+- PR: https://github.com/udecode/plate/pull/5101
+- Issue / tracker: #5043 comment https://github.com/udecode/plate/issues/5043#issuecomment-5348836498
+- Browser proof: one DOM child, exact 20-character text, zero fresh console errors
+- Caveats: CI final readback remains before goal completion
 
 Timeline:
 - 2026-08-19T22:13:13.161Z Task goal plan created.
