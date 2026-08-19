@@ -97,4 +97,25 @@ describe('LengthPlugin', () => {
       expect(options.maxLength).toBe(15);
     });
   });
+
+  describe('when the overflow spans block boundaries', () => {
+    // The trim deletes across block boundaries, which Slate decomposes into
+    // merge/remove operations. Those come back through the plugin's own
+    // `apply`, and before the re-entrancy guard the nested call started a
+    // second overlapping delete and crashed on a path the outer one had
+    // already invalidated.
+    it('truncate a multi-block paste without crashing', () => {
+      editor = createEditorWithLength(20);
+      editor.tf.insertFragment([
+        { children: [{ text: 'a'.repeat(25) }], type: 'p' },
+        { children: [{ text: '' }], type: 'p' },
+        { children: [{ text: '' }], type: 'p' },
+        { children: [{ text: 'overflowing text' }], type: 'p' },
+      ]);
+
+      expect(editor.children).toEqual([
+        { children: [{ text: 'a'.repeat(20) }], type: 'p' },
+      ]);
+    });
+  });
 });

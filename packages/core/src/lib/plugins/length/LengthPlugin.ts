@@ -4,29 +4,45 @@ import { createTSlatePlugin } from '../../plugin';
 
 export const LengthPlugin = createTSlatePlugin<LengthConfig>({
   key: 'length',
-}).overrideEditor(({ editor, getOptions, tf: { apply } }) => ({
-  transforms: {
-    apply(operation) {
-      editor.tf.withoutNormalizing(() => {
-        apply(operation);
+}).overrideEditor(({ editor, getOptions, tf: { apply } }) => {
+  // The trim below applies its own operations, which come back through this
+  // same `apply`. Without this guard the nested call sees a half-finished
+  // document that is still over the limit and starts a second, overlapping
+  // delete, invalidating the paths the outer one is still walking.
+  let trimming = false;
 
-        const options = getOptions();
+  return {
+    transforms: {
+      apply(operation) {
+        editor.tf.withoutNormalizing(() => {
+          apply(operation);
 
-        if (options.maxLength) {
-          const length = editor.api.string([]).length;
+          if (trimming) return;
 
-          // Make sure to remove overflow of text beyond character limit
-          if (length > options.maxLength) {
-            const overflowLength = length - options.maxLength;
+          const options = getOptions();
 
-            editor.tf.delete({
-              distance: overflowLength,
-              reverse: true,
-              unit: 'character',
-            });
+          if (options.maxLength) {
+            const length = editor.api.string([]).length;
+
+            // Make sure to remove overflow of text beyond character limit
+            if (length > options.maxLength) {
+              const overflowLength = length - options.maxLength;
+
+              trimming = true;
+
+              try {
+                editor.tf.delete({
+                  distance: overflowLength,
+                  reverse: true,
+                  unit: 'character',
+                });
+              } finally {
+                trimming = false;
+              }
+            }
           }
-        }
-      });
+        });
+      },
     },
-  },
-}));
+  };
+});
