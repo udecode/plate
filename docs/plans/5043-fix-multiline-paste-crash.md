@@ -403,6 +403,7 @@ Final handoff / sync:
 
 Timeline:
 - 2026-08-19T22:13:13.161Z Task goal plan created.
+- 2026-08-19T22:41:21Z Changeset policy rejected single-quoted YAML key; switched to the repo-required double-quoted form and revalidated locally.
 - 2026-08-20T00:13:28+02:00 Issue, skills, active-goal state, branch, exact
   owner files, and prior fix counterexample reviewed; goal created.
 - 2026-08-20T00:16:00+02:00 TDD red reproduced exact issue via
