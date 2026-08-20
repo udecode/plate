@@ -20,7 +20,7 @@ import { onHoverNode } from '../transforms/onHoverNode';
 import { canUseDomDnd, noopConnector } from '../utils/dndEnvironment';
 
 export type CanDropCallback = (args: {
-  dragEntry: NodeEntry<TElement>;
+  dragEntry?: NodeEntry<TElement>;
   dragItem: DragItemNode;
   dropEntry: NodeEntry<TElement>;
   editor: PlateEditor;
