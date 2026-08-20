@@ -1,5 +1,8 @@
+import { MarkdownPlugin } from '@platejs/markdown';
+
 import type { SlateEditor } from '../../editor';
 
+import { createPlateEditor } from '../../../react';
 import { createSlateEditor } from '../../editor';
 
 describe('LengthPlugin', () => {
@@ -55,6 +58,23 @@ describe('LengthPlugin', () => {
   });
 
   describe('when pasting text', () => {
+    it('truncates multiline plain text without crashing', () => {
+      const editor = createPlateEditor({
+        autoSelect: true,
+        maxLength: 20,
+        plugins: [MarkdownPlugin],
+      });
+      const dataTransfer = {
+        getData: (format: string) =>
+          format === 'text/plain'
+            ? '123456789012345678901\n\ntrailing text'
+            : '',
+      } as DataTransfer;
+
+      expect(() => editor.tf.insertData(dataTransfer)).not.toThrow();
+      expect(editor.api.string([])).toHaveLength(20);
+    });
+
     it('truncate pasted text that exceeds maxLength', () => {
       editor = createEditorWithLength(10);
       editor.tf.insertFragment([
@@ -63,6 +83,20 @@ describe('LengthPlugin', () => {
 
       expect(editor.children).toEqual([
         { children: [{ text: 'This is a ' }], type: 'p' },
+      ]);
+    });
+
+    it('enforces maxLength across empty fragment blocks', () => {
+      editor = createEditorWithLength(20);
+      editor.tf.insertFragment([
+        { children: [{ text: '123456789012345678901' }], type: 'p' },
+        { children: [{ text: '' }], type: 'p' },
+        { children: [{ text: '' }], type: 'p' },
+        { children: [{ text: 'trailing text' }], type: 'p' },
+      ]);
+
+      expect(editor.children).toEqual([
+        { children: [{ text: '12345678901234567890' }], type: 'p' },
       ]);
     });
   });
