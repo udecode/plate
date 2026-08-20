@@ -156,8 +156,6 @@ export const onDropNode = (
       });
     }
   } else {
-    editor.tf.insertNodes(dragItem.element, { at: to });
-
     const sourceEditor = dragItem.editor;
 
     if (sourceEditor) {
@@ -167,15 +165,23 @@ export const onDropNode = (
           ? [dragItem.id]
           : [];
 
-      const paths = draggedIds
+      const nodeEntries = draggedIds
         .map((id) => sourceEditor.api.node<TElement>({ id, at: [] }))
         .filter((entry): entry is NodeEntry<TElement> => !!entry)
+
+      const nodes = nodeEntries.map(([node]) => node);
+
+      editor.tf.insertNodes(nodes, { at: to });
+
+      const paths = nodeEntries
         .map(([, path]) => path)
         .sort((a, b) => PathApi.compare(b, a));
 
       paths.forEach((path) => {
         sourceEditor.tf.removeNodes({ at: path });
       });
+    } else {
+      editor.tf.insertNodes(dragItem.element, { at: to });
     }
   }
 };
