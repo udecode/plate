@@ -137,6 +137,8 @@ fi
 # shadcn local-file installs can reintroduce relative `.ts/.tsx` import extensions.
 normalize_relative_ts_imports "$TEMPLATE_DIR/src"
 normalize_react_day_picker_api "$TEMPLATE_DIR"
+node "$BASE/tooling/scripts/normalize-template-tsconfig.mjs" \
+  "$TEMPLATE_DIR/tsconfig.json"
 
 echo "Running bun lint:fix..."
 bun lint:fix
