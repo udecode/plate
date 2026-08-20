@@ -1,5 +1,11 @@
 # @platejs/core
 
+## 53.3.7
+
+### Patch Changes
+
+- [#5101](https://github.com/udecode/plate/pull/5101) by [@zbeyens](https://github.com/zbeyens) – Fix multiline plain-text pastes crashing when `maxLength` truncates across blocks
+
 ## 53.3.6
 
 ### Patch Changes
