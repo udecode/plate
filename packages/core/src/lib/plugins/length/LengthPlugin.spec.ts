@@ -101,9 +101,8 @@ describe('LengthPlugin', () => {
   describe('when the overflow spans block boundaries', () => {
     // The trim deletes across block boundaries, which Slate decomposes into
     // merge/remove operations. Those come back through the plugin's own
-    // `apply`, and before the re-entrancy guard the nested call started a
-    // second overlapping delete and crashed on a path the outer one had
-    // already invalidated.
+    // `apply`, so nested trims are suppressed and the outer one loops until
+    // the length invariant holds.
     it('truncate a multi-block paste without crashing', () => {
       editor = createEditorWithLength(20);
       editor.tf.insertFragment([
@@ -116,6 +115,28 @@ describe('LengthPlugin', () => {
       expect(editor.children).toEqual([
         { children: [{ text: 'a'.repeat(20) }], type: 'p' },
       ]);
+    });
+
+    it('truncate to maxLength when the overflow is a single character', () => {
+      // One pass is not enough here: the deletion distance is spent crossing
+      // the empty blocks without removing a character, so the trim has to run
+      // again to reach the limit.
+      editor = createEditorWithLength(20);
+      editor.tf.insertFragment([
+        { children: [{ text: 'a'.repeat(21) }], type: 'p' },
+        { children: [{ text: '' }], type: 'p' },
+        { children: [{ text: '' }], type: 'p' },
+        { children: [{ text: 'tail' }], type: 'p' },
+      ]);
+
+      expect(editor.api.string([])).toBe('a'.repeat(20));
+    });
+
+    it('truncate pasted plain text containing line breaks', () => {
+      editor = createEditorWithLength(20);
+      editor.tf.insertText(`${'a'.repeat(21)}\n\noverflowing tail`);
+
+      expect(editor.api.string([]).length).toBeLessThanOrEqual(20);
     });
   });
 });
