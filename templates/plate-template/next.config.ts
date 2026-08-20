@@ -1,12 +1,10 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  // TEMPLATE ONLY
-  turbopack: { root: import.meta.dirname },
-  reactCompiler: true,
   experimental: {
     turbopackFileSystemCacheForDev: true,
   },
+  reactCompiler: true,
 
   // TEMPLATE ONLY
   async redirects() {
@@ -18,6 +16,8 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  // TEMPLATE ONLY
+  turbopack: { root: import.meta.dirname },
 };
 
 export default nextConfig;
