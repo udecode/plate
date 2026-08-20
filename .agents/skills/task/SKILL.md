@@ -20,6 +20,9 @@ they earn their keep, and verify before calling the task done.
 - Read the task source first.
 - Read local repo instructions and nearby implementation patterns before
   editing.
+- Every GitHub PR requires its own `task` invocation and dedicated task plan.
+  The PR body must name that plan, the plan must exist at the exact PR head,
+  and the plan must identify that exact PR. Batch-level evidence never counts.
 - Search for existing patterns before inventing new ones.
 - Prefer the best durable ownership fix over the smallest local patch.
 - Treat public issue diagnoses and suggested fixes as claims to challenge, not
@@ -27,8 +30,10 @@ they earn their keep, and verify before calling the task done.
 - Prefer targeted tests and checks during iteration.
 - Keep the user updated at milestones.
 - Verify the actual result before claiming done.
-- Do not default to research swarms, review swarms, browser proof, PRs, tracker
-  comments, or compounding.
+- Do not default to research swarms, review swarms, browser proof, tracker
+  comments, or compounding. Verified code-changing work does default to a PR
+  unless the user explicitly says not to, no local patch exists, or a real
+  blocker is recorded.
 - Before calling a task blocked on a repo-wide gate, rule out local install
   corruption once when the failure smells wrong for the diff.
 
@@ -100,7 +105,9 @@ they earn their keep, and verify before calling the task done.
 10. If testing or coverage work, load `testing` before `tdd` and choose the
     smallest honest slice.
 11. If program or batch work, restate the ordered scope and finish one slice at
-    a time unless the user asked for a broader sweep.
+    a time unless the user asked for a broader sweep. Invoke `task` separately
+    and create a dedicated plan for every exact PR before autoclosure; an
+    aggregate plan may choose order but never substitutes for per-PR evidence.
 12. For any tracker source, record source type/id/title, task type, acceptance
     criteria, caveats, likely files/routes/packages, browser surface, likely
     root-cause layer, and the pre-solution issue challenge verdict when
@@ -283,8 +290,11 @@ lock.
   claims. Use `--template docs` when docs dominate. Use `--with docs` and still
   load `docs-creator` when docs are a supporting touched surface under a normal
   or major task. Tiny typo/link-only edits may skip it with an explicit reason.
-- Git/PR shipping: when verified code should ship and repo policy permits it,
-  use normal `git`/`gh` commands directly. The `task` skill owns the PR body.
+- Git/PR shipping: verified code-changing work must be committed, pushed, and
+  opened or updated as a PR unless the user explicitly said not to, no local
+  patch exists, or a real blocker is recorded. Use normal `git`/`gh` commands
+  directly. The `task` skill owns the PR body. Lack of a separate "open a PR"
+  user sentence is not a blocker.
 - Review skills: load only for risky, large, user-facing, or
   architecture-sensitive changes.
 - `agent-native-reviewer`: changes touch `.agents/**`, `.claude/**`,
@@ -348,8 +358,10 @@ the patch is risky.
 ### Program Or Batch Work
 
 1. Respect explicit order.
-2. Define done for the current slice before implementation.
-3. Complete one slice cleanly unless the user asks for a broader sweep.
+2. Invoke `task` and create a dedicated plan for each exact PR; a batch plan
+   only orders slices.
+3. Define done for the current slice before implementation.
+4. Complete one slice cleanly unless the user asks for a broader sweep.
 
 ### Refactor Or Chore
 
@@ -416,6 +428,9 @@ Keep verification mandatory and proportional.
   changelog gate replaces the package changeset.
 - If verified work changed code, create or update the PR before tracker
   sync-back unless the user said not to.
+- Before autoclosure or handoff, require exactly one
+  `🧭 Task plan: docs/plans/<plan>.md` line in the PR body. Verify the plan at
+  the exact PR head and record the exact PR number or URL in that plan.
 - If the task came from a tracker item and reached a meaningful outcome, sync
   back unless the user said not to.
 
@@ -445,12 +460,15 @@ Use the accepted task PR format from kitcn PR #270. The shape is not optional:
    `🐛 Fixes #123` or `🐛 Fixes ➖ N/A`. Never include a line that links to the
    current PR itself; the current PR URL belongs in the final response, not in
    its own description.
-3. Use an emoji confidence line, for example `🟢 95-100% confidence`.
-4. Use this exact table header:
+3. Add exactly one task-plan line:
+   `🧭 Task plan: docs/plans/<plan>.md`. The named plan must exist at the exact
+   PR head and identify this exact PR number or URL.
+4. Use an emoji confidence line, for example `🟢 95-100% confidence`.
+5. Use this exact table header:
    `| Phase | 🧪 Tests | 🌐 Browser |`
-5. Use `Reproduced` and `Verified` rows. Mark passing proof with `🟢`, repro or
+6. Use `Reproduced` and `Verified` rows. Mark passing proof with `🟢`, repro or
    failing proof with `🔴`, and non-applicable browser/test cells with `➖ N/A`.
-6. Use bold emoji section headings exactly in this family:
+7. Use bold emoji section headings exactly in this family:
    `**✅ Outcome**`, `**⚠️ Caveat**`, `**🏗️ Design**`, and
    `**🧪 Verified**`.
 
@@ -483,6 +501,9 @@ with `gh pr view --json body` before final handoff.
 - Testing work loaded the testing policy before implementation.
 - Only necessary skills were loaded.
 - Batch work did not sprawl without explicit instruction.
+- Every PR created or updated by the run has one dedicated `task` invocation,
+  exactly one task-plan body line, that plan at the exact head, and exact PR
+  ownership recorded in the plan. A batch plan is never accepted as evidence.
 - Verification matched change scope.
 - PR descriptions created by task runs used the kitcn PR #270 emoji task-style
   body and were verified with `gh pr view --json body`.

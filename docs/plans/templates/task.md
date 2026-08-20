@@ -24,6 +24,8 @@ Timed checkpoint:
 
 Completion threshold:
 - TODO: Define the exact task done state.
+- If a PR is created or updated, this exact task plan exists at the PR head,
+  identifies that exact PR, and the PR body names it exactly once.
 - Task closure is legal only when the source-of-truth acceptance criteria are
   satisfied or explicitly narrowed, required verification evidence is recorded,
   code-review and release-artifact gates are closed when applicable, tracker/PR
@@ -112,6 +114,7 @@ Start Gates:
 | Release artifact decision | pending | pending |
 | Browser tool decision for browser surface | pending | pending |
 | PR expectation decision | pending | pending |
+| Dedicated task plan selected for exact PR | pending | pending |
 | Tracker sync expectation decision | pending | pending |
 | Output budget strategy recorded | pending | pending |
 
@@ -154,6 +157,11 @@ Work Checklist:
       requirements, PR body sync, and issue/Linear sync when applicable.
 - [ ] Branch handling recorded for code-changing work: dedicated branch used,
       new branch needed, or N/A with reason.
+- [ ] Every PR has its own `task` invocation and dedicated plan; this plan is
+      not aggregate evidence for another PR.
+- [ ] If a PR exists, its body has exactly one
+      `🧭 Task plan: docs/plans/<plan>.md` line, this file exists at the exact PR
+      head, and this plan records that exact PR number or URL.
 - [ ] Local-env-rot retry policy recorded for any surprising repo-wide failure:
       reinstall/rerun evidence or N/A with reason.
 - [ ] Workspace authority recorded: every proof command names the cwd/tool that
@@ -193,6 +201,7 @@ Completion Gates:
 | Local install corruption suspected | pending | Run `pnpm run reinstall` once, rerun the exact failing command, or record N/A | pending |
 | Autoreview for non-trivial implementation changes | pending | Load `.agents/skills/autoreview/SKILL.md`; use dirty local `--mode local`, branch/PR `--mode branch --base <base>`, or committed slice `--mode commit --commit <ref>` until no accepted/actionable findings, or record N/A for docs-only/trivial/no local patch | pending |
 | PR create or update | pending | Run `check` before PR work and sync PR body to the task-style final handoff | pending |
+| Per-PR task ownership | pending | Verify one task-plan body line, plan at exact head, and exact PR ownership in this plan | pending |
 | Task-style PR body verified | pending | Verify the PR body with `gh pr view --json body`; it must preserve auto-release blocks when applicable, must not include a current-PR self-link, and must use the kitcn PR #270 emoji format: `🐛 Fixes ...`, `🟢 95-100% confidence`, `Phase / 🧪 Tests / 🌐 Browser` table, and bold emoji Outcome/Caveat/Design/Verified sections | pending |
 | PR proof image hosting | pending | If PR body needs browser proof, replace local image paths with hosted GitHub URLs or record N/A | pending |
 | Tracker sync-back | pending | Post concise issue/Linear sync after PR exists, or record N/A/blocker | pending |
@@ -253,7 +262,9 @@ Task-style PR body contract:
   part of the diff and repo policy expects auto release, include that block.
 - Use the accepted kitcn PR #270 visual format. The body starts with an emoji
   issue/tracker/fix line, for example `🐛 Fixes #123` or `🐛 Fixes ➖ N/A`, then
-  an emoji confidence line like `🟢 95-100% confidence`.
+  exactly one `🧭 Task plan: docs/plans/<plan>.md` line, then an emoji
+  confidence line like `🟢 95-100% confidence`. The plan must exist at the
+  exact PR head and identify that exact PR.
 - Use this exact table header: `| Phase | 🧪 Tests | 🌐 Browser |`.
 - Use `Reproduced` and `Verified` rows. Mark passing proof with `🟢`, repro or
   failing proof with `🔴`, and non-applicable cells with `➖ N/A`.
@@ -270,6 +281,7 @@ Task-style PR body contract:
 
 Final handoff / sync:
 - PR: pending
+- Task plan at exact PR head: pending
 - Issue / tracker: pending
 - Browser proof: pending
 - Caveats: pending
