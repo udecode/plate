@@ -11,6 +11,9 @@
 ## Git
 
 - **Git:** Never git add, commit, push, or create PR unless the user explicitly asks, or the active command/skill explicitly requires it.
+- **Task PR default:** The `task` and `major-task` skills explicitly require verified code-changing work to be committed, pushed, and opened/updated as a PR unless the user explicitly says not to, the work has no local patch, or a real blocker is recorded. Do not treat the lack of a separate "open a PR" user sentence as a blocker.
+- **One PR, one task:** Every PR requires its own `task` invocation and dedicated task plan. The PR body must name that plan, the plan must exist at the PR head, and it must identify the exact PR. A batch plan may order PRs, but one batch-level `task` or `autoclosure` run never substitutes.
+- **Noncompliant PR:** `autoclosure` must comment and close any PR without valid per-PR task evidence. The comment must explain the requirement, show how to run `task`, and recommend GPT-5.6 with high-or-higher reasoning effort. The comment must succeed before closing; read back both the comment and `CLOSED` state, then stop without reviewing, repairing, or merging the PR.
 - **Open PR follow-up:** If the current branch already has an open PR and you make any change, treat that PR as explicit authorization to commit and push the entire checkout before handoff. Do not leave local-only follow-up changes on an open PR branch.
 - **Push scope:** When you do commit and push, include unrelated dirty files outside src; those are often manual user changes or synced skill/docs updates, so do not silently leave them behind.
 - **PR:** Before creating or updating a PR, run `check`. If it fails, stop and fix it or report the blocker. Do not open a PR with failing `check` unless the user explicitly says to.
@@ -50,8 +53,11 @@ Use those skills when relevant:
   the autogoal skill before durable work when the task has a measurable completion
   threshold
 - `orchestrator` when the current thread should route per-branch work to child threads instead of executing locally
-- `task` for normal repo task execution
+- `task` for normal repo task execution. It is mandatory once per PR, including
+  every PR inside a batch
 - `major-task` for heavyweight architecture, framework comparison, migration, benchmark, or proposal work
+- `autoclosure` to finish the current tree without creating new product scope,
+  or to comment and close a PR that lacks verifiable per-PR `task` evidence
 - `clawsweeper` f[text](cid:f_mpqm0jua0)or Slate issue-ledger triage, duplicate/stale/invalid classification, small high-confidence issue processing, and exact claim sync
 - `clawpatch` for Clawpatch init/map/review/report/fix/revalidate workflows
 - `editor-test-harvester` for mining external editor repositories for portable editor-behavior tests, Slate v2 coverage gaps, and copy/refactor/create decisions
@@ -60,6 +66,14 @@ Use those skills when relevant:
 - `release-lanes` for beta/latest release lane maintenance, promote, direct main-to-next sync, beta pre-mode, and npm/GitHub release verification
 - `sync-main-to-next` for the fast direct `main -> next` release-lane sync wrapper without promotion or autoreview ceremony
 - `tdd`
+- `resolve-pr-feedback` owns actionable GitHub PR feedback after source-backed
+  triage
+- For `.agents/**`, `.claude/**`, `.codex/**`, skills, hooks, commands,
+  prompts, or user-action tooling, use the autogoal agent-native pack, run
+  `agent-native-reviewer`, then end with `autoreview`
+- Repository-owner authorization: `task`, `major-task`, and agent-native
+  workflows may invoke their required final `autoreview` without per-run
+  confirmation
 - @.agents/rules/changeset.mdc when updating packages to write a changeset before completing
 - @.agents/rules/plate-plan.mdc when defining or updating editor-behavior law, authority maps, protocol rows, or parity coverage
 
