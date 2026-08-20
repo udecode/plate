@@ -58,7 +58,6 @@ export const getDropPath = (
   if (!dropEntry) return;
   if (
     (canDropNode &&
-      dragEntry &&
       !canDropNode({ dragEntry, dragItem, dropEntry, editor })) ||
     !monitor.canDrop()
   ) {
