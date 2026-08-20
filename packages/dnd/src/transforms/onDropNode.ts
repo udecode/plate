@@ -40,12 +40,17 @@ export const getDropPath = (
   let dropEntry: NodeEntry<TElement> | undefined;
 
   if ('element' in dragItem) {
-    const dragPath = editor.api.findPath(dragItem.element);
+    let dragPath: Path | undefined;
+
+    if (dragItem.editorId === editor.id) {
+      dragPath = editor.api.findPath(dragItem.element);
+      if (!dragPath) return;
+    }
+
     const hoveredPath = editor.api.findPath(element);
+    if (!hoveredPath) return;
 
-    if (!dragPath || !hoveredPath) return;
-
-    dragEntry = [dragItem.element, dragPath];
+    dragEntry = dragPath && [dragItem.element, dragPath];
     dropEntry = [element, hoveredPath];
   } else {
     dropEntry = editor.api.node<TElement>({ id: element.id as string, at: [] });
