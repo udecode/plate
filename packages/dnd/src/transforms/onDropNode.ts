@@ -57,8 +57,7 @@ export const getDropPath = (
   }
   if (!dropEntry) return;
   if (
-    (canDropNode &&
-      !canDropNode({ dragEntry, dragItem, dropEntry, editor })) ||
+    (canDropNode && !canDropNode({ dragEntry, dragItem, dropEntry, editor })) ||
     !monitor.canDrop()
   ) {
     return;
@@ -166,7 +165,7 @@ export const onDropNode = (
 
       const nodeEntries = draggedIds
         .map((id) => sourceEditor.api.node<TElement>({ id, at: [] }))
-        .filter((entry): entry is NodeEntry<TElement> => !!entry)
+        .filter((entry): entry is NodeEntry<TElement> => !!entry);
 
       const nodes = nodeEntries.map(([node]) => node);
 
